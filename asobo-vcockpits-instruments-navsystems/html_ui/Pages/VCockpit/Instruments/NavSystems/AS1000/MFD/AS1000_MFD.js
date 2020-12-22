@@ -120,24 +120,24 @@ class AS1000_MFD_NavStatus extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var groundSpeedValue = fastToFixed(SimVar.GetSimVarValue("GPS GROUND SPEED", "knots"), 0) + "kt";
+        const groundSpeedValue = fastToFixed(SimVar.GetSimVarValue("GPS GROUND SPEED", "knots"), 0) + "kt";
         if (this.groundSpeedValue != groundSpeedValue) {
             this.groundSpeed.textContent = groundSpeedValue;
             this.groundSpeedValue = groundSpeedValue;
         }
-        var currentTrackValue = fastToFixed(SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree"), 0) + "°";
+        const currentTrackValue = fastToFixed(SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree"), 0) + "°";
         if (this.currentTrack.textContent != currentTrackValue) {
             this.currentTrack.textContent = currentTrackValue;
             this.currentTrackValue = currentTrackValue;
         }
         const flightPlanActive = SimVar.GetSimVarValue("GPS IS ACTIVE FLIGHT PLAN", "boolean");
         if (flightPlanActive) {
-            var desiredTrackValue = fastToFixed(SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree"), 0) + "°";
+            const desiredTrackValue = fastToFixed(SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree"), 0) + "°";
             if (this.desiredTrack.textContent != desiredTrackValue) {
                 this.desiredTrack.textContent = desiredTrackValue;
                 this.desiredTrackValue = desiredTrackValue;
             }
-            var ete = SimVar.GetSimVarValue("GPS WP ETE", "seconds");
+            const ete = SimVar.GetSimVarValue("GPS WP ETE", "seconds");
             if (this.lastEte == undefined || this.lastEte != ete) {
                 this.eteElement.textContent = Math.floor(ete / 60) + ":" + (ete % 60 < 10 ? "0" : "") + ete % 60;
                 this.lastEte = ete;
@@ -169,7 +169,7 @@ class AS1000_MFD_PageNavigation extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var displayNameValue = this.gps.getCurrentPageGroup().name + " - " + this.gps.getCurrentPage().name;
+        const displayNameValue = this.gps.getCurrentPageGroup().name + " - " + this.gps.getCurrentPage().name;
         if (displayNameValue != this.displayNameValue) {
             this.currentPageDisplay.textContent = displayNameValue;
             this.displayNameValue = displayNameValue;
@@ -194,7 +194,7 @@ class AS1000_MFD_PageNavigation extends NavSystemElement {
                     this.pagesHtmlValue = pageHtml;
                 }
             } else {
-                var pageCells = "";
+                let pageCells = "";
                 for (let i = 0; i < this.gps.pageGroups.length; i++) {
                     pageCells += '<td state="' + (i == this.gps.currentPageGroupIndex ? "Selected" : "Unselected") + '">' + this.gps.pageGroups[i].name + '</td>';
                 }
@@ -399,7 +399,7 @@ class AS1000_MFD_AirportInfos extends NavSystemPage {
         this.switchPanel(this.defaultIndex);
     }
     info_callback() {
-        var index = (this.elementSelector.index + 1) % 2;
+        const index = (this.elementSelector.index + 1) % 2;
         this.switchPanel(index);
     }
     switchPanel(_index) {
@@ -455,7 +455,7 @@ class AS1000_MFD_AirportInfos1 extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        var infos = this.icaoSearchField.getUpdatedInfos();
+        const infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao != "") {
             this.symbolElement.textContent = "";
             switch (infos.privateType) {
@@ -566,7 +566,7 @@ class AS1000_MFD_AirportInfos1 extends NavSystemElement {
                     this.runwayLightsElement.textContent = "Frequency";
                     break;
             }
-            var frequencies = [];
+            const frequencies = [];
             for (let i = 0; i < infos.frequencies.length; i++) {
                 frequencies.push('<div class="Freq"><div class="Name">' + infos.frequencies[i].name + '</div><div class="Value Blinking">' + infos.frequencies[i].mhValue.toFixed(3) + '</div></div>');
             }
@@ -615,7 +615,7 @@ class AS1000_MFD_AirportInfos1 extends NavSystemElement {
         return true;
     }
     frequencyCallback(_event, _index) {
-        var infos = this.icaoSearchField.getUpdatedInfos();
+        const infos = this.icaoSearchField.getUpdatedInfos();
         if (_event == "ENT_Push") {
             if (infos.frequencies[_index].mhValue >= 118) {
                 const index = this.gps.getElementOfType(AS1000.ComFrequencies).getActiveIndex();
@@ -653,7 +653,7 @@ class AS1000_MFD_AirportInfos2 extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        var infos = this.icaoSearchField.getUpdatedInfos();
+        const infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao != "") {
             this.symbolElement.textContent = "";
             switch (infos.privateType) {

@@ -301,8 +301,8 @@ class Aera_Com extends NavSystemElement {
             com1Stby = '<span class="Fixed">' + this.gps.frequencyFormat(SimVar.GetSimVarValue("COM STANDBY FREQUENCY:1", "MHz"), 2) + '</span>';
         } else {
             const state = this.gps.blinkGetState(1000, 500) ? "Blink" : "Off";
-            var regex = new RegExp('^(.{' + (this.inputIndex > 2 ? this.inputIndex + 1 : this.inputIndex) + '})(.)(.*)');
-            var replace = '<span class="Writed">$1</span><span class="Writing" state="' + state + '">$2</span><span class = "ToWrite">$3</span>';
+            const regex = new RegExp('^(.{' + (this.inputIndex > 2 ? this.inputIndex + 1 : this.inputIndex) + '})(.)(.*)');
+            const replace = '<span class="Writed">$1</span><span class="Writing" state="' + state + '">$2</span><span class = "ToWrite">$3</span>';
             com1Stby = (this.currentInput.toFixed(2) + " ").replace(regex, replace);
         }
         Avionics.Utils.diffAndSet(this.frequency, com1Stby);

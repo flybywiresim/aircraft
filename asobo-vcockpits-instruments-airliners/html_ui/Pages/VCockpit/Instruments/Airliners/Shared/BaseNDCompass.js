@@ -224,16 +224,16 @@ class Jet_NDCompass extends HTMLElement {
         this.updateMapRange();
     }
     updateCompass(_deltaTime) {
-        var simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-        var simSelectedHeading = 0;
+        const simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+        let simSelectedHeading = 0;
         if (this.aircraft === Aircraft.B747_8 || this.aircraft === Aircraft.AS01B) {
             simSelectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
         } else {
             simSelectedHeading = Simplane.getAutoPilotHeadingLockValue(false);
         }
-        var simTrack = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
-        var simSelectedTrack = SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree");
-        var simGroundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
+        let simTrack = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
+        const simSelectedTrack = SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree");
+        const simGroundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
         if (Simplane.getAutoPilotTRKModeActive() || Simplane.getAutoPilotTRKFPAModeActive()) {
             this._referenceMode = Jet_NDCompass_Reference.TRACK;
         } else {
@@ -246,7 +246,7 @@ class Jet_NDCompass extends HTMLElement {
             }
             this.lastSelectedHeading = Math.round(simSelectedHeading);
         }
-        var compass = 0;
+        let compass = 0;
         if (this.displayMode !== Jet_NDCompass_Display.PLAN) {
             if (this.referenceMode == Jet_NDCompass_Reference.TRACK) {
                 compass = simTrack;
@@ -259,7 +259,7 @@ class Jet_NDCompass extends HTMLElement {
                     this.currentRefMode.textContent = "HDG";
                 }
             }
-            var roundedCompass = fastToFixed(compass, 2);
+            const roundedCompass = fastToFixed(compass, 2);
             this.setAttribute("rotation", roundedCompass);
             if (this.currentRefGroup) {
                 this.currentRefGroup.classList.toggle('hide', false);
@@ -466,19 +466,19 @@ class Jet_NDCompass extends HTMLElement {
                 this.selectedHeadingRightText.classList.toggle('hide', true);
             }
         }
-        var heading = simHeading;
-        var roundedHeading = fastToFixed(heading, 3);
+        const heading = simHeading;
+        const roundedHeading = fastToFixed(heading, 3);
         this.setAttribute("heading_bug_rotation", roundedHeading);
         if (simGroundSpeed <= 10) {
             simTrack = simHeading;
         }
-        var roundedTracking = fastToFixed(simTrack, 3);
+        const roundedTracking = fastToFixed(simTrack, 3);
         this.setAttribute("tracking_bug_rotation", roundedTracking);
         if (this.ilsGroup) {
             if (this._showILS || this.navigationMode == Jet_NDCompass_Navigation.ILS) {
                 const localizer = this.gps.radioNav.getBestILSBeacon();
                 if (localizer.id > 0) {
-                    var roundedCourse = fastToFixed(localizer.course, 3);
+                    const roundedCourse = fastToFixed(localizer.course, 3);
                     this.setAttribute("ils_bug_rotation", roundedCourse);
                     this.ilsGroup.classList.toggle('hide', false);
                 } else {
@@ -496,7 +496,7 @@ class Jet_NDCompass extends HTMLElement {
                 const range = this.mapRange * this.mapRanges[i].factor;
                 if (range < 1.0 && this.mapRanges[i].removeInteger) {
                     const rangeText = (Math.floor(range * 100) / 100).toFixed(2);
-                    var radixPos = rangeText.indexOf('.');
+                    const radixPos = rangeText.indexOf('.');
                     this.mapRanges[i].text.textContent = rangeText.slice(radixPos);
                 } else {
                     this.mapRanges[i].text.textContent = range.toString();

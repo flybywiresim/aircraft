@@ -85,10 +85,10 @@ class A320_Neo_PFD_VSpeed extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var vSpeed = Math.round(Simplane.getVerticalSpeed());
+        const vSpeed = Math.round(Simplane.getVerticalSpeed());
         this.vsi.setAttribute("vspeed", vSpeed.toString());
         if (Simplane.getAutoPilotVerticalSpeedHoldActive()) {
-            var selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
+            const selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
             this.vsi.setAttribute("selected_vspeed", selVSpeed.toString());
             this.vsi.setAttribute("selected_vspeed_active", "true");
         } else {
@@ -161,7 +161,7 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
     onUpdate(_deltaTime) {
         if (this.hsi) {
             this.hsi.update(_deltaTime);
-            var xyz = Simplane.getOrientationAxis();
+            const xyz = Simplane.getOrientationAxis();
             if (xyz) {
                 this.hsi.setAttribute("pitch", (xyz.pitch / Math.PI * 180).toString());
                 this.hsi.setAttribute("bank", (xyz.bank / Math.PI * 180).toString());

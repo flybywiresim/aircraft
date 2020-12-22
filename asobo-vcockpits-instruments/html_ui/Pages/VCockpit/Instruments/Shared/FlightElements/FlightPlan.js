@@ -32,7 +32,7 @@ class FlightPlan {
                 this.activeWayPoint = SimVar.GetSimVarValue("C:fs9gps:FlightPlanActiveWaypoint", "number");
                 this.isDirectTo = SimVar.GetSimVarValue("C:fs9gps:FlightPlanIsDirectTo", "Bool");
                 SimVar.GetSimVarArrayValues(this.waypointsBatch, function (_Values) {
-                    for (var i = 0; i < _Values.length; i++) {
+                    for (let i = 0; i < _Values.length; i++) {
                         if (!this.wayPoints[i]) {
                             this.wayPoints[i] = new WayPoint(this.instrument);
                         }
@@ -55,7 +55,7 @@ class FlightPlan {
                     this.approach.name = SimVar.GetSimVarValue("C:fs9gps:FlightPlanTitle", "string", this.instrument.instrumentIdentifier);
                     SimVar.GetSimVarArrayValues(this.approachBatch, function (_Values) {
                         this.approach.WayPoints = [];
-                        for (var i = 0; i < _Values.length; i++) {
+                        for (let i = 0; i < _Values.length; i++) {
                             this.approach.wayPoints.push(new ApproachWayPoint(this.gps));
                             this.approach.wayPoints[i].icao = _Values[i][0];
                             this.approach.wayPoints[i].name = _Values[i][1];
@@ -90,8 +90,8 @@ class FlightPlan {
         }.bind(this));
     }
     GetAirportList() {
-        var airports = [];
-        for (var i = 0; i < this.wayPoints.length; i++) {
+        const airports = [];
+        for (let i = 0; i < this.wayPoints.length; i++) {
             if (this.wayPoints[i].type == 'A') {
                 airports.push(this.wayPoints[i]);
             }
@@ -99,7 +99,7 @@ class FlightPlan {
         return airports;
     }
     FillHTMLElement(_element, _nbElemMax, _startIndex) {
-        var Html = "";
+        let Html = "";
         if (this.wayPoints.length > 0) {
             for (var i = _startIndex; i < Math.min(_startIndex + _nbElemMax, this.wayPoints.length); i++) {
                 let ident = this.wayPoints[i].GetInfos().ident;

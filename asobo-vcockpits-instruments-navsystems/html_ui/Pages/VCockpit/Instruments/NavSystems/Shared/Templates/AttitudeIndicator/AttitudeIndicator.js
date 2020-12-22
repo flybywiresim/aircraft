@@ -182,7 +182,7 @@ class AttitudeIndicator extends HTMLElement {
         this.root.setAttribute("overflow", "visible");
         this.root.setAttribute("style", "position:absolute");
         attitudeContainer.appendChild(this.root);
-        var refHeight = (this.isBackup) ? 330 : 230;
+        const refHeight = (this.isBackup) ? 330 : 230;
         const attitude_pitch_container = document.createElementNS(Avionics.SVG.NS, "svg");
         attitude_pitch_container.setAttribute("width", "230");
         attitude_pitch_container.setAttribute("height", refHeight.toString());

@@ -184,7 +184,7 @@ class AS3000_Engine extends NavSystemElementContainer {
         if (!fromConfig) {
             this.engineType = Simplane.getEngineType();
             this.engineCount = Simplane.getEngineCount();
-            var ed = this.root.querySelector("as3000-engine-display");
+            const ed = this.root.querySelector("as3000-engine-display");
             if (!ed) {
                 console.error("Engine Display component expected!");
                 return;
@@ -331,32 +331,32 @@ class AS3000_Engine extends NavSystemElementContainer {
         if (!this.root || !this.allEnginesReady || this.widthSet) {
             return;
         }
-        var vpRect = this.gps.getBoundingClientRect();
-        var vpWidth = vpRect.width;
-        var vpHeight = vpRect.height;
+        const vpRect = this.gps.getBoundingClientRect();
+        const vpWidth = vpRect.width;
+        const vpHeight = vpRect.height;
         if (vpWidth <= 0 || vpHeight <= 0) {
             return;
         }
-        var width = this.root.offsetWidth;
+        const width = this.root.offsetWidth;
         if (width <= 0) {
             return;
         }
-        var newWidth = width * this.engineCount;
+        const newWidth = width * this.engineCount;
         if (width != newWidth) {
             this.root.style.width = width * this.engineCount + "px";
-            for (var i = 0; i < this.allElements.length; i++) {
+            for (let i = 0; i < this.allElements.length; i++) {
                 this.allElements[i].redraw();
             }
         }
         this.widthSet = true;
     }
     addGauge() {
-        var newElem = new GaugeElement();
+        const newElem = new GaugeElement();
         this.allElements.push(newElem);
         return newElem;
     }
     addText() {
-        var newElem = new TextElement();
+        const newElem = new TextElement();
         this.allElements.push(newElem);
         return newElem;
     }
@@ -504,7 +504,7 @@ class AS3000_Engine extends NavSystemElementContainer {
         return Simplane.getEnginePower(_index);
     }
     getNg(_index) {
-        var engineId = _index + 1;
+        const engineId = _index + 1;
         return SimVar.GetSimVarValue("TURB ENG N1:" + engineId, "percent");
     }
     getItt(_index) {
@@ -516,19 +516,19 @@ class AS3000_Engine extends NavSystemElementContainer {
         return SimVar.GetSimVarValue("TURB ENG1 ITT", "celsius");
     }
     getFuelFlow(_index) {
-        var engineId = _index + 1;
+        const engineId = _index + 1;
         return SimVar.GetSimVarValue("ENG FUEL FLOW GPH:" + engineId, "gallons per hour");
     }
     getOilPress(_index) {
-        var engineId = _index + 1;
+        const engineId = _index + 1;
         return SimVar.GetSimVarValue("GENERAL ENG OIL PRESSURE:" + engineId, "psi");
     }
     getOilTemp(_index) {
-        var engineId = _index + 1;
+        const engineId = _index + 1;
         return SimVar.GetSimVarValue("GENERAL ENG OIL TEMPERATURE:" + engineId, "celsius");
     }
     getEGT(_index) {
-        var engineId = _index + 1;
+        const engineId = _index + 1;
         return SimVar.GetSimVarValue("GENERAL ENG EXHAUST GAS TEMPERATURE:" + engineId, "farenheit");
     }
     getVAC() {
@@ -562,9 +562,9 @@ class AS3000_Engine extends NavSystemElementContainer {
         return SimVar.GetSimVarValue("PRESSURIZATION PRESSURE DIFFERENTIAL", "psi");
     }
     getEngineHours() {
-        var totalSeconds = SimVar.GetSimVarValue("GENERAL ENG ELAPSED TIME:1", "seconds");
-        var hours = Math.floor(totalSeconds / 3600);
-        var remainingSeconds = totalSeconds - (hours * 3600);
+        const totalSeconds = SimVar.GetSimVarValue("GENERAL ENG ELAPSED TIME:1", "seconds");
+        let hours = Math.floor(totalSeconds / 3600);
+        const remainingSeconds = totalSeconds - (hours * 3600);
         hours += Math.floor((remainingSeconds / 3600) * 10) / 10;
         return hours;
     }
@@ -594,19 +594,19 @@ class AS3000_MFD_ComFrequencies extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var com1Active = SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:1", "MHz");
+        const com1Active = SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:1", "MHz");
         if (com1Active) {
             Avionics.Utils.diffAndSet(this.com1Active, com1Active.toFixed(SimVar.GetSimVarValue("COM SPACING MODE:1", "Enum") == 0 ? 2 : 3));
         }
-        var com1Sby = SimVar.GetSimVarValue("COM STANDBY FREQUENCY:1", "MHz");
+        const com1Sby = SimVar.GetSimVarValue("COM STANDBY FREQUENCY:1", "MHz");
         if (com1Sby) {
             Avionics.Utils.diffAndSet(this.com1Stby, com1Sby.toFixed(SimVar.GetSimVarValue("COM SPACING MODE:1", "Enum") == 0 ? 2 : 3));
         }
-        var com2Active = SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:2", "MHz");
+        const com2Active = SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:2", "MHz");
         if (com2Active) {
             Avionics.Utils.diffAndSet(this.com2Active, com2Active.toFixed(SimVar.GetSimVarValue("COM SPACING MODE:2", "Enum") == 0 ? 2 : 3));
         }
-        var com2Sby = SimVar.GetSimVarValue("COM STANDBY FREQUENCY:2", "MHz");
+        const com2Sby = SimVar.GetSimVarValue("COM STANDBY FREQUENCY:2", "MHz");
         if (com2Sby) {
             Avionics.Utils.diffAndSet(this.com2Stby, com2Sby.toFixed(SimVar.GetSimVarValue("COM SPACING MODE:2", "Enum") == 0 ? 2 : 3));
         }

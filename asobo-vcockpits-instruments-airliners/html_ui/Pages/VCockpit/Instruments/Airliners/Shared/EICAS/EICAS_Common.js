@@ -59,11 +59,11 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         }
     }
     refreshClock() {
-        var seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         if (seconds != this.currentSeconds) {
             this.currentSeconds = seconds;
-            var hours = Math.floor(seconds / 3600);
-            var minutes = Math.floor((seconds - (hours * 3600)) / 60);
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds - (hours * 3600)) / 60);
             if (minutes != this.currentMinutes) {
                 this.currentMinutes = minutes;
                 if (this.hoursText != null) {

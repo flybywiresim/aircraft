@@ -188,7 +188,7 @@ class AS3X_Touch extends NavSystemTouch {
         if (this.handleReversionaryMode && this.displayMode == "PFD") {
             let reversionary = false;
             if (document.body.hasAttribute("reversionary")) {
-                var attr = document.body.getAttribute("reversionary");
+                const attr = document.body.getAttribute("reversionary");
                 if (attr == "true") {
                     reversionary = true;
                 }
@@ -579,7 +579,7 @@ class AS3X_Touch_TopBar extends NavSystemElement {
             Avionics.Utils.diffAndSet(this.wpt, nextWaypoint.ident);
             Avionics.Utils.diffAndSet(this.brg, fastToFixed(this.gps.currFlightPlanManager.getBearingToActiveWaypoint(), 0) + "°m");
             Avionics.Utils.diffAndSet(this.dist, this.gps.currFlightPlanManager.getDistanceToActiveWaypoint().toFixed(1) + "nm");
-            var ete = this.gps.currFlightPlanManager.getETEToActiveWaypoint();
+            const ete = this.gps.currFlightPlanManager.getETEToActiveWaypoint();
             Avionics.Utils.diffAndSet(this.ete, ete >= 60 * 60 ? Math.floor(ete / 3600) + "+" + ((ete % 3600 / 60) < 10 ? "0" : "") + Math.floor(ete % 3600 / 60) : Math.floor(ete / 60) + ":" + (ete % 60 < 10 ? "0" : "") + ete % 60);
         } else {
             Avionics.Utils.diffAndSet(this.wpt, "____");

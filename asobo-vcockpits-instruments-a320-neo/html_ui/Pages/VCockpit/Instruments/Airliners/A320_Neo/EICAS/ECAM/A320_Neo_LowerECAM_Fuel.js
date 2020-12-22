@@ -94,7 +94,7 @@ var A320_Neo_LowerECAM_Fuel;
             this.updateQuantity(this.rightOuterTankValue, "FUEL TANK RIGHT AUX QUANTITY", factor);
             this.updateFuelFlow(factor);
             this.updateFuelConsumption(factor);
-            for (var i = 0; i < this.allToggleElements.length; ++i) {
+            for (let i = 0; i < this.allToggleElements.length; ++i) {
                 if (this.allToggleElements[i] != null) {
                     this.allToggleElements[i].refresh();
                 }
@@ -115,14 +115,14 @@ var A320_Neo_LowerECAM_Fuel;
             }
         }
         updateFuelFlow(_unitFactor) {
-            var totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "gallons per hour") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "gallons per hour")) * (_unitFactor / 60);
+            const totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "gallons per hour") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "gallons per hour")) * (_unitFactor / 60);
             this.fuelFlowValue.textContent = fastToFixed(totalFuelFlow, 0);
         }
         updateFuelConsumption(_unitFactor) {
             if (this.fuelLevels) {
-                var leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "gallon") * _unitFactor * 0.001;
-                var rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "gallon") * _unitFactor * 0.001;
-                var totalConsumption = leftConsumption + rightConsumption;
+                const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "gallon") * _unitFactor * 0.001;
+                const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "gallon") * _unitFactor * 0.001;
+                const totalConsumption = leftConsumption + rightConsumption;
                 this.leftValveValue.textContent = fastToFixed(leftConsumption, 0);
                 this.rightValveValue.textContent = fastToFixed(rightConsumption, 0);
                 this.middleFuelValue.textContent = fastToFixed(totalConsumption, 0);
@@ -131,7 +131,7 @@ var A320_Neo_LowerECAM_Fuel;
             }
         }
         updateQuantity(_elem, _simvar, _unitFactor) {
-            var quantity = SimVar.GetSimVarValue(_simvar, "gallons");
+            let quantity = SimVar.GetSimVarValue(_simvar, "gallons");
             quantity *= _unitFactor;
             _elem.textContent = fastToFixed(quantity, 0);
         }

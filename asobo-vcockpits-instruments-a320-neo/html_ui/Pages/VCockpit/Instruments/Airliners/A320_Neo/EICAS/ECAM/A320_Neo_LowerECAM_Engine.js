@@ -52,19 +52,19 @@ var A320_Neo_LowerECAM_Engine;
             this.updateIGN();
         }
         updateIGN() {
-            var ignLeftTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
-            var n2Igniting = (SimVar.GetSimVarValue("TURB ENG IS IGNITING:1", "bool") === 1) ? true : false;
-            var n2Percent = SimVar.GetSimVarValue("ENG N2 RPM:1", "percent");
+            let ignLeftTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
+            let n2Igniting = (SimVar.GetSimVarValue("TURB ENG IS IGNITING:1", "bool") === 1) ? true : false;
+            let n2Percent = SimVar.GetSimVarValue("ENG N2 RPM:1", "percent");
             if (n2Igniting || (n2Percent > 5)) {
                 ignLeftTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A;
             }
-            var ignRightTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
+            let ignRightTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
             n2Igniting = (SimVar.GetSimVarValue("TURB ENG IS IGNITING:2", "bool") === 1) ? true : false;
             n2Percent = SimVar.GetSimVarValue("ENG N2 RPM:2", "percent");
             if (n2Igniting || (n2Percent > 5)) {
                 ignRightTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.B;
             }
-            var ignNeedRefreshTitle = false;
+            let ignNeedRefreshTitle = false;
             if (ignLeftTargetState != this.ignLeftCurrentState) {
                 this.ignLeftCurrentState = ignLeftTargetState;
                 if (this.ignLeftValueText != null) {
@@ -120,7 +120,7 @@ var A320_Neo_LowerECAM_Engine;
             this.engineBleedPressureValueText = _engineBleedPressureValueText;
             this.engineBleedValveOpenLine = _startValveOpenLine;
             this.engineBleedValveClosedLine = _startValveClosedLine;
-            var gaugeDef = new A320_Neo_ECAM_Common.GaugeDefinition();
+            const gaugeDef = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef.arcSize = 200;
             gaugeDef.currentValuePrecision = 0;
             gaugeDef.minValue = A320_Neo_LowerECAM_Engine.Definitions.MIN_GAUGE_OIL;
@@ -168,12 +168,12 @@ var A320_Neo_LowerECAM_Engine;
             }
         }
         getOilQuantity() {
-            var value = SimVar.GetSimVarValue("ENG OIL QUANTITY:" + this.engineIndex, "percent") * 0.01;
+            let value = SimVar.GetSimVarValue("ENG OIL QUANTITY:" + this.engineIndex, "percent") * 0.01;
             value *= A320_Neo_LowerECAM_Engine.Definitions.MAX_GAUGE_OIL;
             return value;
         }
         getOilPressure() {
-            var value = SimVar.GetSimVarValue("ENG OIL PRESSURE:" + this.engineIndex, "psi");
+            const value = SimVar.GetSimVarValue("ENG OIL PRESSURE:" + this.engineIndex, "psi");
             return value;
         }
         setFuelUsedValue(_value, _force = false) {

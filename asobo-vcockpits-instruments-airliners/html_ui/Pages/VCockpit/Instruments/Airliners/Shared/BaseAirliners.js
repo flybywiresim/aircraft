@@ -115,9 +115,9 @@ var Airliners;
         }
         onEvent(_event) {
             super.onEvent(_event);
-            var prefix = this.getLowerScreenChangeEventNamePrefix();
+            const prefix = this.getLowerScreenChangeEventNamePrefix();
             if (_event.indexOf(prefix) >= 0) {
-                var pageName = _event.replace(prefix, "");
+                const pageName = _event.replace(prefix, "");
                 this.changePage(pageName);
             } else {
                 for (let i = 0; i < this.lowerScreenPages.length; i++) {
@@ -127,7 +127,7 @@ var Airliners;
         }
         onChangeLowerScreenPage(..._args) {
             if ((_args != null) && (_args.length > 0)) {
-                var strings = _args[0];
+                const strings = _args[0];
                 if ((strings != null) && (strings.length > 0)) {
                     this.changePage(strings[0]);
                 }
@@ -139,7 +139,7 @@ var Airliners;
         changePage(_pageName) {
             const pageName = _pageName.toUpperCase();
             this.SwitchToPageName(BaseEICAS.LOWER_SCREEN_GROUP_NAME, pageName);
-            for (var i = 0; i < this.lowerScreenPages.length; i++) {
+            for (let i = 0; i < this.lowerScreenPages.length; i++) {
                 if (this.lowerScreenPages[i].name == pageName) {
                     SimVar.SetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number", i);
                     break;
@@ -193,7 +193,7 @@ var Airliners;
         }
         init() {
             super.init();
-            var root = this.gps.getChildById(this.htmlElemId);
+            const root = this.gps.getChildById(this.htmlElemId);
             if (root != null) {
                 this.screen = root.querySelector(this.selector);
                 this.screen.init(this.gps);
@@ -224,7 +224,7 @@ var Airliners;
             this.selector = _selector;
         }
         init() {
-            var root = this.gps.getChildById(this.container.htmlElemId);
+            const root = this.gps.getChildById(this.container.htmlElemId);
             if (root != null) {
                 this.page = root.querySelector(this.selector);
                 this.page.init(this.gps);
@@ -351,8 +351,8 @@ var Airliners;
             }
         }
         refreshValue() {
-            var code = "";
-            for (var i = 0; i <= 3; i++) {
+            let code = "";
+            for (let i = 0; i <= 3; i++) {
                 if (this.currentDigits[i] >= 0) {
                     code += this.currentDigits[i].toString();
                 } else {
@@ -365,7 +365,7 @@ var Airliners;
         }
         onEvent(_event) {
             if (_event.indexOf("BTN_") >= 0) {
-                var buttonSuffix = _event.replace("BTN_", "");
+                const buttonSuffix = _event.replace("BTN_", "");
                 if (buttonSuffix.charAt(0) == 'C') {
                     if (this.currentDigits[0] >= 0) {
                         if (this.bLastInputIsCLR) {
@@ -398,7 +398,7 @@ var Airliners;
                         }
                         slot = 0;
                     }
-                    var buttonNumber = parseInt(buttonSuffix);
+                    const buttonNumber = parseInt(buttonSuffix);
                     this.currentDigits[slot] = buttonNumber;
                     this.refreshValue();
                     if (slot == 3 && this.currentDigits[3] >= 0) {

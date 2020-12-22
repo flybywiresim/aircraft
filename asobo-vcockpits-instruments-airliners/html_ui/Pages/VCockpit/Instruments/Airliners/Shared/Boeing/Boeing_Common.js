@@ -101,9 +101,9 @@ var Boeing;
             this.refreshValue(0, 0, 0, true);
         }
         update(_deltaTime) {
-            var leverPos = Simplane.getFlapsHandleIndex();
-            var flapsPercent = ((SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT PERCENT", "percent")) * 0.5) * 0.01;
-            var flapsAngle = (SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
+            const leverPos = Simplane.getFlapsHandleIndex();
+            const flapsPercent = ((SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT PERCENT", "percent")) * 0.5) * 0.01;
+            const flapsAngle = (SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
             this.refreshValue(leverPos, flapsPercent, flapsAngle);
             if ((this.currentAngle <= 0) && (this.timeout > 0)) {
                 this.timeout -= _deltaTime;
@@ -119,17 +119,17 @@ var Boeing;
                 this.currentLeverPosition = _leverPos;
                 this.currentPercent = _realFlapsPercent;
                 this.currentAngle = _realFlapsAngle;
-                var targetAngle = this.flapsLeverPositionToAngle(this.currentLeverPosition);
-                var barTop = 0;
-                var barBottom = 0;
-                var barHeight = 0;
+                const targetAngle = this.flapsLeverPositionToAngle(this.currentLeverPosition);
+                let barTop = 0;
+                let barBottom = 0;
+                let barHeight = 0;
                 if (this.bar != null) {
                     barTop = this.bar.y.baseVal.value;
                     barBottom = barTop + this.bar.height.baseVal.value;
                     barHeight = (barBottom - barTop);
                 }
-                var markerY = barTop + (barHeight * this.currentPercent);
-                var markerYStr = markerY.toString();
+                const markerY = barTop + (barHeight * this.currentPercent);
+                const markerYStr = markerY.toString();
                 if (this.marker != null) {
                     this.marker.setAttribute("y1", markerYStr);
                     this.marker.setAttribute("y2", markerYStr);
@@ -139,7 +139,7 @@ var Boeing;
                     this.valueText.setAttribute("y", markerYStr);
                 }
                 if (this.gauge != null) {
-                    var height = barHeight * this.currentPercent;
+                    const height = barHeight * this.currentPercent;
                     this.gauge.setAttribute("height", height.toString());
                 }
                 if (this.rootElement != null) {
@@ -176,9 +176,9 @@ var Boeing;
                 this.valueText = _root.querySelector(".value");
                 this.arrow = _root.querySelector(".arrow");
                 this.trimBand = _root.querySelector(".trimBand");
-                var bar = _root.querySelector(".bar");
+                const bar = _root.querySelector(".bar");
                 if (bar != null) {
-                    var barHeight = bar.y2.baseVal.value - bar.y1.baseVal.value;
+                    const barHeight = bar.y2.baseVal.value - bar.y1.baseVal.value;
                     this.valueToArrowY = (barHeight * 0.5) / this.maxValue;
                 }
                 if (this.takeoffText != null) {
@@ -193,13 +193,13 @@ var Boeing;
         refreshValue(_value, _force = false) {
             if ((_value != this.currentValue) || _force) {
                 this.currentValue = Utils.Clamp(_value, 0, this.maxValue);
-                var displayValue = (this.currentValue + this.maxValue) * 0.5;
+                const displayValue = (this.currentValue + this.maxValue) * 0.5;
                 if (this.valueText != null) {
                     this.valueText.textContent = displayValue.toFixed(this.valueDecimals);
                 }
                 if (this.arrow != null) {
                     const clampedVal = Utils.Clamp(this.currentValue, -this.maxValue, this.maxValue);
-                    var arrowY = clampedVal * this.valueToArrowY;
+                    const arrowY = clampedVal * this.valueToArrowY;
                     this.arrow.setAttribute("transform", "translate(0," + arrowY + ")");
                 }
             }
@@ -221,9 +221,9 @@ var Boeing;
                 this.leftText = _root.querySelector(".left");
                 this.rightText = _root.querySelector(".right");
                 this.arrow = _root.querySelector(".arrow");
-                var bar = _root.querySelector(".bar");
+                const bar = _root.querySelector(".bar");
                 if (bar != null) {
-                    var barLength = bar.x2.baseVal.value - bar.x1.baseVal.value;
+                    const barLength = bar.x2.baseVal.value - bar.x1.baseVal.value;
                     this.valueToArrowX = (barLength * 0.5) / this.maxValue;
                 }
             }
@@ -235,9 +235,9 @@ var Boeing;
         refreshValue(_value, _force = false) {
             if ((_value != this.currentValue) || _force) {
                 this.currentValue = Utils.Clamp(_value, -this.maxValue, this.maxValue);
-                var bShowLeft = false;
-                var bShowRight = false;
-                var displayValue = Math.abs(this.currentValue);
+                let bShowLeft = false;
+                let bShowRight = false;
+                let displayValue = Math.abs(this.currentValue);
                 if (displayValue <= 0.05) {
                     displayValue = 0;
                 } else {
@@ -254,7 +254,7 @@ var Boeing;
                     this.rightText.style.display = bShowRight ? "block" : "none";
                 }
                 if (this.arrow != null) {
-                    var arrowX = this.currentValue * this.valueToArrowX;
+                    const arrowX = this.currentValue * this.valueToArrowX;
                     this.arrow.setAttribute("transform", "translate(" + arrowX + ",0)");
                 }
             }
@@ -285,7 +285,7 @@ var Boeing;
             if (_force || (this.isActive != _isActive)) {
                 this.isActive = _isActive;
                 if (this.element != null) {
-                    var className = this.isActive ? "active" : "inactive";
+                    const className = this.isActive ? "active" : "inactive";
                     this.element.setAttribute("class", "fuelengine-" + className);
                 }
             }
@@ -309,7 +309,7 @@ var Boeing;
                 this.isSwitched = _isSwitched;
                 this.isActive = _isActive;
                 if (this.element != null) {
-                    var className = this.isSwitched ? "switched" : "notswitched";
+                    let className = this.isSwitched ? "switched" : "notswitched";
                     className += this.isActive ? "-active" : "-inactive";
                     this.element.setAttribute("class", "fuelpump-" + className);
                 }
@@ -327,16 +327,16 @@ var Boeing;
         }
         init() {
             if (this.element != null) {
-                var baseTransform = this.element.getAttribute("transform");
-                var rotateIndex = baseTransform.search("rotate");
+                const baseTransform = this.element.getAttribute("transform");
+                const rotateIndex = baseTransform.search("rotate");
                 if (rotateIndex < 0) {
                     this.transformStringClosed = baseTransform + " rotate(0)";
                     this.transformStringOpen = baseTransform + " rotate(90)";
                 } else {
                     this.transformStringClosed = baseTransform;
-                    var rotateStartIndex = baseTransform.indexOf("rotate(") + 7;
-                    var rotateEndIndex = baseTransform.indexOf(")", rotateStartIndex);
-                    var angle = parseFloat(baseTransform.slice(rotateStartIndex, rotateEndIndex));
+                    const rotateStartIndex = baseTransform.indexOf("rotate(") + 7;
+                    const rotateEndIndex = baseTransform.indexOf(")", rotateStartIndex);
+                    const angle = parseFloat(baseTransform.slice(rotateStartIndex, rotateEndIndex));
                     this.transformStringOpen = baseTransform.replace("rotate(" + angle + ")", "rotate(" + (angle + 90) + ")");
                 }
             }
@@ -346,7 +346,7 @@ var Boeing;
             this.refresh(SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:" + this.index, "Bool"), SimVar.GetSimVarValue("FUELSYSTEM VALVE OPEN:" + this.index, "number"));
         }
         refresh(_isSwitched, _openLevel, _force = false) {
-            var open = this.isOpen;
+            let open = this.isOpen;
             if (_openLevel >= 1) {
                 open = true;
             } else if (_openLevel <= 0) {
@@ -383,7 +383,7 @@ var Boeing;
             if (_force || (this.isActive != _isActive)) {
                 this.isActive = _isActive;
                 if (this.element != null) {
-                    var className = this.isActive ? "active" : "inactive";
+                    const className = this.isActive ? "active" : "inactive";
                     this.element.setAttribute("class", "fuelline-" + className);
                 }
             }
@@ -439,7 +439,7 @@ var Boeing;
         }
         onInfoPanelEvent(_type, ..._args) {
             if ((_args != null) && (_args.length > 0)) {
-                var strings = _args[0];
+                const strings = _args[0];
                 if ((strings != null) && (strings.length > 0)) {
                     let panelId;
                     if (strings[0] == "primary") {
@@ -500,7 +500,7 @@ var Boeing;
             }
         }
         createDiv(_id, _class = "", _text = "") {
-            var div = document.createElement("div");
+            const div = document.createElement("div");
             if (_id.length > 0) {
                 div.id = _id;
             }
@@ -513,13 +513,13 @@ var Boeing;
             return div;
         }
         getNextAvailableDiv() {
-            for (var i = 0; i < this.allDivs.length; ++i) {
+            for (let i = 0; i < this.allDivs.length; ++i) {
                 if (this.allDivs[i].textContent.length == 0) {
                     return this.allDivs[i];
                 }
             }
             if (this.divMain != null) {
-                var newDiv = document.createElement("div");
+                const newDiv = document.createElement("div");
                 this.allDivs.push(newDiv);
                 this.divMain.appendChild(newDiv);
                 return newDiv;
@@ -527,7 +527,7 @@ var Boeing;
             return null;
         }
         getDivFromMessage(_message) {
-            for (var i = 0; i < this.allDivs.length; ++i) {
+            for (let i = 0; i < this.allDivs.length; ++i) {
                 if (this.allDivs[i].textContent == _message) {
                     return this.allDivs[i];
                 }
@@ -543,17 +543,17 @@ var Boeing;
             return "";
         }
         addMessage(_message, _style) {
-            var div = this.getNextAvailableDiv();
+            const div = this.getNextAvailableDiv();
             if (div != null) {
                 div.textContent = _message;
                 div.className = this.getClassNameFromStyle(_style);
             }
         }
         removeMessage(_message) {
-            var div = this.getDivFromMessage(_message);
+            const div = this.getDivFromMessage(_message);
             if (div != null) {
                 div.textContent = "";
-                for (var i = 0; i < (this.allDivs.length - 1); ++i) {
+                for (let i = 0; i < (this.allDivs.length - 1); ++i) {
                     if (this.allDivs[i].textContent.length == 0) {
                         if (this.allDivs[i + 1].textContent.length > 0) {
                             this.allDivs[i].textContent = this.allDivs[i + 1].textContent;
@@ -565,14 +565,14 @@ var Boeing;
             }
         }
         modifyMessage(_currentMessage, _newMessage, _newStyle) {
-            var div = this.getDivFromMessage(_currentMessage);
+            const div = this.getDivFromMessage(_currentMessage);
             if (div != null) {
                 div.textContent = _newMessage;
                 div.className = this.getClassNameFromStyle(_newStyle);
             }
         }
         clearScreen() {
-            for (var i = 0; i < this.allDivs.length; ++i) {
+            for (let i = 0; i < this.allDivs.length; ++i) {
                 this.allDivs[i].textContent = "";
             }
         }

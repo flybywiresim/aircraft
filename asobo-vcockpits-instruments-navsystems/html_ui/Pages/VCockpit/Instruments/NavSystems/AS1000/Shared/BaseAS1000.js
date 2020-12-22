@@ -76,9 +76,9 @@ var AS1000;
         }
         onUpdate(_deltaTime) {
             if (this.nav1ActiveElement) {
-                var nav1Active = SimVar.GetSimVarValue("NAV ACTIVE FREQUENCY:1", "MHz");
+                const nav1Active = SimVar.GetSimVarValue("NAV ACTIVE FREQUENCY:1", "MHz");
                 if (nav1Active) {
-                    var nav1ActiveValue = nav1Active.toFixed(2);
+                    const nav1ActiveValue = nav1Active.toFixed(2);
                     if (nav1ActiveValue != this.nav1ActiveValue) {
                         this.nav1ActiveElement.textContent = nav1ActiveValue;
                         this.nav1IdentElement.textContent =
@@ -86,26 +86,26 @@ var AS1000;
                     }
                 }
                 Avionics.Utils.diffAndSet(this.nav1IdentElement, SimVar.GetSimVarValue("NAV SIGNAL:1", "number") > 0 ? SimVar.GetSimVarValue("NAV IDENT:1", "string") : "");
-                var nav2Active = SimVar.GetSimVarValue("NAV ACTIVE FREQUENCY:2", "MHz");
+                const nav2Active = SimVar.GetSimVarValue("NAV ACTIVE FREQUENCY:2", "MHz");
                 if (nav2Active) {
-                    var nav2ActiveValue = nav2Active.toFixed(2);
+                    const nav2ActiveValue = nav2Active.toFixed(2);
                     if (nav2ActiveValue != this.nav2ActiveValue) {
                         this.nav2ActiveElement.textContent = nav2ActiveValue;
                         this.nav2ActiveValue = nav2ActiveValue;
                     }
                 }
                 Avionics.Utils.diffAndSet(this.nav2IdentElement, SimVar.GetSimVarValue("NAV SIGNAL:2", "number") > 0 ? SimVar.GetSimVarValue("NAV IDENT:2", "string") : "");
-                var nav1Sby = SimVar.GetSimVarValue("NAV STANDBY FREQUENCY:1", "MHz");
+                const nav1Sby = SimVar.GetSimVarValue("NAV STANDBY FREQUENCY:1", "MHz");
                 if (nav1Sby) {
-                    var nav1SbyValue = nav1Sby.toFixed(2);
+                    const nav1SbyValue = nav1Sby.toFixed(2);
                     if (nav1SbyValue != this.nav1SbyValue) {
                         this.nav1SbyElement.textContent = nav1SbyValue;
                         this.nav1SbyValue = nav1SbyValue;
                     }
                 }
-                var nav2Sby = SimVar.GetSimVarValue("NAV STANDBY FREQUENCY:2", "MHz");
+                const nav2Sby = SimVar.GetSimVarValue("NAV STANDBY FREQUENCY:2", "MHz");
                 if (nav2Sby) {
-                    var nav2SbyValue = nav2Sby.toFixed(2);
+                    const nav2SbyValue = nav2Sby.toFixed(2);
                     if (nav2SbyValue != this.nav2SbyValue) {
                         this.nav2SbyElement.textContent = nav2SbyValue;
                         this.nav2SbyValue = nav2SbyValue;
@@ -154,7 +154,7 @@ var AS1000;
             this.com2SbyValue = "";
         }
         make_bcd16(arg) {
-            var iarg = (arg / 10000.0 - 10000);
+            const iarg = (arg / 10000.0 - 10000);
             arg = (iarg % 10) + ((iarg / 10 % 10) << 4) + ((iarg / 100 % 10) << 8) + ((iarg / 1000 % 10) << 12);
             return arg;
         }
@@ -205,33 +205,33 @@ var AS1000;
         }
         onUpdate(_deltaTime) {
             if (this.com1ActiveElement) {
-                var com1Active = SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:1", "MHz");
+                const com1Active = SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:1", "MHz");
                 if (com1Active) {
-                    var com1ActiveValue = com1Active.toFixed(3);
+                    const com1ActiveValue = com1Active.toFixed(3);
                     if (com1ActiveValue != this.com1ActiveValue) {
                         this.com1ActiveElement.textContent = com1ActiveValue;
                         this.com1ActiveValue = com1ActiveValue;
                     }
                 }
-                var com2Active = SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:2", "MHz");
+                const com2Active = SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:2", "MHz");
                 if (com2Active) {
-                    var com2ActiveValue = com2Active.toFixed(3);
+                    const com2ActiveValue = com2Active.toFixed(3);
                     if (com2ActiveValue != this.com2ActiveValue) {
                         this.com2ActiveElement.textContent = com2ActiveValue;
                         this.com2ActiveValue = com2ActiveValue;
                     }
                 }
-                var com1Sby = SimVar.GetSimVarValue("COM STANDBY FREQUENCY:1", "MHz");
+                const com1Sby = SimVar.GetSimVarValue("COM STANDBY FREQUENCY:1", "MHz");
                 if (com1Sby) {
-                    var com1SbyValue = com1Sby.toFixed(3);
+                    const com1SbyValue = com1Sby.toFixed(3);
                     if (com1SbyValue != this.com1SbyValue) {
                         this.com1SbyElement.textContent = com1SbyValue;
                         this.com1SbyValue = com1SbyValue;
                     }
                 }
-                var com2Sby = SimVar.GetSimVarValue("COM STANDBY FREQUENCY:2", "MHz");
+                const com2Sby = SimVar.GetSimVarValue("COM STANDBY FREQUENCY:2", "MHz");
                 if (com2Sby) {
-                    var com2SbyValue = com2Sby.toFixed(3);
+                    const com2SbyValue = com2Sby.toFixed(3);
                     if (com2SbyValue != this.com2SbyValue) {
                         this.com2SbyElement.textContent = com2SbyValue;
                         this.com2SbyValue = com2SbyValue;
@@ -287,7 +287,7 @@ class Engine extends NavSystemElementContainer {
         if (!fromConfig) {
             this.engineType = Simplane.getEngineType();
             this.engineCount = Simplane.getEngineCount();
-            var ed = this.root.querySelector("engine-display");
+            const ed = this.root.querySelector("engine-display");
             if (!ed) {
                 console.error("Engine Display component expected!");
                 return;
@@ -422,32 +422,32 @@ class Engine extends NavSystemElementContainer {
         if (!this.root || !this.allEnginesReady || this.widthSet) {
             return;
         }
-        var vpRect = this.gps.getBoundingClientRect();
-        var vpWidth = vpRect.width;
-        var vpHeight = vpRect.height;
+        const vpRect = this.gps.getBoundingClientRect();
+        const vpWidth = vpRect.width;
+        const vpHeight = vpRect.height;
         if (vpWidth <= 0 || vpHeight <= 0) {
             return;
         }
-        var width = this.root.offsetWidth;
+        const width = this.root.offsetWidth;
         if (width <= 0) {
             return;
         }
-        var newWidth = width * this.engineCount;
+        const newWidth = width * this.engineCount;
         if (width != newWidth) {
             this.root.style.width = width * this.engineCount + "px";
-            for (var i = 0; i < this.allElements.length; i++) {
+            for (let i = 0; i < this.allElements.length; i++) {
                 this.allElements[i].redraw();
             }
         }
         this.widthSet = true;
     }
     addGauge() {
-        var newElem = new GaugeElement();
+        const newElem = new GaugeElement();
         this.allElements.push(newElem);
         return newElem;
     }
     addText() {
-        var newElem = new TextElement();
+        const newElem = new TextElement();
         this.allElements.push(newElem);
         return newElem;
     }
@@ -594,7 +594,7 @@ class Engine extends NavSystemElementContainer {
         return Simplane.getEnginePower(_index);
     }
     getNg(_index) {
-        var engineId = _index + 1;
+        const engineId = _index + 1;
         return SimVar.GetSimVarValue("TURB ENG N1:" + engineId, "percent");
     }
     getItt(_index) {
@@ -606,27 +606,27 @@ class Engine extends NavSystemElementContainer {
         return SimVar.GetSimVarValue("TURB ENG1 ITT", "celsius");
     }
     getFuelFlow(_index) {
-        var engineId = _index + 1;
+        const engineId = _index + 1;
         return SimVar.GetSimVarValue("ENG FUEL FLOW GPH:" + engineId, "gallons per hour");
     }
     getOilPress(_index) {
-        var engineId = _index + 1;
+        const engineId = _index + 1;
         return SimVar.GetSimVarValue("GENERAL ENG OIL PRESSURE:" + engineId, "psi");
     }
     getOilTempFarenheit(_index) {
-        var engineId = _index + 1;
+        const engineId = _index + 1;
         return SimVar.GetSimVarValue("GENERAL ENG OIL TEMPERATURE:" + engineId, "farenheit");
     }
     getOilTempCelsius(_index) {
-        var engineId = _index + 1;
+        const engineId = _index + 1;
         return SimVar.GetSimVarValue("GENERAL ENG OIL TEMPERATURE:" + engineId, "celsius");
     }
     getEGTFarenheit(_index) {
-        var engineId = _index + 1;
+        const engineId = _index + 1;
         return SimVar.GetSimVarValue("GENERAL ENG EXHAUST GAS TEMPERATURE:" + engineId, "farenheit");
     }
     getEGTCelsius(_index) {
-        var engineId = _index + 1;
+        const engineId = _index + 1;
         return SimVar.GetSimVarValue("GENERAL ENG EXHAUST GAS TEMPERATURE:" + engineId, "farenheit");
     }
     getVAC() {
@@ -660,9 +660,9 @@ class Engine extends NavSystemElementContainer {
         return SimVar.GetSimVarValue("PRESSURIZATION PRESSURE DIFFERENTIAL", "psi");
     }
     getEngineHours() {
-        var totalSeconds = SimVar.GetSimVarValue("GENERAL ENG ELAPSED TIME:1", "seconds");
-        var hours = Math.floor(totalSeconds / 3600);
-        var remainingSeconds = totalSeconds - (hours * 3600);
+        const totalSeconds = SimVar.GetSimVarValue("GENERAL ENG ELAPSED TIME:1", "seconds");
+        let hours = Math.floor(totalSeconds / 3600);
+        const remainingSeconds = totalSeconds - (hours * 3600);
         hours += Math.floor((remainingSeconds / 3600) * 10) / 10;
         return hours;
     }
@@ -713,11 +713,11 @@ class AS1000_PFD_NearestAirports extends NavSystemElement {
         if (this.isActive) {
             this.rootElement.setAttribute("state", "Active");
             this.nearestAirportList.Update(25, 200);
-            var airportListStrings = [];
-            for (var i = 0; i < this.nearestAirportList.airports.length; i++) {
+            const airportListStrings = [];
+            for (let i = 0; i < this.nearestAirportList.airports.length; i++) {
                 const airport = this.nearestAirportList.airports[i];
-                var firstLine = "";
-                var secondLine = "";
+                let firstLine = "";
+                let secondLine = "";
                 const logo = airport.imageFileName();
                 firstLine += '<td><span class="Blinking">' + airport.ident + '</span><img src="/Pages/VCockpit/Instruments/Shared/Map/Images/' + logo + '" class="imgSizeS" /></td>';
                 firstLine += '<td>' + fastToFixed(airport.bearing, 0) + '° </td>';
@@ -760,8 +760,8 @@ class AS1000_PFD_NearestAirports extends NavSystemElement {
         this.gps.ActiveSelection(this.defaultSelectables);
     }
     airportFrequency_SelectionCallback(_event, _index) {
-        var comFreq = this.gps.getElementOfType(AS1000.ComFrequencies);
-        var navFreq = this.gps.getElementOfType(AS1000.NavFrequencies);
+        const comFreq = this.gps.getElementOfType(AS1000.ComFrequencies);
+        const navFreq = this.gps.getElementOfType(AS1000.NavFrequencies);
         switch (_event) {
             case "ENT_Push":
                 if (this.nearestAirportList.airports[Math.floor(_index / 2)].frequencyMHz >= 118) {
@@ -804,10 +804,10 @@ class AS1000_PFD_AirportInfos extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         if (this.isActive) {
-            var infos = this.wayPoint.GetInfos();
+            const infos = this.wayPoint.GetInfos();
             if (infos instanceof AirportInfo) {
                 this.ident.textContent = infos.ident;
-                var symbol = infos.GetSymbolFileName();
+                const symbol = infos.GetSymbolFileName();
                 if (symbol) {
                     this.symbol.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + infos.GetSymbolFileName() + '"/>';
                 } else {
@@ -830,7 +830,7 @@ class AS1000_PFD_AirportInfos extends NavSystemElement {
                         break;
                 }
                 this.timeZone.textContent = "";
-                var maxLength = 0;
+                let maxLength = 0;
                 for (let i = 0; i < infos.runways.length; i++) {
                     if (infos.runways[i].length > maxLength) {
                         maxLength = infos.runways[i].length;

@@ -70,7 +70,7 @@ class BaseInstrument extends TemplateElement {
     setInstrumentIdentifier(_identifier) {
         if (_identifier && _identifier != "" && _identifier != this.instrumentIdentifier) {
             this._instrumentId = _identifier;
-            var guid = this.getAttribute("Guid");
+            const guid = this.getAttribute("Guid");
             if (guid != undefined) {
                 LaunchFlowEvent("ON_VCOCKPIT_INSTRUMENT_INITIALIZED", guid, this.instrumentIdentifier, this.isInteractive, this.IsGlassCockpit);
             }
@@ -86,7 +86,7 @@ class BaseInstrument extends TemplateElement {
         if (!_selector.startsWith("#") && !_selector.startsWith(".")) {
             _selector = "#" + _selector;
         }
-        var child = this.querySelector(_selector.toString());
+        const child = this.querySelector(_selector.toString());
         return child;
     }
     getChildrenById(_selector) {
@@ -96,7 +96,7 @@ class BaseInstrument extends TemplateElement {
         if (!_selector.startsWith("#") && !_selector.startsWith(".")) {
             _selector = "#" + _selector;
         }
-        var children = this.querySelectorAll(_selector.toString());
+        const children = this.querySelectorAll(_selector.toString());
         return children;
     }
     getChildrenByClassName(_selector) {
@@ -222,14 +222,14 @@ class BaseInstrument extends TemplateElement {
         this._gameState = _newState;
     }
     loadDocumentAttributes() {
-        var attr = undefined;
+        let attr = undefined;
         if (document.body.hasAttribute("quality")) {
             attr = document.body.getAttribute("quality");
         } else if (window.parent && window.parent.document.body.hasAttribute("quality")) {
             attr = window.parent.document.body.getAttribute("quality");
         }
         if (attr != undefined) {
-            var quality = Quality[attr];
+            const quality = Quality[attr];
             if (quality != undefined && this._quality != quality) {
                 this.onQualityChanged(quality);
             }
@@ -240,7 +240,7 @@ class BaseInstrument extends TemplateElement {
             attr = window.parent.document.body.getAttribute("gamestate");
         }
         if (attr != undefined) {
-            var state = GameState[attr];
+            const state = GameState[attr];
             if (state != undefined && this._gameState != state) {
                 this.onGameStateChanged(this._gameState, state);
             }
@@ -261,7 +261,7 @@ class BaseInstrument extends TemplateElement {
         }
     }
     parseURLAttributes() {
-        var instrumentID = this.templateID;
+        let instrumentID = this.templateID;
         if (this.urlConfig.index) {
             instrumentID += "_" + this.urlConfig.index;
         }
@@ -271,7 +271,7 @@ class BaseInstrument extends TemplateElement {
         }
     }
     beforeUpdate() {
-        var curTime = Date.now();
+        const curTime = Date.now();
         this._deltaTime = curTime - this._lastTime;
         this._lastTime = curTime;
         this.updatePendingCalls();
@@ -295,7 +295,7 @@ class BaseInstrument extends TemplateElement {
         this.afterUpdate();
     }
     CanUpdate() {
-        var quality = this.getQuality();
+        const quality = this.getQuality();
         if (quality == Quality.ultra) {
             return true;
         } else if (quality == Quality.high) {
@@ -375,7 +375,7 @@ class BaseInstrument extends TemplateElement {
         this._isConnected = false;
     }
     loadXMLConfig() {
-        var xmlPath;
+        let xmlPath;
         if (this.urlConfig.config) {
             xmlPath = "/Pages/VCockpit/Instruments/Shared/Configs/" + this.urlConfig.config + ".xml";
         } else if (this._xmlConfigPath) {
@@ -383,7 +383,7 @@ class BaseInstrument extends TemplateElement {
         }
         if (xmlPath) {
             this.xmlConfigLoading = true;
-            var xmlRequest = new XMLHttpRequest();
+            const xmlRequest = new XMLHttpRequest();
             xmlRequest.onreadystatechange = function (_instrument) {
                 if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                     _instrument.onXMLConfigLoaded(this);
@@ -410,7 +410,7 @@ class BaseInstrument extends TemplateElement {
         this.xmlConfigLoading = false;
     }
     loadURLAttributes() {
-        var parsedUrl = new URL(this.getAttribute("Url").toLowerCase());
+        const parsedUrl = new URL(this.getAttribute("Url").toLowerCase());
         this.urlConfig.style = parsedUrl.searchParams.get("style");
         this.urlConfig.config = parsedUrl.searchParams.get("config");
         const index = parsedUrl.searchParams.get("index");
@@ -423,11 +423,11 @@ class BaseInstrument extends TemplateElement {
         return Date.now() - this.startTime;
     }
     getAspectRatio() {
-        var vpRect = this.getBoundingClientRect();
+        const vpRect = this.getBoundingClientRect();
         if (vpRect) {
-            var vpWidth = vpRect.width;
-            var vpHeight = vpRect.height;
-            var aspectRatio = vpWidth / vpHeight;
+            const vpWidth = vpRect.width;
+            const vpHeight = vpRect.height;
+            const aspectRatio = vpWidth / vpHeight;
             return aspectRatio;
         }
         return 1.0;

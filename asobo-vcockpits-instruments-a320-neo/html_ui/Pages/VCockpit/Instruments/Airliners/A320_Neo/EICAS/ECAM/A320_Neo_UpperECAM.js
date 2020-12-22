@@ -14,7 +14,7 @@ var A320_Neo_UpperECAM;
     Definitions.MAX_FF = 9900;
     A320_Neo_UpperECAM.Definitions = Definitions;
     function createDiv(_id, _class = "", _text = "") {
-        var div = document.createElement("div");
+        const div = document.createElement("div");
         if (_id.length > 0) {
             div.id = _id;
         }
@@ -28,7 +28,7 @@ var A320_Neo_UpperECAM;
     }
     A320_Neo_UpperECAM.createDiv = createDiv;
     function createSVGText(_text, _class, _x, _y, _alignmentBaseline = "center") {
-        var textElement = document.createElementNS(Avionics.SVG.NS, "text");
+        const textElement = document.createElementNS(Avionics.SVG.NS, "text");
         textElement.textContent = _text;
         textElement.setAttribute("class", _class);
         textElement.setAttribute("x", _x);
@@ -38,7 +38,7 @@ var A320_Neo_UpperECAM;
     }
     A320_Neo_UpperECAM.createSVGText = createSVGText;
     function createSVGCircle(_class, _radius, _x, _y) {
-        var circleElement = document.createElementNS(Avionics.SVG.NS, "circle");
+        const circleElement = document.createElementNS(Avionics.SVG.NS, "circle");
         circleElement.setAttribute("class", _class);
         circleElement.setAttribute("r", _radius);
         circleElement.setAttribute("cx", _x);
@@ -71,7 +71,7 @@ var A320_Neo_UpperECAM;
             this.allPanels.push(this.flapsPanel);
             this.allPanels.push(this.infoBottomLeftPanel);
             this.allPanels.push(this.infoBottomRightPanel);
-            for (var i = 0; i < this.allPanels.length; ++i) {
+            for (let i = 0; i < this.allPanels.length; ++i) {
                 if (this.allPanels[i] != null) {
                     this.allPanels[i].init();
                 }
@@ -85,7 +85,7 @@ var A320_Neo_UpperECAM;
             if (!this.isInitialised) {
                 return;
             }
-            for (var i = 0; i < this.allPanels.length; ++i) {
+            for (let i = 0; i < this.allPanels.length; ++i) {
                 if (this.allPanels[i] != null) {
                     this.allPanels[i].update(_deltaTime);
                 }
@@ -132,11 +132,11 @@ var A320_Neo_UpperECAM;
         }
         create() {
             super.create();
-            for (var i = 0; i < 2; i++) {
+            for (let i = 0; i < 2; i++) {
                 this.engines.push(new A320_Neo_UpperECAM.Engine(this.divMain, i));
                 this.engines[i].init();
             }
-            var gaugeInfoDiv = A320_Neo_UpperECAM.createDiv("GaugeInfo");
+            const gaugeInfoDiv = A320_Neo_UpperECAM.createDiv("GaugeInfo");
             this.statusDiv = A320_Neo_UpperECAM.createDiv("", "STATUS", "");
             gaugeInfoDiv.appendChild(this.statusDiv);
             gaugeInfoDiv.appendChild(A320_Neo_UpperECAM.createDiv("", "SLOT1_TITLE", "N1"));
@@ -163,8 +163,8 @@ var A320_Neo_UpperECAM;
         }
         update(_deltaTime) {
             if (this.allGauges != null) {
-                var active = A320_Neo_ECAM_Common.isEngineDisplayActive(this.index + 1);
-                for (var i = 0; i < this.allGauges.length; ++i) {
+                const active = A320_Neo_ECAM_Common.isEngineDisplayActive(this.index + 1);
+                for (let i = 0; i < this.allGauges.length; ++i) {
                     if (this.allGauges[i] != null) {
                         this.allGauges[i].active = active;
                         this.allGauges[i].update(_deltaTime);
@@ -173,7 +173,7 @@ var A320_Neo_UpperECAM;
             }
         }
         createEGTGauge() {
-            var gaugeDef = new A320_Neo_ECAM_Common.GaugeDefinition();
+            const gaugeDef = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef.startAngle = -180;
             gaugeDef.arcSize = 180;
             gaugeDef.minValue = A320_Neo_UpperECAM.Definitions.MIN_GAUGE_EGT;
@@ -198,7 +198,7 @@ var A320_Neo_UpperECAM;
             this.allGauges.push(this.gaugeEGT);
         }
         createN1Gauge() {
-            var gaugeDef = new A320_Neo_ECAM_Common.GaugeDefinition();
+            const gaugeDef = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef.minValue = A320_Neo_UpperECAM.Definitions.MIN_GAUGE_N1;
             gaugeDef.maxValue = A320_Neo_UpperECAM.Definitions.MAX_GAUGE_N1;
             gaugeDef.arcSize = 200;
@@ -228,25 +228,25 @@ var A320_Neo_UpperECAM;
             this.allGauges.push(this.gaugeN1);
         }
         getEGTGaugeValue() {
-            var engineId = this.index + 1;
-            var value = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:" + engineId, "celsius");
+            const engineId = this.index + 1;
+            const value = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:" + engineId, "celsius");
             return value;
         }
         getN1GaugeValue() {
-            var engineId = (this.index + 1);
-            var value = SimVar.GetSimVarValue("ENG N1 RPM:" + engineId, "percent");
+            const engineId = (this.index + 1);
+            const value = SimVar.GetSimVarValue("ENG N1 RPM:" + engineId, "percent");
             return value;
         }
         getN1GaugeThrottleValue() {
-            var throttle = Math.abs(Simplane.getEngineThrottleCommandedN1(this.index));
-            var value = throttle * A320_Neo_UpperECAM.Definitions.THROTTLE_TO_N1_GAUGE;
+            const throttle = Math.abs(Simplane.getEngineThrottleCommandedN1(this.index));
+            const value = throttle * A320_Neo_UpperECAM.Definitions.THROTTLE_TO_N1_GAUGE;
             return value;
         }
         getN1GaugeAutopilotThrottleValues(_values) {
             if ((_values != null) && (_values.length == 2)) {
                 if (Simplane.getAutoPilotThrottleActive()) {
-                    var engineThrottle = this.getN1GaugeValue();
-                    var autopilotThrottle = Simplane.getAutopilotCommandedN1(this.index);
+                    const engineThrottle = this.getN1GaugeValue();
+                    const autopilotThrottle = Simplane.getAutopilotCommandedN1(this.index);
                     if (engineThrottle < autopilotThrottle) {
                         _values[0] = engineThrottle;
                         _values[1] = autopilotThrottle;
@@ -272,7 +272,7 @@ var A320_Neo_UpperECAM;
     class LinesStyleComponent_Base {
         constructor(_svgRoot) {
             if (_svgRoot != null) {
-                var line = document.createElementNS(Avionics.SVG.NS, "line");
+                const line = document.createElementNS(Avionics.SVG.NS, "line");
                 line.setAttribute("x1", this.getLineX1());
                 line.setAttribute("x2", this.getLineX2());
                 line.setAttribute("y1", "85%");
@@ -290,7 +290,7 @@ var A320_Neo_UpperECAM;
                 this.isActive = _active;
                 this.currentValue = _value;
                 if (this.valueText != null) {
-                    var valueClass = this.isActive ? "Value" : "Inactive";
+                    const valueClass = this.isActive ? "Value" : "Inactive";
                     this.valueText.setAttribute("class", valueClass);
                     if (this.isActive) {
                         this.valueText.textContent = this.currentValue.toFixed(_valueDisplayPrecision);
@@ -328,12 +328,12 @@ var A320_Neo_UpperECAM;
     A320_Neo_UpperECAM.LinesStyleComponent_Right = LinesStyleComponent_Right;
     class LinesStyleInfo {
         constructor(_divMain, _bottomValue) {
-            var svgRoot = document.createElementNS(Avionics.SVG.NS, "svg");
+            const svgRoot = document.createElementNS(Avionics.SVG.NS, "svg");
             svgRoot.appendChild(A320_Neo_UpperECAM.createSVGText(this.getTitle(), "Title", "50%", "75%", "bottom"));
             svgRoot.appendChild(A320_Neo_UpperECAM.createSVGText(this.getUnit(), "Unit", "50%", "100%", "bottom"));
             this.leftComponent = new LinesStyleComponent_Left(svgRoot);
             this.rightComponent = new LinesStyleComponent_Right(svgRoot);
-            var div = A320_Neo_UpperECAM.createDiv("LineStyleInfos");
+            const div = A320_Neo_UpperECAM.createDiv("LineStyleInfos");
             div.style.bottom = _bottomValue;
             div.appendChild(svgRoot);
             _divMain.appendChild(div);
@@ -359,8 +359,8 @@ var A320_Neo_UpperECAM;
             return "%";
         }
         getValue(_engine) {
-            var name = "ENG N2 RPM:" + _engine;
-            var percent = SimVar.GetSimVarValue(name, "percent");
+            const name = "ENG N2 RPM:" + _engine;
+            let percent = SimVar.GetSimVarValue(name, "percent");
             percent = Math.max(0, Math.min(100, percent));
             return percent;
         }
@@ -381,7 +381,7 @@ var A320_Neo_UpperECAM;
             return "KG/H";
         }
         getValue(_engine) {
-            var value = SimVar.GetSimVarValue("ENG FUEL FLOW GPH:" + _engine, "gallons per hour") * this.gallonToKG;
+            const value = SimVar.GetSimVarValue("ENG FUEL FLOW GPH:" + _engine, "gallons per hour") * this.gallonToKG;
             return value;
         }
     }
@@ -390,7 +390,7 @@ var A320_Neo_UpperECAM;
         create() {
             super.create();
             if (this.divMain != null) {
-                var statusDiv = A320_Neo_UpperECAM.createDiv("Status");
+                const statusDiv = A320_Neo_UpperECAM.createDiv("Status");
                 this.throttleState = A320_Neo_UpperECAM.createDiv("ThrottleState");
                 statusDiv.appendChild(this.throttleState);
                 this.throttleValue = A320_Neo_UpperECAM.createDiv("ThrottleValue");
@@ -398,7 +398,7 @@ var A320_Neo_UpperECAM;
                 this.flexTemperature = A320_Neo_UpperECAM.createDiv("FlexTemperature");
                 statusDiv.appendChild(this.flexTemperature);
                 this.divMain.appendChild(statusDiv);
-                var fuelOnBoardDiv = A320_Neo_UpperECAM.createDiv("FuelOnBoard");
+                const fuelOnBoardDiv = A320_Neo_UpperECAM.createDiv("FuelOnBoard");
                 fuelOnBoardDiv.appendChild(A320_Neo_UpperECAM.createDiv("Title", "", "FOB :"));
                 this.fobValue = A320_Neo_UpperECAM.createDiv("Value");
                 fuelOnBoardDiv.appendChild(this.fobValue);
@@ -412,12 +412,12 @@ var A320_Neo_UpperECAM;
         update(_deltaTime) {
             super.update(_deltaTime);
             if (Simplane.getEngineActive(0) || Simplane.getEngineActive(1)) {
-                var throttleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
-                var throttleValue = Simplane.getEngineThrottleMaxThrust(1);
+                const throttleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
+                const throttleValue = Simplane.getEngineThrottleMaxThrust(1);
                 if (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) {
                     if (throttleMode == ThrottleMode.FLEX_MCT) {
                         this.setThrottle(true, throttleValue, throttleMode, true);
-                        var flexTemp = Simplane.getFlexTemperature();
+                        const flexTemp = Simplane.getFlexTemperature();
                         this.setFlexTemperature((flexTemp > 0), flexTemp);
                     } else {
                         this.setThrottle(true, throttleValue, throttleMode);
@@ -544,17 +544,17 @@ var A320_Neo_UpperECAM;
         }
         create() {
             super.create();
-            var rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
+            const rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
             rootSVG.setAttribute("id", "DiagramSVG");
             rootSVG.setAttribute("viewBox", "0 0 " + this.viewBoxSize.x + " " + this.viewBoxSize.y);
             this.divMain.appendChild(rootSVG);
             this.hideOnInactiveGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.hideOnInactiveGroup.setAttribute("id", "HideOnInactive");
             rootSVG.appendChild(this.hideOnInactiveGroup);
-            var shape = document.createElementNS(Avionics.SVG.NS, "path");
+            const shape = document.createElementNS(Avionics.SVG.NS, "path");
             shape.setAttribute("class", "shape");
             {
-                var d = [
+                const d = [
                     "M", this.mainShapeCorners[0].x, ",", this.mainShapeCorners[0].y,
                     " L", this.mainShapeCorners[1].x, ",", this.mainShapeCorners[1].y,
                     " L", this.mainShapeCorners[2].x, ",", this.mainShapeCorners[2].y,
@@ -592,7 +592,7 @@ var A320_Neo_UpperECAM;
             this.hideOnInactiveGroup.appendChild(A320_Neo_UpperECAM.createSVGText("F", "sfText", this.fTextPos.x.toString(), this.fTextPos.y.toString()));
             this.currentStateText = A320_Neo_UpperECAM.createSVGText("", "state", this.currentStateTextPos.x.toString(), this.currentStateTextPos.y.toString());
             this.hideOnInactiveGroup.appendChild(this.currentStateText);
-            var dotSizeStr = this.dotSize.toString();
+            const dotSizeStr = this.dotSize.toString();
             for (var i = 1; i < this.slatDotPositions.length; ++i) {
                 this.hideOnInactiveGroup.appendChild(A320_Neo_UpperECAM.createSVGCircle("dot", dotSizeStr, this.slatDotPositions[i].x.toString(), this.slatDotPositions[i].y.toString()));
             }
@@ -630,17 +630,17 @@ var A320_Neo_UpperECAM;
         }
         update(_deltaTime) {
             super.update(_deltaTime);
-            var slatsAngle = (SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
-            var flapsAngle = (SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
-            var handleIndex = Simplane.getFlapsHandleIndex(true);
+            const slatsAngle = (SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
+            const flapsAngle = (SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
+            const handleIndex = Simplane.getFlapsHandleIndex(true);
             const slatsTargetIndex = handleIndex;
             const flapsTargetIndex = handleIndex;
-            var slatsAngleChanged = (this.currentSlatsAngle != slatsAngle);
-            var flapsAngleChanged = (this.currentFlapsAngle != flapsAngle);
+            const slatsAngleChanged = (this.currentSlatsAngle != slatsAngle);
+            const flapsAngleChanged = (this.currentFlapsAngle != flapsAngle);
             if ((slatsAngleChanged || flapsAngleChanged) && ((this.cockpitSettings != null) && (this.cockpitSettings.FlapsLevels != null) && this.cockpitSettings.FlapsLevels.initialised)) {
                 if (slatsAngleChanged) {
                     this.currentSlatsAngle = slatsAngle;
-                    var dSlatsArrow = "";
+                    let dSlatsArrow = "";
                     if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[0]) {
                         dSlatsArrow = this.targetSlatsArrowsStrings[0];
                     } else if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[1]) {
@@ -659,7 +659,7 @@ var A320_Neo_UpperECAM;
                 }
                 if (flapsAngleChanged) {
                     this.currentFlapsAngle = flapsAngle;
-                    var dFlapsArrow = "";
+                    let dFlapsArrow = "";
                     if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[0]) {
                         dFlapsArrow = this.targetFlapsArrowsStrings[0];
                     } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[1]) {
@@ -713,7 +713,7 @@ var A320_Neo_UpperECAM;
                         }
                     }
                 }
-                var active = ((this.currentSlatsAngle > 0) || (this.currentFlapsAngle > 0));
+                const active = ((this.currentSlatsAngle > 0) || (this.currentFlapsAngle > 0));
                 if (this.isActive != active) {
                     if (active) {
                         this.activate();
@@ -740,8 +740,8 @@ var A320_Neo_UpperECAM;
             }
         }
         generateArrowPathD(_baseString, _origin, _start, _end, _currentLineProgress) {
-            var dir = new Vec2(_end.x - _start.x, _end.y - _start.y);
-            var finalPos = new Vec2();
+            const dir = new Vec2(_end.x - _start.x, _end.y - _start.y);
+            const finalPos = new Vec2();
             if (_currentLineProgress >= 1) {
                 finalPos.x = _end.x;
                 finalPos.y = _end.y;
@@ -752,7 +752,7 @@ var A320_Neo_UpperECAM;
                 finalPos.x = _start.x;
                 finalPos.y = _start.y;
             }
-            var d = "M" + finalPos.x + "," + finalPos.y;
+            let d = "M" + finalPos.x + "," + finalPos.y;
             d += _baseString;
             if (_origin != null) {
                 d += " L" + _origin.x + "," + _origin.y;
@@ -813,7 +813,7 @@ var A320_Neo_UpperECAM;
         }
         onInfoPanelEvent(_type, ..._args) {
             if ((_args != null) && (_args.length > 0)) {
-                var strings = _args[0];
+                const strings = _args[0];
                 if ((strings != null) && (strings.length > 0)) {
                     let panelId;
                     if (strings[0] == "primary") {
@@ -862,13 +862,13 @@ var A320_Neo_UpperECAM;
             this.allDivs = [];
         }
         getNextAvailableDiv() {
-            for (var i = 0; i < this.allDivs.length; ++i) {
+            for (let i = 0; i < this.allDivs.length; ++i) {
                 if (this.allDivs[i].textContent.length == 0) {
                     return this.allDivs[i];
                 }
             }
             if (this.divMain != null) {
-                var newDiv = document.createElement("div");
+                const newDiv = document.createElement("div");
                 this.allDivs.push(newDiv);
                 this.divMain.appendChild(newDiv);
                 return newDiv;
@@ -876,7 +876,7 @@ var A320_Neo_UpperECAM;
             return null;
         }
         getDivFromMessage(_message) {
-            for (var i = 0; i < this.allDivs.length; ++i) {
+            for (let i = 0; i < this.allDivs.length; ++i) {
                 if (this.allDivs[i].textContent == _message) {
                     return this.allDivs[i];
                 }
@@ -892,17 +892,17 @@ var A320_Neo_UpperECAM;
             return "";
         }
         addMessage(_message, _style) {
-            var div = this.getNextAvailableDiv();
+            const div = this.getNextAvailableDiv();
             if (div != null) {
                 div.textContent = _message;
                 div.className = this.getClassNameFromStyle(_style);
             }
         }
         removeMessage(_message) {
-            var div = this.getDivFromMessage(_message);
+            const div = this.getDivFromMessage(_message);
             if (div != null) {
                 div.textContent = "";
-                for (var i = 0; i < (this.allDivs.length - 1); ++i) {
+                for (let i = 0; i < (this.allDivs.length - 1); ++i) {
                     if (this.allDivs[i].textContent.length == 0) {
                         if (this.allDivs[i + 1].textContent.length > 0) {
                             this.allDivs[i].textContent = this.allDivs[i + 1].textContent;
@@ -914,14 +914,14 @@ var A320_Neo_UpperECAM;
             }
         }
         modifyMessage(_currentMessage, _newMessage, _newStyle) {
-            var div = this.getDivFromMessage(_currentMessage);
+            const div = this.getDivFromMessage(_currentMessage);
             if (div != null) {
                 div.textContent = _newMessage;
                 div.className = this.getClassNameFromStyle(_newStyle);
             }
         }
         clearScreen() {
-            for (var i = 0; i < this.allDivs.length; ++i) {
+            for (let i = 0; i < this.allDivs.length; ++i) {
                 this.allDivs[i].textContent = "";
             }
         }

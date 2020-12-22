@@ -39,7 +39,7 @@ var Boeing;
             }
             Boeing_FMA.ApproachStatus.update(_deltaTime);
             if (this.allAnnunciations != null) {
-                for (var i = 0; i < this.allAnnunciations.length; ++i) {
+                for (let i = 0; i < this.allAnnunciations.length; ++i) {
                     if (this.allAnnunciations[i] != null) {
                         this.allAnnunciations[i].update(_deltaTime);
                     }
@@ -68,7 +68,7 @@ var Boeing_FMA;
             this.flareState = 0;
             this.rolloutState = 0;
             if (Simplane.getCurrentFlightPhase() == FlightPhase.FLIGHT_PHASE_APPROACH) {
-                var alt = Simplane.getAltitudeAboveGround();
+                const alt = Simplane.getAltitudeAboveGround();
                 if (alt <= 1500) {
                     if (alt < 1.5) {
                         this.rolloutDelay += _deltaTime;
@@ -99,7 +99,7 @@ var Boeing_FMA;
             this.highlightElement = _highlightElement;
         }
         update(_deltaTime) {
-            var mode = this.getActiveMode();
+            const mode = this.getActiveMode();
             if (mode != this.currentMode) {
                 this.changeMode(mode);
             }
@@ -138,9 +138,9 @@ var Boeing_FMA;
             this.rightThrottleArmed = false;
         }
         update(_deltaTime) {
-            var left = Simplane.getAutoPilotThrottleArmed(1);
-            var right = Simplane.getAutoPilotThrottleArmed(2);
-            var mode = this.getActiveMode();
+            const left = Simplane.getAutoPilotThrottleArmed(1);
+            const right = Simplane.getAutoPilotThrottleArmed(2);
+            const mode = this.getActiveMode();
             if ((mode != this.currentMode) || (left != this.leftThrottleArmed) || (right != this.rightThrottleArmed)) {
                 this.leftThrottleArmed = left;
                 this.rightThrottleArmed = right;
@@ -193,7 +193,7 @@ var Boeing_FMA;
             return 4;
         }
         getCurrentModeText() {
-            var modeText = "";
+            let modeText = "";
             if (this.leftThrottleArmed && !this.rightThrottleArmed) {
             } else if (!this.leftThrottleArmed && this.rightThrottleArmed) {
             }
@@ -330,7 +330,7 @@ var Boeing_FMA;
         changeMode(_mode) {
             super.changeMode(_mode);
             if (this.divElement != null) {
-                var className = "bottom";
+                let className = "bottom";
                 if (_mode == 4) {
                     className += " warning";
                 }

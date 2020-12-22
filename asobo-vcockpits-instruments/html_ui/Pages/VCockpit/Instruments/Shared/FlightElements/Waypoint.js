@@ -285,7 +285,7 @@ class AirportInfo extends WayPointInfo {
         });
     }
     GetSymbolFileName() {
-        var logo = "";
+        let logo = "";
         if (this.airportClass == 2 || this.airportClass == 3) {
             logo = "GPS/Airport_Soft.png";
         } else if (this.airportClass == 1) {
@@ -312,7 +312,7 @@ class AirportInfo extends WayPointInfo {
         return logo;
     }
     imageFileName() {
-        var fName = "";
+        let fName = "";
         if (this.airportClass === 0) {
             fName = "ICON_MAP_AIRPORT_UNKNOWN_PINK.svg";
         } else if (this.airportClass === 1) {
@@ -354,20 +354,20 @@ class AirportInfo extends WayPointInfo {
         return fName.replace(".svg", ".png");
     }
     GetSize() {
-        var minX = 0;
-        var minY = 0;
-        var maxX = 0;
-        var maxY = 0;
-        var latCos = Math.cos((this.lat / 180) * Math.PI);
-        for (var i = 0; i < this.runways.length; i++) {
-            var centerY = (this.lat - this.runways[i].latitude) * 60;
-            var centerX = (this.runways[i].longitude - this.long) * latCos * 60;
-            var forwardY = -this.runways[i].cosDirection;
-            var forwardX = this.runways[i].sinDirection;
-            var beginX = centerX - (forwardX * ((this.runways[i].length / 2) * 0.000164579));
-            var beginY = centerY - (forwardY * ((this.runways[i].length / 2) * 0.000164579));
-            var endX = centerX + (forwardX * ((this.runways[i].length / 2) * 0.000164579));
-            var endY = centerY + (forwardY * ((this.runways[i].length / 2) * 0.000164579));
+        let minX = 0;
+        let minY = 0;
+        let maxX = 0;
+        let maxY = 0;
+        const latCos = Math.cos((this.lat / 180) * Math.PI);
+        for (let i = 0; i < this.runways.length; i++) {
+            const centerY = (this.lat - this.runways[i].latitude) * 60;
+            const centerX = (this.runways[i].longitude - this.long) * latCos * 60;
+            const forwardY = -this.runways[i].cosDirection;
+            const forwardX = this.runways[i].sinDirection;
+            const beginX = centerX - (forwardX * ((this.runways[i].length / 2) * 0.000164579));
+            const beginY = centerY - (forwardY * ((this.runways[i].length / 2) * 0.000164579));
+            const endX = centerX + (forwardX * ((this.runways[i].length / 2) * 0.000164579));
+            const endY = centerY + (forwardY * ((this.runways[i].length / 2) * 0.000164579));
             if (beginX < minX) {
                 minX = beginX;
             }
@@ -596,7 +596,7 @@ class VORInfo extends WayPointInfo {
         return this.loaded;
     }
     GetSymbol() {
-        var image = "";
+        let image = "";
         switch (this.type) {
             case 1:
                 image = "GPS/Vor.png";

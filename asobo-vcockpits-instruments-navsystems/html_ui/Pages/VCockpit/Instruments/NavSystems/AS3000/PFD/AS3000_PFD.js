@@ -58,7 +58,7 @@ class AS3000_PFD extends NavSystem {
         if (this.handleReversionaryMode) {
             this.reversionaryMode = false;
             if (document.body.hasAttribute("reversionary")) {
-                var attr = document.body.getAttribute("reversionary");
+                const attr = document.body.getAttribute("reversionary");
                 if (attr == "true") {
                     this.reversionaryMode = true;
                 }

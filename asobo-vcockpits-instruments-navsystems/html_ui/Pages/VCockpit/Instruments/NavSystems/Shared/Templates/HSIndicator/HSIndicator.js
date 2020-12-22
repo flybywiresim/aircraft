@@ -66,7 +66,7 @@ class HSIndicator extends HTMLElement {
     createSVG() {
         Utils.RemoveAllChildren(this);
         if (this.hasAttribute("displaystyle")) {
-            var style = this.getAttribute("displaystyle").toLowerCase();
+            const style = this.getAttribute("displaystyle").toLowerCase();
             if (style == "hud") {
                 this.displayStyle = HSIndicatorDisplayType.HUD;
             } else if (style == "hud_simplified") {
@@ -942,14 +942,14 @@ class HSIndicator extends HTMLElement {
     init() {
     }
     update(_deltaTime) {
-        var compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-        var roundedCompass = fastToFixed(compass, 3);
+        const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+        const roundedCompass = fastToFixed(compass, 3);
         this.setAttribute("rotation", roundedCompass);
-        var turnRate = SimVar.GetSimVarValue("TURN INDICATOR RATE", "degree per second");
-        var roundedTurnRate = fastToFixed(turnRate, 3);
+        const turnRate = SimVar.GetSimVarValue("TURN INDICATOR RATE", "degree per second");
+        const roundedTurnRate = fastToFixed(turnRate, 3);
         this.setAttribute("turn_rate", roundedTurnRate);
-        var heading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
-        var roundedHeading = fastToFixed(heading, 3);
+        const heading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
+        const roundedHeading = fastToFixed(heading, 3);
         this.setAttribute("heading_bug_rotation", roundedHeading);
         this.setAttribute("current_track", SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degrees"));
         this.logic_cdiSource = SimVar.GetSimVarValue("GPS DRIVES NAV1", "Bool") ? 3 : SimVar.GetSimVarValue("AUTOPILOT NAV SELECTED", "Number");

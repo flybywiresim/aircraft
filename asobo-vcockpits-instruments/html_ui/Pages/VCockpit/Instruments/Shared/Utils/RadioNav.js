@@ -196,7 +196,7 @@ class RadioNav {
         return SimVar.GetSimVarValue("ADF ACTIVE FREQUENCY:" + _index, "KHz");
     }
     setADFActiveFrequency(_index, _value) {
-        var namePrefix = "K:ADF";
+        let namePrefix = "K:ADF";
         if (_index > 1) {
             namePrefix = namePrefix + _index;
         }
@@ -206,7 +206,7 @@ class RadioNav {
         return SimVar.SetSimVarValue("K:COM" + _vhfIndex + "_RADIO_SWAP", "Bool", 1);
     }
     setVHFActiveFrequency(_userIndex, _vhfIndex, _value) {
-        var namePrefix = "K:COM";
+        let namePrefix = "K:COM";
         if (_vhfIndex > 1) {
             namePrefix = namePrefix + _vhfIndex;
         }
@@ -216,7 +216,7 @@ class RadioNav {
         return SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:" + _vhfIndex, "MHz");
     }
     setVHFStandbyFrequency(_userIndex, _vhfIndex, _value) {
-        var namePrefix = "K:COM";
+        let namePrefix = "K:COM";
         if (_vhfIndex > 1) {
             namePrefix = namePrefix + _vhfIndex;
         }

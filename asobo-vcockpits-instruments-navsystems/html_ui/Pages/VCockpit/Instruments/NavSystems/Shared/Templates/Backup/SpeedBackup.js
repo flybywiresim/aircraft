@@ -41,9 +41,9 @@ class SpeedBackup extends HTMLElement {
         if (this.hasAttribute("cursorSizeFactor")) {
             this.cursorSizeFactor = parseFloat(this.getAttribute("cursorSizeFactor"));
         }
-        var refHeight = 350;
-        var refCenter = 175;
-        var baroDeltaY = 0;
+        let refHeight = 350;
+        let refCenter = 175;
+        let baroDeltaY = 0;
         if (this.isBackup && this.aspectRatio < 1.0) {
             refHeight = 512;
             refCenter = 250;

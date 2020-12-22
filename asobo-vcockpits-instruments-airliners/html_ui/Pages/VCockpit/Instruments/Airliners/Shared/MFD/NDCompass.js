@@ -26,7 +26,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         this.root.setAttribute("height", "100%");
         this.root.setAttribute("viewBox", "-225 -215 550 516");
         this.appendChild(this.root);
-        var trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
+        const trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
         trsGroup.setAttribute("transform", "translate(0, 70)");
         this.root.appendChild(trsGroup);
         {
@@ -35,8 +35,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             viewBox.setAttribute("y", "-300");
             viewBox.setAttribute("viewBox", "-325 -350 750 600");
             trsGroup.appendChild(viewBox);
-            var circleRadius = 350;
-            var maskHeight = 200;
+            const circleRadius = 350;
+            const maskHeight = 200;
             this.arcMaskGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.arcMaskGroup.setAttribute("id", "mask");
             viewBox.appendChild(this.arcMaskGroup);
@@ -47,11 +47,11 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 topMask.setAttribute("fill", "#0e0d08");
                 this.arcMaskGroup.appendChild(topMask);
             }
-            var fixedGroup = document.createElementNS(Avionics.SVG.NS, "g");
+            const fixedGroup = document.createElementNS(Avionics.SVG.NS, "g");
             fixedGroup.setAttribute("id", "fixedElements");
             viewBox.appendChild(fixedGroup);
             {
-                var arc = new Avionics.SVGArc;
+                const arc = new Avionics.SVGArc;
                 arc.init("mainArc", circleRadius, 2, "white");
                 arc.translate(50, 50);
                 arc.rotate(-90 + 26.5);
@@ -61,7 +61,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 vec.SetNorm(circleRadius * 0.92);
                 this.addMapRange(fixedGroup, 50 - vec.x, 50 - vec.y, "white", "20", false, 1.0, false);
                 {
-                    var smallCircleRadius = 170;
+                    const smallCircleRadius = 170;
                     const circle = document.createElementNS(Avionics.SVG.NS, "circle");
                     circle.setAttribute("cx", "50");
                     circle.setAttribute("cy", "50");
@@ -99,12 +99,12 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 clipRect.setAttribute("width", (circleRadius * 2).toString());
                 clipRect.setAttribute("height", (circleRadius).toString());
                 clipRect.setAttribute("fill", "white");
-                var clipPath = document.createElementNS(Avionics.SVG.NS, "clipPath");
+                const clipPath = document.createElementNS(Avionics.SVG.NS, "clipPath");
                 clipPath.setAttribute("id", "clip");
                 clipPath.appendChild(clipRect);
                 fixedGroup.appendChild(clipPath);
             }
-            var clipGroup = document.createElementNS(Avionics.SVG.NS, "g");
+            const clipGroup = document.createElementNS(Avionics.SVG.NS, "g");
             clipGroup.setAttribute("id", "clipElements");
             clipGroup.setAttribute("clip-path", "url(#clip)");
             viewBox.appendChild(clipGroup);
@@ -342,7 +342,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         this.root.setAttribute("height", "100%");
         this.root.setAttribute("viewBox", "-225 -215 550 516");
         this.appendChild(this.root);
-        var trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
+        const trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
         trsGroup.setAttribute("transform", "translate(0, 200)");
         this.root.appendChild(trsGroup);
         {
@@ -351,9 +351,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             viewBox.setAttribute("y", "-475");
             viewBox.setAttribute("viewBox", "-225 -550 550 600");
             trsGroup.appendChild(viewBox);
-            var circleRadius = 425;
-            var dashSpacing = 72;
-            var maskHeight = 200;
+            const circleRadius = 425;
+            const dashSpacing = 72;
+            const maskHeight = 200;
             this.arcMaskGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.arcMaskGroup.setAttribute("id", "MaskGroup");
             viewBox.appendChild(this.arcMaskGroup);
@@ -448,8 +448,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 this.trackingGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.trackingGroup.setAttribute("id", "trackingGroup");
                 {
-                    var halfw = 7;
-                    var halfh = 10;
+                    const halfw = 7;
+                    const halfh = 10;
                     this.trackingLine = document.createElementNS(Avionics.SVG.NS, "path");
                     this.trackingLine.setAttribute("id", "trackingLine");
                     this.trackingLine.setAttribute("d", "M50 50 v " + (circleRadius - halfh * 2));
@@ -457,10 +457,10 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     this.trackingLine.setAttribute("stroke", "#00FF21");
                     this.trackingLine.setAttribute("stroke-width", "3");
                     this.trackingGroup.appendChild(this.trackingLine);
-                    var p1 = (50) + ", " + (50 + circleRadius);
-                    var p2 = (50 + halfw) + ", " + (50 + circleRadius - halfh);
-                    var p3 = (50) + ", " + (50 + circleRadius - halfh * 2);
-                    var p4 = (50 - halfw) + ", " + (50 + circleRadius - halfh);
+                    const p1 = (50) + ", " + (50 + circleRadius);
+                    const p2 = (50 + halfw) + ", " + (50 + circleRadius - halfh);
+                    const p3 = (50) + ", " + (50 + circleRadius - halfh * 2);
+                    const p4 = (50 - halfw) + ", " + (50 + circleRadius - halfh);
                     this.trackingBug = document.createElementNS(Avionics.SVG.NS, "polygon");
                     this.trackingBug.setAttribute("id", "trackingBug");
                     this.trackingBug.setAttribute("points", p1 + " " + p2 + " " + p3 + " " + p4);
@@ -552,16 +552,16 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         this.root.setAttribute("height", "100%");
         this.root.setAttribute("viewBox", "-225 -215 550 516");
         this.appendChild(this.root);
-        var trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
+        const trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
         trsGroup.setAttribute("transform", "translate(-266, -208) scale(1.15)");
         this.root.appendChild(trsGroup);
         {
             const viewBox = document.createElementNS(Avionics.SVG.NS, "svg");
             viewBox.setAttribute("viewBox", "-250 -475 600 700");
             trsGroup.appendChild(viewBox);
-            var circleRadius = 450;
-            var dashSpacing = 72;
-            var maskHeight = 200;
+            const circleRadius = 450;
+            const dashSpacing = 72;
+            const maskHeight = 200;
             this.arcMaskGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.arcMaskGroup.setAttribute("id", "MaskGroup");
             viewBox.appendChild(this.arcMaskGroup);
@@ -850,11 +850,11 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         this.root.setAttribute("height", "100%");
         this.root.setAttribute("viewBox", "0 0 1000 710");
         this.appendChild(this.root);
-        var trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
+        const trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
         trsGroup.setAttribute("transform", "translate(-45, -100) scale(1.09)");
         this.root.appendChild(trsGroup);
         {
-            var circleRadius;
+            let circleRadius;
             const viewBox = document.createElementNS(Avionics.SVG.NS, "svg");
             if (this._fullscreen) {
                 viewBox.setAttribute("viewBox", "-250 -550 600 650");
@@ -868,8 +868,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             this.arcMaskGroup.setAttribute("id", "MaskGroup");
             viewBox.appendChild(this.arcMaskGroup);
             {
-                var maskMargin = 10;
-                var maskHeight = 200;
+                const maskMargin = 10;
+                const maskHeight = 200;
                 const topMask = document.createElementNS(Avionics.SVG.NS, "path");
                 topMask.setAttribute("id", "MaskGroup");
                 topMask.setAttribute("d", "M" + (-maskMargin) + " " + -maskHeight + ", L" + (circleRadius * 2 + maskMargin) + " " + -maskHeight + ", L" + (circleRadius * 2 + maskMargin) + " " + circleRadius + ", L" + (circleRadius * 2) + " " + circleRadius + ", A 25 25 0 1 0 0, " + circleRadius + ", L" + (-maskMargin) + " " + circleRadius + " Z");
@@ -1685,12 +1685,12 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             this.trackingGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.trackingGroup.setAttribute("id", "trackingGroup");
             {
-                var halfw = 13;
-                var halfh = 20;
-                var p1 = (500) + ", " + (500 - circleRadius);
-                var p2 = (500 + halfw) + ", " + (500 - circleRadius + halfh);
-                var p3 = (500) + ", " + (500 - circleRadius + halfh * 2);
-                var p4 = (500 - halfw) + ", " + (500 - circleRadius + halfh);
+                const halfw = 13;
+                const halfh = 20;
+                const p1 = (500) + ", " + (500 - circleRadius);
+                const p2 = (500 + halfw) + ", " + (500 - circleRadius + halfh);
+                const p3 = (500) + ", " + (500 - circleRadius + halfh * 2);
+                const p4 = (500 - halfw) + ", " + (500 - circleRadius + halfh);
                 this.trackingBug = document.createElementNS(Avionics.SVG.NS, "polygon");
                 this.trackingBug.setAttribute("id", "trackingBug");
                 this.trackingBug.setAttribute("points", p1 + " " + p2 + " " + p3 + " " + p4);
@@ -2604,7 +2604,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         innerCircleGroup.setAttribute("id", "innerCircle");
         this.root.appendChild(innerCircleGroup);
         {
-            var smallCircleRadius = 170;
+            const smallCircleRadius = 170;
             const circle = document.createElementNS(Avionics.SVG.NS, "circle");
             circle.setAttribute("cx", "500");
             circle.setAttribute("cy", "500");

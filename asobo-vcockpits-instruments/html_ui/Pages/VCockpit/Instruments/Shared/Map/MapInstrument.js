@@ -346,7 +346,7 @@ class MapInstrument extends ISvgMapRootElement {
         if (this.eBingMode !== EBingMode.HORIZON) {
             this.navMap = new SvgMap(this, { svgElement: this.getElementsByTagName("svg")[0], configPath: this.configPath });
             this.navMap.lineCanvas = this.lineCanvas;
-            var mapSVG = this.querySelector("#MapSVG");
+            const mapSVG = this.querySelector("#MapSVG");
             mapSVG.setAttribute("display", "visible");
             this.insertBefore(this.lineCanvas, mapSVG);
             this.wpt = this.querySelector("#WPT");
@@ -567,7 +567,7 @@ class MapInstrument extends ISvgMapRootElement {
                 } else {
                     this.navMap.setRange(this.getDisplayRange());
                 }
-                var bingRadius = this.navMap.NMWidth * 0.5 * this.rangeFactor;
+                const bingRadius = this.navMap.NMWidth * 0.5 * this.rangeFactor;
                 if (!this.isDisplayingWeather()) {
                     this.updateBingMapSize();
                 }
@@ -813,8 +813,8 @@ class MapInstrument extends ISvgMapRootElement {
                 if (this.bingMap) {
                     let transform = "";
                     if (this.bRotateWithAirplane && !this.isDisplayingWeatherRadar()) {
-                        var compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES TRUE", "degree");
-                        var roundedCompass = fastToFixed(compass, 3);
+                        const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES TRUE", "degree");
+                        const roundedCompass = fastToFixed(compass, 3);
                         transform = "rotate(" + -roundedCompass + "deg)";
                     }
                     this.bingMap.style.transform = transform;
@@ -850,8 +850,8 @@ class MapInstrument extends ISvgMapRootElement {
             };
             setConfig();
         } else {
-            var svgConfig = null;
-            var svgConfigLoaded = false;
+            let svgConfig = null;
+            let svgConfigLoaded = false;
             const loadSVGConfig = () => {
                 if (typeof (SvgMapConfig) !== "undefined") {
                     svgConfig = new SvgMapConfig();
@@ -888,35 +888,35 @@ class MapInstrument extends ISvgMapRootElement {
             this.flightPlanManager.update(_deltaTime);
         }
         if (this.wpt) {
-            var wpId = SimVar.GetSimVarValue("GPS WP NEXT ID", "string");
+            const wpId = SimVar.GetSimVarValue("GPS WP NEXT ID", "string");
             if (this.wpIdValue != wpId) {
                 this.wpt.textContent = wpId;
                 this.wpIdValue = wpId;
             }
         }
         if (this.dtkMap) {
-            var wpDtk = fastToFixed(SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree"), 0);
+            const wpDtk = fastToFixed(SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree"), 0);
             if (this.wpDtkValue != wpDtk) {
                 this.dtkMap.textContent = wpDtk;
                 this.wpDtkValue = wpDtk;
             }
         }
         if (this.disMap) {
-            var wpDis = fastToFixed(SimVar.GetSimVarValue("GPS WP DISTANCE", "nautical mile"), 1);
+            const wpDis = fastToFixed(SimVar.GetSimVarValue("GPS WP DISTANCE", "nautical mile"), 1);
             if (this.wpDisValue != wpDis) {
                 this.disMap.textContent = wpDis;
                 this.wpDisValue = wpDis;
             }
         }
         if (this.gsMap) {
-            var gs = fastToFixed(SimVar.GetSimVarValue("GPS GROUND SPEED", "knots"), 0);
+            const gs = fastToFixed(SimVar.GetSimVarValue("GPS GROUND SPEED", "knots"), 0);
             if (this.gsValue != gs) {
                 this.gsMap.textContent = gs;
                 this.gsValue = gs;
             }
         }
         if (this.mapRangeElement) {
-            var range = '<div class="Align">' + this.getDisplayRange() + '</div><div class="Align unit">n<br/>m</div>';
+            const range = '<div class="Align">' + this.getDisplayRange() + '</div><div class="Align unit">n<br/>m</div>';
             if (this.rangeValue != range) {
                 this.mapRangeElement.innerHTML = range;
                 this.rangeValue = range;
@@ -936,7 +936,7 @@ class MapInstrument extends ISvgMapRootElement {
         if (!this.instrument) {
             return;
         }
-        var wantedQuality = this.instrument.getQuality();
+        const wantedQuality = this.instrument.getQuality();
         if (wantedQuality != this.quality) {
             this.quality = wantedQuality;
             this.refreshDisplay();
@@ -996,13 +996,13 @@ class MapInstrument extends ISvgMapRootElement {
     }
     updateInputs() {
         if (this.eBingMode === EBingMode.VFR) {
-            var scrollUp = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_UP");
-            var scrollDown = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_DOWN");
-            var scrollLeft = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_LEFT");
-            var scrollRight = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_RIGHT");
-            var scrollX = 0;
-            var scrollY = 0;
-            var scrollFactor = 10;
+            const scrollUp = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_UP");
+            const scrollDown = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_DOWN");
+            const scrollLeft = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_LEFT");
+            const scrollRight = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_RIGHT");
+            let scrollX = 0;
+            let scrollY = 0;
+            const scrollFactor = 10;
             if (scrollUp == EInputStatus.down) {
                 scrollY = scrollFactor;
             } else if (scrollDown == EInputStatus.down) {
@@ -1021,8 +1021,8 @@ class MapInstrument extends ISvgMapRootElement {
                 this.bVfrMapFollowPlane = false;
             }
         }
-        var zoomIn = GetInputStatus("PLANE", "KEY_VFRMAP_ZOOM_IN");
-        var zoomOut = GetInputStatus("PLANE", "KEY_VFRMAP_ZOOM_OUT");
+        const zoomIn = GetInputStatus("PLANE", "KEY_VFRMAP_ZOOM_IN");
+        const zoomOut = GetInputStatus("PLANE", "KEY_VFRMAP_ZOOM_OUT");
         if (zoomIn == EInputStatus.pressed) {
             this.zoomIn();
         } else if (zoomOut == EInputStatus.pressed) {
@@ -1344,14 +1344,14 @@ class MapInstrument extends ISvgMapRootElement {
         if (_coordinates && isFinite(_coordinates.lat) && isFinite(_coordinates.long)) {
             this.navMap.setCenterCoordinates(_coordinates.lat, _coordinates.long, _smoothness);
             if (this.eBingMode == EBingMode.VFR) {
-                var latLong = _coordinates.toStringFloat();
+                const latLong = _coordinates.toStringFloat();
                 Coherent.trigger("ON_VFRMAP_COORDINATES_CHANGED", latLong);
             }
         }
     }
     scrollMap(_dispX, _dispY) {
         if (this.navMap.lastCenterCoordinates) {
-            var scaleFactor = parseInt(window.getComputedStyle(this).height) / 1000;
+            const scaleFactor = parseInt(window.getComputedStyle(this).height) / 1000;
             const long = -_dispX * this.navMap.angularWidth / (1000 * scaleFactor);
             const lat = _dispY * this.navMap.angularHeight / (1000 * scaleFactor);
             const newCoordinates = new LatLongAlt(this.navMap.lastCenterCoordinates);

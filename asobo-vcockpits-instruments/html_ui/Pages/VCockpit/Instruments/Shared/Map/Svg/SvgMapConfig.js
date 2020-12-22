@@ -322,7 +322,7 @@ class SvgMapConfig {
         const r = parseInt(hexStringColor.substr(0 + offset, 2), 16);
         const g = parseInt(hexStringColor.substr(2 + offset, 2), 16);
         const b = parseInt(hexStringColor.substr(4 + offset, 2), 16);
-        var rgb = 256 * 256 * b + 256 * g + r;
+        const rgb = 256 * 256 * b + 256 * g + r;
         return rgb;
     }
 }

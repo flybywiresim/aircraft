@@ -163,7 +163,7 @@ class A320_Neo_FDW_FrequencyHandler {
             this.setCrsValueSimVar();
             this.activeCRSMode = false;
         } else {
-            var temp = this.active;
+            const temp = this.active;
             this.active = this.stby;
             this.stby = temp;
             this.setActiveValueSimVar();
@@ -225,7 +225,7 @@ class A320_Neo_FDW_FrequencyHandler {
         }
     }
     trySetStbyValue(_value) {
-        var newValue = Utils.Clamp(_value, this.min, this.max);
+        const newValue = Utils.Clamp(_value, this.min, this.max);
         if (newValue != this.stby) {
             this.stby = newValue;
             this.setStbyValueSimVar();
@@ -328,7 +328,7 @@ class A320_Neo_FDW extends BaseAirliners {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
-        var isOn = SimVar.GetSimVarValue(this.onVarName, "Boolean");
+        const isOn = SimVar.GetSimVarValue(this.onVarName, "Boolean");
         if (isOn && (this.currentFrequencyType == A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE)) {
             this.switchOn();
         } else if (!isOn && (this.currentFrequencyType != A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE)) {
@@ -400,8 +400,8 @@ class A320_Neo_FDW extends BaseAirliners {
             }
         } else {
             if (_event.indexOf(this.buttonEventNamePrefix) >= 0) {
-                var xmlRef = _event.replace(this.buttonEventNamePrefix, "");
-                for (var frequencyType = 0; frequencyType < A320_Neo_RadioManagement.FREQUENCY_TYPE.NB; ++frequencyType) {
+                const xmlRef = _event.replace(this.buttonEventNamePrefix, "");
+                for (let frequencyType = 0; frequencyType < A320_Neo_RadioManagement.FREQUENCY_TYPE.NB; ++frequencyType) {
                     if (this.frequencyHandlers[frequencyType].hasXMLRef(xmlRef)) {
                         this.currentFrequencyType = frequencyType;
                         this.frequencyHandlers[frequencyType].show();

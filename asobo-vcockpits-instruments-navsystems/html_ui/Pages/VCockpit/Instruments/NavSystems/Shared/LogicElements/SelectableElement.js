@@ -74,7 +74,7 @@ class SelectableElementGroup extends SelectableElement {
         this.index = 0;
     }
     onEvent(_event, _index = -1) {
-        var result;
+        let result;
         if (this.callbacks[this.index]) {
             if (_index == -1) {
                 result = this.callbacks[this.index](_event);
@@ -129,7 +129,7 @@ class SelectableElementGroup extends SelectableElement {
     }
     updateSelection(_selected) {
         for (let i = 0; i < this.callbacks.length; i++) {
-            var element = this.element.getElementsByClassName("Select" + i)[0];
+            const element = this.element.getElementsByClassName("Select" + i)[0];
             if (element) {
                 if (_selected && i == this.index) {
                     element.setAttribute("state", "Selected");
@@ -163,7 +163,7 @@ class SelectableElementSliderGroup extends SelectableElement {
         this.emptyLine = _emptyLine;
     }
     onEvent(_event) {
-        var result;
+        let result;
         if (this.stringElements.length > 0) {
             result = this.elements[this.index].SendEvent(_event, this.offset + this.index);
             if (!result) {
@@ -300,8 +300,8 @@ class SelectableElementSliderGroup extends SelectableElement {
         if (this.isDisplayLocked) {
             return;
         }
-        var nbElements = this.stringElements.length;
-        var maxDisplayedElements = this.elements.length;
+        const nbElements = this.stringElements.length;
+        const maxDisplayedElements = this.elements.length;
         if (nbElements > maxDisplayedElements) {
             this.slider.setAttribute("state", "Active");
             this.sliderCursor.setAttribute("style", "height:" + (maxDisplayedElements * 100 / nbElements) +

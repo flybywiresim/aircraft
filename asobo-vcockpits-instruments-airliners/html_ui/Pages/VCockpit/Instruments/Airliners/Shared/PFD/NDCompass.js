@@ -24,13 +24,13 @@ class Jet_PFD_NDCompass extends Jet_NDCompass {
         this.root.setAttribute("height", "100%");
         this.root.setAttribute("viewBox", "-225 -215 900 516");
         this.appendChild(this.root);
-        var trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
+        const trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
         trsGroup.setAttribute("transform", "translate(1, 160)");
         this.root.appendChild(trsGroup);
         {
-            var viewBoxSize = "-225 -550 550 600";
-            var circleRadius = 425;
-            var dashSpacing = 72;
+            let viewBoxSize = "-225 -550 550 600";
+            let circleRadius = 425;
+            const dashSpacing = 72;
             if (this.isHud) {
                 viewBoxSize = "-275 -550 650 700";
                 circleRadius = 400;
