@@ -1765,7 +1765,7 @@ class FMCMainDisplay extends BaseAirliners {
                 return true;
             }
             const rteRsvPercent = parseFloat(s.split("/")[1]);
-            if ((0 > rteRsvPercent > 15)) {
+            if (!this.isRteRsvPercentInRange(rteRsvPercent)) {
                 this._rteRsvPercentOOR = true;
                 this.addNewMessage(NXSystemMessages.notAllowed);
                 return false;
@@ -1843,6 +1843,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.addNewMessage(NXSystemMessages.entryOutOfRange);
         return false;
     }
+    
+    isRteRsvPercentInRange(value) {
+        return value > 0 && value < 15;
+    }
 
     trySetRouteReservedFuel(s) {
         if (s) {
@@ -1854,7 +1858,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
             const rteRsvWeight = parseFloat(s.split("/")[0]) / this._conversionWeight;
             const rteRsvPercent = parseFloat(s.split("/")[1]);
-            if ((0 > rteRsvPercent && rteRsvPercent > 15)) {
+            if (!this.isRteRsvPercentInRange(rteRsvPercent)) {
                 this._rteRsvPercentOOR = true;
                 return true;
             }
@@ -1863,7 +1867,13 @@ class FMCMainDisplay extends BaseAirliners {
             if (isFinite(rteRsvWeight)) {
                 this._routeReservedWeight = rteRsvWeight;
                 this._routeReservedPercent = 0;
-                return true;
+                if (this.isRteRsvPercentInRange(this.getRouteReservedPercent())) { //Bit of a hacky method due previous tight coupling of weight and percentage calculations
+                    return true;
+                } else {
+                    this.trySetRouteReservedFuel(FMCMainDisplay.clrValue);
+                    this._rteRsvPercentOOR = true;
+                    return false;
+                }
             } else if (isFinite(rteRsvPercent)) {
                 this._routeReservedWeight = NaN;
                 this._routeReservedPercent = rteRsvPercent;
