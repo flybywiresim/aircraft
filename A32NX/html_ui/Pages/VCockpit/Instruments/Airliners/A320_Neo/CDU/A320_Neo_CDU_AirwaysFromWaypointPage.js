@@ -13,6 +13,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             mcdu.onRightInput[5] = async () => {
                 mcdu.insertTemporaryFlightPlan(() => {
                     mcdu.copyAirwaySelections();
+                    mcdu.updateConstraints();
                     CDUFlightPlanPage.ShowPage(mcdu, 0);
                 });
             };
