@@ -210,11 +210,11 @@ class A32NX_FuelPred {
         switch (computation) {
             case this.computations.FUEL:
                 const deviation = 0;
-                return (Math.round(math.sum(math.dotMultiply((!alternate ? fuelConsumedCoeff : altFuelConsumedCoef) ,mmOfDistFL)))) + deviation;
+                return (Math.round(math.sum(math.dotMultiply((alternate ? altFuelConsumedCoef : fuelConsumedCoeff), mmOfDistFL)))) + deviation;
             case this.computations.TIME:
-                return (Math.round(math.sum(math.dotMultiply((!alternate ? timeCoeff : altTimeCoef),mmOfDistFL))));
+                return (Math.round(math.sum(math.dotMultiply((alternate ? altTimeCoef : timeCoeff), mmOfDistFL))));
             case this.computations.CORRECTIONS:
-                return (Math.round(math.sum(math.dotMultiply((!alternate ? correctionsCoef : altCorrectionsCoeff),mmOfDistFL))));
+                return (Math.round(math.sum(math.dotMultiply((alternate ? altCorrectionsCoeff : correctionsCoef), mmOfDistFL))));
         }
     }
 
