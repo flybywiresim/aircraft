@@ -12,7 +12,6 @@
 1. [CDU] Improved ascent constraint algorithm - @MisterChocker (Leon)
 1. [CDU] Fixed FPLN airways showing as undefined - @pareil6 - (pareil6)
 1. [CDU] Allow SimBrief OFP to override previous flight plan - @pareil6 (pareil6)
-1. [MISC] Stop autobrake max disengaging on the ground - @pareil6 (pareil6)
 
 ## 0.5.0
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
