@@ -1837,6 +1837,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this._rteReservedEntered = false;
                 this._routeReservedWeight = 0;
                 this._routeReservedPercent = 5;
+                this._rteRsvPercentOOR = false;
                 return true;
             }
             const rteRsvWeight = parseFloat(s.split("/")[0]) / this._conversionWeight;
