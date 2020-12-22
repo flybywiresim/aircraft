@@ -204,7 +204,8 @@
                                     if onGroundWaitCounter == 30 {
                                         if (A:AUTOBRAKES ACTIVE, bool) {
                                             autobrakesActivated = true;
-                                        } else {
+                                        }
+                                        if autobrakesActivated and !(A:AUTOBRAKES ACTIVE, bool) {
                                             autobrakesLevel = 0;
                                             autobrakesActivated = false;
                                             onGroundWaitCounter = 0;
