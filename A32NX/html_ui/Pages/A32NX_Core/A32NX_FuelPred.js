@@ -209,7 +209,6 @@ class A32NX_FuelPred {
         //TODO Create logic for handling 200NM and FL390 = 0
         switch (computation) {
             case this.computations.FUEL:
-                const deviation = 0;
                 return (Math.round(math.sum(math.dotMultiply((alternate ? altFuelConsumedCoef : fuelConsumedCoeff), mmOfDistFL)))) + deviation;
             case this.computations.TIME:
                 return (Math.round(math.sum(math.dotMultiply((alternate ? altTimeCoef : timeCoeff), mmOfDistFL))));
