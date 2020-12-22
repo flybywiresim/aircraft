@@ -68,7 +68,7 @@ class CDUFlightPlanPage {
                 }
             }
             rows[10] = ["\xa0DEST", "DIST EFOB", isFlying ? "\xa0UTC" : "TIME" ];//set last row
-            rows[11] = [destCell, destDistCell + " ----", destTimeCell];
+            rows[11] = [destCell, destDistCell + " " + (mcdu.getDestEFOB(true) * mcdu._conversionWeight).toFixed(1), destTimeCell];
             mcdu.leftInputDelay[5] = () => {
                 return mcdu.getDelaySwitchPage();
             };
