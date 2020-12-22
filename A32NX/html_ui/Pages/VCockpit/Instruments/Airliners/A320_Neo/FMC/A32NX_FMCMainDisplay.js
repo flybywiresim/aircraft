@@ -103,7 +103,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._fuelPredDone = false;
         this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
         this._blockFuelEntered = false;
-        this._predFailure = false;
         /* CPDLC Fields */
         this._cpdlcAtcCenter = "";
         this.tropo = "";
@@ -724,13 +723,10 @@ class FMCMainDisplay extends BaseAirliners {
                 airDistance = A32NX_FuelPred.computeAirDistance(Math.round(this._DistanceToAlt), -this.averageWind);
             }
 
-            this._predFailure = false;
             const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.CORRECTIONS, true);
             if ((20 < airDistance && airDistance < 200) && (100 < placeholderFl && placeholderFl < 290)) { //This will always be true until we can setup alternate routes
                 this._routeAltFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.FUEL, true) + deviation) / 1000;
                 this._routeAltFuelTime = A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.TIME, true);
-            } else {
-                this._predFailure = true;
             }
         }
     }
@@ -754,7 +750,6 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_DESCENT) {
             altToUse = SimVar.GetSimVarValue("PLANE ALTITUDE", 'Feet') / 100;
         }
-        this._predFailure = false;
 
         // Use alternate coefficients - EXPERIMENTAL
         if ((20 < airDistance && airDistance < 200) && (100 < altToUse && altToUse < 290)) {
@@ -767,8 +762,6 @@ class FMCMainDisplay extends BaseAirliners {
 
             this._routeTripFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.FUEL, false) + deviation) / 1000;
             this._routeTripTime = A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.TIME, false);
-        } else {
-            this._predFailure = true;
         }
     }
 
@@ -782,10 +775,6 @@ class FMCMainDisplay extends BaseAirliners {
 
     tryUpdateLW() {
         this.landingWeight = this.takeOffWeight - this._routeTripFuelWeight;
-    }
-
-    tryGetPredFailure() {
-        return this._predFailure;
     }
 
     /**
@@ -1843,7 +1832,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.addNewMessage(NXSystemMessages.entryOutOfRange);
         return false;
     }
-    
+
     isRteRsvPercentInRange(value) {
         return value > 0 && value < 15;
     }
