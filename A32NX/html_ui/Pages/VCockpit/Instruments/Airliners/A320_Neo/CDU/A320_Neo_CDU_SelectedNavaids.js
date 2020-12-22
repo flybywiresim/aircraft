@@ -4,19 +4,19 @@ class CDUSelectedNavaids {
         mcdu.page.Current = mcdu.page.SelectedNavaids;
 
         mcdu.setTemplate([
-            ["SELECTED NAVAIDS"],
-            ["VOR/TAC", "DESELECT", "AUTO"],
-            [``, `[  ]*[color]cyan`, ""],
+            ["\xa0SELECTED NAVAIDS"],
+            ["\xa0VOR/TAC", "DESELECT", "AUTO"],
+            [``, `[\xa0\xa0\xa0]{small}*{end}[color]cyan`, ""],
             [""],
             [""],
             [""],
             [""],
-            ["ILS", "", "AUTO"],
+            ["\xa0ILS", "", "AUTO"],
             [``, ``, ""],
-            ["RADIONAV SELECTED[color]cyan"],
-            ["DESELECT"],
-            ["GPS SELECTED[color]cyan"],
-            ["DESELECT", "RETURN>"]
+            ["\xa0RADIONAV SELECTED[color]cyan"],
+            ["{DESELECT[color]inop"],
+            ["\xa0GPS SELECTED[color]cyan"],
+            ["{DESELECT[color]inop", "RETURN>"]
         ]);
 
         mcdu.rightInputDelay[5] = () => {
