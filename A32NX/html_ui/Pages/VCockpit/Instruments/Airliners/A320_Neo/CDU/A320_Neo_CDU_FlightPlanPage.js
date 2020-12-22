@@ -256,7 +256,7 @@ class CDUFlightPlanPage {
                         let airwayName = "";
                         if (prevWaypoint && waypoint) {
                             let airway = undefined;
-                            if (prevWaypoint.infos.airwayOut === waypoint.infos.airwayIn) {
+                            if (prevWaypoint.infos.airwayOut && prevWaypoint.infos.airwayOut === waypoint.infos.airwayIn) {
                                 airway = {name: prevWaypoint.infos.airwayOut };
                             } else if (waypoint.infos.airwayIn && prevWaypoint.infos.airwayOut === undefined) {
                                 airway = {name: waypoint.infos.airwayIn };
