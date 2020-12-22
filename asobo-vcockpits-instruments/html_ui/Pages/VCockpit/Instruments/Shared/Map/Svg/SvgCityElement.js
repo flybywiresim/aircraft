@@ -56,8 +56,7 @@ class SvgCityElement extends SvgMapElement {
                 container.insertBefore(rect, text);
             }, 0);
         }
-        let image;
-        image = document.createElementNS(Avionics.SVG.NS, "image");
+        const image = document.createElementNS(Avionics.SVG.NS, "image");
         image.classList.add("map-city-icon");
         image.setAttribute("width", "100%");
         image.setAttribute("height", "100%");
