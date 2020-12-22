@@ -183,6 +183,7 @@
                             alias onGroundWaitCounter = (L:A32NX_ON_GROUND_WAIT_COUNTER, number);
                             alias disarmAutobrakesOnLgRetract = (L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT, bool);
                             alias autobrakesActivated = (L:A32NX_AUTOBRAKES_ACTIVATED, bool);
+                            alias autobrakesActive = (A:AUTOBRAKES ACTIVE, bool);
 
                             if onGround and (A:AUTO BRAKE SWITCH CB, number) == 4 {
                                 autobrakesLevel = 3;
@@ -204,7 +205,9 @@
                                     if onGroundWaitCounter == 30 {
                                         if (A:AUTOBRAKES ACTIVE, bool) {
                                             autobrakesActivated = true;
-                                        } else {
+                                        }
+                                        
+                                        if autobrakesActivated and !autobrakesActive {
                                             autobrakesLevel = 0;
                                             autobrakesActivated = false;
                                             onGroundWaitCounter = 0;
