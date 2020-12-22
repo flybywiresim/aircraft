@@ -79,7 +79,6 @@ class A320_Neo_FCU_MainPage extends NavSystemPage {
     }
 }
 
-// Generic flight control unit component.
 class A320_Neo_FCU_Component {
     getDivElement(_name) {
         if (this.divRef != null) {
@@ -131,7 +130,6 @@ class A320_Neo_FCU_Component {
     }
 }
 
-// Flight control unit speed component.
 class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     constructor() {
         super(...arguments);
@@ -195,13 +193,13 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     }
 }
 
-// Flight control unit heading component.
 class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     constructor() {
         super(...arguments);
         this.backToIdleTimeout = 0;
         this.idleCountdown = 5; // in seconds
         this.trueAirspeedThreshold = 50; // in knots
+        this.headingForTrackRecalculationPeriod = 1500; // in ms
     }
     init() {
         this.textHDG = this.getTextElement("HDG");
@@ -236,19 +234,20 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
         if (isLateralModeActive) {
             this.refresh(false, isManaged, isTRKMode, showSelectedHeading, 0, lightsTest);
-        } else {
-            {
-                if (isTRKMode) {
-                    // TODO: debounce re-calculating heading for track to increase performance.
-                    const track = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees");
+        } else if (isTRKMode) {
+            const track = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees");
+            if (!this.isManaged) {
+                this.timeSinceHeadingForTrackRecalculation = (this.timeSinceHeadingForTrackRecalculation + _deltaTime) || 0;
+                if (this.timeSinceHeadingForTrackRecalculation > this.headingForTrackRecalculationPeriod) {
                     const heading = this.calculateHeadingForTrack(track);
                     Coherent.call("HEADING_BUG_SET", 1, heading);
-
-                    this.refresh(true, isManaged, true, showSelectedHeading, track, lightsTest);
-                } else {
-                    this.refresh(true, isManaged, false, showSelectedHeading, Simplane.getAutoPilotSelectedHeadingLockValue(false), lightsTest);
+                    this.timeSinceHeadingForTrackRecalculation = 0;
                 }
             }
+
+            this.refresh(true, isManaged, true, showSelectedHeading, track, lightsTest);
+        } else {
+            this.refresh(true, isManaged, false, showSelectedHeading, Simplane.getAutoPilotSelectedHeadingLockValue(false), lightsTest);
         }
     }
     refresh(_isActive, _isManaged, _isTRKMode, _showSelectedHeading, _value, _lightsTest, _force = false) {
@@ -366,18 +365,19 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
             const newTrack = ((currentTrack + 1 % 360) + 360) % 360;
             SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees", newTrack);
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
+            Coherent.call("HEADING_BUG_SET", 1, this.calculateHeadingForTrack(newTrack));
         } else if (_event === "AP_DEC_TRACK") {
             const currentTrack = Math.round(SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees"));
             const newTrack = ((currentTrack - 1 % 360) + 360) % 360;
             SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees", newTrack);
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
+            Coherent.call("HEADING_BUG_SET", 1, this.calculateHeadingForTrack(newTrack));
         } else if (_event === "MODE_MANAGED_HEADING" && this.isManaged) {
             this.backToIdleTimeout = 0;
         }
     }
 }
 
-// Flight control unit HDG/TRK mode component.
 class A320_Neo_FCU_Mode extends A320_Neo_FCU_Component {
     init() {
         this.textHDG = this.getTextElement("HDG");
@@ -409,7 +409,6 @@ class A320_Neo_FCU_Mode extends A320_Neo_FCU_Component {
     }
 }
 
-// Flight control unit altitude component.
 class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
     init() {
         this.illuminator = this.getElement("circle", "Illuminator");
@@ -469,7 +468,6 @@ var A320_Neo_FCU_VSpeed_State;
     A320_Neo_FCU_VSpeed_State[A320_Neo_FCU_VSpeed_State["Selecting"] = 2] = "Selecting";
     A320_Neo_FCU_VSpeed_State[A320_Neo_FCU_VSpeed_State["Flying"] = 3] = "Flying";
 })(A320_Neo_FCU_VSpeed_State || (A320_Neo_FCU_VSpeed_State = {}));
-// Flight control unit vertical speed component.
 class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
     constructor() {
         super(...arguments);
@@ -477,6 +475,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         this._debug = 300;
         this.ABS_MINMAX_FPA = 9.9;
         this.ABS_MINMAX_VS = 6000;
+        this.verticalSpeedForAngleRecalculationPeriod = 1500;
     }
     get currentState() {
         return this._currentState;
@@ -602,18 +601,22 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             const altitude = Simplane.getAltitude();
             const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
             const deltaAltitude = targetAltitude - altitude;
-            if (isFPAMode) {
-                const angle = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree");
-                const verticalSpeed = this.calculateVerticalSpeedForAngle(angle);
-                Coherent.call("AP_VS_VAR_SET_ENGLISH", 1, verticalSpeed);
-                Coherent.call("AP_VS_VAR_SET_ENGLISH", 2, verticalSpeed);
+            if (isFPAMode && this.currentState === A320_Neo_FCU_VSpeed_State.Flying) {
+                this.timeSinceVerticalSpeedForAngleRecalculation = (this.timeSinceVerticalSpeedForAngleRecalculation + _deltaTime) || 0;
+                if (this.timeSinceVerticalSpeedForAngleRecalculation > this.verticalSpeedForAngleRecalculationPeriod) {
+                    const angle = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree");
+                    const verticalSpeed = this.calculateVerticalSpeedForAngle(angle);
+                    Coherent.call("AP_VS_VAR_SET_ENGLISH", 1, verticalSpeed);
+                    Coherent.call("AP_VS_VAR_SET_ENGLISH", 2, verticalSpeed);
+                    this.timeSinceVerticalSpeedForAngleRecalculation = 0;
+                }
             }
-            // const targetVerticalSpeed = Simplane.getAutoPilotVerticalSpeedHoldValue();
-            // if (deltaAltitude * targetVerticalSpeed < 1) {
-            //     this.currentState = A320_Neo_FCU_VSpeed_State.Idle;
-            //     this._enterIdleState();
-            //     this.forceUpdate = true;
-            // }
+            const targetVerticalSpeed = Simplane.getAutoPilotVerticalSpeedHoldValue();
+            if (deltaAltitude * targetVerticalSpeed < 1) {
+                this.currentState = A320_Neo_FCU_VSpeed_State.Idle;
+                this._enterIdleState();
+                this.forceUpdate = true;
+            }
             if (Math.abs(deltaAltitude) < 200) {
                 this.currentState = A320_Neo_FCU_VSpeed_State.Idle;
                 this._enterIdleState();
@@ -656,7 +659,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             if (this.isActive && this.currentState != A320_Neo_FCU_VSpeed_State.Idle) {
                 const sign = (this.currentValue < 0) ? "-" : "+";
                 if (this.isFPAMode) {
-                    let value = Math.floor(Math.abs(this.currentValue));
+                    let value = Math.abs(this.currentValue);
                     value = Math.round(value * 10).toString().padStart(2, "0");
                     this.textValueContent = sign + value;
                 } else {
@@ -689,11 +692,17 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             const currentFpa = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree");
             const newFpa = Utils.Clamp(Math.round((currentFpa - 0.1) * 10) / 10, -this.ABS_MINMAX_FPA, this.ABS_MINMAX_FPA);
             SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree", newFpa);
+            const verticalSpeed = this.calculateVerticalSpeedForAngle(newFpa);
+            Coherent.call("AP_VS_VAR_SET_ENGLISH", 1, verticalSpeed);
+            Coherent.call("AP_VS_VAR_SET_ENGLISH", 2, verticalSpeed);
             this.onRotate();
         } else if (_event === "AP_INC_FPA") {
             const currentFpa = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree");
             const newFpa = Utils.Clamp(Math.round((currentFpa + 0.1) * 10) / 10, -this.ABS_MINMAX_FPA, this.ABS_MINMAX_FPA);
             SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree", newFpa);
+            const verticalSpeed = this.calculateVerticalSpeedForAngle(newFpa);
+            Coherent.call("AP_VS_VAR_SET_ENGLISH", 1, verticalSpeed);
+            Coherent.call("AP_VS_VAR_SET_ENGLISH", 2, verticalSpeed);
             this.onRotate();
         }
     }
@@ -717,7 +726,6 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         const groundSpeed = _groundSpeed * 3.28084 * 60; // Now in feet per minute.
         const angle = _angle * Math.PI / 180; // Now in radians.
         const verticalSpeed = Math.tan(angle) * groundSpeed;
-        console.log("V/S for set FPA: " + verticalSpeed);
         return Utils.Clamp(verticalSpeed, -this.ABS_MINMAX_VS, this.ABS_MINMAX_VS);
     }
     /**
@@ -737,7 +745,6 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
     }
 }
 
-// Flight control unit large screen.
 class A320_Neo_FCU_LargeScreen extends NavSystemElement {
     init(root) {
         if (this.components == null) {
@@ -788,7 +795,6 @@ class A320_Neo_FCU_LargeScreen extends NavSystemElement {
     }
 }
 
-// Flight control unit pressure component.
 class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
     init() {
         this.selectedElem = this.getDivElement("Selected");
@@ -840,7 +846,6 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
     }
 }
 
-// Flight control unit small screen (just pressure component).
 class A320_Neo_FCU_SmallScreen extends NavSystemElement {
     init(root) {
         if (this.pressure == null) {
