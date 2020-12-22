@@ -53,6 +53,22 @@ html {
   font-weight: normal;
   font-style: normal; }
 
+@keyframes FlashYellow {
+  5%, 45% {
+    color: yellow;
+    background-color: #1a1d21; }
+  55%, 95% {
+    color: #1a1d21;
+    background-color: yellow; } }
+
+@keyframes FlashRed {
+  0%, 45% {
+    color: red;
+    background-color: #1a1d21; }
+  55%, 100% {
+    color: white;
+    background-color: red; } }
+
 #Mainframe {
   --refWidth: 1024;
   --refHeight: 768; }
@@ -489,6 +505,14 @@ as1000-pfd-element {
                 width: 50%;
                 text-align: center;
                 color: green; }
+                as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Center #AP_Status[Display=Yellow] {
+                  color: yellow; }
+                as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Center #AP_Status[Display=Red] {
+                  color: red; }
+                as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Center #AP_Status[Display=YellowFlash] {
+                  animation: FlashYellow 1s infinite; }
+                as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Center #AP_Status[Display=RedFlash] {
+                  animation: FlashRed 1s infinite; }
             as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Right {
               display: flex;
               width: 54%; }

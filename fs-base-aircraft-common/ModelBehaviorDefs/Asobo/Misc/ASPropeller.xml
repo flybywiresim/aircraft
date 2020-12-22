@@ -1,0 +1,98 @@
+<ModelBehaviors>
+	<Include ModelBehaviorFile="Asobo\Generic.xml"/>
+	
+	<Template Name="ASOBO_ASPropeller_Template">
+		<Parameters Type="Default">
+			<SWITCH_AUTO_MANUAL_NODE_ID>ASPropeller_Switch_Propeller_AutoManual</SWITCH_AUTO_MANUAL_NODE_ID>
+			<SWITCH_AUTO_MANUAL_ANIM_NAME>ASPropeller_Switch_Propeller_AutoManual</SWITCH_AUTO_MANUAL_ANIM_NAME>
+			<KNOB_INC_DEC_NODE_ID>ASPropeller_Knob_Propeller_RPM</KNOB_INC_DEC_NODE_ID>
+			<KNOB_INC_DEC_ANIM_NAME>ASPropeller_Knob_Propeller_RPM</KNOB_INC_DEC_ANIM_NAME>
+			<SWITCH_INC_DEC_NODE_ID>ASPropeller_Switch_Propeller_RPM</SWITCH_INC_DEC_NODE_ID>
+			<SWITCH_INC_DEC_ANIM_NAME>ASPropellerSwitch_Propeller_RPM</SWITCH_INC_DEC_ANIM_NAME>
+			<MIN_EMISSIVE_NODE_ID>ASPropeller_Emissive_Pitch_Min</MIN_EMISSIVE_NODE_ID>
+			<MAX_EMISSIVE_NODE_ID>ASPropeller_Emissive_Pitch_Max</MAX_EMISSIVE_NODE_ID>
+			<SCREEN_NODE_ID>ASPropeller_Screen</SCREEN_NODE_ID>
+			<AS_PROPELLER>ASPropeller</AS_PROPELLER>
+			<UPDATE_FREQ>10</UPDATE_FREQ>
+			<UPDATE_COUNT_BEFORE_REPEAT>5</UPDATE_COUNT_BEFORE_REPEAT>
+			<ADDITIONAL_TESTS/>
+			<MOMENTARY_MIN_DURATION>0.1</MOMENTARY_MIN_DURATION>
+		</Parameters>
+		<Component ID="ASPropeller_Switch_Propeller_AutoManual" Node="#SWITCH_AUTO_MANUAL_NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>#SWITCH_AUTO_MANUAL_NODE_ID#</NODE_ID><!-- no time for this feature as of now, stick to auto -->
+				<ANIM_POS>100</ANIM_POS>
+				<ANIM_NAME>#SWITCH_AUTO_MANUAL_ANIM_NAME#</ANIM_NAME>
+			</UseTemplate>
+		</Component>
+		<Component ID="ASPropeller_Knob_Propeller_RPM" Node="#KNOB_INC_DEC_NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+				<CLOCKWISE_CODE>(&gt;H:#AS_PROPELLER#_Knob_Inc)</CLOCKWISE_CODE>
+				<ANTICLOCKWISE_CODE>(&gt;H:#AS_PROPELLER#_Knob_Dec)</ANTICLOCKWISE_CODE>
+				<THRESHOLD_INPUT>0.0005</THRESHOLD_INPUT>
+				<THRESHOLD_MOUSE>0.01</THRESHOLD_MOUSE>
+				<ANIM_NAME>#KNOB_INC_DEC_ANIM_NAME#</ANIM_NAME>
+			</UseTemplate>
+		</Component>
+		<Component ID="ASPropeller_Switch_Propeller_RPM" Node="#SWITCH_INC_DEC_NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Update">
+				<FREQUENCY>#UPDATE_FREQ#</FREQUENCY>
+				<UPDATE_CODE>
+					(O:_Delta) 0 != #ADDITIONAL_TESTS# if{
+						(O:_UPDATE_Count) #UPDATE_COUNT_BEFORE_REPEAT# &gt;= if{
+							(O:_Delta) 0 &gt; if{
+								(&gt;H:#AS_PROPELLER#_Switch_Inc)
+							} els{
+								(&gt;H:#AS_PROPELLER#_Switch_Dec)
+							}
+						}
+						(O:_UPDATE_Count) 1 + (&gt;O:_UPDATE_Count)
+					}
+				</UPDATE_CODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Switch_3States">
+				<ANIM_NAME>#SWITCH_INC_DEC_ANIM_NAME#</ANIM_NAME>
+				<CODE_POS_0>
+					1 (&gt;O:_Delta)
+					(&gt;H:#AS_PROPELLER#_Switch_Inc)
+				</CODE_POS_0>
+				<CODE_POS_1>
+					0 (&gt;O:_Delta)
+					0 (&gt;O:_UPDATE_Count)
+				</CODE_POS_1>
+				<CODE_POS_2>
+					-1 (&gt;O:_Delta)
+					(&gt;H:#AS_PROPELLER#_Switch_Inc)
+				</CODE_POS_2>
+				<MOMENTARY_SWITCH/>
+				<STATE_MAX_TIMER>#MOMENTARY_MIN_DURATION#</STATE_MAX_TIMER>
+				<STATE0_TIMER>#MOMENTARY_MIN_DURATION#</STATE0_TIMER>
+				<STATE0_TEST>
+					(O:_Delta) 0 &gt;
+				</STATE0_TEST>
+				<STATE1_TEST>
+					(O:_Delta) 0 ==
+				</STATE1_TEST>
+				<STATE2_TEST>
+					(O:_Delta) 0 &lt;
+				</STATE2_TEST>
+				<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+				<THRESHOLD_INPUT>0.00025</THRESHOLD_INPUT>
+				<THRESHOLD_MOUSE>0.005</THRESHOLD_MOUSE>
+			</UseTemplate>
+		</Component>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#MIN_EMISSIVE_NODE_ID#</NODE_ID>
+			<EMISSIVE_CODE>(L:#AS_PROPELLER#_Pitch_Min) 0 &gt;</EMISSIVE_CODE>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#MAX_EMISSIVE_NODE_ID#</NODE_ID>
+			<EMISSIVE_CODE>(L:#AS_PROPELLER#_Pitch_Max) 0 &gt;</EMISSIVE_CODE>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#SCREEN_NODE_ID#</NODE_ID>
+			<EMISSIVE_CODE>0.5</EMISSIVE_CODE>
+		</UseTemplate>
+	</Template>
+	
+</ModelBehaviors>

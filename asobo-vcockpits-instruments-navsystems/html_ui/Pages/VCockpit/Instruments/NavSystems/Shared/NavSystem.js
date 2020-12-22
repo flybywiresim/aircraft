@@ -37,9 +37,7 @@ class NavSystem extends BaseInstrument {
     get flightPlanManager() {
         return this.currFlightPlanManager;
     }
-    get instrumentAlias() {
-        return null;
-    }
+    get instrumentAlias() { return null; }
     connectedCallback() {
         super.connectedCallback();
         this.contextualMenu = this.getChildById("ContextualMenu");
@@ -53,18 +51,22 @@ class NavSystem extends BaseInstrument {
     disconnectedCallback() {
         super.disconnectedCallback();
     }
+    Init() {
+        super.Init();
+        this.cockpitSettings = SimVar.GetGameVarValue("", "GlassCockpitSettings");
+    }
     parseXMLConfig() {
         super.parseXMLConfig();
-        const soundSourceNodeElem = this.xmlConfig.getElementsByTagName("SoundSourceNode");
+        let soundSourceNodeElem = this.xmlConfig.getElementsByTagName("SoundSourceNode");
         if (soundSourceNodeElem.length > 0) {
             this.soundSourceNode = soundSourceNodeElem[0].textContent;
         }
         if (this.instrumentXmlConfig) {
-            const skipValidationAfterInitElem = this.instrumentXmlConfig.getElementsByTagName("SkipValidationAfterInit");
+            let skipValidationAfterInitElem = this.instrumentXmlConfig.getElementsByTagName("SkipValidationAfterInit");
             if (skipValidationAfterInitElem.length > 0 && this.needValidationAfterInit) {
                 this.needValidationAfterInit = skipValidationAfterInitElem[0].textContent != "True";
             }
-            const styleNode = this.instrumentXmlConfig.getElementsByTagName("Style");
+            let styleNode = this.instrumentXmlConfig.getElementsByTagName("Style");
             if (styleNode.length > 0) {
                 this.electricity.setAttribute("displaystyle", styleNode[0].textContent);
             }
@@ -81,8 +83,9 @@ class NavSystem extends BaseInstrument {
                     }
                     if (this.eventLinkedPageGroups[i] == this.currentEventLinkedPageGroup) {
                         this.exitEventLinkedPageGroup();
-                    } else {
-                        const currentGroup = this.getCurrentPageGroup();
+                    }
+                    else {
+                        var currentGroup = this.getCurrentPageGroup();
                         if (currentGroup) {
                             currentGroup.onExit();
                         }
@@ -97,7 +100,8 @@ class NavSystem extends BaseInstrument {
                     if (this.popUpElement == this.eventLinkedPopUpElements[i]) {
                         this.popUpElement.onExit();
                         this.popUpElement = null;
-                    } else {
+                    }
+                    else {
                         this.switchToPopUpPage(this.eventLinkedPopUpElements[i]);
                     }
                 }
@@ -108,10 +112,9 @@ class NavSystem extends BaseInstrument {
             if (this.popUpElement) {
                 this.popUpElement.onEvent(_event);
             }
-            const currentPage = this.getCurrentPage();
-            if (currentPage) {
+            var currentPage = this.getCurrentPage();
+            if (currentPage)
                 currentPage.onEvent(_event);
-            }
             switch (this.currentInteractionState) {
                 case 1:
                     if (this.currentSelectableArray[this.cursorIndex].SendEvent(_event)) {
@@ -160,7 +163,7 @@ class NavSystem extends BaseInstrument {
                         } while (this.currentContextualMenu.elements[this.cursorIndex].isInactive() == true && count < this.currentContextualMenu.elements.length);
                     }
                     if (_event == "NavigationSmallDec") {
-                        const count = 0;
+                        let count = 0;
                         do {
                             this.cursorIndex = (this.cursorIndex - 1) < 0 ? (this.currentContextualMenu.elements.length - 1) : (this.cursorIndex - 1);
                             if (this.cursorIndex < (this.contextualMenuDisplayBeginIndex)) {
@@ -223,7 +226,7 @@ class NavSystem extends BaseInstrument {
                         }
                     }
                     if (_event == "NavigationPush") {
-                        let defaultSelectableArray = this.getCurrentPage().element.getDefaultSelectables();
+                        var defaultSelectableArray = this.getCurrentPage().element.getDefaultSelectables();
                         if (this.popUpElement) {
                             defaultSelectableArray = this.popUpElement.element.getDefaultSelectables();
                         }
@@ -243,10 +246,9 @@ class NavSystem extends BaseInstrument {
     exitEventLinkedPageGroup() {
         this.currentEventLinkedPageGroup.pageGroup.onExit();
         this.currentEventLinkedPageGroup = null;
-        const currentGroup = this.getCurrentPageGroup();
-        if (currentGroup) {
+        var currentGroup = this.getCurrentPageGroup();
+        if (currentGroup)
             currentGroup.onEnter();
-        }
     }
     DecomposeEventFromPrefix(_args) {
         let search = this.instrumentIdentifier + "_";
@@ -255,9 +257,8 @@ class NavSystem extends BaseInstrument {
         }
         search = this.instrumentAlias;
         if (search != null && search != "") {
-            if (this.urlConfig.index) {
+            if (this.urlConfig.index)
                 search += "_" + this.urlConfig.index;
-            }
             search += "_";
             if (_args[0].startsWith(search)) {
                 return _args[0].slice(search.length);
@@ -265,15 +266,14 @@ class NavSystem extends BaseInstrument {
         }
         search = this.templateID + "_";
         if (_args[0].startsWith(search)) {
-            const evt = _args[0].slice(search.length);
-            const separator = evt.search("_");
+            let evt = _args[0].slice(search.length);
+            let separator = evt.search("_");
             if (separator >= 0) {
-                if (!isFinite(parseInt(evt.substring(0, separator)))) {
+                if (!isFinite(parseInt(evt.substring(0, separator))))
                     return evt;
-                }
-            } else if (!isFinite(parseInt(evt))) {
-                return evt;
             }
+            else if (!isFinite(parseInt(evt)))
+                return evt;
         }
         search = "Generic_";
         if (_args[0].startsWith(search)) {
@@ -283,14 +283,15 @@ class NavSystem extends BaseInstrument {
     }
     onInteractionEvent(_args) {
         if (this.isElectricityAvailable()) {
-            let event = this.DecomposeEventFromPrefix(_args);
+            var event = this.DecomposeEventFromPrefix(_args);
             if (event) {
                 if (event == "ElementSetAttribute" && _args.length >= 4) {
-                    const element = this.getChildById(_args[1]);
+                    let element = this.getChildById(_args[1]);
                     if (element) {
                         Avionics.Utils.diffAndSetAttribute(element, _args[2], _args[3]);
                     }
-                } else {
+                }
+                else {
                     this.computeEvent(event);
                     for (let i = 0; i < this.eventAliases.length; i++) {
                         if (this.eventAliases[i].source == event) {
@@ -298,7 +299,8 @@ class NavSystem extends BaseInstrument {
                         }
                     }
                 }
-            } else if (_args[0].startsWith("NavSystem_")) {
+            }
+            else if (_args[0].startsWith("NavSystem_")) {
                 event = _args[0].slice("NavSystem_".length);
                 this.computeEvent(event);
                 for (let i = 0; i < this.eventAliases.length; i++) {
@@ -307,7 +309,8 @@ class NavSystem extends BaseInstrument {
                     }
                 }
             }
-        } else {
+        }
+        else {
             console.log("Electricity Is NOT Available");
         }
     }
@@ -325,7 +328,7 @@ class NavSystem extends BaseInstrument {
             if (NavSystem._iterations < 10000) {
                 NavSystem._iterations += 1;
             }
-            const t0 = performance.now();
+            let t0 = performance.now();
             if (this.isElectricityAvailable()) {
                 if (!this.isStarted) {
                     this.onPowerOn();
@@ -337,27 +340,31 @@ class NavSystem extends BaseInstrument {
                             SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 1);
                             SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 3);
                         }
-                    } else {
+                    }
+                    else {
                         if (this.electricity) {
                             this.electricity.setAttribute("state", "on");
                             SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 1);
                             SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 2);
                         }
                     }
-                } else if (Date.now() - this.startTime > this.initDuration) {
+                }
+                else if (Date.now() - this.startTime > this.initDuration) {
                     if (this.electricity) {
                         this.electricity.setAttribute("state", "initWaitingValidation");
                         SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 0.2);
                         SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 1);
                     }
-                } else {
+                }
+                else {
                     if (this.electricity) {
                         this.electricity.setAttribute("state", "init");
                         SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 0.2);
                         SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 1);
                     }
                 }
-            } else {
+            }
+            else {
                 this.hasBeenOff = true;
                 if (this.isStarted) {
                     this.onShutDown();
@@ -385,7 +392,8 @@ class NavSystem extends BaseInstrument {
             }
             if (this.useUpdateBudget) {
                 this.updateGroupsWithBudget();
-            } else {
+            }
+            else {
                 this.updateGroups();
             }
             switch (this.currentInteractionState) {
@@ -398,7 +406,8 @@ class NavSystem extends BaseInstrument {
                     for (var i = 0; i < this.currentSelectableArray.length; i++) {
                         if (i == this.cursorIndex) {
                             this.currentSelectableArray[i].updateSelection(this.blinkGetState(400, 200));
-                        } else {
+                        }
+                        else {
                             this.currentSelectableArray[i].updateSelection(false);
                         }
                     }
@@ -408,13 +417,14 @@ class NavSystem extends BaseInstrument {
                     break;
             }
             this.onUpdate(this.deltaTime);
-            const t = performance.now() - t0;
+            let t = performance.now() - t0;
             NavSystem.maxTimeUpdateAllTime = Math.max(t, NavSystem.maxTimeUpdateAllTime);
             NavSystem.maxTimeUpdate = Math.max(t, NavSystem.maxTimeUpdate);
-            const factor = 1 / NavSystem._iterations;
+            let factor = 1 / NavSystem._iterations;
             NavSystem.mediumTimeUpdate *= (1 - factor);
             NavSystem.mediumTimeUpdate += factor * t;
-        } else {
+        }
+        else {
             for (var i = 0; i < this.alwaysUpdateList.length; i++) {
                 this.alwaysUpdateList[i].onUpdate(this.deltaTime);
             }
@@ -425,16 +435,16 @@ class NavSystem extends BaseInstrument {
             this.IndependentsElements[i].onUpdate(this.deltaTime);
         }
         if (!this.overridePage) {
-            const currentGroup = this.getCurrentPageGroup();
-            if (currentGroup) {
+            var currentGroup = this.getCurrentPageGroup();
+            if (currentGroup)
                 currentGroup.onUpdate(this.deltaTime);
-            }
-        } else {
+        }
+        else {
             this.overridePage.onUpdate(this.deltaTime);
         }
     }
     updateGroupsWithBudget() {
-        const target = this.budgetedItemId + this.maxUpdateBudget;
+        var target = this.budgetedItemId + this.maxUpdateBudget;
         while (this.budgetedItemId < target) {
             if (this.budgetedItemId < this.IndependentsElements.length) {
                 this.IndependentsElements[this.budgetedItemId].onUpdate(this.deltaTime);
@@ -442,15 +452,16 @@ class NavSystem extends BaseInstrument {
                 continue;
             }
             if (!this.overridePage) {
-                const currentGroup = this.getCurrentPageGroup();
+                var currentGroup = this.getCurrentPageGroup();
                 if (currentGroup) {
-                    const itemId = this.budgetedItemId - this.IndependentsElements.length;
+                    var itemId = this.budgetedItemId - this.IndependentsElements.length;
                     if (currentGroup.onUpdateSpecificItem(this.deltaTime, itemId)) {
                         this.budgetedItemId++;
                         continue;
                     }
                 }
-            } else {
+            }
+            else {
                 this.overridePage.onUpdate(this.deltaTime);
             }
             this.budgetedItemId = 0;
@@ -478,27 +489,29 @@ class NavSystem extends BaseInstrument {
             _slider.setAttribute("state", "Active");
             _cursor.setAttribute("style", "height:" + (_maxElems * 100 / _nbElem) +
                 "%;top:" + (_index * 100 / _nbElem) + "%");
-        } else {
+        }
+        else {
             _slider.setAttribute("state", "Inactive");
         }
     }
     frequencyFormat(_frequency, _nbDigits) {
-        const IntPart = Math.floor(_frequency);
-        const Digits = Math.round((_frequency - IntPart) * Math.pow(10, _nbDigits));
+        var IntPart = Math.floor(_frequency);
+        var Digits = Math.round((_frequency - IntPart) * Math.pow(10, _nbDigits));
         return fastToFixed(IntPart, 0) + '.<span class="FrecDecimals">' + ('000' + (Digits)).slice(-_nbDigits) + '</span>';
     }
     frequencyListFormat(_airport, _baseId, _maxElem = -1, _firstElemIndex = 0) {
         if (_airport && _airport.frequencies) {
-            let htmlFreq = "";
-            let endIndex = _airport.frequencies.length;
+            var htmlFreq = "";
+            var endIndex = _airport.frequencies.length;
             if (_maxElem != -1) {
                 endIndex = Math.min(_airport.frequencies.length, _firstElemIndex + _maxElem);
             }
-            for (let i = 0; i < Math.min(_airport.frequencies.length, _maxElem); i++) {
+            for (var i = 0; i < Math.min(_airport.frequencies.length, _maxElem); i++) {
                 htmlFreq += '<div><div class="Align LeftDisplay" id="' + _baseId + "Name_" + i + '">' + _airport.frequencies[i + _firstElemIndex].name.replace(" ", "&nbsp;").slice(0, 15) + '</div> <div class="Align RightValue SelectableElement" id="' + _baseId + i + '">' + this.frequencyFormat(_airport.frequencies[i + _firstElemIndex].mhValue, 3) + '</div></div>';
             }
             return htmlFreq;
-        } else {
+        }
+        else {
             return "";
         }
     }
@@ -515,15 +528,16 @@ class NavSystem extends BaseInstrument {
         }
     }
     longitudeFormat(_longitude) {
-        let format = "";
+        var format = "";
         if (_longitude < 0) {
             format += "W";
             _longitude = Math.abs(_longitude);
-        } else {
+        }
+        else {
             format += "E";
         }
-        const degrees = Math.floor(_longitude);
-        const minutes = ((_longitude - degrees) * 60);
+        var degrees = Math.floor(_longitude);
+        var minutes = ((_longitude - degrees) * 60);
         format += fastToFixed(degrees, 0);
         format += "°";
         format += fastToFixed(minutes, 2);
@@ -531,15 +545,16 @@ class NavSystem extends BaseInstrument {
         return format;
     }
     latitudeFormat(_latitude) {
-        let format = "";
+        var format = "";
         if (_latitude < 0) {
             format += "S";
             _latitude = Math.abs(_latitude);
-        } else {
+        }
+        else {
             format += "N";
         }
-        const degrees = Math.floor(_latitude);
-        const minutes = ((_latitude - degrees) * 60);
+        var degrees = Math.floor(_latitude);
+        var minutes = ((_latitude - degrees) * 60);
         format += fastToFixed(degrees, 0);
         format += "°";
         format += fastToFixed(minutes, 2);
@@ -551,7 +566,7 @@ class NavSystem extends BaseInstrument {
             case 0:
                 break;
             case 1:
-                for (let i = 0; i < this.currentSelectableArray.length; i++) {
+                for (var i = 0; i < this.currentSelectableArray.length; i++) {
                     this.currentSelectableArray[i].updateSelection(false);
                 }
                 break;
@@ -590,7 +605,7 @@ class NavSystem extends BaseInstrument {
     ActiveSelection(_selectables) {
         this.SwitchToInteractionState(1);
         this.currentSelectableArray = _selectables;
-        const begin = this.cursorIndex;
+        let begin = this.cursorIndex;
         while (!this.currentSelectableArray[this.cursorIndex].isActive) {
             this.cursorIndex = (this.cursorIndex + 1) % this.currentSelectableArray.length;
             if (this.cursorIndex == begin) {
@@ -679,18 +694,19 @@ class NavSystem extends BaseInstrument {
     getCurrentPageGroup() {
         if (this.currentEventLinkedPageGroup) {
             return this.currentEventLinkedPageGroup.pageGroup;
-        } else {
+        }
+        else {
             return this.pageGroups[this.currentPageGroupIndex];
         }
     }
     getCurrentPage() {
         if (!this.overridePage) {
-            const currentGroup = this.getCurrentPageGroup();
-            if (currentGroup) {
+            var currentGroup = this.getCurrentPageGroup();
+            if (currentGroup)
                 return currentGroup.getCurrentPage();
-            }
             return undefined;
-        } else {
+        }
+        else {
             return this.overridePage;
         }
     }
@@ -722,18 +738,19 @@ class NavSystem extends BaseInstrument {
     }
     getElementOfType(c) {
         for (let i = 0; i < this.IndependentsElements.length; i++) {
-            const elem = this.IndependentsElements[i].getElementOfType(c);
+            var elem = this.IndependentsElements[i].getElementOfType(c);
             if (elem) {
                 return elem;
             }
         }
-        const curr = this.getCurrentPage().element.getElementOfType(c);
+        let curr = this.getCurrentPage().element.getElementOfType(c);
         if (curr) {
             return curr;
-        } else {
+        }
+        else {
             for (let i = 0; i < this.pageGroups.length; i++) {
                 for (let j = 0; j < this.pageGroups[i].pages.length; j++) {
-                    const elem = this.pageGroups[i].pages[j].getElementOfType(c);
+                    let elem = this.pageGroups[i].pages[j].getElementOfType(c);
                     if (elem) {
                         return elem;
                     }
@@ -763,38 +780,34 @@ class NavSystem extends BaseInstrument {
         this.updateAspectRatio();
     }
     updateAspectRatio() {
-        if (this.forcedAspectRatioSet) {
+        if (this.forcedAspectRatioSet)
             return;
-        }
         if (this.aspectRatioElement == null) {
             return;
         }
-        const frame = this.getChildById(this.aspectRatioElement);
-        if (!frame) {
+        var frame = this.getChildById(this.aspectRatioElement);
+        if (!frame)
             return;
-        }
-        const vpRect = this.getBoundingClientRect();
-        const vpWidth = vpRect.width;
-        const vpHeight = vpRect.height;
-        if (vpWidth <= 0 || vpHeight <= 0) {
+        var vpRect = this.getBoundingClientRect();
+        var vpWidth = vpRect.width;
+        var vpHeight = vpRect.height;
+        if (vpWidth <= 0 || vpHeight <= 0)
             return;
-        }
-        const frameStyle = window.getComputedStyle(frame);
-        if (!frameStyle) {
+        let frameStyle = window.getComputedStyle(frame);
+        if (!frameStyle)
             return;
-        }
-        const refWidth = parseInt(frameStyle.getPropertyValue('--refWidth'));
-        const refHeight = parseInt(frameStyle.getPropertyValue('--refHeight'));
-        const curWidth = parseInt(frameStyle.width);
-        const curHeight = parseInt(frameStyle.height);
-        const curRatio = curHeight / curWidth;
-        let refRatio = curRatio;
+        var refWidth = parseInt(frameStyle.getPropertyValue('--refWidth'));
+        var refHeight = parseInt(frameStyle.getPropertyValue('--refHeight'));
+        var curWidth = parseInt(frameStyle.width);
+        var curHeight = parseInt(frameStyle.height);
+        var curRatio = curHeight / curWidth;
+        var refRatio = curRatio;
         if (refWidth > 0 && refHeight > 0) {
             console.log("Forcing aspectratio to " + refWidth + "*" + refHeight);
             refRatio = refHeight / refWidth;
-            let newLeft = parseInt(frameStyle.left);
-            let newWidth = curWidth;
-            let newHeight = curWidth * refRatio;
+            var newLeft = parseInt(frameStyle.left);
+            var newWidth = curWidth;
+            var newHeight = curWidth * refRatio;
             if (newHeight > vpHeight) {
                 newWidth = vpHeight / refRatio;
                 newHeight = vpHeight;
@@ -822,9 +835,8 @@ class NavSystem extends BaseInstrument {
         return this.forcedAspectRatio;
     }
     isComputingAspectRatio() {
-        if (this.aspectRatioElement != null && !this.forcedAspectRatioSet) {
+        if (this.aspectRatioElement != null && !this.forcedAspectRatioSet)
             return false;
-        }
         return true;
     }
     onSoundEnd(_eventId) {
@@ -876,12 +888,10 @@ class NavSystem extends BaseInstrument {
         }
     }
     isBootProcedureComplete() {
-        if (!this.hasBeenOff) {
+        if (!this.hasBeenOff)
             return true;
-        }
-        if ((Date.now() - this.startTime > this.initDuration) && (this.initAcknowledged || !this.needValidationAfterInit)) {
+        if ((Date.now() - this.startTime > this.initDuration) && (this.initAcknowledged || !this.needValidationAfterInit))
             return true;
-        }
         return false;
     }
     acknowledgeInit() {
@@ -895,7 +905,7 @@ class NavSystem extends BaseInstrument {
     }
     hasWeatherRadar() {
         if (this.instrumentXmlConfig) {
-            const elem = this.instrumentXmlConfig.getElementsByTagName("WeatherRadar");
+            let elem = this.instrumentXmlConfig.getElementsByTagName("WeatherRadar");
             if (elem.length > 0 && (elem[0].textContent.toLowerCase() == "off" || elem[0].textContent.toLowerCase() == "none")) {
                 return false;
             }
@@ -903,17 +913,15 @@ class NavSystem extends BaseInstrument {
         return true;
     }
     alwaysUpdate(_element, _val) {
-        for (let i = 0; i < this.alwaysUpdateList.length; i++) {
+        for (var i = 0; i < this.alwaysUpdateList.length; i++) {
             if (this.alwaysUpdateList[i] == _element) {
-                if (!_val) {
+                if (!_val)
                     this.alwaysUpdateList.splice(i, 1);
-                }
                 return;
             }
         }
-        if (_val) {
+        if (_val)
             this.alwaysUpdateList.push(_element);
-        }
     }
 }
 NavSystem.maxTimeUpdateAllTime = 0;
@@ -944,9 +952,8 @@ class NavSystemPageGroup {
         this.pages[this.pageIndex].onEnter();
     }
     onUpdate(_deltaTime) {
-        if (!this._updatingWithBudget) {
+        if (!this._updatingWithBudget)
             this.pages[this.pageIndex].onUpdate(_deltaTime);
-        }
     }
     onUpdateSpecificItem(_deltaTime, _itemId) {
         if (_itemId == 0) {
@@ -1020,7 +1027,8 @@ class NavSystemElementContainer {
                     this.element.init(this.gps.getChildById(this.htmlElemId));
                     this.element.isInitialized = true;
                 }
-            } else {
+            }
+            else {
                 return false;
             }
         }
@@ -1031,27 +1039,24 @@ class NavSystemElementContainer {
         return this.isInitialized;
     }
     onEnter() {
-        if (!this.checkInit()) {
+        if (!this.checkInit())
             return;
-        }
         if (this.element) {
             this.element.onEnter();
         }
     }
     onUpdate(_deltaTime) {
         if (!this._updatingWithBudget) {
-            if (!this.checkInit()) {
+            if (!this.checkInit())
                 return;
-            }
             if (this.element) {
                 this.element.onUpdate(_deltaTime);
             }
         }
     }
     onUpdateSpecificItem(_deltaTime, _itemId) {
-        if (!this.checkInit()) {
+        if (!this.checkInit())
             return;
-        }
         if (_itemId == 0) {
             this._updatingWithBudget = true;
             {
@@ -1130,9 +1135,8 @@ class NavSystemElement extends Updatable {
     }
     set alwaysUpdate(_val) {
         this._alwaysUpdate = _val;
-        if (this.gps) {
+        if (this.gps)
             this.gps.alwaysUpdate(this, _val);
-        }
     }
     isReady() {
         return true;
@@ -1144,9 +1148,8 @@ class NavSystemElement extends Updatable {
     onPowerOn() {
     }
     onUpdateSpecificItem(_deltaTime, _itemId) {
-        if (_itemId == 0) {
+        if (_itemId == 0)
             this.onUpdate(_deltaTime);
-        }
         return false;
     }
     getDefaultSelectables() {
@@ -1164,7 +1167,8 @@ class NavSystemElement extends Updatable {
     getElementOfType(c) {
         if (this instanceof c) {
             return this;
-        } else {
+        }
+        else {
             return null;
         }
     }
@@ -1180,7 +1184,7 @@ class NavSystemIFrameElement extends NavSystemElement {
         if (this.iFrame) {
             this.canvas = this.iFrame.contentWindow;
             if (this.canvas) {
-                const readyToSet = this.canvas["readyToSet"];
+                var readyToSet = this.canvas["readyToSet"];
                 if (readyToSet) {
                     return true;
                 }
@@ -1237,9 +1241,8 @@ class NavSystemElementGroup extends NavSystemElement {
         }
         if (_itemId < this.elements.length) {
             this.elements[_itemId].onUpdate(_deltaTime);
-            if (_itemId + 1 < this.elements.length) {
+            if (_itemId + 1 < this.elements.length)
                 return true;
-            }
         }
         return false;
     }
@@ -1283,7 +1286,7 @@ class NavSystemElementGroup extends NavSystemElement {
     }
     getElementOfType(c) {
         for (let i = 0; i < this.elements.length; i++) {
-            const elem = this.elements[i].getElementOfType(c);
+            var elem = this.elements[i].getElementOfType(c);
             if (elem) {
                 return elem;
             }
@@ -1366,7 +1369,7 @@ class NavSystemElementSelector extends NavSystemElement {
     }
     getElementOfType(c) {
         for (let i = 0; i < this.elements.length; i++) {
-            const elem = this.elements[i].getElementOfType(c);
+            var elem = this.elements[i].getElementOfType(c);
             if (elem) {
                 return elem;
             }
@@ -1389,9 +1392,8 @@ class SoftKeyElement {
         this.name = _name;
         this.state = "None";
         this.stateCallback = _stateCB;
-        if (!_callback) {
+        if (!_callback)
             this.state = "Greyed";
-        }
     }
 }
 class SoftKeysMenu {
@@ -1410,7 +1412,7 @@ class CDIElement extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        const CTD = SimVar.GetSimVarValue("GPS WP CROSS TRK", "nautical mile");
+        var CTD = SimVar.GetSimVarValue("GPS WP CROSS TRK", "nautical mile");
         this.cdiCursor.setAttribute("style", "left:" + ((CTD <= -1 ? -1 : CTD >= 1 ? 1 : CTD) * 50 + 50) + "%");
     }
     onExit() {
@@ -1449,9 +1451,8 @@ class MapInstrumentElement extends NavSystemElement {
     }
     setGPS(_gps) {
         super.setGPS(_gps);
-        if (this.instrument) {
+        if (this.instrument)
             this.instrument.init(this.gps);
-        }
     }
     onEnter() {
     }
@@ -1459,8 +1460,8 @@ class MapInstrumentElement extends NavSystemElement {
         if (this.instrumentLoaded) {
             this.instrument.update(_deltaTime);
             if (this.weatherTexts) {
-                const range = this.instrument.getWeatherRange();
-                const ratio = 1.0 / this.weatherTexts.length;
+                let range = this.instrument.getWeatherRange();
+                let ratio = 1.0 / this.weatherTexts.length;
                 for (let i = 0; i < this.weatherTexts.length; i++) {
                     this.weatherTexts[i].textContent = fastToFixed(range * ratio * (i + 1), 2) + "NM";
                 }
@@ -1470,15 +1471,15 @@ class MapInstrumentElement extends NavSystemElement {
     onExit() {
     }
     onEvent(_event) {
-        if (this.instrument) {
+        if (this.instrument)
             this.instrument.onEvent(_event);
-        }
     }
     toggleDisplayMode() {
         if (this.displayMode == EMapDisplayMode.GPS) {
             this.gps.getCurrentPage().name = "WEATHER RADAR";
             this.displayMode = EMapDisplayMode.RADAR;
-        } else {
+        }
+        else {
             this.gps.getCurrentPage().name = "NAVIGATION MAP";
             this.displayMode = EMapDisplayMode.GPS;
         }
@@ -1488,68 +1489,59 @@ class MapInstrumentElement extends NavSystemElement {
         this.displayMode = _mode;
         if (_mode == EMapDisplayMode.GPS) {
             this.gps.getCurrentPage().name = "NAVIGATION MAP";
-        } else {
+        }
+        else {
             this.gps.getCurrentPage().name = "WEATHER RADAR";
         }
         this.updateWeather();
     }
-    getDisplayMode() {
-        return this.displayMode;
-    }
+    getDisplayMode() { return this.displayMode; }
     toggleIsolines() {
         if (this.instrument) {
-            if (this.instrument.getIsolines() == true) {
+            if (this.instrument.getIsolines() == true)
                 this.instrument.showIsolines(false);
-            } else {
+            else
                 this.instrument.showIsolines(true);
-            }
         }
     }
-    getIsolines() {
-        return this.instrument.getIsolines();
-    }
+    getIsolines() { return this.instrument.getIsolines(); }
     toggleNexrad() {
         this.nexradOn = !this.nexradOn;
         this.updateWeather();
     }
-    getNexrad() {
-        return this.nexradOn;
-    }
+    getNexrad() { return this.nexradOn; }
     setRadar(_mode) {
         this.radarMode = _mode;
         this.updateWeather();
     }
-    getRadarMode() {
-        return this.radarMode;
-    }
+    getRadarMode() { return this.radarMode; }
     updateWeather() {
         if (this.instrument) {
             if (this.displayMode == EMapDisplayMode.GPS) {
-                if (this.nexradOn) {
+                if (this.nexradOn)
                     this.setWeather(EWeatherRadar.TOPVIEW);
-                } else {
+                else
                     this.setWeather(EWeatherRadar.OFF);
-                }
-            } else {
-                if (this.radarMode == ERadarMode.HORIZON) {
+            }
+            else {
+                if (this.radarMode == ERadarMode.HORIZON)
                     this.setWeather(EWeatherRadar.HORIZONTAL);
-                } else {
+                else
                     this.setWeather(EWeatherRadar.VERTICAL);
-                }
             }
         }
     }
     setWeather(_mode) {
         this.instrument.showWeather(_mode);
-        const svgRoot = this.instrument.weatherSVG;
+        let svgRoot = this.instrument.weatherSVG;
         if (svgRoot) {
             Utils.RemoveAllChildren(svgRoot);
             this.weatherTexts = null;
             if (_mode == EWeatherRadar.HORIZONTAL || _mode == EWeatherRadar.VERTICAL) {
-                const circleRadius = 575;
-                const dashNbRect = 10;
-                const dashWidth = 8;
-                const dashHeight = 6;
+                var circleRadius = 575;
+                var dashNbRect = 10;
+                var dashWidth = 8;
+                var dashHeight = 6;
                 if (_mode == EWeatherRadar.HORIZONTAL) {
                     this.instrument.setBingMapStyle("10.3%", "-13.3%", "127%", "157%");
                     var coneAngle = 90;
@@ -1557,21 +1549,21 @@ class MapInstrumentElement extends NavSystemElement {
                     var trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
                     trsGroup.setAttribute("transform", "translate(-125, 29) scale(1.63)");
                     svgRoot.appendChild(trsGroup);
-                    const viewBox = document.createElementNS(Avionics.SVG.NS, "svg");
+                    let viewBox = document.createElementNS(Avionics.SVG.NS, "svg");
                     viewBox.setAttribute("viewBox", "-600 -600 1200 1200");
                     trsGroup.appendChild(viewBox);
                     var circleGroup = document.createElementNS(Avionics.SVG.NS, "g");
                     circleGroup.setAttribute("id", "Circles");
                     viewBox.appendChild(circleGroup);
                     {
-                        const rads = [0.25, 0.50, 0.75, 1.0];
+                        let rads = [0.25, 0.50, 0.75, 1.0];
                         for (let r = 0; r < rads.length; r++) {
-                            const rad = circleRadius * rads[r];
+                            let rad = circleRadius * rads[r];
                             let startDegrees = -coneAngle * 0.5;
-                            const endDegrees = coneAngle * 0.5;
+                            let endDegrees = coneAngle * 0.5;
                             while (Math.floor(startDegrees) <= endDegrees) {
-                                const line = document.createElementNS(Avionics.SVG.NS, "rect");
-                                const degree = (180 + startDegrees + 0.5);
+                                let line = document.createElementNS(Avionics.SVG.NS, "rect");
+                                let degree = (180 + startDegrees + 0.5);
                                 line.setAttribute("x", "0");
                                 line.setAttribute("y", rad.toString());
                                 line.setAttribute("width", dashWidth.toString());
@@ -1642,28 +1634,29 @@ class MapInstrumentElement extends NavSystemElement {
                         textGroup.appendChild(text);
                         this.weatherTexts.push(text);
                     }
-                } else if (_mode == EWeatherRadar.VERTICAL) {
+                }
+                else if (_mode == EWeatherRadar.VERTICAL) {
                     this.instrument.setBingMapStyle("-75%", "-88%", "201%", "250%");
                     var coneAngle = 51.43;
                     svgRoot.setAttribute("viewBox", "0 0 400 400");
                     var trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
                     trsGroup.setAttribute("transform", "translate(402, -190) scale(1.95) rotate(90)");
                     svgRoot.appendChild(trsGroup);
-                    const viewBox = document.createElementNS(Avionics.SVG.NS, "svg");
+                    let viewBox = document.createElementNS(Avionics.SVG.NS, "svg");
                     viewBox.setAttribute("viewBox", "-600 -600 1200 1200");
                     trsGroup.appendChild(viewBox);
                     var circleGroup = document.createElementNS(Avionics.SVG.NS, "g");
                     circleGroup.setAttribute("id", "Circles");
                     viewBox.appendChild(circleGroup);
                     {
-                        const rads = [0.25, 0.50, 0.75, 1.0];
+                        let rads = [0.25, 0.50, 0.75, 1.0];
                         for (let r = 0; r < rads.length; r++) {
-                            const rad = circleRadius * rads[r];
+                            let rad = circleRadius * rads[r];
                             let startDegrees = -coneAngle * 0.5;
-                            const endDegrees = coneAngle * 0.5;
+                            let endDegrees = coneAngle * 0.5;
                             while (Math.floor(startDegrees) <= endDegrees) {
-                                const line = document.createElementNS(Avionics.SVG.NS, "rect");
-                                const degree = (180 + startDegrees + 0.5);
+                                let line = document.createElementNS(Avionics.SVG.NS, "rect");
+                                let degree = (180 + startDegrees + 0.5);
                                 line.setAttribute("x", "0");
                                 line.setAttribute("y", rad.toString());
                                 line.setAttribute("width", dashWidth.toString());
@@ -1675,15 +1668,15 @@ class MapInstrumentElement extends NavSystemElement {
                             }
                         }
                     }
-                    const limitGroup = document.createElementNS(Avionics.SVG.NS, "g");
+                    var limitGroup = document.createElementNS(Avionics.SVG.NS, "g");
                     limitGroup.setAttribute("id", "Limits");
                     viewBox.appendChild(limitGroup);
                     {
-                        const endPosY = circleRadius + 50;
+                        let endPosY = circleRadius + 50;
                         let posX = -130;
                         let posY = 50;
                         while (posY <= endPosY) {
-                            const line = document.createElementNS(Avionics.SVG.NS, "rect");
+                            let line = document.createElementNS(Avionics.SVG.NS, "rect");
                             line.setAttribute("x", posX.toString());
                             line.setAttribute("y", (-posY).toString());
                             line.setAttribute("width", dashHeight.toString());
@@ -1695,7 +1688,7 @@ class MapInstrumentElement extends NavSystemElement {
                         posX = 130;
                         posY = 50;
                         while (posY <= endPosY) {
-                            const line = document.createElementNS(Avionics.SVG.NS, "rect");
+                            let line = document.createElementNS(Avionics.SVG.NS, "rect");
                             line.setAttribute("x", posX.toString());
                             line.setAttribute("y", (-posY).toString());
                             line.setAttribute("width", dashHeight.toString());
@@ -1785,22 +1778,22 @@ class MapInstrumentElement extends NavSystemElement {
                         this.weatherTexts.push(text);
                     }
                 }
-                const legendGroup = document.createElementNS(Avionics.SVG.NS, "g");
+                var legendGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 legendGroup.setAttribute("id", "legendGroup");
                 svgRoot.appendChild(legendGroup);
                 {
-                    const x = -5;
-                    const y = 325;
-                    const w = 70;
-                    const h = 125;
-                    const titleHeight = 20;
-                    const scaleOffsetX = 5;
-                    const scaleOffsetY = 5;
-                    const scaleWidth = 13;
-                    const scaleHeight = 24;
-                    const left = x - w * 0.5;
-                    const top = y - h * 0.5;
-                    let rect = document.createElementNS(Avionics.SVG.NS, "rect");
+                    var x = -5;
+                    var y = 325;
+                    var w = 70;
+                    var h = 125;
+                    var titleHeight = 20;
+                    var scaleOffsetX = 5;
+                    var scaleOffsetY = 5;
+                    var scaleWidth = 13;
+                    var scaleHeight = 24;
+                    var left = x - w * 0.5;
+                    var top = y - h * 0.5;
+                    var rect = document.createElementNS(Avionics.SVG.NS, "rect");
                     rect.setAttribute("x", left.toString());
                     rect.setAttribute("y", top.toString());
                     rect.setAttribute("width", w.toString());
@@ -1826,7 +1819,7 @@ class MapInstrumentElement extends NavSystemElement {
                     text.setAttribute("font-size", "11");
                     text.setAttribute("text-anchor", "middle");
                     legendGroup.appendChild(text);
-                    let scaleIndex = 0;
+                    var scaleIndex = 0;
                     rect = document.createElementNS(Avionics.SVG.NS, "rect");
                     rect.setAttribute("x", (left + scaleOffsetX).toString());
                     rect.setAttribute("y", (top + titleHeight + scaleOffsetY + scaleIndex * scaleHeight).toString());
@@ -1895,14 +1888,15 @@ class SoftKeyHtmlElement {
         this.Value = "";
     }
     fillFromElement(_elem) {
-        const val = _elem.name;
+        var val = _elem.name;
         if (this.Value != val) {
             this.Element.innerHTML = val;
             this.Value = val;
         }
         if (_elem.stateCallback) {
             _elem.state = _elem.stateCallback();
-        } else if (!_elem.callback) {
+        }
+        else if (!_elem.callback) {
             _elem.state = "Greyed";
         }
         if (_elem.state) {
@@ -1917,11 +1911,11 @@ class SoftKeys extends NavSystemElement {
         this.softKeyHTMLClass = _softKeyHTMLClass;
     }
     init(root) {
-        for (let i = 1; i <= 12; i++) {
-            const name = "Key" + i.toString();
-            const child = this.gps.getChildById(name);
+        for (var i = 1; i <= 12; i++) {
+            var name = "Key" + i.toString();
+            var child = this.gps.getChildById(name);
             if (child) {
-                const e = new this.softKeyHTMLClass(child);
+                var e = new this.softKeyHTMLClass(child);
                 this.softKeys.push(e);
             }
         }
@@ -1930,11 +1924,11 @@ class SoftKeys extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        const currentPage = this.gps.getCurrentPage();
+        var currentPage = this.gps.getCurrentPage();
         if (currentPage) {
             this.currentMenu = currentPage.getSoftKeyMenu();
             if (this.currentMenu && this.currentMenu.elements && this.currentMenu.elements.length > 0) {
-                for (let i = 0; i < this.currentMenu.elements.length; i++) {
+                for (var i = 0; i < this.currentMenu.elements.length; i++) {
                     this.softKeys[i].fillFromElement(this.currentMenu.elements[i]);
                 }
             }
@@ -2001,6 +1995,8 @@ class Annunciation_Message {
         this.Visible = false;
         this.Acknowledged = false;
     }
+    reset() {
+    }
 }
 ;
 class XMLCondition {
@@ -2028,16 +2024,23 @@ class Annunciation_Message_XML extends Annunciation_Message {
         }
         return false;
     }
+    reset() {
+        super.reset();
+        for (let i = 0; i < this.conditions.length; i++) {
+            this.conditions[i].logic.reset();
+        }
+    }
 }
 class Annunciation_Message_Timed extends Annunciation_Message {
 }
 ;
 class Annunciation_Message_Switch extends Annunciation_Message {
     get Text() {
-        const index = this.Handler();
+        let index = this.Handler();
         if (index > 0) {
             return this.Texts[index - 1];
-        } else {
+        }
+        else {
             return "";
         }
     }
@@ -2060,10 +2063,12 @@ class Annunciator_Message_MultipleConditions extends Annunciation_Message {
             if (this.conditions[i].Handler()) {
                 if (this.conditions[i].beginTime == 0) {
                     this.conditions[i].beginTime = Date.now() + 1000 * this.conditions[i].Time;
-                } else if (this.conditions[i].beginTime <= Date.now()) {
+                }
+                else if (this.conditions[i].beginTime <= Date.now()) {
                     result = true;
                 }
-            } else {
+            }
+            else {
                 this.conditions[i].beginTime = 0;
             }
         }
@@ -2081,13 +2086,12 @@ class Annunciations extends NavSystemElement {
     }
     init(root) {
         this.engineType = Simplane.getEngineType();
-        if (this.rootElementName != "") {
+        if (this.rootElementName != "")
             this.annunciations = this.gps.getChildById(this.rootElementName);
-        }
         if (this.gps.xmlConfig) {
-            const annunciationsRoot = this.gps.xmlConfig.getElementsByTagName("Annunciations");
+            let annunciationsRoot = this.gps.xmlConfig.getElementsByTagName("Annunciations");
             if (annunciationsRoot.length > 0) {
-                const annunciations = annunciationsRoot[0].getElementsByTagName("Annunciation");
+                let annunciations = annunciationsRoot[0].getElementsByTagName("Annunciation");
                 for (let i = 0; i < annunciations.length; i++) {
                     this.addXmlMessage(annunciations[i]);
                 }
@@ -2098,15 +2102,20 @@ class Annunciations extends NavSystemElement {
     }
     onExit() {
     }
+    reset() {
+        for (let i = 0; i < this.allMessages.length; i++) {
+            this.allMessages[i].reset();
+        }
+    }
     addMessage(_type, _text, _handler) {
-        const msg = new Annunciation_Message();
+        var msg = new Annunciation_Message();
         msg.Type = _type;
         msg.Text = _text;
         msg.Handler = _handler.bind(msg);
         this.allMessages.push(msg);
     }
     addXmlMessage(_element) {
-        const msg = new Annunciation_Message_XML();
+        var msg = new Annunciation_Message_XML();
         switch (_element.getElementsByTagName("Type")[0].textContent) {
             case "Warning":
                 msg.Type = Annunciation_MessageType.WARNING;
@@ -2122,9 +2131,9 @@ class Annunciations extends NavSystemElement {
                 break;
         }
         msg.baseText = _element.getElementsByTagName("Text")[0].textContent;
-        const conditions = _element.getElementsByTagName("Condition");
+        let conditions = _element.getElementsByTagName("Condition");
         for (let i = 0; i < conditions.length; i++) {
-            const condition = new XMLCondition();
+            let condition = new XMLCondition();
             condition.logic = new CompositeLogicXMLElement(this.gps, conditions[i]);
             condition.suffix = conditions[i].getAttribute("Suffix");
             msg.conditions.push(condition);
@@ -2132,7 +2141,7 @@ class Annunciations extends NavSystemElement {
         this.allMessages.push(msg);
     }
     addMessageTimed(_type, _text, _handler, _time) {
-        const msg = new Annunciation_Message_Timed();
+        var msg = new Annunciation_Message_Timed();
         msg.Type = _type;
         msg.Text = _text;
         msg.Handler = _handler.bind(msg);
@@ -2140,14 +2149,14 @@ class Annunciations extends NavSystemElement {
         this.allMessages.push(msg);
     }
     addMessageSwitch(_type, _texts, _handler) {
-        const msg = new Annunciation_Message_Switch();
+        var msg = new Annunciation_Message_Switch();
         msg.Type = _type;
         msg.Texts = _texts;
         msg.Handler = _handler.bind(msg);
         this.allMessages.push(msg);
     }
     addMessageMultipleConditions(_type, _text, _conditions) {
-        const msg = new Annunciator_Message_MultipleConditions();
+        var msg = new Annunciator_Message_MultipleConditions();
         msg.Type = _type;
         msg.Text = _text;
         msg.conditions = _conditions;
@@ -2170,12 +2179,11 @@ class Cabin_Annunciations extends Annunciations {
         super.init(root);
         this.alwaysUpdate = true;
         this.isPlayingWarningTone = false;
-        for (let i = 0; i < this.allMessages.length; i++) {
-            const message = this.allMessages[i];
-            let value = false;
-            if (message.Handler) {
+        for (var i = 0; i < this.allMessages.length; i++) {
+            var message = this.allMessages[i];
+            var value = false;
+            if (message.Handler)
                 value = message.Handler() != 0;
-            }
             if (value != message.Visible) {
                 this.needReload = true;
                 message.Visible = value;
@@ -2199,12 +2207,11 @@ class Cabin_Annunciations extends Annunciations {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        for (let i = 0; i < this.allMessages.length; i++) {
-            const message = this.allMessages[i];
-            let value = false;
-            if (message.Handler) {
+        for (var i = 0; i < this.allMessages.length; i++) {
+            var message = this.allMessages[i];
+            var value = false;
+            if (message.Handler)
                 value = message.Handler() != 0;
-            }
             if (value != message.Visible) {
                 this.needReload = true;
                 message.Visible = value;
@@ -2217,17 +2224,17 @@ class Cabin_Annunciations extends Annunciations {
                         case Annunciation_MessageType.CAUTION:
                             this.displayCaution.push(message);
                             if (!message.Acknowledged && !this.isPlayingWarningTone && this.gps.isPrimary) {
-                                const res = this.gps.playInstrumentSound("tone_caution");
-                                if (res) {
+                                let res = this.gps.playInstrumentSound("tone_caution");
+                                if (res)
                                     this.isPlayingWarningTone = true;
-                                }
                             }
                             break;
                         case Annunciation_MessageType.ADVISORY:
                             this.displayAdvisory.push(message);
                             break;
                     }
-                } else {
+                }
+                else {
                     switch (message.Type) {
                         case Annunciation_MessageType.WARNING:
                             for (let i = 0; i < this.displayWarning.length; i++) {
@@ -2257,9 +2264,8 @@ class Cabin_Annunciations extends Annunciations {
                 }
             }
         }
-        if (this.annunciations) {
+        if (this.annunciations)
             this.annunciations.setAttribute("state", this.gps.blinkGetState(800, 400) ? "Blink" : "None");
-        }
         if (this.needReload) {
             let warningOn = 0;
             let cautionOn = 0;
@@ -2288,16 +2294,14 @@ class Cabin_Annunciations extends Annunciations {
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", warningOn);
                 SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", cautionOn);
             }
-            if (this.annunciations) {
+            if (this.annunciations)
                 this.annunciations.innerHTML = messages;
-            }
             this.needReload = false;
         }
         if (this.warningTone && !this.isPlayingWarningTone && this.gps.isPrimary) {
-            const res = this.gps.playInstrumentSound("tone_warning");
-            if (res) {
+            let res = this.gps.playInstrumentSound("tone_warning");
+            if (res)
                 this.isPlayingWarningTone = true;
-            }
         }
     }
     onEvent(_event) {
@@ -2318,10 +2322,9 @@ class Cabin_Annunciations extends Annunciations {
                     }
                 }
                 if (this.needReload && this.firstAcknowledge && this.gps.isPrimary) {
-                    const res = this.gps.playInstrumentSound("aural_warning_ok");
-                    if (res) {
+                    let res = this.gps.playInstrumentSound("aural_warning_ok");
+                    if (res)
                         this.firstAcknowledge = false;
-                    }
                 }
                 break;
         }
@@ -2350,7 +2353,7 @@ class Cabin_Annunciations extends Annunciations {
         this.offStart = true;
     }
     hasMessages() {
-        for (let i = 0; i < this.allMessages.length; i++) {
+        for (var i = 0; i < this.allMessages.length; i++) {
             if (this.allMessages[i].Visible) {
                 return true;
             }
@@ -2463,26 +2466,23 @@ class Engine_Annunciations extends Cabin_Annunciations {
         return SimVar.GetSimVarValue("WARNING OIL PRESSURE", "Boolean");
     }
     LowFuelPressure() {
-        const pressure = SimVar.GetSimVarValue("ENG FUEL PRESSURE", "psi");
-        if (pressure <= 1) {
+        var pressure = SimVar.GetSimVarValue("ENG FUEL PRESSURE", "psi");
+        if (pressure <= 1)
             return true;
-        }
         return false;
     }
     LowVoltage() {
-        let voltage;
+        var voltage;
         voltage = SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE", "volts");
-        if (voltage < 24) {
+        if (voltage < 24)
             return true;
-        }
         return false;
     }
     HighVoltage() {
-        let voltage;
+        var voltage;
         voltage = SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE", "volts");
-        if (voltage > 32) {
+        if (voltage > 32)
             return true;
-        }
         return false;
     }
     FuelTemperature() {
@@ -2504,7 +2504,7 @@ class Engine_Annunciations extends Cabin_Annunciations {
         return (SimVar.GetSimVarValue("ENG OIL PRESSURE:1", "psi") <= 60);
     }
     itt(_limit = 840) {
-        const itt = SimVar.GetSimVarValue("TURB ENG ITT:1", "celsius");
+        let itt = SimVar.GetSimVarValue("TURB ENG ITT:1", "celsius");
         return (itt > _limit);
     }
     flapsAsym() {
@@ -2541,29 +2541,32 @@ class Engine_Annunciations extends Cabin_Annunciations {
         return false;
     }
     oilPressCaution() {
-        const press = SimVar.GetSimVarValue("ENG OIL PRESSURE:1", "psi");
+        let press = SimVar.GetSimVarValue("ENG OIL PRESSURE:1", "psi");
         return (press <= 105 && press >= 60);
     }
     chip() {
         return false;
     }
     oilTemp() {
-        const temp = SimVar.GetSimVarValue("GENERAL ENG OIL TEMPERATURE:1", "celsius");
+        let temp = SimVar.GetSimVarValue("GENERAL ENG OIL TEMPERATURE:1", "celsius");
         return (temp <= 0 || temp >= 104);
     }
     auxBoostPmpOn() {
         return SimVar.GetSimVarValue("GENERAL ENG FUEL PUMP ON:1", "Bool");
     }
     fuelLowSelector() {
-        const left = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "gallon") < 9;
-        const right = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "gallon") < 9;
+        let left = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "gallon") < 9;
+        let right = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "gallon") < 9;
         if (left && right) {
             return 3;
-        } else if (left) {
+        }
+        else if (left) {
             return 1;
-        } else if (right) {
+        }
+        else if (right) {
             return 2;
-        } else {
+        }
+        else {
             return 0;
         }
     }
@@ -2571,8 +2574,8 @@ class Engine_Annunciations extends Cabin_Annunciations {
         return false;
     }
     fuelImbalance() {
-        const left = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "gallon");
-        const right = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "gallon");
+        let left = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "gallon");
+        let right = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "gallon");
         return Math.abs(left - right) > 15;
     }
     lowLvlFailSelector() {
@@ -2647,6 +2650,8 @@ class Warning_Data {
         this.callback = _callback;
         this.once = _once;
     }
+    reset() {
+    }
 }
 class Warning_Data_XML extends Warning_Data {
     constructor(_gps, _shortText, _longText, _soundEvent, _Level, _logicElement, _once = false) {
@@ -2656,6 +2661,10 @@ class Warning_Data_XML extends Warning_Data {
     }
     getXMLBoolean() {
         return this.xmlLogic.getValue() != 0;
+    }
+    reset() {
+        super.reset();
+        this.xmlLogic.reset();
     }
 }
 class Warnings extends NavSystemElement {
@@ -2673,12 +2682,12 @@ class Warnings extends NavSystemElement {
     init(_root) {
         let alertsFromXML = false;
         if (this.gps.xmlConfig) {
-            const alertsGroup = this.gps.xmlConfig.getElementsByTagName("VoicesAlerts");
+            let alertsGroup = this.gps.xmlConfig.getElementsByTagName("VoicesAlerts");
             if (alertsGroup.length > 0) {
                 alertsFromXML = true;
-                const alerts = alertsGroup[0].getElementsByTagName("Alert");
+                let alerts = alertsGroup[0].getElementsByTagName("Alert");
                 for (let i = 0; i < alerts.length; i++) {
-                    const typeParam = alerts[i].getElementsByTagName("Type");
+                    let typeParam = alerts[i].getElementsByTagName("Type");
                     let type = 0;
                     if (typeParam.length > 0) {
                         switch (typeParam[0].textContent) {
@@ -2699,23 +2708,23 @@ class Warnings extends NavSystemElement {
                     let shortText = "";
                     let longText = "";
                     if (type != 0) {
-                        const shortTextElem = alerts[i].getElementsByTagName("ShortText");
+                        let shortTextElem = alerts[i].getElementsByTagName("ShortText");
                         if (shortTextElem.length > 0) {
                             shortText = shortTextElem[0].textContent;
                         }
-                        const longTextElem = alerts[i].getElementsByTagName("LongText");
+                        let longTextElem = alerts[i].getElementsByTagName("LongText");
                         if (longTextElem.length > 0) {
                             longText = longTextElem[0].textContent;
                         }
                     }
                     let soundEvent = "";
-                    const soundEventElem = alerts[i].getElementsByTagName("SoundEvent");
+                    let soundEventElem = alerts[i].getElementsByTagName("SoundEvent");
                     if (soundEventElem.length > 0) {
                         soundEvent = soundEventElem[0].textContent;
                     }
-                    const condition = alerts[i].getElementsByTagName("Condition")[0];
+                    let condition = alerts[i].getElementsByTagName("Condition")[0];
                     let once = false;
-                    const onceElement = alerts[i].getElementsByTagName("Once");
+                    let onceElement = alerts[i].getElementsByTagName("Once");
                     if (onceElement.length > 0 && onceElement[0].textContent == "True") {
                         once = true;
                     }
@@ -2735,47 +2744,45 @@ class Warnings extends NavSystemElement {
         SimVar.SetSimVarValue("L:AS1000_Warnings_Master_Set", "number", 0);
     }
     onUpdate(_deltaTime) {
-        const masterSet = SimVar.GetSimVarValue("L:AS1000_Warnings_Master_Set", "number");
+        let masterSet = SimVar.GetSimVarValue("L:AS1000_Warnings_Master_Set", "number");
         if (masterSet == 0) {
             SimVar.SetSimVarValue("L:AS1000_Warnings_Master_Set", "number", this.UID);
-        } else if (masterSet == this.UID) {
+        }
+        else if (masterSet == this.UID) {
             let found = false;
             let foundText = false;
             let bestWarning = 0;
             for (let i = 0; i < this.warnings.length; i++) {
-                const warning = this.warnings[i];
+                let warning = this.warnings[i];
                 if (!warning.once || !warning.hasPlayed) {
                     if (warning.callback()) {
                         if (warning.soundEvent != "") {
                             if ((this.playingSounds.length <= 0) || (i < this.playingSounds[this.playingSounds.length - 1])) {
-                                const res = this.gps.playInstrumentSound(warning.soundEvent);
+                                let res = this.gps.playInstrumentSound(warning.soundEvent);
                                 if (res) {
                                     this.playingSounds.push(i);
                                     warning.hasPlayed = true;
                                 }
                             }
                         }
-                        if (!foundText) {
+                        if (!foundText)
                             bestWarning = i;
-                        }
-                        if (warning.shortText || warning.longText) {
+                        if (warning.shortText || warning.longText)
                             foundText = true;
-                        }
                         found = true;
                     }
                 }
             }
-            if (found) {
+            if (found)
                 SimVar.SetSimVarValue("L:AS1000_Warnings_WarningIndex", "number", bestWarning + 1);
-            } else {
+            else
                 SimVar.SetSimVarValue("L:AS1000_Warnings_WarningIndex", "number", 0);
-            }
         }
     }
     onSoundEnd(_eventId) {
         let i = 0;
         while (i < this.playingSounds.length) {
-            const soundId = this.playingSounds[i];
+            var soundId = this.playingSounds[i];
             if (Name_Z.compare(this.warnings[soundId].soundEventId, _eventId)) {
                 this.playingSounds.splice(i, 1);
                 continue;
@@ -2794,7 +2801,8 @@ class Warnings extends NavSystemElement {
         for (let i = 0; i < _points.length; i++) {
             if (_valueX > _points[i][0]) {
                 lastLowerIndex = i;
-            } else {
+            }
+            else {
                 break;
             }
         }
@@ -2805,17 +2813,19 @@ class Warnings extends NavSystemElement {
                 }
             }
             return _points[lastLowerIndex].length;
-        } else if (lastLowerIndex == -1) {
+        }
+        else if (lastLowerIndex == -1) {
             for (let i = 1; i < _points[0].length; i++) {
                 if (_valueY < _points[0][i]) {
                     return i;
                 }
             }
             return _points[0].length;
-        } else {
-            const factorLower = (_valueX - _points[lastLowerIndex][0]) / _points[lastLowerIndex + 1][0];
+        }
+        else {
+            let factorLower = (_valueX - _points[lastLowerIndex][0]) / _points[lastLowerIndex + 1][0];
             for (let i = 1; i < _points[lastLowerIndex].length; i++) {
-                const limit = _points[lastLowerIndex][i] * factorLower + _points[lastLowerIndex + 1][i] * (1 - factorLower);
+                let limit = _points[lastLowerIndex][i] * factorLower + _points[lastLowerIndex + 1][i] * (1 - factorLower);
                 if (_valueY < limit) {
                     return i;
                 }
@@ -2823,20 +2833,25 @@ class Warnings extends NavSystemElement {
             return _points[lastLowerIndex].length;
         }
     }
+    reset() {
+        for (let i = 0; i < this.warnings.length; i++) {
+            this.warnings[i].reset();
+        }
+    }
     pullUpCallback() {
-        const height = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND", "feet");
-        const descentRate = -SimVar.GetSimVarValue("VERTICAL SPEED", "feet per minute");
+        let height = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND", "feet");
+        let descentRate = -SimVar.GetSimVarValue("VERTICAL SPEED", "feet per minute");
         return this.linearMultiPointsEvaluation(this.pullUp_sinkRate_Points, descentRate, height) == 1;
     }
     sinkRateCallback() {
-        const height = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND", "feet");
-        const descentRate = -SimVar.GetSimVarValue("VERTICAL SPEED", "feet per minute");
+        let height = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND", "feet");
+        let descentRate = -SimVar.GetSimVarValue("VERTICAL SPEED", "feet per minute");
         return this.linearMultiPointsEvaluation(this.pullUp_sinkRate_Points, descentRate, height) == 2;
     }
     landingGearCallback() {
-        const gear = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
-        const throttle = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "percent");
-        const flaps = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number");
+        let gear = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
+        let throttle = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "percent");
+        let flaps = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number");
         return !gear && (flaps > 1 || (throttle == 0));
     }
     stallCallback() {
@@ -2861,13 +2876,14 @@ class Cabin_Warnings extends Warnings {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
-        const warningIndex = SimVar.GetSimVarValue("L:AS1000_Warnings_WarningIndex", "number");
+        let warningIndex = SimVar.GetSimVarValue("L:AS1000_Warnings_WarningIndex", "number");
         let warningText;
         let warningLevel;
-        if (warningIndex <= 0 || warningIndex >= this.warnings.length) {
+        if (warningIndex <= 0 || warningIndex > this.warnings.length) {
             warningText = "";
             warningLevel = 0;
-        } else {
+        }
+        else {
             warningText = this.warnings[warningIndex - 1].shortText;
             warningLevel = this.warnings[warningIndex - 1].level;
         }
@@ -2911,7 +2927,7 @@ class GlassCockpit_XMLEngine extends NavSystemElement {
     }
     init(_root) {
         if (this.gps.xmlConfig) {
-            const engineRoot = this.gps.xmlConfig.getElementsByTagName("EngineDisplay");
+            let engineRoot = this.gps.xmlConfig.getElementsByTagName("EngineDisplay");
             if (engineRoot.length > 0) {
                 this.xmlEngineDisplay = _root.querySelector("glasscockpit-xmlenginedisplay");
                 this.xmlEngineDisplay.setConfiguration(this.gps, engineRoot[0]);

@@ -1,201 +1,203 @@
 <ModelBehaviors>
-	<Template Name="ASOBO_PASSENGER_Switch_Cabin_Heat_SubTemplate">
-		<DefaultTemplateParameters>
-			<NODE_ID>PASSENGER_Switch_Cabin_Heat_#ID#</NODE_ID>
-			<ANIM_NAME>PASSENGER_Switch_Cabin_Heat_#ID#</ANIM_NAME>
-			<ANIM_LENGTH>100</ANIM_LENGTH>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.SWITCH_CABIN_HEAT</TOOLTIPID>
-			<Switch>
-				<Case Check="USE_DRAGGING_INTERACTION">
-					<DELTA_MIN>0.00025</DELTA_MIN>
-					<AXIS_INCREMENT>5</AXIS_INCREMENT>
-					<Condition Check="BUTTON_NODE_ID">
-						<DOWN_CODE>1 (&gt;I:XMLVAR_Interacting_With_Lever_CabinHeat#ID#)</DOWN_CODE>
-						<RELEASE_CODE>0 (&gt;I:XMLVAR_Interacting_With_Lever_CabinHeat#ID#)</RELEASE_CODE>
-						<BUTTON_ANIM_NAME>#BUTTON_NODE_ID#</BUTTON_ANIM_NAME>
-					</Condition>
-					<USE_TRAJECTORY_DRAG_MODE>True</USE_TRAJECTORY_DRAG_MODE>
-				</Case>
-				<Case Check="USE_KNOB_INTERACTION">
-					<NODE_NAME>#NODE_ID#</NODE_NAME>
-					<KNOB_POSITION_VAR_TYPE>O</KNOB_POSITION_VAR_TYPE>
-					<KNOB_POSITION_VAR>XMLVAR_CabinHeatKnob#ID#</KNOB_POSITION_VAR>
-					<KNOB_SPEED>4</KNOB_SPEED>
-					<WRAP>False</WRAP>
-				</Case>
-			</Switch>
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<Switch>
-				<Case Check="USE_DRAGGING_INTERACTION">
-					<Condition Check="BUTTON_NODE_ID">
+<Template Name="ASOBO_PASSENGER_Switch_Cabin_Heat_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>PASSENGER_Switch_Cabin_Heat_#ID#</NODE_ID>
+		<ANIM_NAME>PASSENGER_Switch_Cabin_Heat_#ID#</ANIM_NAME>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.SWITCH_CABIN_HEAT</TOOLTIPID>
+		<Switch>
+			<Case Check="USE_DRAGGING_INTERACTION">
+				<DELTA_MIN>0.00025</DELTA_MIN>
+				<AXIS_INCREMENT>5</AXIS_INCREMENT>
+				<Condition Check="BUTTON_NODE_ID">
+					<LOCK_CODE>1 (&gt;I:XMLVAR_Interacting_With_Lever_CabinHeat#ID#)</LOCK_CODE>
+					<UNLOCK_CODE>0 (&gt;I:XMLVAR_Interacting_With_Lever_CabinHeat#ID#)</UNLOCK_CODE>
+					<BUTTON_ANIM_NAME>#BUTTON_NODE_ID#</BUTTON_ANIM_NAME>
+				</Condition>
+				<USE_TRAJECTORY_DRAG_MODE>True</USE_TRAJECTORY_DRAG_MODE>
+			</Case>
+			<Case Check="USE_KNOB_INTERACTION">
+				<NODE_NAME>#NODE_ID#</NODE_NAME>
+				<KNOB_POSITION_VAR_TYPE>O</KNOB_POSITION_VAR_TYPE>
+				<KNOB_POSITION_VAR>XMLVAR_CabinHeatKnob#ID#</KNOB_POSITION_VAR>
+				<KNOB_SPEED>4</KNOB_SPEED>
+				<WRAP>False</WRAP>
+			</Case>
+		</Switch>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<Switch>
+			<Case Check="USE_DRAGGING_INTERACTION">
+				<Condition Check="BUTTON_NODE_ID">
+					<True>
+						<UseTemplate Name="ASOBO_GT_Anim_Code">
+							<ANIM_LAG>800</ANIM_LAG>
+							<ANIM_NAME>#BUTTON_ANIM_NAME#</ANIM_NAME>
+							<ANIM_CODE>
+								(I:XMLVAR_Interacting_With_Lever_CabinHeat#ID#) 100 *
+							</ANIM_CODE>
+							<ANIM_LENGTH>100</ANIM_LENGTH>
+						</UseTemplate>
+						<UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents">
+							<ANIM_NAME>#BUTTON_ANIM_NAME#</ANIM_NAME>
+							<WWISE_EVENT_1>cabin_heat_lever_button_on</WWISE_EVENT_1>
+							<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+							<DIRECTION_1>Forward</DIRECTION_1>
+							<WWISE_EVENT_2>cabin_heat_lever_button_off</WWISE_EVENT_2>
+							<NORMALIZED_TIME_2>0.9</NORMALIZED_TIME_2>
+							<DIRECTION_2>Backward</DIRECTION_2>
+						</UseTemplate>
+					</True>
+				</Condition>
+				<UseTemplate Name="ASOBO_GT_Lever_DraggingWheelLeftDrag_Axis">
+					<ANIM_CODE>(L:XMLVAR_CabinHeat_Position_#ID#)</ANIM_CODE>
+					<POSITIVE_AXIS_CODE>(L:XMLVAR_CabinHeat_Position_#ID#) #AXIS_INCREMENT# + #ANIM_LENGTH# min (&gt;L:XMLVAR_CabinHeat_Position_#ID#)</POSITIVE_AXIS_CODE>
+					<NEGATIVE_AXIS_CODE>(L:XMLVAR_CabinHeat_Position_#ID#) #AXIS_INCREMENT# - 0 max (&gt;L:XMLVAR_CabinHeat_Position_#ID#)</NEGATIVE_AXIS_CODE>
+					<Condition Valid="USE_TRAJECTORY_DRAG_MODE">
 						<True>
-							<UseTemplate Name="ASOBO_GT_Anim_Code">
-								<ANIM_LAG>800</ANIM_LAG>
-								<ANIM_NAME>#BUTTON_ANIM_NAME#</ANIM_NAME>
-								<ANIM_CODE>
-									(I:XMLVAR_Interacting_With_Lever_CabinHeat#ID#) 100 *
-								</ANIM_CODE>
-								<ANIM_LENGTH>100</ANIM_LENGTH>
-							</UseTemplate>
-							<UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents">
-								<ANIM_NAME>#BUTTON_ANIM_NAME#</ANIM_NAME>
-								<WWISE_EVENT_1>cabin_heat_lever_button_on</WWISE_EVENT_1>
-								<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-								<DIRECTION_1>Forward</DIRECTION_1>
-								<WWISE_EVENT_2>cabin_heat_lever_button_off</WWISE_EVENT_2>
-								<NORMALIZED_TIME_2>0.9</NORMALIZED_TIME_2>
-								<DIRECTION_2>Backward</DIRECTION_2>
-							</UseTemplate>
+							<Condition Check="BUTTON_NODE_ID">
+								<DRAG_ANIM_NAME>#ANIM_NAME#</DRAG_ANIM_NAME>
+							</Condition>
+							<DRAG_CODE>
+								#ANIM_LENGTH# (M:DragPercent) * sp0
+								l0 #ANIM_LENGTH# min 0 max (&gt;L:XMLVAR_CabinHeat_Position_#ID#)
+							</DRAG_CODE>
 						</True>
+						<False>
+							<DRAG_CODE>(L:XMLVAR_CabinHeat_Position_#ID#) (O:DragScale) + #ANIM_LENGTH# min 0 max (&gt;L:XMLVAR_CabinHeat_Position_#ID#)</DRAG_CODE>
+						</False>
 					</Condition>
-					<UseTemplate Name="ASOBO_GT_Lever_DraggingWheelLeftDrag_Axis">
-						<ANIM_CODE>(L:XMLVAR_CabinHeat_Position_#ID#)</ANIM_CODE>
-						<POSITIVE_AXIS_CODE>(L:XMLVAR_CabinHeat_Position_#ID#) #AXIS_INCREMENT# + #ANIM_LENGTH# min (&gt;L:XMLVAR_CabinHeat_Position_#ID#)</POSITIVE_AXIS_CODE>
-						<NEGATIVE_AXIS_CODE>(L:XMLVAR_CabinHeat_Position_#ID#) #AXIS_INCREMENT# - 0 max (&gt;L:XMLVAR_CabinHeat_Position_#ID#)</NEGATIVE_AXIS_CODE>
-						<Condition Valid="USE_TRAJECTORY_DRAG_MODE">
-							<True>
-								<Condition Check="BUTTON_NODE_ID">
-									<DRAG_ANIM_NAME>#ANIM_NAME#</DRAG_ANIM_NAME>
-								</Condition>
-								<DRAG_CODE>
-									#ANIM_LENGTH# (M:DragPercent) * sp0
-									l0 #ANIM_LENGTH# min 0 max (&gt;L:XMLVAR_CabinHeat_Position_#ID#)
-								</DRAG_CODE>
-							</True>
-							<False>
-								<DRAG_CODE>(L:XMLVAR_CabinHeat_Position_#ID#) (O:DragScale) + #ANIM_LENGTH# min 0 max (&gt;L:XMLVAR_CabinHeat_Position_#ID#)</DRAG_CODE>
-							</False>
-						</Condition>
-						<AXIS>Y</AXIS>
-						<NO_ARROWS/>
-						<CURSOR>Grab</CURSOR>
-						<WWISE_EVENT_1>cabin_heat_lever_on</WWISE_EVENT_1>
-						<WWISE_EVENT_2>cabin_heat_lever_off</WWISE_EVENT_2>
-					</UseTemplate>
-				</Case>
-				<Case Check="USE_KNOB_INTERACTION">
-					<UseTemplate Name="ASOBO_GT_Knob_Finite_Dummy">
-						<KNOB_NAME>#NODE_NAME#</KNOB_NAME>
-						<WWISE_EVENT>cabin_heat_knob</WWISE_EVENT>
-						<COUNT>25</COUNT>
-					</UseTemplate>
-				</Case>
-				<Default>
-					<UseTemplate Name="ASOBO_GT_Switch_Code">
-						<ANIM_CODE>(L:XMLVAR_CabinHeatSwitch#ID#Status) #ANIM_LENGTH# *</ANIM_CODE>
-						<LEFT_SINGLE_CODE>(L:XMLVAR_CabinHeatSwitch#ID#Status) ! (&gt;L:XMLVAR_CabinHeatSwitch#ID#Status)</LEFT_SINGLE_CODE>
-						<WWISE_EVENT_1>cabin_heat_switch_on</WWISE_EVENT_1>
-						<WWISE_EVENT_2>cabin_heat_switch_off</WWISE_EVENT_2>
-					</UseTemplate>
-				</Default>
-			</Switch>
-		</Component>
-		<Condition Check="HIGHLIGHT_NODE_ID">
-			<UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
-				<NODE_ID>#HIGHLIGHT_NODE_ID#</NODE_ID>
-			</UseTemplate>
-		</Condition>
-	</Template>
+					<AXIS>Y</AXIS>
+					<NO_ARROWS/>
+					<CURSOR>Grab</CURSOR>
+					<WWISE_EVENT_1>cabin_heat_lever_on</WWISE_EVENT_1>
+					<WWISE_EVENT_2>cabin_heat_lever_off</WWISE_EVENT_2>
+				</UseTemplate>
+			</Case>
+			<Case Check="USE_KNOB_INTERACTION">
+				<UseTemplate Name="ASOBO_GT_Knob_Finite_Dummy">
+					<KNOB_NAME>#NODE_NAME#</KNOB_NAME>
+					<WWISE_EVENT>cabin_heat_knob</WWISE_EVENT>
+					<COUNT>25</COUNT>
+				</UseTemplate>
+			</Case>
+			<Default>
+				<UseTemplate Name="ASOBO_GT_Switch_Code">
+					<ANIM_CODE>(L:XMLVAR_CabinHeatSwitch#ID#Status) #ANIM_LENGTH# *</ANIM_CODE>
+					<LEFT_SINGLE_CODE>(L:XMLVAR_CabinHeatSwitch#ID#Status) ! (&gt;L:XMLVAR_CabinHeatSwitch#ID#Status)</LEFT_SINGLE_CODE>
+					<WWISE_EVENT_1>cabin_heat_switch_on</WWISE_EVENT_1>
+					<WWISE_EVENT_2>cabin_heat_switch_off</WWISE_EVENT_2>
+				</UseTemplate>
+			</Default>
+		</Switch>
+	</Component>
+	<Condition Check="HIGHLIGHT_NODE_ID">
+		<UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
+			<NODE_ID>#HIGHLIGHT_NODE_ID#</NODE_ID>
+		</UseTemplate>
+	</Condition>
+</Template>
 
-	<Template Name="ASOBO_PASSENGER_Switch_Cabin_Air_SubTemplate">
-		<DefaultTemplateParameters>
-			<NODE_ID>PASSENGER_Switch_Cabin_Air_#ID#</NODE_ID>
-			<ANIM_NAME>PASSENGER_Switch_Cabin_Air_#ID#</ANIM_NAME>
-			<ANIM_LENGTH>100</ANIM_LENGTH>
-			<Switch>
-				<Case Check="USE_DRAGGING_INTERACTION">
-					<DELTA_MIN>0.00025</DELTA_MIN>
-					<AXIS_INCREMENT>5</AXIS_INCREMENT>
-					<Condition Check="BUTTON_NODE_ID">
-						<DOWN_CODE>1 (&gt;I:XMLVAR_Interacting_With_Lever_CabinAir#ID#)</DOWN_CODE>
-						<RELEASE_CODE>0 (&gt;I:XMLVAR_Interacting_With_Lever_CabinAir#ID#)</RELEASE_CODE>
-						<BUTTON_ANIM_NAME>#BUTTON_NODE_ID#</BUTTON_ANIM_NAME>
-					</Condition>
-					<USE_TRAJECTORY_DRAG_MODE>True</USE_TRAJECTORY_DRAG_MODE>
-				</Case>
-				<Case Check="USE_KNOB_INTERACTION">
-					<NODE_NAME>#NODE_ID#</NODE_NAME>
-					<KNOB_POSITION_VAR_TYPE>O</KNOB_POSITION_VAR_TYPE>
-					<KNOB_POSITION_VAR>XMLVAR_CabinAirKnob#ID#</KNOB_POSITION_VAR>
-					<KNOB_SPEED>4</KNOB_SPEED>
-					<WRAP>False</WRAP>
-				</Case>
-			</Switch>
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<Switch>
-				<Case Check="USE_DRAGGING_INTERACTION">
-					<Condition Check="BUTTON_NODE_ID">
+<Template Name="ASOBO_PASSENGER_Switch_Cabin_Air_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>PASSENGER_Switch_Cabin_Air_#ID#</NODE_ID>
+		<ANIM_NAME>PASSENGER_Switch_Cabin_Air_#ID#</ANIM_NAME>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<Switch>
+			<Case Check="USE_DRAGGING_INTERACTION">
+				<DELTA_MIN>0.00025</DELTA_MIN>
+				<AXIS_INCREMENT>5</AXIS_INCREMENT>
+				<Condition Check="BUTTON_NODE_ID">
+					<LOCK_CODE>1 (&gt;I:XMLVAR_Interacting_With_Lever_CabinAir#ID#)</LOCK_CODE>
+					<UNLOCK_CODE>0 (&gt;I:XMLVAR_Interacting_With_Lever_CabinAir#ID#)</UNLOCK_CODE>
+					<BUTTON_ANIM_NAME>#BUTTON_NODE_ID#</BUTTON_ANIM_NAME>
+				</Condition>
+				<USE_TRAJECTORY_DRAG_MODE>True</USE_TRAJECTORY_DRAG_MODE>
+			</Case>
+			<Case Check="USE_KNOB_INTERACTION">
+				<NODE_NAME>#NODE_ID#</NODE_NAME>
+				<KNOB_POSITION_VAR_TYPE>O</KNOB_POSITION_VAR_TYPE>
+				<KNOB_POSITION_VAR>XMLVAR_CabinAirKnob#ID#</KNOB_POSITION_VAR>
+				<KNOB_SPEED>4</KNOB_SPEED>
+				<WRAP>False</WRAP>
+				<THRESHOLD_INPUT>0.0001 </THRESHOLD_INPUT>
+				<THRESHOLD_MOUSE>0.005</THRESHOLD_MOUSE>
+			</Case>
+		</Switch>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<Switch>
+			<Case Check="USE_DRAGGING_INTERACTION">
+				<Condition Check="BUTTON_NODE_ID">
+					<True>
+						<UseTemplate Name="ASOBO_GT_Anim_Code">
+							<ANIM_LAG>800</ANIM_LAG>
+							<ANIM_NAME>#BUTTON_ANIM_NAME#</ANIM_NAME>
+							<ANIM_CODE>
+								(I:XMLVAR_Interacting_With_Lever_CabinAir#ID#) 100 *
+							</ANIM_CODE>
+							<ANIM_LENGTH>100</ANIM_LENGTH>
+						</UseTemplate>
+						<UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents">
+							<ANIM_NAME>#BUTTON_ANIM_NAME#</ANIM_NAME>
+							<WWISE_EVENT_1>cabin_heat_lever_button_on</WWISE_EVENT_1>
+							<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+							<DIRECTION_1>Forward</DIRECTION_1>
+							<WWISE_EVENT_2>cabin_heat_lever_button_off</WWISE_EVENT_2>
+							<NORMALIZED_TIME_2>0.9</NORMALIZED_TIME_2>
+							<DIRECTION_2>Backward</DIRECTION_2>
+						</UseTemplate>
+					</True>
+				</Condition>
+				<UseTemplate Name="ASOBO_GT_Lever_DraggingWheelLeftDrag_Axis">
+					<ANIM_CODE>(L:XMLVAR_CabinAir_Position_#ID#)</ANIM_CODE>
+					<POSITIVE_AXIS_CODE>(L:XMLVAR_CabinAir_Position_#ID#) #AXIS_INCREMENT# + #ANIM_LENGTH# min (&gt;L:XMLVAR_CabinAir_Position_#ID#)</POSITIVE_AXIS_CODE>
+					<NEGATIVE_AXIS_CODE>(L:XMLVAR_CabinAir_Position_#ID#) #AXIS_INCREMENT# - 0 max (&gt;L:XMLVAR_CabinAir_Position_#ID#)</NEGATIVE_AXIS_CODE>
+					<Condition Valid="USE_TRAJECTORY_DRAG_MODE">
 						<True>
-							<UseTemplate Name="ASOBO_GT_Anim_Code">
-								<ANIM_LAG>800</ANIM_LAG>
-								<ANIM_NAME>#BUTTON_ANIM_NAME#</ANIM_NAME>
-								<ANIM_CODE>
-									(I:XMLVAR_Interacting_With_Lever_CabinAir#ID#) 100 *
-								</ANIM_CODE>
-								<ANIM_LENGTH>100</ANIM_LENGTH>
-							</UseTemplate>
-							<UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents">
-								<ANIM_NAME>#BUTTON_ANIM_NAME#</ANIM_NAME>
-								<WWISE_EVENT_1>cabin_heat_lever_button_on</WWISE_EVENT_1>
-								<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-								<DIRECTION_1>Forward</DIRECTION_1>
-								<WWISE_EVENT_2>cabin_heat_lever_button_off</WWISE_EVENT_2>
-								<NORMALIZED_TIME_2>0.9</NORMALIZED_TIME_2>
-								<DIRECTION_2>Backward</DIRECTION_2>
-							</UseTemplate>
+							<Condition Check="BUTTON_NODE_ID">
+								<DRAG_ANIM_NAME>#ANIM_NAME#</DRAG_ANIM_NAME>
+							</Condition>
+							<DRAG_CODE>
+								#ANIM_LENGTH# (M:DragPercent) * sp0
+								l0 #ANIM_LENGTH# min 0 max (&gt;L:XMLVAR_CabinAir_Position_#ID#)
+							</DRAG_CODE>
 						</True>
+						<False>
+							<DRAG_CODE>(L:XMLVAR_CabinAir_Position_#ID#) (O:DragScale) + #ANIM_LENGTH# min 0 max (&gt;L:XMLVAR_CabinAir_Position_#ID#)</DRAG_CODE>
+						</False>
 					</Condition>
-					<UseTemplate Name="ASOBO_GT_Lever_DraggingWheelLeftDrag_Axis">
-						<ANIM_CODE>(L:XMLVAR_CabinAir_Position_#ID#)</ANIM_CODE>
-						<POSITIVE_AXIS_CODE>(L:XMLVAR_CabinAir_Position_#ID#) #AXIS_INCREMENT# + #ANIM_LENGTH# min (&gt;L:XMLVAR_CabinAir_Position_#ID#)</POSITIVE_AXIS_CODE>
-						<NEGATIVE_AXIS_CODE>(L:XMLVAR_CabinAir_Position_#ID#) #AXIS_INCREMENT# - 0 max (&gt;L:XMLVAR_CabinAir_Position_#ID#)</NEGATIVE_AXIS_CODE>
-						<Condition Valid="USE_TRAJECTORY_DRAG_MODE">
-							<True>
-								<Condition Check="BUTTON_NODE_ID">
-									<DRAG_ANIM_NAME>#ANIM_NAME#</DRAG_ANIM_NAME>
-								</Condition>
-								<DRAG_CODE>
-									#ANIM_LENGTH# (M:DragPercent) * sp0
-									l0 #ANIM_LENGTH# min 0 max (&gt;L:XMLVAR_CabinAir_Position_#ID#)
-								</DRAG_CODE>
-							</True>
-							<False>
-								<DRAG_CODE>(L:XMLVAR_CabinAir_Position_#ID#) (O:DragScale) + #ANIM_LENGTH# min 0 max (&gt;L:XMLVAR_CabinAir_Position_#ID#)</DRAG_CODE>
-							</False>
-						</Condition>
-						<AXIS>Y</AXIS>
-						<NO_ARROWS/>
-						<CURSOR>Grab</CURSOR>
-						<WWISE_EVENT_1>cabin_heat_lever_on</WWISE_EVENT_1>
-						<NORMALIZED_TIME_1>0.9</NORMALIZED_TIME_1>
-						<DIRECTION_1>Forward</DIRECTION_1>			
-						<WWISE_EVENT_2>cabin_heat_lever_off</WWISE_EVENT_2> 
-						<DIRECTION_2>Backward</DIRECTION_2>
-						<NORMALIZED_TIME_2>0.1</NORMALIZED_TIME_2>		
-					</UseTemplate>
-				</Case>
-				<Case Check="USE_KNOB_INTERACTION">
-					<UseTemplate Name="ASOBO_GT_Knob_Finite_Dummy">
-						<KNOB_NAME>#NODE_NAME#</KNOB_NAME>
-						<WWISE_EVENT>cabin_heat_knob</WWISE_EVENT>
-					</UseTemplate>
-				</Case>
-				<Default>
-					<UseTemplate Name="ASOBO_GT_Switch_Code">
-						<ANIM_CODE>(L:XMLVAR_CabinAirSwitch#ID#Status) #ANIM_LENGTH# *</ANIM_CODE>
-						<LEFT_SINGLE_CODE>(L:XMLVAR_CabinAirSwitch#ID#Status) ! (&gt;L:XMLVAR_CabinAirSwitch#ID#Status)</LEFT_SINGLE_CODE>
-						<WWISE_EVENT_1>cabin_heat_switch_on</WWISE_EVENT_1>
-						<WWISE_EVENT_2>cabin_heat_switch_off</WWISE_EVENT_2>
-					</UseTemplate>
-				</Default>
-			</Switch>
-		</Component>
-		<Condition Check="HIGHLIGHT_NODE_ID">
-			<UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
-				<NODE_ID>#HIGHLIGHT_NODE_ID#</NODE_ID>
-			</UseTemplate>
-		</Condition>
-	</Template>
+					<AXIS>Y</AXIS>
+					<NO_ARROWS/>
+					<CURSOR>Grab</CURSOR>
+					<WWISE_EVENT_1>cabin_heat_lever_on</WWISE_EVENT_1>
+					<NORMALIZED_TIME_1>0.9</NORMALIZED_TIME_1>
+					<DIRECTION_1>Forward</DIRECTION_1>			
+					<WWISE_EVENT_2>cabin_heat_lever_off</WWISE_EVENT_2> 
+					<DIRECTION_2>Backward</DIRECTION_2>
+					<NORMALIZED_TIME_2>0.1</NORMALIZED_TIME_2>		
+				</UseTemplate>
+			</Case>
+			<Case Check="USE_KNOB_INTERACTION">
+				<UseTemplate Name="ASOBO_GT_Knob_Finite_Dummy">
+					<KNOB_NAME>#NODE_NAME#</KNOB_NAME>
+					<WWISE_EVENT>cabin_heat_knob</WWISE_EVENT>
+				</UseTemplate>
+			</Case>
+			<Default>
+				<UseTemplate Name="ASOBO_GT_Switch_Code">
+					<ANIM_CODE>(L:XMLVAR_CabinAirSwitch#ID#Status) #ANIM_LENGTH# *</ANIM_CODE>
+					<LEFT_SINGLE_CODE>(L:XMLVAR_CabinAirSwitch#ID#Status) ! (&gt;L:XMLVAR_CabinAirSwitch#ID#Status)</LEFT_SINGLE_CODE>
+					<WWISE_EVENT_1>cabin_heat_switch_on</WWISE_EVENT_1>
+					<WWISE_EVENT_2>cabin_heat_switch_off</WWISE_EVENT_2>
+				</UseTemplate>
+			</Default>
+		</Switch>
+	</Component>
+	<Condition Check="HIGHLIGHT_NODE_ID">
+		<UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
+			<NODE_ID>#HIGHLIGHT_NODE_ID#</NODE_ID>
+		</UseTemplate>
+	</Condition>
+</Template>
 </ModelBehaviors>

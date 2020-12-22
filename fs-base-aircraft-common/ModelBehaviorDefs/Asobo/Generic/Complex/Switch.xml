@@ -1,168 +1,201 @@
 <ModelBehaviors>
-	<!--
-		Simple switch (2 states) object.
+<!--
+	Simple switch (2 states) object.
 
-		Required parameter:
-			ANIM_NAME
-			ANIM_SIMVAR
-			EVENTID
-	-->
-	<Template Name = "ASOBO_GT_Switch">
-		<DefaultTemplateParameters>
-			<ANIMREF_ID>0</ANIMREF_ID>
-			<ANIMTIP_0_ON_PERCENT>0.0</ANIMTIP_0_ON_PERCENT>
-			<ANIMTIP_1_ON_PERCENT>1.0</ANIMTIP_1_ON_PERCENT>
-			<ANIM_LAG>400</ANIM_LAG>		
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name = "ASOBO_GT_Anim_Sim">
-			<ANIM_SIMVAR_UNITS>Bool</ANIM_SIMVAR_UNITS>
-			<ANIM_SIMVAR_SCALE>100</ANIM_SIMVAR_SCALE>
-		</UseTemplate>
+	Required parameter:
+		ANIM_NAME
+		ANIM_SIMVAR
+		EVENTID
+-->
+<Template Name = "ASOBO_GT_Switch">
+	<DefaultTemplateParameters>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0_ON_PERCENT>0.0</ANIMTIP_0_ON_PERCENT>
+		<ANIMTIP_1_ON_PERCENT>1.0</ANIMTIP_1_ON_PERCENT>
+		<ANIM_LAG>400</ANIM_LAG>		
+		<IS_SWITCH>True</IS_SWITCH>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<ANIM_SIMVAR_UNITS>Bool</ANIM_SIMVAR_UNITS>
+	</OverrideTemplateParameters>
+	
+	<UseTemplate Name = "ASOBO_GT_Anim_Sim">
+		<ANIM_SIMVAR_SCALE>100</ANIM_SIMVAR_SCALE>
+	</UseTemplate>
 
-		<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
-		</UseTemplate>
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+	</UseTemplate>
 
-		<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Event">
-		</UseTemplate>
-	</Template>
-
-	<Template Name = "ASOBO_GT_Component_Switch">
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Switch">
+	<Condition Valid="IS_SWITCH">
+		<True>
+			<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Code">
+				<LEFT_SINGLE_CODE>(&gt;K:#EVENTID#)</LEFT_SINGLE_CODE>
+				<ANIM_CODE>(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) 100 *</ANIM_CODE>
+				<EVENTID/>
 			</UseTemplate>
-		</Component>
-	</Template>
+		</True>
+		<False>
+	<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Event">
+	</UseTemplate>
+		</False>
+	</Condition>
+</Template>
 
-	<!--
-		Simple switch (2 states) object which requires Up/Down interaction.
-		
-
-		Required parameter:
-			ANIM_NAME
-			CODE_POS_0
-			CODE_POS_1
-	-->
-	<Template Name = "ASOBO_GT_Switch_2States">
-		<UseTemplate Name = "ASOBO_GT_Switch_XStates">
-			<NUM_STATES>2</NUM_STATES>
+<Template Name = "ASOBO_GT_Component_Switch">
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Switch">
 		</UseTemplate>
-	</Template>
+	</Component>
+</Template>
 
-	<!--
-		Simple switch (3 states) object.
+<!--
+	Simple switch (2 states) object which requires Up/Down interaction.
+	
 
-		Required parameter:
-			ANIM_NAME
-			CODE_POS_0
-			CODE_POS_1
-			CODE_POS_2
-	-->
-	<Template Name = "ASOBO_GT_Switch_3States">
-		<UseTemplate Name = "ASOBO_GT_Switch_XStates">
-			<NUM_STATES>3</NUM_STATES>
-		</UseTemplate>
-	</Template>
+	Required parameter:
+		ANIM_NAME
+		CODE_POS_0
+		CODE_POS_1
+-->
+<Template Name = "ASOBO_GT_Switch_2States">
+	<UseTemplate Name = "ASOBO_GT_Switch_XStates">
+		<NUM_STATES>2</NUM_STATES>
+	</UseTemplate>
+</Template>
 
-	<!--
-		Simple switch (4 states) object.
+<!--
+	Simple switch (3 states) object.
 
-		Required parameter:
-			ANIM_NAME
-			CODE_POS_0
-			CODE_POS_1
-			CODE_POS_2
-			CODE_POS_3
-	-->
-	<Template Name = "ASOBO_GT_Switch_4States">
-		<UseTemplate Name = "ASOBO_GT_Switch_XStates">
-			<NUM_STATES>4</NUM_STATES>
-		</UseTemplate>
-	</Template>
+	Required parameter:
+		ANIM_NAME
+		CODE_POS_0
+		CODE_POS_1
+		CODE_POS_2
+-->
+<Template Name = "ASOBO_GT_Switch_3States">
+	<UseTemplate Name = "ASOBO_GT_Switch_XStates">
+		<NUM_STATES>3</NUM_STATES>
+	</UseTemplate>
+</Template>
 
-	<!--
-		Simple switch (5 states) object.
+<!--
+	Simple switch (4 states) object.
 
-		Required parameter:
-			ANIM_NAME
-			CODE_POS_0
-			CODE_POS_1
-			CODE_POS_2
-			CODE_POS_3
-			CODE_POS_4
-	-->
-	<Template Name = "ASOBO_GT_Switch_5States">
-		<UseTemplate Name = "ASOBO_GT_Switch_XStates">
-			<NUM_STATES>5</NUM_STATES>
-		</UseTemplate>
-	</Template>
+	Required parameter:
+		ANIM_NAME
+		CODE_POS_0
+		CODE_POS_1
+		CODE_POS_2
+		CODE_POS_3
+-->
+<Template Name = "ASOBO_GT_Switch_4States">
+	<UseTemplate Name = "ASOBO_GT_Switch_XStates">
+		<NUM_STATES>4</NUM_STATES>
+	</UseTemplate>
+</Template>
 
-	<!--
-		Simple switch (6 states) object.
+<!--
+	Simple switch (5 states) object.
 
-		Required parameter:
-			ANIM_NAME
-			CODE_POS_0
-			CODE_POS_1
-			CODE_POS_2
-			CODE_POS_3
-			CODE_POS_4
-			CODE_POS_5
-	-->
-	<Template Name = "ASOBO_GT_Switch_6States">
-		<UseTemplate Name = "ASOBO_GT_Switch_XStates">
-			<NUM_STATES>6</NUM_STATES>
-		</UseTemplate>
-	</Template>
+	Required parameter:
+		ANIM_NAME
+		CODE_POS_0
+		CODE_POS_1
+		CODE_POS_2
+		CODE_POS_3
+		CODE_POS_4
+-->
+<Template Name = "ASOBO_GT_Switch_5States">
+	<UseTemplate Name = "ASOBO_GT_Switch_XStates">
+		<NUM_STATES>5</NUM_STATES>
+	</UseTemplate>
+</Template>
 
-	<!--
-		Simple switch (7 states) object.
+<!--
+	Simple switch (6 states) object.
 
-		Required parameter:
-			ANIM_NAME
-			CODE_POS_0
-			CODE_POS_1
-			CODE_POS_2
-			CODE_POS_3
-			CODE_POS_4
-			CODE_POS_5
-			CODE_POS_6
-	-->
-	<Template Name = "ASOBO_GT_Switch_7States">
-		<UseTemplate Name = "ASOBO_GT_Switch_XStates">
-			<NUM_STATES>7</NUM_STATES>
-		</UseTemplate>
-	</Template>
+	Required parameter:
+		ANIM_NAME
+		CODE_POS_0
+		CODE_POS_1
+		CODE_POS_2
+		CODE_POS_3
+		CODE_POS_4
+		CODE_POS_5
+-->
+<Template Name = "ASOBO_GT_Switch_6States">
+	<UseTemplate Name = "ASOBO_GT_Switch_XStates">
+		<NUM_STATES>6</NUM_STATES>
+	</UseTemplate>
+</Template>
+
+<!--
+	Simple switch (7 states) object.
+
+	Required parameter:
+		ANIM_NAME
+		CODE_POS_0
+		CODE_POS_1
+		CODE_POS_2
+		CODE_POS_3
+		CODE_POS_4
+		CODE_POS_5
+		CODE_POS_6
+-->
+<Template Name = "ASOBO_GT_Switch_7States">
+	<UseTemplate Name = "ASOBO_GT_Switch_XStates">
+		<NUM_STATES>7</NUM_STATES>
+	</UseTemplate>
+</Template>
 
 
-	<Template Name = "ASOBO_GT_Switch_XStates">
-		<DefaultTemplateParameters>
-			<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
-			<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
-			<ANIM_LAG>400</ANIM_LAG>
-			<ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
-			<ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
-			<ANIMREF_ID>0</ANIMREF_ID>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition Check="IS_LOOPING">
-				<True>
-					<ANIM_WRAP>1</ANIM_WRAP>
-					<ANIM_LENGTH Process="Int">#NUM_STATES# 100 *</ANIM_LENGTH>
-				</True>
-				<False>
-					<ANIM_LENGTH Process="Int">#NUM_STATES# 1 - 100 *</ANIM_LENGTH>
-				</False>
-			</Condition>
-		</OverrideTemplateParameters>
+<Template Name = "ASOBO_GT_Switch_XStates">
+	<DefaultTemplateParameters>
+		<NODE_ID>#ANIM_NAME#</NODE_ID> <!-- Used to create an unique Variable Name - having a specified NODE_ID is better but ANIM_NAME can be a fallback -->
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Switch_XStates_SubTemplate">
+	</UseTemplate>
+</Template>
 
-		<UseTemplate Name = "ASOBO_GT_Anim_Code">
-			<ANIM_CODE>
-				(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 100 *
-			</ANIM_CODE>
-		</UseTemplate>
+<Template Name = "ASOBO_GT_Switch_XStates_SubTemplate">
+	<DefaultTemplateParameters>
+		<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+		<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
+		<DRAG_ANIMATION_VARIABLE_TYPE>O</DRAG_ANIMATION_VARIABLE_TYPE>
+		<DRAG_ANIMATION_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Position</DRAG_ANIMATION_VARIABLE_NAME>
+		<DRAG_ANIMATION_TARGET_VARIABLE_TYPE>O</DRAG_ANIMATION_TARGET_VARIABLE_TYPE>
+		<DRAG_ANIMATION_TARGET_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Target_Position</DRAG_ANIMATION_TARGET_VARIABLE_NAME>
+		<ANIM_LAG>400</ANIM_LAG>
+		<UPARROW_DRAG_IM/>
+		<DOWNARROW_DRAG_IM/>
+		<LEFTARROW_DRAG_IM/>
+		<RIGHTARROW_DRAG_IM/>
+		<CURSOR_CENTER_DRAG_IM/>
+		<CURSOR_DRAG_IM>Grab</CURSOR_DRAG_IM>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
+		<ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Check="IS_LOOPING">
+			<True>
+				<ANIM_WRAP>1</ANIM_WRAP>
+				<ANIM_LENGTH Process="Int">#NUM_STATES# 100 *</ANIM_LENGTH>
+			</True>
+			<False>
+				<ANIM_LENGTH Process="Int">#NUM_STATES# 1 - 100 *</ANIM_LENGTH>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
 
-		<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
+	<UseTemplate Name = "ASOBO_GT_Anim_Code">
+		<ANIM_CODE>
+			(#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) 
+		</ANIM_CODE>
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
 			<Condition Check="IS_LOOPING">
 				<True>
 					<COUNT Process="Int">#NUM_STATES#</COUNT>
@@ -171,492 +204,546 @@
 					<COUNT Process="Int">#NUM_STATES# 1 -</COUNT>
 				</False>
 			</Condition>
-		</UseTemplate>
+    </UseTemplate>
 
-		<UseTemplate Name = "ASOBO_GT_Update_EnsureVariableConsistency_MultiStates">
-		</UseTemplate>
+	<UseTemplate Name = "ASOBO_GT_Update_EnsureVariableConsistency_MultiStates">
+	</UseTemplate>
 
-		<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_MultiStates">
-		</UseTemplate>
-	</Template>
+	<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_MultiStates">
+	</UseTemplate>
+</Template>
 
-	<!--
-		Simple switch (2 states) object,
-		using code for anim and interaction.
+<!--
+	Simple switch (2 states) object,
+	using code for anim and interaction.
 
-		Required parameter:
-			ANIM_NAME
-			ANIM_CODE
-			LEFT_SINGLE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Switch_Code">
-		<DefaultTemplateParameters>
-			<ANIMREF_ID>0</ANIMREF_ID>
-			<ANIMTIP_0_ON_PERCENT>0.0</ANIMTIP_0_ON_PERCENT>
-			<ANIMTIP_1_ON_PERCENT>1.0</ANIMTIP_1_ON_PERCENT>
-			<ANIM_LAG>400</ANIM_LAG>
-			<ANIM_LENGTH>100</ANIM_LENGTH>
-			<Condition Valid="FORCE_FULL_ANIM">
-				<True>
-					<ANIM_TIME_IN_SEC>1</ANIM_TIME_IN_SEC>
-				</True>
-			</Condition>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition Valid="FORCE_FULL_ANIM">
-				<True>
-					<ANIM_TARGET_CODE>#ANIM_CODE#</ANIM_TARGET_CODE>
-				</True>
-			</Condition>
-		</OverrideTemplateParameters>
-		
-		<UseTemplate Name = "ASOBO_GT_Anim">
-			<Condition Valid="FORCE_FULL_ANIM">
-				<True>
-					<ANIM_CODE>
-						#ANIM_TARGET_CODE# sp0
-						(O:XMLVAR_CurrentAnimPosition) 0 == 
-						(O:XMLVAR_CurrentAnimPosition) #ANIM_LENGTH# == or if{
-							l0 (&gt;O:XMLVAR_CurrentAnimTargetPosition) 
-						}
-						
+	Required parameter:
+		ANIM_NAME
+		ANIM_CODE
+		LEFT_SINGLE_CODE
+-->
+<Template Name = "ASOBO_GT_Switch_Code">
+	<DefaultTemplateParameters>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0_ON_PERCENT>0.0</ANIMTIP_0_ON_PERCENT>
+		<ANIMTIP_1_ON_PERCENT>1.0</ANIMTIP_1_ON_PERCENT>
+		<ANIM_LAG>400</ANIM_LAG>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<IS_SWITCH>True</IS_SWITCH>
+		<Condition Valid="FORCE_FULL_ANIM">
+			<True>
+				<ANIM_TIME_IN_SEC>1</ANIM_TIME_IN_SEC>
+			</True>
+		</Condition>
+		<Condition Check="ANIM_SIMVAR">
+			<ANIM_SIMVAR_SCALE>1</ANIM_SIMVAR_SCALE>
+			<ANIM_SIMVAR_BIAS>0</ANIM_SIMVAR_BIAS>
+			<ANIM_SIMVAR_UNITS>Bool</ANIM_SIMVAR_UNITS>
+		</Condition>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid="FORCE_FULL_ANIM">
+			<True>
+				<ANIM_TARGET_CODE>#ANIM_CODE#</ANIM_TARGET_CODE>
+			</True>
+		</Condition>
+	</OverrideTemplateParameters>
+	
+	<UseTemplate Name = "ASOBO_GT_Anim">
+		<Condition Valid="FORCE_FULL_ANIM">
+			<True>
+				<ANIM_CODE>
+					#ANIM_TARGET_CODE# sp0
+					(O:XMLVAR_CurrentAnimPosition) 0 == 
+					(O:XMLVAR_CurrentAnimPosition) #ANIM_LENGTH# == or if{
+						l0 (&gt;O:XMLVAR_CurrentAnimTargetPosition) 
+					}
+					
 						#ANIM_LENGTH# #ANIM_TIME_IN_SEC# / (A:ANIMATION DELTA TIME, seconds) * s1
-						(O:XMLVAR_CurrentAnimPosition) (O:XMLVAR_CurrentAnimTargetPosition) - abs s2 &lt; if{
-							(O:XMLVAR_CurrentAnimPosition) (O:XMLVAR_CurrentAnimTargetPosition) &gt; if{
-								(O:XMLVAR_CurrentAnimPosition) l1 - (&gt;O:XMLVAR_CurrentAnimPosition)
-							} els{
-								(O:XMLVAR_CurrentAnimPosition) l1 + (&gt;O:XMLVAR_CurrentAnimPosition)
-							}
+					(O:XMLVAR_CurrentAnimPosition) (O:XMLVAR_CurrentAnimTargetPosition) - abs s2 &lt; if{
+						(O:XMLVAR_CurrentAnimPosition) (O:XMLVAR_CurrentAnimTargetPosition) &gt; if{
+							(O:XMLVAR_CurrentAnimPosition) l1 - (&gt;O:XMLVAR_CurrentAnimPosition)
 						} els{
-							(O:XMLVAR_CurrentAnimTargetPosition) (&gt;O:XMLVAR_CurrentAnimPosition) 
+							(O:XMLVAR_CurrentAnimPosition) l1 + (&gt;O:XMLVAR_CurrentAnimPosition)
 						}
-						(O:XMLVAR_CurrentAnimPosition)
-					</ANIM_CODE>
-				</True>
-			</Condition>
-		</UseTemplate>
+					} els{
+						(O:XMLVAR_CurrentAnimTargetPosition) (&gt;O:XMLVAR_CurrentAnimPosition) 
+					}
+					(O:XMLVAR_CurrentAnimPosition)
+				</ANIM_CODE>
+			</True>
+		</Condition>
+	</UseTemplate>
 
-		<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
-		</UseTemplate>
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+	</UseTemplate>
 
-		<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Code">		
-		</UseTemplate>
-	</Template>
-	<Template Name = "ASOBO_GT_Component_Switch_Code">
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Switch_Code">
-			</UseTemplate>
-		</Component>
-	</Template>
-
-	<!--
-		Simple dummy switch (2 states) object,
-		using code for anim and interaction.
-
-		Required parameter:
-			ANIM_NAME
-			NODE_ID
-	-->
-	<Template Name = "ASOBO_GT_Switch_Dummy">
-		<DefaultTemplateParameters>
-			<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
-			<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
-			<LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
-			<NUM_STATES>2</NUM_STATES>
-			<INIT_VALUE>0</INIT_VALUE>
-			<ANIMREF_ID>0</ANIMREF_ID>
-			<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
-			<ANIMTIP_1_ON_PERCENT>1</ANIMTIP_1_ON_PERCENT>
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<Update Once="True">
-				#INIT_VALUE# (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-			</Update>
-			<Switch Param="NUM_STATES">
-				<Case Value="2">
-					<UseTemplate Name = "ASOBO_GT_Anim_Code">
-						<ANIM_CODE>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 100 *</ANIM_CODE>
-					</UseTemplate>
-					<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
-					</UseTemplate>
-					<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Code">
-						<LEFT_SINGLE_CODE>
-							(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) ! (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-							#LEFT_SINGLE_CODE#
-						</LEFT_SINGLE_CODE>
-					</UseTemplate>
-				</Case>
-				<Case Value="3">
-					<UseTemplate Name = "ASOBO_GT_Switch_3States">
-						<CODE_POS_0>
-							0 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-						</CODE_POS_0>
-						<CODE_POS_1>
-							1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-						</CODE_POS_1>
-						<CODE_POS_2>
-							2 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-						</CODE_POS_2>
-						<STATE0_TEST>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 ==</STATE0_TEST>
-						<STATE1_TEST>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 ==</STATE1_TEST>
-						<STATE2_TEST>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 ==</STATE2_TEST>
-					</UseTemplate>
-				</Case>
-			</Switch>
-		</Component>
-	</Template>
-
-	<!--
-		Three state switch where one frame corresponds to the true value of a boolean simvar.
-
-		Required parameters:
-			SIMVAR
-			SINGLE_ID
-			ANIM_NAME
-			KEY_TOGGLE
-			NONUNIQUE_DEFAULT
-	-->
-
-	<Template Name = "ASOBO_GT_Switch_3States_SingleTrue">
-		<UseTemplate Name = "ASOBO_GT_Switch_3States_SingleFalse">
-			<POTENTIAL_INVERSION> ! </POTENTIAL_INVERSION>
-		</UseTemplate>
-	</Template>
-
-	<!--
-		Three state switch where one frame corresponds to the false value of a boolean simvar.
-
-		Required parameters:
-			SIMVAR
-			SINGLE_ID
-			ANIM_NAME
-			KEY_TOGGLE
-			NONUNIQUE_DEFAULT
-	-->
-
-	<Template Name = "ASOBO_GT_Switch_3States_SingleFalse">
-		<DefaultTemplateParameters>
-			<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
-			<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
-			<POTENTIAL_INVERSION> </POTENTIAL_INVERSION>
-			<KEY_TOGGLE_PARAM></KEY_TOGGLE_PARAM>
-		</DefaultTemplateParameters>
-		<UseTemplate Name = "ASOBO_GT_Switch_3States">
-			<INIT_VARS>
-				(A:#SIMVAR#, Bool) #POTENTIAL_INVERSION# (&gt;O:3States_2_1_SimvarValue)
-				(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) #SINGLE_ID# == (&gt;O:IsOnSingleID)
-				(O:IsOnSingleID) (O:3States_2_1_SimvarValue) == (&gt;O:NeedsToBeInverted)
-				0 #SINGLE_ID# == (&gt;O:IsState0Single)
-				1 #SINGLE_ID# == (&gt;O:IsState1Single)
-				2 #SINGLE_ID# == (&gt;O:IsState2Single)
-			</INIT_VARS>
-			<STATE0_TEST>
-				(O:NeedsToBeInverted)
-				(O:IsState0Single) (O:3States_2_1_SimvarValue) !=
-				(O:IsState0Single) (O:IsOnSingleID) or
-				(O:IsState0Single) 0 #NONUNIQUE_DEFAULT# == or
-				and and
-			</STATE0_TEST>
-			<STATE1_TEST>
-				(O:NeedsToBeInverted)
-				(O:IsState1Single) (O:3States_2_1_SimvarValue) !=
-				(O:IsState1Single) (O:IsOnSingleID) or
-				(O:IsState1Single) 1 #NONUNIQUE_DEFAULT# == or
-				and and
-			</STATE1_TEST>
-			<STATE2_TEST>
-				(O:NeedsToBeInverted)
-				(O:IsState2Single) (O:3States_2_1_SimvarValue) !=
-				(O:IsState2Single) (O:IsOnSingleID) or
-				(O:IsState2Single) 2 #NONUNIQUE_DEFAULT# == or
-				and and
-			</STATE2_TEST>
-
-			<CODE_POS_0>
-					(O:IsState0Single) (O:3States_2_1_SimvarValue) == if{ #KEY_TOGGLE_PARAM# (&gt;K:#KEY_TOGGLE#) }
-			</CODE_POS_0>
-			<CODE_POS_1>
-					(O:IsState1Single) (O:3States_2_1_SimvarValue) == if{ #KEY_TOGGLE_PARAM# (&gt;K:#KEY_TOGGLE#) }
-			</CODE_POS_1>
-			<CODE_POS_2>
-					(O:IsState2Single) (O:3States_2_1_SimvarValue) == if{ #KEY_TOGGLE_PARAM# (&gt;K:#KEY_TOGGLE#) }
-			</CODE_POS_2>
-
-		</UseTemplate>
-	</Template>
-
-
-	<!--
-		Toggle VAR_NAME bool value
-
-		[REQUIRED] VAR_NAME(bool): variable name
-		VAR_SCOPE(Text, default:O): Scope of the variable
-	-->
-	<Template Name="ASOBO_GT_Toggle_Variable">
-		<DefaultTemplateParameters>
-			<VAR_SCOPE>O</VAR_SCOPE>
-			<TOGGLE_CODE></TOGGLE_CODE>
-		</DefaultTemplateParameters>
+	<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Code">		
+		<Condition Valid="ANIM_SIMVAR">
+			<ANIM_CODE>(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #ANIM_SIMVAR_SCALE# * #ANIM_SIMVAR_BIAS# +</ANIM_CODE>
+		</Condition>
+	</UseTemplate>
+</Template>
+<Template Name = "ASOBO_GT_Component_Switch_Code">
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
 		<UseTemplate Name="ASOBO_GT_Switch_Code">
-			<Condition Check="VERIF_STATE_CODE">
-				<True>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<!--
+	Simple dummy switch (2 states) object,
+	using code for anim and interaction.
+
+	Required parameter:
+		ANIM_NAME
+		NODE_ID
+-->
+<Template Name = "ASOBO_GT_Switch_Dummy">
+	<DefaultTemplateParameters>
+		<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+		<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
+		<LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
+		<NUM_STATES>2</NUM_STATES>
+		<INIT_VALUE>0</INIT_VALUE>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+		<ANIMTIP_1_ON_PERCENT>1</ANIMTIP_1_ON_PERCENT>
+		<ANIM_LAG>400</ANIM_LAG>
+		<IS_SWITCH>True</IS_SWITCH>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<Update Once="True">
+			#INIT_VALUE# (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+		</Update>
+		<Switch Param="NUM_STATES">
+			<Case Value="2">
+				<UseTemplate Name = "ASOBO_GT_Anim_Code">
+					<ANIM_CODE>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 100 *</ANIM_CODE>
+				</UseTemplate>
+				<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+				</UseTemplate>
+				<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Code">
+					<IS_SWITCH>True</IS_SWITCH>
+					<MouseFlags>LeftSingle+LeftRelease+LeftDrag</MouseFlags>
 					<LEFT_SINGLE_CODE>
-						#VERIF_STATE_CODE# if{
-							(#VAR_SCOPE#:#VAR_NAME#) ! (&gt;#VAR_SCOPE#:#VAR_NAME#)
-							#TOGGLE_CODE#
-						}
+						(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) ! (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+						#LEFT_SINGLE_CODE#
 					</LEFT_SINGLE_CODE>
-				</True>
-				<False>			
-					<LEFT_SINGLE_CODE>
+					<ANIM_CODE>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 100 *</ANIM_CODE>
+				</UseTemplate>
+			</Case>
+			<Case Value="3">
+				<UseTemplate Name = "ASOBO_GT_Switch_3States">
+					<CODE_POS_0>
+						0 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+					</CODE_POS_0>
+					<CODE_POS_1>
+						1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+					</CODE_POS_1>
+					<CODE_POS_2>
+						2 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+					</CODE_POS_2>
+					<STATE0_TEST>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 ==</STATE0_TEST>
+					<STATE1_TEST>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 ==</STATE1_TEST>
+					<STATE2_TEST>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 ==</STATE2_TEST>
+				</UseTemplate>
+			</Case>
+		</Switch>
+	</Component>
+</Template>
+
+<!--
+	Three state switch where one frame corresponds to the true value of a boolean simvar.
+
+	Required parameters:
+		SIMVAR
+		SINGLE_ID
+		ANIM_NAME
+		KEY_TOGGLE
+		NONUNIQUE_DEFAULT
+-->
+
+<Template Name = "ASOBO_GT_Switch_3States_SingleTrue">
+	<UseTemplate Name = "ASOBO_GT_Switch_3States_SingleFalse">
+		<POTENTIAL_INVERSION> ! </POTENTIAL_INVERSION>
+	</UseTemplate>
+</Template>
+
+<!--
+	Three state switch where one frame corresponds to the false value of a boolean simvar.
+
+	Required parameters:
+		SIMVAR
+		SINGLE_ID
+		ANIM_NAME
+		KEY_TOGGLE
+		NONUNIQUE_DEFAULT
+-->
+
+<Template Name = "ASOBO_GT_Switch_3States_SingleFalse">
+	<DefaultTemplateParameters>
+		<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+		<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
+		<POTENTIAL_INVERSION> </POTENTIAL_INVERSION>
+		<KEY_TOGGLE_PARAM></KEY_TOGGLE_PARAM>
+	</DefaultTemplateParameters>
+	<UseTemplate Name = "ASOBO_GT_Switch_3States">
+		<INIT_VARS>
+			(A:#SIMVAR#, Bool) #POTENTIAL_INVERSION# (&gt;O:3States_2_1_SimvarValue)
+			(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) #SINGLE_ID# == (&gt;O:IsOnSingleID)
+			(O:IsOnSingleID) (O:3States_2_1_SimvarValue) == (&gt;O:NeedsToBeInverted)
+			0 #SINGLE_ID# == (&gt;O:IsState0Single)
+			1 #SINGLE_ID# == (&gt;O:IsState1Single)
+			2 #SINGLE_ID# == (&gt;O:IsState2Single)
+		</INIT_VARS>
+		<STATE0_TEST>
+			(O:NeedsToBeInverted)
+			(O:IsState0Single) (O:3States_2_1_SimvarValue) !=
+			(O:IsState0Single) (O:IsOnSingleID) or
+			(O:IsState0Single) 0 #NONUNIQUE_DEFAULT# == or
+			and and
+		</STATE0_TEST>
+		<STATE1_TEST>
+			(O:NeedsToBeInverted)
+			(O:IsState1Single) (O:3States_2_1_SimvarValue) !=
+			(O:IsState1Single) (O:IsOnSingleID) or
+			(O:IsState1Single) 1 #NONUNIQUE_DEFAULT# == or
+			and and
+		</STATE1_TEST>
+		<STATE2_TEST>
+			(O:NeedsToBeInverted)
+			(O:IsState2Single) (O:3States_2_1_SimvarValue) !=
+			(O:IsState2Single) (O:IsOnSingleID) or
+			(O:IsState2Single) 2 #NONUNIQUE_DEFAULT# == or
+			and and
+		</STATE2_TEST>
+
+		<CODE_POS_0>
+				(O:IsState0Single) (O:3States_2_1_SimvarValue) == if{ #KEY_TOGGLE_PARAM# (&gt;K:#KEY_TOGGLE#) }
+		</CODE_POS_0>
+		<CODE_POS_1>
+				(O:IsState1Single) (O:3States_2_1_SimvarValue) == if{ #KEY_TOGGLE_PARAM# (&gt;K:#KEY_TOGGLE#) }
+		</CODE_POS_1>
+		<CODE_POS_2>
+				(O:IsState2Single) (O:3States_2_1_SimvarValue) == if{ #KEY_TOGGLE_PARAM# (&gt;K:#KEY_TOGGLE#) }
+		</CODE_POS_2>
+
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Toggle VAR_NAME bool value
+
+	[REQUIRED] VAR_NAME(bool): variable name
+	VAR_SCOPE(Text, default:O): Scope of the variable
+-->
+<Template Name="ASOBO_GT_Toggle_Variable">
+	<DefaultTemplateParameters>
+		<VAR_SCOPE>O</VAR_SCOPE>
+		<TOGGLE_CODE></TOGGLE_CODE>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Switch_Code">
+		<Condition Check="VERIF_STATE_CODE">
+			<True>
+				<LEFT_SINGLE_CODE>
+					#VERIF_STATE_CODE# if{
 						(#VAR_SCOPE#:#VAR_NAME#) ! (&gt;#VAR_SCOPE#:#VAR_NAME#)
 						#TOGGLE_CODE#
-					</LEFT_SINGLE_CODE>
-				</False>
-			</Condition>
-		</UseTemplate>
-	</Template>
+					}
+				</LEFT_SINGLE_CODE>
+			</True>
+			<False>			
+				<LEFT_SINGLE_CODE>
+					(#VAR_SCOPE#:#VAR_NAME#) ! (&gt;#VAR_SCOPE#:#VAR_NAME#)
+					#TOGGLE_CODE#
+				</LEFT_SINGLE_CODE>
+			</False>
+		</Condition>
+	</UseTemplate>
+</Template>
 
-	<!--
-		Toggle VAR_NAME bool value
+<!--
+	Toggle VAR_NAME bool value
 
-		[REQUIRED] VAR_NAME(bool): variable name
-		VAR_SCOPE(Text, default:L): Scope of the variable
-	-->
-	<Template Name="ASOBO_GT_Toggle_Variable_Anim">
-		<DefaultTemplateParameters>
-			<VAR_NAME>XMLVAR_Toggle</VAR_NAME>
-			<VAR_SCOPE>O</VAR_SCOPE>
-			<ANIM_CODE>(#VAR_SCOPE#:#VAR_NAME#) 100 *</ANIM_CODE>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_GT_Toggle_Variable">
-		</UseTemplate>
-	</Template>
+	[REQUIRED] VAR_NAME(bool): variable name
+	VAR_SCOPE(Text, default:L): Scope of the variable
+-->
+<Template Name="ASOBO_GT_Toggle_Variable_Anim">
+	<DefaultTemplateParameters>
+		<VAR_NAME>XMLVAR_Toggle</VAR_NAME>
+		<VAR_SCOPE>O</VAR_SCOPE>
+		<ANIM_CODE>(#VAR_SCOPE#:#VAR_NAME#) 100 *</ANIM_CODE>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Toggle_Variable">
+	</UseTemplate>
+</Template>
 
-	<!--
-		Toggle VAR_NAME bool value for a set duration
+<!--
+	Toggle VAR_NAME bool value for a set duration
 
-		VAR_NAME(bool): variable name
-		VAR_SCOPE(Text, default:L): Scope of the variable
-		
-		OPTION: 
-		CANCELLABLE: make the switch still work as a switch during duration
-	-->
-	<Template Name="ASOBO_GT_Toggle_Variable_ForDuration">
-		<DefaultTemplateParameters>
-			<VAR_NAME>XMLVAR_Toggle</VAR_NAME>
-			<VAR_SCOPE>O</VAR_SCOPE>
-			<DURATION>1</DURATION>
-			<CODE_START_TIMER></CODE_START_TIMER>
-			<CODE_AFTER_DURATION></CODE_AFTER_DURATION>
-			<Condition Check="CANCELLABLE">
-				<CODE_CANCELLING></CODE_CANCELLING>
-			</Condition>
-			<ANIMREF_ID>0</ANIMREF_ID>
-			<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
-			<ANIMTIP_1_ON_PERCENT>1</ANIMTIP_1_ON_PERCENT>
-		</DefaultTemplateParameters>
-		<Update Frequency = "5">
-			(#VAR_SCOPE#:#VAR_NAME#)
-			(E:SIMULATION TIME, second) (O:_ActivationTime) #DURATION# + &gt; and if{
-				0 (&gt;#VAR_SCOPE#:#VAR_NAME#)
-				#CODE_AFTER_DURATION#
-			}
+	VAR_NAME(bool): variable name
+	VAR_SCOPE(Text, default:L): Scope of the variable
+	
+	OPTION: 
+	CANCELLABLE: make the switch still work as a switch during duration
+-->
+<Template Name="ASOBO_GT_Toggle_Variable_ForDuration">
+	<DefaultTemplateParameters>
+		<VAR_NAME>XMLVAR_Toggle</VAR_NAME>
+		<VAR_SCOPE>O</VAR_SCOPE>
+		<DURATION>1</DURATION>
+		<CODE_START_TIMER></CODE_START_TIMER>
+		<CODE_AFTER_DURATION></CODE_AFTER_DURATION>
+		<Condition Check="CANCELLABLE">
+			<CODE_CANCELLING></CODE_CANCELLING>
+		</Condition>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+		<ANIMTIP_1_ON_PERCENT>1</ANIMTIP_1_ON_PERCENT>
+	</DefaultTemplateParameters>
+	<Update Frequency = "5">
+		(#VAR_SCOPE#:#VAR_NAME#)
+		(E:SIMULATION TIME, second) (O:_ActivationTime) #DURATION# + &gt; and if{
+			0 (&gt;#VAR_SCOPE#:#VAR_NAME#)
+			#CODE_AFTER_DURATION#
+		}
+	</Update>
+	<UseTemplate Name="ASOBO_GT_Switch_Code">
+		<ANIM_CODE>(#VAR_SCOPE#:#VAR_NAME#) 100 *</ANIM_CODE>
+		<Condition Check="CANCELLABLE">
+			<True>
+				<LEFT_SINGLE_CODE>
+					(#VAR_SCOPE#:#VAR_NAME#) ! if{
+						1 (&gt;#VAR_SCOPE#:#VAR_NAME#)
+						(E:SIMULATION TIME, second) (&gt;O:_ActivationTime)
+						#CODE_START_TIMER#
+					} els{
+						0 (&gt;#VAR_SCOPE#:#VAR_NAME#)
+						0 (&gt;O:_ActivationTime)
+						#CODE_CANCELLING#
+					}
+				</LEFT_SINGLE_CODE>
+			</True>
+			<False>
+				<LEFT_SINGLE_CODE>
+					(#VAR_SCOPE#:#VAR_NAME#) ! if{
+						1 (&gt;#VAR_SCOPE#:#VAR_NAME#)
+						(E:SIMULATION TIME, second) (&gt;O:_ActivationTime)
+						#CODE_START_TIMER#
+					}
+				</LEFT_SINGLE_CODE>
+			</False>
+		</Condition>
+	</UseTemplate>
+</Template>
+
+<!--
+	For switch in OFF position by a cover
+	
+	Required:
+	SWITCH_NODE_ID
+	COVER_NODE_ID
+	SWITCH_ANIM_NAME
+	COVER_ANIM_NAME
+	
+	Should Be overriden (behaviour)
+	(2 states only) TOGGLE_ON_CODE
+	(2 states only) TOGGLE_OFF_CODE
+	FORCED_OFF_CODE
+	
+	Optional: 
+	COVER_VAR_NAME: true if cover is NOT blocking the switch
+	SWITCH_VAR_NAME: (2 states: true if switch is in off state; 3 states: position of the switch)
+-->
+<Template Name="ASOBO_GT_Switch_Covered">
+	<DefaultTemplateParameters>
+		<NUM_STATES>2</NUM_STATES>
+		<SWITCH_VAR_TYPE>I</SWITCH_VAR_TYPE>
+		<COVER_VAR_TYPE>I</COVER_VAR_TYPE>
+		<COVER_VAR_NAME>XMLVAR_CoverON</COVER_VAR_NAME>
+		<SWITCH_VAR_NAME>XMLVAR_SwitchDisabled</SWITCH_VAR_NAME>
+		<FORCED_OFF_CODE></FORCED_OFF_CODE>
+		<Condition Check="NUM_STATES" Match="2">
+			<True>
+				<OFF_POSITION>1</OFF_POSITION>
+			</True>
+			<False>
+				<OFF_POSITION>2</OFF_POSITION>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	<UseTemplate name="ASOBO_GT_Switch_Covered_SubTemplate">
+		<FORCED_OFF_CODE>
+			#OFF_POSITION# (&gt;#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#)
+			#FORCED_OFF_CODE#
+		</FORCED_OFF_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_GT_Switch_Covered_SubTemplate">
+	<DefaultTemplateParameters>
+		<COVER_INIT_VALUE>0</COVER_INIT_VALUE>
+		<WWISE_COVER_EVENT_OPEN>covered_open_switch</WWISE_COVER_EVENT_OPEN>
+		<WWISE_COVER_EVENT_CLOSE>covered_close_switch</WWISE_COVER_EVENT_CLOSE>
+		<Condition Check="NUM_STATES" Match="2">
+			<True>
+				<TOGGLE_ON_CODE></TOGGLE_ON_CODE>
+				<TOGGLE_OFF_CODE></TOGGLE_OFF_CODE>
+				<TOGGLE_COND>(#COVER_VAR_TYPE#:#COVER_VAR_NAME#) ! (#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#) ! and</TOGGLE_COND>
+				<INIT_VALUE>1</INIT_VALUE>
+				<SWITCH_ANIM_CODE>(#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#) ! 100 *</SWITCH_ANIM_CODE>
+			</True>
+			<False>
+				<STATE0_TEST>(#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#) 0 ==</STATE0_TEST>
+				<STATE1_TEST>(#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#) 1 ==</STATE1_TEST>
+				<STATE2_TEST>(#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#) 2 ==</STATE2_TEST>
+				<TOGGLE_COND>(#COVER_VAR_TYPE#:#COVER_VAR_NAME#) !</TOGGLE_COND>
+				<INIT_VALUE>2</INIT_VALUE>
+			</False>
+		</Condition>
+		<ANIMREF_ID_SWITCH></ANIMREF_ID_SWITCH>
+		<ANIMTIP_0_ON_PERCENT_SWITCH></ANIMTIP_0_ON_PERCENT_SWITCH>
+		<ANIMTIP_1_ON_PERCENT_SWITCH></ANIMTIP_1_ON_PERCENT_SWITCH>
+		<ANIMTIP_2_ON_PERCENT_SWITCH></ANIMTIP_2_ON_PERCENT_SWITCH>
+		<ANIMTIP_0_SWITCH></ANIMTIP_0_SWITCH>
+		<ANIMTIP_1_SWITCH></ANIMTIP_1_SWITCH>
+		<ANIMTIP_2_SWITCH></ANIMTIP_2_SWITCH>
+		<ANIMREF_ID_COVER></ANIMREF_ID_COVER>
+		<ANIMTIP_0_ON_PERCENT_COVER></ANIMTIP_0_ON_PERCENT_COVER>
+		<ANIMTIP_1_ON_PERCENT_COVER></ANIMTIP_1_ON_PERCENT_COVER>
+		<ANIMTIP_0_COVER></ANIMTIP_0_COVER>
+		<ANIMTIP_1_COVER></ANIMTIP_1_COVER>
+		<OPEN_COVER_CONDITION/>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<SWITCH_NODE_ID></SWITCH_NODE_ID>
+			<COVER_NODE_ID></COVER_NODE_ID>
+		</AddParams>
+	</EditableTemplateParameters>
+	<Component ID="#SWITCH_NODE_ID#" Node="#SWITCH_NODE_ID#">
+		<Update Once="True">
+			#INIT_VALUE# (&gt;#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#)
+			#COVER_INIT_VALUE# (&gt;#COVER_VAR_TYPE#:#COVER_VAR_NAME#)
 		</Update>
-		<UseTemplate Name="ASOBO_GT_Switch_Code">
-			<ANIM_CODE>(#VAR_SCOPE#:#VAR_NAME#) 100 *</ANIM_CODE>
-			<Condition Check="CANCELLABLE">
-				<True>
-					<LEFT_SINGLE_CODE>
-						(#VAR_SCOPE#:#VAR_NAME#) ! if{
-							1 (&gt;#VAR_SCOPE#:#VAR_NAME#)
-							(E:SIMULATION TIME, second) (&gt;O:_ActivationTime)
-							#CODE_START_TIMER#
-						} els{
-							0 (&gt;#VAR_SCOPE#:#VAR_NAME#)
-							0 (&gt;O:_ActivationTime)
-							#CODE_CANCELLING#
-						}
-					</LEFT_SINGLE_CODE>
-				</True>
-				<False>
-					<LEFT_SINGLE_CODE>
-						(#VAR_SCOPE#:#VAR_NAME#) ! if{
-							1 (&gt;#VAR_SCOPE#:#VAR_NAME#)
-							(E:SIMULATION TIME, second) (&gt;O:_ActivationTime)
-							#CODE_START_TIMER#
-						}
-					</LEFT_SINGLE_CODE>
-				</False>
-			</Condition>
-		</UseTemplate>
-	</Template>
-
-	<!--
-		For switch in OFF position by a cover
-		
-		Required:
-		SWITCH_NODE_ID
-		COVER_NODE_ID
-		SWITCH_ANIM_NAME
-		COVER_ANIM_NAME
-		
-		Should Be overriden (behaviour)
-		(2 states only) TOGGLE_ON_CODE
-		(2 states only) TOGGLE_OFF_CODE
-		FORCED_OFF_CODE
-		
-		Optional: 
-		COVER_VAR_NAME: true if cover is NOT blocking the switch
-		SWITCH_VAR_NAME: (2 states: true if switch is in off state; 3 states: position of the switch)
-	-->
-	<Template Name="ASOBO_GT_Switch_Covered">
-		<DefaultTemplateParameters>
-			<NUM_STATES>2</NUM_STATES>
-			<SWITCH_VAR_TYPE>I</SWITCH_VAR_TYPE>
-			<COVER_VAR_TYPE>I</COVER_VAR_TYPE>
-			<FORCED_OFF_CODE></FORCED_OFF_CODE>
-			<Condition Check="NUM_STATES" Match="2">
-				<True>
-					<OFF_POSITION>1</OFF_POSITION>
-				</True>
-				<False>
-					<OFF_POSITION>2</OFF_POSITION>
-				</False>
-			</Condition>
-		</DefaultTemplateParameters>
-		<UseTemplate name="ASOBO_GT_Switch_Covered_SubTemplate">
-			<FORCED_OFF_CODE>
-				#OFF_POSITION# (&gt;#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#)
-				#FORCED_OFF_CODE#
-			</FORCED_OFF_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_GT_Switch_Covered_SubTemplate">
-		<DefaultTemplateParameters>
-			<COVER_VAR_NAME>XMLVAR_CoverON</COVER_VAR_NAME>
-			<SWITCH_VAR_NAME>XMLVAR_SwitchDisabled</SWITCH_VAR_NAME>
-			<COVER_INIT_VALUE>0</COVER_INIT_VALUE>
-			<WWISE_COVER_EVENT_OPEN>covered_open_switch</WWISE_COVER_EVENT_OPEN>
-			<WWISE_COVER_EVENT_CLOSE>covered_close_switch</WWISE_COVER_EVENT_CLOSE>
-			<Condition Check="NUM_STATES" Match="2">
-				<True>
-					<TOGGLE_ON_CODE></TOGGLE_ON_CODE>
-					<TOGGLE_OFF_CODE></TOGGLE_OFF_CODE>
-					<TOGGLE_COND>(#COVER_VAR_TYPE#:#COVER_VAR_NAME#) ! (#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#) ! and</TOGGLE_COND>
-					<INIT_VALUE>1</INIT_VALUE>
-					<SWITCH_ANIM_CODE>(#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#) ! 100 *</SWITCH_ANIM_CODE>
-				</True>
-				<False>
-					<STATE0_TEST>(#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#) 0 ==</STATE0_TEST>
-					<STATE1_TEST>(#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#) 1 ==</STATE1_TEST>
-					<STATE2_TEST>(#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#) 2 ==</STATE2_TEST>
-					<TOGGLE_COND>(#COVER_VAR_TYPE#:#COVER_VAR_NAME#) !</TOGGLE_COND>
-					<INIT_VALUE>2</INIT_VALUE>
-				</False>
-			</Condition>
-			<ANIMREF_ID_SWITCH></ANIMREF_ID_SWITCH>
-			<ANIMTIP_0_ON_PERCENT_SWITCH></ANIMTIP_0_ON_PERCENT_SWITCH>
-			<ANIMTIP_1_ON_PERCENT_SWITCH></ANIMTIP_1_ON_PERCENT_SWITCH>
-			<ANIMTIP_2_ON_PERCENT_SWITCH></ANIMTIP_2_ON_PERCENT_SWITCH>
-			<ANIMTIP_0_SWITCH></ANIMTIP_0_SWITCH>
-			<ANIMTIP_1_SWITCH></ANIMTIP_1_SWITCH>
-			<ANIMTIP_2_SWITCH></ANIMTIP_2_SWITCH>
-			<ANIMREF_ID_COVER></ANIMREF_ID_COVER>
-			<ANIMTIP_0_ON_PERCENT_COVER></ANIMTIP_0_ON_PERCENT_COVER>
-			<ANIMTIP_1_ON_PERCENT_COVER></ANIMTIP_1_ON_PERCENT_COVER>
-			<ANIMTIP_0_COVER></ANIMTIP_0_COVER>
-			<ANIMTIP_1_COVER></ANIMTIP_1_COVER>
-			<OPEN_COVER_CONDITION/>
-		</DefaultTemplateParameters>
-		<EditableTemplateParameters>
-			<AddParams>
-				<SWITCH_NODE_ID></SWITCH_NODE_ID>
-				<COVER_NODE_ID></COVER_NODE_ID>
-			</AddParams>
-		</EditableTemplateParameters>
-		<Component ID="#SWITCH_NODE_ID#" Node="#SWITCH_NODE_ID#">
-			<Update Once="True">
-				#INIT_VALUE# (&gt;#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#)
-				#COVER_INIT_VALUE# (&gt;#COVER_VAR_TYPE#:#COVER_VAR_NAME#)
+		<Switch Param="SWITCH_TYPE">
+			<Case Value="MOMENTARY">
+				<UseTemplate Name="ASOBO_GT_Push_Button">
+					<ANIMREF_ID>#ANIMREF_ID_SWITCH#</ANIMREF_ID>
+					<ANIMTIP_0_ON_PERCENT>#ANIMTIP_0_ON_PERCENT_SWITCH#</ANIMTIP_0_ON_PERCENT>
+					<ANIMTIP_1_ON_PERCENT>#ANIMTIP_1_ON_PERCENT_SWITCH#</ANIMTIP_1_ON_PERCENT>
+					<ANIMTIP_0>#ANIMTIP_0_SWITCH#</ANIMTIP_0>
+					<ANIMTIP_1>#ANIMTIP_1_SWITCH#</ANIMTIP_1>
+					<ANIM_NAME>#SWITCH_ANIM_NAME#</ANIM_NAME>
+					<OVERRIDE_ANIM_CODE>#SWITCH_ANIM_CODE#</OVERRIDE_ANIM_CODE>
+					<LEFT_SINGLE_CODE>(#COVER_VAR_TYPE#:#COVER_VAR_NAME#) if{ #TOGGLE_ON_CODE# }</LEFT_SINGLE_CODE>
+					<LEFT_LEAVE_CODE>#TOGGLE_OFF_CODE#</LEFT_LEAVE_CODE>
+				</UseTemplate>
+			</Case>
+			<Default>
+		<Condition Check="NUM_STATES" Match="2">
+			<True>
+				<UseTemplate Name="ASOBO_GT_Toggle_Variable_Anim">
+					<ANIMREF_ID>#ANIMREF_ID_SWITCH#</ANIMREF_ID>
+					<ANIMTIP_0_ON_PERCENT>#ANIMTIP_0_ON_PERCENT_SWITCH#</ANIMTIP_0_ON_PERCENT>
+					<ANIMTIP_1_ON_PERCENT>#ANIMTIP_1_ON_PERCENT_SWITCH#</ANIMTIP_1_ON_PERCENT>
+					<ANIMTIP_0>#ANIMTIP_0_SWITCH#</ANIMTIP_0>
+					<ANIMTIP_1>#ANIMTIP_1_SWITCH#</ANIMTIP_1>
+					<VAR_NAME>#SWITCH_VAR_NAME#</VAR_NAME>
+					<VAR_SCOPE>#SWITCH_VAR_TYPE#</VAR_SCOPE>
+					<ANIM_NAME>#SWITCH_ANIM_NAME#</ANIM_NAME>
+					<ANIM_CODE>#SWITCH_ANIM_CODE#</ANIM_CODE>
+					<VERIF_STATE_CODE>(#COVER_VAR_TYPE#:#COVER_VAR_NAME#)</VERIF_STATE_CODE>
+					<Condition Check="INVERT_SWITCH_ANIM">
+						<INVERT_ANIM>#INVERT_SWITCH_ANIM#</INVERT_ANIM>
+					</Condition>
+					<Condition Check="OVERRIDE_TOGGLE_CODE">
+						<True>
+							<TOGGLE_CODE>#OVERRIDE_TOGGLE_CODE#</TOGGLE_CODE>
+						</True>
+						<False>
+							<TOGGLE_CODE>
+								(#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#) ! if{ 
+									#TOGGLE_ON_CODE#
+								} els{
+									#TOGGLE_OFF_CODE#
+								}					
+							</TOGGLE_CODE>
+						</False>
+					</Condition>
+				</UseTemplate>
+			</True>
+			<False>
+				<UseTemplate Name="ASOBO_GT_Switch_3States">
+					<ANIMREF_ID>#ANIMREF_ID_SWITCH#</ANIMREF_ID>
+					<ANIMTIP_0_ON_PERCENT>#ANIMTIP_0_ON_PERCENT_SWITCH#</ANIMTIP_0_ON_PERCENT>
+					<ANIMTIP_1_ON_PERCENT>#ANIMTIP_1_ON_PERCENT_SWITCH#</ANIMTIP_1_ON_PERCENT>
+					<ANIMTIP_2_ON_PERCENT>#ANIMTIP_2_ON_PERCENT_SWITCH#</ANIMTIP_2_ON_PERCENT>
+					<ANIMTIP_0>#ANIMTIP_0_SWITCH#</ANIMTIP_0>
+					<ANIMTIP_1>#ANIMTIP_1_SWITCH#</ANIMTIP_1>
+					<ANIMTIP_2>#ANIMTIP_2_SWITCH#</ANIMTIP_2>
+					<ANIM_NAME>#SWITCH_ANIM_NAME#</ANIM_NAME>
+					<CODE_POS_0_VERIF>
+						(#COVER_VAR_TYPE#:#COVER_VAR_NAME#)
+					</CODE_POS_0_VERIF>
+					<CODE_POS_1_VERIF>
+						(#COVER_VAR_TYPE#:#COVER_VAR_NAME#)
+					</CODE_POS_1_VERIF>
+					<STATE2_TEST>#STATE2_TEST# (#COVER_VAR_TYPE#:#COVER_VAR_NAME#) or</STATE2_TEST>
+					<SWITCH_POSITION_VAR>#SWITCH_VAR_NAME#</SWITCH_POSITION_VAR>
+					<SWITCH_POSITION_TYPE>#SWITCH_VAR_TYPE#</SWITCH_POSITION_TYPE>
+					<Condition Check="INVERT_SWITCH_ANIM">
+						<INVERT_ANIM>#INVERT_SWITCH_ANIM#</INVERT_ANIM>
+					</Condition>
+				</UseTemplate>
+			</False>
+		</Condition>
+			</Default>
+		</Switch>
+	</Component>
+	<Component ID="#COVER_NODE_ID#" Node="#COVER_NODE_ID#">
+		<Condition Check="ENSURE_VARIABLE_CONSISTENCY">
+			<Update Frequency="5">
+				#OPEN_COVER_CONDITION# != if{ 
+					1 (&gt;#COVER_VAR_TYPE#:#COVER_VAR_NAME#)
+				}
 			</Update>
-			<Condition Check="NUM_STATES" Match="2">
+		</Condition>
+		<UseTemplate Name="ASOBO_GT_Toggle_Variable_Anim">
+			<Condition Valid="COVER_INVERT_SWITCH_ON_CONDITION">
 				<True>
-					<UseTemplate Name="ASOBO_GT_Toggle_Variable_Anim">
-						<ANIMREF_ID>#ANIMREF_ID_SWITCH#</ANIMREF_ID>
-						<ANIMTIP_0_ON_PERCENT>#ANIMTIP_0_ON_PERCENT_SWITCH#</ANIMTIP_0_ON_PERCENT>
-						<ANIMTIP_1_ON_PERCENT>#ANIMTIP_1_ON_PERCENT_SWITCH#</ANIMTIP_1_ON_PERCENT>
-						<ANIMTIP_0>#ANIMTIP_0_SWITCH#</ANIMTIP_0>
-						<ANIMTIP_1>#ANIMTIP_1_SWITCH#</ANIMTIP_1>
-						<VAR_NAME>#SWITCH_VAR_NAME#</VAR_NAME>
-						<VAR_SCOPE>#SWITCH_VAR_TYPE#</VAR_SCOPE>
-						<ANIM_NAME>#SWITCH_ANIM_NAME#</ANIM_NAME>
-						<ANIM_CODE>#SWITCH_ANIM_CODE#</ANIM_CODE>
-						<VERIF_STATE_CODE>(#COVER_VAR_TYPE#:#COVER_VAR_NAME#)</VERIF_STATE_CODE>
-						<Condition Check="OVERRIDE_TOGGLE_CODE">
-							<True>
-								<TOGGLE_CODE>#OVERRIDE_TOGGLE_CODE#</TOGGLE_CODE>
-							</True>
-							<False>
-								<TOGGLE_CODE>
-									(#SWITCH_VAR_TYPE#:#SWITCH_VAR_NAME#) ! if{ 
-										#TOGGLE_ON_CODE#
-									} els{
-										#TOGGLE_OFF_CODE#
-									}					
-								</TOGGLE_CODE>
-							</False>
-						</Condition>
-					</UseTemplate>
+					<INVERT_SWITCH_ON_CONDITION>#COVER_INVERT_SWITCH_ON_CONDITION#</INVERT_SWITCH_ON_CONDITION>
 				</True>
 				<False>
-					<UseTemplate Name="ASOBO_GT_Switch_3States">
-						<ANIMREF_ID>#ANIMREF_ID_SWITCH#</ANIMREF_ID>
-						<ANIMTIP_0_ON_PERCENT>#ANIMTIP_0_ON_PERCENT_SWITCH#</ANIMTIP_0_ON_PERCENT>
-						<ANIMTIP_1_ON_PERCENT>#ANIMTIP_1_ON_PERCENT_SWITCH#</ANIMTIP_1_ON_PERCENT>
-						<ANIMTIP_2_ON_PERCENT>#ANIMTIP_2_ON_PERCENT_SWITCH#</ANIMTIP_2_ON_PERCENT>
-						<ANIMTIP_0>#ANIMTIP_0_SWITCH#</ANIMTIP_0>
-						<ANIMTIP_1>#ANIMTIP_1_SWITCH#</ANIMTIP_1>
-						<ANIMTIP_2>#ANIMTIP_2_SWITCH#</ANIMTIP_2>
-						<ANIM_NAME>#SWITCH_ANIM_NAME#</ANIM_NAME>
-						<CODE_POS_0_VERIF>
-							(#COVER_VAR_TYPE#:#COVER_VAR_NAME#)
-						</CODE_POS_0_VERIF>
-						<CODE_POS_1_VERIF>
-							(#COVER_VAR_TYPE#:#COVER_VAR_NAME#)
-						</CODE_POS_1_VERIF>
-						<STATE2_TEST>#STATE2_TEST# (#COVER_VAR_TYPE#:#COVER_VAR_NAME#) or</STATE2_TEST>
-						<SWITCH_POSITION_VAR>#SWITCH_VAR_NAME#</SWITCH_POSITION_VAR>
-						<SWITCH_POSITION_TYPE>#SWITCH_VAR_TYPE#</SWITCH_POSITION_TYPE>
-					</UseTemplate>
+					<INVERT_SWITCH_ON_CONDITION>False</INVERT_SWITCH_ON_CONDITION>
 				</False>
 			</Condition>
-		</Component>
-		<Component ID="#COVER_NODE_ID#" Node="#COVER_NODE_ID#">
-			<Condition Check="ENSURE_VARIABLE_CONSISTENCY">
-				<Update Frequency="5">
-					#OPEN_COVER_CONDITION# != if{ 
-						1 (&gt;#COVER_VAR_TYPE#:#COVER_VAR_NAME#)
-					}
-				</Update>
+			<Condition Check="INVERT_COVER_ANIM">
+				<True>
+					<INVERT_ANIM>True</INVERT_ANIM>
+					<ANIMTIP_0_ON_PERCENT>#ANIMTIP_1_ON_PERCENT_COVER#</ANIMTIP_0_ON_PERCENT>
+					<ANIMTIP_1_ON_PERCENT>#ANIMTIP_0_ON_PERCENT_COVER#</ANIMTIP_1_ON_PERCENT>
+				</True>
+				<False>
+					<ANIMTIP_0_ON_PERCENT>#ANIMTIP_0_ON_PERCENT_COVER#</ANIMTIP_0_ON_PERCENT>
+					<ANIMTIP_1_ON_PERCENT>#ANIMTIP_1_ON_PERCENT_COVER#</ANIMTIP_1_ON_PERCENT>
+				</False>
 			</Condition>
-			<UseTemplate Name="ASOBO_GT_Toggle_Variable_Anim">
-				<ANIMREF_ID>#ANIMREF_ID_COVER#</ANIMREF_ID>
-				<ANIMTIP_0_ON_PERCENT>#ANIMTIP_0_ON_PERCENT_COVER#</ANIMTIP_0_ON_PERCENT>
-				<ANIMTIP_1_ON_PERCENT>#ANIMTIP_1_ON_PERCENT_COVER#</ANIMTIP_1_ON_PERCENT>
-				<ANIMTIP_0>#ANIMTIP_0_COVER#</ANIMTIP_0>
-				<ANIMTIP_1>#ANIMTIP_1_COVER#</ANIMTIP_1>
-				<VAR_NAME>#COVER_VAR_NAME#</VAR_NAME>
-				<VAR_SCOPE>#COVER_VAR_TYPE#</VAR_SCOPE>
-				<ANIM_NAME>#COVER_ANIM_NAME#</ANIM_NAME>
-				<TOGGLE_CODE>
-					#TOGGLE_COND# if{ 
-						#FORCED_OFF_CODE#
-					}
-				</TOGGLE_CODE>
-				<WWISE_EVENT_1>#WWISE_COVER_EVENT_OPEN#</WWISE_EVENT_1>
-				<WWISE_EVENT_2>#WWISE_COVER_EVENT_CLOSE#</WWISE_EVENT_2>
-			</UseTemplate>
-		</Component>
-	</Template>
+			<ANIMTIP_0>#ANIMTIP_0_COVER#</ANIMTIP_0>
+			<ANIMTIP_1>#ANIMTIP_1_COVER#</ANIMTIP_1>
+			<ANIMREF_ID>#ANIMREF_ID_COVER#</ANIMREF_ID>
+			<VAR_NAME>#COVER_VAR_NAME#</VAR_NAME>
+			<VAR_SCOPE>#COVER_VAR_TYPE#</VAR_SCOPE>
+			<ANIM_NAME>#COVER_ANIM_NAME#</ANIM_NAME>
+			<TOGGLE_CODE>
+				#TOGGLE_COND# if{ 
+					#FORCED_OFF_CODE#
+				}
+			</TOGGLE_CODE>
+			<WWISE_EVENT_1>#WWISE_COVER_EVENT_OPEN#</WWISE_EVENT_1>
+			<WWISE_EVENT_2>#WWISE_COVER_EVENT_CLOSE#</WWISE_EVENT_2>
+		</UseTemplate>
+	</Component>
+</Template>
 </ModelBehaviors>

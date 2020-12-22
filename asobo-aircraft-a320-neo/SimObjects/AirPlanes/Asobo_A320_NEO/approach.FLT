@@ -113,6 +113,7 @@ FoldingWingsState=0, 0
 XMLVAR_RMP_L_On=1
 XMLVAR_RMP_R_On=1
 XMLVAR_Baro1_Mode=1
+A320_Neo_MFD_NAV_MODE=3
 
 [Gauges.0]
 KollsmanSetting=29.921342849731445313
@@ -176,6 +177,9 @@ ForceDisplayUI=False
 AltitudeSlotIndex=2
 SpeedSlotIndex=2
 VSSlotIndex=2
+
+[Electrical.0]
+circuit.77=False,1.00
 
 [Controls.0]
 SpoilersHandle=000.00

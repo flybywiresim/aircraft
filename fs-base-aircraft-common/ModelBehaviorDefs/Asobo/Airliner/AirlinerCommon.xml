@@ -84,6 +84,8 @@
 					<BUTTON_IDENT_NAME>#PUSH_BTN_PREFIX#Ident#PUSH_BTN_SUFFIX#</BUTTON_IDENT_NAME>
 					<KNOB_XPNDR_MODE_NODE_ID>Knob_ATC_STBY</KNOB_XPNDR_MODE_NODE_ID>
 					<KNOB_XPNDR_MODE_ANIM_NAME>Knob_ATC_STBY</KNOB_XPNDR_MODE_ANIM_NAME>
+					<KNOB_XPNDR_THRT_NODE_ID>KNOB_ATC_THRT</KNOB_XPNDR_THRT_NODE_ID>
+					<KNOB_XPNDR_THRT_ANIM_NAME>KNOB_ATC_THRT</KNOB_XPNDR_THRT_ANIM_NAME>
 					<KNOB_XPNDR_ON_OFF_NODE_ID>Knob_ATC_ALT</KNOB_XPNDR_ON_OFF_NODE_ID>
 					<KNOB_XPNDR_ON_OFF_ANIM_NAME>Knob_ATC_ALT</KNOB_XPNDR_ON_OFF_ANIM_NAME>
 					<EVENT_TARGET>A320_Neo_ATC</EVENT_TARGET>
@@ -202,6 +204,16 @@
 							<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ATC_SET_TO_STBY</ANIMTIP_0>
 							<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ATC_SET_TO_AUTO</ANIMTIP_1>
 							<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ATC_SET_TO_ON</ANIMTIP_2>
+						</UseTemplate>
+					</Component>
+					<Component ID="#KNOB_XPNDR_THRT_NODE_ID#" Node="#KNOB_XPNDR_THRT_NODE_ID#">
+						<UseTemplate Name="ASOBO_GT_Switch_4States">
+							<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+							<LEFTARROW>TurnLeft</LEFTARROW>
+							<RIGHTARROW>TurnRight</RIGHTARROW>
+							<ANIM_NAME>#KNOB_XPNDR_THRT_ANIM_NAME#</ANIM_NAME>
+							<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+							<SWITCH_POSITION_VAR>XMLVAR_XPNDR_THRT_Switch</SWITCH_POSITION_VAR>
 						</UseTemplate>
 					</Component>
 				</Component>
@@ -947,13 +959,56 @@
 		
 		<Condition Valid="NO_LIGHT">
 			<False>
-				<Component ID="#NODE_ID_LIGHT#_Light" Node="#NODE_ID_LIGHT#">
-					<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-						<EMISSIVE_CODE>#TRANSMIT_EMISSIVE_CODE#</EMISSIVE_CODE>
-					</UseTemplate>
-				</Component>
+				<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+					<NODE_ID>#NODE_ID_LIGHT#</NODE_ID>
+					<COMPONENT_ID>#NODE_ID_LIGHT#_Light</COMPONENT_ID>
+					<Switch Param="TYPE">
+						<Case Value="BOEING">
+							<DONT_OVERRIDE_BASE_EMISSIVE>False</DONT_OVERRIDE_BASE_EMISSIVE>
+						</Case>
+						<Default>
+							<EMISSIVE_CODE>#TRANSMIT_EMISSIVE_CODE#</EMISSIVE_CODE>
+						</Default>
+					</Switch>
+				</UseTemplate>
 			</False>
 		</Condition>
+	</Template>
+	
+	<Template Name="ASOBO_Airliner_Audio_Panel_Knob_Lights_Dummies">
+		<OverrideTemplateParameters>
+			<DONT_OVERRIDE_BASE_EMISSIVE>False</DONT_OVERRIDE_BASE_EMISSIVE>
+		</OverrideTemplateParameters>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#PREFIX#_AudioReceiver_Knob_FLT_#ID#_SEQ1</NODE_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#PREFIX#_AudioReceiver_Knob_CAB_#ID#_SEQ1</NODE_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#PREFIX#_AudioReceiver_Knob_PA_#ID#_SEQ1</NODE_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#PREFIX#_AudioReceiver_Knob_HF_L_#ID#_SEQ1</NODE_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#PREFIX#_AudioReceiver_Knob_HF_R_#ID#_SEQ1</NODE_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#PREFIX#_AudioReceiver_Knob_SAT_L_#ID#_SEQ1</NODE_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#PREFIX#_AudioReceiver_Knob_SAT_R_#ID#_SEQ1</NODE_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#PREFIX#_AudioReceiver_Knob_SPKR_#ID#_SEQ1</NODE_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#PREFIX#_AudioReceiver_Knob_01_#ID#_SEQ1</NODE_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#PREFIX#_AudioReceiver_Knob_02_#ID#_SEQ1</NODE_ID>
+		</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_AIRLINER_Audio_Panel_Updater">
@@ -1041,5 +1096,77 @@
 				l12 (&gt;O:XMLVAR_COM_3_Volume_PreviousValue)
 			</UPDATE_CODE>
 		</UseTemplate>
+	</Template>
+	
+	<Template Name="ASOBO_AIRLINER_Switch_Seatbelts_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID>AIRLINER_Switch_Seatbelts</NODE_ID>
+			<ANIM_NAME>AIRLINER_Switch_Seatbelts</ANIM_NAME>
+			<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+			<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+			<SWITCH_POSITION_VAR>XMLVAR_SeatBelts</SWITCH_POSITION_VAR>
+		</DefaultTemplateParameters>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<Switch Param="TYPE">
+				<Case Value="ONOFF">
+					<UseTemplate Name="ASOBO_GT_Switch">
+						<ANIM_SIMVAR>CABIN SEATBELTS ALERT SWITCH</ANIM_SIMVAR>
+						<EVENTID>CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE</EVENTID>
+						<WWISE_EVENT_1>seatbelts_switch_on</WWISE_EVENT_1>
+						<WWISE_EVENT_2>seatbelts_switch_off</WISE_EVENT_2>
+						<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+						<NORMALIZED_TIME_2>0.9</NORMALIZED_TIME_2>
+					</UseTemplate>
+				</Case>
+				<Case Value="OFFAUTOON">
+					<UseTemplate Name="ASOBO_GT_Switch_3States">
+						<WWISE_EVENT>seatbelts_switch</WWISE_EVENT>
+					</UseTemplate>
+				</Case>
+			</Switch>
+		</Component>
+	</Template>
+	
+	<Template Name="ASOBO_AIRLINER_Switch_NoSmoking_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID>AIRLINER_Switch_NoSmoking</NODE_ID>
+			<ANIM_NAME>AIRLINER_Switch_NoSmoking</ANIM_NAME>
+			<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+			<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+			<SWITCH_POSITION_VAR>XMLVAR_NoSmoking</SWITCH_POSITION_VAR>
+		</DefaultTemplateParameters>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<Switch Param="TYPE">
+				<Case Value="ONOFF">
+					<UseTemplate Name="ASOBO_GT_Switch">
+						<ANIM_SIMVAR>CABIN NO SMOKING ALERT SWITCH</ANIM_SIMVAR>
+						<EVENTID>CABIN_NO_SMOKING_ALERT_SWITCH_TOGGLE</EVENTID>
+						<WWISE_EVENT_1>nosmoking_switch_on</WWISE_EVENT_1>
+						<WWISE_EVENT_2>nosmoking_switch_off</WISE_EVENT_2>
+						<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+						<NORMALIZED_TIME_2>0.9</NORMALIZED_TIME_2>
+					</UseTemplate>
+				</Case>
+				<Case Value="ONAUTOOFF">
+					<UseTemplate Name="ASOBO_GT_Switch_3States">
+						<WWISE_EVENT>nosmoking_switch</WWISE_EVENT>
+					</UseTemplate>
+				</Case>
+			</Switch>
+		</Component>
+	</Template>
+	
+	<Template Name="ASOBO_AIRLINER_Push_Clock_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID>AIRLINER_Push_Clock</NODE_ID>
+			<ANIM_NAME>AIRLINER_Push_Clock</ANIM_NAME>
+			<PLANE_PREFIX>Generic</PLANE_PREFIX>
+			<BUTTON_ID>Clock</BUTTON_ID>
+		</DefaultTemplateParameters>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Push_Button">
+				<LEFT_SINGLE_CODE>(&gt;H:#PLANE_PREFIX#_BTN_#BUTTON_ID#)</LEFT_SINGLE_CODE>
+			</UseTemplate>
+		</Component>
 	</Template>
 </ModelBehaviors>

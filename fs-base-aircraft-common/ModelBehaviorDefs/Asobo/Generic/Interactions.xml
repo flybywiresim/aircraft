@@ -1,1246 +1,2067 @@
 <ModelBehaviors>
 	<Include RelativeFile="Subtemplates\\Interactions_Subtemplates.xml"/>
 
-	<!-- ####################################################################### -->
-	<!-- ######################## Interaction Templates ######################## -->
-	<!-- ####################################################################### -->
+<!-- ####################################################################### -->
+<!-- ######################## Interaction Templates ######################## -->
+<!-- ####################################################################### -->
 
 
-	<!--
-		Empty interaction
-	-->
-	<Template Name = "ASOBO_GT_Interaction_NoInteraction">
-		<DefaultTemplateParameters>
-			<MOUSEFLAGS/>
-		</DefaultTemplateParameters>
+<!--
+	Empty interaction
+-->
+<Template Name = "ASOBO_GT_Interaction_NoInteraction">
+	<DefaultTemplateParameters>
+		<MOUSEFLAGS/>
+		<DISABLE_INTERACTION_LOCK>True</DISABLE_INTERACTION_LOCK>
+	</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<CALLBACKCODE>0</CALLBACKCODE>
-		</UseTemplate>
-	</Template>
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<CALLBACKCODE>0</CALLBACKCODE>
+	</UseTemplate>
+</Template>
 
-	<!--
-		Tooltip only interaction
-	-->
-	<Template Name = "ASOBO_GT_Interaction_Tooltip">
-		<DefaultTemplateParameters>
-		</DefaultTemplateParameters>
+<!--
+	Tooltip only interaction
+-->
+<Template Name = "ASOBO_GT_Interaction_Tooltip">
+	<DefaultTemplateParameters>
+	</DefaultTemplateParameters>
 
-		<Condition>
-			<Test>
-				<Greater>
-					<Value>CONTAINER_COUNT</Value>
-					<Number>0</Number>
-				</Greater>
-			</Test>
-			<True>
-				<Component ID="#NODE_ID#_1" Node="#NODE_ID#_1">
-					<UseTemplate Name="ASOBO_GT_Interaction_NoInteraction">
-						<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
-					</UseTemplate>
-				</Component>
-			</True>
-			<False>
-				<Component ID="#NODE_ID#" Node="#NODE_ID#">
-					<UseTemplate Name="ASOBO_GT_Interaction_NoInteraction">
-						<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
-					</UseTemplate>
-				</Component>
-			</False>
-		</Condition>
-		
-		<Condition>
-			<Test>
-				<Greater>
-					<Value>CONTAINER_COUNT</Value>
-					<Number>1</Number>
-				</Greater>
-			</Test>
-			<True>
-				<Component ID="#NODE_ID#_2" Node="#NODE_ID#_2">
-					<UseTemplate Name="ASOBO_GT_Interaction_NoInteraction">
-						<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
-					</UseTemplate>
-				</Component>
-			</True>
-		</Condition>
-		
-		<Condition>
-			<Test>
-				<Greater>
-					<Value>CONTAINER_COUNT</Value>
-					<Number>2</Number>
-				</Greater>
-			</Test>
-			<True>
-				<Component ID="#NODE_ID#_3" Node="#NODE_ID#_3">
-					<UseTemplate Name="ASOBO_GT_Interaction_NoInteraction">
-						<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
-					</UseTemplate>
-				</Component>
-			</True>
-		</Condition>
-	</Template>
-
-
-	<!--
-		Simple left click interaction,
-		using event.
-
-		Required parameter:
-			EVENTID
-	-->
-	<Template Name = "ASOBO_GT_Interaction_LeftSingle_Event">
-		<DefaultTemplateParameters>
-			<HELPID/>
-			<TOOLTIPID/>
-			<CURSOR>Hand</CURSOR>
-		</DefaultTemplateParameters>
-
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<MouseFlags>LeftSingle</MouseFlags>
-		</UseTemplate>
-	</Template>
+	<Condition>
+		<Test>
+			<Greater>
+				<Value>CONTAINER_COUNT</Value>
+				<Number>0</Number>
+			</Greater>
+		</Test>
+		<True>
+			<Component ID="#NODE_ID#_1" Node="#NODE_ID#_1">
+				<UseTemplate Name="ASOBO_GT_Interaction_NoInteraction">
+					<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+				</UseTemplate>
+			</Component>
+		</True>
+		<False>
+			<Component ID="#NODE_ID#" Node="#NODE_ID#">
+				<UseTemplate Name="ASOBO_GT_Interaction_NoInteraction">
+					<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+				</UseTemplate>
+				<Condition NotEmpty="ANIM_POS">
+					<True>
+						<UseTemplate Name="ASOBO_GT_Anim_Code">
+							<ANIM_CODE>#ANIM_POS#</ANIM_CODE>
+						</UseTemplate>
+					</True>
+				</Condition>
+			</Component>
+		</False>
+	</Condition>
+	
+	<Condition>
+		<Test>
+			<Greater>
+				<Value>CONTAINER_COUNT</Value>
+				<Number>1</Number>
+			</Greater>
+		</Test>
+		<True>
+			<Component ID="#NODE_ID#_2" Node="#NODE_ID#_2">
+				<UseTemplate Name="ASOBO_GT_Interaction_NoInteraction">
+					<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+				</UseTemplate>
+			</Component>
+		</True>
+	</Condition>
+	
+	<Condition>
+		<Test>
+			<Greater>
+				<Value>CONTAINER_COUNT</Value>
+				<Number>2</Number>
+			</Greater>
+		</Test>
+		<True>
+			<Component ID="#NODE_ID#_3" Node="#NODE_ID#_3">
+				<UseTemplate Name="ASOBO_GT_Interaction_NoInteraction">
+					<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+				</UseTemplate>
+			</Component>
+		</True>
+	</Condition>
+</Template>
 
 
-	<!--
-		Simple left click interaction,
-		using code.
+<!--
+	Simple left click interaction,
+	using event.
 
-		Required parameter:
-			LEFT_SINGLE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Interaction_LeftSingle_Code">
-		<DefaultTemplateParameters>
-			<HELPID/>
-			<TOOLTIPID/>
-			<CURSOR>Hand</CURSOR>
-			<MOUSEFLAGS>LeftSingle</MOUSEFLAGS>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<CALLBACKCODE>
-				#LEFT_SINGLE_CODE#
-			</CALLBACKCODE>
-		</UseTemplate>
-	</Template>
+	Required parameter:
+		EVENTID
+-->
+<Template Name = "ASOBO_GT_Interaction_LeftSingle_Event">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<CURSOR>Hand</CURSOR>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<MouseFlags>LeftSingle</MouseFlags>
+	</UseTemplate>
+</Template>
 
 
-	<!--
-		Left click and left leave interaction,
-		using code.
+<!--
+	Simple left click interaction,
+	using code.
 
-		Required parameter:
-			LEFT_SINGLE_CODE
-			LEFT_LEAVE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
-		<DefaultTemplateParameters>
-			<HELPID></HELPID>
-			<TOOLTIPID></TOOLTIPID>
-			<CURSOR>Hand</CURSOR>
-			<MOUSEFLAGS>LeftAll</MOUSEFLAGS>
-			<MOUSE_WHEEL_INPUTS></MOUSE_WHEEL_INPUTS>
-		</DefaultTemplateParameters>
-
-		<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code_Subtemplate1">
-			<Condition Check="WHEEL_UP_CODE">
-				<MOUSEFLAGS>#MOUSEFLAGS#+WheelUp</MOUSEFLAGS>	
-				<MOUSE_WHEEL_INPUTS> els{ (M:Event) 'WheelUp'   scmi 0 == if{ #WHEEL_UP_CODE# } #MOUSE_WHEEL_INPUTS# }</MOUSE_WHEEL_INPUTS>
-			</Condition>
-		</UseTemplate>
-	</Template>
-
-	<!--
-		Left click timed interaction, with short and long press codes.
-
-		Required parameter:
-			SHORT_CLICK_CODE
-			LONG_CLICK_CODE
-	-->
-	<Template Name = "ASOBO_GT_Interaction_Left_Timed_Code">
-		<DefaultTemplateParameters>
-			<LONG_CLICK_TIME>2</LONG_CLICK_TIME>
-			<HELPID/>
-			<TOOLTIPID/>
-			<LEFT_SINGLE_CODE/>
-			<LEFT_LEAVE_CODE/>
-		</DefaultTemplateParameters>
-
-		<Update Frequency = "10">
-			(O:_PressTime) 0 &gt; if{
-				(E:SIMULATION TIME, second) (O:_PressTime) #LONG_CLICK_TIME# + &gt;
-				if{ #LONG_CLICK_CODE# 0 (&gt;O:_PressTime) }
-			}
-		</Update>
-
-		<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
-			<LEFT_SINGLE_CODE>
-				(E:SIMULATION TIME, second) (&gt;O:_PressTime)
-				#LEFT_SINGLE_CODE#
-			</LEFT_SINGLE_CODE>
-			<LEFT_LEAVE_CODE>
-				(O:_PressTime) 0 &gt; if{
-					(E:SIMULATION TIME, second) (O:_PressTime) #LONG_CLICK_TIME# + &lt;
-					if{ #SHORT_CLICK_CODE# }
-				}
-				0 (&gt;O:_PressTime)
-				#LEFT_LEAVE_CODE#
-			</LEFT_LEAVE_CODE>
-		</UseTemplate>
-	</Template>
-
-	<Template Name = "ASOBO_GT_Interaction_LeftSingle_Recurring">
-		<DefaultTemplateParameters>
-			<HELPID/>
-			<TOOLTIPID/>
-			<CURSOR>Hand</CURSOR>
-		</DefaultTemplateParameters>
-
-		<!-- Call code if left click is held, depending on the X axis side -->
-		<Update Frequency = "10">
-			(O:_IsMouseDown) if{ #LEFT_SINGLE_CODE# }
-		</Update>
-		
-		<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
-			<LEFT_SINGLE_CODE>
-				1 (&gt;O:_IsMouseDown)
-				#LEFT_SINGLE_CODE#
-			</LEFT_SINGLE_CODE>
-			<LEFT_LEAVE_CODE>
-				0 (&gt;O:_IsMouseDown)
-			</LEFT_LEAVE_CODE>
-		</UseTemplate>
-	</Template>
-
-	<!--
-		This template is used to create a multi states switch.
-		This should be the only entry point. Do not call GT_Interaction_LeftSingle_ParamSetup_XStates.
-		NUM_STATES can be set to decide how many states the switch should have.
-	-->
-	<Template Name = "ASOBO_GT_Interaction_LeftSingle_MultiStates">
-		<DefaultTemplateParameters>
-			<NUM_STATES>2</NUM_STATES>
-			<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
-			<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
-			<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
-			<CODE_DOWN> </CODE_DOWN>
-			<CODE_DOWN_CLOSING></CODE_DOWN_CLOSING>
-			<CODE_UP> </CODE_UP>
-			<CODE_UP_CLOSING> </CODE_UP_CLOSING>
-			<CODE_REPEAT></CODE_REPEAT>
-			<Condition Check="MOMENTARY_SWITCH">
-				<SWITCH_POSITION_TYPE_TIMER>O</SWITCH_POSITION_TYPE_TIMER>
-				<SWITCH_POSITION_VAR_TIMER>XMLVAR_SwitchStateTimer</SWITCH_POSITION_VAR_TIMER>
-				<SWITCH_POSITION_TYPE_ISDOWN>O</SWITCH_POSITION_TYPE_ISDOWN>
-				<SWITCH_POSITION_VAR_ISDOWN>XMLVAR_MomentarySwitch_IsHeld</SWITCH_POSITION_VAR_ISDOWN>
-				<STATE_MAX_TIMER>2</STATE_MAX_TIMER>
-				<STATE0_TIMER>2</STATE0_TIMER>
-			</Condition>
-		</DefaultTemplateParameters>
-
+	Required parameter:
+		LEFT_SINGLE_CODE
+-->
+<Template Name = "ASOBO_GT_Interaction_LeftSingle_Code">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<CURSOR>Hand</CURSOR>
 		<Condition>
 			<Test>
 				<And>
-					<Arg Check="STATE0_TIMER"/>
-					<Greater>
-						<Value>STATE0_TIMER</Value>
-						<Number>0</Number>
-					</Greater>
+					<Arg Valid="IS_SWITCH"/>
+					<Arg NotEmpty="ANIM_CODE"/>
 				</And>
 			</Test>
 			<True>
-				<UseTemplate Name="ASOBO_GT_Update">
-					<UPDATE_ONCE>True</UPDATE_ONCE>
-					<UPDATE_CODE>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 == if{ 1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) }</UPDATE_CODE>
-				</UseTemplate>
+				<CURSOR_DRAG_IM>Grab</CURSOR_DRAG_IM>
+				<MOUSEFLAGS_DEFAULT_IM>LeftSingle</MOUSEFLAGS_DEFAULT_IM>
+				<MOUSEFLAGS_DRAG_IM>LeftAll+Wheel+Lock+Unlock</MOUSEFLAGS_DRAG_IM>
+				<AXIS>Y</AXIS>
+				<THRESHOLD_INPUT>0.03</THRESHOLD_INPUT>
+				<THRESHOLD_MOUSE>0.01</THRESHOLD_MOUSE>
+				<Condition Valid="INVERT_WHEEL_INTERACTION">
+					<True>
+						<FLAG_POS_WHEEL_UP>2</FLAG_POS_WHEEL_UP>
+						<FLAG_POS_WHEEL_DN>1</FLAG_POS_WHEEL_DN>
+					</True>
+					<False>
+						<FLAG_POS_WHEEL_UP>1</FLAG_POS_WHEEL_UP>
+						<FLAG_POS_WHEEL_DN>2</FLAG_POS_WHEEL_DN>
+					</False>
+				</Condition>
+				<Condition Valid="INVERT_SWITCH_ON_CONDITION">
+					<True>
+						<SWITCH_ON_CONDITION>0 ==</SWITCH_ON_CONDITION>
+					</True>
+					<False>
+						<SWITCH_ON_CONDITION>0 &gt;</SWITCH_ON_CONDITION>
+					</False>
+				</Condition>
+			</True>
+			<False>
+				<MOUSEFLAGS_DEFAULT_IM>LeftSingle</MOUSEFLAGS_DEFAULT_IM>
+				<MOUSEFLAGS_DRAG_IM>Lock</MOUSEFLAGS_DRAG_IM>
+				<DISABLE_INTERACTION_LOCK>True</DISABLE_INTERACTION_LOCK>
+			</False>
+		</Condition>
+		<Condition Check="LEFT_SINGLE_CODE">
+			<True>
+				<LEFT_SINGLE_CODE_DEFAULT_IM>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE_DEFAULT_IM>
+				<LEFT_SINGLE_CODE_DRAG_IM>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE_DRAG_IM>
+			</True>
+			<False>
+				<LEFT_SINGLE_CODE_DEFAULT_IM/>
+				<LEFT_SINGLE_CODE_DRAG_IM/>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid = "IS_SWITCH">
+			<Condition NotEmpty="ANIM_CODE">
+				<False>
+					<IS_SWITCH>False</IS_SWITCH>
+				</False>
+				<True>
+					<LEFT_SINGLE_CODE_DRAG_IM>
+						#ANIM_CODE# #SWITCH_ON_CONDITION# (&gt;O:_bSwitchIsON)
+						#THRESHOLD_INPUT# #THRESHOLD_MOUSE# (M:InputType) 1 == ? sp0
+						(M:Event) 'WheelUp'    scmi 0 == if{ g#FLAG_POS_WHEEL_UP# } els{
+						(M:Event) 'WheelDown'  scmi 0 == if{ g#FLAG_POS_WHEEL_DN# } els{
+						(M:Event) 'Lock' scmi 0 == if{
+							(M:Relative#AXIS#) (&gt;O:_InitPos)
+						} els{
+						(M:Event) 'Unlock' scmi 0 == if{
+							0 (&gt;O:_InitPos)
+						} els{
+						(M:Event) 'LeftDrag' scmi 0 == if{
+							(M:Relative#AXIS#) (O:_InitPos) - sp1
+							l1 0 &gt; if{
+								l1 l0 &gt; if{ (M:Relative#AXIS#) (&gt;O:_InitPos) g1 }
+							} els{
+								l1 abs l0 &gt; if{ (M:Relative#AXIS#) (&gt;O:_InitPos) g2 }
+							}
+						}
+						} } } }
+						quit
+						:1 (O:_bSwitchIsON) ! if{ g3 } quit
+						:2 (O:_bSwitchIsON) if{ g3 } quit
+						:3 #LEFT_SINGLE_CODE_DRAG_IM#
+					</LEFT_SINGLE_CODE_DRAG_IM>
+				</True>
+			</Condition>
+		</Condition>
+	</OverrideTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<CALLBACKCODE_DRAG_IM>
+			#LEFT_SINGLE_CODE_DRAG_IM#
+		</CALLBACKCODE_DRAG_IM>
+		<CALLBACKCODE_DEFAULT_IM>
+			#LEFT_SINGLE_CODE_DEFAULT_IM#
+		</CALLBACKCODE_DEFAULT_IM>	
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Left click and left leave interaction,
+	using code.
+
+	Required parameter:
+		LEFT_SINGLE_CODE
+		LEFT_LEAVE_CODE
+-->
+<Template Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+	<DefaultTemplateParameters>
+		<HELPID></HELPID>
+		<TOOLTIPID></TOOLTIPID>
+		<CURSOR>Hand</CURSOR>
+		<MOUSEFLAGS>LeftAll+Lock+Unlock</MOUSEFLAGS>
+		<MOUSE_WHEEL_INPUTS></MOUSE_WHEEL_INPUTS>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code_Subtemplate1">
+		<Condition Check="WHEEL_UP_CODE">
+			<MOUSEFLAGS>#MOUSEFLAGS#+WheelUp</MOUSEFLAGS>	
+			<MOUSE_WHEEL_INPUTS> els{ (M:Event) 'WheelUp'   scmi 0 == if{ #WHEEL_UP_CODE# } #MOUSE_WHEEL_INPUTS# }</MOUSE_WHEEL_INPUTS>
+		</Condition>
+	</UseTemplate>
+</Template>
+
+<!--
+	Left click timed interaction, with short and long press codes.
+
+	Required parameter:
+		SHORT_CLICK_CODE
+		LONG_CLICK_CODE
+-->
+<Template Name = "ASOBO_GT_Interaction_Left_Timed_Code">
+	<DefaultTemplateParameters>
+		<LONG_CLICK_TIME>2</LONG_CLICK_TIME>
+		<HELPID/>
+		<TOOLTIPID/>
+		<LEFT_SINGLE_CODE/>
+		<LEFT_LEAVE_CODE/>
+	</DefaultTemplateParameters>
+
+	<Update Frequency = "10">
+		(O:_PressTime) 0 &gt; if{
+			(E:SIMULATION TIME, second) (O:_PressTime) #LONG_CLICK_TIME# + &gt;
+			if{ #LONG_CLICK_CODE# 0 (&gt;O:_PressTime) }
+		}
+	</Update>
+
+	<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+		<LEFT_SINGLE_CODE>
+			(E:SIMULATION TIME, second) (&gt;O:_PressTime)
+			#LEFT_SINGLE_CODE#
+		</LEFT_SINGLE_CODE>
+		<LEFT_LEAVE_CODE>
+			(O:_PressTime) 0 &gt; if{
+				(E:SIMULATION TIME, second) (O:_PressTime) #LONG_CLICK_TIME# + &lt;
+				if{ #SHORT_CLICK_CODE# }
+			}
+			0 (&gt;O:_PressTime)
+			#LEFT_LEAVE_CODE#
+		</LEFT_LEAVE_CODE>
+	</UseTemplate>
+</Template>
+
+<!--
+	This template is used to create a multi states switch.
+	This should be the only entry point. Do not call GT_Interaction_LeftSingle_ParamSetup_XStates.
+	NUM_STATES can be set to decide how many states the switch should have.
+-->
+<Template Name = "ASOBO_GT_Interaction_LeftSingle_MultiStates">
+	<DefaultTemplateParameters>
+		<NUM_STATES>2</NUM_STATES>
+		<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+		<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
+		<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+		<CODE_DOWN> </CODE_DOWN>
+		<CODE_DOWN_CLOSING></CODE_DOWN_CLOSING>
+		<CODE_UP> </CODE_UP>
+		<CODE_UP_CLOSING> </CODE_UP_CLOSING>
+		<CODE_REPEAT></CODE_REPEAT>
+		<Condition Check="MOMENTARY_SWITCH">
+			<SWITCH_POSITION_TYPE_TIMER>O</SWITCH_POSITION_TYPE_TIMER>
+			<SWITCH_POSITION_VAR_TIMER>XMLVAR_SwitchStateTimer</SWITCH_POSITION_VAR_TIMER>
+			<SWITCH_POSITION_TYPE_ISDOWN>O</SWITCH_POSITION_TYPE_ISDOWN>
+			<SWITCH_POSITION_VAR_ISDOWN>XMLVAR_MomentarySwitch_IsHeld</SWITCH_POSITION_VAR_ISDOWN>
+			<STATE_MAX_TIMER>2</STATE_MAX_TIMER>
+			<STATE0_TIMER>2</STATE0_TIMER>
+		</Condition>
+	</DefaultTemplateParameters>
+
+	<Condition>
+		<Test>
+			<And>
+				<Arg Check="STATE0_TIMER"/>
+				<Greater>
+					<Value>STATE0_TIMER</Value>
+					<Number>0</Number>
+				</Greater>
+			</And>
+		</Test>
+		<True>
+			<UseTemplate Name="ASOBO_GT_Update">
+				<UPDATE_ONCE>True</UPDATE_ONCE>
+				<UPDATE_CODE>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 == if{ 1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) }</UPDATE_CODE>
+			</UseTemplate>
+		</True>
+	</Condition>
+	<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_ParamSetup">
+	</UseTemplate>
+</Template>
+
+<!--
+	Continuous rotary objects kind interations.
+
+	Required parameter:
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+-->
+<Template Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft">
+	<DefaultTemplateParameters>
+		<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+		<ALWAYS_USE_ANIM_LAG>False</ALWAYS_USE_ANIM_LAG>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Interaction_WheelAndContinuousLeft_#SWITCH_DIRECTION#">
+	</UseTemplate>
+</Template>
+
+<!--
+	Combo of continuous rotary objects and left click and left leave interaction,
+	using code.
+
+	Required parameter:
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+		LEFT_SINGLE_CODE
+-->
+<Template Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft_LeftSingle">
+	<Parameters Type="Default">
+		<CURSOR_LEFT>TurnLeft</CURSOR_LEFT>
+		<!-- Big arrows by default -->
+		<CURSOR_RIGHT>TurnRight</CURSOR_RIGHT>
+		<CENTER_RADIUS>0.004</CENTER_RADIUS>
+		<HELPID/>
+		<TOOLTIPID/>
+		<CENTER_CURSOR>Hand</CENTER_CURSOR>
+		<THRESHOLD_X_INPUT>0.2</THRESHOLD_X_INPUT>
+		<THRESHOLD_X_MOUSE>0.01</THRESHOLD_X_MOUSE>
+		<THRESHOLD_Y_INPUT>0.05</THRESHOLD_Y_INPUT>
+		<THRESHOLD_Y_MOUSE>0.025</THRESHOLD_Y_MOUSE>
+		<LEFT_LEAVE_CODE/>
+		<Condition Check="LEFT_LEAVE_CODE">
+			<True>
+				<LEFT_LEAVE_CODE_OUTER></LEFT_LEAVE_CODE_OUTER><!-- By default only call left leave when the button was pressed -->
+				<LEFT_LEAVE_CODE_INNER>#LEFT_LEAVE_CODE#</LEFT_LEAVE_CODE_INNER>
+			</True>
+			<False>
+				<LEFT_LEAVE_CODE_OUTER/>
+				<LEFT_LEAVE_CODE_INNER/>
+			</False>
+		</Condition>
+		<Condition Check="LEFT_SINGLE_CODE">
+			<True>
+				<LEFT_SINGLE_CODE_OUTER></LEFT_SINGLE_CODE_OUTER><!-- By default only call left single when clicking in the middle of the knob -->
+				<LEFT_SINGLE_CODE_INNER>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE_INNER>
+			</True>
+			<False>
+				<LEFT_SINGLE_CODE_OUTER/>
+				<LEFT_SINGLE_CODE_INNER/>
+			</False>
+		</Condition>
+		<UPDATE_FREQUENCY>10</UPDATE_FREQUENCY>
+		<UPARROW_DRAG_IM/>
+		<DOWNARROW_DRAG_IM/>
+		<LEFTARROW_DRAG_IM/>
+		<RIGHTARROW_DRAG_IM/>
+		<CURSOR_CENTER_DRAG_IM/>
+		<CURSOR_DRAG_IM>Grab</CURSOR_DRAG_IM>
+		<Condition NotEmpty="CLOCKWISE_CODE">
+			<True>
+				<CLOCKWISE_CODE_DEFAULT_IM>#CLOCKWISE_CODE#</CLOCKWISE_CODE_DEFAULT_IM>
+				<CLOCKWISE_CODE_DRAG_IM>#CLOCKWISE_CODE#</CLOCKWISE_CODE_DRAG_IM>
+			</True>
+			<False>
+				<CLOCKWISE_CODE_DEFAULT_IM/>
+				<CLOCKWISE_CODE_DRAG_IM/>
+			</False>
+		</Condition>
+		<Condition NotEmpty="ANTICLOCKWISE_CODE">
+			<True>
+				<ANTICLOCKWISE_CODE_DEFAULT_IM>#ANTICLOCKWISE_CODE#</ANTICLOCKWISE_CODE_DEFAULT_IM>
+				<ANTICLOCKWISE_CODE_DRAG_IM>#ANTICLOCKWISE_CODE#</ANTICLOCKWISE_CODE_DRAG_IM>
+			</True>
+			<False>
+				<ANTICLOCKWISE_CODE_DEFAULT_IM/>
+				<ANTICLOCKWISE_CODE_DRAG_IM/>
+			</False>
+		</Condition>
+		<Condition Valid="NO_PUSH_PULL_LOCK">
+			<True>
+				<RESET_LOCK/>
+				<UPDATE_LAST_PUSH_TIME/>
+				<UPDATE_LAST_PULL_TIME/>
+				<CAN_BE_PUSHED>1</CAN_BE_PUSHED>
+				<CAN_BE_PULLED>1</CAN_BE_PULLED>
+				<LOCK_PUSH/>
+				<LOCK_PULL/>
+				<RESET_PUSH/>
+				<RESET_PULL/>
+			</True>
+			<False>
+				<PUSH_RESET_DELAY>0.15</PUSH_RESET_DELAY>
+				<PULL_RESET_DELAY>0.15</PULL_RESET_DELAY>
+				<RESET_LOCK>
+					(O:_PushLocked) if{ 0 (&gt;O:_PushLocked) }
+					(O:_PullLocked) if{ 0 (&gt;O:_PullLocked) }
+				</RESET_LOCK>
+				<UPDATE_LAST_PUSH_TIME>
+					(M:InputType) 1 == if{
+						(E:SIMULATION TIME, second) (&gt;O:_LastPushTime)
+					}
+				</UPDATE_LAST_PUSH_TIME>
+				<UPDATE_LAST_PULL_TIME>
+					(M:InputType) 1 == if{
+						(E:SIMULATION TIME, second) (&gt;O:_LastPullTime)
+					}
+				</UPDATE_LAST_PULL_TIME>
+				<CAN_BE_PUSHED>(O:_PushLocked) !</CAN_BE_PUSHED>
+				<CAN_BE_PULLED>(O:_PullLocked) !</CAN_BE_PULLED>
+				<LOCK_PUSH>1 (&gt;O:_PushLocked)</LOCK_PUSH>
+				<LOCK_PULL>1 (&gt;O:_PullLocked)</LOCK_PULL>
+				<RESET_PUSH>(O:_PushLocked) if{ 0 (&gt;O:_PushLocked) }</RESET_PUSH>
+				<RESET_PULL>(O:_PullLocked) if{ 0 (&gt;O:_PullLocked) }</RESET_PULL>
+			</False>
+		</Condition>
+		<ON_DOWN_EVENT/>
+		<ON_UP_EVENT/>
+		<ADDITIONAL_EVENT_HANDLING/>
+		<ON_BEFORE_DELTA_X_THRESHOLD_TEST/>
+		<ON_BEFORE_DELTA_Y_THRESHOLD_TEST/>
+		<PRE_DRAG_UPDATE/>
+		<POST_DRAG_UPDATE/>
+		<ALWAYS_USE_ANIM_LAG>False</ALWAYS_USE_ANIM_LAG>
+	</Parameters>
+	<Parameters Type="Override">
+		<THRESHOLD_X>#THRESHOLD_X_INPUT# #THRESHOLD_X_MOUSE# (M:InputType) 1 == ?</THRESHOLD_X>
+		<THRESHOLD_Y>#THRESHOLD_Y_INPUT# #THRESHOLD_Y_MOUSE# (M:InputType) 1 == ?</THRESHOLD_Y>
+		<Condition Valid="INVERT_AXIS_CODE">
+			<True>
+				<Condition NotEmpty="CODE_UP"><False><CODE_UP>#ANTICLOCKWISE_CODE_DRAG_IM#</CODE_UP></False></Condition>
+				<Condition NotEmpty="CODE_DN"><False><CODE_DN>#CLOCKWISE_CODE_DRAG_IM#</CODE_DN></False></Condition>
+				<Condition NotEmpty="CODE_LEFT"><False><CODE_LEFT>#LEFT_SINGLE_CODE#</CODE_LEFT></False></Condition>
+				<Condition NotEmpty="CODE_RIGHT"><False><CODE_RIGHT>#LEFT_LEAVE_CODE#</CODE_RIGHT></False></Condition>
+			</True>
+			<False>
+				<Condition NotEmpty="CODE_UP"><False><CODE_UP>#LEFT_SINGLE_CODE#</CODE_UP></False></Condition>
+				<Condition NotEmpty="CODE_DN"><False><CODE_DN>#LEFT_LEAVE_CODE#</CODE_DN></False></Condition>
+				<Condition NotEmpty="CODE_LEFT"><False><CODE_LEFT>#ANTICLOCKWISE_CODE_DRAG_IM#</CODE_LEFT></False></Condition>
+				<Condition NotEmpty="CODE_RIGHT"><False><CODE_RIGHT>#CLOCKWISE_CODE_DRAG_IM#</CODE_RIGHT></False></Condition>
+			</False>
+		</Condition>
+		<Condition NotEmpty="UPDATE_DEFAULT_IM">
+			<False>
+				<UPDATE_DEFAULT_IM>
+					(O:_MouseDownRelativePosX) 0 &gt; if{ #CLOCKWISE_CODE_DEFAULT_IM# } els{
+					(O:_MouseDownRelativePosX) 0 &lt; if{ #ANTICLOCKWISE_CODE_DEFAULT_IM# } }
+				</UPDATE_DEFAULT_IM>
+			</False>
+		</Condition>
+	</Parameters>
+	<Update Frequency = "#UPDATE_FREQUENCY#" InteractionModel="Default">
+		#UPDATE_DEFAULT_IM#
+	</Update>
+	<Condition Valid="NO_PUSH_PULL_LOCK">
+		<False>
+			<Update Frequency = "#UPDATE_FREQUENCY#" InteractionModel="Drag">
+				(O:_PushLocked) (O:_LastPushTime) 0 &gt; and if{
+					(E:SIMULATION TIME, second) (O:_LastPushTime) - #PUSH_RESET_DELAY# &gt; if{
+						0 (&gt;O:_PushLocked) 
+						0 (&gt;O:_LastPushTime)
+					}
+				} 
+				(O:_PullLocked) (O:_LastPullTime) 0 &gt; and  if{
+					(E:SIMULATION TIME, second) (O:_LastPullTime) - #PULL_RESET_DELAY# &gt; if{
+						0 (&gt;O:_PullLocked) 
+						0 (&gt;O:_LastPullTime)
+					}
+				}
+			</Update>
+		</False>
+	</Condition>
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<LEFTARROW>#CURSOR_LEFT#</LEFTARROW>
+		<RIGHTARROW>#CURSOR_RIGHT#</RIGHTARROW>
+		<MOUSEFLAGS_DEFAULT_IM>LeftSingle+LeftRelease+WheelUp+WheelDown+Lock+Unlock</MOUSEFLAGS_DEFAULT_IM>
+		<CALLBACKCODE_DEFAULT_IM>
+			(M:Event) 'WheelUp'    scmi 0 == if{ #CLOCKWISE_CODE_DEFAULT_IM# } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ #ANTICLOCKWISE_CODE_DEFAULT_IM# } els{
+			(M:Event) 'LeftSingle' scmi 0 == if{ 
+				(M:RelativeX) abs #CENTER_RADIUS# &gt; if{
+					0 (&gt;O:_ButtonPressed)
+					(M:RelativeX) (&gt;O:_MouseDownRelativePosX)
+					#LEFT_SINGLE_CODE_OUTER#
+				} els{
+					0 (&gt;O:_MouseDownRelativePosX)
+					1 (&gt;O:_ButtonPressed)
+					#LEFT_SINGLE_CODE_INNER#
+				}
+			} els{
+			(M:Event) 'LeftRelease'   scmi 0 == if{
+				(O:_MouseDownRelativePosX) 0 != if{ #LEFT_LEAVE_CODE_OUTER# }
+				(O:_ButtonPressed) if{ #LEFT_LEAVE_CODE_INNER# }
+				0 (&gt;O:_MouseDownRelativePosX)
+				0 (&gt;O:_ButtonPressed)
+			} 
+			} } }
+		</CALLBACKCODE_DEFAULT_IM>
+		<MOUSEFLAGS_DRAG_IM>LeftAll+Wheel+Lock+Unlock</MOUSEFLAGS_DRAG_IM>
+		<CALLBACKCODE_DRAG_IM>
+			#ADDITIONAL_EVENT_HANDLING#
+			(M:Event) 'WheelUp'    scmi 0 == if{ #CLOCKWISE_CODE_DRAG_IM# } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ #ANTICLOCKWISE_CODE_DRAG_IM# } els{
+			(M:Event) 'Lock' scmi 0 == if{
+				(M:RelativeX) (&gt;O:_LastX)
+				(M:RelativeY) (&gt;O:_LastY)
+				#ON_DOWN_EVENT#
+			} els{
+			(M:Event) 'Unlock' scmi 0 == if{
+				0 (&gt;O:_LastX)
+				0 (&gt;O:_LastY)
+				#RESET_LOCK#
+				#ON_UP_EVENT#
+			} els{
+			(M:Event) 'LeftDrag' scmi 0 == if{ 
+				#PRE_DRAG_UPDATE#
+				(M:RelativeX) (O:_LastX) - sp0
+				#THRESHOLD_X# (&gt;O:_InputThresholdX)
+				#ON_BEFORE_DELTA_X_THRESHOLD_TEST#
+				l0 abs (O:_InputThresholdX) &gt; if{
+					l0 (O:_InputThresholdX) / abs flr sp1
+					l0 (O:_InputThresholdX) % abs sp2
+					:1 (* for loop *)
+					l1 0 &lt;= if{ g2 }
+					l1 -- sp1
+					l0 0 &gt; if{
+						#CODE_RIGHT#
+					} els{
+						#CODE_LEFT#
+					}
+					g1
+					:2 
+					l0 0 &gt; if{
+						(M:RelativeX) l2 - (&gt;O:_LastX)
+					} els{
+						(M:RelativeX) l2 + (&gt;O:_LastX)
+					}
+				}
+				(M:RelativeY) (O:_LastY) - sp0
+				#THRESHOLD_Y# (&gt;O:_InputThresholdY)
+				#ON_BEFORE_DELTA_Y_THRESHOLD_TEST#
+				l0 abs (O:_InputThresholdY) &gt; if{
+					l0 (O:_InputThresholdY) / abs flr sp1
+					l0 (O:_InputThresholdY) % abs sp2
+					:3 (* for loop *)
+					l1 0 &lt;= if{ g4 }
+					l1 -- sp1
+					l0 0 &gt; if{
+						#UPDATE_LAST_PUSH_TIME#
+						#CAN_BE_PUSHED# if{
+							#LOCK_PUSH#
+							#CODE_UP#
+						}
+						#RESET_PULL#
+					} els{
+						#UPDATE_LAST_PULL_TIME#
+						#CAN_BE_PULLED# if{
+							#LOCK_PULL#
+							#CODE_DN#
+						}
+						#RESET_PUSH#
+					}
+					g3
+					:4 
+					l0 0 &gt; if{
+						(M:RelativeY) l2 - (&gt;O:_LastY)
+					} els{
+						(M:RelativeY) l2 + (&gt;O:_LastY)
+					}
+				}
+				#POST_DRAG_UPDATE#
+			} } } } }
+			quit
+		</CALLBACKCODE_DRAG_IM>
+	</UseTemplate>
+</Template>
+
+<!--
+	Combo of continuous rotary objects and left click and left leave interaction,
+	using code.
+
+	Required parameter:
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+		PUSH_CODE
+		PULL_CODE
+-->
+<Template Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft_PushPull">
+	<DefaultTemplateParameters>
+		<CURSOR_LEFT>TurnLeft</CURSOR_LEFT>
+		<!-- Big arrows by default -->
+		<CURSOR_RIGHT>TurnRight</CURSOR_RIGHT>
+		<CENTER_RADIUS>0.004</CENTER_RADIUS>
+		<HELPID/>
+		<TOOLTIPID/>
+		<LEFT_LEAVE_CODE/>
+		<THRESHOLD_X_INPUT>0.2</THRESHOLD_X_INPUT>
+		<THRESHOLD_X_MOUSE>0.01</THRESHOLD_X_MOUSE>
+		<THRESHOLD_Y_INPUT>0.05</THRESHOLD_Y_INPUT>
+		<THRESHOLD_Y_MOUSE>0.025</THRESHOLD_Y_MOUSE>
+		<CURSOR_UP>UpArrow</CURSOR_UP>
+		<CURSOR_DOWN>DownArrow</CURSOR_DOWN>
+		<UPDATE_FREQUENCY>10</UPDATE_FREQUENCY>
+		<Condition NotEmpty="CLOCKWISE_CODE">
+			<True>
+				<CLOCKWISE_CODE_DEFAULT_IM>#CLOCKWISE_CODE#</CLOCKWISE_CODE_DEFAULT_IM>
+				<CLOCKWISE_CODE_DRAG_IM>#CLOCKWISE_CODE#</CLOCKWISE_CODE_DRAG_IM>
+			</True>
+			<False>
+				<CLOCKWISE_CODE_DEFAULT_IM/>
+				<CLOCKWISE_CODE_DRAG_IM/>
+			</False>
+		</Condition>
+		<Condition NotEmpty="ANTICLOCKWISE_CODE">
+			<True>
+				<ANTICLOCKWISE_CODE_DEFAULT_IM>#ANTICLOCKWISE_CODE#</ANTICLOCKWISE_CODE_DEFAULT_IM>
+				<ANTICLOCKWISE_CODE_DRAG_IM>#ANTICLOCKWISE_CODE#</ANTICLOCKWISE_CODE_DRAG_IM>
+			</True>
+			<False>
+				<ANTICLOCKWISE_CODE_DEFAULT_IM/>
+				<ANTICLOCKWISE_CODE_DRAG_IM/>
+			</False>
+		</Condition>
+		<Condition Valid="NO_PUSH_PULL_LOCK">
+			<True>
+				<RESET_LOCK/>
+				<UPDATE_LAST_PUSH_TIME/>
+				<UPDATE_LAST_PULL_TIME/>
+				<CAN_BE_PUSHED>1</CAN_BE_PUSHED>
+				<CAN_BE_PULLED>1</CAN_BE_PULLED>
+				<LOCK_PUSH/>
+				<LOCK_PULL/>
+				<RESET_PUSH/>
+				<RESET_PULL/>
+			</True>
+			<False>
+				<PUSH_RESET_DELAY>0.15</PUSH_RESET_DELAY>
+				<PULL_RESET_DELAY>0.15</PULL_RESET_DELAY>
+				<RESET_LOCK>
+					(O:IsPushed) if{ 0 (&gt;O:IsPushed) }
+					(O:IsPulled) if{ 0 (&gt;O:IsPulled) }
+				</RESET_LOCK>
+				<UPDATE_LAST_PUSH_TIME>
+					(M:InputType) 1 == if{
+						(E:SIMULATION TIME, second) (&gt;O:_LastPushTime)
+					}
+				</UPDATE_LAST_PUSH_TIME>
+				<UPDATE_LAST_PULL_TIME>
+					(M:InputType) 1 == if{
+						(E:SIMULATION TIME, second) (&gt;O:_LastPullTime)
+					}
+				</UPDATE_LAST_PULL_TIME>
+				<CAN_BE_PUSHED>(O:IsPushed) !</CAN_BE_PUSHED>
+				<CAN_BE_PULLED>(O:IsPulled) !</CAN_BE_PULLED>
+				<LOCK_PUSH>1 (&gt;O:IsPushed)</LOCK_PUSH>
+				<LOCK_PULL>1 (&gt;O:IsPulled)</LOCK_PULL>
+				<RESET_PUSH>(O:IsPushed) if{ 0 (&gt;O:IsPushed) }</RESET_PUSH>
+				<RESET_PULL>(O:IsPulled) if{ 0 (&gt;O:IsPulled) }</RESET_PULL>
+			</False>
+		</Condition>
+		<ON_DOWN_EVENT/>
+		<ADDITIONAL_EVENT_HANDLING/>
+		<ON_BEFORE_DELTA_X_THRESHOLD_TEST/>
+		<ON_BEFORE_DELTA_Y_THRESHOLD_TEST/>
+		<UPARROW_DRAG_IM/>
+		<DOWNARROW_DRAG_IM/>
+		<LEFTARROW_DRAG_IM/>
+		<RIGHTARROW_DRAG_IM/>
+		<CURSOR_CENTER_DRAG_IM/>
+		<CURSOR_DRAG_IM>Grab</CURSOR_DRAG_IM>
+		<ALWAYS_USE_ANIM_LAG>False</ALWAYS_USE_ANIM_LAG>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<THRESHOLD_X>#THRESHOLD_X_INPUT# #THRESHOLD_X_MOUSE# (M:InputType) 1 == ?</THRESHOLD_X>
+		<THRESHOLD_Y>#THRESHOLD_Y_INPUT# #THRESHOLD_Y_MOUSE# (M:InputType) 1 == ?</THRESHOLD_Y>
+		<Condition Valid="INVERT_AXIS_CODE">
+			<True>
+				<Condition NotEmpty="CODE_UP"><False><CODE_UP>#PULL_CODE#</CODE_UP></False></Condition>
+				<Condition NotEmpty="CODE_DN"><False><CODE_DN>#PUSH_CODE#</CODE_DN></False></Condition>
+				<Condition NotEmpty="CODE_LEFT"><False><CODE_LEFT>#CLOCKWISE_CODE_DRAG_IM#</CODE_LEFT></False></Condition>
+				<Condition NotEmpty="CODE_RIGHT"><False><CODE_RIGHT>#ANTICLOCKWISE_CODE_DRAG_IM#</CODE_RIGHT></False></Condition>
+			</True>
+			<False>
+				<Condition NotEmpty="CODE_UP"><False><CODE_UP>#PUSH_CODE#</CODE_UP></False></Condition>
+				<Condition NotEmpty="CODE_DN"><False><CODE_DN>#PULL_CODE#</CODE_DN></False></Condition>
+				<Condition NotEmpty="CODE_LEFT"><False><CODE_LEFT>#ANTICLOCKWISE_CODE_DRAG_IM#</CODE_LEFT></False></Condition>
+				<Condition NotEmpty="CODE_RIGHT"><False><CODE_RIGHT>#CLOCKWISE_CODE_DRAG_IM#</CODE_RIGHT></False></Condition>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+	
+	<Update Frequency = "#UPDATE_FREQUENCY#" InteractionModel="Default">
+		(O:_MouseDownRelativePosX) 0 &gt; if{ #CLOCKWISE_CODE_DEFAULT_IM# } els{
+		(O:_MouseDownRelativePosX) 0 &lt; if{ #ANTICLOCKWISE_CODE_DEFAULT_IM# } }
+	</Update>
+	<Condition Valid="NO_PUSH_PULL_LOCK">
+		<False>
+			<Update Frequency = "#UPDATE_FREQUENCY#" InteractionModel="Drag">
+				(O:_PushLocked) (O:_LastPushTime) 0 &gt; and if{
+					(E:SIMULATION TIME, second) (O:_LastPushTime) - #PUSH_RESET_DELAY# &gt; if{
+						0 (&gt;O:_PushLocked) 
+						0 (&gt;O:_LastPushTime)
+					}
+				} 
+				(O:_PullLocked) (O:_LastPullTime) 0 &gt; and  if{
+					(E:SIMULATION TIME, second) (O:_LastPullTime) - #PULL_RESET_DELAY# &gt; if{
+						0 (&gt;O:_PullLocked) 
+						0 (&gt;O:_LastPullTime)
+					}
+				}
+			</Update>
+		</False>
+	</Condition>
+
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<MOUSEFLAGS>LeftSingle+LeftRelease+WheelUp+WheelDown</MOUSEFLAGS>
+		<LEFTARROW>#CURSOR_LEFT#</LEFTARROW>
+		<RIGHTARROW>#CURSOR_RIGHT#</RIGHTARROW>
+		<UPARROW>#CURSOR_UP#</UPARROW>
+		<DOWNARROW>#CURSOR_DOWN#</DOWNARROW>
+		<CALLBACKCODE_DEFAULT_IM>
+			(M:Event) 'WheelUp'    scmi 0 == if{ #CLOCKWISE_CODE_DEFAULT_IM# } els{
+				(M:Event) 'WheelDown'  scmi 0 == if{ #ANTICLOCKWISE_CODE_DEFAULT_IM# } els{
+			(M:Event) 'LeftRelease'   scmi 0 == if{ 0 (&gt;O:_MouseDownRelativePosX) }
+			(M:RelativeX) abs #CENTER_RADIUS# &gt;
+			(M:RelativeY) abs #CENTER_RADIUS# &gt; or if{
+				(M:RelativeX) abs (M:RelativeY) abs &gt; if{
+					(M:Event) 'LeftSingle' scmi 0 ==
+					 if{ (M:RelativeX) (&gt;O:_MouseDownRelativePosX) }
+					
+				} els{
+					0 (&gt;O:_MouseDownRelativePosX)
+					(M:Event) 'LeftSingle' scmi 0 ==
+					 if{
+						(M:RelativeY) 0 &gt; if{
+							#PUSH_CODE#
+							1 (&gt;O:IsPushed)
+						} els{
+							#PULL_CODE#
+							1 (&gt;O:IsPulled)
+						}
+					 }
+					els{ (M:Event) 'LeftRelease'   scmi 0 == if{
+							#LEFT_LEAVE_CODE# 
+							0 (&gt;O:IsPulled)
+							0 (&gt;O:IsPushed)
+						}
+					}
+				}
+			}
+				} 
+			}
+		</CALLBACKCODE_DEFAULT_IM>
+		<MOUSEFLAGS_DRAG_IM>LeftAll+Wheel+Lock+Unlock</MOUSEFLAGS_DRAG_IM>
+		<CALLBACKCODE_DRAG_IM>
+			#ADDITIONAL_EVENT_HANDLING#
+			(M:Event) 'WheelUp'    scmi 0 == if{ #CLOCKWISE_CODE_DRAG_IM# } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ #ANTICLOCKWISE_CODE_DRAG_IM# } els{
+			(M:Event) 'Lock' scmi 0 == if{
+				(M:RelativeX) (&gt;O:_LastX)
+				(M:RelativeY) (&gt;O:_LastY)
+				#ON_DOWN_EVENT#
+			} els{
+			(M:Event) 'Unlock' scmi 0 == if{
+				0 (&gt;O:_LastX)
+				0 (&gt;O:_LastY)
+				#RESET_LOCK#
+				#LEFT_LEAVE_CODE#
+			} els{
+			(M:Event) 'LeftDrag' scmi 0 == if{ 
+				(M:RelativeX) (O:_LastX) - sp0
+				#THRESHOLD_X# (&gt;O:_InputThresholdX)
+				#ON_BEFORE_DELTA_X_THRESHOLD_TEST#
+				l0 abs (O:_InputThresholdX) &gt; if{
+					l0 (O:_InputThresholdX) / abs flr sp1
+					l0 (O:_InputThresholdX) % abs sp2
+					:1 (* for loop *)
+					l1 0 &lt;= if{ g2 }
+					l1 -- sp1
+					l0 0 &gt; if{
+						#CODE_RIGHT#
+					} els{
+						#CODE_LEFT#
+					}
+					g1
+					:2 
+					l0 0 &gt; if{
+						(M:RelativeX) l2 - (&gt;O:_LastX)
+					} els{
+						(M:RelativeX) l2 + (&gt;O:_LastX)
+					}
+				}
+				(M:RelativeY) (O:_LastY) - sp0
+				#THRESHOLD_Y# (&gt;O:_InputThresholdY)
+				#ON_BEFORE_DELTA_Y_THRESHOLD_TEST#
+				l0 abs (O:_InputThresholdY) &gt; if{
+					l0 (O:_InputThresholdY) / abs flr sp1
+					l0 (O:_InputThresholdY) % abs sp2
+					:3 (* for loop *)
+					l1 0 &lt;= if{ g4 }
+					l1 -- sp1
+					l0 0 &gt; if{
+						#UPDATE_LAST_PUSH_TIME#
+						#CAN_BE_PUSHED# if{
+							#LOCK_PUSH#
+							#CODE_UP#
+						}
+						#RESET_PULL#
+					} els{
+						#UPDATE_LAST_PULL_TIME#
+						#CAN_BE_PULLED# if{
+							#LOCK_PULL#
+							#CODE_DN#
+						}
+						#RESET_PUSH#
+					}
+					g3
+					:4 
+					l0 0 &gt; if{
+						(M:RelativeY) l2 - (&gt;O:_LastY)
+					} els{
+						(M:RelativeY) l2 + (&gt;O:_LastY)
+					}
+					
+				}
+			} } } } }
+			quit
+		</CALLBACKCODE_DRAG_IM>
+	</UseTemplate>
+</Template>
+
+<!--
+	Combo of continuous rotary objects and left click and left leave interaction whith short and long action depending of time clicked,
+	using code.
+
+	Required parameter:
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+		LONG_CLICK_TIME
+		SHORT_CLICK_CODE
+		LONG_CLICK_CODE
+-->
+<Template Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft_LeftSingleTimed">
+	<DefaultTemplateParameters>
+		<LEFT_SINGLE_CODE/>
+		<LEFT_LEAVE_CODE/>
+		<ALWAYS_USE_ANIM_LAG>False</ALWAYS_USE_ANIM_LAG>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Interaction_WheelAndContinuousLeft_LeftSingle">
+		<LEFT_SINGLE_CODE>
+			(E:SIMULATION TIME, second) (&gt;O:_PressTime)
+			#LEFT_SINGLE_CODE#
+		</LEFT_SINGLE_CODE>
+		<LEFT_LEAVE_CODE>
+			(O:_PressTime) 0 &gt; if{
+				(E:SIMULATION TIME, second) (O:_PressTime) #LONG_CLICK_TIME# + &lt;
+				if{ #SHORT_CLICK_CODE# }
+			}
+			0 (&gt;O:_PressTime)
+			#LEFT_LEAVE_CODE#
+		</LEFT_LEAVE_CODE>
+	</UseTemplate>
+
+	<Update Frequency = "10">
+		(O:_PressTime) 0 &gt; if{
+			(E:SIMULATION TIME, second) (O:_PressTime) #LONG_CLICK_TIME# + &gt;
+			if{ #LONG_CLICK_CODE# 0 (&gt;O:_PressTime) }
+		}
+	</Update>
+</Template>
+
+<Template Name = "ASOBO_GT_Interaction_WheelLeftDrag_Axis">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<DELTA_MIN>0.0005</DELTA_MIN>
+		<Condition Check="NO_ARROWS">
+			<False>
+				<Condition Check="AXIS" Match="Y">
+					<UPARROW>UpArrow</UPARROW>
+					<DOWNARROW>DownArrow</DOWNARROW>
+				</Condition>
+				<Condition Check="AXIS" Match="X">
+					<LEFTARROW>TurnLeft</LEFTARROW>
+					<RIGHTARROW>TurnRight</RIGHTARROW>
+				</Condition>
+			</False>
+		</Condition>
+		<CALLBACKCODE></CALLBACKCODE>
+		<Condition Check="INVERT_INTERACTION">
+			<True>
+				<FLAG_1>2</FLAG_1>
+				<FLAG_2>1</FLAG_2>
+				<DRAG_INVERTION>1</DRAG_INVERTION>
+			</True>
+			<False>
+				<FLAG_1>1</FLAG_1>
+				<FLAG_2>2</FLAG_2>
+				<DRAG_INVERTION>-1</DRAG_INVERTION>
+			</False>
+		</Condition>
+		<COUNT>2</COUNT>
+		<DOWN_CODE/>
+		<RELEASE_CODE/>
+		<LOCK_CODE/>
+		<UNLOCK_CODE/>
+		<CURSOR_DRAG_IM>Grab</CURSOR_DRAG_IM>
+		<ALWAYS_USE_ANIM_LAG>False</ALWAYS_USE_ANIM_LAG>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Check="USE_TRAJECTORY_DRAG_MODE">
+			<True>
+				<LOCK_CODE>
+					1 (&gt;O:_Interacting)
+					#LOCK_CODE#
+				</LOCK_CODE>
+				<UNLOCK_CODE>
+					0 (&gt;O:_Interacting)
+					#UNLOCK_CODE#
+				</UNLOCK_CODE>
+				<DRAG_CODE>
+					(M:Relative#AXIS#) (&gt;O:_LastPos)
+						(O:_Interacting) if{
+						#DRAG_CODE#
+						}
+				</DRAG_CODE>
+			</True>
+			<False>
+				<DRAG_CODE>
+					(O:_LastPos) (M:Relative#AXIS#) - (&gt;O:_Delta)
+					(O:_Delta) abs #DELTA_MIN# &gt; if{
+						(O:_Delta) #DELTA_MIN# / #DRAG_INVERTION# * (&gt;O:DragScale)
+						(M:Relative#AXIS#) (&gt;O:_LastPos)
+						#DRAG_CODE# g3 quit
+					}
+				</DRAG_CODE>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<MouseFlags>LeftSingle+LeftRelease+LeftDrag+WheelUp+WheelDown+Lock+Unlock</MouseFlags>
+		<CALLBACKCODE>
+			(M:Event) 'Lock'       scmi 0 == if{ #LOCK_CODE# } els{
+			(M:Event) 'Unlock'     scmi 0 == if{ #UNLOCK_CODE# } els{
+			(M:Event) 'WheelUp'    scmi 0 == if{ g#FLAG_1# } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ g#FLAG_2# } els{
+			(M:Event) 'LeftSingle' scmi 0 == if{
+					(M:Relative#AXIS#) (&gt;O:_LastPos)
+					#DOWN_CODE#
+				} els{
+			(M:Event) 'LeftRelease' scmi 0 == if{
+					#RELEASE_CODE#
+			} els{
+			(M:Event) 'LeftDrag' scmi 0 == if{
+					#DRAG_CODE#
+				}
+			} } } } } }
+			
+			g3 quit
+			
+			:1 #POSITIVE_AXIS_CODE# g3 quit
+			:2 #NEGATIVE_AXIS_CODE# g3 quit
+			
+			:3 
+			#CALLBACKCODE#
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+<Template Name = "ASOBO_GT_Interaction_WheelLeftSingle_Axis">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<DELTA_MIN>1</DELTA_MIN>
+		<Condition Check="NO_ARROWS">
+			<False>
+				<Condition Check="AXIS" Match="Y">
+					<UPARROW>UpArrow</UPARROW>
+					<DOWNARROW>DownArrow</DOWNARROW>
+				</Condition>
+				<Condition Check="AXIS" Match="X">
+					<LEFTARROW>TurnLeft</LEFTARROW>
+					<RIGHTARROW>TurnRight</RIGHTARROW>
+				</Condition>
+			</False>
+		</Condition>
+		<Condition NotEmpty="CALLBACKCODE">
+			<True>
+				<CALLBACKCODE_DEFAULT_IM>#CALLBACKCODE#</CALLBACKCODE_DEFAULT_IM>
+				<CALLBACKCODE_DRAG_IM>#CALLBACKCODE#</CALLBACKCODE_DRAG_IM>
+			</True>
+			<False>
+				<CALLBACKCODE_DEFAULT_IM/>
+				<CALLBACKCODE_DRAG_IM/>
+			</False>
+		</Condition>
+		<Condition NotEmpty="POSITIVE_AXIS_CODE">
+			<True>
+				<POSITIVE_AXIS_CODE_DEFAULT_IM>#POSITIVE_AXIS_CODE#</POSITIVE_AXIS_CODE_DEFAULT_IM>
+				<POSITIVE_AXIS_CODE_DRAG_IM>#POSITIVE_AXIS_CODE#</POSITIVE_AXIS_CODE_DRAG_IM>
 			</True>
 		</Condition>
-		<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_ParamSetup">
-		</UseTemplate>
-	</Template>
-
-	<!--
-		Continuous rotary objects kind interations.
-
-		Required parameter:
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft">
-		<DefaultTemplateParameters>
-			<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
-		</DefaultTemplateParameters>
-
-		<UseTemplate Name="ASOBO_GT_Interaction_WheelAndContinuousLeft_#SWITCH_DIRECTION#">
-		</UseTemplate>
-	</Template>
-
-	<!--
-		Combo of continuous rotary objects and left click and left leave interaction,
-		using code.
-
-		Required parameter:
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-			LEFT_SINGLE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft_LeftSingle">
-		<DefaultTemplateParameters>
-			<CURSOR_LEFT>TurnLeft</CURSOR_LEFT>
-			<!-- Big arrows by default -->
-			<CURSOR_RIGHT>TurnRight</CURSOR_RIGHT>
-			<CENTER_RADIUS>0.004</CENTER_RADIUS>
-			<HELPID/>
-			<TOOLTIPID/>
-			<Condition Check="LEFT_LEAVE_CODE">
-				<True>
-					<LEFT_LEAVE_CODE_OUTER></LEFT_LEAVE_CODE_OUTER><!-- By default only call left leave when the button was pressed -->
-					<LEFT_LEAVE_CODE_INNER>#LEFT_LEAVE_CODE#</LEFT_LEAVE_CODE_INNER>
-				</True>
-				<False>
-					<LEFT_LEAVE_CODE_OUTER/>
-					<LEFT_LEAVE_CODE_INNER/>
-				</False>
-			</Condition>
-			<Condition Check="LEFT_SINGLE_CODE">
-				<True>
-					<LEFT_SINGLE_CODE_OUTER></LEFT_SINGLE_CODE_OUTER><!-- By default only call left single when clicking in the middle of the knob -->
-					<LEFT_SINGLE_CODE_INNER>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE_INNER>
-				</True>
-				<False>
-					<LEFT_SINGLE_CODE_OUTER/>
-					<LEFT_SINGLE_CODE_INNER/>
-				</False>
-			</Condition>
-			<CENTER_CURSOR>Hand</CENTER_CURSOR>
-			<UPDATE_FREQUENCY>10</UPDATE_FREQUENCY>
-		</DefaultTemplateParameters>
-
-		<Update Frequency = "#UPDATE_FREQUENCY#">
-			(O:_MouseDownRelativePosX) 0 &gt; if{ #CLOCKWISE_CODE# } els{
-			(O:_MouseDownRelativePosX) 0 &lt; if{ #ANTICLOCKWISE_CODE# } }
-		</Update>
-
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<MouseFlags>LeftSingle+LeftRelease+WheelUp+WheelDown</MouseFlags>
-			<LEFTARROW>#CURSOR_LEFT#</LEFTARROW>
-			<RIGHTARROW>#CURSOR_RIGHT#</RIGHTARROW>
-			<CALLBACKCODE>
-				(M:Event) 'WheelUp'    scmi 0 == if{ #CLOCKWISE_CODE# } els{
-				(M:Event) 'WheelDown'  scmi 0 == if{ #ANTICLOCKWISE_CODE# } els{
-				(M:Event) 'LeftSingle' scmi 0 == if{ 
-					(M:RelativeX) abs #CENTER_RADIUS# &gt; if{
-						0 (&gt;O:_ButtonPressed)
-						(M:RelativeX) (&gt;O:_MouseDownRelativePosX)
-						#LEFT_SINGLE_CODE_OUTER#
-					} els{
-						0 (&gt;O:_MouseDownRelativePosX)
-						1 (&gt;O:_ButtonPressed)
-						#LEFT_SINGLE_CODE_INNER#
-					}
-				} els{
-				(M:Event) 'LeftRelease'   scmi 0 == if{
-					(O:_MouseDownRelativePosX) 0 != if{ #LEFT_LEAVE_CODE_OUTER# }
-					(O:_ButtonPressed) if{ #LEFT_LEAVE_CODE_INNER# }
-					0 (&gt;O:_MouseDownRelativePosX)
-					0 (&gt;O:_ButtonPressed)
-				} 
-				} } }
-			</CALLBACKCODE>
-		</UseTemplate>
-	</Template>
-
-	<!--
-		Combo of continuous rotary objects and left click and left leave interaction,
-		using code.
-
-		Required parameter:
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-			PUSH_CODE
-			PULL_CODE
-	-->
-	<Template Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft_PushPull">
-		<DefaultTemplateParameters>
-			<CURSOR_LEFT>TurnLeft</CURSOR_LEFT>
-			<!-- Big arrows by default -->
-			<CURSOR_RIGHT>TurnRight</CURSOR_RIGHT>
-			<CENTER_RADIUS>0.004</CENTER_RADIUS>
-			<HELPID/>
-			<TOOLTIPID/>
-			<LEFT_LEAVE_CODE/>
-			<CURSOR_UP>UpArrow</CURSOR_UP>
-			<CURSOR_DOWN>DownArrow</CURSOR_DOWN>
-			<UPDATE_FREQUENCY>10</UPDATE_FREQUENCY>
-		</DefaultTemplateParameters>
-		
-		<Update Frequency = "#UPDATE_FREQUENCY#">
-			(O:_MouseDownRelativePosX) 0 &gt; if{ #CLOCKWISE_CODE# } els{
-			(O:_MouseDownRelativePosX) 0 &lt; if{ #ANTICLOCKWISE_CODE# } }
-		</Update>
-
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<MouseFlags>LeftSingle+LeftRelease+WheelUp+WheelDown</MouseFlags>
-			<LEFTARROW>#CURSOR_LEFT#</LEFTARROW>
-			<RIGHTARROW>#CURSOR_RIGHT#</RIGHTARROW>
-			<UPARROW>#CURSOR_UP#</UPARROW>
-			<DOWNARROW>#CURSOR_DOWN#</DOWNARROW>
-			<CALLBACKCODE>
-				(M:Event) 'WheelUp'    scmi 0 == if{ #CLOCKWISE_CODE# } els{
-				(M:Event) 'WheelDown'  scmi 0 == if{ #ANTICLOCKWISE_CODE# } els{
-				
-				(M:Event) 'LeftRelease'   scmi 0 == if{ 0 (&gt;O:_MouseDownRelativePosX) }
-				
-				(M:RelativeX) abs #CENTER_RADIUS# &gt;
-				(M:RelativeY) abs #CENTER_RADIUS# &gt; or if{
-					(M:RelativeX) abs (M:RelativeY) abs &gt; if{
-						(M:Event) 'LeftSingle' scmi 0 ==
-						 if{ (M:RelativeX) (&gt;O:_MouseDownRelativePosX) }
-						
-					} els{
-						0 (&gt;O:_MouseDownRelativePosX)
-						(M:Event) 'LeftSingle' scmi 0 ==
-						 if{
-							(M:RelativeY) 0 &gt; if{
-								#PUSH_CODE#
-								1 (&gt;O:IsPushed)
-							} els{
-								#PULL_CODE#
-								1 (&gt;O:IsPulled)
-							}
-						 }
-						els{ (M:Event) 'LeftRelease'   scmi 0 == if{
-								#LEFT_LEAVE_CODE# 
-								0 (&gt;O:IsPulled)
-								0 (&gt;O:IsPushed)
-							}
-						}
-					}
-				}
-				} }
-			</CALLBACKCODE>
-		</UseTemplate>
-	</Template>
-
-	<!--
-		Combo of continuous rotary objects and left click and left leave interaction whith short and long action depending of time clicked,
-		using code.
-
-		Required parameter:
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-			LONG_CLICK_TIME
-			SHORT_CLICK_CODE
-			LONG_CLICK_CODE
-	-->
-	<Template Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft_LeftSingleTimed">
-		<DefaultTemplateParameters>
-			<LEFT_SINGLE_CODE/>
-			<LEFT_LEAVE_CODE/>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_GT_Interaction_WheelAndContinuousLeft_LeftSingle">
-			<LEFT_SINGLE_CODE>
-				(E:SIMULATION TIME, second) (&gt;O:_PressTime)
-				#LEFT_SINGLE_CODE#
-			</LEFT_SINGLE_CODE>
-			<LEFT_LEAVE_CODE>
-				(O:_PressTime) 0 &gt; if{
-					(E:SIMULATION TIME, second) (O:_PressTime) #LONG_CLICK_TIME# + &lt;
-					if{ #SHORT_CLICK_CODE# }
-				}
-				0 (&gt;O:_PressTime)
-				#LEFT_LEAVE_CODE#
-			</LEFT_LEAVE_CODE>
-		</UseTemplate>
-
-		<Update Frequency = "10">
-			(O:_PressTime) 0 &gt; if{
-				(E:SIMULATION TIME, second) (O:_PressTime) #LONG_CLICK_TIME# + &gt;
-				if{ #LONG_CLICK_CODE# 0 (&gt;O:_PressTime) }
-			}
-		</Update>
-	</Template>
-
-	<Template Name = "ASOBO_GT_Interaction_WheelLeftDrag_Axis">
-		<DefaultTemplateParameters>
-			<HELPID/>
-			<TOOLTIPID/>
-			<DELTA_MIN>0.0005</DELTA_MIN>
-			<Condition Check="NO_ARROWS">
-				<False>
-					<Condition Check="AXIS" Match="Y">
-						<UPARROW>UpArrow</UPARROW>
-						<DOWNARROW>DownArrow</DOWNARROW>
-					</Condition>
-					<Condition Check="AXIS" Match="X">
-						<LEFTARROW>TurnLeft</LEFTARROW>
-						<RIGHTARROW>TurnRight</RIGHTARROW>
-					</Condition>
-				</False>
-			</Condition>
-			<CALLBACKCODE></CALLBACKCODE>
-			<Condition Check="INVERT_INTERACTION">
-				<True>
-					<FLAG_1>2</FLAG_1>
-					<FLAG_2>1</FLAG_2>
-					<DRAG_INVERTION>1</DRAG_INVERTION>
-				</True>
-				<False>
-					<FLAG_1>1</FLAG_1>
-					<FLAG_2>2</FLAG_2>
-					<DRAG_INVERTION>-1</DRAG_INVERTION>
-				</False>
-			</Condition>
-			<COUNT>2</COUNT>
-			<DOWN_CODE></DOWN_CODE>
-			<RELEASE_CODE></RELEASE_CODE>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition Check="USE_TRAJECTORY_DRAG_MODE">
-				<True>
-					<DOWN_CODE>
-						1 (&gt;O:_Interacting)
-						#DOWN_CODE#
-					</DOWN_CODE>
-					<RELEASE_CODE>
-						0 (&gt;O:_Interacting)
-						#RELEASE_CODE#
-					</RELEASE_CODE>
-					<DRAG_CODE>
-						(M:Relative#AXIS#) (&gt;O:_LastPos)
-						(O:_Interacting) if{
-							#DRAG_CODE#
-						}
-					</DRAG_CODE>
-				</True>
-				<False>
-					<DRAG_CODE>
-						(O:_LastPos) (M:Relative#AXIS#) - (&gt;O:_Delta)
-						(O:_Delta) abs #DELTA_MIN# &gt; if{
-							(O:_Delta) #DELTA_MIN# / #DRAG_INVERTION# * (&gt;O:DragScale)
-							(M:Relative#AXIS#) (&gt;O:_LastPos)
-							#DRAG_CODE# g3 quit
-						}
-					</DRAG_CODE>
-				</False>
-			</Condition>
-		</OverrideTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<MouseFlags>LeftSingle+LeftRelease+LeftDrag+WheelUp+WheelDown</MouseFlags>
-			<CALLBACKCODE>
-				(M:Event) 'WheelUp'    scmi 0 == if{ g#FLAG_1# } els{
-				(M:Event) 'WheelDown'  scmi 0 == if{ g#FLAG_2# } els{
-				(M:Event) 'LeftSingle' scmi 0 == if{
-						(M:Relative#AXIS#) (&gt;O:_LastPos)
-						#DOWN_CODE#
-					} els{
-				(M:Event) 'LeftRelease' scmi 0 == if{
-						#RELEASE_CODE#
-				} els{
-				(M:Event) 'LeftDrag' scmi 0 == if{
-						#DRAG_CODE#
-					}
-				} } } }
-				g3 quit
-				
-				:1 #POSITIVE_AXIS_CODE# g3 quit
-				:2 #NEGATIVE_AXIS_CODE# g3 quit
-				
-				:3 
-				#CALLBACKCODE#
-			</CALLBACKCODE>
-		</UseTemplate>
-	</Template>
-
-	<Template Name = "ASOBO_GT_Interaction_WheelLeftSingle_Axis">
-		<DefaultTemplateParameters>
-			<HELPID/>
-			<TOOLTIPID/>
-			<DELTA_MIN>1</DELTA_MIN>
-			<Condition Check="NO_ARROWS">
-				<False>
-					<Condition Check="AXIS" Match="Y">
-						<UPARROW>UpArrow</UPARROW>
-						<DOWNARROW>DownArrow</DOWNARROW>
-					</Condition>
-					<Condition Check="AXIS" Match="X">
-						<LEFTARROW>TurnLeft</LEFTARROW>
-						<RIGHTARROW>TurnRight</RIGHTARROW>
-					</Condition>
-				</False>
-			</Condition>
-			<CALLBACKCODE></CALLBACKCODE>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<MouseFlags>LeftSingle+WheelUp+WheelDown</MouseFlags>
-			<CALLBACKCODE>
-				(M:Event) 'WheelUp'    scmi 0 == if{ g1 } els{
-				(M:Event) 'WheelDown'  scmi 0 == if{ g2 } els{
-				(M:Event) 'LeftSingle' scmi 0 == if{
-						(M:Relative#AXIS#) (&gt;O:_LastPos)
-						(M:Relative#AXIS#) 0 &gt; if{ g1 } els{ g2 }
-					}
-				} }
-				quit
-				
-				:1 #POSITIVE_AXIS_CODE# quit
-				:2 #NEGATIVE_AXIS_CODE# quit
-				
-				#CALLBACKCODE#
-			</CALLBACKCODE>
-		</UseTemplate>
-	</Template>
-
-	<!--
-		Dragging objects interations on X axis,
-		using "set" event.
-
-		Required parameter:
-			DRAG_SIMVAR
-			DRAG_SIMVAR_UNITS
-			DRAG_EVENTID_SET
-	-->
-	<Template Name = "ASOBO_GT_Interaction_DraggingXAxis_EventSet">
-		<DefaultTemplateParameters>
-			<HELPID/>
-			<TOOLTIPID/>
-			<CURSOR>Grab</CURSOR>
-			<DRAG_SCALE>163.84</DRAG_SCALE>
-			<DRAG_AXIS_SCALE>100</DRAG_AXIS_SCALE>
-			<DRAG_MIN_VALUE>0</DRAG_MIN_VALUE>
-			<DRAG_MAX_VALUE>16384</DRAG_MAX_VALUE>
-			<AXIS>X</AXIS>
-		</DefaultTemplateParameters>
-
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<MouseFlags>LeftSingle+LeftDrag+WheelUp+WheelDown</MouseFlags>
-			<CALLBACKDRAGGING/>
-		</UseTemplate>
-	</Template>
-
-
-	<!--
-		Dragging objects interations on Y axis,
-		using "set" event.
-
-		Required parameter:
-			DRAG_SIMVAR
-			DRAG_SIMVAR_UNITS
-			DRAG_EVENTID_SET
-	-->
-	<Template Name = "ASOBO_GT_Interaction_DraggingYAxis_EventSet">
-		<DefaultTemplateParameters>
-			<HELPID/>
-			<TOOLTIPID/>
-			<CURSOR>Grab</CURSOR>
-			<DRAG_SCALE>163.84</DRAG_SCALE>
-			<DRAG_AXIS_SCALE>-100</DRAG_AXIS_SCALE>
-			<DRAG_MIN_VALUE>0</DRAG_MIN_VALUE>
-			<DRAG_MAX_VALUE>16384</DRAG_MAX_VALUE>
-			<AXIS>Y</AXIS>
-		</DefaultTemplateParameters>
-
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<MouseFlags>LeftSingle+LeftDrag+WheelUp+WheelDown</MouseFlags>
-			<CALLBACKDRAGGING/>
-		</UseTemplate>
-	</Template>
-
-
-	<!--
-		Base logic template for dragging objects interations on axis,
-		using code.
-
-		Required parameter:
-			UP_CODE
-			DOWN_CODE
-			AXIS (must be exactly "X" or "Y")
-	-->
-	<Template Name = "ASOBO_GT_Interaction_DraggingAxis_Code">
-		<DefaultTemplateParameters>
-			<HELPID/>
-			<TOOLTIPID/>
-			<CURSOR>Grab</CURSOR>
-			<DRAG_DELTA>0.001</DRAG_DELTA>
-			<DRAG_SPEED>0.5</DRAG_SPEED>
-			
-			<POSITION_TYPE>O</POSITION_TYPE>
-			<POSITION_VAR>Position</POSITION_VAR>
-			
-			<Condition Check="IS_LOOPING">
-				<True>
-					<MIN_LIMITER>dnor</MIN_LIMITER>
-					<MAX_LIMITER>dnor</MAX_LIMITER>
-				</True>
-				<False>
-					<Condition Check="ANIM_LENGTH">
-						<True>
-							<MIN_LIMITER> 0 max </MIN_LIMITER>
-							<MAX_LIMITER> #ANIM_LENGTH# min </MAX_LIMITER>
-						</True>
-						<False>
-							<ANIM_LENGTH>100</ANIM_LENGTH>
-							<MIN_LIMITER> 0 max </MIN_LIMITER>
-							<MAX_LIMITER> 100 min </MAX_LIMITER>
-						</False>
-					</Condition>
-				</False>
-			</Condition>
-			<Condition Check="REVERSE_INTERACTION">
-				<True>
-					<FLAG_1>2</FLAG_1>
-					<FLAG_2>1</FLAG_2>
-				</True>
-				<False>
-					<FLAG_1>1</FLAG_1>
-					<FLAG_2>2</FLAG_2>
-				</False>
-			</Condition>
-			<LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<MouseFlags>LeftAll+WheelUp+WheelDown</MouseFlags>
-			<CALLBACKCODE>
-				(M:Event) 'WheelUp'    scmi 0 == if{ g1 } els{
-				(M:Event) 'WheelDown'  scmi 0 == if{ g2 } els{
-				(M:Event) 'LeftSingle' scmi 0 == if{ #LEFT_SINGLE_CODE# (M:Relative#AXIS#) (&gt;O:_Last#AXIS#) } els{
-				(M:Event) 'LeftDrag'   scmi 0 == if{
-					(O:_Last#AXIS#) (M:Relative#AXIS#) -  #DRAG_DELTA# / abs (&gt;O:DragFactor)
-					(O:_Last#AXIS#) (M:Relative#AXIS#) -  -#DRAG_DELTA# &lt; if{ 
-						(M:Relative#AXIS#) (&gt;O:_Last#AXIS#) 
-						g1 
-					} els{
-						(O:_Last#AXIS#) (M:Relative#AXIS#) -  #DRAG_DELTA# &gt; if{ 
-						(M:Relative#AXIS#) (&gt;O:_Last#AXIS#) 
-						g2 
-						} els{
-				} } } } } }
-				quit
-				
-				:#FLAG_1# (#POSITION_TYPE#:#POSITION_VAR#) #DRAG_SPEED# (O:DragFactor) * + #MAX_LIMITER# (&gt;#POSITION_TYPE#:#POSITION_VAR#)
-				#UP_CODE#
-				quit
-				
-				:#FLAG_2# (#POSITION_TYPE#:#POSITION_VAR#) #DRAG_SPEED# (O:DragFactor) * - #MIN_LIMITER# (&gt;#POSITION_TYPE#:#POSITION_VAR#)
-				#DOWN_CODE#
-				quit
-			</CALLBACKCODE>
-		</UseTemplate>
-	</Template>
-
-	<!--
-		Dragging objects interations on X axis,
-		using code.
-
-		Required parameter:
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Interaction_DraggingXAxis_Code">
-
-		<UseTemplate Name = "ASOBO_GT_Interaction_DraggingAxis_Code">
-			<AXIS>X</AXIS>
-		</UseTemplate>
-	</Template>
-
-
-	<!--
-		Dragging objects interations on Y axis,
-		using code.
-
-		Required parameter:
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Interaction_DraggingYAxis_Code">
-
-		<UseTemplate Name = "ASOBO_GT_Interaction_DraggingAxis_Code">
-			<AXIS>Y</AXIS>
-		</UseTemplate>
-	</Template>
-
-
-	<!--
-		Dragging objects interations on X axis,
-		using "increase" and "decrease" events.
-
-		Required parameter:
-			CLOCKWISE_EVENTID
-			ANTICLOCKWISE_EVENTID
-	-->
-	<Template Name = "ASOBO_GT_Interaction_DraggingXAxis_EventsIncDec">
-		<DefaultTemplateParameters>
-			<HELPID/>
-			<TOOLTIPID/>
-			<DRAG_DELTA>8</DRAG_DELTA>
-			<CURSOR>Grab</CURSOR>
-		</DefaultTemplateParameters>
-
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<MouseFlags>LeftSingle+LeftDrag+WheelUp+WheelDown</MouseFlags>
-			<X_MOVEMENT/>
-		</UseTemplate>
-	</Template>
-
-
-	<!--
-		Dragging objects interations on Y axis,
-		using "increase" and "decrease" events.
-
-		Required parameter:
-			CLOCKWISE_EVENTID
-			ANTICLOCKWISE_EVENTID
-	-->
-	<Template Name = "ASOBO_GT_Interaction_DraggingYAxis_EventsIncDec">
-		<DefaultTemplateParameters>
-			<HELPID/>
-			<TOOLTIPID/>
-			<DRAG_DELTA>20</DRAG_DELTA>
-			<CURSOR>Grab</CURSOR>
-		</DefaultTemplateParameters>
-
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<MouseFlags>LeftSingle+LeftDrag+WheelUp+WheelDown</MouseFlags>
-			<Y_MOVEMENT/>
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_GT_Interaction_DraggingYAxis_Gates">
-		<DefaultTemplateParameters>
-			<STEPS_NUMBER>3</STEPS_NUMBER>
-			<GATE_TOLERANCE>0.2</GATE_TOLERANCE>
-			<DRAG_SPEED>10</DRAG_SPEED> 
-			<POSITION_TYPE>O</POSITION_TYPE>
-			<POSITION_VAR>Position</POSITION_VAR>
-			<CURSOR>Grab</CURSOR>
-			<AXIS>Y</AXIS>
-			<GATE_DIRECTION>1</GATE_DIRECTION>
-			<!-- GATE_DIRECTION : 
-						-1 = Forwards
-						0 = Both
-						1 = Backwards
-			-->
-			<IGNORE_GATE>False</IGNORE_GATE>
-			<INIT_DRAG></INIT_DRAG>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition Valid="USE_TRAJECTORY_DRAG_MODE">
-				<True>
-					<Condition Valid="OVERRIDE_NEW_POSITION">
-						<True>
-							<NEW_POSITION>#OVERRIDE_NEW_POSITION#</NEW_POSITION>
-						</True>
-						<False>
-							<NEW_POSITION>#STEPS_NUMBER# (M:DragPercent) * </NEW_POSITION>
-						</False>
-					</Condition>
-					<INIT_DRAG>
-						#INIT_DRAG#
-						(M:DragPercent) (&gt;O:InitialDragPercent)
-					</INIT_DRAG>
-					<DRAG_CODE>
-						#DRAG_CODE#
-						(M:DragPercent) (&gt;O:PrevDragPercent)
-					</DRAG_CODE>
-				</True>
-				<False>
-					<NEW_POSITION>(#POSITION_TYPE#:#POSITION_VAR#) l3 + </NEW_POSITION>
-				</False>
-			</Condition>
-			<Condition>
-				<Test>
-					<And>
-						<Greater>
-							<Value>IGNORE_GATE</Value>
-							<Number>0</Number>
-						</Greater>
-						<Lower>
-							<Value>IGNORE_GATE</Value>
-							<Value>STEPS_NUMBER</Value>
-						</Lower>
-					</And>
-				</Test>
-				<True>
-					<IGNORE_GATE_CODE>
-						(O:MaxDraggingPosition) #IGNORE_GATE# == if{
-							(O:MaxDraggingPosition) ++ (&gt;O:MaxDraggingPosition)
-						}
-						(O:MinDraggingPosition) #IGNORE_GATE# == if{
-							(O:MinDraggingPosition) -- (&gt;O:MinDraggingPosition)
-						}
-					</IGNORE_GATE_CODE>
-				</True>
-				<False>
-					<IGNORE_GATE_CODE></IGNORE_GATE_CODE>
-				</False>
-			</Condition>
-		</OverrideTemplateParameters>
-
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<MOUSEFLAGS>LeftAll+WheelUp+WheelDown</MOUSEFLAGS>
-			<CALLBACKCODE>
-				(M:Event) 'LeftSingle' scmp 0 == if{
-					(M:RelativeY) (&gt;O:PrevY, Number)
-					(#POSITION_TYPE#:#POSITION_VAR#) (&gt;O:InitialDraggingPosition)
-					(O:InitialDraggingPosition) near (O:InitialDraggingPosition) - abs #GATE_TOLERANCE# &lt; sp1
-					#INIT_DRAG#
-					
-					#GATE_DIRECTION# -1 != if{
-						l1 if{
-							(O:InitialDraggingPosition) near 1 + #STEPS_NUMBER# min (&gt;O:MaxDraggingPosition)
-						} els{
-							(O:InitialDraggingPosition) ceil #STEPS_NUMBER# min (&gt;O:MaxDraggingPosition)
-						}
-					} els{
-						#STEPS_NUMBER# (&gt;O:MaxDraggingPosition)
-					}
-					
-					#GATE_DIRECTION# 1 != if{
-						l1 if{
-							(O:InitialDraggingPosition) near 1 - 0 max (&gt;O:MinDraggingPosition)
-						} els{
-							(O:InitialDraggingPosition) flr 0 max (&gt;O:MinDraggingPosition)
-						}
-					} els{
-						0 (&gt;O:MinDraggingPosition)
-					}
-					#IGNORE_GATE_CODE#
-					1 (&gt;O:IsDragging)
-				} els{ 
-					(M:Event) 'LeftRelease' scmp 0 == if{
-						0 (&gt;O:IsDragging)
-					} els{			
-						(M:Event) 'LeftDrag' scmp 0 == if{
-							(O:PrevY) (M:RelativeY) - sp2	
-							l2 #DRAG_SPEED# * sp3
-							
-							#GATE_DIRECTION# -1 != if{
-								(#POSITION_TYPE#:#POSITION_VAR#) #GATE_TOLERANCE# + flr 1 + (O:MaxDraggingPosition) min (&gt;O:MaxDraggingPosition)
-							}
-							#GATE_DIRECTION# 1 != if{
-								(#POSITION_TYPE#:#POSITION_VAR#) #GATE_TOLERANCE# - ceil 1 - (O:MinDraggingPosition) max (&gt;O:MinDraggingPosition)
-							}
-							#IGNORE_GATE_CODE#
-							
-							#NEW_POSITION# (O:MaxDraggingPosition) min (O:MinDraggingPosition) max (&gt;#POSITION_TYPE#:#POSITION_VAR#)
-							
-							#DRAG_CODE#
-							
-							(M:RelativeY) (&gt;O:PrevY)
-						}
-					}
-				}
-			</CALLBACKCODE>
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_GT_Interaction_DraggingYAxis_SimGates">
-		<DefaultTemplateParameters>
-			<STEPS_NUMBER>3</STEPS_NUMBER>
-			<GATE_TOLERANCE>0.2</GATE_TOLERANCE>
-			<DRAG_SPEED>0.01</DRAG_SPEED> 
-			<CURSOR>Grab</CURSOR>
-			<GATE_DIRECTION>1</GATE_DIRECTION>
-			<AXIS>Y</AXIS>
-			<!-- GATE_DIRECTION : 
-						-1 = Forwards
-						0 = Both
-						1 = Backwards
-			-->
-			<SIMVAR_CONVERSION> </SIMVAR_CONVERSION>
-			<EVENTID_CONVERSION> </EVENTID_CONVERSION>
-			
-		</DefaultTemplateParameters>
-
-		<UseTemplate Name="ASOBO_GT_Interaction_DraggingYAxis_SimGates_Base">
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_GT_MouseRect">
-		<DefaultTemplateParameters>
-			<HELPID/>
-			<TOOLTIPID/>
-			<UPARROW/>
-			<DOWNARROW/>
-			<LEFTARROW/>
-			<RIGHTARROW/>
-			<CURSOR/>
-			<CENTER_CURSOR/>
-			<CENTER_RADIUS>0</CENTER_RADIUS>
-			<ANIMCURSOR_MIN/>
-			<ANIMCURSOR_MAX/>
-			<ANIMTIP_LOOP/>
-			<ANIMTIP_0_ON_PERCENT/>
-			<ANIMTIP_1_ON_PERCENT/>
-			<ANIMTIP_2_ON_PERCENT/>
-			<ANIMTIP_3_ON_PERCENT/>
-			<ANIMTIP_4_ON_PERCENT/>
-			<ANIMTIP_5_ON_PERCENT/>
-			<ANIMTIP_6_ON_PERCENT/>
-			<ANIMTIP_7_ON_PERCENT/>
-			<ANIMTIP_8_ON_PERCENT/>
-			<ANIMTIP_9_ON_PERCENT/>		
-			<ANIMTIP_10_ON_PERCENT/>
-			<ANIMTIP_11_ON_PERCENT/>
-			<ANIMTIP_12_ON_PERCENT/>
-			<ANIMTIP_13_ON_PERCENT/>
-			<ANIMTIP_14_ON_PERCENT/>
-			<ANIMTIP_15_ON_PERCENT/>
-			
-			<ANIMTIP_0_ON_CURSOR/>
-			<ANIMTIP_1_ON_CURSOR/>
-			<ANIMTIP_2_ON_CURSOR/>
-			<ANIMTIP_3_ON_CURSOR/>
-			<ANIMTIP_4_ON_CURSOR/>
-			<ANIMTIP_5_ON_CURSOR/>
-			<ANIMTIP_6_ON_CURSOR/>
-			<ANIMTIP_7_ON_CURSOR/>
-			<ANIMTIP_8_ON_CURSOR/>
-			<ANIMTIP_9_ON_CURSOR/>
-			<ANIMTIP_10_ON_CURSOR/>
-			<ANIMTIP_11_ON_CURSOR/>
-			<ANIMTIP_12_ON_CURSOR/>
-			<ANIMTIP_13_ON_CURSOR/>
-			<ANIMTIP_14_ON_CURSOR/>
-			<ANIMTIP_15_ON_CURSOR/>
-			
-			<ANIMTIP_0_ON_HITBOX/>
-			<ANIMTIP_1_ON_HITBOX/>
-			<ANIMTIP_2_ON_HITBOX/>
-			<ANIMTIP_3_ON_HITBOX/>
-			<ANIMTIP_4_ON_HITBOX/>
-			<ANIMTIP_5_ON_HITBOX/>
-			<ANIMTIP_6_ON_HITBOX/>
-			<ANIMTIP_7_ON_HITBOX/>
-			<ANIMTIP_8_ON_HITBOX/>
-			<ANIMTIP_9_ON_HITBOX/>
-			<ANIMTIP_10_ON_HITBOX/>
-			<ANIMTIP_11_ON_HITBOX/>
-			<ANIMTIP_12_ON_HITBOX/>
-			<ANIMTIP_13_ON_HITBOX/>
-			<ANIMTIP_14_ON_HITBOX/>
-			<ANIMTIP_15_ON_HITBOX/>
-			
-			<DRAG_IS_RELATIVE>True</DRAG_IS_RELATIVE>
-			<DRAG_AXIS_X_SCALE>0</DRAG_AXIS_X_SCALE>
-			<DRAG_AXIS_Y_SCALE>0</DRAG_AXIS_Y_SCALE>
-			<DRAG_AXIS_Z_SCALE>0</DRAG_AXIS_Z_SCALE>
-			<Condition Check="DRAG_AXIS_SCALE">
-				<Switch Param="AXIS">
-					<Case Value="X">
-						<DRAG_AXIS_X_SCALE>#DRAG_AXIS_SCALE#</DRAG_AXIS_X_SCALE>
-					</Case>
-					<Case Value="Y">
-						<DRAG_AXIS_Y_SCALE>#DRAG_AXIS_SCALE#</DRAG_AXIS_Y_SCALE>
-					</Case>
-					<Case Value="Z">
-						<DRAG_AXIS_Z_SCALE>#DRAG_AXIS_SCALE#</DRAG_AXIS_Z_SCALE>
-					</Case>
-				</Switch>
-			</Condition>
-			<DRAG_NODE_ID></DRAG_NODE_ID>
-			<DRAG_ANIM_NAME></DRAG_ANIM_NAME>
-			<Condition Check="USE_TRAJECTORY_DRAG_MODE">
-				<True>
-					<DRAG_MODE>Trajectory</DRAG_MODE>
-				</True>
-				<False>
-					<DRAG_MODE>Default</DRAG_MODE>
-				</False>
-			</Condition>
-			
-			<Condition Check="NODE_ID">
-				<True>
-					<DRAG_ANIMATION_VARIABLE_TYPE>O</DRAG_ANIMATION_VARIABLE_TYPE>
-					<DRAG_ANIMATION_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Position</DRAG_ANIMATION_VARIABLE_NAME>
-					<DRAG_ANIMATION_TARGET_VARIABLE_TYPE>O</DRAG_ANIMATION_TARGET_VARIABLE_TYPE>
-					<DRAG_ANIMATION_TARGET_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Target_Position</DRAG_ANIMATION_TARGET_VARIABLE_NAME>
-				</True>
-			</Condition>
-			
-			<ANIMCURSOR_DIR>1.0</ANIMCURSOR_DIR>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition NotEmpty="ANIMATION_CODE_SETTER">
-				<Switch>
-					<Case Check="X_MOVEMENT">
-						<X_MOVEMENT>
-							#X_MOVEMENT#
-							#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
-							#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
-						</X_MOVEMENT>
-					</Case>
-					<Case Check="Y_MOVEMENT">
-						<Y_MOVEMENT>
-							#Y_MOVEMENT#
-							#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
-							#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
-						</Y_MOVEMENT>
-					</Case>
-					<Case Check="CALLBACKDRAGGING">
-						<CALLBACKDRAGGING>
-							#CALLBACKDRAGGING#
-							#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
-							#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
-						</CALLBACKDRAGGING>
-					</Case>
-					<Case Check="CALLBACKCODE">
-						<CALLBACKCODE>
-							#CALLBACKCODE#
-							#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
-							#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
-						</CALLBACKCODE>
-					</Case>
-				</Switch>
-			</Condition>
-			<Condition Check="INVERT_ANIM">
-				<True>
-					<ANIMCURSOR_DIR Process="Float">#ANIMCURSOR_DIR# -1 *</ANIMCURSOR_DIR>
-				</True>
-			</Condition>
-		</OverrideTemplateParameters>
-		
-		<Switch>
-			<Case Check="EMISSIVE_NODE_POTENTIOMETER">
-				<UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
-					<POTENTIOMETER>#EMISSIVE_NODE_POTENTIOMETER#</POTENTIOMETER>
-				</UseTemplate>
-			</Case>
-			<Case Check="EMISSIVE_NODE_SIMVAR_POWER_SETTING">
-				<UseTemplate Name="ASOBO_GT_Emissive_Power_Setting">
-					<SIMVAR_POWER_SETTING>#EMISSIVE_NODE_SIMVAR_POWER_SETTING#</SIMVAR_POWER_SETTING>
-				</UseTemplate>
-			</Case>
-		</Switch>
-		
-		<Condition Check="ANIMATION_CODE_SETTER">
-			<UseTemplate Name="ASOBO_GT_Update_SmoothLeverMovement">
-			</UseTemplate>
+		<Condition NotEmpty="NEGATIVE_AXIS_CODE">
+			<True>
+				<NEGATIVE_AXIS_CODE_DEFAULT_IM>#NEGATIVE_AXIS_CODE#</NEGATIVE_AXIS_CODE_DEFAULT_IM>
+				<NEGATIVE_AXIS_CODE_DRAG_IM>#NEGATIVE_AXIS_CODE#</NEGATIVE_AXIS_CODE_DRAG_IM>
+			</True>
 		</Condition>
-		
-		<MouseRect>
-			<HelpID>#HELPID#</HelpID>
-			<TooltipID>#TOOLTIPID#</TooltipID>	
-			<CursorLeft>#LEFTARROW#</CursorLeft>
-			<CursorRight>#RIGHTARROW#</CursorRight>
-			<CursorUp>#UPARROW#</CursorUp>
-			<CursorDown>#DOWNARROW#</CursorDown>	
-			<CursorCenter>#CENTER_CURSOR#</CursorCenter>
-			<Cursor>#CURSOR#</Cursor>
-			<CursorCenterRadius>#CENTER_RADIUS#</CursorCenterRadius>
-			<MouseFlags>#MOUSEFLAGS#</MouseFlags>
-			<Animated>
-				<Condition Check="ANIMREF_ID">
-					<AnimRefID>#ANIMREF_ID#</AnimRefID>
-				</Condition>
-				
-				<AnimCursor min="#ANIMCURSOR_MIN#" max="#ANIMCURSOR_MAX#">#ANIMCURSOR_DIR#</AnimCursorDir>
-				
-				<Condition Check="ANIMTIP_LOOP">
-					<AnimTooltipLoop>#ANIMTIP_LOOP#</AnimTooltipLoop>
-				</Condition>
-							
-				<Condition NotEmpty="ANIMTIP_0">
-					<AnimTooltip percent="#ANIMTIP_0_ON_PERCENT#" cursor="#ANIMTIP_0_ON_CURSOR#" hitbox="#ANIMTIP_0_ON_HITBOX#">#ANIMTIP_0#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_1">
-					<AnimTooltip percent="#ANIMTIP_1_ON_PERCENT#" cursor="#ANIMTIP_1_ON_CURSOR#" hitbox="#ANIMTIP_1_ON_HITBOX#">#ANIMTIP_1#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_2">
-					<AnimTooltip percent="#ANIMTIP_2_ON_PERCENT#" cursor="#ANIMTIP_2_ON_CURSOR#" hitbox="#ANIMTIP_2_ON_HITBOX#">#ANIMTIP_2#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_3">
-					<AnimTooltip percent="#ANIMTIP_3_ON_PERCENT#" cursor="#ANIMTIP_3_ON_CURSOR#" hitbox="#ANIMTIP_3_ON_HITBOX#">#ANIMTIP_3#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_4">
-					<AnimTooltip percent="#ANIMTIP_4_ON_PERCENT#" cursor="#ANIMTIP_4_ON_CURSOR#" hitbox="#ANIMTIP_4_ON_HITBOX#">#ANIMTIP_4#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_5">
-					<AnimTooltip percent="#ANIMTIP_5_ON_PERCENT#" cursor="#ANIMTIP_5_ON_CURSOR#" hitbox="#ANIMTIP_5_ON_HITBOX#">#ANIMTIP_5#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_6">
-					<AnimTooltip percent="#ANIMTIP_6_ON_PERCENT#" cursor="#ANIMTIP_6_ON_CURSOR#" hitbox="#ANIMTIP_6_ON_HITBOX#">#ANIMTIP_6#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_7">
-					<AnimTooltip percent="#ANIMTIP_7_ON_PERCENT#" cursor="#ANIMTIP_7_ON_CURSOR#" hitbox="#ANIMTIP_7_ON_HITBOX#">#ANIMTIP_7#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_8">
-					<AnimTooltip percent="#ANIMTIP_8_ON_PERCENT#" cursor="#ANIMTIP_8_ON_CURSOR#" hitbox="#ANIMTIP_8_ON_HITBOX#">#ANIMTIP_8#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_9">
-					<AnimTooltip percent="#ANIMTIP_9_ON_PERCENT#" cursor="#ANIMTIP_9_ON_CURSOR#" hitbox="#ANIMTIP_9_ON_HITBOX#">#ANIMTIP_9#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_10">
-					<AnimTooltip percent="#ANIMTIP_10_ON_PERCENT#" cursor="#ANIMTIP_10_ON_CURSOR#" hitbox="#ANIMTIP_10_ON_HITBOX#">#ANIMTIP_10#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_11">
-					<AnimTooltip percent="#ANIMTIP_11_ON_PERCENT#" cursor="#ANIMTIP_11_ON_CURSOR#" hitbox="#ANIMTIP_11_ON_HITBOX#">#ANIMTIP_11#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_12">
-					<AnimTooltip percent="#ANIMTIP_12_ON_PERCENT#" cursor="#ANIMTIP_12_ON_CURSOR#" hitbox="#ANIMTIP_12_ON_HITBOX#">#ANIMTIP_12#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_13">
-					<AnimTooltip percent="#ANIMTIP_13_ON_PERCENT#" cursor="#ANIMTIP_13_ON_CURSOR#" hitbox="#ANIMTIP_13_ON_HITBOX#">#ANIMTIP_13#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_14">
-					<AnimTooltip percent="#ANIMTIP_14_ON_PERCENT#" cursor="#ANIMTIP_14_ON_CURSOR#" hitbox="#ANIMTIP_14_ON_HITBOX#">#ANIMTIP_14#</AnimTooltip>
-				</Condition>
-				<Condition NotEmpty="ANIMTIP_15">
-					<AnimTooltip percent="#ANIMTIP_15_ON_PERCENT#" cursor="#ANIMTIP_15_ON_CURSOR#" hitbox="#ANIMTIP_15_ON_HITBOX#">#ANIMTIP_15#</AnimTooltip>
-				</Condition>
-			</Animated>
+		<Condition Valid="INVERT_WHEEL_INTERACTION">
+			<True>
+				<FLAG_POS_WHEEL_UP>4</FLAG_POS_WHEEL_UP>
+				<FLAG_POS_WHEEL_DN>3</FLAG_POS_WHEEL_DN>
+			</True>
+			<False>
+				<FLAG_POS_WHEEL_UP>3</FLAG_POS_WHEEL_UP>
+				<FLAG_POS_WHEEL_DN>4</FLAG_POS_WHEEL_DN>
+			</False>
+		</Condition>
+		<Condition Valid="INVERT_DRAG_POSITIVE_CONDITION">
+			<True>
+				<DRAG_IS_POSITIVE_CONDITION>0 &lt;=</DRAG_IS_POSITIVE_CONDITION>
+			</True>
+			<False>
+				<DRAG_IS_POSITIVE_CONDITION>0 &gt;</DRAG_IS_POSITIVE_CONDITION>
+			</False>
+		</Condition>
+		<THRESHOLD_MOUSE>0.01</THRESHOLD_MOUSE>
+		<THRESHOLD_INPUT>0.25</THRESHOLD_INPUT>
+		<UPARROW_DRAG_IM/>
+		<DOWNARROW_DRAG_IM/>
+		<LEFTARROW_DRAG_IM/>
+		<RIGHTARROW_DRAG_IM/>
+		<CURSOR_CENTER_DRAG_IM/>
+		<CURSOR_DRAG_IM>Grab</CURSOR_DRAG_IM>
+		<ALWAYS_USE_ANIM_LAG>False</ALWAYS_USE_ANIM_LAG>
+		<USE_PAD_DRAG_IM_LOCK>False</USE_PAD_DRAG_IM_LOCK>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<THRESHOLD>#THRESHOLD_INPUT# #THRESHOLD_MOUSE# (M:InputType) 1 == ?</THRESHOLD>
+		<Condition Valid="USE_PAD_DRAG_IM_LOCK">
+			<True>
+				<CHECK_AND_RESET_DRAG_LOCK>
+					(M:InputType) 1 == if{ 
+						(O:_ResetDragTime) (E:SIMULATION TIME, second) &lt; if{ 
+							0 (&gt;O:_IsLimited) 
+						} 
+						(E:SIMULATION TIME, second) @DragLockResetTimer + (&gt;O:_ResetDragTime) 
+					} 
+				</CHECK_AND_RESET_DRAG_LOCK>
+				<CHECK_IS_DRAG_LOCKED>(M:InputType) 1 == (O:_IsLimited) and</CHECK_IS_DRAG_LOCKED>
+				<SET_DRAG_LOCK>1 (&gt;O:_IsLimited)</SET_DRAG_LOCK>
+				<UNSET_DRAG_LOCK>0 (&gt;O:_IsLimited)</UNSET_DRAG_LOCK>
+			</True>
+			<False>
+				<CHECK_AND_RESET_DRAG_LOCK/>
+				<CHECK_IS_DRAG_LOCKED>0</CHECK_IS_DRAG_LOCKED>
+				<SET_DRAG_LOCK/>
+				<UNSET_DRAG_LOCK/>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<MOUSEFLAGS_DRAG_IM>LeftAll+WheelUp+WheelDown+Lock+Unlock</MOUSEFLAGS_DRAG_IM>
+		<CALLBACKCODE_DRAG_IM>
+			(M:Event) 'WheelUp'    scmi 0 == if{ g#FLAG_POS_WHEEL_UP# } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ g#FLAG_POS_WHEEL_DN# } els{
+			(M:Event) 'Lock' scmi 0 == if{
+				(M:Relative#AXIS#) (&gt;O:_Last#AXIS#)
+				#UNSET_DRAG_LOCK#
+			} els{
+			(M:Event) 'Unlock' scmi 0 == if{
+				0 (&gt;O:_Last#AXIS#)
+			} els{
+			(M:Event) 'LeftDrag' scmi 0 == if{ 
+				#CHECK_AND_RESET_DRAG_LOCK# 
+				#CHECK_IS_DRAG_LOCKED# if{
+					(M:Relative#AXIS#) (&gt;O:_Last#AXIS#)
+				} els{
+					(M:Relative#AXIS#) (O:_Last#AXIS#) - sp0
+					#THRESHOLD# (&gt;O:_InputThreshold)
+					l0 abs (O:_InputThreshold) &gt; if{
+						#SET_DRAG_LOCK#
+						l0 (O:_InputThreshold) / abs flr sp1
+						l0 (O:_InputThreshold) % abs sp2
+						:1 (* for loop *)
+						l1 0 &lt;= if{ g2 }
+						l1 -- sp1
+						l0 #DRAG_IS_POSITIVE_CONDITION# if{
+							#POSITIVE_AXIS_CODE_DRAG_IM#
+						} els{
+							#NEGATIVE_AXIS_CODE_DRAG_IM#
+						}
+						g1
+						:2 
+						l0 0 &gt; if{
+							(M:Relative#AXIS#) l2 - (&gt;O:_Last#AXIS#)
+						} els{
+							(M:Relative#AXIS#) l2 + (&gt;O:_Last#AXIS#)
+						}
+						g5
+					}
+				}
+			} } } } }
+			quit
+			:5 #CALLBACKCODE_DRAG_IM#
+			quit
+			:3 #POSITIVE_AXIS_CODE_DRAG_IM# g5 quit
+			:4 #NEGATIVE_AXIS_CODE_DRAG_IM# g5 quit
+		</CALLBACKCODE_DRAG_IM>
+		<MOUSEFLAGS_DEFAULT_IM>LeftSingle+WheelUp+WheelDown</MOUSEFLAGS_DEFAULT_IM>
+		<CALLBACKCODE_DEFAULT_IM>
+			(M:Event) 'WheelUp'    scmi 0 == if{ g1 } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ g2 } els{
+			(M:Event) 'LeftSingle' scmi 0 == if{
+					(M:Relative#AXIS#) (&gt;O:_LastPos)
+					(M:Relative#AXIS#) 0 &gt; if{ g1 } els{ g2 }
+				}
+			} }
+			quit
 			
-			<Switch>
-				<Case Check="EVENTID">
-					<EventID>#EVENTID#</EventID>
+			:1 #POSITIVE_AXIS_CODE_DEFAULT_IM# quit
+			:2 #NEGATIVE_AXIS_CODE_DEFAULT_IM# quit
+			
+			#CALLBACKCODE_DEFAULT_IM#
+		</CALLBACKCODE_DEFAULT_IM>
+	</UseTemplate>
+</Template>
+
+<!--
+	Dragging objects interations on X axis,
+	using "set" event.
+
+	Required parameter:
+		DRAG_SIMVAR
+		DRAG_SIMVAR_UNITS
+		DRAG_EVENTID_SET
+-->
+<Template Name = "ASOBO_GT_Interaction_DraggingXAxis_EventSet">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<CURSOR>Grab</CURSOR>
+		<DRAG_SCALE>163.84</DRAG_SCALE>
+		<DRAG_AXIS_SCALE>100</DRAG_AXIS_SCALE>
+		<DRAG_MIN_VALUE>0</DRAG_MIN_VALUE>
+		<DRAG_MAX_VALUE>16384</DRAG_MAX_VALUE>
+		<AXIS>X</AXIS>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<MouseFlags>LeftSingle+LeftDrag+WheelUp+WheelDown+Lock</MouseFlags>
+		<CALLBACKDRAGGING/>
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Dragging objects interations on Y axis,
+	using "set" event.
+
+	Required parameter:
+		DRAG_SIMVAR
+		DRAG_SIMVAR_UNITS
+		DRAG_EVENTID_SET
+-->
+<Template Name = "ASOBO_GT_Interaction_DraggingYAxis_EventSet">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<CURSOR>Grab</CURSOR>
+		<DRAG_SCALE>163.84</DRAG_SCALE>
+		<DRAG_AXIS_SCALE>-100</DRAG_AXIS_SCALE>
+		<DRAG_MIN_VALUE>0</DRAG_MIN_VALUE>
+		<DRAG_MAX_VALUE>16384</DRAG_MAX_VALUE>
+		<AXIS>Y</AXIS>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<MouseFlags>LeftSingle+LeftDrag+WheelUp+WheelDown+Lock</MouseFlags>
+		<CALLBACKDRAGGING/>
+	</UseTemplate>
+</Template>
+
+<!--
+	Dragging objects interations on X axis,
+	using "increase" and "decrease" events.
+
+	Required parameter:
+		CLOCKWISE_EVENTID
+		ANTICLOCKWISE_EVENTID
+-->
+<Template Name = "ASOBO_GT_Interaction_DraggingXAxis_EventsIncDec">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<DRAG_DELTA>8</DRAG_DELTA>
+		<DRAG_SCALAR>2</DRAG_SCALAR>
+		<CURSOR>Grab</CURSOR>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<MouseFlags>LeftSingle+LeftDrag+WheelUp+WheelDown+Lock</MouseFlags>
+		<X_MOVEMENT/>
+	</UseTemplate>
+</Template>
+
+<!--
+	Dragging objects interations on Y axis,
+	using "increase" and "decrease" events.
+
+	Required parameter:
+		CLOCKWISE_EVENTID
+		ANTICLOCKWISE_EVENTID
+-->
+<Template Name = "ASOBO_GT_Interaction_DraggingYAxis_EventsIncDec">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<DRAG_DELTA>20</DRAG_DELTA>
+		<DRAG_SCALAR>5</DRAG_SCALAR>
+		<CURSOR>Grab</CURSOR>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<MouseFlags>LeftSingle+LeftDrag+WheelUp+WheelDown+Lock</MouseFlags>
+		<Y_MOVEMENT/>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GT_Interaction_DraggingYAxis_Gates">
+	<DefaultTemplateParameters>
+		<STEPS_NUMBER>3</STEPS_NUMBER>
+		<GATE_TOLERANCE>0.2</GATE_TOLERANCE>
+		<DRAG_SPEED>10</DRAG_SPEED> 
+		<POSITION_TYPE>O</POSITION_TYPE>
+		<POSITION_VAR>Position</POSITION_VAR>
+		<CURSOR>Grab</CURSOR>
+		<AXIS>Y</AXIS>
+		<GATE_DIRECTION>1</GATE_DIRECTION>
+		<!-- GATE_DIRECTION : 
+					-1 = Forwards
+					0 = Both
+					1 = Backwards
+		-->
+		<IGNORE_GATE>False</IGNORE_GATE>
+		<INIT_DRAG></INIT_DRAG>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid="USE_TRAJECTORY_DRAG_MODE">
+			<True>
+				<Condition Valid="OVERRIDE_NEW_POSITION">
+					<True>
+						<NEW_POSITION>#OVERRIDE_NEW_POSITION#</NEW_POSITION>
+					</True>
+					<False>
+						<NEW_POSITION>#STEPS_NUMBER# (M:DragPercent) * </NEW_POSITION>
+					</False>
+				</Condition>
+				<INIT_DRAG>
+					#INIT_DRAG#
+					(M:DragPercent) (&gt;O:InitialDragPercent)
+				</INIT_DRAG>
+				<DRAG_CODE>
+					#DRAG_CODE#
+					(M:DragPercent) (&gt;O:PrevDragPercent)
+				</DRAG_CODE>
+			</True>
+			<False>
+				<NEW_POSITION>(#POSITION_TYPE#:#POSITION_VAR#) l3 + </NEW_POSITION>
+			</False>
+		</Condition>
+		<Condition>
+			<Test>
+				<And>
+					<Greater>
+						<Value>IGNORE_GATE</Value>
+						<Number>0</Number>
+					</Greater>
+					<Lower>
+						<Value>IGNORE_GATE</Value>
+						<Value>STEPS_NUMBER</Value>
+					</Lower>
+				</And>
+			</Test>
+			<True>
+				<IGNORE_GATE_CODE>
+					(O:MaxDraggingPosition) #IGNORE_GATE# == if{
+						(O:MaxDraggingPosition) ++ (&gt;O:MaxDraggingPosition)
+					}
+					(O:MinDraggingPosition) #IGNORE_GATE# == if{
+						(O:MinDraggingPosition) -- (&gt;O:MinDraggingPosition)
+					}
+				</IGNORE_GATE_CODE>
+			</True>
+			<False>
+				<IGNORE_GATE_CODE></IGNORE_GATE_CODE>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<MOUSEFLAGS>LeftAll+WheelUp+WheelDown+Lock+Unlock</MOUSEFLAGS>
+		<CALLBACKCODE>
+			(M:Event) 'Lock' scmp 0 == if{
+				(M:RelativeY) (&gt;O:PrevY, Number)
+				(#POSITION_TYPE#:#POSITION_VAR#) (&gt;O:InitialDraggingPosition)
+				(O:InitialDraggingPosition) near (O:InitialDraggingPosition) - abs #GATE_TOLERANCE# &lt; sp1
+				#INIT_DRAG#
+				
+				#GATE_DIRECTION# -1 != if{
+					l1 if{
+						(O:InitialDraggingPosition) near 1 + #STEPS_NUMBER# min (&gt;O:MaxDraggingPosition)
+					} els{
+						(O:InitialDraggingPosition) ceil #STEPS_NUMBER# min (&gt;O:MaxDraggingPosition)
+					}
+				} els{
+					#STEPS_NUMBER# (&gt;O:MaxDraggingPosition)
+				}
+				
+				#GATE_DIRECTION# 1 != if{
+					l1 if{
+						(O:InitialDraggingPosition) near 1 - 0 max (&gt;O:MinDraggingPosition)
+					} els{
+						(O:InitialDraggingPosition) flr 0 max (&gt;O:MinDraggingPosition)
+					}
+				} els{
+					0 (&gt;O:MinDraggingPosition)
+				}
+				#IGNORE_GATE_CODE#
+				1 (&gt;O:IsDragging)
+			} els{ 
+				(M:Event) 'Unlock' scmp 0 == if{
+					0 (&gt;O:IsDragging)
+				} els{			
+					(M:Event) 'LeftDrag' scmp 0 == if{
+						(M:InputType) 1 == if{
+							(O:_ResetLimitsTime) (E:SIMULATION TIME, second) &lt; if{
+								(#POSITION_TYPE#:#POSITION_VAR#) (&gt;O:InitialDraggingPosition)
+								(O:InitialDraggingPosition) near (O:InitialDraggingPosition) - abs #GATE_TOLERANCE# &lt; sp1
+								#INIT_DRAG#
+								
+								#GATE_DIRECTION# -1 != if{
+									l1 if{
+										(O:InitialDraggingPosition) near 1 + #STEPS_NUMBER# min (&gt;O:MaxDraggingPosition)
+									} els{
+										(O:InitialDraggingPosition) ceil #STEPS_NUMBER# min (&gt;O:MaxDraggingPosition)
+									}
+								} els{
+									#STEPS_NUMBER# (&gt;O:MaxDraggingPosition)
+								}
+								
+								#GATE_DIRECTION# 1 != if{
+									l1 if{
+										(O:InitialDraggingPosition) near 1 - 0 max (&gt;O:MinDraggingPosition)
+									} els{
+										(O:InitialDraggingPosition) flr 0 max (&gt;O:MinDraggingPosition)
+									}
+								} els{
+									0 (&gt;O:MinDraggingPosition)
+								}
+								#IGNORE_GATE_CODE#
+							}
+							(E:SIMULATION TIME, second) 0.1 + (&gt;O:_ResetLimitsTime)
+						}
+						
+						
+						(O:PrevY) (M:RelativeY) - sp2	
+						l2 #DRAG_SPEED# * sp3
+						
+						#GATE_DIRECTION# -1 != if{
+							(#POSITION_TYPE#:#POSITION_VAR#) #GATE_TOLERANCE# + flr 1 + (O:MaxDraggingPosition) min (&gt;O:MaxDraggingPosition)
+						}
+						#GATE_DIRECTION# 1 != if{
+							(#POSITION_TYPE#:#POSITION_VAR#) #GATE_TOLERANCE# - ceil 1 - (O:MinDraggingPosition) max (&gt;O:MinDraggingPosition)
+						}
+						#IGNORE_GATE_CODE#
+						
+						#NEW_POSITION# (O:MaxDraggingPosition) min (O:MinDraggingPosition) max (&gt;#POSITION_TYPE#:#POSITION_VAR#)
+						
+						#DRAG_CODE#
+						
+						(M:RelativeY) (&gt;O:PrevY)
+					}
+				}
+			}
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GT_Interaction_DraggingYAxis_SimGates">
+	<DefaultTemplateParameters>
+		<STEPS_NUMBER>3</STEPS_NUMBER>
+		<GATE_TOLERANCE>0.2</GATE_TOLERANCE>
+		<DRAG_SPEED>0.01</DRAG_SPEED> 
+		<CURSOR>Grab</CURSOR>
+		<GATE_DIRECTION>1</GATE_DIRECTION>
+		<AXIS>Y</AXIS>
+		<!-- GATE_DIRECTION : 
+					-1 = Forwards
+					0 = Both
+					1 = Backwards
+		-->
+		<SIMVAR_CONVERSION> </SIMVAR_CONVERSION>
+		<EVENTID_CONVERSION> </EVENTID_CONVERSION>
+		
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Interaction_DraggingYAxis_SimGates_Base">
+	</UseTemplate>
+</Template>
+
+<!--
+	Base logic template for dragging objects interations on axis,
+	using code.
+
+	Required parameter:
+		UP_CODE
+		DOWN_CODE
+		AXIS (must be exactly "X" or "Y")
+-->
+<Template Name = "ASOBO_GT_Interaction_DraggingAxis_Code">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<CURSOR>Grab</CURSOR>
+		<DRAG_DELTA>0.001</DRAG_DELTA>
+		<DRAG_SPEED>0.5</DRAG_SPEED>
+		
+		<POSITION_TYPE>O</POSITION_TYPE>
+		<POSITION_VAR>Position</POSITION_VAR>
+		
+		<Condition Check="IS_LOOPING">
+			<True>
+				<MIN_LIMITER>dnor</MIN_LIMITER>
+				<MAX_LIMITER>dnor</MAX_LIMITER>
+			</True>
+			<False>
+				<Condition Check="ANIM_LENGTH">
+					<True>
+						<MIN_LIMITER> 0 max </MIN_LIMITER>
+						<MAX_LIMITER> #ANIM_LENGTH# min </MAX_LIMITER>
+					</True>
+					<False>
+						<ANIM_LENGTH>100</ANIM_LENGTH>
+						<MIN_LIMITER> 0 max </MIN_LIMITER>
+						<MAX_LIMITER> 100 min </MAX_LIMITER>
+					</False>
+				</Condition>
+			</False>
+		</Condition>
+		<Condition Check="REVERSE_INTERACTION">
+			<True>
+				<FLAG_1>2</FLAG_1>
+				<FLAG_2>1</FLAG_2>
+			</True>
+			<False>
+				<FLAG_1>1</FLAG_1>
+				<FLAG_2>2</FLAG_2>
+			</False>
+		</Condition>
+		<LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
+		<ALWAYS_USE_ANIM_LAG>False</ALWAYS_USE_ANIM_LAG>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<MouseFlags>LeftAll+WheelUp+WheelDown</MouseFlags>
+		<CALLBACKCODE>
+			(M:Event) 'WheelUp'    scmi 0 == if{ g1 } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ g2 } els{
+			(M:Event) 'LeftSingle' scmi 0 == if{ #LEFT_SINGLE_CODE# (M:Relative#AXIS#) (&gt;O:_Last#AXIS#) } els{
+			(M:Event) 'LeftDrag'   scmi 0 == if{
+				(O:_Last#AXIS#) (M:Relative#AXIS#) -  #DRAG_DELTA# / abs (&gt;O:DragFactor)
+				(O:_Last#AXIS#) (M:Relative#AXIS#) -  -#DRAG_DELTA# &lt; if{ 
+					(M:Relative#AXIS#) (&gt;O:_Last#AXIS#) 
+					g1 
+				} els{
+					(O:_Last#AXIS#) (M:Relative#AXIS#) -  #DRAG_DELTA# &gt; if{ 
+					(M:Relative#AXIS#) (&gt;O:_Last#AXIS#) 
+					g2 
+					} els{
+			} } } } } }
+			quit
+			
+			:#FLAG_1# (#POSITION_TYPE#:#POSITION_VAR#) #DRAG_SPEED# (O:DragFactor) * + #MAX_LIMITER# (&gt;#POSITION_TYPE#:#POSITION_VAR#)
+			#UP_CODE#
+			quit
+			
+			:#FLAG_2# (#POSITION_TYPE#:#POSITION_VAR#) #DRAG_SPEED# (O:DragFactor) * - #MIN_LIMITER# (&gt;#POSITION_TYPE#:#POSITION_VAR#)
+			#DOWN_CODE#
+			quit
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+<!--
+	Dragging objects interations on X axis,
+	using code.
+
+	Required parameter:
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+-->
+<Template Name = "ASOBO_GT_Interaction_DraggingXAxis_Code">
+
+	<UseTemplate Name = "ASOBO_GT_Interaction_DraggingAxis_Code">
+		<AXIS>X</AXIS>
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Dragging objects interations on Y axis,
+	using code.
+
+	Required parameter:
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+-->
+<Template Name = "ASOBO_GT_Interaction_DraggingYAxis_Code">
+
+	<UseTemplate Name = "ASOBO_GT_Interaction_DraggingAxis_Code">
+		<AXIS>Y</AXIS>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GT_MouseRect">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<ANIMCURSOR_MIN/>
+		<ANIMCURSOR_MAX/>
+		<ANIMTIP_LOOP/>
+		<ANIMTIP_0_ON_PERCENT/>
+		<ANIMTIP_1_ON_PERCENT/>
+		<ANIMTIP_2_ON_PERCENT/>
+		<ANIMTIP_3_ON_PERCENT/>
+		<ANIMTIP_4_ON_PERCENT/>
+		<ANIMTIP_5_ON_PERCENT/>
+		<ANIMTIP_6_ON_PERCENT/>
+		<ANIMTIP_7_ON_PERCENT/>
+		<ANIMTIP_8_ON_PERCENT/>
+		<ANIMTIP_9_ON_PERCENT/>		
+		<ANIMTIP_10_ON_PERCENT/>
+		<ANIMTIP_11_ON_PERCENT/>
+		<ANIMTIP_12_ON_PERCENT/>
+		<ANIMTIP_13_ON_PERCENT/>
+		<ANIMTIP_14_ON_PERCENT/>
+		<ANIMTIP_15_ON_PERCENT/>
+		
+		<ANIMTIP_0_ON_CURSOR/>
+		<ANIMTIP_1_ON_CURSOR/>
+		<ANIMTIP_2_ON_CURSOR/>
+		<ANIMTIP_3_ON_CURSOR/>
+		<ANIMTIP_4_ON_CURSOR/>
+		<ANIMTIP_5_ON_CURSOR/>
+		<ANIMTIP_6_ON_CURSOR/>
+		<ANIMTIP_7_ON_CURSOR/>
+		<ANIMTIP_8_ON_CURSOR/>
+		<ANIMTIP_9_ON_CURSOR/>
+		<ANIMTIP_10_ON_CURSOR/>
+		<ANIMTIP_11_ON_CURSOR/>
+		<ANIMTIP_12_ON_CURSOR/>
+		<ANIMTIP_13_ON_CURSOR/>
+		<ANIMTIP_14_ON_CURSOR/>
+		<ANIMTIP_15_ON_CURSOR/>
+		
+		<ANIMTIP_0_ON_HITBOX/>
+		<ANIMTIP_1_ON_HITBOX/>
+		<ANIMTIP_2_ON_HITBOX/>
+		<ANIMTIP_3_ON_HITBOX/>
+		<ANIMTIP_4_ON_HITBOX/>
+		<ANIMTIP_5_ON_HITBOX/>
+		<ANIMTIP_6_ON_HITBOX/>
+		<ANIMTIP_7_ON_HITBOX/>
+		<ANIMTIP_8_ON_HITBOX/>
+		<ANIMTIP_9_ON_HITBOX/>
+		<ANIMTIP_10_ON_HITBOX/>
+		<ANIMTIP_11_ON_HITBOX/>
+		<ANIMTIP_12_ON_HITBOX/>
+		<ANIMTIP_13_ON_HITBOX/>
+		<ANIMTIP_14_ON_HITBOX/>
+		<ANIMTIP_15_ON_HITBOX/>
+		
+		<DRAG_IS_RELATIVE>True</DRAG_IS_RELATIVE>
+		<DRAG_AXIS_X_SCALE>0</DRAG_AXIS_X_SCALE>
+		<DRAG_AXIS_Y_SCALE>0</DRAG_AXIS_Y_SCALE>
+		<DRAG_AXIS_Z_SCALE>0</DRAG_AXIS_Z_SCALE>
+		<Condition Check="DRAG_AXIS_SCALE">
+			<Switch Param="AXIS">
+				<Case Value="X">
+					<DRAG_AXIS_X_SCALE>#DRAG_AXIS_SCALE#</DRAG_AXIS_X_SCALE>
 				</Case>
-				<Case Check="CALLBACKCODE">
-					<CallbackCode>
-						<Code>#CALLBACKCODE#</Code>
-						<DragAnimName>#DRAG_ANIM_NAME#</DragAnimName>
-						<DragNodeId>#DRAG_NODE_ID#</DragNodeId>
-						<DragMode>#DRAG_MODE#</DragMode>
-					</CallbackCode>
+				<Case Value="Y">
+					<DRAG_AXIS_Y_SCALE>#DRAG_AXIS_SCALE#</DRAG_AXIS_Y_SCALE>
 				</Case>
-				<Case Check="Y_MOVEMENT">
-					<CallbackJumpDragging>
-						<YMovement>
-							<Delta>#DRAG_DELTA#</Delta>
-							<EventIdInc>#CLOCKWISE_EVENTID#</EventIdInc>
-							<EventIdDec>#ANTICLOCKWISE_EVENTID#</EventIdDec>
-						</YMovement>
-					</CallbackJumpDragging>
-				</Case>
-				<Case Check="X_MOVEMENT">
-					<CallbackJumpDragging>
-						<XMovement>
-							<Delta>#DRAG_DELTA#</Delta>
-							<EventIdInc>#CLOCKWISE_EVENTID#</EventIdInc>
-							<EventIdDec>#ANTICLOCKWISE_EVENTID#</EventIdDec>
-						</XMovement>
-					</CallbackJumpDragging>
-				</Case>
-				<Case Check="CALLBACKDRAGGING">
-					<CallbackDragging>
-						<Variable>#DRAG_SIMVAR#</Variable>
-						<Units>#DRAG_SIMVAR_UNITS#</Units>
-						<Scale>#DRAG_SCALE#</Scale>
-						<XScale>#DRAG_AXIS_X_SCALE#</XScale>
-						<YScale>#DRAG_AXIS_Y_SCALE#</YScale>
-						<ZScale>#DRAG_AXIS_Z_SCALE#</ZScale>
-						<MinValue>#DRAG_MIN_VALUE#</MinValue>
-						<MaxValue>#DRAG_MAX_VALUE#</MaxValue>
-						<EventID>#DRAG_EVENTID_SET#</EventID>
-						<IsRelative>#DRAG_IS_RELATIVE#</IsRelative>
-						<DragAnimName>#DRAG_ANIM_NAME#</DragAnimName>
-						<DragNodeName>#DRAG_NODE_ID#</DragNodeName>
-						<DragMode>#DRAG_MODE#</DragMode>
-					</CallbackDragging>
+				<Case Value="Z">
+					<DRAG_AXIS_Z_SCALE>#DRAG_AXIS_SCALE#</DRAG_AXIS_Z_SCALE>
 				</Case>
 			</Switch>
-		</MouseRect>
-	</Template>
+		</Condition>
+		<DRAG_NODE_ID></DRAG_NODE_ID>
+		<DRAG_ANIM_NAME></DRAG_ANIM_NAME>
+		<Condition Check="USE_TRAJECTORY_DRAG_MODE">
+			<True>
+				<DRAG_MODE>Trajectory</DRAG_MODE>
+				<Condition Check="DONT_SYNC_DRAG_TO_ANIM">
+					<True>
+						<DRAG_ANIM_SYNCED>False</DRAG_ANIM_SYNCED>
+					</True>
+					<False>
+						<DRAG_ANIM_SYNCED>True</DRAG_ANIM_SYNCED>
+					</False>
+				</Condition>
+			</True>
+			<False>
+				<DRAG_MODE>Default</DRAG_MODE>
+				<DRAG_ANIM_SYNCED>True</DRAG_ANIM_SYNCED>
+			</False>
+		</Condition>
+		<Condition Valid="AXIS">
+			<True>
+				<DRAG_AXIS>#AXIS#</DRAG_AXIS>
+			</True>
+			<False>
+				<DRAG_AXIS>Any</DRAG_AXIS>
+			</False>
+		</Condition>
+		<DRAG_SCALAR>0.025</DRAG_SCALAR>
+		<Condition Check="NODE_ID">
+			<True>
+				<DRAG_ANIMATION_VARIABLE_TYPE>O</DRAG_ANIMATION_VARIABLE_TYPE>
+				<DRAG_ANIMATION_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Position</DRAG_ANIMATION_VARIABLE_NAME>
+				<DRAG_ANIMATION_TARGET_VARIABLE_TYPE>O</DRAG_ANIMATION_TARGET_VARIABLE_TYPE>
+				<DRAG_ANIMATION_TARGET_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Target_Position</DRAG_ANIMATION_TARGET_VARIABLE_NAME>
+			</True>
+		</Condition>
+			
+		<ANIMCURSOR_DIR>1.0</ANIMCURSOR_DIR>
+		<!-- Handling old CallbackCodes for compatibility with Interaction models -->
+		<Condition Check="CALLBACKCODE">
+			<True>
+				<CALLBACKCODE_DEFAULT_IM>#CALLBACKCODE#</CALLBACKCODE_DEFAULT_IM>
+				<CALLBACKCODE_DRAG_IM>#CALLBACKCODE#</CALLBACKCODE_DRAG_IM>
+			</True>
+			<False>
+				<Condition Check="CALLBACKCODE_DEFAULT_IM">
+					<CALLBACKCODE_DRAG_IM>#CALLBACKCODE_DEFAULT_IM#</CALLBACKCODE_DRAG_IM>
+				</Condition>
+			</False>
+		</Condition>
+		<CENTER_RADIUS>0</CENTER_RADIUS>
+		<ALWAYS_USE_ANIM_LAG>True</ALWAYS_USE_ANIM_LAG>
+		<!-- Override flags to prevent drag event to be called unless the corresponding button is down -->
+		<DRAG_MOUSEFLAGS_LOCKABLE>LeftDrag+RightDrag+MiddleDrag</DRAG_MOUSEFLAGS_LOCKABLE>
+		<TOOLTIP_TITLE/>
+		<TOOLTIP_TITLE_IS_DYNAMIC>False</TOOLTIP_TITLE_IS_DYNAMIC>
+		<TEMPORARY_LOCK_FLAGS>LeftSingle</TEMPORARY_LOCK_FLAGS>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid="ALWAYS_USE_ANIM_LAG">
+			<True>
+				<DRAG_USE_ANIM_LAG>True</DRAG_USE_ANIM_LAG>
+			</True>
+			<False>
+				<DRAG_USE_ANIM_LAG>False</DRAG_USE_ANIM_LAG>
+			</False>
+		</Condition>
+		<Condition NotEmpty="ANIMATION_CODE_SETTER">
+			<True>
+			<Switch>
+				<Case Check="X_MOVEMENT">
+					<X_MOVEMENT>
+						#X_MOVEMENT#
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
+					</X_MOVEMENT>
+				</Case>
+				<Case Check="Y_MOVEMENT">
+					<Y_MOVEMENT>
+						#Y_MOVEMENT#
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
+					</Y_MOVEMENT>
+				</Case>
+				<Case Check="CALLBACKDRAGGING">
+					<CALLBACKDRAGGING>
+						#CALLBACKDRAGGING#
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
+					</CALLBACKDRAGGING>
+				</Case>
+					<Case Check="CALLBACKCODE_DEFAULT_IM">
+						<CALLBACKCODE_DEFAULT_IM>
+							#CALLBACKCODE_DEFAULT_IM#
+							#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
+							#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
+						</CALLBACKCODE_DEFAULT_IM>
+						<CALLBACKCODE_DRAG_IM>
+							#CALLBACKCODE_DRAG_IM#
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
+						</CALLBACKCODE_DRAG_IM>
+				</Case>
+			</Switch>
+			</True>
+		</Condition>
+		<Condition Check="INVERT_ANIM">
+			<True>
+				<ANIMCURSOR_DIR Process="Float">#ANIMCURSOR_DIR# -1 *</ANIMCURSOR_DIR>
+			</True>
+		</Condition>
+		<Condition Valid="INVERT_IM_DRAG_INPUT_SCALAR">
+			<True>
+				<DRAG_SCALAR Process="Float">#DRAG_SCALAR# -1 *</DRAG_SCALAR>
+			</True>
+		</Condition>
+		<Switch>
+			<Case Valid="NO_HIGHLIGHT_NODE_ID">
+				<!-- Skip the highlight for this MouseRect (can be used to prevent breaking material using a dynamic texture such as touch screens) -->
+				<HIGHLIGHT_NODE_ID>__NO_HIGHLIGHT__</HIGHLIGHT_NODE_ID>
+			</Case>
+			<Case NotEmpty="HIGHLIGHT_NODE_ID">
+				<!-- Skip the highlight for this MouseRect (can be used to prevent breaking material using a dynamic texture such as touch screens) -->
+				<HIGHLIGHT_NODE_ID>#HIGHLIGHT_NODE_ID#</HIGHLIGHT_NODE_ID>
+			</Case>
+			<Default>
+				<HIGHLIGHT_NODE_ID/>
+			</Default>
+		</Switch>
+		<Condition Valid="DISABLE_INTERACTION_LOCK">
+			<True>
+				<DRAG_IM_LOCK_ENABLED>False</DRAG_IM_LOCK_ENABLED>
+			</True>
+			<False>
+				<DRAG_IM_LOCK_ENABLED>True</DRAG_IM_LOCK_ENABLED>
+			</False>
+		</Condition>
+		<PARAM1>LEFTARROW</PARAM1>
+		<PARAM2>RIGHTARROW</PARAM2>
+		<PARAM3>CURSOR</PARAM3>
+		<PARAM4>CENTER_CURSOR</PARAM4>
+		<PARAM5>UPARROW</PARAM5>
+		<PARAM6>DOWNARROW</PARAM6>
+		<PARAM7>CENTER_RADIUS</PARAM7><PARAM7_EMPTY_IF_NOT_DECLARED>False</PARAM7_EMPTY_IF_NOT_DECLARED>
+		<PARAM8>MOUSEFLAGS</PARAM8>
+	</OverrideTemplateParameters>
+	
+	<Switch>
+		<Case Check="EMISSIVE_NODE_POTENTIOMETER">
+			<UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
+				<POTENTIOMETER>#EMISSIVE_NODE_POTENTIOMETER#</POTENTIOMETER>
+			</UseTemplate>
+		</Case>
+		<Case Check="EMISSIVE_NODE_SIMVAR_POWER_SETTING">
+			<UseTemplate Name="ASOBO_GT_Emissive_Power_Setting">
+				<SIMVAR_POWER_SETTING>#EMISSIVE_NODE_SIMVAR_POWER_SETTING#</SIMVAR_POWER_SETTING>
+			</UseTemplate>
+		</Case>
+	</Switch>
+		
+	<Condition Check="ANIMATION_CODE_SETTER">
+		<UseTemplate Name="ASOBO_GT_Update_SmoothLeverMovement">
+		</UseTemplate>
+	</Condition>
+	
+	<!-- Process parameters with potential different implementation depending on IM -->
+	<Loop>
+		<Setup>
+			<Param>ID</Param>
+			<From>1</From>
+			<Inc>1</Inc>
+			<While>
+				<Arg Valid="PARAM#ID#"/>
+			</While>
+		</Setup>
+		<Do>
+			<Parameters Type="Default">
+				<Condition Valid="PARAM#ID#_EMPTY_IF_NOT_DECLARED">
+					<True>
+						<EMPTY_IF_NOT_DECLARED Process="Param">PARAM#ID#_EMPTY_IF_NOT_DECLARED</EMPTY_IF_NOT_DECLARED>
+					</True>
+					<False>
+						<EMPTY_IF_NOT_DECLARED>True</EMPTY_IF_NOT_DECLARED>
+					</False>
+				</Condition>
+			</Parameters>
+			<Parameters Type="Override">
+				<PARAM Process="Param">PARAM#ID#</PARAM>
+			</Parameters>
+			<Parameters Type="Override" Lifetime="Loop">
+				<Condition NotEmpty="#PARAM#">
+					<True>
+						<Condition Check="#PARAM#_DEFAULT_IM">
+							<False>
+								<#PARAM#_DEFAULT_IM Process="Param">#PARAM#</#PARAM#_DEFAULT_IM>
+							</False>
+						</Condition>
+						<Condition Check="#PARAM#_DRAG_IM">
+							<False>
+								<#PARAM#_DRAG_IM Process="Param">#PARAM#</#PARAM#_DRAG_IM>
+							</False>
+						</Condition>
+					</True>
+					<False>
+						<Condition>
+							<Test>
+								<Or>
+									<Arg NotEmpty="#PARAM#_DEFAULT_IM"/>
+									<Arg NotEmpty="#PARAM#_DRAG_IM"/>
+								</Or>
+							</Test>
+							<True>
+								<!-- procede, do not override declared (not empty) args -->
+								<Condition Valid="EMPTY_IF_NOT_DECLARED">
+									<Condition NotEmpty="#PARAM#_DEFAULT_IM">
+										<False>
+											<#PARAM#_DEFAULT_IM/>
+										</False>
+									</Condition>
+									<Condition NotEmpty="#PARAM#_DRAG_IM">
+										<False>
+											<#PARAM#_DRAG_IM/>
+										</False>
+									</Condition>
+								</Condition>
+							</True>
+							<False>
+								<Condition Valid="EMPTY_IF_NOT_DECLARED">
+									<#PARAM#_DEFAULT_IM/>
+									<#PARAM#_DRAG_IM/>
+								</Condition>
+							</False>
+						</Condition>
+					</False>
+				</Condition>
+			</Parameters>
+		</Do>
+		<Then>
+			<UseTemplate Name="ASOBO_GT_MouseRect_Impl">
+			</UseTemplate>
+		</Then>
+	</Loop>
+</Template>
+
+<Template Name="ASOBO_GT_MouseRect_Impl">
+	<MouseRect>
+		<IMCursorsInstances>
+			<IMDefault>
+				<CursorLeft>#LEFTARROW_DEFAULT_IM#</CursorLeft>
+				<CursorRight>#RIGHTARROW_DEFAULT_IM#</CursorRight>
+				<CursorUp>#UPARROW_DEFAULT_IM#</CursorUp>
+				<CursorDown>#DOWNARROW_DEFAULT_IM#</CursorDown>	
+				<CursorCenter>#CENTER_CURSOR_DEFAULT_IM#</CursorCenter>
+				<Cursor>#CURSOR_DEFAULT_IM#</Cursor>
+				<CursorCenterRadius>#CENTER_RADIUS_DEFAULT_IM#</CursorCenterRadius>
+			</IMDefault>
+			<IMDrag>
+				<CursorLeft>#LEFTARROW_DRAG_IM#</CursorLeft>
+				<CursorRight>#RIGHTARROW_DRAG_IM#</CursorRight>
+				<CursorUp>#UPARROW_DRAG_IM#</CursorUp>
+				<CursorDown>#DOWNARROW_DRAG_IM#</CursorDown>	
+				<CursorCenter>#CENTER_CURSOR_DRAG_IM#</CursorCenter>
+				<Cursor>#CURSOR_DRAG_IM#</Cursor>
+				<CursorCenterRadius>#CENTER_RADIUS_DRAG_IM#</CursorCenterRadius>
+			</IMDrag>
+		</IMCursorsInstances>
+		<IMMouseFlagsInstances>
+			<IMDefault>#MOUSEFLAGS_DEFAULT_IM#</IMDefault>
+			<IMDrag>#MOUSEFLAGS_DRAG_IM#</IMDrag>
+		</IMMouseFlagsInstances>
+		<IMTooltipsInstances>
+			<IMDefault>
+				<HelpID>#HELPID#</HelpID>
+				<TooltipID>#TOOLTIPID#</TooltipID>	
+				<Animated>
+					<Condition Check="ANIMREF_ID">
+						<AnimRefID>#ANIMREF_ID#</AnimRefID>
+					</Condition>
+						
+					<AnimCursor min="#ANIMCURSOR_MIN#" max="#ANIMCURSOR_MAX#">#ANIMCURSOR_DIR#</AnimCursor>
+						
+					<Condition Check="ANIMTIP_LOOP">
+						<AnimTooltipLoop>#ANIMTIP_LOOP#</AnimTooltipLoop>
+					</Condition>
+					<Loop>
+						<Setup>
+							<Param>ID</Param>
+							<From>0</From>
+							<Inc>1</Inc>
+							<While>
+								<Arg NotEmpty="ANIMTIP_#ID#"/>
+							</While>
+						</Setup>
+						<Do>
+							<Parameters Type="Default">
+								<ANIMTIP_#ID#_ON_PERCENT>False</ANIMTIP_#ID#_ON_PERCENT>
+								<TOOLTIP_#ID#_ON_CURSOR/>
+								<TOOLTIP_#ID#_ON_HITBOX/>
+							</Parameters>
+							<Parameters Type="Override">
+								<ANIMTIP_ON_PERCENT Process="Param">ANIMTIP_#ID#_ON_PERCENT</ANIMTIP_ON_PERCENT>
+								<TOOLTIP_ON_CURSOR Process="Param">ANIMTIP_#ID#_ON_CURSOR</TOOLTIP_ON_CURSOR>
+								<TOOLTIP_ON_HITBOX Process="Param">ANIMTIP_#ID#_ON_HITBOX</TOOLTIP_ON_HITBOX>
+								<ANIMTIP Process="Param">ANIMTIP_#ID#</ANIMTIP>
+							</Parameters>
+							<AnimTooltip percent="#ANIMTIP_ON_PERCENT#" cursor="#TOOLTIP_ON_CURSOR#" hitbox="#TOOLTIP_ON_HITBOX#">#ANIMTIP#</AnimTooltip>
+						</Do>
+					</Loop>
+				</Animated>
+			</IMDefault>
+			<IMDrag>
+				<Tooltips>
+					<TTTitle RPN="#TOOLTIP_TITLE_IS_DYNAMIC#">#TOOLTIP_TITLE#</TTTitle>
+					<Loop>
+						<Setup>
+							<Param>ID</Param>
+							<From>0</From>
+							<Inc>1</Inc>
+							<While>
+								<And>
+									<Arg Valid="TOOLTIP_#ID#_DESC"/>
+									<Arg Valid="TOOLTIP_#ID#_VALUE"/>
+								</And>
+							</While>
+						</Setup>
+						<Do>
+							<Parameters Type="Default">
+								<TOOLTIP_#ID#_DESC_IS_DYNAMIC>False</TOOLTIP_#ID#_DESC_IS_DYNAMIC>
+								<TOOLTIP_#ID#_VALUE_IS_DYNAMIC>True</TOOLTIP_#ID#_VALUE_IS_DYNAMIC>
+								<TOOLTIP_#ID#_ICON/>
+								<TOOLTIP_#ID#_VALUE/>
+							</Parameters>
+							<Parameters Type="Override">
+								<TOOLTIP_ICON Process="Param">TOOLTIP_#ID#_ICON</TOOLTIP_ICON>
+								<TOOLTIP_DESC Process="Param">TOOLTIP_#ID#_DESC</TOOLTIP_DESC>
+								<TOOLTIP_DESC_IS_DYNAMIC Process="Param">TOOLTIP_#ID#_DESC_IS_DYNAMIC</TOOLTIP_DESC_IS_DYNAMIC>
+								<TOOLTIP_VALUE Process="Param">TOOLTIP_#ID#_VALUE</TOOLTIP_VALUE>
+								<TOOLTIP_VALUE_IS_DYNAMIC Process="Param">TOOLTIP_#ID#_VALUE_IS_DYNAMIC</TOOLTIP_VALUE_IS_DYNAMIC>
+							</Parameters>
+							<Tooltip>
+								<Icon>#TOOLTIP_ICON#</Icon><!-- Move, Rotate, Push, Pull -->
+								<TTDescription RPN="#TOOLTIP_DESC_IS_DYNAMIC#">#TOOLTIP_DESC#</TTDescription>
+								<TTValue RPN="#TOOLTIP_VALUE_IS_DYNAMIC#">#TOOLTIP_VALUE#</TTValue>
+							</Tooltip>
+						</Do>
+					</Loop>
+				</Tooltips>
+			</IMDrag>
+		</IMTooltipsInstances>
+		<Lock>#DRAG_IM_LOCK_ENABLED#</Lock>
+		<LockFlagsTemporary>#TEMPORARY_LOCK_FLAGS#</LockFlagsTemporary>
+		<HighlightNodeId>#HIGHLIGHT_NODE_ID#</HighlightNodeId>
+		<Switch>
+			<Case NotEmpty="EVENTID">
+				<EventID>#EVENTID#</EventID>
+			</Case>
+			<Case Check="CALLBACKCODE_DEFAULT_IM">
+				<CallbackCode>
+					<IMCodeInstances>
+						<IMDefault>#CALLBACKCODE_DEFAULT_IM#</IMDefault>
+						<IMDrag>#CALLBACKCODE_DRAG_IM#</IMDrag>
+					</IMCodeInstances>
+					<DragAnimName>#DRAG_ANIM_NAME#</DragAnimName>
+					<DragNodeId>#DRAG_NODE_ID#</DragNodeId>
+					<DragAnimSynced>#DRAG_ANIM_SYNCED#</DragAnimSynced>
+					<DragUseAnimLag>#DRAG_USE_ANIM_LAG#</DragUseAnimLag>
+					<DragMode>#DRAG_MODE#</DragMode>
+					<DragAxis>#DRAG_AXIS#</DragAxis>
+					<DragScalar>#DRAG_SCALAR#</DragScalar>
+					<DragFlagsLockable>#DRAG_MOUSEFLAGS_LOCKABLE#</DragFlagsLockable>
+				</CallbackCode>
+			</Case>
+			<Case Check="Y_MOVEMENT">
+				<CallbackJumpDragging>
+					<YMovement>
+						<Delta>#DRAG_DELTA#</Delta>
+						<DragScalar>#DRAG_SCALAR#</DragScalar>
+						<EventIdInc>#CLOCKWISE_EVENTID#</EventIdInc>
+						<EventIdDec>#ANTICLOCKWISE_EVENTID#</EventIdDec>
+					</YMovement>
+					<DragUseAnimLag>#DRAG_USE_ANIM_LAG#</DragUseAnimLag>
+					<DragScalar>#DRAG_SCALAR#</DragScalar>
+					<DragFlagsLockable>#DRAG_MOUSEFLAGS_LOCKABLE#</DragFlagsLockable>
+				</CallbackJumpDragging>
+			</Case>
+			<Case Check="X_MOVEMENT">
+				<CallbackJumpDragging>
+					<XMovement>
+						<Delta>#DRAG_DELTA#</Delta>
+						<DragScalar>#DRAG_SCALAR#</DragScalar>
+						<EventIdInc>#CLOCKWISE_EVENTID#</EventIdInc>
+						<EventIdDec>#ANTICLOCKWISE_EVENTID#</EventIdDec>
+					</XMovement>
+					<DragUseAnimLag>#DRAG_USE_ANIM_LAG#</DragUseAnimLag>
+					<DragScalar>#DRAG_SCALAR#</DragScalar>
+					<DragFlagsLockable>#DRAG_MOUSEFLAGS_LOCKABLE#</DragFlagsLockable>
+				</CallbackJumpDragging>
+			</Case>
+			<Case Check="CALLBACKDRAGGING">
+				<CallbackDragging>
+					<Variable>#DRAG_SIMVAR#</Variable>
+					<Units>#DRAG_SIMVAR_UNITS#</Units>
+					<Scale>#DRAG_SCALE#</Scale>
+					<XScale>#DRAG_AXIS_X_SCALE#</XScale>
+					<YScale>#DRAG_AXIS_Y_SCALE#</YScale>
+					<ZScale>#DRAG_AXIS_Z_SCALE#</ZScale>
+					<MinValue>#DRAG_MIN_VALUE#</MinValue>
+					<MaxValue>#DRAG_MAX_VALUE#</MaxValue>
+					<EventID>#DRAG_EVENTID_SET#</EventID>
+					<IsRelative>#DRAG_IS_RELATIVE#</IsRelative>
+					<DragAnimName>#DRAG_ANIM_NAME#</DragAnimName>
+					<DragNodeName>#DRAG_NODE_ID#</DragNodeName>
+					<DragAnimSynced>#DRAG_ANIM_SYNCED#</DragAnimSynced>
+					<DragUseAnimLag>#DRAG_USE_ANIM_LAG#</DragUseAnimLag>
+					<DragMode>#DRAG_MODE#</DragMode>
+					<DragAxis>#DRAG_AXIS#</DragAxis>
+					<DragScalar>#DRAG_SCALAR#</DragScalar>
+					<DragFlagsLockable>#DRAG_MOUSEFLAGS_LOCKABLE#</DragFlagsLockable>
+				</CallbackDragging>
+			</Case>
+		</Switch>
+	</MouseRect>
+</Template>
 </ModelBehaviors>

@@ -1,0 +1,630 @@
+<Include Path="Asobo\Generic.xml"/>
+
+<Template Name="ASOBO_FA18_Lights_Ident_Switch_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>FA18_Lights_Ident_Switch</NODE_ID>
+		<ANIM_NAME>FA18_Lights_Ident_Switch</ANIM_NAME>
+		<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+		<ARROW_TYPE>Curved</ARROW_TYPE>
+		<TOTAL_DURATION_LIST/>
+		<1_FLASH_COUNT_LIST/>
+		<1_WAIT_DURATION_LIST/>
+		<1_FLASH_DURATION_LIST/>
+		<2_FLASH_COUNT_LIST/>
+		<2_WAIT_DURATION_LIST/>
+		<2_FLASH_DURATION_LIST/>
+		<INPUT_POTENTIOMETER>17</INPUT_POTENTIOMETER>
+		<OUTPUT_POTENTIOMETER>18</OUTPUT_POTENTIOMETER>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_FA18_Lights_Ident_Switch_Param_Processing_Template">
+		<NEXT_ID>1</NEXT_ID>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_FA18_Lights_Ident_Switch_Param_Processing_Template">
+	<OverrideTemplateParameters>
+		<CURRENT_1_WAIT_DURATION Process="Param">#NEXT_ID#_1_WAIT_DURATION</CURRENT_1_WAIT_DURATION>
+		<CURRENT_2_WAIT_DURATION Process="Param">#NEXT_ID#_2_WAIT_DURATION</CURRENT_2_WAIT_DURATION>
+		<CURRENT_1_FLASH_COUNT Process="Param">#NEXT_ID#_1_FLASH_COUNT</CURRENT_1_FLASH_COUNT>
+		<CURRENT_2_FLASH_COUNT Process="Param">#NEXT_ID#_2_FLASH_COUNT</CURRENT_2_FLASH_COUNT>
+	</OverrideTemplateParameters>
+	
+	<Condition Check="#NEXT_ID#_1_WAIT_DURATION">
+		<True>
+			<UseTemplate Name="ASOBO_FA18_Lights_Ident_Switch_Param_Processing_2_Template">
+				<CURRENT_TOTAL_DURATION Process="Int">#CURRENT_1_WAIT_DURATION# #CURRENT_2_WAIT_DURATION# + #FLASH_DURATION# #CURRENT_1_FLASH_COUNT# 2 * 1 - 0 max * + #FLASH_DURATION# #CURRENT_2_FLASH_COUNT# 2 * 1 - 0 max * +</CURRENT_TOTAL_DURATION>
+				<CURRENT_1_FLASH_DURATION Process="Int">#FLASH_DURATION# #CURRENT_1_FLASH_COUNT# 2 * 1 - 0 max *</CURRENT_1_FLASH_DURATION>
+				<CURRENT_2_FLASH_DURATION Process="Int">#FLASH_DURATION# #CURRENT_2_FLASH_COUNT# 2 * 1 - 0 max *</CURRENT_2_FLASH_DURATION>
+			</UseTemplate>
+		</True>
+		<False>
+			<UseTemplate Name="ASOBO_FA18_Lights_Ident_Switch_SubTemplate">
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>
+
+<Template Name="ASOBO_FA18_Lights_Ident_Switch_Param_Processing_2_Template">
+	<UseTemplate Name="ASOBO_FA18_Lights_Ident_Switch_Param_Processing_Template">
+		<NEXT_ID Process="Int">#NEXT_ID# 1 +</NEXT_ID>
+		<TOTAL_DURATION_LIST>#CURRENT_TOTAL_DURATION# #TOTAL_DURATION_LIST#</TOTAL_DURATION_LIST>
+		<1_FLASH_COUNT_LIST>#CURRENT_1_FLASH_COUNT# #1_FLASH_COUNT_LIST#</1_FLASH_COUNT_LIST>
+		<1_WAIT_DURATION_LIST>#CURRENT_1_WAIT_DURATION# #1_WAIT_DURATION_LIST#</1_WAIT_DURATION_LIST>
+		<1_FLASH_DURATION_LIST>#CURRENT_1_FLASH_DURATION# #1_FLASH_DURATION_LIST#</1_FLASH_DURATION_LIST>
+		<2_FLASH_COUNT_LIST>#CURRENT_2_FLASH_COUNT# #2_FLASH_COUNT_LIST#</2_FLASH_COUNT_LIST>
+		<2_WAIT_DURATION_LIST>#CURRENT_2_WAIT_DURATION# #2_WAIT_DURATION_LIST#</2_WAIT_DURATION_LIST>
+		<2_FLASH_DURATION_LIST>#CURRENT_2_FLASH_DURATION# #2_FLASH_DURATION_LIST#</2_FLASH_DURATION_LIST>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_FA18_Lights_Ident_Switch_SubTemplate">
+	<DefaultTemplateParameters>
+		<EXTRA_UPDATE_CODE></EXTRA_UPDATE_CODE>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<MAX_ID Process="Int">#NEXT_ID# 1 -</MAX_ID>
+	</OverrideTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Update">
+			<FREQUENCY>30</FREQUENCY>
+			<UPDATE_CODE>
+				(E:SIMULATION TIME, seconds)  100 * flr sp0
+				#TOTAL_DURATION_LIST# #MAX_ID# (L:XMLVAR_EXT_LTS_IDENT) case sp2
+				#1_FLASH_COUNT_LIST# #MAX_ID# (L:XMLVAR_EXT_LTS_IDENT) case sp3
+				#1_WAIT_DURATION_LIST# #MAX_ID# (L:XMLVAR_EXT_LTS_IDENT) case sp4
+				#1_FLASH_DURATION_LIST# #MAX_ID# (L:XMLVAR_EXT_LTS_IDENT) case sp5
+				#2_FLASH_COUNT_LIST# #MAX_ID# (L:XMLVAR_EXT_LTS_IDENT) case sp6
+				#2_WAIT_DURATION_LIST# #MAX_ID# (L:XMLVAR_EXT_LTS_IDENT) case sp7
+				#2_FLASH_DURATION_LIST# #MAX_ID# (L:XMLVAR_EXT_LTS_IDENT) case sp8
+				
+				l0 l2 % sp1
+
+				0 sp9
+				l1 l5 &lt; if{
+					l1 #FLASH_DURATION# / flr 2 % 0 == sp9
+				}
+				els{
+					l1 l4 l5 + - d 0 &gt; r l8 &lt; and if{
+						l1 #FLASH_DURATION# / flr 2 % 0 == sp9
+					}
+				}
+				
+				(A:LIGHT POTENTIOMETER:#INPUT_POTENTIOMETER#, Percent over 100) l9 * #OUTPUT_POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
+				#EXTRA_UPDATE_CODE#
+			</UPDATE_CODE>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Switch_XStates">
+			<NUM_STATES>7</NUM_STATES>
+			<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+			<SWITCH_POSITION_VAR>XMLVAR_EXT_LTS_IDENT</SWITCH_POSITION_VAR>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_FA18_HUD_Control_Panel_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_FA18_HUD_Control_Panel_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_FA18_HUD_Control_Panel_SubTemplate">
+	<DefaultTemplateParameters>
+		<PREFIX>#PLANE_PREFIX#_HUD</PREFIX>
+		<NODE_ID_CLUTTER>HUD_Switch_Clutter#SUFFIX_ID#</NODE_ID_CLUTTER>
+		<ANIM_NAME_CLUTTER>HUD_Switch_Clutter#SUFFIX_ID#</ANIM_NAME_CLUTTER>
+		<NODE_ID_BRT>HUD_Knob_Brightness#SUFFIX_ID#</NODE_ID_BRT>
+		<ANIM_NAME_BRT>HUD_Knob_Brightness#SUFFIX_ID#</ANIM_NAME_BRT>
+		<NODE_ID_DAY_NIGHT>HUD_Switch_DayNight#SUFFIX_ID#</NODE_ID_DAY_NIGHT>
+		<ANIM_NAME_DAY_NIGHT>HUD_Switch_DayNight#SUFFIX_ID#</ANIM_NAME_DAY_NIGHT>
+		<NODE_ID_BLK_LVL>HUD_Knob_Black_Level#SUFFIX_ID#</NODE_ID_BLK_LVL>
+		<ANIM_NAME_BLK_LVL>HUD_Knob_Black_Level#SUFFIX_ID#</ANIM_NAME_BLK_LVL>
+		<NODE_ID_NVG_PWR>HUD_Knob_NVG_Pwr#SUFFIX_ID#</NODE_ID_NVG_PWR>
+		<ANIM_NAME_NVG_PWR>HUD_Knob_NVG_Pwr#SUFFIX_ID#</ANIM_NAME_NVG_PWR>
+		<NODE_ID_BAT>HUD_Knob_BAT#SUFFIX_ID#</NODE_ID_BAT>
+		<ANIM_NAME_BAT>HUD_Knob_BAT#SUFFIX_ID#</ANIM_NAME_BAT>
+		<NODE_ID_AOA>HUD_Knob_AOA#SUFFIX_ID#</NODE_ID_AOA>
+		<ANIM_NAME_AOA>HUD_Knob_AOA#SUFFIX_ID#</ANIM_NAME_AOA>
+		<NODE_ID_ALT>HUD_Knob_ALT#SUFFIX_ID#</NODE_ID_ALT>
+		<ANIM_NAME_ALT>HUD_Knob_ALT#SUFFIX_ID#</ANIM_NAME_ALT>
+		<NODE_ID_ATT>HUD_Knob_ATT#SUFFIX_ID#</NODE_ID_ATT>
+		<ANIM_NAME_ATT>HUD_Knob_ATT#SUFFIX_ID#</ANIM_NAME_ATT>
+		<NODE_ID_SCREEN>HUD_Screen</NODE_ID_SCREEN>
+	</DefaultTemplateParameters>
+	
+	<Component ID="#PREFIX##SUFFIX_ID#">
+		<Component ID="#NODE_ID_CLUTTER#" Node="#NODE_ID_CLUTTER#">
+			<UseTemplate Name="ASOBO_GT_Switch_3States">
+				<ANIM_NAME>#ANIM_NAME_CLUTTER#</ANIM_NAME>
+				<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+				<SWITCH_POSITION_VAR>XMLVAR_#PREFIX#_#ID#_Clutter</SWITCH_POSITION_VAR>
+			</UseTemplate>
+		</Component>
+		
+		<UseTemplate Name="ASOBO_FA18_Knob_Brightness_Template">
+			<CIRCUIT>#BRT_CIRCUIT#</CIRCUIT>
+			<NODE_ID>#NODE_ID_BRT#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_BRT#</ANIM_NAME>
+		</UseTemplate>
+		
+		<Component ID="#NODE_ID_DAY_NIGHT#" Node="#NODE_ID_DAY_NIGHT#">
+			<UseTemplate Name="ASOBO_GT_Switch_Code">
+				<ANIM_NAME>#ANIM_NAME_DAY_NIGHT#</ANIM_NAME>
+				<ANIM_CODE>(L:XMLVAR_#PREFIX#_#ID#_NightMode) 100 *</ANIM_CODE>
+				<LEFT_SINGLE_CODE>(L:XMLVAR_#PREFIX#_#ID#_NightMode) ! (&gt;L:XMLVAR_#PREFIX#_#ID#_NightMode)</LEFT_SINGLE_CODE>
+			</UseTemplate>
+		</Component>
+		
+		<Component ID="#NODE_ID_BLK_LVL#" Node="#NODE_ID_BLK_LVL#">
+			<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+				<ANIM_NAME>#ANIM_NAME_BLK_LVL#</ANIM_NAME>
+				<CLOCKWISE_CODE>
+					(L:XMLVAR_#PREFIX#_#ID#_Black_Level) 0.03 + 1 min (&gt;L:XMLVAR_#PREFIX#_#ID#_Black_Level)
+				</CLOCKWISE_CODE>
+				<ANTICLOCKWISE_CODE>
+					(L:XMLVAR_#PREFIX#_#ID#_Black_Level) 0.03 - 0.0 max (&gt;L:XMLVAR_#PREFIX#_#ID#_Black_Level)
+				</ANTICLOCKWISE_CODE>
+			</UseTemplate>
+		</Component>
+		
+		<Component ID="#NODE_ID_NVG_PWR#" Node="#NODE_ID_NVG_PWR#">
+			<UseTemplate Name="ASOBO_GT_Switch_3States">
+				<ANIM_NAME>#ANIM_NAME_NVG_PWR#</ANIM_NAME>
+				<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+				<SWITCH_POSITION_VAR>XMLVAR_#PREFIX#_#ID#_NVG_PWR</SWITCH_POSITION_VAR>
+			</UseTemplate>
+		</Component>
+		
+		<Component ID="#NODE_ID_BAT#" Node="#NODE_ID_BAT#">
+			<UseTemplate Name="ASOBO_GT_Knob_Finite_Code">
+				<ANIM_NAME>#ANIM_NAME_BAT#</ANIM_NAME>
+				<ANIM_CODE>
+					(L:XMLVAR_#PREFIX#_#ID#_Brightness_Stroke_To_Raster) 100 *
+				</ANIM_CODE>
+				<CLOCKWISE_CODE>
+					(L:XMLVAR_#PREFIX#_#ID#_Brightness_Stroke_To_Raster) 0.03 + 1 min (&gt;L:XMLVAR_#PREFIX#_#ID#_Brightness_Stroke_To_Raster)
+				</CLOCKWISE_CODE>
+				<ANTICLOCKWISE_CODE>
+					(L:XMLVAR_#PREFIX#_#ID#_Brightness_Stroke_To_Raster) 0.03 - 0.0 max (&gt;L:XMLVAR_#PREFIX#_#ID#_Brightness_Stroke_To_Raster)
+				</ANTICLOCKWISE_CODE>
+			</UseTemplate>
+		</Component>
+		
+		<Component ID="#NODE_ID_AOA#" Node="#NODE_ID_AOA#">
+			<UseTemplate Name="ASOBO_GT_Knob_Finite_Code">
+				<ANIM_NAME>#ANIM_NAME_AOA#</ANIM_NAME>
+				<ANIM_CODE>
+					(L:XMLVAR_#PREFIX#_#ID#_AOA) 100 *
+				</ANIM_CODE>
+				<CLOCKWISE_CODE>
+					(L:XMLVAR_#PREFIX#_#ID#_AOA) 0.03 + 1 min (&gt;L:XMLVAR_#PREFIX#_#ID#_AOA)
+				</CLOCKWISE_CODE>
+				<ANTICLOCKWISE_CODE>
+					(L:XMLVAR_#PREFIX#_#ID#_AOA) 0.03 - 0.0 max (&gt;L:XMLVAR_#PREFIX#_#ID#_AOA)
+				</ANTICLOCKWISE_CODE>
+			</UseTemplate>
+		</Component>
+		
+		<Component ID="#NODE_ID_ALT#" Node="#NODE_ID_ALT#">
+			<UseTemplate Name="ASOBO_GT_Switch_Code">
+				<ANIM_NAME>#ANIM_NAME_ALT#</ANIM_NAME>
+				<ANIM_CODE>(L:XMLVAR_#PREFIX#_#ID#_ALT) 100 *</ANIM_CODE>
+				<LEFT_SINGLE_CODE>(L:XMLVAR_#PREFIX#_#ID#_ALT) ! (&gt;L:XMLVAR_#PREFIX#_#ID#_ALT)</LEFT_SINGLE_CODE>
+			</UseTemplate>
+		</Component>
+		
+		<Component ID="#NODE_ID_ATT#" Node="#NODE_ID_ATT#">
+			<UseTemplate Name="ASOBO_GT_Switch_3States">
+				<ANIM_NAME>#ANIM_NAME_ATT#</ANIM_NAME>
+				<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+				<SWITCH_POSITION_VAR>XMLVAR_#PREFIX#_#ID#_ATT</SWITCH_POSITION_VAR>
+			</UseTemplate>
+		</Component>
+		
+		<UseTemplate Name="ASOBO_FA18_Screen_Template">
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_FA18_Engine_Fuel_Display_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_FA18_Engine_Fuel_Display_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_FA18_Engine_Fuel_Display_SubTemplate">
+	<DefaultTemplateParameters>
+		<PREFIX>#PLANE_PREFIX#_EFD</PREFIX>
+		<NODE_ID_KNOB_BINGO>EFD_Knob_Bingo#SUFFIX_ID#</NODE_ID_KNOB_BINGO>
+		<ANIM_NAME_KNOB_BINGO>EFD_Knob_Bingo#SUFFIX_ID#</ANIM_NAME_KNOB_BINGO>
+		<ANIM_NAME_PUSH_MODE>EFD_Push_Mode#SUFFIX_ID#</ANIM_NAME_PUSH_MODE>
+		<NODE_ID_PUSH_MODE>EFD_Push_Mode#SUFFIX_ID#</NODE_ID_PUSH_MODE>
+		<NODE_ID_BRT>EFD_Knob_Brightness#SUFFIX_ID#</NODE_ID_BRT>
+		<ANIM_NAME_BRT>EFD_Knob_Brightness#SUFFIX_ID#</ANIM_NAME_BRT>
+		<NODE_ID_SCREEN>EFD_Screen#SUFFIX_ID#</NODE_ID_SCREEN>
+	</DefaultTemplateParameters>
+	
+	<Component ID="#PREFIX##SUFFIX_ID#">
+		<Component ID="#NODE_ID_KNOB_BINGO#" Node="#NODE_ID_KNOB_BINGO#">
+			<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+				<ANIM_NAME>#ANIM_NAME_KNOB_BINGO#</ANIM_NAME>
+				<CLOCKWISE_CODE>
+					(&gt;H:#PREFIX#_#ID#_KNOB_BINGO_INC)
+				</CLOCKWISE_CODE>
+				<ANTICLOCKWISE_CODE>
+					(&gt;H:#PREFIX#_#ID#_KNOB_BINGO_DEC)
+				</ANTICLOCKWISE_CODE>
+			</UseTemplate>
+		</Component>
+		
+		<Component ID="#NODE_ID_PUSH_MODE#" Node="#NODE_ID_PUSH_MODE#">
+			<UseTemplate Name="ASOBO_GT_Push_Button">
+				<ANIM_NAME>#ANIM_NAME_PUSH_MODE#</ANIM_NAME>
+				<LEFT_SINGLE_CODE>
+					(&gt;H:#PREFIX#_#ID#_PUSH_MODE)
+				</LEFT_SINGLE_CODE>
+			</UseTemplate>
+		</Component>
+		
+		<UseTemplate Name="ASOBO_FA18_Knob_Brightness_Template">
+			<CIRCUIT>#BRT_CIRCUIT#</CIRCUIT>
+			<NODE_ID>#NODE_ID_BRT#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_BRT#</ANIM_NAME>
+		</UseTemplate>
+		
+		<UseTemplate Name="ASOBO_FA18_Screen_Template">
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_FA18_Upfront_Control_Display_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_FA18_Upfront_Control_Display_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_FA18_Upfront_Control_Display_SubTemplate">
+	<DefaultTemplateParameters>
+		<PREFIX>#PLANE_PREFIX#_UFCD</PREFIX>
+		<NODE_ID_SCREEN>UFCD_Screen#SUFFIX_ID#</NODE_ID_SCREEN>
+		<NODE_ID_KNOB_COM1>UFCD_Knob_COM1#SUFFIX_ID#</NODE_ID_KNOB_COM1>
+		<ANIM_NAME_KNOB_COM1>UFCD_Knob_COM1#SUFFIX_ID#</ANIM_NAME_KNOB_COM1>
+		<NODE_ID_KNOB_COM2>UFCD_Knob_COM2#SUFFIX_ID#</NODE_ID_KNOB_COM2>
+		<ANIM_NAME_KNOB_COM2>UFCD_Knob_COM2#SUFFIX_ID#</ANIM_NAME_KNOB_COM2>
+		<NODE_ID_KNOB_COM1_VOLUME>UFCD_Knob_COM1_Volume#SUFFIX_ID#</NODE_ID_KNOB_COM1_VOLUME>
+		<ANIM_NAME_KNOB_COM1_VOLUME>UFCD_Knob_COM1_Volume#SUFFIX_ID#</ANIM_NAME_KNOB_COM1_VOLUME>
+		<NODE_ID_KNOB_COM2_VOLUME>UFCD_Knob_COM2_Volume#SUFFIX_ID#</NODE_ID_KNOB_COM2_VOLUME>
+		<ANIM_NAME_KNOB_COM2_VOLUME>UFCD_Knob_COM2_Volume#SUFFIX_ID#</ANIM_NAME_KNOB_COM2_VOLUME>
+		<NODE_ID_BRT>UFCD_Knob_Brightness#SUFFIX_ID#</NODE_ID_BRT>
+		<ANIM_NAME_BRT>UFCD_Knob_Brightness#SUFFIX_ID#</ANIM_NAME_BRT>
+		<NODE_ID_CONT>UFCD_Knob_Contrast#SUFFIX_ID#</NODE_ID_CONT>
+		<ANIM_NAME_CONT>UFCD_Knob_Contrast#SUFFIX_ID#</ANIM_NAME_CONT>
+		<NODE_ID_PUSH_ID>UFCD_Push_ID#SUFFIX_ID#</NODE_ID_PUSH_ID>
+		<ANIM_NAME_PUSH_ID>UFCD_Push_ID#SUFFIX_ID#</ANIM_NAME_PUSH_ID>
+		<NODE_ID_PUSH_EM_CON>UFCD_Push_EM_Cond#SUFFIX_ID#</NODE_ID_PUSH_EM_CON>
+		<ANIM_NAME_PUSH_EM_CON>UFCD_Push_EM_Cond#SUFFIX_ID#</ANIM_NAME_PUSH_EM_CON>
+		<NODE_ID_SYM>UFCD_Knob_Sym#SUFFIX_ID#</NODE_ID_SYM>
+		<ANIM_NAME_SYM>UFCD_Knob_Sym#SUFFIX_ID#</ANIM_NAME_SYM>
+	</DefaultTemplateParameters>
+	
+	<Component ID="#PREFIX##SUFFIX_ID#">
+		<UseTemplate Name="ASOBO_FA18_UFCD_COM_Knobs_Template">
+			<COM_ID>1</COM_ID>
+			<COM_CIRCUIT>#COM1_CIRCUIT#</COM_CIRCUIT>
+			<NODE_ID_KNOB_COM_VOLUME>#NODE_ID_KNOB_COM1_VOLUME#</NODE_ID_KNOB_COM_VOLUME>
+			<ANIM_NAME_KNOB_COM_VOLUME>#ANIM_NAME_KNOB_COM1_VOLUME#</ANIM_NAME_KNOB_COM_VOLUME>
+			<NODE_ID_KNOB_COM>#NODE_ID_KNOB_COM1#</NODE_ID_KNOB_COM>
+			<ANIM_NAME_KNOB_COM>#ANIM_NAME_KNOB_COM1#</ANIM_NAME_KNOB_COM>
+		</UseTemplate>
+		
+		<UseTemplate Name="ASOBO_FA18_UFCD_COM_Knobs_Template">
+			<COM_ID>2</COM_ID>
+			<COM_CIRCUIT>#COM2_CIRCUIT#</COM_CIRCUIT>
+			<NODE_ID_KNOB_COM_VOLUME>#NODE_ID_KNOB_COM2_VOLUME#</NODE_ID_KNOB_COM_VOLUME>
+			<ANIM_NAME_KNOB_COM_VOLUME>#ANIM_NAME_KNOB_COM2_VOLUME#</ANIM_NAME_KNOB_COM_VOLUME>
+			<NODE_ID_KNOB_COM>#NODE_ID_KNOB_COM2#</NODE_ID_KNOB_COM>
+			<ANIM_NAME_KNOB_COM>#ANIM_NAME_KNOB_COM2#</ANIM_NAME_KNOB_COM>
+		</UseTemplate>
+		
+		<UseTemplate Name="ASOBO_FA18_Knob_Brightness_Template">
+			<CIRCUIT>#BRT_CIRCUIT#</CIRCUIT>
+			<NODE_ID>#NODE_ID_BRT#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_BRT#</ANIM_NAME>
+		</UseTemplate>
+		
+		<Component ID="#NODE_ID_SYM#" Node="#NODE_ID_SYM#">
+			<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+				<ANIM_NAME>#ANIM_NAME_SYM#</ANIM_NAME>
+				<CLOCKWISE_CODE>
+					(&gt;H:#PREFIX#_#ID#_KNOB_SYM_INC)
+				</CLOCKWISE_CODE>
+				<ANTICLOCKWISE_CODE>
+					(&gt;H:#PREFIX#_#ID#_KNOB_SYM_DEC)
+				</ANTICLOCKWISE_CODE>
+			</UseTemplate>
+		</Component>
+		
+		<Component ID="#NODE_ID_PUSH_ID#" Node="#NODE_ID_PUSH_ID#">
+			<UseTemplate Name="ASOBO_GT_Push_Button">
+				<ANIM_NAME>#ANIM_NAME_PUSH_ID#</ANIM_NAME>
+				<LEFT_SINGLE_CODE>
+					(&gt;H:#PREFIX#_#ID#_PUSH_ID)
+				</LEFT_SINGLE_CODE>
+			</UseTemplate>
+		</Component>
+		
+		<Component ID="#NODE_ID_PUSH_EM_CON#" Node="#NODE_ID_PUSH_EM_CON#">
+			<UseTemplate Name="ASOBO_GT_Push_Button">
+				<ANIM_NAME>#ANIM_NAME_PUSH_EM_CON#</ANIM_NAME>
+				<LEFT_SINGLE_CODE>
+					(&gt;H:#PREFIX#_#ID#_PUSH_EM_CON)
+				</LEFT_SINGLE_CODE>
+			</UseTemplate>
+		</Component>
+		
+		<UseTemplate Name="ASOBO_FA18_Screen_Template">
+		</UseTemplate>
+		
+		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+			<NODE_ID>#NODE_ID_CONT#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_CONT#</ANIM_NAME>
+			<ANIM_POS>50</ANIM_POS>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_FA18_Knob_Brightness_Template">
+	<DefaultTemplateParameters>
+		<BRIGHTNESS_VARIABLE_TYPE>I</BRIGHTNESS_VARIABLE_TYPE>
+		<BRIGHTNESS_VARIABLE_NAME>XMLVAR_#PREFIX#_#ID#_Brightness</BRIGHTNESS_VARIABLE_NAME>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid="CIRCUIT">
+			<True>
+				<CIRCUIT_CODE_ON>
+					(I:XMLVAR_#PREFIX#_#ID#_Brightness) 0 &gt;
+					(A:CIRCUIT SWITCH ON:#CIRCUIT#, Boolean) ! and if{
+						#CIRCUIT# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)
+					}
+				</CIRCUIT_CODE_ON>
+				<CIRCUIT_CODE_OFF>
+					(I:XMLVAR_#PREFIX#_#ID#_Brightness) 0 ==
+					(A:CIRCUIT SWITCH ON:#CIRCUIT#, Boolean) and if{
+						#CIRCUIT# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)
+					}
+				</CIRCUIT_CODE_OFF>
+			</True>
+			<False>
+				<CIRCUIT_CODE_ON></CIRCUIT_CODE_ON>
+				<CIRCUIT_CODE_OFF></CIRCUIT_CODE_OFF>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Knob_Finite_Code">
+			<ANIM_CODE>
+				(#BRIGHTNESS_VARIABLE_TYPE#:#BRIGHTNESS_VARIABLE_NAME#) 100 *
+			</ANIM_CODE>
+			<CLOCKWISE_CODE>
+				(#BRIGHTNESS_VARIABLE_TYPE#:#BRIGHTNESS_VARIABLE_NAME#) 0.03 + 1 min (&gt;#BRIGHTNESS_VARIABLE_TYPE#:#BRIGHTNESS_VARIABLE_NAME#)
+				#CIRCUIT_CODE_ON#
+			</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>
+				(#BRIGHTNESS_VARIABLE_TYPE#:#BRIGHTNESS_VARIABLE_NAME#) 0.03 - 0.0 max (&gt;#BRIGHTNESS_VARIABLE_TYPE#:#BRIGHTNESS_VARIABLE_NAME#)
+				#CIRCUIT_CODE_OFF#
+			</ANTICLOCKWISE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_FA18_UFCD_COM_Knobs_Template">
+	<DefaultTemplateParameters>
+		<COM_ID>1</COM_ID>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid="COM_CIRCUIT">
+			<True>
+				<CIRCUIT_CODE_ON>
+					(A:COM VOLUME:#COM_ID#, Percent) 0 &gt;
+					(A:CIRCUIT SWITCH ON:#COM_CIRCUIT#, Boolean) ! and if{
+						#COM_CIRCUIT# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)
+					}
+				</CIRCUIT_CODE_ON>
+				<CIRCUIT_CODE_OFF>
+					(A:COM VOLUME:#COM_ID#, Percent) 0 ==
+					(A:CIRCUIT SWITCH ON:#COM_CIRCUIT#, Boolean) and if{
+						#COM_CIRCUIT# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)
+					}
+				</CIRCUIT_CODE_OFF>
+			</True>
+			<False>
+				<CIRCUIT_CODE_ON></CIRCUIT_CODE_ON>
+				<CIRCUIT_CODE_OFF></CIRCUIT_CODE_OFF>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+
+	<Component ID="#NODE_ID_KNOB_COM_VOLUME#" Node="#NODE_ID_KNOB_COM_VOLUME#">
+		<UseTemplate Name="ASOBO_GT_Knob_Finite_Simvar">
+			<ANIM_SIMVAR>COM VOLUME:#COM_ID#</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+			<ANIM_NAME>#ANIM_NAME_KNOB_COM_VOLUME#</ANIM_NAME>
+			<CLOCKWISE_CODE>
+				(&gt;K:COM#COM_ID#_VOLUME_INC)
+				#CIRCUIT_CODE_ON#
+			</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>
+				(&gt;K:COM#COM_ID#_VOLUME_DEC)
+				#CIRCUIT_CODE_OFF#
+			</ANTICLOCKWISE_CODE>
+		</UseTemplate>
+	</Component>
+	<Component ID="#NODE_ID_KNOB_COM#" Node="#NODE_ID_KNOB_COM#">
+		<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+			<ANIM_NAME>#ANIM_NAME_KNOB_COM#</ANIM_NAME>
+			<CLOCKWISE_CODE>
+				(&gt;H:#PREFIX#_#ID#_KNOB_COM#COM_ID#_INC)
+			</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>
+				(&gt;H:#PREFIX#_#ID#_KNOB_COM#COM_ID#_DEC)
+			</ANTICLOCKWISE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_FA18_Multipurpose_Color_Display_Template">
+	<DefaultTemplateParameters>
+		<ID>3</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_FA18_Multipurpose_Color_Display_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_FA18_Multipurpose_Color_Display_SubTemplate">
+	<DefaultTemplateParameters>
+		<PREFIX>#PLANE_PREFIX#_DDI</PREFIX>
+		<NODE_ID_SCREEN>MPCD_Screen_#ID#</NODE_ID_SCREEN>
+		<DEFAULT_SCREEN_BRIGHTNESS>0.5</DEFAULT_SCREEN_BRIGHTNESS>
+	</DefaultTemplateParameters>
+	
+	<Component ID="#PREFIX##SUFFIX_ID#">
+		<UseTemplate Name="ASOBO_GT_Helper_Increasing_ID">
+			<EXIT_TEMPLATE>ASOBO_FA18_DDI_Push_Template</EXIT_TEMPLATE>
+			<PARAM>BTN_ID</PARAM>
+			<MAX_ID>20</MAX_ID>
+		</UseTemplate>
+		
+		<Component ID="#NODE_ID_GAIN#" Node="#NODE_ID_GAIN#">
+			<UseTemplate Name="ASOBO_GT_Knob_Finite_Code">
+				<ANIM_NAME>#ANIM_NAME_GAIN#</ANIM_NAME>
+				<ANIM_CODE>
+					(I:XMLVAR_#PREFIX#_#ID#_Brightness) 100 *
+				</ANIM_CODE>
+				<CLOCKWISE_CODE>
+					(I:XMLVAR_#PREFIX#_#ID#_Brightness) 0.05 + 1 min (&gt;I:XMLVAR_#PREFIX#_#ID#_Brightness)
+				</CLOCKWISE_CODE>
+				<ANTICLOCKWISE_CODE>
+					(I:XMLVAR_#PREFIX#_#ID#_Brightness) 0.05 - 0.05 max (&gt;I:XMLVAR_#PREFIX#_#ID#_Brightness)
+				</ANTICLOCKWISE_CODE>
+			</UseTemplate>
+		</Component>
+		
+		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+			<NODE_ID>#NODE_ID_CONT#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_CONT#</ANIM_NAME>
+			<ANIM_POS>50</ANIM_POS>
+		</UseTemplate>
+		
+		<UseTemplate Name="ASOBO_FA18_Screen_Template">
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_FA18_Screen_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_SCREEN_BRIGHTNESS>0.5</DEFAULT_SCREEN_BRIGHTNESS>
+		<BRIGHTNESS_VARIABLE_TYPE>I</BRIGHTNESS_VARIABLE_TYPE>
+		<BRIGHTNESS_VARIABLE_NAME>XMLVAR_#PREFIX#_#ID#_Brightness</BRIGHTNESS_VARIABLE_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Update">
+		<UPDATE_ONCE>True</UPDATE_ONCE>
+		<UPDATE_CODE>
+			#DEFAULT_SCREEN_BRIGHTNESS# (&gt;#BRIGHTNESS_VARIABLE_TYPE#:#BRIGHTNESS_VARIABLE_NAME#)
+		</UPDATE_CODE>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+		<NODE_ID>#NODE_ID_SCREEN#</NODE_ID>
+		<EMISSIVE_CODE>(#BRIGHTNESS_VARIABLE_TYPE#:#BRIGHTNESS_VARIABLE_NAME#)</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_FA18_Digital_Display_Indicator_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_FA18_Digital_Display_Indicator_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_FA18_Digital_Display_Indicator_SubTemplate">
+	<DefaultTemplateParameters>
+		<PREFIX>#PLANE_PREFIX#_DDI</PREFIX>
+		<NODE_ID_GAIN>DDI_Switch_Gain#SUFFIX_ID#</NODE_ID_GAIN>
+		<ANIM_NAME_GAIN>DDI_Switch_Gain#SUFFIX_ID#</ANIM_NAME_GAIN>
+		<NODE_ID_CONT>DDI_Switch_Cont#SUFFIX_ID#</NODE_ID_CONT>
+		<ANIM_NAME_CONT>DDI_Switch_Cont#SUFFIX_ID#</ANIM_NAME_CONT>
+		<NODE_ID_SCREEN>DDI_Screen#SUFFIX_ID#</NODE_ID_SCREEN>
+	</DefaultTemplateParameters>
+	
+	<Component ID="#PREFIX##SUFFIX_ID#">
+		<UseTemplate Name="ASOBO_GT_Helper_Increasing_ID">
+			<EXIT_TEMPLATE>ASOBO_FA18_DDI_Push_Template</EXIT_TEMPLATE>
+			<PARAM>BTN_ID</PARAM>
+			<MAX_ID>20</MAX_ID>
+		</UseTemplate>
+		
+		<Component ID="#NODE_ID_GAIN#" Node="#NODE_ID_GAIN#">
+			<UseTemplate Name="ASOBO_GT_Switch_3States">
+				<ANIM_NAME>#ANIM_NAME_GAIN#</ANIM_NAME>
+				<CODE_POS_0>
+					(I:XMLVAR_#PREFIX#_#ID#_Brightness) 0.03 + 1 min (&gt;I:XMLVAR_#PREFIX#_#ID#_Brightness)
+				</CODE_POS_0>
+				<CODE_POS_2>
+					(I:XMLVAR_#PREFIX#_#ID#_Brightness) 0.03 - 0.05 max (&gt;I:XMLVAR_#PREFIX#_#ID#_Brightness)
+				</CODE_POS_2>
+				<MOMENTARY_REPEAT_FREQUENCY>5</MOMENTARY_REPEAT_FREQUENCY>
+				<MOMENTARY_SWITCH/>
+				<STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
+				<STATE0_TIMER>0.01</STATE0_TIMER>
+			</UseTemplate>
+		</Component>
+		
+		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+			<NODE_ID>#NODE_ID_CONT#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_CONT#</ANIM_NAME>
+			<ANIM_POS>50</ANIM_POS>
+		</UseTemplate>
+		
+		<UseTemplate Name="ASOBO_FA18_Screen_Template">
+		</UseTemplate>
+	</Component>
+</Template>
+
+<!-- REQUIRES : ID -->
+<Template Name="ASOBO_FA18_DDI_Push_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>DDI_Push_#BTN_ID##SUFFIX_ID#</NODE_ID>
+		<ANIM_NAME>DDI_Push_#BTN_ID##SUFFIX_ID#</ANIM_NAME>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid="NODE_ID_#BTN_ID#">
+			<True>
+				<NODE_ID Process="Param">NODE_ID_#BTN_ID#</NODE_ID>
+			</True>
+		</Condition>
+		<Condition Valid="ANIM_NAME_#BTN_ID#">
+			<True>
+				<ANIM_NAME Process="Param">ANIM_NAME_#BTN_ID#</ANIM_NAME>
+			</True>
+		</Condition>
+	</OverrideTemplateParameters>
+	
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button">
+			<LEFT_SINGLE_CODE>(&gt;H:#PREFIX#_#ID#_BTN_#BTN_ID#)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>

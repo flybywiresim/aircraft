@@ -1,163 +1,222 @@
 <ModelBehaviors>
-	<Template Name="ASOBO_AS3X_Softkeys">
-		<DefaultTemplateParameters>
-			<COUNT>1</COUNT>
-			<INDEX>1</INDEX>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_AS3X_Softkey_Subtemplate">
+<Template Name="ASOBO_AS3X_Softkeys">
+	<DefaultTemplateParameters>
+		<COUNT>1</COUNT>
+		<INDEX>1</INDEX>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_AS3X_Softkey_Subtemplate">
+	</UseTemplate> 
+</Template>
+<Template Name="ASOBO_AS3X_Softkey_Subtemplate">
+	<DefaultTemplateParameters>
+		<RECURSIVE_ID>2</RECURSIVE_ID>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<NODE_ID>#AS3X#_Push_Softkey_#INDEX##NODE_SUFFIX#</NODE_ID>
+		<ANIM_NAME>#AS3X#_Push_Softkey_#INDEX##NODE_SUFFIX#</ANIM_NAME>
+	</OverrideTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button">
+			<LEFT_SINGLE_CODE>(&gt;H:#HTML_PREFIX#SOFTKEYS_#INDEX#)</LEFT_SINGLE_CODE>  
 		</UseTemplate> 
-	</Template>
-	<Template Name="ASOBO_AS3X_Softkey_Subtemplate">
-		<DefaultTemplateParameters>
-			<RECURSIVE_ID>2</RECURSIVE_ID>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<NODE_ID>#AS3X#_Push_Softkey_#INDEX##NODE_SUFFIX#</NODE_ID>
-			<ANIM_NAME>#AS3X#_Push_Softkey_#INDEX##NODE_SUFFIX#</ANIM_NAME>
-		</OverrideTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Push_Button">
-				<LEFT_SINGLE_CODE>(&gt;H:#HTML_PREFIX#SOFTKEYS_#INDEX#)</LEFT_SINGLE_CODE>  
-			</UseTemplate> 
-		</Component>
-		<Condition>
-			<Test>
-				<Lower>
-					<Value>INDEX</Value>
-					<Value>COUNT</Value>
-				</Lower>
-			</Test>
-			<True>
-				<UseTemplate Name="ASOBO_AS3X_Softkey_Subtemplate">
-					<INDEX>#RECURSIVE_ID#</INDEX>
-					<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
-				</UseTemplate>
-			</True>
-		</Condition>
-	</Template>
-
-	<Template Name="ASOBO_AS3X_Hardkeys">
-		<UseTemplate Name="ASOBO_AS3X_Hardkey_Subtemplate">
-		</UseTemplate> 
-	</Template>
-	<Template Name="ASOBO_AS3X_Hardkey_Subtemplate">
-		<DefaultTemplateParameters>
-			<RECURSIVE_ID>2</RECURSIVE_ID>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<NODE_ID>#AS3X#_Push_#NAME##NODE_SUFFIX#</NODE_ID>
-			<ANIM_NAME>#AS3X#_Push_#NAME##NODE_SUFFIX#</ANIM_NAME>
-			<TOOLTIPID>#TOOLTIPVALUE#</TOOLTIPID>
-		</OverrideTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Push_Button">
-				<LEFT_SINGLE_CODE>(&gt;H:#HTML_PREFIX##EVENT#)</LEFT_SINGLE_CODE>
-				<!-- <TOOLTIPID>#TOOLTIPVALUE#</TOOLTIPID> -->
-				
-			</UseTemplate> 
-		</Component>
-		<Condition Valid="NAME#RECURSIVE_ID#">
-			<True>
-				<UseTemplate Name="ASOBO_AS3X_Hardkey_Subtemplate">
-					<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
-					<NAME Process="Param">NAME#RECURSIVE_ID#</NAME>
-					<TOOLTIPVALUE Process="Param">TOOLTIP#RECURSIVE_ID#</TOOLTIPVALUE>
-					<Condition Valid="EVENT#RECURSIVE_ID#">
-						<True>
-							<EVENT Process="Param">EVENT#RECURSIVE_ID#</NAME>
-						</True>
-						<False>
-							<EVENT Process="Param">NAME#RECURSIVE_ID#</NAME>
-						</False>
-					</Condition>
-				</UseTemplate>
-			</True>
-		</Condition>
-	</Template>
-
-	<Template Name="ASOBO_AS3X_Range_Button_Template">
-		<DefaultTemplateParameters>
-			<ANIM_NAME>#AS3X#_Push_Range#NODE_SUFFIX#</ANIM_NAME>
-			<NODE_ID>#AS3X#_Push_Range#NODE_SUFFIX#</NODE_ID>
-			<RANGE_BUTTON_LAYOUT_DIRECTION>Y</RANGE_BUTTON_LAYOUT_DIRECTION>
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name = "ASOBO_GT_Push_Button">
-				<LEFT_SINGLE_CODE>
-					(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) 0 &gt;
-					 if{ (&gt;H:#AS3X##NODE_SUFFIX#_RNG_Dezoom) }
-					els{ (&gt;H:#AS3X##NODE_SUFFIX#_RNG_Zoom) }
-				</LEFT_SINGLE_CODE>
-				<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_RNG_ADJUST</TOOLTIPID>
+	</Component>
+	<Condition>
+		<Test>
+			<Lower>
+				<Value>INDEX</Value>
+				<Value>COUNT</Value>
+			</Lower>
+		</Test>
+		<True>
+			<UseTemplate Name="ASOBO_AS3X_Softkey_Subtemplate">
+				<INDEX>#RECURSIVE_ID#</INDEX>
+				<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
 			</UseTemplate>
-		</Component>
-	</Template>
+		</True>
+	</Condition>
+</Template>
 
-	<Template Name="ASOBO_AS3X_Template">
-		<DefaultTemplateParameters>
-			<HTML_PREFIX>AS3X_</HTML_PREFIX>
-			<AS3X>AS3X</AS3X>
-			<NODE_SUFFIX></NODE_SUFFIX>
-			<ID>1</ID>
-			<WWISE_EVENT_1>as3x_push_button_on</WWISE_EVENT_1>
-			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-			<WWISE_EVENT_2>as3x_push_button_off</WWISE_EVENT_2>
-			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_AS3X_Softkeys">
-			<COUNT>5</COUNT>
+<Template Name="ASOBO_AS3X_Hardkeys">
+	<UseTemplate Name="ASOBO_AS3X_Hardkey_Subtemplate">
+	</UseTemplate> 
+</Template>
+<Template Name="ASOBO_AS3X_Hardkey_Subtemplate">
+	<DefaultTemplateParameters>
+		<RECURSIVE_ID>2</RECURSIVE_ID>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<NODE_ID>#AS3X#_Push_#NAME##NODE_SUFFIX#</NODE_ID>
+		<ANIM_NAME>#AS3X#_Push_#NAME##NODE_SUFFIX#</ANIM_NAME>
+		<TOOLTIPID>#TOOLTIPVALUE#</TOOLTIPID>
+	</OverrideTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button">
+			<LEFT_SINGLE_CODE>(&gt;H:#HTML_PREFIX##EVENT#)</LEFT_SINGLE_CODE>
+			<!-- <TOOLTIPID>#TOOLTIPVALUE#</TOOLTIPID> -->
+			
+		</UseTemplate> 
+	</Component>
+	<Condition Valid="NAME#RECURSIVE_ID#">
+		<True>
+			<UseTemplate Name="ASOBO_AS3X_Hardkey_Subtemplate">
+				<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
+				<NAME Process="Param">NAME#RECURSIVE_ID#</NAME>
+				<TOOLTIPVALUE Process="Param">TOOLTIP#RECURSIVE_ID#</TOOLTIPVALUE>
+				<Condition Valid="EVENT#RECURSIVE_ID#">
+					<True>
+						<EVENT Process="Param">EVENT#RECURSIVE_ID#</NAME>
+					</True>
+					<False>
+						<EVENT Process="Param">NAME#RECURSIVE_ID#</NAME>
+					</False>
+				</Condition>
+			</UseTemplate>
+		</True>
+	</Condition>
+</Template>
+
+<Template Name="ASOBO_AS3X_Range_Button_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>#AS3X#_Push_Range#NODE_SUFFIX#</ANIM_NAME>
+		<NODE_ID>#AS3X#_Push_Range#NODE_SUFFIX#</NODE_ID>
+		<RANGE_BUTTON_LAYOUT_DIRECTION>Y</RANGE_BUTTON_LAYOUT_DIRECTION>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name = "ASOBO_GT_Push_Button">
+			<LEFT_SINGLE_CODE_DRAG_IM>
+				(M:Event) 'WheelUp'    scmi 0 == if{ g3 } els{
+				(M:Event) 'WheelDown'  scmi 0 == if{ g4 } }
+				(M:Event) 'LeftSingle' scmi 0 == if{
+					(M:InputType) 0 == if{ 
+						1 (&gt;O:_ButtonAnimVar) 
+						(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) 0 &gt;
+						 if{ g4 }
+						els{ g3 }
+						quit
+					} els{
+						(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) (&gt;O:_Last#RANGE_BUTTON_LAYOUT_DIRECTION#)
+					}
+				} els{
+					(M:InputType) 1 == if{
+						(M:Event) 'LeftRelease' scmi 0 == if{
+							0 (&gt;O:_Last#RANGE_BUTTON_LAYOUT_DIRECTION#)
+						} els{
+							(M:Event) 'LeftDrag' scmi 0 == if{ 
+								(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) (O:_Last#RANGE_BUTTON_LAYOUT_DIRECTION#) - sp0
+								0.1 (&gt;O:_InputThreshold)
+								l0 abs (O:_InputThreshold) &gt; if{
+									l0 (O:_InputThreshold) / abs flr sp1
+									l0 (O:_InputThreshold) % abs sp2
+									:1 (* for loop *)
+									l1 0 &lt;= if{ g2 }
+									l1 -- sp1
+									1 (&gt;O:_ButtonAnimVar)
+									l0 0 &gt; if{
+										(&gt;H:#AS3X##NODE_SUFFIX#_RNG_Dezoom)
+									} els{
+										(&gt;H:#AS3X##NODE_SUFFIX#_RNG_Zoom)
+									}
+									g1
+									:2 
+									l0 0 &gt; if{
+										(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) l2 - (&gt;O:_Last#RANGE_BUTTON_LAYOUT_DIRECTION#)
+									} els{
+										(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) l2 + (&gt;O:_Last#RANGE_BUTTON_LAYOUT_DIRECTION#)
+									}
+								}
+							}
+						}
+					}
+				}
+				quit
+				:3 (&gt;H:#AS3X##NODE_SUFFIX#_RNG_Zoom) quit
+				:4 (&gt;H:#AS3X##NODE_SUFFIX#_RNG_Dezoom) quit
+			</LEFT_SINGLE_CODE_DRAG_IM>
+			<MOUSEFLAGS_DRAG_IM>LeftAll+Wheel</MOUSEFLAGS_DRAG_IM>
+			<LEFT_SINGLE_CODE_DEFAULT_IM>
+				(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) 0 &gt;
+				 if{ (&gt;H:#AS3X#_RNG_Dezoom) }
+				els{ (&gt;H:#AS3X#_RNG_Zoom) }
+			</LEFT_SINGLE_CODE_DEFAULT_IM>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_RNG_ADJUST</TOOLTIPID>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS3X_Hardkeys">
-			<NAME>Enter</NAME>
-			<TOOLTIPVALUE>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_ENTER</TOOLTIPVALUE>
-			<NAME2>Clear</NAME2>
-			<TOOLTIP2>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_CLEAR</TOOLTIP2>
-			<NAME3>Menu</NAME3>
-			<TOOLTIP3>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_MENU</TOOLTIP3>
-			<NAME4>Flightplan</NAME4>
-			<TOOLTIP4>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_FPL</TOOLTIP4>
-			<NAME5>DirectTo</NAME5>
-			<TOOLTIP5>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_DIRECT_TO</TOOLTIP5>
-			<NAME6>Nearest</NAME6>
-			<TOOLTIP6>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_NEAREST</TOOLTIP6>
-			<EVENT>ENT_Push</EVENT>
-			<EVENT2>CLR</EVENT2>
-			<EVENT3>MENU_Push</EVENT3>
-			<EVENT4>FPL_Push</EVENT4>
-			<EVENT5>DIRECTTO</EVENT5>
-			<EVENT6>NRST_Push</EVENT6>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS3X_Range_Button_Template">
-			<WWISE_EVENT_1>as3x_range_push_button_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>as3x_range_push_button_off</WWISE_EVENT_2>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Joystick_Separated_Interaction">
-			<JOYSTICK_X_CODE_LEFT>(&gt;H:#HTML_PREFIX#JOYSTICK_LEFT)</JOYSTICK_X_CODE_LEFT>
-			<JOYSTICK_X_CODE_RIGHT>(&gt;H:#HTML_PREFIX#JOYSTICK_RIGHT)</JOYSTICK_X_CODE_RIGHT>
-			<JOYSTICK_Y_CODE_DOWN>(&gt;H:#HTML_PREFIX#JOYSTICK_DOWN)</JOYSTICK_Y_CODE_DOWN>
-			<JOYSTICK_Y_CODE_UP>(&gt;H:#HTML_PREFIX#JOYSTICK_UP)</JOYSTICK_Y_CODE_UP>
-			<LEFT_SINGLE_CODE>(&gt;H:#HTML_PREFIX#JOYSTICK_PUSH)</LEFT_SINGLE_CODE>
-			<WHEEL_UP_CODE>(&gt;H:#HTML_PREFIX#TURN_INC)</WHEEL_UP_CODE>
-			<WHEEL_DOWN_CODE>(&gt;H:#HTML_PREFIX#TURN_DEC)</WHEEL_DOWN_CODE>
-			<ANIM_NAME_L_R>#AS3X#_Joystick_L_R#NODE_SUFFIX#</ANIM_NAME_L_R>
-			<ANIM_NAME_DN_UP>#AS3X#_Joystick_DN_UP#NODE_SUFFIX#</ANIM_NAME_DN_UP>
-			<ANIM_NAME_KNOB>#AS3X#_Joystick_Knob#NODE_SUFFIX#</ANIM_NAME_KNOB>
-			<ANIM_NAME_PUSH>#AS3X#_Joystick_Push#NODE_SUFFIX#</ANIM_NAME_PUSH>
-			<VAR_NAME>#AS3X#_Joystick_#ID#_Interacting</VAR_NAME>
-			<PAN_TOOLTIP></PAN_TOOLTIP> <!-- TT:COCKPIT.TOOLTIPS.AS1000_KNOB_RANGE_PAN -->
-			<PUSH_TOOLTIP></PUSH_TOOLTIP> <!-- TT:COCKPIT.TOOLTIPS.AS1000_KNOB_RANGE_HAND -->
-			<ROTATE_TOOLTIP></ROTATE_TOOLTIP> <!-- TT:COCKPIT.TOOLTIPS.AS430_RNG_ADJUST -->
-			<NODE_ID>#AS3X#_Joystick_Knob#NODE_SUFFIX#</NODE_ID>
-			<PAN_NODE_ID>#AS3X#_Joystick_Pan#NODE_SUFFIX#</PAN_NODE_ID>
-			<UPDATE_FREQUENCY>20</UPDATE_FREQUENCY>
-			<WWISE_JOYSTICK_EVENT_L>as3x_joystick</WWISE_JOYSTICK_EVENT_L>
-			<WWISE_JOYSTICK_EVENT_R>as3x_joystick</WWISE_JOYSTICK_EVENT_R >	
-			<WWISE_JOYSTICK_EVENT_UP>as3x_joystick</WWISE_JOYSTICK_EVENT_UP>
-			<WWISE_JOYSTICK_EVENT_DN>as3x_joystick</WWISE_JOYSTICK_EVENT_DN>
-			<WWISE_EVENT_1>as3x_knob_push_button_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>as3x_knob_push_button_off</WWISE_EVENT_2>
-			<WWISE_EVENT>as3x_knob_turn</WWISE_EVENT>
-			<COUNT>36</COUNT>
-		</UseTemplate>
-	</Template>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_AS3X_Template">
+	<DefaultTemplateParameters>
+		<HTML_PREFIX>AS3X_</HTML_PREFIX>
+		<AS3X>AS3X</AS3X>
+		<NODE_SUFFIX></NODE_SUFFIX>
+		<ID>1</ID>
+		<WWISE_EVENT_1>as3x_push_button_on</WWISE_EVENT_1>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<WWISE_EVENT_2>as3x_push_button_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_AS3X_Softkeys">
+		<COUNT>5</COUNT>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS3X_Hardkeys">
+		<NAME>Enter</NAME>
+		<TOOLTIPVALUE>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_ENTER</TOOLTIPVALUE>
+		<NAME2>Clear</NAME2>
+		<TOOLTIP2>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_CLEAR</TOOLTIP2>
+		<NAME3>Menu</NAME3>
+		<TOOLTIP3>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_MENU</TOOLTIP3>
+		<NAME4>Flightplan</NAME4>
+		<TOOLTIP4>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_FPL</TOOLTIP4>
+		<NAME5>DirectTo</NAME5>
+		<TOOLTIP5>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_DIRECT_TO</TOOLTIP5>
+		<NAME6>Nearest</NAME6>
+		<TOOLTIP6>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_NEAREST</TOOLTIP6>
+		<EVENT>ENT_Push</EVENT>
+		<EVENT2>CLR</EVENT2>
+		<EVENT3>MENU_Push</EVENT3>
+		<EVENT4>FPL_Push</EVENT4>
+		<EVENT5>DIRECTTO</EVENT5>
+		<EVENT6>NRST_Push</EVENT6>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS3X_Range_Button_Template">
+		<WWISE_EVENT_1>as3x_range_push_button_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>as3x_range_push_button_off</WWISE_EVENT_2>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_GT_Joystick_Separated_Interaction">
+		<JOYSTICK_X_CODE_LEFT>(&gt;H:#HTML_PREFIX#JOYSTICK_LEFT)</JOYSTICK_X_CODE_LEFT>
+		<JOYSTICK_X_CODE_RIGHT>(&gt;H:#HTML_PREFIX#JOYSTICK_RIGHT)</JOYSTICK_X_CODE_RIGHT>
+		<JOYSTICK_Y_CODE_DOWN>(&gt;H:#HTML_PREFIX#JOYSTICK_DOWN)</JOYSTICK_Y_CODE_DOWN>
+		<JOYSTICK_Y_CODE_UP>(&gt;H:#HTML_PREFIX#JOYSTICK_UP)</JOYSTICK_Y_CODE_UP>
+		<LEFT_SINGLE_CODE_DEFAULT_IM>(&gt;H:#HTML_PREFIX#JOYSTICK_PUSH) </LEFT_SINGLE_CODE_DEFAULT_IM>
+		<!-- Spacial case for DRAG_IM to condense inputs to only one node -->
+		<ADDITIONAL_EVENT_HANDLING>
+			(M:Event) 'RightSingle' scmi 0 == if{
+				(&gt;H:#HTML_PREFIX#JOYSTICK_PUSH)
+				quit
+			}
+		</ADDITIONAL_EVENT_HANDLING>
+		<MOUSEFLAGS_DRAG_IM>RightSingle+LeftAll+Wheel+Lock+Unlock</MOUSEFLAGS_DRAG_IM>
+		<WHEEL_UP_CODE>(&gt;H:#HTML_PREFIX#TURN_INC)</WHEEL_UP_CODE>
+		<WHEEL_DOWN_CODE>(&gt;H:#HTML_PREFIX#TURN_DEC)</WHEEL_DOWN_CODE>
+		<ANIM_NAME_L_R>#AS3X#_Joystick_L_R#NODE_SUFFIX#</ANIM_NAME_L_R>
+		<ANIM_NAME_DN_UP>#AS3X#_Joystick_DN_UP#NODE_SUFFIX#</ANIM_NAME_DN_UP>
+		<ANIM_NAME_KNOB>#AS3X#_Joystick_Knob#NODE_SUFFIX#</ANIM_NAME_KNOB>
+		<ANIM_NAME_PUSH>#AS3X#_Joystick_Push#NODE_SUFFIX#</ANIM_NAME_PUSH>
+		<VAR_NAME>#AS3X#_Joystick_#ID#_Interacting</VAR_NAME>
+		<PAN_TOOLTIP></PAN_TOOLTIP> <!-- TT:COCKPIT.TOOLTIPS.AS1000_KNOB_RANGE_PAN -->
+		<PUSH_TOOLTIP></PUSH_TOOLTIP> <!-- TT:COCKPIT.TOOLTIPS.AS1000_KNOB_RANGE_HAND -->
+		<ROTATE_TOOLTIP></ROTATE_TOOLTIP> <!-- TT:COCKPIT.TOOLTIPS.AS430_RNG_ADJUST -->
+		<NODE_ID>#AS3X#_Joystick_Knob#NODE_SUFFIX#</NODE_ID>
+		<HIGHLIGHT_NODE_ID>#AS3X#_Joystick_Knob_Visual#NODE_SUFFIX#</HIGHLIGHT_NODE_ID>
+		<PAN_NODE_ID>#AS3X#_Joystick_Pan#NODE_SUFFIX#</PAN_NODE_ID>
+		<UPDATE_FREQUENCY>20</UPDATE_FREQUENCY>
+		<WWISE_JOYSTICK_EVENT_L>as3x_joystick</WWISE_JOYSTICK_EVENT_L>
+		<WWISE_JOYSTICK_EVENT_R>as3x_joystick</WWISE_JOYSTICK_EVENT_R >	
+		<WWISE_JOYSTICK_EVENT_UP>as3x_joystick</WWISE_JOYSTICK_EVENT_UP>
+		<WWISE_JOYSTICK_EVENT_DN>as3x_joystick</WWISE_JOYSTICK_EVENT_DN>
+		<WWISE_EVENT_1>as3x_knob_push_button_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>as3x_knob_push_button_off</WWISE_EVENT_2>
+		<WWISE_EVENT>as3x_knob_turn</WWISE_EVENT>
+		<COUNT>36</COUNT>
+	</UseTemplate>
+</Template>
 </ModelBehaviors>

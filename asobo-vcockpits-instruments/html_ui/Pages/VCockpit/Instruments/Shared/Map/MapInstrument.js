@@ -115,27 +115,27 @@ class MapInstrument extends ISvgMapRootElement {
     }
     get dummyObstacles() {
         if (!this._dummyObstacles) {
-            const obstacleA = new SvgObstacleElement("high-voltage-pyl");
+            let obstacleA = new SvgObstacleElement("high-voltage-pyl");
             obstacleA.lat = 47.349613;
             obstacleA.long = -122.123143;
             obstacleA.alt = 328;
-            const obstacleB = new SvgObstacleElement("radio-tower");
+            let obstacleB = new SvgObstacleElement("radio-tower");
             obstacleB.lat = 47.277525;
             obstacleB.long = -122.291616;
             obstacleB.alt = 426;
-            const obstacleC = new SvgObstacleElement("radio-tower");
+            let obstacleC = new SvgObstacleElement("radio-tower");
             obstacleC.lat = 47.263344;
             obstacleC.long = -122.348211;
             obstacleC.alt = 393;
-            const obstacleD = new SvgObstacleElement("maybe-tree");
+            let obstacleD = new SvgObstacleElement("maybe-tree");
             obstacleD.lat = 47.426000;
             obstacleD.long = -122.436833;
             obstacleD.alt = 196;
-            const obstacleE = new SvgObstacleElement("space-needle");
+            let obstacleE = new SvgObstacleElement("space-needle");
             obstacleE.lat = 47.620402;
             obstacleE.long = -122.349301;
             obstacleE.alt = 603;
-            const obstacleF = new SvgObstacleElement("university-of-washington-tower");
+            let obstacleF = new SvgObstacleElement("university-of-washington-tower");
             obstacleF.lat = 47.660527;
             obstacleF.long = -122.314670;
             obstacleF.alt = 325;
@@ -143,9 +143,7 @@ class MapInstrument extends ISvgMapRootElement {
         }
         return this._dummyObstacles;
     }
-    get templateID() {
-        return "MapInstrumentTemplate";
-    }
+    get templateID() { return "MapInstrumentTemplate"; }
     connectedCallback() {
         this.lineCanvas = document.createElement("canvas");
         this.lineCanvas.id = "line-canvas";
@@ -156,14 +154,15 @@ class MapInstrument extends ISvgMapRootElement {
         this.lineCanvas.style.height = "100%";
         if (this.hasAttribute("bing-id")) {
             this.bingId = this.getAttribute("bing-id");
-        } else {
+        }
+        else {
             console.warn("No BingID specified !");
         }
         if (this.hasAttribute("config-path")) {
             this.configPath = this.getAttribute("config-path");
         }
         for (let i = 0; i < MapInstrument.observedAttributes.length; i++) {
-            const attr = MapInstrument.observedAttributes[i];
+            let attr = MapInstrument.observedAttributes[i];
             if (this.hasAttribute(attr)) {
                 this.attributeChangedCallback(attr, null, this.getAttribute(attr));
             }
@@ -194,112 +193,128 @@ class MapInstrument extends ISvgMapRootElement {
         ];
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        const lowercaseName = name.toLowerCase();
+        let lowercaseName = name.toLowerCase();
         if (lowercaseName == "bing-mode") {
             var attr = newValue.toLowerCase();
             if (attr === "vfr") {
                 this.eBingMode = EBingMode.VFR;
-            } else if (attr === "horizon") {
+            }
+            else if (attr === "horizon") {
                 this.eBingMode = EBingMode.HORIZON;
-            } else {
+            }
+            else {
                 this.eBingMode = EBingMode.PLANE;
             }
-            if (this.bingMap) {
+            if (this.bingMap)
                 this.bingMap.setMode(this.eBingMode);
-            }
-        } else if (lowercaseName == "bing-ref") {
+        }
+        else if (lowercaseName == "bing-ref") {
             var attr = newValue.toLowerCase();
             if (attr === "plane") {
                 this.eBingRef = EBingReference.PLANE;
-            } else {
+            }
+            else {
                 this.eBingRef = EBingReference.SEA;
             }
-            if (this.bingMap) {
+            if (this.bingMap)
                 this.bingMap.setReference(this.eBingRef);
-            }
-        } else if (lowercaseName === "show-bing-map") {
+        }
+        else if (lowercaseName === "show-bing-map") {
             if (newValue === "true") {
                 this.showBingMap = true;
                 if (this.bingMap) {
                     this.bingMap.setVisible(true);
                 }
-            } else {
+            }
+            else {
                 this.showBingMap = false;
                 if (this.bingMap) {
                     this.bingMap.setVisible(false);
                 }
             }
-        } else if (lowercaseName === "show-airplane") {
-            if (newValue === "false" || newValue == null) {
+        }
+        else if (lowercaseName === "show-airplane") {
+            if (newValue === "false" || newValue == null)
                 this.bShowAirplane = false;
-            } else {
+            else
                 this.bShowAirplane = true;
-            }
-        } else if (lowercaseName === "show-overlay") {
-            if (newValue === "false" || newValue == null) {
+        }
+        else if (lowercaseName === "show-overlay") {
+            if (newValue === "false" || newValue == null)
                 this.bShowOverlay = false;
-            } else {
+            else
                 this.bShowOverlay = true;
-            }
-        } else if (lowercaseName === "show-roads") {
+        }
+        else if (lowercaseName === "show-roads") {
             this.showRoads = false;
             if (newValue === "true") {
                 this.showRoads = true;
             }
-        } else if (lowercaseName === "show-airspaces") {
+        }
+        else if (lowercaseName === "show-airspaces") {
             this.showAirspaces = false;
             if (newValue === "true") {
                 this.showAirspaces = true;
             }
-        } else if (lowercaseName === "show-airways") {
+        }
+        else if (lowercaseName === "show-airways") {
             this.showAirways = false;
             if (newValue === "true") {
                 this.showAirways = true;
             }
-        } else if (lowercaseName === "show-flightplan") {
+        }
+        else if (lowercaseName === "show-flightplan") {
             this.showFlightPlan = false;
             if (newValue === "true") {
                 this.showFlightPlan = true;
                 this.updateFlightPlanVisibility();
             }
-        } else if (lowercaseName === "hide-flightplan-if-bushtrip") {
+        }
+        else if (lowercaseName === "hide-flightplan-if-bushtrip") {
             this.bHideFlightPlanIfBushtrip = false;
             if (newValue === "true") {
                 this.bHideFlightPlanIfBushtrip = true;
                 this.bIsFlightPlanVisible = false;
                 this.updateFlightPlanVisibility();
             }
-        } else if (lowercaseName === "show-vors") {
+        }
+        else if (lowercaseName === "show-vors") {
             this.showVORs = false;
             if (newValue === "true") {
                 this.showVORs = true;
             }
-        } else if (lowercaseName === "show-intersections") {
+        }
+        else if (lowercaseName === "show-intersections") {
             this.showIntersections = false;
             if (newValue === "true") {
                 this.showIntersections = true;
             }
-        } else if (lowercaseName === "show-ndbs") {
+        }
+        else if (lowercaseName === "show-ndbs") {
             this.showNDBs = false;
             if (newValue === "true") {
                 this.showNDBs = true;
             }
-        } else if (lowercaseName === "show-airports") {
+        }
+        else if (lowercaseName === "show-airports") {
             this.showAirports = false;
             if (newValue === "true") {
                 this.showAirports = true;
             }
-        } else if (lowercaseName === "show-obstacles") {
+        }
+        else if (lowercaseName === "show-obstacles") {
             this.showObstacles = false;
             if (newValue === "true") {
                 this.showObstacles = true;
             }
-        } else if (lowercaseName === "show-traffic") {
+        }
+        else if (lowercaseName === "show-traffic") {
             this.showTraffic = false;
             if (newValue === "true") {
                 this.showTraffic = true;
             }
-        } else if (lowercaseName === "show-constraints") {
+        }
+        else if (lowercaseName === "show-constraints") {
             this.showConstraints = false;
             if (newValue === "true") {
                 this.showConstraints = true;
@@ -314,25 +329,27 @@ class MapInstrument extends ISvgMapRootElement {
             if (arg instanceof BaseInstrument) {
                 this.instrument = arg;
                 this.selfManagedInstrument = false;
-            } else {
+            }
+            else {
                 this.instrument = document.createElement("base-instrument");
                 this.selfManagedInstrument = true;
                 if (typeof (arg) === "string") {
                     this.instrument.setInstrumentIdentifier(arg);
                 }
             }
-        } else {
+        }
+        else {
         }
         this._flightPlanManager = this.instrument.flightPlanManager;
         if (this._flightPlanManager) {
             this.instrument.addEventListener("FlightStart", this.onFlightStart.bind(this));
-        } else {
+        }
+        else {
             this._flightPlanManager = new FlightPlanManager(this.instrument);
         }
         let bingMapId = this.bingId;
-        if (this.instrument.urlConfig.index) {
+        if (this.instrument.urlConfig.index)
             bingMapId += "_GPS" + this.instrument.urlConfig.index;
-        }
         this.bingMap = this.getElementsByTagName("bing-map")[0];
         this.bingMap.setMode(this.eBingMode);
         this.bingMap.setReference(this.eBingRef);
@@ -346,7 +363,7 @@ class MapInstrument extends ISvgMapRootElement {
         if (this.eBingMode !== EBingMode.HORIZON) {
             this.navMap = new SvgMap(this, { svgElement: this.getElementsByTagName("svg")[0], configPath: this.configPath });
             this.navMap.lineCanvas = this.lineCanvas;
-            const mapSVG = this.querySelector("#MapSVG");
+            var mapSVG = this.querySelector("#MapSVG");
             mapSVG.setAttribute("display", "visible");
             this.insertBefore(this.lineCanvas, mapSVG);
             this.wpt = this.querySelector("#WPT");
@@ -413,11 +430,10 @@ class MapInstrument extends ISvgMapRootElement {
             this.addEventListener("mousewheel", this.OnMouseWheel.bind(this));
         }
         this.loadBingMapConfig();
-        if (this.bingMap.isReady()) {
+        if (this.bingMap.isReady())
             this.onBingMapReady();
-        } else {
+        else
             this.bingMap.addEventListener("BingMapReady", this.onBingMapReady.bind(this));
-        }
         this.cursorSvg = this.querySelector("#MapCursor");
         this.weatherSVG = this.querySelector("#WeatherSVG");
         window.document.addEventListener("OnVCockpitPanelAttributesChanged", this.updateVisibility.bind(this));
@@ -433,9 +449,8 @@ class MapInstrument extends ISvgMapRootElement {
         if (this.eBingMode !== EBingMode.HORIZON) {
             Coherent.call("GET_IS_BUSHTRIP").then(v => {
                 this.isBushTrip = v;
-                if (this.isBushTrip) {
+                if (this.isBushTrip)
                     console.log("Bushtrip Detected");
-                }
                 if (this.flightPlanElement) {
                     this.flightPlanElement.highlightActiveLeg = !this.isBushTrip;
                     this.flightPlanElement.hideReachedWaypoints = !this.isBushTrip;
@@ -449,13 +464,16 @@ class MapInstrument extends ISvgMapRootElement {
             if (this.bHideFlightPlanIfBushtrip) {
                 if (this.isBushTrip) {
                     this.bIsFlightPlanVisible = false;
-                } else {
+                }
+                else {
                     this.bIsFlightPlanVisible = true;
                 }
-            } else {
+            }
+            else {
                 this.bIsFlightPlanVisible = true;
             }
-        } else {
+        }
+        else {
             this.bIsFlightPlanVisible = false;
         }
     }
@@ -465,12 +483,12 @@ class MapInstrument extends ISvgMapRootElement {
             this.drawCounter %= 100;
             this.npcAirplaneManager.update();
             if (this.showRoads) {
-                const t0 = performance.now();
+                let t0 = performance.now();
                 while (this.roadsBuffer.length > 0 && (performance.now() - t0 < 1)) {
-                    const road = this.roadsBuffer.pop();
+                    let road = this.roadsBuffer.pop();
                     if (road) {
                         if (road.path.length > 100) {
-                            const truncRoad = {
+                            let truncRoad = {
                                 id: 0,
                                 path: road.path.splice(90),
                                 type: road.type,
@@ -483,7 +501,7 @@ class MapInstrument extends ISvgMapRootElement {
                 }
                 if (this.roadsBuffer.length < 100) {
                     Coherent.call("GET_ROADS_BAG_SIZE").then((size) => {
-                        const iterator = this.smartIterator.getIteration(size - 1);
+                        let iterator = this.smartIterator.getIteration(size - 1);
                         if (isFinite(iterator)) {
                             Coherent.call("GET_ROADS_BAG", iterator).then((roadBag) => {
                                 this.roadsBuffer.push(...roadBag);
@@ -510,21 +528,21 @@ class MapInstrument extends ISvgMapRootElement {
             }
             if (this.drawCounter === 45 || (this.showConstraints && (!this.constraints || this.constraints.length === 0))) {
                 if (this.showConstraints) {
-                    const wpWithConstraints = this.flightPlanManager.getWaypointsWithAltitudeConstraints();
+                    let wpWithConstraints = this.flightPlanManager.getWaypointsWithAltitudeConstraints();
                     this.constraints = [];
                     for (let i = 0; i < wpWithConstraints.length; i++) {
-                        const svgConstraint = new SvgConstraintElement(wpWithConstraints[i]);
+                        let svgConstraint = new SvgConstraintElement(wpWithConstraints[i]);
                         this.constraints.push(svgConstraint);
                     }
                 }
             }
-            const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
-            const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
+            let lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
+            let long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
             let planeLla;
             let needCenterOnPlane = false;
             if (lat && long && isFinite(lat) && isFinite(long)) {
                 planeLla = new LatLongAlt(lat, long);
-                const unsmoothedMove = this.navMap.setPlaneCoordinates(lat, long, 0.95);
+                let unsmoothedMove = this.navMap.setPlaneCoordinates(lat, long, 0.95);
                 if (unsmoothedMove) {
                     console.warn("Plane appears to have been teleported. FlightPlan active Waypoint index recalculated.");
                     this.flightPlanManager.recomputeActiveWaypointIndex();
@@ -532,10 +550,10 @@ class MapInstrument extends ISvgMapRootElement {
                 if (this.eBingMode === EBingMode.PLANE) {
                     needCenterOnPlane = true;
                     if (this.bEnableCenterOnFplnWaypoint) {
-                        const airlinerMcduCurrentFplnWaypointIndex = SimVar.GetSimVarValue("L:AIRLINER_MCDU_CURRENT_FPLN_WAYPOINT", "number");
+                        let airlinerMcduCurrentFplnWaypointIndex = SimVar.GetSimVarValue("L:AIRLINER_MCDU_CURRENT_FPLN_WAYPOINT", "number");
                         if (airlinerMcduCurrentFplnWaypointIndex >= 0) {
                             if (this.flightPlanManager) {
-                                const airlinerMcduCurrentFplnWaypoint = this.flightPlanManager.getWaypoint(airlinerMcduCurrentFplnWaypointIndex, NaN, true);
+                                let airlinerMcduCurrentFplnWaypoint = this.flightPlanManager.getWaypoint(airlinerMcduCurrentFplnWaypointIndex, NaN, true);
                                 if (airlinerMcduCurrentFplnWaypoint && airlinerMcduCurrentFplnWaypoint.infos.coordinates) {
                                     this.setNavMapCenter(airlinerMcduCurrentFplnWaypoint.infos.coordinates);
                                     needCenterOnPlane = false;
@@ -543,40 +561,40 @@ class MapInstrument extends ISvgMapRootElement {
                             }
                         }
                     }
-                } else if (!this.bVfrMapPlanePositionReady) {
+                }
+                else if (!this.bVfrMapPlanePositionReady) {
                     needCenterOnPlane = true;
                     if (SimVar.GetSimVarValue("GROUND VELOCITY", "knots") > 10) {
                         setTimeout(() => {
                             this.bVfrMapPlanePositionReady = true;
                         }, 3000);
                     }
-                } else if (this.eBingMode === EBingMode.VFR && this.bVfrMapFollowPlane) {
+                }
+                else if (this.eBingMode === EBingMode.VFR && this.bVfrMapFollowPlane) {
                     needCenterOnPlane = true;
                 }
             }
-            if (needCenterOnPlane) {
+            if (needCenterOnPlane)
                 this.centerOnPlane();
-            } else {
+            else
                 this.scrollMap(this.scrollDisp.x, this.scrollDisp.y);
-            }
             this.scrollDisp.x = 0;
             this.scrollDisp.y = 0;
             if (this.bingMap) {
                 if (this.isDisplayingWeather()) {
                     this.navMap.setRange(this.getWeatherRange());
-                } else {
+                }
+                else {
                     this.navMap.setRange(this.getDisplayRange());
                 }
-                const bingRadius = this.navMap.NMWidth * 0.5 * this.rangeFactor;
-                if (!this.isDisplayingWeather()) {
+                var bingRadius = this.navMap.NMWidth * 0.5 * this.rangeFactor;
+                if (!this.isDisplayingWeather())
                     this.updateBingMapSize();
-                }
-                if (this.navMap.lastCenterCoordinates) {
+                if (this.navMap.lastCenterCoordinates)
                     this.bingMap.setParams({ lla: this.navMap.lastCenterCoordinates, radius: bingRadius });
-                }
             }
             if (this.navMap.centerCoordinates) {
-                const centerCoordinates = this.navMap.centerCoordinates;
+                let centerCoordinates = this.navMap.centerCoordinates;
                 if (this.showAirports) {
                     this.airportLoader.searchLat = centerCoordinates.lat;
                     this.airportLoader.searchLong = centerCoordinates.long;
@@ -622,18 +640,18 @@ class MapInstrument extends ISvgMapRootElement {
             }
             if (this.showAirways && (this.drawCounter % 50 === 40)) {
                 if (this.getDeclutteredRange() < this.intersectionMaxRange) {
-                    const intersection = this.intersectionLoader.waypoints[this.airwayIterator];
+                    let intersection = this.intersectionLoader.waypoints[this.airwayIterator];
                     if (intersection instanceof NearestIntersection) {
                         if (intersection.routes.length > 0 && !intersection.airwaysDrawn) {
                             for (let i = 0; i < intersection.routes.length; i++) {
                                 if (intersection.routes[i]) {
-                                    const routeCoordinates = new LatLong(intersection.coordinates.lat, intersection.coordinates.long);
-                                    const coordinatesPrev = intersection.routes[i].prevWaypoint.GetInfos().coordinates;
+                                    let routeCoordinates = new LatLong(intersection.coordinates.lat, intersection.coordinates.long);
+                                    let coordinatesPrev = intersection.routes[i].prevWaypoint.GetInfos().coordinates;
                                     if (coordinatesPrev) {
-                                        const routePrevStart = new LatLong(coordinatesPrev.lat, coordinatesPrev.long);
-                                        const coordinatesNext = intersection.routes[i].nextWaypoint.GetInfos().coordinates;
+                                        let routePrevStart = new LatLong(coordinatesPrev.lat, coordinatesPrev.long);
+                                        let coordinatesNext = intersection.routes[i].nextWaypoint.GetInfos().coordinates;
                                         if (coordinatesNext) {
-                                            const routeNextStart = new LatLong(coordinatesNext.lat, coordinatesNext.long);
+                                            let routeNextStart = new LatLong(coordinatesNext.lat, coordinatesNext.long);
                                             this.roadNetwork.addRoad([routePrevStart, routeCoordinates, routeNextStart], 101, 8);
                                             this.roadNetwork.addRoad([routePrevStart, routeCoordinates, routeNextStart], 101, 12);
                                             this.roadNetwork.addRoad([routePrevStart, routeCoordinates, routeNextStart], 101, 14);
@@ -670,19 +688,21 @@ class MapInstrument extends ISvgMapRootElement {
                         }
                     }
                 }
-                const margin = 0.05;
+                let margin = 0.05;
                 if (this.showAirports) {
                     for (let i = 0; i < this.airportLoader.waypoints.length; i++) {
-                        const airport = this.airportLoader.waypoints[i];
+                        let airport = this.airportLoader.waypoints[i];
                         if (airport && airport.infos instanceof AirportInfo) {
                             if (this.navMap.isLatLongInFrame(airport.infos.coordinates, margin)) {
                                 if (this.getDeclutteredRange() < this.smallAirportMaxRange) {
                                     this.navMap.mapElements.push(airport.getSvgElement(this.navMap.index));
-                                } else if (this.getDeclutteredRange() < this.medAirportMaxRange) {
+                                }
+                                else if (this.getDeclutteredRange() < this.medAirportMaxRange) {
                                     if (airport.infos.getClassSize() !== AirportSize.Small) {
                                         this.navMap.mapElements.push(airport.getSvgElement(this.navMap.index));
                                     }
-                                } else if (this.getDeclutteredRange() < this.largeAirportMaxRange) {
+                                }
+                                else if (this.getDeclutteredRange() < this.largeAirportMaxRange) {
                                     if (airport.infos.getClassSize() === AirportSize.Large) {
                                         this.navMap.mapElements.push(airport.getSvgElement(this.navMap.index));
                                     }
@@ -693,7 +713,7 @@ class MapInstrument extends ISvgMapRootElement {
                 }
                 if (this.showVORs && (this.getDeclutteredRange() < this.vorMaxRange || this.getDeclutteredRange() < this.minimizedVorMaxRange)) {
                     for (let i = 0; i < this.vorLoader.waypoints.length; i++) {
-                        const vor = this.vorLoader.waypoints[i];
+                        let vor = this.vorLoader.waypoints[i];
                         vor.getSvgElement(this.navMap.index).minimize = this.getDeclutteredRange() > this.vorMaxRange;
                         if (this.navMap.isLatLongInFrame(vor.infos.coordinates, margin)) {
                             this.navMap.mapElements.push(vor.getSvgElement(this.navMap.index));
@@ -702,7 +722,7 @@ class MapInstrument extends ISvgMapRootElement {
                 }
                 if (this.showNDBs && (this.getDeclutteredRange() < this.ndbMaxRange || this.getDeclutteredRange() < this.minimizedNdbMaxRange)) {
                     for (let i = 0; i < this.ndbLoader.waypoints.length; i++) {
-                        const ndb = this.ndbLoader.waypoints[i];
+                        let ndb = this.ndbLoader.waypoints[i];
                         ndb.getSvgElement(this.navMap.index).minimize = this.getDeclutteredRange() > this.ndbMaxRange;
                         if (this.navMap.isLatLongInFrame(ndb.infos.coordinates, margin)) {
                             this.navMap.mapElements.push(ndb.getSvgElement(this.navMap.index));
@@ -711,7 +731,7 @@ class MapInstrument extends ISvgMapRootElement {
                 }
                 if (this.showIntersections && (this.getDeclutteredRange() < this.intersectionMaxRange || this.getDeclutteredRange() < this.minimizedIntersectionMaxRange)) {
                     for (let i = 0; i < this.intersectionLoader.waypoints.length; i++) {
-                        const intersection = this.intersectionLoader.waypoints[i];
+                        let intersection = this.intersectionLoader.waypoints[i];
                         intersection.getSvgElement(this.navMap.index).minimize = this.getDeclutteredRange() > this.intersectionMaxRange;
                         if (this.navMap.isLatLongInFrame(intersection.infos.coordinates, margin)) {
                             this.navMap.mapElements.push(intersection.getSvgElement(this.navMap.index));
@@ -720,14 +740,16 @@ class MapInstrument extends ISvgMapRootElement {
                 }
                 if (this.showCities) {
                     for (let i = 0; i < this.cityManager.displayedCities.length; i++) {
-                        const city = this.cityManager.displayedCities[i];
+                        let city = this.cityManager.displayedCities[i];
                         if (this.getDeclutteredRange() < this.smallCityMaxRange) {
                             this.navMap.mapElements.push(city);
-                        } else if (this.getDeclutteredRange() < this.medCityMaxRange) {
+                        }
+                        else if (this.getDeclutteredRange() < this.medCityMaxRange) {
                             if (city.size !== CitySize.Small) {
                                 this.navMap.mapElements.push(city);
                             }
-                        } else if (this.getDeclutteredRange() < this.largeCityMaxRange) {
+                        }
+                        else if (this.getDeclutteredRange() < this.largeCityMaxRange) {
                             if (city.size === CitySize.Large) {
                                 this.navMap.mapElements.push(city);
                             }
@@ -740,18 +762,18 @@ class MapInstrument extends ISvgMapRootElement {
                     }
                 }
                 if (this.flightPlanManager && this.bIsFlightPlanVisible) {
-                    const l = this.flightPlanManager.getWaypointsCount();
+                    let l = this.flightPlanManager.getWaypointsCount();
                     if (l > 1) {
                         if (SimVar.GetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number") === 1) {
                             this.navMap.mapElements.push(this.tmpFlightPlanElement);
-                            const lTmpFlightPlan = this.flightPlanManager.getWaypointsCount(1);
+                            let lTmpFlightPlan = this.flightPlanManager.getWaypointsCount(1);
                             if (lTmpFlightPlan > 1) {
                                 for (let i = 0; i < lTmpFlightPlan; i++) {
-                                    const waypoint = this.flightPlanManager.getWaypoint(i, 1);
+                                    let waypoint = this.flightPlanManager.getWaypoint(i, 1);
                                     if (waypoint && waypoint.ident !== "" && waypoint.ident !== "USER") {
                                         if (waypoint.getSvgElement(this.navMap.index)) {
                                             if (!this.navMap.mapElements.find(w => {
-                                                return (w instanceof SvgWaypointElement) && w.source.ident === waypoint.ident;
+                                                return (w instanceof SvgWaypointElement) && w.source.icao === waypoint.icao;
                                             })) {
                                                 this.navMap.mapElements.push(waypoint.getSvgElement(this.navMap.index));
                                             }
@@ -762,11 +784,11 @@ class MapInstrument extends ISvgMapRootElement {
                         }
                         this.navMap.mapElements.push(this.flightPlanElement);
                         for (let i = 0; i < l; i++) {
-                            const waypoint = this.flightPlanManager.getWaypoint(i);
-                            if (waypoint && waypoint.ident !== "" && waypoint.ident !== "USER") {
+                            let waypoint = this.flightPlanManager.getWaypoint(i);
+                            if (waypoint && waypoint.ident !== "" && waypoint.ident !== "USER" && waypoint.ident !== "POI") {
                                 if (waypoint.getSvgElement(this.navMap.index)) {
                                     if (!this.navMap.mapElements.find(w => {
-                                        return (w instanceof SvgWaypointElement) && w.source.ident === waypoint.ident;
+                                        return (w instanceof SvgWaypointElement) && w.source.icao === waypoint.icao;
                                     })) {
                                         this.navMap.mapElements.push(waypoint.getSvgElement(this.navMap.index));
                                     }
@@ -774,14 +796,14 @@ class MapInstrument extends ISvgMapRootElement {
                             }
                         }
                     }
-                    const approachWaypoints = this.flightPlanManager.getApproachWaypoints();
-                    const lAppr = approachWaypoints.length;
+                    let approachWaypoints = this.flightPlanManager.getApproachWaypoints();
+                    let lAppr = approachWaypoints.length;
                     for (let i = 0; i < lAppr; i++) {
-                        const apprWaypoint = approachWaypoints[i];
+                        let apprWaypoint = approachWaypoints[i];
                         if (apprWaypoint && apprWaypoint.ident !== "" && apprWaypoint.ident !== "USER") {
                             if (apprWaypoint.getSvgElement(this.navMap.index)) {
                                 if (!this.navMap.mapElements.find(w => {
-                                    return (w instanceof SvgWaypointElement) && w.source.ident === apprWaypoint.ident;
+                                    return (w instanceof SvgWaypointElement) && w.source.icao === apprWaypoint.icao;
                                 })) {
                                     this.navMap.mapElements.push(apprWaypoint.getSvgElement(this.navMap.index));
                                 }
@@ -807,27 +829,25 @@ class MapInstrument extends ISvgMapRootElement {
                 }
                 this.navMap.mapElements.push(...this.maskElements);
                 this.navMap.mapElements.push(...this.topOfCurveElements);
-                this.navMap.mapElements = this.navMap.mapElements.sort((a, b) => {
-                    return b.sortIndex - a.sortIndex;
-                });
+                this.navMap.mapElements = this.navMap.mapElements.sort((a, b) => { return b.sortIndex - a.sortIndex; });
                 if (this.bingMap) {
                     let transform = "";
                     if (this.bRotateWithAirplane && !this.isDisplayingWeatherRadar()) {
-                        const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES TRUE", "degree");
-                        const roundedCompass = fastToFixed(compass, 3);
+                        var compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES TRUE", "degree");
+                        var roundedCompass = fastToFixed(compass, 3);
                         transform = "rotate(" + -roundedCompass + "deg)";
                     }
                     this.bingMap.style.transform = transform;
                 }
-            } else {
+            }
+            else {
                 if (this.bShowAirplaneOnWeather) {
                     this.navMap.mapElements.push(this.airplaneIconElement);
                 }
                 if (this.bingMap) {
                     let transform = "";
-                    if (this.bingMap.getWeather() == EWeatherRadar.VERTICAL) {
+                    if (this.bingMap.getWeather() == EWeatherRadar.VERTICAL)
                         transform = "scale(0.75)";
-                    }
                     this.bingMap.style.transform = transform;
                 }
             }
@@ -835,45 +855,48 @@ class MapInstrument extends ISvgMapRootElement {
     }
     loadBingMapConfig() {
         if (this.eBingMode !== EBingMode.HORIZON) {
-            const setConfig = () => {
+            let setConfig = () => {
                 if (this.navMap.configLoaded) {
                     for (let i = 0; i < 3; i++) {
-                        const conf = this.navMap.config.generateBing(i);
-                        if (conf) {
+                        let conf = this.navMap.config.generateBing(i);
+                        if (conf)
                             this.bingMap.addConfig(conf);
-                        }
                     }
                     this.bingMap.setConfig(this.bingMapConfigId);
-                } else {
+                }
+                else {
                     setTimeout(setConfig, 1000);
                 }
             };
             setConfig();
-        } else {
-            let svgConfig = null;
-            let svgConfigLoaded = false;
-            const loadSVGConfig = () => {
+        }
+        else {
+            var svgConfig = null;
+            var svgConfigLoaded = false;
+            let loadSVGConfig = () => {
                 if (typeof (SvgMapConfig) !== "undefined") {
                     svgConfig = new SvgMapConfig();
                     svgConfig.load(this.configPath, () => {
                         svgConfigLoaded = true;
                     });
-                } else {
+                }
+                else {
                     setTimeout(loadSVGConfig, 200);
                 }
             };
             loadSVGConfig();
-            const setBingConfig = () => {
+            let setBingConfig = () => {
                 if (svgConfigLoaded && this.instrument.isComputingAspectRatio()) {
                     for (let i = 0; i < 3; i++) {
-                        const conf = svgConfig.generateBing(i);
+                        let conf = svgConfig.generateBing(i);
                         if (conf) {
                             conf.aspectRatio = (this.instrument.isAspectRatioForced()) ? this.instrument.getForcedScreenRatio() : 1.0;
                             this.bingMap.addConfig(conf);
                         }
                     }
                     this.bingMap.setConfig(this.bingMapConfigId);
-                } else {
+                }
+                else {
                     setTimeout(setBingConfig, 1000);
                 }
             };
@@ -888,35 +911,35 @@ class MapInstrument extends ISvgMapRootElement {
             this.flightPlanManager.update(_deltaTime);
         }
         if (this.wpt) {
-            const wpId = SimVar.GetSimVarValue("GPS WP NEXT ID", "string");
+            var wpId = SimVar.GetSimVarValue("GPS WP NEXT ID", "string");
             if (this.wpIdValue != wpId) {
                 this.wpt.textContent = wpId;
                 this.wpIdValue = wpId;
             }
         }
         if (this.dtkMap) {
-            const wpDtk = fastToFixed(SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree"), 0);
+            var wpDtk = fastToFixed(SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree"), 0);
             if (this.wpDtkValue != wpDtk) {
                 this.dtkMap.textContent = wpDtk;
                 this.wpDtkValue = wpDtk;
             }
         }
         if (this.disMap) {
-            const wpDis = fastToFixed(SimVar.GetSimVarValue("GPS WP DISTANCE", "nautical mile"), 1);
+            var wpDis = fastToFixed(SimVar.GetSimVarValue("GPS WP DISTANCE", "nautical mile"), 1);
             if (this.wpDisValue != wpDis) {
                 this.disMap.textContent = wpDis;
                 this.wpDisValue = wpDis;
             }
         }
         if (this.gsMap) {
-            const gs = fastToFixed(SimVar.GetSimVarValue("GPS GROUND SPEED", "knots"), 0);
+            var gs = fastToFixed(SimVar.GetSimVarValue("GPS GROUND SPEED", "knots"), 0);
             if (this.gsValue != gs) {
                 this.gsMap.textContent = gs;
                 this.gsValue = gs;
             }
         }
         if (this.mapRangeElement) {
-            const range = '<div class="Align">' + this.getDisplayRange() + '</div><div class="Align unit">n<br/>m</div>';
+            var range = '<div class="Align">' + this.getDisplayRange() + '</div><div class="Align unit">n<br/>m</div>';
             if (this.rangeValue != range) {
                 this.mapRangeElement.innerHTML = range;
                 this.rangeValue = range;
@@ -933,10 +956,9 @@ class MapInstrument extends ISvgMapRootElement {
         }
     }
     updateVisibility() {
-        if (!this.instrument) {
+        if (!this.instrument)
             return;
-        }
-        const wantedQuality = this.instrument.getQuality();
+        var wantedQuality = this.instrument.getQuality();
         if (wantedQuality != this.quality) {
             this.quality = wantedQuality;
             this.refreshDisplay();
@@ -944,73 +966,64 @@ class MapInstrument extends ISvgMapRootElement {
     }
     refreshDisplay() {
         if (this.isDisplayingWeatherRadar() && this.weatherHideGPS) {
-            if (this.navMap && this.navMap.svgHtmlElement) {
+            if (this.navMap && this.navMap.svgHtmlElement)
                 this.navMap.svgHtmlElement.style.display = "block";
-            }
-            if (this.lineCanvas) {
+            if (this.lineCanvas)
                 this.lineCanvas.style.display = "none";
-            }
-            if (this.roadNetwork) {
+            if (this.roadNetwork)
                 this.roadNetwork.setVisible(false);
-            }
             return;
         }
         if (this.quality == Quality.ultra || this.quality == Quality.high) {
-            if (this.navMap && this.navMap.svgHtmlElement) {
+            if (this.navMap && this.navMap.svgHtmlElement)
                 this.navMap.svgHtmlElement.style.display = "block";
-            }
-            if (this.lineCanvas) {
+            if (this.lineCanvas)
                 this.lineCanvas.style.display = "block";
-            }
-            if (this.roadNetwork) {
+            if (this.roadNetwork)
                 this.roadNetwork.setVisible(true);
-            }
             this.bingMap.setVisible(this.showBingMap);
-        } else if (this.quality == Quality.medium) {
-            if (this.navMap && this.navMap.svgHtmlElement) {
+        }
+        else if (this.quality == Quality.medium) {
+            if (this.navMap && this.navMap.svgHtmlElement)
                 this.navMap.svgHtmlElement.style.display = "block";
-            }
-            if (this.lineCanvas) {
+            if (this.lineCanvas)
                 this.lineCanvas.style.display = "none";
-            }
-            if (this.roadNetwork) {
+            if (this.roadNetwork)
                 this.roadNetwork.setVisible(false);
-            }
             this.bingMap.setVisible(this.showBingMap);
-        } else {
-            if (this.navMap && this.navMap.svgHtmlElement) {
+        }
+        else {
+            if (this.navMap && this.navMap.svgHtmlElement)
                 this.navMap.svgHtmlElement.style.display = "none";
-            }
-            if (this.lineCanvas) {
+            if (this.lineCanvas)
                 this.lineCanvas.style.display = "none";
-            }
-            if (this.roadNetwork) {
+            if (this.roadNetwork)
                 this.roadNetwork.setVisible(false);
-            }
-            if (this.quality == Quality.low || this.quality == Quality.hidden) {
+            if (this.quality == Quality.low || this.quality == Quality.hidden)
                 this.bingMap.setVisible(this.showBingMap);
-            } else {
+            else
                 this.bingMap.setVisible(false);
-            }
         }
     }
     updateInputs() {
         if (this.eBingMode === EBingMode.VFR) {
-            const scrollUp = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_UP");
-            const scrollDown = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_DOWN");
-            const scrollLeft = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_LEFT");
-            const scrollRight = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_RIGHT");
-            let scrollX = 0;
-            let scrollY = 0;
-            const scrollFactor = 10;
+            var scrollUp = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_UP");
+            var scrollDown = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_DOWN");
+            var scrollLeft = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_LEFT");
+            var scrollRight = GetInputStatus("PLANE", "KEY_VFRMAP_SCROLL_RIGHT");
+            var scrollX = 0;
+            var scrollY = 0;
+            var scrollFactor = 10;
             if (scrollUp == EInputStatus.down) {
                 scrollY = scrollFactor;
-            } else if (scrollDown == EInputStatus.down) {
+            }
+            else if (scrollDown == EInputStatus.down) {
                 scrollY = -scrollFactor;
             }
             if (scrollLeft == EInputStatus.down) {
                 scrollX = scrollFactor;
-            } else if (scrollRight == EInputStatus.down) {
+            }
+            else if (scrollRight == EInputStatus.down) {
                 scrollX = -scrollFactor;
             }
             if (scrollX != 0 || scrollY != 0) {
@@ -1021,11 +1034,12 @@ class MapInstrument extends ISvgMapRootElement {
                 this.bVfrMapFollowPlane = false;
             }
         }
-        const zoomIn = GetInputStatus("PLANE", "KEY_VFRMAP_ZOOM_IN");
-        const zoomOut = GetInputStatus("PLANE", "KEY_VFRMAP_ZOOM_OUT");
+        var zoomIn = GetInputStatus("PLANE", "KEY_VFRMAP_ZOOM_IN");
+        var zoomOut = GetInputStatus("PLANE", "KEY_VFRMAP_ZOOM_OUT");
         if (zoomIn == EInputStatus.pressed) {
             this.zoomIn();
-        } else if (zoomOut == EInputStatus.pressed) {
+        }
+        else if (zoomOut == EInputStatus.pressed) {
             this.zoomOut();
         }
     }
@@ -1054,7 +1068,8 @@ class MapInstrument extends ISvgMapRootElement {
         if (_event === "JOYSTICK_PUSH") {
             if (this.eBingMode === EBingMode.PLANE || this.eBingMode === EBingMode.VFR) {
                 this.activateCursor();
-            } else if (this.eBingMode === EBingMode.CURSOR) {
+            }
+            else if (this.eBingMode === EBingMode.CURSOR) {
                 this.deactivateCursor();
             }
         }
@@ -1069,14 +1084,15 @@ class MapInstrument extends ISvgMapRootElement {
             }
         }
         if (this.eBingMode === EBingMode.CURSOR) {
-            const cursorSpeed = 2;
-            const mapSpeed = 4;
+            let cursorSpeed = 2;
+            let mapSpeed = 4;
             switch (_event) {
                 case "PanLeft":
                 case "JOYSTICK_LEFT":
                     if (this.cursorX > 10) {
                         this.setCursorPos(this.cursorX - cursorSpeed, this.cursorY);
-                    } else {
+                    }
+                    else {
                         this.scrollDisp.x += mapSpeed;
                         this.svgSmooth = this.SVG_SMOOTH_CURSOR;
                     }
@@ -1085,7 +1101,8 @@ class MapInstrument extends ISvgMapRootElement {
                 case "JOYSTICK_RIGHT":
                     if (this.cursorX < 90) {
                         this.setCursorPos(this.cursorX + cursorSpeed, this.cursorY);
-                    } else {
+                    }
+                    else {
                         this.scrollDisp.x -= mapSpeed;
                         this.svgSmooth = this.SVG_SMOOTH_CURSOR;
                     }
@@ -1094,7 +1111,8 @@ class MapInstrument extends ISvgMapRootElement {
                 case "JOYSTICK_UP":
                     if (this.cursorY > 10) {
                         this.setCursorPos(this.cursorX, this.cursorY - cursorSpeed);
-                    } else {
+                    }
+                    else {
                         this.scrollDisp.y += mapSpeed;
                         this.svgSmooth = this.SVG_SMOOTH_CURSOR;
                     }
@@ -1103,7 +1121,8 @@ class MapInstrument extends ISvgMapRootElement {
                 case "JOYSTICK_DOWN":
                     if (this.cursorY < 90) {
                         this.setCursorPos(this.cursorX, this.cursorY + cursorSpeed);
-                    } else {
+                    }
+                    else {
                         this.scrollDisp.y -= mapSpeed;
                         this.svgSmooth = this.SVG_SMOOTH_CURSOR;
                     }
@@ -1113,16 +1132,18 @@ class MapInstrument extends ISvgMapRootElement {
     }
     onBackOnTrack(_lat, _long) {
         let bot;
-        const previousBot = this.backOnTracks[this.backOnTracks.length - 1];
+        let previousBot = this.backOnTracks[this.backOnTracks.length - 1];
         if (previousBot) {
-            const dLat = Math.abs(previousBot.llaRequested.lat - _lat);
-            const dLon = Math.abs(previousBot.llaRequested.long - _long);
+            let dLat = Math.abs(previousBot.llaRequested.lat - _lat);
+            let dLon = Math.abs(previousBot.llaRequested.long - _long);
             if (dLat < 0.5 / 60 && dLon < 0.5 / 60) {
                 bot = previousBot;
-            } else {
+            }
+            else {
                 bot = new SvgBackOnTrackElement();
             }
-        } else {
+        }
+        else {
             bot = new SvgBackOnTrackElement();
         }
         bot.llaRequested = new LatLongAlt(_lat, _long);
@@ -1151,9 +1172,8 @@ class MapInstrument extends ISvgMapRootElement {
     }
     rotateWithPlane(_val) {
         this.bRotateWithAirplane = _val;
-        if (this.navMap) {
+        if (this.navMap)
             this.navMap.rotateWithPlane = _val;
-        }
     }
     setPlaneScale(_scale) {
         if (this.airplaneIconElement) {
@@ -1182,15 +1202,14 @@ class MapInstrument extends ISvgMapRootElement {
     }
     getWeatherRange() {
         return this.getDisplayRange();
-        if (this.rangeIndex < this.weatherRanges.length) {
+        if (this.rangeIndex < this.weatherRanges.length)
             return this.weatherRanges[this.rangeIndex];
-        }
         return this.weatherRanges[this.weatherRanges.length - 1];
     }
     updateBingMapSize() {
-        const w = this.curWidth;
-        const h = this.curHeight;
-        const max = Math.max(w, h);
+        let w = this.curWidth;
+        let h = this.curHeight;
+        let max = Math.max(w, h);
         if (w * h > 1 && w * h !== this.lastWH) {
             this.lastWH = w * h;
             this.bingMap.style.width = fastToFixed(max, 0) + "px";
@@ -1213,9 +1232,8 @@ class MapInstrument extends ISvgMapRootElement {
     set bingMapRef(_ref) {
         if (this.eBingRef != _ref) {
             this.eBingRef = _ref;
-            if (this.bingMap) {
+            if (this.bingMap)
                 this.bingMap.setReference(this.eBingRef);
-            }
         }
     }
     get bingMapRef() {
@@ -1224,9 +1242,8 @@ class MapInstrument extends ISvgMapRootElement {
     set mapConfigId(_id) {
         if (this.bingMapConfigId != _id) {
             this.bingMapConfigId = _id;
-            if (this.bingMap) {
+            if (this.bingMap)
                 this.bingMap.setConfig(_id);
-            }
         }
     }
     get mapConfigId() {
@@ -1240,64 +1257,58 @@ class MapInstrument extends ISvgMapRootElement {
     }
     showWeather(_mode) {
         let cone = 0;
-        if (_mode == EWeatherRadar.HORIZONTAL) {
+        if (_mode == EWeatherRadar.HORIZONTAL)
             cone = Math.PI / 2;
-        } else if (_mode == EWeatherRadar.VERTICAL) {
+        else if (_mode == EWeatherRadar.VERTICAL)
             cone = Math.PI / 3.5;
-        } else if (_mode == EWeatherRadar.OFF) {
-            if (this.weatherSVG) {
+        else if (_mode == EWeatherRadar.OFF) {
+            if (this.weatherSVG)
                 Utils.RemoveAllChildren(this.weatherSVG);
-            }
         }
         this.bingMap.showWeather(_mode, cone);
         this.bShowAirplaneOnWeather = false;
         this.weatherHideGPS = true;
         this.lastWH = 0;
-        if (!this.isDisplayingWeatherRadar()) {
+        if (!this.isDisplayingWeatherRadar())
             this.updateBingMapSize();
-        }
         this.refreshDisplay();
     }
     showWeatherWithGPS(_mode, _cone) {
         if (_cone == 0) {
-            if (_mode == EWeatherRadar.HORIZONTAL) {
+            if (_mode == EWeatherRadar.HORIZONTAL)
                 _cone = Math.PI / 2;
-            } else if (_mode == EWeatherRadar.VERTICAL) {
+            else if (_mode == EWeatherRadar.VERTICAL)
                 _cone = Math.PI / 3.5;
-            }
         }
         this.bingMap.showWeather(_mode, _cone);
         this.weatherHideGPS = false;
         this.lastWH = 0;
-        if (!this.isDisplayingWeatherRadar()) {
+        if (!this.isDisplayingWeatherRadar())
             this.updateBingMapSize();
-        }
         this.refreshDisplay();
     }
     getWeather() {
         return this.bingMap.getWeather();
     }
     isDisplayingWeather() {
-        if (this.bingMap && (this.bingMap.getWeather() != undefined && this.bingMap.getWeather() != EWeatherRadar.OFF)) {
+        if (this.bingMap && (this.bingMap.getWeather() != undefined && this.bingMap.getWeather() != EWeatherRadar.OFF))
             return true;
-        }
         return false;
     }
     isDisplayingWeatherRadar() {
-        if (this.bingMap && (this.bingMap.getWeather() == EWeatherRadar.HORIZONTAL || this.bingMap.getWeather() == EWeatherRadar.VERTICAL)) {
+        if (this.bingMap && (this.bingMap.getWeather() == EWeatherRadar.HORIZONTAL || this.bingMap.getWeather() == EWeatherRadar.VERTICAL))
             return true;
-        }
         return false;
     }
     setFlightPlanAsDashed(_val) {
-        if (this.flightPlanElement) {
+        if (this.flightPlanElement)
             this.flightPlanElement.setAsDashed(_val);
-        }
     }
     activateCursor() {
         if (EBingMode.VFR) {
             this.bWasCenteredOnPlane = true;
-        } else {
+        }
+        else {
             this.bWasCenteredOnPlane = false;
             this.lastCenter = this.navMap.centerCoordinates;
         }
@@ -1308,7 +1319,8 @@ class MapInstrument extends ISvgMapRootElement {
         if (this.bWasCenteredOnPlane) {
             this.eBingMode = EBingMode.PLANE;
             this.centerOnPlane();
-        } else {
+        }
+        else {
             this.eBingMode = EBingMode.VFR;
             this.setCenter(this.lastCenter);
         }
@@ -1328,7 +1340,8 @@ class MapInstrument extends ISvgMapRootElement {
         if (this.eBingMode != EBingMode.CURSOR) {
             this.eBingMode = EBingMode.VFR;
             this.setNavMapCenter(_coordinates);
-        } else {
+        }
+        else {
             this.bWasCenteredOnPlane = false;
             this.lastCenter = _coordinates;
         }
@@ -1336,7 +1349,8 @@ class MapInstrument extends ISvgMapRootElement {
     setCenteredOnPlane() {
         if (this.eBingMode != EBingMode.CURSOR) {
             this.eBingMode = EBingMode.PLANE;
-        } else {
+        }
+        else {
             this.bWasCenteredOnPlane = true;
         }
     }
@@ -1344,27 +1358,29 @@ class MapInstrument extends ISvgMapRootElement {
         if (_coordinates && isFinite(_coordinates.lat) && isFinite(_coordinates.long)) {
             this.navMap.setCenterCoordinates(_coordinates.lat, _coordinates.long, _smoothness);
             if (this.eBingMode == EBingMode.VFR) {
-                const latLong = _coordinates.toStringFloat();
+                var latLong = _coordinates.toStringFloat();
                 Coherent.trigger("ON_VFRMAP_COORDINATES_CHANGED", latLong);
             }
         }
     }
     scrollMap(_dispX, _dispY) {
         if (this.navMap.lastCenterCoordinates) {
-            const scaleFactor = parseInt(window.getComputedStyle(this).height) / 1000;
-            const long = -_dispX * this.navMap.angularWidth / (1000 * scaleFactor);
-            const lat = _dispY * this.navMap.angularHeight / (1000 * scaleFactor);
-            const newCoordinates = new LatLongAlt(this.navMap.lastCenterCoordinates);
+            var scaleFactor = parseInt(window.getComputedStyle(this).height) / 1000;
+            let long = -_dispX * this.navMap.angularWidth / (1000 * scaleFactor);
+            let lat = _dispY * this.navMap.angularHeight / (1000 * scaleFactor);
+            let newCoordinates = new LatLongAlt(this.navMap.lastCenterCoordinates);
             newCoordinates.long += long;
             newCoordinates.lat += lat;
             if (newCoordinates.long > 180) {
                 newCoordinates.long -= 360;
-            } else if (newCoordinates.long < -180) {
+            }
+            else if (newCoordinates.long < -180) {
                 newCoordinates.long += 360;
             }
             if (newCoordinates.lat > 90) {
                 newCoordinates.lat -= 180;
-            } else if (newCoordinates.lat < -90) {
+            }
+            else if (newCoordinates.lat < -90) {
                 newCoordinates.lat += 180;
             }
             this.setNavMapCenter(newCoordinates, this.svgSmooth);
@@ -1408,7 +1424,8 @@ class MapInstrument extends ISvgMapRootElement {
         if (this._supportMouseWheel) {
             if (_e.deltaY < 0) {
                 this.zoomIn();
-            } else if (_e.deltaY > 0) {
+            }
+            else if (_e.deltaY > 0) {
                 this.zoomOut();
             }
         }

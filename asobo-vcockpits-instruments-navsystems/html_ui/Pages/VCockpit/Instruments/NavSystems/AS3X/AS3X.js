@@ -3,9 +3,7 @@ class AS3X extends NavSystem {
         super(...arguments);
         this.pageListElems = [];
     }
-    get IsGlassCockpit() {
-        return true;
-    }
+    get IsGlassCockpit() { return true; }
     connectedCallback() {
         super.connectedCallback();
         this.contentElement = this.getChildById("Content");
@@ -25,7 +23,7 @@ class AS3X extends NavSystem {
         super.parseXMLConfig();
         let state = "PFD";
         if (this.instrumentXmlConfig) {
-            const displayModeConfig = this.instrumentXmlConfig.getElementsByTagName("DisplayMode");
+            let displayModeConfig = this.instrumentXmlConfig.getElementsByTagName("DisplayMode");
             if (displayModeConfig.length > 0) {
                 state = displayModeConfig[0].textContent;
                 this.contentElement.setAttribute("state", state);
@@ -40,13 +38,14 @@ class AS3X extends NavSystem {
                 ];
                 this.mapInstrument = new MapInstrumentElement();
                 this.mapInstrument.setGPS(this);
+                this.warnings = new PFD_Warnings();
                 this.addIndependentElementContainer(new NavSystemElementContainer("Airspeed", "PFD", new PFD_Airspeed()));
                 this.addIndependentElementContainer(new NavSystemElementContainer("Altimeter", "PFD", new PFD_Altimeter()));
                 this.addIndependentElementContainer(new NavSystemElementContainer("SimpleCompass", "PFD", new PFD_SimpleCompass()));
                 this.addIndependentElementContainer(new NavSystemElementContainer("CDI", "PFD", new PFD_CDI()));
                 this.addIndependentElementContainer(new NavSystemElementContainer("MapInstrument", "PFD", this.mapInstrument));
                 this.addIndependentElementContainer(new NavSystemElementContainer("Attitude", "PFD", new PFD_Attitude()));
-                this.addIndependentElementContainer(new NavSystemElementContainer("Warnings", "Warnings", new PFD_Warnings()));
+                this.addIndependentElementContainer(new NavSystemElementContainer("Warnings", "Warnings", this.warnings));
                 this.addIndependentElementContainer(new NavSystemElementContainer("Autopilot", "AutopilotInfos", new PFD_AutopilotDisplay()));
                 this.addIndependentElementContainer(new NavSystemElementContainer("Engine", "Engine", new GlassCockpit_XMLEngine()));
                 this.addIndependentElementContainer(new NavSystemElementContainer("TopBar", "TopBar", new AS3X_TopBar()));
@@ -65,8 +64,9 @@ class AS3X extends NavSystem {
                 this.proceduresPage.setGPS(this);
                 break;
             case "Split":
+                this.warnings = new PFD_Warnings();
                 this.addIndependentElementContainer(new AS3X_PFD());
-                this.addIndependentElementContainer(new NavSystemElementContainer("Warnings", "Warnings", new PFD_Warnings()));
+                this.addIndependentElementContainer(new NavSystemElementContainer("Warnings", "Warnings", this.warnings));
             case "MFD":
                 this.pageGroups = [
                     new NavSystemPageGroup("Main", this, [
@@ -93,10 +93,10 @@ class AS3X extends NavSystem {
     Update() {
         super.Update();
         Avionics.Utils.diffAndSet(this.currentPageElement, this.getCurrentPage().detailedName);
-        const currPageGroup = this.getCurrentPageGroup();
+        let currPageGroup = this.getCurrentPageGroup();
         for (let i = 0; i < currPageGroup.pages.length; i++) {
             if (i >= this.pageListElems.length) {
-                const elem = window.document.createElement("div");
+                let elem = window.document.createElement("div");
                 elem.setAttribute("class", "pageElem");
                 this.pageListElems.push(elem);
                 this.pageListElement.appendChild(elem);
@@ -104,7 +104,8 @@ class AS3X extends NavSystem {
             Avionics.Utils.diffAndSet(this.pageListElems[i], currPageGroup.pages[i].shortName);
             if (i == currPageGroup.pageIndex) {
                 Avionics.Utils.diffAndSetAttribute(this.pageListElems[i], "state", "Active");
-            } else {
+            }
+            else {
                 Avionics.Utils.diffAndSetAttribute(this.pageListElems[i], "state", "Inactive");
             }
         }
@@ -115,8 +116,11 @@ class AS3X extends NavSystem {
             Avionics.Utils.diffAndSet(this.gsValue, fastToFixed(SimVar.GetSimVarValue("GPS GROUND SPEED", "knot"), 0) + "kt");
         }
     }
-    get templateID() {
-        return "AS3X";
+    get templateID() { return "AS3X"; }
+    reboot() {
+        super.reboot();
+        if (this.warnings)
+            this.warnings.reset();
     }
 }
 class AS3X_Page extends NavSystemPage {
@@ -156,7 +160,7 @@ class AS3X_PFD extends AS3X_Page {
         ];
         this.softKeys = this.mainSoftkeyMenu;
         if (this.gps.instrumentXmlConfig) {
-            const altimeterIndexElems = this.gps.instrumentXmlConfig.getElementsByTagName("AltimeterIndex");
+            let altimeterIndexElems = this.gps.instrumentXmlConfig.getElementsByTagName("AltimeterIndex");
             if (altimeterIndexElems.length > 0) {
                 this.altimeterIndex = parseInt(altimeterIndexElems[0].textContent) + 1;
             }
@@ -165,14 +169,16 @@ class AS3X_PFD extends AS3X_Page {
     switchToValueSelectionMode(_value) {
         if (_value == this.valueSelectionMode) {
             this.valueSelectionMode = 0;
-        } else {
+        }
+        else {
             this.valueSelectionMode = _value;
         }
     }
     valueSelectionModeStateCallback(_value) {
         if (_value == this.valueSelectionMode) {
             return "Active";
-        } else {
+        }
+        else {
             return "None";
         }
     }
@@ -188,7 +194,7 @@ class AS3X_PFD extends AS3X_Page {
         this.softKeys = _menu;
     }
     switchCdiSrc() {
-        const isGPSDrived = SimVar.GetSimVarValue("GPS DRIVES NAV1", "Bool");
+        let isGPSDrived = SimVar.GetSimVarValue("GPS DRIVES NAV1", "Bool");
         let cdiSrc = isGPSDrived ? 3 : SimVar.GetSimVarValue("AUTOPILOT NAV SELECTED", "number");
         cdiSrc = (cdiSrc % 3) + 1;
         if (cdiSrc == 2 && !SimVar.GetSimVarValue("NAV AVAILABLE:2", "Bool")) {
@@ -204,10 +210,10 @@ class AS3X_PFD extends AS3X_Page {
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         Avionics.Utils.diffAndSet(this.oatValue, fastToFixed(SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius"), 0) + "°C");
-        const lcl = SimVar.GetSimVarValue("E:LOCAL TIME", "seconds");
-        const hh = Math.floor(lcl / 3600);
-        const mm = Math.floor((lcl % 3600) / 60);
-        const ss = Math.floor(lcl % 60);
+        let lcl = SimVar.GetSimVarValue("E:LOCAL TIME", "seconds");
+        let hh = Math.floor(lcl / 3600);
+        let mm = Math.floor((lcl % 3600) / 60);
+        let ss = Math.floor(lcl % 60);
         Avionics.Utils.diffAndSet(this.lclValue, (hh < 10 ? "0" : "") + hh + (mm < 10 ? ":0" : ":") + mm + (ss < 10 ? ":0" : ":") + ss);
     }
     onEvent(_event) {
@@ -254,10 +260,10 @@ class AS3X_PFD extends AS3X_Page {
 }
 class AS3X_TopBar extends NavSystemElement {
     init(root) {
-        const info1 = this.gps.getChildById("TopInfo1");
-        const info2 = this.gps.getChildById("TopInfo2");
-        const info3 = this.gps.getChildById("TopInfo3");
-        const info4 = this.gps.getChildById("TopInfo4");
+        let info1 = this.gps.getChildById("TopInfo1");
+        let info2 = this.gps.getChildById("TopInfo2");
+        let info3 = this.gps.getChildById("TopInfo3");
+        let info4 = this.gps.getChildById("TopInfo4");
         this.title1 = info1.getElementsByClassName("title")[0];
         this.title2 = info2.getElementsByClassName("title")[0];
         this.title3 = info3.getElementsByClassName("title")[0];
@@ -270,15 +276,15 @@ class AS3X_TopBar extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        const wp = SimVar.GetSimVarValue("GPS WP NEXT ID", "string");
+        let wp = SimVar.GetSimVarValue("GPS WP NEXT ID", "string");
         Avionics.Utils.diffAndSet(this.value1, wp != "" ? wp : "____");
-        const brg = SimVar.GetSimVarValue("GPS WP BEARING", "degrees");
+        let brg = SimVar.GetSimVarValue("GPS WP BEARING", "degrees");
         Avionics.Utils.diffAndSet(this.value2, brg > 0 ? fastToFixed(brg, 0) + "°M" : "___°M");
-        const dist = SimVar.GetSimVarValue("GPS WP DISTANCE", "nautical mile");
+        let dist = SimVar.GetSimVarValue("GPS WP DISTANCE", "nautical mile");
         Avionics.Utils.diffAndSet(this.value3, dist > 0 ? dist.toFixed(1) + "NM" : "__._NM");
-        const ete = SimVar.GetSimVarValue("GPS ETE", "minutes");
-        const hh = Math.floor(ete / 60);
-        const mm = Math.floor(ete % 60);
+        let ete = SimVar.GetSimVarValue("GPS ETE", "minutes");
+        let hh = Math.floor(ete / 60);
+        let mm = Math.floor(ete % 60);
         Avionics.Utils.diffAndSet(this.value4, ete > 0 ? (hh < 10 ? "0" : "") + hh + (mm < 10 ? ":0" : ":") + mm : "__:__");
     }
     onExit() {
@@ -303,7 +309,8 @@ class AS3X_AFPL_Page extends AS3X_Page {
     toggleProc() {
         if (this.gps.popUpElement) {
             this.gps.closePopUpElement();
-        } else {
+        }
+        else {
             this.gps.switchToPopUpPage(this.gps.proceduresPage);
         }
     }

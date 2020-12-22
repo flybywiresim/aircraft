@@ -17,21 +17,21 @@ class SvgFlightPlanElement extends SvgMapElement {
         ;
     }
     createDraw(map) {
-        const container = document.createElementNS(Avionics.SVG.NS, "svg");
+        let container = document.createElementNS(Avionics.SVG.NS, "svg");
         container.id = this.id(map);
         container.setAttribute("overflow", "visible");
         if (map.config.flightPlanNonActiveLegStrokeWidth > 0) {
             this._outlinePath = document.createElementNS(Avionics.SVG.NS, "path");
             this._outlinePath.setAttribute("stroke", map.config.flightPlanNonActiveLegStrokeColor);
             this._outlinePath.setAttribute("fill", "none");
-            const outlinePathWidth = fastToFixed((map.config.flightPlanNonActiveLegStrokeWidth + map.config.flightPlanNonActiveLegWidth), 0);
+            let outlinePathWidth = fastToFixed((map.config.flightPlanNonActiveLegStrokeWidth + map.config.flightPlanNonActiveLegWidth), 0);
             this._outlinePath.setAttribute("stroke-width", outlinePathWidth);
             this._outlinePath.setAttribute("stroke-linecap", "square");
             container.appendChild(this._outlinePath);
             this._outlineActive = document.createElementNS(Avionics.SVG.NS, "path");
             this._outlineActive.setAttribute("stroke", map.config.flightPlanActiveLegStrokeColor);
             this._outlineActive.setAttribute("fill", "none");
-            const outlineActiveWidth = fastToFixed((map.config.flightPlanActiveLegStrokeWidth + map.config.flightPlanActiveLegWidth), 0);
+            let outlineActiveWidth = fastToFixed((map.config.flightPlanActiveLegStrokeWidth + map.config.flightPlanActiveLegWidth), 0);
             this._outlineActive.setAttribute("stroke-width", outlineActiveWidth);
             this._outlineActive.setAttribute("stroke-linecap", "square");
             container.appendChild(this._outlineActive);
@@ -48,7 +48,7 @@ class SvgFlightPlanElement extends SvgMapElement {
         if (this.flightPlanIndex === 1) {
             this._colorPath.setAttribute("stroke", "yellow");
         }
-        const colorPathWidth = fastToFixed(map.config.flightPlanNonActiveLegWidth, 0);
+        let colorPathWidth = fastToFixed(map.config.flightPlanNonActiveLegWidth, 0);
         this._colorPath.setAttribute("stroke-width", colorPathWidth);
         this._colorPath.setAttribute("stroke-linecap", "square");
         container.appendChild(this._colorPath);
@@ -58,7 +58,7 @@ class SvgFlightPlanElement extends SvgMapElement {
         if (this.flightPlanIndex === 1) {
             this._colorActive.setAttribute("stroke", "yellow");
         }
-        const colorActiveWidth = fastToFixed(map.config.flightPlanActiveLegWidth, 0);
+        let colorActiveWidth = fastToFixed(map.config.flightPlanActiveLegWidth, 0);
         this._colorActive.setAttribute("stroke-width", colorActiveWidth);
         this._colorActive.setAttribute("stroke-linecap", "square");
         container.appendChild(this._colorActive);
@@ -77,37 +77,48 @@ class SvgFlightPlanElement extends SvgMapElement {
     updateDraw(map) {
         this._highlightedLegIndex = SimVar.GetSimVarValue("L:MAP_FLIGHTPLAN_HIGHLIT_WAYPOINT", "number");
         this.points = [];
-        const transitionPoints = [];
+        let transitionPoints = [];
         let lastLat = NaN;
         let lastLong = NaN;
         let departureRunwayCase;
         let activeWaypointIndex = -1;
         if (this.source) {
-            const l = this.source.getWaypointsCount();
+            let l = this.source.getWaypointsCount();
             activeWaypointIndex = this.source.getActiveWaypointIndex(false, true);
             let doLastLeg = true;
             if (this.source.getApproach() && this.source.getApproach().transitions.length > 0) {
                 doLastLeg = false;
             }
             if (!this.source.getIsDirectTo() && this.source.getWaypoint(0, this.flightPlanIndex)) {
-                const departureWaypoint = this.source.getWaypoint(0, this.flightPlanIndex);
+                let departureWaypoint = this.source.getWaypoint(0, this.flightPlanIndex);
                 if (departureWaypoint.infos instanceof AirportInfo) {
                     departureRunwayCase = this.source.getDepartureRunway();
                 }
             }
             let pIndex = 0;
             let first = 0;
+            let firstApproach = 0;
             if (this.source.getIsDirectTo()) {
-                first = 1;
-            } else if (this.hideReachedWaypoints) {
+                let directToTarget = this.source.getDirectToTarget();
+                if (directToTarget) {
+                    first = this.source.getWaypoints().findIndex(wp => { return wp.icao === directToTarget.icao; });
+                    if (first === -1) {
+                        firstApproach = this.source.getApproachWaypoints().findIndex(wp => { return wp.icao === directToTarget.icao; });
+                        if (firstApproach != -1) {
+                            first = Infinity;
+                        }
+                    }
+                }
+            }
+            else if (this.hideReachedWaypoints) {
                 first = Math.max(0, activeWaypointIndex - 1);
             }
-            const approach = this.source.getApproach();
-            const last = (this.source.isActiveApproach() && approach) ? 0 : this.source.getLastIndexBeforeApproach();
+            let approach = this.source.getApproach();
+            let last = (this.source.isActiveApproach() && approach) ? 0 : this.source.getLastIndexBeforeApproach();
             for (let i = first; i < (last != -1 ? last : l - (doLastLeg ? 0 : 1)); i++) {
-                const waypoint = this.source.getWaypoint(i, this.flightPlanIndex);
+                let waypoint = this.source.getWaypoint(i, this.flightPlanIndex);
                 if (waypoint) {
-                    const wpPoints = [];
+                    let wpPoints = [];
                     if (waypoint.transitionLLas) {
                         for (let j = 0; j < waypoint.transitionLLas.length; j++) {
                             wpPoints.push(waypoint.transitionLLas[i].toLatLong());
@@ -121,27 +132,28 @@ class SvgFlightPlanElement extends SvgMapElement {
                             this.latLong.long = departureRunwayCase.beginningCoordinates.long;
                         }
                         if (this.latLong.lat !== lastLat && this.latLong.long !== lastLong) {
-                            const deltaLong = Math.abs(lastLong - this.latLong.long);
+                            let deltaLong = Math.abs(lastLong - this.latLong.long);
                             if (deltaLong > 2) {
-                                const lastX = Math.cos(lastLat / 180 * Math.PI) * Math.cos(lastLong / 180 * Math.PI);
-                                const lastY = Math.cos(lastLat / 180 * Math.PI) * Math.sin(lastLong / 180 * Math.PI);
-                                const lastZ = Math.sin(lastLat / 180 * Math.PI);
-                                const X = Math.cos(this.latLong.lat / 180 * Math.PI) * Math.cos(this.latLong.long / 180 * Math.PI);
-                                const Y = Math.cos(this.latLong.lat / 180 * Math.PI) * Math.sin(this.latLong.long / 180 * Math.PI);
-                                const Z = Math.sin(this.latLong.lat / 180 * Math.PI);
-                                const stepCount = Math.floor(deltaLong / 2);
+                                let lastX = Math.cos(lastLat / 180 * Math.PI) * Math.cos(lastLong / 180 * Math.PI);
+                                let lastY = Math.cos(lastLat / 180 * Math.PI) * Math.sin(lastLong / 180 * Math.PI);
+                                let lastZ = Math.sin(lastLat / 180 * Math.PI);
+                                let X = Math.cos(this.latLong.lat / 180 * Math.PI) * Math.cos(this.latLong.long / 180 * Math.PI);
+                                let Y = Math.cos(this.latLong.lat / 180 * Math.PI) * Math.sin(this.latLong.long / 180 * Math.PI);
+                                let Z = Math.sin(this.latLong.lat / 180 * Math.PI);
+                                let stepCount = Math.floor(deltaLong / 2);
                                 for (let k = 0; k < stepCount; k++) {
-                                    const d = (k + 1) / (stepCount + 1);
-                                    const x = lastX * (1 - d) + X * d;
-                                    const y = lastY * (1 - d) + Y * d;
-                                    const z = lastZ * (1 - d) + Z * d;
-                                    const long = Math.atan2(y, x) / Math.PI * 180;
-                                    const hyp = Math.sqrt(x * x + y * y);
-                                    const lat = Math.atan2(z, hyp) / Math.PI * 180;
+                                    let d = (k + 1) / (stepCount + 1);
+                                    let x = lastX * (1 - d) + X * d;
+                                    let y = lastY * (1 - d) + Y * d;
+                                    let z = lastZ * (1 - d) + Z * d;
+                                    let long = Math.atan2(y, x) / Math.PI * 180;
+                                    let hyp = Math.sqrt(x * x + y * y);
+                                    let lat = Math.atan2(z, hyp) / Math.PI * 180;
                                     if (this.points[pIndex]) {
                                         map.coordinatesToXYToRef(new LatLong(lat, long), this.points[pIndex]);
-                                    } else {
-                                        const p = map.coordinatesToXY(new LatLong(lat, long));
+                                    }
+                                    else {
+                                        let p = map.coordinatesToXY(new LatLong(lat, long));
                                         p.refWP = waypoint;
                                         p.refWPIndex = i;
                                         this.points.push(p);
@@ -164,8 +176,9 @@ class SvgFlightPlanElement extends SvgMapElement {
                                     this._lastP0X = this.points[0].x;
                                     this._lastP0Y = this.points[0].y;
                                 }
-                            } else {
-                                const p = map.coordinatesToXY(this.latLong);
+                            }
+                            else {
+                                let p = map.coordinatesToXY(this.latLong);
                                 p.refWP = waypoint;
                                 p.refWPIndex = i;
                                 this.points.push(p);
@@ -179,8 +192,9 @@ class SvgFlightPlanElement extends SvgMapElement {
                             this.latLong.long = departureRunwayCase.endCoordinates.long;
                             if (this.points[pIndex]) {
                                 map.coordinatesToXYToRef(this.latLong, this.points[pIndex]);
-                            } else {
-                                const p = map.coordinatesToXY(this.latLong);
+                            }
+                            else {
+                                let p = map.coordinatesToXY(this.latLong);
                                 p.refWP = waypoint;
                                 p.refWPIndex = 0;
                                 this.points.push(p);
@@ -191,32 +205,38 @@ class SvgFlightPlanElement extends SvgMapElement {
                 }
             }
             if (approach) {
-                const waypoints = this.source.getApproachWaypoints();
-                for (let i = 0; i < waypoints.length; i++) {
-                    const wpPoints = [];
-                    if (waypoints[i].transitionLLas) {
-                        for (let j = 0; j < waypoints[i].transitionLLas.length; j++) {
-                            wpPoints.push(waypoints[i].transitionLLas[j]);
+                let waypoints = this.source.getApproachWaypoints();
+                for (let i = firstApproach; i < waypoints.length; i++) {
+                    let waypoint = waypoints[i];
+                    if (waypoint) {
+                        let wpPoints = [];
+                        if (i > firstApproach || !this.source.getIsDirectTo()) {
+                            if (waypoints[i].transitionLLas) {
+                                for (let j = 0; j < waypoints[i].transitionLLas.length; j++) {
+                                    wpPoints.push(waypoints[i].transitionLLas[j]);
+                                }
+                            }
                         }
-                    }
-                    wpPoints.push(new LatLongAlt(waypoints[i].latitudeFP, waypoints[i].longitudeFP, waypoints[i].altitudeinFP));
-                    for (let j = 0; j < wpPoints.length; j++) {
-                        if (this.points[pIndex]) {
-                            map.coordinatesToXYToRef(wpPoints[j], this.points[pIndex]);
-                            this.points[pIndex].refWP = waypoints[i];
-                            this.points[pIndex].refWPIndex = last + i;
-                        } else {
-                            const p = map.coordinatesToXY(wpPoints[j]);
-                            p.refWP = waypoints[i];
-                            p.refWPIndex = last + i;
-                            this.points.push(p);
+                        wpPoints.push(new LatLongAlt(waypoints[i].latitudeFP, waypoints[i].longitudeFP, waypoints[i].altitudeinFP));
+                        for (let j = 0; j < wpPoints.length; j++) {
+                            if (this.points[pIndex]) {
+                                map.coordinatesToXYToRef(wpPoints[j], this.points[pIndex]);
+                                this.points[pIndex].refWP = waypoints[i];
+                                this.points[pIndex].refWPIndex = last + i;
+                            }
+                            else {
+                                let p = map.coordinatesToXY(wpPoints[j]);
+                                p.refWP = waypoints[i];
+                                p.refWPIndex = last + i;
+                                this.points.push(p);
+                            }
+                            pIndex++;
                         }
-                        pIndex++;
                     }
                 }
             }
         }
-        const logWPIndex = false;
+        let logWPIndex = false;
         if (logWPIndex) {
             let indexes = "";
             this.points.forEach(p => {
@@ -225,30 +245,30 @@ class SvgFlightPlanElement extends SvgMapElement {
             console.log(indexes);
         }
         for (let bevels = 0; bevels < 2; bevels++) {
-            const bevelAmount = map.NMToPixels(3) / (bevels + 1);
+            let bevelAmount = map.NMToPixels(3) / (bevels + 1);
             if (this.points.length > 2) {
-                const beveledPoints = [this.points[0]];
+                let beveledPoints = [this.points[0]];
                 for (let i = 1; i < this.points.length - 1; i++) {
-                    const pPrev = this.points[i - 1];
-                    const p = this.points[i];
-                    const pNext = this.points[i + 1];
+                    let pPrev = this.points[i - 1];
+                    let p = this.points[i];
+                    let pNext = this.points[i + 1];
                     if ((pPrev.x == p.x && pPrev.y == p.y) || (pNext.x == p.x && pNext.y == p.y)) {
                         beveledPoints.push(p);
                         continue;
                     }
                     let xPrev = pPrev.x - p.x;
                     let yPrev = pPrev.y - p.y;
-                    const dPrev = Math.sqrt(xPrev * xPrev + yPrev * yPrev);
+                    let dPrev = Math.sqrt(xPrev * xPrev + yPrev * yPrev);
                     xPrev /= dPrev;
                     yPrev /= dPrev;
                     let xNext = pNext.x - p.x;
                     let yNext = pNext.y - p.y;
-                    const dNext = Math.sqrt(xNext * xNext + yNext * yNext);
+                    let dNext = Math.sqrt(xNext * xNext + yNext * yNext);
                     xNext /= dNext;
                     yNext /= dNext;
-                    const b = Math.min(dPrev / 3, dNext / 3, bevelAmount);
-                    const refWPIndex = p.refWPIndex + (((bevels === 1) && (i % 2 === 0)) ? 1 : 0);
-                    const refWP = (((bevels === 1) && (i % 2 === 0)) ? pNext.refWP : p.refWP);
+                    let b = Math.min(dPrev / 3, dNext / 3, bevelAmount);
+                    let refWPIndex = p.refWPIndex + (((bevels === 1) && (i % 2 === 0)) ? 1 : 0);
+                    let refWP = (((bevels === 1) && (i % 2 === 0)) ? pNext.refWP : p.refWP);
                     beveledPoints.push({
                         x: p.x + xPrev * b,
                         y: p.y + yPrev * b,
@@ -276,7 +296,7 @@ class SvgFlightPlanElement extends SvgMapElement {
             let prevRefWPIndex = this.points[this.points.length - 1].refWPIndex;
             let prevRefWP = this.points[this.points.length - 1].refWP;
             for (let p = this.points.length - 2; p > 0; p--) {
-                const point = this.points[p];
+                let point = this.points[p];
                 if (point.refWPIndex > prevRefWPIndex) {
                     point.refWPIndex = prevRefWPIndex;
                     point.refWP = prevRefWP;
@@ -285,66 +305,93 @@ class SvgFlightPlanElement extends SvgMapElement {
                 prevRefWP = point.refWP;
             }
         }
-        let path = "";
         let activePath = "";
+        let standardPath = "";
         let transitionPath = "";
         let showActiveLeg = false;
-        let prevIsHighlit;
-        for (let i = 0; i < this.points.length - 1; i++) {
-            const p1 = this.points[i];
-            let p2 = this.points[i + 1];
-            if (!p2) {
-                p2 = this.points[i + 2];
+        let prevIsHighlit = false;
+        let prevWasClipped = false;
+        let first = true;
+        let s1 = new Vec2();
+        let s2 = new Vec2();
+        let p1 = null;
+        let p2 = null;
+        for (let i = 0; i < this.points.length; i++) {
+            let p = this.points[i];
+            if (!p || isNaN(p.x) || isNaN(p.y)) {
+                continue;
             }
-            if (p1 && p2) {
-                const p1x = fastToFixed(p1.x, 0);
-                const p1y = fastToFixed(p1.y, 0);
-                const p2x = fastToFixed(p2.x, 0);
-                const p2y = fastToFixed(p2.y, 0);
-                if (p1x !== p2x || p1y !== p2y) {
-                    let isHighlit = false;
-                    if (!this._isDashed && this.highlightActiveLeg) {
-                        if (this.source.getActiveWaypoint(false, true)) {
-                            if (p2.refWP.ident === this.source.getActiveWaypoint(false, true).ident) {
-                                isHighlit = true;
-                            }
-                        } else if (activeWaypointIndex <= 1 && p2.refWPIndex <= activeWaypointIndex) {
+            if (!p1) {
+                p1 = p;
+                continue;
+            }
+            p2 = p;
+            if (p1.x != p2.x || p1.y != p2.y) {
+                let isHighlit = false;
+                if (!this._isDashed && this.highlightActiveLeg) {
+                    if (this.source.getActiveWaypoint(false, true)) {
+                        if (p2.refWP === this.source.getActiveWaypoint(false, true)) {
                             isHighlit = true;
                         }
                     }
+                    else if (activeWaypointIndex <= 1 && p2.refWPIndex <= activeWaypointIndex) {
+                        isHighlit = true;
+                    }
+                }
+                if (map.segmentVsFrame(p1, p2, s1, s2)) {
+                    let x1 = fastToFixed(s1.x, 0);
+                    let y1 = fastToFixed(s1.y, 0);
+                    let x2 = fastToFixed(s2.x, 0);
+                    let y2 = fastToFixed(s2.y, 0);
                     if (isHighlit) {
                         showActiveLeg = true;
-                        if (i === 0 || prevIsHighlit != isHighlit) {
-                            activePath += "M" + p1x + " " + p1y + " L" + p2x + " " + p2y + " ";
-                        } else {
-                            activePath += "L" + p2x + " " + p2y + " ";
+                        if (first || prevIsHighlit != isHighlit || prevWasClipped) {
+                            activePath += "M" + x1 + " " + y1 + " L" + x2 + " " + y2 + " ";
                         }
-                    } else {
-                        if (i === 0 || prevIsHighlit != isHighlit) {
-                            path += "M" + p1x + " " + p1y + " L" + p2x + " " + p2y + " ";
-                        } else {
-                            path += "L" + p2x + " " + p2y + " ";
+                        else {
+                            activePath += "L" + x2 + " " + y2 + " ";
                         }
                     }
-                    prevIsHighlit = isHighlit;
+                    else {
+                        if (first || prevIsHighlit != isHighlit || prevWasClipped) {
+                            standardPath += "M" + x1 + " " + y1 + " L" + x2 + " " + y2 + " ";
+                        }
+                        else {
+                            standardPath += "L" + x2 + " " + y2 + " ";
+                        }
+                    }
+                    first = false;
+                    prevWasClipped = (s2.Equals(p2)) ? false : true;
                 }
+                else {
+                    prevWasClipped = true;
+                }
+                prevIsHighlit = isHighlit;
             }
+            p1 = p2;
         }
-        for (let i = 0; i < transitionPoints.length - 1; i++) {
-            const p1 = transitionPoints[i];
-            let p2 = transitionPoints[i + 1];
-            if (!p2) {
-                p2 = transitionPoints[i + 2];
+        p1 = null;
+        p2 = null;
+        for (let i = 0; i < transitionPoints.length; i++) {
+            let p = transitionPoints[i];
+            if (!p || isNaN(p.x) || isNaN(p.y)) {
+                continue;
             }
-            if (p1 && p2 && map.isSegmentInFrame(p1, p2)) {
-                const p1x = fastToFixed(p1.x, 0);
-                const p1y = fastToFixed(p1.y, 0);
-                const p2x = fastToFixed(p2.x, 0);
-                const p2y = fastToFixed(p2.y, 0);
-                if (p1x !== p2x || p1y !== p2y) {
-                    transitionPath += "M" + p1x + " " + p1y + " L" + p2x + " " + p2y + " ";
+            if (!p1) {
+                p1 = p;
+                continue;
+            }
+            p2 = p;
+            if (p1.x != p2.x || p1.y != p2.y) {
+                if (map.segmentVsFrame(p1, p2, s1, s2)) {
+                    let x1 = fastToFixed(s1.x, 0);
+                    let y1 = fastToFixed(s1.y, 0);
+                    let x2 = fastToFixed(s2.x, 0);
+                    let y2 = fastToFixed(s2.y, 0);
+                    transitionPath += "M" + x1 + " " + y1 + " L" + x2 + " " + y2 + " ";
                 }
             }
+            p1 = p2;
         }
         if (showActiveLeg) {
             if (this._colorActive) {
@@ -359,7 +406,8 @@ class SvgFlightPlanElement extends SvgMapElement {
             if (this._colorActive) {
                 this._colorActive.setAttribute("d", activePath);
             }
-        } else {
+        }
+        else {
             if (this._colorActive) {
                 this._colorActive.setAttribute("display", "none");
             }
@@ -367,21 +415,17 @@ class SvgFlightPlanElement extends SvgMapElement {
                 this._outlineActive.setAttribute("display", "none");
             }
         }
-        if (this._colorPath.getAttribute("d") !== path) {
-            if (this._colorPath) {
-                this._colorPath.setAttribute("d", path);
-            }
-            if (this._outlinePath) {
-                this._outlinePath.setAttribute("d", path);
-            }
+        if (this._colorPath) {
+            this._colorPath.setAttribute("d", standardPath);
         }
-        if (this._transitionPath.getAttribute("d") !== transitionPath) {
-            if (this._transitionPath) {
-                this._transitionPath.setAttribute("d", transitionPath);
-            }
-            if (this._transitionOutlinePath) {
-                this._transitionOutlinePath.setAttribute("d", transitionPath);
-            }
+        if (this._outlinePath) {
+            this._outlinePath.setAttribute("d", standardPath);
+        }
+        if (this._transitionPath) {
+            this._transitionPath.setAttribute("d", transitionPath);
+        }
+        if (this._transitionOutlinePath) {
+            this._transitionOutlinePath.setAttribute("d", transitionPath);
         }
     }
     setAsDashed(_val, _force = false) {
@@ -389,13 +433,14 @@ class SvgFlightPlanElement extends SvgMapElement {
             this._isDashed = _val;
             if (this._colorActive && this._colorPath) {
                 if (this._isDashed) {
-                    const length = 14;
-                    const spacing = 8;
+                    let length = 14;
+                    let spacing = 8;
                     this._colorPath.removeAttribute("stroke-linecap");
                     this._colorPath.setAttribute("stroke-dasharray", length + " " + spacing);
                     this._colorActive.removeAttribute("stroke-linecap");
                     this._colorActive.setAttribute("stroke-dasharray", length + " " + spacing);
-                } else {
+                }
+                else {
                     this._colorPath.removeAttribute("stroke-dasharray");
                     this._colorPath.setAttribute("stroke-linecap", "square");
                     this._colorActive.removeAttribute("stroke-dasharray");
@@ -417,36 +462,37 @@ class SvgBackOnTrackElement extends SvgMapElement {
         ;
     }
     createDraw(map) {
-        const container = document.createElementNS(Avionics.SVG.NS, "svg");
+        let container = document.createElementNS(Avionics.SVG.NS, "svg");
         container.id = this.id(map);
         container.setAttribute("overflow", "visible");
         if (map.config.flightPlanDirectLegStrokeWidth > 0) {
             this._outlineLine = document.createElementNS(Avionics.SVG.NS, "line");
             this._outlineLine.setAttribute("stroke", this.overrideColor != "" ? this.overrideColor : map.config.flightPlanDirectLegStrokeColor);
-            const outlineDirectLegWidth = fastToFixed((map.config.flightPlanDirectLegStrokeWidth + map.config.flightPlanDirectLegWidth), 0);
+            let outlineDirectLegWidth = fastToFixed((map.config.flightPlanDirectLegStrokeWidth + map.config.flightPlanDirectLegWidth), 0);
             this._outlineLine.setAttribute("stroke-width", outlineDirectLegWidth);
             this._outlineLine.setAttribute("stroke-linecap", "square");
             container.appendChild(this._outlineLine);
         }
         this._colorLine = document.createElementNS(Avionics.SVG.NS, "line");
         this._colorLine.setAttribute("stroke", this.overrideColor != "" ? this.overrideColor : map.config.flightPlanDirectLegColor);
-        const colorDirectLegWidth = fastToFixed(map.config.flightPlanDirectLegWidth, 0);
+        let colorDirectLegWidth = fastToFixed(map.config.flightPlanDirectLegWidth, 0);
         this._colorLine.setAttribute("stroke-width", colorDirectLegWidth);
         this._colorLine.setAttribute("stroke-linecap", "square");
         container.appendChild(this._colorLine);
         return container;
     }
     updateDraw(map) {
-        const p1 = map.coordinatesToXY(this.llaRequested);
+        let p1 = map.coordinatesToXY(this.llaRequested);
         let p2;
         if (this.targetWaypoint) {
             p2 = map.coordinatesToXY(this.targetWaypoint.infos.coordinates);
-        } else if (this.targetLla) {
+        }
+        else if (this.targetLla) {
             p2 = map.coordinatesToXY(this.targetLla);
         }
         let dx = p2.x - p1.x;
         let dy = p2.y - p1.y;
-        const d = Math.sqrt(dx * dx + dy * dy);
+        let d = Math.sqrt(dx * dx + dy * dy);
         dx /= d;
         dy /= d;
         p1.x += dx * 20;
@@ -476,7 +522,7 @@ class SvgApproachFlightPlanDebugElement extends SvgMapElement {
         ;
     }
     createDraw(map) {
-        const container = document.createElementNS(Avionics.SVG.NS, "svg");
+        let container = document.createElementNS(Avionics.SVG.NS, "svg");
         container.id = this.id(map);
         container.setAttribute("overflow", "visible");
         this._path = document.createElementNS(Avionics.SVG.NS, "path");
@@ -489,9 +535,9 @@ class SvgApproachFlightPlanDebugElement extends SvgMapElement {
     updateDraw(map) {
         if (this.source && this.source.waypoints) {
             let d = "";
-            const waypoints = this.source.waypoints;
+            let waypoints = this.source.waypoints;
             for (let i = 0; i < waypoints.length; i++) {
-                const wpPoints = [];
+                let wpPoints = [];
                 if (waypoints[i].transitionLLas) {
                     for (let j = 0; j < waypoints[i].transitionLLas.length; j++) {
                         wpPoints.push(waypoints[i].transitionLLas[j]);
@@ -499,11 +545,12 @@ class SvgApproachFlightPlanDebugElement extends SvgMapElement {
                 }
                 wpPoints.push(waypoints[i].lla);
                 for (let j = 0; j < wpPoints.length; j++) {
-                    const lla = wpPoints[j];
-                    const xy = map.coordinatesToXY(lla);
+                    let lla = wpPoints[j];
+                    let xy = map.coordinatesToXY(lla);
                     if (i === 0 && j === 0) {
                         d += "M" + xy.x.toFixed(0) + " " + xy.y.toFixed(0) + " ";
-                    } else {
+                    }
+                    else {
                         d += "L" + xy.x.toFixed(0) + " " + xy.y.toFixed(0) + " ";
                     }
                 }

@@ -3,12 +3,8 @@ class A320_Neo_PFD extends BaseAirliners {
         super();
         this.initDuration = 7000;
     }
-    get templateID() {
-        return "A320_Neo_PFD";
-    }
-    get IsGlassCockpit() {
-        return true;
-    }
+    get templateID() { return "A320_Neo_PFD"; }
+    get IsGlassCockpit() { return true; }
     connectedCallback() {
         super.connectedCallback();
         this.pageGroups = [
@@ -85,13 +81,14 @@ class A320_Neo_PFD_VSpeed extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        const vSpeed = Math.round(Simplane.getVerticalSpeed());
+        var vSpeed = Math.round(Simplane.getVerticalSpeed());
         this.vsi.setAttribute("vspeed", vSpeed.toString());
         if (Simplane.getAutoPilotVerticalSpeedHoldActive()) {
-            const selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
+            var selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
             this.vsi.setAttribute("selected_vspeed", selVSpeed.toString());
             this.vsi.setAttribute("selected_vspeed_active", "true");
-        } else {
+        }
+        else {
             this.vsi.setAttribute("selected_vspeed_active", "false");
         }
     }
@@ -161,9 +158,8 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
     onUpdate(_deltaTime) {
         if (this.hsi) {
             this.hsi.update(_deltaTime);
-            const xyz = Simplane.getOrientationAxis();
+            var xyz = Simplane.getOrientationAxis();
             if (xyz) {
-                this.hsi.setAttribute("horizon", (xyz.pitch / Math.PI * 180).toString());
                 this.hsi.setAttribute("pitch", (xyz.pitch / Math.PI * 180).toString());
                 this.hsi.setAttribute("bank", (xyz.bank / Math.PI * 180).toString());
             }
@@ -228,6 +224,13 @@ class A320_Neo_PFD_ILS extends NavSystemElement {
     onUpdate(_deltaTime) {
         if (this.ils) {
             this.ils.update(_deltaTime);
+            if (Simplane.getAutoPilotGlideslopeActive()) {
+                if (this.gps.flightPlanManager.isApproachActivated()) {
+                    if (Simplane.getAutoPilotApproachType() === 10) {
+                        this.showGlideslope(true);
+                    }
+                }
+            }
         }
     }
     onExit() {
@@ -239,6 +242,11 @@ class A320_Neo_PFD_ILS extends NavSystemElement {
             this.ils.showLocalizer(_val);
             this.ils.showGlideslope(_val);
             this.ils.showNavInfo(_val);
+        }
+    }
+    showGlideslope(_val) {
+        if (this.ils) {
+            this.ils.showGlideslope(_val);
         }
     }
 }

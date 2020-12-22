@@ -1,347 +1,357 @@
 <ModelBehaviors>
 	<Include ModelBehaviorFile="Asobo\Generic.xml"/>
 
-	<Macro Name="ADFButtonEmissiveCode">
-		(A:LIGHT POTENTIOMETER:#EMISSIVE_POTENTIOMETER#, percent over 100)
-	</Macro>
+<Macro Name="ADFButtonEmissiveCode">
+	(A:LIGHT POTENTIOMETER:#EMISSIVE_POTENTIOMETER#, percent over 100)
+</Macro>
 
-	<Template Name="ASOBO_INSTRUMENT_ADF_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-			<TEMPLATE_TO_CALL>ASOBO_INSTRUMENT_ADF_SubTemplate</TEMPLATE_TO_CALL>
+<Template Name="ASOBO_INSTRUMENT_ADF_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_INSTRUMENT_ADF_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_INSTRUMENT_ADF_SubTemplate">
+	<DefaultTemplateParameters>
+		<ANIM_LAG>400</ANIM_LAG>
+		<ANIM_NEVER_FAILS>True</ANIM_NEVER_FAILS>
+		<Condition Check="CIRCUIT_ADF">
+			<FAILURE>(A:CIRCUIT ON:#CIRCUIT_ADF#, Bool)</FAILURE>
+		</Condition>
+	</DefaultTemplateParameters>
+	
+	<Component ID="INSTRUMENT_ADF">
+		<Component ID="ADF_Frame#SUFFIX_ID#" Node="ADF_Frame#SUFFIX_ID#">
+			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				<EMISSIVE_CODE>@ADFButtonEmissiveCode</EMISSIVE_CODE>
+			</UseTemplate>
+		</Component>
+		<Component ID="ADF_Screen#SUFFIX_ID#" Node="ADF_Screen#SUFFIX_ID#">
+			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				<EMISSIVE_CODE>0.5</EMISSIVE_CODE>
+			</UseTemplate>
+		</Component>
+		<UseTemplate Name="ASOBO_Button_ADF_ID_Template">
+			<BUTTON_ID>ADF</BUTTON_ID>
+			<HTML_EVENT>adf_AntAdf</HTML_EVENT>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.ADF_BUTTON_ADF</TOOLTIPID>
 		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_INSTRUMENT_ADF_SubTemplate">
-		<DefaultTemplateParameters>
-			<ANIM_LAG>400</ANIM_LAG>
-			<ANIM_NEVER_FAILS>True</ANIM_NEVER_FAILS>
-			<Condition Check="CIRCUIT_ADF">
-				<FAILURE>(A:CIRCUIT ON:#CIRCUIT_ADF#, Bool)</FAILURE>
-			</Condition>
-		</DefaultTemplateParameters>
+		<UseTemplate Name="ASOBO_Button_ADF_ID_Template">
+			<BUTTON_ID>BFO</BUTTON_ID>
+			<HTML_EVENT>adf_bfo</HTML_EVENT>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.ADF_BUTTON_BFO</TOOLTIPID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_Button_ADF_ID_Template">
+			<BUTTON_ID>FRQ</BUTTON_ID>
+			<HTML_EVENT>adf_frqTransfert</HTML_EVENT>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.ADF_BUTTON_FRQ</TOOLTIPID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_Button_ADF_ID_Template">
+			<BUTTON_ID>FLT</BUTTON_ID>
+			<HTML_EVENT>adf_FltEt</HTML_EVENT>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.ADF_BUTTON_FLT_ET</TOOLTIPID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_Button_ADF_ID_Template">
+			<BUTTON_ID>SetReset</BUTTON_ID>
+			<HTML_EVENT>adf_SetRst</HTML_EVENT>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.ADF_BUTTON_SET_RST</TOOLTIPID>
+		</UseTemplate>
 		
-		<Component ID="INSTRUMENT_ADF">
-			<Component ID="ADF_Frame#SUFFIX_ID#" Node="ADF_Frame#SUFFIX_ID#">
-				<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-					<EMISSIVE_CODE>@ADFButtonEmissiveCode</EMISSIVE_CODE>
+		<UseTemplate Name="ASOBO_ADF_Knob_Volume_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_ADF_Knob_Frequency_MHz_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_ADF_Knob_Frequency_KHz_Template">
+
+			
+		</UseTemplate>
+	</Component>
+</Template>
+
+<!--
+		Code to Handle a button on the transpoder
+		Req. : #BUTTON_ID# - ID of the button 
+-->
+<Template Name="ASOBO_Button_ADF_ID_Template">
+	<DefaultTemplateParameters>
+		<EMISSIVE_POTENTIOMETER>1</EMISSIVE_POTENTIOMETER>
+		<NODE_ID>ADF_Push_#BUTTON_ID##SUFFIX_ID#</NODE_ID>
+		<ANIM_NAME>ADF_Push_#BUTTON_ID##SUFFIX_ID#</ANIM_NAME>
+		<PART_ID>ADF_Push_#BUTTON_ID#</PART_ID>
+		<BUTTON_EMISSIVE_FACTOR>1</BUTTON_EMISSIVE_FACTOR>
+	</DefaultTemplateParameters>
+
+	<Component ID="ADF_Button_#BUTTON_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button_Emissive">
+			<LEFT_SINGLE_CODE>(&gt;H:#HTML_EVENT#)</LEFT_SINGLE_CODE>
+			<EMISSIVE_CODE>@ADFButtonEmissiveCode #BUTTON_EMISSIVE_FACTOR# *</EMISSIVE_CODE>
+			<WWISE_EVENT_1>ADF_push_button_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>ADF_push_button_off</WWISE_EVENT_2> 
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>			
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_ADF_Knob_Volume_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_ADF_Knob_Volume_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_ADF_Knob_Volume_SubTemplate">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>ADF_Knob_Volume#SUFFIX_ID#</ANIM_NAME>
+		<NODE_ID>ADF_Knob_Volume#SUFFIX_ID#</NODE_ID>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ADF_VOLUME_DECREASE</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ADF_VOLUME_INCREASE</ANIMTIP_1>
+		<WWISE_EVENT>adf_volume_knob</WWISE_EVENT>	
+		<COUNT>14</COUNT>
+		<THRESHOLD_INPUT>0.00025</THRESHOLD_INPUT>
+		<THRESHOLD_MOUSE>0.01</THRESHOLD_MOUSE>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Check="CIRCUIT_ADF">
+			<True>
+				<TURN_OFF_CIRCUIT_WHEN_VOLUME_OFF>(A:ADF VOLUME:1, Percent) 0 &gt; (A:CIRCUIT SWITCH ON:#CIRCUIT_ADF#, Bool) != if{ #CIRCUIT_ADF# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }</TURN_OFF_CIRCUIT_WHEN_VOLUME_OFF>
+			</True>
+			<False>
+				<TURN_OFF_CIRCUIT_WHEN_VOLUME_OFF/>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<Condition Check="CIRCUIT_ADF">
+			<Update Once="True">
+				(A:ADF VOLUME:1, Percent) 0 == (A:CIRCUIT SWITCH ON:#CIRCUIT_ADF#, Bool) and if{ #CIRCUIT_ADF# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }
+			</Update>
+		</Condition>
+		<UseTemplate Name="ASOBO_GT_Knob_Finite_Simvar">
+			<ANIM_SIMVAR>ADF VOLUME:1</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+			<CLOCKWISE_CODE>(&gt;K:ADF_VOLUME_INC) #TURN_OFF_CIRCUIT_WHEN_VOLUME_OFF#</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>(&gt;K:ADF_VOLUME_DEC) #TURN_OFF_CIRCUIT_WHEN_VOLUME_OFF#</ANTICLOCKWISE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_ADF_Knob_Frequency_MHz_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_ADF_Knob_Frequency_MHz_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_ADF_Knob_Frequency_MHz_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID_MHZ>ADF_Knob_Frequency_MHz#SUFFIX_ID#</NODE_ID_MHZ>
+		<ANIM_NAME_MHZ>ADF_Knob_Frequency_MHz#SUFFIX_ID#</ANIM_NAME_MHZ>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMCURSOR_MIN>-1</ANIMCURSOR_MIN>
+		<ANIMCURSOR_MAX>2</ANIMCURSOR_MAX>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_DECREASE</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_INCREASE</ANIMTIP_1>
+		<WWISE_EVENT>adf_frequency_outer_knob</WWISE_EVENT>	
+		<COUNT>36</COUNT>
+		<THRESHOLD_INPUT>0.0005</THRESHOLD_INPUT>
+		<THRESHOLD_MOUSE>0.01</THRESHOLD_MOUSE>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<NODE_ID_MHZ></NODE_ID_MHZ>
+			<ANIM_NAME_MHZ></ANIM_NAME_MHZ>
+		</AddParams>
+	</EditableTemplateParameters>
+	
+	<Component ID="#NODE_ID_MHZ#" Node="#NODE_ID_MHZ#">
+		<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+			<ANIM_NAME>#ANIM_NAME_MHZ#</ANIM_NAME>
+			<CLOCKWISE_CODE>(&gt;K:ADF_100_INC)</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>(&gt;K:ADF_100_DEC)</ANTICLOCKWISE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_ADF_Knob_Frequency_KHz_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_ADF_Knob_Frequency_KHz_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_ADF_Knob_Frequency_KHz_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID_KHZ>ADF_Knob_Frequency_KHz#SUFFIX_ID#</NODE_ID_KHZ>
+		<ANIM_NAME_KNOB_KHZ>ADF_Knob_Frequency_KHz#SUFFIX_ID#</ANIM_NAME_KNOB_KHZ>
+		<ANIM_NAME_PUSH_KHZ>ADF_Knob_Frequency_KHz_Push#SUFFIX_ID#</ANIM_NAME_PUSH_KHZ>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_DECREASE</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_INCREASE</ANIMTIP_1>	
+		<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_PUSHED_OUT</ANIMTIP_2>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+		<ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>
+		<ANIMTIP_2>%((L:XMLVAR_ADFFrequencyToggle))%{if}TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_PUSHED_IN%{else}TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_PUSHED_OUT%{end}</ANIMTIP_2>		
+		<THRESHOLD_X_INPUT>0.1</THRESHOLD_X_INPUT>
+		<THRESHOLD_X_MOUSE>0.005</THRESHOLD_X_MOUSE>	
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<NODE_ID_KHZ></NODE_ID_KHZ>
+			<ANIM_NAME_KNOB_KHZ></ANIM_NAME_KNOB_KHZ>
+			<ANIM_NAME_PUSH_KHZ></ANIM_NAME_PUSH_KHZ>
+		</AddParams>
+	</EditableTemplateParameters>
+	
+	<Component ID="#NODE_ID_KHZ#" Node="#NODE_ID_KHZ#">
+		<UseTemplate Name="ASOBO_GT_Anim_Code">
+			<ANIM_NAME>#ANIM_NAME_PUSH_KHZ#</ANIM_NAME>
+			<ANIM_CODE>(L:XMLVAR_ADFFrequencyToggle) 100 *</ANIM_CODE>
+		</UseTemplate>
+		<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+			<ANIM_NAME>#ANIM_NAME_PUSH_KHZ#</ANIM_NAME>
+			<WWISE_EVENT_1>ADF_knob_push_button_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>ADF_knob_push_button_off</WWISE_EVENT_2>
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<NORMALIZED_TIME_2>0.1</NORMALIZED_TIME_2>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+			<ANIM_NAME>#ANIM_NAME_KNOB_KHZ#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(L:XMLVAR_ADFFrequencyToggle) ! (&gt;L:XMLVAR_ADFFrequencyToggle)</LEFT_SINGLE_CODE>
+			<CODE_UP>1 (&gt;L:XMLVAR_ADFFrequencyToggle)</CODE_UP>
+			<CODE_DN>0 (&gt;L:XMLVAR_ADFFrequencyToggle)</CODE_DN>
+			<CLOCKWISE_CODE>
+				(L:XMLVAR_ADFFrequencyToggle) if{
+					(&gt;K:ADF_10_INC)
+				} els{
+					(&gt;K:ADF_1_INC)
+				}
+			</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>
+				(L:XMLVAR_ADFFrequencyToggle) if{
+					(&gt;K:ADF_10_DEC)
+				} els{
+					(&gt;K:ADF_1_DEC)
+				}
+			</ANTICLOCKWISE_CODE>
+			<EXTRA_INTERACTION>_LeftSingle</EXTRA_INTERACTION>
+			<WWISE_EVENT>adf_frequency_inner_knob</WWISE_EVENT>	
+			<COUNT>36</COUNT>
+		</UseTemplate>
+		
+	</Component>
+</Template>
+
+<Template Name="ASOBO_ADF_Knob_Mode_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_ADF_Knob_Mode_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_ADF_Knob_Mode_SubTemplate">
+	<DefaultTemplateParameters>
+		<KNOB_COUNT>4</KNOB_COUNT>
+		<DEFAULT_KNOB_INDEX>2</DEFAULT_KNOB_INDEX><!-- 0 to KNOB_COUNT-1 -->
+		<KNOB_NAME>ADF_Knob_Mode#SUFFIX_ID#</KNOB_NAME>
+		<ANIMTIP_2_ON_PERCENT>0</ANIMTIP_2_ON_PERCENT>
+		<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ADF_SWITCH_BFO</ANIMTIP_2>
+		<ANIMTIP_3_ON_PERCENT>0.33</ANIMTIP_3_ON_PERCENT>
+		<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.ADF_SWITCH_REC</ANIMTIP_3>
+		<ANIMTIP_4_ON_PERCENT>0.66</ANIMTIP_4_ON_PERCENT>
+		<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.ADF_SWITCH_ADF</ANIMTIP_4>
+		<ANIMTIP_5_ON_PERCENT>1</ANIMTIP_5_ON_PERCENT>
+		<ANIMTIP_5>TT:COCKPIT.TOOLTIPS.ADF_SWITCH_TEST</ANIMTIP_5>
+		<WWISE_EVENT>adf_mode_knob</WWISE_EVENT>	
+		<COUNT>3</COUNT>		
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_ADF_Knob_Mode_SubTemplate2">
+		<KNOB_SPEED Process="Float">100 #KNOB_COUNT# 1 - /</KNOB_SPEED>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_ADF_Knob_Mode_SubTemplate2">
+	<!-- DUMMY, doesn't do anything on sim state -->
+	<UseTemplate Name="ASOBO_GT_Knob_Finite_Dummy">
+		<INIT_VALUE Process="Int">#DEFAULT_KNOB_INDEX# #KNOB_SPEED# *</INIT_VALUE>
+	</UseTemplate>
+</Template>
+
+<!-- Simple separate knobs without extra behaviour -->
+<Template Name="ASOBO_ADF_3Knobs_Frequency_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_ADF_3Knobs_Frequency_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_ADF_3Knobs_Frequency_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID_MHZ>ADF_Knob_Frequency_MHz#SUFFIX_ID#</NODE_ID_MHZ>
+		<ANIM_NAME_MHZ>ADF_Knob_Frequency_MHz#SUFFIX_ID#</ANIM_NAME_MHZ>
+		<NODE_ID_KHZ>ADF_Knob_Frequency_KHz#SUFFIX_ID#</NODE_ID_KHZ>
+		<ANIM_NAME_KHZ>ADF_Knob_Frequency_KHz#SUFFIX_ID#</ANIM_NAME_KHZ>
+		<NODE_ID_HZ>ADF_Knob_Frequency_Hz#SUFFIX_ID#</NODE_ID_HZ>
+		<ANIM_NAME_HZ>ADF_Knob_Frequency_Hz#SUFFIX_ID#</ANIM_NAME_HZ>
+		<WWISE_EVENT>adf_frequency_knob</WWISE_EVENT>	
+		<COUNT>36</COUNT>
+		<THRESHOLD_INPUT>0.0005</THRESHOLD_INPUT>
+		<THRESHOLD_MOUSE>0.01</THRESHOLD_MOUSE>
+	</DefaultTemplateParameters>
+	<Condition Check="NO_KNOB_MHZ">
+		<False>
+			<Component ID="#NODE_ID_MHZ#" Node="#NODE_ID_MHZ#">
+				<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+					<ANIM_NAME>#ANIM_NAME_MHZ#</ANIM_NAME>
+					<CLOCKWISE_CODE>(&gt;K:ADF_100_INC)</CLOCKWISE_CODE>
+					<ANTICLOCKWISE_CODE>(&gt;K:ADF_100_DEC)</ANTICLOCKWISE_CODE>
 				</UseTemplate>
 			</Component>
-			<Component ID="ADF_Screen#SUFFIX_ID#" Node="ADF_Screen#SUFFIX_ID#">
-				<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-					<EMISSIVE_CODE>0.5</EMISSIVE_CODE>
+		</False>
+	</Condition>
+	<Condition Check="NO_KNOB_KHZ">
+		<False>
+			<Component ID="#NODE_ID_KHZ#" Node="#NODE_ID_KHZ#">
+				<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+					<ANIM_NAME>#ANIM_NAME_KHZ#</ANIM_NAME>
+					<CLOCKWISE_CODE>(&gt;K:ADF_10_INC)</CLOCKWISE_CODE>
+					<ANTICLOCKWISE_CODE>(&gt;K:ADF_10_DEC)</ANTICLOCKWISE_CODE>
 				</UseTemplate>
 			</Component>
-			<UseTemplate Name="ASOBO_Button_ADF_ID_Template">
-				<BUTTON_ID>ADF</BUTTON_ID>
-				<HTML_EVENT>adf_AntAdf</HTML_EVENT>
-				<TOOLTIPID>TT:COCKPIT.TOOLTIPS.ADF_BUTTON_ADF</TOOLTIPID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_Button_ADF_ID_Template">
-				<BUTTON_ID>BFO</BUTTON_ID>
-				<HTML_EVENT>adf_bfo</HTML_EVENT>
-				<TOOLTIPID>TT:COCKPIT.TOOLTIPS.ADF_BUTTON_BFO</TOOLTIPID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_Button_ADF_ID_Template">
-				<BUTTON_ID>FRQ</BUTTON_ID>
-				<HTML_EVENT>adf_frqTransfert</HTML_EVENT>
-				<TOOLTIPID>TT:COCKPIT.TOOLTIPS.ADF_BUTTON_FRQ</TOOLTIPID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_Button_ADF_ID_Template">
-				<BUTTON_ID>FLT</BUTTON_ID>
-				<HTML_EVENT>adf_FltEt</HTML_EVENT>
-				<TOOLTIPID>TT:COCKPIT.TOOLTIPS.ADF_BUTTON_FLT_ET</TOOLTIPID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_Button_ADF_ID_Template">
-				<BUTTON_ID>SetReset</BUTTON_ID>
-				<HTML_EVENT>adf_SetRst</HTML_EVENT>
-				<TOOLTIPID>TT:COCKPIT.TOOLTIPS.ADF_BUTTON_SET_RST</TOOLTIPID>
-			</UseTemplate>
-			
-			<UseTemplate Name="ASOBO_ADF_Knob_Volume_Template">
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_ADF_Knob_Frequency_MHz_Template">
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_ADF_Knob_Frequency_KHz_Template">
-
-				
-			</UseTemplate>
-		</Component>
-	</Template>
-
-	<!--
-			Code to Handle a button on the transpoder
-			Req. : #BUTTON_ID# - ID of the button 
-	-->
-	<Template Name="ASOBO_Button_ADF_ID_Template">
-		<DefaultTemplateParameters>
-			<EMISSIVE_POTENTIOMETER>1</EMISSIVE_POTENTIOMETER>
-			<NODE_ID>ADF_Push_#BUTTON_ID##SUFFIX_ID#</NODE_ID>
-			<ANIM_NAME>ADF_Push_#BUTTON_ID##SUFFIX_ID#</ANIM_NAME>
-			<PART_ID>ADF_Push_#BUTTON_ID#</PART_ID>
-			<BUTTON_EMISSIVE_FACTOR>1</BUTTON_EMISSIVE_FACTOR>
-		</DefaultTemplateParameters>
-
-		<Component ID="ADF_Button_#BUTTON_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Push_Button_Emissive">
-				<LEFT_SINGLE_CODE>(&gt;H:#HTML_EVENT#)</LEFT_SINGLE_CODE>
-				<EMISSIVE_CODE>@ADFButtonEmissiveCode #BUTTON_EMISSIVE_FACTOR# *</EMISSIVE_CODE>
-				<WWISE_EVENT_1>ADF_push_button_on</WWISE_EVENT_1>
-				<WWISE_EVENT_2>ADF_push_button_off</WWISE_EVENT_2> 
-				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>			
-			</UseTemplate>
-		</Component>
-	</Template>
-
-	<Template Name="ASOBO_ADF_Knob_Volume_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-			<TEMPLATE_TO_CALL>ASOBO_ADF_Knob_Volume_SubTemplate</TEMPLATE_TO_CALL>
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_ADF_Knob_Volume_SubTemplate">
-		<DefaultTemplateParameters>
-			<ANIM_NAME>ADF_Knob_Volume#SUFFIX_ID#</ANIM_NAME>
-			<NODE_ID>ADF_Knob_Volume#SUFFIX_ID#</NODE_ID>
-			<ANIMREF_ID>0</ANIMREF_ID>
-			<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
-			<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
-			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ADF_VOLUME_DECREASE</ANIMTIP_0>
-			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ADF_VOLUME_INCREASE</ANIMTIP_1>
-			<WWISE_EVENT>adf_volume_knob</WWISE_EVENT>	
-			<COUNT>14</COUNT>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition Check="CIRCUIT_ADF">
-				<True>
-					<TURN_OFF_CIRCUIT_WHEN_VOLUME_OFF>(A:ADF VOLUME:1, Percent) 0 &gt; (A:CIRCUIT SWITCH ON:#CIRCUIT_ADF#, Bool) != if{ #CIRCUIT_ADF# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }</TURN_OFF_CIRCUIT_WHEN_VOLUME_OFF>
-				</True>
-				<False>
-					<TURN_OFF_CIRCUIT_WHEN_VOLUME_OFF/>
-				</False>
-			</Condition>
-		</OverrideTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<Condition Check="CIRCUIT_ADF">
-				<Update Once="True">
-					(A:ADF VOLUME:1, Percent) 0 == (A:CIRCUIT SWITCH ON:#CIRCUIT_ADF#, Bool) and if{ #CIRCUIT_ADF# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }
-				</Update>
-			</Condition>
-			<UseTemplate Name="ASOBO_GT_Knob_Finite_Simvar">
-				<ANIM_SIMVAR>ADF VOLUME:1</ANIM_SIMVAR>
-				<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
-				<CLOCKWISE_CODE>(&gt;K:ADF_VOLUME_INC) #TURN_OFF_CIRCUIT_WHEN_VOLUME_OFF#</CLOCKWISE_CODE>
-				<ANTICLOCKWISE_CODE>(&gt;K:ADF_VOLUME_DEC) #TURN_OFF_CIRCUIT_WHEN_VOLUME_OFF#</ANTICLOCKWISE_CODE>
-			</UseTemplate>
-		</Component>
-	</Template>
-
-	<Template Name="ASOBO_ADF_Knob_Frequency_MHz_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-			<TEMPLATE_TO_CALL>ASOBO_ADF_Knob_Frequency_MHz_SubTemplate</TEMPLATE_TO_CALL>
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_ADF_Knob_Frequency_MHz_SubTemplate">
-		<DefaultTemplateParameters>
-			<NODE_ID_MHZ>ADF_Knob_Frequency_MHz#SUFFIX_ID#</NODE_ID_MHZ>
-			<ANIM_NAME_MHZ>ADF_Knob_Frequency_MHz#SUFFIX_ID#</ANIM_NAME_MHZ>
-			<ANIMREF_ID>0</ANIMREF_ID>
-			<ANIMCURSOR_MIN>-1</ANIMCURSOR_MIN>
-			<ANIMCURSOR_MAX>2</ANIMCURSOR_MAX>
-			<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
-			<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
-			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_DECREASE</ANIMTIP_0>
-			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_INCREASE</ANIMTIP_1>
-			<WWISE_EVENT>adf_frequency_outer_knob</WWISE_EVENT>	
-			<COUNT>36</COUNT>
-		</DefaultTemplateParameters>
-		<EditableTemplateParameters>
-			<AddParams>
-				<NODE_ID_MHZ></NODE_ID_MHZ>
-				<ANIM_NAME_MHZ></ANIM_NAME_MHZ>
-			</AddParams>
-		</EditableTemplateParameters>
-		
-		<Component ID="#NODE_ID_MHZ#" Node="#NODE_ID_MHZ#">
-			<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-				<ANIM_NAME>#ANIM_NAME_MHZ#</ANIM_NAME>
-				<CLOCKWISE_CODE>(&gt;K:ADF_100_INC)</CLOCKWISE_CODE>
-				<ANTICLOCKWISE_CODE>(&gt;K:ADF_100_DEC)</ANTICLOCKWISE_CODE>
-			</UseTemplate>
-		</Component>
-	</Template>
-
-	<Template Name="ASOBO_ADF_Knob_Frequency_KHz_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-			<TEMPLATE_TO_CALL>ASOBO_ADF_Knob_Frequency_KHz_SubTemplate</TEMPLATE_TO_CALL>
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_ADF_Knob_Frequency_KHz_SubTemplate">
-		<DefaultTemplateParameters>
-			<NODE_ID_KHZ>ADF_Knob_Frequency_KHz#SUFFIX_ID#</NODE_ID_KHZ>
-			<ANIM_NAME_KNOB_KHZ>ADF_Knob_Frequency_KHz#SUFFIX_ID#</ANIM_NAME_KNOB_KHZ>
-			<ANIM_NAME_PUSH_KHZ>ADF_Knob_Frequency_KHz_Push#SUFFIX_ID#</ANIM_NAME_PUSH_KHZ>
-			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_DECREASE</ANIMTIP_0>
-			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_INCREASE</ANIMTIP_1>	
-			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_PUSHED_OUT</ANIMTIP_2>
-			<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
-			<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
-			<ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>
-			<ANIMTIP_2>%((L:XMLVAR_ADFFrequencyToggle))%{if}TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_PUSHED_IN%{else}TT:COCKPIT.TOOLTIPS.ADF_KNOB_FREQUENCY_PUSHED_OUT%{end}</ANIMTIP_2>		
-		</DefaultTemplateParameters>
-		<EditableTemplateParameters>
-			<AddParams>
-				<NODE_ID_KHZ></NODE_ID_KHZ>
-				<ANIM_NAME_KNOB_KHZ></ANIM_NAME_KNOB_KHZ>
-				<ANIM_NAME_PUSH_KHZ></ANIM_NAME_PUSH_KHZ>
-			</AddParams>
-		</EditableTemplateParameters>
-		
-		<Component ID="#NODE_ID_KHZ#" Node="#NODE_ID_KHZ#">
-			<UseTemplate Name="ASOBO_GT_Anim_Code">
-				<ANIM_NAME>#ANIM_NAME_PUSH_KHZ#</ANIM_NAME>
-				<ANIM_CODE>(L:XMLVAR_ADFFrequencyToggle) 100 *</ANIM_CODE>
-			</UseTemplate>
-			<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
-				<ANIM_NAME>#ANIM_NAME_PUSH_KHZ#</ANIM_NAME>
-				<WWISE_EVENT_1>ADF_knob_push_button_on</WWISE_EVENT_1>
-				<WWISE_EVENT_2>ADF_knob_push_button_off</WWISE_EVENT_2>
-				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-				<NORMALIZED_TIME_2>0.1</NORMALIZED_TIME_2>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-				<ANIM_NAME>#ANIM_NAME_KNOB_KHZ#</ANIM_NAME>
-				<LEFT_SINGLE_CODE>(L:XMLVAR_ADFFrequencyToggle) ! (&gt;L:XMLVAR_ADFFrequencyToggle)</LEFT_SINGLE_CODE>
-				<CLOCKWISE_CODE>
-					(L:XMLVAR_ADFFrequencyToggle) if{
-						(&gt;K:ADF_10_INC)
-					} els{
-						(&gt;K:ADF_1_INC)
-					}
-				</CLOCKWISE_CODE>
-				<ANTICLOCKWISE_CODE>
-					(L:XMLVAR_ADFFrequencyToggle) if{
-						(&gt;K:ADF_10_DEC)
-					} els{
-						(&gt;K:ADF_1_DEC)
-					}
-				</ANTICLOCKWISE_CODE>
-				<EXTRA_INTERACTION>_LeftSingle</EXTRA_INTERACTION>
-				<WWISE_EVENT>adf_frequency_inner_knob</WWISE_EVENT>	
-				<COUNT>36</COUNT>
-			</UseTemplate>
-			
-		</Component>
-	</Template>
-
-	<Template Name="ASOBO_ADF_Knob_Mode_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-			<TEMPLATE_TO_CALL>ASOBO_ADF_Knob_Mode_SubTemplate</TEMPLATE_TO_CALL>
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_ADF_Knob_Mode_SubTemplate">
-		<DefaultTemplateParameters>
-			<KNOB_COUNT>4</KNOB_COUNT>
-			<DEFAULT_KNOB_INDEX>2</DEFAULT_KNOB_INDEX><!-- 0 to KNOB_COUNT-1 -->
-			<KNOB_NAME>ADF_Knob_Mode#SUFFIX_ID#</KNOB_NAME>
-			<ANIMTIP_2_ON_PERCENT>0</ANIMTIP_2_ON_PERCENT>
-			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ADF_SWITCH_BFO</ANIMTIP_2>
-			<ANIMTIP_3_ON_PERCENT>0.33</ANIMTIP_3_ON_PERCENT>
-			<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.ADF_SWITCH_REC</ANIMTIP_3>
-			<ANIMTIP_4_ON_PERCENT>0.66</ANIMTIP_4_ON_PERCENT>
-			<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.ADF_SWITCH_ADF</ANIMTIP_4>
-			<ANIMTIP_5_ON_PERCENT>1</ANIMTIP_5_ON_PERCENT>
-			<ANIMTIP_5>TT:COCKPIT.TOOLTIPS.ADF_SWITCH_TEST</ANIMTIP_5>
-			<WWISE_EVENT>adf_mode_knob</WWISE_EVENT>	
-			<COUNT>3</COUNT>		
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_ADF_Knob_Mode_SubTemplate2">
-			<KNOB_SPEED Process="Float">100 #KNOB_COUNT# 1 - /</KNOB_SPEED>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_ADF_Knob_Mode_SubTemplate2">
-		<!-- DUMMY, doesn't do anything on sim state -->
-		<UseTemplate Name="ASOBO_GT_Knob_Finite_Dummy">
-			<INIT_VALUE Process="Int">#DEFAULT_KNOB_INDEX# #KNOB_SPEED# *</INIT_VALUE>
-		</UseTemplate>
-	</Template>
-
-	<!-- Simple separate knobs without extra behaviour -->
-	<Template Name="ASOBO_ADF_3Knobs_Frequency_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-			<TEMPLATE_TO_CALL>ASOBO_ADF_3Knobs_Frequency_SubTemplate</TEMPLATE_TO_CALL>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_ADF_3Knobs_Frequency_SubTemplate">
-		<DefaultTemplateParameters>
-			<NODE_ID_MHZ>ADF_Knob_Frequency_MHz#SUFFIX_ID#</NODE_ID_MHZ>
-			<ANIM_NAME_MHZ>ADF_Knob_Frequency_MHz#SUFFIX_ID#</ANIM_NAME_MHZ>
-			<NODE_ID_KHZ>ADF_Knob_Frequency_KHz#SUFFIX_ID#</NODE_ID_KHZ>
-			<ANIM_NAME_KHZ>ADF_Knob_Frequency_KHz#SUFFIX_ID#</ANIM_NAME_KHZ>
-			<NODE_ID_HZ>ADF_Knob_Frequency_Hz#SUFFIX_ID#</NODE_ID_HZ>
-			<ANIM_NAME_HZ>ADF_Knob_Frequency_Hz#SUFFIX_ID#</ANIM_NAME_HZ>
-			<WWISE_EVENT>adf_frequency_knob</WWISE_EVENT>	
-			<COUNT>36</COUNT>
-		</DefaultTemplateParameters>
-		<Condition Check="NO_KNOB_MHZ">
-			<False>
-				<Component ID="#NODE_ID_MHZ#" Node="#NODE_ID_MHZ#">
-					<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-						<ANIM_NAME>#ANIM_NAME_MHZ#</ANIM_NAME>
-						<CLOCKWISE_CODE>(&gt;K:ADF_100_INC)</CLOCKWISE_CODE>
-						<ANTICLOCKWISE_CODE>(&gt;K:ADF_100_DEC)</ANTICLOCKWISE_CODE>
-					</UseTemplate>
-				</Component>
-			</False>
-		</Condition>
-		<Condition Check="NO_KNOB_KHZ">
-			<False>
-				<Component ID="#NODE_ID_KHZ#" Node="#NODE_ID_KHZ#">
-					<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-						<ANIM_NAME>#ANIM_NAME_KHZ#</ANIM_NAME>
-						<CLOCKWISE_CODE>(&gt;K:ADF_10_INC)</CLOCKWISE_CODE>
-						<ANTICLOCKWISE_CODE>(&gt;K:ADF_10_DEC)</ANTICLOCKWISE_CODE>
-					</UseTemplate>
-				</Component>
-			</False>
-		</Condition>
-		<Condition Check="NO_KNOB_HZ">
-			<False>
-				<Component ID="#NODE_ID_HZ#" Node="#NODE_ID_HZ#">
-					<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-						<ANIM_NAME>#ANIM_NAME_HZ#</ANIM_NAME>
-						<CLOCKWISE_CODE>(&gt;K:ADF_1_INC)</CLOCKWISE_CODE>
-						<ANTICLOCKWISE_CODE>(&gt;K:ADF_1_DEC)</ANTICLOCKWISE_CODE>
-					</UseTemplate>
-				</Component>
-			</False>
-		</Condition>
-	</Template>
+		</False>
+	</Condition>
+	<Condition Check="NO_KNOB_HZ">
+		<False>
+			<Component ID="#NODE_ID_HZ#" Node="#NODE_ID_HZ#">
+				<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+					<ANIM_NAME>#ANIM_NAME_HZ#</ANIM_NAME>
+					<CLOCKWISE_CODE>(&gt;K:ADF_1_INC)</CLOCKWISE_CODE>
+					<ANTICLOCKWISE_CODE>(&gt;K:ADF_1_DEC)</ANTICLOCKWISE_CODE>
+				</UseTemplate>
+			</Component>
+		</False>
+	</Condition>
+</Template>
 </ModelBehaviors>

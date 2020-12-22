@@ -14,13 +14,13 @@ class Highlight extends HTMLElement {
         this.tryBuild();
     }
     tryBuild() {
-        const rect = this.getBoundingClientRect();
+        let rect = this.getBoundingClientRect();
         if (!this.built && rect.height != 0) {
             this.built = true;
             this.root.setAttribute("width", "100%");
             this.root.setAttribute("height", "100%");
             this.root.setAttribute("display", "none");
-            const vbox = "0 0 " + rect.width + " " + rect.height;
+            let vbox = "0 0 " + rect.width + " " + rect.height;
             this.root.setAttribute("viewBox", vbox);
             this.appendChild(this.root);
             this.height = rect.height;
@@ -47,14 +47,14 @@ class Highlight extends HTMLElement {
     }
     attributeChangedCallback(name, oldValue, newValue) {
         this.tryBuild();
-        if (oldValue == newValue) {
+        if (oldValue == newValue)
             return;
-        }
         switch (name) {
             case "active":
                 if (newValue == "true") {
                     this.root.setAttribute("display", "inherit");
-                } else {
+                }
+                else {
                     this.root.setAttribute("display", "none");
                 }
                 break;
@@ -65,10 +65,10 @@ class Highlight extends HTMLElement {
                 d += "L0 " + this.height;
                 d += "L0 0";
                 let bgPath = "";
-                const paths = [];
-                const elems = newValue.split(";");
+                let paths = [];
+                let elems = newValue.split(";");
                 for (let i = 0; i < elems.length; i++) {
-                    const coords = elems[i].split(" ");
+                    let coords = elems[i].split(" ");
                     paths.push(new drawPath(elems[i]));
                     bgPath += "M" + (parseInt(coords[0]) - 4) + " " + (parseInt(coords[1]) - 4);
                     bgPath += "L" + (parseInt(coords[0]) - 4) + " " + (parseInt(coords[3]) + 4);
@@ -115,7 +115,7 @@ class drawPath {
     constructor(_points) {
         this.points = [];
         if (_points != "") {
-            const coords = _points.split(" ");
+            let coords = _points.split(" ");
             this.points.push(new drawPoint(parseInt(coords[0]) - 4, parseInt(coords[1]) - 4));
             this.points.push(new drawPoint(parseInt(coords[0]) - 4, parseInt(coords[3]) + 4));
             this.points.push(new drawPoint(parseInt(coords[2]) + 4, parseInt(coords[3]) + 4));
@@ -145,7 +145,7 @@ class drawPath {
         let dist = (_p1.x != _p2.x ? Math.abs(_p2.x - _p1.x) : Math.abs(_p1.y - _p2.y)) + 1;
         for (let i = 0; i < this.points.length; i++) {
             if ((_p1.x != _p2.x ? (this.points[i].y < _p1.y != this.points[(i + 1) % this.points.length].y < _p1.y) && (this.points[i].x < _p1.x != this.points[i].x < _p2.x) : (this.points[i].x < _p1.x != this.points[(i + 1) % this.points.length].x < _p1.x) && (this.points[i].y < _p1.y != this.points[i].y < _p2.y)) && !(_p1.x == this.points[i].x && _p1.y == this.points[i].y) && !(_p1.x == this.points[(i + 1) % this.points.length].x && _p1.y == this.points[(i + 1) % this.points.length].y)) {
-                const localDist = (_p1.x != _p2.x ? Math.abs(_p1.x - this.points[i].x) : Math.abs(_p1.y - this.points[i].y));
+                let localDist = (_p1.x != _p2.x ? Math.abs(_p1.x - this.points[i].x) : Math.abs(_p1.y - this.points[i].y));
                 if (localDist < dist && localDist > 0) {
                     elem = i;
                     dist = localDist;
@@ -163,7 +163,7 @@ class drawPath {
         return false;
     }
     merge(_other) {
-        const newPath = new drawPath("");
+        let newPath = new drawPath("");
         let index = 0;
         let isOnOther = false;
         let finish = false;
@@ -176,104 +176,127 @@ class drawPath {
                 return _other;
             }
         }
-        const startIndex = index;
+        let startIndex = index;
         currPoint = this.points[index];
         while (!finish && counter > 0) {
-            const direction = this.getDestinationIndex(currPoint);
-            const directionOther = _other.getDestinationIndex(currPoint);
+            let direction = this.getDestinationIndex(currPoint);
+            let directionOther = _other.getDestinationIndex(currPoint);
             if (!isNaN(direction) && isNaN(directionOther)) {
                 nextPoint = this.points[direction];
-            } else if (isNaN(direction) && !isNaN(directionOther)) {
+            }
+            else if (isNaN(direction) && !isNaN(directionOther)) {
                 nextPoint = _other.points[directionOther];
-            } else if (!isNaN(direction) && !isNaN(directionOther)) {
+            }
+            else if (!isNaN(direction) && !isNaN(directionOther)) {
                 if (this.points[direction].x > currPoint.x) {
                     if (_other.points[directionOther].x > currPoint.x) {
                         if (this.points[direction].x < _other.points[directionOther].x) {
                             nextPoint = this.points[direction];
                             isOnOther = false;
-                        } else {
+                        }
+                        else {
                             nextPoint = _other.points[directionOther];
                             isOnOther = true;
                         }
-                    } else if (_other.points[directionOther].y > currPoint.y) {
+                    }
+                    else if (_other.points[directionOther].y > currPoint.y) {
                         nextPoint = _other.points[directionOther];
                         isOnOther = true;
-                    } else {
+                    }
+                    else {
                         nextPoint = this.points[direction];
                         isOnOther = false;
                     }
-                } else if (this.points[direction].x < currPoint.x) {
+                }
+                else if (this.points[direction].x < currPoint.x) {
                     if (_other.points[directionOther].x < currPoint.x) {
                         if (this.points[direction].x > _other.points[directionOther].x) {
                             nextPoint = this.points[direction];
                             isOnOther = false;
-                        } else {
+                        }
+                        else {
                             nextPoint = _other.points[directionOther];
                             isOnOther = true;
                         }
-                    } else if (_other.points[directionOther].y < currPoint.y) {
+                    }
+                    else if (_other.points[directionOther].y < currPoint.y) {
                         nextPoint = _other.points[directionOther];
                         isOnOther = true;
-                    } else {
+                    }
+                    else {
                         nextPoint = this.points[direction];
                         isOnOther = false;
                     }
-                } else if (this.points[direction].y < currPoint.y) {
+                }
+                else if (this.points[direction].y < currPoint.y) {
                     if (_other.points[directionOther].y < currPoint.y) {
                         if (this.points[direction].y > _other.points[directionOther].y) {
                             nextPoint = this.points[direction];
                             isOnOther = false;
-                        } else {
+                        }
+                        else {
                             nextPoint = _other.points[directionOther];
                             isOnOther = true;
                         }
-                    } else if (_other.points[directionOther].x > currPoint.x) {
+                    }
+                    else if (_other.points[directionOther].x > currPoint.x) {
                         nextPoint = _other.points[directionOther];
                         isOnOther = true;
-                    } else {
+                    }
+                    else {
                         nextPoint = this.points[direction];
                         isOnOther = false;
                     }
-                } else {
+                }
+                else {
                     if (_other.points[directionOther].y > currPoint.y) {
                         if (this.points[direction].y < _other.points[directionOther].y) {
                             nextPoint = this.points[direction];
                             isOnOther = false;
-                        } else {
+                        }
+                        else {
                             nextPoint = _other.points[directionOther];
                             isOnOther = true;
                         }
-                    } else if (_other.points[directionOther].x < currPoint.x) {
+                    }
+                    else if (_other.points[directionOther].x < currPoint.x) {
                         nextPoint = _other.points[directionOther];
                         isOnOther = true;
-                    } else {
+                    }
+                    else {
                         nextPoint = this.points[direction];
                         isOnOther = false;
                     }
                 }
-            } else {
+            }
+            else {
                 throw new Error("Error in highlight rectangles merging : could not find any points to continue the highlight polygon");
             }
             newPath.points.push(currPoint);
             if (isOnOther) {
-                const intersectionIndex = this.getIntersectionIndex(currPoint, nextPoint);
+                let intersectionIndex = this.getIntersectionIndex(currPoint, nextPoint);
                 if (intersectionIndex == -1) {
                     currPoint = nextPoint;
-                } else {
+                }
+                else {
                     if (currPoint.x == nextPoint.x) {
                         currPoint = new drawPoint(currPoint.x, this.points[intersectionIndex].y);
-                    } else {
+                    }
+                    else {
                         currPoint = new drawPoint(this.points[intersectionIndex].x, currPoint.y);
                     }
                 }
-            } else {
-                const intersectionIndex = _other.getIntersectionIndex(currPoint, nextPoint);
+            }
+            else {
+                let intersectionIndex = _other.getIntersectionIndex(currPoint, nextPoint);
                 if (intersectionIndex == -1) {
                     currPoint = nextPoint;
-                } else {
+                }
+                else {
                     if (currPoint.x == nextPoint.x) {
                         currPoint = new drawPoint(currPoint.x, _other.points[intersectionIndex].y);
-                    } else {
+                    }
+                    else {
                         currPoint = new drawPoint(_other.points[intersectionIndex].x, currPoint.y);
                     }
                 }

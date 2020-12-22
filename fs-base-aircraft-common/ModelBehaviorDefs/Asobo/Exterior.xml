@@ -1214,13 +1214,7 @@
 			<Default>
 				<Switch>
 					<Case Valid="USE_DIFFERENT_ANIM_FOR_L_R">
-						<UseTemplate Name="ASOBO_GT_Anim_Sim">
-							<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
-							<ANIM_SIMVAR>#ANIM_SIMVAR_LEFT#</ANIM_SIMVAR>
-						</UseTemplate>
-						<UseTemplate Name="ASOBO_GT_Anim_Sim">
-							<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
-							<ANIM_SIMVAR>#ANIM_SIMVAR_RIGHT#</ANIM_SIMVAR>
+						<UseTemplate Name="ASOBO_HANDLING_LeftRightAnim_Template">
 						</UseTemplate>
 					</Case>
 					<Default>
@@ -1230,17 +1224,75 @@
 			</Default>
 		</Switch>
 	</Template>
+	<Template Name="ASOBO_HANDLING_LeftRightAnim_Template">
+		<DefaultTemplateParameters>
+			<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+		</DefaultTemplateParameters>
+		<OverrideTemplateParameters>
+			<Condition NotEmpty="MAX_VALUE">
+				<True>
+					<LEFTRIGHT_TEMPLATE_TO_CALL>ASOBO_GT_Anim_Code</LEFTRIGHT_TEMPLATE_TO_CALL>
+					<ANIM_CODE_LEFT>(A:#ANIM_SIMVAR_LEFT#, #ANIM_SIMVAR_UNITS#) #MAX_VALUE# / 100 *</ANIM_CODE_LEFT>
+					<ANIM_CODE_RIGHT>(A:#ANIM_SIMVAR_RIGHT#, #ANIM_SIMVAR_UNITS#) #MAX_VALUE# / 100 *</ANIM_CODE_RIGHT>
+				</True>
+				<False>
+					<LEFTRIGHT_TEMPLATE_TO_CALL>ASOBO_GT_Anim_Sim</LEFTRIGHT_TEMPLATE_TO_CALL>
+				</False>
+			</Condition>
+		</OverrideTemplateParameters>
+		
+		<UseTemplate Name="#LEFTRIGHT_TEMPLATE_TO_CALL#">
+			<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
+			<ANIM_SIMVAR>#ANIM_SIMVAR_LEFT#</ANIM_SIMVAR>
+			<Condition Check="ANIM_CODE_LEFT">
+				<True>
+					<ANIM_CODE>#ANIM_CODE_LEFT#</ANIM_CODE>
+				</True>
+			</Condition>
+		</UseTemplate>
+		<UseTemplate Name="#LEFTRIGHT_TEMPLATE_TO_CALL#">
+			<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
+			<ANIM_SIMVAR>#ANIM_SIMVAR_RIGHT#</ANIM_SIMVAR>
+			<Condition Check="ANIM_CODE_RIGHT">
+				<True>
+					<ANIM_CODE>#ANIM_CODE_RIGHT#</ANIM_CODE>
+				</True>
+			</Condition>
+		</UseTemplate>
+	</Template>
 	<!-- Elevator ####################################################### -->
 	<Template Name="ASOBO_HANDLING_Elevator_Template">
 		<DefaultTemplateParameters>
 			<ANIM_NAME>HANDLING_Elevator</ANIM_NAME>
 			<ANIM_SIMVAR_SCALE>0.5</ANIM_SIMVAR_SCALE>
 			<ANIM_SIMVAR_BIAS>50</ANIM_SIMVAR_BIAS>
+			<AILERON_DEFLECTION_SCALE>0.2</AILERON_DEFLECTION_SCALE>
+			<ANIM_LENGTH>100</ANIM_LENGTH>
 		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_HANDLING_Trim_Base_Template">
-			<ANIM_SIMVAR>ELEVATOR DEFLECTION PCT</ANIM_SIMVAR>
-			<ANIM_SIMVAR_TRIM>ELEVATOR TRIM PCT</ANIM_SIMVAR_TRIM>
-		</UseTemplate>
+		<Switch Param="TYPE">
+			<Case Value="FA18E">
+				<UseTemplate Name="ASOBO_GT_Anim">
+					<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
+					<ANIM_CODE>
+						(A:ELEVATOR DEFLECTION PCT, Percent) #ANIM_SIMVAR_SCALE# * #ANIM_SIMVAR_BIAS# + 
+						(A:AILERON LEFT DEFLECTION PCT, Percent) #AILERON_DEFLECTION_SCALE# * + 0 max #ANIM_LENGTH# min
+					</ANIM_CODE>
+				</UseTemplate>
+				<UseTemplate Name="ASOBO_GT_Anim">
+					<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
+					<ANIM_CODE>
+						(A:ELEVATOR DEFLECTION PCT, Percent) #ANIM_SIMVAR_SCALE# * #ANIM_SIMVAR_BIAS# + 
+						(A:AILERON RIGHT DEFLECTION PCT, Percent) -1 * #AILERON_DEFLECTION_SCALE# * + 0 max #ANIM_LENGTH# min
+					</ANIM_CODE>
+				</UseTemplate>
+			</Case>
+			<Default>
+				<UseTemplate Name="ASOBO_HANDLING_Trim_Base_Template">
+					<ANIM_SIMVAR>ELEVATOR DEFLECTION PCT</ANIM_SIMVAR>
+					<ANIM_SIMVAR_TRIM>ELEVATOR TRIM PCT</ANIM_SIMVAR_TRIM>
+				</UseTemplate>
+			</Default>
+		</Switch>
 	</Template>
 	<!-- Rudders ######################################################## -->
 	<Template Name="ASOBO_HANDLING_Rudder_Template">
@@ -1275,8 +1327,21 @@
 		<DefaultTemplateParameters>
 			<ANIM_NAME_LEFT>HANDLING_Spoilers_L</ANIM_NAME_LEFT>
 			<ANIM_NAME_RIGHT>HANDLING_Spoilers_R</ANIM_NAME_RIGHT>
+			<MAX_VALUE>35</MAX_VALUE>
 			<Condition Valid="USE_GROUND_SPOILER">
-				<ANIM_NAME_GROUND>HANDLING_Spoilers_Ground</ANIM_NAME_GROUND>
+				<Condition Check="ANIM_NAME_GROUND_LEFT">
+					<True>
+						<ANIM_NAME_GROUND>#ANIM_NAME_GROUND_LEFT#</ANIM_NAME_GROUND>
+					</True>
+					<False>
+						<ANIM_NAME_GROUND>HANDLING_Spoilers_Ground</ANIM_NAME_GROUND>
+					</False>
+				</Condition>
+				<Condition Check="ANIM_NAME_GROUND_LEFT_2">
+					<True>
+						<ANIM_NAME_GROUND_2>#ANIM_NAME_GROUND_LEFT_2#</ANIM_NAME_GROUND_2>
+					</True>
+				</Condition>
 				<ANIM_LAG_GROUND>100</ANIM_LAG_GROUND>
 				<ANIM_LAG_GROUND_2>100</ANIM_LAG_GROUND_2>
 				<TIME_REMAINS_AFTER_GROUND>5</TIME_REMAINS_AFTER_GROUND>
@@ -1285,47 +1350,53 @@
 		<OverrideTemplateParameters>
 			<Condition Valid="USE_GROUND_SPOILER">
 				<Switch Param="USE_GROUND_SPOILER">
-					<Case Value="GROUND_ONLY">
-						<DEPLOYMENT_CONDITION>
-						s1 0 &gt; if{ 
-							(O:XMLVAR_GroundSpoilerTriggered) ! if{
-								(A:SIM ON GROUND, Bool) if{ 100 (&gt;O:XMLVAR_GroundSpoilerTriggered)  }
-							}
-						} els{
-							0 (&gt;O:XMLVAR_GroundSpoilerTriggered)
-						}
-						(O:XMLVAR_GroundSpoilerTriggered)
-						</DEPLOYMENT_CONDITION>
-					</Case>
 					<Case Value="FULL_SPOILER">
-						<DEPLOYMENT_CONDITION>99.9 &gt; 100 *</DEPLOYMENT_CONDITION>
+						<DEPLOYMENT_CONDITION_LEFT>99.9 &gt; 100 *</DEPLOYMENT_CONDITION_LEFT>
+						<DEPLOYMENT_CONDITION_RIGHT>99.9 &gt; 100 *</DEPLOYMENT_CONDITION_RIGHT>
 					</Case>
 					<Default>
-						<DEPLOYMENT_CONDITION></DEPLOYMENT_CONDITION>
+						<DEPLOYMENT_CONDITION_LEFT></DEPLOYMENT_CONDITION_LEFT>
+						<DEPLOYMENT_CONDITION_RIGHT></DEPLOYMENT_CONDITION_RIGHT>
 					</Default>
 				</Switch>
 			</Condition>
 		</OverrideTemplateParameters>
-		<UseTemplate Name="ASOBO_HANDLING_Trim_Base_Template">
-			<USE_DIFFERENT_ANIM_FOR_L_R>True</USE_DIFFERENT_ANIM_FOR_L_R>
-			<USE_INTEGRATED_TRIM>False</USE_INTEGRATED_TRIM><!-- Spoilers not trimable -->
-			<TRIM_ONLY>False</TRIM_ONLY><!-- Spoilers not trimable -->
+		<UseTemplate Name="ASOBO_HANDLING_LeftRightAnim_Template">
 			<ANIM_SIMVAR_LEFT>SPOILERS LEFT POSITION</ANIM_SIMVAR_LEFT>
 			<ANIM_SIMVAR_RIGHT>SPOILERS RIGHT POSITION</ANIM_SIMVAR_RIGHT>
+			<ANIM_SIMVAR_UNITS>Degrees</ANIM_SIMVAR_UNITS>
 		</UseTemplate>
 		<Condition Valid="USE_GROUND_SPOILER">
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>#ANIM_NAME_GROUND#</ANIM_NAME>
-				<ANIM_CODE>(A:SPOILERS LEFT POSITION, Percent) (A:SPOILERS RIGHT POSITION, Percent) + 0.5 * #DEPLOYMENT_CONDITION#</ANIM_CODE>
+				<ANIM_CODE>(A:SPOILERS LEFT POSITION, Percent) #DEPLOYMENT_CONDITION_LEFT#</ANIM_CODE>
 				<ANIM_LAG>#ANIM_LAG_GROUND#</ANIM_LAG>
 			</UseTemplate>
+			<Condition NotEmpty="ANIM_NAME_GROUND_RIGHT">
+				<True>
+					<UseTemplate Name="ASOBO_GT_Anim">
+						<ANIM_NAME>#ANIM_NAME_GROUND_RIGHT#</ANIM_NAME>
+						<ANIM_CODE>(A:SPOILERS RIGHT POSITION, Percent) #DEPLOYMENT_CONDITION_RIGHT#</ANIM_CODE>
+						<ANIM_LAG>#ANIM_LAG_GROUND#</ANIM_LAG>
+					</UseTemplate>
+				</True>
+			</Condition>
 			<Condition NotEmpty="ANIM_NAME_GROUND_2">
 				<True>
 					<UseTemplate Name="ASOBO_GT_Anim">
 						<ANIM_NAME>#ANIM_NAME_GROUND_2#</ANIM_NAME>
-						<ANIM_CODE>(O:XMLVAR_GroundSpoilerTriggered)</ANIM_CODE>
+						<ANIM_CODE>(A:SPOILERS LEFT POSITION, Percent)</ANIM_CODE>
 						<ANIM_LAG>#ANIM_LAG_GROUND_2#</ANIM_LAG>
 					</UseTemplate>
+					<Condition NotEmpty="ANIM_NAME_GROUND_RIGHT_2">
+						<True>
+							<UseTemplate Name="ASOBO_GT_Anim">
+								<ANIM_NAME>#ANIM_NAME_GROUND_RIGHT_2#</ANIM_NAME>
+								<ANIM_CODE>(A:SPOILERS RIGHT POSITION, Percent)</ANIM_CODE>
+								<ANIM_LAG>#ANIM_LAG_GROUND_2#</ANIM_LAG>
+							</UseTemplate>
+						</True>
+					</Condition>
 				</True>
 			</Condition>
 		</Condition>
@@ -1697,4 +1768,16 @@
 			</UseTemplate>
 		</Component>
 	</Template>
+	<Template Name="ASOBO_Wing_Fold_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>Wing_Fold</ANIM_NAME>
+		</DefaultTemplateParameters>
+		
+		<UseTemplate Name="ASOBO_GT_Anim">
+			<ANIM_SIMVAR>FOLDING WING LEFT PERCENT</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+			<ANIM_LENGTH>100</ANIM_LENGTH>
+		</UseTemplate>
+	</Template>
 </ModelBehaviors>
+

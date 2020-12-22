@@ -1,494 +1,530 @@
 <ModelBehaviors>
-	<!--
-		Simple push button object.
+<!--
+	Simple push button object.
 
-		Required parameter:
-			ANIM_NAME
-			LEFT_SINGLE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Push_Button">
-		<DefaultTemplateParameters>
-			<ANIM_LENGTH>100</ANIM_LENGTH>
-			<ANIM_DURATION>0.5</ANIM_DURATION>
-			<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
-			<SWITCH_POSITION_VAR>_ButtonAnimVar</SWITCH_POSITION_VAR>
+	Required parameter:
+		ANIM_NAME
+		LEFT_SINGLE_CODE
+-->
+<Template Name = "ASOBO_GT_Push_Button">
+	<DefaultTemplateParameters>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIM_DURATION>0.5</ANIM_DURATION>
+		<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+		<SWITCH_POSITION_VAR>_ButtonAnimVar</SWITCH_POSITION_VAR>
+		<Condition Valid="LEFT_SINGLE_CODE_REPEAT_FREQUENCY">
+			<True>
+				<LEFT_LEAVE_CODE>0</LEFT_LEAVE_CODE>
+			</True>
+		</Condition>
+		<Condition Check="LEFT_SINGLE_CODE_DRAG_IM">
+			<False>
+				<NO_PREEXISTING_DRAG_IM_DEFINITION/>
+			</False>
+		</Condition>
+		<Condition Check="LEFT_SINGLE_CODE">
+			<True>
+				<LEFT_SINGLE_CODE_DEFAULT_IM>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE_DEFAULT_IM>
+				<LEFT_SINGLE_CODE_DRAG_IM>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE_DRAG_IM>
+			</True>
+			<False>
+				<LEFT_SINGLE_CODE_DEFAULT_IM/>
+				<LEFT_SINGLE_CODE_DRAG_IM/>
+			</False>
+		</Condition>
+		<DISABLE_INTERACTION_LOCK>True</DISABLE_INTERACTION_LOCK>
+	</DefaultTemplateParameters>
+
+	<Update Frequency = "10">
+		(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 &gt; (O:ForcePush) 0 &gt; or if{
+			(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / - (O:ForcePush) max (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+		}
+	</Update>
+
+	<UseTemplate Name = "ASOBO_GT_Anim_Code">
+		<Condition Valid="OVERRIDE_ANIM_CODE">
+			<True>
+				<ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
+			</True>
+			<False>
+				<ANIM_CODE>#ANIM_LENGTH# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) *</ANIM_CODE>
+			</False>
+		</Condition>
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+	</UseTemplate>
+
+	<Condition Check="LEFT_LEAVE_CODE">
+		<True>
 			<Condition Valid="LEFT_SINGLE_CODE_REPEAT_FREQUENCY">
 				<True>
-					<LEFT_LEAVE_CODE>0</LEFT_LEAVE_CODE>
+					<UseTemplate Name="ASOBO_GT_Update">
+						<FREQUENCY>#LEFT_SINGLE_CODE_REPEAT_FREQUENCY#</FREQUENCY>
+						<UPDATE_CODE>(O:ForcePush) if{ #LEFT_SINGLE_CODE# }</UPDATE_CODE>
+					</UseTemplate>
 				</True>
 			</Condition>
-		</DefaultTemplateParameters>
+			<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+				<LEFT_SINGLE_CODE>1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) #LEFT_SINGLE_CODE# 1 (&gt;O:ForcePush)</LEFT_SINGLE_CODE>
+				<LEFT_LEAVE_CODE>0 (&gt;O:ForcePush) #LEFT_LEAVE_CODE#</LEFT_LEAVE_CODE>
+			</UseTemplate>
+		</True>
+		<False>
+			<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Code">
+				<LEFT_SINGLE_CODE_DEFAULT_IM>
+					1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+					#LEFT_SINGLE_CODE_DEFAULT_IM#
+				</LEFT_SINGLE_CODE_DEFAULT_IM>
+				<Condition Check="NO_PREEXISTING_DRAG_IM_DEFINITION">
+					<LEFT_SINGLE_CODE_DRAG_IM>
+					1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+						#LEFT_SINGLE_CODE_DRAG_IM#
+					</LEFT_SINGLE_CODE_DRAG_IM>
+				</Condition>
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>
 
-		<Update Frequency = "10">
-			(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 &gt; (O:ForcePush) 0 &gt; or if{
-				(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / - (O:ForcePush) max (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-			}
-		</Update>
 
-		<UseTemplate Name = "ASOBO_GT_Anim_Code">
-			<Condition Valid="OVERRIDE_ANIM_CODE">
-				<True>
-					<ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
-				</True>
-				<False>
-					<ANIM_CODE>#ANIM_LENGTH# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) *</ANIM_CODE>
-				</False>
-			</Condition>
-		</UseTemplate>
+<!--
+	Simple push button object, customized for AIRBUS type planes.
 
-		<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
-		</UseTemplate>
+	Required parameter:
+		ANIM_NAME
+		LEFT_SINGLE_CODE
+		SEQ1_NODE_ID
+		SEQ1_EMISSIVE_CODE
+		SEQ2_NODE_ID
+		SEQ2_EMISSIVE_CODE / POTENTIOMETER
+-->
+<Template Name = "ASOBO_GT_Push_Button_Airliner">
+	<DefaultTemplateParameters>
+		<SEQ1_SUFFIX>_SEQ1</SEQ1_SUFFIX>
+		<SEQ2_SUFFIX>_SEQ2</SEQ2_SUFFIX>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner_SubTemplate">
+	</UseTemplate>
 
-		<Condition Check="LEFT_LEAVE_CODE">
+</Template>
+
+<Template Name = "ASOBO_GT_Push_Button_Airliner_SubTemplate">
+	<DefaultTemplateParameters>
+		<Condition Check="POTENTIOMETER">
 			<True>
-				<Condition Valid="LEFT_SINGLE_CODE_REPEAT_FREQUENCY">
+				<POTENTIOMETER_SEQ1>#POTENTIOMETER#</POTENTIOMETER_SEQ1>
+				<POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
+			</True>
+		</Condition>
+		<Condition Check="SIMVAR_POWER_SETTING">
+			<True>
+				<SIMVAR_POWER_SETTING_SEQ1>#SIMVAR_POWER_SETTING#</SIMVAR_POWER_SETTING_SEQ1>
+				<SIMVAR_POWER_SETTING_SEQ2>#SIMVAR_POWER_SETTING#</SIMVAR_POWER_SETTING_SEQ2>
+			</True>
+		</Condition>
+		<SEQ1_EMISSIVE_CODE>1</SEQ1_EMISSIVE_CODE>
+		<SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
+		<SEQ1_NODE_ID>#NODE_ID##SEQ1_SUFFIX#</SEQ1_NODE_ID>
+		<SEQ2_NODE_ID>#NODE_ID##SEQ2_SUFFIX#</SEQ2_NODE_ID>
+		<Condition Check="ONLY_SEQ1">
+			<NO_SEQ2/>
+		</Condition>
+		<Condition Check="ONLY_SEQ2">
+			<NO_SEQ1/>
+		</Condition>
+		<Condition Check="COVER_NODE_ID">
+			<OPENEDGUARD_TOOLTIP>TT:COCKPIT.TOOLTIPS.GENERIC_BUTTON_GUARD_OFF</OPENEDGUARD_TOOLTIP>
+			<CLOSEDGUARD_TOOLTIP>TT:COCKPIT.TOOLTIPS.GENERIC_BUTTON_GUARD_ON</CLOSEDGUARD_TOOLTIP>
+		</Condition>
+		<SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+		<SEQ2_EMISSIVE_DRIVES_VISIBILITY>True</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+		<SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+		<SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+		<Condition Check="NOT_DIMMABLE">
+			<True>
+				<SEQ1_NOT_DIMMABLE>#NOT_DIMMABLE#</SEQ1_NOT_DIMMABLE>
+				<SEQ2_NOT_DIMMABLE>#NOT_DIMMABLE#</SEQ2_NOT_DIMMABLE>
+			</True>
+			<False>
+				<SEQ1_NOT_DIMMABLE>False</SEQ1_NOT_DIMMABLE>
+				<SEQ2_NOT_DIMMABLE>False</SEQ2_NOT_DIMMABLE>
+			</False>
+		</Condition>
+		<IS_SWITCH>False</IS_SWITCH>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<SEQ1_NODE_ID></SEQ1_NODE_ID>
+			<SEQ2_NODE_ID></SEQ2_NODE_ID>
+		</AddParams>
+	</EditableTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Check="DOWN_STATE_CODE">
+			<False>
+				<Condition Valid="SEQ1_CODE_DRIVES_DOWN_STATE">
 					<True>
-						<UseTemplate Name="ASOBO_GT_Update">
-							<FREQUENCY>#LEFT_SINGLE_CODE_REPEAT_FREQUENCY#</FREQUENCY>
-							<UPDATE_CODE>(O:ForcePush) if{ #LEFT_SINGLE_CODE# }</UPDATE_CODE>
+						<DOWN_STATE_CODE>#SEQ1_EMISSIVE_CODE#</DOWN_STATE_CODE>
+					</True>
+				</Condition>
+				<Condition Valid="SEQ2_CODE_DRIVES_DOWN_STATE">
+					<True>
+						<DOWN_STATE_CODE>#SEQ2_EMISSIVE_CODE#</DOWN_STATE_CODE>
+					</True>
+				</Condition>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+
+	<Condition Check="DUMMY_BUTTON">
+		<False>
+			<Condition Check="COVER_NODE_ID">
+				<True>
+					<Component ID="#COVER_NODE_ID#" Node="#COVER_NODE_ID#">
+						<UseTemplate Name = "ASOBO_GT_Switch_Code">
+							<Condition Valid="COVER_INVERT_WHEEL_INTERACTION">
+								<INVERT_WHEEL_INTERACTION>#COVER_INVERT_WHEEL_INTERACTION#</INVERT_WHEEL_INTERACTION>
+							</Condition>
+							<Condition Valid="COVER_INVERT_SWITCH_ON_CONDITION">
+								<INVERT_SWITCH_ON_CONDITION>#COVER_INVERT_SWITCH_ON_CONDITION#</INVERT_SWITCH_ON_CONDITION>
+							</Condition>
+							<LEFT_SINGLE_CODE>(I:XMLVAR_#COVER_NODE_ID#_Up) ! (&gt;I:XMLVAR_#COVER_NODE_ID#_Up)</LEFT_SINGLE_CODE>
+							<ANIM_CODE>(I:XMLVAR_#COVER_NODE_ID#_Up) 100 *</ANIM_CODE>
+							<ANIM_NAME>#COVER_ANIM_NAME#</ANIM_NAME>
+							<ANIMTIP_0>#CLOSEDGUARD_TOOLTIP#</ANIMTIP_0>
+							<ANIMTIP_1>#OPENEDGUARD_TOOLTIP#</ANIMTIP_1>
+							<WWISE_EVENT_1>cover_open</WWISE_EVENT_1>
+							<WWISE_EVENT_2>cover_close</WWISE_EVENT_2>
+						</UseTemplate>
+					</Component>
+				</True>
+			</Condition>
+			
+			<Component ID="#NODE_ID#" Node="#NODE_ID#">
+				<OverrideTemplateParameters>
+					<Condition Check="COVER_NODE_ID">
+						<True>
+							<LEFT_SINGLE_CODE>(I:XMLVAR_#COVER_NODE_ID#_Up) if{ #LEFT_SINGLE_CODE# }</LEFT_SINGLE_CODE>
+						</True>
+					</Condition>
+				</OverrideTemplateParameters>
+				<Condition Check="DOWN_STATE_CODE">
+					<True>
+						<UseTemplate Name = "ASOBO_GT_Switch_Code">
+							<ANIM_CODE>#DOWN_STATE_CODE# 100 *</ANIM_CODE>
+						</UseTemplate>
+					</True>
+					<False>
+						<Condition Valid="HAS_LONG_PRESS">
+							<True>
+								<UseTemplate Name = "ASOBO_GT_Push_Button_Timed">
+								</UseTemplate>
+							</True>
+							<False>
+						<UseTemplate Name = "ASOBO_GT_Push_Button">
+						</UseTemplate>
+					</False>
+				</Condition>
+					</False>
+				</Condition>
+			</Component>
+		</False>
+		<True>
+			<Condition Valid="IS_INOP">
+				<True>
+					<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+						<Condition>
+							<Test>
+								<And>
+									<Arg Check="DOWN_STATE_CODE"/>
+									<Arg Check="ANIM_NAME"/>
+								</And>
+							</Test>
+							<True>
+								<ANIM_POS>#DOWN_STATE_CODE# 100 *</ANIM_POS>
+							</True>
+						</Condition>
+					</UseTemplate>
+				</True>
+			</Condition>
+		</True>
+	</Condition>
+	
+	<Condition Check="NO_SEQ1">
+		<False>
+			<Component ID="#SEQ1_NODE_ID#_S1" Node="#SEQ1_NODE_ID#">
+				<UseTemplate Name ="ASOBO_GT_Emissive_Gauge">
+					<Condition NotEmpty="SEQ1_FAILURE">
+						<FAILURE>#SEQ1_FAILURE#</FAILURE>
+					</Condition>
+					<Switch>
+						<Case Valid="SEQ1_NOT_DIMMABLE">
+							<EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE#</EMISSIVE_CODE>
+						</Case>
+						<Case NotEmpty="POTENTIOMETER_SEQ1">
+							<EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE# (A:LIGHT POTENTIOMETER:#POTENTIOMETER_SEQ1#, Percent over 100) *</EMISSIVE_CODE>
+						</Case>
+						<Case NotEmpty="SIMVAR_POWER_SETTING_SEQ1">
+							<EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE# (A:#SIMVAR_POWER_SETTING_SEQ1#, Percent over 100) *</EMISSIVE_CODE>
+						</Case>
+						<Default>
+							<EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE#</EMISSIVE_CODE>
+						</Default>
+					</Switch>
+					<Condition Valid="SEQ1_EMISSIVE_DRIVES_VISIBILITY">
+						<True>
+							<EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+						</True>
+					</Condition>
+					<Condition Valid="SEQ1_EMISSIVE_DRIVES_VISIBILITY">
+						<True>
+							<EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+						</True>
+					</Condition>
+				</UseTemplate>
+				<Condition Valid="SEQ1_CODE_DRIVES_VISIBILITY">
+					<True>
+						<UseTemplate Name="ASOBO_GT_Visibility_Code">
+							<VISIBILITY_CODE>#SEQ1_EMISSIVE_CODE# 0 &gt;</VISIBILITY_CODE>
 						</UseTemplate>
 					</True>
 				</Condition>
-				<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
-					<LEFT_SINGLE_CODE>1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) #LEFT_SINGLE_CODE# 1 (&gt;O:ForcePush)</LEFT_SINGLE_CODE>
-					<LEFT_LEAVE_CODE>0 (&gt;O:ForcePush) #LEFT_LEAVE_CODE#</LEFT_LEAVE_CODE>
-				</UseTemplate>
-			</True>
-			<False>
-				<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Code">
-					<LEFT_SINGLE_CODE>
-						1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-						#LEFT_SINGLE_CODE#
-					</LEFT_SINGLE_CODE>
-				</UseTemplate>
-			</False>
-		</Condition>
-	</Template>
-
-
-	<!--
-		Simple push button object, customized for AIRBUS type planes.
-
-		Required parameter:
-			ANIM_NAME
-			LEFT_SINGLE_CODE
-			SEQ1_NODE_ID
-			SEQ1_EMISSIVE_CODE
-			SEQ2_NODE_ID
-			SEQ2_EMISSIVE_CODE / POTENTIOMETER
-	-->
-	<Template Name = "ASOBO_GT_Push_Button_Airliner">
-		<DefaultTemplateParameters>
-			<SEQ1_SUFFIX>_SEQ1</SEQ1_SUFFIX>
-			<SEQ2_SUFFIX>_SEQ2</SEQ2_SUFFIX>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Push_Button_Airliner_SubTemplate">
-		</UseTemplate>
-
-	</Template>
-
-	<Template Name = "ASOBO_GT_Push_Button_Airliner_SubTemplate">
-		<DefaultTemplateParameters>
-			<Condition Check="POTENTIOMETER">
-				<True>
-					<POTENTIOMETER_SEQ1>#POTENTIOMETER#</POTENTIOMETER_SEQ1>
-					<POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
-				</True>
-			</Condition>
-			<Condition Check="SIMVAR_POWER_SETTING">
-				<True>
-					<SIMVAR_POWER_SETTING_SEQ1>#SIMVAR_POWER_SETTING#</SIMVAR_POWER_SETTING_SEQ1>
-					<SIMVAR_POWER_SETTING_SEQ2>#SIMVAR_POWER_SETTING#</SIMVAR_POWER_SETTING_SEQ2>
-				</True>
-			</Condition>
-			<SEQ1_EMISSIVE_CODE>1</SEQ1_EMISSIVE_CODE>
-			<SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
-			<SEQ1_NODE_ID>#NODE_ID##SEQ1_SUFFIX#</SEQ1_NODE_ID>
-			<SEQ2_NODE_ID>#NODE_ID##SEQ2_SUFFIX#</SEQ2_NODE_ID>
-			<Condition Check="ONLY_SEQ1">
-				<NO_SEQ2/>
-			</Condition>
-			<Condition Check="ONLY_SEQ2">
-				<NO_SEQ1/>
-			</Condition>
-			<Condition Check="COVER_NODE_ID">
-				<OPENEDGUARD_TOOLTIP>TT:COCKPIT.TOOLTIPS.GENERIC_BUTTON_GUARD_OFF</OPENEDGUARD_TOOLTIP>
-				<CLOSEDGUARD_TOOLTIP>TT:COCKPIT.TOOLTIPS.GENERIC_BUTTON_GUARD_ON</CLOSEDGUARD_TOOLTIP>
-			</Condition>
-			<SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-			<SEQ2_EMISSIVE_DRIVES_VISIBILITY>True</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-			<SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-			<SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-			<Condition Check="NOT_DIMMABLE">
-				<True>
-					<SEQ1_NOT_DIMMABLE>#NOT_DIMMABLE#</SEQ1_NOT_DIMMABLE>
-					<SEQ2_NOT_DIMMABLE>#NOT_DIMMABLE#</SEQ2_NOT_DIMMABLE>
-				</True>
-				<False>
-					<SEQ1_NOT_DIMMABLE>False</SEQ1_NOT_DIMMABLE>
-					<SEQ2_NOT_DIMMABLE>False</SEQ2_NOT_DIMMABLE>
-				</False>
-			</Condition>
-		</DefaultTemplateParameters>
-		<EditableTemplateParameters>
-			<AddParams>
-				<SEQ1_NODE_ID></SEQ1_NODE_ID>
-				<SEQ2_NODE_ID></SEQ2_NODE_ID>
-			</AddParams>
-		</EditableTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition Check="DOWN_STATE_CODE">
-				<False>
-					<Condition Valid="SEQ1_CODE_DRIVES_DOWN_STATE">
+			</Component>
+		</False>
+	</Condition>
+	
+	<Condition Check="NO_SEQ2">
+		<False>
+			<Component ID="#SEQ2_NODE_ID#_S2" Node="#SEQ2_NODE_ID#">
+				<UseTemplate Name ="ASOBO_GT_Emissive_Gauge">
+					<Condition NotEmpty="SEQ2_FAILURE">
+						<FAILURE>#SEQ2_FAILURE#</FAILURE>
+					</Condition>
+					<Switch>
+						<Case Valid="SEQ2_NOT_DIMMABLE">
+							<EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE#</EMISSIVE_CODE>
+						</Case>
+						<Case NotEmpty="POTENTIOMETER_SEQ2">
+							<EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE# (A:LIGHT POTENTIOMETER:#POTENTIOMETER_SEQ2#, Percent over 100) *</EMISSIVE_CODE>
+						</Case>
+						<Case NotEmpty="SIMVAR_POWER_SETTING_SEQ2">
+							<EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE# (A:#SIMVAR_POWER_SETTING_SEQ2#, Percent over 100) *</EMISSIVE_CODE>
+						</Case>
+						<Default>
+							<EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE#</EMISSIVE_CODE>
+						</Default>
+					</Switch>
+					<Condition Valid="SEQ2_EMISSIVE_DRIVES_VISIBILITY">
 						<True>
-							<DOWN_STATE_CODE>#SEQ1_EMISSIVE_CODE#</DOWN_STATE_CODE>
+							<EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
 						</True>
 					</Condition>
-					<Condition Valid="SEQ2_CODE_DRIVES_DOWN_STATE">
+					<Condition Valid="SEQ2_EMISSIVE_DRIVES_VISIBILITY">
 						<True>
-							<DOWN_STATE_CODE>#SEQ2_EMISSIVE_CODE#</DOWN_STATE_CODE>
+							<EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
 						</True>
 					</Condition>
-				</False>
-			</Condition>
-		</OverrideTemplateParameters>
-
-		<Condition Check="DUMMY_BUTTON">
-			<False>
-				<Condition Check="COVER_NODE_ID">
+				</UseTemplate>
+				<Condition Valid="SEQ2_CODE_DRIVES_VISIBILITY">
 					<True>
-						<Component ID="#COVER_NODE_ID#" Node="#COVER_NODE_ID#">
-							<UseTemplate Name = "ASOBO_GT_Switch_Code">
-								<LEFT_SINGLE_CODE>(I:XMLVAR_#COVER_NODE_ID#_Up) ! (&gt;I:XMLVAR_#COVER_NODE_ID#_Up)</LEFT_SINGLE_CODE>
-								<ANIM_CODE>(I:XMLVAR_#COVER_NODE_ID#_Up) 100 *</ANIM_CODE>
-								<ANIM_NAME>#COVER_ANIM_NAME#</ANIM_NAME>
-								<ANIMTIP_0>#CLOSEDGUARD_TOOLTIP#</ANIMTIP_0>
-								<ANIMTIP_1>#OPENEDGUARD_TOOLTIP#</ANIMTIP_1>
-								<WWISE_EVENT_1>cover_open</WWISE_EVENT_1>
-								<WWISE_EVENT_2>cover_close</WWISE_EVENT_2>
-							</UseTemplate>
-						</Component>
+						<UseTemplate Name="ASOBO_GT_Visibility_Code">
+							<VISIBILITY_CODE>#SEQ2_EMISSIVE_CODE# 0 &gt;</VISIBILITY_CODE>
+						</UseTemplate>
 					</True>
 				</Condition>
-				
-				<Component ID="#NODE_ID#" Node="#NODE_ID#">
-					<OverrideTemplateParameters>
-						<Condition Check="COVER_NODE_ID">
-							<True>
-								<LEFT_SINGLE_CODE>(I:XMLVAR_#COVER_NODE_ID#_Up) if{ #LEFT_SINGLE_CODE# }</LEFT_SINGLE_CODE>
-							</True>
-						</Condition>
-					</OverrideTemplateParameters>
-					<Condition Check="DOWN_STATE_CODE">
-						<True>
-							<UseTemplate Name = "ASOBO_GT_Switch_Code">
-								<ANIM_CODE>#DOWN_STATE_CODE# 100 *</ANIM_CODE>
-							</UseTemplate>
-						</True>
-						<False>
-							<UseTemplate Name = "ASOBO_GT_Push_Button">
-							</UseTemplate>
-						</False>
-					</Condition>
-				</Component>
-			</False>
-			<True>
-				<Component ID="#NODE_ID#" Node="#NODE_ID#">
-					<Condition Valid="IS_INOP">
-						<True>
-							<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-							</UseTemplate>
-						</True>
-					</Condition>
-					<Condition>
-						<Test>
-							<And>
-								<Arg Check="DOWN_STATE_CODE"/>
-								<Arg Check="ANIM_NAME"/>
-							</And>
-						</Test>
-						<True>
-							<UseTemplate Name = "ASOBO_GT_Anim">
-								<ANIM_CODE>#DOWN_STATE_CODE# 100 *</ANIM_CODE>
-							</UseTemplate>
-						</True>
-					</Condition>
-				</Component>
-			</True>
-		</Condition>
-		
-		<Condition Check="NO_SEQ1">
-			<False>
-				<Component ID="#SEQ1_NODE_ID#_S1" Node="#SEQ1_NODE_ID#">
-					<UseTemplate Name ="ASOBO_GT_Emissive_Gauge">
-						<Condition NotEmpty="SEQ1_FAILURE">
-							<FAILURE>#SEQ1_FAILURE#</FAILURE>
-						</Condition>
-						<Switch>
-							<Case Valid="SEQ1_NOT_DIMMABLE">
-								<EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE#</EMISSIVE_CODE>
-							</Case>
-							<Case NotEmpty="POTENTIOMETER_SEQ1">
-								<EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE# (A:LIGHT POTENTIOMETER:#POTENTIOMETER_SEQ1#, Percent over 100) *</EMISSIVE_CODE>
-							</Case>
-							<Case NotEmpty="SIMVAR_POWER_SETTING_SEQ1">
-								<EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE# (A:#SIMVAR_POWER_SETTING_SEQ1#, Percent over 100) *</EMISSIVE_CODE>
-							</Case>
-							<Default>
-								<EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE#</EMISSIVE_CODE>
-							</Default>
-						</Switch>
-						<Condition Valid="SEQ1_EMISSIVE_DRIVES_VISIBILITY">
-							<True>
-								<EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
-							</True>
-						</Condition>
-						<Condition Valid="SEQ1_EMISSIVE_DRIVES_VISIBILITY">
-							<True>
-								<EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
-							</True>
-						</Condition>
-					</UseTemplate>
-					<Condition Valid="SEQ1_CODE_DRIVES_VISIBILITY">
-						<True>
-							<UseTemplate Name="ASOBO_GT_Visibility_Code">
-								<VISIBILITY_CODE>#SEQ1_EMISSIVE_CODE# 0 &gt;</VISIBILITY_CODE>
-							</UseTemplate>
-						</True>
-					</Condition>
-				</Component>
-			</False>
-		</Condition>
-		
-		<Condition Check="NO_SEQ2">
-			<False>
-				<Component ID="#SEQ2_NODE_ID#_S2" Node="#SEQ2_NODE_ID#">
-					<UseTemplate Name ="ASOBO_GT_Emissive_Gauge">
-						<Condition NotEmpty="SEQ2_FAILURE">
-							<FAILURE>#SEQ2_FAILURE#</FAILURE>
-						</Condition>
-						<Switch>
-							<Case Valid="SEQ2_NOT_DIMMABLE">
-								<EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE#</EMISSIVE_CODE>
-							</Case>
-							<Case NotEmpty="POTENTIOMETER_SEQ2">
-								<EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE# (A:LIGHT POTENTIOMETER:#POTENTIOMETER_SEQ2#, Percent over 100) *</EMISSIVE_CODE>
-							</Case>
-							<Case NotEmpty="SIMVAR_POWER_SETTING_SEQ2">
-								<EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE# (A:#SIMVAR_POWER_SETTING_SEQ2#, Percent over 100) *</EMISSIVE_CODE>
-							</Case>
-							<Default>
-								<EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE#</EMISSIVE_CODE>
-							</Default>
-						</Switch>
-						<Condition Valid="SEQ2_EMISSIVE_DRIVES_VISIBILITY">
-							<True>
-								<EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
-							</True>
-						</Condition>
-						<Condition Valid="SEQ2_EMISSIVE_DRIVES_VISIBILITY">
-							<True>
-								<EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
-							</True>
-						</Condition>
-					</UseTemplate>
-					<Condition Valid="SEQ2_CODE_DRIVES_VISIBILITY">
-						<True>
-							<UseTemplate Name="ASOBO_GT_Visibility_Code">
-								<VISIBILITY_CODE>#SEQ2_EMISSIVE_CODE# 0 &gt;</VISIBILITY_CODE>
-							</UseTemplate>
-						</True>
-					</Condition>
-				</Component>
-			</False>
-		</Condition>
-	</Template>
-
-	<!--
-		Push button object,
-		with emissive code.
-		(Requires Gauge power)
-
-		Required parameter:
-			ANIM_NAME
-			LEFT_SINGLE_CODE
-			EMISSIVE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Push_Button_Emissive">
-
-		<UseTemplate Name = "ASOBO_GT_Push_Button">
-		</UseTemplate>
-
-		<UseTemplate Name = "ASOBO_GT_Emissive_Gauge">
-		</UseTemplate>
-	</Template>
-
-
-	<!--
-		Push button, with action on short press, and action on long press.
-
-		Required parameter:
-			SHORT_CLICK_CODE
-			LONG_CLICK_CODE
-	-->
-	<Template Name = "ASOBO_GT_Push_Button_Timed">
-		<DefaultTemplateParameters>
-			<ANIM_LENGTH>100</ANIM_LENGTH>
-			<LEFT_SINGLE_CODE/>
-			<LEFT_LEAVE_CODE/>
-		</DefaultTemplateParameters>
-
-		<Update Frequency = "10">
-			(O:_PressTime) 0 &gt;
-			 if{ #ANIM_LENGTH# (&gt;O:_ButtonAnimVar) }
-			els{ (O:_ButtonAnimVar) #ANIM_LENGTH# 0.7 * - 0 max (&gt;O:_ButtonAnimVar) }
-		</Update>
-
-		<UseTemplate Name = "ASOBO_GT_Anim_Code">
-			<ANIM_CODE>(O:_ButtonAnimVar)</ANIM_CODE>
-		</UseTemplate>
-
-		<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
-		</UseTemplate>
-
-		<UseTemplate Name = "ASOBO_GT_Interaction_Left_Timed_Code">
-		</UseTemplate>
-	</Template>
-
-
-	<!--
-		Push button, with action when first pressed, and another when released.
-
-		Required parameter:
-			SHORT_CLICK_CODE
-			LONG_CLICK_CODE
-	-->
-	<Template Name = "ASOBO_GT_Push_Button_Held">
-		<DefaultTemplateParameters>
-			<ANIM_LENGTH>100</ANIM_LENGTH>
-			<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
-			<SWITCH_POSITION_VAR>_ButtonAnimVar</SWITCH_POSITION_VAR>
-			<LEFT_SINGLE_CODE/>
-			<LEFT_LEAVE_CODE/>
-			<ANIM_DURATION>0.3</ANIM_DURATION>
-		</DefaultTemplateParameters>
-
-
-		<Update Frequency = "10">
-			(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 &gt; (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 0 &gt; or if{
-				(O:AnimGoingForward) if{
-					(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / + 1 min (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-					(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 == if{
-						0 (&gt;O:AnimGoingForward)
-		}
-		} els{
-			(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / - (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) max (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-				}
-			}
-		</Update>
-		
-		<UseTemplate Name = "ASOBO_GT_Anim_Code">
-			<Condition Check="OVERRIDE_ANIM_CODE">
-				<True>
-					<ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
-				</True>
-				<False>
-					<ANIM_CODE>#ANIM_LENGTH# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) *</ANIM_CODE>
-				</False>
-			</Condition>
-		</UseTemplate>
-
-		<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
-		</UseTemplate>
-
-		<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
-			<LEFT_SINGLE_CODE>1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 1 (&gt;O:AnimGoingForward) #LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
-			<LEFT_LEAVE_CODE>0 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) #LEFT_LEAVE_CODE#</LEFT_LEAVE_CODE>
-		</UseTemplate>
-
-		<Condition NotEmpty="EMISSIVE_CODE">
-			<UseTemplate Name = "ASOBO_GT_Emissive_Gauge">
-				<Condition Valid="NO_EMISSIVE_ON_HELD">
-					<False>
-						<EMISSIVE_CODE> (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) #EMISSIVE_CODE# or </EMISSIVE_CODE>
-					</False>
-				</Condition>
-			</UseTemplate>
-		</Condition>
-	</Template>
-
-	<!--
-		Push button, with action when first pressed, and another when released.
-
-		Required parameter:
-			LEFT_SINGLE_CODE
-			LEFT_LEAVE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Push_Button_Held_Simple">
-		<DefaultTemplateParameters>
-			<ANIM_LENGTH>100</ANIM_LENGTH>
-			<LEFT_SINGLE_CODE/>
-			<LEFT_LEAVE_CODE/>
-		</DefaultTemplateParameters>
-		<UseTemplate Name = "ASOBO_GT_Anim">
-		</UseTemplate>
-		<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
-		</UseTemplate>
-		<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_GT_Push_Button_Dummy_Emissive">
-		<DefaultTemplateParameters>	
-			<BUTTON_STATE_TYPE>O</BUTTON_STATE_TYPE>
-			<BUTTON_STATE_VAR>_ButtonVar</BUTTON_STATE_VAR>
-			<LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
-		</DefaultTemplateParameters>
-		
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Push_Button">
-				<LEFT_SINGLE_CODE> #LEFT_SINGLE_CODE# (#BUTTON_STATE_TYPE#:#BUTTON_STATE_VAR#) ! (&gt;#BUTTON_STATE_TYPE#:#BUTTON_STATE_VAR#)</LEFT_SINGLE_CODE>
-			</UseTemplate>
-		</Component>
-		<Component ID="#OFF_NODE_ID#" Node="#OFF_NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-				<EMISSIVE_CODE>(#BUTTON_STATE_TYPE#:#BUTTON_STATE_VAR#)</EMISSIVE_CODE>
-			</UseTemplate>
-		</Component>
-		
-		<Condition Check="FAULT_INDICATOR">
-			<Component ID="#FAULT_NODE_ID#" Node="#FAULT_NODE_ID#">
-				<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-					<EMISSIVE_CODE>0</EMISSIVE_CODE>
-				</UseTemplate>
 			</Component>
-		</Condition>
-	</Template>	
+		</False>
+	</Condition>
+</Template>
 
-	<!-- Airliner Dummy button -->
-	<Template Name="ASOBO_GT_Push_Button_Airliner_Dummy">
-		<DefaultTemplateParameters>
-			<Condition Check="POTENTIOMETER_SEQ1">
-				<True>
-					<SEQ1_EMISSIVE_CODE>1</SEQ1_EMISSIVE_CODE>
-				</True>
+<!--
+	Push button object,
+	with emissive code.
+	(Requires Gauge power)
+
+	Required parameter:
+		ANIM_NAME
+		LEFT_SINGLE_CODE
+		EMISSIVE_CODE
+-->
+<Template Name = "ASOBO_GT_Push_Button_Emissive">
+
+	<UseTemplate Name = "ASOBO_GT_Push_Button">
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_Emissive_Gauge">
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Push button, with action on short press, and action on long press.
+
+	Required parameter:
+		SHORT_CLICK_CODE
+		LONG_CLICK_CODE
+-->
+<Template Name = "ASOBO_GT_Push_Button_Timed">
+	<DefaultTemplateParameters>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<LEFT_SINGLE_CODE/>
+		<LEFT_LEAVE_CODE/>
+		<DISABLE_INTERACTION_LOCK>True</DISABLE_INTERACTION_LOCK>
+	</DefaultTemplateParameters>
+
+	<Update Frequency = "10">
+		(O:_PressTime) 0 &gt;
+		 if{ #ANIM_LENGTH# (&gt;O:_ButtonAnimVar) }
+		els{ (O:_ButtonAnimVar) #ANIM_LENGTH# 0.7 * - 0 max (&gt;O:_ButtonAnimVar) }
+	</Update>
+
+	<UseTemplate Name = "ASOBO_GT_Anim_Code">
+		<ANIM_CODE>(O:_ButtonAnimVar)</ANIM_CODE>
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_Interaction_Left_Timed_Code">
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Push button, with action when first pressed, and another when released.
+
+	Required parameter:
+		SHORT_CLICK_CODE
+		LONG_CLICK_CODE
+-->
+<Template Name = "ASOBO_GT_Push_Button_Held">
+	<DefaultTemplateParameters>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+		<SWITCH_POSITION_VAR>_ButtonAnimVar</SWITCH_POSITION_VAR>
+		<LEFT_SINGLE_CODE/>
+		<LEFT_LEAVE_CODE/>
+		<ANIM_DURATION>0.3</ANIM_DURATION>
+		<DISABLE_INTERACTION_LOCK>True</DISABLE_INTERACTION_LOCK>
+	</DefaultTemplateParameters>
+
+
+	<Update Frequency = "10">
+		(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 &gt; (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 0 &gt; or if{
+			(O:AnimGoingForward) if{
+				(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / + 1 min (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+				(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 == if{
+					0 (&gt;O:AnimGoingForward)
+    }
+    } els{
+        (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / - (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) max (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+			}
+		}
+	</Update>
+	
+	<UseTemplate Name = "ASOBO_GT_Anim_Code">
+		<Condition Check="OVERRIDE_ANIM_CODE">
+			<True>
+				<ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
+			</True>
+			<False>
+				<ANIM_CODE>#ANIM_LENGTH# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) *</ANIM_CODE>
+			</False>
+		</Condition>
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+		<LEFT_SINGLE_CODE>1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 1 (&gt;O:AnimGoingForward) #LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+		<LEFT_LEAVE_CODE>0 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) #LEFT_LEAVE_CODE#</LEFT_LEAVE_CODE>
+	</UseTemplate>
+
+	<Condition NotEmpty="EMISSIVE_CODE">
+		<UseTemplate Name = "ASOBO_GT_Emissive_Gauge">
+			<Condition Valid="NO_EMISSIVE_ON_HELD">
 				<False>
-					<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+					<EMISSIVE_CODE> (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) #EMISSIVE_CODE# or </EMISSIVE_CODE>
 				</False>
 			</Condition>
-			<Condition Check="POTENTIOMETER_SEQ2">
-				<True>
-					<SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
-				</True>
-				<False>
-					<SEQ2_EMISSIVE_CODE>0</SEQ2_EMISSIVE_CODE>
-				</False>
-			</Condition>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-			<DUMMY_BUTTON/>
 		</UseTemplate>
-	</Template>
+	</Condition>
+</Template>
+
+<!--
+	Push button, with action when first pressed, and another when released.
+
+	Required parameter:
+		LEFT_SINGLE_CODE
+		LEFT_LEAVE_CODE
+-->
+<Template Name = "ASOBO_GT_Push_Button_Held_Simple">
+	<DefaultTemplateParameters>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<LEFT_SINGLE_CODE/>
+		<LEFT_LEAVE_CODE/>
+		<DISABLE_INTERACTION_LOCK>True</DISABLE_INTERACTION_LOCK>
+	</DefaultTemplateParameters>
+	<UseTemplate Name = "ASOBO_GT_Anim">
+	</UseTemplate>
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+	</UseTemplate>
+	<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GT_Push_Button_Dummy_Emissive">
+	<DefaultTemplateParameters>	
+		<BUTTON_STATE_TYPE>O</BUTTON_STATE_TYPE>
+		<BUTTON_STATE_VAR>_ButtonVar</BUTTON_STATE_VAR>
+		<LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
+	</DefaultTemplateParameters>
+	
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button">
+			<LEFT_SINGLE_CODE> #LEFT_SINGLE_CODE# (#BUTTON_STATE_TYPE#:#BUTTON_STATE_VAR#) ! (&gt;#BUTTON_STATE_TYPE#:#BUTTON_STATE_VAR#)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+	<Component ID="#OFF_NODE_ID#" Node="#OFF_NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<EMISSIVE_CODE>(#BUTTON_STATE_TYPE#:#BUTTON_STATE_VAR#)</EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+	
+	<Condition Check="FAULT_INDICATOR">
+		<Component ID="#FAULT_NODE_ID#" Node="#FAULT_NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				<EMISSIVE_CODE>0</EMISSIVE_CODE>
+			</UseTemplate>
+		</Component>
+	</Condition>
+</Template>	
+
+<!-- Airliner Dummy button -->
+<Template Name="ASOBO_GT_Push_Button_Airliner_Dummy">
+	<DefaultTemplateParameters>
+		<Condition Check="POTENTIOMETER_SEQ1">
+			<True>
+				<SEQ1_EMISSIVE_CODE>1</SEQ1_EMISSIVE_CODE>
+			</True>
+			<False>
+				<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+			</False>
+		</Condition>
+		<Condition Check="POTENTIOMETER_SEQ2">
+			<True>
+				<SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
+			</True>
+			<False>
+				<SEQ2_EMISSIVE_CODE>0</SEQ2_EMISSIVE_CODE>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+		<DUMMY_BUTTON/>
+	</UseTemplate>
+</Template>
 </ModelBehaviors>

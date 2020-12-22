@@ -13,7 +13,10 @@
   "waypointLabelDistance": 5,
   "waypointIconSize": 22,
 
-  "intersectionLabelColor": "00ff00",
+  "intersectionLabelColor": "#00ff00",
+  "vorLabelColor": "#00ff00",
+  "ndbLabelColor": "#00ff00",
+  "airportLabelColor": "#00ff00",
 
   "preventLabelOverlap": false,
 
@@ -122,3 +125,7 @@
     }
   ]
 }
+
+
+
+  

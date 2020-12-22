@@ -133,6 +133,8 @@
 	</UseTemplate>
 	<UseTemplate Name="ASOBO_FMC_Emissive_EXEC_Template">
 	</UseTemplate>
+	<UseTemplate Name="ASOBO_FMC_Screen">
+	</UseTemplate>
 </Template>
 
 <Template Name="ASOBO_FMC_AS01B">
@@ -197,6 +199,8 @@
 	<UseTemplate Name="ASOBO_FMC_Push_NEXT_PAGE_Template">
 	</UseTemplate>
 	<UseTemplate Name="ASOBO_FMC_Push_EXEC_Template">
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_FMC_Emissive_EXEC_Template">
 	</UseTemplate>
 	
 	<UseTemplate Name="ASOBO_FMC_Knob_Cursor">
@@ -305,6 +309,7 @@
 	<UseTemplate Name="ASOBO_FMC_Push_OVFY_Template">
 	</UseTemplate>
 	<UseTemplate Name="ASOBO_FMC_Push_CLR_Template">
+		<HAS_LONG_PRESS>True</HAS_LONG_PRESS>
 	</UseTemplate>
 	<UseTemplate Name="ASOBO_FMC_Push_BRT_DIM_Template">
 	</UseTemplate>
@@ -537,6 +542,7 @@
 				<PREFIX>CJ4_FMC</PREFIX>
 			</Case>
 		</Switch>
+		<PART_ID>FMC_Button_#HTML_EVENT_ID#</PART_ID>
 	</DefaultTemplateParameters>
 
 	<Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -548,7 +554,15 @@
 			</True>
 			<False>
 				<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-					<LEFT_SINGLE_CODE>(&gt;H:#PREFIX#_#ID#_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
+					<Condition Valid="HAS_LONG_PRESS">
+						<True>
+							<SHORT_CLICK_CODE>(&gt;H:#PREFIX#_#ID#_BTN_#HTML_EVENT_ID#)</SHORT_CLICK_CODE>
+							<LONG_CLICK_CODE>(&gt;H:#PREFIX#_#ID#_BTN_#HTML_EVENT_ID#_Long)</LONG_CLICK_CODE>
+						</True>
+						<False>
+							<LEFT_SINGLE_CODE>(&gt;H:#PREFIX#_#ID#_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
+						</False>
+					</Condition>
 				</UseTemplate>
 			</False>
 		</Condition>
@@ -799,6 +813,7 @@
 		<POTENTIOMETER></POTENTIOMETER>
 		<FAILURE>1</FAILURE>
 		<EMISSIVE_CODE>(L:FMC_EXEC_ACTIVE)</EMISSIVE_CODE> 
+		<DONT_OVERRIDE_BASE_EMISSIVE>False</DONT_OVERRIDE_BASE_EMISSIVE>
 	</UseTemplate>
 </Template>
 
@@ -1763,6 +1778,26 @@
 		<NORMALIZED_TIME_1>0.3</NORMALIZED_TIME_1>	
 		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
 	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Check="BRT_DIM_SWITCH_DIRECTION" Match="Horizontal">
+			<True>
+				<POS_0_SIGN>- 0.05 max</POS_0_SIGN>
+				<POS_2_SIGN>+ 1 min </POS_2_SIGN>
+			</True>
+			<False>
+				<POS_0_SIGN>+ 1 min </POS_0_SIGN>
+				<POS_2_SIGN>- 0.05 max</POS_2_SIGN>
+			</False>
+		</Condition>
+		<Switch>
+			<Case Check="POTENTIOMETER">
+				<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
+			</Case>
+			<Case Check="SIMVAR_POWER_SETTING">
+				<EMISSIVE_CODE>(A:#SIMVAR_POWER_SETTING#, Percent over 100)</EMISSIVE_CODE>
+			</Case>
+		</Switch>
+	</OverrideTemplateParameters>
 	<EditableTemplateParameters>
 		<AddParams>
 			<NODE_ID_BRT_DIM></NODE_ID_BRT_DIM>
@@ -1812,10 +1847,10 @@
 					<CURSOR>Hand</CURSOR>
 					<ANIM_NAME>#ANIM_NAME_BRT_DIM#</ANIM_NAME>
 					<CODE_POS_0>
-						(I:XMLVAR_MCDU_#ID#_Brightness) 0.03 + 1 min (&gt;I:XMLVAR_MCDU_#ID#_Brightness)
+						(I:XMLVAR_MCDU_#ID#_Brightness) 0.03 #POS_0_SIGN# (&gt;I:XMLVAR_MCDU_#ID#_Brightness)
 					</CODE_POS_0>
 					<CODE_POS_2>
-						(I:XMLVAR_MCDU_#ID#_Brightness) 0.03 - 0.05 max (&gt;I:XMLVAR_MCDU_#ID#_Brightness)
+						(I:XMLVAR_MCDU_#ID#_Brightness) 0.03 #POS_2_SIGN# (&gt;I:XMLVAR_MCDU_#ID#_Brightness)
 					</CODE_POS_2>
 					<STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
 					<STATE0_TIMER>0.01</STATE0_TIMER>
@@ -1835,18 +1870,20 @@
 	
 	<Condition Valid="NO_BRT_DIM_EMISSIVE">
 		<False>
-			<Condition Valid="POTENTIOMETER">
+			<Condition Valid="EMISSIVE_CODE">
 				<True>
 					<Component ID="#NODE_ID_BRT_DIM_SEQ1#_S1" Node="#NODE_ID_BRT_DIM_SEQ1#">
 						<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-							<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
 						</UseTemplate>
 					</Component>
-					<Component ID="#NODE_ID_BRT_DIM_SEQ2#_S2" Node="#NODE_ID_BRT_DIM_SEQ2#">
-						<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-							<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
-						</UseTemplate>
-					</Component>
+					<Condition Valid="NO_BRT_DIM_EMISSIVE_SEQ2">
+						<False>
+							<Component ID="#NODE_ID_BRT_DIM_SEQ2#_S2" Node="#NODE_ID_BRT_DIM_SEQ2#">
+								<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+								</UseTemplate>
+							</Component>
+						</False>
+					</Condition>
 				</True>
 			</Condition>
 		</False>

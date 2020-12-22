@@ -3,64 +3,81 @@
 
 	<!-- Landing Gears ################################################################ -->
 	<Template Name="ASOBO_LANDING_GEAR_Lever_Gear_Template">
-		<DefaultTemplateParameters>
-			<ANIM_NAME>LANDING_GEAR_Lever_Gear</ANIM_NAME>
-			<PART_ID>LANDING_GEAR_Lever_Gear</PART_ID>
-			<NODE_ID>LANDING_GEAR_Lever_Gear</NODE_ID>
-			<LIGHT_NODE_ID>LANDING_GEAR_Lever_GearLight</LIGHT_NODE_ID>
-			<ANIM_LAG>400</ANIM_LAG>
-			<TOOLTIPID>%((A:GEAR HANDLE POSITION, percent) 50 &gt;)%{if}TT:COCKPIT.TOOLTIPS.LANDING_GEAR_DN %{else}TT:COCKPIT.TOOLTIPS.LANDING_GEAR_UP %{end}</TOOLTIPID> <!-- -->
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<Condition Check="NO_GEARUP_ON_GROUND">
-				<True>
-					<UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_Code">
-						<ANIM_CODE>(A:GEAR HANDLE POSITION, Bool) 100 *</ANIM_CODE>
-						<UP_CODE>(A:SIM ON GROUND, Bool) ! if{ (&gt;K:GEAR_UP) }</UP_CODE>
-						<DOWN_CODE>(&gt;K:GEAR_DOWN)</DOWN_CODE>
-						<HELPID>HELPID_GAUGE_GEAR_LEVER</HELPID>
-					</UseTemplate>
-				</True>
-				<False>
-					<UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_EventsIncDec">
-						<ANIM_SIMVAR>GEAR HANDLE POSITION</ANIM_SIMVAR>
-						<ANIM_SIMVAR_UNITS>Bool</ANIM_SIMVAR_UNITS>
-						<ANIM_SIMVAR_SCALE>100</ANIM_SIMVAR_SCALE>
-						<HELPID>HELPID_GAUGE_GEAR_LEVER</HELPID>
-						<CLOCKWISE_EVENTID>GEAR_DOWN</CLOCKWISE_EVENTID>
-						<ANTICLOCKWISE_EVENTID>GEAR_UP</ANTICLOCKWISE_EVENTID>
-					</UseTemplate>
-				</False>
-			</Condition>
-			<UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvents_Same">
-				<WWISE_EVENT>gear_lever</WWISE_EVENT>
-				<COUNT>1</COUNT>
+	<DefaultTemplateParameters>
+		<ANIM_NAME>LANDING_GEAR_Lever_Gear</ANIM_NAME>
+		<PART_ID>LANDING_GEAR_Lever_Gear</PART_ID>
+		<NODE_ID>LANDING_GEAR_Lever_Gear</NODE_ID>
+		<LIGHT_NODE_ID>LANDING_GEAR_Lever_GearLight</LIGHT_NODE_ID>
+		<ANIM_LAG>400</ANIM_LAG>
+		<TOOLTIPID>%((A:GEAR HANDLE POSITION, percent) 50 &gt;)%{if}TT:COCKPIT.TOOLTIPS.LANDING_GEAR_DN %{else}TT:COCKPIT.TOOLTIPS.LANDING_GEAR_UP %{end}</TOOLTIPID> <!-- -->
+		<DRAG_SCALAR>10</DRAG_SCALAR>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<Condition Check="NO_GEARUP_ON_GROUND">
+			<True>
+				<UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_Code">
+					<ANIM_CODE>(A:GEAR HANDLE POSITION, Bool) 100 *</ANIM_CODE>
+					<UP_CODE>(A:SIM ON GROUND, Bool) ! if{ (&gt;K:GEAR_UP) }</UP_CODE>
+					<DOWN_CODE>(&gt;K:GEAR_DOWN)</DOWN_CODE>
+					<HELPID>HELPID_GAUGE_GEAR_LEVER</HELPID>
+				</UseTemplate>
+			</True>
+			<False>
+				<UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_EventsIncDec">
+					<ANIM_SIMVAR>GEAR HANDLE POSITION</ANIM_SIMVAR>
+					<ANIM_SIMVAR_UNITS>Bool</ANIM_SIMVAR_UNITS>
+					<ANIM_SIMVAR_SCALE>100</ANIM_SIMVAR_SCALE>
+					<HELPID>HELPID_GAUGE_GEAR_LEVER</HELPID>
+					<CLOCKWISE_EVENTID>GEAR_DOWN</CLOCKWISE_EVENTID>
+					<ANTICLOCKWISE_EVENTID>GEAR_UP</ANTICLOCKWISE_EVENTID>
+				</UseTemplate>
+			</False>
+		</Condition>
+		<UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvents_Same">
+			<WWISE_EVENT>gear_lever</WWISE_EVENT>
+			<COUNT>1</COUNT>
+		</UseTemplate>
+	</Component>
+	<Condition Check="EMISSIVE_CODE">
+		<Component ID="#LIGHT_NODE_ID#" Node="#LIGHT_NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				<PART_ID>#LIGHT_NODE_ID#</PART_ID>
 			</UseTemplate>
 		</Component>
-		<Condition Check="EMISSIVE_CODE">
-			<Component ID="#LIGHT_NODE_ID#" Node="#LIGHT_NODE_ID#">
-				<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-					<PART_ID>#LIGHT_NODE_ID#</PART_ID>
-				</UseTemplate>
-			</Component>
-		</Condition>
+	</Condition>
 	</Template>
 	<Template Name="ASOBO_LANDING_GEAR_Light_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<GEAR_ID>0</GEAR_ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<GEAR_ID>0</GEAR_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_LANDING_GEAR_Light_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_LANDING_GEAR_Light_Transit_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LANDING_GEAR_Light_Unsafe</NODE_ID>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<EMISSIVE_CODE>(A:CIRCUIT GEAR MOTOR ON, Bool)</EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+	</Template>
+
+	<Template Name="ASOBO_LANDING_GEAR_Lever_Gear_Emergency_Template">
 		<DefaultTemplateParameters>
-			<NODE_ID>LANDING_GEAR_Light_Unsafe</NODE_ID>
+			<ANIM_NAME>LANDING_GEAR_Lever_Gear_Emergency</ANIM_NAME>
+			<PART_ID>LANDING_GEAR_Lever_Gear_Emergency</PART_ID>
+			<NODE_ID>LANDING_GEAR_Lever_Gear_Emergency</NODE_ID>
+			<ANIM_LAG>400</ANIM_LAG>
+			<DRAG_SCALAR>10</DRAG_SCALAR>
 		</DefaultTemplateParameters>
 		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-				<EMISSIVE_CODE>(A:CIRCUIT GEAR MOTOR ON, Bool)</EMISSIVE_CODE>
+			<UseTemplate Name="ASOBO_GT_Switch_Code">
+				<LEFT_SINGLE_CODE>(&gt;K:GEAR_EMERGENCY_HANDLE_TOGGLE)</LEFT_SINGLE_CODE>
+				<ANIM_CODE>(A:GEAR EMERGENCY HANDLE POSITION, Bool) 100 *</ANIM_CODE>
 			</UseTemplate>
 		</Component>
 	</Template>
@@ -78,7 +95,7 @@
 		<DefaultTemplateParameters>
 			<NODE_ID>LANDING_GEAR_LowAltitude_Warning_Light</NODE_ID>
 		</DefaultTemplateParameters>
-		
+	
 		<Component ID="#NODE_ID#" Node="#NODE_ID#">
 			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
 				<EMISSIVE_CODE>
@@ -101,12 +118,14 @@
 			<ID>Left</ID>
 		</UseTemplate>
 	</Template>
+	
 	<Template Name="ASOBO_LANDING_GEAR_Light_Right_Template">
 		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_Template">
 			<SIMVAR>GEAR RIGHT POSITION</SIMVAR>
 			<ID>Right</ID>
 		</UseTemplate>
 	</Template>
+	
 	<Template Name="ASOBO_LANDING_GEAR_Light_Unsafe_Template">
 		<DefaultTemplateParameters>
 			<NODE_ID>LANDING_GEAR_Light_Unsafe</NODE_ID>
@@ -180,4 +199,14 @@
 		<UseTemplate Name="ASOBO_LANDING_GEAR_Lever_Brake_SubTemplate">
 		</UseTemplate>
 	</Template>
+	
+	<Template Name="ASOBO_LANDING_GEAR_Indicator_Template">
+		<DefaultTemplateParameters>
+			<SIDE>CENTER</SIDE>
+		</DefaultTemplateParameters>
+		
+		<UseTemplate Name="ASOBO_LANDING_GEAR_Indicator_SubTemplate">
+		</UseTemplate>
+	</Template>
 </ModelBehaviors>
+

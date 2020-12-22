@@ -1,6 +1,6 @@
 class CDUVerticalRevisionPage {
     static ShowPage(mcdu, waypoint) {
-        const waypointInfo = waypoint.infos;
+        let waypointInfo = waypoint.infos;
         if (waypointInfo instanceof WayPointInfo) {
             mcdu.clearDisplay();
             let waypointIdent = "---";
@@ -18,20 +18,16 @@ class CDUVerticalRevisionPage {
                 ["", "LL WING/INCR/NO"],
                 ["[][color]blue", "[ ]°/[ ]°/[][color]blue"],
                 ["", "NEXT WPT"],
-                ["<HOLD", "[ ][color]blue"],
+                ["\<HOLD", "[ ][color]blue"],
                 ["ENABLE[color]blue", "NEW DEST"],
                 ["←ALTN[color]blue", "[ ][color]blue"],
                 [""],
                 ["", "AIRWAYS>"],
                 [""],
-                ["<RETURN"]
+                ["\<RETURN"]
             ]);
-            mcdu.onRightInput[4] = () => {
-                A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint);
-            };
-            mcdu.onLeftInput[5] = () => {
-                CDUFlightPlanPage.ShowPage(mcdu);
-            };
+            mcdu.onRightInput[4] = () => { A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint); };
+            mcdu.onLeftInput[5] = () => { CDUFlightPlanPage.ShowPage(mcdu); };
         }
     }
 }

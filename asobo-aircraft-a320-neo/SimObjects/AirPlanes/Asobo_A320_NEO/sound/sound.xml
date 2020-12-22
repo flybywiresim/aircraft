@@ -59,6 +59,8 @@
   
   <MiscellaneousSounds>
 	<Sound WwiseEvent="AP_PREFLIGHT_CHECK_OVER" ViewPoint="Inside" WwiseData="true" />
+	<Sound WwiseEvent="NO_SMOKING_ALERT" ViewPoint="Inside" WwiseData="true" BreakOnStop="true" />
+	<Sound WwiseEvent="SEATBELTS_ALERT" ViewPoint="Inside" WwiseData="true" BreakOnStop="true"/>
   </MiscellaneousSounds>
   
   <EngineSoundPresets>
@@ -399,7 +401,10 @@
 	<Sound WwiseData="true" WwiseEvent="atc_transponder_knob" ViewPoint="Inside"/>
 	<Sound WwiseData="true" WwiseEvent="autopilot_baro_selector_button_on" ViewPoint="Inside"/>	   
 	<Sound WwiseData="true" WwiseEvent="autopilot_baro_selector_button_off" ViewPoint="Inside"/>	
-
+	<Sound WwiseData="true" WwiseEvent="seatbelts_switch_on" ViewPoint="Inside"/>		
+	<Sound WwiseData="true" WwiseEvent="seatbelts_switch_off" ViewPoint="Inside"/>					
+	<Sound WwiseData="true" WwiseEvent="nosmoking_switch_on" ViewPoint="Inside"/>	
+	<Sound WwiseData="true" WwiseEvent="nosmoking_switch_off" ViewPoint="Inside"/>	
 	
 	<!-- AUDIORECEIVER ================================================================================================= -->  
 	<Sound WwiseData="true" WwiseEvent="audioreceiver_push_button_on" ViewPoint="Inside"/>	  	  

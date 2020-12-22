@@ -1,6 +1,6 @@
 class SvgNearestIntersectionElement extends SvgWaypointElement {
     id(map) {
-        return "nrst-intersection-" + this.ident + "-map-" + map.index;
+        return "nrst-intersection-" + this.icaoNoSpace + "-map-" + map.index;
     }
     class() {
         return "map-nrst-intersection";

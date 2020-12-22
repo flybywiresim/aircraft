@@ -6,7 +6,7 @@ class CustomValue {
         this.unitDisplay = _gps.getChildById(_unitID);
     }
     Update() {
-        const flightPlanActive = SimVar.GetSimVarValue("GPS IS ACTIVE FLIGHT PLAN", "boolean");
+        let flightPlanActive = SimVar.GetSimVarValue("GPS IS ACTIVE FLIGHT PLAN", "boolean");
         switch (this.valueIndex) {
             case 0:
                 this.nameDisplay.textContent = "BRG";

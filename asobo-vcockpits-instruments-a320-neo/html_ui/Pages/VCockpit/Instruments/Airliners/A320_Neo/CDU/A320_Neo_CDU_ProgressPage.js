@@ -1,8 +1,8 @@
 class CDUProgressPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
-        const flightPhase = "CRZ";
-        const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
+        let flightPhase = "CRZ";
+        let flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         mcdu.onLeftInput[1] = () => {
             CDUProgressPage.ShowReportPage(mcdu);
         };
@@ -14,13 +14,13 @@ class CDUProgressPage {
             [flightPhase, "REC MAX", "OPT"],
             [""],
             [""],
-            ["<REPORT", ""],
+            ["\<REPORT", ""],
             ["UPDATE AT"],
             ["*[][color]blue"],
             ["BRG / DIST"],
             ["---°.----.-", "[ ][color]blue", "TO"],
             ["PREDICTIVE"],
-            ["<GPS", "GPS PRIMARY[color]green"],
+            ["\<GPS", "GPS PRIMARY[color]green"],
             ["REQUIRED", "ESTIMATED", "ACCUR"],
             ["3.4NM[color]blue", "0.07NM[color]green", "HIGH[color]green"]
         ]);
@@ -32,7 +32,7 @@ class CDUProgressPage {
             altCell = mcdu.cruiseFlightLevel.toFixed(0);
         }
         mcdu.onRightInput[0] = () => {
-            const value = mcdu.inOut;
+            let value = mcdu.inOut;
             mcdu.clearUserInput();
             if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
                 CDUProgressPage.ShowReportPage(mcdu);
@@ -41,22 +41,24 @@ class CDUProgressPage {
         let toWaypoint;
         if (mcdu.routeIndex === mcdu.flightPlanManager.getWaypointsCount() - 1) {
             toWaypoint = mcdu.flightPlanManager.getDestination();
-        } else {
+        }
+        else {
             toWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex);
         }
         let toWaypointCell = "";
         let toWaypointUTCCell = "---";
-        const toWaypointAltCell = "----";
+        let toWaypointAltCell = "----";
         let nextWaypointCell = "";
         let nextWaypointUTCCell = "----";
-        const nextWaypointAltCell = "---";
+        let nextWaypointAltCell = "---";
         if (toWaypoint) {
             toWaypointCell = toWaypoint.ident;
             toWaypointUTCCell = FMCMainDisplay.secondsTohhmm(toWaypoint.infos.etaInFP);
             let nextWaypoint;
             if (mcdu.routeIndex + 1 === mcdu.flightPlanManager.getWaypointsCount()) {
                 nextWaypoint = mcdu.flightPlanManager.getDestination();
-            } else {
+            }
+            else {
                 nextWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex + 1);
             }
             if (nextWaypoint) {
@@ -70,9 +72,9 @@ class CDUProgressPage {
         if (mcdu.flightPlanManager.getDestination()) {
             console.log(mcdu.flightPlanManager.getDestination());
             destCell = mcdu.flightPlanManager.getDestination().ident;
-            const destInfos = mcdu.flightPlanManager.getDestination().infos;
+            let destInfos = mcdu.flightPlanManager.getDestination().infos;
             if (destInfos instanceof AirportInfo) {
-                const destApproach = destInfos.approaches[mcdu.flightPlanManager.getApproachIndex()];
+                let destApproach = destInfos.approaches[mcdu.flightPlanManager.getApproachIndex()];
                 if (destApproach) {
                     destCell += destApproach.runway;
                 }
@@ -104,11 +106,12 @@ class CDUProgressPage {
             destIdentCell = mcdu.flightPlanManager.getDestination().ident + "[color]green";
             if (overrideDestETA) {
                 destETACell = overrideDestETA;
-            } else {
+            }
+            else {
                 destETACell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
             }
             mcdu.onRightInput[0] = () => {
-                const value = mcdu.inOut;
+                let value = mcdu.inOut;
                 mcdu.clearUserInput();
                 CDUProgressPage.ShowPredictiveGPSPage(mcdu, value);
             };

@@ -1,820 +1,853 @@
 <ModelBehaviors>
 	<Include RelativeFile="Subtemplates\\Safety_Subtemplates.xml"/>
-	<!-- Safety ################################################################## -->
-	<!-- Push Warning & Caution & Annunciator -->
+<!-- Safety ################################################################## -->
+<!-- Push Warning & Caution & Annunciator -->
 
-	<Template Name="ASOBO_SAFETY_Push_Warning_Template">
-		<DefaultTemplateParameters>
-			<VAR_SCOPE>O</VAR_SCOPE>
-			<VAR_NAME>SAFETY_Push_Warning</VAR_NAME>
-			<AS3000>Generic</AS3000>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
-			<ID>Warning</ID>
-			<LEFT_SINGLE_CODE>(&gt;H:#AS3000#_Master_Warning_Push)</LEFT_SINGLE_CODE>
-			<EMISSIVE_CODE>(L:#AS3000#_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or</EMISSIVE_CODE>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
-		</UseTemplate>
+<Template Name="ASOBO_SAFETY_Push_Warning_Template">
+	<DefaultTemplateParameters>
+		<VAR_SCOPE>O</VAR_SCOPE>
+		<VAR_NAME>SAFETY_Push_Warning</VAR_NAME>
+		<AS3000>Generic</AS3000>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Push_Template">
+		<ID>Warning</ID>
+		<LEFT_SINGLE_CODE>(&gt;H:#AS3000#_Master_Warning_Push)</LEFT_SINGLE_CODE>
+		<EMISSIVE_CODE>(L:#AS3000#_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or</EMISSIVE_CODE>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
+	</UseTemplate>
 
 
-	</Template>
-	<Template Name="ASOBO_SAFETY_Push_Caution_Template">
-		<DefaultTemplateParameters>
-			<VAR_SCOPE>O</VAR_SCOPE>
-			<VAR_NAME>SAFETY_Push_Caution</VAR_NAME>
-			<AS3000>Generic</AS3000>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
-			<ID>Caution</ID>
-			<LEFT_SINGLE_CODE>(&gt;H:#AS3000#_Master_Caution_Push)</LEFT_SINGLE_CODE>
-			<EMISSIVE_CODE>(L:#AS3000#_Master_Caution_Active) (#VAR_SCOPE#:#VAR_NAME#) or</EMISSIVE_CODE>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
-		</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Push_Caution_Template">
+	<DefaultTemplateParameters>
+		<VAR_SCOPE>O</VAR_SCOPE>
+		<VAR_NAME>SAFETY_Push_Caution</VAR_NAME>
+		<AS3000>Generic</AS3000>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Push_Template">
+		<ID>Caution</ID>
+		<LEFT_SINGLE_CODE>(&gt;H:#AS3000#_Master_Caution_Push)</LEFT_SINGLE_CODE>
+		<EMISSIVE_CODE>(L:#AS3000#_Master_Caution_Active) (#VAR_SCOPE#:#VAR_NAME#) or</EMISSIVE_CODE>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
+	</UseTemplate>
 
-	</Template>
-	<Template Name="ASOBO_SAFETY_Push_WarningCaution_Template">
-		<DefaultTemplateParameters>
-			<VAR_SCOPE>O</VAR_SCOPE>
-			<VAR_NAME>SAFETY_Push_WarningCaution</VAR_NAME>
-			<AS3000>Generic</AS3000>
-			<ANIM_NAME>SAFETY_Push_WarningCaution</ANIM_NAME>
-			<NODE_ID>SAFETY_Push_WarningCaution</NODE_ID>
-			<PART_ID>SAFETY_Push_WarningCaution</PART_ID>
-			<WWISE_EVENT_1>safety_push_button_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>safety_push_button_off</WWISE_EVENT_2>
-			<SEQ1_NODE_ID>SAFETY_Push_WarningCaution_SEQ1</SEQ1_NODE_ID>
-			<SEQ2_NODE_ID>SAFETY_Push_WarningCaution_SEQ2</SEQ2_NODE_ID>
-			
-			<SWITCH_POSITION_TYPE>I</SWITCH_POSITION_TYPE>
-			<SWITCH_POSITION_VAR>SAFETY_Push_WarningCaution_ButtonAnimVar</SWITCH_POSITION_VAR>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_CAUTION_ACKNOWLEDGE</TOOLTIPID>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition Valid="NO_EMISSIVE_ON_HELD">
-				<True>
-					<HELD_EMISSIVE></HELD_EMISSIVE>
-				</True>
-				<False>
-					<HELD_EMISSIVE>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) or</HELD_EMISSIVE>
-				</False>
-			</Condition>
-		</OverrideTemplateParameters>
+</Template>
+<Template Name="ASOBO_SAFETY_Push_WarningCaution_Template">
+	<DefaultTemplateParameters>
+		<VAR_SCOPE>O</VAR_SCOPE>
+		<VAR_NAME>SAFETY_Push_WarningCaution</VAR_NAME>
+		<AS3000>Generic</AS3000>
+		<ANIM_NAME>SAFETY_Push_WarningCaution</ANIM_NAME>
+		<NODE_ID>SAFETY_Push_WarningCaution</NODE_ID>
+		<PART_ID>SAFETY_Push_WarningCaution</PART_ID>
+		<WWISE_EVENT_1>safety_push_button_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>safety_push_button_off</WWISE_EVENT_2>
+		<SEQ1_NODE_ID>SAFETY_Push_WarningCaution_SEQ1</SEQ1_NODE_ID>
+		<SEQ2_NODE_ID>SAFETY_Push_WarningCaution_SEQ2</SEQ2_NODE_ID>
 		
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Push_Button_Held">
-				<LEFT_SINGLE_CODE>(&gt;H:#AS3000#_Master_Caution_Push) (&gt;H:#AS3000#_Master_Warning_Push)</LEFT_SINGLE_CODE>
-				<EMISSIVE_CODE/>
-			</UseTemplate>
-		</Component>
-		<Component ID="#SEQ1_NODE_ID#" Node="#SEQ1_NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-				<EMISSIVE_CODE> (L:#AS3000#_Master_Caution_Active) (#VAR_SCOPE#:#VAR_NAME#) or #HELD_EMISSIVE# </EMISSIVE_CODE>
-			</UseTemplate>
-		</Component>
-		<Component ID="#SEQ2_NODE_ID#" Node="#SEQ2_NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-				<EMISSIVE_CODE> (L:#AS3000#_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or #HELD_EMISSIVE# </EMISSIVE_CODE>
-			</UseTemplate>
-		</Component>
-	</Template>
-
-	<Template Name="ASOBO_SAFETY_Push_Annunciator_Template">
-		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
-			<ID>Annunciator</ID>
-			<LEFT_SINGLE_CODE>(&gt;K:ANNUNCIATOR_SWITCH_ON)</LEFT_SINGLE_CODE>
-			<LEFT_LEAVE_CODE>(&gt;K:ANNUNCIATOR_SWITCH_OFF)</LEFT_LEAVE_CODE>
-			<WWISE_EVENT_1>annunciator_push_button_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>annunciator_push_button_off</WWISE_EVENT_2> 
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Push_Test_Template">
-		<DefaultTemplateParameters>
-			<VAR_SCOPE>L</VAR_SCOPE>
-			<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_LTS_TEST</TOOLTIPID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
-			<ID>Test</ID>
-			<LEFT_SINGLE_CODE>1 (&gt;#VAR_SCOPE#:#VAR_NAME#)</LEFT_SINGLE_CODE>
-			<LEFT_LEAVE_CODE>0 (&gt;#VAR_SCOPE#:#VAR_NAME#)</LEFT_LEAVE_CODE>
-			
-		</UseTemplate>
-
-
-	</Template>
-	<Template Name="ASOBO_SAFETY_Push_Acknowledge_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Push_Acknowledge</NODE_ID>
-			<ANIM_NAME>SAFETY_Push_Acknowledge</ANIM_NAME>
-			<GREEN_LIGHT_NODE_ID>SAFETY_Acknowledge_Light_Green</GREEN_LIGHT_NODE_ID>
-			<ORANGE_LIGHT_NODE_ID>SAFETY_Acknowledge_Light_Orange</ORANGE_LIGHT_NODE_ID>
-			<GREEN_LIGHT_ANIM_NAME>SAFETY_Acknowledge_Light_Green</GREEN_LIGHT_ANIM_NAME>
-			<ORANGE_LIGHT_ANIM_NAME>SAFETY_Acknowledge_Light_Orange</ORANGE_LIGHT_ANIM_NAME>
-			<WWISE_EVENT_1>annunciator_push_button_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>annunciator_push_button_off</WWISE_EVENT_2> 
-			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-			<NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<Update Frequency="2">
-				(I:XMLVAR_SAFETY_Blink_Step) ++ 3 % (&gt;I:XMLVAR_SAFETY_Blink_Step) 
-				(I:XMLVAR_SAFETY_Blink_Step) 2 &lt; if{
-					1 (&gt;I:XMLVAR_SAFETY_Blink)
-				} els{
-					0 (&gt;I:XMLVAR_SAFETY_Blink)
-				}
-			</Update>
-			<UseTemplate Name = "ASOBO_GT_Push_Button_Timed">
-				<PART_ID>SAFETY_Push_Acknowledge</PART_ID>
-				<SHORT_CLICK_CODE>
-					0 (&gt;L:XMLVAR_SAFETY_Panel_Test_Enabled)
-					(E:SIMULATION TIME, second) (&gt;L:XMLVAR_AcknowledgeTime)
-					0 (&gt;I:XMLVAR_CautionWaitingAck)
-					0 (&gt;I:XMLVAR_WarningWaitingAck)
-					0 (&gt;L:XMLVAR_CautionEnabled)
-					0 (&gt;L:XMLVAR_WarningEnabled)
-				</SHORT_CLICK_CODE>
-				<LONG_CLICK_CODE>1 (&gt;L:XMLVAR_SAFETY_Panel_Test_Enabled)</LONG_CLICK_CODE>
-			</UseTemplate>
-			<Condition Check="USE_EMISSIVE_BUTTON">
-				<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-					<EMISSIVE_CODE>(L:XMLVAR_CautionEnabled) (L:XMLVAR_WarningEnabled) or (L:XMLVAR_LTS_Test) or</EMISSIVE_CODE>
-				</UseTemplate>
-			</Condition>
-		</Component>
-		<Condition Check="NO_INDICATOR_LIGHTS">
+		<SWITCH_POSITION_TYPE>I</SWITCH_POSITION_TYPE>
+		<SWITCH_POSITION_VAR>SAFETY_Push_WarningCaution_ButtonAnimVar</SWITCH_POSITION_VAR>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_CAUTION_ACKNOWLEDGE</TOOLTIPID>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid="NO_EMISSIVE_ON_HELD">
+			<True>
+				<HELD_EMISSIVE></HELD_EMISSIVE>
+			</True>
 			<False>
-				<Component ID="#GREEN_LIGHT_NODE_ID#" Node="#GREEN_LIGHT_NODE_ID#">
-					<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-						<EMISSIVE_CODE>
-							(L:XMLVAR_SAFETY_Panel_Test_Enabled) ! (L:XMLVAR_CautionEnabled) ! (L:XMLVAR_WarningEnabled) ! and and
-						</EMISSIVE_CODE>
-					</UseTemplate>
-					<UseTemplate Name="ASOBO_GT_Anim_Code">
-						<ANIM_CODE>
-							(A:ELECTRICAL MASTER BATTERY, Bool) if{
-								(L:XMLVAR_SAFETY_Panel_Test_Enabled) (L:XMLVAR_CautionEnabled) (L:XMLVAR_WarningEnabled) or or 100 *
-							} els{
-								0
-							}
-						</ANIM_CODE>
-						<ANIM_NAME>#GREEN_LIGHT_ANIM_NAME#</ANIM_NAME>
-						<ANIM_LAG>0</ANIM_LAG>
-					</UseTemplate>
-				</Component>
-				<Component ID="#ORANGE_LIGHT_NODE_ID#" Node="#ORANGE_LIGHT_NODE_ID#">
-					<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-						<EMISSIVE_CODE>
-							(L:XMLVAR_SAFETY_Panel_Test_Enabled) (L:XMLVAR_CautionEnabled) (L:XMLVAR_WarningEnabled) or or
-						</EMISSIVE_CODE>
-					</UseTemplate>
-					<UseTemplate Name="ASOBO_GT_Anim_Code">
-						<ANIM_CODE>
-							(A:ELECTRICAL MASTER BATTERY, Bool) if{
-								(L:XMLVAR_SAFETY_Panel_Test_Enabled) ! (L:XMLVAR_CautionEnabled) ! (L:XMLVAR_WarningEnabled) ! and and 100 *
-							} els{
-								0
-							}
-						</ANIM_CODE>
-						<ANIM_NAME>#ORANGE_LIGHT_ANIM_NAME#</ANIM_NAME>
-						<ANIM_LAG>0</ANIM_LAG>
-					</UseTemplate>
-				</Component>
+				<HELD_EMISSIVE>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) or</HELD_EMISSIVE>
 			</False>
 		</Condition>
-	</Template>
-
-	<Template Name="ASOBO_SAFETY_Indicator_Template">
-		<DefaultTemplateParameters>
-			<REQUIRE_ACK_CODE/>
-			<CANCEL_ACK_CODE/>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Day_Night_Check_Template">
-			<Condition Check="OVERRIDE_EMISSIVE_CODE">
-				<EMISSIVE_CODE>#OVERRIDE_EMISSIVE_CODE#</EMISSIVE_CODE>
-			</Condition>
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_SAFETY_Indicator_Day_Night_Check_Template">
-		<DefaultTemplateParameters>
-			<EMISSIVE_CODE>0</EMISSIVE_CODE>
-			<DAYNIGHT_FACTOR>0.7</DAYNIGHT_FACTOR>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_SubTemplate">
-			<Condition Check="CHECK_DAYNIGHT_SWITCH">
-				<EMISSIVE_CODE>
-					(L:XMLVAR_WarningsAttenuated) if{
-						#DAYNIGHT_FACTOR# sp1
-					} els{ 
-						1 sp1
-					}
-					#EMISSIVE_CODE# l1 *
-				</EMISSIVE_CODE>
-			</Condition>
-		</UseTemplate>	
-	</Template>
-
-	<Template Name="ASOBO_SAFETY_Indicator_Warning_Template">
-		<DefaultTemplateParameters>
-			<REQUIRE_ACK_CODE>
-				(I:XMLVAR_WarningWaitingAck) ++ (&gt;I:XMLVAR_WarningWaitingAck)
-				(I:XMLVAR_WarningWaitingAck) 0 &gt; (&gt;L:XMLVAR_WarningEnabled)
-			</REQUIRE_ACK_CODE>
-			<CANCEL_ACK_CODE>
-				(I:XMLVAR_WarningWaitingAck) -- (&gt;I:XMLVAR_WarningWaitingAck)
-				(I:XMLVAR_WarningWaitingAck) 0 &gt; (&gt;L:XMLVAR_WarningEnabled)
-			</CANCEL_ACK_CODE>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
-		</UseTemplate>	
-	</Template>
-
-	<Template Name="ASOBO_SAFETY_Indicator_Caution_Template">
-		<DefaultTemplateParameters>
-			<REQUIRE_ACK_CODE>
-				(I:XMLVAR_CautionWaitingAck) ++ (&gt;I:XMLVAR_CautionWaitingAck)
-				(I:XMLVAR_CautionWaitingAck) 0 &gt; (&gt;L:XMLVAR_CautionEnabled)
-			</REQUIRE_ACK_CODE>
-			<CANCEL_ACK_CODE>
-				(I:XMLVAR_CautionWaitingAck) -- (&gt;I:XMLVAR_CautionWaitingAck)
-				(I:XMLVAR_CautionWaitingAck) 0 &gt; (&gt;L:XMLVAR_CautionEnabled)
-			</CANCEL_ACK_CODE>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
-		</UseTemplate>	
-	</Template>
-	<!-- Master Warning and Caution -->
-	<Template Name="ASOBO_SAFETY_Indicator_Caution_Master_Template"> 
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Caution</NODE_ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
-			<EMISSIVE_CODE>
-				(L:XMLVAR_CautionEnabled)
-			</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Warning_Master_Template"> 
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Warning</NODE_ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
-			<EMISSIVE_CODE>
-				(L:XMLVAR_WarningEnabled)
-			</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-
-	<!-- SAFETY indicators implementation-->
-	<Template Name="ASOBO_SAFETY_Indicator_Battery_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Battery</NODE_ID>
-			<THRESHOLD_VOLTAGE>23</THRESHOLD_VOLTAGE>
-			<THRESHOLD_LOAD>5</THRESHOLD_LOAD>
-			<MIN_RPM>500</MIN_RPM>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Switch Valid="ONLY_CHECK_DISCHARGE">
-				<True>
-					<EMISSIVE_CODE>
-						(A:ELECTRICAL BATTERY LOAD:#ID#, amp) #THRESHOLD_LOAD# &gt;
-					</EMISSIVE_CODE>
-				</True>
-				<False>
-					<EMISSIVE_CODE>
-						(A:ELECTRICAL BATTERY VOLTAGE:#ID#, volt) #THRESHOLD_VOLTAGE# &lt;
-						(A:ELECTRICAL BATTERY LOAD:#ID#, amp) #THRESHOLD_LOAD# &gt; (A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM# &gt; and 
-						or
-					</EMISSIVE_CODE>
-				</False>
-			</Switch>
-		</OverrideTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Coolant_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Coolant</NODE_ID>
-			<THRESHOLD>50</THRESHOLD>
-			<SIMVAR_UNITS>Percent</SIMVAR_UNITS>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-			<EMISSIVE_CODE>(A:RECIP ENG COOLANT RESERVOIR PERCENT:1, #SIMVAR_UNITS#) #THRESHOLD# &lt;</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_OilPress_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_OilPress</NODE_ID>
-			<THRESHOLD>50</THRESHOLD>
-			<SIMVAR_UNITS>Psi</SIMVAR_UNITS>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-			<EMISSIVE_CODE>(A:GENERAL ENG OIL PRESSURE:1, #SIMVAR_UNITS#) #THRESHOLD# &lt;</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_OilTemp_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_OilTemp</NODE_ID>
-			<THRESHOLD>110</THRESHOLD>
-			<MIN_THRESHOLD>20</MIN_THRESHOLD>
-			<ID>1</ID>
-			<SIMVAR_UNITS>Celsius</SIMVAR_UNITS>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-			<EMISSIVE_CODE>(A:GENERAL ENG OIL TEMPERATURE:#ID#, #SIMVAR_UNITS#) s0 #THRESHOLD# &gt; l0 #MIN_THRESHOLD# &lt; or</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_FuelPress_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_FuelPress</NODE_ID>
-			<THRESHOLD>2</THRESHOLD>
-			<SIMVAR_UNITS>Psi</SIMVAR_UNITS>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-			<EMISSIVE_CODE>(A:GENERAL ENG FUEL PRESSURE:1, #SIMVAR_UNITS#) #THRESHOLD# &lt;</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Vacuum_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Vacuum</NODE_ID>
-			<THRESHOLD>3</THRESHOLD>
-			<SIMVAR_UNITS>inHG</SIMVAR_UNITS>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-			<EMISSIVE_CODE>(A:SUCTION PRESSURE, #SIMVAR_UNITS#) #THRESHOLD# &lt;</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Waiting_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Waiting</NODE_ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Flaps_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Flaps</NODE_ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-			<EMISSIVE_CODE>(A:TRAILING EDGE FLAPS LEFT PERCENT, Percent) 0 &gt;</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Charge_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Charge</NODE_ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-			<EMISSIVE_CODE>(A:GENERAL ENG GENERATOR ACTIVE:1, Bool) not</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_LowFuel_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_LowFuel</NODE_ID>
-			<Condition Valid="USE_DANGEROUS_CRITICAL_THRESHOLDS">
-				<True>
-					<THRESHOLD_DANGEROUS>12</THRESHOLD_DANGEROUS>
-					<THRESHOLD_CRITICAL>8</THRESHOLD_CRITICAL>
-					<EMISSIVE_CODE_CRITICAL>1</EMISSIVE_CODE_CRITICAL>
-					<EMISSIVE_CODE_DANGEROUS>1</EMISSIVE_CODE_DANGEROUS>
-				</True>
-				<False>
-					<THRESHOLD>8</THRESHOLD>
-				</False>
-			</Condition>
-			<SIMVAR_FUEL>FUEL TANK CENTER QUANTITY</SIMVAR_FUEL>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-			<Condition Valid="USE_DANGEROUS_CRITICAL_THRESHOLDS">
-				<True>
-					<Condition Check="SIMVAR_FUEL2">
-						<True>
-							<EMISSIVE_CODE>
-								(A:#SIMVAR_FUEL#, Gallons) #THRESHOLD_DANGEROUS# &lt; (A:#SIMVAR_FUEL2#, Gallons) #THRESHOLD_DANGEROUS# &lt; or s0 if{
-									(A:#SIMVAR_FUEL#, Gallons) #THRESHOLD_CRITICAL# &lt; (A:#SIMVAR_FUEL2#, Gallons) #THRESHOLD_CRITICAL# &lt; or if{
-										#EMISSIVE_CODE_CRITICAL# sp0
-									} els{
-										#EMISSIVE_CODE_DANGEROUS# sp0
-									}
-								}
-								l0
-							</EMISSIVE_CODE>
-						</True>
-						<False>
-							<EMISSIVE_CODE>
-								(A:#SIMVAR_FUEL#, Gallons) #THRESHOLD_DANGEROUS# &lt; s0 if{
-									(A:#SIMVAR_FUEL#, Gallons) #THRESHOLD_CRITICAL# &lt; if{
-										#EMISSIVE_CODE_CRITICAL# sp0
-									} els{
-										#EMISSIVE_CODE_DANGEROUS# sp0
-									}
-								}
-								l0
-							</EMISSIVE_CODE>
-						</False>
-					</Condition>
-				</True>
-				<False>
-					<Condition Check="SIMVAR_FUEL2">
-						<True>
-							<EMISSIVE_CODE>(A:#SIMVAR_FUEL#, Gallons) #THRESHOLD# &lt; (A:#SIMVAR_FUEL2#, Gallons) #THRESHOLD# &lt; or</EMISSIVE_CODE>
-						</True>
-						<False>
-							<EMISSIVE_CODE>(A:#SIMVAR_FUEL#, Gallons) #THRESHOLD# &lt;</EMISSIVE_CODE>
-						</False>
-					</Condition>
-				</False>
-			</Condition>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_LowVolt_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_LowVolt</NODE_ID>
-			<THRESHOLD>12.8</THRESHOLD>
-			<BUS_ID>1</BUS_ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-			<Condition Check="THRESHOLD_UP">
-				<True>
-					<EMISSIVE_CODE>
-						(A:ELECTRICAL MAIN BUS VOLTAGE:#BUS_ID#, Volts) #THRESHOLD_DOWN# &lt; if{ 
-							(O:LightOn) ! if{ 1 (&gt;O:LightOn) }
-							1 
-						} els{
-							(O:LightOn) (A:ELECTRICAL MAIN BUS VOLTAGE:#BUS_ID#, Volts) #THRESHOLD_UP# &gt; and if{
-								0 (&gt;O:LightOn)
-							}
-							(O:LightOn)
-						}
-					</EMISSIVE_CODE>
-				</True>
-				<False>
-					<EMISSIVE_CODE>
-						(A:ELECTRICAL MAIN BUS VOLTAGE:#BUS_ID#, Volts) #THRESHOLD# &lt;
-					</EMISSIVE_CODE>
-				</False>
-			</Condition>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Pitot_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Pitot</NODE_ID>
-			<Condition Check="ON_WHEN_PITOT_IS_ACTIVE">
-				<False>
-					<INVERT_CONDITION>!</INVERT_CONDITION>
-				</False>
-				<True>
-					<INVERT_CONDITION/>
-				</True>
-			</Condition>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-			<EMISSIVE_CODE>(A:PITOT HEAT, Bool) (A:CIRCUIT PITOT HEAT ON:#ID#, Bool) and #INVERT_CONDITION#</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Alternator_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Alternator</NODE_ID>
-			<THREAT>Caution</THREAT>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_#THREAT#_Template">
-			<EMISSIVE_CODE>(A:ELECTRICAL GENALT BUS VOLTAGE:#ID#, volts) 0 ==</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Glow_Light_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Glow_Light</NODE_ID>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
-			<EMISSIVE_CODE>
-				(A:RECIP ENG GLOW PLUG ACTIVE:#ID#,Bool)
-			</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Starter_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Starter</NODE_ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
-			<EMISSIVE_CODE>(A:GENERAL ENG STARTER ACTIVE:1, Bool)</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Engine_Template">
-		<!-- TODO Emissive code -->
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Engine</NODE_ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_ECU_Template">
-		<!-- TODO Emissive code -->
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_ECU</NODE_ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_FuelTransfer_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_FuelTransfer</NODE_ID>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
-			<Condition Check="USE_CUSTOM_MODE">
-				<True>
-					<EMISSIVE_CODE>
-						(A:FUEL SELECTED TRANSFER MODE, Enum) 5 ==
-						(A:FUEL TRANSFER PUMP ON:#ID#, Bool) and
-					</EMISSIVE_CODE>
-				</True>
-				<False>
-					<EMISSIVE_CODE>
-						(A:FUEL SELECTED TRANSFER MODE, Enum) 0 &gt;
-					</EMISSIVE_CODE>
-				</False>
-			</Condition>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Start_Template">
-		<!-- TODO Emissive code -->
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Start</NODE_ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Doors_Template"> 
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Doors</NODE_ID>
-			<SIMVAR>CANOPY OPEN</SIMVAR>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
-			<EMISSIVE_CODE>(A:#SIMVAR#, percent) 0 &gt;</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_TrimFail_Template">
-		<!-- TODO Emissive code -->
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_TrimFail</NODE_ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_RPM_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_RPM</NODE_ID>
-			<THRESHOLD>3200</THRESHOLD>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
-			<EMISSIVE_CODE>(A:GENERAL ENG RPM:#ID#, rpm) #THRESHOLD# &gt;</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_Accelerometer_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_Accelerometer</NODE_ID>
-			<MAX_NEGATIVE>-5</MAX_NEGATIVE>
-			<MAX_POSITIVE>10</MAX_POSITIVE>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
-			<EMISSIVE_CODE>(A:G FORCE, GForce) s0 #MAX_NEGATIVE# &lt; l0 #MAX_POSITIVE# &gt; or</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_HydraulicsPressure_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_HydraulicsPressure</NODE_ID>
-			<PRESSURE_THRESHOLD_PSI>150</PRESSURE_THRESHOLD_PSI>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
-			<EMISSIVE_CODE>(A:HYDRAULIC PRESSURE:#ID#, psi) #PRESSURE_THRESHOLD_PSI# (A:HYDRAULIC RESERVOIR PERCENT:#ID#, percent over 100) * &lt;</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Indicator_HydraulicsFailure_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Indicator_HydraulicsFailure</NODE_ID>
-			<PERCENT_THRESHOLD>1</PERCENT_THRESHOLD>
-			<MIN_INTEGRITY>0.1</MIN_INTEGRITY>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
-			<EMISSIVE_CODE>(A:HYDRAULIC RESERVOIR PERCENT:#ID#, percent) #PERCENT_THRESHOLD# &lt; (A:HYDRAULIC SYSTEM INTEGRITY, Bool) #MIN_INTEGRITY# &lt; or</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_SAFETY_Indicator_NavGps_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID_NAV>SAFETY_Indicator_Nav</NODE_ID_NAV>
-			<NODE_ID_GPS>SAFETY_Indicator_Gps</NODE_ID_GPS>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
-			<NODE_ID>#NODE_ID_GPS#</NODE_ID>
-			<EMISSIVE_CODE>(A:GPS DRIVES NAV1, bool)</EMISSIVE_CODE>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
-			<NODE_ID>#NODE_ID_NAV#</NODE_ID>
-			<EMISSIVE_CODE>(A:GPS DRIVES NAV1, bool) !</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_SAFETY_Switch_Light">
-		<DefaultTemplateParameters>
-			<PART_ID>SAFETY_Switch_Light</PART_ID>
-			<NODE_ID>SAFETY_Switch_Light</NODE_ID>
-			<ANIM_NAME>SAFETY_Switch_Light</ANIM_NAME>
-			
-			<Condition Check="INVERTED_SWITCH">
-				<True>
-					<TEST_ID>0</TEST_ID>
-					<DIM_ID>2</DIM_ID>
-				</True>
-				<False>
-					<TEST_ID>2</TEST_ID>
-					<DIM_ID>0</DIM_ID>
-				</False>
-			</Condition>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_SAFETY_Switch_Light_SubTemplate">
+	</OverrideTemplateParameters>
+	
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button_Held">
+			<LEFT_SINGLE_CODE>(&gt;H:#AS3000#_Master_Caution_Push) (&gt;H:#AS3000#_Master_Warning_Push)</LEFT_SINGLE_CODE>
+			<EMISSIVE_CODE/>
 		</UseTemplate>
 	</Component>
+	<Component ID="#SEQ1_NODE_ID#" Node="#SEQ1_NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<EMISSIVE_CODE> (L:#AS3000#_Master_Caution_Active) (#VAR_SCOPE#:#VAR_NAME#) or #HELD_EMISSIVE# </EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+	<Component ID="#SEQ2_NODE_ID#" Node="#SEQ2_NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<EMISSIVE_CODE> (L:#AS3000#_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or #HELD_EMISSIVE# </EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
 
-	<!-- safety: others -->
-	<Template Name="ASOBO_SAFETY_Switch_ELT_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Switch_ELT</NODE_ID>
-			<ANIM_NAME>SAFETY_Switch_ELT</ANIM_NAME>
-			<EMISSIVE_NODE_ID>SAFETY_Switch_ELT_Text</EMISSIVE_NODE_ID>
-			<WWISE_EVENT>safety_elt_switch</WWISE_EVENT>		
-			<WWISE_EVENT_1>safety_elt_switch_on</WWISE_EVENT_1>	
-			<WWISE_EVENT_2>safety_elt_switch_off</WWISE_EVENT_2>
-			<!-- 0=OFF, 1=ARMED, 2=ON, 3=TEST/RESET -->
-			<ELT_VAR>XMLVAR_ELT_STATE</ELT_VAR>	
-			<ELT_SCOPE>L</ELT_SCOPE>
-			<!-- supposed to be around 3 blinks per second by default -->
-			<ELT_LED_BLINK>(E:SIMULATION TIME, second) 6 * 2 %</ELT_LED_BLINK>
-			<ELT_MIN_TIME_ON_FOR_TEST_RESET>1</ELT_MIN_TIME_ON_FOR_TEST_RESET>
-			<ELT_TEST_DURATION>1</ELT_TEST_DURATION>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<UPDATE_ELT_STATE>
-				(A:ELT ACTIVATED, Bool) if{
-					2 (&gt;#ELT_SCOPE#:#ELT_VAR#)
-				} els{
-					2 (#ELT_SCOPE#:#ELT_VAR#) == if{
-						1 (&gt;#ELT_SCOPE#:#ELT_VAR#)
-					}
-					3 (#ELT_SCOPE#:#ELT_VAR#) == if{
-						(E:SIMULATION TIME, second) (L:XMLVAR_ELT_TEST_TIME) - #ELT_TEST_DURATION# &gt; if{
-							1 (&gt;#ELT_SCOPE#:#ELT_VAR#)
+<Template Name="ASOBO_SAFETY_Push_Annunciator_Template">
+	<UseTemplate Name="ASOBO_SAFETY_Push_Template">
+		<ID>Annunciator</ID>
+		<LEFT_SINGLE_CODE>(&gt;K:ANNUNCIATOR_SWITCH_ON)</LEFT_SINGLE_CODE>
+		<LEFT_LEAVE_CODE>(&gt;K:ANNUNCIATOR_SWITCH_OFF)</LEFT_LEAVE_CODE>
+		<WWISE_EVENT_1>annunciator_push_button_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>annunciator_push_button_off</WWISE_EVENT_2> 
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Push_Test_Template">
+	<DefaultTemplateParameters>
+		<VAR_SCOPE>L</VAR_SCOPE>
+		<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_LTS_TEST</TOOLTIPID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Push_Template">
+		<ID>Test</ID>
+		<LEFT_SINGLE_CODE>1 (&gt;#VAR_SCOPE#:#VAR_NAME#)</LEFT_SINGLE_CODE>
+		<LEFT_LEAVE_CODE>0 (&gt;#VAR_SCOPE#:#VAR_NAME#)</LEFT_LEAVE_CODE>
+		
+	</UseTemplate>
+
+
+</Template>
+<Template Name="ASOBO_SAFETY_Push_Acknowledge_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Push_Acknowledge</NODE_ID>
+		<ANIM_NAME>SAFETY_Push_Acknowledge</ANIM_NAME>
+		<GREEN_LIGHT_NODE_ID>SAFETY_Acknowledge_Light_Green</GREEN_LIGHT_NODE_ID>
+		<ORANGE_LIGHT_NODE_ID>SAFETY_Acknowledge_Light_Orange</ORANGE_LIGHT_NODE_ID>
+		<GREEN_LIGHT_ANIM_NAME>SAFETY_Acknowledge_Light_Green</GREEN_LIGHT_ANIM_NAME>
+		<ORANGE_LIGHT_ANIM_NAME>SAFETY_Acknowledge_Light_Orange</ORANGE_LIGHT_ANIM_NAME>
+		<WWISE_EVENT_1>annunciator_push_button_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>annunciator_push_button_off</WWISE_EVENT_2> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<Update Frequency="2">
+			(I:XMLVAR_SAFETY_Blink_Step) ++ 3 % (&gt;I:XMLVAR_SAFETY_Blink_Step) 
+			(I:XMLVAR_SAFETY_Blink_Step) 2 &lt; if{
+				1 (&gt;I:XMLVAR_SAFETY_Blink)
+			} els{
+				0 (&gt;I:XMLVAR_SAFETY_Blink)
+			}
+		</Update>
+		<UseTemplate Name = "ASOBO_GT_Push_Button_Timed">
+			<PART_ID>SAFETY_Push_Acknowledge</PART_ID>
+			<SHORT_CLICK_CODE>
+				0 (&gt;L:XMLVAR_SAFETY_Panel_Test_Enabled)
+				(E:SIMULATION TIME, second) (&gt;L:XMLVAR_AcknowledgeTime)
+				0 (&gt;I:XMLVAR_CautionWaitingAck)
+				0 (&gt;I:XMLVAR_WarningWaitingAck)
+				0 (&gt;L:XMLVAR_CautionEnabled)
+				0 (&gt;L:XMLVAR_WarningEnabled)
+			</SHORT_CLICK_CODE>
+			<LONG_CLICK_CODE>1 (&gt;L:XMLVAR_SAFETY_Panel_Test_Enabled)</LONG_CLICK_CODE>
+		</UseTemplate>
+		<Condition Check="USE_EMISSIVE_BUTTON">
+			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				<EMISSIVE_CODE>(L:XMLVAR_CautionEnabled) (L:XMLVAR_WarningEnabled) or (L:XMLVAR_LTS_Test) or</EMISSIVE_CODE>
+			</UseTemplate>
+		</Condition>
+	</Component>
+	<Condition Check="NO_INDICATOR_LIGHTS">
+		<False>
+			<Component ID="#GREEN_LIGHT_NODE_ID#" Node="#GREEN_LIGHT_NODE_ID#">
+				<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+					<EMISSIVE_CODE>
+						(L:XMLVAR_SAFETY_Panel_Test_Enabled) ! (L:XMLVAR_CautionEnabled) ! (L:XMLVAR_WarningEnabled) ! and and
+					</EMISSIVE_CODE>
+				</UseTemplate>
+				<UseTemplate Name="ASOBO_GT_Anim_Code">
+					<ANIM_CODE>
+						(A:ELECTRICAL MASTER BATTERY, Bool) if{
+							(L:XMLVAR_SAFETY_Panel_Test_Enabled) (L:XMLVAR_CautionEnabled) (L:XMLVAR_WarningEnabled) or or 100 *
+						} els{
+							0
 						}
-					}
+					</ANIM_CODE>
+					<ANIM_NAME>#GREEN_LIGHT_ANIM_NAME#</ANIM_NAME>
+					<ANIM_LAG>0</ANIM_LAG>
+				</UseTemplate>
+			</Component>
+			<Component ID="#ORANGE_LIGHT_NODE_ID#" Node="#ORANGE_LIGHT_NODE_ID#">
+				<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+					<EMISSIVE_CODE>
+						(L:XMLVAR_SAFETY_Panel_Test_Enabled) (L:XMLVAR_CautionEnabled) (L:XMLVAR_WarningEnabled) or or
+					</EMISSIVE_CODE>
+				</UseTemplate>
+				<UseTemplate Name="ASOBO_GT_Anim_Code">
+					<ANIM_CODE>
+						(A:ELECTRICAL MASTER BATTERY, Bool) if{
+							(L:XMLVAR_SAFETY_Panel_Test_Enabled) ! (L:XMLVAR_CautionEnabled) ! (L:XMLVAR_WarningEnabled) ! and and 100 *
+						} els{
+							0
+						}
+					</ANIM_CODE>
+					<ANIM_NAME>#ORANGE_LIGHT_ANIM_NAME#</ANIM_NAME>
+					<ANIM_LAG>0</ANIM_LAG>
+				</UseTemplate>
+			</Component>
+		</False>
+	</Condition>
+</Template>
+
+<Template Name="ASOBO_SAFETY_Indicator_Template">
+	<DefaultTemplateParameters>
+		<REQUIRE_ACK_CODE/>
+		<CANCEL_ACK_CODE/>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Day_Night_Check_Template">
+		<Condition Check="OVERRIDE_EMISSIVE_CODE">
+			<EMISSIVE_CODE>#OVERRIDE_EMISSIVE_CODE#</EMISSIVE_CODE>
+		</Condition>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_SAFETY_Indicator_Day_Night_Check_Template">
+	<DefaultTemplateParameters>
+		<EMISSIVE_CODE>0</EMISSIVE_CODE>
+		<DAYNIGHT_FACTOR>0.7</DAYNIGHT_FACTOR>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_SubTemplate">
+		<Condition Check="CHECK_DAYNIGHT_SWITCH">
+			<EMISSIVE_CODE>
+				(L:XMLVAR_WarningsAttenuated) if{
+					#DAYNIGHT_FACTOR# sp1
+				} els{ 
+					1 sp1
 				}
-			</UPDATE_ELT_STATE>
-			<ON_OFF>
-				(A:ELT ACTIVATED, Bool) if{ (&gt;K:ELT_OFF) }
-				0 (&gt;#ELT_SCOPE#:#ELT_VAR#)
-			</ON_OFF>
-			<ON_ARM>
-				(A:ELT ACTIVATED, Bool) if{ (&gt;K:ELT_OFF) }
-				1 (&gt;#ELT_SCOPE#:#ELT_VAR#)
-			</ON_ARM>
-			<ON_ACTIVATE>
-				(A:ELT ACTIVATED, Bool) ! if{ (&gt;K:ELT_ON) }
-				(E:SIMULATION TIME, second) (&gt;L:XMLVAR_ELT_ACTIVATION_TIME)
-				2 (&gt;#ELT_SCOPE#:#ELT_VAR#)
-			</ON_ACTIVATE>
-			<ON_TEST_RESET>
-				(A:ELT ACTIVATED, Bool) if{ (&gt;K:ELT_OFF) }
-				3 (&gt;#ELT_SCOPE#:#ELT_VAR#)
-				(E:SIMULATION TIME, second) (&gt;L:XMLVAR_ELT_TEST_TIME)
-			</ON_TEST_RESET>
-			<ARM_TEST_RESET_CONDITION>
-				(E:SIMULATION TIME, second) (L:XMLVAR_ELT_ACTIVATION_TIME) - #ELT_MIN_TIME_ON_FOR_TEST_RESET# &gt; (A:ELT ACTIVATED, Bool) and
-			</ARM_TEST_RESET_CONDITION>
-			<LED_ON_CHECK>
-				(A:ELT ACTIVATED, Bool) #ELT_LED_BLINK# and (#ELT_SCOPE#:#ELT_VAR#) 3 == or
-			</LED_ON_CHECK>
-		</OverrideTemplateParameters>
-		<Condition Check="NO_EMISSIVE">
+				#EMISSIVE_CODE# l1 *
+			</EMISSIVE_CODE>
+		</Condition>
+	</UseTemplate>	
+</Template>
+
+<Template Name="ASOBO_SAFETY_Indicator_Warning_Template">
+	<DefaultTemplateParameters>
+		<REQUIRE_ACK_CODE>
+			(I:XMLVAR_WarningWaitingAck) ++ (&gt;I:XMLVAR_WarningWaitingAck)
+			(I:XMLVAR_WarningWaitingAck) 0 &gt; (&gt;L:XMLVAR_WarningEnabled)
+		</REQUIRE_ACK_CODE>
+		<CANCEL_ACK_CODE>
+			(I:XMLVAR_WarningWaitingAck) -- (&gt;I:XMLVAR_WarningWaitingAck)
+			(I:XMLVAR_WarningWaitingAck) 0 &gt; (&gt;L:XMLVAR_WarningEnabled)
+		</CANCEL_ACK_CODE>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
+	</UseTemplate>	
+</Template>
+
+<Template Name="ASOBO_SAFETY_Indicator_Caution_Template">
+	<DefaultTemplateParameters>
+		<REQUIRE_ACK_CODE>
+			(I:XMLVAR_CautionWaitingAck) ++ (&gt;I:XMLVAR_CautionWaitingAck)
+			(I:XMLVAR_CautionWaitingAck) 0 &gt; (&gt;L:XMLVAR_CautionEnabled)
+		</REQUIRE_ACK_CODE>
+		<CANCEL_ACK_CODE>
+			(I:XMLVAR_CautionWaitingAck) -- (&gt;I:XMLVAR_CautionWaitingAck)
+			(I:XMLVAR_CautionWaitingAck) 0 &gt; (&gt;L:XMLVAR_CautionEnabled)
+		</CANCEL_ACK_CODE>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
+	</UseTemplate>	
+</Template>
+<!-- Master Warning and Caution -->
+<Template Name="ASOBO_SAFETY_Indicator_Caution_Master_Template"> 
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Caution</NODE_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
+		<EMISSIVE_CODE>
+			(L:XMLVAR_CautionEnabled)
+		</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Warning_Master_Template"> 
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Warning</NODE_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
+		<EMISSIVE_CODE>
+			(L:XMLVAR_WarningEnabled)
+		</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+
+<!-- SAFETY indicators implementation-->
+<Template Name="ASOBO_SAFETY_Indicator_Battery_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Battery</NODE_ID>
+		<THRESHOLD_VOLTAGE>23</THRESHOLD_VOLTAGE>
+		<THRESHOLD_LOAD>5</THRESHOLD_LOAD>
+		<MIN_RPM>500</MIN_RPM>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Switch Valid="ONLY_CHECK_DISCHARGE">
+			<True>
+				<EMISSIVE_CODE>
+					(A:ELECTRICAL BATTERY LOAD:#ID#, amp) #THRESHOLD_LOAD# &gt;
+				</EMISSIVE_CODE>
+			</True>
 			<False>
-				<Component ID="#EMISSIVE_NODE_ID#" Node="#EMISSIVE_NODE_ID#">
-					<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-						<EMISSIVE_CODE>#LED_ON_CHECK#</EMISSIVE_CODE>
-					</UseTemplate>
-				</Component>
+				<EMISSIVE_CODE>
+					(A:ELECTRICAL BATTERY VOLTAGE:#ID#, volt) #THRESHOLD_VOLTAGE# &lt;
+					(A:ELECTRICAL BATTERY LOAD:#ID#, amp) #THRESHOLD_LOAD# &gt; (A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM# &gt; and 
+					or
+				</EMISSIVE_CODE>
+			</False>
+		</Switch>
+	</OverrideTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Spoilers_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Spoilers</NODE_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
+		<EMISSIVE_CODE>(A:SPOILERS LEFT POSITION, Percent over 100) 0 &gt; (A:SPOILERS RIGHT POSITION, Percent over 100) 0 &gt; or (A:SPOILERS HANDLE POSITION, Percent) 0 &gt; and</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Launch_Bar_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Launch_Bar</NODE_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
+		<EMISSIVE_CODE>(A:LAUNCHBAR POSITION, Percent over 100) 0 &gt;</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Launch_Bar_Warning_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Launch_Bar_Warning</NODE_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+		<EMISSIVE_CODE>
+			(A:LAUNCHBAR POSITION, Percent over 100) 0 &gt; sp1
+			(A:LAUNCHBAR SWITCH, Bool) sp2
+			(A:SIM ON GROUND, Bool) sp3
+			(A:GEAR LEFT POSITION, Percent over 100) 0 == sp4
+			l1 l3 ! and
+			l1 l4 and or
+			l2 l3 ! and or
+			l2 l4 and or
+		</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Coolant_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Coolant</NODE_ID>
+		<THRESHOLD>50</THRESHOLD>
+		<SIMVAR_UNITS>Percent</SIMVAR_UNITS>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+		<EMISSIVE_CODE>(A:RECIP ENG COOLANT RESERVOIR PERCENT:1, #SIMVAR_UNITS#) #THRESHOLD# &lt;</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_OilPress_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_OilPress</NODE_ID>
+		<THRESHOLD>50</THRESHOLD>
+		<SIMVAR_UNITS>Psi</SIMVAR_UNITS>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+		<EMISSIVE_CODE>(A:GENERAL ENG OIL PRESSURE:1, #SIMVAR_UNITS#) #THRESHOLD# &lt;</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_OilTemp_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_OilTemp</NODE_ID>
+		<THRESHOLD>110</THRESHOLD>
+		<MIN_THRESHOLD>20</MIN_THRESHOLD>
+		<ID>1</ID>
+		<SIMVAR_UNITS>Celsius</SIMVAR_UNITS>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+		<EMISSIVE_CODE>(A:GENERAL ENG OIL TEMPERATURE:#ID#, #SIMVAR_UNITS#) s0 #THRESHOLD# &gt; l0 #MIN_THRESHOLD# &lt; or</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_FuelPress_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_FuelPress</NODE_ID>
+		<THRESHOLD>2</THRESHOLD>
+		<SIMVAR_UNITS>Psi</SIMVAR_UNITS>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+		<EMISSIVE_CODE>(A:GENERAL ENG FUEL PRESSURE:1, #SIMVAR_UNITS#) #THRESHOLD# &lt;</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Vacuum_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Vacuum</NODE_ID>
+		<THRESHOLD>3</THRESHOLD>
+		<SIMVAR_UNITS>inHG</SIMVAR_UNITS>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+		<EMISSIVE_CODE>(A:SUCTION PRESSURE, #SIMVAR_UNITS#) #THRESHOLD# &lt;</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Waiting_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Waiting</NODE_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Flaps_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Flaps</NODE_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+		<EMISSIVE_CODE>(A:TRAILING EDGE FLAPS LEFT PERCENT, Percent) 0 &gt;</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Charge_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Charge</NODE_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+		<EMISSIVE_CODE>(A:GENERAL ENG GENERATOR ACTIVE:1, Bool) not</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_LowFuel_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_LowFuel</NODE_ID>
+		<Condition Valid="USE_DANGEROUS_CRITICAL_THRESHOLDS">
+			<True>
+				<THRESHOLD_DANGEROUS>12</THRESHOLD_DANGEROUS>
+				<THRESHOLD_CRITICAL>8</THRESHOLD_CRITICAL>
+				<EMISSIVE_CODE_CRITICAL>1</EMISSIVE_CODE_CRITICAL>
+				<EMISSIVE_CODE_DANGEROUS>1</EMISSIVE_CODE_DANGEROUS>
+			</True>
+			<False>
+				<THRESHOLD>8</THRESHOLD>
 			</False>
 		</Condition>
-		<UseTemplate Name="ASOBO_GT_Update">
-			<UPDATE_CODE>#UPDATE_ELT_STATE#</UPDATE_CODE>
-			<FREQUENCY>5</FREQUENCY>
-		</UseTemplate>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<Switch Param="TYPE">
-				<Case Value="ARM_ON">
-					<UseTemplate Name="ASOBO_GT_Switch_Code">
-						<LEFT_SINGLE_CODE>
-							(A:ELT ACTIVATED, Bool) ! if{
-								#ON_ACTIVATE#
-							} els{
-								#ARM_TEST_RESET_CONDITION# if{
-									#ON_TEST_RESET#
+		<SIMVAR_FUEL>FUEL TANK CENTER QUANTITY</SIMVAR_FUEL>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+		<Condition Valid="USE_DANGEROUS_CRITICAL_THRESHOLDS">
+			<True>
+				<Condition Check="SIMVAR_FUEL2">
+					<True>
+						<EMISSIVE_CODE>
+							(A:#SIMVAR_FUEL#, Gallons) #THRESHOLD_DANGEROUS# &lt; (A:#SIMVAR_FUEL2#, Gallons) #THRESHOLD_DANGEROUS# &lt; or s0 if{
+								(A:#SIMVAR_FUEL#, Gallons) #THRESHOLD_CRITICAL# &lt; (A:#SIMVAR_FUEL2#, Gallons) #THRESHOLD_CRITICAL# &lt; or if{
+									#EMISSIVE_CODE_CRITICAL# sp0
 								} els{
-									#ON_ARM#
+									#EMISSIVE_CODE_DANGEROUS# sp0
 								}
 							}
-						</LEFT_SINGLE_CODE>
-						<ANIM_CODE>(A:ELT ACTIVATED, Bool) 100 *</ANIM_CODE>
-					</UseTemplate>
-				</Case>
-				<Case Value="ARM_ON_OFF">
-					<UseTemplate Name="ASOBO_GT_Switch_3States">
-						<PART_ID>SWITCH_ELT</PART_ID>
-						<CODE_POS_0>
+							l0
+						</EMISSIVE_CODE>
+					</True>
+					<False>
+						<EMISSIVE_CODE>
+							(A:#SIMVAR_FUEL#, Gallons) #THRESHOLD_DANGEROUS# &lt; s0 if{
+								(A:#SIMVAR_FUEL#, Gallons) #THRESHOLD_CRITICAL# &lt; if{
+									#EMISSIVE_CODE_CRITICAL# sp0
+								} els{
+									#EMISSIVE_CODE_DANGEROUS# sp0
+								}
+							}
+							l0
+						</EMISSIVE_CODE>
+					</False>
+				</Condition>
+			</True>
+			<False>
+				<Condition Check="SIMVAR_FUEL2">
+					<True>
+						<EMISSIVE_CODE>(A:#SIMVAR_FUEL#, Gallons) #THRESHOLD# &lt; (A:#SIMVAR_FUEL2#, Gallons) #THRESHOLD# &lt; or</EMISSIVE_CODE>
+					</True>
+					<False>
+						<EMISSIVE_CODE>(A:#SIMVAR_FUEL#, Gallons) #THRESHOLD# &lt;</EMISSIVE_CODE>
+					</False>
+				</Condition>
+			</False>
+		</Condition>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_LowVolt_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_LowVolt</NODE_ID>
+		<THRESHOLD>12.8</THRESHOLD>
+		<BUS_ID>1</BUS_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+		<Condition Check="THRESHOLD_UP">
+			<True>
+				<EMISSIVE_CODE>
+					(A:ELECTRICAL MAIN BUS VOLTAGE:#BUS_ID#, Volts) #THRESHOLD_DOWN# &lt; if{ 
+						(O:LightOn) ! if{ 1 (&gt;O:LightOn) }
+						1 
+					} els{
+						(O:LightOn) (A:ELECTRICAL MAIN BUS VOLTAGE:#BUS_ID#, Volts) #THRESHOLD_UP# &gt; and if{
+							0 (&gt;O:LightOn)
+						}
+						(O:LightOn)
+					}
+				</EMISSIVE_CODE>
+			</True>
+			<False>
+				<EMISSIVE_CODE>
+					(A:ELECTRICAL MAIN BUS VOLTAGE:#BUS_ID#, Volts) #THRESHOLD# &lt;
+				</EMISSIVE_CODE>
+			</False>
+		</Condition>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Pitot_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Pitot</NODE_ID>
+		<Condition Check="ON_WHEN_PITOT_IS_ACTIVE">
+			<False>
+				<INVERT_CONDITION>!</INVERT_CONDITION>
+			</False>
+			<True>
+				<INVERT_CONDITION/>
+			</True>
+		</Condition>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+		<EMISSIVE_CODE>(A:PITOT HEAT, Bool) (A:CIRCUIT PITOT HEAT ON:#ID#, Bool) and #INVERT_CONDITION#</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Alternator_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Alternator</NODE_ID>
+		<THREAT>Caution</THREAT>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_#THREAT#_Template">
+		<EMISSIVE_CODE>(A:ELECTRICAL GENALT BUS VOLTAGE:#ID#, volts) 0 ==</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Glow_Light_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Glow_Light</NODE_ID>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
+		<EMISSIVE_CODE>
+			(A:RECIP ENG GLOW PLUG ACTIVE:#ID#,Bool)
+		</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Starter_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Starter</NODE_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
+		<EMISSIVE_CODE>(A:GENERAL ENG STARTER ACTIVE:1, Bool)</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Engine_Template">
+	<!-- TODO Emissive code -->
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Engine</NODE_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_ECU_Template">
+	<!-- TODO Emissive code -->
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_ECU</NODE_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Caution_Template">
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_FuelTransfer_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_FuelTransfer</NODE_ID>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
+		<Condition Check="USE_CUSTOM_MODE">
+			<True>
+				<EMISSIVE_CODE>
+					(A:FUEL SELECTED TRANSFER MODE, Enum) 5 ==
+					(A:FUEL TRANSFER PUMP ON:#ID#, Bool) and
+				</EMISSIVE_CODE>
+			</True>
+			<False>
+				<EMISSIVE_CODE>
+					(A:FUEL SELECTED TRANSFER MODE, Enum) 0 &gt;
+				</EMISSIVE_CODE>
+			</False>
+		</Condition>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Start_Template">
+	<!-- TODO Emissive code -->
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Start</NODE_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Doors_Template"> 
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Doors</NODE_ID>
+		<SIMVAR>CANOPY OPEN</SIMVAR>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
+		<EMISSIVE_CODE>(A:#SIMVAR#, percent) 0 &gt;</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_TrimFail_Template">
+	<!-- TODO Emissive code -->
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_TrimFail</NODE_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_RPM_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_RPM</NODE_ID>
+		<THRESHOLD>3200</THRESHOLD>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
+		<EMISSIVE_CODE>(A:GENERAL ENG RPM:#ID#, rpm) #THRESHOLD# &gt;</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_Accelerometer_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_Accelerometer</NODE_ID>
+		<MAX_NEGATIVE>-5</MAX_NEGATIVE>
+		<MAX_POSITIVE>10</MAX_POSITIVE>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
+		<EMISSIVE_CODE>(A:G FORCE, GForce) s0 #MAX_NEGATIVE# &lt; l0 #MAX_POSITIVE# &gt; or</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_HydraulicsPressure_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_HydraulicsPressure</NODE_ID>
+		<PRESSURE_THRESHOLD_PSI>150</PRESSURE_THRESHOLD_PSI>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
+		<EMISSIVE_CODE>(A:HYDRAULIC PRESSURE:#ID#, psi) #PRESSURE_THRESHOLD_PSI# (A:HYDRAULIC RESERVOIR PERCENT:#ID#, percent over 100) * &lt;</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_SAFETY_Indicator_HydraulicsFailure_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Indicator_HydraulicsFailure</NODE_ID>
+		<PERCENT_THRESHOLD>1</PERCENT_THRESHOLD>
+		<MIN_INTEGRITY>0.1</MIN_INTEGRITY>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Warning_Template">
+		<EMISSIVE_CODE>(A:HYDRAULIC RESERVOIR PERCENT:#ID#, percent) #PERCENT_THRESHOLD# &lt; (A:HYDRAULIC SYSTEM INTEGRITY, Bool) #MIN_INTEGRITY# &lt; or</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_SAFETY_Indicator_NavGps_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID_NAV>SAFETY_Indicator_Nav</NODE_ID_NAV>
+		<NODE_ID_GPS>SAFETY_Indicator_Gps</NODE_ID_GPS>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
+		<NODE_ID>#NODE_ID_GPS#</NODE_ID>
+		<EMISSIVE_CODE>(A:GPS DRIVES NAV1, bool)</EMISSIVE_CODE>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_SAFETY_Indicator_Template">
+		<NODE_ID>#NODE_ID_NAV#</NODE_ID>
+		<EMISSIVE_CODE>(A:GPS DRIVES NAV1, bool) !</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_SAFETY_Switch_Light">
+	<DefaultTemplateParameters>
+		<PART_ID>SAFETY_Switch_Light</PART_ID>
+		<NODE_ID>SAFETY_Switch_Light</NODE_ID>
+		<ANIM_NAME>SAFETY_Switch_Light</ANIM_NAME>
+		
+		<Condition Check="INVERTED_SWITCH">
+			<True>
+				<TEST_ID>0</TEST_ID>
+				<DIM_ID>2</DIM_ID>
+			</True>
+			<False>
+				<TEST_ID>2</TEST_ID>
+				<DIM_ID>0</DIM_ID>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_SAFETY_Switch_Light_SubTemplate">
+	</UseTemplate>
+</Component>
+
+<!-- safety: others -->
+<Template Name="ASOBO_SAFETY_Switch_ELT_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Switch_ELT</NODE_ID>
+		<ANIM_NAME>SAFETY_Switch_ELT</ANIM_NAME>
+		<EMISSIVE_NODE_ID>SAFETY_Switch_ELT_Text</EMISSIVE_NODE_ID>
+		<WWISE_EVENT>safety_elt_switch</WWISE_EVENT>		
+		<WWISE_EVENT_1>safety_elt_switch_on</WWISE_EVENT_1>	
+		<WWISE_EVENT_2>safety_elt_switch_off</WWISE_EVENT_2>
+		<!-- 0=OFF, 1=ARMED, 2=ON, 3=TEST/RESET -->
+		<ELT_VAR>XMLVAR_ELT_STATE</ELT_VAR>	
+		<ELT_SCOPE>L</ELT_SCOPE>
+		<!-- supposed to be around 3 blinks per second by default -->
+		<ELT_LED_BLINK>(E:SIMULATION TIME, second) 6 * 2 %</ELT_LED_BLINK>
+		<ELT_MIN_TIME_ON_FOR_TEST_RESET>1</ELT_MIN_TIME_ON_FOR_TEST_RESET>
+		<ELT_TEST_DURATION>1</ELT_TEST_DURATION>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<UPDATE_ELT_STATE>
+			(A:ELT ACTIVATED, Bool) if{
+				2 (&gt;#ELT_SCOPE#:#ELT_VAR#)
+			} els{
+				2 (#ELT_SCOPE#:#ELT_VAR#) == if{
+					1 (&gt;#ELT_SCOPE#:#ELT_VAR#)
+				}
+				3 (#ELT_SCOPE#:#ELT_VAR#) == if{
+					(E:SIMULATION TIME, second) (L:XMLVAR_ELT_TEST_TIME) - #ELT_TEST_DURATION# &gt; if{
+						1 (&gt;#ELT_SCOPE#:#ELT_VAR#)
+					}
+				}
+			}
+		</UPDATE_ELT_STATE>
+		<ON_OFF>
+			(A:ELT ACTIVATED, Bool) if{ (&gt;K:ELT_OFF) }
+			0 (&gt;#ELT_SCOPE#:#ELT_VAR#)
+		</ON_OFF>
+		<ON_ARM>
+			(A:ELT ACTIVATED, Bool) if{ (&gt;K:ELT_OFF) }
+			1 (&gt;#ELT_SCOPE#:#ELT_VAR#)
+		</ON_ARM>
+		<ON_ACTIVATE>
+			(A:ELT ACTIVATED, Bool) ! if{ (&gt;K:ELT_ON) }
+			(E:SIMULATION TIME, second) (&gt;L:XMLVAR_ELT_ACTIVATION_TIME)
+			2 (&gt;#ELT_SCOPE#:#ELT_VAR#)
+		</ON_ACTIVATE>
+		<ON_TEST_RESET>
+			(A:ELT ACTIVATED, Bool) if{ (&gt;K:ELT_OFF) }
+			3 (&gt;#ELT_SCOPE#:#ELT_VAR#)
+			(E:SIMULATION TIME, second) (&gt;L:XMLVAR_ELT_TEST_TIME)
+		</ON_TEST_RESET>
+		<ARM_TEST_RESET_CONDITION>
+			(E:SIMULATION TIME, second) (L:XMLVAR_ELT_ACTIVATION_TIME) - #ELT_MIN_TIME_ON_FOR_TEST_RESET# &gt; (A:ELT ACTIVATED, Bool) and
+		</ARM_TEST_RESET_CONDITION>
+		<LED_ON_CHECK>
+			(A:ELT ACTIVATED, Bool) #ELT_LED_BLINK# and (#ELT_SCOPE#:#ELT_VAR#) 3 == or
+		</LED_ON_CHECK>
+	</OverrideTemplateParameters>
+	<Condition Check="NO_EMISSIVE">
+		<False>
+			<Component ID="#EMISSIVE_NODE_ID#" Node="#EMISSIVE_NODE_ID#">
+				<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+					<EMISSIVE_CODE>#LED_ON_CHECK#</EMISSIVE_CODE>
+				</UseTemplate>
+			</Component>
+		</False>
+	</Condition>
+	<UseTemplate Name="ASOBO_GT_Update">
+		<UPDATE_CODE>#UPDATE_ELT_STATE#</UPDATE_CODE>
+		<FREQUENCY>5</FREQUENCY>
+	</UseTemplate>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<Switch Param="TYPE">
+			<Case Value="ARM_ON">
+				<UseTemplate Name="ASOBO_GT_Switch_Code">
+					<LEFT_SINGLE_CODE>
+						(A:ELT ACTIVATED, Bool) ! if{
+							#ON_ACTIVATE#
+						} els{
 							#ARM_TEST_RESET_CONDITION# if{
 								#ON_TEST_RESET#
 							} els{
 								#ON_ARM#
 							}
-						</CODE_POS_0>
-						<CODE_POS_1>
-							#ON_ACTIVATE#
-						</CODE_POS_1>
-						<CODE_POS_2>
-							#ON_OFF#
-						</CODE_POS_2>
-						<STATE0_TEST>(#ELT_SCOPE#:#ELT_VAR#) 1 ==</STATE0_TEST>
-						<STATE1_TEST>(#ELT_SCOPE#:#ELT_VAR#) 2 ==</STATE1_TEST>
-						<STATE2_TEST>(#ELT_SCOPE#:#ELT_VAR#) 0 ==</STATE2_TEST>
-						<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ELT_ARM</ANIMTIP_0>
-						<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ELT_TURN_ON</ANIMTIP_1>
-						<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ELT_OFF</ANIMTIP_2>
-					</UseTemplate>
-				</Case>
-				<Default>
-					<!-- ELT can't be in the OFF state since it doesn't exist -->
-					<UseTemplate Name="ASOBO_GT_Update">
-						<UPDATE_CODE>0 (#ELT_SCOPE#:#ELT_VAR#) == if{ 1 (&gt;#ELT_SCOPE#:#ELT_VAR#) }</UPDATE_CODE>
-						<FREQUENCY>1</FREQUENCY>
-					</UseTemplate>
-					<UseTemplate Name="ASOBO_GT_Switch_3States">
-						<PART_ID>SWITCH_ELT</PART_ID>
-						<CODE_POS_0>
-							#ON_ACTIVATE#
-						</CODE_POS_0>
-						<CODE_POS_1>
-							#ON_ARM#
-						</CODE_POS_1>
-						<CODE_POS_2>
+						}
+					</LEFT_SINGLE_CODE>
+					<ANIM_CODE>(A:ELT ACTIVATED, Bool) 100 *</ANIM_CODE>
+				</UseTemplate>
+			</Case>
+			<Case Value="ARM_ON_OFF">
+				<UseTemplate Name="ASOBO_GT_Switch_3States">
+					<PART_ID>SWITCH_ELT</PART_ID>
+					<CODE_POS_0>
+						#ARM_TEST_RESET_CONDITION# if{
 							#ON_TEST_RESET#
-						</CODE_POS_2>
-						<STATE0_TEST>(#ELT_SCOPE#:#ELT_VAR#) 2 ==</STATE0_TEST>
-						<STATE1_TEST>(#ELT_SCOPE#:#ELT_VAR#) 1 ==</STATE1_TEST>
-						<STATE2_TEST>(#ELT_SCOPE#:#ELT_VAR#) 3 ==</STATE2_TEST>
-						<MOMENTARY_SWITCH/>
-						<STATE_MAX_TIMER>1</STATE_MAX_TIMER>
-						<STATE0_TIMER>0</STATE0_TIMER>
-						<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ELT_TURN_ON</ANIMTIP_0>
-						<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ELT_ARM</ANIMTIP_1>
-						<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ELT_SET_TEST</ANIMTIP_2>
-					</UseTemplate>
-				</Default>
-			</Switch>
-		</Component>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Push_AlternateStaticAir_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>SAFETY_Push_AlternateStaticAir</NODE_ID>
-			<ANIM_NAME>SAFETY_Push_AlternateStaticAir</ANIM_NAME>
-			<PART_ID>SAFETY_Push_AlternateStaticAir</PART_ID>
-			<WWISE_EVENT_1>safety_alternate_static_air_push_button_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>safety_alternate_static_air_push_button_off</WWISE_EVENT_2>
-			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ALTERNATE_STATIC_LEVER_TO_ALTERNATE</ANIMTIP_0>
-			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ALTERNATE_STATIC_LEVER_TO_STATIC</ANIMTIP_1>
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Switch">
-				<EVENTID>TOGGLE_ALTERNATE_STATIC</EVENTID>
-				<ANIM_SIMVAR>ALTERNATE STATIC SOURCE OPEN</ANIM_SIMVAR>
-				<ANIM_SIMVAR_SCALE>100</ANIM_SIMVAR_SCALE>
-				<ANIM_SIMVAR_UNITS>bool</ANIM_SIMVAR_UNITS>
-				<ANIM_LENGTH>100</ANIM_LENGTH>
-			</UseTemplate>
-		</Component>
-	</Template>
-	<Template Name="ASOBO_SAFETY_Gauge_OxygenPressure_Template">
-		<DefaultTemplateParameters>
-			<MIN_TEMP>0</MIN_TEMP>
-			<MAX_TEMP>110</MAX_TEMP>
-			<PRESSURE_MIN_TEMP_FAHRENHEIT>1515</PRESSURE_MIN_TEMP_FAHRENHEIT>
-			<PRESSURE_MAX_TEMP_FAHRENHEIT>2040</PRESSURE_MAX_TEMP_FAHRENHEIT>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_SAFETY_Gauge_OxygenPressure_SubTemplate">
+						} els{
+							#ON_ARM#
+						}
+					</CODE_POS_0>
+					<CODE_POS_1>
+						#ON_ACTIVATE#
+					</CODE_POS_1>
+					<CODE_POS_2>
+						#ON_OFF#
+					</CODE_POS_2>
+					<STATE0_TEST>(#ELT_SCOPE#:#ELT_VAR#) 1 ==</STATE0_TEST>
+					<STATE1_TEST>(#ELT_SCOPE#:#ELT_VAR#) 2 ==</STATE1_TEST>
+					<STATE2_TEST>(#ELT_SCOPE#:#ELT_VAR#) 0 ==</STATE2_TEST>
+					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ELT_ARM</ANIMTIP_0>
+					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ELT_TURN_ON</ANIMTIP_1>
+					<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ELT_OFF</ANIMTIP_2>
+				</UseTemplate>
+			</Case>
+			<Default>
+				<!-- ELT can't be in the OFF state since it doesn't exist -->
+				<UseTemplate Name="ASOBO_GT_Update">
+					<UPDATE_CODE>0 (#ELT_SCOPE#:#ELT_VAR#) == if{ 1 (&gt;#ELT_SCOPE#:#ELT_VAR#) }</UPDATE_CODE>
+					<FREQUENCY>1</FREQUENCY>
+				</UseTemplate>
+				<UseTemplate Name="ASOBO_GT_Switch_3States">
+					<PART_ID>SWITCH_ELT</PART_ID>
+					<CODE_POS_0>
+						#ON_ACTIVATE#
+					</CODE_POS_0>
+					<CODE_POS_1>
+						#ON_ARM#
+					</CODE_POS_1>
+					<CODE_POS_2>
+						#ON_TEST_RESET#
+					</CODE_POS_2>
+					<STATE0_TEST>(#ELT_SCOPE#:#ELT_VAR#) 2 ==</STATE0_TEST>
+					<STATE1_TEST>(#ELT_SCOPE#:#ELT_VAR#) 1 ==</STATE1_TEST>
+					<STATE2_TEST>(#ELT_SCOPE#:#ELT_VAR#) 3 ==</STATE2_TEST>
+					<MOMENTARY_SWITCH/>
+					<STATE_MAX_TIMER>1</STATE_MAX_TIMER>
+					<STATE0_TIMER>0</STATE0_TIMER>
+					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ELT_TURN_ON</ANIMTIP_0>
+					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ELT_ARM</ANIMTIP_1>
+					<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ELT_SET_TEST</ANIMTIP_2>
+				</UseTemplate>
+			</Default>
+		</Switch>
+	</Component>
+</Template>
+<Template Name="ASOBO_SAFETY_Push_AlternateStaticAir_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>SAFETY_Push_AlternateStaticAir</NODE_ID>
+		<ANIM_NAME>SAFETY_Push_AlternateStaticAir</ANIM_NAME>
+		<PART_ID>SAFETY_Push_AlternateStaticAir</PART_ID>
+		<WWISE_EVENT_1>safety_alternate_static_air_push_button_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>safety_alternate_static_air_push_button_off</WWISE_EVENT_2>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ALTERNATE_STATIC_LEVER_TO_ALTERNATE</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ALTERNATE_STATIC_LEVER_TO_STATIC</ANIMTIP_1>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Switch">
+			<EVENTID>TOGGLE_ALTERNATE_STATIC</EVENTID>
+			<ANIM_SIMVAR>ALTERNATE STATIC SOURCE OPEN</ANIM_SIMVAR>
+			<ANIM_SIMVAR_SCALE>100</ANIM_SIMVAR_SCALE>
+			<ANIM_SIMVAR_UNITS>bool</ANIM_SIMVAR_UNITS>
+			<ANIM_LENGTH>100</ANIM_LENGTH>
 		</UseTemplate>
-	</Template>
+	</Component>
+</Template>
+<Template Name="ASOBO_SAFETY_Gauge_OxygenPressure_Template">
+	<DefaultTemplateParameters>
+		<MIN_TEMP>0</MIN_TEMP>
+		<MAX_TEMP>110</MAX_TEMP>
+		<PRESSURE_MIN_TEMP_FAHRENHEIT>1515</PRESSURE_MIN_TEMP_FAHRENHEIT>
+		<PRESSURE_MAX_TEMP_FAHRENHEIT>2040</PRESSURE_MAX_TEMP_FAHRENHEIT>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_SAFETY_Gauge_OxygenPressure_SubTemplate">
+	</UseTemplate>
+</Template>
 </ModelBehaviors>

@@ -1,623 +1,746 @@
 <ModelBehaviors>
-	<!--
-		Finite rotating object,
-		using incrementing and decrementing events,
-		anim based on simvar.
+<!--
+	Finite rotating object,
+	using incrementing and decrementing events,
+	anim based on simvar.
 
-		Required parameter:
-			ANIM_SIMVAR
-			ANIM_SIMVAR_UNITS
-			ANIM_SIMVAR_MIN
-			ANIM_SIMVAR_MAX
-			ANIM_NAME
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Knob_Finite_Simvar">
-		<DefaultTemplateParameters>
-			<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
-			<ANIM_SIMVAR_MIN>0</ANIM_SIMVAR_MIN>
-			<ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
-			<EXTRA_INTERACTION/>
-			<ANIMREF_ID>0</ANIMREF_ID>
-			<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
-			<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
-			<ANIMTIP_0></ANIMTIP_0>
-			<ANIMTIP_1></ANIMTIP_1>	
-			<ANIM_LAG>100</ANIM_LAG>
-			<ANIM_WRAP>True</ANIM_WRAP>
-			<!-- Should not be overriden except from generic template -->
-		</DefaultTemplateParameters>
+	Required parameter:
+		ANIM_SIMVAR
+		ANIM_SIMVAR_UNITS
+		ANIM_SIMVAR_MIN
+		ANIM_SIMVAR_MAX
+		ANIM_NAME
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+-->
+<Template Name = "ASOBO_GT_Knob_Finite_Simvar">
+	<DefaultTemplateParameters>
+		<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+		<ANIM_SIMVAR_MIN>0</ANIM_SIMVAR_MIN>
+		<ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
+		<EXTRA_INTERACTION/>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+		<ANIMTIP_0></ANIMTIP_0>
+		<ANIMTIP_1></ANIMTIP_1>	
+		<ANIM_LAG>100</ANIM_LAG>
+		<ANIM_WRAP>True</ANIM_WRAP>
+		<!-- Should not be overriden except from generic template -->
+	</DefaultTemplateParameters>
 
-		<UseTemplate Name = "ASOBO_GT_Anim_Code">
-			<ANIM_CODE>
-				(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - / 100 * 
-			</ANIM_CODE>
+	<UseTemplate Name = "ASOBO_GT_Anim_Code">
+		<ANIM_CODE>
+			(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - / 100 * 
+		</ANIM_CODE>
+	</UseTemplate>
+	<!-- <UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same"/> -->
+	<UseTemplate Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft#EXTRA_INTERACTION#">
+		<CLOCKWISE_CODE>
+			#CLOCKWISE_CODE#
+		</CLOCKWISE_CODE>
+		<ANTICLOCKWISE_CODE>
+			#ANTICLOCKWISE_CODE#
+		</ANTICLOCKWISE_CODE>
+	</UseTemplate>
+
+	<Condition Valid="WWISE_EVENT">
+		<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
 		</UseTemplate>
-		<!-- <UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same"/> -->
-		<UseTemplate Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft#EXTRA_INTERACTION#">
-			<CLOCKWISE_CODE>
-				#CLOCKWISE_CODE#
-			</CLOCKWISE_CODE>
-			<ANTICLOCKWISE_CODE>
-				#ANTICLOCKWISE_CODE#
-			</ANTICLOCKWISE_CODE>
-		</UseTemplate>
+	</Condition>
+</Template>
+<!--
+	Finite rotating object,
+	using incrementing and decrementing events,
+	anim based on code.
 
-		<Condition Valid="WWISE_EVENT">
-			<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
-			</UseTemplate>
-		</Condition>
-	</Template>
-	<!--
-		Finite rotating object,
-		using incrementing and decrementing events,
-		anim based on code.
-
-		Required parameter:
-			ANIM_CODE
-			ANIM_NAME
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Knob_Finite_Code">
-		<DefaultTemplateParameters>
-			<EXTRA_INTERACTION/>
-			<COUNT>10</COUNT>
-			<WRAP>True</WRAP>
-			<ANIMREF_ID>0</ANIMREF_ID>
-			<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
-			<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
-			<ANIMTIP_0></ANIMTIP_0>
-			<ANIMTIP_1></ANIMTIP_1>		
-			<ANIM_LAG>100</ANIM_LAG>
-			<!-- Should not be overriden except from generic template -->
-			<Condition Valid="PUSH">
-				<True>
-					<EXTRA_INTERACTION>_LeftSingle</EXTRA_INTERACTION>
-					<ANIM_LENGTH_PUSH>100</ANIM_LENGTH_PUSH>
-				</True>
-			</Condition>
-		</DefaultTemplateParameters>
-		<UseTemplate Name = "ASOBO_GT_Anim_Code">
-			<ANIM_WRAP>#WRAP#</ANIM_WRAP>
-		</UseTemplate>
+	Required parameter:
+		ANIM_CODE
+		ANIM_NAME
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+-->
+<Template Name = "ASOBO_GT_Knob_Finite_Code">
+	<DefaultTemplateParameters>
+		<EXTRA_INTERACTION/>
+		<COUNT>10</COUNT>
+		<WRAP>True</WRAP>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+		<ANIMTIP_0></ANIMTIP_0>
+		<ANIMTIP_1></ANIMTIP_1>		
+		<ANIM_LAG>100</ANIM_LAG>
+		<!-- Should not be overriden except from generic template -->
 		<Condition Valid="PUSH">
 			<True>
-				<Update Frequency = "10">
-					(O:_ButtonPressed) 0 &gt;
-					 if{ #ANIM_LENGTH_PUSH# (&gt;O:_PushAnimVar) }
-					els{ (O:_PushAnimVar) #ANIM_LENGTH_PUSH# 0.7 * - 0 max (&gt;O:_PushAnimVar) }
-				</Update>
-
-				<UseTemplate Name = "ASOBO_GT_Anim_Code">
-					<ANIM_NAME>#ANIM_NAME_PUSH#</ANIM_NAME>
-					<ANIM_LENGTH>#ANIM_LENGTH_PUSH#</ANIM_LENGTH>
-					<ANIM_CODE>(O:_PushAnimVar)</ANIM_CODE>
-				</UseTemplate>
+				<EXTRA_INTERACTION>_LeftSingle</EXTRA_INTERACTION>
+				<ANIM_LENGTH_PUSH>100</ANIM_LENGTH_PUSH>
 			</True>
 		</Condition>
-		
-		<Condition Check="WWISE_EVENT">
-			<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
-			</UseTemplate>
-		</Condition>
+	</DefaultTemplateParameters>
+	<UseTemplate Name = "ASOBO_GT_Anim_Code">
+		<ANIM_WRAP>#WRAP#</ANIM_WRAP>
+	</UseTemplate>
+	<Condition Valid="PUSH">
+		<True>
+			<Update Frequency = "10">
+				(O:_ButtonPressed) 0 &gt;
+				 if{ #ANIM_LENGTH_PUSH# (&gt;O:_PushAnimVar) }
+				els{ (O:_PushAnimVar) #ANIM_LENGTH_PUSH# 0.7 * - 0 max (&gt;O:_PushAnimVar) }
+			</Update>
 
-		<UseTemplate Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft#EXTRA_INTERACTION#">
-			<CLOCKWISE_CODE>
-				#CLOCKWISE_CODE#
-			</CLOCKWISE_CODE>
-			<ANTICLOCKWISE_CODE>
-				#ANTICLOCKWISE_CODE#
-			</ANTICLOCKWISE_CODE>
-		</UseTemplate>
-	</Template>
-
-	<!--
-		Finite rotating object,
-		with no effect beyond animation.
-
-		Required parameter:
-			KNOB_NAME
-	-->
-	<Template Name = "ASOBO_GT_Knob_Finite_Dummy">
-		<DefaultTemplateParameters>
-			<ANIM_NAME>#KNOB_NAME#</ANIM_NAME>
-			<NODE_NAME>#KNOB_NAME#</NODE_NAME>
-			<KNOB_POSITION_VAR_TYPE>O</KNOB_POSITION_VAR_TYPE>
-			<KNOB_POSITION_VAR>#KNOB_NAME#</KNOB_POSITION_VAR>
-			<KNOB_SPEED>4</KNOB_SPEED>
-		</DefaultTemplateParameters>
-		
-		<Component ID="#KNOB_NAME#" Node="#NODE_NAME#">
-			<Condition Check="INIT_VALUE">
-				<Update Once="True">
-					#INIT_VALUE# (&gt;#KNOB_POSITION_VAR_TYPE#:#KNOB_POSITION_VAR#)
-				</Update>
-			</Condition>
-			<UseTemplate Name="ASOBO_GT_Knob_Finite_Code">
-				<PART_ID>#KNOB_NAME#</PART_ID>
-				<ANIM_LENGTH>100</ANIM_LENGTH>
-				<ANIM_CODE>(#KNOB_POSITION_VAR_TYPE#:#KNOB_POSITION_VAR#)</ANIM_CODE>
-				<CLOCKWISE_CODE>(#KNOB_POSITION_VAR_TYPE#:#KNOB_POSITION_VAR#) #KNOB_SPEED# + 100 min (&gt;#KNOB_POSITION_VAR_TYPE#:#KNOB_POSITION_VAR#)</CLOCKWISE_CODE>
-				<ANTICLOCKWISE_CODE>(#KNOB_POSITION_VAR_TYPE#:#KNOB_POSITION_VAR#) #KNOB_SPEED# - 0 max (&gt;#KNOB_POSITION_VAR_TYPE#:#KNOB_POSITION_VAR#)</ANTICLOCKWISE_CODE>
-			</UseTemplate>	
-			<Condition Check="WWISE_EVENT">
-				<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same"/>			
-			</Condition>
-		</Component>
-	</Template>
-
-	<!--
-		Finite rotating object,
-		using incrementing and decrementing events,
-		anim based on simvar.
-		Also has a switch interaction 
-		when clicking on the center.
-
-		Required parameter:
-			ANIM_SIMVAR_KNOB
-			ANIM_SIMVAR_UNITS_KNOB
-			ANIM_SIMVAR_SWITCH
-			ANIM_SIMVAR_UNITS_SWITCH
-			ANIM_NAME_SWITCH
-			ANIM_NAME_KNOB
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-			LEFT_SINGLE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Knob_Finite_Switch">
-		<DefaultTemplateParameters>
-			<ANIM_SIMVAR_SCALE_KNOB>1</ANIM_SIMVAR_SCALE_KNOB>
-			<ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
-			<ANIM_LENGTH_KNOB>100</ANIM_LENGTH_KNOB>
-			<ANIM_LENGTH_SWITCH>100</ANIM_LENGTH_SWITCH>
-			<ANIM_SIMVAR_SCALE_SWITCH>1</ANIM_SIMVAR_SCALE_SWITCH>
-			<CENTER_RADIUS>0.004</CENTER_RADIUS>
-			<ANIM_WRAP>False</ANIM_WRAP>
-			<USE_SIMVAR_FOR_BUTTON_ANIM>True</USE_SIMVAR_FOR_BUTTON_ANIM>
-		</DefaultTemplateParameters>
-		<EditableTemplateParameters>
-			<AddParams>
-				<ANIM_NAME_SWITCH></ANIM_NAME_SWITCH>
-				<ANIM_NAME_KNOB></ANIM_NAME_KNOB>
-			</AddParams>
-			<RemoveParams>
-				<NODE_ID></NODE_ID>
-				<ANIM_NAME></ANIM_NAME>
-			</RemoveParams>
-		</EditableTemplateParameters>
-
-		<Condition Valid="USE_SIMVAR_FOR_BUTTON_ANIM">
-			<True>
-				<UseTemplate Name = "ASOBO_GT_Anim_Sim">
-					<ANIM_NAME>#ANIM_NAME_SWITCH#</ANIM_NAME>
-					<ANIM_LENGTH>#ANIM_LENGTH_SWITCH#</ANIM_LENGTH>
-					<ANIM_SIMVAR>#ANIM_SIMVAR_SWITCH#</ANIM_SIMVAR>
-					<ANIM_SIMVAR_SCALE>#ANIM_SIMVAR_SCALE_SWITCH#</ANIM_SIMVAR_SCALE>
-					<ANIM_SIMVAR_UNITS>#ANIM_SIMVAR_UNITS_SWITCH#</ANIM_SIMVAR_UNITS>
-					<Condition Check="ANIM_LAG_SWITCH">
-						<ANIM_LAG>#ANIM_LAG_SWITCH#</ANIM_LAG>
-					</Condition>
-					<ANIM_WRAP>False</ANIM_WRAP>
-				</UseTemplate>
-			</True>
-			<False>
-				<UseTemplate Name = "ASOBO_GT_Anim_Code">
-					<ANIM_CODE>#ANIM_CODE_SWITCH#</ANIM_CODE>
-					<ANIM_NAME>#ANIM_NAME_SWITCH#</ANIM_NAME>
-					<ANIM_LENGTH>#ANIM_LENGTH_SWITCH#</ANIM_LENGTH>
-					<Condition Check="ANIM_LAG_SWITCH">
-						<ANIM_LAG>#ANIM_LAG_SWITCH#</ANIM_LAG>
-					</Condition>
-				</UseTemplate>
-			</False>
-		</Condition>
-		
-
-		<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
-			<ANIM_NAME>#ANIM_NAME_SWITCH#</ANIM_NAME>
-		</UseTemplate>
-
-		<Condition Valid="USE_SIMVAR_FOR_KNOB_ANIM">
-			<True>
-				<UseTemplate Name = "ASOBO_GT_Knob_Finite_Simvar">
-					<ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
-					<ANIM_SIMVAR>#ANIM_SIMVAR_KNOB#</ANIM_SIMVAR>
-					<ANIM_SIMVAR_UNITS>#ANIM_SIMVAR_UNITS_KNOB#</ANIM_SIMVAR_UNITS>
-					<ANIM_SIMVAR_SCALE>#ANIM_SIMVAR_SCALE_KNOB#</ANIM_SIMVAR_SCALE>
-					<ANIM_LENGTH>#ANIM_LENGTH_KNOB#</ANIM_LENGTH>
-					<EXTRA_INTERACTION>_LeftSingle</EXTRA_INTERACTION>
-					<Condition Check="ANIM_LAG_KNOB">
-						<ANIM_LAG>#ANIM_LAG_KNOB#</ANIM_LAG>
-					</Condition>
-				</UseTemplate>
-			</True>
-			<False>
-				<UseTemplate Name = "ASOBO_GT_Knob_Finite_Code">
-					<ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
-					<ANIM_CODE>#KNOB_ANIM_CODE#</ANIM_CODE>
-					<ANIM_LENGTH>#ANIM_LENGTH_KNOB#</ANIM_LENGTH>
-					<EXTRA_INTERACTION>_LeftSingle</EXTRA_INTERACTION>
-					<Condition Check="ANIM_LAG_KNOB">
-						<ANIM_LAG>#ANIM_LAG_KNOB#</ANIM_LAG>
-					</Condition>
-				</UseTemplate>
-			</False>
-		</Condition>
-	</Template>
-
-	<!--
-		Infinite rotating object,
-		using incrementing and decrementing events,
-		anim based on iteraction.
-
-		Required parameter:
-			ANIM_NAME
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Knob_Infinite">
-		<DefaultTemplateParameters>
-			<ROTATION_SPEED>10</ROTATION_SPEED>
-			<EXTRA_INTERACTION/><!-- Should not be overriden except from generic template -->
-			<CLOCKWISE_CONDITION> 1 </CLOCKWISE_CONDITION>
-			<ANTICLOCKWISE_CONDITION> 1 </ANTICLOCKWISE_CONDITION>
-			<ANIM_LAG>100</ANIM_LAG>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name = "ASOBO_GT_Anim_Code">
-			<Condition Check="OVERRIDE_ANIM_CODE">
-				<True>
-					<ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
-				</True>
-				<False>
-					<ANIM_CODE>(O:_KnobAnimVar) 3.6 / </ANIM_CODE>
-					<ANIM_WRAP>True</ANIM_WRAP>
-				</False>
-			</Condition>
-		</UseTemplate>
-
-		<Condition Check="WWISE_EVENT">
-			<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
-			</UseTemplate>
-		</Condition>
-
-		<UseTemplate Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft#EXTRA_INTERACTION#">
-			<CLOCKWISE_CODE>
-				#CLOCKWISE_CONDITION# if{
-					(O:_KnobAnimVar) #ROTATION_SPEED# + dnor (&gt;O:_KnobAnimVar)
-					#CLOCKWISE_CODE#
-				}
-			</CLOCKWISE_CODE>
-			<ANTICLOCKWISE_CODE>
-				#ANTICLOCKWISE_CONDITION# if{
-					(O:_KnobAnimVar) #ROTATION_SPEED# - dnor (&gt;O:_KnobAnimVar)
-					#ANTICLOCKWISE_CODE#
-				}
-			</ANTICLOCKWISE_CODE>
-		</UseTemplate>
-	</Template>
-
-	<!--
-		Infinite rotating object,
-		using incrementing and decrementing events,
-		anim based on iteraction.
-
-		Required parameter:
-			ANIM_NAME
-			HITBOX_UP_NODE_ID
-			HITBOX_DOWN_NODE_ID
-	-->
-	<Template Name = "ASOBO_GT_Knob_Infinite_SeparatedInteraction">
-		<DefaultTemplateParameters>
-			<ROTATION_SPEED>10</ROTATION_SPEED>
-			<CURSOR_LEFT>TurnLeft</CURSOR_LEFT>
-			<CURSOR_RIGHT>TurnRight</CURSOR_RIGHT>
-			<CURSOR_UP>UpArrow</CURSOR_UP>
-			<CURSOR_DOWN>DownArrow</CURSOR_DOWN>
-			<LEFT_SINGLE_DOWN></LEFT_SINGLE_DOWN>
-			<ANIM_LAG>100</ANIM_LAG>
-		</DefaultTemplateParameters>
-		<EditableTemplateParameters>
-			<AddParams>
-				<HITBOX_UP_NODE_ID></HITBOX_UP_NODE_ID>
-				<HITBOX_DOWN_NODE_ID></HITBOX_DOWN_NODE_ID>
-			</AddParams>
-			<RemoveParams>
-				<NODE_ID></NODE_ID>
-			</RemoveParams>
-		</EditableTemplateParameters>
-
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
 			<UseTemplate Name = "ASOBO_GT_Anim_Code">
-				<ANIM_CODE>(I:#NODE_ID#_KnobAnimVar) 3.6 / </ANIM_CODE>
-			<ANIM_WRAP>True</ANIM_WRAP>
+				<ANIM_NAME>#ANIM_NAME_PUSH#</ANIM_NAME>
+				<ANIM_LENGTH>#ANIM_LENGTH_PUSH#</ANIM_LENGTH>
+				<ANIM_CODE>(O:_PushAnimVar)</ANIM_CODE>
 			</UseTemplate>
-			<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
+		</True>
+	</Condition>
+	
+	<Condition Check="WWISE_EVENT">
+		<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
+		</UseTemplate>
+	</Condition>
+
+	<UseTemplate Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft#EXTRA_INTERACTION#">
+	</UseTemplate>
+</Template>
+
+<!--
+	Finite rotating object,
+	with no effect beyond animation.
+
+	Required parameter:
+		KNOB_NAME
+-->
+<Template Name = "ASOBO_GT_Knob_Finite_Dummy">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>#KNOB_NAME#</ANIM_NAME>
+		<NODE_NAME>#KNOB_NAME#</NODE_NAME>
+		<KNOB_POSITION_VAR_TYPE>O</KNOB_POSITION_VAR_TYPE>
+		<KNOB_POSITION_VAR>#KNOB_NAME#</KNOB_POSITION_VAR>
+		<KNOB_SPEED>4</KNOB_SPEED>
+	</DefaultTemplateParameters>
+	
+	<Component ID="#KNOB_NAME#" Node="#NODE_NAME#">
+		<Condition Check="INIT_VALUE">
+			<Update Once="True">
+				#INIT_VALUE# (&gt;#KNOB_POSITION_VAR_TYPE#:#KNOB_POSITION_VAR#)
+			</Update>
+		</Condition>
+		<UseTemplate Name="ASOBO_GT_Knob_Finite_Code">
+			<PART_ID>#KNOB_NAME#</PART_ID>
+			<ANIM_LENGTH>100</ANIM_LENGTH>
+			<ANIM_CODE>(#KNOB_POSITION_VAR_TYPE#:#KNOB_POSITION_VAR#)</ANIM_CODE>
+			<CLOCKWISE_CODE>(#KNOB_POSITION_VAR_TYPE#:#KNOB_POSITION_VAR#) #KNOB_SPEED# + 100 min (&gt;#KNOB_POSITION_VAR_TYPE#:#KNOB_POSITION_VAR#)</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>(#KNOB_POSITION_VAR_TYPE#:#KNOB_POSITION_VAR#) #KNOB_SPEED# - 0 max (&gt;#KNOB_POSITION_VAR_TYPE#:#KNOB_POSITION_VAR#)</ANTICLOCKWISE_CODE>
+		</UseTemplate>	
+		<Condition Check="WWISE_EVENT">
+			<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same"/>			
+		</Condition>
+	</Component>
+</Template>
+
+<!--
+	Finite rotating object,
+	using incrementing and decrementing events,
+	anim based on simvar.
+	Also has a switch interaction 
+	when clicking on the center.
+
+	Required parameter:
+		ANIM_SIMVAR_KNOB
+		ANIM_SIMVAR_UNITS_KNOB
+		ANIM_SIMVAR_SWITCH
+		ANIM_SIMVAR_UNITS_SWITCH
+		ANIM_NAME_SWITCH
+		ANIM_NAME_KNOB
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+		LEFT_SINGLE_CODE
+-->
+<Template Name = "ASOBO_GT_Knob_Finite_Switch">
+	<DefaultTemplateParameters>
+		<ANIM_SIMVAR_SCALE_KNOB>1</ANIM_SIMVAR_SCALE_KNOB>
+		<ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
+		<ANIM_LENGTH_KNOB>100</ANIM_LENGTH_KNOB>
+		<ANIM_LENGTH_SWITCH>100</ANIM_LENGTH_SWITCH>
+		<ANIM_SIMVAR_SCALE_SWITCH>1</ANIM_SIMVAR_SCALE_SWITCH>
+		<CENTER_RADIUS>0.004</CENTER_RADIUS>
+		<ANIM_WRAP>False</ANIM_WRAP>
+		<USE_SIMVAR_FOR_BUTTON_ANIM>True</USE_SIMVAR_FOR_BUTTON_ANIM>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<ANIM_NAME_SWITCH></ANIM_NAME_SWITCH>
+			<ANIM_NAME_KNOB></ANIM_NAME_KNOB>
+		</AddParams>
+		<RemoveParams>
+			<NODE_ID></NODE_ID>
+			<ANIM_NAME></ANIM_NAME>
+		</RemoveParams>
+	</EditableTemplateParameters>
+
+	<Condition Valid="USE_SIMVAR_FOR_BUTTON_ANIM">
+		<True>
+			<UseTemplate Name = "ASOBO_GT_Anim_Sim">
+				<ANIM_NAME>#ANIM_NAME_SWITCH#</ANIM_NAME>
+				<ANIM_LENGTH>#ANIM_LENGTH_SWITCH#</ANIM_LENGTH>
+				<ANIM_SIMVAR>#ANIM_SIMVAR_SWITCH#</ANIM_SIMVAR>
+				<ANIM_SIMVAR_SCALE>#ANIM_SIMVAR_SCALE_SWITCH#</ANIM_SIMVAR_SCALE>
+				<ANIM_SIMVAR_UNITS>#ANIM_SIMVAR_UNITS_SWITCH#</ANIM_SIMVAR_UNITS>
+				<Condition Check="ANIM_LAG_SWITCH">
+					<ANIM_LAG>#ANIM_LAG_SWITCH#</ANIM_LAG>
+				</Condition>
+				<ANIM_WRAP>False</ANIM_WRAP>
 			</UseTemplate>
-		</Component>
-
-		<Component ID="#HITBOX_UP_NODE_ID#" Node="#HITBOX_UP_NODE_ID#">
-			<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Recurring">
-				<LEFT_SINGLE_CODE>
-					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# - dnor (&gt;I:#NODE_ID#_KnobAnimVar)
-					#ANTICLOCKWISE_CODE#
-				</LEFT_SINGLE_CODE>
-				<WHEEL_UP_CODE>
-					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# - dnor (&gt;I:#NODE_ID#_KnobAnimVar)
-					#ANTICLOCKWISE_CODE#
-				</WHEEL_UP_CODE>
-				<WHEEL_DOWN_CODE>
-					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# + dnor (&gt;I:#NODE_ID#_KnobAnimVar)
-					#CLOCKWISE_CODE#
-				</WHEEL_DOWN_CODE>
-				<Condition Check="SWITCH_DIRECTION" Match="Vertical">
-					<CURSOR>#CURSOR_UP#</CURSOR>
-				</Condition>
-				<Condition Check="SWITCH_DIRECTION" Match="Horizontal">
-					<CURSOR>#CURSOR_LEFT#</CURSOR>
+		</True>
+		<False>
+			<UseTemplate Name = "ASOBO_GT_Anim_Code">
+				<ANIM_CODE>#ANIM_CODE_SWITCH#</ANIM_CODE>
+				<ANIM_NAME>#ANIM_NAME_SWITCH#</ANIM_NAME>
+				<ANIM_LENGTH>#ANIM_LENGTH_SWITCH#</ANIM_LENGTH>
+				<Condition Check="ANIM_LAG_SWITCH">
+					<ANIM_LAG>#ANIM_LAG_SWITCH#</ANIM_LAG>
 				</Condition>
 			</UseTemplate>
-		</Component>
-		<Component ID="#HITBOX_DOWN_NODE_ID#" Node="#HITBOX_DOWN_NODE_ID#">
-			<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Recurring">
-				<LEFT_SINGLE_CODE>
-					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# + dnor (&gt;I:#NODE_ID#_KnobAnimVar)
-					#CLOCKWISE_CODE#
-				</LEFT_SINGLE_CODE>
-				<WHEEL_UP_CODE>
-					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# - dnor (&gt;I:#NODE_ID#_KnobAnimVar)
-					#ANTICLOCKWISE_CODE#
-				</WHEEL_UP_CODE>
-				<WHEEL_DOWN_CODE>
-					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# + dnor (&gt;I:#NODE_ID#_KnobAnimVar)
-					#CLOCKWISE_CODE#
-				</WHEEL_DOWN_CODE>
-				<Condition Check="SWITCH_DIRECTION" Match="Vertical">
-					<CURSOR>#CURSOR_DOWN#</CURSOR>
-				</Condition>
-				<Condition Check="SWITCH_DIRECTION" Match="Horizontal">
-					<CURSOR>#CURSOR_RIGHT#</CURSOR>
+		</False>
+	</Condition>
+	
+
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+		<ANIM_NAME>#ANIM_NAME_SWITCH#</ANIM_NAME>
+	</UseTemplate>
+
+	<Condition Valid="USE_SIMVAR_FOR_KNOB_ANIM">
+		<True>
+			<UseTemplate Name = "ASOBO_GT_Knob_Finite_Simvar">
+				<ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
+				<ANIM_SIMVAR>#ANIM_SIMVAR_KNOB#</ANIM_SIMVAR>
+				<ANIM_SIMVAR_UNITS>#ANIM_SIMVAR_UNITS_KNOB#</ANIM_SIMVAR_UNITS>
+				<ANIM_SIMVAR_SCALE>#ANIM_SIMVAR_SCALE_KNOB#</ANIM_SIMVAR_SCALE>
+				<ANIM_LENGTH>#ANIM_LENGTH_KNOB#</ANIM_LENGTH>
+				<EXTRA_INTERACTION>_LeftSingle</EXTRA_INTERACTION>
+				<Condition Check="ANIM_LAG_KNOB">
+					<ANIM_LAG>#ANIM_LAG_KNOB#</ANIM_LAG>
 				</Condition>
 			</UseTemplate>
-		</Component>
-	</Template>
+		</True>
+		<False>
+			<UseTemplate Name = "ASOBO_GT_Knob_Finite_Code">
+				<ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
+				<ANIM_CODE>#KNOB_ANIM_CODE#</ANIM_CODE>
+				<ANIM_LENGTH>#ANIM_LENGTH_KNOB#</ANIM_LENGTH>
+				<EXTRA_INTERACTION>_LeftSingle</EXTRA_INTERACTION>
+				<Condition Check="ANIM_LAG_KNOB">
+					<ANIM_LAG>#ANIM_LAG_KNOB#</ANIM_LAG>
+				</Condition>
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>
 
-	<!--
-		Infinite rotating object,
-		using incrementing and decrementing events,
-		anim based on sim.
+<!--
+	Infinite rotating object,
+	using incrementing and decrementing events,
+	anim based on iteraction.
 
-		Required parameter:
-			ANIM_NAME
-			ANIM_SIMVAR
-			ANIM_SIMVAR_UNITS
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Knob_Infinite_Sim">
+	Required parameter:
+		ANIM_NAME
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+-->
+<Template Name = "ASOBO_GT_Knob_Infinite">
+	<DefaultTemplateParameters>
+		<ROTATION_SPEED>10</ROTATION_SPEED>
+		<EXTRA_INTERACTION/><!-- Should not be overriden except from generic template -->
+		<CLOCKWISE_CONDITION> 1 </CLOCKWISE_CONDITION>
+		<ANTICLOCKWISE_CONDITION> 1 </ANTICLOCKWISE_CONDITION>
+		<ANIM_LAG>100</ANIM_LAG>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name = "ASOBO_GT_Anim_Code">
+		<Condition Check="OVERRIDE_ANIM_CODE">
+			<True>
+				<ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
+			</True>
+			<False>
+				<ANIM_CODE>(O:_KnobAnimVar) 3.6 / </ANIM_CODE>
+				<ANIM_WRAP>True</ANIM_WRAP>
+			</False>
+		</Condition>
+	</UseTemplate>
 
-		<UseTemplate Name = "ASOBO_GT_Anim_Sim">
-			<ANIM_WRAP>True</ANIM_WRAP>
+	<Condition Check="WWISE_EVENT">
+		<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
 		</UseTemplate>
+	</Condition>
 
-		<UseTemplate Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft">
-		</UseTemplate>
-	</Template>
-
-
-	<!--
-		Knob with push button object.
-
-		Required parameter:
-			ANIM_NAME_PUSH
-			ANIM_NAME_KNOB
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-			LEFT_SINGLE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Knob_Infinite_Push">
-		<DefaultTemplateParameters>
-			<ANIM_LENGTH_PUSH>100</ANIM_LENGTH_PUSH>
-			<ANIM_LENGTH_KNOB>100</ANIM_LENGTH_KNOB>
-			<ROTATION_SPEED>10</ROTATION_SPEED>
-			<CENTER_RADIUS>0.004</CENTER_RADIUS>
-			<ANIMREF_ID>-1</ANIMREF_ID>
-			<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
-			<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
-			<OVERRIDE_PUSH_ANIM_CODE>(O:_PushAnimVar)</OVERRIDE_PUSH_ANIM_CODE>
-		</DefaultTemplateParameters>
-		<EditableTemplateParameters>
-			<AddParams>
-				<ANIM_NAME_PUSH></ANIM_NAME_PUSH>
-				<ANIM_NAME_KNOB></ANIM_NAME_KNOB>
-			</AddParams>
-			<RemoveParams>
-				<ANIM_NAME></ANIM_NAME>
-			</RemoveParams>
-		</EditableTemplateParameters>
-
-		<Update Frequency = "10">
-			(O:_ButtonPressed) 0 &gt;
-			 if{ #ANIM_LENGTH_PUSH# (&gt;O:_PushAnimVar) }
-			els{ (O:_PushAnimVar) #ANIM_LENGTH_PUSH# 0.7 * - 0 max (&gt;O:_PushAnimVar) }
-		</Update>
-
-		<UseTemplate Name = "ASOBO_GT_Anim_Code">
-			<ANIM_NAME>#ANIM_NAME_PUSH#</ANIM_NAME>
-			<ANIM_LENGTH>#ANIM_LENGTH_PUSH#</ANIM_LENGTH>
-			<ANIM_CODE>#OVERRIDE_PUSH_ANIM_CODE#</ANIM_CODE>
-		</UseTemplate>
-
-		<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
-			<ANIM_NAME>#ANIM_NAME_PUSH#</ANIM_NAME>
-		</UseTemplate>
-
-		<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-			<ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
-			<ANIM_LENGTH>#ANIM_LENGTH_KNOB#</ANIM_LENGTH>
-			<EXTRA_INTERACTION>_LeftSingle</EXTRA_INTERACTION>
-		</UseTemplate>
-	</Template>
-
-	<!--
-		Knob with push button object.
-
-		Required parameter:
-			ANIM_NAME_PULL
-			ANIM_NAME_KNOB
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-			LEFT_SINGLE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Knob_Infinite_Pull">
-		<DefaultTemplateParameters>
-			<ANIM_LENGTH_PULL>100</ANIM_LENGTH_PULL>
-			<ANIM_LENGTH_KNOB>100</ANIM_LENGTH_KNOB>
-			<ROTATION_SPEED>10</ROTATION_SPEED>
-			<CENTER_RADIUS>0.004</CENTER_RADIUS>
-			<ANIMREF_ID>-1</ANIMREF_ID>
-			<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
-			<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
-			<LEFT_SINGLE_CODE>(O:PullAnimVar) ! (&gt;O:PullAnimVar)</LEFT_SINGLE_CODE>
-			<ANIM_CODE>(O:PullAnimVar)</ANIM_CODE>
-		</DefaultTemplateParameters>
-		<EditableTemplateParameters>
-			<AddParams>
-				<ANIM_NAME_PULL></ANIM_NAME_PULL>
-				<ANIM_NAME_KNOB></ANIM_NAME_KNOB>
-			</AddParams>
-			<RemoveParams>
-				<ANIM_NAME></ANIM_NAME>
-			</RemoveParams>
-		</EditableTemplateParameters>
-
-		<UseTemplate Name = "ASOBO_GT_Anim">
-			<ANIM_NAME>#ANIM_NAME_PULL#</ANIM_NAME>
-			<ANIM_LENGTH>#ANIM_LENGTH_PULL#</ANIM_LENGTH>
-		</UseTemplate>
-
-		<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
-			<ANIM_NAME>#ANIM_NAME_PULL#</ANIM_NAME>
-		</UseTemplate>
-
-		<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-			<ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
-			<ANIM_LENGTH>#ANIM_LENGTH_KNOB#</ANIM_LENGTH>
-			<EXTRA_INTERACTION>_LeftSingle</EXTRA_INTERACTION>
-		</UseTemplate>
-	</Template>
-
-	<!--
-		Knob with push button object.
-
-		Required parameter:
-			ANIM_NAME_PULL
-			ANIM_NAME_KNOB
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-			LEFT_SINGLE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Knob_Infinite_PushPull">
-		<DefaultTemplateParameters>
-			<ANIM_LENGTH_PUSHPULL>100</ANIM_LENGTH_PUSHPULL>
-			<ANIM_LENGTH_KNOB>100</ANIM_LENGTH_KNOB>
-			<ROTATION_SPEED>10</ROTATION_SPEED>
-			<CENTER_RADIUS>0</CENTER_RADIUS>
-			<ANIMREF_ID>-1</ANIMREF_ID>
-			<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
-			<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
-		</DefaultTemplateParameters>
-		<EditableTemplateParameters>
-			<AddParams>
-				<ANIM_NAME_PUSHPULL></ANIM_NAME_PUSHPULL>
-				<ANIM_NAME_KNOB></ANIM_NAME_KNOB>
-			</AddParams>
-			<RemoveParams>
-				<ANIM_NAME></ANIM_NAME>
-			</RemoveParams>
-		</EditableTemplateParameters>
-
-		<UseTemplate Name = "ASOBO_GT_Anim">
-			<ANIM_NAME>#ANIM_NAME_PUSHPULL#</ANIM_NAME>
-			<ANIM_LENGTH>#ANIM_LENGTH_PUSHPULL#</ANIM_LENGTH>
-			<ANIM_CODE>
-				(O:IsPulled) if{
-					0
-				} els{
-					(O:IsPushed) if{
-						100
-					} els{
-						50
+	<UseTemplate Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft#EXTRA_INTERACTION#">
+		<Condition>
+			<Test>
+				<And>
+					<Arg NotEmpty="CLOCKWISE_CODE_DEFAULT_IM"/>
+					<Arg NotEmpty="CLOCKWISE_CODE_DRAG_IM"/>
+				</And>
+			</Test>
+			<True>
+				<CLOCKWISE_CODE_DEFAULT_IM>
+					#CLOCKWISE_CONDITION# if{
+						(O:_KnobAnimVar) #ROTATION_SPEED# + dnor (&gt;O:_KnobAnimVar)
+						#CLOCKWISE_CODE_DEFAULT_IM#
 					}
-				}
-			</ANIM_CODE>
-		</UseTemplate>
+				</CLOCKWISE_CODE_DEFAULT_IM>
+				<CLOCKWISE_CODE_DRAG_IM>
+					#CLOCKWISE_CONDITION# if{
+						(O:_KnobAnimVar) #ROTATION_SPEED# + dnor (&gt;O:_KnobAnimVar)
+						#CLOCKWISE_CODE_DRAG_IM#
+					}
+				</CLOCKWISE_CODE_DRAG_IM>
+			</True>
+			<False>
+		<CLOCKWISE_CODE>
+			#CLOCKWISE_CONDITION# if{
+				(O:_KnobAnimVar) #ROTATION_SPEED# + dnor (&gt;O:_KnobAnimVar)
+				#CLOCKWISE_CODE#
+			}
+		</CLOCKWISE_CODE>
+			</False>
+		</Condition>
+		<Condition>
+			<Test>
+				<And>
+					<Arg NotEmpty="ANTICLOCKWISE_CODE_DEFAULT_IM"/>
+					<Arg NotEmpty="ANTICLOCKWISE_CODE_DRAG_IM"/>
+				</And>
+			</Test>
+			<True>
+				<ANTICLOCKWISE_CODE_DEFAULT_IM>
+					#ANTICLOCKWISE_CONDITION# if{
+						(O:_KnobAnimVar) #ROTATION_SPEED# - dnor (&gt;O:_KnobAnimVar)
+						#ANTICLOCKWISE_CODE_DEFAULT_IM#
+					}
+				</ANTICLOCKWISE_CODE_DEFAULT_IM>
+				<ANTICLOCKWISE_CODE_DRAG_IM>
+					#ANTICLOCKWISE_CONDITION# if{
+						(O:_KnobAnimVar) #ROTATION_SPEED# - dnor (&gt;O:_KnobAnimVar)
+						#ANTICLOCKWISE_CODE_DRAG_IM#
+					}
+				</ANTICLOCKWISE_CODE_DRAG_IM>
+			</True>
+			<False>
+		<ANTICLOCKWISE_CODE>
+			#ANTICLOCKWISE_CONDITION# if{
+				(O:_KnobAnimVar) #ROTATION_SPEED# - dnor (&gt;O:_KnobAnimVar)
+				#ANTICLOCKWISE_CODE#
+			}
+		</ANTICLOCKWISE_CODE>
+			</False>
+		</Condition>
+	</UseTemplate>
+</Template>
 
-		<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
-			<ANIM_NAME>#ANIM_NAME_PUSHPULL#</ANIM_NAME>
-		</UseTemplate>
+<!--
+	Infinite rotating object,
+	using incrementing and decrementing events,
+	anim based on iteraction.
 
-		<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-			<ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
-			<ANIM_LENGTH>#ANIM_LENGTH_KNOB#</ANIM_LENGTH>
-			<EXTRA_INTERACTION>_PushPull</EXTRA_INTERACTION>
-		</UseTemplate>
-	</Template>
+	Required parameter:
+		ANIM_NAME
+		HITBOX_UP_NODE_ID
+		HITBOX_DOWN_NODE_ID
+-->
+<Template Name = "ASOBO_GT_Knob_Infinite_SeparatedInteraction">
+	<DefaultTemplateParameters>
+		<ROTATION_SPEED>10</ROTATION_SPEED>
+		<CURSOR_LEFT>TurnLeft</CURSOR_LEFT>
+		<CURSOR_RIGHT>TurnRight</CURSOR_RIGHT>
+		<CURSOR_UP>UpArrow</CURSOR_UP>
+		<CURSOR_DOWN>DownArrow</CURSOR_DOWN>
+		<LEFT_SINGLE_DOWN></LEFT_SINGLE_DOWN>
+		<ANIM_LAG>100</ANIM_LAG>
+		<HIGHLIGHT_NODE_ID>#NODE_ID#</HIGHLIGHT_NODE_ID>
+		<INVERT_WHEEL_INTERACTION>True</INVERT_WHEEL_INTERACTION>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition>
+			<Test>
+				<And>
+					<Arg NotEmpty="CLOCKWISE_CODE_DEFAULT_IM"/>
+					<Arg NotEmpty="CLOCKWISE_CODE_DRAG_IM"/>
+				</And>
+			</Test>
+			<True>
+				<CLOCKWISE_CODE_DEFAULT_IM>
+					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# + dnor (&gt;I:#NODE_ID#_KnobAnimVar)
+					#CLOCKWISE_CODE_DEFAULT_IM#
+				</CLOCKWISE_CODE_DEFAULT_IM>
+				<CLOCKWISE_CODE_DRAG_IM>
+					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# + dnor (&gt;I:#NODE_ID#_KnobAnimVar)
+					#CLOCKWISE_CODE_DRAG_IM#
+				</CLOCKWISE_CODE_DRAG_IM>
+			</True>
+			<False>
+				<CLOCKWISE_CODE_DEFAULT_IM>
+					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# + dnor (&gt;I:#NODE_ID#_KnobAnimVar)
+					#CLOCKWISE_CODE#
+				</CLOCKWISE_CODE_DEFAULT_IM>
+				<CLOCKWISE_CODE_DRAG_IM>
+					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# + dnor (&gt;I:#NODE_ID#_KnobAnimVar)
+					#CLOCKWISE_CODE#
+				</CLOCKWISE_CODE_DRAG_IM>
+			</False>
+		</Condition>
+		<Condition>
+			<Test>
+				<And>
+					<Arg NotEmpty="ANTICLOCKWISE_CODE_DEFAULT_IM"/>
+					<Arg NotEmpty="ANTICLOCKWISE_CODE_DRAG_IM"/>
+				</And>
+			</Test>
+			<True>
+				<ANTICLOCKWISE_CODE_DEFAULT_IM>
+					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# - dnor (&gt;I:#NODE_ID#_KnobAnimVar)
+					#ANTICLOCKWISE_CODE_DEFAULT_IM#
+				</ANTICLOCKWISE_CODE_DEFAULT_IM>
+				<ANTICLOCKWISE_CODE_DRAG_IM>
+					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# - dnor (&gt;I:#NODE_ID#_KnobAnimVar)
+					#ANTICLOCKWISE_CODE_DRAG_IM#
+				</ANTICLOCKWISE_CODE_DRAG_IM>
+			</True>
+			<False>
+				<ANTICLOCKWISE_CODE_DEFAULT_IM>
+					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# - dnor (&gt;I:#NODE_ID#_KnobAnimVar)
+					#ANTICLOCKWISE_CODE#
+				</ANTICLOCKWISE_CODE_DEFAULT_IM>
+				<ANTICLOCKWISE_CODE_DRAG_IM>
+					(I:#NODE_ID#_KnobAnimVar) #ROTATION_SPEED# - dnor (&gt;I:#NODE_ID#_KnobAnimVar)
+					#ANTICLOCKWISE_CODE#
+				</ANTICLOCKWISE_CODE_DRAG_IM>
+			</False>
+		</Condition>
+		<LEFT_SINGLE_CODE_OUTER>1 (&gt;O:_Interacting)</LEFT_SINGLE_CODE_OUTER>
+		<LEFT_SINGLE_CODE_INNER>1 (&gt;O:_Interacting)</LEFT_SINGLE_CODE_INNER>
+		<LEFT_LEAVE_CODE_OUTER>0 (&gt;O:_Interacting)</LEFT_LEAVE_CODE_OUTER>
+		<LEFT_LEAVE_CODE_INNER>0 (&gt;O:_Interacting)</LEFT_LEAVE_CODE_INNER>
+		<NO_PUSH_PULL_LOCK>True</NO_PUSH_PULL_LOCK>
+		<CURSOR_LEFT/>
+		<CURSOR_RIGHT/>
+	</OverrideTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<HITBOX_UP_NODE_ID></HITBOX_UP_NODE_ID>
+			<HITBOX_DOWN_NODE_ID></HITBOX_DOWN_NODE_ID>
+		</AddParams>
+		<RemoveParams>
+			<NODE_ID></NODE_ID>
+		</RemoveParams>
+	</EditableTemplateParameters>
 
-	<!--
-		Knob with push button object whith short or long left click events based on time pushed.
-
-		Required parameter:
-			ANIM_NAME_PUSH
-			ANIM_NAME_KNOB
-			CLOCKWISE_CODE
-			ANTICLOCKWISE_CODE
-			LEFT_SINGLE_CODE
-			LONG_CLICK_CODE
-			SHORT_CLICK_CODE
-			LONG_CLICK_TIME
-	-->
-	<Template Name = "ASOBO_GT_Knob_Infinite_Push_Timed">
-		<DefaultTemplateParameters>
-			<ANIM_LENGTH_PUSH>100</ANIM_LENGTH_PUSH>
-			<ANIM_LENGTH_KNOB>100</ANIM_LENGTH_KNOB>
-			<ROTATION_SPEED>10</ROTATION_SPEED>
-			<CENTER_RADIUS>0.004</CENTER_RADIUS>
-			<LEFT_SINGLE_CODE/>
-			<LEFT_LEAVE_CODE/>
-		</DefaultTemplateParameters>
-		<EditableTemplateParameters>
-			<AddParams>
-				<ANIM_NAME_PUSH></ANIM_NAME_PUSH>
-				<ANIM_NAME_KNOB></ANIM_NAME_KNOB>
-			</AddParams>
-			<RemoveParams>
-				<ANIM_NAME></ANIM_NAME>
-			</RemoveParams>
-		</EditableTemplateParameters>
-
-		<Update Frequency = "10">
-			(O:_ButtonPressed) 0 &gt;
-			 if{ #ANIM_LENGTH_PUSH# (&gt;O:_PushAnimVar) }
-			els{ (O:_PushAnimVar) #ANIM_LENGTH_PUSH# 0.7 * - 0 max (&gt;O:_PushAnimVar) }
-		</Update>
-
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
 		<UseTemplate Name = "ASOBO_GT_Anim_Code">
-			<ANIM_NAME>#ANIM_NAME_PUSH#</ANIM_NAME>
-			<ANIM_LENGTH>#ANIM_LENGTH_PUSH#</ANIM_LENGTH>
-			<ANIM_CODE>(O:_PushAnimVar)</ANIM_CODE>
+			<ANIM_CODE>(I:#NODE_ID#_KnobAnimVar) 3.6 / </ANIM_CODE>
+		<ANIM_WRAP>True</ANIM_WRAP>
 		</UseTemplate>
+		<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
+		</UseTemplate>
+	</Component>
 
-		<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
-			<ANIM_NAME>#ANIM_NAME_PUSH#</ANIM_NAME>
+	<Component ID="#HITBOX_UP_NODE_ID#" Node="#HITBOX_UP_NODE_ID#">
+		<UseTemplate Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft_LeftSingle">
+			<Condition Check="SWITCH_DIRECTION" Match="Vertical">
+				<CURSOR>#CURSOR_UP#</CURSOR>
+				<CODE_UP>#ANTICLOCKWISE_CODE_DRAG_IM#</CODE_UP>
+				<CODE_DN>#CLOCKWISE_CODE_DRAG_IM#</CODE_DN>
+				<CODE_LEFT>0</CODE_LEFT>
+				<CODE_RIGHT>0</CODE_RIGHT>
+			</Condition>
+			<Condition Check="SWITCH_DIRECTION" Match="Horizontal">
+				<CURSOR>#CURSOR_LEFT#</CURSOR>
+				<CODE_UP>0</CODE_UP>
+				<CODE_DN>0</CODE_DN>
+				<CODE_LEFT>#CLOCKWISE_CODE_DRAG_IM#</CODE_LEFT>
+				<CODE_RIGHT>#ANTICLOCKWISE_CODE_DRAG_IM#</CODE_RIGHT>
+			</Condition>
+			<Condition Valid="INVERT_WHEEL_INTERACTION">
+				<True>
+					<CLOCKWISE_CODE_DEFAULT_IM>#ANTICLOCKWISE_CODE_DEFAULT_IM#</CLOCKWISE_CODE_DEFAULT_IM>
+					<ANTICLOCKWISE_CODE_DEFAULT_IM>#CLOCKWISE_CODE_DEFAULT_IM#</ANTICLOCKWISE_CODE_DEFAULT_IM>
+					<CLOCKWISE_CODE_DRAG_IM>#ANTICLOCKWISE_CODE_DRAG_IM#</CLOCKWISE_CODE_DRAG_IM>
+					<ANTICLOCKWISE_CODE_DRAG_IM>#CLOCKWISE_CODE_DRAG_IM#</ANTICLOCKWISE_CODE_DRAG_IM>
+				</True>
+			</Condition>
+			<UPDATE_DEFAULT_IM>
+				(O:_Interacting) if{ #ANTICLOCKWISE_CODE_DEFAULT_IM# }
+			</UPDATE_DEFAULT_IM>
 		</UseTemplate>
+	</Component>
+	<Component ID="#HITBOX_DOWN_NODE_ID#" Node="#HITBOX_DOWN_NODE_ID#">
+		<UseTemplate Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft_LeftSingle">
+			<Condition Check="SWITCH_DIRECTION" Match="Vertical">
+				<CURSOR>#CURSOR_DOWN#</CURSOR>
+				<CODE_UP>#ANTICLOCKWISE_CODE_DRAG_IM#</CODE_UP>
+				<CODE_DN>#CLOCKWISE_CODE_DRAG_IM#</CODE_DN>
+				<CODE_LEFT>0</CODE_LEFT>
+				<CODE_RIGHT>0</CODE_RIGHT>
+			</Condition>
+			<Condition Check="SWITCH_DIRECTION" Match="Horizontal">
+				<CURSOR>#CURSOR_RIGHT#</CURSOR>
+				<CODE_UP>0</CODE_UP>
+				<CODE_DN>0</CODE_DN>
+				<CODE_LEFT>#CLOCKWISE_CODE_DRAG_IM#</CODE_LEFT>
+				<CODE_RIGHT>#ANTICLOCKWISE_CODE_DRAG_IM#</CODE_RIGHT>
+			</Condition>
+			<Condition Valid="INVERT_WHEEL_INTERACTION">
+				<True>
+					<CLOCKWISE_CODE_DEFAULT_IM>#ANTICLOCKWISE_CODE_DEFAULT_IM#</CLOCKWISE_CODE_DEFAULT_IM>
+					<ANTICLOCKWISE_CODE_DEFAULT_IM>#CLOCKWISE_CODE_DEFAULT_IM#</ANTICLOCKWISE_CODE_DEFAULT_IM>
+					<CLOCKWISE_CODE_DRAG_IM>#ANTICLOCKWISE_CODE_DRAG_IM#</CLOCKWISE_CODE_DRAG_IM>
+					<ANTICLOCKWISE_CODE_DRAG_IM>#CLOCKWISE_CODE_DRAG_IM#</ANTICLOCKWISE_CODE_DRAG_IM>
+				</True>
+			</Condition>
+			<UPDATE_DEFAULT_IM>
+				(O:_Interacting) if{ #CLOCKWISE_CODE_DEFAULT_IM# }
+			</UPDATE_DEFAULT_IM>
+		</UseTemplate>
+	</Component>
+</Template>
 
-		<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-			<ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
-			<ANIM_LENGTH>#ANIM_LENGTH_KNOB#</ANIM_LENGTH>
-			<EXTRA_INTERACTION>_LeftSingleTimed</EXTRA_INTERACTION>
-		</UseTemplate>
-	</Template>
+<!--
+	Infinite rotating object,
+	using incrementing and decrementing events,
+	anim based on sim.
+
+	Required parameter:
+		ANIM_NAME
+		ANIM_SIMVAR
+		ANIM_SIMVAR_UNITS
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+-->
+<Template Name = "ASOBO_GT_Knob_Infinite_Sim">
+
+	<UseTemplate Name = "ASOBO_GT_Anim_Sim">
+		<ANIM_WRAP>True</ANIM_WRAP>
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft">
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Knob with push button object.
+
+	Required parameter:
+		ANIM_NAME_PUSH
+		ANIM_NAME_KNOB
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+		LEFT_SINGLE_CODE
+-->
+<Template Name = "ASOBO_GT_Knob_Infinite_Push">
+	<DefaultTemplateParameters>
+		<ANIM_LENGTH_PUSH>100</ANIM_LENGTH_PUSH>
+		<ANIM_LENGTH_KNOB>100</ANIM_LENGTH_KNOB>
+		<ROTATION_SPEED>10</ROTATION_SPEED>
+		<CENTER_RADIUS>0.004</CENTER_RADIUS>
+		<ANIMREF_ID>-1</ANIMREF_ID>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+		<OVERRIDE_PUSH_ANIM_CODE>(O:_PushAnimVar)</OVERRIDE_PUSH_ANIM_CODE>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<ANIM_NAME_PUSH></ANIM_NAME_PUSH>
+			<ANIM_NAME_KNOB></ANIM_NAME_KNOB>
+		</AddParams>
+		<RemoveParams>
+			<ANIM_NAME></ANIM_NAME>
+		</RemoveParams>
+	</EditableTemplateParameters>
+
+	<Update Frequency = "10">
+		(O:_ButtonPressed) 0 &gt;
+		 if{ #ANIM_LENGTH_PUSH# (&gt;O:_PushAnimVar) }
+		els{ (O:_PushAnimVar) #ANIM_LENGTH_PUSH# 0.7 * - 0 max (&gt;O:_PushAnimVar) }
+	</Update>
+
+	<UseTemplate Name = "ASOBO_GT_Anim_Code">
+		<ANIM_NAME>#ANIM_NAME_PUSH#</ANIM_NAME>
+		<ANIM_LENGTH>#ANIM_LENGTH_PUSH#</ANIM_LENGTH>
+		<ANIM_CODE>#OVERRIDE_PUSH_ANIM_CODE#</ANIM_CODE>
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+		<ANIM_NAME>#ANIM_NAME_PUSH#</ANIM_NAME>
+	</UseTemplate>
+
+	<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+		<ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
+		<ANIM_LENGTH>#ANIM_LENGTH_KNOB#</ANIM_LENGTH>
+		<EXTRA_INTERACTION>_LeftSingle</EXTRA_INTERACTION>
+	</UseTemplate>
+</Template>
+
+<!--
+	Knob with push button object.
+
+	Required parameter:
+		ANIM_NAME_PULL
+		ANIM_NAME_KNOB
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+		LEFT_SINGLE_CODE
+-->
+<Template Name = "ASOBO_GT_Knob_Infinite_Pull">
+	<DefaultTemplateParameters>
+		<ANIM_LENGTH_PULL>100</ANIM_LENGTH_PULL>
+		<ANIM_LENGTH_KNOB>100</ANIM_LENGTH_KNOB>
+		<ROTATION_SPEED>10</ROTATION_SPEED>
+		<CENTER_RADIUS>0.004</CENTER_RADIUS>
+		<ANIMREF_ID>-1</ANIMREF_ID>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+		<LEFT_SINGLE_CODE>(O:PullAnimVar) ! (&gt;O:PullAnimVar)</LEFT_SINGLE_CODE>
+		<ANIM_CODE>(O:PullAnimVar)</ANIM_CODE>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<ANIM_NAME_PULL></ANIM_NAME_PULL>
+			<ANIM_NAME_KNOB></ANIM_NAME_KNOB>
+		</AddParams>
+		<RemoveParams>
+			<ANIM_NAME></ANIM_NAME>
+		</RemoveParams>
+	</EditableTemplateParameters>
+
+	<UseTemplate Name = "ASOBO_GT_Anim">
+		<ANIM_NAME>#ANIM_NAME_PULL#</ANIM_NAME>
+		<ANIM_LENGTH>#ANIM_LENGTH_PULL#</ANIM_LENGTH>
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+		<ANIM_NAME>#ANIM_NAME_PULL#</ANIM_NAME>
+	</UseTemplate>
+
+	<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+		<ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
+		<ANIM_LENGTH>#ANIM_LENGTH_KNOB#</ANIM_LENGTH>
+		<EXTRA_INTERACTION>_LeftSingle</EXTRA_INTERACTION>
+	</UseTemplate>
+</Template>
+
+<!--
+	Knob with push button object.
+
+	Required parameter:
+		ANIM_NAME_PULL
+		ANIM_NAME_KNOB
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+		LEFT_SINGLE_CODE
+-->
+<Template Name = "ASOBO_GT_Knob_Infinite_PushPull">
+	<DefaultTemplateParameters>
+		<ANIM_LENGTH_PUSHPULL>100</ANIM_LENGTH_PUSHPULL>
+		<ANIM_LENGTH_KNOB>100</ANIM_LENGTH_KNOB>
+		<ROTATION_SPEED>10</ROTATION_SPEED>
+		<CENTER_RADIUS>0</CENTER_RADIUS>
+		<ANIMREF_ID>-1</ANIMREF_ID>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<ANIM_NAME_PUSHPULL></ANIM_NAME_PUSHPULL>
+			<ANIM_NAME_KNOB></ANIM_NAME_KNOB>
+		</AddParams>
+		<RemoveParams>
+			<ANIM_NAME></ANIM_NAME>
+		</RemoveParams>
+	</EditableTemplateParameters>
+
+	<UseTemplate Name = "ASOBO_GT_Anim">
+		<ANIM_NAME>#ANIM_NAME_PUSHPULL#</ANIM_NAME>
+		<ANIM_LENGTH>#ANIM_LENGTH_PUSHPULL#</ANIM_LENGTH>
+		<ANIM_CODE>
+			(O:IsPulled) if{
+				0
+			} els{
+				(O:IsPushed) if{
+					100
+				} els{
+					50
+				}
+			}
+		</ANIM_CODE>
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+		<ANIM_NAME>#ANIM_NAME_PUSHPULL#</ANIM_NAME>
+	</UseTemplate>
+
+	<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+		<ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
+		<ANIM_LENGTH>#ANIM_LENGTH_KNOB#</ANIM_LENGTH>
+		<EXTRA_INTERACTION>_PushPull</EXTRA_INTERACTION>
+	</UseTemplate>
+</Template>
+
+<!--
+	Knob with push button object whith short or long left click events based on time pushed.
+
+	Required parameter:
+		ANIM_NAME_PUSH
+		ANIM_NAME_KNOB
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+		LEFT_SINGLE_CODE
+		LONG_CLICK_CODE
+		SHORT_CLICK_CODE
+		LONG_CLICK_TIME
+-->
+<Template Name = "ASOBO_GT_Knob_Infinite_Push_Timed">
+	<DefaultTemplateParameters>
+		<ANIM_LENGTH_PUSH>100</ANIM_LENGTH_PUSH>
+		<ANIM_LENGTH_KNOB>100</ANIM_LENGTH_KNOB>
+		<ROTATION_SPEED>10</ROTATION_SPEED>
+		<CENTER_RADIUS>0.004</CENTER_RADIUS>
+		<LEFT_SINGLE_CODE/>
+		<LEFT_LEAVE_CODE/>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<ANIM_NAME_PUSH></ANIM_NAME_PUSH>
+			<ANIM_NAME_KNOB></ANIM_NAME_KNOB>
+		</AddParams>
+		<RemoveParams>
+			<ANIM_NAME></ANIM_NAME>
+		</RemoveParams>
+	</EditableTemplateParameters>
+
+	<Update Frequency = "10">
+		(O:_ButtonPressed) 0 &gt;
+		 if{ #ANIM_LENGTH_PUSH# (&gt;O:_PushAnimVar) }
+		els{ (O:_PushAnimVar) #ANIM_LENGTH_PUSH# 0.7 * - 0 max (&gt;O:_PushAnimVar) }
+	</Update>
+
+	<UseTemplate Name = "ASOBO_GT_Anim_Code">
+		<ANIM_NAME>#ANIM_NAME_PUSH#</ANIM_NAME>
+		<ANIM_LENGTH>#ANIM_LENGTH_PUSH#</ANIM_LENGTH>
+		<ANIM_CODE>(O:_PushAnimVar)</ANIM_CODE>
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+		<ANIM_NAME>#ANIM_NAME_PUSH#</ANIM_NAME>
+	</UseTemplate>
+
+	<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+		<ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
+		<ANIM_LENGTH>#ANIM_LENGTH_KNOB#</ANIM_LENGTH>
+		<EXTRA_INTERACTION>_LeftSingleTimed</EXTRA_INTERACTION>
+	</UseTemplate>
+</Template>
 </ModelBehaviors>

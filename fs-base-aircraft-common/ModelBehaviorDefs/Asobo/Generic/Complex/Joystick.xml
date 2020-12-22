@@ -1,97 +1,313 @@
 <ModelBehaviors>
-	<!--
-		Basic Joystick interaction (all or nothing (0, 1 or -1), no in between value)
+<!--
+	Basic Joystick interaction (all or nothing (0, 1 or -1), no in between value)
 
-		JOYSTICK_X_CODE_LEFT(code): code executed when joystick is orientated left
-		JOYSTICK_X_CODE_RIGHT(code): code executed when joystick is orientated right
-		JOYSTICK_Y_CODE_DOWN(code): code executed when joystick is orientated down
-		JOYSTICK_Y_CODE_UP(code): code executed when joystick is orientated up
-	-->
-	<Template Name = "ASOBO_GT_Joystick_Interaction">
-		<DefaultTemplateParameters>
-			<JOYSTICK_LEFT_SINGLE_CODE/>
-			<JOYSTICK_RELEASE_CODE/>
-			<UPDATE_FREQUENCY>5</UPDATE_FREQUENCY>
-			<CENTER_RADIUS>0.0025</CENTER_RADIUS>
-			<JOYSTICK_X_CODE_LEFT></JOYSTICK_X_CODE_LEFT>
-			<JOYSTICK_X_CODE_RIGHT></JOYSTICK_X_CODE_RIGHT>
-			<JOYSTICK_Y_CODE_DOWN></JOYSTICK_Y_CODE_DOWN>
-			<JOYSTICK_Y_CODE_UP></JOYSTICK_Y_CODE_UP>
-			<VAR_NAME>XMLVAR_Interacting_With_Joystick#ID#</VAR_NAME>
-		</DefaultTemplateParameters>
-		<Update frequency="#UPDATE_FREQUENCY#">
-				(I:#VAR_NAME#) if{
-					(O:Interacting_With_X_Axis) if{
-						(O:Can_Pan_On_X_Axis) if{
-							(O:Panning_X_Axis_Delta) 0 &lt; if{ #JOYSTICK_X_CODE_LEFT# } els{ #JOYSTICK_X_CODE_RIGHT# }
-						}
-					} els{
-						(O:Can_Pan_On_Y_Axis) if{
-							(O:Panning_Y_Axis_Delta) 0 &lt; if{ #JOYSTICK_Y_CODE_DOWN# } els{ #JOYSTICK_Y_CODE_UP# }
-						}
+	JOYSTICK_X_CODE_LEFT(code): code executed when joystick is orientated left
+	JOYSTICK_X_CODE_RIGHT(code): code executed when joystick is orientated right
+	JOYSTICK_Y_CODE_DOWN(code): code executed when joystick is orientated down
+	JOYSTICK_Y_CODE_UP(code): code executed when joystick is orientated up
+-->
+<Template Name = "ASOBO_GT_Joystick_Interaction">
+	<DefaultTemplateParameters>
+		<JOYSTICK_LEFT_SINGLE_CODE/>
+		<JOYSTICK_RELEASE_CODE/>
+		<UPDATE_FREQUENCY>5</UPDATE_FREQUENCY>
+		<CENTER_RADIUS>0.0025</CENTER_RADIUS>
+		<JOYSTICK_X_CODE_LEFT></JOYSTICK_X_CODE_LEFT>
+		<JOYSTICK_X_CODE_RIGHT></JOYSTICK_X_CODE_RIGHT>
+		<JOYSTICK_Y_CODE_DOWN></JOYSTICK_Y_CODE_DOWN>
+		<JOYSTICK_Y_CODE_UP></JOYSTICK_Y_CODE_UP>
+		<VAR_NAME>XMLVAR_Interacting_With_Joystick#ID#</VAR_NAME>
+		<THRESHOLD_X_INPUT>0.03</THRESHOLD_X_INPUT>
+		<THRESHOLD_X_MOUSE>0.001</THRESHOLD_X_MOUSE>
+		<THRESHOLD_Y_INPUT>0.03</THRESHOLD_Y_INPUT>
+		<THRESHOLD_Y_MOUSE>0.001</THRESHOLD_Y_MOUSE>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<THRESHOLD_X>#THRESHOLD_X_INPUT# #THRESHOLD_X_MOUSE# (M:InputType) 1 == ?</THRESHOLD_X>
+		<THRESHOLD_Y>#THRESHOLD_Y_INPUT# #THRESHOLD_Y_MOUSE# (M:InputType) 1 == ?</THRESHOLD_Y>
+	</OverrideTemplateParameters>
+	<Update frequency="#UPDATE_FREQUENCY#" InteractionModel="Default">
+			(I:#VAR_NAME#) if{
+			(I:#JOYSTICK_ID#Interacting_With_X_Axis) if{
+				(I:#JOYSTICK_ID#Can_Pan_On_X_Axis) if{
+					(I:#JOYSTICK_ID#Panning_X_Axis_Delta) 0 &lt; if{ #JOYSTICK_X_CODE_LEFT# } els{ #JOYSTICK_X_CODE_RIGHT# }
+					}
+				} els{
+				(I:#JOYSTICK_ID#Can_Pan_On_Y_Axis) if{
+					(I:#JOYSTICK_ID#Panning_Y_Axis_Delta) 0 &lt; if{ #JOYSTICK_Y_CODE_DOWN# } els{ #JOYSTICK_Y_CODE_UP# }
 					}
 				}
-			</Update>
-		<UseTemplate Name="ASOBO_GT_MouseRect">
-			<CALLBACKCODE>
-				(M:Event) 'LeftSingle'  scmi 0 == if{
-					1 (&gt;I:#VAR_NAME#)
-					#JOYSTICK_LEFT_SINGLE_CODE#
-					g1
-				} els{
-				(M:Event) 'LeftRelease' scmi 0 == if{ 
-					0 (&gt;I:#VAR_NAME#)
-					0 (&gt;O:Can_Pan_On_X_Axis)
-					0 (&gt;O:Can_Pan_On_Y_Axis)
-					#JOYSTICK_RELEASE_CODE#
-				} els{
-				(M:Event) 'LeftDrag' scmi 0 == if{ 
-					g1
-				} } }
-				quit
-				:1 (M:RelativeX) abs (M:RelativeY) abs &gt; (&gt;O:Interacting_With_X_Axis)
-				(M:RelativeX) abs #CENTER_RADIUS# &gt; (&gt;O:Can_Pan_On_X_Axis)
-				(M:RelativeY) abs #CENTER_RADIUS# &gt; (&gt;O:Can_Pan_On_Y_Axis)
-				-1 1 (M:RelativeX) 0 &lt; ? (&gt;O:Panning_X_Axis_Delta)
-				-1 1 (M:RelativeY) 0 &lt; ? (&gt;O:Panning_Y_Axis_Delta)
-			</CALLBACKCODE>
-			<MOUSEFLAGS>LeftAll</MOUSEFLAGS>
-		</UseTemplate>
-	</Template>
+			}
+		</Update>
+	<UseTemplate Name="ASOBO_GT_MouseRect">
+		<CALLBACKCODE_DEFAULT_IM>
+			(M:Event) 'LeftSingle'  scmi 0 == if{
+				1 (&gt;I:#VAR_NAME#)
+				#JOYSTICK_LEFT_SINGLE_CODE#
+				g1
+			} els{
+			(M:Event) 'LeftRelease' scmi 0 == if{ 
+				0 (&gt;I:#VAR_NAME#)
+				0 (&gt;I:#JOYSTICK_ID#Can_Pan_On_X_Axis)
+				0 (&gt;I:#JOYSTICK_ID#Can_Pan_On_Y_Axis)
+				#JOYSTICK_RELEASE_CODE#
+			} els{
+			(M:Event) 'LeftDrag' scmi 0 == if{ 
+				g1
+			} } }
+			quit
+			:1 (M:RelativeX) abs (M:RelativeY) abs &gt; (&gt;I:#JOYSTICK_ID#Interacting_With_X_Axis)
+			(M:RelativeX) abs #CENTER_RADIUS# &gt; (&gt;I:#JOYSTICK_ID#Can_Pan_On_X_Axis)
+			(M:RelativeY) abs #CENTER_RADIUS# &gt; (&gt;I:#JOYSTICK_ID#Can_Pan_On_Y_Axis)
+			-1 1 (M:RelativeX) 0 &lt; ? (&gt;I:#JOYSTICK_ID#Panning_X_Axis_Delta)
+			-1 1 (M:RelativeY) 0 &lt; ? (&gt;I:#JOYSTICK_ID#Panning_Y_Axis_Delta)
+		</CALLBACKCODE>
+		<Condition Valid="NO_DRAG_IM_INTERACTION">
+			<True>
+				<CALLBACKCODE_DRAG_IM>quit</CALLBACKCODE_DRAG_IM>
+			</True>
+			<False>
+				<CALLBACKCODE_DRAG_IM>
+					(M:Event) 'LeftSingle' scmi 0 == if{ 
+						#JOYSTICK_LEFT_SINGLE_CODE#
+						(M:RelativeX) (&gt;O:_LastX)
+						(M:RelativeY) (&gt;O:_LastY)
+						1 (&gt;I:#JOYSTICK_ID#Can_Pan_On_X_Axis)
+						1 (&gt;I:#JOYSTICK_ID#Can_Pan_On_Y_Axis)
+					} els{ 
+						(M:Event) 'LeftRelease' scmi 0 == if{ 
+							#JOYSTICK_RELEASE_CODE#
+							0 (&gt;O:_LastX)
+							0 (&gt;O:_LastY)
+							0 (&gt;I:#JOYSTICK_ID#Can_Pan_On_X_Axis)
+							0 (&gt;I:#JOYSTICK_ID#Can_Pan_On_Y_Axis)
+						} els{ 
+							(M:Event) 'LeftDrag' scmi 0 == if{ 
+								g1 
+							} 
+						} 
+					} 
+					quit 
+					:1 
+					(M:RelativeX) (O:_LastX) - sp0
+					#THRESHOLD_X# (&gt;O:_InputThresholdX)
+					l0 (&gt;I:#JOYSTICK_ID#Panning_X_Axis_Delta)
+					l0 abs (O:_InputThresholdX) &gt; if{
+						l0 (O:_InputThresholdX) / abs flr sp1
+						l0 (O:_InputThresholdX) % abs sp2
+						:1 (* for loop *)
+						l1 0 &lt;= if{ g2 }
+						l1 -- sp1
+						l0 0 &gt; if{
+							#JOYSTICK_X_CODE_RIGHT#
+						} els{
+							#JOYSTICK_X_CODE_LEFT#
+						}
+						g1
+						:2 
+						l0 0 &gt; if{
+							(M:RelativeX) l2 - (&gt;O:_LastX)
+						} els{
+							(M:RelativeX) l2 + (&gt;O:_LastX)
+						}
+					}
+					(M:RelativeY) (O:_LastY) - sp0
+					#THRESHOLD_Y# (&gt;O:_InputThresholdY)
+					l0 (&gt;I:#JOYSTICK_ID#Panning_Y_Axis_Delta)
+					l0 abs (O:_InputThresholdY) &gt; if{
+						l0 (O:_InputThresholdY) / abs flr sp1
+						l0 (O:_InputThresholdY) % abs sp2
+						:3 (* for loop *)
+						l1 0 &lt;= if{ g4 }
+						l1 -- sp1
+						l0 0 &gt; if{
+							#JOYSTICK_Y_CODE_UP#
+						} els{
+							#JOYSTICK_Y_CODE_DOWN#
+						}
+						g3
+						:4 
+						l0 0 &gt; if{
+							(M:RelativeY) l2 - (&gt;O:_LastY)
+						} els{
+							(M:RelativeY) l2 + (&gt;O:_LastY)
+						}
+					}
+				</CALLBACKCODE_DRAG_IM>
+			</False>
+		</Condition>
+		<MOUSEFLAGS>LeftAll</MOUSEFLAGS>
+	</UseTemplate>
+</Template>
 
-	<Template Name = "ASOBO_GT_Joystick">
-		<DefaultTemplateParameters>
-			<ANIM_NAME_L_R>Joystick_X_Axis</ANIM_NAME_L_R>
-			<ANIM_NAME_DN_UP>Joystick_Y_Axis</ANIM_NAME_DN_UP>
-			<LEFTARROW>LeftArrow</LEFTARROW>
-			<RIGHTARROW>RightArrow</RIGHTARROW>
-			<UPARROW>UpArrow</UPARROW>
-			<DOWNARROW>DownArrow</DOWNARROW>
+<Template Name = "ASOBO_GT_Joystick">
+	<DefaultTemplateParameters>
+		<ANIM_NAME_L_R>Joystick_X_Axis</ANIM_NAME_L_R>
+		<ANIM_NAME_DN_UP>Joystick_Y_Axis</ANIM_NAME_DN_UP>
+		<LEFTARROW>LeftArrow</LEFTARROW>
+		<RIGHTARROW>RightArrow</RIGHTARROW>
+		<UPARROW>UpArrow</UPARROW>
+		<DOWNARROW>DownArrow</DOWNARROW>
+		<CENTER_CURSOR>Hand</CENTER_CURSOR>
+		<ID>1</ID>
+		<WWISE_JOYSTICK_EVENT_L>generic_joystick_L</WWISE_JOYSTICK_EVENT_L>
+		<WWISE_JOYSTICK_EVENT_R>generic_joystick_R</WWISE_JOYSTICK_EVENT_R >	
+		<WWISE_JOYSTICK_EVENT_UP>generic_joystick_UP</WWISE_JOYSTICK_EVENT_UP>
+		<WWISE_JOYSTICK_EVENT_DN>generic_joystick_DN</WWISE_JOYSTICK_EVENT_DN>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<JOYSTICK_ID>Joystick_#ID#_</JOYSTICK_ID>
+	</OverrideTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<ANIM_NAME_L_R></ANIM_NAME_L_R>
+			<ANIM_NAME_DN_UP></ANIM_NAME_DN_UP>
+		</AddParams>
+	</EditableTemplateParameters>
+	<Condition Valid="NO_ANIMATION">
+		<False>
+	<UseTemplate Name="ASOBO_GT_Anim_Code">
+				<ANIM_CODE>(I:#JOYSTICK_ID#Panning_X_Axis_Delta) (I:#JOYSTICK_ID#Can_Pan_On_X_Axis) * 50 * 50 +</ANIM_CODE>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIM_NAME>#ANIM_NAME_L_R#</ANIM_NAME>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_GT_Anim_Code">
+				<ANIM_CODE>(I:#JOYSTICK_ID#Panning_Y_Axis_Delta) (I:#JOYSTICK_ID#Can_Pan_On_Y_Axis) * 50 * 50 +</ANIM_CODE>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIM_NAME>#ANIM_NAME_DN_UP#</ANIM_NAME>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents">
+		<ANIM_NAME>#ANIM_NAME_L_R#</ANIM_NAME>
+		<WWISE_EVENT_1>#WWISE_JOYSTICK_EVENT_L#</WWISE_EVENT_1>
+		<DIRECTION_1>Both</DIRECTION_1>
+		<WWISE_EVENT_2>#WWISE_JOYSTICK_EVENT_R#</WWISE_EVENT_2>
+		<DIRECTION_2>Both</DIRECTION_2>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents">
+		<ANIM_NAME>#ANIM_NAME_DN_UP#</ANIM_NAME>
+		<WWISE_EVENT_1>#WWISE_JOYSTICK_EVENT_DN#</WWISE_EVENT_1>
+		<DIRECTION_1>Both</DIRECTION_1>
+		<WWISE_EVENT_2>#WWISE_JOYSTICK_EVENT_UP#</WWISE_EVENT_2>
+		<DIRECTION_2>Both</DIRECTION_2>
+	</UseTemplate>
+		</False>
+	</Condition>
+	<UseTemplate Name="ASOBO_GT_Joystick_Interaction">
+	</UseTemplate>	
+</Template>
+
+<!-- Add some functionalities to the base joystick:
+- Push
+- Knob
+- Separate pan interaction from the joystick itself
+-->
+<Template Name = "ASOBO_GT_Joystick_Separated_Interaction">
+	<DefaultTemplateParameters>
+		<ANIM_NAME_KNOB>Joystick_Knob</ANIM_NAME_KNOB>
+		<ANIM_NAME_PUSH>Joystick_Push</ANIM_NAME_PUSH>
+		<ANIM_NAME_L_R>Joystick_X_Axis</ANIM_NAME_L_R>
+		<ANIM_NAME_DN_UP>Joystick_Y_Axis</ANIM_NAME_DN_UP>
+		<PAN_NODE_ID>Joystick_Pan</PAN_NODE_ID>
+		<NODE_ID>Joystick</NODE_ID>
+		<WHEEL_UP_CODE></WHEEL_UP_CODE>
+		<WHEEL_DOWN_CODE></WHEEL_DOWN_CODE>
+		<LEFT_SINGLE_CODE_DEFAULT_IM></LEFT_SINGLE_CODE_DEFAULT_IM>
+		<LEFT_RELEASE_CODE_DEFAULT_IM></LEFT_RELEASE_CODE_DEFAULT_IM>
+		<LEFT_SINGLE_CODE_DRAG_IM></LEFT_SINGLE_CODE_DRAG_IM>
+		<LEFT_RELEASE_CODE_DRAG_IM></LEFT_RELEASE_CODE_DRAG_IM>
+		<KNOB_TURN_SPEED>10</KNOB_TURN_SPEED>
+		<PUSH_TOOLTIP></PUSH_TOOLTIP>
+		<ROTATE_TOOLTIP></ROTATE_TOOLTIP>
+		<ID>1</ID>
+		<WWISE_JOYSTICK_EVENT_L>generic_joystick_L</WWISE_JOYSTICK_EVENT_L>
+		<WWISE_JOYSTICK_EVENT_R>generic_joystick_R</WWISE_JOYSTICK_EVENT_R >	
+		<WWISE_JOYSTICK_EVENT_UP>generic_joystick_UP</WWISE_JOYSTICK_EVENT_UP>
+		<WWISE_JOYSTICK_EVENT_DN>generic_joystick_DN</WWISE_JOYSTICK_EVENT_DN>
+		<JOYSTICK_X_CODE_LEFT></JOYSTICK_X_CODE_LEFT>
+		<JOYSTICK_X_CODE_RIGHT></JOYSTICK_X_CODE_RIGHT>
+		<JOYSTICK_Y_CODE_DOWN></JOYSTICK_Y_CODE_DOWN>
+		<JOYSTICK_Y_CODE_UP></JOYSTICK_Y_CODE_UP>
+		<THRESHOLD_X_INPUT>0.03</THRESHOLD_X_INPUT>
+		<THRESHOLD_X_MOUSE>0.001</THRESHOLD_X_MOUSE>
+		<THRESHOLD_Y_INPUT>0.03</THRESHOLD_Y_INPUT>
+		<THRESHOLD_Y_MOUSE>0.001</THRESHOLD_Y_MOUSE>
+		<TIMEOUT_DELAY_RESET_AXIS>0.1</TIMEOUT_DELAY_RESET_AXIS>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<JOYSTICK_ID>Joystick_#ID#_</JOYSTICK_ID>
+	</OverrideTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+		<ANIM_NAME_KNOB></ANIM_NAME_KNOB>
+		<ANIM_NAME_PUSH></ANIM_NAME_PUSH>
+		<PAN_NODE_ID></PAN_NODE_ID>
+		<NODE_ID></NODE_ID>
+		</AddParams>
+	</EditableTemplateParameters>
+	<Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
+		<OverrideTemplateParameters>
+			<SAVE_TIME_LAST_X_UPDATE>(E:SIMULATION TIME, seconds) #TIMEOUT_DELAY_RESET_AXIS# + (&gt;O:#JOYSTICK_ID#_X_NextTimeout)</SAVE_TIME_LAST_X_UPDATE>
+			<SAVE_TIME_LAST_Y_UPDATE>(E:SIMULATION TIME, seconds) #TIMEOUT_DELAY_RESET_AXIS# + (&gt;O:#JOYSTICK_ID#_Y_NextTimeout)</SAVE_TIME_LAST_Y_UPDATE>
+		</OverrideTemplateParameters>
+		<UseTemplate Name="ASOBO_GT_Update">
+			<FREQUENCY Process="Int">#TIMEOUT_DELAY_RESET_AXIS# 0 &gt; if{ 1 #TIMEOUT_DELAY_RESET_AXIS# / } els{ 10 }</FREQUENCY>
+			<UPDATE_CODE>
+				(I:#JOYSTICK_ID#Can_Pan_On_X_Axis) if{
+					(E:SIMULATION TIME, seconds) (O:#JOYSTICK_ID#_X_NextTimeout) &gt; if{
+						#SAVE_TIME_LAST_X_UPDATE#
+						0 (&gt;I:#JOYSTICK_ID#Panning_X_Axis_Delta)
+					} 
+				}
+				(I:#JOYSTICK_ID#Can_Pan_On_Y_Axis) if{
+					(E:SIMULATION TIME, seconds) (O:#JOYSTICK_ID#_Y_NextTimeout) &gt; if{
+						#SAVE_TIME_LAST_Y_UPDATE#
+						0 (&gt;I:#JOYSTICK_ID#Panning_Y_Axis_Delta)
+					} 
+				}
+			</UPDATE_CODE>
+			<INTERACTION_MODEL>Drag</INTERACTION_MODEL>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
+			<CURSOR_LEFT>TurnLeft</CURSOR_LEFT>
+			<CURSOR_RIGHT>TurnRight</CURSOR_RIGHT>
 			<CENTER_CURSOR>Hand</CENTER_CURSOR>
-			<ID>1</ID>
-			<WWISE_JOYSTICK_EVENT_L>generic_joystick_L</WWISE_JOYSTICK_EVENT_L>
-			<WWISE_JOYSTICK_EVENT_R>generic_joystick_R</WWISE_JOYSTICK_EVENT_R >	
-			<WWISE_JOYSTICK_EVENT_UP>generic_joystick_UP</WWISE_JOYSTICK_EVENT_UP>
-			<WWISE_JOYSTICK_EVENT_DN>generic_joystick_DN</WWISE_JOYSTICK_EVENT_DN>
-		</DefaultTemplateParameters>
-		<EditableTemplateParameters>
-			<AddParams>
-				<ANIM_NAME_L_R></ANIM_NAME_L_R>
-				<ANIM_NAME_DN_UP></ANIM_NAME_DN_UP>
-			</AddParams>
-		</EditableTemplateParameters>
+			<CLOCKWISE_CODE>#WHEEL_UP_CODE#</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>#WHEEL_DOWN_CODE#</ANTICLOCKWISE_CODE>
+			<ANIMTIP_0>#PUSH_TOOLTIP#</ANIMTIP_0>
+			<ANIMTIP_0_ON_CURSOR>HAND</ANIMTIP_0_ON_CURSOR>
+			<ANIMTIP_1>#ROTATE_TOOLTIP#</ANIMTIP_1>
+			<ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+			<ANIMTIP_2>#ROTATE_TOOLTIP#</ANIMTIP_2>
+			<ANIMTIP_2_ON_CURSOR>TurnRight</ANIMTIP_2_ON_CURSOR>
+			<CODE_UP>#JOYSTICK_Y_CODE_UP# 1 (&gt;I:#JOYSTICK_ID#Panning_Y_Axis_Delta) #SAVE_TIME_LAST_Y_UPDATE#</CODE_UP>
+			<CODE_DN>#JOYSTICK_Y_CODE_DOWN# -1 (&gt;I:#JOYSTICK_ID#Panning_Y_Axis_Delta) #SAVE_TIME_LAST_Y_UPDATE#</CODE_DN>
+			<CODE_LEFT>#JOYSTICK_X_CODE_LEFT# -1 (&gt;I:#JOYSTICK_ID#Panning_X_Axis_Delta) #SAVE_TIME_LAST_X_UPDATE#</CODE_LEFT>
+			<CODE_RIGHT>#JOYSTICK_X_CODE_RIGHT# 1 (&gt;I:#JOYSTICK_ID#Panning_X_Axis_Delta) #SAVE_TIME_LAST_X_UPDATE#</CODE_RIGHT>
+			<LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE_DEFAULT_IM#</LEFT_SINGLE_CODE>
+			<LEFT_RELEASE_CODE>#LEFT_RELEASE_CODE_DEFAULT_IM#</LEFT_RELEASE_CODE>
+			<ON_DOWN_EVENT>
+				#LEFT_SINGLE_CODE_DRAG_IM#
+				1 (&gt;I:#JOYSTICK_ID#Can_Pan_On_X_Axis)
+				1 (&gt;I:#JOYSTICK_ID#Can_Pan_On_Y_Axis)
+			</ON_DOWN_EVENT>
+			<ON_UP_EVENT>
+				#LEFT_RELEASE_CODE_DRAG_IM#
+				0 (&gt;I:#JOYSTICK_ID#Can_Pan_On_X_Axis)
+				0 (&gt;I:#JOYSTICK_ID#Can_Pan_On_Y_Axis)
+			</ON_UP_EVENT>
+			<NO_PUSH_PULL_LOCK>True</NO_PUSH_PULL_LOCK>
+		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Anim_Code">
-			<ANIM_CODE>(O:Panning_X_Axis_Delta) (O:Can_Pan_On_X_Axis) * (O:Interacting_With_X_Axis) * 50 * 50 +</ANIM_CODE>
+			<ANIM_CODE>(I:#JOYSTICK_ID#Panning_X_Axis_Delta) (I:#JOYSTICK_ID#Can_Pan_On_X_Axis) * 50 * 50 +</ANIM_CODE>
 			<ANIM_LENGTH>100</ANIM_LENGTH>
 			<ANIM_NAME>#ANIM_NAME_L_R#</ANIM_NAME>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Anim_Code">
-			<ANIM_CODE>(O:Panning_Y_Axis_Delta) (O:Can_Pan_On_Y_Axis) * (O:Interacting_With_X_Axis) ! * 50 * 50 +</ANIM_CODE>
+			<ANIM_CODE>(I:#JOYSTICK_ID#Panning_Y_Axis_Delta) (I:#JOYSTICK_ID#Can_Pan_On_Y_Axis) * 50 * 50 +</ANIM_CODE>
 			<ANIM_LENGTH>100</ANIM_LENGTH>
 			<ANIM_NAME>#ANIM_NAME_DN_UP#</ANIM_NAME>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Joystick_Interaction">
-		</UseTemplate>	
 		<UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents">
 			<ANIM_NAME>#ANIM_NAME_L_R#</ANIM_NAME>
 			<WWISE_EVENT_1>#WWISE_JOYSTICK_EVENT_L#</WWISE_EVENT_1>
@@ -106,63 +322,29 @@
 			<WWISE_EVENT_2>#WWISE_JOYSTICK_EVENT_UP#</WWISE_EVENT_2>
 			<DIRECTION_2>Both</DIRECTION_2>
 		</UseTemplate>
-	</Template>
-
-	<!-- Add some functionalities to the base joystick:
-	- Push
-	- Knob
-	- Separate pan interaction from the joystick itself
-	-->
-	<Template Name = "ASOBO_GT_Joystick_Separated_Interaction">
-		<DefaultTemplateParameters>
-			<ANIM_NAME_KNOB>Joystick_Knob</ANIM_NAME_KNOB>
-			<ANIM_NAME_PUSH>Joystick_Push</ANIM_NAME_PUSH>
-			<PAN_NODE_ID>Joystick_Pan</PAN_NODE_ID>
-			<NODE_ID>Joystick</NODE_ID>
-			<WHEEL_UP_CODE></WHEEL_UP_CODE>
-			<WHEEL_DOWN_CODE></WHEEL_DOWN_CODE>
-			<LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
-			<KNOB_TURN_SPEED>10</KNOB_TURN_SPEED>
-			<PUSH_TOOLTIP></PUSH_TOOLTIP>
-			<ROTATE_TOOLTIP></ROTATE_TOOLTIP>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<EditableTemplateParameters>
-			<AddParams>
-			<ANIM_NAME_KNOB></ANIM_NAME_KNOB>
-			<ANIM_NAME_PUSH></ANIM_NAME_PUSH>
-			<PAN_NODE_ID></PAN_NODE_ID>
-			<NODE_ID></NODE_ID>
-			</AddParams>
-		</EditableTemplateParameters>
-		<Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
-				<CURSOR_LEFT>TurnLeft</CURSOR_LEFT>
-				<CURSOR_RIGHT>TurnRight</CURSOR_RIGHT>
-				<CENTER_CURSOR>Hand</CENTER_CURSOR>
-				<CLOCKWISE_CODE>#WHEEL_UP_CODE#</CLOCKWISE_CODE>
-				<ANTICLOCKWISE_CODE>#WHEEL_DOWN_CODE#</ANTICLOCKWISE_CODE>
-				<ANIMTIP_0>#PUSH_TOOLTIP#</ANIMTIP_0>
-				<ANIMTIP_0_ON_CURSOR>HAND</ANIMTIP_0_ON_CURSOR>
-				<ANIMTIP_1>#ROTATE_TOOLTIP#</ANIMTIP_1>
-				<ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
-				<ANIMTIP_2>#ROTATE_TOOLTIP#</ANIMTIP_2>
-				<ANIMTIP_2_ON_CURSOR>TurnRight</ANIMTIP_2_ON_CURSOR>
-			</UseTemplate>
-		</Component>
-		<Component ID="#PAN_NODE_ID#_#ID#" Node="#PAN_NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Joystick">
-				<Condition Check="PAN_TOOLTIP">
-					<ANIMTIP_0>#PAN_TOOLTIP#</ANIMTIP_0>
-					<ANIMTIP_0_ON_CURSOR>UPARROW</ANIMTIP_0_ON_CURSOR>
-					<ANIMTIP_1>#PAN_TOOLTIP#</ANIMTIP_1>
-					<ANIMTIP_1_ON_CURSOR>DOWNARROW</ANIMTIP_1_ON_CURSOR>
-					<ANIMTIP_2>#PAN_TOOLTIP#</ANIMTIP_2>
-					<ANIMTIP_2_ON_CURSOR>LEFTARROW</ANIMTIP_2_ON_CURSOR>
-					<ANIMTIP_3>#PAN_TOOLTIP#</ANIMTIP_3>
-					<ANIMTIP_3_ON_CURSOR>RIGHTARROW</ANIMTIP_3_ON_CURSOR>
-				</Condition>
-			</UseTemplate>
-		</Component>
-	</Template>
+	</Component>
+	<Component ID="#PAN_NODE_ID#_#ID#" Node="#PAN_NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Joystick">
+			<NO_ANIMATION>True</NO_ANIMATION>
+			<NO_HIGHLIGHT_NODE_ID>True</NO_HIGHLIGHT_NODE_ID>
+			<NO_DRAG_IM_INTERACTION>True</NO_DRAG_IM_INTERACTION>
+			<Condition Check="PAN_TOOLTIP">
+				<ANIMTIP_0>#PAN_TOOLTIP#</ANIMTIP_0>
+				<ANIMTIP_0_ON_CURSOR>UPARROW</ANIMTIP_0_ON_CURSOR>
+				<ANIMTIP_1>#PAN_TOOLTIP#</ANIMTIP_1>
+				<ANIMTIP_1_ON_CURSOR>DOWNARROW</ANIMTIP_1_ON_CURSOR>
+				<ANIMTIP_2>#PAN_TOOLTIP#</ANIMTIP_2>
+				<ANIMTIP_2_ON_CURSOR>LEFTARROW</ANIMTIP_2_ON_CURSOR>
+				<ANIMTIP_3>#PAN_TOOLTIP#</ANIMTIP_3>
+				<ANIMTIP_3_ON_CURSOR>RIGHTARROW</ANIMTIP_3_ON_CURSOR>
+			</Condition>
+			<UPARROW_DRAG_IM/>
+			<DOWNARROW_DRAG_IM/>
+			<LEFTARROW_DRAG_IM/>
+			<RIGHTARROW_DRAG_IM/>
+			<CURSOR_CENTER_DRAG_IM/>
+			<CURSOR_DRAG_IM>Normal</CURSOR_DRAG_IM>
+		</UseTemplate>
+	</Component>
+</Template>
 </ModelBehaviors>

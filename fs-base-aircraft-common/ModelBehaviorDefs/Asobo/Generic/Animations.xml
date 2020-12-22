@@ -21,6 +21,8 @@
 			<ANIM_SIMVAR_BIAS>0</ANIM_SIMVAR_BIAS>
 		</DefaultTemplateParameters>
 		
+		<Condition Valid="DISABLE_ANIMATION">
+			<False>
 		<Condition Check="INVERT_ANIM">
 			<True>
 				<UseTemplate Name = "ASOBO_GT_Anim_Code">
@@ -41,6 +43,8 @@
 				</Condition>
 			</False>
 		</Condition>
+			</False>
+		</Condition>
 	</Template>
 
 	<!--
@@ -56,8 +60,12 @@
 			<ID/>
 		</DefaultTemplateParameters>
 
+		<Condition Valid="DISABLE_ANIMATION">
+			<False>
 		<UseTemplate Name="ASOBO_GT_Anim_Code_Failure_Test">
 		</UseTemplate>
+			</False>
+		</Condition>
 	</Template>
 
 	<!--

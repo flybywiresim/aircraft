@@ -1,75 +1,76 @@
 <ModelBehaviors>
 	<Include RelativeFile="Subtemplates\\Updates_Subtemplates.xml"/>
 
-	<!-- ####################################################################### -->
-	<!-- ######################### Update Templates ########################## -->
-	<!-- ####################################################################### -->
-	<!--
-	<!--
-		This template is used to ensure switches that have multiple state have the right state if their Simvar is changed.
-		This should be the only entry point. Do not call GT_Update_EnsureVariableConsistency_MultiStates_ParamSetup_XStates.
-		NUM_STATES can be set to decide how many states the switch should have.
-	-->
-	<Template Name = "ASOBO_GT_Update_EnsureVariableConsistency_MultiStates">
-		<DefaultTemplateParameters>
-			<NUM_STATES>2</NUM_STATES>
-			<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
-			<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
+<!-- ####################################################################### -->
+<!-- ######################### Update Templates ########################## -->
+<!-- ####################################################################### -->
+<!--
+<!--
+	This template is used to ensure switches that have multiple state have the right state if their Simvar is changed.
+	This should be the only entry point. Do not call GT_Update_EnsureVariableConsistency_MultiStates_ParamSetup_XStates.
+	NUM_STATES can be set to decide how many states the switch should have.
+-->
+<Template Name = "ASOBO_GT_Update_EnsureVariableConsistency_MultiStates">
+	<DefaultTemplateParameters>
+		<NUM_STATES>2</NUM_STATES>
+		<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+		<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
 
-			<INIT_VARS/>
-			<UPDATE_STATES/>
-		</DefaultTemplateParameters>
+		<INIT_VARS/>
+		<UPDATE_STATES/>
+	</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_GT_Update_EnsureVariableConsistency_MultiStates_ParamSetup">
-		</UseTemplate>
-	</Template>
+	<UseTemplate Name="ASOBO_GT_Update_EnsureVariableConsistency_MultiStates_ParamSetup">
+	</UseTemplate>
+</Template>
 
-	<Template Name = "ASOBO_GT_Update_SmoothLeverMovement">
-		<DefaultTemplateParameters>
-			<DRAG_ANIMATION_VARIABLE_TYPE>O</DRAG_ANIMATION_VARIABLE_TYPE>
-			<DRAG_ANIMATION_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Position</DRAG_ANIMATION_VARIABLE_NAME>
-			<DRAG_ANIMATION_TARGET_VARIABLE_TYPE>O</DRAG_ANIMATION_TARGET_VARIABLE_TYPE>
-			<DRAG_ANIMATION_TARGET_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Target_Position</DRAG_ANIMATION_TARGET_VARIABLE_NAME>
-			<PERCENT_PER_SECONDS>100</PERCENT_PER_SECONDS>
-			<FREQUENCY>30</FREQUENCY>
-		</DefaultTemplateParameters>
+<Template Name = "ASOBO_GT_Update_SmoothLeverMovement">
+	<DefaultTemplateParameters>
+		<DRAG_ANIMATION_VARIABLE_TYPE>O</DRAG_ANIMATION_VARIABLE_TYPE>
+		<DRAG_ANIMATION_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Position</DRAG_ANIMATION_VARIABLE_NAME>
+		<DRAG_ANIMATION_TARGET_VARIABLE_TYPE>O</DRAG_ANIMATION_TARGET_VARIABLE_TYPE>
+		<DRAG_ANIMATION_TARGET_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Target_Position</DRAG_ANIMATION_TARGET_VARIABLE_NAME>
+		<PERCENT_PER_SECONDS>100</PERCENT_PER_SECONDS>
+		<FREQUENCY>30</FREQUENCY>
+	</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_GT_Update">
-			<UPDATE_CODE>
-				#ANIMATION_CODE_SETTER# (#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#) - abs 0.1 &gt; if{
-					#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
-				}
-				
-				(#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) (#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#) - abs 0.1 &gt; if{
-					(#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) (#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#) &gt; if{
-						(#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) #PERCENT_PER_SECONDS# #FREQUENCY# / - (#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#) max (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
-					} els{
-						(#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) #PERCENT_PER_SECONDS# #FREQUENCY# / + (#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#) min (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
-					}
+	<UseTemplate Name="ASOBO_GT_Update">
+		<UPDATE_CODE>
+			#ANIMATION_CODE_SETTER# (#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#) - abs 0.1 &gt; if{
+				#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
+			}
+			
+			(#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) (#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#) - abs 0.1 &gt; if{
+				(#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) (#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#) &gt; if{
+					(#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) #PERCENT_PER_SECONDS# #FREQUENCY# / - (#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#) max (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
 				} els{
-					(#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#) (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) 
+					(#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) #PERCENT_PER_SECONDS# #FREQUENCY# / + (#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#) min (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
 				}
-			</UPDATE_CODE>
-		</UseTemplate>
-	</Template>
+			} els{
+				(#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#) (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) 
+			}
+		</UPDATE_CODE>
+	</UseTemplate>
+</Template>
 
-	<Template Name="ASOBO_GT_Update">
-		<DefaultTemplateParameters>
-			<FREQUENCY>1</FREQUENCY>
-			<UPDATE_CODE></UPDATE_CODE>
-		</DefaultTemplateParameters>
-		
-		<Condition Check="UPDATE_ONCE">
-			<True>
-				<Update Once="True">
-					#UPDATE_CODE#
-				</Update>
-			</True>
-			<False>
-				<Update Frequency="#FREQUENCY#">
-					#UPDATE_CODE#
-				</Update>
-			</False>
-		</Condition>
-	</Template>
+<Template Name="ASOBO_GT_Update">
+	<DefaultTemplateParameters>
+		<FREQUENCY>1</FREQUENCY>
+		<UPDATE_CODE></UPDATE_CODE>
+		<INTERACTION_MODEL>All</INTERACTION_MODEL>
+	</DefaultTemplateParameters>
+	
+	<Condition Check="UPDATE_ONCE">
+		<True>
+			<Update Once="True" InteractionModel="#INTERACTION_MODEL#">
+				#UPDATE_CODE#
+			</Update>
+		</True>
+		<False>
+			<Update Frequency="#FREQUENCY#" InteractionModel="#INTERACTION_MODEL#">
+				#UPDATE_CODE#
+			</Update>
+		</False>
+	</Condition>
+</Template>
 </ModelBehaviors>

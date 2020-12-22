@@ -2,23 +2,23 @@
   "content": [
     {
       "path": "CheckpointsLibrary/Asobo_DefaultCheckpointLibrary.xml",
-      "size": 497371,
-      "date": 132440551700000000
+      "size": 545563,
+      "date": 132521800030000000
     },
     {
       "path": "de-DE.locPak",
       "size": 2117,
-      "date": 132451877417995397
+      "date": 132503667340934849
     },
     {
       "path": "en-US.locPak",
       "size": 2065,
-      "date": 132451877417985394
+      "date": 132503667340824631
     },
     {
       "path": "es-ES.locPak",
       "size": 2220,
-      "date": 132451877417955419
+      "date": 132503667340674839
     },
     {
       "path": "FlightStatesLibrary/airliner/approach.FLT",
@@ -263,22 +263,22 @@
     {
       "path": "fr-FR.locPak",
       "size": 2169,
-      "date": 132451877417995397
+      "date": 132503667340974625
     },
     {
       "path": "it-IT.locPak",
       "size": 2234,
-      "date": 132451877418005396
+      "date": 132503667341024839
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Airliner/Airbus.xml",
-      "size": 38644,
-      "date": 132441108910000000
+      "size": 37959,
+      "date": 132478556900000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Airliner/AirlinerCommon.xml",
-      "size": 46776,
-      "date": 132441156110000000
+      "size": 52030,
+      "date": 132522668810000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Airliner/AS02A.xml",
@@ -287,13 +287,13 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Airliner/Boeing.xml",
-      "size": 43010,
-      "date": 132441160220000000
+      "size": 43215,
+      "date": 132521656940000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Airliner/FMC.xml",
-      "size": 63028,
-      "date": 132441159980000000
+      "size": 64188,
+      "date": 132515724600000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Airliner/GlassCockpit.xml",
@@ -312,33 +312,33 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Autopilot.xml",
-      "size": 59820,
-      "date": 132475841520000000
+      "size": 63037,
+      "date": 132521688580000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Deice.xml",
-      "size": 10253,
-      "date": 132441151040000000
+      "size": 5053,
+      "date": 132520917640000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Electrical.xml",
-      "size": 24643,
-      "date": 132441151040000000
+      "size": 24132,
+      "date": 132509596670000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Engine.xml",
-      "size": 7051,
-      "date": 132441151040000000
+      "size": 7204,
+      "date": 132478557070000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Fuel.xml",
-      "size": 11958,
-      "date": 132441151040000000
+      "size": 11933,
+      "date": 132478557670000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Handling.xml",
-      "size": 61408,
-      "date": 132441151040000000
+      "size": 64154,
+      "date": 132509693430000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Index.xml",
@@ -347,18 +347,18 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Instrument.xml",
-      "size": 42002,
-      "date": 132441151040000000
+      "size": 42279,
+      "date": 132478558050000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/LandingGear.xml",
-      "size": 6480,
-      "date": 132441151040000000
+      "size": 7384,
+      "date": 132509693280000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Lighting.xml",
-      "size": 28887,
-      "date": 132441151040000000
+      "size": 32967,
+      "date": 132509693080000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Passenger.xml",
@@ -372,13 +372,13 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Pressurization.xml",
-      "size": 11824,
-      "date": 132441151050000000
+      "size": 14702,
+      "date": 132509692920000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Safety.xml",
-      "size": 31012,
-      "date": 132441151050000000
+      "size": 31532,
+      "date": 132478558960000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Aircraft_Subtemplates.xml",
@@ -387,53 +387,53 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Autopilot_Subtemplates.xml",
-      "size": 32191,
-      "date": 132481914710000000
+      "size": 37852,
+      "date": 132509594370000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Deice_Subtemplates.xml",
-      "size": 23108,
-      "date": 132441109970000000
+      "size": 31164,
+      "date": 132512016030000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Electrical_Subtemplates.xml",
-      "size": 74457,
-      "date": 132441110130000000
+      "size": 74576,
+      "date": 132509602820000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Engine_Subtemplates.xml",
-      "size": 59478,
-      "date": 132441110270000000
+      "size": 68258,
+      "date": 132518205390000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Fuel_Subtemplates.xml",
-      "size": 54440,
-      "date": 132441110400000000
+      "size": 57226,
+      "date": 132512277770000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Handling_Subtemplates.xml",
-      "size": 22599,
-      "date": 132441110530000000
+      "size": 22636,
+      "date": 132490576060000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Instrument_Subtemplates.xml",
-      "size": 68131,
-      "date": 132441111260000000
+      "size": 70083,
+      "date": 132514901850000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/LandingGear_Subtemplates.xml",
-      "size": 12212,
-      "date": 132441111420000000
+      "size": 12586,
+      "date": 132509615480000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Lighting_Subtemplates.xml",
-      "size": 33008,
-      "date": 132441111560000000
+      "size": 36341,
+      "date": 132509616890000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Passenger_Subtemplates.xml",
-      "size": 8580,
-      "date": 132441111870000000
+      "size": 8472,
+      "date": 132472277680000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Pressurization_Subtemplates.xml",
@@ -442,13 +442,13 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Safety_Subtemplates.xml",
-      "size": 7022,
-      "date": 132441112550000000
+      "size": 6777,
+      "date": 132478559650000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Exterior.xml",
-      "size": 66019,
-      "date": 132441154390000000
+      "size": 69009,
+      "date": 132505928590000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic.xml",
@@ -457,13 +457,13 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Animations.xml",
-      "size": 2722,
-      "date": 132441151050000000
+      "size": 2886,
+      "date": 132509617430000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/AnimationTriggers.xml",
-      "size": 4234,
-      "date": 132441123530000000
+      "size": 4562,
+      "date": 132509617560000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Complex/Index.xml",
@@ -472,13 +472,13 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Complex/Joystick.xml",
-      "size": 6589,
-      "date": 132441118720000000
+      "size": 13913,
+      "date": 132472277680000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Complex/Knob.xml",
-      "size": 19376,
-      "date": 132441121240000000
+      "size": 23337,
+      "date": 132472277680000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Complex/Lever.xml",
@@ -492,28 +492,28 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Complex/PushButton.xml",
-      "size": 16072,
-      "date": 132441121630000000
+      "size": 17081,
+      "date": 132518254750000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Complex/Switch.xml",
-      "size": 20562,
-      "date": 132441121790000000
+      "size": 23509,
+      "date": 132520770280000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Emissive.xml",
-      "size": 9724,
-      "date": 132441123770000000
+      "size": 9735,
+      "date": 132478559780000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/FX.xml",
-      "size": 1352,
-      "date": 132458611240000000
+      "size": 1713,
+      "date": 132487836590000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Helpers.xml",
-      "size": 9025,
-      "date": 132441123930000000
+      "size": 9617,
+      "date": 132457518370000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Index.xml",
@@ -522,8 +522,8 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Interactions.xml",
-      "size": 38158,
-      "date": 132441151050000000
+      "size": 64437,
+      "date": 132518254760000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Subtemplates/Animations_Subtemplates.xml",
@@ -532,8 +532,8 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Subtemplates/Interactions_Subtemplates.xml",
-      "size": 19318,
-      "date": 132441122950000000
+      "size": 27490,
+      "date": 132518217780000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Subtemplates/Updates_Subtemplates.xml",
@@ -542,8 +542,8 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Updates.xml",
-      "size": 3511,
-      "date": 132441151050000000
+      "size": 3569,
+      "date": 132457518730000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Generic/Visibility.xml",
@@ -552,23 +552,23 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/GlassCockpit/AS1000.xml",
-      "size": 73986,
-      "date": 132441156110000000
+      "size": 73088,
+      "date": 132509637540000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/GlassCockpit/AS3000.xml",
-      "size": 32374,
-      "date": 132473188310000000
+      "size": 31953,
+      "date": 132509638100000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/GlassCockpit/AS3X.xml",
-      "size": 6601,
-      "date": 132441126980000000
+      "size": 8592,
+      "date": 132521786840000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/GlassCockpit/AS3X_Touch.xml",
-      "size": 6847,
-      "date": 132441156110000000
+      "size": 6741,
+      "date": 132457518840000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/GlassCockpit/AS580.xml",
@@ -576,14 +576,19 @@
       "date": 132441156110000000
     },
     {
+      "path": "ModelBehaviorDefs/Asobo/GlassCockpit/FA18.xml",
+      "size": 24652,
+      "date": 132475689170000000
+    },
+    {
       "path": "ModelBehaviorDefs/Asobo/GPS/Aera.xml",
-      "size": 3243,
-      "date": 132441128220000000
+      "size": 3327,
+      "date": 132509638410000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/GPS/AS430.xml",
-      "size": 15397,
-      "date": 132441156110000000
+      "size": 17475,
+      "date": 132472277700000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/GPS/AS530.xml",
@@ -594,6 +599,11 @@
       "path": "ModelBehaviorDefs/Asobo/Misc/Accelerometer.xml",
       "size": 4018,
       "date": 132441156120000000
+    },
+    {
+      "path": "ModelBehaviorDefs/Asobo/Misc/ASPropeller.xml",
+      "size": 4023,
+      "date": 132520071330000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Misc/Clock.xml",
@@ -622,13 +632,13 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/NAVCOM/ADF.xml",
-      "size": 13543,
-      "date": 132441156120000000
+      "size": 13692,
+      "date": 132478559860000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/NAVCOM/AS92.xml",
-      "size": 3405,
-      "date": 132441151050000000
+      "size": 3436,
+      "date": 132478559890000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/NAVCOM/KAP140.xml",
@@ -637,13 +647,13 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/NAVCOM/NavComSystem.xml",
-      "size": 91264,
-      "date": 132481956260000000
+      "size": 90888,
+      "date": 132509643290000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Transponder/AS21.xml",
-      "size": 3705,
-      "date": 132441151050000000
+      "size": 3766,
+      "date": 132521691060000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Transponder/AS330.xml",
@@ -658,22 +668,22 @@
     {
       "path": "pl-PL.locPak",
       "size": 2028,
-      "date": 132451877417965400
+      "date": 132503667340724842
     },
     {
       "path": "pt-BR.locPak",
       "size": 2170,
-      "date": 132451877417955419
+      "date": 132503667340614871
     },
     {
       "path": "ru-RU.locPak",
       "size": 2880,
-      "date": 132451877417985394
+      "date": 132503667340874623
     },
     {
       "path": "zh-CN.locPak",
       "size": 1926,
-      "date": 132451877417975398
+      "date": 132503667340774624
     }
   ]
 }

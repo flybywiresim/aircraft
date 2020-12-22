@@ -1,12 +1,12 @@
 class A320_Neo_CDU_AirwaysFromWaypointPage {
     static ShowPage(mcdu, waypoint, offset = 0, pendingAirway) {
         mcdu.clearDisplay();
-        const rows = [["----"], [""], [""], [""], [""]];
-        const allRows = A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(mcdu, waypoint);
-        const page = (2 + (Math.floor(offset / 4)));
-        const pageCount = (Math.floor(allRows.length / 4) + 2);
+        let rows = [["----"], [""], [""], [""], [""]];
+        let allRows = A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(mcdu, waypoint);
+        let page = (2 + (Math.floor(offset / 4)));
+        let pageCount = (Math.floor(allRows.length / 4) + 2);
         let rowBottomLabel = [""];
-        let rowBottomLine = ["<RETURN"];
+        let rowBottomLine = ["\<RETURN"];
         if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
             rowBottomLabel = ["TMPY[color]red", "TMPY[color]red"];
             rowBottomLine = ["*ERASE[color]red", "INSERT*[color]red"];
@@ -25,12 +25,13 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         for (let i = 0; i < rows.length; i++) {
             if (allRows[i + offset]) {
                 rows[i] = allRows[i + offset];
-            } else if (!showInput) {
+            }
+            else if (!showInput) {
                 showInput = true;
                 if (!pendingAirway) {
                     rows[i] = ["[ ][color]blue", "[ ][color]blue"];
                     mcdu.onRightInput[i] = async () => {
-                        const value = mcdu.inOut;
+                        let value = mcdu.inOut;
                         if (value.length > 0) {
                             mcdu.clearUserInput();
                             mcdu.insertWaypoint(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, () => {
@@ -39,26 +40,26 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         }
                     };
                     mcdu.onLeftInput[i] = async () => {
-                        const value = mcdu.inOut;
+                        let value = mcdu.inOut;
                         if (value.length > 0) {
                             mcdu.clearUserInput();
-                            const lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
+                            let lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
                             if (lastWaypoint) {
-                                const airway = lastWaypoint.infos.airways.find(a => {
-                                    return a.name === value;
-                                });
+                                let airway = lastWaypoint.infos.airways.find(a => { return a.name === value; });
                                 if (airway) {
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
-                                } else {
+                                }
+                                else {
                                     mcdu.showErrorMessage("NOT IN DATABASE");
                                 }
                             }
                         }
                     };
-                } else {
+                }
+                else {
                     rows[i] = [pendingAirway.name, "[ ][color]blue"];
                     mcdu.onRightInput[i] = () => {
-                        const value = mcdu.inOut;
+                        let value = mcdu.inOut;
                         if (value.length > 0) {
                             mcdu.clearUserInput();
                             mcdu.insertWaypointsAlongAirway(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, pendingAirway.name, (result) => {
@@ -74,8 +75,9 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 }
             }
         }
+        let title = "<span>AIRWAYS FROM </span><span class='green'>" + waypoint.ident + "</span>";
         mcdu.setTemplate([
-            ["AIRWAYS FROM " + waypoint.ident],
+            [title],
             ["VIA", "TO"],
             rows[0],
             [""],
@@ -91,32 +93,34 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         ]);
     }
     static _GetAllRows(fmc, waypoint) {
-        const allRows = [];
+        let allRows = [];
         let doInsert = false;
-        const flightPlan = fmc.flightPlanManager;
+        let flightPlan = fmc.flightPlanManager;
         if (flightPlan) {
-            const departure = flightPlan.getDeparture();
+            let departure = flightPlan.getDeparture();
             if (departure) {
-                const departureWaypoints = flightPlan.getDepartureWaypoints();
-                const lastDepartureWaypoint = departureWaypoints[departureWaypoints.length - 1];
+                let departureWaypoints = flightPlan.getDepartureWaypoints();
+                let lastDepartureWaypoint = departureWaypoints[departureWaypoints.length - 1];
                 if (lastDepartureWaypoint) {
                     allRows.push([departure.name, lastDepartureWaypoint.ident]);
                 }
             }
-            const routeWaypoints = flightPlan.getEnRouteWaypoints();
+            let routeWaypoints = flightPlan.getEnRouteWaypoints();
             for (let i = 0; i < routeWaypoints.length; i++) {
-                const prev = routeWaypoints[i - 1];
-                const wp = routeWaypoints[i];
-                const next = routeWaypoints[i + 1];
+                let prev = routeWaypoints[i - 1];
+                let wp = routeWaypoints[i];
+                let next = routeWaypoints[i + 1];
                 if (wp) {
                     if (doInsert) {
-                        const prevAirway = IntersectionInfo.GetCommonAirway(prev, wp);
+                        let prevAirway = IntersectionInfo.GetCommonAirway(prev, wp);
                         if (!prevAirway) {
                             allRows.push(["DIRECT", wp.ident]);
-                        } else {
+                        }
+                        else {
                             allRows.push([prevAirway.name, wp.ident]);
                         }
-                    } else {
+                    }
+                    else {
                         if (wp.icao === waypoint.icao) {
                             doInsert = true;
                         }

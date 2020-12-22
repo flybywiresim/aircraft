@@ -354,7 +354,7 @@ as430-element {
           as430-element #Electricity #TopDisplay #GpsPart #Position #Compass #CompassBackground {
             position: absolute;
             width: calc(237.142857143vw);
-            left: -local-get-vh(40px, 190); }
+            left: calc(-21.0526315789vh); }
           as430-element #Electricity #TopDisplay #GpsPart #Position #Compass #CompassArrow {
             position: absolute;
             left: calc(63.6842105263vh);

@@ -24,7 +24,8 @@ class SvgNearestVORElement extends SvgWaypointElement {
         let fName = "";
         if (this.source) {
             fName = this.source.imageFileName();
-        } else {
+        }
+        else {
             switch (this.vorType) {
                 case 1:
                     fName = "ICON_MAP_VOR.svg";

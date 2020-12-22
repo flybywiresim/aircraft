@@ -20,11 +20,9 @@ class CDUAvailableFlightPlanPage {
             [""],
             [""],
             [""],
-            ["<RETURN"]
+            ["\<RETURN"]
         ]);
-        mcdu.onLeftInput[5] = () => {
-            CDUInitPage.ShowPage1(mcdu);
-        };
+        mcdu.onLeftInput[5] = () => { CDUInitPage.ShowPage1(mcdu); };
     }
 }
 //# sourceMappingURL=A320_Neo_CDU_AvailableFlightPlanPage.js.map

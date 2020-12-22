@@ -1,78 +1,80 @@
 <ModelBehaviors>
 	<Include RelativeFile="NavComSystem.xml"/>
 
-	<Template Name="ASOBO_AS92_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<AS92>COM_AS92</AS92>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-			<TEMPLATE_TO_CALL>ASOBO_AS92_SubTemplate</TEMPLATE_TO_CALL>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_AS92_SubTemplate">
-		<DefaultTemplateParameters>
-			<BASE_EMISSIVE>0.5</BASE_EMISSIVE>
+<Template Name="ASOBO_AS92_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<AS92>COM_AS92</AS92>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_AS92_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_AS92_SubTemplate">
+	<DefaultTemplateParameters>
+		<BASE_EMISSIVE>0.5</BASE_EMISSIVE>
+		<Condition Check="CIRCUIT_ID">
+			<FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID#, Bool)</FAILURE>
+			<ANIM_NEVER_FAILS/>
+		</Condition>
+	</DefaultTemplateParameters>
+	<Component ID="COM_Screen#SUFFIX_ID#" Node="COM_Screen#SUFFIX_ID#">
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
 			<Condition Check="CIRCUIT_ID">
-				<FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID#, Bool)</FAILURE>
-				<ANIM_NEVER_FAILS/>
+				<True>
+					<EMISSIVE_CODE>#BASE_EMISSIVE#</EMISSIVE_CODE>
+				</True>
+				<False>
+			<EMISSIVE_CODE>(A:CIRCUIT NAVCOM#ID# ON, Bool) #BASE_EMISSIVE# *</EMISSIVE_CODE>
+				</False>
 			</Condition>
-		</DefaultTemplateParameters>
-		<Component ID="COM_Screen#SUFFIX_ID#" Node="COM_Screen#SUFFIX_ID#">
-			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-				<Condition Check="CIRCUIT_ID">
-					<True>
-						<EMISSIVE_CODE>#BASE_EMISSIVE#</EMISSIVE_CODE>
-					</True>
-					<False>
-				<EMISSIVE_CODE>(A:CIRCUIT NAVCOM#ID# ON, Bool) #BASE_EMISSIVE# *</EMISSIVE_CODE>
-					</False>
-				</Condition>
-			</UseTemplate>
-		</Component>
-		<UseTemplate Name="ASOBO_NAVCOM_Knob_COM_Frequency_Template">
-			<NODE_ID_LARGE_KNOB>#AS92#_Knob_MHZ#SUFFIX_ID#</NODE_ID_LARGE_KNOB>
-			<NODE_ID_SMALL_KNOB>#AS92#_Knob_KHZ#SUFFIX_ID#</NODE_ID_SMALL_KNOB>
-			<ANIM_NAME_LARGE_KNOB>#AS92#_Knob_MHZ#SUFFIX_ID#</ANIM_NAME_LARGE_KNOB>
-			<ANIM_NAME_SMALL_KNOB>#AS92#_Knob_KHZ#SUFFIX_ID#</ANIM_NAME_SMALL_KNOB>
-			<ANIM_NAME_SMALL_KNOB_PUSH>#AS92#_Knob_KHZ_Push#SUFFIX_ID#</ANIM_NAME_SMALL_KNOB_PUSH>
-			<ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>
-			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.INOP TT:COCKPIT.TOOLTIPS.AS92_KNOB_COM_PUSH_STEP</ANIMTIP_2>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_NAVCOM_Push_COM_Swap_Template">
-			<NODE_ID>#AS92#_Push_Swap#SUFFIX_ID#</NODE_ID>
-			<ANIM_NAME>#AS92#_Push_Swap#SUFFIX_ID#</ANIM_NAME>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.COM_FREQUENCY_TRANSFER_KEY</TOOLTIPID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_NAVCOM_Knob_COM_Volume_Template">
-			<DefaultTemplateParameters>
-				<NODE_ID>#AS92#_Knob_Volume#SUFFIX_ID#</NODE_ID>
-				<ANIM_NAME_SWITCH>#AS92#_Push_Squelsh#SUFFIX_ID#</ANIM_NAME_SWITCH>
-				<ANIM_NAME_KNOB>#AS92#_Knob_Volume#SUFFIX_ID#</ANIM_NAME_KNOB>
-				<ANIMREF_ID>1</ANIMREF_ID>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.NAVCOM_COM_VOLUME_DECREASE</ANIMTIP_0>
-				<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.NAVCOM_COM_VOLUME_INCREASE</ANIMTIP_1>
-				<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
-				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.NAVCOM_COM_VOLUME_TEST</ANIMTIP_2>
-				<ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>
-			</DefaultTemplateParameters>
+	</Component>
+	<UseTemplate Name="ASOBO_NAVCOM_Knob_COM_Frequency_Template">
+		<NODE_ID_LARGE_KNOB>#AS92#_Knob_MHZ#SUFFIX_ID#</NODE_ID_LARGE_KNOB>
+		<NODE_ID_SMALL_KNOB>#AS92#_Knob_KHZ#SUFFIX_ID#</NODE_ID_SMALL_KNOB>
+		<ANIM_NAME_LARGE_KNOB>#AS92#_Knob_MHZ#SUFFIX_ID#</ANIM_NAME_LARGE_KNOB>
+		<ANIM_NAME_SMALL_KNOB>#AS92#_Knob_KHZ#SUFFIX_ID#</ANIM_NAME_SMALL_KNOB>
+		<ANIM_NAME_SMALL_KNOB_PUSH>#AS92#_Knob_KHZ_Push#SUFFIX_ID#</ANIM_NAME_SMALL_KNOB_PUSH>
+		<ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>
+		<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.INOP TT:COCKPIT.TOOLTIPS.AS92_KNOB_COM_PUSH_STEP</ANIMTIP_2>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_NAVCOM_Push_COM_Swap_Template">
+		<NODE_ID>#AS92#_Push_Swap#SUFFIX_ID#</NODE_ID>
+		<ANIM_NAME>#AS92#_Push_Swap#SUFFIX_ID#</ANIM_NAME>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.COM_FREQUENCY_TRANSFER_KEY</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_NAVCOM_Knob_COM_Volume_Template">
+		<DefaultTemplateParameters>
 			<NODE_ID>#AS92#_Knob_Volume#SUFFIX_ID#</NODE_ID>
 			<ANIM_NAME_SWITCH>#AS92#_Push_Squelsh#SUFFIX_ID#</ANIM_NAME_SWITCH>
 			<ANIM_NAME_KNOB>#AS92#_Knob_Volume#SUFFIX_ID#</ANIM_NAME_KNOB>
-			<ANIM_LAG_SWITCH>500</ANIM_LAG_SWITCH>
-			<ANIM_LAG_KNOB>300</ANIM_LAG_KNOB>
+			<ANIMREF_ID>1</ANIMREF_ID>
+			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.NAVCOM_COM_VOLUME_DECREASE</ANIMTIP_0>
+			<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.NAVCOM_COM_VOLUME_INCREASE</ANIMTIP_1>
+			<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.NAVCOM_COM_VOLUME_TEST</ANIMTIP_2>
+			<ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>0.05 0.005
+		</DefaultTemplateParameters>
+		<NODE_ID>#AS92#_Knob_Volume#SUFFIX_ID#</NODE_ID>
+		<ANIM_NAME_SWITCH>#AS92#_Push_Squelsh#SUFFIX_ID#</ANIM_NAME_SWITCH>
+		<ANIM_NAME_KNOB>#AS92#_Knob_Volume#SUFFIX_ID#</ANIM_NAME_KNOB>
+		<ANIM_LAG_SWITCH>500</ANIM_LAG_SWITCH>
+		<ANIM_LAG_KNOB>300</ANIM_LAG_KNOB>
+		<THRESHOLD_X_INPUT>0.05</THRESHOLD_X_INPUT>
+		<THRESHOLD_X_MOUSE>0.005</THRESHOLD_X_MOUSE>
+	</UseTemplate>
+	<Component ID="#AS92#_Push_Memory_#ID#" Node="#AS92#_Push_Memory#SUFFIX_ID#">
+		<UseTemplate Name="ASOBO_NavCom_EmissiveMaterialTemplate">
+			<NO_POTENTIOMETER/>
 		</UseTemplate>
-		<Component ID="#AS92#_Push_Memory_#ID#" Node="#AS92#_Push_Memory#SUFFIX_ID#">
-			<UseTemplate Name="ASOBO_NavCom_EmissiveMaterialTemplate">
-				<NO_POTENTIOMETER/>
-			</UseTemplate>
-		</Component>
-		<Component ID="#AS92#_Push_Monitor_#ID#" Node="#AS92#_Push_Monitor#SUFFIX_ID#">
-			<UseTemplate Name="ASOBO_NavCom_EmissiveMaterialTemplate">
-				<NO_POTENTIOMETER/>
-			</UseTemplate>
-		</Component>
-	</Template>
+	</Component>
+	<Component ID="#AS92#_Push_Monitor_#ID#" Node="#AS92#_Push_Monitor#SUFFIX_ID#">
+		<UseTemplate Name="ASOBO_NavCom_EmissiveMaterialTemplate">
+			<NO_POTENTIOMETER/>
+		</UseTemplate>
+	</Component>
+</Template>
 </ModelBehaviors>

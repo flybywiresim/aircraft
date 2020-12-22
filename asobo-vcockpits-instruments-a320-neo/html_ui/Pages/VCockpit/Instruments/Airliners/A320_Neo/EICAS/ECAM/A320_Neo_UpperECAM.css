@@ -1,4 +1,41 @@
 ﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+html {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; }
+  html body {
+    -webkit-user-select: none;
+    font-family: Roboto-Regular;
+    font-size: calc(var(--viewportHeightRatio) * (36px / 21.6) * var(--currentPageHeight) / 100);
+    color: white;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0; }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; }
+
+:root {
   --ecamDefaultColour: white;
   --ecamUnitsColour: #009696;
   --ecamValueColour: green;
@@ -80,9 +117,11 @@ a320-neo-upper-ecam {
       a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .Unit {
         fill: var(--ecamUnitsColour); }
       a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .Value {
-        fill: var(--ecamValueColour); }
+        fill: var(--ecamValueColour);
+        font-size: 46px; }
       a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .Inactive {
         fill: var(--ecamInactiveColour);
+        font-size: 46px;
         letter-spacing: 5px; }
   a320-neo-upper-ecam #InfoTopPanel {
     position: absolute;

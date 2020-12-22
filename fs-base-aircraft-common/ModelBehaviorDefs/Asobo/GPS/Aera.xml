@@ -1,80 +1,83 @@
 <ModelBehaviors>
-	<Template Name="ASOBO_Aera_Template">
-		<DefaultTemplateParameters>
-			<POTENTIOMETER>4</POTENTIOMETER>
-		</DefaultTemplateParameters>
-		<Component ID="_Touchpad" Node="_Touchpad">
-			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-				<EMISSIVE_CODE>0.5</EMISSIVE_CODE>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
-				<LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
-				<!-- <MOUSEFLAGS>WheelUp</MOUSEFLAGS> -->
-			</UseTemplate>
-		</Component>
-		
-		<Condition Valid="NO_BUTTONS">
-			<False>
-				<Component ID="Aera_Nrst" Node="WARNING_NRST">
-					<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
-						<LEFT_SINGLE_CODE>(&gt;H:Aera_NRST_Push)</LEFT_SINGLE_CODE>
-					</UseTemplate>
-				</Component>
-				<Component ID="Aera_Drct" Node="WARNING_D">
-					<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
-						<LEFT_SINGLE_CODE>(&gt;H:Aera_DirectTo_Push)</LEFT_SINGLE_CODE>
-					</UseTemplate>
-				</Component>
-				<Component ID="Aera_Menu" Node="DECAL">
-					<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
-						<LEFT_SINGLE_CODE>(&gt;H:Aera_Menu_Push)</LEFT_SINGLE_CODE>
-					</UseTemplate>
-				</Component>
-				<Component ID="Aera_Back" Node="WARNING_BACK">
-					<UseTemplate Name="ASOBO_GT_Interaction_Left_Timed_Code">
-						<LONG_CLICK_TIME>1</LONG_CLICK_TIME>
-						<SHORT_CLICK_CODE>(&gt;H:Aera_Back_Push)</SHORT_CLICK_CODE>
-						<LONG_CLICK_CODE>(&gt;H:Aera_Back_Push_Long)</LONG_CLICK_CODE>
-					</UseTemplate>
-				</Component>
-			</False>
-		</Condition>
-	</Template>
-
-	<Template Name="ASOBO_Aera_Screen_Only_Template">
-		<DefaultTemplateParameters>
-			<Condition Check="USE_ON_OFF_SWITCH">
-				<!-- Requires CIRCUIT_ID -->
-				<ON_OFF_SWITCH_NODE_ID>A510_Switch_Power</ON_OFF_SWITCH_NODE_ID>
-				<ON_OFF_SWITCH_ANIM_NAME>A510_Switch_Power</ON_OFF_SWITCH_ANIM_NAME>
-			</Condition>
-			<WWISE_EVENT_1>a510_push_button_on</WWISE_EVENT_1> 
-			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>		
-			<WWISE_EVENT_2>a510_push_button_off</WWISE_EVENT_2>   
-			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
-		</DefaultTemplateParameters>
-		<Component ID="Aera_Screen" Node="Tablet_Screen">
-			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-				<Condition Check="USE_ON_OFF_SWITCH">
-					<FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID#, Bool)</FAILURE>
-				</Condition>
-				<EMISSIVE_CODE>0.5</EMISSIVE_CODE>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
-				<LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
-				<!--<MOUSEFLAGS>WheelUp</MOUSEFLAGS>-->
-			</UseTemplate>
-		</Component>
-		<Condition Check="USE_ON_OFF_SWITCH">
-			<Component ID="#ON_OFF_SWITCH_NODE_ID#" Node="#ON_OFF_SWITCH_NODE_ID#">
-				<UseTemplate Name="ASOBO_GT_Switch_Code">
-					<LEFT_SINGLE_CODE>#CIRCUIT_ID# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)</LEFT_SINGLE_CODE>
-					<ANIM_CODE>(A:CIRCUIT SWITCH ON:#CIRCUIT_ID#, Bool) 100 *</ANIM_CODE>
-					<ANIM_NAME>#ON_OFF_SWITCH_ANIM_NAME#</ANIM_NAME>
-					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AVIONICS_MASTER_SWITCH_OFF</ANIMTIP_0>
-					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AVIONICS_MASTER_SWITCH_ON</ANIMTIP_1>
+<Template Name="ASOBO_Aera_Template">
+	<DefaultTemplateParameters>
+		<POTENTIOMETER>4</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	<Component ID="_Touchpad" Node="_Touchpad">
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<EMISSIVE_CODE>0.5</EMISSIVE_CODE>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
+			<LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
+			<NO_HIGHLIGHT_NODE_ID>True</NO_HIGHLIGHT_NODE_ID>
+			<!-- <MOUSEFLAGS>WheelUp</MOUSEFLAGS> -->
+		</UseTemplate>
+	</Component>
+	
+	<Condition Valid="NO_BUTTONS">
+		<False>
+			<Component ID="Aera_Nrst" Node="WARNING_NRST">
+				<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
+					<LEFT_SINGLE_CODE>(&gt;H:Aera_NRST_Push)</LEFT_SINGLE_CODE>
 				</UseTemplate>
 			</Component>
+			<Component ID="Aera_Drct" Node="WARNING_D">
+				<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
+					<LEFT_SINGLE_CODE>(&gt;H:Aera_DirectTo_Push)</LEFT_SINGLE_CODE>
+				</UseTemplate>
+			</Component>
+			<Component ID="Aera_Menu" Node="DECAL">
+				<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
+					<LEFT_SINGLE_CODE>(&gt;H:Aera_Menu_Push)</LEFT_SINGLE_CODE>
+				</UseTemplate>
+			</Component>
+			<Component ID="Aera_Back" Node="WARNING_BACK">
+				<UseTemplate Name="ASOBO_GT_Interaction_Left_Timed_Code">
+					<LONG_CLICK_TIME>1</LONG_CLICK_TIME>
+					<SHORT_CLICK_CODE>(&gt;H:Aera_Back_Push)</SHORT_CLICK_CODE>
+					<LONG_CLICK_CODE>(&gt;H:Aera_Back_Push_Long)</LONG_CLICK_CODE>
+				</UseTemplate>
+			</Component>
+		</False>
+	</Condition>
+</Template>
+
+<Template Name="ASOBO_Aera_Screen_Only_Template">
+	<DefaultTemplateParameters>
+		<Condition Check="USE_ON_OFF_SWITCH">
+			<!-- Requires CIRCUIT_ID -->
+			<ON_OFF_SWITCH_NODE_ID>A510_Switch_Power</ON_OFF_SWITCH_NODE_ID>
+			<ON_OFF_SWITCH_ANIM_NAME>A510_Switch_Power</ON_OFF_SWITCH_ANIM_NAME>
 		</Condition>
-	</Template>
+		<WWISE_EVENT_1>a510_push_button_on</WWISE_EVENT_1> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>		
+		<WWISE_EVENT_2>a510_push_button_off</WWISE_EVENT_2>   
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+		<SCREEN_NODE_ID>Tablet_Screen</SCREEN_NODE_ID>
+	</DefaultTemplateParameters>
+	<Component ID="Aera_Screen" Node="#SCREEN_NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<Condition Check="USE_ON_OFF_SWITCH">
+				<FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID#, Bool)</FAILURE>
+			</Condition>
+			<EMISSIVE_CODE>0.5</EMISSIVE_CODE>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
+			<LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
+			<NO_HIGHLIGHT_NODE_ID>True</NO_HIGHLIGHT_NODE_ID>
+			<!--<MOUSEFLAGS>WheelUp</MOUSEFLAGS>-->
+		</UseTemplate>
+	</Component>
+	<Condition Check="USE_ON_OFF_SWITCH">
+		<Component ID="#ON_OFF_SWITCH_NODE_ID#" Node="#ON_OFF_SWITCH_NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Switch_Code">
+				<LEFT_SINGLE_CODE>#CIRCUIT_ID# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)</LEFT_SINGLE_CODE>
+				<ANIM_CODE>(A:CIRCUIT SWITCH ON:#CIRCUIT_ID#, Bool) 100 *</ANIM_CODE>
+				<ANIM_NAME>#ON_OFF_SWITCH_ANIM_NAME#</ANIM_NAME>
+				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AVIONICS_MASTER_SWITCH_OFF</ANIMTIP_0>
+				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AVIONICS_MASTER_SWITCH_ON</ANIMTIP_1>
+			</UseTemplate>
+		</Component>
+	</Condition>
+</Template>
 </ModelBehaviors>

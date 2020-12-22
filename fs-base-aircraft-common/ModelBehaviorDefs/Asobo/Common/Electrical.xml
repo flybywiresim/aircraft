@@ -3,623 +3,623 @@
 
 	<!-- Electricals ################################################################ -->
 	<Template Name="ASOBO_ELECTRICAL_Switch_Avionics_Master_Template">
-		<DefaultTemplateParameters>
-			<ANIM_NAME>ELECTRICAL_Switch_Avionics_Master</ANIM_NAME>
-			<NODE_ID>ELECTRICAL_Switch_Avionics_Master</NODE_ID>
-			<PART_ID>ELECTRICAL_Switch_Avionics_Master</PART_ID>
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Switch">
-				<ANIM_SIMVAR>AVIONICS MASTER SWITCH</ANIM_SIMVAR>
-				
-				<HELPID>HELPID_GAUGE_AVIONICS_SWITCH</HELPID>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AVIONICS_MASTER_SWITCH_OFF</ANIMTIP_0>
-				<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AVIONICS_MASTER_SWITCH_ON</ANIMTIP_1>
-				<ANIMTIP_1_ON_PERCENT>1</ANIMTIP_1_ON_PERCENT>
-				
-				<EVENTID>TOGGLE_AVIONICS_MASTER</EVENTID>
-				<WWISE_EVENT_1>avionic_switch_on</WWISE_EVENT_1>
-				<WWISE_EVENT_2>avionic_switch_off</WWISE_EVENT_2>
-			</UseTemplate>
-		</Component>
+	<DefaultTemplateParameters>
+		<ANIM_NAME>ELECTRICAL_Switch_Avionics_Master</ANIM_NAME>
+		<NODE_ID>ELECTRICAL_Switch_Avionics_Master</NODE_ID>
+		<PART_ID>ELECTRICAL_Switch_Avionics_Master</PART_ID>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Switch">
+			<ANIM_SIMVAR>AVIONICS MASTER SWITCH</ANIM_SIMVAR>
+			
+			<HELPID>HELPID_GAUGE_AVIONICS_SWITCH</HELPID>
+			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AVIONICS_MASTER_SWITCH_OFF</ANIMTIP_0>
+			<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AVIONICS_MASTER_SWITCH_ON</ANIMTIP_1>
+			<ANIMTIP_1_ON_PERCENT>1</ANIMTIP_1_ON_PERCENT>
+			
+			<EVENTID>TOGGLE_AVIONICS_MASTER</EVENTID>
+			<WWISE_EVENT_1>avionic_switch_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>avionic_switch_off</WWISE_EVENT_2>
+		</UseTemplate>
+	</Component>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Avionics_Bus_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<SWITCH_TYPE>ON_OFF</SWITCH_TYPE>
-			<Condition Check="MULTI_BUS">
-				<True>
-					<AVIONICS_BUS_ID_1>1</AVIONICS_BUS_ID_1>
-					<SOURCE_BUS_ID_1>-1</SOURCE_BUS_ID_1>
-					<AVIONICS_CIRCUIT_ID_1>1</AVIONICS_CIRCUIT_ID_1>
-					<AVIONICS_BUS_ID_2>1</AVIONICS_BUS_ID_2>
-					<SOURCE_BUS_ID_2>-1</SOURCE_BUS_ID_2>
-					<AVIONICS_CIRCUIT_ID_2>1</AVIONICS_CIRCUIT_ID_2>
-				</True>
-				<False>
-					<AVIONICS_BUS_ID>1</AVIONICS_BUS_ID>
-					<SOURCE_BUS_ID>-1</SOURCE_BUS_ID>
-					<AVIONICS_CIRCUIT_ID>1</AVIONICS_CIRCUIT_ID>
-				</False>
-			</Condition>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Avionics_Bus_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<SWITCH_TYPE>ON_OFF</SWITCH_TYPE>
+		<Condition Check="MULTI_BUS">
+			<True>
+				<AVIONICS_BUS_ID_1>1</AVIONICS_BUS_ID_1>
+				<SOURCE_BUS_ID_1>-1</SOURCE_BUS_ID_1>
+				<AVIONICS_CIRCUIT_ID_1>1</AVIONICS_CIRCUIT_ID_1>
+				<AVIONICS_BUS_ID_2>1</AVIONICS_BUS_ID_2>
+				<SOURCE_BUS_ID_2>-1</SOURCE_BUS_ID_2>
+				<AVIONICS_CIRCUIT_ID_2>1</AVIONICS_CIRCUIT_ID_2>
+			</True>
+			<False>
+				<AVIONICS_BUS_ID>1</AVIONICS_BUS_ID>
+				<SOURCE_BUS_ID>-1</SOURCE_BUS_ID>
+				<AVIONICS_CIRCUIT_ID>1</AVIONICS_CIRCUIT_ID>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Avionics_Bus_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Essential_Bus_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Essential_Bus_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Essential_Bus_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Alternator_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<NUM_STATES>2</NUM_STATES>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Alternator_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<NUM_STATES>2</NUM_STATES>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Alternator_SubTemplate">
+	</UseTemplate>
 	</Template>	    
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Engine_Bleed_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Engine_Bleed_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Engine_Bleed_SubTemplate">
+	</UseTemplate>
 	</Template>	
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_APU_Bleed_Template">
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_APU_Bleed_SubTemplate">
-		</UseTemplate>
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_APU_Bleed_SubTemplate">
+	</UseTemplate>
 	</Template>	  
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_APU_Starter_Template">
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_APU_Starter_SubTemplate">
-		</UseTemplate>
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_APU_Starter_SubTemplate">
+	</UseTemplate>
 	</Template>	  
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_APU_Generator_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters> 
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_APU_Generator_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters> 
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_APU_Generator_SubTemplate">
+	</UseTemplate>
 	</Template>	  
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Bus_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters> 
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Bus_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters> 
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Bus_SubTemplate">
+	</UseTemplate>
 	</Template>	  
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Circuit_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<INTERACTION>Switch</INTERACTION>
-		</DefaultTemplateParameters> 
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Circuit_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<INTERACTION>Switch</INTERACTION>
+	</DefaultTemplateParameters> 
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Circuit_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Battery_Master_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Battery_Master_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Battery_Master_SubTemplate">
+	</UseTemplate>
 	</Template>	
 
 	<Template Name="ASOBO_ELECTRICAL_Emissive_Battery_Discharge_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_ELECTRICAL_Emissive_Battery_Discharge_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_ELECTRICAL_Emissive_Battery_Discharge_SubTemplate">
+	</UseTemplate>
 	</Template>	
 
 	<Template Name="ASOBO_ELECTRICAL_Push_BatteryCharge_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name = "ASOBO_ELECTRICAL_Push_BatteryCharge_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name = "ASOBO_ELECTRICAL_Push_BatteryCharge_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Magneto_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<Switch Param="SWITCH_TYPE">
-				<Case Value="ON_OFF">
-					<ENG_ID>1</ENG_ID>
-				</Case>
-				<Default>
-					<INDEX_OFF>0</INDEX_OFF>
-					<INDEX_LEFT>1</INDEX_LEFT>
-					<INDEX_RIGHT>2</INDEX_RIGHT>
-					<INDEX_BOTH>3</INDEX_BOTH>	
-				</Default>
-			</Switch>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Magneto_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<Switch Param="SWITCH_TYPE">
+			<Case Value="ON_OFF">
+				<ENG_ID>1</ENG_ID>
+			</Case>
+			<Default>
+				<INDEX_OFF>0</INDEX_OFF>
+				<INDEX_LEFT>1</INDEX_LEFT>
+				<INDEX_RIGHT>2</INDEX_RIGHT>
+				<INDEX_BOTH>3</INDEX_BOTH>	
+			</Default>
+		</Switch>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Magneto_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Push_Starter_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_ELECTRICAL_Push_Starter_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_ELECTRICAL_Push_Starter_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Knob_Master_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<SWITCH_TYPE>OFF_ON_START</SWITCH_TYPE>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_ELECTRICAL_Knob_Master_SubTemplate"/>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<SWITCH_TYPE>OFF_ON_START</SWITCH_TYPE>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_ELECTRICAL_Knob_Master_SubTemplate"/>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Battery_STBY_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<WWISE_EVENT>switch_battery</WWISE_EVENT>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Battery_STBY_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<WWISE_EVENT>switch_battery</WWISE_EVENT>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Battery_STBY_SubTemplate">
+	</UseTemplate>
 	</Template>	
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Alternator_STBY_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<ALTERNATOR_ID>2</ALTERNATOR_ID>
-			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STBY_ALTERNATOR_OFF</ANIMTIP_0>
-			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.STBY_ALTERNATOR_ON</ANIMTIP_1>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Alternator_STBY_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<ALTERNATOR_ID>2</ALTERNATOR_ID>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STBY_ALTERNATOR_OFF</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.STBY_ALTERNATOR_ON</ANIMTIP_1>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Alternator_STBY_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Avionics_STBY_Power_Template">
-		<DefaultTemplateParameters>
-			<ANIM_NAME>ELECTRICAL_Switch_Avionics_STBY_Power</ANIM_NAME>
-			<NODE_ID>ELECTRICAL_Switch_Avionics_STBY_Power</NODE_ID>
-			<PART_ID>ELECTRICAL_Switch_Avionics_STBY_Power</PART_ID>
-			<COVER_NODE_ID>ELECTRICAL_Switch_Avionics_STBY_Power_Cover</COVER_NODE_ID>
-			<COVER_ANIM_NAME>ELECTRICAL_Switch_Avionics_STBY_Power_Cover</COVER_ANIM_NAME>
-			<SOURCE_BUS_ID>1</SOURCE_BUS_ID>
-			<DESTINATION_BUS>2</DESTINATION_BUS>
-			<ANIM_LENGTH>100</ANIM_LENGTH>
-			<ANIMREF_ID_SWITCH>0</ANIMREF_ID_SWITCH>
-			<ANIMTIP_0_ON_PERCENT_SWITCH>0</ANIMTIP_0_ON_PERCENT_SWITCH>
-			<ANIMTIP_1_ON_PERCENT_SWITCH>1</ANIMTIP_1_ON_PERCENT_SWITCH>
-			<ANIMTIP_0_SWITCH>TT:COCKPIT.TOOLTIPS.AVIONICS_STBY_POWER_BUTTON_OFF</ANIMTIP_0_SWITCH>
-			<ANIMTIP_1_SWITCH>TT:COCKPIT.TOOLTIPS.AVIONICS_STBY_POWER_BUTTON_ON</ANIMTIP_1_SWITCH>
-			<ANIMREF_ID_COVER>0</ANIMREF_ID_COVER>
-			<ANIMTIP_0_ON_PERCENT_COVER>0</ANIMTIP_0_ON_PERCENT_COVER>
-			<ANIMTIP_1_ON_PERCENT_COVER>1</ANIMTIP_1_ON_PERCENT_COVER>
-			<ANIMTIP_0_COVER>TT:COCKPIT.TOOLTIPS.AVIONICS_BUS_STBY_POWER_GUARD_ON</ANIMTIP_0_COVER>
-			<ANIMTIP_1_COVER>TT:COCKPIT.TOOLTIPS.AVIONICS_BUS_STBY_POWER_GUARD_OFF</ANIMTIP_1_COVER>
-			<WWISE_EVENT_1>avionics_stby_power_switch_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>avionics_stby_power_switch_off</WWISE_EVENT_2>		
-		</DefaultTemplateParameters>
-		<Component ID="ELECTRICAL_Avionics_STBY_Power">
-			<UseTemplate Name="ASOBO_GT_Switch_Covered">
-				<SWITCH_NODE_ID>#NODE_ID#</SWITCH_NODE_ID>
-				<SWITCH_ANIM_NAME>#ANIM_NAME#</SWITCH_ANIM_NAME>
-				<COVER_VAR_NAME>XMLVAR_ELECTRICAL_AvionicsSTBYPWR_CoverOpened</COVER_VAR_NAME>
-				<SWITCH_VAR_NAME>XMLVAR_ELECTRICAL_AvionicsSTBYPWR_Disabled</SWITCH_VAR_NAME>
-				<TOGGLE_ON_CODE>
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-					(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) ! if{
-						#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
-					}
-				</TOGGLE_ON_CODE>
-				<TOGGLE_OFF_CODE>
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-					(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) if{
-						#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
-					}
-				</TOGGLE_OFF_CODE>
-				<FORCED_OFF_CODE>
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-					(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) if{
-						#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
-					}
-				</FORCED_OFF_CODE>
-				<SWITCH_ANIM_CODE>
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-					(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) (I:XMLVAR_ELECTRICAL_AvionicsSTBYPWR_CoverOpened) and #ANIM_LENGTH# *
-				</SWITCH_ANIM_CODE>
-				<INIT_VALUE>
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-					(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) !
-				</INIT_VALUE>
-				<COVER_INIT_VALUE>
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-					(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool)
-				</COVER_INIT_VALUE>
-			</UseTemplate>
-		</Component>		
+	<DefaultTemplateParameters>
+		<ANIM_NAME>ELECTRICAL_Switch_Avionics_STBY_Power</ANIM_NAME>
+		<NODE_ID>ELECTRICAL_Switch_Avionics_STBY_Power</NODE_ID>
+		<PART_ID>ELECTRICAL_Switch_Avionics_STBY_Power</PART_ID>
+		<COVER_NODE_ID>ELECTRICAL_Switch_Avionics_STBY_Power_Cover</COVER_NODE_ID>
+		<COVER_ANIM_NAME>ELECTRICAL_Switch_Avionics_STBY_Power_Cover</COVER_ANIM_NAME>
+		<SOURCE_BUS_ID>1</SOURCE_BUS_ID>
+		<DESTINATION_BUS>2</DESTINATION_BUS>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIMREF_ID_SWITCH>0</ANIMREF_ID_SWITCH>
+		<ANIMTIP_0_ON_PERCENT_SWITCH>0</ANIMTIP_0_ON_PERCENT_SWITCH>
+		<ANIMTIP_1_ON_PERCENT_SWITCH>1</ANIMTIP_1_ON_PERCENT_SWITCH>
+		<ANIMTIP_0_SWITCH>TT:COCKPIT.TOOLTIPS.AVIONICS_STBY_POWER_BUTTON_OFF</ANIMTIP_0_SWITCH>
+		<ANIMTIP_1_SWITCH>TT:COCKPIT.TOOLTIPS.AVIONICS_STBY_POWER_BUTTON_ON</ANIMTIP_1_SWITCH>
+		<ANIMREF_ID_COVER>0</ANIMREF_ID_COVER>
+		<ANIMTIP_0_ON_PERCENT_COVER>0</ANIMTIP_0_ON_PERCENT_COVER>
+		<ANIMTIP_1_ON_PERCENT_COVER>1</ANIMTIP_1_ON_PERCENT_COVER>
+		<ANIMTIP_0_COVER>TT:COCKPIT.TOOLTIPS.AVIONICS_BUS_STBY_POWER_GUARD_ON</ANIMTIP_0_COVER>
+		<ANIMTIP_1_COVER>TT:COCKPIT.TOOLTIPS.AVIONICS_BUS_STBY_POWER_GUARD_OFF</ANIMTIP_1_COVER>
+		<WWISE_EVENT_1>avionics_stby_power_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>avionics_stby_power_switch_off</WWISE_EVENT_2>		
+	</DefaultTemplateParameters>
+	<Component ID="ELECTRICAL_Avionics_STBY_Power">
+		<UseTemplate Name="ASOBO_GT_Switch_Covered">
+			<SWITCH_NODE_ID>#NODE_ID#</SWITCH_NODE_ID>
+			<SWITCH_ANIM_NAME>#ANIM_NAME#</SWITCH_ANIM_NAME>
+			<COVER_VAR_NAME>XMLVAR_ELECTRICAL_AvionicsSTBYPWR_CoverOpened</COVER_VAR_NAME>
+			<SWITCH_VAR_NAME>XMLVAR_ELECTRICAL_AvionicsSTBYPWR_Disabled</SWITCH_VAR_NAME>
+			<TOGGLE_ON_CODE>
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
+				(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) ! if{
+					#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+				}
+			</TOGGLE_ON_CODE>
+			<TOGGLE_OFF_CODE>
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
+				(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) if{
+					#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+				}
+			</TOGGLE_OFF_CODE>
+			<FORCED_OFF_CODE>
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
+				(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) if{
+					#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+				}
+			</FORCED_OFF_CODE>
+			<SWITCH_ANIM_CODE>
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
+				(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) (I:XMLVAR_ELECTRICAL_AvionicsSTBYPWR_CoverOpened) and #ANIM_LENGTH# *
+			</SWITCH_ANIM_CODE>
+			<INIT_VALUE>
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
+				(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) !
+			</INIT_VALUE>
+			<COVER_INIT_VALUE>
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
+				(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool)
+			</COVER_INIT_VALUE>
+		</UseTemplate>
+	</Component>		
 	</Template>
 	<Template Name="ASOBO_ELECTRICAL_Switch_Avionics_Bus_Tie_Template">
-		<DefaultTemplateParameters>
-			<ANIM_NAME>ELECTRICAL_Switch_Avionics_Bus_Tie</ANIM_NAME>
-			<NODE_ID>ELECTRICAL_Switch_Avionics_Bus_Tie</NODE_ID>
-			<PART_ID>ELECTRICAL_Switch_Avionics_Bus_Tie</PART_ID>
-			<COVER_NODE_ID>ELECTRICAL_Switch_Avionics_Bus_Tie_Cover</COVER_NODE_ID>
-			<COVER_ANIM_NAME>ELECTRICAL_Switch_Avionics_Bus_Tie_Cover</COVER_ANIM_NAME>
-			<SOURCE_BUS_ID>1</SOURCE_BUS_ID>
-			<DESTINATION_BUS>2</DESTINATION_BUS>
-			<ANIM_LENGTH>100</ANIM_LENGTH>
-			<ANIMREF_ID_SWITCH>0</ANIMREF_ID_SWITCH>
-			<ANIMTIP_0_ON_PERCENT_SWITCH>0</ANIMTIP_0_ON_PERCENT_SWITCH>
-			<ANIMTIP_1_ON_PERCENT_SWITCH>1</ANIMTIP_1_ON_PERCENT_SWITCH>
-			<ANIMTIP_0_SWITCH>TT:COCKPIT.TOOLTIPS.AVIONICS_BUS_TIE_BUTTON_OFF</ANIMTIP_0_SWITCH>
-			<ANIMTIP_1_SWITCH>TT:COCKPIT.TOOLTIPS.AVIONICS_BUS_TIE_BUTTON_ON</ANIMTIP_1_SWITCH>
-			<ANIMREF_ID_COVER>0</ANIMREF_ID_COVER>
-			<ANIMTIP_0_ON_PERCENT_COVER>0</ANIMTIP_0_ON_PERCENT_COVER>
-			<ANIMTIP_1_ON_PERCENT_COVER>1</ANIMTIP_1_ON_PERCENT_COVER>
-			<ANIMTIP_0_COVER>TT:COCKPIT.TOOLTIPS.AVIONICS_BUS_TIE_BUTTON_GUARD_ON</ANIMTIP_0_COVER>
-			<ANIMTIP_1_COVER>TT:COCKPIT.TOOLTIPS.AVIONICS_BUS_TIE_BUTTON_GUARD_OFF</ANIMTIP_1_COVER>
-			<WWISE_EVENT_1>avionics_bus_tie_switch_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>avionics_bus_tie_switch_off</WWISE_EVENT_2>
-		</DefaultTemplateParameters>
-		<Component ID="ELECTRICAL_Avionics_Bus_Tie">
-			<UseTemplate Name="ASOBO_GT_Switch_Covered">
-				<SWITCH_NODE_ID>#NODE_ID#</SWITCH_NODE_ID>
-				<SWITCH_ANIM_NAME>#ANIM_NAME#</SWITCH_ANIM_NAME>
-				<COVER_VAR_NAME>XMLVAR_ELECTRICAL_AvionicsBusTie_CoverOpened</COVER_VAR_NAME>
-				<SWITCH_VAR_NAME>XMLVAR_ELECTRICAL_AvionicsBusTie_Disabled</SWITCH_VAR_NAME>
-				<TOGGLE_ON_CODE>
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-					(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) ! if{
-						#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
-					}
-				</TOGGLE_ON_CODE>
-				<TOGGLE_OFF_CODE>
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-					(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) if{
-						#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
-					}
-				</TOGGLE_OFF_CODE>
-				<FORCED_OFF_CODE>
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-					(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) if{
-						#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
-					}
-				</FORCED_OFF_CODE>
-				<SWITCH_ANIM_CODE>
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-					(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) (I:XMLVAR_ELECTRICAL_AvionicsBusTie_CoverOpened) and #ANIM_LENGTH# *
-				</SWITCH_ANIM_CODE>
-				<INIT_VALUE>
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-					(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) !
-				</INIT_VALUE>
-				<COVER_INIT_VALUE>
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-					(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool)
-				</COVER_INIT_VALUE>
-			</UseTemplate>
-		</Component>		
+	<DefaultTemplateParameters>
+		<ANIM_NAME>ELECTRICAL_Switch_Avionics_Bus_Tie</ANIM_NAME>
+		<NODE_ID>ELECTRICAL_Switch_Avionics_Bus_Tie</NODE_ID>
+		<PART_ID>ELECTRICAL_Switch_Avionics_Bus_Tie</PART_ID>
+		<COVER_NODE_ID>ELECTRICAL_Switch_Avionics_Bus_Tie_Cover</COVER_NODE_ID>
+		<COVER_ANIM_NAME>ELECTRICAL_Switch_Avionics_Bus_Tie_Cover</COVER_ANIM_NAME>
+		<SOURCE_BUS_ID>1</SOURCE_BUS_ID>
+		<DESTINATION_BUS>2</DESTINATION_BUS>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIMREF_ID_SWITCH>0</ANIMREF_ID_SWITCH>
+		<ANIMTIP_0_ON_PERCENT_SWITCH>0</ANIMTIP_0_ON_PERCENT_SWITCH>
+		<ANIMTIP_1_ON_PERCENT_SWITCH>1</ANIMTIP_1_ON_PERCENT_SWITCH>
+		<ANIMTIP_0_SWITCH>TT:COCKPIT.TOOLTIPS.AVIONICS_BUS_TIE_BUTTON_OFF</ANIMTIP_0_SWITCH>
+		<ANIMTIP_1_SWITCH>TT:COCKPIT.TOOLTIPS.AVIONICS_BUS_TIE_BUTTON_ON</ANIMTIP_1_SWITCH>
+		<ANIMREF_ID_COVER>0</ANIMREF_ID_COVER>
+		<ANIMTIP_0_ON_PERCENT_COVER>0</ANIMTIP_0_ON_PERCENT_COVER>
+		<ANIMTIP_1_ON_PERCENT_COVER>1</ANIMTIP_1_ON_PERCENT_COVER>
+		<ANIMTIP_0_COVER>TT:COCKPIT.TOOLTIPS.AVIONICS_BUS_TIE_BUTTON_GUARD_ON</ANIMTIP_0_COVER>
+		<ANIMTIP_1_COVER>TT:COCKPIT.TOOLTIPS.AVIONICS_BUS_TIE_BUTTON_GUARD_OFF</ANIMTIP_1_COVER>
+		<WWISE_EVENT_1>avionics_bus_tie_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>avionics_bus_tie_switch_off</WWISE_EVENT_2>
+	</DefaultTemplateParameters>
+	<Component ID="ELECTRICAL_Avionics_Bus_Tie">
+		<UseTemplate Name="ASOBO_GT_Switch_Covered">
+			<SWITCH_NODE_ID>#NODE_ID#</SWITCH_NODE_ID>
+			<SWITCH_ANIM_NAME>#ANIM_NAME#</SWITCH_ANIM_NAME>
+			<COVER_VAR_NAME>XMLVAR_ELECTRICAL_AvionicsBusTie_CoverOpened</COVER_VAR_NAME>
+			<SWITCH_VAR_NAME>XMLVAR_ELECTRICAL_AvionicsBusTie_Disabled</SWITCH_VAR_NAME>
+			<TOGGLE_ON_CODE>
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
+				(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) ! if{
+					#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+				}
+			</TOGGLE_ON_CODE>
+			<TOGGLE_OFF_CODE>
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
+				(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) if{
+					#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+				}
+			</TOGGLE_OFF_CODE>
+			<FORCED_OFF_CODE>
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
+				(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) if{
+					#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+				}
+			</FORCED_OFF_CODE>
+			<SWITCH_ANIM_CODE>
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
+				(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) (I:XMLVAR_ELECTRICAL_AvionicsBusTie_CoverOpened) and #ANIM_LENGTH# *
+			</SWITCH_ANIM_CODE>
+			<INIT_VALUE>
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
+				(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) !
+			</INIT_VALUE>
+			<COVER_INIT_VALUE>
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
+				(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool)
+			</COVER_INIT_VALUE>
+		</UseTemplate>
+	</Component>		
 	</Template>
 	<Template Name="ASOBO_ELECTRICAL_Switch_ExternalPower_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_ExternalPower_SubTemplate">
-		</UseTemplate>		
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_ExternalPower_SubTemplate">
+	</UseTemplate>		
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Connection_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Connection</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Connection</ANIM_NAME>
-			<ID>1</ID>
-			<SOURCE_BUS_ID>1</SOURCE_BUS_ID>
-			<Condition Check="ALTERNATE_DST">
-				<True>
-					<DESTINATION_BUS_1>2</DESTINATION_BUS_1>
-					<DESTINATION_BUS_2>3</DESTINATION_BUS_2>
-					<INIT>DST_1</INIT>
-				</True>
-				<False>
-					<DESTINATION_BUS>2</DESTINATION_BUS>
-				</False>
-			</Condition>
-			<ANIM_LENGTH>100</ANIM_LENGTH>
-			<TOGGLE_CODE/>
-			<Condition Check="MONITOR_SIMVAR_VALUE">
-				<SIMVAR_TYPE>Bool</SIMVAR_TYPE>
-				<VAR_NAME>XMLVAR_STORED_SIMVAR_VALUE</VAR_NAME>
-				<VAR_SCOPE>O</VAR_SCOPE>
-				<VALUE_CHANGED_CODE></VALUE_CHANGED_CODE>
-			</Condition>
-			<WWISE_EVENT_1>electrical_switch_on</WWISE_EVENT_1>
-			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-			<WWISE_EVENT_2>electrical_switch_off</WWISE_EVENT_2>
-			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition Check="ALTERNATE_DST">
-				<True>
-					<!-- alternate between 2 connections with the same source, one is always connected -->
-					<LEFT_SINGLE_CODE>
-						#DESTINATION_BUS_1# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
-						#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS_1#, Bool) sp0
-						#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS_2#, Bool) sp1
-						l0 l1 == if{
-							#DESTINATION_BUS_2# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)					
-						}
-						#TOGGLE_CODE#
-					</LEFT_SINGLE_CODE>
-					<SEQ1_EMISSIVE_CODE>#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS_1#, Bool)</SEQ1_EMISSIVE_CODE>
-					<SEQ2_EMISSIVE_CODE>#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS_2#, Bool)</SEQ2_EMISSIVE_CODE>
-					<Switch Param="INIT">
-						<Case Value="DST_1">
-							<BUS_TO_CONNECT_TO>#DESTINATION_BUS_1#</BUS_TO_CONNECT_TO>
-							<BUS_TO_DISCONNECT_FROM>#DESTINATION_BUS_2#</BUS_TO_DISCONNECT_FROM>
-						</Case>
-						<Case Value="DST_2">
-							<BUS_TO_CONNECT_TO>#DESTINATION_BUS_2#</BUS_TO_CONNECT_TO>
-							<BUS_TO_DISCONNECT_FROM>#DESTINATION_BUS_1#</BUS_TO_DISCONNECT_FROM>
-						</Case>
-					</Switch>
-				</True>
-				<False>
-					<LEFT_SINGLE_CODE>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Connection</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Connection</ANIM_NAME>
+		<ID>1</ID>
+		<SOURCE_BUS_ID>1</SOURCE_BUS_ID>
+		<Condition Check="ALTERNATE_DST">
+			<True>
+				<DESTINATION_BUS_1>2</DESTINATION_BUS_1>
+				<DESTINATION_BUS_2>3</DESTINATION_BUS_2>
+				<INIT>DST_1</INIT>
+			</True>
+			<False>
+				<DESTINATION_BUS>2</DESTINATION_BUS>
+			</False>
+		</Condition>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<TOGGLE_CODE/>
+		<Condition Check="MONITOR_SIMVAR_VALUE">
+			<SIMVAR_TYPE>Bool</SIMVAR_TYPE>
+			<VAR_NAME>XMLVAR_STORED_SIMVAR_VALUE</VAR_NAME>
+			<VAR_SCOPE>O</VAR_SCOPE>
+			<VALUE_CHANGED_CODE></VALUE_CHANGED_CODE>
+		</Condition>
+		<WWISE_EVENT_1>electrical_switch_on</WWISE_EVENT_1>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<WWISE_EVENT_2>electrical_switch_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Check="ALTERNATE_DST">
+			<True>
+				<!-- alternate between 2 connections with the same source, one is always connected -->
+				<LEFT_SINGLE_CODE>
+					#DESTINATION_BUS_1# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS_1#, Bool) sp0
+					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS_2#, Bool) sp1
+					l0 l1 == if{
+						#DESTINATION_BUS_2# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)					
+					}
+					#TOGGLE_CODE#
+				</LEFT_SINGLE_CODE>
+				<SEQ1_EMISSIVE_CODE>#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS_1#, Bool)</SEQ1_EMISSIVE_CODE>
+				<SEQ2_EMISSIVE_CODE>#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS_2#, Bool)</SEQ2_EMISSIVE_CODE>
+				<Switch Param="INIT">
+					<Case Value="DST_1">
+						<BUS_TO_CONNECT_TO>#DESTINATION_BUS_1#</BUS_TO_CONNECT_TO>
+						<BUS_TO_DISCONNECT_FROM>#DESTINATION_BUS_2#</BUS_TO_DISCONNECT_FROM>
+					</Case>
+					<Case Value="DST_2">
+						<BUS_TO_CONNECT_TO>#DESTINATION_BUS_2#</BUS_TO_CONNECT_TO>
+						<BUS_TO_DISCONNECT_FROM>#DESTINATION_BUS_1#</BUS_TO_DISCONNECT_FROM>
+					</Case>
+				</Switch>
+			</True>
+			<False>
+				<LEFT_SINGLE_CODE>
+					#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+					#TOGGLE_CODE#
+				</LEFT_SINGLE_CODE>
+				<!-- CONNECTED on SEQ2, DISCONNECTED on SEQ1-->
+				<Condition Valid="INVERT_EMISSIVE_STATE">
+					<True>
+						<SEQ1_EMISSIVE_CODE>#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) !</SEQ1_EMISSIVE_CODE>
+						<SEQ2_EMISSIVE_CODE>#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool)</SEQ2_EMISSIVE_CODE>
+					</True>
+					<False>
+						<SEQ1_EMISSIVE_CODE>#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool)</SEQ1_EMISSIVE_CODE>
+						<SEQ2_EMISSIVE_CODE>#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) !</SEQ2_EMISSIVE_CODE>
+					</False>
+				</Condition>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+	<Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
+		<Condition Check="MONITOR_SIMVAR_VALUE">
+			<Update Once="True">
+				(A:#MONITOR_SIMVAR_VALUE#, #SIMVAR_TYPE#) (&gt;#VAR_SCOPE#:#VAR_NAME#)
+			</Update>
+			<Update Frequency="5">
+				(A:#MONITOR_SIMVAR_VALUE#, #SIMVAR_TYPE#) (#VAR_SCOPE#:#VAR_NAME#) != if{
+					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
+					(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) (A:#MONITOR_SIMVAR_VALUE#, #SIMVAR_TYPE#) != if{
 						#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
-						#TOGGLE_CODE#
-					</LEFT_SINGLE_CODE>
-					<!-- CONNECTED on SEQ2, DISCONNECTED on SEQ1-->
-					<Condition Valid="INVERT_EMISSIVE_STATE">
-						<True>
-							<SEQ1_EMISSIVE_CODE>#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) !</SEQ1_EMISSIVE_CODE>
-							<SEQ2_EMISSIVE_CODE>#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool)</SEQ2_EMISSIVE_CODE>
-						</True>
-						<False>
-							<SEQ1_EMISSIVE_CODE>#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool)</SEQ1_EMISSIVE_CODE>
-							<SEQ2_EMISSIVE_CODE>#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) !</SEQ2_EMISSIVE_CODE>
-						</False>
-					</Condition>
-				</False>
-			</Condition>
-		</OverrideTemplateParameters>
-		<Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
-			<Condition Check="MONITOR_SIMVAR_VALUE">
-				<Update Once="True">
-					(A:#MONITOR_SIMVAR_VALUE#, #SIMVAR_TYPE#) (&gt;#VAR_SCOPE#:#VAR_NAME#)
-				</Update>
-				<Update Frequency="5">
-					(A:#MONITOR_SIMVAR_VALUE#, #SIMVAR_TYPE#) (#VAR_SCOPE#:#VAR_NAME#) != if{
+					}
+					#VALUE_CHANGED_CODE#
+				}
+				(A:#MONITOR_SIMVAR_VALUE#, #SIMVAR_TYPE#) (&gt;#VAR_SCOPE#:#VAR_NAME#)
+			</Update>
+		</Condition>
+		<Condition Check="ALTERNATE_DST">
+			<Update Once="True">
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#BUS_TO_DISCONNECT_FROM#, Bool) if{
+					#BUS_TO_DISCONNECT_FROM# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+				}
+				#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#BUS_TO_CONNECT_TO#, Bool) ! if{
+					#BUS_TO_CONNECT_TO# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+				}
+			</Update>
+		</Condition>
+		<Condition Valid="IS_AIRLINER">
+			<True>
+				<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+				</UseTemplate>
+			</True>
+			<False>
+				<UseTemplate Name="ASOBO_GT_Switch_Code">
+					<ANIM_CODE>
 						#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-						(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) (A:#MONITOR_SIMVAR_VALUE#, #SIMVAR_TYPE#) != if{
-							#DESTINATION_BUS# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
-						}
-						#VALUE_CHANGED_CODE#
-					}
-					(A:#MONITOR_SIMVAR_VALUE#, #SIMVAR_TYPE#) (&gt;#VAR_SCOPE#:#VAR_NAME#)
-				</Update>
-			</Condition>
-			<Condition Check="ALTERNATE_DST">
-				<Update Once="True">
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#BUS_TO_DISCONNECT_FROM#, Bool) if{
-						#BUS_TO_DISCONNECT_FROM# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
-					}
-					#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#BUS_TO_CONNECT_TO#, Bool) ! if{
-						#BUS_TO_CONNECT_TO# #SOURCE_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
-					}
-				</Update>
-			</Condition>
-			<Condition Valid="IS_AIRLINER">
-				<True>
-					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-					</UseTemplate>
-				</True>
-				<False>
-					<UseTemplate Name="ASOBO_GT_Switch_Code">
-						<ANIM_CODE>
-							#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number)
-							(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) #ANIM_LENGTH# *
-						</ANIM_CODE>
-					</UseTemplate>
-				</False>
-			</Condition>
-		</Component>
+						(A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) #ANIM_LENGTH# *
+					</ANIM_CODE>
+				</UseTemplate>
+			</False>
+		</Condition>
+	</Component>
 	</Template>
 
 	<!-- PARAM: IS_ON (code returning true when the procedure has been executed) Since it's context dependent it must be provided case by case -->
 	<Template Name="ASOBO_ELECTRICAL_Switch_Procedure_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Procedure</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Procedure</ANIM_NAME>
+		<ID>1</ID>
+		<PROC_ID>1</PROC_ID>
+		<!-- DUMMY SETTINGS, override as necessary -->
+		<IS_ON>(O:_IsOn) ! (&gt;O:_IsOn) (O:_IsOn)</IS_ON>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<LEFT_SINGLE_CODE>#IS_ON# #PROC_ID# (&gt;K:2:ELECTRICAL_EXECUTE_PROCEDURE)</LEFT_SINGLE_CODE>
+	</OverrideTemplateParameters>
+	<Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
 		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Procedure</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Procedure</ANIM_NAME>
-			<ID>1</ID>
-			<PROC_ID>1</PROC_ID>
-			<!-- DUMMY SETTINGS, override as necessary -->
-			<IS_ON>(O:_IsOn) ! (&gt;O:_IsOn) (O:_IsOn)</IS_ON>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<LEFT_SINGLE_CODE>#IS_ON# #PROC_ID# (&gt;K:2:ELECTRICAL_EXECUTE_PROCEDURE)</LEFT_SINGLE_CODE>
-		</OverrideTemplateParameters>
-		<Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
-			<DefaultTemplateParameters>
-				<Switch Param="TYPE">
-					<Case Value="SWITCH">
-						<ANIM_CODE>(O:_IsOn) 100 *</ANIM_CODE>
-					</Case>
-				</Switch>
-			</DefaultTemplateParameters>
 			<Switch Param="TYPE">
-				<Case Value="PUSH">
-					<UseTemplate Name="ASOBO_GT_Push_Button">
-					</UseTemplate>
-				</Case>
 				<Case Value="SWITCH">
-					<UseTemplate Name="ASOBO_GT_Switch_Code">
-					</UseTemplate>
+					<ANIM_CODE>(O:_IsOn) 100 *</ANIM_CODE>
 				</Case>
 			</Switch>
-		</Component>
+		</DefaultTemplateParameters>
+		<Switch Param="TYPE">
+			<Case Value="PUSH">
+				<UseTemplate Name="ASOBO_GT_Push_Button">
+				</UseTemplate>
+			</Case>
+			<Case Value="SWITCH">
+				<UseTemplate Name="ASOBO_GT_Switch_Code">
+				</UseTemplate>
+			</Case>
+		</Switch>
+	</Component>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Breaker_Autopilot_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Breaker_Autopilot</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Breaker_Autopilot</ANIM_NAME>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
-			<CIRCUIT_NAME>AUTOPILOT</CIRCUIT_NAME>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Breaker_Autopilot</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Breaker_Autopilot</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
+		<CIRCUIT_NAME>AUTOPILOT</CIRCUIT_NAME>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Breaker_AvnFan_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Breaker_AvnFan</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Breaker_AvnFan</ANIM_NAME>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
-			<CIRCUIT_NAME>AVNFAN</CIRCUIT_NAME>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Breaker_AvnFan</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Breaker_AvnFan</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
+		<CIRCUIT_NAME>AVNFAN</CIRCUIT_NAME>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Breaker_GPS_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Breaker_GPS</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Breaker_GPS</ANIM_NAME>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
-			<CIRCUIT_NAME>GPS</CIRCUIT_NAME>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Breaker_GPS</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Breaker_GPS</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
+		<CIRCUIT_NAME>GPS</CIRCUIT_NAME>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Breaker_NAVCOM1_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Breaker_NAVCOM1</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Breaker_NAVCOM1</ANIM_NAME>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
-			<CIRCUIT_NAME>NAVCOM1</CIRCUIT_NAME>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Breaker_NAVCOM1</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Breaker_NAVCOM1</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
+		<CIRCUIT_NAME>NAVCOM1</CIRCUIT_NAME>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Breaker_NAVCOM2_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Breaker_NAVCOM2</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Breaker_NAVCOM2</ANIM_NAME>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
-			<CIRCUIT_NAME>NAVCOM2</CIRCUIT_NAME>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Breaker_NAVCOM2</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Breaker_NAVCOM2</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
+		<CIRCUIT_NAME>NAVCOM2</CIRCUIT_NAME>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Breaker_NAVCOM3_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Breaker_NAVCOM3</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Breaker_NAVCOM3</ANIM_NAME>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
-			<CIRCUIT_NAME>NAVCOM3</CIRCUIT_NAME>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Breaker_NAVCOM3</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Breaker_NAVCOM3</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
+		<CIRCUIT_NAME>NAVCOM3</CIRCUIT_NAME>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Breaker_ADF_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Breaker_ADF</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Breaker_ADF</ANIM_NAME>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
-			<CIRCUIT_NAME>ADF</CIRCUIT_NAME>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Breaker_ADF</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Breaker_ADF</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
+		<CIRCUIT_NAME>ADF</CIRCUIT_NAME>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Breaker_XPNDR_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Breaker_XPNDR</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Breaker_XPNDR</ANIM_NAME>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
-			<CIRCUIT_NAME>XPNDR</CIRCUIT_NAME>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Breaker_XPNDR</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Breaker_XPNDR</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
+		<CIRCUIT_NAME>XPNDR</CIRCUIT_NAME>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Breaker_FLAP_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Breaker_FLAP</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Breaker_FLAP</ANIM_NAME>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
-			<CIRCUIT_NAME>FLAP</CIRCUIT_NAME>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Breaker_FLAP</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Breaker_FLAP</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
+		<CIRCUIT_NAME>FLAP</CIRCUIT_NAME>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Breaker_AVNBUS1_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Breaker_AVNBUS1</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Breaker_AVNBUS1</ANIM_NAME>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
-			<CIRCUIT_NAME>AVNBUS1</CIRCUIT_NAME>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Breaker_AVNBUS1</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Breaker_AVNBUS1</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
+		<CIRCUIT_NAME>AVNBUS1</CIRCUIT_NAME>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Breaker_AVNBUS2_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Breaker_AVNBUS2</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Breaker_AVNBUS2</ANIM_NAME>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
-			<CIRCUIT_NAME>AVNBUS2</CIRCUIT_NAME>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Breaker_AVNBUS2</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Breaker_AVNBUS2</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
+		<CIRCUIT_NAME>AVNBUS2</CIRCUIT_NAME>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Breaker_LTSPWR_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Breaker_LTSPWR</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Breaker_LTSPWR</ANIM_NAME>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
-			<CIRCUIT_NAME>LTSPWR</CIRCUIT_NAME>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Breaker_LTSPWR</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Breaker_LTSPWR</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
+		<CIRCUIT_NAME>LTSPWR</CIRCUIT_NAME>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Switch_Breaker_ALTFLD_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>ELECTRICAL_Switch_Breaker_ALTFLD</NODE_ID>
-			<ANIM_NAME>ELECTRICAL_Switch_Breaker_ALTFLD</ANIM_NAME>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
-			<CIRCUIT_NAME>ALTFLD</CIRCUIT_NAME>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_Switch_Breaker_ALTFLD</NODE_ID>
+		<ANIM_NAME>ELECTRICAL_Switch_Breaker_ALTFLD</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Breaker_Template">
+		<CIRCUIT_NAME>ALTFLD</CIRCUIT_NAME>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_ELECTRICAL_Emissive_Bus_Template">
-		<DefaultTemplateParameters>
-			<BUS_INDEX>-1</BUS_INDEX>
-		</DefaultTemplateParameters> 
-		<UseTemplate Name="ASOBO_ELECTRICAL_Emissive_Bus_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<BUS_INDEX>-1</BUS_INDEX>
+	</DefaultTemplateParameters> 
+	<UseTemplate Name="ASOBO_ELECTRICAL_Emissive_Bus_SubTemplate">
+	</UseTemplate>
 	</Template>	  
 </ModelBehaviors>

@@ -1,167 +1,168 @@
 <ModelBehaviors>
 	<Include ModelBehaviorFile="Asobo\Generic.xml"/>
 
-	<!-- REQ: SUFFIX for auto naming -->
-	<Template Name="ASOBO_AS3X_Touch_Knob_Template">
-		<DefaultTemplateParameters>
-			<Condition Check="SUFFIX">
-				<NODE_ID>AS3X_Knob_#SUFFIX##SUFFIX_ID#</NODE_ID>
-				<ANIM_NAME>AS3X_Knob_#SUFFIX##SUFFIX_ID#</ANIM_NAME>
-				<PART_ID>AS3X_Knob_#SUFFIX#</PART_ID>
-				<KEY_NAME_INC>AS3X_Touch_#ID#_Knob_#SUFFIX#_INC</KEY_NAME_INC>
-				<KEY_NAME_DEC>AS3X_Touch_#ID#_Knob_#SUFFIX#_DEC</KEY_NAME_DEC>
-			</Condition>
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-				<CLOCKWISE_CODE>(&gt;H:#KEY_NAME_INC#)</CLOCKWISE_CODE>
-				<ANTICLOCKWISE_CODE>(&gt;H:#KEY_NAME_DEC#)</ANTICLOCKWISE_CODE>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-				<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
-			</UseTemplate>
-		</Component>
-	</Template>
-	<!-- REQ: SUFFIX for auto naming, KEY_ID_OVERRIDE to override key_name if a suffix is supplied or tu use the default naming convention -->
-	<Template Name="ASOBO_AS3X_Touch_Push_Template">
-		<DefaultTemplateParameters>
-			<BUTTON_POTENTIOMETER>#POTENTIOMETER#</BUTTON_POTENTIOMETER>
-			<Condition Check="SUFFIX">
-				<NODE_ID>AS3X_Push_#SUFFIX##SUFFIX_ID#</NODE_ID>
-				<ANIM_NAME>AS3X_Push_#SUFFIX##SUFFIX_ID#</ANIM_NAME>
-				<PART_ID>AS3X_Push_#SUFFIX#</PART_ID>
-			</Condition>
-			<Condition Check="KEY_ID_OVERRIDE">
-				<True>
-					<KEY>AS3X_Touch_#ID#_#KEY_ID_OVERRIDE#_Push</KEY>
-				</True>
-				<False>
-					<Condition Check="SUFFIX">
-						<KEY>AS3X_Touch_#ID#_#SUFFIX#_Push</KEY>
-					</Condition>
-				</False>
-			</Condition>
-			<WWISE_EVENT_1>as3x_button_push_on</WWISE_EVENT_1>
-			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-			<WWISE_EVENT_2>as3x_button_push_off</WWISE_EVENT_2> 
-			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Push_Button_Emissive">
-				<ANIM_NAME>#ANIM_NAME#</ANIM_NAME>
-				<LEFT_SINGLE_CODE>(&gt;H:#KEY#)</LEFT_SINGLE_CODE>
-				<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#BUTTON_POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
-			</UseTemplate>
-		</Component>
-	</Template>
-
-	<Template Name="ASOBO_AS3X_Touch">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-			<TEMPLATE_TO_CALL>ASOBO_AS3X_Touch_SubTemplate</TEMPLATE_TO_CALL>
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_AS3X_Touch_SubTemplate">
-		<DefaultTemplateParameters>
-			<POTENTIOMETER>4</POTENTIOMETER>
-		</DefaultTemplateParameters>
-		<Component ID="AS3X_Touch_SCREEN#SUFFIX_ID#" Node="AS3X_Screen#SUFFIX_ID#">
-			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-				<PART_ID>AS3X_Touch</PART_ID>
-				<EMISSIVE_CODE>0.5</EMISSIVE_CODE>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
-				<LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
-				<!-- <MOUSEFLAGS>WheelUp</MOUSEFLAGS> -->
-			</UseTemplate>
-		</Component>
-		<UseTemplate Name="ASOBO_AS3X_Touch_Push_Template">
-			<SUFFIX>Nearest</SUFFIX>
-			<KEY_ID_OVERRIDE>NRST</KEY_ID_OVERRIDE>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_NEAREST</TOOLTIPID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS3X_Touch_Push_Template">
-			<SUFFIX>DirectTo</SUFFIX>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_DIRECT_TO</TOOLTIPID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS3X_Touch_Push_Template">
-			<SUFFIX>Menu</SUFFIX>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_MENU</TOOLTIPID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS3X_Touch_Push_Template">
-			<SUFFIX>Back</SUFFIX>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.BACK</TOOLTIPID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS3X_Touch_Knob_Template">
-			<SUFFIX>Inner_L</SUFFIX>
-			<WWISE_EVENT>as3x_inner_knob</WWISE_EVENT>
-			<COUNT>36</COUNT>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS3X_Touch_Knob_Template">
-			<SUFFIX>Inner_R</SUFFIX>
-			<WWISE_EVENT>as3x_inner_knob</WWISE_EVENT>
-			<COUNT>36</COUNT>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS3X_Touch_Knob_Template">
-			<SUFFIX>Outer_L</SUFFIX>
-			<WWISE_EVENT>as3x_outer_knob</WWISE_EVENT>
-			<COUNT>36</COUNT>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS3X_Touch_Knob_Template">
-			<SUFFIX>Outer_R</SUFFIX>		
-			<WWISE_EVENT>as3x_outer_knob</WWISE_EVENT>
-			<COUNT>36</COUNT>
-		</UseTemplate>
-	</Template>
-
-	<!-- REQ: NODE_ID (name of the screen node) // AMBIENT_POTENTIOMETER: ID of the potentiometer driving ambient light (found in system.cfg) -->
-	<Template Name="ASOBO_AS3X_Touch_Screen_Template">
-		<DefaultTemplateParameters>
-			<POTENTIOMETER>4</POTENTIOMETER>
-			<LIGHT_DIMMING_SCALE>0.3</LIGHT_DIMMING_SCALE>
-			<SCREEN_LIGHT_DIMMING_SCALE>0.5</SCREEN_LIGHT_DIMMING_SCALE>
-			<SCREEN_MIN_EMISSIVE_PERCENT>0.05</SCREEN_MIN_EMISSIVE_PERCENT>
-			<MIN_AMBIENT_EMISSIVE_PERCENT>0.1</MIN_AMBIENT_EMISSIVE_PERCENT>
-			<MAX_EMISSIVE_PERCENT>1</MAX_EMISSIVE_PERCENT>
-			<INSTR_ID>1</INSTR_ID>
-			<AS3X>AS3X</AS3X>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_AS3X_Touch_Screen_SubTemplate">
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_AS3X_Touch_Screen_SubTemplate">
-		<DefaultTemplateParameters>
-			<KEY_PREFIX>#AS3X#_Touch_#INSTR_ID#</KEY_PREFIX>
-			<SCREEN_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #SCREEN_LIGHT_DIMMING_SCALE# * #MAX_EMISSIVE_PERCENT# #SCREEN_MIN_EMISSIVE_PERCENT# - * #SCREEN_MIN_EMISSIVE_PERCENT# +</SCREEN_EMISSIVE_CODE>
-			<Condition Check="CIRCUIT_ID">
-				<True>
-					<FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID#, Bool)</FAILURE>
-				</True>
-				<False>
-					<FAILURE>(A:CIRCUIT GENERAL PANEL ON:0, Bool)</FAILURE>
-				</False>
-			</Condition>
-			<NODE_ID>#AS3X#_Screen_#INSTR_ID#_#ID#</NODE_ID>
-		</DefaultTemplateParameters>
-		<Condition Check="AMBIENT_POTENTIOMETER">
-			<Component ID="#AS3X#_Touch_Ambient_#INSTR_ID#_#ID#">
-				<UseTemplate Name="ASOBO_LIGHTING_Ambient_Template">
-					<BOUNCE_POTENTIOMETER_PERCENT>
-						(L:#KEY_PREFIX#_ScreenLuminosity) (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #MAX_EMISSIVE_PERCENT# #SCREEN_MIN_EMISSIVE_PERCENT# - * * #MIN_AMBIENT_EMISSIVE_PERCENT# + #FAILURE# * 100 *
-					</BOUNCE_POTENTIOMETER_PERCENT>
-					<POTENTIOMETER>#AMBIENT_POTENTIOMETER#</POTENTIOMETER>
-				</UseTemplate>
-			</Component>
+<!-- REQ: SUFFIX for auto naming -->
+<Template Name="ASOBO_AS3X_Touch_Knob_Template">
+	<DefaultTemplateParameters>
+		<Condition Check="SUFFIX">
+			<NODE_ID>AS3X_Knob_#SUFFIX##SUFFIX_ID#</NODE_ID>
+			<ANIM_NAME>AS3X_Knob_#SUFFIX##SUFFIX_ID#</ANIM_NAME>
+			<PART_ID>AS3X_Knob_#SUFFIX#</PART_ID>
+			<KEY_NAME_INC>AS3X_Touch_#ID#_Knob_#SUFFIX#_INC</KEY_NAME_INC>
+			<KEY_NAME_DEC>AS3X_Touch_#ID#_Knob_#SUFFIX#_DEC</KEY_NAME_DEC>
 		</Condition>
-		<Component ID="#AS3X#_Touch_Screen_#INSTR_ID#_#ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-				<PART_ID>#AS3X#_Touch</PART_ID>
-				<EMISSIVE_CODE>#SCREEN_EMISSIVE_CODE#</EMISSIVE_CODE>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+			<CLOCKWISE_CODE>(&gt;H:#KEY_NAME_INC#)</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>(&gt;H:#KEY_NAME_DEC#)</ANTICLOCKWISE_CODE>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+<!-- REQ: SUFFIX for auto naming, KEY_ID_OVERRIDE to override key_name if a suffix is supplied or tu use the default naming convention -->
+<Template Name="ASOBO_AS3X_Touch_Push_Template">
+	<DefaultTemplateParameters>
+		<BUTTON_POTENTIOMETER>#POTENTIOMETER#</BUTTON_POTENTIOMETER>
+		<Condition Check="SUFFIX">
+			<NODE_ID>AS3X_Push_#SUFFIX##SUFFIX_ID#</NODE_ID>
+			<ANIM_NAME>AS3X_Push_#SUFFIX##SUFFIX_ID#</ANIM_NAME>
+			<PART_ID>AS3X_Push_#SUFFIX#</PART_ID>
+		</Condition>
+		<Condition Check="KEY_ID_OVERRIDE">
+			<True>
+				<KEY>AS3X_Touch_#ID#_#KEY_ID_OVERRIDE#_Push</KEY>
+			</True>
+			<False>
+				<Condition Check="SUFFIX">
+					<KEY>AS3X_Touch_#ID#_#SUFFIX#_Push</KEY>
+				</Condition>
+			</False>
+		</Condition>
+		<WWISE_EVENT_1>as3x_button_push_on</WWISE_EVENT_1>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<WWISE_EVENT_2>as3x_button_push_off</WWISE_EVENT_2> 
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button_Emissive">
+			<ANIM_NAME>#ANIM_NAME#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:#KEY#)</LEFT_SINGLE_CODE>
+			<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#BUTTON_POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_AS3X_Touch">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_AS3X_Touch_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_AS3X_Touch_SubTemplate">
+	<DefaultTemplateParameters>
+		<POTENTIOMETER>4</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	<Component ID="AS3X_Touch_SCREEN#SUFFIX_ID#" Node="AS3X_Screen#SUFFIX_ID#">
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<PART_ID>AS3X_Touch</PART_ID>
+			<EMISSIVE_CODE>0.5</EMISSIVE_CODE>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
+			<LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
+			<NO_HIGHLIGHT_NODE_ID>True</NO_HIGHLIGHT_NODE_ID>
+			<!-- <MOUSEFLAGS>WheelUp</MOUSEFLAGS> -->
+		</UseTemplate>
+	</Component>
+	<UseTemplate Name="ASOBO_AS3X_Touch_Push_Template">
+		<SUFFIX>Nearest</SUFFIX>
+		<KEY_ID_OVERRIDE>NRST</KEY_ID_OVERRIDE>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_NEAREST</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS3X_Touch_Push_Template">
+		<SUFFIX>DirectTo</SUFFIX>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_DIRECT_TO</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS3X_Touch_Push_Template">
+		<SUFFIX>Menu</SUFFIX>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_MENU</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS3X_Touch_Push_Template">
+		<SUFFIX>Back</SUFFIX>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.BACK</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS3X_Touch_Knob_Template">
+		<SUFFIX>Inner_L</SUFFIX>
+		<WWISE_EVENT>as3x_inner_knob</WWISE_EVENT>
+		<COUNT>36</COUNT>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS3X_Touch_Knob_Template">
+		<SUFFIX>Inner_R</SUFFIX>
+		<WWISE_EVENT>as3x_inner_knob</WWISE_EVENT>
+		<COUNT>36</COUNT>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS3X_Touch_Knob_Template">
+		<SUFFIX>Outer_L</SUFFIX>
+		<WWISE_EVENT>as3x_outer_knob</WWISE_EVENT>
+		<COUNT>36</COUNT>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS3X_Touch_Knob_Template">
+		<SUFFIX>Outer_R</SUFFIX>		
+		<WWISE_EVENT>as3x_outer_knob</WWISE_EVENT>
+		<COUNT>36</COUNT>
+	</UseTemplate>
+</Template>
+
+<!-- REQ: NODE_ID (name of the screen node) // AMBIENT_POTENTIOMETER: ID of the potentiometer driving ambient light (found in system.cfg) -->
+<Template Name="ASOBO_AS3X_Touch_Screen_Template">
+	<DefaultTemplateParameters>
+		<POTENTIOMETER>4</POTENTIOMETER>
+		<LIGHT_DIMMING_SCALE>0.3</LIGHT_DIMMING_SCALE>
+		<SCREEN_LIGHT_DIMMING_SCALE>0.5</SCREEN_LIGHT_DIMMING_SCALE>
+		<SCREEN_MIN_EMISSIVE_PERCENT>0.05</SCREEN_MIN_EMISSIVE_PERCENT>
+		<MIN_AMBIENT_EMISSIVE_PERCENT>0.1</MIN_AMBIENT_EMISSIVE_PERCENT>
+		<MAX_EMISSIVE_PERCENT>1</MAX_EMISSIVE_PERCENT>
+		<INSTR_ID>1</INSTR_ID>
+		<AS3X>AS3X</AS3X>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_AS3X_Touch_Screen_SubTemplate">
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_AS3X_Touch_Screen_SubTemplate">
+	<DefaultTemplateParameters>
+		<KEY_PREFIX>#AS3X#_Touch_#INSTR_ID#</KEY_PREFIX>
+		<SCREEN_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #SCREEN_LIGHT_DIMMING_SCALE# * #MAX_EMISSIVE_PERCENT# #SCREEN_MIN_EMISSIVE_PERCENT# - * #SCREEN_MIN_EMISSIVE_PERCENT# +</SCREEN_EMISSIVE_CODE>
+		<Condition Check="CIRCUIT_ID">
+			<True>
+				<FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID#, Bool)</FAILURE>
+			</True>
+			<False>
+				<FAILURE>(A:CIRCUIT GENERAL PANEL ON:0, Bool)</FAILURE>
+			</False>
+		</Condition>
+		<NODE_ID>#AS3X#_Screen_#INSTR_ID#_#ID#</NODE_ID>
+	</DefaultTemplateParameters>
+	<Condition Check="AMBIENT_POTENTIOMETER">
+		<Component ID="#AS3X#_Touch_Ambient_#INSTR_ID#_#ID#">
+			<UseTemplate Name="ASOBO_LIGHTING_Ambient_Template">
+				<BOUNCE_POTENTIOMETER_PERCENT>
+					(L:#KEY_PREFIX#_ScreenLuminosity) (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #MAX_EMISSIVE_PERCENT# #SCREEN_MIN_EMISSIVE_PERCENT# - * * #MIN_AMBIENT_EMISSIVE_PERCENT# + #FAILURE# * 100 *
+				</BOUNCE_POTENTIOMETER_PERCENT>
+				<POTENTIOMETER>#AMBIENT_POTENTIOMETER#</POTENTIOMETER>
 			</UseTemplate>
 		</Component>
-	</Template>
+	</Condition>
+	<Component ID="#AS3X#_Touch_Screen_#INSTR_ID#_#ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<PART_ID>#AS3X#_Touch</PART_ID>
+			<EMISSIVE_CODE>#SCREEN_EMISSIVE_CODE#</EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
 </ModelBehaviors>

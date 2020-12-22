@@ -2,338 +2,403 @@
 	<Include ModelBehaviorFile="Asobo\Generic.xml"/>
 	<Include ModelBehaviorFile="Asobo\NAVCOM\NavComSystem.xml"/>
 
-	<Template Name="ASOBO_AS430_Push_Button_Template">
-		<DefaultTemplateParameters>
-			<BTN_ID></BTN_ID>
-			<PREFIX>#AS430#</PREFIX>
-			<WWISE_PREFIX>ASB430</WWISE_PREFIX>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_AS430_Push_Button_SubTemplate"/>
-	</Template>
-	<Template Name="ASOBO_AS430_Push_Button_SubTemplate">
-		<DefaultTemplateParameters>
-			<EXTRA_PARAM>_Emissive</EXTRA_PARAM>
-			<NODE_ID>#PREFIX#_#BTN_ID#</NODE_ID>
-			<ANIM_NAME>#PREFIX#_#BTN_ID#</ANIM_NAME>
-			<PART_ID>#PREFIX#_#BTN_ID#</PART_ID>
-			<HTML_KEY>#PREFIX#_</HTML_KEY>
+<Template Name="ASOBO_AS430_Push_Button_Template">
+	<DefaultTemplateParameters>
+		<BTN_ID></BTN_ID>
+		<PREFIX>#AS430#</PREFIX>
+		<WWISE_PREFIX>ASB430</WWISE_PREFIX>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_AS430_Push_Button_SubTemplate"/>
+</Template>
+<Template Name="ASOBO_AS430_Push_Button_SubTemplate">
+	<DefaultTemplateParameters>
+		<EXTRA_PARAM>_Emissive</EXTRA_PARAM>
+		<NODE_ID>#PREFIX#_#BTN_ID#</NODE_ID>
+		<ANIM_NAME>#PREFIX#_#BTN_ID#</ANIM_NAME>
+		<PART_ID>#PREFIX#_#BTN_ID#</PART_ID>
+		<HTML_KEY>#PREFIX#_</HTML_KEY>
+		<WWISE_EVENT_1>#WWISE_PREFIX#_push_button_on</WWISE_EVENT_1> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>		
+		<WWISE_EVENT_2>#WWISE_PREFIX#_push_button_off</WWISE_EVENT_2>   
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>		
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button#EXTRA_PARAM#">
+			<Condition Check="EXTRA_PARAM" Match="_Emissive">
+				<Condition Check="LEFT_SINGLE_CODE">
+					<False>
+						<LEFT_SINGLE_CODE>(&gt;H:#HTML_KEY##BTN_ID#)</LEFT_SINGLE_CODE>   
+					</False>
+				</Condition>
+			</Condition>
+		</UseTemplate>
+		<Condition Check="EXTRA_PARAM" Match="_Timed">
+			<UseTemplate Name = "ASOBO_GT_Emissive_Gauge"/>
+		</Condition>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_AS430_Knob_Infinite_Template">
+	<DefaultTemplateParameters>
+		<BTN_ID></BTN_ID>
+		<INC_ID></INC_ID>
+		<DEC_ID></DEC_ID>
+		<PREFIX>#AS430#</PREFIX>
+		<WWISE_PREFIX>ASB430</WWISE_PREFIX>
+		<EXTRA_PARAM></EXTRA_PARAM>
+		<ANIMREF_ID>-1</ANIMREF_ID>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+		<ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>
+		<ANIMTIP_3_ON_CURSOR>TurnLeftSmall</ANIMTIP_3_ON_CURSOR>
+		<ANIMTIP_4_ON_CURSOR>TurnRightSmall</ANIMTIP_4_ON_CURSOR>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_AS430_Knob_Infinite_SubTemplate"/>
+</Template>
+<Template Name="ASOBO_AS430_Knob_Infinite_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>#PREFIX#_#BTN_ID#</NODE_ID>
+		<ANIM_NAME>#PREFIX#_#BTN_ID#</ANIM_NAME>
+		<PART_ID>#PREFIX#_#BTN_ID#</PART_ID>
+		<HTML_KEY>#PREFIX#_</HTML_KEY>
+		<Condition Check="EXTRA_PARAM" Match="_Push">
+			<ANIM_NAME_KNOB>#PREFIX#_Knob_#BTN_ID#</ANIM_NAME_KNOB>
+			<ANIM_NAME_PUSH>#PREFIX#_Push_#BTN_ID#</ANIM_NAME_PUSH>
+			<WWISE_EVENT_1>#WWISE_PREFIX#_knob_push_button_on</WWISE_EVENT_1> 
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>				
+			<WWISE_EVENT_2>#WWISE_PREFIX#_knob_push_button_off</WWISE_EVENT_2>
+			<NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>				
+		</Condition>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Knob_Infinite#EXTRA_PARAM#">
+			<CLOCKWISE_CODE>(&gt;H:#HTML_KEY##INC_ID#)</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>(&gt;H:#HTML_KEY##DEC_ID#)</ANTICLOCKWISE_CODE>
+			 <Condition Check="EXTRA_PARAM" Match="_Push">
+				<Condition Check="LEFT_SINGLE_CODE">
+					<False>
+						<LEFT_SINGLE_CODE>(&gt;H:#HTML_KEY##BTN_ID#)</LEFT_SINGLE_CODE>   
+					</False>
+				</Condition>
+			</Condition>
+			<Condition Check="USE_SMALL_ARROWS">
+				<CURSOR_LEFT>TurnLeftSmall</CURSOR_LEFT>
+				<CURSOR_RIGHT>TurnRightSmall</CURSOR_RIGHT>
+			</Condition>
+		</UseTemplate>
+		<UseTemplate Name = "ASOBO_GT_Emissive_Gauge"/>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_AS430_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<POTENTIOMETER>1</POTENTIOMETER>
+		<FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
+		<ANIM_NEVER_FAILS/>
+		<AS430>AS430</AS430>
+		<WWISE_PREFIX>ASB430</WWISE_PREFIX>
+		<EMISSIVE_DEFAULT_VALUE>0.5</EMISSIVE_DEFAULT_VALUE>
+		<DIMMING_FACTOR>1</DIMMING_FACTOR>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_AS430_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_AS430_SubTemplate">
+	<DefaultTemplateParameters>
+		<Switch>
+			<Case Valid="SIMVAR_POWER_SETTING">
+				<EMISSIVE_CODE>(A:#SIMVAR_POWER_SETTING#, percent over 100) #DIMMING_FACTOR# *</EMISSIVE_CODE>
+			</Case>
+			<Case Valid="POTENTIOMETER">
+				<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, percent over 100) #DIMMING_FACTOR# *</EMISSIVE_CODE>
+			</Case>
+			<Default>
+				<EMISSIVE_CODE>#EMISSIVE_DEFAULT_VALUE# #DIMMING_FACTOR# *</EMISSIVE_CODE>
+			</Default>
+		</Switch>
+		<RANGE_BUTTON_LAYOUT_DIRECTION>X</RANGE_BUTTON_LAYOUT_DIRECTION>
+		<RANGE_UPDATE_FREQUENCY>2</RANGE_UPDATE_FREQUENCY>
+		<NAV_INDEX>1</NAV_INDEX>
+		<COM_INDEX>1</COM_INDEX>
+	</DefaultTemplateParameters>
+	<Condition Valid="NO_SCREEN_EMISSIVE">
+		<False>
+			<Component ID="#AS430#_Screen#SUFFIX_ID#" Node="#AS430#_Screen#SUFFIX_ID#">
+				<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+					<EMISSIVE_CODE>#EMISSIVE_DEFAULT_VALUE#</EMISSIVE_CODE>
+				</UseTemplate>
+			</Component>
+		</False>
+	</Condition>
+	<Component ID="#AS430#_Frame#SUFFIX_ID#" Node="#AS430#_Frame#SUFFIX_ID#">
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<!-- <EMISSIVE_CODE>#EMISSIVE_DEFAULT_VALUE#</EMISSIVE_CODE> -->
+		</UseTemplate>
+	</Component>
+	<!-- Buttons -->
+	<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
+		<ANIM_NAME>#AS430#_Push_Enter#SUFFIX_ID#</ANIM_NAME>
+		<NODE_ID>#AS430#_Push_Enter#SUFFIX_ID#</NODE_ID>
+		<BTN_ID>ENT_Push</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_ENTER</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
+		<ANIM_NAME>#AS430#_Push_Menu#SUFFIX_ID#</ANIM_NAME>
+		<NODE_ID>#AS430#_Push_Menu#SUFFIX_ID#</NODE_ID>
+		<BTN_ID>MENU_Push</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_MENU</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
+		<ANIM_NAME>#AS430#_Push_FlightPlan#SUFFIX_ID#</ANIM_NAME>
+		<NODE_ID>#AS430#_Push_FlightPlan#SUFFIX_ID#</NODE_ID>
+		<BTN_ID>FPL_Push</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_FLIGHTPLAN_PUSH</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
+		<ANIM_NAME>#AS430#_Push_DirectTo#SUFFIX_ID#</ANIM_NAME>
+		<NODE_ID>#AS430#_Push_DirectTo#SUFFIX_ID#</NODE_ID>
+		<BTN_ID>DirectTo_Push</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_DIRECT_TO</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
+		<EXTRA_PARAM>_Timed</EXTRA_PARAM>
+		<ANIM_NAME>#AS430#_Push_Clear#SUFFIX_ID#</ANIM_NAME>
+		<NODE_ID>#AS430#_Push_Clear#SUFFIX_ID#</NODE_ID>
+		<SHORT_CLICK_CODE>(&gt;H:#AS430#_CLR_Push)</SHORT_CLICK_CODE>
+		<LONG_CLICK_CODE>(&gt;H:#AS430#_CLR_Push_Long)</LONG_CLICK_CODE>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_CLEAR</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
+		<ANIM_NAME>#AS430#_Push_Message#SUFFIX_ID#</ANIM_NAME>
+		<NODE_ID>#AS430#_Push_Message#SUFFIX_ID#</NODE_ID>
+		<BTN_ID>MSG_Push</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_MSG_PUSH</TOOLTIPID>
+	</UseTemplate>
+	<Component ID="#AS430#_Push_CDI#SUFFIX_ID#" Node="#AS430#_Push_CDI#SUFFIX_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button">
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_CDI_PUSH</TOOLTIPID>
+			<ANIM_NAME>#AS430#_Push_CDI#SUFFIX_ID#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;K:TOGGLE_GPS_DRIVES_NAV1)</LEFT_SINGLE_CODE>
 			<WWISE_EVENT_1>#WWISE_PREFIX#_push_button_on</WWISE_EVENT_1> 
 			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>		
 			<WWISE_EVENT_2>#WWISE_PREFIX#_push_button_off</WWISE_EVENT_2>   
 			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>		
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Push_Button#EXTRA_PARAM#">
-				<Condition Check="EXTRA_PARAM" Match="_Emissive">
-					<Condition Check="LEFT_SINGLE_CODE">
-						<False>
-							<LEFT_SINGLE_CODE>(&gt;H:#HTML_KEY##BTN_ID#)</LEFT_SINGLE_CODE>   
-						</False>
-					</Condition>
-				</Condition>
-			</UseTemplate>
-			<Condition Check="EXTRA_PARAM" Match="_Timed">
-				<UseTemplate Name = "ASOBO_GT_Emissive_Gauge"/>
-			</Condition>
-		</Component>
-	</Template>
-
-	<Template Name="ASOBO_AS430_Knob_Infinite_Template">
-		<DefaultTemplateParameters>
-			<BTN_ID></BTN_ID>
-			<INC_ID></INC_ID>
-			<DEC_ID></DEC_ID>
-			<PREFIX>#AS430#</PREFIX>
-			<WWISE_PREFIX>ASB430</WWISE_PREFIX>
-			<EXTRA_PARAM></EXTRA_PARAM>
-			<ANIMREF_ID>-1</ANIMREF_ID>
-			<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
-			<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
-			<ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>
-			<ANIMTIP_3_ON_CURSOR>TurnLeftSmall</ANIMTIP_3_ON_CURSOR>
-			<ANIMTIP_4_ON_CURSOR>TurnRightSmall</ANIMTIP_4_ON_CURSOR>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_AS430_Knob_Infinite_SubTemplate"/>
-	</Template>
-	<Template Name="ASOBO_AS430_Knob_Infinite_SubTemplate">
-		<DefaultTemplateParameters>
-			<NODE_ID>#PREFIX#_#BTN_ID#</NODE_ID>
-			<ANIM_NAME>#PREFIX#_#BTN_ID#</ANIM_NAME>
-			<PART_ID>#PREFIX#_#BTN_ID#</PART_ID>
-			<HTML_KEY>#PREFIX#_</HTML_KEY>
-			<Condition Check="EXTRA_PARAM" Match="_Push">
-				<ANIM_NAME_KNOB>#PREFIX#_Knob_#BTN_ID#</ANIM_NAME_KNOB>
-				<ANIM_NAME_PUSH>#PREFIX#_Push_#BTN_ID#</ANIM_NAME_PUSH>
-				<WWISE_EVENT_1>#WWISE_PREFIX#_knob_push_button_on</WWISE_EVENT_1> 
-				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>				
-				<WWISE_EVENT_2>#WWISE_PREFIX#_knob_push_button_off</WWISE_EVENT_2>
-				<NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>				
-			</Condition>
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Knob_Infinite#EXTRA_PARAM#">
-				<CLOCKWISE_CODE>(&gt;H:#HTML_KEY##INC_ID#)</CLOCKWISE_CODE>
-				<ANTICLOCKWISE_CODE>(&gt;H:#HTML_KEY##DEC_ID#)</ANTICLOCKWISE_CODE>
-				 <Condition Check="EXTRA_PARAM" Match="_Push">
-					<Condition Check="LEFT_SINGLE_CODE">
-						<False>
-							<LEFT_SINGLE_CODE>(&gt;H:#HTML_KEY##BTN_ID#)</LEFT_SINGLE_CODE>   
-						</False>
-					</Condition>
-				</Condition>
-				<Condition Check="USE_SMALL_ARROWS">
-					<CURSOR_LEFT>TurnLeftSmall</CURSOR_LEFT>
-					<CURSOR_RIGHT>TurnRightSmall</CURSOR_RIGHT>
-				</Condition>
-			</UseTemplate>
-			<UseTemplate Name = "ASOBO_GT_Emissive_Gauge"/>
-		</Component>
-	</Template>
-
-	<Template Name="ASOBO_AS430_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<POTENTIOMETER>1</POTENTIOMETER>
-			<FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
-			<ANIM_NEVER_FAILS/>
-			<AS430>AS430</AS430>
-			<WWISE_PREFIX>ASB430</WWISE_PREFIX>
-			<EMISSIVE_DEFAULT_VALUE>0.5</EMISSIVE_DEFAULT_VALUE>
-			<DIMMING_FACTOR>1</DIMMING_FACTOR>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-			<TEMPLATE_TO_CALL>ASOBO_AS430_SubTemplate</TEMPLATE_TO_CALL>
 		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_AS430_SubTemplate">
-		<DefaultTemplateParameters>
-			<Switch>
-				<Case Valid="SIMVAR_POWER_SETTING">
-					<EMISSIVE_CODE>(A:#SIMVAR_POWER_SETTING#, percent over 100) #DIMMING_FACTOR# *</EMISSIVE_CODE>
-				</Case>
-				<Case Valid="POTENTIOMETER">
-					<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, percent over 100) #DIMMING_FACTOR# *</EMISSIVE_CODE>
-				</Case>
-				<Default>
-					<EMISSIVE_CODE>#EMISSIVE_DEFAULT_VALUE# #DIMMING_FACTOR# *</EMISSIVE_CODE>
-				</Default>
-			</Switch>
-			<RANGE_BUTTON_LAYOUT_DIRECTION>X</RANGE_BUTTON_LAYOUT_DIRECTION>
-			<NAV_INDEX>1</NAV_INDEX>
-			<COM_INDEX>1</COM_INDEX>
-		</DefaultTemplateParameters>
-		<Condition Valid="NO_SCREEN_EMISSIVE">
-			<False>
-				<Component ID="#AS430#_Screen#SUFFIX_ID#" Node="#AS430#_Screen#SUFFIX_ID#">
-					<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-						<EMISSIVE_CODE>#EMISSIVE_DEFAULT_VALUE#</EMISSIVE_CODE>
-					</UseTemplate>
-				</Component>
-			</False>
-		</Condition>
-		<Component ID="#AS430#_Frame#SUFFIX_ID#" Node="#AS430#_Frame#SUFFIX_ID#">
-			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-				<!-- <EMISSIVE_CODE>#EMISSIVE_DEFAULT_VALUE#</EMISSIVE_CODE> -->
-			</UseTemplate>
-		</Component>
-		<!-- Buttons -->
+		<UseTemplate Name = "ASOBO_GT_Emissive_Gauge"/>
+	</Component>
+	<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
+		<ANIM_NAME>#AS430#_Push_OBS#SUFFIX_ID#</ANIM_NAME>
+		<NODE_ID>#AS430#_Push_OBS#SUFFIX_ID#</NODE_ID>
+		<BTN_ID>OBS_Push</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_OBS_PUSH</TOOLTIPID>
+	</UseTemplate>
+	<!-- Add VNAV button which doesn't exist on AS430 but does on variants -->
+	<Condition Check="USE_VNAV_BUTTON">
 		<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
-			<ANIM_NAME>#AS430#_Push_Enter#SUFFIX_ID#</ANIM_NAME>
-			<NODE_ID>#AS430#_Push_Enter#SUFFIX_ID#</NODE_ID>
-			<BTN_ID>ENT_Push</BTN_ID>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_ENTER</TOOLTIPID>
+			<ANIM_NAME>#AS430#_Push_VerticalNavigation#SUFFIX_ID#</ANIM_NAME>
+			<NODE_ID>#AS430#_Push_VerticalNavigation#SUFFIX_ID#</NODE_ID>
+			<BTN_ID>VNAV_Push</BTN_ID>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_VNAV_PUSH</TOOLTIPID>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
-			<ANIM_NAME>#AS430#_Push_Menu#SUFFIX_ID#</ANIM_NAME>
-			<NODE_ID>#AS430#_Push_Menu#SUFFIX_ID#</NODE_ID>
-			<BTN_ID>MENU_Push</BTN_ID>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_MENU</TOOLTIPID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
-			<ANIM_NAME>#AS430#_Push_FlightPlan#SUFFIX_ID#</ANIM_NAME>
-			<NODE_ID>#AS430#_Push_FlightPlan#SUFFIX_ID#</NODE_ID>
-			<BTN_ID>FPL_Push</BTN_ID>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_FLIGHTPLAN_PUSH</TOOLTIPID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
-			<ANIM_NAME>#AS430#_Push_DirectTo#SUFFIX_ID#</ANIM_NAME>
-			<NODE_ID>#AS430#_Push_DirectTo#SUFFIX_ID#</NODE_ID>
-			<BTN_ID>DirectTo_Push</BTN_ID>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_DIRECT_TO</TOOLTIPID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
-			<EXTRA_PARAM>_Timed</EXTRA_PARAM>
-			<ANIM_NAME>#AS430#_Push_Clear#SUFFIX_ID#</ANIM_NAME>
-			<NODE_ID>#AS430#_Push_Clear#SUFFIX_ID#</NODE_ID>
-			<SHORT_CLICK_CODE>(&gt;H:#AS430#_CLR_Push)</SHORT_CLICK_CODE>
-			<LONG_CLICK_CODE>(&gt;H:#AS430#_CLR_Push_Long)</LONG_CLICK_CODE>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS1000_PUSH_CLEAR</TOOLTIPID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
-			<ANIM_NAME>#AS430#_Push_Message#SUFFIX_ID#</ANIM_NAME>
-			<NODE_ID>#AS430#_Push_Message#SUFFIX_ID#</NODE_ID>
-			<BTN_ID>MSG_Push</BTN_ID>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_MSG_PUSH</TOOLTIPID>
-		</UseTemplate>
-		<Component ID="#AS430#_Push_CDI#SUFFIX_ID#" Node="#AS430#_Push_CDI#SUFFIX_ID#">
-			<UseTemplate Name="ASOBO_GT_Push_Button">
-				<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_CDI_PUSH</TOOLTIPID>
-				<ANIM_NAME>#AS430#_Push_CDI#SUFFIX_ID#</ANIM_NAME>
-				<LEFT_SINGLE_CODE>(&gt;K:TOGGLE_GPS_DRIVES_NAV1)</LEFT_SINGLE_CODE>
-				<WWISE_EVENT_1>#WWISE_PREFIX#_push_button_on</WWISE_EVENT_1> 
-				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>		
-				<WWISE_EVENT_2>#WWISE_PREFIX#_push_button_off</WWISE_EVENT_2>   
-				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>		
-			</UseTemplate>
-			<UseTemplate Name = "ASOBO_GT_Emissive_Gauge"/>
-		</Component>
-		<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
-			<ANIM_NAME>#AS430#_Push_OBS#SUFFIX_ID#</ANIM_NAME>
-			<NODE_ID>#AS430#_Push_OBS#SUFFIX_ID#</NODE_ID>
-			<BTN_ID>OBS_Push</BTN_ID>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_OBS_PUSH</TOOLTIPID>
-		</UseTemplate>
-		<!-- Add VNAV button which doesn't exist on AS430 but does on variants -->
-		<Condition Check="USE_VNAV_BUTTON">
-			<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
-				<ANIM_NAME>#AS430#_Push_VerticalNavigation#SUFFIX_ID#</ANIM_NAME>
-				<NODE_ID>#AS430#_Push_VerticalNavigation#SUFFIX_ID#</NODE_ID>
-				<BTN_ID>VNAV_Push</BTN_ID>
-				<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_VNAV_PUSH</TOOLTIPID>
-			</UseTemplate>
-		</Condition>
-		<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
-			<ANIM_NAME>#AS430#_Push_Procedure#SUFFIX_ID#</ANIM_NAME>
-			<NODE_ID>#AS430#_Push_Procedure#SUFFIX_ID#</NODE_ID>
-			<BTN_ID>PROC_Push</BTN_ID>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_PROC_PUSH</TOOLTIPID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
-			<ANIM_NAME>#AS430#_Push_COM_Swap#SUFFIX_ID#</ANIM_NAME>
-			<NODE_ID>#AS430#_Push_COM_Swap#SUFFIX_ID#</NODE_ID>
-			<BTN_ID>COMSWAP_Push</BTN_ID>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.COM_FREQUENCY_TRANSFER_KEY</TOOLTIPID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
-			<ANIM_NAME>#AS430#_Push_NAV_Swap#SUFFIX_ID#</ANIM_NAME>
-			<NODE_ID>#AS430#_Push_NAV_Swap#SUFFIX_ID#</NODE_ID>
-			<BTN_ID>NAVSWAP_Push</BTN_ID>
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.NAV_FREQUENCY_TRANSFER_KEY</TOOLTIPID>
-		</UseTemplate>
-		<UseTemplate Name = "ASOBO_AS430_Push_Button_Template">
-			<ANIM_NAME>#AS430#_Switch_Range#SUFFIX_ID#</ANIM_NAME>
-			<NODE_ID>#AS430#_Switch_Range#SUFFIX_ID#</NODE_ID>
-			<LEFT_SINGLE_CODE>
-				(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) 0 &gt;
-				 if{ (&gt;H:#AS430#_RNG_Dezoom) 	}
-				els{ (&gt;H:#AS430#_RNG_Zoom) 	}
-			</LEFT_SINGLE_CODE>
-			<!-- A CHECK A FIX CODE <TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_RNG_UP</TOOLTIPID> -->
-			<!-- <TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_RNG_DN</TOOLTIPID> -->
-			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_RNG_ADJUST</TOOLTIPID> 
-		</UseTemplate>
-		<!-- Knobs -->
-		<UseTemplate Name="ASOBO_AS430_Knob_Infinite_Template">
-			<ANIM_NAME>#AS430#_Knob_GPS#SUFFIX_ID#</ANIM_NAME>
-			<NODE_ID>#AS430#_Knob_GPS#SUFFIX_ID#</NODE_ID>
-			<INC_ID>RightLargeKnob_Right</INC_ID>
-			<DEC_ID>RightLargeKnob_Left</DEC_ID>
-			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AS430_RIGHT_KNOB_TURN_L</ANIMTIP_0>
-			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AS430_RIGHT_KNOB_TURN_R</ANIMTIP_1>
-			<WWISE_EVENT>#WWISE_PREFIX#_outer_knob</WWISE_EVENT>
-			<COUNT>36</COUNT>	
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS430_Knob_Infinite_Template">
-			<NODE_ID>#AS430#_Knob_Mhz#SUFFIX_ID#</NODE_ID>
-			<ANIM_NAME>#AS430#_Knob_Mhz#SUFFIX_ID#</ANIM_NAME>
-			<INC_ID>LeftLargeKnob_Right</INC_ID>
-			<DEC_ID>LeftLargeKnob_Left</DEC_ID>
-			<WWISE_EVENT>#WWISE_PREFIX#_outer_knob</WWISE_EVENT>
-			<COUNT>36</COUNT>		
-			<!-- A CHECK -->
-			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AS430_LEFT_KNOB_DECREASE</ANIMTIP_0>
-			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AS430_LEFT_KNOB_INCREASE</ANIMTIP_1>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS430_Knob_Infinite_Template">
-			<EXTRA_PARAM>_Push</EXTRA_PARAM>
-			<USE_SMALL_ARROWS/>
-			<NODE_ID>#AS430#_Knob_CRSR#SUFFIX_ID#</NODE_ID>
-			<ANIM_NAME_KNOB>#AS430#_Knob_CRSR#SUFFIX_ID#</ANIM_NAME_KNOB>
-			<ANIM_NAME_PUSH>#AS430#_Push_CRSR#SUFFIX_ID#</ANIM_NAME_PUSH>
-			<INC_ID>RightSmallKnob_Right</INC_ID>
-			<DEC_ID>RightSmallKnob_Left</DEC_ID>
-			<BTN_ID>RightSmallKnob_Push</BTN_ID>
-			<WWISE_EVENT_1>#WWISE_PREFIX#_largeknob_push_button_on</WWISE_EVENT_1> 
-			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>				
-			<WWISE_EVENT_2>#WWISE_PREFIX#_largeknob_push_button_off</WWISE_EVENT_2>
-			<NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>		
-			<WWISE_EVENT>#WWISE_PREFIX#_inner_knob</WWISE_EVENT>
-			<COUNT>36</COUNT>		
-			<!-- A CHECK -->
-			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AS430_RIGHT_KNOB_PUSH</ANIMTIP_2>
-			<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AS430_RIGHT_KNOB_TURN_SMALL_L</ANIMTIP_3>
-			<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.AS430_RIGHT_KNOB_TURN_SMALL_R</ANIMTIP_4>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_AS430_Knob_Infinite_Template">
-			<EXTRA_PARAM>_Push</EXTRA_PARAM>
-			<USE_SMALL_ARROWS/>
-			<NODE_ID>#AS430#_Knob_Khz#SUFFIX_ID#</NODE_ID>
-			<ANIM_NAME_KNOB>#AS430#_Knob_Khz#SUFFIX_ID#</ANIM_NAME_KNOB>
-			<ANIM_NAME_PUSH>#AS430#_Push_COM_NAV_Select#SUFFIX_ID#</ANIM_NAME_PUSH>
-			<INC_ID>LeftSmallKnob_Right</INC_ID>
-			<DEC_ID>LeftSmallKnob_Left</DEC_ID>
-			<BTN_ID>LeftSmallKnob_Push</BTN_ID>
-			<WWISE_EVENT_1>#WWISE_PREFIX#_largeknob_push_button_on</WWISE_EVENT_1> 
-			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>				
-			<WWISE_EVENT_2>#WWISE_PREFIX#_largeknob_push_button_off</WWISE_EVENT_2>
-			<NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>		
-			<WWISE_EVENT>#WWISE_PREFIX#_inner_knob</WWISE_EVENT>
-			<COUNT>36</COUNT>		
-			<!-- A CHECK -->
-			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AS430_LEFT_KNOB_PUSH</ANIMTIP_2>
-			<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AS430_LEFT_KNOB_DECREASE</ANIMTIP_3>
-			<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.AS430_LEFT_KNOB_INCREASE</ANIMTIP_4>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_NAVCOM_Knob_NAV_Volume_Template">
-			<NODE_ID>#AS430#_Knob_NAV_Volume#SUFFIX_ID#</NODE_ID>
-			<ANIM_NAME_KNOB>#AS430#_Knob_NAV_Volume#SUFFIX_ID#</ANIM_NAME_KNOB>
-			<ANIM_NAME_SWITCH>#AS430#_Push_ID#SUFFIX_ID#</ANIM_NAME_SWITCH>
-			<ANIM_LAG_SWITCH>500</ANIM_LAG_SWITCH>
-			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AS1000_NAV_VOL_ID_PUSH</ANIMTIP_2>
-			<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AS1000_NAV_VOL_ID_DECREASE</ANIMTIP_3>
-			<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.AS1000_NAV_VOL_ID_INCREASE</ANIMTIP_4>
-			<ANIMREF_ID>1</ANIMREF_ID>
-			<WWISE_EVENT_1>#WWISE_PREFIX#_smallknob_push_button_on</WWISE_EVENT_1> 
-			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>				
-			<WWISE_EVENT_2>#WWISE_PREFIX#_smallknob_push_button_off</WWISE_EVENT_2>
-			<NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>		
-			<WWISE_EVENT>#WWISE_PREFIX#_small_knob</WWISE_EVENT>
-			<COUNT>14</COUNT>	
-			<CURSOR_LEFT>TurnLeftSmall</CURSOR_LEFT>
-			<CURSOR_RIGHT>TurnRightSmall</CURSOR_RIGHT>
-			<ID>#NAV_INDEX#</ID>
-			<CIRCUIT_ID></CIRCUIT_ID><!-- Force empty circuit_id since only COM should toggle the circuit state -->
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_NAVCOM_Knob_COM_Volume_Template">
-			<NODE_ID>#AS430#_Knob_COM_Volume#SUFFIX_ID#</NODE_ID>
-			<ANIM_NAME_KNOB>#AS430#_Knob_COM_Volume#SUFFIX_ID#</ANIM_NAME_KNOB>
-			<ANIM_NAME_SWITCH>#AS430#_Push_Squelch#SUFFIX_ID#</ANIM_NAME_SWITCH>
-			<ANIM_LAG_SWITCH>500</ANIM_LAG_SWITCH>
-			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AS430_COM_VOL_SQ_PUSH</ANIMTIP_2>
-			<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AS1000_COM_VOL_SQ_DECREASE</ANIMTIP_3>
-			<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.AS1000_COM_VOL_SQ_INCREASE</ANIMTIP_4>
-			<ANIMREF_ID>1</ANIMREF_ID>
-			<WWISE_EVENT_1>#WWISE_PREFIX#_smallknob_push_button_on</WWISE_EVENT_1> 
-			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>				
-			<WWISE_EVENT_2>#WWISE_PREFIX#_smallknob_push_button_off</WWISE_EVENT_2>
-			<NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>		
-			<WWISE_EVENT>#WWISE_PREFIX#_small_knob</WWISE_EVENT>
-			<COUNT>14</COUNT>	
-			<CURSOR_LEFT>TurnLeftSmall</CURSOR_LEFT>
-			<CURSOR_RIGHT>TurnRightSmall</CURSOR_RIGHT>
-			<ID>#COM_INDEX#</ID>
-		</UseTemplate>
-	</Template>
+	</Condition>
+	<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
+		<ANIM_NAME>#AS430#_Push_Procedure#SUFFIX_ID#</ANIM_NAME>
+		<NODE_ID>#AS430#_Push_Procedure#SUFFIX_ID#</NODE_ID>
+		<BTN_ID>PROC_Push</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_PROC_PUSH</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
+		<ANIM_NAME>#AS430#_Push_COM_Swap#SUFFIX_ID#</ANIM_NAME>
+		<NODE_ID>#AS430#_Push_COM_Swap#SUFFIX_ID#</NODE_ID>
+		<BTN_ID>COMSWAP_Push</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.COM_FREQUENCY_TRANSFER_KEY</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS430_Push_Button_Template">
+		<ANIM_NAME>#AS430#_Push_NAV_Swap#SUFFIX_ID#</ANIM_NAME>
+		<NODE_ID>#AS430#_Push_NAV_Swap#SUFFIX_ID#</NODE_ID>
+		<BTN_ID>NAVSWAP_Push</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.NAV_FREQUENCY_TRANSFER_KEY</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name = "ASOBO_AS430_Push_Button_Template">
+		<ANIM_NAME>#AS430#_Switch_Range#SUFFIX_ID#</ANIM_NAME>
+		<NODE_ID>#AS430#_Switch_Range#SUFFIX_ID#</NODE_ID>
+		<LEFT_SINGLE_CODE/><!-- Template would override the code if this is not defined -->
+		<LEFT_SINGLE_CODE_DRAG_IM>
+			(M:Event) 'WheelUp'    scmi 0 == if{ g3 } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ g4 } }
+			(M:Event) 'LeftSingle' scmi 0 == if{
+				(M:InputType) 0 == if{ 
+					1 (&gt;O:_ButtonAnimVar) 
+					(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) 0 &gt;
+					 if{ g4 }
+					els{ g3 }
+					quit
+				} els{
+					(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) (&gt;O:_Last#RANGE_BUTTON_LAYOUT_DIRECTION#)
+				}
+			} els{
+				(M:InputType) 1 == if{
+					(M:Event) 'LeftRelease' scmi 0 == if{
+						0 (&gt;O:_Last#RANGE_BUTTON_LAYOUT_DIRECTION#)
+					} els{
+						(M:Event) 'LeftDrag' scmi 0 == if{ 
+							(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) (O:_Last#RANGE_BUTTON_LAYOUT_DIRECTION#) - sp0
+							0.3 (&gt;O:_InputThreshold)
+							l0 abs (O:_InputThreshold) &gt; if{
+								l0 (O:_InputThreshold) / abs flr sp1
+								l0 (O:_InputThreshold) % abs sp2
+								:1 (* for loop *)
+								l1 0 &lt;= if{ g2 }
+								l1 -- sp1
+								1 (&gt;O:_ButtonAnimVar)
+								l0 0 &gt; if{
+									(&gt;H:#AS430#_RNG_Dezoom)
+								} els{
+									(&gt;H:#AS430#_RNG_Zoom)
+								}
+								g1
+								:2 
+								l0 0 &gt; if{
+									(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) l2 - (&gt;O:_Last#RANGE_BUTTON_LAYOUT_DIRECTION#)
+								} els{
+									(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) l2 + (&gt;O:_Last#RANGE_BUTTON_LAYOUT_DIRECTION#)
+								}
+							}
+						}
+					}
+				}
+			}
+			quit
+			:3 (&gt;H:#AS430#_RNG_Zoom) quit
+			:4 (&gt;H:#AS430#_RNG_Dezoom) quit
+		</LEFT_SINGLE_CODE_DRAG_IM>
+		<MOUSEFLAGS_DRAG_IM>LeftAll+Wheel</MOUSEFLAGS_DRAG_IM>
+		<LEFT_SINGLE_CODE_DEFAULT_IM>
+			(M:Relative#RANGE_BUTTON_LAYOUT_DIRECTION#) 0 &gt;
+			 if{ (&gt;H:#AS430#_RNG_Dezoom) 	}
+			els{ (&gt;H:#AS430#_RNG_Zoom) 	}
+		</LEFT_SINGLE_CODE_DEFAULT_IM>
+		<DISABLE_INTERACTION_LOCK>False</DISABLE_INTERACTION_LOCK>
+		<!-- A CHECK A FIX CODE <TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_RNG_UP</TOOLTIPID> -->
+		<!-- <TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_RNG_DN</TOOLTIPID> -->
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AS430_RNG_ADJUST</TOOLTIPID> 
+	</UseTemplate>
+	<!-- Knobs -->
+	<UseTemplate Name="ASOBO_AS430_Knob_Infinite_Template">
+		<ANIM_NAME>#AS430#_Knob_GPS#SUFFIX_ID#</ANIM_NAME>
+		<NODE_ID>#AS430#_Knob_GPS#SUFFIX_ID#</NODE_ID>
+		<INC_ID>RightLargeKnob_Right</INC_ID>
+		<DEC_ID>RightLargeKnob_Left</DEC_ID>
+		<THRESHOLD_INPUT>0.001</THRESHOLD_INPUT>
+		<THRESHOLD_MOUSE>0.03</THRESHOLD_MOUSE>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AS430_RIGHT_KNOB_TURN_L</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AS430_RIGHT_KNOB_TURN_R</ANIMTIP_1>
+		<WWISE_EVENT>#WWISE_PREFIX#_outer_knob</WWISE_EVENT>
+		<COUNT>36</COUNT>	
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS430_Knob_Infinite_Template">
+		<NODE_ID>#AS430#_Knob_Mhz#SUFFIX_ID#</NODE_ID>
+		<ANIM_NAME>#AS430#_Knob_Mhz#SUFFIX_ID#</ANIM_NAME>
+		<INC_ID>LeftLargeKnob_Right</INC_ID>
+		<DEC_ID>LeftLargeKnob_Left</DEC_ID>
+		<WWISE_EVENT>#WWISE_PREFIX#_outer_knob</WWISE_EVENT>
+		<COUNT>36</COUNT>		
+		<THRESHOLD_INPUT>0.0005</THRESHOLD_INPUT>
+		<THRESHOLD_MOUSE>0.01</THRESHOLD_MOUSE>
+		<!-- A CHECK -->
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AS430_LEFT_KNOB_DECREASE</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AS430_LEFT_KNOB_INCREASE</ANIMTIP_1>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS430_Knob_Infinite_Template">
+		<EXTRA_PARAM>_Push</EXTRA_PARAM>
+		<USE_SMALL_ARROWS/>
+		<NODE_ID>#AS430#_Knob_CRSR#SUFFIX_ID#</NODE_ID>
+		<ANIM_NAME_KNOB>#AS430#_Knob_CRSR#SUFFIX_ID#</ANIM_NAME_KNOB>
+		<ANIM_NAME_PUSH>#AS430#_Push_CRSR#SUFFIX_ID#</ANIM_NAME_PUSH>
+		<INC_ID>RightSmallKnob_Right</INC_ID>
+		<DEC_ID>RightSmallKnob_Left</DEC_ID>
+		<BTN_ID>RightSmallKnob_Push</BTN_ID>
+		<WWISE_EVENT_1>#WWISE_PREFIX#_largeknob_push_button_on</WWISE_EVENT_1> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>				
+		<WWISE_EVENT_2>#WWISE_PREFIX#_largeknob_push_button_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>		
+		<WWISE_EVENT>#WWISE_PREFIX#_inner_knob</WWISE_EVENT>
+		<COUNT>36</COUNT>		
+		<!-- A CHECK -->
+		<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AS430_RIGHT_KNOB_PUSH</ANIMTIP_2>
+		<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AS430_RIGHT_KNOB_TURN_SMALL_L</ANIMTIP_3>
+		<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.AS430_RIGHT_KNOB_TURN_SMALL_R</ANIMTIP_4>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_AS430_Knob_Infinite_Template">
+		<EXTRA_PARAM>_Push</EXTRA_PARAM>
+		<USE_SMALL_ARROWS/>
+		<NODE_ID>#AS430#_Knob_Khz#SUFFIX_ID#</NODE_ID>
+		<ANIM_NAME_KNOB>#AS430#_Knob_Khz#SUFFIX_ID#</ANIM_NAME_KNOB>
+		<ANIM_NAME_PUSH>#AS430#_Push_COM_NAV_Select#SUFFIX_ID#</ANIM_NAME_PUSH>
+		<INC_ID>LeftSmallKnob_Right</INC_ID>
+		<DEC_ID>LeftSmallKnob_Left</DEC_ID>
+		<BTN_ID>LeftSmallKnob_Push</BTN_ID>
+		<THRESHOLD_X_INPUT>0.05</THRESHOLD_X_INPUT>
+		<THRESHOLD_X_MOUSE>0.01</THRESHOLD_X_MOUSE>
+		<THRESHOLD_Y_INPUT>0.05</THRESHOLD_Y_INPUT>
+		<THRESHOLD_Y_MOUSE>0.03</THRESHOLD_Y_MOUSE>
+		<WWISE_EVENT_1>#WWISE_PREFIX#_largeknob_push_button_on</WWISE_EVENT_1> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>				
+		<WWISE_EVENT_2>#WWISE_PREFIX#_largeknob_push_button_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>		
+		<WWISE_EVENT>#WWISE_PREFIX#_inner_knob</WWISE_EVENT>
+		<COUNT>36</COUNT>		
+		<!-- A CHECK -->
+		<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AS430_LEFT_KNOB_PUSH</ANIMTIP_2>
+		<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AS430_LEFT_KNOB_DECREASE</ANIMTIP_3>
+		<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.AS430_LEFT_KNOB_INCREASE</ANIMTIP_4>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_NAVCOM_Knob_NAV_Volume_Template">
+		<NODE_ID>#AS430#_Knob_NAV_Volume#SUFFIX_ID#</NODE_ID>
+		<ANIM_NAME_KNOB>#AS430#_Knob_NAV_Volume#SUFFIX_ID#</ANIM_NAME_KNOB>
+		<ANIM_NAME_SWITCH>#AS430#_Push_ID#SUFFIX_ID#</ANIM_NAME_SWITCH>
+		<ANIM_LAG_SWITCH>500</ANIM_LAG_SWITCH>
+		<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AS1000_NAV_VOL_ID_PUSH</ANIMTIP_2>
+		<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AS1000_NAV_VOL_ID_DECREASE</ANIMTIP_3>
+		<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.AS1000_NAV_VOL_ID_INCREASE</ANIMTIP_4>
+		<ANIMREF_ID>1</ANIMREF_ID>
+		<WWISE_EVENT_1>#WWISE_PREFIX#_smallknob_push_button_on</WWISE_EVENT_1> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>				
+		<WWISE_EVENT_2>#WWISE_PREFIX#_smallknob_push_button_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>		
+		<WWISE_EVENT>#WWISE_PREFIX#_small_knob</WWISE_EVENT>
+		<COUNT>14</COUNT>	
+		<CURSOR_LEFT>TurnLeftSmall</CURSOR_LEFT>
+		<CURSOR_RIGHT>TurnRightSmall</CURSOR_RIGHT>
+		<THRESHOLD_X_INPUT>0.08</THRESHOLD_X_INPUT>
+		<THRESHOLD_X_MOUSE>0.01</THRESHOLD_X_MOUSE>
+		<ID>#NAV_INDEX#</ID>
+		<CIRCUIT_ID></CIRCUIT_ID><!-- Force empty circuit_id since only COM should toggle the circuit state -->
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_NAVCOM_Knob_COM_Volume_Template">
+		<NODE_ID>#AS430#_Knob_COM_Volume#SUFFIX_ID#</NODE_ID>
+		<ANIM_NAME_KNOB>#AS430#_Knob_COM_Volume#SUFFIX_ID#</ANIM_NAME_KNOB>
+		<ANIM_NAME_SWITCH>#AS430#_Push_Squelch#SUFFIX_ID#</ANIM_NAME_SWITCH>
+		<ANIM_LAG_SWITCH>500</ANIM_LAG_SWITCH>
+		<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AS430_COM_VOL_SQ_PUSH</ANIMTIP_2>
+		<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AS1000_COM_VOL_SQ_DECREASE</ANIMTIP_3>
+		<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.AS1000_COM_VOL_SQ_INCREASE</ANIMTIP_4>
+		<ANIMREF_ID>1</ANIMREF_ID>
+		<WWISE_EVENT_1>#WWISE_PREFIX#_smallknob_push_button_on</WWISE_EVENT_1> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>				
+		<WWISE_EVENT_2>#WWISE_PREFIX#_smallknob_push_button_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_2>0.3</NORMALIZED_TIME_2>		
+		<WWISE_EVENT>#WWISE_PREFIX#_small_knob</WWISE_EVENT>
+		<COUNT>14</COUNT>	
+		<CURSOR_LEFT>TurnLeftSmall</CURSOR_LEFT>
+		<CURSOR_RIGHT>TurnRightSmall</CURSOR_RIGHT>
+		<THRESHOLD_X_INPUT>0.08</THRESHOLD_X_INPUT>
+		<THRESHOLD_X_MOUSE>0.01</THRESHOLD_X_MOUSE>
+		<ID>#COM_INDEX#</ID>
+	</UseTemplate>
+</Template>
 </ModelBehaviors>

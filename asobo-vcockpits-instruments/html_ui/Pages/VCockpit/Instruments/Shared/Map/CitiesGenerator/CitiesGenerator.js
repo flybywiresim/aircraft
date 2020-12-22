@@ -1,29 +1,27 @@
 class CitiesGenerator {
     static BodyLog(message) {
-        const e = document.createElement("div");
+        let e = document.createElement("div");
         e.textContent = "> " + message;
         document.getElementById("output").appendChild(e);
     }
     static async ExtractCities() {
         return new Promise((resolve) => {
-            const request = new XMLHttpRequest();
+            let request = new XMLHttpRequest();
             request.overrideMimeType("text/plain");
             request.onreadystatechange = () => {
                 if (request.readyState === 4) {
                     if (request.status === 200) {
-                        const rawText = request.responseText;
-                        const lines = rawText.split("\n");
+                        let rawText = request.responseText;
+                        let lines = rawText.split("\n");
                         CitiesGenerator.BodyLog("Cities found : " + lines.length);
                         CitiesGenerator.BodyLog("");
-                        const cities = new Cities();
+                        let cities = new Cities();
                         for (let i = 0; i < lines.length; i++) {
-                            const city = new City();
+                            let city = new City();
                             city.name = lines[i].split(":")[3].trim().toLowerCase();
                             city.lat = parseFloat(lines[i].split(":")[14]);
                             city.long = parseFloat(lines[i].split(":")[15]);
-                            if (!cities.cities.find(c => {
-                                return c.name === city.name;
-                            })) {
+                            if (!cities.cities.find(c => { return c.name === city.name; })) {
                                 cities.cities.push(city);
                             }
                         }
@@ -45,16 +43,16 @@ class CitiesGenerator {
     }
     static async GetLargeCities(cities) {
         return new Promise((resolve) => {
-            const request = new XMLHttpRequest();
+            let request = new XMLHttpRequest();
             request.overrideMimeType("text/plain");
             request.onreadystatechange = () => {
                 if (request.readyState === 4) {
                     if (request.status === 200) {
-                        const rawText = request.responseText;
-                        const lines = rawText.split("\n");
+                        let rawText = request.responseText;
+                        let lines = rawText.split("\n");
                         CitiesGenerator.BodyLog("Large Cities found : " + lines.length);
                         CitiesGenerator.BodyLog("");
-                        const largeCities = [];
+                        let largeCities = [];
                         for (let i = 0; i < lines.length; i++) {
                             largeCities.push(lines[i].split(",")[0].split("(")[0].trim().toLowerCase());
                         }
@@ -76,16 +74,16 @@ class CitiesGenerator {
     }
     static async GetMediumCities(cities) {
         return new Promise((resolve) => {
-            const request = new XMLHttpRequest();
+            let request = new XMLHttpRequest();
             request.overrideMimeType("text/plain");
             request.onreadystatechange = () => {
                 if (request.readyState === 4) {
                     if (request.status === 200) {
-                        const rawText = request.responseText;
-                        const lines = rawText.split("\n");
+                        let rawText = request.responseText;
+                        let lines = rawText.split("\n");
                         CitiesGenerator.BodyLog("Medium Cities found : " + lines.length);
                         CitiesGenerator.BodyLog("");
-                        const mediumCities = [];
+                        let mediumCities = [];
                         for (let i = 0; i < lines.length; i++) {
                             mediumCities.push(lines[i].split(",")[0].split("(")[0].trim().toLowerCase());
                         }
@@ -106,9 +104,9 @@ class CitiesGenerator {
         });
     }
     static MarkSize(cities, sizeSource, size) {
-        const marked = [];
+        let marked = [];
         for (let i = 0; i < cities.cities.length; i++) {
-            const city = cities.cities[i];
+            let city = cities.cities[i];
             if (sizeSource.indexOf(city.name) !== -1) {
                 city.size = size;
                 marked.push(city);
@@ -123,7 +121,7 @@ class CitiesGenerator {
         }
         CitiesGenerator.BodyLog("Cities marked as " + sizeName + " : " + marked.length);
         CitiesGenerator.BodyLog("");
-        const rLog = 3;
+        let rLog = 3;
         for (let i = 0; i < Math.min(rLog, marked.length - rLog); i++) {
             CitiesGenerator.BodyLog(marked[i]);
         }

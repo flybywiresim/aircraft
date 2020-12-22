@@ -3,346 +3,346 @@
 
 	<!-- Fuel ################################################################ -->
 	<Template Name="ASOBO_FUEL_Switch_Cutoff_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<INTERACTION>Switch</INTERACTION>
-			<ENG_COUNT>1</ENG_COUNT>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_FUEL_Switch_Cutoff_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<INTERACTION>Switch</INTERACTION>
+		<ENG_COUNT>1</ENG_COUNT>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_FUEL_Switch_Cutoff_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Switch_Crossfeed_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_FUEL_Switch_Crossfeed_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_FUEL_Switch_Crossfeed_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Switch_Cutoff_Crossfeed_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_FUEL_Switch_Cutoff_Crossfeed_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_FUEL_Switch_Cutoff_Crossfeed_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Switch_Selector_Template">
-		<DefaultTemplateParameters>
-			<ANIM_NAME>FUEL_Switch_Selector</ANIM_NAME>
-			<NODE_ID>FUEL_Switch_Selector</NODE_ID>
-			<PART_ID>FUEL_Selector</PART_ID>
-			<WWISE_EVENT>fuel_selector_knob</WWISE_EVENT>
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Switch_3States">
-				<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
-				<CODE_POS_0>
-					(&gt;K:FUEL_SELECTOR_LEFT)
-				</CODE_POS_0>
-				<CODE_POS_1>
-					(&gt;K:FUEL_SELECTOR_RIGHT)
-				</CODE_POS_1>
-				<CODE_POS_2>
-					(&gt;K:FUEL_SELECTOR_OFF)
-				</CODE_POS_2>
-				<STATE0_TEST>(A:FUEL TANK SELECTOR:1, Enum) 2 ==</STATE0_TEST>
-				<STATE1_TEST>(A:FUEL TANK SELECTOR:1, Enum) 3 ==</STATE1_TEST>
-				<STATE2_TEST>(A:FUEL TANK SELECTOR:1, Enum) 0 ==</STATE2_TEST>
-			</UseTemplate>
-		</Component>
+	<DefaultTemplateParameters>
+		<ANIM_NAME>FUEL_Switch_Selector</ANIM_NAME>
+		<NODE_ID>FUEL_Switch_Selector</NODE_ID>
+		<PART_ID>FUEL_Selector</PART_ID>
+		<WWISE_EVENT>fuel_selector_knob</WWISE_EVENT>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Switch_3States">
+			<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+			<CODE_POS_0>
+				(&gt;K:FUEL_SELECTOR_LEFT)
+			</CODE_POS_0>
+			<CODE_POS_1>
+				(&gt;K:FUEL_SELECTOR_RIGHT)
+			</CODE_POS_1>
+			<CODE_POS_2>
+				(&gt;K:FUEL_SELECTOR_OFF)
+			</CODE_POS_2>
+			<STATE0_TEST>(A:FUEL TANK SELECTOR:1, Enum) 2 ==</STATE0_TEST>
+			<STATE1_TEST>(A:FUEL TANK SELECTOR:1, Enum) 3 ==</STATE1_TEST>
+			<STATE2_TEST>(A:FUEL TANK SELECTOR:1, Enum) 0 ==</STATE2_TEST>
+		</UseTemplate>
+	</Component>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Switch_Transfer_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<Condition Check="USE_AUTO_ON_SWITCH">
-				<VAR_SCOPE>I</VAR_SCOPE>
-			</Condition>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_FUEL_Switch_Transfer_SubTemplate">
-			<Condition Check="USE_AUTO_ON_SWITCH">
-				<VAR_NAME>XMLVAR_Transfer_State_#ID#</VAR_NAME>
-			</Condition>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<Condition Check="USE_AUTO_ON_SWITCH">
+			<VAR_SCOPE>I</VAR_SCOPE>
+		</Condition>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_FUEL_Switch_Transfer_SubTemplate">
+		<Condition Check="USE_AUTO_ON_SWITCH">
+			<VAR_NAME>XMLVAR_Transfer_State_#ID#</VAR_NAME>
+		</Condition>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Knob_Selector_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<NUM_STATES>2</NUM_STATES>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_FUEL_Knob_Selector_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<NUM_STATES>2</NUM_STATES>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_FUEL_Knob_Selector_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Update_Ensure_Fuel_Valve_Open">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_GT_Update">
-			<!-- Ensure Fuel Valves state follow Fuel Selector pos, as there is no switch for it on the plane it can be closed by the autoshutdown. -->
-			<FREQUENCY>1</FREQUENCY>
-			<UPDATE_CODE>
-				(A:FUEL TANK SELECTOR:#ID#, Enum) 0 == 
-				(A:SHUTOFF VALVE PULLED, Bool) != if{
-					(&gt;K:SHUTOFF_VALVE_TOGGLE)
-				}
-				(A:FUEL TANK SELECTOR:#ID#, Enum) 0 != 
-				(A:GENERAL ENG FUEL VALVE:#ID#, Bool) != if{
-					(&gt;K:TOGGLE_FUEL_VALVE_ENG#ID#)
-				}
-			</UPDATE_CODE>
-		</UseTemplate>
+	<UseTemplate Name="ASOBO_GT_Update">
+		<!-- Ensure Fuel Valves state follow Fuel Selector pos, as there is no switch for it on the plane it can be closed by the autoshutdown. -->
+		<FREQUENCY>1</FREQUENCY>
+		<UPDATE_CODE>
+			(A:FUEL TANK SELECTOR:#ID#, Enum) 0 == 
+			(A:SHUTOFF VALVE PULLED, Bool) != if{
+				(&gt;K:SHUTOFF_VALVE_TOGGLE)
+			}
+			(A:FUEL TANK SELECTOR:#ID#, Enum) 0 != 
+			(A:GENERAL ENG FUEL VALVE:#ID#, Bool) != if{
+				(&gt;K:TOGGLE_FUEL_VALVE_ENG#ID#)
+			}
+		</UPDATE_CODE>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Switch_Pump_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<SWITCH_TYPE>ON_OFF</SWITCH_TYPE>
-			<INTERACTION>Switch</INTERACTION>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_FUEL_Switch_Pump_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<SWITCH_TYPE>ON_OFF</SWITCH_TYPE>
+		<INTERACTION>Switch</INTERACTION>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_FUEL_Switch_Pump_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Lever_Primer_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_FUEL_Lever_Primer_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_FUEL_Lever_Primer_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Lever_Mixture_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<WWISE_EVENT_1>fuel_lever_mixture_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>fuel_lever_mixture_off</WWISE_EVENT_2>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_FUEL_Lever_Mixture_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<WWISE_EVENT_1>fuel_lever_mixture_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>fuel_lever_mixture_off</WWISE_EVENT_2>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_FUEL_Lever_Mixture_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<!-- Not in engine templates since it only acts on mixture which is categorized as FUEL everywhere else -->
 	<Template Name="ASOBO_FUEL_Push_RunStop_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<EXTINGUISH_STOP_WHEN_STARTER_ON>True</EXTINGUISH_STOP_WHEN_STARTER_ON>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_FUEL_Push_RunStop_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<EXTINGUISH_STOP_WHEN_STARTER_ON>True</EXTINGUISH_STOP_WHEN_STARTER_ON>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_FUEL_Push_RunStop_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Update_MatchValveToMixture">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<FREQUENCY>1</FREQUENCY>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Update">
-			<UPDATE_CODE>
-				(A:GENERAL ENG FUEL VALVE:#ID#, Bool)
-				(A:GENERAL ENG MIXTURE LEVER POSITION:#ID#, Percent) 0 &gt; != if{
-					(&gt;K:TOGGLE_FUEL_VALVE_ENG#ID#)
-				}
-			</UPDATE_CODE>
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<FREQUENCY>1</FREQUENCY>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Update">
+		<UPDATE_CODE>
+			(A:GENERAL ENG FUEL VALVE:#ID#, Bool)
+			(A:GENERAL ENG MIXTURE LEVER POSITION:#ID#, Percent) 0 &gt; != if{
+				(&gt;K:TOGGLE_FUEL_VALVE_ENG#ID#)
+			}
+		</UPDATE_CODE>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Update_ForceMixture">
-		<DefaultTemplateParameters>
-			<NUMBER_OF_ENGINES>1</NUMBER_OF_ENGINES>
-			<FREQUENCY>1</FREQUENCY>
-			<Condition Check="AUTOSTART_FUEL_TRIGGER_INDEX">
+	<DefaultTemplateParameters>
+		<NUMBER_OF_ENGINES>1</NUMBER_OF_ENGINES>
+		<FREQUENCY>1</FREQUENCY>
+		<Condition Check="AUTOSTART_FUEL_TRIGGER_INDEX">
+			<True>
+				<TEST>(A:FUEL TRIGGER:#AUTOSTART_FUEL_TRIGGER_INDEX#, Bool) !</TEST>
+			</True>
+			<False>
+				<TEST>(A:FUEL TRIGGER:1, Bool) !</TEST>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition>
+			<CODE_ENG_1/>
+			<CODE_ENG_2/>
+			<CODE_ENG_3/>
+			<CODE_ENG_4/>
+			<Test>
+				<GreaterOrEqual>
+					<Value>NUMBER_OF_ENGINES</Value>
+					<Number>1</Number>
+				</GreaterOrEqual>
 				<True>
-					<TEST>(A:FUEL TRIGGER:#AUTOSTART_FUEL_TRIGGER_INDEX#, Bool) !</TEST>
+					<CODE_ENG_1>(&gt;K:MIXTURE1_RICH)</CODE_ENG_1>
 				</True>
-				<False>
-					<TEST>(A:FUEL TRIGGER:1, Bool) !</TEST>
-				</False>
-			</Condition>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition>
-				<CODE_ENG_1/>
-				<CODE_ENG_2/>
-				<CODE_ENG_3/>
-				<CODE_ENG_4/>
-				<Test>
-					<GreaterOrEqual>
-						<Value>NUMBER_OF_ENGINES</Value>
-						<Number>1</Number>
-					</GreaterOrEqual>
-					<True>
-						<CODE_ENG_1>(&gt;K:MIXTURE1_RICH)</CODE_ENG_1>
-					</True>
-				</Test>
-				<Test>
-					<GreaterOrEqual>
-						<Value>NUMBER_OF_ENGINES</Value>
-						<Number>2</Number>
-					</GreaterOrEqual>
-					<True>
-						<CODE_ENG_2>(&gt;K:MIXTURE2_RICH)</CODE_ENG_2>
-					</True>
-				</Test>
-				<Test>
-					<GreaterOrEqual>
-						<Value>NUMBER_OF_ENGINES</Value>
-						<Number>3</Number>
-					</GreaterOrEqual>
-					<True>
-						<CODE_ENG_3>(&gt;K:MIXTURE3_RICH)</CODE_ENG_3>
-					</True>
-				</Test>
-				<Test>
-					<GreaterOrEqual>
-						<Value>NUMBER_OF_ENGINES</Value>
-						<Number>4</Number>
-					</GreaterOrEqual>
-					<True>
-						<CODE_ENG_4>(&gt;K:MIXTURE4_RICH)</CODE_ENG_4>
-					</True>
-				</Test>
-				
-			</Condition>
-		</OverrideTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Update">
-			<UPDATE_CODE>
-					#TEST# if{
-						#CODE_ENG_1#
-						#CODE_ENG_2#
-						#CODE_ENG_3#
-						#CODE_ENG_4#
-					}
-			</UPDATE_CODE>
-		</UseTemplate>
+			</Test>
+			<Test>
+				<GreaterOrEqual>
+					<Value>NUMBER_OF_ENGINES</Value>
+					<Number>2</Number>
+				</GreaterOrEqual>
+				<True>
+					<CODE_ENG_2>(&gt;K:MIXTURE2_RICH)</CODE_ENG_2>
+				</True>
+			</Test>
+			<Test>
+				<GreaterOrEqual>
+					<Value>NUMBER_OF_ENGINES</Value>
+					<Number>3</Number>
+				</GreaterOrEqual>
+				<True>
+					<CODE_ENG_3>(&gt;K:MIXTURE3_RICH)</CODE_ENG_3>
+				</True>
+			</Test>
+			<Test>
+				<GreaterOrEqual>
+					<Value>NUMBER_OF_ENGINES</Value>
+					<Number>4</Number>
+				</GreaterOrEqual>
+				<True>
+					<CODE_ENG_4>(&gt;K:MIXTURE4_RICH)</CODE_ENG_4>
+				</True>
+			</Test>
+			
+		</Condition>
+	</OverrideTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Update">
+		<UPDATE_CODE>
+				#TEST# if{
+					#CODE_ENG_1#
+					#CODE_ENG_2#
+					#CODE_ENG_3#
+					#CODE_ENG_4#
+				}
+		</UPDATE_CODE>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Push_Pump_Template">
-		<DefaultTemplateParameters>
-			<PART_ID>FUEL_Push_Pump</PART_ID> 
-			<ID>1</ID>
-			<OFF_TOOLTIP></OFF_TOOLTIP>
-			<ON_TOOLTIP></ON_TOOLTIP>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_FUEL_Push_Pump_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<PART_ID>FUEL_Push_Pump</PART_ID> 
+		<ID>1</ID>
+		<OFF_TOOLTIP></OFF_TOOLTIP>
+		<ON_TOOLTIP></ON_TOOLTIP>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_FUEL_Push_Pump_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Push_Valve_Template">
-		<DefaultTemplateParameters>
-			<PART_ID>FUEL_Push_Valve</PART_ID> 
-			<ID>1</ID>
-			<OFF_TOOLTIP></OFF_TOOLTIP>
-			<ON_TOOLTIP></ON_TOOLTIP>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_FUEL_Push_Valve_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<PART_ID>FUEL_Push_Valve</PART_ID> 
+		<ID>1</ID>
+		<OFF_TOOLTIP></OFF_TOOLTIP>
+		<ON_TOOLTIP></ON_TOOLTIP>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_FUEL_Push_Valve_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Switch_Valve_Template">
-		<DefaultTemplateParameters>
-			<PART_ID>FUEL_Switch_Valve</PART_ID> 
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_FUEL_Switch_Valve_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<PART_ID>FUEL_Switch_Valve</PART_ID> 
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_FUEL_Switch_Valve_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Push_Trigger_Template">
-		<DefaultTemplateParameters>
-			<PART_ID>FUEL_Push_Trigger</PART_ID> 
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_FUEL_Push_Trigger_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<PART_ID>FUEL_Push_Trigger</PART_ID> 
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_FUEL_Push_Trigger_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Emissive_LowPressure_Template">
-		<DefaultTemplateParameters>
-			<PART_ID>FUEL_Emissive_LowPressure</PART_ID> 
-			<ID>1</ID>
-			<MIN_PRESSURE>4</MIN_PRESSURE>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_FUEL_Emissive_LowPressure_SubTemplate">
-		</UseTemplate>
+	<DefaultTemplateParameters>
+		<PART_ID>FUEL_Emissive_LowPressure</PART_ID> 
+		<ID>1</ID>
+		<MIN_PRESSURE>4</MIN_PRESSURE>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_FUEL_Emissive_LowPressure_SubTemplate">
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Push_Balance_Template">
-		<DefaultTemplateParameters>
-			<EXTRA_CONDITION>1</EXTRA_CONDITION>
-			<WWISE_EVENT_1>fuel_balance_push_button_on</WWISE_EVENT_1>
-			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-			<WWISE_EVENT_2>fuel_balance_push_button_off</WWISE_EVENT_2>
-			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-			<TOOLTIPID>%((A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_LEFTTORIGHT#, Bool) (A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_RIGHTTOLEFT#, Bool) or)%{if}TT:COCKPIT.TOOLTIPS.FUEL_BALANCE_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.FUEL_BALANCE_TURN_ON%{end}</TOOLTIPID>
-			<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<ACTIVE_BALANCE_SYSTEM_CODE>
-				(* No active balance - active it ! *)
-				(A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_ENDBALANCE#, Bool) ! #EXTRA_CONDITION# and if{
-					(A:FUELSYSTEM TANK QUANTITY:#TANK_ID_LEFT#, Gallons) (A:FUELSYSTEM TANK QUANTITY:#TANK_ID_RIGHT#, Gallons) &lt; if{
-						#TRIGGER_ID_RIGHTTOLEFT# (&gt;K:FUELSYSTEM_TRIGGER_TOGGLE)
-					} els{
-						#TRIGGER_ID_LEFTTORIGHT# (&gt;K:FUELSYSTEM_TRIGGER_TOGGLE)
-					}
-				}
-			</ACTIVE_BALANCE_SYSTEM_CODE>
-		</OverrideTemplateParameters>
-		
-		<Condition Check="EXTRA_CONDITION" Match="1">
-			<False>
-				<UseTemplate Name="ASOBO_GT_Update">
-					<FREQUENCY>1</FREQUENCY>
-					<UPDATE_CODE>
-						#EXTRA_CONDITION# ! if{
-							(A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_RIGHTTOLEFT#, Bool) if{
-								#TRIGGER_ID_RIGHTTOLEFT# (&gt;K:FUELSYSTEM_TRIGGER_TOGGLE)
-							}
-							(A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_LEFTTORIGHT#, Bool) if{
-								#TRIGGER_ID_LEFTTORIGHT# (&gt;K:FUELSYSTEM_TRIGGER_TOGGLE)
-							}
-						}
-					</UPDATE_CODE>
-				</UseTemplate>
-			</False>
-		</Condition>
-		<UseTemplate Name="ASOBO_GT_Update">
-			<FREQUENCY>1</FREQUENCY>
-			<UPDATE_CODE>
-				(L:FuelBalanceSystemActive) if{
-					(A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_LEFTTORIGHT#, Bool) (A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_RIGHTTOLEFT#, Bool) or not if{
-						#ACTIVE_BALANCE_SYSTEM_CODE#
-					}
-				}
-			</UPDATE_CODE>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-			<SEQ1_EMISSIVE_CODE>(L:FuelBalanceSystemActive)</SEQ1_EMISSIVE_CODE>
-			<SEQ2_EMISSIVE_CODE>0</SEQ2_EMISSIVE_CODE>
-			<LEFT_SINGLE_CODE>
-				(L:FuelBalanceSystemActive) ! (&gt;L:FuelBalanceSystemActive)
-				(A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_LEFTTORIGHT#, Bool) if{
+	<DefaultTemplateParameters>
+		<EXTRA_CONDITION>1</EXTRA_CONDITION>
+		<WWISE_EVENT_1>fuel_balance_push_button_on</WWISE_EVENT_1>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<WWISE_EVENT_2>fuel_balance_push_button_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+		<TOOLTIPID>%((A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_LEFTTORIGHT#, Bool) (A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_RIGHTTOLEFT#, Bool) or)%{if}TT:COCKPIT.TOOLTIPS.FUEL_BALANCE_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.FUEL_BALANCE_TURN_ON%{end}</TOOLTIPID>
+		<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<ACTIVE_BALANCE_SYSTEM_CODE>
+			(* No active balance - active it ! *)
+			(A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_ENDBALANCE#, Bool) ! #EXTRA_CONDITION# and if{
+				(A:FUELSYSTEM TANK QUANTITY:#TANK_ID_LEFT#, Gallons) (A:FUELSYSTEM TANK QUANTITY:#TANK_ID_RIGHT#, Gallons) &lt; if{
+					#TRIGGER_ID_RIGHTTOLEFT# (&gt;K:FUELSYSTEM_TRIGGER_TOGGLE)
+				} els{
 					#TRIGGER_ID_LEFTTORIGHT# (&gt;K:FUELSYSTEM_TRIGGER_TOGGLE)
-				} els{ (A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_RIGHTTOLEFT#, Bool) if{
-						#TRIGGER_ID_RIGHTTOLEFT# (&gt;K:FUELSYSTEM_TRIGGER_TOGGLE)
-					} els{
-						#ACTIVE_BALANCE_SYSTEM_CODE#
-					}
 				}
-			</LEFT_SINGLE_CODE>
-		</UseTemplate>
+			}
+		</ACTIVE_BALANCE_SYSTEM_CODE>
+	</OverrideTemplateParameters>
+	
+	<Condition Check="EXTRA_CONDITION" Match="1">
+		<False>
+			<UseTemplate Name="ASOBO_GT_Update">
+				<FREQUENCY>1</FREQUENCY>
+				<UPDATE_CODE>
+					#EXTRA_CONDITION# ! if{
+						(A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_RIGHTTOLEFT#, Bool) if{
+							#TRIGGER_ID_RIGHTTOLEFT# (&gt;K:FUELSYSTEM_TRIGGER_TOGGLE)
+						}
+						(A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_LEFTTORIGHT#, Bool) if{
+							#TRIGGER_ID_LEFTTORIGHT# (&gt;K:FUELSYSTEM_TRIGGER_TOGGLE)
+						}
+					}
+				</UPDATE_CODE>
+			</UseTemplate>
+		</False>
+	</Condition>
+	<UseTemplate Name="ASOBO_GT_Update">
+		<FREQUENCY>1</FREQUENCY>
+		<UPDATE_CODE>
+			(L:FuelBalanceSystemActive) if{
+				(A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_LEFTTORIGHT#, Bool) (A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_RIGHTTOLEFT#, Bool) or not if{
+					#ACTIVE_BALANCE_SYSTEM_CODE#
+				}
+			}
+		</UPDATE_CODE>
+	</UseTemplate>
+	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+		<SEQ1_EMISSIVE_CODE>(L:FuelBalanceSystemActive)</SEQ1_EMISSIVE_CODE>
+		<SEQ2_EMISSIVE_CODE>0</SEQ2_EMISSIVE_CODE>
+		<LEFT_SINGLE_CODE>
+			(L:FuelBalanceSystemActive) ! (&gt;L:FuelBalanceSystemActive)
+			(A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_LEFTTORIGHT#, Bool) if{
+				#TRIGGER_ID_LEFTTORIGHT# (&gt;K:FUELSYSTEM_TRIGGER_TOGGLE)
+			} els{ (A:FUELSYSTEM TRIGGER STATUS:#TRIGGER_ID_RIGHTTOLEFT#, Bool) if{
+					#TRIGGER_ID_RIGHTTOLEFT# (&gt;K:FUELSYSTEM_TRIGGER_TOGGLE)
+				} els{
+					#ACTIVE_BALANCE_SYSTEM_CODE#
+				}
+			}
+		</LEFT_SINGLE_CODE>
+	</UseTemplate>
 	</Template>
 
 	<Template Name="ASOBO_FUEL_Shutdown_Watcher_Template">
@@ -372,5 +372,13 @@
 				 </UPDATE_CODE>
 			</UseTemplate>
 		</Condition>
+	</Template>
+
+	<Template Name="ASOBO_FUEL_Lever_Pump_Template">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+			<PART_ID>FUEL_Lever_Pump</PART_ID> 
+		</DefaultTemplateParameters>
+		<UseTemplate Name="ASOBO_FUEL_Lever_Pump_SubTemplate"></UseTemplate>
 	</Template>
 </ModelBehaviors>

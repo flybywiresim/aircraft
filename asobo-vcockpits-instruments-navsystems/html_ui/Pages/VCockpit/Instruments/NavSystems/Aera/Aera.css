@@ -80,7 +80,7 @@ aera-element {
     height: 100%;
     background-color: black;
     z-index: 1000; }
-  aera-element #TopBar {
+  aera-element #LeftDisplay #TopBar {
     position: absolute;
     top: 0%;
     width: 90%;
@@ -89,27 +89,13 @@ aera-element {
     display: flex;
     font-size: 3.5vh;
     line-height: 5vh; }
-    aera-element #TopBar #currentPageName {
+    aera-element #LeftDisplay #TopBar #currentPageName {
       position: absolute;
       left: 1%; }
-    aera-element #TopBar #topLine_LocalTime {
+    aera-element #LeftDisplay #TopBar #topLine_LocalTime {
       position: absolute;
       right: 1%; }
-  aera-element #RightMenu {
-    position: absolute;
-    width: 10%;
-    right: 0%;
-    height: 100vh;
-    bottom: 0%; }
-    aera-element #RightMenu .gradientButton {
-      width: 90%;
-      height: 16.66vh;
-      margin-left: 5%; }
-      aera-element #RightMenu .gradientButton .title {
-        font-size: 3.5vh; }
-    aera-element #RightMenu #MenuButton .title {
-      top: 10%; }
-  aera-element #MFD {
+  aera-element #LeftDisplay #MFD {
     position: absolute;
     bottom: 0%;
     top: 5vh;
@@ -118,7 +104,7 @@ aera-element {
     background-color: black;
     border-left: 0.2vh solid white;
     z-index: 1; }
-    aera-element #MFD #PagesContainer {
+    aera-element #LeftDisplay #MFD #PagesContainer {
       position: absolute;
       top: 0%;
       left: 0%;
@@ -126,21 +112,22 @@ aera-element {
       bottom: 0%;
       width: auto;
       height: auto;
-      overflow: hidden; }
-      aera-element #MFD #PagesContainer .page {
+      overflow: hidden;
+      transform: rotateX(0); }
+      aera-element #LeftDisplay #MFD #PagesContainer .page {
         position: absolute;
         width: 100%;
         height: 100%;
         display: none; }
-      aera-element #MFD #PagesContainer[state=PFD] #PFD,
-      aera-element #MFD #PagesContainer[state=Map] #Map,
-      aera-element #MFD #PagesContainer[state=FPL] #FPL,
-      aera-element #MFD #PagesContainer[state=NearestAirport] #NearestAirport,
-      aera-element #MFD #PagesContainer[state=NearestVOR] #NearestVOR,
-      aera-element #MFD #PagesContainer[state=NearestNDB] #NearestNDB,
-      aera-element #MFD #PagesContainer[state=NearestIntersection] #NearestIntersection {
+      aera-element #LeftDisplay #MFD #PagesContainer[state=PFD] #PFD,
+      aera-element #LeftDisplay #MFD #PagesContainer[state=Map] #Map,
+      aera-element #LeftDisplay #MFD #PagesContainer[state=FPL] #FPL,
+      aera-element #LeftDisplay #MFD #PagesContainer[state=NearestAirport] #NearestAirport,
+      aera-element #LeftDisplay #MFD #PagesContainer[state=NearestVOR] #NearestVOR,
+      aera-element #LeftDisplay #MFD #PagesContainer[state=NearestNDB] #NearestNDB,
+      aera-element #LeftDisplay #MFD #PagesContainer[state=NearestIntersection] #NearestIntersection {
         display: block; }
-      aera-element #MFD #PagesContainer #PFD #HorizonContainer {
+      aera-element #LeftDisplay #MFD #PagesContainer #PFD #HorizonContainer {
         transform: rotateX(0);
         position: absolute;
         width: 100%;
@@ -148,7 +135,7 @@ aera-element {
         z-index: -6;
         border: none;
         overflow: hidden; }
-        aera-element #MFD #PagesContainer #PFD #HorizonContainer #Horizon {
+        aera-element #LeftDisplay #MFD #PagesContainer #PFD #HorizonContainer #Horizon {
           position: absolute;
           left: 30%;
           right: 30%;
@@ -156,63 +143,63 @@ aera-element {
           width: auto;
           height: 24%;
           border: none; }
-        aera-element #MFD #PagesContainer #PFD #HorizonContainer #SyntheticVision {
+        aera-element #LeftDisplay #MFD #PagesContainer #PFD #HorizonContainer #SyntheticVision {
           top: -51vh;
           width: 160vh;
           height: 160vh;
           z-index: -3;
           display: block; }
-          aera-element #MFD #PagesContainer #PFD #HorizonContainer #SyntheticVision #MapSVG, aera-element #MFD #PagesContainer #PFD #HorizonContainer #SyntheticVision #road-network-canvas, aera-element #MFD #PagesContainer #PFD #HorizonContainer #SyntheticVision #MapRange, aera-element #MFD #PagesContainer #PFD #HorizonContainer #SyntheticVision #MapOrientation {
+          aera-element #LeftDisplay #MFD #PagesContainer #PFD #HorizonContainer #SyntheticVision #MapSVG, aera-element #LeftDisplay #MFD #PagesContainer #PFD #HorizonContainer #SyntheticVision #road-network-canvas, aera-element #LeftDisplay #MFD #PagesContainer #PFD #HorizonContainer #SyntheticVision #MapRange, aera-element #LeftDisplay #MFD #PagesContainer #PFD #HorizonContainer #SyntheticVision #MapOrientation {
             transform: rotateX(0);
             display: none; }
-          aera-element #MFD #PagesContainer #PFD #HorizonContainer #SyntheticVision bing-map {
+          aera-element #LeftDisplay #MFD #PagesContainer #PFD #HorizonContainer #SyntheticVision bing-map {
             transform: rotateX(0);
             position: absolute;
             left: 0px;
             top: 0px;
             width: 100%;
             height: 100%; }
-      aera-element #MFD #PagesContainer #PFD #Airspeed {
+      aera-element #LeftDisplay #MFD #PagesContainer #PFD #Airspeed {
         position: absolute;
         height: 91.3vh;
         left: -1.6%;
         top: 10vh; }
-      aera-element #MFD #PagesContainer #PFD #altimeterContainer {
+      aera-element #LeftDisplay #MFD #PagesContainer #PFD #altimeterContainer {
         position: absolute;
         height: 85vh;
         width: 36%;
         right: 0%;
         top: 10vh;
         overflow: hidden; }
-        aera-element #MFD #PagesContainer #PFD #altimeterContainer #Altimeter {
+        aera-element #LeftDisplay #MFD #PagesContainer #PFD #altimeterContainer #Altimeter {
           position: absolute;
           height: 98vh;
           width: 36vw;
           right: -13.1vw;
           top: -6.9vh; }
-      aera-element #MFD #PagesContainer #PFD #Compass {
+      aera-element #LeftDisplay #MFD #PagesContainer #PFD #Compass {
         position: absolute;
         height: 10vh;
         top: 0%;
         left: 0%;
         right: 0%;
         width: auto; }
-      aera-element #MFD #PagesContainer #PFD #CDI {
+      aera-element #LeftDisplay #MFD #PagesContainer #PFD #CDI {
         position: absolute;
         height: 10vh;
         bottom: 0%;
         left: 32.64%;
         right: 32.64%;
         width: auto; }
-      aera-element #MFD #PagesContainer #Map #MapInstrument #MapOrientation {
+      aera-element #LeftDisplay #MFD #PagesContainer #Map #MapInstrument #MapOrientation {
         height: 5vh;
         font-size: 3.5vh;
         line-height: 5vh; }
-      aera-element #MFD #PagesContainer #Map #MapInstrument #MapRange {
+      aera-element #LeftDisplay #MFD #PagesContainer #Map #MapInstrument #MapRange {
         height: 5vh;
         font-size: 3.5vh;
         line-height: 5vh; }
-      aera-element #MFD #PagesContainer #FPL #Afpl_Map {
+      aera-element #LeftDisplay #MFD #PagesContainer #FPL #Afpl_Map {
         position: absolute;
         height: calc(40% - 1vh);
         left: 0.5vh;
@@ -221,7 +208,7 @@ aera-element {
         width: auto;
         border: 0.2vh solid #333333;
         border-radius: 1vh; }
-      aera-element #MFD #PagesContainer #FPL #flightPlan {
+      aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan {
         position: absolute;
         width: 100%;
         top: 40%;
@@ -241,23 +228,23 @@ aera-element {
   100% {
     right: -29.5vw;
     visibility: hidden; } }
-        aera-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu {
+        aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan .HalfMenu {
           visibility: hidden; }
-        aera-element #MFD #PagesContainer #FPL #flightPlan[displayedMenu=Waypoint] #AFPL_WaypointButtonsTable,
-        aera-element #MFD #PagesContainer #FPL #flightPlan[displayedMenu=Destination] #AFPL_DestinationButtonsTable,
-        aera-element #MFD #PagesContainer #FPL #flightPlan[displayedMenu=Origin] #AFPL_OriginButtonsTable {
+        aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan[displayedMenu=Waypoint] #AFPL_WaypointButtonsTable,
+        aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan[displayedMenu=Destination] #AFPL_DestinationButtonsTable,
+        aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan[displayedMenu=Origin] #AFPL_OriginButtonsTable {
           visibility: visible;
           animation: rightEnter 0.5s; }
-        aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_Origin[state=SelectedWP],
-        aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_EnRoute[state=SelectedWP],
-        aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_Destination[state=SelectedWP] {
+        aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_Origin[state=SelectedWP],
+        aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_EnRoute[state=SelectedWP],
+        aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_Destination[state=SelectedWP] {
           background-color: #0093d0; }
-        aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable {
+        aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable {
           width: 100%;
           height: 100%;
           border: 0.4vh solid white;
           border-collapse: collapse; }
-          aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable thead {
+          aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable thead {
             display: block;
             color: white;
             font-size: 3vh;
@@ -265,7 +252,7 @@ aera-element {
             width: 97%;
             border-bottom: 0.4vh solid white;
             padding-right: 3%; }
-          aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody {
+          aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody {
             display: block;
             overflow-y: scroll;
             overflow-x: hidden;
@@ -273,24 +260,24 @@ aera-element {
             width: 97%;
             position: relative;
             padding-right: 1.75%; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody::-webkit-scrollbar {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody::-webkit-scrollbar {
               width: 0.5vw; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody::-webkit-scrollbar-track {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody::-webkit-scrollbar-track {
               background: none; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody::-webkit-scrollbar-thumb {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody::-webkit-scrollbar-thumb {
               background: white; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state="Selected"] {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state="Selected"] {
               background-color: #0093d0; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=Inactive] {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=Inactive] {
               display: none; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=CurrentLeg] .Waypoint .mainValue, aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=CurrentLeg] .Waypoint .title {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=CurrentLeg] .Waypoint .mainValue, aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=CurrentLeg] .Waypoint .title {
               color: magenta; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=CurrentLeg] .DTK, aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=CurrentLeg] .DIS {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=CurrentLeg] .DTK, aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=CurrentLeg] .DIS {
               color: magenta; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr, aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody td {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr, aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody td {
               height: 16vh;
               position: relative; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .gradientButton {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .gradientButton {
               position: absolute;
               top: 0.4vh;
               left: 0.4vh;
@@ -298,17 +285,17 @@ aera-element {
               right: 0.4vh;
               height: auto;
               width: auto; }
-              aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .gradientButton .mainValue {
+              aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .gradientButton .mainValue {
                 color: aqua;
                 font-size: 3vh; }
-              aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .gradientButton .mainText {
+              aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .gradientButton .mainText {
                 font-size: 3vh; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .Waypoint .mainValue {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .Waypoint .mainValue {
               position: absolute;
               text-align: left;
               left: 10%;
               top: 5%; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .Waypoint .title {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .Waypoint .title {
               position: absolute;
               text-align: left;
               left: 10%;
@@ -316,50 +303,50 @@ aera-element {
               width: 80%;
               font-size: 2.5vh;
               line-height: 2.5vh; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .Waypoint .symbol {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .Waypoint .symbol {
               position: absolute;
               right: 0%;
               top: 0%; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .Waypoint[state=SelectedWP] {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .Waypoint[state=SelectedWP] {
               background-color: #0093d0; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .DTK {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .DTK {
               position: absolute;
               right: 5%;
               top: 10%;
               font-size: 3vh;
               color: white;
               text-align: right; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .DIS {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .DIS {
               position: absolute;
               right: 5%;
               bottom: 10%;
               font-size: 3vh;
               color: white;
               text-align: right; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody #CurrentLegArrowSVG {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody #CurrentLegArrowSVG {
               position: absolute;
               left: 0%;
               top: 0%;
               height: 100%;
               width: 100%;
               z-index: 1; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody #AFPL_EnRouteAdd[state="Inactive"] {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody #AFPL_EnRouteAdd[state="Inactive"] {
               display: none; }
-          aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable thead tr th:nth-child(1), aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr:first-child td:nth-child(1) {
+          aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable thead tr th:nth-child(1), aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr:first-child td:nth-child(1) {
             width: 45vw; }
-          aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable thead tr th:nth-child(2), aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr:first-child td:nth-child(2) {
+          aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable thead tr th:nth-child(2), aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr:first-child td:nth-child(2) {
             width: 20vw; }
-          aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable thead tr th:nth-child(3), aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr:first-child td:nth-child(3) {
+          aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable thead tr th:nth-child(3), aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr:first-child td:nth-child(3) {
             width: 20vw; }
-          aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable #SizeSetter, aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable #SizeSetter td {
+          aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable #SizeSetter, aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable #SizeSetter td {
             border: none;
             height: 2px;
             overflow: visible; }
-          aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable #SizeSetter #CurrentLegArrowSVG {
+          aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable #SizeSetter #CurrentLegArrowSVG {
             overflow: visible; }
-          aera-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable td {
+          aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable td {
             border: 0.4vh solid white; }
-        aera-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu {
+        aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan .HalfMenu {
           position: absolute;
           right: 0vw;
           top: 0%;
@@ -367,28 +354,28 @@ aera-element {
           border-collapse: collapse;
           background-color: black;
           width: 31.25vw; }
-          aera-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu tbody {
+          aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan .HalfMenu tbody {
             height: 100%; }
-          aera-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr {
+          aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr {
             height: 20%; }
-            aera-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr td {
+            aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr td {
               border: 0.4vh solid white;
               height: 20%;
               width: 50%; }
-              aera-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr td .gradientButton {
+              aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr td .gradientButton {
                 margin: 2%;
                 height: 96%;
                 width: 96%; }
-                aera-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr td .gradientButton .statusBar {
+                aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr td .gradientButton .statusBar {
                   bottom: 20%; }
-                aera-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr td .gradientButton .mainText {
+                aera-element #LeftDisplay #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr td .gradientButton .mainText {
                   font-size: 3.5vh;
                   line-height: 4vh; }
-    aera-element #MFD .NrstContainer {
+    aera-element #LeftDisplay #MFD .NrstContainer {
       width: 100%;
       height: 90%;
       position: relative; }
-      aera-element #MFD .NrstContainer .NearestList {
+      aera-element #LeftDisplay #MFD .NrstContainer .NearestList {
         position: absolute;
         width: 100%;
         height: 100%;
@@ -401,7 +388,7 @@ aera-element {
         color: white;
         text-align: center;
         font-size: 2.5vh; }
-        aera-element #MFD .NrstContainer .NearestList .gradientButton {
+        aera-element #LeftDisplay #MFD .NrstContainer .NearestList .gradientButton {
           position: absolute;
           top: 0.4vh;
           left: 0.4vh;
@@ -409,14 +396,14 @@ aera-element {
           right: 0.4vh;
           height: auto;
           width: auto; }
-          aera-element #MFD .NrstContainer .NearestList .gradientButton .mainValue {
+          aera-element #LeftDisplay #MFD .NrstContainer .NearestList .gradientButton .mainValue {
             position: absolute;
             text-align: left;
             left: 5%;
             top: 5%;
             color: white;
             font-size: 3vh; }
-          aera-element #MFD .NrstContainer .NearestList .gradientButton .title {
+          aera-element #LeftDisplay #MFD .NrstContainer .NearestList .gradientButton .title {
             position: absolute;
             text-align: left;
             left: 5%;
@@ -425,20 +412,20 @@ aera-element {
             height: 7vh;
             overflow: hidden;
             font-size: 2.3vh; }
-          aera-element #MFD .NrstContainer .NearestList .gradientButton .symbol {
+          aera-element #LeftDisplay #MFD .NrstContainer .NearestList .gradientButton .symbol {
             position: absolute;
             right: 0%;
             top: 0%; }
-          aera-element #MFD .NrstContainer .NearestList .gradientButton .mainNumber {
+          aera-element #LeftDisplay #MFD .NrstContainer .NearestList .gradientButton .mainNumber {
             font-size: 2.5vh;
             padding: 0%;
             margin: 0%;
             margin-top: 3vh;
             width: 100%;
             text-align: center; }
-          aera-element #MFD .NrstContainer .NearestList .gradientButton[state=SelectedWP] {
+          aera-element #LeftDisplay #MFD .NrstContainer .NearestList .gradientButton[state=SelectedWP] {
             background-color: #0093d0; }
-        aera-element #MFD .NrstContainer .NearestList thead {
+        aera-element #LeftDisplay #MFD .NrstContainer .NearestList thead {
           display: block;
           color: white;
           font-size: 3vh;
@@ -446,7 +433,7 @@ aera-element {
           width: 97%;
           border-bottom: 0.4vh solid white;
           padding-right: 3%; }
-        aera-element #MFD .NrstContainer .NearestList tbody {
+        aera-element #LeftDisplay #MFD .NrstContainer .NearestList tbody {
           display: block;
           overflow-y: scroll;
           overflow-x: hidden;
@@ -454,26 +441,26 @@ aera-element {
           width: 97%;
           position: relative;
           padding-right: 1.75%; }
-          aera-element #MFD .NrstContainer .NearestList tbody::-webkit-scrollbar {
+          aera-element #LeftDisplay #MFD .NrstContainer .NearestList tbody::-webkit-scrollbar {
             width: 0.5vw; }
-          aera-element #MFD .NrstContainer .NearestList tbody::-webkit-scrollbar-track {
+          aera-element #LeftDisplay #MFD .NrstContainer .NearestList tbody::-webkit-scrollbar-track {
             background: none; }
-          aera-element #MFD .NrstContainer .NearestList tbody::-webkit-scrollbar-thumb {
+          aera-element #LeftDisplay #MFD .NrstContainer .NearestList tbody::-webkit-scrollbar-thumb {
             background: white; }
-          aera-element #MFD .NrstContainer .NearestList tbody tr[state=Inactive] {
+          aera-element #LeftDisplay #MFD .NrstContainer .NearestList tbody tr[state=Inactive] {
             display: none; }
-          aera-element #MFD .NrstContainer .NearestList tbody tr, aera-element #MFD .NrstContainer .NearestList tbody td {
+          aera-element #LeftDisplay #MFD .NrstContainer .NearestList tbody tr, aera-element #LeftDisplay #MFD .NrstContainer .NearestList tbody td {
             height: 15.4vh;
             position: relative; }
-          aera-element #MFD .NrstContainer .NearestList tbody td {
+          aera-element #LeftDisplay #MFD .NrstContainer .NearestList tbody td {
             border-bottom: 0.4vh solid white; }
-          aera-element #MFD .NrstContainer .NearestList tbody tr td:first-child {
+          aera-element #LeftDisplay #MFD .NrstContainer .NearestList tbody tr td:first-child {
             border-right: 0.4vh solid white; }
-        aera-element #MFD .NrstContainer .NearestList #SizeSetter, aera-element #MFD .NrstContainer .NearestList #SizeSetter td {
+        aera-element #LeftDisplay #MFD .NrstContainer .NearestList #SizeSetter, aera-element #LeftDisplay #MFD .NrstContainer .NearestList #SizeSetter td {
           border: none;
           height: 0vh;
           overflow: visible; }
-      aera-element #MFD .NrstContainer .SelectionMenu {
+      aera-element #LeftDisplay #MFD .NrstContainer .SelectionMenu {
         position: absolute;
         height: 100%;
         width: 30%;
@@ -488,15 +475,15 @@ aera-element {
     right: -100%; }
   100% {
     right: -0.75%; } }
-        aera-element #MFD .NrstContainer .SelectionMenu[state=Inactive] {
+        aera-element #LeftDisplay #MFD .NrstContainer .SelectionMenu[state=Inactive] {
           display: none; }
-        aera-element #MFD .NrstContainer .SelectionMenu[state=Active] {
+        aera-element #LeftDisplay #MFD .NrstContainer .SelectionMenu[state=Active] {
           animation: rightEnter 0.5s 1; }
-        aera-element #MFD .NrstContainer .SelectionMenu tr, aera-element #MFD .NrstContainer .SelectionMenu td {
+        aera-element #LeftDisplay #MFD .NrstContainer .SelectionMenu tr, aera-element #LeftDisplay #MFD .NrstContainer .SelectionMenu td {
           width: 100%;
           height: 20%;
           position: relative; }
-          aera-element #MFD .NrstContainer .SelectionMenu tr .gradientButton, aera-element #MFD .NrstContainer .SelectionMenu td .gradientButton {
+          aera-element #LeftDisplay #MFD .NrstContainer .SelectionMenu tr .gradientButton, aera-element #LeftDisplay #MFD .NrstContainer .SelectionMenu td .gradientButton {
             position: absolute;
             height: auto;
             width: auto;
@@ -504,60 +491,60 @@ aera-element {
             left: 2%;
             right: 2%;
             bottom: 2%; }
-            aera-element #MFD .NrstContainer .SelectionMenu tr .gradientButton .statusBar, aera-element #MFD .NrstContainer .SelectionMenu td .gradientButton .statusBar {
+            aera-element #LeftDisplay #MFD .NrstContainer .SelectionMenu tr .gradientButton .statusBar, aera-element #LeftDisplay #MFD .NrstContainer .SelectionMenu td .gradientButton .statusBar {
               bottom: 20%; }
-            aera-element #MFD .NrstContainer .SelectionMenu tr .gradientButton .mainText, aera-element #MFD .NrstContainer .SelectionMenu td .gradientButton .mainText {
+            aera-element #LeftDisplay #MFD .NrstContainer .SelectionMenu tr .gradientButton .mainText, aera-element #LeftDisplay #MFD .NrstContainer .SelectionMenu td .gradientButton .mainText {
               margin-top: 5%;
               font-size: 2.3vh;
               line-height: 3vh; }
-    aera-element #MFD #NearestAirport {
+    aera-element #LeftDisplay #MFD #NearestAirport {
       width: 100%;
       height: 100%; }
-      aera-element #MFD #NearestAirport .NearestList thead tr th:nth-child(1), aera-element #MFD #NearestAirport .NearestList tbody tr:first-child td:nth-child(1) {
+      aera-element #LeftDisplay #MFD #NearestAirport .NearestList thead tr th:nth-child(1), aera-element #LeftDisplay #MFD #NearestAirport .NearestList tbody tr:first-child td:nth-child(1) {
         width: 45vh; }
-      aera-element #MFD #NearestAirport .NearestList thead tr th:nth-child(2), aera-element #MFD #NearestAirport .NearestList tbody tr:first-child td:nth-child(2) {
+      aera-element #LeftDisplay #MFD #NearestAirport .NearestList thead tr th:nth-child(2), aera-element #LeftDisplay #MFD #NearestAirport .NearestList tbody tr:first-child td:nth-child(2) {
         width: 30vh; }
-      aera-element #MFD #NearestAirport .NearestList thead tr th:nth-child(3), aera-element #MFD #NearestAirport .NearestList tbody tr:first-child td:nth-child(3) {
+      aera-element #LeftDisplay #MFD #NearestAirport .NearestList thead tr th:nth-child(3), aera-element #LeftDisplay #MFD #NearestAirport .NearestList tbody tr:first-child td:nth-child(3) {
         width: 30vh; }
-      aera-element #MFD #NearestAirport .NearestList thead tr th:nth-child(4), aera-element #MFD #NearestAirport .NearestList tbody tr:first-child td:nth-child(4) {
+      aera-element #LeftDisplay #MFD #NearestAirport .NearestList thead tr th:nth-child(4), aera-element #LeftDisplay #MFD #NearestAirport .NearestList tbody tr:first-child td:nth-child(4) {
         width: 30vh; }
-    aera-element #MFD #NearestIntersection {
+    aera-element #LeftDisplay #MFD #NearestIntersection {
       width: 100%;
       height: 100%; }
-      aera-element #MFD #NearestIntersection .NearestList thead tr th:nth-child(1), aera-element #MFD #NearestIntersection .NearestList tbody tr:first-child td:nth-child(1) {
+      aera-element #LeftDisplay #MFD #NearestIntersection .NearestList thead tr th:nth-child(1), aera-element #LeftDisplay #MFD #NearestIntersection .NearestList tbody tr:first-child td:nth-child(1) {
         width: 45vh; }
-      aera-element #MFD #NearestIntersection .NearestList thead tr th:nth-child(2), aera-element #MFD #NearestIntersection .NearestList tbody tr:first-child td:nth-child(2) {
+      aera-element #LeftDisplay #MFD #NearestIntersection .NearestList thead tr th:nth-child(2), aera-element #LeftDisplay #MFD #NearestIntersection .NearestList tbody tr:first-child td:nth-child(2) {
         width: 45vh; }
-      aera-element #MFD #NearestIntersection .NearestList thead tr th:nth-child(3), aera-element #MFD #NearestIntersection .NearestList tbody tr:first-child td:nth-child(3) {
+      aera-element #LeftDisplay #MFD #NearestIntersection .NearestList thead tr th:nth-child(3), aera-element #LeftDisplay #MFD #NearestIntersection .NearestList tbody tr:first-child td:nth-child(3) {
         width: 45vh; }
-    aera-element #MFD #NearestVOR {
+    aera-element #LeftDisplay #MFD #NearestVOR {
       width: 100%;
       height: 100%; }
-      aera-element #MFD #NearestVOR .NearestList tr td:last-child {
+      aera-element #LeftDisplay #MFD #NearestVOR .NearestList tr td:last-child {
         border-right: 0.4vh solid white;
         border-left: 0.4vh solid white; }
-      aera-element #MFD #NearestVOR .NearestList thead tr th:nth-child(1), aera-element #MFD #NearestVOR .NearestList tbody tr:first-child td:nth-child(1) {
+      aera-element #LeftDisplay #MFD #NearestVOR .NearestList thead tr th:nth-child(1), aera-element #LeftDisplay #MFD #NearestVOR .NearestList tbody tr:first-child td:nth-child(1) {
         width: 45vh; }
-      aera-element #MFD #NearestVOR .NearestList thead tr th:nth-child(2), aera-element #MFD #NearestVOR .NearestList tbody tr:first-child td:nth-child(2) {
+      aera-element #LeftDisplay #MFD #NearestVOR .NearestList thead tr th:nth-child(2), aera-element #LeftDisplay #MFD #NearestVOR .NearestList tbody tr:first-child td:nth-child(2) {
         width: 25vh; }
-      aera-element #MFD #NearestVOR .NearestList thead tr th:nth-child(3), aera-element #MFD #NearestVOR .NearestList tbody tr:first-child td:nth-child(3) {
+      aera-element #LeftDisplay #MFD #NearestVOR .NearestList thead tr th:nth-child(3), aera-element #LeftDisplay #MFD #NearestVOR .NearestList tbody tr:first-child td:nth-child(3) {
         width: 25vh; }
-      aera-element #MFD #NearestVOR .NearestList thead tr th:nth-child(4), aera-element #MFD #NearestVOR .NearestList tbody tr:first-child td:nth-child(4) {
+      aera-element #LeftDisplay #MFD #NearestVOR .NearestList thead tr th:nth-child(4), aera-element #LeftDisplay #MFD #NearestVOR .NearestList tbody tr:first-child td:nth-child(4) {
         width: 40vh; }
-    aera-element #MFD #NearestNDB {
+    aera-element #LeftDisplay #MFD #NearestNDB {
       width: 100%;
       height: 100%; }
-      aera-element #MFD #NearestNDB .symbol {
+      aera-element #LeftDisplay #MFD #NearestNDB .symbol {
         max-height: 4.5vh !important; }
-      aera-element #MFD #NearestNDB .NearestList thead tr th:nth-child(1), aera-element #MFD #NearestNDB .NearestList tbody tr:first-child td:nth-child(1) {
+      aera-element #LeftDisplay #MFD #NearestNDB .NearestList thead tr th:nth-child(1), aera-element #LeftDisplay #MFD #NearestNDB .NearestList tbody tr:first-child td:nth-child(1) {
         width: 35vw; }
-      aera-element #MFD #NearestNDB .NearestList thead tr th:nth-child(2), aera-element #MFD #NearestNDB .NearestList tbody tr:first-child td:nth-child(2) {
+      aera-element #LeftDisplay #MFD #NearestNDB .NearestList thead tr th:nth-child(2), aera-element #LeftDisplay #MFD #NearestNDB .NearestList tbody tr:first-child td:nth-child(2) {
         width: 20vw; }
-      aera-element #MFD #NearestNDB .NearestList thead tr th:nth-child(3), aera-element #MFD #NearestNDB .NearestList tbody tr:first-child td:nth-child(3) {
+      aera-element #LeftDisplay #MFD #NearestNDB .NearestList thead tr th:nth-child(3), aera-element #LeftDisplay #MFD #NearestNDB .NearestList tbody tr:first-child td:nth-child(3) {
         width: 20vw; }
-      aera-element #MFD #NearestNDB .NearestList thead tr th:nth-child(4), aera-element #MFD #NearestNDB .NearestList tbody tr:first-child td:nth-child(4) {
+      aera-element #LeftDisplay #MFD #NearestNDB .NearestList thead tr th:nth-child(4), aera-element #LeftDisplay #MFD #NearestNDB .NearestList tbody tr:first-child td:nth-child(4) {
         width: 20vw; }
-    aera-element #MFD .popup {
+    aera-element #LeftDisplay #MFD .popup {
       position: absolute;
       top: 0%;
       left: 0%;
@@ -568,15 +555,15 @@ aera-element {
       display: none;
       background-color: black;
       z-index: 20; }
-      aera-element #MFD .popup[state=Active] {
+      aera-element #LeftDisplay #MFD .popup[state=Active] {
         display: block; }
-      aera-element #MFD .popup .WindowTitle {
+      aera-element #LeftDisplay #MFD .popup .WindowTitle {
         font-size: 3vh;
         width: 100%;
         text-align: center;
         position: absolute;
         top: 2%; }
-    aera-element #MFD #PageMenu .menuElements {
+    aera-element #LeftDisplay #MFD #PageMenu .menuElements {
       position: absolute;
       height: 90%;
       top: 10%;
@@ -586,30 +573,30 @@ aera-element {
       flex-wrap: wrap;
       justify-content: center;
       align-items: center; }
-    aera-element #MFD #PageMenu .gradientButton {
+    aera-element #LeftDisplay #MFD #PageMenu .gradientButton {
       width: 15vh;
       min-width: 15vh;
       height: 15vh; }
-      aera-element #MFD #PageMenu .gradientButton .title {
+      aera-element #LeftDisplay #MFD #PageMenu .gradientButton .title {
         font-size: 2.1vh;
         line-height: 2.1vh; }
-    aera-element #MFD #XPDR #transponder_ModeSelect {
+    aera-element #LeftDisplay #MFD #XPDR #transponder_ModeSelect {
       position: absolute;
       bottom: 18%;
       width: 100%; }
-      aera-element #MFD #XPDR #transponder_ModeSelect #transponder_ModeSelectTitle {
+      aera-element #LeftDisplay #MFD #XPDR #transponder_ModeSelect #transponder_ModeSelectTitle {
         width: 100%;
         color: white;
         font-size: 3vh;
         text-align: center; }
-      aera-element #MFD #XPDR #transponder_ModeSelect .mainText {
+      aera-element #LeftDisplay #MFD #XPDR #transponder_ModeSelect .mainText {
         font-size: 3.5vh; }
-      aera-element #MFD #XPDR #transponder_ModeSelect #buttonsList {
+      aera-element #LeftDisplay #MFD #XPDR #transponder_ModeSelect #buttonsList {
         width: 100%;
         display: flex; }
-      aera-element #MFD #XPDR #transponder_ModeSelect .gradientButton {
+      aera-element #LeftDisplay #MFD #XPDR #transponder_ModeSelect .gradientButton {
         width: 32%; }
-    aera-element #MFD #XPDR #transponder_CodeDisplay {
+    aera-element #LeftDisplay #MFD #XPDR #transponder_CodeDisplay {
       position: absolute;
       right: 30%;
       top: 10%;
@@ -617,54 +604,54 @@ aera-element {
       height: 12.3%;
       width: 40%;
       text-align: center; }
-      aera-element #MFD #XPDR #transponder_CodeDisplay #transponder_Code {
+      aera-element #LeftDisplay #MFD #XPDR #transponder_CodeDisplay #transponder_Code {
         font-size: 8vh;
         color: black; }
-        aera-element #MFD #XPDR #transponder_CodeDisplay #transponder_Code .Writed, aera-element #MFD #XPDR #transponder_CodeDisplay #transponder_Code .ToWrite {
+        aera-element #LeftDisplay #MFD #XPDR #transponder_CodeDisplay #transponder_Code .Writed, aera-element #LeftDisplay #MFD #XPDR #transponder_CodeDisplay #transponder_Code .ToWrite {
           background-color: none;
           color: aqua; }
-        aera-element #MFD #XPDR #transponder_CodeDisplay #transponder_Code .Writing {
+        aera-element #LeftDisplay #MFD #XPDR #transponder_CodeDisplay #transponder_Code .Writing {
           animation: SelectedCharBlinkFreqEdit 1s infinite;
           min-width: 0.5vw;
           min-height: 8vh;
           display: inline-block; }
-        aera-element #MFD #XPDR #transponder_CodeDisplay #transponder_Code .Fixed {
+        aera-element #LeftDisplay #MFD #XPDR #transponder_CodeDisplay #transponder_Code .Fixed {
           background-color: aqua; }
-    aera-element #MFD #XPDR #transponder_Bksp {
+    aera-element #LeftDisplay #MFD #XPDR #transponder_Bksp {
       position: absolute;
       right: 2%;
       top: 10%; }
-    aera-element #MFD #XPDR #transponder_NumberKeyboard {
+    aera-element #LeftDisplay #MFD #XPDR #transponder_NumberKeyboard {
       position: absolute;
       right: 2%;
       left: 2%;
       width: auto;
       top: 25%; }
-      aera-element #MFD #XPDR #transponder_NumberKeyboard .roundButton {
+      aera-element #LeftDisplay #MFD #XPDR #transponder_NumberKeyboard .roundButton {
         width: 15vh;
         height: 15vh;
         line-height: 12vh;
         display: inline-block;
         margin: 0.5vh; }
-    aera-element #MFD #XPDR #transponder_ActiveTransponder {
+    aera-element #LeftDisplay #MFD #XPDR #transponder_ActiveTransponder {
       position: absolute;
       left: 25%;
       bottom: 0%; }
-    aera-element #MFD #XPDR #transponder_Vfr {
+    aera-element #LeftDisplay #MFD #XPDR #transponder_Vfr {
       position: absolute;
       left: 2%;
       top: 10%; }
-    aera-element #MFD #XPDR #transponder_Cancel {
+    aera-element #LeftDisplay #MFD #XPDR #transponder_Cancel {
       position: absolute;
       left: 2%;
       bottom: 2%;
       width: 30%; }
-    aera-element #MFD #XPDR #transponder_Enter {
+    aera-element #LeftDisplay #MFD #XPDR #transponder_Enter {
       position: absolute;
       right: 2%;
       bottom: 2%;
       width: 30%; }
-    aera-element #MFD #COM #com_FreqDisplay {
+    aera-element #LeftDisplay #MFD #COM #com_FreqDisplay {
       position: absolute;
       right: 30%;
       top: 10%;
@@ -672,142 +659,142 @@ aera-element {
       height: 9.2%;
       width: 40%;
       text-align: center; }
-      aera-element #MFD #COM #com_FreqDisplay #com_frequency {
+      aera-element #LeftDisplay #MFD #COM #com_FreqDisplay #com_frequency {
         font-size: 6vh;
         color: black; }
-        aera-element #MFD #COM #com_FreqDisplay #com_frequency .Writed, aera-element #MFD #COM #com_FreqDisplay #com_frequency .ToWrite {
+        aera-element #LeftDisplay #MFD #COM #com_FreqDisplay #com_frequency .Writed, aera-element #LeftDisplay #MFD #COM #com_FreqDisplay #com_frequency .ToWrite {
           background-color: none;
           color: aqua; }
-        aera-element #MFD #COM #com_FreqDisplay #com_frequency .Writing {
+        aera-element #LeftDisplay #MFD #COM #com_FreqDisplay #com_frequency .Writing {
           animation: SelectedCharBlinkFreqEdit 1s infinite;
           min-width: 0.5vw;
           min-height: 6vh;
           display: inline-block; }
-        aera-element #MFD #COM #com_FreqDisplay #com_frequency .Fixed {
+        aera-element #LeftDisplay #MFD #COM #com_FreqDisplay #com_frequency .Fixed {
           background-color: aqua; }
-    aera-element #MFD #COM #com_Bksp {
+    aera-element #LeftDisplay #MFD #COM #com_Bksp {
       position: absolute;
       right: 2%;
       top: 10%; }
-    aera-element #MFD #COM #Com_NumbersKeyboard {
+    aera-element #LeftDisplay #MFD #COM #Com_NumbersKeyboard {
       position: absolute;
       bottom: 18%;
       width: 50%;
       left: 25%;
       right: 25%; }
-    aera-element #MFD #COM #Com_Cancel {
+    aera-element #LeftDisplay #MFD #COM #Com_Cancel {
       position: absolute;
       bottom: 2%;
       left: 2%; }
-    aera-element #MFD #COM #Com_XFR {
+    aera-element #LeftDisplay #MFD #COM #Com_XFR {
       position: absolute;
       bottom: 2%;
       right: 27%; }
-    aera-element #MFD #COM #Com_Enter {
+    aera-element #LeftDisplay #MFD #COM #Com_Enter {
       position: absolute;
       bottom: 2%;
       right: 2%; }
-    aera-element #MFD #DirectTo #SelectedWaypoint {
+    aera-element #LeftDisplay #MFD #DirectTo #SelectedWaypoint {
       width: 100%;
       height: 15vh; }
-      aera-element #MFD #DirectTo #SelectedWaypoint .mainValue {
+      aera-element #LeftDisplay #MFD #DirectTo #SelectedWaypoint .mainValue {
         position: absolute;
         left: 2%;
         top: 0%;
         text-align: left;
         color: aqua;
         font-size: 6vh; }
-      aera-element #MFD #DirectTo #SelectedWaypoint .title {
+      aera-element #LeftDisplay #MFD #DirectTo #SelectedWaypoint .title {
         position: absolute;
         left: 2%;
         bottom: 0%;
         text-align: left;
         font-size: 4.5vh; }
-    aera-element #MFD #DirectTo #TopInfos #Location {
+    aera-element #LeftDisplay #MFD #DirectTo #TopInfos #Location {
       width: 48%;
       margin-left: 2%; }
-    aera-element #MFD #DirectTo #TopInfos #Bearing {
+    aera-element #LeftDisplay #MFD #DirectTo #TopInfos #Bearing {
       width: 20%; }
-    aera-element #MFD #DirectTo #TopInfos #Distance {
+    aera-element #LeftDisplay #MFD #DirectTo #TopInfos #Distance {
       width: 25%; }
-    aera-element #MFD #DirectTo #TopInfos div {
+    aera-element #LeftDisplay #MFD #DirectTo #TopInfos div {
       display: inline-block;
       width: 30%; }
-      aera-element #MFD #DirectTo #TopInfos div div {
+      aera-element #LeftDisplay #MFD #DirectTo #TopInfos div div {
         display: block;
         color: white;
         font-size: 4vh;
         width: 100%; }
-    aera-element #MFD #DirectTo #TopLine,
-    aera-element #MFD #DirectTo #MiddleLine {
+    aera-element #LeftDisplay #MFD #DirectTo #TopLine,
+    aera-element #LeftDisplay #MFD #DirectTo #MiddleLine {
       position: relative;
       width: 100%;
       height: 16vh; }
-      aera-element #MFD #DirectTo #TopLine .gradientButton,
-      aera-element #MFD #DirectTo #MiddleLine .gradientButton {
+      aera-element #LeftDisplay #MFD #DirectTo #TopLine .gradientButton,
+      aera-element #LeftDisplay #MFD #DirectTo #MiddleLine .gradientButton {
         position: absolute;
         top: 0%;
         display: inline-block;
         text-align: center;
         width: 48%;
         height: 15vh; }
-      aera-element #MFD #DirectTo #TopLine .gradientButton:first-child,
-      aera-element #MFD #DirectTo #MiddleLine .gradientButton:first-child {
+      aera-element #LeftDisplay #MFD #DirectTo #TopLine .gradientButton:first-child,
+      aera-element #LeftDisplay #MFD #DirectTo #MiddleLine .gradientButton:first-child {
         left: 1%; }
-      aera-element #MFD #DirectTo #TopLine .gradientButton:last-child,
-      aera-element #MFD #DirectTo #MiddleLine .gradientButton:last-child {
+      aera-element #LeftDisplay #MFD #DirectTo #TopLine .gradientButton:last-child,
+      aera-element #LeftDisplay #MFD #DirectTo #MiddleLine .gradientButton:last-child {
         right: 1%; }
-      aera-element #MFD #DirectTo #TopLine .mainValue,
-      aera-element #MFD #DirectTo #MiddleLine .mainValue {
+      aera-element #LeftDisplay #MFD #DirectTo #TopLine .mainValue,
+      aera-element #LeftDisplay #MFD #DirectTo #MiddleLine .mainValue {
         font-size: 4vh;
         color: aqua; }
-    aera-element #MFD #DirectTo #bottomLine {
+    aera-element #LeftDisplay #MFD #DirectTo #bottomLine {
       width: 100%;
       height: 30vh;
       position: relative; }
-      aera-element #MFD #DirectTo #bottomLine .gradientButton {
+      aera-element #LeftDisplay #MFD #DirectTo #bottomLine .gradientButton {
         display: inline-block;
         text-align: center;
         height: 20vh; }
-        aera-element #MFD #DirectTo #bottomLine .gradientButton .mainValue {
+        aera-element #LeftDisplay #MFD #DirectTo #bottomLine .gradientButton .mainValue {
           font-size: 4vh;
           color: white; }
-      aera-element #MFD #DirectTo #bottomLine #DRCT_ActivateDirect {
+      aera-element #LeftDisplay #MFD #DirectTo #bottomLine #DRCT_ActivateDirect {
         position: absolute;
         top: 0%;
         right: 0%;
         width: 29%; }
-        aera-element #MFD #DirectTo #bottomLine #DRCT_ActivateDirect .DrctImg {
+        aera-element #LeftDisplay #MFD #DirectTo #bottomLine #DRCT_ActivateDirect .DrctImg {
           vertical-align: middle;
           padding-bottom: 1vh; }
-      aera-element #MFD #DirectTo #bottomLine #DRCT_CancelButton {
+      aera-element #LeftDisplay #MFD #DirectTo #bottomLine #DRCT_CancelButton {
         position: absolute;
         top: 0%;
         left: 0%;
         width: 29%; }
-        aera-element #MFD #DirectTo #bottomLine #DRCT_CancelButton .DrctImg {
+        aera-element #LeftDisplay #MFD #DirectTo #bottomLine #DRCT_CancelButton .DrctImg {
           vertical-align: middle;
           padding-bottom: 1vh; }
-      aera-element #MFD #DirectTo #bottomLine #DRCT_ActivateInsertInFP {
+      aera-element #LeftDisplay #MFD #DirectTo #bottomLine #DRCT_ActivateInsertInFP {
         position: absolute;
         top: 0%;
         left: 30%;
         width: 39%; }
-    aera-element #MFD #fullKeyboard {
+    aera-element #LeftDisplay #MFD #fullKeyboard {
       z-index: 2; }
-      aera-element #MFD #fullKeyboard #Keyboard_LetterTable,
-      aera-element #MFD #fullKeyboard #Keyboard_NumberTable {
+      aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_LetterTable,
+      aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_NumberTable {
         display: none; }
-      aera-element #MFD #fullKeyboard[keyboard=Letters] #Keyboard_LetterTable,
-      aera-element #MFD #fullKeyboard[keyboard=Numbers] #Keyboard_NumberTable {
+      aera-element #LeftDisplay #MFD #fullKeyboard[keyboard=Letters] #Keyboard_LetterTable,
+      aera-element #LeftDisplay #MFD #fullKeyboard[keyboard=Numbers] #Keyboard_NumberTable {
         display: inherit; }
-      aera-element #MFD #fullKeyboard #topLine {
+      aera-element #LeftDisplay #MFD #fullKeyboard #topLine {
         position: absolute;
         top: 0%;
         left: 0%;
         height: 5vh;
         width: 100%; }
-        aera-element #MFD #fullKeyboard #topLine #EditText {
+        aera-element #LeftDisplay #MFD #fullKeyboard #topLine #EditText {
           position: absolute;
           left: 1%;
           height: 100%;
@@ -817,20 +804,20 @@ aera-element {
           line-height: 5vh;
           padding-left: 2%;
           color: black; }
-          aera-element #MFD #fullKeyboard #topLine #EditText .NoEdit {
+          aera-element #LeftDisplay #MFD #fullKeyboard #topLine #EditText .NoEdit {
             background-color: aqua; }
-          aera-element #MFD #fullKeyboard #topLine #EditText .Writed {
+          aera-element #LeftDisplay #MFD #fullKeyboard #topLine #EditText .Writed {
             background-color: none;
             color: aqua; }
-          aera-element #MFD #fullKeyboard #topLine #EditText .ToWrite {
+          aera-element #LeftDisplay #MFD #fullKeyboard #topLine #EditText .ToWrite {
             background-color: none;
             color: dimgray; }
-          aera-element #MFD #fullKeyboard #topLine #EditText .Writing {
+          aera-element #LeftDisplay #MFD #fullKeyboard #topLine #EditText .Writing {
             animation: SelectedCharBlinkFreqEdit 1s infinite;
             min-width: 0.5vw;
             min-height: 4vh;
             display: inline-block; }
-        aera-element #MFD #fullKeyboard #topLine #Infos {
+        aera-element #LeftDisplay #MFD #fullKeyboard #topLine #Infos {
           position: absolute;
           left: 32%;
           height: 100%;
@@ -838,153 +825,167 @@ aera-element {
           color: white;
           font-size: 2.5vh;
           vertical-align: bottom; }
-          aera-element #MFD #fullKeyboard #topLine #Infos #InfosContent {
+          aera-element #LeftDisplay #MFD #fullKeyboard #topLine #Infos #InfosContent {
             position: absolute;
             bottom: 0%;
             vertical-align: bottom;
             width: 92%; }
-          aera-element #MFD #fullKeyboard #topLine #Infos #InfosSymbol {
+          aera-element #LeftDisplay #MFD #fullKeyboard #topLine #Infos #InfosSymbol {
             position: absolute;
             bottom: 0%;
             vertical-align: bottom;
             width: 8%;
             right: 0%; }
-      aera-element #MFD #fullKeyboard #Keyboard_LetterTable,
-      aera-element #MFD #fullKeyboard #Keyboard_NumberTable {
+      aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_LetterTable,
+      aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_NumberTable {
         position: absolute;
         top: 6vh;
         left: 0%;
         width: 100%;
         height: 75vh; }
-        aera-element #MFD #fullKeyboard #Keyboard_LetterTable tr,
-        aera-element #MFD #fullKeyboard #Keyboard_NumberTable tr {
+        aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_LetterTable tr,
+        aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_NumberTable tr {
           height: 12vh; }
-          aera-element #MFD #fullKeyboard #Keyboard_LetterTable tr td,
-          aera-element #MFD #fullKeyboard #Keyboard_NumberTable tr td {
+          aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_LetterTable tr td,
+          aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_NumberTable tr td {
             height: 13vh;
             width: 12vw; }
-          aera-element #MFD #fullKeyboard #Keyboard_LetterTable tr .Double,
-          aera-element #MFD #fullKeyboard #Keyboard_NumberTable tr .Double {
+          aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_LetterTable tr .Double,
+          aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_NumberTable tr .Double {
             width: 24vw; }
-        aera-element #MFD #fullKeyboard #Keyboard_LetterTable .gradientButton,
-        aera-element #MFD #fullKeyboard #Keyboard_NumberTable .gradientButton {
+        aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_LetterTable .gradientButton,
+        aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_NumberTable .gradientButton {
           height: 8vh;
           width: 10vh; }
-          aera-element #MFD #fullKeyboard #Keyboard_LetterTable .gradientButton .mainText,
-          aera-element #MFD #fullKeyboard #Keyboard_NumberTable .gradientButton .mainText {
+          aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_LetterTable .gradientButton .mainText,
+          aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_NumberTable .gradientButton .mainText {
             display: inline;
             font-size: 4vh;
             vertical-align: central; }
-          aera-element #MFD #fullKeyboard #Keyboard_LetterTable .gradientButton .title,
-          aera-element #MFD #fullKeyboard #Keyboard_NumberTable .gradientButton .title {
+          aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_LetterTable .gradientButton .title,
+          aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_NumberTable .gradientButton .title {
             font-size: 3vh; }
-        aera-element #MFD #fullKeyboard #Keyboard_LetterTable #K_SwitchToNum,
-        aera-element #MFD #fullKeyboard #Keyboard_LetterTable #KN_SwitchToLetters,
-        aera-element #MFD #fullKeyboard #Keyboard_NumberTable #K_SwitchToNum,
-        aera-element #MFD #fullKeyboard #Keyboard_NumberTable #KN_SwitchToLetters {
+        aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_LetterTable #K_SwitchToNum,
+        aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_LetterTable #KN_SwitchToLetters,
+        aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_NumberTable #K_SwitchToNum,
+        aera-element #LeftDisplay #MFD #fullKeyboard #Keyboard_NumberTable #KN_SwitchToLetters {
           width: 20vh; }
-      aera-element #MFD #fullKeyboard #FK_Cancel {
+      aera-element #LeftDisplay #MFD #fullKeyboard #FK_Cancel {
         position: absolute;
         left: 2%;
         bottom: 2%;
         width: 30%; }
-      aera-element #MFD #fullKeyboard #FK_Enter {
+      aera-element #LeftDisplay #MFD #fullKeyboard #FK_Enter {
         position: absolute;
         right: 2%;
         bottom: 2%;
         width: 30%; }
-    aera-element #MFD #PFD_Menu .title {
+    aera-element #LeftDisplay #MFD #PFD_Menu .title {
       position: absolute;
       width: 100%;
       top: 0%;
       text-align: center;
       font-size: 3vh; }
-    aera-element #MFD #PFD_Menu .subpart {
+    aera-element #LeftDisplay #MFD #PFD_Menu .subpart {
       position: absolute;
       border: 0.4vh solid white; }
-      aera-element #MFD #PFD_Menu .subpart .title {
+      aera-element #LeftDisplay #MFD #PFD_Menu .subpart .title {
         position: absolute;
         width: 100%;
         top: 1vh; }
-      aera-element #MFD #PFD_Menu .subpart .gradientButton {
+      aera-element #LeftDisplay #MFD #PFD_Menu .subpart .gradientButton {
         position: absolute;
         bottom: 0.5vh;
         height: 10vh; }
-        aera-element #MFD #PFD_Menu .subpart .gradientButton .mainText {
+        aera-element #LeftDisplay #MFD #PFD_Menu .subpart .gradientButton .mainText {
           position: absolute;
           font-size: 3vh;
           width: 100%;
           text-align: center; }
-    aera-element #MFD #PFD_Menu #cdi_source {
+    aera-element #LeftDisplay #MFD #PFD_Menu #cdi_source {
       top: 5%;
       left: 30%;
       right: 30%;
       width: auto;
       height: 20%; }
-      aera-element #MFD #PFD_Menu #cdi_source .gradientButton {
+      aera-element #LeftDisplay #MFD #PFD_Menu #cdi_source .gradientButton {
         left: 10%;
         right: 10%;
         width: auto; }
-    aera-element #MFD #PFD_Menu #inset_windows {
+    aera-element #LeftDisplay #MFD #PFD_Menu #inset_windows {
       top: 27%;
       left: 5%;
       right: 5%;
       height: 20%;
       width: auto; }
-      aera-element #MFD #PFD_Menu #inset_windows #left_inset_button {
+      aera-element #LeftDisplay #MFD #PFD_Menu #inset_windows #left_inset_button {
         position: absolute;
         left: 2%;
         width: 45%; }
-      aera-element #MFD #PFD_Menu #inset_windows #right_inset_button {
+      aera-element #LeftDisplay #MFD #PFD_Menu #inset_windows #right_inset_button {
         position: absolute;
         right: 2%;
         width: 45%; }
-    aera-element #MFD #PFD_Menu #bearing_pointers {
+    aera-element #LeftDisplay #MFD #PFD_Menu #bearing_pointers {
       top: 49%;
       height: 20%;
       left: 5%;
       right: 5%;
       width: auto; }
-      aera-element #MFD #PFD_Menu #bearing_pointers #left_bearing_button {
+      aera-element #LeftDisplay #MFD #PFD_Menu #bearing_pointers #left_bearing_button {
         left: 2%;
         width: 45%; }
-      aera-element #MFD #PFD_Menu #bearing_pointers #right_bearing_button {
+      aera-element #LeftDisplay #MFD #PFD_Menu #bearing_pointers #right_bearing_button {
         right: 2%;
         width: 45%; }
-    aera-element #MFD #PFD_Menu #timer {
+    aera-element #LeftDisplay #MFD #PFD_Menu #timer {
       top: 71%;
       height: 20%;
       left: 5%;
       right: 35%;
       width: auto; }
-      aera-element #MFD #PFD_Menu #timer #timer_startStop_button {
+      aera-element #LeftDisplay #MFD #PFD_Menu #timer #timer_startStop_button {
         left: 2%;
         width: 55%; }
-        aera-element #MFD #PFD_Menu #timer #timer_startStop_button .topTitle {
+        aera-element #LeftDisplay #MFD #PFD_Menu #timer #timer_startStop_button .topTitle {
           position: absolute;
           width: 100%;
           text-align: center;
           top: 5%;
           font-size: 2.5vh; }
-        aera-element #MFD #PFD_Menu #timer #timer_startStop_button .value {
+        aera-element #LeftDisplay #MFD #PFD_Menu #timer #timer_startStop_button .value {
           position: absolute;
           width: 100%;
           text-align: center;
           bottom: 15%;
           font-size: 3.5vh; }
-      aera-element #MFD #PFD_Menu #timer #timer_reset_button {
+      aera-element #LeftDisplay #MFD #PFD_Menu #timer #timer_reset_button {
         right: 2%;
         width: 35%; }
-    aera-element #MFD #PFD_Menu #minimums {
+    aera-element #LeftDisplay #MFD #PFD_Menu #minimums {
       top: 71%;
       height: 20%;
       left: 67.5%;
       right: 5%;
       width: auto; }
-      aera-element #MFD #PFD_Menu #minimums .gradientButton {
+      aera-element #LeftDisplay #MFD #PFD_Menu #minimums .gradientButton {
         left: 5%;
         right: 5%;
         width: auto; }
+  aera-element #RightMenu {
+    position: absolute;
+    width: 10%;
+    right: 0%;
+    height: 100vh;
+    bottom: 0%; }
+    aera-element #RightMenu .gradientButton {
+      width: 90%;
+      height: 16.66vh;
+      margin-left: 5%; }
+      aera-element #RightMenu .gradientButton .title {
+        font-size: 3.5vh; }
+    aera-element #RightMenu #MenuButton .title {
+      top: 10%; }
   aera-element #WaypointDuplicateWindow {
     color: white;
     font-size: 3vh;
@@ -1379,4 +1380,42 @@ aera-element {
   aera-element #Annunciations[state=Blink] .Caution_Blink {
     color: black;
     background-color: yellow; }
+
+aera-element[state=vertical] #LeftDisplay {
+  transform: rotate(-90deg) translate(-155px, -640px); }
+  aera-element[state=vertical] #LeftDisplay #TopBar {
+    width: 62%; }
+  aera-element[state=vertical] #LeftDisplay #MFD {
+    height: 138vh;
+    width: 62%; }
+    aera-element[state=vertical] #LeftDisplay #MFD #PagesContainer #PFD #HorizonContainer #SyntheticVision {
+      width: 100vh;
+      height: 190vh; }
+    aera-element[state=vertical] #LeftDisplay #MFD #PagesContainer #PFD #altimeterContainer {
+      height: 70%;
+      top: 12%; }
+      aera-element[state=vertical] #LeftDisplay #MFD #PagesContainer #PFD #altimeterContainer #Altimeter {
+        height: 79%;
+        top: 0%;
+        right: -64%; }
+    aera-element[state=vertical] #LeftDisplay #MFD #PagesContainer #PFD #Airspeed {
+      top: 12%;
+      left: -5%;
+      height: 55%; }
+    aera-element[state=vertical] #LeftDisplay #MFD #PagesContainer #PFD #CDI {
+      width: 50vh;
+      left: 25.5%; }
+
+aera-element[state=vertical] #RightMenu {
+  right: 0.4%;
+  top: 0.75%; }
+  aera-element[state=vertical] #RightMenu .gradientButton {
+    transform: rotate(-90deg);
+    width: 97%;
+    height: 15.8vh;
+    margin-left: 0%; }
+    aera-element[state=vertical] #RightMenu .gradientButton .img {
+      margin-top: 0%; }
+    aera-element[state=vertical] #RightMenu .gradientButton .title {
+      bottom: 5%; }
 

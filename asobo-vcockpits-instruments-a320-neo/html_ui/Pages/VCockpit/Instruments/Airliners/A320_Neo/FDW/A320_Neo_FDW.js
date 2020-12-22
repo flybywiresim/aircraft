@@ -18,13 +18,13 @@ var A320_Neo_RadioManagement;
             case FREQUENCY_TYPE.VOR:
             case FREQUENCY_TYPE.ILS:
             case FREQUENCY_TYPE.ADF:
-            {
-                return true;
-            }
+                {
+                    return true;
+                }
             default:
-            {
-                return false;
-            }
+                {
+                    return false;
+                }
         }
     }
     A320_Neo_RadioManagement.IsNAVFrequencyType = IsNAVFrequencyType;
@@ -52,6 +52,8 @@ class A320_Neo_FDW_FrequencyHandler {
         this.setCrsSimVar = null;
         this.savedActive = 0;
         this.savedStby = 0;
+        this.autoRefreshTimer = 5.0;
+        this.disableAutoRefreshTimer = 0.0;
         this.index = _index;
         this.xmlRef = _xmlRef;
         this.radioNav = _radioNav;
@@ -80,7 +82,16 @@ class A320_Neo_FDW_FrequencyHandler {
     hasXMLRef(_xmlRef) {
         return (_xmlRef == this.xmlRef);
     }
-    apply(_activeText, _stbyText) {
+    update(_deltaTime, _activeText, _stbyText) {
+        this.disableAutoRefreshTimer -= _deltaTime;
+        if (this.disableAutoRefreshTimer <= 0.0) {
+            this.disableAutoRefreshTimer = 0.0;
+            this.autoRefreshTimer -= _deltaTime;
+            if (this.autoRefreshTimer <= 0.0) {
+                this.setFromSimvars();
+                this.autoRefreshTimer = 5.0;
+            }
+        }
         if (this.needRefresh) {
             if (_activeText != null) {
                 _activeText.textContent = this.active.toFixed(this.displayDP);
@@ -88,7 +99,8 @@ class A320_Neo_FDW_FrequencyHandler {
             if (_stbyText != null) {
                 if (this.activeCRSMode) {
                     _stbyText.textContent = "C-" + this.targetCRS.toString().padStart(3, "0");
-                } else {
+                }
+                else {
                     _stbyText.textContent = this.stby.toFixed(this.displayDP);
                 }
             }
@@ -96,42 +108,43 @@ class A320_Neo_FDW_FrequencyHandler {
         }
     }
     show() {
+        this.setFromSimvars();
+    }
+    setFromSimvars() {
         if (this.getActiveSimVar != null) {
             if (this.savedActive != 0) {
                 this.active = this.savedActive;
                 this.setActiveValueSimVar();
-            } else {
+            }
+            else {
                 this.active = this.getActiveSimVar(this.index);
                 let validVal = this.active;
-                if (this.active == 0) {
+                if (this.active == 0)
                     validVal = 110.50;
-                } else {
+                else
                     validVal = Utils.Clamp(this.active, this.min, this.max);
-                }
-                const changed = (validVal != this.active) ? true : false;
+                let changed = (validVal != this.active) ? true : false;
                 this.active = validVal;
-                if (changed) {
+                if (changed)
                     this.setActiveValueSimVar();
-                }
             }
         }
         if (this.getStbySimVar != null) {
             if (this.savedStby != 0) {
                 this.stby = this.savedStby;
                 this.setStbyValueSimVar();
-            } else {
+            }
+            else {
                 this.stby = this.getStbySimVar(this.index);
                 let validVal = this.stby;
-                if (this.stby == 0) {
+                if (this.stby == 0)
                     validVal = 113.90;
-                } else {
+                else
                     validVal = Utils.Clamp(this.stby, this.min, this.max);
-                }
-                const changed = (validVal != this.stby) ? true : false;
+                let changed = (validVal != this.stby) ? true : false;
                 this.stby = validVal;
-                if (changed) {
+                if (changed)
                     this.setStbyValueSimVar();
-                }
             }
         }
         if (this.useCRSMode) {
@@ -148,8 +161,9 @@ class A320_Neo_FDW_FrequencyHandler {
             this.currentCRS = this.targetCRS;
             this.setCrsValueSimVar();
             this.activeCRSMode = false;
-        } else {
-            const temp = this.active;
+        }
+        else {
+            var temp = this.active;
             this.active = this.stby;
             this.stby = temp;
             this.setActiveValueSimVar();
@@ -165,7 +179,8 @@ class A320_Neo_FDW_FrequencyHandler {
     decimalINC() {
         if (this.activeCRSMode) {
             this.modifyTargetCRSValue(1);
-        } else {
+        }
+        else {
             let newValue = parseFloat((this.stby + this.decimalMod).toFixed(this.displayDP));
             if (Math.trunc(newValue) > Math.trunc(this.stby)) {
                 newValue -= 1;
@@ -182,7 +197,8 @@ class A320_Neo_FDW_FrequencyHandler {
     decimalDEC() {
         if (this.activeCRSMode) {
             this.modifyTargetCRSValue(-1);
-        } else {
+        }
+        else {
             let newValue = parseFloat((this.stby - this.decimalMod).toFixed(this.displayDP));
             if (Math.trunc(newValue) < Math.trunc(this.stby)) {
                 newValue += 1;
@@ -199,33 +215,38 @@ class A320_Neo_FDW_FrequencyHandler {
     integerINC() {
         if (this.activeCRSMode) {
             this.modifyTargetCRSValue(10);
-        } else {
+        }
+        else {
             this.trySetStbyValue(this.stby + this.integerMod);
         }
     }
     integerDEC() {
         if (this.activeCRSMode) {
             this.modifyTargetCRSValue(-10);
-        } else {
+        }
+        else {
             this.trySetStbyValue(this.stby - this.integerMod);
         }
     }
     trySetStbyValue(_value) {
-        const newValue = Utils.Clamp(_value, this.min, this.max);
+        var newValue = Utils.Clamp(_value, this.min, this.max);
         if (newValue != this.stby) {
             this.stby = newValue;
             this.setStbyValueSimVar();
             this.needRefresh = true;
+            this.disableAutoRefreshTimer = 5.0;
         }
     }
     modifyTargetCRSValue(_value) {
         this.targetCRS += _value;
         if (this.targetCRS < 0) {
             this.targetCRS += 360;
-        } else if (this.targetCRS > 360) {
+        }
+        else if (this.targetCRS > 360) {
             this.targetCRS -= 360;
         }
         this.needRefresh = true;
+        this.disableAutoRefreshTimer = 5.0;
     }
     setActiveValueSimVar() {
         if (this.setActiveSimVar != null) {
@@ -257,7 +278,6 @@ class A320_Neo_FDW extends BaseAirliners {
         this.integerIncEventName = "";
         this.integerDecEventName = "";
         this.buttonEventNamePrefix = "";
-        this.showValues = false;
         this.currentFrequencyType = A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE;
         this.lastNonNavFrequencyType = A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE;
         this.isNavModeActive = false;
@@ -274,9 +294,7 @@ class A320_Neo_FDW extends BaseAirliners {
         this.decimalDecEventName = "DIAL_" + this.side + "_DECIMAL_DEC";
         this.buttonEventNamePrefix = "BTN_" + this.side + "_";
     }
-    get templateID() {
-        return "A320_Neo_FDW";
-    }
+    get templateID() { return "A320_Neo_FDW"; }
     connectedCallback() {
         super.connectedCallback();
         this.valueTexts[0] = this.querySelector("#ActiveValue");
@@ -313,26 +331,15 @@ class A320_Neo_FDW extends BaseAirliners {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
-        const isOn = SimVar.GetSimVarValue(this.onVarName, "Boolean");
+        var isOn = SimVar.GetSimVarValue(this.onVarName, "Boolean");
         if (isOn && (this.currentFrequencyType == A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE)) {
             this.switchOn();
-        } else if (!isOn && (this.currentFrequencyType != A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE)) {
+        }
+        else if (!isOn && (this.currentFrequencyType != A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE)) {
             this.switchOff();
         }
-        const needShowValues = (isOn && (this.currentFrequencyType != A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE));
-        if (needShowValues != this.showValues) {
-            this.showValues = needShowValues;
-            if (!this.showValues) {
-                if (this.valueTexts[0] != null) {
-                    this.valueTexts[0].textContent = "";
-                }
-                if (this.valueTexts[1] != null) {
-                    this.valueTexts[1].textContent = "";
-                }
-            }
-        }
-        if (this.showValues) {
-            this.frequencyHandlers[this.currentFrequencyType].apply(this.valueTexts[0], this.valueTexts[1]);
+        if (isOn) {
+            this.frequencyHandlers[this.currentFrequencyType].update(this.deltaTime, this.valueTexts[0], this.valueTexts[1]);
         }
     }
     switchOn() {
@@ -345,54 +352,64 @@ class A320_Neo_FDW extends BaseAirliners {
         this.currentFrequencyType = A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE;
         this.lastNonNavFrequencyType = this.currentFrequencyType;
         this.switchNavActive(false);
+        if (this.valueTexts[0] != null) {
+            this.valueTexts[0].textContent = "";
+        }
+        if (this.valueTexts[1] != null) {
+            this.valueTexts[1].textContent = "";
+        }
     }
     switchNavActive(_val) {
         this.isNavModeActive = _val;
         this.radioNav.setRADIONAVActive(this.navIndex, _val);
-        if (!_val) {
+        if (!_val)
             this.radioNav.setRADIONAVSource(NavSource.AUTO);
-        }
     }
     onEvent(_event) {
         if (_event == this.transferEventName) {
             if (this.currentFrequencyType > A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE) {
                 this.frequencyHandlers[this.currentFrequencyType].transfer();
             }
-        } else if (_event == this.navButtonEventName) {
+        }
+        else if (_event == this.navButtonEventName) {
             if (this.isNavModeActive) {
                 if (this.lastNonNavFrequencyType > A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE) {
                     this.currentFrequencyType = this.lastNonNavFrequencyType;
                     this.frequencyHandlers[this.currentFrequencyType].show();
-                    if (this.currentFrequencyType == A320_Neo_RadioManagement.FREQUENCY_TYPE.VOR) {
+                    if (this.currentFrequencyType == A320_Neo_RadioManagement.FREQUENCY_TYPE.VOR)
                         this.radioNav.setRADIONAVSource(NavSource.VOR1);
-                    } else if (this.currentFrequencyType == A320_Neo_RadioManagement.FREQUENCY_TYPE.ILS) {
+                    else if (this.currentFrequencyType == A320_Neo_RadioManagement.FREQUENCY_TYPE.ILS)
                         this.radioNav.setRADIONAVSource(NavSource.ILS1);
-                    } else {
+                    else
                         this.radioNav.setRADIONAVSource(NavSource.AUTO);
-                    }
                 }
             }
             this.switchNavActive(!this.isNavModeActive);
-        } else if (_event == this.decimalIncEventName) {
+        }
+        else if (_event == this.decimalIncEventName) {
             if (this.currentFrequencyType > A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE) {
                 this.frequencyHandlers[this.currentFrequencyType].decimalINC();
             }
-        } else if (_event == this.decimalDecEventName) {
+        }
+        else if (_event == this.decimalDecEventName) {
             if (this.currentFrequencyType > A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE) {
                 this.frequencyHandlers[this.currentFrequencyType].decimalDEC();
             }
-        } else if (_event == this.integerIncEventName) {
+        }
+        else if (_event == this.integerIncEventName) {
             if (this.currentFrequencyType > A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE) {
                 this.frequencyHandlers[this.currentFrequencyType].integerINC();
             }
-        } else if (_event == this.integerDecEventName) {
+        }
+        else if (_event == this.integerDecEventName) {
             if (this.currentFrequencyType > A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE) {
                 this.frequencyHandlers[this.currentFrequencyType].integerDEC();
             }
-        } else {
+        }
+        else {
             if (_event.indexOf(this.buttonEventNamePrefix) >= 0) {
-                const xmlRef = _event.replace(this.buttonEventNamePrefix, "");
-                for (let frequencyType = 0; frequencyType < A320_Neo_RadioManagement.FREQUENCY_TYPE.NB; ++frequencyType) {
+                var xmlRef = _event.replace(this.buttonEventNamePrefix, "");
+                for (var frequencyType = 0; frequencyType < A320_Neo_RadioManagement.FREQUENCY_TYPE.NB; ++frequencyType) {
                     if (this.frequencyHandlers[frequencyType].hasXMLRef(xmlRef)) {
                         this.currentFrequencyType = frequencyType;
                         this.frequencyHandlers[frequencyType].show();

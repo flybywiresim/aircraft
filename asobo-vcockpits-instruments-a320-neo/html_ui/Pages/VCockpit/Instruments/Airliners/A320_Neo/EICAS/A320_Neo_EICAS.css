@@ -54,6 +54,43 @@ html {
   font-style: normal; }
 
 :root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+html {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; }
+  html body {
+    -webkit-user-select: none;
+    font-family: Roboto-Regular;
+    font-size: calc(var(--viewportHeightRatio) * (36px / 21.6) * var(--currentPageHeight) / 100);
+    color: white;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0; }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; }
+
+:root {
   --ecamDefaultColour: white;
   --ecamUnitsColour: #009696;
   --ecamValueColour: green;
@@ -142,21 +179,21 @@ a320-neo-ecam-gauge {
       text-anchor: end; }
     a320-neo-ecam-gauge #RootSVG #CurrentValue.active {
       fill: var(--ecamValueColour);
-      font-size: 15px; }
+      font-size: 21px; }
     a320-neo-ecam-gauge #RootSVG #CurrentValue.warning {
       fill: var(--ecamWarningColour);
-      font-size: 15px; }
+      font-size: 21px; }
     a320-neo-ecam-gauge #RootSVG #CurrentValue.danger {
       fill: var(--ecamDangerColour);
-      font-size: 15px; }
+      font-size: 21px; }
     a320-neo-ecam-gauge #RootSVG #CurrentValue.inactive {
       fill: var(--ecamInactiveColour);
-      font-size: 20px;
+      font-size: 26px;
       letter-spacing: 5px; }
     a320-neo-ecam-gauge #RootSVG #CurrentValueBorder {
       fill: none;
       stroke: grey;
-      stroke-width: 3px; }
+      stroke-width: 1px; }
     a320-neo-ecam-gauge #RootSVG #ExtraMessage {
       width: 100%;
       height: 100%; }

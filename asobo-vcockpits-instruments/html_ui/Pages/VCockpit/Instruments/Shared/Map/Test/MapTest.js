@@ -23,41 +23,37 @@ class SortedListElement {
     }
 }
 class MapTest extends ISvgMapRootElement {
-    get templateID() {
-        return "MapTest";
-    }
+    get templateID() { return "MapTest"; }
     connectedCallback() {
         super.connectedCallback();
         this.Test1();
     }
     Test1() {
-        const l = 100000;
-        const all = [];
+        let l = 100000;
+        let all = [];
         for (let i = 0; i < l; i++) {
             all.push(new SortedListElement(Math.floor(Math.random() * 100), this.RandomLetter() + this.RandomLetter() + this.RandomLetter()));
         }
-        const list = [];
-        const sortedList = new SortedList();
-        const t0 = performance.now();
+        let list = [];
+        let sortedList = new SortedList();
+        let t0 = performance.now();
         for (let i = 0; i < l; i++) {
             sortedList.add(all[i]);
         }
         console.log((performance.now() - t0).toFixed(2) + " ms with SortedList<T> " + sortedList.length + " elements added.");
-        const t1 = performance.now();
+        let t1 = performance.now();
         for (let i = 0; i < l; i++) {
-            const newElement = all[i];
-            if (!list.find(e => {
-                return e.compare(newElement) === 0;
-            })) {
+            let newElement = all[i];
+            if (!list.find(e => { return e.compare(newElement) === 0; })) {
                 list.push(newElement);
             }
         }
         console.log((performance.now() - t1).toFixed(2) + " ms with [] " + list.length + " elements added.");
-        const map = new SvgMap(this, { svgElementId: "pouet-pouet" });
-        const bodAirport = new SvgNearestAirportElement();
+        let map = new SvgMap(this, { svgElementId: "pouet-pouet" });
+        let bodAirport = new SvgNearestAirportElement();
         bodAirport.coordinates = new LatLongAlt(44.8305935, -0.7124992);
-        const lonLat = new SvgLatLonElement();
-        const zizAirport = new SvgNearestAirportElement();
+        let lonLat = new SvgLatLonElement();
+        let zizAirport = new SvgNearestAirportElement();
         zizAirport.ident = "ZIZ";
         zizAirport.bearing = 0;
         zizAirport.distance = 10;

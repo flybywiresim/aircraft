@@ -34,11 +34,11 @@ class BaseGPS extends NavSystem {
     parseXMLConfig() {
         super.parseXMLConfig();
         if (this.instrumentXmlConfig) {
-            const comElem = this.instrumentXmlConfig.getElementsByTagName("ComIndex");
+            let comElem = this.instrumentXmlConfig.getElementsByTagName("ComIndex");
             if (comElem.length > 0) {
                 this.comIndex = parseInt(comElem[0].textContent);
             }
-            const navElem = this.instrumentXmlConfig.getElementsByTagName("NavIndex");
+            let navElem = this.instrumentXmlConfig.getElementsByTagName("NavIndex");
             if (navElem.length > 0) {
                 this.navIndex = parseInt(navElem[0].textContent);
             }
@@ -52,28 +52,32 @@ class BaseGPS extends NavSystem {
         if (_event == "LeftSmallKnob_Right") {
             if (this.currentlySelectedFreq == 0) {
                 SimVar.SetSimVarValue("K:COM" + (this.comIndex == 1 ? "" : this.comIndex) + "_RADIO_FRACT_INC", "number", 0);
-            } else {
+            }
+            else {
                 SimVar.SetSimVarValue("K:NAV" + this.navIndex + "_RADIO_FRACT_INC", "number", 0);
             }
         }
         if (_event == "LeftSmallKnob_Left") {
             if (this.currentlySelectedFreq == 0) {
                 SimVar.SetSimVarValue("K:COM" + (this.comIndex == 1 ? "" : this.comIndex) + "_RADIO_FRACT_DEC", "number", 0);
-            } else {
+            }
+            else {
                 SimVar.SetSimVarValue("K:NAV" + this.navIndex + "_RADIO_FRACT_DEC", "number", 0);
             }
         }
         if (_event == "LeftLargeKnob_Right") {
             if (this.currentlySelectedFreq == 0) {
                 SimVar.SetSimVarValue("K:COM" + (this.comIndex == 1 ? "" : this.comIndex) + "_RADIO_WHOLE_INC", "number", 0);
-            } else {
+            }
+            else {
                 SimVar.SetSimVarValue("K:NAV" + this.navIndex + "_RADIO_WHOLE_INC", "number", 0);
             }
         }
         if (_event == "LeftLargeKnob_Left") {
             if (this.currentlySelectedFreq == 0) {
                 SimVar.SetSimVarValue("K:COM" + (this.comIndex == 1 ? "" : this.comIndex) + "_RADIO_WHOLE_DEC", "number", 0);
-            } else {
+            }
+            else {
                 SimVar.SetSimVarValue("K:NAV" + this.navIndex + "_RADIO_WHOLE_DEC", "number", 0);
             }
         }
@@ -83,7 +87,7 @@ class BaseGPS extends NavSystem {
             this.currentEventLinkedPageGroup = null;
         }
         if (_event == "CLR_Push") {
-            const map = this.getChildById("MapInstrument");
+            let map = this.getChildById("MapInstrument");
             if (map) {
                 map.declutterLevel++;
                 if (map.declutterLevel > 1) {
@@ -109,10 +113,12 @@ class BaseGPS extends NavSystem {
             this.msgAlert.setAttribute("style", "visibility: visible");
             if (this.messageList.haveNewMessages) {
                 this.msgAlert.setAttribute("state", this.blinkGetState(1000, 500) ? "Blink" : "None");
-            } else {
+            }
+            else {
                 this.msgAlert.setAttribute("state", "None");
             }
-        } else {
+        }
+        else {
             this.msgAlert.setAttribute("style", "visibility: hidden");
         }
         this.comActive.innerHTML = this.frequencyFormat(SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:" + this.comIndex, "MHz"), SimVar.GetSimVarValue("COM SPACING MODE:" + this.comIndex, "Enum") == 0 ? 2 : 3);
@@ -122,36 +128,42 @@ class BaseGPS extends NavSystem {
         if (this.currentlySelectedFreq == 0) {
             this.comStandby.setAttribute("state", "Selected");
             this.vlocStandby.setAttribute("state", "Unselected");
-        } else {
+        }
+        else {
             this.vlocStandby.setAttribute("state", "Selected");
             this.comStandby.setAttribute("state", "Unselected");
         }
         if (SimVar.GetSimVarValue("C:fs9gps:FlightPlanIsActiveFlightPlan", "Boolean")) {
-            const distance = SimVar.GetSimVarValue("GPS WP DISTANCE", "nautical mile");
+            var distance = SimVar.GetSimVarValue("GPS WP DISTANCE", "nautical mile");
             if (SimVar.GetSimVarValue("C:fs9gps:FlightPlanIsActiveApproach", "Boolean")) {
                 this.currentMode = 3;
                 this.botRadioPartMid.textContent = "APPR";
-            } else if (SimVar.GetSimVarValue("GPS FLIGHT PLAN WP COUNT", "number") == (SimVar.GetSimVarValue("GPS FLIGHT PLAN WP INDEX", "number") + 1) && distance <= 30) {
+            }
+            else if (SimVar.GetSimVarValue("GPS FLIGHT PLAN WP COUNT", "number") == (SimVar.GetSimVarValue("GPS FLIGHT PLAN WP INDEX", "number") + 1) && distance <= 30) {
                 if (distance <= 10) {
                     this.currentMode = 3;
                     this.botRadioPartMid.textContent = "APPR";
-                } else {
+                }
+                else {
                     this.currentMode = 2;
                     this.botRadioPartMid.textContent = "TERM";
                 }
-            } else {
+            }
+            else {
                 this.currentMode = 1;
                 this.botRadioPartMid.textContent = "ENR";
             }
-        } else {
+        }
+        else {
             this.botRadioPartMid.textContent = "ENR";
             this.currentMode = 0;
         }
-        let pagesMenu = "";
-        for (let i = 0; i < this.getCurrentPageGroup().pages.length; i++) {
+        var pagesMenu = "";
+        for (var i = 0; i < this.getCurrentPageGroup().pages.length; i++) {
             if (i == this.getCurrentPageGroup().pageIndex) {
                 pagesMenu += '<div class="PageSelect" state="Active"></div>';
-            } else {
+            }
+            else {
                 pagesMenu += '<div class="PageSelect" state="Inactive"></div>';
             }
         }
@@ -161,8 +173,8 @@ class BaseGPS extends NavSystem {
 }
 class GPS_DefaultNavPage extends NavSystemPage {
     constructor(_customValuesNumber = 6, _customValuesDefaults = [4, 3, 0, 9, 10, 7]) {
-        const cdiElem = new CDIElement();
-        const baseElem = new GPS_DefaultNav(_customValuesNumber, _customValuesDefaults);
+        var cdiElem = new CDIElement();
+        var baseElem = new GPS_DefaultNav(_customValuesNumber, _customValuesDefaults);
         super("DefaultNav", "DefaultNav", new NavSystemElementGroup([baseElem, cdiElem]));
         this.cdiElement = cdiElem;
         this.baseElem = baseElem;
@@ -191,7 +203,7 @@ class GPS_DefaultNav extends NavSystemElement {
         this.dnCustoms = [];
         this.dnCustomSelectableArray = [];
         for (let i = 0; i < this.customValuesNumber; i++) {
-            const num = i + 1;
+            let num = i + 1;
             this.dnCustoms.push(new CustomValue(this.gps, "DNName" + num, "DNValue" + num, "DNUnit" + num));
             this.dnCustomSelectableArray.push(new SelectableElement(this.gps, this.dnCustoms[i].nameDisplay, this.customValueSelect_CB.bind(this, i)));
         }
@@ -222,9 +234,10 @@ class GPS_DefaultNav extends NavSystemElement {
                 this.currBranchArrow.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/GPS/direct_to.png" class="imgSizeM"/>';
                 this.legSymbol = 1;
             }
-        } else {
+        }
+        else {
             if (SimVar.GetSimVarValue("GPS IS APPROACH ACTIVE", "Boolean")) {
-                const approachType = SimVar.GetSimVarValue("GPS APPROACH WP TYPE", "number");
+                let approachType = SimVar.GetSimVarValue("GPS APPROACH WP TYPE", "number");
                 switch (approachType) {
                     case 0:
                     case 1:
@@ -279,7 +292,8 @@ class GPS_DefaultNav extends NavSystemElement {
                         }
                         break;
                 }
-            } else {
+            }
+            else {
                 if (this.legSymbol != 2) {
                     this.currBranchArrow.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/GPS/course_to.png" class="imgSizeM"/>';
                     this.legSymbol = 2;
@@ -287,7 +301,7 @@ class GPS_DefaultNav extends NavSystemElement {
             }
         }
         this.currBranchTo.textContent = SimVar.GetSimVarValue("GPS WP NEXT ID", "string");
-        for (let i = 0; i < this.dnCustoms.length; i++) {
+        for (var i = 0; i < this.dnCustoms.length; i++) {
             this.dnCustoms[i].Update();
         }
     }
@@ -356,7 +370,8 @@ class GPS_ComNav extends NavSystemElement {
         if (_event == "ENT_Push") {
             if (this.airportListOnPlan[this.airportListIndex].GetInfos().frequencies[_index].mhValue >= 118) {
                 SimVar.SetSimVarValue("K:COM" + (this.gps.comIndex == 1 ? "" : this.gps.comIndex) + "_STBY_RADIO_SET", "Frequency BCD16", this.airportListOnPlan[this.airportListIndex].GetInfos().frequencies[_index].bcd16Value);
-            } else {
+            }
+            else {
                 SimVar.SetSimVarValue("K:NAV" + this.gps.navIndex + "_STBY_SET", "Frequency BCD16", this.airportListOnPlan[this.airportListIndex].GetInfos().frequencies[_index].bcd16Value);
             }
         }
@@ -365,7 +380,7 @@ class GPS_ComNav extends NavSystemElement {
         this.gps.currFlightPlan.FillWithCurrentFP(function () {
             this.airportListOnPlan = this.gps.currFlightPlan.GetAirportList();
             this.airportSelectionMenu.elements = [];
-            for (let i = 0; i < this.airportListOnPlan.length; i++) {
+            for (var i = 0; i < this.airportListOnPlan.length; i++) {
                 this.airportSelectionMenu.elements.push(new ContextualMenuElement(this.airportListOnPlan[i].GetInfos().ident, this.setComAirtportListIndex_CB.bind(this, i)));
             }
             this.UpdateComDisplay();
@@ -382,20 +397,24 @@ class GPS_ComNav extends NavSystemElement {
             }
             if (this.airportListIndex == 0) {
                 this.terrainStatus.textContent = "DEPARTURE";
-            } else if (this.airportListIndex == this.airportListOnPlan.length - 1) {
+            }
+            else if (this.airportListIndex == this.airportListOnPlan.length - 1) {
                 this.terrainStatus.textContent = "ARRIVAL";
-            } else {
+            }
+            else {
                 this.terrainStatus.textContent = "EN ROUTE";
             }
             this.terrainCode.textContent = this.airportListOnPlan[this.airportListIndex].GetInfos().ident;
             this.terrainType.textContent = this.gps.airportPrivateTypeStrFromEnum(this.airportListOnPlan[this.airportListIndex].GetInfos().privateType);
-            const logo = this.airportListOnPlan[this.airportListIndex].GetInfos().GetSymbol();
+            var logo = this.airportListOnPlan[this.airportListIndex].GetInfos().GetSymbol();
             if (logo != "") {
                 this.terrainTypeLogo.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
-            } else {
+            }
+            else {
                 this.terrainTypeLogo.innerHTML = "";
             }
-        } else {
+        }
+        else {
             this.terrainStatus.textContent = "";
             this.terrainCode.textContent = "";
             this.terrainType.textContent = "";
@@ -414,8 +433,8 @@ class GPS_ComNav extends NavSystemElement {
     }
     UpdateComDisplay() {
         this.airportListOnPlan[this.airportListIndex].UpdateInfos();
-        const infos = this.airportListOnPlan[this.airportListIndex].GetInfos();
-        const elements = [];
+        var infos = this.airportListOnPlan[this.airportListIndex].GetInfos();
+        var elements = [];
         if (infos && infos.frequencies) {
             for (let i = 0; i < infos.frequencies.length; i++) {
                 elements.push('<div><div class="Align LeftDisplay">' + infos.frequencies[i].name.replace(" ", "&nbsp;").slice(0, 15) + '</div> <div class="Align RightValue SelectableElement">' + this.gps.frequencyFormat(infos.frequencies[i].mhValue, 3) + '</div></div>');
@@ -486,34 +505,37 @@ class GPS_Position extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.compassBackground.setAttribute("style", "Left:" + fastToFixed(((SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree") * -125 / 90) - 40), 0) + "px");
-        for (let i = 0; i < this.customValues.length; i++) {
+        for (var i = 0; i < this.customValues.length; i++) {
             this.customValues[i].Update();
         }
         this.positionValueNS.textContent = this.gps.latitudeFormat(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"));
         this.positionValueEW.textContent = this.gps.longitudeFormat(SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude"));
-        const time = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
-        const hours = Math.floor(time / 3600);
-        const minutes = Math.floor((time % 3600) / 60);
-        const seconds = Math.floor(time % 60);
+        var time = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
+        var hours = Math.floor(time / 3600);
+        var minutes = Math.floor((time % 3600) / 60);
+        var seconds = Math.floor(time % 60);
         this.timeValue.textContent = (hours < 10 ? "0" + fastToFixed(hours, 0) : fastToFixed(hours, 0)) + ":" + (minutes < 10 ? "0" + fastToFixed(minutes, 0) : fastToFixed(minutes, 0)) + ":" + (seconds < 10 ? "0" + fastToFixed(seconds, 0) : fastToFixed(seconds, 0));
-        const reference = this.posRefSearchField.getUpdatedInfos();
+        var reference = this.posRefSearchField.getUpdatedInfos();
         if (this.referenceMode == 0) {
             this.positionRefMode.textContent = "TO";
-        } else {
+        }
+        else {
             this.positionRefMode.textContent = "FROM";
         }
         this.posRefSearchField.Update();
         if (reference.icao) {
             if (this.referenceMode == 0) {
                 this.geoCalcReferenceRelative.SetParams(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude"), reference.coordinates.lat, reference.coordinates.long);
-            } else {
+            }
+            else {
                 this.geoCalcReferenceRelative.SetParams(reference.coordinates.lat, reference.coordinates.long, SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude"));
             }
             this.geoCalcReferenceRelative.Compute(function () {
                 this.positionRefBearing.textContent = fastToFixed(this.geoCalcReferenceRelative.bearing, 0);
                 this.positionRefDistance.textContent = fastToFixed(this.geoCalcReferenceRelative.distance, 0);
             }.bind(this));
-        } else {
+        }
+        else {
             this.positionRefBearing.textContent = "___";
             this.positionRefDistance.textContent = "__._";
         }
@@ -641,9 +663,9 @@ class GPS_AirportWaypointLocation extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        const infos = this.icaoSearchField.getUpdatedInfos();
+        var infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            const logo = infos.GetSymbol();
+            var logo = infos.GetSymbol();
             if (logo != "") {
                 this.privateLogo.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -685,7 +707,8 @@ class GPS_AirportWaypointLocation extends NavSystemElement {
                     break;
             }
             this.airspaceType.textContent = infos.airspaceType;
-        } else {
+        }
+        else {
             this.private.textContent = "Unknown";
             this.facilityName.textContent = "______________________";
             this.city.textContent = "______________________";
@@ -748,13 +771,13 @@ class GPS_AirportWaypointRunways extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        const infos = this.icaoSearchField.getUpdatedInfos();
+        var infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            const size = infos.GetSize();
-            const nmPixelSize = Math.min(130 / size.x, 110 / size.y);
-            const context = this.mapElement.getContext("2d");
+            var size = infos.GetSize();
+            var nmPixelSize = Math.min(130 / size.x, 110 / size.y);
+            var context = this.mapElement.getContext("2d");
             context.clearRect(0, 0, 200, 200);
-            const logo = infos.GetSymbol();
+            var logo = infos.GetSymbol();
             if (logo != "") {
                 this.privateLogoElement.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -773,7 +796,7 @@ class GPS_AirportWaypointRunways extends NavSystemElement {
                     break;
             }
             if (infos.runways && this.selectedRunway >= 0 && this.selectedRunway < infos.runways.length) {
-                const runway = infos.runways[this.selectedRunway];
+                let runway = infos.runways[this.selectedRunway];
                 if (runway) {
                     this.nameElement.textContent = runway.designation;
                     this.lengthElement.textContent = fastToFixed(runway.length, 0);
@@ -862,7 +885,8 @@ class GPS_AirportWaypointRunways extends NavSystemElement {
                     }
                 }
             }
-        } else {
+        }
+        else {
             this.identElement.textContent = "_____";
             this.privateLogoElement.innerHTML = "";
             this.privateElement.textContent = "Unknown";
@@ -891,14 +915,14 @@ class GPS_AirportWaypointRunways extends NavSystemElement {
     }
     runway_SelectionCallback(_event) {
         if (_event == "ENT_Push" || _event == "RightSmallKnob_Right" || _event == "RightSmallKnob_Left") {
-            const infos = this.icaoSearchField.getUpdatedInfos();
+            var infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                const menu = new ContextualMenu("RUNWAY", []);
-                const callback = function (_index) {
+                var menu = new ContextualMenu("RUNWAY", []);
+                var callback = function (_index) {
                     this.selectedRunway = _index;
                     this.gps.SwitchToInteractionState(0);
                 };
-                for (let i = 0; i < infos.runways.length; i++) {
+                for (var i = 0; i < infos.runways.length; i++) {
                     menu.elements.push(new ContextualMenuElement(infos.runways[i].designation, callback.bind(this, i)));
                 }
                 this.gps.ShowContextualMenu(menu);
@@ -937,9 +961,9 @@ class GPS_AirportWaypointFrequencies extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        const infos = this.icaoSearchField.getUpdatedInfos();
+        var infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            const logo = infos.GetSymbol();
+            var logo = infos.GetSymbol();
             if (logo != "") {
                 this.logoElement.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -957,14 +981,15 @@ class GPS_AirportWaypointFrequencies extends NavSystemElement {
                     this.privateElement.textContent = "Private";
                     break;
             }
-            const elements = [];
+            var elements = [];
             if (infos && infos.frequencies) {
                 for (let i = 0; i < infos.frequencies.length; i++) {
                     elements.push('<div><div class="Align LeftDisplay">' + infos.frequencies[i].name.replace(" ", "&nbsp;").slice(0, 15) + '</div> <div class="Align RightValue SelectableElement">' + this.gps.frequencyFormat(infos.frequencies[i].mhValue, 3) + '</div></div>');
                 }
             }
             this.frequenciesSelectionGroup.setStringElements(elements);
-        } else {
+        }
+        else {
             this.identElement.textContent = "_____";
             this.logoElement.innerHTML = "";
             this.privateElement.textContent = "Unknown";
@@ -978,10 +1003,11 @@ class GPS_AirportWaypointFrequencies extends NavSystemElement {
     }
     activeFrequency_SelectionCallback(_event, _index) {
         if (_event == "ENT_Push") {
-            const infos = this.icaoSearchField.getUpdatedInfos();
+            var infos = this.icaoSearchField.getUpdatedInfos();
             if (infos.frequencies[_index].mhValue >= 118) {
                 SimVar.SetSimVarValue("K:COM" + (this.gps.comIndex == 1 ? "" : this.gps.comIndex) + "_STBY_RADIO_SET", "Frequency BCD16", infos.frequencies[_index].bcd16Value);
-            } else {
+            }
+            else {
                 SimVar.SetSimVarValue("K:NAV" + this.gps.navIndex + "_STBY_SET", "Frequency BCD16", infos.frequencies[_index].bcd16Value);
             }
         }
@@ -1037,9 +1063,9 @@ class GPS_AirportWaypointApproaches extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        const infos = this.icaoSearchField.getUpdatedInfos();
+        var infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            const logo = infos.GetSymbol();
+            var logo = infos.GetSymbol();
             if (logo != "") {
                 this.privateLogoElement.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -1057,19 +1083,22 @@ class GPS_AirportWaypointApproaches extends NavSystemElement {
                     this.privateElement.textContent = "Private";
                     break;
             }
-            const approach = this.getSelectedApproach(infos);
+            let approach = this.getSelectedApproach(infos);
             if (approach) {
                 this.approachElement.textContent = approach.name;
                 if (approach.transitions && this.selectedTransition >= 0 && approach.transitions.length > this.selectedTransition) {
                     this.transitionElement.textContent = approach.transitions[this.selectedTransition].name;
-                } else {
+                }
+                else {
                     this.transitionElement.textContent = "";
                 }
-            } else {
+            }
+            else {
                 this.approachElement.textContent = "";
                 this.transitionElement.textContent = "";
             }
-        } else {
+        }
+        else {
             this.identElement.textContent = "_____";
             this.privateElement.textContent = "Unknown";
             this.approachElement.textContent = "";
@@ -1114,15 +1143,15 @@ class GPS_AirportWaypointApproaches extends NavSystemElement {
     }
     approach_SelectionCallback(_event) {
         if (_event == "ENT_Push" || _event == "RightSmallKnob_Right" || _event == "RightSmallKnob_Left") {
-            const infos = this.icaoSearchField.getUpdatedInfos();
+            var infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                const menu = new ContextualMenu("APR", []);
-                const callback = function (_index) {
+                var menu = new ContextualMenu("APR", []);
+                var callback = function (_index) {
                     this.selectedApproach = _index;
                     this.selectedTransition = 0;
                     this.gps.SwitchToInteractionState(0);
                 };
-                for (let i = 0; i < infos.approaches.length; i++) {
+                for (var i = 0; i < infos.approaches.length; i++) {
                     menu.elements.push(new ContextualMenuElement(infos.approaches[i].name, callback.bind(this, i)));
                 }
                 this.gps.ShowContextualMenu(menu);
@@ -1131,16 +1160,16 @@ class GPS_AirportWaypointApproaches extends NavSystemElement {
     }
     transtion_SelectionCallback(_event) {
         if (_event == "ENT_Push" || _event == "RightSmallKnob_Right" || _event == "RightSmallKnob_Left") {
-            const infos = this.icaoSearchField.getUpdatedInfos();
+            var infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                const menu = new ContextualMenu("TRANS", []);
-                const callback = function (_index) {
+                var menu = new ContextualMenu("TRANS", []);
+                var callback = function (_index) {
                     this.selectedTransition = _index;
                     this.gps.SwitchToInteractionState(0);
                 };
-                const approach = this.getSelectedApproach(infos);
+                let approach = this.getSelectedApproach(infos);
                 if (approach) {
-                    for (let i = 0; i < approach.transitions.length; i++) {
+                    for (var i = 0; i < approach.transitions.length; i++) {
                         menu.elements.push(new ContextualMenuElement(approach.transitions[i].name, callback.bind(this, i)));
                     }
                 }
@@ -1176,9 +1205,9 @@ class GPS_IntersectionWaypoint extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        const infos = this.icaoSearchField.getUpdatedInfos();
+        var infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            const logo = infos.GetSymbol();
+            var logo = infos.GetSymbol();
             if (logo != "") {
                 this.symbolElement.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -1188,7 +1217,8 @@ class GPS_IntersectionWaypoint extends NavSystemElement {
             this.nearestVORElement.textContent = infos.nearestVORIdent;
             this.radialFromNearVORElement.textContent = fastToFixed(infos.nearestVORMagneticRadial, 0);
             this.distanceFromNearVORElement.textContent = fastToFixed(infos.nearestVORDistance / 1852, 1);
-        } else {
+        }
+        else {
             this.posNSElement.textContent = "_ __°__.__'";
             this.posEWElement.textContent = "____°__.__'";
             this.nearestVORElement.textContent = "_____";
@@ -1237,9 +1267,9 @@ class GPS_NDBWaypoint extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        const infos = this.icaoSearchField.getUpdatedInfos();
+        var infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            const logo = infos.GetSymbol();
+            var logo = infos.GetSymbol();
             if (logo != "") {
                 this.symbolElement.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -1251,10 +1281,12 @@ class GPS_NDBWaypoint extends NavSystemElement {
             this.frequencyElement.textContent = fastToFixed(infos.frequencyMHz, 1);
             if (infos.weatherBroadcast == 2) {
                 this.weatherBroadcastElement.textContent = "Wx Brdcst";
-            } else {
+            }
+            else {
                 this.weatherBroadcastElement.textContent = "";
             }
-        } else {
+        }
+        else {
             this.identElement.textContent = "_____";
             this.symbolElement.innerHTML = "";
             this.facilityElement.textContent = "______________________";
@@ -1308,9 +1340,9 @@ class GPS_VORWaypoint extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        const infos = this.icaoSearchField.getUpdatedInfos();
+        var infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            const logo = infos.GetSymbol();
+            var logo = infos.GetSymbol();
             if (logo != "") {
                 this.symbolElement.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -1322,16 +1354,19 @@ class GPS_VORWaypoint extends NavSystemElement {
             this.frequencyElement.textContent = fastToFixed(infos.frequencyMHz, 2);
             if (infos.weatherBroadcast == 2) {
                 this.weatherBroadcastElement.textContent = "Wx Brdcst";
-            } else {
+            }
+            else {
                 this.weatherBroadcastElement.textContent = "";
             }
-            const magVar = infos.magneticVariation;
+            var magVar = infos.magneticVariation;
             if (infos.magneticVariation > 0) {
                 this.magneticDeviationElement.textContent = 'W' + fastToFixed(magVar, 0) + "°";
-            } else {
+            }
+            else {
                 this.magneticDeviationElement.textContent = "E" + fastToFixed((0 - magVar), 0) + "°";
             }
-        } else {
+        }
+        else {
             this.identElement.textContent = "_____";
             this.symbolElement.innerHTML = "";
             this.facilityElement.textContent = "______________________";
@@ -1379,14 +1414,15 @@ class GPS_NearestAirports extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.nearestAirportList.Update();
-        const airportListStrings = [];
-        for (let i = 0; i < this.nearestAirportList.airports.length; i++) {
-            let firstLine = "";
-            let secondLine = "";
-            let logo = "";
+        var airportListStrings = [];
+        for (var i = 0; i < this.nearestAirportList.airports.length; i++) {
+            var firstLine = "";
+            var secondLine = "";
+            var logo = "";
             if (this.nearestAirportList.airports[i].airportClass == 2 || this.nearestAirportList.airports[i].airportClass == 3) {
                 logo = "Airport_Soft.png";
-            } else if (this.nearestAirportList.airports[i].airportClass == 1) {
+            }
+            else if (this.nearestAirportList.airports[i].airportClass == 1) {
                 switch (Math.round((this.nearestAirportList.airports[i].longestRunwayDirection % 180) / 45.0)) {
                     case 0:
                     case 4:
@@ -1402,9 +1438,11 @@ class GPS_NearestAirports extends NavSystemElement {
                         logo = "Airport_Hard_NW_SE.png";
                         break;
                 }
-            } else if (this.nearestAirportList.airports[i].airportClass == 4) {
+            }
+            else if (this.nearestAirportList.airports[i].airportClass == 4) {
                 logo = "Helipad.png";
-            } else if (this.nearestAirportList.airports[i].airportClass == 5) {
+            }
+            else if (this.nearestAirportList.airports[i].airportClass == 5) {
                 logo = "Private_Airfield.png";
             }
             firstLine += '<td class="SelectableElement">' + this.nearestAirportList.airports[i].ident + '</td>';
@@ -1443,7 +1481,8 @@ class GPS_NearestAirports extends NavSystemElement {
             case "ENT_Push":
                 if (this.nearestAirportList.airports[Math.floor(_index / 2)].frequencyMHz >= 118) {
                     SimVar.SetSimVarValue("K:COM" + (this.gps.comIndex == 1 ? "" : this.gps.comIndex) + "_STBY_RADIO_SET", "Frequency BCD16", this.nearestAirportList.airports[Math.floor(_index / 2)].frequencyBCD16);
-                } else {
+                }
+                else {
                     SimVar.SetSimVarValue("K:NAV" + this.gps.navIndex + "_STBY_SET", "Frequency BCD16", this.nearestAirportList.airports[Math.floor(_index / 2)].frequencyBCD16);
                 }
                 break;
@@ -1470,9 +1509,9 @@ class GPS_NearestIntersection extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.nearestIntersectionList.Update();
-        const lines = [];
-        for (let i = 0; i < this.nearestIntersectionList.intersections.length; i++) {
-            let line = "";
+        var lines = [];
+        for (var i = 0; i < this.nearestIntersectionList.intersections.length; i++) {
+            var line = "";
             line += '<td class="SelectableElement">' + this.nearestIntersectionList.intersections[i].ident + '</td>';
             line += '<td><img src="/Pages/VCockpit/Instruments/Shared/Map/Images/' + this.nearestIntersectionList.intersections[i].imageFileName() + '"/></td>';
             line += '<td>' + fastToFixed(this.nearestIntersectionList.intersections[i].bearing, 0) + '<div class="Align unit">o<br />M</div></td>';
@@ -1518,9 +1557,9 @@ class GPS_NearestNDB extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.nearestNDBList.Update();
-        const lines = [];
-        for (let i = 0; i < this.nearestNDBList.ndbs.length; i++) {
-            let line = "";
+        var lines = [];
+        for (var i = 0; i < this.nearestNDBList.ndbs.length; i++) {
+            var line = "";
             line += '<td class="SelectableElement">' + this.nearestNDBList.ndbs[i].ident + '</td>';
             line += '<td><img src="/Pages/VCockpit/Instruments/Shared/Map/Images/' + this.nearestNDBList.ndbs[i].imageFileName() + '"/></td>';
             line += '<td>' + fastToFixed(this.nearestNDBList.ndbs[i].bearing, 0) + '<div class="Align unit">o<br />M</div></td>';
@@ -1570,11 +1609,11 @@ class GPS_NearestVOR extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.nearestVORList.Update();
-        const lines = [];
-        for (let i = 0; i < this.nearestVORList.vors.length; i++) {
-            let line = "";
+        var lines = [];
+        for (var i = 0; i < this.nearestVORList.vors.length; i++) {
+            var line = "";
             line += '<td class="SelectableElement Select0">' + this.nearestVORList.vors[i].ident + '</td>';
-            const image = this.nearestVORList.vors[i].imageFileName();
+            var image = this.nearestVORList.vors[i].imageFileName();
             line += '<td> <img src="/Pages/VCockpit/Instruments/Shared/Map/Images/' + image + '"></td>';
             line += '<td>' + fastToFixed(this.nearestVORList.vors[i].bearing, 0) + '<div class="Align unit">o<br />M</div></td>';
             line += '<td>' + fastToFixed(this.nearestVORList.vors[i].distance, 1) + '<div class="Align unit">n<br />m</div></td>';
@@ -1625,28 +1664,31 @@ class GPS_NearestAirpaces extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.nearestAirspacesList.Update();
-        const nbAirspaces = this.nearestAirspacesList.airspaces.length;
+        var nbAirspaces = this.nearestAirspacesList.airspaces.length;
         if (nbAirspaces > 0) {
-            const airspace = this.nearestAirspacesList.airspaces[0];
+            let airspace = this.nearestAirspacesList.airspaces[0];
             this.nrstAirspaceName1.textContent = airspace.name;
             this.nrstAirspaceStatus1.textContent = airspace.GetStatus();
-        } else {
+        }
+        else {
             this.nrstAirspaceName1.textContent = "____________________";
             this.nrstAirspaceStatus1.textContent = "___________________";
         }
         if (nbAirspaces > 1) {
-            const airspace = this.nearestAirspacesList.airspaces[1];
+            let airspace = this.nearestAirspacesList.airspaces[1];
             this.nrstAirspaceName2.textContent = airspace.name;
             this.nrstAirspaceStatus2.textContent = airspace.GetStatus();
-        } else {
+        }
+        else {
             this.nrstAirspaceName2.textContent = "____________________";
             this.nrstAirspaceStatus2.textContent = "___________________";
         }
         if (nbAirspaces > 2) {
-            const airspace = this.nearestAirspacesList.airspaces[2];
+            let airspace = this.nearestAirspacesList.airspaces[2];
             this.nrstAirspaceName3.textContent = airspace.name;
             this.nrstAirspaceStatus3.textContent = airspace.GetStatus();
-        } else {
+        }
+        else {
             this.nrstAirspaceName3.textContent = "____________________";
             this.nrstAirspaceStatus3.textContent = "___________________";
         }
@@ -1694,10 +1736,10 @@ class GPS_DirectTo extends NavSystemElement {
         }
     }
     onUpdate(_deltaTime) {
-        const infos = this.icaoSearchField.getWaypoint() ? this.icaoSearchField.getWaypoint().infos : new WayPointInfo(this.gps);
+        var infos = this.icaoSearchField.getWaypoint() ? this.icaoSearchField.getWaypoint().infos : new WayPointInfo(this.gps);
         if (infos && infos.icao != '') {
             this.icao.textContent = infos.icao;
-            const logo = infos.GetSymbol();
+            var logo = infos.GetSymbol();
             if (logo != "") {
                 this.airportPrivateLogo.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -1712,7 +1754,8 @@ class GPS_DirectTo extends NavSystemElement {
                     this.drctCrs.textContent = fastToFixed(this.geoCalc.bearing, 0);
                 }
             }.bind(this));
-        } else {
+        }
+        else {
             this.icao.textContent = "_____";
             this.region.textContent = "__________";
             this.facilityName.textContent = "______________________";
@@ -1748,8 +1791,8 @@ class GPS_DirectTo extends NavSystemElement {
     }
     flightPlan_SelectionCallback(_event) {
         if (_event == "ENT_Push" || _event == "RightSmallKnob_Right" || _event == "RightSmallKnob_Left") {
-            const elements = [];
-            for (let i = 0; i < this.gps.currFlightPlan.wayPoints.length; i++) {
+            var elements = [];
+            for (var i = 0; i < this.gps.currFlightPlan.wayPoints.length; i++) {
                 elements.push(new ContextualMenuElement(this.gps.currFlightPlan.wayPoints[i].GetInfos().ident, function (_index) {
                     this.currentFPLWpSelected = _index;
                     this.icaoSearchField.SetWaypoint(this.gps.currFlightPlan.wayPoints[_index].type, this.gps.currFlightPlan.wayPoints[_index].GetInfos().icao);
@@ -1773,13 +1816,15 @@ class GPS_DirectTo extends NavSystemElement {
 class GPS_WaypointLine extends MFD_WaypointLine {
     getString() {
         if (this.waypoint) {
-            const infos = this.waypoint.GetInfos();
+            let infos = this.waypoint.GetInfos();
             return '<td class="SelectableElement Select0">' + (infos.ident != "" ? infos.ident : this.waypoint.ident) + '</td><td>'
                 + (isNaN(this.waypoint.cumulativeDistanceInFP) ? "" : fastToFixed(this.waypoint.cumulativeDistanceInFP, 0) + '<div class="Align unit">n<br/>m</div>') + '</td><td>'
                 + fastToFixed(this.waypoint.distanceInFP, 1) + '<div class="Align unit">n<br/>m</div></td>';
-        } else if (this.element.emptyLine != "") {
+        }
+        else if (this.element.emptyLine != "") {
             return this.element.emptyLine;
-        } else {
+        }
+        else {
             return '<td class="SelectableElement Select0"></td><td> </td><td> </td>';
         }
     }
@@ -1802,7 +1847,8 @@ class GPS_ApproachWaypointLine extends MFD_ApproachWaypointLine {
             return '<td class="SelectableElement Select0">' + this.waypoint.ident + '</td><td>'
                 + (isNaN(this.waypoint.cumulativeDistanceInFP) ? "" : fastToFixed(this.waypoint.cumulativeDistanceInFP, 0) + '<div class="Align unit">n<br/>m</div>') + '</td><td>'
                 + fastToFixed(this.waypoint.distanceInFP, 1) + '<div class="Align unit">n<br/>m</div></td>';
-        } else {
+        }
+        else {
             return '<td class="SelectableElement Select0"></td><td> </td><td> </td>';
         }
     }
@@ -1932,7 +1978,7 @@ class GPS_Messages extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        const html = "";
+        var html = "";
         this.messages.innerHTML = html;
     }
     onExit() {
@@ -1965,14 +2011,15 @@ class GPS_FPLWaypointSelection extends NavSystemElement {
         this.waypointSelectionSearchField.StartSearch(this.onSearchFieldValidation.bind(this));
     }
     onUpdate(_deltaTime) {
-        const infos = this.waypointSelectionSearchField.getUpdatedInfos();
+        var infos = this.waypointSelectionSearchField.getUpdatedInfos();
         this.wpSRegion.textContent = infos.region ? infos.region : '';
         this.wpSFacility1.textContent = infos.name ? infos.name : '';
         this.wpSFacility2.textContent = infos.city ? infos.city : '';
         if (infos.coordinates && infos.coordinates.lat && infos.coordinates.long) {
             this.wpSPosNS.textContent = this.gps.latitudeFormat(infos.coordinates.lat);
             this.wpSPosEW.textContent = this.gps.longitudeFormat(infos.coordinates.long);
-        } else {
+        }
+        else {
             this.wpSPosNS.textContent = '';
             this.wpSPosEW.textContent = '';
         }
@@ -1986,8 +2033,9 @@ class GPS_FPLWaypointSelection extends NavSystemElement {
             this.gps.lastRelevantICAO = null;
             this.gps.lastRelevantICAOType = null;
             this.gps.switchToPopUpPage(this.duplicateWaypoints, this.gps.popUpCloseCallback);
-        } else {
-            const infos = this.waypointSelectionSearchField.getUpdatedInfos();
+        }
+        else {
+            var infos = this.waypointSelectionSearchField.getUpdatedInfos();
             this.gps.lastRelevantICAO = infos.icao;
             this.gps.lastRelevantICAOType = infos.getWaypointType();
             this.gps.closePopUpElement();
@@ -2098,9 +2146,9 @@ class GPS_ApproachSelection extends MFD_ApproachSelection {
     }
     openApproachList(_event) {
         if (_event == "ENT_Push" || _event == "NavigationSmallInc" || _event == "NavigationSmallDec") {
-            const infos = this.icaoSearchField.getUpdatedInfos();
+            let infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                const elems = new Array();
+                let elems = new Array();
                 for (let i = 0; i < infos.approaches.length; i++) {
                     elems.push(infos.approaches[i].name);
                 }
@@ -2120,10 +2168,10 @@ class GPS_ApproachSelection extends MFD_ApproachSelection {
     }
     openTransitionList(_event) {
         if (_event == "ENT_Push" || _event == "NavigationSmallInc" || _event == "NavigationSmallDec") {
-            const infos = this.icaoSearchField.getUpdatedInfos();
+            let infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                const elems = new Array();
-                const approach = this.getSelectedApproach(infos);
+                let elems = new Array();
+                let approach = this.getSelectedApproach(infos);
                 if (approach) {
                     for (let i = 0; i < approach.transitions.length; i++) {
                         elems.push(approach.transitions[i].name);
@@ -2208,9 +2256,9 @@ class GPS_ArrivalSelection extends MFD_ArrivalSelection {
     }
     openArrivalList(_event) {
         if (_event == "ENT_Push" || _event == "NavigationSmallInc" || _event == "NavigationSmallDec") {
-            const infos = this.icaoSearchField.getUpdatedInfos();
+            let infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                const elems = new Array();
+                let elems = new Array();
                 for (let i = 0; i < infos.arrivals.length; i++) {
                     elems.push(infos.arrivals[i].name);
                 }
@@ -2230,10 +2278,10 @@ class GPS_ArrivalSelection extends MFD_ArrivalSelection {
     }
     openRunwaysList(_event) {
         if (_event == "ENT_Push" || _event == "NavigationSmallInc" || _event == "NavigationSmallDec") {
-            const infos = this.icaoSearchField.getUpdatedInfos();
+            let infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                const elems = new Array();
-                const arrival = this.getSelectedArrival(infos);
+                let elems = new Array();
+                let arrival = this.getSelectedArrival(infos);
                 if (arrival) {
                     for (let i = 0; i < arrival.runwayTransitions.length; i++) {
                         elems.push(arrival.runwayTransitions[i].name);
@@ -2249,10 +2297,10 @@ class GPS_ArrivalSelection extends MFD_ArrivalSelection {
     }
     openTransitionList(_event) {
         if (_event == "ENT_Push" || _event == "NavigationSmallInc" || _event == "NavigationSmallDec") {
-            const infos = this.icaoSearchField.getUpdatedInfos();
+            let infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                const elems = new Array();
-                const arrival = this.getSelectedArrival(infos);
+                let elems = new Array();
+                let arrival = this.getSelectedArrival(infos);
                 if (arrival) {
                     for (let i = 0; i < arrival.enRouteTransitions.length; i++) {
                         elems.push(arrival.enRouteTransitions[i].name);
@@ -2332,9 +2380,9 @@ class GPS_DepartureSelection extends MFD_DepartureSelection {
     }
     openDepartureList(_event) {
         if (_event == "ENT_Push" || _event == "NavigationSmallInc" || _event == "NavigationSmallDec") {
-            const infos = this.icaoSearchField.getUpdatedInfos();
+            let infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                const elems = new Array();
+                let elems = new Array();
                 for (let i = 0; i < infos.departures.length; i++) {
                     elems.push(infos.departures[i].name);
                 }
@@ -2354,10 +2402,10 @@ class GPS_DepartureSelection extends MFD_DepartureSelection {
     }
     openRunwaysList(_event) {
         if (_event == "ENT_Push" || _event == "NavigationSmallInc" || _event == "NavigationSmallDec") {
-            const infos = this.icaoSearchField.getUpdatedInfos();
+            let infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                const elems = new Array();
-                const departure = this.getSelectedDeparture(infos);
+                let elems = new Array();
+                let departure = this.getSelectedDeparture(infos);
                 if (departure) {
                     for (let i = 0; i < departure.runwayTransitions.length; i++) {
                         elems.push(departure.runwayTransitions[i].name);
@@ -2373,10 +2421,10 @@ class GPS_DepartureSelection extends MFD_DepartureSelection {
     }
     openTransitionList(_event) {
         if (_event == "ENT_Push" || _event == "NavigationSmallInc" || _event == "NavigationSmallDec") {
-            const infos = this.icaoSearchField.getUpdatedInfos();
+            let infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                const elems = new Array();
-                const departure = this.getSelectedDeparture(infos);
+                let elems = new Array();
+                let departure = this.getSelectedDeparture(infos);
                 if (departure) {
                     for (let i = 0; i < departure.enRouteTransitions.length; i++) {
                         elems.push(departure.enRouteTransitions[i].name);
@@ -2401,7 +2449,7 @@ class GPS_MapInfos extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        const flightPlanActive = SimVar.GetSimVarValue("GPS IS ACTIVE FLIGHT PLAN", "boolean");
+        let flightPlanActive = SimVar.GetSimVarValue("GPS IS ACTIVE FLIGHT PLAN", "boolean");
         Avionics.Utils.diffAndSet(this.wpt, SimVar.GetSimVarValue("GPS WP NEXT ID", "string"));
         Avionics.Utils.diffAndSet(this.dtkMap, !flightPlanActive ? "___" : fastToFixed(SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree"), 0));
         Avionics.Utils.diffAndSet(this.disMap, !flightPlanActive ? "___._" : fastToFixed(SimVar.GetSimVarValue("GPS WP DISTANCE", "nautical mile"), 1));

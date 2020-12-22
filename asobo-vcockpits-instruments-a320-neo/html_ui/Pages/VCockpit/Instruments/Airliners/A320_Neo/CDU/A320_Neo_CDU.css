@@ -94,16 +94,19 @@ a320-neo-cdu-main-display::after {
   color: white; }
 
 .blue {
-  color: #99ceff; }
+  color: #00ffff; }
 
 .yellow {
-  color: #f9dd02; }
+  color: #ffff00; }
 
 .green {
-  color: #1daa05; }
+  color: #00ff00; }
 
 .red {
-  color: #ff886d; }
+  color: #ffbf00; }
+
+.magenta {
+  color: #ff00ff; }
 
 fmc-main-display::before {
   content: " ";

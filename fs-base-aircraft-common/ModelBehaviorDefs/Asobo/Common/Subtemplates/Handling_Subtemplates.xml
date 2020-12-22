@@ -451,6 +451,7 @@
 				<LEFT_SINGLE_CODE>
 					#DISABLE_TRIM#
 					1 (&gt;K:AUTOPILOT_OFF)
+					(&gt;H:Generic_Autopilot_Disc)
 				</LEFT_SINGLE_CODE>
 				<LEFT_LEAVE_CODE>
 					#ENABLE_TRIM#

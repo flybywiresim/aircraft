@@ -1,273 +1,281 @@
 <ModelBehaviors>
-	<!-- ####################################################################### -->
-	<!-- ########################## Emissive Templates ######################### -->
-	<!-- ####################################################################### -->
+<!-- ####################################################################### -->
+<!-- ########################## Emissive Templates ######################### -->
+<!-- ####################################################################### -->
 
 
-	<!--
-		Emissive parameter, driven by simvar.
+<!--
+	Emissive parameter, driven by simvar.
 
-		Required parameter:
-			EMISSIVE_SIMVAR
-			EMISSIVE_SIMVAR_UNITS
-	-->
-	<Template Name = "ASOBO_GT_Material_Emissive_Sim">
-		<DefaultTemplateParameters>
-			<EMISSIVE_SIMVAR_SCALE>1</EMISSIVE_SIMVAR_SCALE>
-			<EMISSIVE_SIMVAR_BIAS>0</EMISSIVE_SIMVAR_BIAS>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition Valid="DONT_OVERRIDE_BASE_EMISSIVE">
-				<True>
-					<OVERRIDE_BASE_EMISSIVE>FALSE</OVERRIDE_BASE_EMISSIVE>
-				</True>
-				<False>
-					<OVERRIDE_BASE_EMISSIVE>TRUE</OVERRIDE_BASE_EMISSIVE>
-				</False>
-			</Condition>
-		</OverrideTemplateParameters>
-		<UseTemplate Name="ASOBO_GT_Part_ID"/>
-		<Material>
-			<EmissiveFactor>
-				<Parameter>
-					<Sim>
-						<Variable>#EMISSIVE_SIMVAR#</Variable>
-						<Units>#EMISSIVE_SIMVAR_UNITS#</Units>
-						<Scale>#EMISSIVE_SIMVAR_SCALE#</Scale>
-						<Bias>#EMISSIVE_SIMVAR_BIAS#</Bias>
-					</Sim>
-				</Parameter>
-				<OverrideBaseEmissive>#OVERRIDE_BASE_EMISSIVE#</OverrideBaseEmissive>
-			</EmissiveFactor>
-		</Material>
-	</Template>
-
-
-	<!--
-		Emissive parameter, driven by code.
-
-		Required parameter:
-			EMISSIVE_CODE
-	-->
-	<Template Name = "ASOBO_GT_Material_Emissive_Code">
-		<DefaultTemplateParameters>
-			<FAILURE>1</FAILURE>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition Valid="DONT_OVERRIDE_BASE_EMISSIVE">
-				<True>
-					<OVERRIDE_BASE_EMISSIVE>FALSE</OVERRIDE_BASE_EMISSIVE>
-				</True>
-				<False>
-					<OVERRIDE_BASE_EMISSIVE>TRUE</OVERRIDE_BASE_EMISSIVE>
-				</False>
-			</Condition>
-		</OverrideTemplateParameters>
-		<UseTemplate Name="ASOBO_GT_Part_ID"/>
-		<Material>
-			<EmissiveFactor>
-				<Parameter>
-					<Code>#EMISSIVE_CODE# #FAILURE# *</Code>
-				</Parameter>
-				<OverrideBaseEmissive>#OVERRIDE_BASE_EMISSIVE#</OverrideBaseEmissive>
-			</EmissiveFactor>
-		</Material>
-	</Template>
-
-
-	<!--
-		Emissive parameter, driven by code, with failure when without gauge elec.
-
-		Required parameter:
-			EMISSIVE_CODE
-	-->
-	<!-- TODO - This should instead be using a FAILURE system -->
-	<Template Name = "ASOBO_GT_Component_Emissive_Gauge">
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<Switch>
-				<Case Valid="POTENTIOMETER">
-					<UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
-					</UseTemplate>
-				</Case>
-				<Case Valid="SIMVAR_POWER_SETTING">
-					<UseTemplate Name="ASOBO_GT_Emissive_Power_Setting">
-					</UseTemplate>
-				</Case>
-				<Default>
-					<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-					</UseTemplate>
-				</Default>
-			</Switch>
-			<Condition Valid="CAMERA_TITLE">
-				<CameraTitle>#CAMERA_TITLE#</CameraTitle>
-			</Condition>
-		</Component>
-	</Template>
-
-	<!--
-		Emissive parameter, driven by code, with failure when without gauge elec.
-
-		Required parameter:
-			EMISSIVE_CODE
-	-->
-	<!-- TODO - This should instead be using a FAILURE system -->
-	<Template Name = "ASOBO_GT_Emissive_Gauge">
-		<DefaultTemplateParameters>
-			<Condition Check="FAILURE_CIRCUIT">
-				<False>
-					<FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
-				</False>
-				<True>
-					<FAILURE>(A:CIRCUIT ON:#FAILURE_CIRCUIT#, Bool)</FAILURE>
-				</True>
-			</Condition>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition Check="ALT_CODE">
-				<EMISSIVE_CODE>#EMISSIVE_CODE# #ALT_CODE# max</EMISSIVE_CODE>
-			</Condition>
-		</OverrideTemplateParameters>
-
-		<Condition Valid="EMISSIVE_DRIVES_VISIBILITY">
+	Required parameter:
+		EMISSIVE_SIMVAR
+		EMISSIVE_SIMVAR_UNITS
+-->
+<Template Name = "ASOBO_GT_Material_Emissive_Sim">
+	<DefaultTemplateParameters>
+		<EMISSIVE_SIMVAR_SCALE>1</EMISSIVE_SIMVAR_SCALE>
+		<EMISSIVE_SIMVAR_BIAS>0</EMISSIVE_SIMVAR_BIAS>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid="DONT_OVERRIDE_BASE_EMISSIVE">
 			<True>
-				<UseTemplate Name="ASOBO_GT_Visibility_Code">
-					<VISIBILITY_CODE>#EMISSIVE_CODE# 0 &gt; #FAILURE# and</VISIBILITY_CODE>
+				<OVERRIDE_BASE_EMISSIVE>FALSE</OVERRIDE_BASE_EMISSIVE>
+			</True>
+			<False>
+				<OVERRIDE_BASE_EMISSIVE>TRUE</OVERRIDE_BASE_EMISSIVE>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Part_ID"/>
+	<Material>
+		<EmissiveFactor>
+			<Parameter>
+				<Sim>
+					<Variable>#EMISSIVE_SIMVAR#</Variable>
+					<Units>#EMISSIVE_SIMVAR_UNITS#</Units>
+					<Scale>#EMISSIVE_SIMVAR_SCALE#</Scale>
+					<Bias>#EMISSIVE_SIMVAR_BIAS#</Bias>
+				</Sim>
+			</Parameter>
+			<OverrideBaseEmissive>#OVERRIDE_BASE_EMISSIVE#</OverrideBaseEmissive>
+		</EmissiveFactor>
+	</Material>
+</Template>
+
+
+<!--
+	Emissive parameter, driven by code.
+
+	Required parameter:
+		EMISSIVE_CODE
+-->
+<Template Name = "ASOBO_GT_Material_Emissive_Code">
+	<DefaultTemplateParameters>
+		<FAILURE>1</FAILURE>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition NotEmpty="EMISSIVE_CODE_FACTOR">
+			<True>
+				<EMISSIVE_CODE_FACTOR>#EMISSIVE_CODE_FACTOR# *</EMISSIVE_CODE_FACTOR>
+			</True>
+			<False>
+				<EMISSIVE_CODE_FACTOR></EMISSIVE_CODE_FACTOR>
+			</False>
+		</Condition>
+		<Condition Valid="DONT_OVERRIDE_BASE_EMISSIVE">
+			<True>
+				<OVERRIDE_BASE_EMISSIVE>FALSE</OVERRIDE_BASE_EMISSIVE>
+			</True>
+			<False>
+				<OVERRIDE_BASE_EMISSIVE>TRUE</OVERRIDE_BASE_EMISSIVE>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Part_ID"/>
+	<Material>
+		<EmissiveFactor>
+			<Parameter>
+				<Code>#EMISSIVE_CODE# #FAILURE# * #EMISSIVE_CODE_FACTOR#</Code>
+			</Parameter>
+			<OverrideBaseEmissive>#OVERRIDE_BASE_EMISSIVE#</OverrideBaseEmissive>
+		</EmissiveFactor>
+	</Material>
+</Template>
+
+
+<!--
+	Emissive parameter, driven by code, with failure when without gauge elec.
+
+	Required parameter:
+		EMISSIVE_CODE
+-->
+<!-- TODO - This should instead be using a FAILURE system -->
+<Template Name = "ASOBO_GT_Component_Emissive_Gauge">
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<Switch>
+			<Case Valid="POTENTIOMETER">
+				<UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
 				</UseTemplate>
+			</Case>
+			<Case Valid="SIMVAR_POWER_SETTING">
+				<UseTemplate Name="ASOBO_GT_Emissive_Power_Setting">
+				</UseTemplate>
+			</Case>
+			<Default>
+				<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				</UseTemplate>
+			</Default>
+		</Switch>
+		<Condition Valid="CAMERA_TITLE">
+			<CameraTitle>#CAMERA_TITLE#</CameraTitle>
+		</Condition>
+	</Component>
+</Template>
+
+<!--
+	Emissive parameter, driven by code, with failure when without gauge elec.
+
+	Required parameter:
+		EMISSIVE_CODE
+-->
+<!-- TODO - This should instead be using a FAILURE system -->
+<Template Name = "ASOBO_GT_Emissive_Gauge">
+	<DefaultTemplateParameters>
+		<Condition Check="FAILURE_CIRCUIT">
+			<False>
+				<FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
+			</False>
+			<True>
+				<FAILURE>(A:CIRCUIT ON:#FAILURE_CIRCUIT#, Bool)</FAILURE>
 			</True>
 		</Condition>
-		
-		<UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
-		</UseTemplate>
-	</Template>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Check="ALT_CODE">
+			<EMISSIVE_CODE>#EMISSIVE_CODE# #ALT_CODE# max</EMISSIVE_CODE>
+		</Condition>
+	</OverrideTemplateParameters>
 
-	<!--
-		Emissive parameter, driven by potentiometer, with failure when without gauge elec.
+	<Condition Valid="EMISSIVE_DRIVES_VISIBILITY">
+		<True>
+			<UseTemplate Name="ASOBO_GT_Visibility_Code">
+				<VISIBILITY_CODE>#EMISSIVE_CODE# 0 &gt; #FAILURE# and</VISIBILITY_CODE>
+			</UseTemplate>
+		</True>
+	</Condition>
+	
+	<UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
+	</UseTemplate>
+</Template>
 
-		Required parameter:
-			POTENTIOMETER
-	-->
-	<Template Name = "ASOBO_GT_Emissive_Potentiometer">
-		<DefaultTemplateParameters>
-			<EMISSIVE_CODE>1</EMISSIVE_CODE> 
-		</DefaultTemplateParameters>
+<!--
+	Emissive parameter, driven by potentiometer, with failure when without gauge elec.
 
-		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-			<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #EMISSIVE_CODE# *</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
+	Required parameter:
+		POTENTIOMETER
+-->
+<Template Name = "ASOBO_GT_Emissive_Potentiometer">
+	<DefaultTemplateParameters>
+		<EMISSIVE_CODE>1</EMISSIVE_CODE> 
+	</DefaultTemplateParameters>
 
-	<!--
-		Emissive parameter, driven by power setting, with failure when without gauge elec.
+	<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+		<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #EMISSIVE_CODE# *</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
 
-		Required parameter:
-			SIMVAR_POWER_SETTING
-	-->
-	<Template Name = "ASOBO_GT_Emissive_Power_Setting">
-		<DefaultTemplateParameters>
-			<EMISSIVE_CODE>1</EMISSIVE_CODE> 
-		</DefaultTemplateParameters>
+<!--
+	Emissive parameter, driven by power setting, with failure when without gauge elec.
 
-		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-			<EMISSIVE_CODE>(A:#SIMVAR_POWER_SETTING#, Percent over 100) #EMISSIVE_CODE# *</EMISSIVE_CODE>
-		</UseTemplate>
-	</Template>
+	Required parameter:
+		SIMVAR_POWER_SETTING
+-->
+<Template Name = "ASOBO_GT_Emissive_Power_Setting">
+	<DefaultTemplateParameters>
+		<EMISSIVE_CODE>1</EMISSIVE_CODE> 
+	</DefaultTemplateParameters>
 
-	<!--
-		Emissive parameter, driven by sim, with failure when without gauge elec.
+	<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+		<EMISSIVE_CODE>(A:#SIMVAR_POWER_SETTING#, Percent over 100) #EMISSIVE_CODE# *</EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
 
-		Required parameter:
-			EMISSIVE_CODE
-	-->
-	<!-- TODO - This should instead be using a FAILURE system. As it is not currently available this instead uses the Code Template. -->
-	<Template Name = "ASOBO_GT_Emissive_Gauge_Sim">
-		<DefaultTemplateParameters>
-			<FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
-			<EMISSIVE_SIMVAR_SCALE>1</EMISSIVE_SIMVAR_SCALE>
-			<EMISSIVE_SIMVAR_BIAS>0</EMISSIVE_SIMVAR_BIAS>
-			<EMISSIVE_SIMVAR_UNITS>Bool</EMISSIVE_SIMVAR_UNITS>
-			<EMISSIVE_DRIVES_VISIBILITY>False</EMISSIVE_DRIVES_VISIBILITY>
-		</DefaultTemplateParameters>
-		<Condition Valid="EMISSIVE_DRIVES_VISIBILITY">
+<!--
+	Emissive parameter, driven by sim, with failure when without gauge elec.
+
+	Required parameter:
+		EMISSIVE_CODE
+-->
+<!-- TODO - This should instead be using a FAILURE system. As it is not currently available this instead uses the Code Template. -->
+<Template Name = "ASOBO_GT_Emissive_Gauge_Sim">
+	<DefaultTemplateParameters>
+		<FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
+		<EMISSIVE_SIMVAR_SCALE>1</EMISSIVE_SIMVAR_SCALE>
+		<EMISSIVE_SIMVAR_BIAS>0</EMISSIVE_SIMVAR_BIAS>
+		<EMISSIVE_SIMVAR_UNITS>Bool</EMISSIVE_SIMVAR_UNITS>
+		<EMISSIVE_DRIVES_VISIBILITY>False</EMISSIVE_DRIVES_VISIBILITY>
+	</DefaultTemplateParameters>
+	<Condition Valid="EMISSIVE_DRIVES_VISIBILITY">
+		<True>
+			<UseTemplate Name="ASOBO_GT_Visibility_Code">
+				<VISIBILITY_CODE>(A:#EMISSIVE_SIMVAR#, #EMISSIVE_SIMVAR_UNITS#) #ALT_CODE# max #EMISSIVE_SIMVAR_SCALE# * #EMISSIVE_SIMVAR_BIAS# + 0 &gt; #FAILURE# and</VISIBILITY_CODE>
+			</UseTemplate>
+		</True>
+	</Condition>
+	<UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
+		<EMISSIVE_CODE>(A:#EMISSIVE_SIMVAR#, #EMISSIVE_SIMVAR_UNITS#) #EMISSIVE_SIMVAR_SCALE# * #EMISSIVE_SIMVAR_BIAS# +</EMISSIVE_CODE>
+		<Condition Check="ALT_CODE">
+			<EMISSIVE_CODE>(A:#EMISSIVE_SIMVAR#, #EMISSIVE_SIMVAR_UNITS#) #ALT_CODE# max #EMISSIVE_SIMVAR_SCALE# * #EMISSIVE_SIMVAR_BIAS# +</EMISSIVE_CODE>
+		</Condition>
+	</UseTemplate>
+</Template>
+
+<!-- Screen emissive with optionnal attached ambient light never black by default expect if failure (no current) -->
+<Template Name="ASOBO_GT_Screen_Template">
+	<DefaultTemplateParameters>
+		<POTENTIOMETER>4</POTENTIOMETER>
+		<SCREEN_LIGHT_DIMMING_SCALE>0.5</SCREEN_LIGHT_DIMMING_SCALE>
+		<SCREEN_MIN_EMISSIVE_PERCENT>0.05</SCREEN_MIN_EMISSIVE_PERCENT>
+		<MIN_AMBIENT_EMISSIVE_PERCENT>0.1</MIN_AMBIENT_EMISSIVE_PERCENT>
+		<MAX_EMISSIVE_PERCENT>1</MAX_EMISSIVE_PERCENT>
+		<MAX_AMBIENT_PERCENT>1</MAX_AMBIENT_PERCENT>
+		<INSTR_ID>1</INSTR_ID>
+		<ID>1</ID>
+		<SCREEN_PREFIX></SCREEN_PREFIX><!-- AS1000/AS3000/.. -->
+		<SCREEN_ID></SCREEN_ID><!-- PFD/MFD/.. -->
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<EMISSIVE_BASE_RANGE Process="Float">#MAX_EMISSIVE_PERCENT# #SCREEN_MIN_EMISSIVE_PERCENT# -</EMISSIVE_BASE_RANGE>
+		<AMBIENT_BASE_RANGE Process="Float">#MAX_AMBIENT_PERCENT# #MIN_AMBIENT_EMISSIVE_PERCENT# -</AMBIENT_BASE_RANGE>
+	</OverrideTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_GT_Screen_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GT_Screen_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>#SCREEN_PREFIX##SCREEN_ID#</NODE_ID>
+		<SCREEN_AVERAGE_LUMINOSITY>(L:#SCREEN_PREFIX##SCREEN_ID#_ScreenLuminosity)</SCREEN_AVERAGE_LUMINOSITY>
+		<Condition Check="CIRCUIT_ID">
 			<True>
-				<UseTemplate Name="ASOBO_GT_Visibility_Code">
-					<VISIBILITY_CODE>(A:#EMISSIVE_SIMVAR#, #EMISSIVE_SIMVAR_UNITS#) #ALT_CODE# max #EMISSIVE_SIMVAR_SCALE# * #EMISSIVE_SIMVAR_BIAS# + 0 &gt; #FAILURE# and</VISIBILITY_CODE>
-				</UseTemplate>
+				<FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID#, Bool)</FAILURE>
 			</True>
+			<False>
+				<FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
+			</False>
 		</Condition>
-		<UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
-			<EMISSIVE_CODE>(A:#EMISSIVE_SIMVAR#, #EMISSIVE_SIMVAR_UNITS#) #EMISSIVE_SIMVAR_SCALE# * #EMISSIVE_SIMVAR_BIAS# +</EMISSIVE_CODE>
-			<Condition Check="ALT_CODE">
-				<EMISSIVE_CODE>(A:#EMISSIVE_SIMVAR#, #EMISSIVE_SIMVAR_UNITS#) #ALT_CODE# max #EMISSIVE_SIMVAR_SCALE# * #EMISSIVE_SIMVAR_BIAS# +</EMISSIVE_CODE>
-			</Condition>
-		</UseTemplate>
-	</Template>
-
-	<!-- Screen emissive with optionnal attached ambient light never black by default expect if failure (no current) -->
-	<Template Name="ASOBO_GT_Screen_Template">
-		<DefaultTemplateParameters>
-			<POTENTIOMETER>4</POTENTIOMETER>
-			<SCREEN_LIGHT_DIMMING_SCALE>0.5</SCREEN_LIGHT_DIMMING_SCALE>
-			<SCREEN_MIN_EMISSIVE_PERCENT>0.05</SCREEN_MIN_EMISSIVE_PERCENT>
-			<MIN_AMBIENT_EMISSIVE_PERCENT>0.1</MIN_AMBIENT_EMISSIVE_PERCENT>
-			<MAX_EMISSIVE_PERCENT>1</MAX_EMISSIVE_PERCENT>
-			<MAX_AMBIENT_PERCENT>1</MAX_AMBIENT_PERCENT>
-			<INSTR_ID>1</INSTR_ID>
-			<ID>1</ID>
-			<SCREEN_PREFIX></SCREEN_PREFIX><!-- AS1000/AS3000/.. -->
-			<SCREEN_ID></SCREEN_ID><!-- PFD/MFD/.. -->
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<EMISSIVE_BASE_RANGE Process="Float">#MAX_EMISSIVE_PERCENT# #SCREEN_MIN_EMISSIVE_PERCENT# -</EMISSIVE_BASE_RANGE>
-			<AMBIENT_BASE_RANGE Process="Float">#MAX_AMBIENT_PERCENT# #MIN_AMBIENT_EMISSIVE_PERCENT# -</AMBIENT_BASE_RANGE>
-		</OverrideTemplateParameters>
-		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-			<TEMPLATE_TO_CALL>ASOBO_GT_Screen_SubTemplate</TEMPLATE_TO_CALL>
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_GT_Screen_SubTemplate">
-		<DefaultTemplateParameters>
-			<NODE_ID>#SCREEN_PREFIX##SCREEN_ID#</NODE_ID>
-			<SCREEN_AVERAGE_LUMINOSITY>(L:#SCREEN_PREFIX##SCREEN_ID#_ScreenLuminosity)</SCREEN_AVERAGE_LUMINOSITY>
-			<Condition Check="CIRCUIT_ID">
-				<True>
-					<FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID#, Bool)</FAILURE>
-				</True>
-				<False>
-					<FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
-				</False>
-			</Condition>
-			<Condition Valid="STATIC_INTENSITY">
-				<True>
-					<BASE_INTENSITY_FACTOR>#SCREEN_LIGHT_DIMMING_SCALE#</BASE_INTENSITY_FACTOR>
-				</True>
-				<False>
-					<Condition Valid="SIMVAR_POWER_SETTING">
-						<True>
-							<BASE_INTENSITY_FACTOR>(A:#SIMVAR_POWER_SETTING#, Percent over 100) #SCREEN_LIGHT_DIMMING_SCALE# *</BASE_INTENSITY_FACTOR>
-						</True>
-						<False>
-							<BASE_INTENSITY_FACTOR>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #SCREEN_LIGHT_DIMMING_SCALE# *</BASE_INTENSITY_FACTOR>
-						</False>
-					</Condition>
-				</False>
-			</Condition>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<SCREEN_EMISSIVE_CODE>#BASE_INTENSITY_FACTOR# #EMISSIVE_BASE_RANGE# * #SCREEN_MIN_EMISSIVE_PERCENT# +</SCREEN_EMISSIVE_CODE>
-			<AMBIENT_EMISSIVE_CODE>#SCREEN_AVERAGE_LUMINOSITY# #BASE_INTENSITY_FACTOR# * #AMBIENT_BASE_RANGE# * #MIN_AMBIENT_EMISSIVE_PERCENT# + #FAILURE# #SCREEN_AVERAGE_LUMINOSITY# 0 &gt; and * 100 *</AMBIENT_EMISSIVE_CODE>
-		</OverrideTemplateParameters>
-		<Condition Check="AMBIENT_POTENTIOMETER">
-			<UseTemplate Name="ASOBO_LIGHTING_Ambient_Template">
-				<BOUNCE_POTENTIOMETER_PERCENT>#AMBIENT_EMISSIVE_CODE#</BOUNCE_POTENTIOMETER_PERCENT>
-				<POTENTIOMETER>#AMBIENT_POTENTIOMETER#</POTENTIOMETER>
-			</UseTemplate>
+		<Condition Valid="STATIC_INTENSITY">
+			<True>
+				<BASE_INTENSITY_FACTOR>#SCREEN_LIGHT_DIMMING_SCALE#</BASE_INTENSITY_FACTOR>
+			</True>
+			<False>
+				<Condition Valid="SIMVAR_POWER_SETTING">
+					<True>
+						<BASE_INTENSITY_FACTOR>(A:#SIMVAR_POWER_SETTING#, Percent over 100) #SCREEN_LIGHT_DIMMING_SCALE# *</BASE_INTENSITY_FACTOR>
+					</True>
+					<False>
+						<BASE_INTENSITY_FACTOR>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #SCREEN_LIGHT_DIMMING_SCALE# *</BASE_INTENSITY_FACTOR>
+					</False>
+				</Condition>
+			</False>
 		</Condition>
-		<Component ID="#NODE_ID#_Emissive" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-				<PART_ID>#SCREEN_PREFIX##SCREEN_ID#</PART_ID>
-				<EMISSIVE_CODE>#SCREEN_EMISSIVE_CODE#</EMISSIVE_CODE>
-			</UseTemplate>
-		</Component>
-	</Template>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<SCREEN_EMISSIVE_CODE>#BASE_INTENSITY_FACTOR# #EMISSIVE_BASE_RANGE# * #SCREEN_MIN_EMISSIVE_PERCENT# +</SCREEN_EMISSIVE_CODE>
+		<AMBIENT_EMISSIVE_CODE>#SCREEN_AVERAGE_LUMINOSITY# #BASE_INTENSITY_FACTOR# * #AMBIENT_BASE_RANGE# * #MIN_AMBIENT_EMISSIVE_PERCENT# + #FAILURE# #SCREEN_AVERAGE_LUMINOSITY# 0 &gt; and * 100 *</AMBIENT_EMISSIVE_CODE>
+	</OverrideTemplateParameters>
+	<Condition Check="AMBIENT_POTENTIOMETER">
+		<UseTemplate Name="ASOBO_LIGHTING_Ambient_Template">
+			<BOUNCE_POTENTIOMETER_PERCENT>#AMBIENT_EMISSIVE_CODE#</BOUNCE_POTENTIOMETER_PERCENT>
+			<POTENTIOMETER>#AMBIENT_POTENTIOMETER#</POTENTIOMETER>
+		</UseTemplate>
+	</Condition>
+	<Component ID="#NODE_ID#_Emissive" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<PART_ID>#SCREEN_PREFIX##SCREEN_ID#</PART_ID>
+			<EMISSIVE_CODE>#SCREEN_EMISSIVE_CODE#</EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
 </ModelBehaviors>

@@ -1,260 +1,293 @@
 <ModelBehaviors>
-	<Template Name="ASOBO_GT_Helper_Recursive_Param_Builder">
-		<DefaultTemplateParameters>
-			<PARAM_REPEATED_START/>
-			<PARAM_REPEATED_END/>
-			<PARAM_START/>
-			<PARAM_END/>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<PARAM_TO_BUILD/>
-			<NEXT_ID>2</NEXT_ID>
-		</OverrideTemplateParameters>
-		
-		<UseTemplate Name="ASOBO_GT_Helper_Recursive_Param_Builder_2">
-		</UseTemplate>
-	</Template>
+<Template Name="ASOBO_GT_Helper_Recursive_Param_Builder">
+	<DefaultTemplateParameters>
+		<PARAM_REPEATED_START/>
+		<PARAM_REPEATED_END/>
+		<PARAM_START/>
+		<PARAM_END/>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<PARAM_TO_BUILD/>
+		<NEXT_ID>2</NEXT_ID>
+	</OverrideTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Helper_Recursive_Param_Builder_2">
+	</UseTemplate>
+</Template>
 
-	<Template Name="ASOBO_GT_Helper_Recursive_Param_Builder_2">
-		<DefaultTemplateParameters>
-			<PARAM_REPEATED_2_START/>
-			<PARAM_REPEATED_2_END/>
-		</DefaultTemplateParameters>
-		<OverrideTemplateParameters>
-			<Condition>
-				<Test>
-					<Or>
-						<Arg NotEmpty="PARAM_REPEATED_2_START"/>
-						<Arg NotEmpty="PARAM_REPEATED_2_END"/>
-					</Or>
-				</Test>
+<Template Name="ASOBO_GT_Helper_Recursive_Param_Builder_2">
+	<DefaultTemplateParameters>
+		<PARAM_REPEATED_2_START/>
+		<PARAM_REPEATED_2_END/>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition>
+			<Test>
+				<Or>
+					<Arg NotEmpty="PARAM_REPEATED_2_START"/>
+					<Arg NotEmpty="PARAM_REPEATED_2_END"/>
+				</Or>
+			</Test>
+			<True>
+				<PARAM_TO_BUILD>#PARAM_TO_BUILD##PARAM_REPEATED_START##ID##PARAM_REPEATED_END##PARAM_REPEATED_2_START##ID##PARAM_REPEATED_2_END#</PARAM_TO_BUILD>
+			</True>
+			<False>
+				<PARAM_TO_BUILD>#PARAM_TO_BUILD##PARAM_REPEATED_START##ID##PARAM_REPEATED_END#</PARAM_TO_BUILD>
+			</False>
+		</Condition>
+		<TEST_ID Process="Param">ID#NEXT_ID#</NEXT_ID>
+	</OverrideTemplateParameters>
+	
+	<Condition NotEmpty="TEST_ID">
+		<True>
+			<UseTemplate Name="ASOBO_GT_Helper_Recursive_Param_Builder_2">
+				<ID>#TEST_ID#</ID>
+				<NEXT_ID Process="Int">#NEXT_ID# 1 +</NEXT_ID>
+			</UseTemplate>
+		</True>
+		<False>
+			<UseTemplate Name="#EXIT_TEMPLATE#">
+				<#PARAM_NAME#>#PARAM_START##PARAM_TO_BUILD##PARAM_END#</#PARAM_NAME#>
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>
+
+<!-- Incremental param builder: build as much param as requested with desired content, prefix and suffix -->
+<Template Name="ASOBO_GT_Helper_Param_Builder_INC">
+	<DefaultTemplateParameters>
+		<CONTENT></CONTENT><!-- What's in between prefix and suffix (both optional) -->
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Helper_Param_Builder_INC_1">
+		<PARAM_ID>1</PARAM_ID><!-- Must be an integer (incremented) -->
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_GT_Helper_Param_Builder_INC_1">
+	<OverrideTemplateParameters>
+		<Condition Valid="PARAM#PARAM_ID#">
+			<Condition Valid="PROCESS_PARAM#PARAM_ID#">
+				<PROCESS_PARAM>True</PROCESS_PARAM>
+			</Condition>
+			<PARAM_NAME Process="Param">PARAM#PARAM_ID#</PARAM_NAME>
+			<Condition Valid="PARAM#PARAM_ID#_PREFIX">
 				<True>
-					<PARAM_TO_BUILD>#PARAM_TO_BUILD##PARAM_REPEATED_START##ID##PARAM_REPEATED_END##PARAM_REPEATED_2_START##ID##PARAM_REPEATED_2_END#</PARAM_TO_BUILD>
+					<PREFIX Process="Param">PARAM#PARAM_ID#_PREFIX</PREFIX>
 				</True>
 				<False>
-					<PARAM_TO_BUILD>#PARAM_TO_BUILD##PARAM_REPEATED_START##ID##PARAM_REPEATED_END#</PARAM_TO_BUILD>
+					<PREFIX/>
 				</False>
 			</Condition>
-			<TEST_ID Process="Param">ID#NEXT_ID#</NEXT_ID>
-		</OverrideTemplateParameters>
-		
-		<Condition NotEmpty="TEST_ID">
-			<True>
-				<UseTemplate Name="ASOBO_GT_Helper_Recursive_Param_Builder_2">
-					<ID>#TEST_ID#</ID>
-					<NEXT_ID Process="Int">#NEXT_ID# 1 +</NEXT_ID>
-				</UseTemplate>
-			</True>
-			<False>
-				<UseTemplate Name="#EXIT_TEMPLATE#">
-					<#PARAM_NAME#>#PARAM_START##PARAM_TO_BUILD##PARAM_END#</#PARAM_NAME#>
-				</UseTemplate>
-			</False>
-		</Condition>
-	</Template>
-
-	<!-- Incremental param builder: build as much param as requested with desired content, prefix and suffix -->
-	<Template Name="ASOBO_GT_Helper_Param_Builder_INC">
-		<DefaultTemplateParameters>
-			<CONTENT></CONTENT><!-- What's in between prefix and suffix (both optional) -->
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_GT_Helper_Param_Builder_INC_1">
-			<PARAM_ID>1</PARAM_ID><!-- Must be an integer (incremented) -->
-		</UseTemplate>
-	</Template>
-	<Template Name="ASOBO_GT_Helper_Param_Builder_INC_1">
-		<OverrideTemplateParameters>
-			<Condition Valid="PARAM#PARAM_ID#">
-				<Condition Valid="PROCESS_PARAM#PARAM_ID#">
-					<PROCESS_PARAM>True</PROCESS_PARAM>
-				</Condition>
-				<PARAM_NAME Process="Param">PARAM#PARAM_ID#</PARAM_NAME>
-				<Condition Valid="PARAM#PARAM_ID#_PREFIX">
-					<True>
-						<PREFIX Process="Param">PARAM#PARAM_ID#_PREFIX</PREFIX>
-					</True>
-					<False>
-						<PREFIX/>
-					</False>
-				</Condition>
-				<Condition Valid="PARAM#PARAM_ID#_SUFFIX">
-					<True>
-						<SUFFIX Process="Param">PARAM#PARAM_ID#_SUFFIX</SUFFIX>
-					</True>
-					<False>
-						<SUFFIX/>
-					</False>
-				</Condition>
+			<Condition Valid="PARAM#PARAM_ID#_SUFFIX">
+				<True>
+					<SUFFIX Process="Param">PARAM#PARAM_ID#_SUFFIX</SUFFIX>
+				</True>
+				<False>
+					<SUFFIX/>
+				</False>
 			</Condition>
-		</OverrideTemplateParameters>
+		</Condition>
+	</OverrideTemplateParameters>
+	<Switch>
+		<Case Valid="PARAM#PARAM_ID#">
+			<UseTemplate Name="ASOBO_GT_Helper_Param_Builder_INC_1">
+				<PARAM_ID Process="Int">#PARAM_ID# 1 +</PARAM_ID>
+				<Condition Valid="PROCESS_PARAM">
+					<True>
+						<Condition NotEmpty="#PREFIX##CONTENT##SUFFIX#"><!-- Make sure param is not empty -->
+							<#PARAM_NAME# Process="Param">#PREFIX##CONTENT##SUFFIX#</#PARAM_NAME#>
+							<PROCESS_PARAM>False</PROCESS_PARAM><!-- Reset flag -->
+						</Condition>
+					</True>
+					<False>
+						<#PARAM_NAME#>#PREFIX##CONTENT##SUFFIX#</#PARAM_NAME#>
+					</False>
+				</Condition>
+			</UseTemplate>
+		</Case>
+		<Default>
+			<UseTemplate Name="#EXIT_TEMPLATE#">
+			</UseTemplate>
+		</Default>
+	</Switch>
+</Template>
+
+<!-- call EXIT_TEMPLATE as many times as MAX_ID each time with the param PARAM increasing by one
+-->
+<Template Name="ASOBO_GT_Helper_Increasing_ID">
+	<DefaultTemplateParameters>
+		<FIRST_ID>1</FIRST_ID>
+		<MAX_ID>1</MAX_ID>
+		<PARAM>BTN_ID</PARAM>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Helper_Increasing_ID_2">
+		<NEXT_ID>#FIRST_ID#</NEXT_ID>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GT_Helper_Increasing_ID_2">
+	<UseTemplate Name="#EXIT_TEMPLATE#">
+		<#PARAM#>#NEXT_ID#</#PARAM#>
+	</UseTemplate>
+	
+	<Condition>
+		<Test>
+			<Lower>
+				<Value>NEXT_ID</Value>
+				<Value>MAX_ID</Value>
+			</Lower>
+		</Test>
+		<True>
+			<UseTemplate Name="ASOBO_GT_Helper_Increasing_ID_2">
+				<NEXT_ID Process="Int">#NEXT_ID# 1 +</NEXT_ID>
+			</UseTemplate>
+		</True>
+	</Condition>
+</Template>
+
+<!-- call EXIT_TEMPLATE with as much parameters as given for multiple IDs
+	PARAM1 (ID by default): dynamic, goes from FIRST_ID to MAX_ID (Integer)
+	can be configured to add as many as you want with specified PREFIX and SUFFIX 
+	(ex: PARAM2: NODE_ID, PARAM2_PREFIX: Node_, MAX_ID:2 ; will generate: 
+		<NODE_ID>Node_1</NODE_ID><ID>1</ID> for the first call to EXIT_TEMPLATE
+		<NODE_ID>Node_2</NODE_ID><ID>2</ID> for the second
+	)
+-->
+<Template Name="ASOBO_GT_Helper_Recursive_ID">
+	<DefaultTemplateParameters>
+		<FIRST_ID>1</FIRST_ID>
+		<MAX_ID>1</MAX_ID>
+		<PARAM1>ID</PARAM1>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Helper_Recursive_ID_2">
+		<NEXT_ID>#FIRST_ID#</NEXT_ID>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GT_Helper_Recursive_ID_2">
+	<UseTemplate Name="ASOBO_GT_Helper_Param_Builder_INC">
+		<CONTENT>#NEXT_ID#</CONTENT>
+	</UseTemplate>
+	<Condition>
+		<Test>
+			<Lower>
+				<Value>NEXT_ID</Value>
+				<Value>MAX_ID</Value>
+			</Lower>
+		</Test>
+		<True>
+			<UseTemplate Name="ASOBO_GT_Helper_Recursive_ID_2">
+				<NEXT_ID Process="Int">#NEXT_ID# 1 +</NEXT_ID>
+			</UseTemplate>
+		</True>
+	</Condition>
+</Template>
+
+<Template Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+	<DefaultTemplateParameters>
 		<Switch>
-			<Case Valid="PARAM#PARAM_ID#">
-				<UseTemplate Name="ASOBO_GT_Helper_Param_Builder_INC_1">
-					<PARAM_ID Process="Int">#PARAM_ID# 1 +</PARAM_ID>
-					<Condition Valid="PROCESS_PARAM">
-						<True>
-							<Condition NotEmpty="#PREFIX##CONTENT##SUFFIX#"><!-- Make sure param is not empty -->
-								<#PARAM_NAME# Process="Param">#PREFIX##CONTENT##SUFFIX#</#PARAM_NAME#>
-								<PROCESS_PARAM>False</PROCESS_PARAM><!-- Reset flag -->
-							</Condition>
-						</True>
-						<False>
-							<#PARAM_NAME#>#PREFIX##CONTENT##SUFFIX#</#PARAM_NAME#>
-						</False>
-					</Condition>
-				</UseTemplate>
+			<Case Valid="DONT_APPEND_ID">
+				<SUFFIX_ID></SUFFIX_ID>
 			</Case>
 			<Default>
-				<UseTemplate Name="#EXIT_TEMPLATE#">
-				</UseTemplate>
-			</Default>
-		</Switch>
-	</Template>
-
-	<!-- call EXIT_TEMPLATE with as much parameters as given for multiple IDs
-		PARAM1 (ID by default): dynamic, goes from FIRST_ID to MAX_ID (Integer)
-		can be configured to add as many as you want with specified PREFIX and SUFFIX 
-		(ex: PARAM2: NODE_ID, PARAM2_PREFIX: Node_, MAX_ID:2 ; will generate: 
-			<NODE_ID>Node_1</NODE_ID><ID>1</ID> for the first call to EXIT_TEMPLATE
-			<NODE_ID>Node_2</NODE_ID><ID>2</ID> for the second
-		)
-	-->
-	<Template Name="ASOBO_GT_Helper_Recursive_ID">
-		<DefaultTemplateParameters>
-			<FIRST_ID>1</FIRST_ID>
-			<MAX_ID>1</MAX_ID>
-			<PARAM1>ID</PARAM1>
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_GT_Helper_Recursive_ID_2">
-			<NEXT_ID>#FIRST_ID#</NEXT_ID>
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_GT_Helper_Recursive_ID_2">
-		<UseTemplate Name="ASOBO_GT_Helper_Param_Builder_INC">
-			<CONTENT>#NEXT_ID#</CONTENT>
-		</UseTemplate>
-		<Condition>
-			<Test>
-				<Lower>
-					<Value>NEXT_ID</Value>
-					<Value>MAX_ID</Value>
-				</Lower>
-			</Test>
-			<True>
-				<UseTemplate Name="ASOBO_GT_Helper_Recursive_ID_2">
-					<NEXT_ID Process="Int">#NEXT_ID# 1 +</NEXT_ID>
-				</UseTemplate>
-			</True>
-		</Condition>
-	</Template>
-
-	<Template Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-		<DefaultTemplateParameters>
-			<Switch>
-				<Case Valid="DONT_APPEND_ID">
-					<SUFFIX_ID></SUFFIX_ID>
-				</Case>
-				<Default>
-					<Condition NotEmpty="CONTAINER_ID">
-						<True>
-							<SUFFIX_ID>_#CONTAINER_ID#</SUFFIX_ID>
-						</True>
-						<False>
-							<SUFFIX_ID>_#ID#</SUFFIX_ID>
-						</False>
-					</Condition>
-				</Default>
-			</Switch>
-		</DefaultTemplateParameters>
-		
-		<UseTemplate Name="#TEMPLATE_TO_CALL#">
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_GT_Helper_Non_Linear_Animation_Code">
-		<DefaultTemplateParameters>
-			<SELECTION>50</SELECTION><!-- dynamic parameter for example gallons qty in a fuel tank -->
-			<!-- at least 2 points of reference to interpolate -->
-			<!-- ANIM_VALUE = frame for which the REF_VALUE is corresponding -->
-			<!-- REF_VALUE = value used as a comparison point to SELECTION -->
-			<ANIM_VALUE_0>0</ANIM_VALUE_0>
-			<REF_VALUE_0>0</REF_VALUE_0>
-			<ANIM_VALUE_1>100</ANIM_VALUE_1>
-			<REF_VALUE_1>100</REF_VALUE_1>
-			<!-- Add as much as necessary when calling the template -->
-			<!-- ######################################################### -->
-			<ANIM_LENGTH>100</ANIM_LENGTH><!-- number of frame in the animation -->
-			<MAX_POINT_INDEX>1</MAX_POINT_INDEX><!-- index of latest point of reference -->
-			<MAX_DISPLAYABLE>100</MAX_DISPLAYABLE><!-- higher bound the value SELECTION can reach (the maximum your gauge can display) -->
-			<MIN_DISPLAYABLE>0</MIN_DISPLAYABLE><!-- lower bound the value SELECTION can reach (the minimum your gauge can display) -->
-			<EXIT_TEMPLATE>ASOBO_GT_Anim_Code</EXIT_TEMPLATE>
-			<EXIT_PARAM_NAME>ANIM_CODE</EXIT_PARAM_NAME>
-			<CONTENT></CONTENT><!-- CONTENT init: can be used to tweak the value before interpolating -->
-		</DefaultTemplateParameters>
-		<UseTemplate Name="ASOBO_GT_Helper_Non_Linear_Animation_Code_2">
-			<NEXT_ID Process="Int">#MAX_POINT_INDEX#</NEXT_ID>
-		</UseTemplate>
-	</Template>
-
-	<Template Name="ASOBO_GT_Helper_Non_Linear_Animation_Code_2">
-		<OverrideTemplateParameters>
-			<ANIM_VAL_CURRENT_POINT Process="Param">ANIM_VALUE_#NEXT_ID#</ANIM_VAL_CURRENT_POINT>
-			<REF_VAL_CURRENT_POINT Process="Param">REF_VALUE_#NEXT_ID#</REF_VAL_CURRENT_POINT>
-		</OverrideTemplateParameters>
-		<Condition>
-			<Test>
-				<GreaterOrEqual>
-					<Value>NEXT_ID</Value>
-					<Number>0</Number>
-				</GreaterOrEqual>
-			</Test>
-			<True>
-				<Condition>
-					<Test>
-						<Equal>
-							<Value>NEXT_ID</Value>
-							<Value>MAX_POINT_INDEX</Value>
-						</Equal>
-					</Test>
+				<Condition NotEmpty="CONTAINER_ID">
 					<True>
-						<!-- First point (higher bound) -->
-						<UseTemplate Name="ASOBO_GT_Helper_Non_Linear_Animation_Code_2">
-							<NEXT_ID Process="Int">#NEXT_ID# 1 -</NEXT_ID>
-							<ANIM_VAL_PREVIOUS_POINT Process="Param">ANIM_VALUE_#NEXT_ID#</ANIM_VAL_PREVIOUS_POINT>
-							<REF_VAL_PREVIOUS_POINT Process="Param">REF_VALUE_#NEXT_ID#</REF_VAL_PREVIOUS_POINT>
-						</UseTemplate>
+						<SUFFIX_ID>_#CONTAINER_ID#</SUFFIX_ID>
 					</True>
 					<False>
-						<UseTemplate Name="ASOBO_GT_Helper_Non_Linear_Animation_Code_2">
-							<NEXT_ID Process="Int">#NEXT_ID# 1 -</NEXT_ID>
-							<CONTENT>
-								#CONTENT#
-								l0 #REF_VAL_CURRENT_POINT# &gt; if{
-									l0 #REF_VAL_CURRENT_POINT# - #REF_VAL_PREVIOUS_POINT# #REF_VAL_CURRENT_POINT# - / #ANIM_VAL_PREVIOUS_POINT# #ANIM_VAL_CURRENT_POINT# - * #ANIM_VAL_CURRENT_POINT# + sp1 g1
-								}
-							</CONTENT>
-							<ANIM_VAL_PREVIOUS_POINT Process="Param">ANIM_VALUE_#NEXT_ID#</ANIM_VAL_PREVIOUS_POINT>
-							<REF_VAL_PREVIOUS_POINT Process="Param">REF_VALUE_#NEXT_ID#</REF_VAL_PREVIOUS_POINT>
-						</UseTemplate>
+						<SUFFIX_ID>_#ID#</SUFFIX_ID>
 					</False>
 				</Condition>
-			</True>
-			<False>
-				<UseTemplate Name="ASOBO_GT_Helper_Non_Linear_Animation_Code_3">
-				</UseTemplate>
-			</False>
-		</Condition>
-	</Template>
+			</Default>
+		</Switch>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="#TEMPLATE_TO_CALL#">
+	</UseTemplate>
+</Template>
 
-	<Template Name="ASOBO_GT_Helper_Non_Linear_Animation_Code_3">
-		<UseTemplate Name="#EXIT_TEMPLATE#">
-			<#EXIT_PARAM_NAME#>
-				#SELECTION# #MAX_DISPLAYABLE# min #MIN_DISPLAYABLE# max sp0
-				#CONTENT#
-				:1 l1
-			</#EXIT_PARAM_NAME#>
-		</UseTemplate>
-	</Template>
+<Template Name="ASOBO_GT_Helper_Non_Linear_Animation_Code">
+	<DefaultTemplateParameters>
+		<SELECTION>50</SELECTION><!-- dynamic parameter for example gallons qty in a fuel tank -->
+		<!-- at least 2 points of reference to interpolate -->
+		<!-- ANIM_VALUE = frame for which the REF_VALUE is corresponding -->
+		<!-- REF_VALUE = value used as a comparison point to SELECTION -->
+		<ANIM_VALUE_0>0</ANIM_VALUE_0>
+		<REF_VALUE_0>0</REF_VALUE_0>
+		<ANIM_VALUE_1>100</ANIM_VALUE_1>
+		<REF_VALUE_1>100</REF_VALUE_1>
+		<!-- Add as much as necessary when calling the template -->
+		<!-- ######################################################### -->
+		<ANIM_LENGTH>100</ANIM_LENGTH><!-- number of frame in the animation -->
+		<MAX_POINT_INDEX>1</MAX_POINT_INDEX><!-- index of latest point of reference -->
+		<MAX_DISPLAYABLE>100</MAX_DISPLAYABLE><!-- higher bound the value SELECTION can reach (the maximum your gauge can display) -->
+		<MIN_DISPLAYABLE>0</MIN_DISPLAYABLE><!-- lower bound the value SELECTION can reach (the minimum your gauge can display) -->
+		<EXIT_TEMPLATE>ASOBO_GT_Anim_Code</EXIT_TEMPLATE>
+		<EXIT_PARAM_NAME>ANIM_CODE</EXIT_PARAM_NAME>
+		<CONTENT></CONTENT><!-- CONTENT init: can be used to tweak the value before interpolating -->
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Helper_Non_Linear_Animation_Code_2">
+		<NEXT_ID Process="Int">#MAX_POINT_INDEX#</NEXT_ID>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GT_Helper_Non_Linear_Animation_Code_2">
+	<OverrideTemplateParameters>
+		<ANIM_VAL_CURRENT_POINT Process="Param">ANIM_VALUE_#NEXT_ID#</ANIM_VAL_CURRENT_POINT>
+		<REF_VAL_CURRENT_POINT Process="Param">REF_VALUE_#NEXT_ID#</REF_VAL_CURRENT_POINT>
+	</OverrideTemplateParameters>
+	<Condition>
+		<Test>
+			<GreaterOrEqual>
+				<Value>NEXT_ID</Value>
+				<Number>0</Number>
+			</GreaterOrEqual>
+		</Test>
+		<True>
+			<Condition>
+				<Test>
+					<Equal>
+						<Value>NEXT_ID</Value>
+						<Value>MAX_POINT_INDEX</Value>
+					</Equal>
+				</Test>
+				<True>
+					<!-- First point (higher bound) -->
+					<UseTemplate Name="ASOBO_GT_Helper_Non_Linear_Animation_Code_2">
+						<NEXT_ID Process="Int">#NEXT_ID# 1 -</NEXT_ID>
+						<ANIM_VAL_PREVIOUS_POINT Process="Param">ANIM_VALUE_#NEXT_ID#</ANIM_VAL_PREVIOUS_POINT>
+						<REF_VAL_PREVIOUS_POINT Process="Param">REF_VALUE_#NEXT_ID#</REF_VAL_PREVIOUS_POINT>
+					</UseTemplate>
+				</True>
+				<False>
+					<UseTemplate Name="ASOBO_GT_Helper_Non_Linear_Animation_Code_2">
+						<NEXT_ID Process="Int">#NEXT_ID# 1 -</NEXT_ID>
+						<CONTENT>
+							#CONTENT#
+							l0 #REF_VAL_CURRENT_POINT# &gt; if{
+								l0 #REF_VAL_CURRENT_POINT# - #REF_VAL_PREVIOUS_POINT# #REF_VAL_CURRENT_POINT# - / #ANIM_VAL_PREVIOUS_POINT# #ANIM_VAL_CURRENT_POINT# - * #ANIM_VAL_CURRENT_POINT# + sp1 g1
+							}
+						</CONTENT>
+						<ANIM_VAL_PREVIOUS_POINT Process="Param">ANIM_VALUE_#NEXT_ID#</ANIM_VAL_PREVIOUS_POINT>
+						<REF_VAL_PREVIOUS_POINT Process="Param">REF_VALUE_#NEXT_ID#</REF_VAL_PREVIOUS_POINT>
+					</UseTemplate>
+				</False>
+			</Condition>
+		</True>
+		<False>
+			<UseTemplate Name="ASOBO_GT_Helper_Non_Linear_Animation_Code_3">
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>
+
+<Template Name="ASOBO_GT_Helper_Non_Linear_Animation_Code_3">
+	<UseTemplate Name="#EXIT_TEMPLATE#">
+		<#EXIT_PARAM_NAME#>
+			#SELECTION# #MAX_DISPLAYABLE# min #MIN_DISPLAYABLE# max sp0
+			#CONTENT#
+			:1 l1
+		</#EXIT_PARAM_NAME#>
+	</UseTemplate>
+</Template>
 </ModelBehaviors>

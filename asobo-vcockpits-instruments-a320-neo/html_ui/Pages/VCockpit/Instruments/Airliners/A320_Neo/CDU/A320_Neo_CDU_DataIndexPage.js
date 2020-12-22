@@ -4,17 +4,17 @@ class CDUDataIndexPage {
         mcdu.setTemplate([
             ["DATA INDEX", "1", "2"],
             ["POSITION"],
-            ["<MONITOR"],
+            ["\<MONITOR"],
             ["IRS"],
-            ["<MONITOR"],
+            ["\<MONITOR"],
             ["GPS"],
-            ["<MONITOR"],
+            ["\<MONITOR"],
             [""],
-            ["<A/C STATUS"],
+            ["\<A/C STATUS"],
             ["CLOSEST", "PRINT"],
-            ["<AIRPORTS", "FUNCTION>"],
+            ["\<AIRPORTS", "FUNCTION>"],
             ["EQUITIME"],
-            ["<POINT"]
+            ["\<POINT"]
         ]);
         mcdu.onLeftInput[0] = () => {
             CDUPositionMonitorPage.ShowPage(mcdu);

@@ -4,9 +4,7 @@ class A320_Neo_Clock extends BaseAirliners {
         this.chronoStarted = false;
         this.chronoValue = 0;
     }
-    get templateID() {
-        return "A320_Neo_Clock";
-    }
+    get templateID() { return "A320_Neo_Clock"; }
     connectedCallback() {
         super.connectedCallback();
         this.topSelectorElem = this.getChildById("TopSelectorValue");
@@ -17,13 +15,17 @@ class A320_Neo_Clock extends BaseAirliners {
         super.disconnectedCallback();
     }
     onInteractionEvent(_args) {
-        if (_args[0] == "oclock_chrono") {
-            if (this.chronoStarted) {
-                this.chronoStarted = false;
-            } else if (this.chronoValue > 0) {
-                this.chronoValue = 0;
-            } else {
-                this.chronoStarted = true;
+        if (this.isElectricityAvailable()) {
+            if (_args[0] == "oclock_chrono") {
+                if (this.chronoStarted) {
+                    this.chronoStarted = false;
+                }
+                else if (this.chronoValue > 0) {
+                    this.chronoValue = 0;
+                }
+                else {
+                    this.chronoStarted = true;
+                }
             }
         }
     }
@@ -43,56 +45,53 @@ class A320_Neo_Clock extends BaseAirliners {
         }
     }
     getUTCTime() {
-        const value = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+        var value = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
         if (value) {
-            const seconds = Number.parseInt(value);
-            const time = Utils.SecondsToDisplayTime(seconds, true, true, false);
+            var seconds = Number.parseInt(value);
+            var time = Utils.SecondsToDisplayTime(seconds, true, true, false);
             return time.toString();
         }
         return "";
     }
     getLocalTime() {
-        const value = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
+        var value = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
         if (value) {
-            const seconds = Number.parseInt(value);
-            const time = Utils.SecondsToDisplayTime(seconds, true, false, false);
+            var seconds = Number.parseInt(value);
+            var time = Utils.SecondsToDisplayTime(seconds, true, false, false);
             return time.toString();
         }
         return "";
     }
     getFlightTime() {
-        const value = SimVar.GetGameVarValue("FLIGHT DURATION", "seconds");
+        var value = SimVar.GetGameVarValue("FLIGHT DURATION", "seconds");
         if (value) {
-            const time = Utils.SecondsToDisplayTime(value, true, false, false);
+            var time = Utils.SecondsToDisplayTime(value, true, false, false);
             return time.toString();
         }
         return "";
     }
     getChronoTime() {
-        const totalSeconds = this.chronoValue;
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
-        const seconds = Math.floor(totalSeconds - (minutes * 60) - (hours * 3600));
-        let time = "";
+        var totalSeconds = this.chronoValue;
+        var hours = Math.floor(totalSeconds / 3600);
+        var minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
+        var seconds = Math.floor(totalSeconds - (minutes * 60) - (hours * 3600));
+        var time = "";
         if (hours == 0) {
-            if (minutes < 10) {
+            if (minutes < 10)
                 time += "0";
-            }
             time += minutes;
             time += ":";
-            if (seconds < 10) {
+            if (seconds < 10)
                 time += "0";
-            }
             time += seconds;
-        } else {
-            if (hours < 10) {
+        }
+        else {
+            if (hours < 10)
                 time += "0";
-            }
             time += hours;
             time += ":";
-            if (minutes < 10) {
+            if (minutes < 10)
                 time += "0";
-            }
             time += minutes;
         }
         return time.toString();
