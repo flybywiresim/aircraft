@@ -4547,20 +4547,16 @@
 														<XPos>20</XPos>
 														<YPos>226</YPos>
 														<Flags>0</Flags>
+														<SegmentShape>Log3</SegmentShape>
 													</Point>
 													<Point>
-														<XPos>23.6178</XPos>
-														<YPos>-183</YPos>
+														<XPos>23.82199</XPos>
+														<YPos>-1</YPos>
 														<Flags>0</Flags>
 													</Point>
 													<Point>
-														<XPos>31.4722</XPos>
-														<YPos>-83</YPos>
-														<Flags>0</Flags>
-													</Point>
-													<Point>
-														<XPos>35.60209</XPos>
-														<YPos>376</YPos>
+														<XPos>34.81675</XPos>
+														<YPos>317</YPos>
 														<Flags>0</Flags>
 													</Point>
 													<Point>
@@ -4575,7 +4571,7 @@
 								</Property>
 								<Property Name="Volume" Type="Real64">
 									<ValueList>
-										<Value>-10</Value>
+										<Value>-13</Value>
 									</ValueList>
 									<RTPCList>
 										<RTPC Name="" ID="{56AF6746-8B35-4D1F-9511-EDDBAF5C3EAF}" ShortID="336704892">
@@ -4601,16 +4597,16 @@
 														<SegmentShape>Exp2</SegmentShape>
 													</Point>
 													<Point>
-														<XPos>21.20419</XPos>
+														<XPos>26.43979</XPos>
 														<YPos>-1.22886</YPos>
 														<Flags>0</Flags>
 														<SegmentShape>Log2</SegmentShape>
 													</Point>
 													<Point>
-														<XPos>32.98429</XPos>
+														<XPos>30.36649</XPos>
 														<YPos>-1.0804</YPos>
 														<Flags>0</Flags>
-														<SegmentShape>Exp2</SegmentShape>
+														<SegmentShape>Log2</SegmentShape>
 													</Point>
 													<Point>
 														<XPos>36.12566</XPos>
@@ -4652,11 +4648,13 @@
 														<XPos>0.02256</XPos>
 														<YPos>-200</YPos>
 														<Flags>0</Flags>
+														<SegmentShape>Log3</SegmentShape>
 													</Point>
 													<Point>
-														<XPos>2</XPos>
-														<YPos>-200</YPos>
+														<XPos>0.20172</XPos>
+														<YPos>-0.43106</YPos>
 														<Flags>0</Flags>
+														<SegmentShape>Exp3</SegmentShape>
 													</Point>
 													<Point>
 														<XPos>5</XPos>
@@ -4719,19 +4717,15 @@
 														<XPos>20</XPos>
 														<YPos>328</YPos>
 														<Flags>0</Flags>
+														<SegmentShape>Log3</SegmentShape>
 													</Point>
 													<Point>
 														<XPos>23.56021</XPos>
-														<YPos>-12</YPos>
+														<YPos>81</YPos>
 														<Flags>0</Flags>
 													</Point>
 													<Point>
-														<XPos>30.36649</XPos>
-														<YPos>80</YPos>
-														<Flags>0</Flags>
-													</Point>
-													<Point>
-														<XPos>34.81675</XPos>
+														<XPos>34.29319</XPos>
 														<YPos>414</YPos>
 														<Flags>0</Flags>
 													</Point>
@@ -4747,16 +4741,16 @@
 								</Property>
 								<Property Name="Volume" Type="Real64">
 									<ValueList>
-										<Value>-10</Value>
+										<Value>-13</Value>
 									</ValueList>
 									<RTPCList>
-										<RTPC Name="" ID="{5E32E629-5AEF-415B-82B4-9495D7F487F0}" ShortID="886332653">
+										<RTPC Name="" ID="{10C39D3B-08CD-402A-AC8F-5CCF1F54163E}" ShortID="704481810">
 											<ReferenceList>
 												<Reference Name="ControlInput">
 													<ObjectRef Name="SIMVAR_TURB_ENG_N1_DERIVED" ID="{79A066BA-57E2-4045-8509-C0AC2DFF5235}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
 												</Reference>
 											</ReferenceList>
-											<Curve Name="" ID="{4DF2FE5F-FBF9-4EB8-BC6D-9267C0BE5BA4}">
+											<Curve Name="" ID="{1D436DDD-CDAF-4A1A-B09C-57DA7EBA1429}">
 												<PropertyList>
 													<Property Name="Flags" Type="int32" Value="3"/>
 												</PropertyList>
@@ -4770,11 +4764,13 @@
 														<XPos>0.02256</XPos>
 														<YPos>-200</YPos>
 														<Flags>0</Flags>
+														<SegmentShape>Log3</SegmentShape>
 													</Point>
 													<Point>
-														<XPos>2</XPos>
-														<YPos>-200</YPos>
+														<XPos>0.20172</XPos>
+														<YPos>-0.431060000000002</YPos>
 														<Flags>0</Flags>
+														<SegmentShape>Exp3</SegmentShape>
 													</Point>
 													<Point>
 														<XPos>5</XPos>
@@ -4807,16 +4803,16 @@
 														<SegmentShape>Exp2</SegmentShape>
 													</Point>
 													<Point>
-														<XPos>21.20419</XPos>
+														<XPos>26.43979</XPos>
 														<YPos>-1.22886</YPos>
 														<Flags>0</Flags>
 														<SegmentShape>Log2</SegmentShape>
 													</Point>
 													<Point>
-														<XPos>32.98429</XPos>
+														<XPos>30.36649</XPos>
 														<YPos>-1.0804</YPos>
 														<Flags>0</Flags>
-														<SegmentShape>Exp2</SegmentShape>
+														<SegmentShape>Log2</SegmentShape>
 													</Point>
 													<Point>
 														<XPos>36.12566</XPos>
@@ -4911,7 +4907,7 @@
 									</RTPCList>
 								</Property>
 								<Property Name="SpeakerPanning" Type="int16" Value="1"/>
-								<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="20"/>
+								<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="50"/>
 								<Property Name="Volume" Type="Real64">
 									<ValueList>
 										<Value>-15</Value>
@@ -4990,7 +4986,7 @@
 															<PointList>
 																<Point>
 																	<XPos>0</XPos>
-																	<YPos>-0</YPos>
+																	<YPos>0</YPos>
 																	<Flags>5</Flags>
 																	<SegmentShape>Log1</SegmentShape>
 																</Point>
@@ -5135,6 +5131,16 @@
 									<Language>SFX</Language>
 									<AudioFile>PWLSpool.wav</AudioFile>
 								</AudioFileSource>
+								<AudioFileSource Name="PWLWhine" ID="{F5322FF9-F603-43AE-A2EA-2014C6619897}">
+									<PropertyList>
+										<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+									</PropertyList>
+									<Language>SFX</Language>
+									<AudioFile>PWLWhine.wav</AudioFile>
+								</AudioFileSource>
 							</ChildrenList>
 							<PositioningInfo>
 								<Panner Name="" ID="{00901F94-CD51-478F-9F6B-F52F64754CD7}"/>
@@ -5188,7 +5194,7 @@
 									</RTPCList>
 								</Property>
 								<Property Name="SpeakerPanning" Type="int16" Value="1"/>
-								<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="20"/>
+								<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="50"/>
 								<Property Name="Volume" Type="Real64">
 									<ValueList>
 										<Value>-15</Value>
@@ -5267,7 +5273,7 @@
 															<PointList>
 																<Point>
 																	<XPos>0</XPos>
-																	<YPos>-0</YPos>
+																	<YPos>0</YPos>
 																	<Flags>5</Flags>
 																	<SegmentShape>Exp1</SegmentShape>
 																</Point>
@@ -5452,7 +5458,7 @@
 									</RTPCList>
 								</Property>
 								<Property Name="SpeakerPanning" Type="int16" Value="1"/>
-								<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="20"/>
+								<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="50"/>
 								<Property Name="Volume" Type="Real64">
 									<ValueList>
 										<Value>-10</Value>
@@ -5523,7 +5529,7 @@
 															<PointList>
 																<Point>
 																	<XPos>0</XPos>
-																	<YPos>-0</YPos>
+																	<YPos>0</YPos>
 																	<Flags>5</Flags>
 																	<SegmentShape>Exp1</SegmentShape>
 																</Point>
@@ -5709,7 +5715,7 @@
 									</RTPCList>
 								</Property>
 								<Property Name="SpeakerPanning" Type="int16" Value="1"/>
-								<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="20"/>
+								<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="50"/>
 								<Property Name="Volume" Type="Real64">
 									<ValueList>
 										<Value>-10</Value>
@@ -5780,7 +5786,7 @@
 															<PointList>
 																<Point>
 																	<XPos>0</XPos>
-																	<YPos>-0</YPos>
+																	<YPos>0</YPos>
 																	<Flags>5</Flags>
 																	<SegmentShape>Exp1</SegmentShape>
 																</Point>
@@ -6019,7 +6025,7 @@
 								</Property>
 								<Property Name="Volume" Type="Real64">
 									<ValueList>
-										<Value>-20</Value>
+										<Value>-23</Value>
 									</ValueList>
 									<RTPCList>
 										<RTPC Name="" ID="{BA38E729-6E6A-4EF9-87AF-BD2055E39C0D}" ShortID="179515632">
@@ -6167,7 +6173,7 @@
 								</Property>
 								<Property Name="Volume" Type="Real64">
 									<ValueList>
-										<Value>-20</Value>
+										<Value>-23</Value>
 									</ValueList>
 									<RTPCList>
 										<RTPC Name="" ID="{B291C28B-02FA-49D4-863E-38497967E267}" ShortID="385301777">
@@ -6257,12 +6263,12 @@
 												<PointList>
 													<Point>
 														<XPos>0</XPos>
-														<YPos>46</YPos>
+														<YPos>72</YPos>
 														<Flags>5</Flags>
 													</Point>
 													<Point>
-														<XPos>99.47644</XPos>
-														<YPos>47</YPos>
+														<XPos>98.16754</XPos>
+														<YPos>74</YPos>
 														<Flags>0</Flags>
 														<SegmentShape>Constant</SegmentShape>
 													</Point>
@@ -6316,7 +6322,7 @@
 								</Property>
 								<Property Name="Volume" Type="Real64">
 									<ValueList>
-										<Value>-96</Value>
+										<Value>5</Value>
 									</ValueList>
 									<RTPCList>
 										<RTPC Name="" ID="{76FF55B2-0CD3-462B-9359-3BE845EC2E75}" ShortID="1044331880">
@@ -6387,25 +6393,25 @@
 								<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
 								<Property Name="Lowpass" Type="int16">
 									<RTPCList>
-										<RTPC Name="" ID="{8B542722-55A9-4E52-B511-3435FD6ADBAA}" ShortID="230613426">
+										<RTPC Name="" ID="{45C0189D-28C5-4EAC-BA6F-6DCBDD1E5AB9}" ShortID="851180726">
 											<ReferenceList>
 												<Reference Name="ControlInput">
 													<ObjectRef Name="SIMVAR_TURB_ENG_N1" ID="{23BAD005-E61B-45C7-9ADA-EB168F71B891}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
 												</Reference>
 											</ReferenceList>
-											<Curve Name="" ID="{FD008F91-AA45-4698-92C4-08CCAA8B37EF}">
+											<Curve Name="" ID="{4E00293E-F6C6-422E-B7C2-756C7E0188EB}">
 												<PropertyList>
 													<Property Name="Flags" Type="int32" Value="65537"/>
 												</PropertyList>
 												<PointList>
 													<Point>
 														<XPos>0</XPos>
-														<YPos>46</YPos>
+														<YPos>72</YPos>
 														<Flags>5</Flags>
 													</Point>
 													<Point>
-														<XPos>99.47644</XPos>
-														<YPos>47</YPos>
+														<XPos>98.16754</XPos>
+														<YPos>74</YPos>
 														<Flags>0</Flags>
 														<SegmentShape>Constant</SegmentShape>
 													</Point>
@@ -6459,7 +6465,7 @@
 								</Property>
 								<Property Name="Volume" Type="Real64">
 									<ValueList>
-										<Value>-96</Value>
+										<Value>5</Value>
 									</ValueList>
 									<RTPCList>
 										<RTPC Name="" ID="{6142720E-53CB-40B4-A684-776FE19CAAB9}" ShortID="994492103">
@@ -6574,7 +6580,7 @@
 									</RTPCList>
 								</Property>
 								<Property Name="SpeakerPanning" Type="int16" Value="1"/>
-								<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="20"/>
+								<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="50"/>
 								<Property Name="Volume" Type="Real64">
 									<ValueList>
 										<Value>-5</Value>
@@ -6635,7 +6641,7 @@
 															<PointList>
 																<Point>
 																	<XPos>0</XPos>
-																	<YPos>-0</YPos>
+																	<YPos>0</YPos>
 																	<Flags>5</Flags>
 																	<SegmentShape>Log1</SegmentShape>
 																</Point>
@@ -6836,7 +6842,7 @@
 									</RTPCList>
 								</Property>
 								<Property Name="SpeakerPanning" Type="int16" Value="1"/>
-								<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="20"/>
+								<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="50"/>
 								<Property Name="Volume" Type="Real64">
 									<ValueList>
 										<Value>-5</Value>
@@ -6897,7 +6903,7 @@
 															<PointList>
 																<Point>
 																	<XPos>0</XPos>
-																	<YPos>-0</YPos>
+																	<YPos>0</YPos>
 																	<Flags>5</Flags>
 																	<SegmentShape>Log1</SegmentShape>
 																</Point>
@@ -10699,7 +10705,7 @@
 						<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="20"/>
 						<Property Name="Volume" Type="Real64">
 							<ValueList>
-								<Value>10</Value>
+								<Value>15</Value>
 							</ValueList>
 							<RTPCList>
 								<RTPC Name="" ID="{458B321F-2F25-4469-9385-C4ACD86DE110}" ShortID="489899398">

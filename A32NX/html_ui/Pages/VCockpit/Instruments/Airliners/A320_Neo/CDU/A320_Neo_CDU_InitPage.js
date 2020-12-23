@@ -33,9 +33,14 @@ class CDUInitPage {
                     flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]cyan";
                 }
 
-                requestEnable = false;
-                requestButtonLabel = "";
-                requestButton = "";
+                // If an active SimBrief OFP matches the FP, hide the request option
+                // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
+                if (mcdu.simbrief.sendStatus != "DONE" ||
+                    (mcdu.simbrief["originIcao"] === mcdu.flightPlanManager.getOrigin().ident && mcdu.simbrief["destinationIcao"] === mcdu.flightPlanManager.getDestination().ident)) {
+                    requestEnable = false;
+                    requestButtonLabel = "";
+                    requestButton = "";
+                }
 
                 if (resetFlightNo) {
                     flightNo = "________[color]amber";
