@@ -20,30 +20,38 @@ class A32NX_ConstraintManager {
      * Calculates altitude constraint
      * @param flightPhase {FlightPhase} current flight phase
      * @param fpm {FlightPlanManager} flight plan manager in use
-     * @param activeWpIdx {number} index of current active waypoint
      * @param curConstraintAlt {number} current altitude constraint
+     * @param crzAlt {number} cruise altitude
      * @returns {number} new cached altitude constraint
      */
-    static getConstraintAltitude(flightPhase, fpm, activeWpIdx, curConstraintAlt) {
+    static getConstraintAltitude(flightPhase, fpm, curConstraintAlt, crzAlt) {
         if (fpm.getIsDirectTo() || flightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             return 0;
         }
         if (flightPhase === FlightPhase.FLIGHT_PHASE_DESCENT || flightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
             return Math.round(this._getAltitudeConstraintDescent(fpm, curConstraintAlt));
         }
-        return Math.round(this._getAltitudeConstraintAscent(fpm, activeWpIdx));
+        return Math.round(this._getAltitudeConstraintAscent(fpm, crzAlt));
     }
 
-    static _getAltitudeConstraintAscent(fpm, activeWpIdx) {
+    static _getAltitudeConstraintAscent(fpm, crzAlt) {
         const rte = fpm.getWaypoints(0);
-        const min = Simplane.getAltitude();
         if (rte.length === 0) {
             return 0;
         }
+        const min = Simplane.getAltitude();
+        const activeWpIdx = Math.max(0, fpm.getActiveWaypointIndex());
         for (let i = activeWpIdx; i < rte.length; i++) {
             const wpt = rte[i];
-            if (typeof wpt === "undefined" || !isFinite(wpt.legAltitude1) || wpt.legAltitudeDescription === 0 || wpt.legAltitudeDescription === 2) {
+            if (typeof wpt === "undefined" || !isFinite(wpt.legAltitude1)) {
                 continue;
+            }
+            if (wpt.legAltitudeDescription === 0 || wpt.legAltitudeDescription === 2) {
+                // Predict altitude in flight plan to predict TOC
+                if (Math.floor(min + (wpt.cumulativeDistanceInFP * 572.41)) < crzAlt - 50) {
+                    continue;
+                }
+                return 0;
             }
             // Get current waypoints altitude constraint, if type 4, get correct (highest) altitude
             let cur = wpt.legAltitude1;
