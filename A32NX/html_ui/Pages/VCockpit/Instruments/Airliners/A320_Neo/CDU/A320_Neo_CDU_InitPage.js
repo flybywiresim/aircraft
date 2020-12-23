@@ -192,7 +192,7 @@ class CDUInitPage {
             ["FLT NBR"],
             [flightNo + "[color]cyan", alignOption],
             [],
-            ["", "WIND/TEMP>[color]inop"],
+            ["", "WIND/TEMP>"],
             ["COST INDEX", "TROPO"],
             [costIndex, tropo],
             ["CRZ FL/TEMP", "GND TEMP"],
@@ -212,6 +212,13 @@ class CDUInitPage {
             } else {
                 CDUInitPage.ShowPage2(mcdu);
             }
+        };
+
+        mcdu.onRightInput[3] = () => {
+            CDUWindPage.Return = () => {
+                CDUInitPage.ShowPage1(mcdu);
+            };
+            CDUWindPage.ShowPage(mcdu);
         };
 
         mcdu.onUp = () => {};
