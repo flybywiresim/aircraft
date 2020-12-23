@@ -4,6 +4,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.6.0
+1. [CDU] Added WIND page - @tyler58546 (tyler58546)
+1. [MISC] Fixed F/O displays being synced with the captain's displays - @tyler58546 (tyler58546)
+
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
 1. [CDU] Fix incorrect block time display on INIT/REVIEW - @pareil6 (pareil6)
