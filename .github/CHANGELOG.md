@@ -13,6 +13,7 @@
 1. [CDU] Fixed FPLN airways showing as undefined - @pareil6 - (pareil6)
 1. [CDU] Allow SimBrief OFP to override previous flight plan - @pareil6 (pareil6)
 1. [MODEL] Incorporate new Asobo model changes - @pepperoni505 (pepperoni505)
+1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 1. [Fuel System] Fixed outer tank fuel transfer - @donstim - (donbikes#4084)
 
 ## 0.5.0
