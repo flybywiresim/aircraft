@@ -113,6 +113,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onFpln = () => {
             CDUFlightPlanPage.ShowPage(this);
         };
+        this.onSec = () => {
+            CDUSecFplnMain.ShowPage(this);
+        };
         this.onRad = () => {
             CDUNavRadioPage.ShowPage(this);
         };
@@ -216,6 +219,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return str
             .replace(/{big}/g, "<span class='b-text'>")
             .replace(/{small}/g, "<span class='s-text'>")
+            .replace(/{big}/g, "<span class='b-text'>")
             .replace(/{amber}/g, "<span class='amber'>")
             .replace(/{red}/g, "<span class='red'>")
             .replace(/{green}/g, "<span class='green'>")
@@ -451,8 +455,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.constraintAltCached = A32NX_ConstraintManager.getConstraintAltitude(
             this.currentFlightPhase,
             this.flightPlanManager,
-            this.activeWaypointIdx,
-            this.constraintAltCached
+            this.constraintAltCached,
+            this._cruiseFlightLevel * 100
         );
         this.updateDisplayedConstraints(true);
     }

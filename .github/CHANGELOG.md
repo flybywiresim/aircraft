@@ -5,8 +5,17 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.6.0
-1.
 1. [MFD] Flight route is now hidden in VOR ROSE and ILS ROSE modes @2hwk (2Cas#1022)
+
+## 0.5.1
+1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
+1. [CDU] Fix incorrect block time display on INIT/REVIEW - @pareil6 (pareil6)
+1. [ECAM] Improved PACKS indication - @MisterChocker (Leon)
+1. [CDU] Improved visuals of CDU Pages - @MisterChocker (Leon)
+1. [CDU] Improved ascent constraint algorithm - @MisterChocker (Leon)
+1. [CDU] Fixed FPLN airways showing as undefined - @pareil6 - (pareil6)
+1. [CDU] Allow SimBrief OFP to override previous flight plan - @pareil6 (pareil6)
+1. [MODEL] Incorporate new Asobo model changes - @pepperoni505 (pepperoni505)
 
 ## 0.5.0
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
@@ -144,6 +153,7 @@
 1. [MFD] Corrected icon for the Decel point on flightplan - @LoungeFlyZ (Chris Johnson)
 1. [ND] Update ND to only show Mode Changed when mode button is used - @ilyeshammadi (Ilyes Hammadi)
 1. [TCAS] Implement first iteration of TCAS - @lukecologne (luke)
+1. [CDU] Arrival and departure page fixes and updated Honeywell-style design - @saintwolf (John Good)
 1. [ECAM] Temporary fix small word on lower ecam, status page - @Kimbyeongjang (김병장#7165)
 1. [ECAM] Add icing-related ECAM warnings and memos - @beheh (Benedict Etzel)
 1. [CDU] Fix CLR position in scratchpad - @beheh (Benedict Etzel)
@@ -168,12 +178,7 @@
 1. [Sound] Replaced sounds for various switches, levers, and buttons - @hotshotp (Boris)
 1. [CDU] Added Soft GA Logic - @MisterChocker (Leon)
 1. [ECAM] Improved Thrust Rating update condition - @MisterChocker (Leon)
-1. [OPTIONS] Added options entry to enable NO PORTABLE DEVICES memo - @wpine215 (Iceman)
-1. [ECAM] Added REFUELG, OUTR TK XFRD, CABIN READY, FUEL X FEED, and ADIRS SWTG memos - @wpine215 (Iceman)
-1. [ECAM] Added PACKS/NAI/WAI text indicator on upper ECAM - @wpine215 (Iceman)
-1. [Engines] Reduced idle thrust at low Mach to improve descent rate - @donstim - (donbkes#4084)
-1. [CDU] Added SIMBRIEF integration, INIT REQUEST and AOC INIT/REVIEW - @viniciusfont (subcomandante)
-1. [CDU] Added PERF W&B page allowing to Refuel and change Payload from the MCDU - @viniciusfont (subcomandante)
+
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 1. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)

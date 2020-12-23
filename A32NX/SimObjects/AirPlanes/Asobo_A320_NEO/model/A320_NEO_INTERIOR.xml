@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="utf-8" ?>
+<!--
+  ~ A32NX
+  ~ Copyright (C) 2020 FlyByWire Simulations and its contributors
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
 <ModelInfo>
     <LODS>
         <!-- Highest LOD -->
@@ -885,6 +903,25 @@
         </Component>
 
         <Component ID="Front_Middle">
+            <Component ID="Speed_Placard" Node="SPEED_LIMIT">
+                <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                    <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                </UseTemplate>
+            </Component>
+
+            <Component ID="Brake_Fan">
+                <UseTemplate Name="FBW_Push_Toggle">
+                    <NODE_ID>PUSH_BKRFAN</NODE_ID>
+                    <LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
+                    <SEQ1_CODE>0</SEQ1_CODE>
+                    <SEQ1_NODE_ID>PUSH_AUTOBKR_SEQ1</SEQ1_NODE_ID>
+                    <TOOLTIPID>(Inop.)</TOOLTIPID>
+                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.APU_SWITCH_SET_OFF</ANIMTIP_0>
+                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.APU_SWITCH_SET_ON</ANIMTIP_1>
+                    <CURSOR/>
+                </UseTemplate>
+            </Component>
+
             <UseTemplate Name="ASOBO_LANDING_GEAR_Lever_Gear_Template">
                 <ANIM_NAME>lever_landing_gear</ANIM_NAME>
                 <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
@@ -2231,7 +2268,7 @@
                 <UseTemplate Name="FBW_Airbus_Wiper_Knob">
                     <NODE_ID>HANDLING_Switch_Wiper_right</NODE_ID>
                     <ANIM_NAME>HANDLING_Switch_Wiper_right</ANIM_NAME>
-                    <CIRCUIT_ID_WIPERS>81</CIRCUIT_ID_WIPERS>
+                    <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
                     <ANIMTIP_0>Set right wiper to OFF</ANIMTIP_0>
                     <ANIMTIP_1>Set right wiper to SLOW</ANIMTIP_1>
                     <ANIMTIP_2>Set right wiper to FAST</ANIMTIP_2>

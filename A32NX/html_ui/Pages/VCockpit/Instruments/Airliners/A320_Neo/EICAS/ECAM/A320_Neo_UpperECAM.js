@@ -1409,16 +1409,21 @@ var A320_Neo_UpperECAM;
 
             if (this.isGrounded || this.flightPhaseBeforeClb || (this.isTogaFlexMct1 && this.isTogaFlexMct2)) {
                 const ignStateActive = this.getCachedSimVar("L:XMLVAR_ENG_MODE_SEL", "Enum") == 2;
-                const apuBleedActive = this.getCachedSimVar("BLEED AIR APU", "Bool");
-                const apuActive = this.getCachedSimVar("APU PCT RPM", "Percent") >= 95;
                 const eng1active = this.getCachedSimVar("ENG COMBUSTION:1", "Bool");
                 const eng2active = this.getCachedSimVar("ENG COMBUSTION:2", "Bool");
+                const xBleedPos = this.getCachedSimVar("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
+                const engBleedAndPackActive = xBleedPos === 2 || (xBleedPos === 1 && this.getCachedSimVar("APU PCT RPM", "Percent") >= 95 && this.getCachedSimVar("BLEED AIR APU", "Bool")) ?
+                    (this.getCachedSimVar("BLEED AIR ENGINE:1", "Bool") || this.getCachedSimVar("BLEED AIR ENGINE:2", "Bool"))
+                    && ((this.getCachedSimVar("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && eng1active) || (this.getCachedSimVar("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && eng2active))
+                    :
+                    (eng1active && this.getCachedSimVar("BLEED AIR ENGINE:1", "Bool") && this.getCachedSimVar("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool"))
+                    || (eng2active && this.getCachedSimVar("BLEED AIR ENGINE:2", "Bool") && this.getCachedSimVar("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool"));
                 const eng1NAIactive = this.getCachedSimVar("ENG ANTI ICE:1", "Bool");
                 const eng2NAIactive = this.getCachedSimVar("ENG ANTI ICE:2", "Bool");
                 const WAIactive = this.getCachedSimVar("STRUCTURAL DEICE SWITCH", "Bool");
 
                 const textList = [];
-                if ((!ignStateActive || (ignStateActive && !this.isGrounded)) && ((apuActive && apuBleedActive) || (eng1active || eng2active))) {
+                if ((!ignStateActive || (ignStateActive && !this.isGrounded)) && engBleedAndPackActive) {
                     textList.push("PACKS");
                 }
                 if ((eng1active && eng1NAIactive) || (eng2active && eng2NAIactive)) {
@@ -2414,15 +2419,15 @@ var A320_Neo_UpperECAM;
                 if (slatsAngleChanged) {
                     this.currentSlatsAngle = slatsAngle;
                     let dSlatsArrow = "";
-                    if (this.currentSlatsAngle <= 0) {
+                    if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[0]) {
                         dSlatsArrow = this.targetSlatsArrowsStrings[0];
-                    } else if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[0]) {
+                    } else if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[1]) {
                         var lerp = Utils.Clamp(this.currentSlatsAngle / 18, 0, 1);
                         dSlatsArrow = this.generateArrowPathD(this.slatArrowPathD, this.mainShapeCorners[0], this.slatDotPositions[0], this.slatDotPositions[1], lerp);
-                    } else if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[2]) {
+                    } else if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[3]) {
                         var lerp = Utils.Clamp((this.currentSlatsAngle - 18) / 4, 0, 1);
                         dSlatsArrow = this.generateArrowPathD(this.slatArrowPathD, this.mainShapeCorners[0], this.slatDotPositions[1], this.slatDotPositions[2], lerp);
-                    } else if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[3]) {
+                    } else if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[4]) {
                         var lerp = Utils.Clamp((this.currentSlatsAngle - 22) / 5, 0, 1);
                         dSlatsArrow = this.generateArrowPathD(this.slatArrowPathD, this.mainShapeCorners[0], this.slatDotPositions[2], this.slatDotPositions[3], lerp);
                     }
@@ -2433,18 +2438,18 @@ var A320_Neo_UpperECAM;
                 if (flapsAngleChanged) {
                     this.currentFlapsAngle = flapsAngle;
                     let dFlapsArrow = "";
-                    if (this.currentFlapsAngle <= 0) {
+                    if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[0]) {
                         dFlapsArrow = this.targetFlapsArrowsStrings[0];
-                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[0]) {
+                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[1]) {
                         var lerp = Utils.Clamp(this.currentFlapsAngle / 10, 0, 1);
                         dFlapsArrow = this.generateArrowPathD(this.flapArrowPathD, this.mainShapeCorners[1], this.flapDotPositions[0], this.flapDotPositions[1], lerp);
-                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[1]) {
+                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[2]) {
                         var lerp = Utils.Clamp((this.currentFlapsAngle - 10) / 5, 0, 1);
                         dFlapsArrow = this.generateArrowPathD(this.flapArrowPathD, this.mainShapeCorners[1], this.flapDotPositions[1], this.flapDotPositions[2], lerp);
-                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[2]) {
+                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[3]) {
                         var lerp = Utils.Clamp((this.currentFlapsAngle - 15) / 5, 0, 1);
                         dFlapsArrow = this.generateArrowPathD(this.flapArrowPathD, this.mainShapeCorners[1], this.flapDotPositions[2], this.flapDotPositions[3], lerp);
-                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[3] + 5) {
+                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[4] + 5) {
                         var lerp = Utils.Clamp((this.currentFlapsAngle - 20) / 20, 0, 1);
                         dFlapsArrow = this.generateArrowPathD(this.flapArrowPathD, this.mainShapeCorners[1], this.flapDotPositions[3], this.flapDotPositions[4], lerp);
                     }

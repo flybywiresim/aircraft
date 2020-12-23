@@ -4,7 +4,7 @@ class CDUPilotsWaypoint {
         mcdu.page.Current = mcdu.page.PilotsWaypoint;
         mcdu.setTemplate([
             ["PILOTS WAYPOINT", "1", "1"],
-            ["IDENT"],
+            ["\xa0IDENT"],
             ["[   ][color]cyan"],
             [""],
             [""],
@@ -12,7 +12,7 @@ class CDUPilotsWaypoint {
             [""],
             [""],
             [""],
-            ["", "NEW"],
+            ["", "NEW\xa0"],
             ["", "WAYPOINT>"],
             ["", "DELETE ALL}[color]cyan"]
         ]);

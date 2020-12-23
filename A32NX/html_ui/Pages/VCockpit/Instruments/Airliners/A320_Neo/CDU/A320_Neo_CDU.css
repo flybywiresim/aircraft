@@ -173,6 +173,11 @@ fmc-main-display::before {
   line-height: 5.8vw;
 }
 
+.b-text {
+  font-size: 5.8vw;
+  letter-spacing: normal;
+}
+
 .msg-text {
   margin-top: 1.5% !important;
   height: 8.1% !important;

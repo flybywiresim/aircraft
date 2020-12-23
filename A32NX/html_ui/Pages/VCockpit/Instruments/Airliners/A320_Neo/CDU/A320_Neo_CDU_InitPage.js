@@ -33,9 +33,14 @@ class CDUInitPage {
                     flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]cyan";
                 }
 
-                requestEnable = false;
-                requestButtonLabel = "";
-                requestButton = "";
+                // If an active SimBrief OFP matches the FP, hide the request option
+                // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
+                if (mcdu.simbrief.sendStatus != "DONE" ||
+                    (mcdu.simbrief["originIcao"] === mcdu.flightPlanManager.getOrigin().ident && mcdu.simbrief["destinationIcao"] === mcdu.flightPlanManager.getDestination().ident)) {
+                    requestEnable = false;
+                    requestButtonLabel = "";
+                    requestButton = "";
+                }
 
                 if (resetFlightNo) {
                     flightNo = "________[color]amber";
@@ -53,7 +58,7 @@ class CDUInitPage {
                     }
                 };
 
-                cruiseFlTemp = "_____|___°[color]amber";
+                cruiseFlTemp = "____\xa0|___°[color]amber";
 
                 if (mcdu._cruiseEntered) {
                     //This is done so pilot enters a FL first, rather than using the computed one
@@ -180,7 +185,7 @@ class CDUInitPage {
 
         mcdu.setTemplate([
             ["INIT {}"], //Need to find the right unicode for left/right arrow
-            ["CO RTE", "FROM/TO"],
+            ["\xa0CO RTE", "FROM/TO\xa0\xa0\xa0"],
             [coRoute, fromTo],
             ["ALTN/CO RTE", requestButtonLabel],
             [altDest, requestButton],
@@ -278,7 +283,7 @@ class CDUInitPage {
             }
         };
 
-        let blockFuel = "___._";
+        let blockFuel = "__._";
         let blockFuelColor = "[color]amber";
         if (mcdu._blockFuelEntered || mcdu._fuelPlanningPhase === mcdu._fuelPlanningPhases.IN_PROGRESS) {
             if (isFinite(mcdu.blockFuel)) {
@@ -543,15 +548,15 @@ class CDUInitPage {
             [initBTitle],
             ["TAXI", "ZFW/ZFWCG"],
             [taxiFuelCell + "[color]cyan", zfwCell + "|" + zfwCgCell + zfwColor],
-            ["TRIP  /TIME", "BLOCK"],
+            ["TRIP\xa0\xa0/TIME", "BLOCK"],
             [tripWeightCell + "/" + tripTimeCell + tripColor, blockFuel + blockFuelColor],
             ["RTE RSV/%", fuelPlanTopTitle + fuelPlanColor],
             [rteRsvWeightCell + "/" + rteRsvPercentCell + rteRsvColor, fuelPlanBottomTitle + fuelPlanColor],
-            ["ALTN  /TIME", "TOW/{sp}{sp}{sp}LW"],
+            ["ALTN\xa0\xa0/TIME", "TOW/\xa0\xa0\xa0\xa0LW"],
             [altnWeightCell + "/" + altnTimeCell + altnColor, towCell + "/" + lwCell + towLwColor],
-            ["FINAL/TIME", "TRIP WIND"],
+            ["FINAL\xa0/TIME", "TRIP WIND"],
             [finalWeightCell + "/" + finalTimeCell + finalColor, "{small}" + tripWindCell + "{end}" + tripWindColor],
-            ["MIN DEST FOB", "EXTRA/TIME"],
+            ["MIN DEST FOB", "EXTRA/\xa0TIME"],
             [minDestFob + minDestFobColor, extraWeightCell + "/" + extraTimeCell + extraColor],
         ]);
 
