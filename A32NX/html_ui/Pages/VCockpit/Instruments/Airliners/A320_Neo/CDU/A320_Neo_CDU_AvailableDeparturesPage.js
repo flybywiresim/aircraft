@@ -5,7 +5,7 @@ class CDUAvailableDeparturesPage {
         if (airportInfo instanceof AirportInfo) {
             mcdu.clearDisplay();
             mcdu.page.Current = mcdu.page.AvailableDeparturesPage;
-            let selectedRunwayCell = "------";
+            let selectedRunwayCell = "---";
             let selectedRunwayCellColor = "white";
             const selectedRunway = mcdu.flightPlanManager.getDepartureRunway();
             if (selectedRunway) {
@@ -62,6 +62,7 @@ class CDUAvailableDeparturesPage {
                 insertRow = ["{ERASE[color]amber", "INSERT*[color]amber"];
                 mcdu.onRightInput[5] = () => {
                     mcdu.insertTemporaryFlightPlan(() => {
+                        mcdu.updateConstraints();
                         CDUFlightPlanPage.ShowPage(mcdu, 0);
                     });
                 };

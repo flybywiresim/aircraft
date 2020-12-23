@@ -67,7 +67,7 @@ class CDUFlightPlanPage {
                     destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().liveETATo);
                 }
             }
-            rows[10] = ["DEST", "DIST EFOB", isFlying ? "UTC" : "TIME" ];//set last row
+            rows[10] = ["\xa0DEST", "DIST EFOB", isFlying ? "\xa0UTC" : "TIME" ];//set last row
             rows[11] = [destCell, destDistCell + " ----", destTimeCell];
             mcdu.leftInputDelay[5] = () => {
                 return mcdu.getDelaySwitchPage();
@@ -134,14 +134,14 @@ class CDUFlightPlanPage {
                 ["-----NO ALTN F-PLN-------"],
                 [""],
                 [""],
-                ["DEST", "DIST EFOB", "TIME"],
+                ["\xa0DEST", "DIST EFOB", "TIME"],
                 ["------", "---- ----", "----"]
             ];
         } else {
             if (offset === 0) {
-                rows[0] = ["FROM", "SPD/ALT\xa0\xa0\xa0", isFlying ? "UTC" : "TIME"];
+                rows[0] = ["\xa0FROM", "SPD/ALT\xa0\xa0\xa0", isFlying ? "\xa0UTC" : "TIME"];
             } else {
-                rows[0] = ["", "SPD/ALT\xa0\xa0\xa0", isFlying ? "UTC" : "TIME"];
+                rows[0] = ["", "SPD/ALT\xa0\xa0\xa0", isFlying ? "\xa0UTC" : "TIME"];
             }
         }
         let iWaypoint = offset;
@@ -256,7 +256,7 @@ class CDUFlightPlanPage {
                         let airwayName = "";
                         if (prevWaypoint && waypoint) {
                             let airway = undefined;
-                            if (prevWaypoint.infos.airwayOut === waypoint.infos.airwayIn) {
+                            if (prevWaypoint.infos.airwayOut && prevWaypoint.infos.airwayOut === waypoint.infos.airwayIn) {
                                 airway = {name: prevWaypoint.infos.airwayOut };
                             } else if (waypoint.infos.airwayIn && prevWaypoint.infos.airwayOut === undefined) {
                                 airway = {name: waypoint.infos.airwayIn };
@@ -265,7 +265,7 @@ class CDUFlightPlanPage {
                                 // airway = IntersectionInfo.GetCommonAirway(prevWaypoint, waypoint);
                             }
                             if (airway) {
-                                airwayName = airway.name;
+                                airwayName = "\xa0" + airway.name;
                             }
                         }
                         const distance = (waypoint === mcdu.flightPlanManager.getActiveWaypoint() ? waypoint.liveDistanceTo : waypoint.distanceInFP);
@@ -279,7 +279,7 @@ class CDUFlightPlanPage {
                             dstnc = dstnc + "\xa0";
                         }
                         dstnc = dstnc + "[color]" + color;
-                        rows[2 * i] = [(index === 0 && offset == 0) ? "FROM" : airwayName, ((index >= activeIndex || waypoint.ident === "(DECEL)") && i != 0 ? dstnc : i === 0 ? "SPD/ALT\xa0\xa0\xa0" : ""), i === 0 ? (isFlying ? "UTC" : "TIME") : ""];
+                        rows[2 * i] = [(index === 0 && offset == 0) ? "\xa0FROM" : airwayName, ((index >= activeIndex || waypoint.ident === "(DECEL)") && i != 0 ? dstnc : i === 0 ? "SPD/ALT\xa0\xa0\xa0" : ""), i === 0 ? (isFlying ? "\xa0UTC" : "TIME") : ""];
                         let speedConstraint = "---";
                         if (waypoint.speedConstraint > 10) {
                             speedConstraint = "{magenta}*{end}" + waypoint.speedConstraint.toFixed(0);

@@ -1832,11 +1832,13 @@ class FMCMainDisplay extends BaseAirliners {
         if (fl < selFl && fl < 10 && phase === FlightPhase.FLIGHT_PHASE_CLIMB || phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             this.cruiseFlightLevel = selFl;
             this._cruiseEntered = true;
+            this.updateConstraints();
             return true;
         }
         if (fl > 0 && fl <= this.maxCruiseFL) {
             this.cruiseFlightLevel = fl;
             this._cruiseEntered = true;
+            this.updateConstraints();
             return true;
         }
         this.showErrorMessage("ENTRY OUT OF RANGE");
@@ -3082,6 +3084,9 @@ class FMCMainDisplay extends BaseAirliners {
             AOCInit2: 44,
             AOCOfpData: 45,
             AOCOfpData2: 46,
+            ClimbWind: 47,
+            CruiseWind: 48,
+            DescentWind: 49,
         };
     }
 

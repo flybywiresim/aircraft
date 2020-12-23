@@ -13,6 +13,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             mcdu.onRightInput[5] = async () => {
                 mcdu.insertTemporaryFlightPlan(() => {
                     mcdu.copyAirwaySelections();
+                    mcdu.updateConstraints();
                     CDUFlightPlanPage.ShowPage(mcdu, 0);
                 });
             };
@@ -24,7 +25,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         };
         allRows.forEach((r, idx) => {
             if (r[0] != "" && r[1] != "") {
-                subRows[idx] = ["VIA", "TO"];
+                subRows[idx] = ["\xa0VIA", "TO\xa0"];
             }
         });
         let showInput = false;
@@ -36,8 +37,8 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             } else if (!showInput) {
                 showInput = true;
                 if (!pendingAirway) {
-                    subRows[i] = ["VIA", ""];
-                    rows[i] = ["[ ][color]cyan", ""];
+                    subRows[i] = ["\xa0VIA", ""];
+                    rows[i] = ["[\xa0\xa0\xa0][color]cyan", ""];
                     mcdu.onRightInput[i] = async (value) => {
                         if (value.length > 0) {
                             mcdu.insertWaypoint(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, () => {
@@ -58,8 +59,8 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         }
                     };
                 } else if (pendingAirway) {
-                    subRows[i] = ["VIA", "TO"];
-                    rows[i] = [`${pendingAirway.name}[color]cyan`, "[ ][color]cyan"];
+                    subRows[i] = ["\xa0VIA", "TO\xa0"];
+                    rows[i] = [`${pendingAirway.name}[color]cyan`, "[\xa0\xa0\xa0][color]cyan"];
                     mcdu.onRightInput[i] = (value) => {
                         if (value.length > 0) {
                             mcdu.ensureCurrentFlightPlanIsTemporary(() => {
@@ -74,8 +75,8 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         }
                     };
                     if (i + 1 < rows.length) {
-                        rows[i + 1] = ["[ ][color]cyan", ""];
-                        subRows[i + 1] = ["VIA", ""];
+                        rows[i + 1] = ["[\xa0\xa0\xa0][color]cyan", ""];
+                        subRows[i + 1] = ["\xa0VIA", ""];
                         mcdu.onLeftInput[i + 1] = async (value) => {
                             if (value.length > 0) {
                                 const toWp = await this._getFirstIntersection(mcdu.flightPlanManager, value, pendingAirway.icaos);

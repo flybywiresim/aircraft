@@ -422,7 +422,6 @@
             <Range LowerBound="25.4" />
         </Sound>
 
-
         <Sound WwiseEvent="FFlowL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
