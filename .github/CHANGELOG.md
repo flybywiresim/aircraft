@@ -12,6 +12,7 @@
 1. [CDU] Improved ascent constraint algorithm - @MisterChocker (Leon)
 1. [CDU] Fixed FPLN airways showing as undefined - @pareil6 - (pareil6)
 1. [CDU] Allow SimBrief OFP to override previous flight plan - @pareil6 (pareil6)
+1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 
 ## 0.5.0
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
@@ -243,4 +244,3 @@
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
 1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
-1. [CDU] Added WIND page - @tyler58546 (tyler58546)
