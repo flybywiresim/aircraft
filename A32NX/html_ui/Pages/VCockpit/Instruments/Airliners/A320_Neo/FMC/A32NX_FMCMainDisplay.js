@@ -3083,6 +3083,9 @@ class FMCMainDisplay extends BaseAirliners {
             AOCInit2: 44,
             AOCOfpData: 45,
             AOCOfpData2: 46,
+            ClimbWind: 47,
+            CruiseWind: 48,
+            DescentWind: 49,
         };
     }
 

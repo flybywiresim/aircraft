@@ -66,6 +66,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             on: 0,
             in: 0,
         };
+        this.winds = {
+            climb: [],
+            cruise: [],
+            des: [],
+            alternate: null
+        };
     }
     get templateID() {
         return "A320_Neo_CDU";
