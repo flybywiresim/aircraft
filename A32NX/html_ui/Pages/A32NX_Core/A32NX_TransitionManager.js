@@ -2,7 +2,7 @@ class A32NX_TransitionManager {
     init() {
         console.log('A32NX_TransitionManager init');
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
-        if (mode!=AUTO) {
+        if (mode !== "AUTO") {
             this.transitionManual();
         }
     }
