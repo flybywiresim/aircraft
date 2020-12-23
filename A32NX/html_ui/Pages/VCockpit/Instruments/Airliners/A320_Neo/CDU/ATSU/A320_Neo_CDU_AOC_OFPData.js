@@ -110,7 +110,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+            mcdu.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         };
 
@@ -130,7 +130,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+            mcdu.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         };
 
@@ -150,7 +150,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+            mcdu.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         };
 
@@ -287,7 +287,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+            mcdu.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         };
 
@@ -314,7 +314,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+            mcdu.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         };
 
@@ -353,7 +353,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+            mcdu.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         };
 
@@ -378,7 +378,7 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+            mcdu.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         };
 
