@@ -1,42 +1,21 @@
-/*!
- * A32NX
- * Copyright (C) 2020 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+@import url(https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap);
 
-@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap");
+/*! modern-normalize v1.0.0 | MIT License | https://github.com/sindresorhus/modern-normalize */
 
 :root {
+  -moz-tab-size: 4;
   tab-size: 4;
 }
 
 html {
   line-height: 1.15;
   -webkit-text-size-adjust: 100%;
-  background: #111827;
 }
 
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  font-weight: 200;
-}
-
-.font-body {
-  font-family: Nunito, sans-serif;
 }
 
 hr {
@@ -298,6 +277,10 @@ video {
   background-color: rgba(59, 130, 246, var(--tw-bg-opacity));
 }
 
+.bg-none {
+  background-image: none;
+}
+
 .rounded-lg {
   border-radius: 0.5rem;
 }
@@ -324,6 +307,10 @@ video {
 
 .border-b-2 {
   border-bottom-width: 2px;
+}
+
+.inline-block {
+  display: inline-block;
 }
 
 .flex {
@@ -366,13 +353,12 @@ video {
   flex-shrink: 0;
 }
 
-.font-mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+.font-body {
+  font-family: Nunito;
 }
 
-.font-semibold {
-  font-weight: 600;
+.font-medium {
+  font-weight: 500;
 }
 
 .h-6 {
@@ -381,21 +367,6 @@ video {
 
 .h-20 {
   height: 5rem;
-}
-
-.text-xs {
-  font-size: 0.85rem;
-  line-height: 1rem;
-}
-
-.text-sm {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
-.text-base {
-  font-size: 1.15rem;
-  line-height: 1.5rem;
 }
 
 .text-lg {
@@ -411,17 +382,22 @@ video {
   font-size: 1.25rem;
 }
 
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
 .text-3xl {
   font-size: 1.875rem;
   line-height: 2.25rem;
 }
 
-.leading-5 {
-  line-height: 1.25rem;
+.leading-7 {
+  line-height: 1.75rem;
 }
 
 .leading-none {
-  line-height: 1rem;
+  line-height: 1;
 }
 
 .mx-3 {
@@ -443,10 +419,6 @@ video {
   margin-top: 0.25rem;
 }
 
-.mt-3 {
-  margin-top: 0.75rem;
-}
-
 .mr-2 {
   margin-right: 0.5rem;
 }
@@ -457,6 +429,10 @@ video {
 
 .ml-2 {
   margin-left: 0.5rem;
+}
+
+.mt-3 {
+  margin-top: 0.75rem;
 }
 
 .mr-4 {
@@ -479,8 +455,20 @@ video {
   margin-bottom: 1.5rem;
 }
 
+.mt-8 {
+  margin-top: 2rem;
+}
+
 .mb-8 {
   margin-bottom: 2rem;
+}
+
+.ml-12 {
+  margin-left: 3rem;
+}
+
+.-mt-2 {
+  margin-top: -0.5rem;
 }
 
 .max-w-md {
@@ -494,6 +482,10 @@ video {
 
 .overflow-hidden {
   overflow: hidden;
+}
+
+.overflow-x-hidden {
+  overflow-x: hidden;
 }
 
 .p-2 {
@@ -534,16 +526,16 @@ video {
   padding-right: 3rem;
 }
 
+.pb-2 {
+  padding-bottom: 0.5rem;
+}
+
+.absolute {
+  position: absolute;
+}
+
 * {
   --tw-shadow: 0 0 transparent;
-}
-
-.pr-1 {
-  padding-right: 1rem;
-}
-
-.pl-1 {
-  padding-left: 1rem;
 }
 
 .shadow-lg {
@@ -607,14 +599,6 @@ video {
   width: 100%;
 }
 
-.gap-3 {
-  gap: 0.75rem;
-}
-
-.gap-4 {
-  gap: 1rem;
-}
-
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -649,4 +633,8 @@ video {
     transform: none;
     animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
   }
+}
+
+body {
+  background: #111827;
 }

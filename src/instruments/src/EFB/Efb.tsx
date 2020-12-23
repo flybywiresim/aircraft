@@ -30,7 +30,8 @@ import Settings from "./Settings/Settings";
 
 type EfbProps = {
     logo: string,
-    currentFlight: string
+    currentFlight: string,
+    nose: string
 };
 
 type EfbState = {
@@ -116,8 +117,8 @@ class Efb extends React.Component<EfbProps, EfbState> {
             taxi: 0,
         },
         units: "kgs",
-        altIcao: "N/A",
-        altIata: "N/A",
+        altIcao: "----",
+        altIata: "---",
         altBurn: 0,
         tripTime: 0,
         contFuelTime: 0,
@@ -224,6 +225,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
         switch (this.state.currentPageIndex) {
             case 1:
                 return <Dispatch
+                    nose={this.props.nose}
                     weights={this.state.weights}
                     fuels={this.state.fuels}
                     units={this.state.units}
@@ -268,7 +270,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
 
     render() {
         return (
-            <div className="font-body">
+            <div className="font-body overflow-x-hidden">
                 <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart} />
                 <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} logo={this.props.logo} />
                 <div>

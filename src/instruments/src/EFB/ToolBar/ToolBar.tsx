@@ -74,10 +74,10 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
                         <div className="flex-shrink-0 flex items-center">
                             <img className="h-20 mr-6" src={this.props.logo} />
                         </div>
-                        <div className="flex space-x-4 text-base">
+                        <div className="flex space-x-4 text-xl">
                             {
                                 this.tabs.map((tab) =>
-                                    <a className={tab.id === this.state.activeIndex ? 'border-b-2 border-t-0 border-r-0 border-l-0 text-white px-3 py-2' : 'text-white px-3 py-2'} key={tab.id} onClick={this.handleClick(tab.id)}>
+                                    <a className={tab.id === this.state.activeIndex ? 'border-b-2 border-t-0 border-r-0 border-l-0 text-white px-3 py-2 font-medium' : 'text-white px-3 py-2 font-medium'} key={tab.id} onClick={this.handleClick(tab.id)}>
                                         {tab.name}
                                     </a>
                                 )

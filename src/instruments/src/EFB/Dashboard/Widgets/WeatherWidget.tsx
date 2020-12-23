@@ -24,7 +24,7 @@ import { IconGauge } from '@tabler/icons';
 import { IconDroplet } from '@tabler/icons';
 import { IconTemperature } from '@tabler/icons';
 import { IconAccessPoint } from '@tabler/icons';
-import { IconPoint } from '@tabler/icons';
+import { IconRouter } from '@tabler/icons';
 
 declare type MetarParserType = {
     raw_text: string,
@@ -215,7 +215,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     }
 
     return (
-        <div className="bg-gray-800 rounded-xl p-6 text-white mb-4 shadow-lg text-base" id={'weather-card-' + props.name}>
+        <div className="bg-gray-800 rounded-xl p-6 text-white mb-4 shadow-lg" id={'weather-card-' + props.name}>
             {metar === undefined ?
                 <p>Loading ...</p>
                 :
@@ -223,8 +223,8 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                     <div className="flex items-center">
                         {props.editIcao == "yes" ?
                             <>
-                                <IconAccessPoint className="mr-2" size={30} stroke={1.5} strokeLinejoin="miter" />
-                                <input className="border-none focus:outline-none text-xl bg-transparent"
+                                <IconAccessPoint className="absolute" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                <input className="ml-12 border-none focus:outline-none text-2xl bg-transparent font-medium uppercase"
                                     type="text"
                                     placeholder={props.icao}
                                     onChange={handleIcao} />
@@ -235,36 +235,36 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                     </div>
                 </div>
                 <div className="mb-6">
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="flextext-lg">
-                            <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
-                            <div className="flex items-center">
-                                {metar.barometer.mb.toFixed(0)}mb
+                    <div className="grid grid-cols-2">
+                        <div className="text-center text-lg">
+                            <div className="flex justify-center">
+                                <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                             </div>
+                            {metar.barometer.mb.toFixed(0)} mb
                         </div>
-                        <div className="text-lg">
-                            <IconWind className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
-                            <div className="flex">
-                                {metar.wind.degrees.toFixed(0)}<IconPoint size={20} stroke={1.5} strokeLinejoin="miter" />/{metar.wind.speed_kts.toFixed(0)} kts
+                        <div className="text-center text-lg">
+                            <div className="flex justify-center">
+                                <IconWind className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                             </div>
+                            {metar.wind.degrees.toFixed(0)}&deg; / {metar.wind.speed_kts.toFixed(0)} kts
                         </div>
-                        <div className="text-lg mt-3">
-                            <IconTemperature className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
-                            <div className="flex">
-                                {metar.temperature.celsius.toFixed(0)}<IconPoint size={20} stroke={1.5} strokeLinejoin="miter" />C
+                        <div className="text-center text-lg mt-3">
+                            <div className="flex justify-center">
+                                <IconTemperature className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                             </div>
+                            {metar.temperature.celsius.toFixed(0)} &deg; C
                         </div>
-                        <div className="text-lg mt-3">
-                            <IconDroplet className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
-                            <div className="flex">
-                                {metar.dewpoint.celsius.toFixed(0)}<IconPoint size={20} stroke={1.5} strokeLinejoin="miter" />C
+                        <div className="text-center text-lg mt-3">
+                            <div className="flex justify-center">
+                                <IconDroplet className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                             </div>
+                            {metar.dewpoint.celsius.toFixed(0)} &deg; C
                         </div>
                     </div>
                 </div>
                 <div>
                     {
-                        <span className="font-mono text-sm">{metar.raw_text !== "" ? metar.raw_text : '----'}</span>
+                        <span className="font-medium leading-7"><IconRouter className="mr-2 inline-block -mt-2" size={23} stroke={1.5} strokeLinejoin="miter" /> {metar.raw_text !== "" ? metar.raw_text : '---------------------------------------------------'}</span>
                     }
                 </div>
                 </>

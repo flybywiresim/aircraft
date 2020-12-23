@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+
+import OverviewPage from './Pages/OverviewPage';
 
 type DispatchProps = {
     weights: {
@@ -38,168 +40,107 @@ type DispatchProps = {
     tripTime: number,
     contFuelTime: number,
     resFuelTime: number,
-    taxiOutTime: number
+    taxiOutTime: number,
+    nose: string
 };
 
-type LoadsheetState = {
-    unitConversion: number;
+type DispatchState = {
+    activeIndex: number,
+    currentPageIndex: number
 };
 
-const Loadsheet = (props: DispatchProps) => {
+class Dispatch extends React.Component<DispatchProps, DispatchState> {
+    constructor(props: DispatchProps) {
+        super(props);
+        this.handleClick = this.handleClick.bind(this);
+    }
 
-    const [unitConversion, setunitConversion] = useState(1000);
+    currentPage() {
+        switch (this.state.currentPageIndex) {
+            case 1:
+                return <h1 className="text-white font-semibold text-lg">Page 1</h1>;
+            case 2:
+                return <h1>Page 2</h1>;
+            case 3:
+                return <h1>Page 3</h1>;
+            case 4:
+                return <h1>Page 4</h1>;
+            default:
+                return <OverviewPage
+                    nose={this.props.nose}
+                    weights={this.props.weights}
+                    fuels={this.props.fuels}
+                    units={this.props.units}
+                    arrivingAirport={this.props.arrivingAirport}
+                    arrivingIata={this.props.arrivingIata}
+                    departingAirport={this.props.departingAirport}
+                    departingIata={this.props.departingIata}
+                    altBurn={this.props.altBurn}
+                    altIcao={this.props.altIcao}
+                    altIata={this.props.altIata}
+                    tripTime={this.props.tripTime}
+                    contFuelTime={this.props.contFuelTime}
+                    resFuelTime={this.props.resFuelTime}
+                    taxiOutTime={this.props.taxiOutTime} />;
+        }
+    }
 
-    useEffect(() => {
-        const unitConv = (props.units === "kgs") ? 1000 : 2240;
-        console.log("Units changed to " + unitConv);
-        setunitConversion(unitConv);
-    }, [props.units]);
+    tabs = [
+        { id: 0, name: 'Overview', link: 'dashboard'},
+        { id: 1, name: 'Loadsheet', link: 'dispatch'},
+        { id: 2, name: 'Fuel', link: 'flight' },
+        { id: 3, name: 'Payload', link: 'ground'}
+    ];
 
-    return (
-        <div className="p-6">
-            <div className="mb-6 text-base">
-                <span className="text-white">Dispatch</span>
-            </div>
-            <div className="flex w-full">
-                <div className="w-1/2">
-                    <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg">
-                        <div className="text-lg p-2 rounded-lg flex items-center justify-center mb-8">
-                            -- Loadsheet [Payload] --
+    state: DispatchState = {
+        activeIndex: this.indexInit(),
+        currentPageIndex: 0
+    };
+
+    indexInit(): number {
+        const url = window.location.pathname;
+        let index = 0;
+        this.tabs.map((tab) => {
+            if (("/" + tab.link) === url) {
+                index = tab.id;
+            } else if (url === "/") {
+                index = 1;
+            }
+        });
+        return index;
+    }
+
+    handleClick(index: number) {
+        return (() => {
+            this.setState({activeIndex: index});
+            this.setState({currentPageIndex: index});
+        });
+    }
+
+    render() {
+        return (
+            <div>
+                <nav className="bg-none">
+                    <div className="flex justify-between p-6">
+                        <div className="flex-1 flex items-center justify-start">
+                            <div className="flex space-x-4 text-xl">
+                                {
+                                    this.tabs.map((tab) =>
+                                        <a className={tab.id === this.state.activeIndex ? 'border-b-2 border-t-0 border-r-0 border-l-0 text-white px-3 pb-2 font-medium' : 'text-white px-3 pb-2 font-medium'} key={tab.id} onClick={this.handleClick(tab.id)}>
+                                            {tab.name}
+                                        </a>
+                                    )
+                                }
+                            </div>
                         </div>
-                        <table className="table-auto font-mono mx-8 my-6">
-                            <thead className="text-xl">
-                                <tr>
-                                    <th className="text-left">&nbsp;</th>
-                                    <th className="px-12 text-right">EST</th>
-                                    <th className="px-12 text-right">MAX</th>
-                                    <th className="px-12 text-right">NOTES</th>
-                                </tr>
-                            </thead>
-                            <div className="h-6"></div>
-                            <tbody>
-                                <tr>
-                                    <td className="text-left"> -- PAX</td>
-                                    <td className="px-12 text-right">{props.weights.passengerCount}</td>
-                                    <td>&nbsp;</td>
-                                    <td className="px-12 text-right">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left"> -- CARGO</td>
-                                    <td className="px-12 text-right">{(props.weights.cargo / unitConversion).toFixed(1)}</td>
-                                    <td>&nbsp;</td>
-                                    <td className="px-12 text-right">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left"> -- PAYLOAD</td>
-                                    <td className="px-12 text-right">{(props.weights.payload / unitConversion).toFixed(1)}</td>
-                                    <td>&nbsp;</td>
-                                    <td className="px-12 text-right">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left"> -- ZFW</td>
-                                    <td className="px-12 text-right">{(props.weights.estZeroFuelWeight / unitConversion).toFixed(1)}</td>
-                                    <td className="px-12 text-right">{(props.weights.maxZeroFuelWeight / unitConversion).toFixed(1)}</td>
-                                    <td className="px-12 text-right">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left"> -- FUEL</td>
-                                    <td className="px-12 text-right">{(props.fuels.planRamp / unitConversion).toFixed(1)}</td>
-                                    <td className="px-12 text-right">????</td>
-                                    <td className="px-12 text-right"></td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left"> -- TOW</td>
-                                    <td className="px-12 text-right">{(props.weights.estTakeOffWeight / unitConversion).toFixed(1)}</td>
-                                    <td className="px-12 text-right">{(props.weights.maxTakeOffWeight / unitConversion).toFixed(1)}</td>
-                                    <td className="px-12 text-right">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left"> -- LAW</td>
-                                    <td className="px-12 text-right">{(props.weights.estLandingWeight / unitConversion).toFixed(1)}</td>
-                                    <td className="px-12 text-right">{(props.weights.maxLandingWeight / unitConversion).toFixed(1)}</td>
-                                    <td className="px-12 text-right">&nbsp;</td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
-                </div>
-                <div className="w-1/2 pl-1">
-                    <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg">
-                        <div className="text-lg p-2 rounded-lg flex items-center justify-center mb-8">
-                            -- Loadsheet [Fuel] --
-                        </div>
-                        <table className="table-auto font-mono mx-8 my-6">
-                            <thead className="text-xl">
-                                <tr>
-                                    <th className="text-left">FUEL</th>
-                                    <th className="px-12 text-right">ARPT</th>
-                                    <th className="px-12 text-right">FUEL</th>
-                                    <th className="px-12 text-right">TIME</th>
-                                </tr>
-                            </thead>
-                            <div className="h-6"></div>
-                            <tbody>
-                                <tr>
-                                    <td className="text-left">TRIP</td>
-                                    <td className="px-12 text-right">{props.arrivingIata}</td>
-                                    <td className="px-12 text-right">{props.fuels.enrouteBurn}</td>
-                                    <td className="px-12 text-right">{(props.tripTime / 60).toFixed(0).padStart(4, "0")}</td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left">CONT</td>
-                                    <td className="px-12 text-right">&nbsp;</td>
-                                    <td className="px-12 text-right">{props.fuels.contingency}</td>
-                                    <td className="px-12 text-right">{(props.contFuelTime / 60).toFixed(0).padStart(4, "0")}</td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left">ALTN</td>
-                                    <td className="px-12 text-right">{props.altIata}</td>
-                                    <td className="px-12 text-right">{props.altBurn}</td>
-                                    <td className="px-12 text-right">????</td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left">FINRES</td>
-                                    <td className="px-12 text-right">&nbsp;</td>
-                                    <td className="px-12 text-right">{props.fuels.reserve}</td>
-                                    <td className="px-12 text-right">????</td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left">MIN T/OFF FUEL</td>
-                                    <td className="px-12 text-right">&nbsp;</td>
-                                    <td className="px-12 text-right">{props.fuels.minTakeOff}</td>
-                                    <td className="px-12 text-right">????</td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left">EXTRA</td>
-                                    <td className="px-12 text-right">&nbsp;</td>
-                                    <td className="px-12 text-right">{props.fuels.extra}</td>
-                                    <td className="px-12 text-right">????</td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left">T/OFF FUEL</td>
-                                    <td className="px-12 text-right">&nbsp;</td>
-                                    <td className="px-12 text-right">{props.fuels.planTakeOff}</td>
-                                    <td className="px-12 text-right">????</td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left">TAXI</td>
-                                    <td className="px-12 text-right">{props.departingIata}</td>
-                                    <td className="px-12 text-right">{props.fuels.taxi}</td>
-                                    <td className="px-12 text-right">{(props.taxiOutTime / 60).toFixed(0).padStart(4, "0")}</td>
-                                </tr>
-                                <tr>
-                                    <td className="text-left">BLOCK FUEL</td>
-                                    <td className="px-12 text-right">{props.departingIata}</td>
-                                    <td className="px-12 text-right">{props.fuels.planRamp}</td>
-                                    <td className="px-12 text-right">&nbsp;</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                </nav>
+                <div>
+                    {this.currentPage()}
                 </div>
             </div>
-        </div>
-    );
-};
+        );
+    }
+}
 
-export default Loadsheet;
+export default Dispatch;
