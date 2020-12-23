@@ -11,9 +11,12 @@ class A32NX_TransitionManager {
     }
     transitionSelector(deltaTime) {
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
-
         if (mode == "AUTO") {
-            
+            const departureAirport = await this.dataManager.GetAirportByIdent(altDestIdent);
+            const arrivalAirport = await this.dataManager.GetAirportByIdent(airportIdent);
+
+            const departureICAO = departureAirport.substring(1, 2);
+            const arrivalICAO = arrivalAirport.substring(1, 2);
         }
     }
     transitionManual() {
