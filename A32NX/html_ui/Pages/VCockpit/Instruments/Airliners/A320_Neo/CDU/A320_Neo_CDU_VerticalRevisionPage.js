@@ -56,7 +56,7 @@ class CDUVerticalRevisionPage {
                 ["MACH/START WPT[color]inop", ""],
                 [`\xa0{inop}[\xa0]/{small}${waypointIdent}{end}{end}`, ""],
                 [""],
-                ["<WIND[color]inop", "STEP ALTS>[color]inop"],
+                ["<WIND", "STEP ALTS>[color]inop"],
                 [""],
                 ["<RETURN"]
             ]);
@@ -112,7 +112,13 @@ class CDUVerticalRevisionPage {
                     mcdu.showErrorMessage("INVALID ENTRY");
                 }
             }; // ALT CSTR
-            mcdu.onLeftInput[4] = () => {}; // WIND
+            mcdu.onLeftInput[4] = () => {
+                //TODO: show appropriate wind page based on waypoint
+                CDUWindPage.Return = () => {
+                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint);
+                };
+                CDUWindPage.ShowPage(mcdu);
+            }; // WIND
             mcdu.onRightInput[4] = () => {}; // STEP ALTS
             mcdu.onLeftInput[5] = () => {
                 CDUFlightPlanPage.ShowPage(mcdu);
