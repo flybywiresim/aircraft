@@ -2,7 +2,7 @@ class A32NX_TransitionManager {
     init() {
         console.log('A32NX_TransitionManager init');
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
-        if (mode !== "AUTO") {
+        if (mode!=AUTO) {
             this.transitionManual();
         }
     }
@@ -11,12 +11,14 @@ class A32NX_TransitionManager {
     }
     transitionSelector(deltaTime) {
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
-        if (mode === "AUTO") {
+        if (mode == "AUTO") {
             const departureAirport = await this.dataManager.GetAirportByIdent(altDestIdent);
             const arrivalAirport = await this.dataManager.GetAirportByIdent(airportIdent);
-
             const departureICAO = departureAirport.substring(1, 2);
             const arrivalICAO = arrivalAirport.substring(1, 2);
+
+            this.departureLogic(departureICAO);
+            this.arrivalLogic(arrivalICAO);
         }
     }
     transitionManual() {
@@ -26,4 +28,13 @@ class A32NX_TransitionManager {
         SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", storedDepartTransAlt);
         SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", storedArrivalTransAlt);
     }
+    departureLogic(icao) {
+    }
+    arrivalLogic(icao) {
+    }
+}
+    const airportList = [
+        { icao: "K", transAlt: 18000 },
+        { icao: "aural_sink_rate", transAlt: 0.9 }
+    ];
 }
