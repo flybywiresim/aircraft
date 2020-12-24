@@ -33,7 +33,6 @@ class CDU_OPTIONS_TRANSITION {
             ["<RETURN"]
         ]);
 
-
         mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
@@ -53,7 +52,7 @@ class CDU_OPTIONS_TRANSITION {
             }
         };
 
-        mcdu.onRightInput[2] = (value) => {
+        mcdu.onLeftInput[3] = (value) => {
             if (isNaN(value) || parseInt(value) > 50000 || parseInt(value) < 3000) {
                 mcdu.addNewMessage(NXSystemMessages.notAllowed);
             } else {
@@ -61,10 +60,10 @@ class CDU_OPTIONS_TRANSITION {
             }
             CDU_OPTIONS_TRANSITION.ShowPage(mcdu);
         };
-
-        mcdu.rightInputDelay[2] = () => {
+        mcdu.leftInputDelay[3] = () => {
             return mcdu.getDelaySwitchPage();
         };
+
         mcdu.onRightInput[3] = (value) => {
             if (isNaN(value) || parseInt(value) > 50000 || parseInt(value) < 3000) {
                 mcdu.addNewMessage(NXSystemMessages.notAllowed);
@@ -73,7 +72,6 @@ class CDU_OPTIONS_TRANSITION {
             }
             CDU_OPTIONS_TRANSITION.ShowPage(mcdu);
         };
-
         mcdu.rightInputDelay[3] = () => {
             return mcdu.getDelaySwitchPage();
         };
