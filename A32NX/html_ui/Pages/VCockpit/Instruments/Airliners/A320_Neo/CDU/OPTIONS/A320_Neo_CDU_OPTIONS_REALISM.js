@@ -27,7 +27,7 @@ class CDU_OPTIONS_REALISM {
         mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        
+
         mcdu.onLeftInput[1] = () => {
             CDU_OPTIONS_TRANSITION.ShowPage(mcdu);
         };
