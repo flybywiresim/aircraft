@@ -25,7 +25,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.routePageCount = 2;
         this.tmpOrigin = "";
         this.tmpDestination = "";
-        this.transitionAltitude = 10000;
+        this.transitionAltitude = NaN;
         this.perfTOTemp = 20;
         this._overridenFlapApproachSpeed = NaN;
         this._overridenSlatApproachSpeed = NaN;
