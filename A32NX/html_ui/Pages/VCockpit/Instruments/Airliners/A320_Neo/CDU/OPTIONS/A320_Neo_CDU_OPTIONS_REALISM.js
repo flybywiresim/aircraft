@@ -9,7 +9,7 @@ class CDU_OPTIONS_REALISM {
             ["\xa0ADIRS", "DMC SELF-TEST\xa0"],
             ["<ALIGN TIME", `{small}[S]{end}{cyan}[${storedDMCTestTime}]*{end}`],
             [""],
-            [""],
+            ["<TRANS ALT"],
             [""],
             [""],
             [""],
@@ -25,6 +25,14 @@ class CDU_OPTIONS_REALISM {
         };
 
         mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        
+        mcdu.onLeftInput[1] = () => {
+            CDU_OPTIONS_TRANSITION.ShowPage(mcdu);
+        };
+
+        mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
 
