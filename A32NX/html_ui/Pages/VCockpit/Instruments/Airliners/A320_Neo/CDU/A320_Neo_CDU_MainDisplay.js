@@ -277,14 +277,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (EFOBBelMin < this._minDestFob) {
             if (this.isAnEngineOn()) {
                 setTimeout(() => {
-                    this.addTypeTwoMessage("DEST EFOB BELOW MIN", true, () => {
+                    this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
                         return this._EfobBelowMinClr === false;
                     }, () => {
                         this._EfobBelowMinClr = true;
                     });
                 }, 180000);
             } else {
-                this.addTypeTwoMessage("DEST EFOB BELOW MIN", true, () => {
+                this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
                     return this._EfobBelowMinClr === false;
                 }, () => {
                     this._EfobBelowMinClr = true;
