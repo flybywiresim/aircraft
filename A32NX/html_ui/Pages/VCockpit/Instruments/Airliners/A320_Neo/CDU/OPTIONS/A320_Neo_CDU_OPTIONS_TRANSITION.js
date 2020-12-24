@@ -25,7 +25,7 @@ class CDU_OPTIONS_TRANSITION {
             [Manual],
             ["", "", "DEFAULT MANUAL TA"],
             [""],
-            ["{sp}DEPATURE", "ARRIVAL{sp}"],
+            ["{sp}DEPARTURE", "ARRIVAL{sp}"],
             [`{cyan}*[${storedDepartTransAlt}]{end}`, `{cyan}[${storedArrivalTransAlt}]*{end}`],
             [""],
             [""],
