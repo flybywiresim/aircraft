@@ -1,36 +1,40 @@
 class A32NX_TransitionManager {
     init() {
         console.log('A32NX_TransitionManager init');
+        this.totalDeltaTime = 0;
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
-        if (mode!=AUTO) {
+        if (mode !== "AUTO") {
             this.transitionManual();
         }
     }
     update(_deltaTime, _core) {
-        this.transitionSelector(deltaTime);
+        this.transitionSelector();
     }
-    transitionSelector(deltaTime) {
+    transitionSelector() {
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
-        if (mode == "AUTO") {
-            const departureAirport = await this.dataManager.GetAirportByIdent(altDestIdent);
-            const arrivalAirport = await this.dataManager.GetAirportByIdent(airportIdent);
+        if (mode === "AUTO") {
+            const arrivalAirport = this.dataManager.GetAirportByIdent(altDestIdent);
+            const departureAirport= this.dataManager.GetAirportByIdent(airportIdent);
             const departureICAO = departureAirport.substring(1, 2);
             const arrivalICAO = arrivalAirport.substring(1, 2);
-
             this.departureLogic(departureICAO);
             this.arrivalLogic(arrivalICAO);
         }
     }
     transitionManual() {
-        const storedDepartTransAlt = NXDataStore.get("CONFIG_DEPART_TRANSALT", "10000");
-        const storedArrivalTransAlt = NXDataStore.get("CONFIG_ARRIVAL_TRANSALT", "10000");
+        const storedDepartTransAlt = parseInt(NXDataStore.get("CONFIG_DEPART_TRANSALT", "10000"));
+        const storedArrivalTransAlt = parseInt(NXDataStore.get("CONFIG_ARRIVAL_TRANSALT", "10000"));
 
         SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", storedDepartTransAlt);
         SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", storedArrivalTransAlt);
     }
     departureLogic(icao) {
+        let departure = airportList.find(obj => obj.icao == icao);
+        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", departure.transAlt);
     }
     arrivalLogic(icao) {
+        let arrival = airportList.find(obj => obj.icao == icao);
+        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", arrival.transAlt);
     }
 }
     const airportList = [
@@ -99,7 +103,7 @@ class A32NX_TransitionManager {
         { icao: "LH", transAlt: NaN },
         { icao: "EH", transAlt: NaN },
         { icao: "EK", transAlt: NaN },
-        { icao: "ED", transAlt: NaN },
+        { icao: "ED", transAlt: 5000 },
         { icao: "ET", transAlt: NaN },
         { icao: "EN", transAlt: NaN },
         { icao: "ES", transAlt: NaN },
@@ -258,6 +262,5 @@ class A32NX_TransitionManager {
         { icao: "NZ", transAlt: NaN },
         { icao: "NF", transAlt: NaN },
         { icao: "NT", transAlt: NaN },
-        { icao: "PT", transAlt: NaN },
+        { icao: "PT", transAlt: NaN }
     ];
-}
