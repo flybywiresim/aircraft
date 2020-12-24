@@ -99,9 +99,9 @@ class CDUPerformancePage {
             }
         };
         let transAlt = "---[color]cyan";
-        let storedDepartTransAlt = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
-        if (storedDepartTransAlt > 0) {
-            transAlt = mcdu.storedDepartTransAlt + "[color]cyan";
+        let departTransAlt = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
+        if (departTransAlt > 0) {
+            transAlt = departTransAlt + "[color]cyan";
         }
         mcdu.onLeftInput[3] = (value) => {
             if (mcdu.trySetTransAltitude(value)) {
@@ -545,12 +545,9 @@ class CDUPerformancePage {
             }
         };
         let transAltCell = "---";
-        let storedArrivalTransAlt = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
-        if (storedArrivalTransAlt > 0) {
-            transAlt = mcdu.storedArrivalTransAlt + "[color]cyan";
-        }
-        if (isFinite(mcdu.perfApprTransAlt)) {
-            transAltCell = mcdu.perfApprTransAlt.toFixed(0);
+        let arrivalTransAlt = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+        if (arrivalTransAlt > 0) {
+            transAltCell = arrivalTransAlt + "[color]cyan";
         }
         mcdu.onLeftInput[3] = (value) => {
             if (mcdu.setPerfApprTransAlt(value)) {
