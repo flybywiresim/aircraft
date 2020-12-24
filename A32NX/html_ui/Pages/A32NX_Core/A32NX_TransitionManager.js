@@ -13,10 +13,10 @@ class A32NX_TransitionManager {
     transitionSelector() {
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
         if (mode === "AUTO") {
-            const arrivalAirport = this.dataManager.GetAirportByIdent(altDestIdent);
-            const departureAirport= this.dataManager.GetAirportByIdent(airportIdent);
-            const departureICAO = departureAirport.substring(1, 2);
-            const arrivalICAO = arrivalAirport.substring(1, 2);
+            // arrivalAirport = this.dataManager.GetAirportByIdent(altDestIdent);
+            // departureAirport= this.dataManager.GetAirportByIdent(airportIdent);
+            let departureICAO = departureAirport.substring(1, 2);
+            let arrivalICAO = arrivalAirport.substring(1, 2);
             this.departureLogic(departureICAO);
             this.arrivalLogic(arrivalICAO);
         }
@@ -28,12 +28,12 @@ class A32NX_TransitionManager {
         SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", storedDepartTransAlt);
         SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", storedArrivalTransAlt);
     }
-    departureLogic(icao) {
-        let departure = airportList.find(obj => obj.icao == icao);
+    departureLogic(airport) {
+        let departure = airportList.find(airportList => airportList.icao == airport);
         SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", departure.transAlt);
     }
-    arrivalLogic(icao) {
-        let arrival = airportList.find(obj => obj.icao == icao);
+    arrivalLogic(airport) {
+        let arrival = airportList.find(airportList => airportList.icao == airport);
         SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", arrival.transAlt);
     }
 }
@@ -209,7 +209,7 @@ class A32NX_TransitionManager {
         { icao: "RO", transAlt: NaN },
         { icao: "RJ", transAlt: NaN },
         { icao: "ZK", transAlt: NaN },
-        { icao: "RK", transAlt: NaN },
+        { icao: "RK", transAlt: 14000 },
     //MiddleAsia
         { icao: "UA", transAlt: NaN },
         { icao: "UT", transAlt: NaN },
