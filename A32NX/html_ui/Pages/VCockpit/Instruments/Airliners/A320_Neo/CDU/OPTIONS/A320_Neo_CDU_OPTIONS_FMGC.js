@@ -26,7 +26,7 @@ class CDU_OPTIONS_FMGC {
             if (value === FMCMainDisplay.clrValue) {
                 NXDataStore.set("CONFIG_ACCEL_ALT", "1500");
             } else if (isNaN(value) || parseInt(value) < 1000 || parseInt(value) > 5000) {
-                mcdu.showErrorMessage("NOT ALLOWED");
+                mcdu.addNewMessage(NXSystemMessages.notAllowed);
             } else {
                 NXDataStore.set("CONFIG_ACCEL_ALT", value);
             }
@@ -39,7 +39,7 @@ class CDU_OPTIONS_FMGC {
 
         mcdu.onLeftInput[0] = (value) => {
             if (value !== "") {
-                mcdu.showErrorMessage("NOT ALLOWED");
+                mcdu.addNewMessage(NXSystemMessages.notAllowed);
             } else {
                 // We'll go from AUTO -> HPA -> IN HG -> AUTO.
                 const newInitBaroUnit = storedInitBaroUnit === "AUTO" ? "HPA" :
@@ -50,7 +50,7 @@ class CDU_OPTIONS_FMGC {
         };
         mcdu.onLeftInput[1] = (value) => {
             if (value !== "") {
-                mcdu.showErrorMessage("NOT ALLOWED");
+                mcdu.addNewMessage(NXSystemMessages.notAllowed);
             } else {
                 NXDataStore.set("CONFIG_USING_METRIC_UNIT", storedUsingMetric === 1 ? "2.20462" : "1");
             }

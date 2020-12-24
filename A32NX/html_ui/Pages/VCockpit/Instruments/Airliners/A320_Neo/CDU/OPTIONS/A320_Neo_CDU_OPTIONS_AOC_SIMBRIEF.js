@@ -43,7 +43,7 @@ class CDU_OPTIONS_SIMBRIEF {
             if (value === FMCMainDisplay.clrValue) {
                 NXDataStore.set("CONFIG_SIMBRIEF_USERID", "");
             } else if (!/^\d+$/.test(value)) {
-                mcdu.showErrorMessage("NOT ALLOWED");
+                mcdu.addNewMessage(NXSystemMessages.notAllowed);
             } else {
                 NXDataStore.set("CONFIG_SIMBRIEF_USERID", value);
                 NXDataStore.set("CONFIG_SIMBRIEF_USERNAME", "");

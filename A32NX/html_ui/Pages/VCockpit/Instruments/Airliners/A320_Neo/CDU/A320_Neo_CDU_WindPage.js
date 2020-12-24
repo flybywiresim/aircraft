@@ -111,7 +111,7 @@ class CDUWindPage {
             }
             const wind = CDUWindPage.ParseWind(value);
             if (wind == null) {
-                mcdu.showErrorMessage("FORMAT ERROR");
+                mcdu.addNewMessage(NXSystemMessages.formatError);
             } else {
                 mcdu.winds.alternate = wind;
                 CDUWindPage.ShowDESPage(mcdu, offset);
@@ -210,7 +210,7 @@ class CDUWindPage {
     static TryAddWind(mcdu, _windArray, _input, _showPage) {
         const data = CDUWindPage.ParseTrueWindAlt(_input);
         if (data == null) {
-            mcdu.showErrorMessage("FORMAT ERROR");
+            mcdu.addNewMessage(NXSystemMessages.formatError);
         } else {
             _windArray.push(data);
             _showPage();

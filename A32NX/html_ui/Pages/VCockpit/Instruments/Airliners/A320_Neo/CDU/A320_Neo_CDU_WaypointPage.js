@@ -44,7 +44,7 @@ class CDUWaypointPage {
                         [""]
                     ]);
                 } else {
-                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
                 }
             });
         };

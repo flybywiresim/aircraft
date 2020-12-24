@@ -6,6 +6,7 @@
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
+1. [MISC] Fixed F/O displays being synced with the captain's displays - @tyler58546 (tyler58546)
 1. [CDU] Add Transition Altitude & Level Options - @Kimbyeongjang (김병장#7165)
 1. [System] Add Transition Layer Logic - @Kimbyeongjang (김병장#7165)
 

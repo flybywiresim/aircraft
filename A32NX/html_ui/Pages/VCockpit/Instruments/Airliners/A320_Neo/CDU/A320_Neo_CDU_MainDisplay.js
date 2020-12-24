@@ -96,11 +96,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         NXApi.connectTelex(flightNo)
             .catch((err) => {
                 if (err !== NXApi.disabledError) {
-                    this.showErrorMessage("FLT NBR IN USE");
+                    this.addNewMessage(NXFictionalMessages.fltNbrInUse);
                 }
             });
 
-        this.defaultInputErrorMessage = "NOT ALLOWED";
         this.onDir = () => {
             CDUDirectToPage.ShowPage(this);
         };
@@ -262,7 +261,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     checkDestData() {
         if (!isFinite(this.perfApprQNH) || !isFinite(this.perfApprTemp) || !isFinite(this.perfApprWindHeading) || !isFinite(this.perfApprWindSpeed)) {
-            this.addTypeTwoMessage("ENTER DEST DATA", true, () => {
+            this.addNewMessage(NXSystemMessages.enterDestData, () => {
                 return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
             });
         }
@@ -277,10 +276,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (EFOBBelMin < this._minDestFob) {
             if (this.isAnEngineOn()) {
                 setTimeout(() => {
-                    this.addTypeTwoMessage("DEST EFOB BELOW MIN", true);
+                    this.addNewMessage(NXSystemMessages.destEfobBelowMin);
                 }, 180000);
             } else {
-                this.addTypeTwoMessage("DEST EFOB BELOW MIN", true);
+                this.addNewMessage(NXSystemMessages.destEfobBelowMin);
             }
         }
     }
@@ -295,7 +294,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             // Parse flaps
             if (flaps && flaps.length > 0) {
                 if (!/^\d+$/.test(flaps)) {
-                    this.showErrorMessage("FORMAT ERROR");
+                    this.addNewMessage(NXSystemMessages.formatError);
                     return false;
                 }
 
@@ -309,7 +308,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             // Parse THS
             if (ths) {
                 if (!/^((UP|DN)(\d?\.?\d)|(\d?\.?\d)(UP|DN))$/.test(ths)) {
-                    this.showErrorMessage("FORMAT ERROR");
+                    this.addNewMessage(NXSystemMessages.formatError);
                     return false;
                 }
 
@@ -342,7 +341,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
 
-        this.showErrorMessage("INVALID ENTRY");
+        this.addNewMessage(NXSystemMessages.entryOutOfRange);
         return false;
     }
     onPowerOn() {
@@ -409,8 +408,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
                 if (!SimVar.GetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool")) {
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
-                    this.tryRemoveMessage("GPS PRIMARY LOST");
-                    this.addTypeTwoMessage("GPS PRIMARY", false, () => {
+                    this.tryRemoveMessage(NXSystemMessages.gpsPrimaryLost.text);
+                    this.addNewMessage(NXSystemMessages.gpsPrimary, () => {
                         SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
                     });
                 }
@@ -418,8 +417,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
                 if (!SimVar.GetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool")) {
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
-                    this.tryRemoveMessage("GPS PRIMARY");
-                    this.addTypeTwoMessage("GPS PRIMARY LOST", true, () => {
+                    this.tryRemoveMessage(NXSystemMessages.gpsPrimary.text);
+                    this.addNewMessage(NXSystemMessages.gpsPrimaryLost, () => {
                         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
                     });
                 }
@@ -476,15 +475,29 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /**
+     * General message handler
+     * @param msg {{text, isAmber, isTypeTwo}} Message Object
+     * @param c {function} Function that checks for validity of error message (typeII only)
+     * @param f {function} Function gets executed when error message has been cleared (typeII only)
+     */
+    addNewMessage(msg, c = () => {}, f = () => {
+        return false;
+    }) {
+        if (msg.isTypeTwo) {
+            this._addTypeTwoMessage(msg.text, msg.isAmber, c, f);
+        } else {
+            this._showTypeOneMessage(msg.text, msg.isAmber);
+        }
+    }
+
+    /**
      * Add Type II Message
      * @param message {string} Message to be displayed
      * @param isAmber {boolean} Is color amber
      * @param c {function} Function that checks for validity of error message
      * @param f {function} Function gets executed when error message has been cleared
      */
-    addTypeTwoMessage(message, isAmber = false, c = () => {}, f = () => {
-        return false;
-    }) {
+    _addTypeTwoMessage(message, isAmber, c, f) {
         if (this.checkForMessage(message)) {
             // Before adding message to queue, check other messages in queue for validity
             for (let i = 0; i < this.messageQueue.length; i++) {
