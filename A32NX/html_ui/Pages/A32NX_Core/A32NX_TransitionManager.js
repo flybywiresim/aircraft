@@ -35,6 +35,5 @@ class A32NX_TransitionManager {
 }
     const airportList = [
         { icao: "K", transAlt: 18000 },
-        { icao: "aural_sink_rate", transAlt: 0.9 }
     ];
 }
