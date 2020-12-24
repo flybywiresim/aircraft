@@ -13,10 +13,8 @@ class A32NX_TransitionManager {
     transitionSelector() {
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
         if (mode === "AUTO") {
-            let departureAirport= NXDataStore.get("PLAN_ORIGIN", "");
-            let arrivalAirport= NXDataStore.get("PLAN_DESTINATION", "");
-            let departureICAO = departureAirport.substring(1, 2);
-            let arrivalICAO = arrivalAirport.substring(1, 2);
+            let departureICAO = NXDataStore.get("PLAN_ORIGIN", "").substr(0, 2);
+            let arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "").substr(0, 2);
             this.departureLogic(departureICAO);
             this.arrivalLogic(arrivalICAO);
         }
@@ -29,26 +27,26 @@ class A32NX_TransitionManager {
         SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", storedArrivalTransAlt);
     }
     departureLogic(airport) {
-        if (airport === "K") {
+        if (airport.substr(0, 1) === "K") {
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
-        } else if (airport === "C") {
+        } else if (airport.substr(0, 1) === "C") {
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
-        } else if (airport === "Y") {
+        } else if (airport.substr(0, 1) === "Y") {
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 11000);
         } else {
-            let departure = airportList.find(airportList => airportList.icao == airport);
+            let departure = airportList.find(airportList => airportList.icao === airport);
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", departure.transAlt);
         }
     }
     arrivalLogic(airport) {
-        if (airport === "K") {
+        if (airport.substr(0, 1) === "K") {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
-        } else if (airport === "C") {
+        } else if (airport.substr(0, 1) === "C") {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
-        } else if (airport === "Y") {
+        } else if (airport.substr(0, 1) === "Y") {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 11000);
         } else {
-            let arrival = airportList.find(airportList => airportList.icao == airport);
+            let arrival = airportList.find(airportList => airportList.icao === airport);
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", arrival.transAlt);
         }
     }
@@ -56,8 +54,8 @@ class A32NX_TransitionManager {
     const airportList = [
     //NorthAmerica
         { icao: "PA", transAlt: NaN },
-        { icao: "C", transAlt: NaN },
-        { icao: "K", transAlt: NaN },
+        { icao: "C", transAlt: 18000 },
+        { icao: "K", transAlt: 18000 },
         { icao: "BG", transAlt: NaN },
         { icao: "TX", transAlt: NaN },
         { icao: "MY", transAlt: NaN },
