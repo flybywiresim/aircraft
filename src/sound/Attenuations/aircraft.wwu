@@ -5437,15 +5437,21 @@
 											<PointList>
 												<Point>
 													<XPos>0</XPos>
-													<YPos>0</YPos>
+													<YPos>-0</YPos>
 													<Flags>5</Flags>
-													<SegmentShape>Exp3</SegmentShape>
+													<SegmentShape>Log3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>3.14107</XPos>
+													<XPos>3.24765</XPos>
 													<YPos>0</YPos>
 													<Flags>0</Flags>
 													<SegmentShape>Exp3</SegmentShape>
+												</Point>
+												<Point>
+													<XPos>3.38558</XPos>
+													<YPos>-200</YPos>
+													<Flags>0</Flags>
+													<SegmentShape>Log3</SegmentShape>
 												</Point>
 												<Point>
 													<XPos>4</XPos>
@@ -5494,7 +5500,31 @@
 									</CurveUsageInfo>
 								</VolumeWetUserUsage>
 								<LowPassFilterUsage>
-									<CurveUsageInfo Platform="Linked" CurveToUse="None"/>
+									<CurveUsageInfo Platform="Linked" CurveToUse="None">
+										<Curve Name="LowPassFilter" ID="{0E099C4F-8687-48D5-9168-F217038967B4}">
+											<PropertyList>
+												<Property Name="Flags" Type="int32" Value="65537"/>
+											</PropertyList>
+											<PointList>
+												<Point>
+													<XPos>0</XPos>
+													<YPos>0</YPos>
+													<Flags>5</Flags>
+												</Point>
+												<Point>
+													<XPos>3.71787</XPos>
+													<YPos>0</YPos>
+													<Flags>0</Flags>
+													<SegmentShape>Log3</SegmentShape>
+												</Point>
+												<Point>
+													<XPos>4</XPos>
+													<YPos>52</YPos>
+													<Flags>37</Flags>
+												</Point>
+											</PointList>
+										</Curve>
+									</CurveUsageInfo>
 								</LowPassFilterUsage>
 								<HighPassFilterUsage>
 									<CurveUsageInfo Platform="Linked" CurveToUse="None"/>

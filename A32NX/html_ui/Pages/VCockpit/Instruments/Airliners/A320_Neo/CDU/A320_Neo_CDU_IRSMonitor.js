@@ -21,11 +21,11 @@ class CDUIRSMonitor {
             ["IRS MONITOR"],
             [""],
             ["<IRS1"],
-            [`${IRSStatus}[color]green`],
+            [`\xa0${IRSStatus}[color]green`],
             ["<IRS2"],
-            [`${IRSStatus}[color]green`],
+            [`\xa0${IRSStatus}[color]green`],
             ["<IRS3"],
-            [`${IRSStatus}[color]green`],
+            [`\xa0${IRSStatus}[color]green`],
         ]);
         mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();

@@ -28,6 +28,51 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._destDataChecked = false;
         this._towerHeadwind = 0;
         this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+        this._EfobBelowMinClr = false;
+        this.simbrief = {
+            route: "",
+            cruiseAltitude: "",
+            originIcao: "",
+            destinationIcao: "",
+            blockFuel: "",
+            payload: undefined,
+            estZfw: "",
+            sendStatus: "READY",
+            costIndex: "",
+            navlog: [],
+            icao_airline: "",
+            flight_number: "",
+            alternateIcao: "",
+            avgTropopause: "",
+            ete: "",
+            blockTime: "",
+            outTime: "",
+            onTime: "",
+            inTime: "",
+            offTime: "",
+            taxiFuel: "",
+            tripFuel: ""
+        };
+        this.aocWeight = {
+            blockFuel: undefined,
+            estZfw: undefined,
+            taxiFuel: undefined,
+            tripFuel: undefined,
+            payload: undefined
+        };
+        this.aocTimes = {
+            doors: 0,
+            off: 0,
+            out: 0,
+            on: 0,
+            in: 0,
+        };
+        this.winds = {
+            climb: [],
+            cruise: [],
+            des: [],
+            alternate: null
+        };
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -52,11 +97,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         NXApi.connectTelex(flightNo)
             .catch((err) => {
                 if (err !== NXApi.disabledError) {
-                    this.showErrorMessage("FLT NBR IN USE");
+                    this.addNewMessage(NXFictionalMessages.fltNbrInUse);
                 }
             });
 
-        this.defaultInputErrorMessage = "NOT ALLOWED";
         this.onDir = () => {
             CDUDirectToPage.ShowPage(this);
         };
@@ -74,6 +118,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         };
         this.onFpln = () => {
             CDUFlightPlanPage.ShowPage(this);
+        };
+        this.onSec = () => {
+            CDUSecFplnMain.ShowPage(this);
         };
         this.onRad = () => {
             CDUNavRadioPage.ShowPage(this);
@@ -176,7 +223,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     _formatCell(str) {
         return str
+            .replace(/{big}/g, "<span class='b-text'>")
             .replace(/{small}/g, "<span class='s-text'>")
+            .replace(/{big}/g, "<span class='b-text'>")
             .replace(/{amber}/g, "<span class='amber'>")
             .replace(/{red}/g, "<span class='red'>")
             .replace(/{green}/g, "<span class='green'>")
@@ -213,7 +262,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     checkDestData() {
         if (!isFinite(this.perfApprQNH) || !isFinite(this.perfApprTemp) || !isFinite(this.perfApprWindHeading) || !isFinite(this.perfApprWindSpeed)) {
-            this.addTypeTwoMessage("ENTER DEST DATA", true, () => {
+            this.addNewMessage(NXSystemMessages.enterDestData, () => {
                 return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
             });
         }
@@ -228,10 +277,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (EFOBBelMin < this._minDestFob) {
             if (this.isAnEngineOn()) {
                 setTimeout(() => {
-                    this.addTypeTwoMessage("DEST EFOB BELOW MIN", true);
+                    this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
+                        return this._EfobBelowMinClr === false;
+                    }, () => {
+                        this._EfobBelowMinClr = true;
+                    });
                 }, 180000);
             } else {
-                this.addTypeTwoMessage("DEST EFOB BELOW MIN", true);
+                this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
+                    return this._EfobBelowMinClr === false;
+                }, () => {
+                    this._EfobBelowMinClr = true;
+                });
             }
         }
     }
@@ -246,7 +303,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             // Parse flaps
             if (flaps && flaps.length > 0) {
                 if (!/^\d+$/.test(flaps)) {
-                    this.showErrorMessage("FORMAT ERROR");
+                    this.addNewMessage(NXSystemMessages.formatError);
                     return false;
                 }
 
@@ -260,7 +317,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             // Parse THS
             if (ths) {
                 if (!/^((UP|DN)(\d?\.?\d)|(\d?\.?\d)(UP|DN))$/.test(ths)) {
-                    this.showErrorMessage("FORMAT ERROR");
+                    this.addNewMessage(NXSystemMessages.formatError);
                     return false;
                 }
 
@@ -293,7 +350,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
 
-        this.showErrorMessage("INVALID ENTRY");
+        this.addNewMessage(NXSystemMessages.entryOutOfRange);
         return false;
     }
     onPowerOn() {
@@ -316,6 +373,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
+
+        this.checkAocTimes();
 
         this.A32NXCore.update();
 
@@ -358,8 +417,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
                 if (!SimVar.GetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool")) {
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
-                    this.tryRemoveMessage("GPS PRIMARY LOST");
-                    this.addTypeTwoMessage("GPS PRIMARY", false, () => {
+                    this.tryRemoveMessage(NXSystemMessages.gpsPrimaryLost.text);
+                    this.addNewMessage(NXSystemMessages.gpsPrimary, () => {
                         SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
                     });
                 }
@@ -367,8 +426,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
                 if (!SimVar.GetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool")) {
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
-                    this.tryRemoveMessage("GPS PRIMARY");
-                    this.addTypeTwoMessage("GPS PRIMARY LOST", true, () => {
+                    this.tryRemoveMessage(NXSystemMessages.gpsPrimary.text);
+                    this.addNewMessage(NXSystemMessages.gpsPrimaryLost, () => {
                         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
                     });
                 }
@@ -410,8 +469,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.constraintAltCached = A32NX_ConstraintManager.getConstraintAltitude(
             this.currentFlightPhase,
             this.flightPlanManager,
-            this.activeWaypointIdx,
-            this.constraintAltCached
+            this.constraintAltCached,
+            this._cruiseFlightLevel * 100
         );
         this.updateDisplayedConstraints(true);
     }
@@ -425,15 +484,29 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /**
+     * General message handler
+     * @param msg {{text, isAmber, isTypeTwo}} Message Object
+     * @param c {function} Function that checks for validity of error message (typeII only)
+     * @param f {function} Function gets executed when error message has been cleared (typeII only)
+     */
+    addNewMessage(msg, c = () => {}, f = () => {
+        return false;
+    }) {
+        if (msg.isTypeTwo) {
+            this._addTypeTwoMessage(msg.text, msg.isAmber, c, f);
+        } else {
+            this._showTypeOneMessage(msg.text, msg.isAmber);
+        }
+    }
+
+    /**
      * Add Type II Message
      * @param message {string} Message to be displayed
      * @param isAmber {boolean} Is color amber
      * @param c {function} Function that checks for validity of error message
      * @param f {function} Function gets executed when error message has been cleared
      */
-    addTypeTwoMessage(message, isAmber = false, c = () => {}, f = () => {
-        return false;
-    }) {
+    _addTypeTwoMessage(message, isAmber, c, f) {
         if (this.checkForMessage(message)) {
             // Before adding message to queue, check other messages in queue for validity
             for (let i = 0; i < this.messageQueue.length; i++) {
@@ -777,6 +850,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.setAPSelectedSpeed(preSelectedClbSpeed, Aircraft.A320_NEO);
                 SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
             }
+            SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 0);
         } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             if (isFinite(this.preSelectedCrzSpeed)) {
                 this.setAPSelectedSpeed(this.preSelectedCrzSpeed, Aircraft.A320_NEO);
@@ -1576,12 +1650,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.landingResetTimer == null) {
                 this.landingResetTimer = 30;
             }
+            if (this.landingAutoBrakeTimer == null) {
+                this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
+            }
             if (this.lastPhaseUpdateTime == null) {
                 this.lastPhaseUpdateTime = Date.now();
             }
             const deltaTime = Date.now() - this.lastPhaseUpdateTime;
+            const deltaQuotient = deltaTime / 1000;
             this.lastPhaseUpdateTime = Date.now();
-            this.landingResetTimer -= deltaTime / 1000;
+            this.landingResetTimer -= deltaQuotient;
+            this.landingAutoBrakeTimer -= deltaQuotient;
+            if (this.landingAutoBrakeTimer <= 0) {
+                this.landingAutoBrakeTimer = null;
+                SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 1);
+            }
             if (this.landingResetTimer <= 0) {
                 this.landingResetTimer = null;
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
@@ -1591,12 +1674,65 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         } else {
             //Reset timer to 30 when airborne in case of go around
             this.landingResetTimer = 30;
+            this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
         }
 
-        if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") != this.currentFlightPhase) {
+        if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") !== this.currentFlightPhase) {
+            this.landingAutoBrakeTimer = null;
             SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", this.currentFlightPhase);
             this.onFlightPhaseChanged();
             SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
+        }
+    }
+    checkAocTimes() {
+        if (!this.aocTimes.off) {
+            const isAirborne = !Simplane.getIsGrounded(); // TODO replace with proper flight mode in future
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && isAirborne) {
+                // Wheels off
+                // Off: remains blank until Take off time
+                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+                this.aocTimes.off = seconds;
+            }
+        }
+
+        if (!this.aocTimes.out) {
+            const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_PREFLIGHT && !currentPKGBrakeState) {
+                // Out: is when you set the brakes to off
+                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+                this.aocTimes.out = seconds;
+            }
+        }
+
+        if (!this.aocTimes.on) {
+            const isAirborne = !Simplane.getIsGrounded(); // TODO replace with proper flight mode in future
+            if (this.aocTimes.off && !isAirborne) {
+                // On: remains blank until Landing time
+                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+                this.aocTimes.on = seconds;
+            }
+        }
+
+        if (!this.aocTimes.in) {
+            const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
+            const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
+            if (this.aocTimes.on && currentPKGBrakeState && cabinDoorPctOpen > 20) {
+                // In: remains blank until brakes set to park AND the first door opens
+                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+                this.aocTimes.in = seconds;
+            }
+        }
+
+        if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_PREFLIGHT) {
+            const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
+            if (!this.aocTimes.doors && cabinDoorPctOpen < 20) {
+                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+                this.aocTimes.doors = seconds;
+            } else {
+                if (cabinDoorPctOpen > 20) {
+                    this.aocTimes.doors = "";
+                }
+            }
         }
     }
 
