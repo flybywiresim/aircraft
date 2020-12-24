@@ -45,7 +45,7 @@ class CDUNavaidPage {
                     ]);
                     mcdu.inOut = Object.keys(res);
                 } else {
-                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
                 }
             });
         };
