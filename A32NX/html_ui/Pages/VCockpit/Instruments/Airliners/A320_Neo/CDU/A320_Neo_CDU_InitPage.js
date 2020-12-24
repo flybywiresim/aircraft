@@ -122,7 +122,7 @@ class CDUInitPage {
         };
 
         if (mcdu.tropo) {
-            tropo = mcdu.tropo + "[color]cyan";
+            tropo = "{small}" + mcdu.tropo + "[color]cyan";
         }
         mcdu.onRightInput[4] = (value) => {
             if (mcdu.tryUpdateTropo(value)) {
