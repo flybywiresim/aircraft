@@ -1851,7 +1851,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (isFinite(rteRsvWeight)) {
                 this._routeReservedWeight = rteRsvWeight;
                 this._routeReservedPercent = 0;
-                if (this.isRteRsvPercentInRange(this.getRouteReservedPercent())) { //Bit of a hacky method due previous tight coupling of weight and percentage calculations
+                if (this.isRteRsvPercentInRange(this.getRouteReservedPercent())) { // Bit of a hacky method due previous tight coupling of weight and percentage calculations
                     return true;
                 } else {
                     this.trySetRouteReservedFuel(FMCMainDisplay.clrValue);
