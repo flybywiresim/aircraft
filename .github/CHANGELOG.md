@@ -6,7 +6,9 @@
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
-1. [MISC] Fixed F/O displays being synced with the captain's displays - @tyler58546 (tyler58546)
+1. [MISC] Fix F/O displays being synced with the captain's displays - @tyler58546 (tyler58546)
+1. [FUEL] Fix outer tank fuel transfer - @donstim - (donbikes#4084)
+
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
