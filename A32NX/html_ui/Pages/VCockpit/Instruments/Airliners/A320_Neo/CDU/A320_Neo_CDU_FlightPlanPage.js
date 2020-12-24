@@ -59,17 +59,23 @@ class CDUFlightPlanPage {
         } else {
             let destTimeCell = "----";
             let destDistCell = "---";
+            let destEFOBCell = "---";
             if (mcdu.flightPlanManager.getDestination()) {
                 destDistCell = mcdu.flightPlanManager.getDestination().liveDistanceTo.toFixed(0);
                 destEFOBCell = (mcdu.getDestEFOB(isFlying) * mcdu._conversionWeight).toFixed(1);
                 if (isFlying) {
                     destTimeCell = FMCMainDisplay.secondsToUTC(mcdu.flightPlanManager.getDestination().liveUTCTo);
+                    destEFOBCell = (mcdu.getDestEFOB(true) * mcdu._conversionWeight).toFixed(1);
                 } else {
                     destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().liveETATo);
+                    destEFOBCell = (mcdu.getDestEFOB(false) * mcdu._conversionWeight).toFixed(1);
                 }
             }
+            if (!CDUInitPage.fuelPredConditionsMet(mcdu)) {
+                destEFOBCell = "---";
+            }
             rows[10] = ["\xa0DEST", "DIST EFOB", isFlying ? "\xa0UTC" : "TIME" ];//set last row
-            rows[11] = [destCell, destDistCell + " ----", destTimeCell];
+            rows[11] = [destCell, destDistCell + " " + destEFOBCell, destTimeCell];
             mcdu.leftInputDelay[5] = () => {
                 return mcdu.getDelaySwitchPage();
             };

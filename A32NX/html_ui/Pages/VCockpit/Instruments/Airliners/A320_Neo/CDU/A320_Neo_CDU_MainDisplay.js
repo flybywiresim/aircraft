@@ -46,6 +46,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._destDataChecked = false;
         this._towerHeadwind = 0;
         this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+        this._EfobBelowMinClr = false;
         this.simbrief = {
             route: "",
             cruiseAltitude: "",
@@ -289,10 +290,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (EFOBBelMin < this._minDestFob) {
             if (this.isAnEngineOn()) {
                 setTimeout(() => {
-                    this.addTypeTwoMessage("DEST EFOB BELOW MIN", true);
+                    this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
+                        return this._EfobBelowMinClr === false;
+                    }, () => {
+                        this._EfobBelowMinClr = true;
+                    });
                 }, 180000);
             } else {
-                this.addTypeTwoMessage("DEST EFOB BELOW MIN", true);
+                this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
+                    return this._EfobBelowMinClr === false;
+                }, () => {
+                    this._EfobBelowMinClr = true;
+                });
             }
         }
     }
