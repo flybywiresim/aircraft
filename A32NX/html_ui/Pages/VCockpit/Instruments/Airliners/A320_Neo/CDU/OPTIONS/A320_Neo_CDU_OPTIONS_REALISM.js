@@ -32,7 +32,7 @@ class CDU_OPTIONS_REALISM {
             if (value === FMCMainDisplay.clrValue) {
                 NXDataStore.set("CONFIG_SELF_TEST_TIME", "15");
             } else if (isNaN(value) || parseInt(value) < 5 || parseInt(value) > 40) {
-                mcdu.showErrorMessage("NOT ALLOWED");
+                mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
             } else {
                 NXDataStore.set("CONFIG_SELF_TEST_TIME", value);
             }
