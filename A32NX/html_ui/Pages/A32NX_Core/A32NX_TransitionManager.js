@@ -13,8 +13,8 @@ class A32NX_TransitionManager {
     transitionSelector() {
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
         if (mode === "AUTO") {
-            // arrivalAirport = this.dataManager.GetAirportByIdent(altDestIdent);
-            // departureAirport= this.dataManager.GetAirportByIdent(airportIdent);
+            let departureAirport= NXDataStore.get("PLAN_ORIGIN", "");
+            let arrivalAirport= NXDataStore.get("PLAN_DESTINATION", "");
             let departureICAO = departureAirport.substring(1, 2);
             let arrivalICAO = arrivalAirport.substring(1, 2);
             this.departureLogic(departureICAO);
