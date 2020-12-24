@@ -55,7 +55,7 @@ class CDU_OPTIONS_TRANSITION {
 
         mcdu.onRightInput[2] = (value) => {
             if (isNaN(value) || parseInt(value) > 50000 || parseInt(value) < 3000) {
-                mcdu.showErrorMessage("NOT ALLOWED");
+                mcdu.addNewMessage(NXSystemMessages.notAllowed);
             } else {
                 NXDataStore.set("CONFIG_DEPART_TRANSALT", value);
             }
