@@ -19,7 +19,8 @@
 }
 
 .NormalStroke {
-  stroke-width: 0.285mm;
+  stroke-width: 0.18mm;
+  stroke-linecap: round;
 }
 
 .FontLargest {
@@ -131,6 +132,9 @@ text.Red {
 }
 .SkyFill {
   fill: #0698ff;
+}
+.BlackFill {
+  fill: $display-background;
 }
 
 .TapeBackground {
