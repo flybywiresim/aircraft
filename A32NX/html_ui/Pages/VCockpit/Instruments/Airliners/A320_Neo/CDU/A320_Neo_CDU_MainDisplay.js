@@ -28,6 +28,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._destDataChecked = false;
         this._towerHeadwind = 0;
         this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+        this._EfobBelowMinClr = false;
         this.simbrief = {
             route: "",
             cruiseAltitude: "",
@@ -276,10 +277,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (EFOBBelMin < this._minDestFob) {
             if (this.isAnEngineOn()) {
                 setTimeout(() => {
-                    this.addNewMessage(NXSystemMessages.destEfobBelowMin);
+                    this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
+                        return this._EfobBelowMinClr === false;
+                    }, () => {
+                        this._EfobBelowMinClr = true;
+                    });
                 }, 180000);
             } else {
-                this.addNewMessage(NXSystemMessages.destEfobBelowMin);
+                this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
+                    return this._EfobBelowMinClr === false;
+                }, () => {
+                    this._EfobBelowMinClr = true;
+                });
             }
         }
     }
@@ -841,6 +850,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.setAPSelectedSpeed(preSelectedClbSpeed, Aircraft.A320_NEO);
                 SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
             }
+            SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 0);
         } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             if (isFinite(this.preSelectedCrzSpeed)) {
                 this.setAPSelectedSpeed(this.preSelectedCrzSpeed, Aircraft.A320_NEO);
@@ -1640,12 +1650,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.landingResetTimer == null) {
                 this.landingResetTimer = 30;
             }
+            if (this.landingAutoBrakeTimer == null) {
+                this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
+            }
             if (this.lastPhaseUpdateTime == null) {
                 this.lastPhaseUpdateTime = Date.now();
             }
             const deltaTime = Date.now() - this.lastPhaseUpdateTime;
+            const deltaQuotient = deltaTime / 1000;
             this.lastPhaseUpdateTime = Date.now();
-            this.landingResetTimer -= deltaTime / 1000;
+            this.landingResetTimer -= deltaQuotient;
+            this.landingAutoBrakeTimer -= deltaQuotient;
+            if (this.landingAutoBrakeTimer <= 0) {
+                this.landingAutoBrakeTimer = null;
+                SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 1);
+            }
             if (this.landingResetTimer <= 0) {
                 this.landingResetTimer = null;
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
@@ -1655,9 +1674,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         } else {
             //Reset timer to 30 when airborne in case of go around
             this.landingResetTimer = 30;
+            this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
         }
 
-        if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") != this.currentFlightPhase) {
+        if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") !== this.currentFlightPhase) {
+            this.landingAutoBrakeTimer = null;
             SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", this.currentFlightPhase);
             this.onFlightPhaseChanged();
             SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);

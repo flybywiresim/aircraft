@@ -7,6 +7,11 @@
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 1. [MISC] Fixed F/O displays being synced with the captain's displays - @tyler58546 (tyler58546)
+1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
+1. [SOUND] Added new vent test and ext pwr relay random sounds - @hotshotp (Boris#9134)
+1. [SOUND] Seatbelt sign now has a delay - @hotshotp (Boris#9134)
+1. [FUEL] Fix outer tank fuel transfer - @donstim - (donbikes#4084)
+1. [PFD] Added auto brake status to FMA - @MisterChocker (Leon)
 1. [CDU] Add Transition Altitude & Level Options - @Kimbyeongjang (김병장#7165)
 1. [System] Add Transition Level Logic - @Kimbyeongjang (김병장#7165)
 
