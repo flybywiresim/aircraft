@@ -56,7 +56,7 @@ class CDUVerticalRevisionPage {
                 ["MACH/START WPT[color]inop", ""],
                 [`\xa0{inop}[\xa0]/{small}${waypointIdent}{end}{end}`, ""],
                 [""],
-                ["<WIND[color]inop", "STEP ALTS>[color]inop"],
+                ["<WIND", "STEP ALTS>[color]inop"],
                 [""],
                 ["<RETURN"]
             ]);
@@ -70,10 +70,7 @@ class CDUVerticalRevisionPage {
                         // NYI
                     }
                 }
-                mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-                setTimeout(() => {
-                    mcdu.showErrorMessage("");
-                }, 1000);
+                mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
             }; // SPD CSTR
             mcdu.onRightInput[2] = (value) => {
                 if (value === FMCMainDisplay.clrValue) {
@@ -109,10 +106,16 @@ class CDUVerticalRevisionPage {
                         });
                     }
                 } else {
-                    mcdu.showErrorMessage("INVALID ENTRY");
+                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
                 }
             }; // ALT CSTR
-            mcdu.onLeftInput[4] = () => {}; // WIND
+            mcdu.onLeftInput[4] = () => {
+                //TODO: show appropriate wind page based on waypoint
+                CDUWindPage.Return = () => {
+                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint);
+                };
+                CDUWindPage.ShowPage(mcdu);
+            }; // WIND
             mcdu.onRightInput[4] = () => {}; // STEP ALTS
             mcdu.onLeftInput[5] = () => {
                 CDUFlightPlanPage.ShowPage(mcdu);

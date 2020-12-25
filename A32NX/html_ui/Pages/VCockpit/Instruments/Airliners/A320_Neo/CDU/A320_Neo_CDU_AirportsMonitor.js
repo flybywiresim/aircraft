@@ -231,7 +231,7 @@ class CDUAirportsMonitor {
                             this.frozen = false;
                             this.ShowPage(mcdu);
                         } else {
-                            mcdu.showErrorMessage("NOT IN DATABASE");
+                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                         }
                     });
                 }

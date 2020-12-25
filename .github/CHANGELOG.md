@@ -5,6 +5,15 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.6.0
+1. [CDU] Added WIND page - @tyler58546 (tyler58546)
+1. [MISC] Fixed F/O displays being synced with the captain's displays - @tyler58546 (tyler58546)
+1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
+1. [SOUND] Added new vent test and ext pwr relay random sounds - @hotshotp (Boris#9134)
+1. [SOUND] Seatbelt sign now has a delay - @hotshotp (Boris#9134)
+1. [FUEL] Fix outer tank fuel transfer - @donstim - (donbikes#4084)
+1. [PFD] Added auto brake status to FMA - @MisterChocker (Leon)
+
+## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
 1. [CDU] Fix incorrect block time display on INIT/REVIEW - @pareil6 (pareil6)
 1. [ECAM] Improved PACKS indication - @MisterChocker (Leon)
@@ -12,6 +21,7 @@
 1. [CDU] Improved ascent constraint algorithm - @MisterChocker (Leon)
 1. [CDU] Fixed FPLN airways showing as undefined - @pareil6 - (pareil6)
 1. [CDU] Allow SimBrief OFP to override previous flight plan - @pareil6 (pareil6)
+1. [MODEL] Incorporate new Asobo model changes - @pepperoni505 (pepperoni505)
 
 ## 0.5.0
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)

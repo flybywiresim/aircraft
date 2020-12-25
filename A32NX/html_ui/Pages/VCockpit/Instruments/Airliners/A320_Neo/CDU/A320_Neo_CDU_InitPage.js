@@ -192,7 +192,7 @@ class CDUInitPage {
             ["FLT NBR"],
             [flightNo + "[color]cyan", alignOption],
             [],
-            ["", "WIND/TEMP>[color]inop"],
+            ["", "WIND/TEMP>"],
             ["COST INDEX", "TROPO"],
             [costIndex, tropo],
             ["CRZ FL/TEMP", "GND TEMP"],
@@ -214,6 +214,13 @@ class CDUInitPage {
             }
         };
 
+        mcdu.onRightInput[3] = () => {
+            CDUWindPage.Return = () => {
+                CDUInitPage.ShowPage1(mcdu);
+            };
+            CDUWindPage.ShowPage(mcdu);
+        };
+
         mcdu.onUp = () => {};
         Coherent.trigger("AP_ALT_VAL_SET", 4200);
         Coherent.trigger("AP_VS_VAL_SET", 300);
@@ -233,8 +240,7 @@ class CDUInitPage {
             mcdu.cruiseFlightLevel &&
             mcdu.flightPlanManager.getWaypointsCount() > 0 &&
             mcdu._zeroFuelWeightZFWCGEntered &&
-            mcdu._blockFuelEntered &&
-            !mcdu.tryGetPredFailure();
+            mcdu._blockFuelEntered;
     }
     static trySetFuelPred(mcdu) {
         if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) {
