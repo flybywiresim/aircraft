@@ -8,24 +8,32 @@ class A32NX_TransitionManager {
         }
     }
     update(_deltaTime, _core) {
-        this.transitionSelector();
-        this.transitionLevel();
+        const spawn = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool");
+        if (spawn === true) {
+            this.transitionSelector();
+            this.transitionLevel();
+        }
+        if (spawn === false) {
+            this.transitionSelector_2();
+            this.transitionLevel_2();
+        }
     }
     async transitionSelector() {
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
-        let checkspawn = NXDataStore.get("PLAN_ORIGIN", "").substr(0, 2);
         if (mode === "AUTO") {
-            if (checkspawn === "") {
-                let departureICAO = await NXDataStore.get("PLAN_ORIGIN", "").substr(0, 2);
-                let arrivalICAO = await NXDataStore.get("PLAN_DESTINATION", "").substr(0, 2);
-                this.departureLogic(departureICAO);
-                this.arrivalLogic(arrivalICAO);
-            } else {
-                let departureICAO = NXDataStore.get("PLAN_ORIGIN", "").substr(0, 2);
-                let arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "").substr(0, 2);
-                this.departureLogic(departureICAO);
-                this.arrivalLogic(arrivalICAO);
-            }
+            let departureICAO = await NXDataStore.get("PLAN_ORIGIN", "").substr(0, 2);
+            let arrivalICAO = await NXDataStore.get("PLAN_DESTINATION", "").substr(0, 2);
+            this.departureLogic(departureICAO);
+            this.arrivalLogic(arrivalICAO);
+        }
+    }
+    transitionSelector_2() {
+        const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
+        if (mode === "AUTO") {
+            let departureICAO = NXDataStore.get("PLAN_ORIGIN", "").substr(0, 2);
+            let arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "").substr(0, 2);
+            this.departureLogic(departureICAO);
+            this.arrivalLogic(arrivalICAO);
         }
     }
     transitionManual() {
@@ -63,6 +71,13 @@ class A32NX_TransitionManager {
         let transAlt = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
         let arrivalICAO = await NXDataStore.get("PLAN_DESTINATION", "");
         let QNH = await getMETAR(arrivalICAO, MSFS);
+        let transitionLevel = (((transAlt + 28*(QNH - 1013)) + 2500)/2);
+        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LVL", "Number", transitionLevel);
+    }
+    transitionLevel_2() {
+        let transAlt = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+        let arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "");
+        let QNH = getMETAR(arrivalICAO, MSFS);
         let transitionLevel = (((transAlt + 28*(QNH - 1013)) + 2500)/2);
         SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LVL", "Number", transitionLevel);
     }
