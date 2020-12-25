@@ -72,6 +72,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.blueSpeedSVG = null;
         this.blueSpeedText = null;
         this.v1blueSpeedText = null;
+        this.decelText = null;
         this.blueSpeedTextLower = null;
         this.redSpeedSVG = null;
         this.redSpeedText = null;
@@ -152,6 +153,19 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.v1blueSpeedText.setAttribute("font-family", "ECAMFontRegular");
             this.v1blueSpeedText.setAttribute("text-anchor", "start");
             this.v1blueSpeedText.setAttribute("alignment-baseline", "central");
+            if (!this.decelText) {
+                this.decelText = document.createElementNS(Avionics.SVG.NS, "text");
+                this.decelText.setAttribute("id", "BlueAirspeedTextLower");
+            } else {
+                Utils.RemoveAllChildren(this.decelText);
+            }
+            this.decelText.setAttribute("x", (posX + 58).toString());
+            this.decelText.setAttribute("y", (posY + height + 17).toString());
+            this.decelText.setAttribute("fill", "#00ff00");
+            this.decelText.setAttribute("font-size", (this.fontSize * 1.5).toString());
+            this.decelText.setAttribute("font-family", "ECAMFontRegular");
+            this.decelText.setAttribute("text-anchor", "end");
+            this.decelText.setAttribute("alignment-baseline", "central");
             if (!this.blueSpeedTextLower) {
                 this.blueSpeedTextLower = document.createElementNS(Avionics.SVG.NS, "text");
                 this.blueSpeedTextLower.setAttribute("id", "BlueAirspeedTextLower");
@@ -208,6 +222,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.rootGroup.appendChild(this.v1blueSpeedText);
             this.rootGroup.appendChild(this.blueSpeedText);
             this.rootGroup.appendChild(this.blueSpeedTextLower);
+            this.rootGroup.appendChild(this.decelText);
             this.rootGroup.appendChild(this.redSpeedText);
             this.rootGroup.appendChild(this.redSpeedTextLower);
             this.rootGroup.appendChild(this.speedNotSetSVG);
@@ -674,9 +689,18 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         const planeOnGround = Simplane.getIsGrounded();
         const vs = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VS", "number");
         const vls = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VLS", "number");
+        const autobrakes = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum");
+        const flightPhase = Simplane.getCurrentFlightPhase();
+        const decel = planeOnGround
+            && autobrakes !== 0
+            && (autobrakes === 3 ? -6 : -2) > SimVar.GetSimVarValue("A:ACCELERATION BODY Z", "feet per second squared")
+            && ((flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB && autobrakes === 3)
+                || ((flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF || flightPhase === FlightPhase.FLIGHT_PHASE_PREFLIGHT)
+                    && autobrakes !== 3 && SimVar.GetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool") === 1)
+            );
         this.smoothSpeeds(indicatedSpeed, dTime, maxSpeed, vls, vs * 1.1, vs * 1.03, vs);
         this.updateSpeedTrendArrow(indicatedSpeed, speedTrend);
-        this.updateTargetSpeeds(indicatedSpeed);
+        this.updateTargetSpeeds(indicatedSpeed, decel);
         this.updateNextFlapSpeedIndicator(indicatedSpeed, nextFlapSpeed);
         this.updateStrip(this.vMaxStripSVG, indicatedSpeed, this._maxSpeed, false, true);
         this.updateStrip(this.vlsStripSVG, indicatedSpeed, this._vls, planeOnGround, false);
@@ -878,7 +902,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.speedTrendArrowSVG.setAttribute("visibility", "visible");
         }
     }
-    updateTargetSpeeds(currentAirspeed) {
+    updateTargetSpeeds(currentAirspeed, _isDecel) {
         {
             let hideV1BlueTextLower = true;
             let v1Speed = 0;
@@ -1019,6 +1043,15 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         }
         if (hideRedPointer && hideRedText && hideRedTextLower && hideBluePointer && hideBlueText && hideBlueTextLower) {
             takeOffSpeedNotSet = true;
+        }
+
+        if (this.decelText) {
+            if (_isDecel) {
+                this.decelText.setAttribute("visibility", "visible");
+                this.decelText.textContent = "DECEL";
+            } else {
+                this.decelText.setAttribute("visibility", "hidden");
+            }
         }
 
         if (this.speedNotSetSVG) {
