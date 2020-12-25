@@ -1,0 +1,83 @@
+export const AttitudeIndicatorFixedUpper = () => (
+    <g id="AttitudeUpperInfoGroup">
+        <g id="RollProtGroup" className="NormalStroke Green">
+            <path id="RollProtRight" d="m105.67 62.887 1.5707-0.8008m-1.5707-0.78293 1.3463-0.68639" />
+            <path id="RollProtLeft" d="m32.138 61.303-1.3463-0.68639m1.3463 2.2701-1.5707-0.8008" />
+        </g>
+        <g id="RollProtLost" className="NormalStroke Amber">
+            <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
+            <path id="RollProtLostLeft" d="m30.043 62.478 1.7808-1.7818m-1.7808 0 1.7808 1.7818" />
+        </g>
+        <g className="NormalStroke White">
+            <path d="m98.645 51.067 2.8492-2.8509" />
+            <path d="m39.168 51.067-2.8492-2.8509" />
+            <path d="m90.858 44.839a42.133 42.158 0 0 0-43.904 0" />
+            <path d="m89.095 43.819 1.8313-3.1738 1.7448 1.0079-1.8313 3.1738" />
+            <path d="m84.259 41.563 0.90817-2.4967-1.8932-0.68946-0.90818 2.4966" />
+            <path d="m75.229 39.142 0.46109-2.6165 1.9841 0.35005-0.46109 2.6165" />
+            <path d="m60.6 39.492-0.46109-2.6165 1.9841-0.35005 0.46109 2.6165" />
+            <path d="m53.553 41.563-0.90818-2.4967 0.9466-0.34474 0.9466-0.34472 0.90818 2.4966" />
+            <path d="m46.973 44.827-1.8313-3.1738 1.7448-1.0079 1.8313 3.1738" />
+        </g>
+        <path className="NormalStroke Yellow" d="m68.906 38.741-2.5184-4.7373h5.0367l-2.5184 4.7373" />
+    </g>
+);
+
+export const AttitudeIndicatorFixedCenter = ({ isOnGround, dispIndex }) => {
+    const FDActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${dispIndex}`, 'Bool');
+
+    let FDRollOffset = 0;
+    let FDPitchOffset = 0;
+
+    if (FDActive) {
+        const FDRollOrder = SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR BANK', 'Radians');
+        const FDPitchOrder = SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR PITCH', 'Radians');
+
+        FDRollOffset = Math.min(Math.max(-FDRollOrder * 180 / Math.PI, -45), 45) * 0.44;
+        FDPitchOffset = Math.min(Math.max(FDPitchOrder * 180 / Math.PI, -22.5), 22.5) * 0.89;
+    }
+
+    return (
+        <g id="AttitudeSymbolsGroup">
+            <path className="Yellow Fill" d="m106.58 81.679v-1.7135h8.9654v1.7135z" />
+            <SidestickIndicator isOnGround={isOnGround} />
+            <g id="FixedAircraftReference" className="NormalStroke Yellow BlackFill">
+                <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
+                <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
+                <path d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
+            </g>
+            <path id="GroundYawSymbol" style={{ display: 'none' }} className="NormalStroke Green" d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z" />
+            <FlightDirector FDActive={FDActive} FDPitch={FDPitchOffset} FDRoll={FDRollOffset} />
+        </g>
+    );
+};
+
+const FlightDirector = ({ FDActive, FDRoll, FDPitch }) => {
+    // The FD bars actually also need an active mode to be displayed. This is todo.
+    if (!FDActive) {
+        return null;
+    }
+
+    return (
+        <g className="NormalStroke Green">
+            <path id="FlightDirectorRoll" transform={`translate(${FDRoll} 0)`} d="m68.906 61.168v39.31" />
+            <path id="FlightDirectorPitch" transform={`translate(0 ${FDPitch})`} d="m49.263 80.823h39.287" />
+        </g>
+    );
+};
+
+const SidestickIndicator = ({ isOnGround }) => {
+    if (!isOnGround) {
+        return null;
+    }
+
+    const SidestickPosX = SimVar.GetSimVarValue('YOKE X POSITION', 'Position') * 29.56;
+    const SidestickPosY = -SimVar.GetSimVarValue('YOKE Y POSITION', 'Position') * 23.02;
+
+    return (
+        <g id="GroundCursorGroup" className="NormalStroke White">
+            <path id="GroundCursorBorders" d="m92.327 103.75h6.0441v-6.0476m-58.93 0v6.0476h6.0441m46.842-45.861h6.0441v6.0476m-58.93 0v-6.0476h6.0441" />
+            <path id="GroundCursorCrosshair" transform={`translate(${SidestickPosX} ${SidestickPosY})`} d="m73.994 81.579h-4.3316v4.3341m-5.8426-4.3341h4.3316v4.3341m5.8426-5.846h-4.3316v-4.3341m-5.8426 4.3341h4.3316v-4.3341" />
+        </g>
+    );
+};
