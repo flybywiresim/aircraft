@@ -10,11 +10,11 @@ class A32NX_TransitionManager {
     update(_deltaTime, _core) {
         this.transitionSelector();
     }
-    transitionSelector() {
+    async transitionSelector() {
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
         if (mode === "AUTO") {
-            let departureICAO = NXDataStore.get("PLAN_ORIGIN", "").substr(0, 2);
-            let arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "").substr(0, 2);
+            let departureICAO = await NXDataStore.get("PLAN_ORIGIN", "").substr(0, 2);
+            let arrivalICAO = await NXDataStore.get("PLAN_DESTINATION", "").substr(0, 2);
             this.departureLogic(departureICAO);
             this.arrivalLogic(arrivalICAO);
         }
@@ -50,10 +50,16 @@ class A32NX_TransitionManager {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", arrival.transAlt);
         }
     }
+    transitionLevel(airport) {
+        let transAlt = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+        let localQNH = 1013;
+        let QNH = 1013;
+        let transitionLevel = (transAlt + 28*(QNH-localQNH))
+    }
 }
     const airportList = [
     //NorthAmerica
-        { icao: "PA", transAlt: NaN },
+        { icao: "PA", transAlt: 18000 },
         { icao: "C", transAlt: 18000 },
         { icao: "K", transAlt: 18000 },
         { icao: "BG", transAlt: NaN },
