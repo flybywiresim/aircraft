@@ -544,7 +544,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.STDpressureSVGShape.classList.remove("blink");
     }
 
-        _updateQNHAlert(indicatedAltitude, baroMode) {
+    _updateQNHAlert(indicatedAltitude, baroMode) {
         this._removeBlink(); //Reset Blink
 
         const transTakeoffAlt = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
