@@ -53,7 +53,7 @@ class A32NX_TransitionManager {
     }
     async transitionLevel() {
         let transAlt = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
-        let arrivalICAO = await NXDataStore.get("PLAN_DESTINATION", "").substr(0, 2);
+        let arrivalICAO = await NXDataStore.get("PLAN_DESTINATION", "");
         let QNH = await getMETAR(arrivalICAO, MSFS);
         let transitionLevel = (((transAlt + 28*(QNH - 1013)) + 2500)/2);
         SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LVL", "Number", transitionLevel);
