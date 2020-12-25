@@ -21,13 +21,13 @@ It's recommended to set gitbash as your default shell in vscode
 ```shell
 git clone https://github.com/flybywiresim/a32nx.git
 cd a32nx
-./scripts/dev-env/run.cmd ./scripts/setup.sh
+.\scripts\dev-env\run.cmd ./scripts/setup.sh
 ```
 
 ## Building
 
 ```shell
-./scripts/dev-env/run.cmd ./scripts/build.sh
+.\scripts\dev-env\run.cmd ./scripts/build.sh
 ```
 
 Note that you should use `run.sh` instead of `run.cmd` if you are on Linux (including WSL).

@@ -55,7 +55,7 @@ class CDUMenuPage {
 
             mcdu.setTemplate([
                 ["MCDU MENU"],
-                ["", "SELECT"],
+                ["", "SELECT\xa0"],
                 [textFMGC, "NAV B/UP>"],
                 [""],
                 [textATSU],
@@ -72,54 +72,54 @@ class CDUMenuPage {
 
         updateView();
 
-        mcdu.showErrorMessage("SELECT DESIRED SYSTEM");
+        mcdu.addNewMessage(NXSystemMessages.selectDesiredSystem);
 
         mcdu.onLeftInput[0] = () => {
-            mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
+            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
             selectedFMGC = true;
             updateView();
             setTimeout(() => {
-                mcdu.showErrorMessage("");
+                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
                 CDUIdentPage.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 100);
         };
 
         mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
+            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
             selectedATSU = true;
             updateView();
             setTimeout(() => {
-                mcdu.showErrorMessage("");
+                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
                 CDUAtsuMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 200);
         };
 
         mcdu.onLeftInput[2] = () => {
-            mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
+            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
             selectedAIDS = true;
             updateView();
             setTimeout(() => {
-                mcdu.showErrorMessage("");
+                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
                 CDU_AIDS_MainMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 400);
         };
 
         mcdu.onLeftInput[3] = () => {
-            mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
+            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
             selectedCFDS = true;
             updateView();
             setTimeout(() => {
-                mcdu.showErrorMessage("");
+                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
                 CDUCfdsMainMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 400);
         };
 
         mcdu.onRightInput[4] = () => {
-            mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
+            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
             selectedMaint = true;
             updateView();
             setTimeout(() => {
-                mcdu.showErrorMessage("");
+                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
                 CDU_OPTIONS_MainMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 200);
         };
@@ -169,6 +169,14 @@ class CDUMenuPage {
             setTimeout(() => {
                 if (mcdu.page.Current === cur) {
                     CDUFlightPlanPage.ShowPage(mcdu);
+                }
+            }, mcdu.getDelaySwitchPage());
+        };
+        mcdu.onSec = () => {
+            const cur = mcdu.page.Current;
+            setTimeout(() => {
+                if (mcdu.page.Current === cur) {
+                    CDUSecFplnMain.ShowPage(mcdu);
                 }
             }, mcdu.getDelaySwitchPage());
         };
