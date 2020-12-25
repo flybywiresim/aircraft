@@ -9,6 +9,7 @@ class A32NX_TransitionManager {
     }
     update(_deltaTime, _core) {
         this.transitionSelector();
+        this.transitionLevel();
     }
     async transitionSelector() {
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
@@ -50,11 +51,12 @@ class A32NX_TransitionManager {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", arrival.transAlt);
         }
     }
-    transitionLevel(airport) {
+    async transitionLevel() {
         let transAlt = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
-        let localQNH = 1013;
-        let QNH = 1013;
-        let transitionLevel = (transAlt + 28*(QNH-localQNH))
+        let arrivalICAO = await NXDataStore.get("PLAN_DESTINATION", "").substr(0, 2);
+        let QNH = await getMETAR(arrivalICAO, MSFS);
+        let transitionLevel = (((transAlt + 28*(QNH - 1013)) + 2500)/2);
+        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LVL", "Number", transitionLevel);
     }
 }
     const airportList = [
