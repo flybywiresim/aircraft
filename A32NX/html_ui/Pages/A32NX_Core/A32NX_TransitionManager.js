@@ -13,11 +13,19 @@ class A32NX_TransitionManager {
     }
     async transitionSelector() {
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
+        let checkspawn = NXDataStore.get("PLAN_ORIGIN", "").substr(0, 2);
         if (mode === "AUTO") {
-            let departureICAO = await NXDataStore.get("PLAN_ORIGIN", "").substr(0, 2);
-            let arrivalICAO = await NXDataStore.get("PLAN_DESTINATION", "").substr(0, 2);
-            this.departureLogic(departureICAO);
-            this.arrivalLogic(arrivalICAO);
+            if (checkspawn === "") {
+                let departureICAO = await NXDataStore.get("PLAN_ORIGIN", "").substr(0, 2);
+                let arrivalICAO = await NXDataStore.get("PLAN_DESTINATION", "").substr(0, 2);
+                this.departureLogic(departureICAO);
+                this.arrivalLogic(arrivalICAO);
+            } else {
+                let departureICAO = NXDataStore.get("PLAN_ORIGIN", "").substr(0, 2);
+                let arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "").substr(0, 2);
+                this.departureLogic(departureICAO);
+                this.arrivalLogic(arrivalICAO);
+            }
         }
     }
     transitionManual() {
