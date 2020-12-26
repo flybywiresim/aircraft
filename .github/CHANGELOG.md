@@ -12,6 +12,8 @@
 1. [SOUND] Seatbelt sign now has a delay - @hotshotp (Boris#9134)
 1. [FUEL] Fix outer tank fuel transfer - @donstim - (donbikes#4084)
 1. [PFD] Added auto brake status to FMA - @MisterChocker (Leon)
+1. [UTILS] Added Vfe and Vfen table - @MisterChocker (Leon)
+1. [PFD] Fixed wrong Vfe and Vfen indication - @MisterChocker (Leon)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
