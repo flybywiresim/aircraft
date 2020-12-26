@@ -1,16 +1,6 @@
-import { useState } from 'react';
 import * as RadNav from './RadioNav.jsx';
-import { useInteractionEvent } from '../util.mjs';
 
-export function LandingSystem({ dispIndex }) {
-    const [LSButtonPressed, setLSButtonPressed] = useState(false);
-
-    useInteractionEvent(`A320_Neo_PFD_BTN_LS_${dispIndex}`, () => {
-        const currentState = SimVar.GetSimVarValue(`L:BTN_LS_${dispIndex}_FILTER_ACTIVE`, 'Bool');
-        setLSButtonPressed(!currentState);
-        SimVar.SetSimVarValue(`L:BTN_LS_${dispIndex}_FILTER_ACTIVE`, 'number', !currentState ? 1 : 0);
-    });
-
+export function LandingSystem({ LSButtonPressed }) {
     let localizer = null;
     let showVDev = false;
 

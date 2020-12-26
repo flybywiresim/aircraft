@@ -26,7 +26,7 @@ export const calculateVerticalOffsetFromRoll = (roll) => {
  * @param angle2 Second angle in degrees
  * @returns {number} Smallest angle between angle1 and angle2 in degrees
  */
-const getSmallestAngle = (angle1, angle2) => {
+export const getSmallestAngle = (angle1, angle2) => {
     let smallestAngle = angle1 - angle2;
     if (smallestAngle > 180) {
         smallestAngle -= 360;
@@ -52,7 +52,7 @@ export const HorizontalTape = ({
     for (let i = 0; i < numTicks; i++) {
         const elementHeading = leftmostHeading + i * valueSpacing;
         const offset = elementHeading * distanceSpacing / valueSpacing;
-        graduationElements.push(graduationElementFunction(heading, offset));
+        graduationElements.push(graduationElementFunction(elementHeading, offset));
     }
 
     bugs.forEach((currentElement) => {
