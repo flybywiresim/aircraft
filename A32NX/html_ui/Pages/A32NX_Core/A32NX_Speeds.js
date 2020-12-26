@@ -57,8 +57,6 @@ class A32NX_Speeds {
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", speeds.gd);
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFE", "number", speeds.vfe);
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", speeds.vfeN);
-
-            console.log("VFE: " + speeds.vfe + ", VFEN: " + speeds.vfeN);
         }, 500);
     }
 
