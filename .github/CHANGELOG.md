@@ -5,7 +5,14 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.6.0
-1. [MFD] Flight route now hidden in VOR ROSE and ILS ROSE modes @2hwk (2Cas#1022)
+1. [ND] Flight route now hidden in VOR ROSE and ILS ROSE modes - @2hwk (2Cas#1022)
+1. [CDU] Added WIND page - @tyler58546 (tyler58546)
+1. [MISC] Fixed F/O displays being synced with the captain's displays - @tyler58546 (tyler58546)
+1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
+1. [SOUND] Added new vent test and ext pwr relay random sounds - @hotshotp (Boris#9134)
+1. [SOUND] Seatbelt sign now has a delay - @hotshotp (Boris#9134)
+1. [FUEL] Fix outer tank fuel transfer - @donstim - (donbikes#4084)
+1. [PFD] Added auto brake status to FMA - @MisterChocker (Leon)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)

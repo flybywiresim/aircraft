@@ -1140,7 +1140,7 @@
 						<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="20"/>
 						<Property Name="Volume" Type="Real64">
 							<ValueList>
-								<Value>-5</Value>
+								<Value>-6</Value>
 							</ValueList>
 							<RTPCList>
 								<RTPC Name="" ID="{30BE0D5E-7276-46BF-B74D-2AF5C675E4F8}" ShortID="998071198">
@@ -8300,7 +8300,7 @@
 												<Flags>5</Flags>
 											</Point>
 											<Point>
-												<XPos>-3</XPos>
+												<XPos>-5</XPos>
 												<YPos>0</YPos>
 												<Flags>0</Flags>
 												<SegmentShape>Log3</SegmentShape>
@@ -8312,7 +8312,7 @@
 												<SegmentShape>Exp3</SegmentShape>
 											</Point>
 											<Point>
-												<XPos>3</XPos>
+												<XPos>5</XPos>
 												<YPos>0</YPos>
 												<Flags>0</Flags>
 											</Point>
@@ -8341,7 +8341,7 @@
 												<Flags>5</Flags>
 											</Point>
 											<Point>
-												<XPos>-3</XPos>
+												<XPos>-5</XPos>
 												<YPos>0</YPos>
 												<Flags>0</Flags>
 												<SegmentShape>Log1</SegmentShape>
@@ -8353,7 +8353,7 @@
 												<SegmentShape>Exp1</SegmentShape>
 											</Point>
 											<Point>
-												<XPos>3</XPos>
+												<XPos>5</XPos>
 												<YPos>0</YPos>
 												<Flags>0</Flags>
 											</Point>
@@ -8365,42 +8365,42 @@
 										</PointList>
 									</Curve>
 								</RTPC>
-								<RTPC Name="" ID="{CEE4D1BB-FAD6-4D65-8A45-CC456F4513C6}" ShortID="457923449">
+								<RTPC Name="" ID="{0817EF8D-DE95-402F-B66F-A5370E446FE6}" ShortID="744262478">
 									<ReferenceList>
 										<Reference Name="ControlInput">
 											<ObjectRef Name="SIMVAR_ROTATION_VELOCITY_BODY_Z" ID="{9970D6C2-20EF-4E4B-A40D-0181AB8EA25B}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
 										</Reference>
 									</ReferenceList>
-									<Curve Name="" ID="{72E137E7-5F95-4F74-8E28-CA810605C39F}">
+									<Curve Name="" ID="{781878C8-43B8-4892-AABD-8E8316AB9995}">
 										<PropertyList>
 											<Property Name="Flags" Type="int32" Value="3"/>
 										</PropertyList>
 										<PointList>
 											<Point>
 												<XPos>-180</XPos>
-												<YPos>8.34245</YPos>
+												<YPos>8.34245000000001</YPos>
 												<Flags>5</Flags>
 											</Point>
 											<Point>
-												<XPos>-12</XPos>
+												<XPos>-10</XPos>
 												<YPos>0</YPos>
 												<Flags>0</Flags>
-												<SegmentShape>Log3</SegmentShape>
+												<SegmentShape>Log1</SegmentShape>
 											</Point>
 											<Point>
 												<XPos>0</XPos>
-												<YPos>-18.1697</YPos>
+												<YPos>-12.14909</YPos>
 												<Flags>0</Flags>
-												<SegmentShape>Exp3</SegmentShape>
+												<SegmentShape>Exp1</SegmentShape>
 											</Point>
 											<Point>
-												<XPos>12</XPos>
+												<XPos>10</XPos>
 												<YPos>0</YPos>
 												<Flags>0</Flags>
 											</Point>
 											<Point>
 												<XPos>180</XPos>
-												<YPos>8.34245</YPos>
+												<YPos>8.34245000000001</YPos>
 												<Flags>37</Flags>
 											</Point>
 										</PointList>
@@ -8577,13 +8577,13 @@
 								<Value>-10</Value>
 							</ValueList>
 							<RTPCList>
-								<RTPC Name="" ID="{7FBD8F7A-E408-42C1-A6B9-82F2DF3AC105}" ShortID="655906334">
+								<RTPC Name="" ID="{C6BB5269-B4B5-4525-B24D-EE2C12B80DD6}" ShortID="555248114">
 									<ReferenceList>
 										<Reference Name="ControlInput">
 											<ObjectRef Name="SIMVAR_ROTATION_VELOCITY_BODY_Y" ID="{EF1B8C24-E1F2-49AC-9E6D-DCC302992296}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
 										</Reference>
 									</ReferenceList>
-									<Curve Name="" ID="{5E823FDD-1D74-43ED-AB53-C3DC438E8407}">
+									<Curve Name="" ID="{3D847DCA-863D-403A-9B7C-69704E9D66D6}">
 										<PropertyList>
 											<Property Name="Flags" Type="int32" Value="3"/>
 										</PropertyList>
@@ -8594,7 +8594,7 @@
 												<Flags>5</Flags>
 											</Point>
 											<Point>
-												<XPos>-3</XPos>
+												<XPos>-5</XPos>
 												<YPos>0</YPos>
 												<Flags>0</Flags>
 												<SegmentShape>Log1</SegmentShape>
@@ -8606,7 +8606,7 @@
 												<SegmentShape>Exp1</SegmentShape>
 											</Point>
 											<Point>
-												<XPos>3</XPos>
+												<XPos>5</XPos>
 												<YPos>0</YPos>
 												<Flags>0</Flags>
 											</Point>
@@ -8618,13 +8618,13 @@
 										</PointList>
 									</Curve>
 								</RTPC>
-								<RTPC Name="" ID="{040B6A85-2548-4A8C-BABD-2133068E21BC}" ShortID="1012375398">
+								<RTPC Name="" ID="{B9BC30CB-7CB3-446B-AE8D-F2D790200DCC}" ShortID="108010306">
 									<ReferenceList>
 										<Reference Name="ControlInput">
 											<ObjectRef Name="SIMVAR_ROTATION_VELOCITY_BODY_Z" ID="{9970D6C2-20EF-4E4B-A40D-0181AB8EA25B}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
 										</Reference>
 									</ReferenceList>
-									<Curve Name="" ID="{72CB47E6-E481-4C62-BE15-1FC197DBAECE}">
+									<Curve Name="" ID="{9068CAF4-9738-45D3-BB60-8E7D45006BC5}">
 										<PropertyList>
 											<Property Name="Flags" Type="int32" Value="3"/>
 										</PropertyList>
@@ -8635,19 +8635,19 @@
 												<Flags>5</Flags>
 											</Point>
 											<Point>
-												<XPos>-12</XPos>
+												<XPos>-10</XPos>
 												<YPos>0</YPos>
 												<Flags>0</Flags>
-												<SegmentShape>Log3</SegmentShape>
+												<SegmentShape>Log1</SegmentShape>
 											</Point>
 											<Point>
 												<XPos>0</XPos>
-												<YPos>-18.1697</YPos>
+												<YPos>-12.14909</YPos>
 												<Flags>0</Flags>
-												<SegmentShape>Exp3</SegmentShape>
+												<SegmentShape>Exp1</SegmentShape>
 											</Point>
 											<Point>
-												<XPos>12</XPos>
+												<XPos>10</XPos>
 												<YPos>0</YPos>
 												<Flags>0</Flags>
 											</Point>
@@ -8659,13 +8659,13 @@
 										</PointList>
 									</Curve>
 								</RTPC>
-								<RTPC Name="" ID="{A8118DED-62E7-4A0E-B6B4-FC893F224605}" ShortID="680758218">
+								<RTPC Name="" ID="{E3381ECE-21C4-448F-8B0E-67CCA34FA64F}" ShortID="499475126">
 									<ReferenceList>
 										<Reference Name="ControlInput">
 											<ObjectRef Name="SIMVAR_ROTATION_VELOCITY_BODY_X" ID="{8443ACC6-D722-4B5A-A546-1E9DEACEB8FD}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
 										</Reference>
 									</ReferenceList>
-									<Curve Name="" ID="{332EF1DA-86E2-428B-8197-6CB1D88FE7E1}">
+									<Curve Name="" ID="{BA5BED8F-F023-4CA2-A266-D4B3E26CE156}">
 										<PropertyList>
 											<Property Name="Flags" Type="int32" Value="3"/>
 										</PropertyList>
@@ -8676,7 +8676,7 @@
 												<Flags>5</Flags>
 											</Point>
 											<Point>
-												<XPos>-3</XPos>
+												<XPos>-5</XPos>
 												<YPos>0</YPos>
 												<Flags>0</Flags>
 												<SegmentShape>Log3</SegmentShape>
@@ -8688,7 +8688,7 @@
 												<SegmentShape>Exp3</SegmentShape>
 											</Point>
 											<Point>
-												<XPos>3</XPos>
+												<XPos>5</XPos>
 												<YPos>0</YPos>
 												<Flags>0</Flags>
 											</Point>
