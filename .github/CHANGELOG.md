@@ -14,6 +14,7 @@
 1. [PFD] Added auto brake status to FMA - @MisterChocker (Leon)
 1. [CDU] Add Transition Altitude & Level Options - @Kimbyeongjang (김병장#7165)
 1. [System] Add Transition Level Logic - @Kimbyeongjang (김병장#7165)
+1. [System] Add Transition Altitude Database - @Kimbyeongjang (김병장#7165)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
