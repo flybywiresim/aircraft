@@ -4,11 +4,11 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
-## 0.6.0
+## 0.5.2
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 1. [MISC] Fix F/O displays being synced with the captain's displays - @tyler58546 (tyler58546)
 1. [FUEL] Fix outer tank fuel transfer - @donstim - (donbikes#4084)
-
+1. [FLIGHTMODEL] Preliminary fix for flaps 1 unrecoverable dives - @donstim (donbikes#4084)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
