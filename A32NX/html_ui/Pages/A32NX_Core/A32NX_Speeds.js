@@ -29,7 +29,10 @@ class A32NX_Speeds {
          */
         setInterval(() => {
             const fp = Simplane.getCurrentFlightPhase();
-            const fhi = Simplane.getFlapsHandleIndex();
+            let fhi = Simplane.getFlapsHandleIndex();
+            if (fhi === 1 && SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT INDEX", "Number") === 0) {
+                fhi = 5;
+            }
             const gw = this.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg")) / 1000;
             const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
             const alt = this.round(Simplane.getAltitude());
@@ -38,14 +41,13 @@ class A32NX_Speeds {
                 return;
             }
 
-            this.curFhi = this.lastFhi === 0 && fhi === 1 && fp > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
             this.lastFhi = fhi;
             this.lastGw = gw;
             this.cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
             this.ldgPos = ldg;
             this.alt = alt;
 
-            const speeds = new NXSpeeds(gw, this.curFhi, ldg, fp < FlightPhase.FLIGHT_PHASE_CLIMB);
+            const speeds = new NXSpeeds(gw, this.lastFhi, ldg, fp < FlightPhase.FLIGHT_PHASE_CLIMB);
             speeds.compensateForMachEffect(alt);
 
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_VS", "number", speeds.vs);
