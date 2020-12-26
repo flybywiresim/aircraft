@@ -21,15 +21,23 @@ function PFD() {
 
     const pitch = -SimVar.GetSimVarValue('PLANE PITCH DEGREES', 'degrees');
     const roll = SimVar.GetSimVarValue('PLANE BANK DEGREES', 'degrees');
+    const heading = SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'degrees');
 
     const isOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'Bool');
 
     const radioAlt = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND MINUS CG', 'feet');
     const decisionHeight = SimVar.GetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet');
 
+    const FDActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${dispIndex}`, 'Bool');
+
+    let selectedHeading = NaN;
+    if (SimVar.GetSimVarValue('L:A320_FCU_SHOW_SELECTED_HEADING', 'number')) {
+        selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
+    }
+
     return (
         <svg className="pfd-svg" version="1.1" viewBox="0 0 158.75 158.75" xmlns="http://www.w3.org/2000/svg">
-            <Horizon pitch={pitch} roll={roll} isOnGround={isOnGround} radioAlt={radioAlt} decisionHeight={decisionHeight} />
+            <Horizon pitch={pitch} roll={roll} heading={heading} FDActive={FDActive} selectedHeading={selectedHeading} isOnGround={isOnGround} radioAlt={radioAlt} decisionHeight={decisionHeight} />
             <path
                 id="Mask1"
                 className="BackgroundFill"
@@ -45,7 +53,7 @@ function PFD() {
             />
             <LandingSystem dispIndex={dispIndex} />
             <AttitudeIndicatorFixedUpper />
-            <AttitudeIndicatorFixedCenter isOnGround={isOnGround} dispIndex={dispIndex} />
+            <AttitudeIndicatorFixedCenter isOnGround={isOnGround} FDActive={FDActive} />
             <VerticalSpeedIndicator radioAlt={radioAlt} />
         </svg>
     );

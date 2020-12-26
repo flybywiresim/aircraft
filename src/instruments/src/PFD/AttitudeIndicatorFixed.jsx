@@ -23,9 +23,7 @@ export const AttitudeIndicatorFixedUpper = () => (
     </g>
 );
 
-export const AttitudeIndicatorFixedCenter = ({ isOnGround, dispIndex }) => {
-    const FDActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${dispIndex}`, 'Bool');
-
+export const AttitudeIndicatorFixedCenter = ({ isOnGround, FDActive }) => {
     let FDRollOffset = 0;
     let FDPitchOffset = 0;
 
