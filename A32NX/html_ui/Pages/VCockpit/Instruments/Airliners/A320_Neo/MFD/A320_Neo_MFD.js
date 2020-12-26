@@ -460,7 +460,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.removeTopOf();
             } else {
                 const active = SimVar.GetSimVarValue("L:BTN_CSTR_" + this.screenIndex + "_FILTER_ACTIVE", "number");
-                console.log(active);
                 if (active) {
                     this.map.instrument.showConstraints = true;
                 }
