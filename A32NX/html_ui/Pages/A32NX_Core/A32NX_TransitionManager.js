@@ -18,10 +18,12 @@ class A32NX_TransitionManager {
             let arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "");
             if (departureICAO.substr(0, 1) === "K" || (departureICAO.substr(0, 1) === "C" && departureICAO !== cAirportList.find(cAirportList => cAirportList.icao === departureICAO))) {
                 SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
-            } else if (arrivalICAO.substr(0, 1) === "K" || (arrivalICAO.substr(0, 1) === "C" && arrivalICAO !== cAirportList.find(cAirportList => cAirportList.icao === arrivalICAO))) {
-                SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
             } else {
                 this.departureLogic(departureICAO);
+            }
+            if (arrivalICAO.substr(0, 1) === "K" || (arrivalICAO.substr(0, 1) === "C" && arrivalICAO !== cAirportList.find(cAirportList => cAirportList.icao === arrivalICAO))) {
+                SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
+            } else {
                 this.arrivalLogic(arrivalICAO);
             }
         }
