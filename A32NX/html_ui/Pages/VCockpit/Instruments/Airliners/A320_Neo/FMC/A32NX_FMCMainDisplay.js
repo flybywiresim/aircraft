@@ -3480,7 +3480,7 @@ class FMCMainDisplay extends BaseAirliners {
     setAPSelectedSpeed(_speed, _aircraft) {
         if (isFinite(_speed)) {
             if (Simplane.getAutoPilotMachModeActive()) {
-                const mach = SimVar.GetGameVarValue("FROM KIAS TO MACH", "number", _speed) + this.athrDiff;
+                const mach = NXSpeedsUtils.convertKCasToMach(_speed);
                 Coherent.call("AP_MACH_VAR_SET", 1, mach);
                 SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
                 return;
@@ -3493,9 +3493,9 @@ class FMCMainDisplay extends BaseAirliners {
     setAPManagedSpeed(_speed, _aircraft) {
         if (isFinite(_speed)) {
             if (Simplane.getAutoPilotMachModeActive()) {
-                let mach = SimVar.GetGameVarValue("FROM KIAS TO MACH", "number", _speed);
+                let mach = NXSpeedsUtils.convertKCasToMach(_speed);
                 const cruiseMach = SimVar.GetGameVarValue("AIRCRAFT CRUISE MACH", "mach");
-                mach = Math.min(mach, cruiseMach) + this.athrDiff;
+                mach = Math.min(mach, cruiseMach);
                 Coherent.call("AP_MACH_VAR_SET", 2, mach);
                 SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
                 return;

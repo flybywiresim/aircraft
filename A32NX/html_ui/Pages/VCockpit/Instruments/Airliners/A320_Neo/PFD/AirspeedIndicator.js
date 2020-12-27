@@ -672,6 +672,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     }
     update(dTime) {
         const indicatedSpeed = SimVar.GetSimVarValue("L:A32NX_SPEEDS_KCAS", "number");
+        const iasOffset = Simplane.getIndicatedSpeed() - indicatedSpeed;
         if (!this.altOver20k && Simplane.getAltitude() >= 20000) {
             this.altOver20k = true;
         }
@@ -700,7 +701,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             );
         this.smoothSpeeds(indicatedSpeed, dTime, maxSpeed, vls, vs * 1.1, vs * 1.03, vs);
         this.updateSpeedTrendArrow(indicatedSpeed, speedTrend);
-        this.updateTargetSpeeds(indicatedSpeed, decel);
+        this.updateTargetSpeeds(indicatedSpeed, decel, iasOffset);
         this.updateNextFlapSpeedIndicator(indicatedSpeed, nextFlapSpeed);
         this.updateStrip(this.vMaxStripSVG, indicatedSpeed, this._maxSpeed, false, true);
         this.updateStrip(this.vlsStripSVG, indicatedSpeed, this._vls, planeOnGround, false);
@@ -902,7 +903,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.speedTrendArrowSVG.setAttribute("visibility", "visible");
         }
     }
-    updateTargetSpeeds(currentAirspeed, _isDecel) {
+    updateTargetSpeeds(currentAirspeed, _isDecel, _iasOffset) {
         {
             let hideV1BlueTextLower = true;
             let v1Speed = 0;
@@ -936,9 +937,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 const isSelected = Simplane.getAutoPilotAirspeedSelected();
                 if (isSelected) {
                     if (Simplane.getAutoPilotMachModeActive()) {
-                        blueAirspeed = SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotMachHoldValue());
+                        blueAirspeed = NXSpeedsUtils.convertMachToKCas(Simplane.getAutoPilotMachHoldValue());
                     } else {
-                        blueAirspeed = Simplane.getAutoPilotAirspeedHoldValue();
+                        blueAirspeed = Simplane.getAutoPilotAirspeedHoldValue() - _iasOffset;
                     }
                 }
             }
@@ -993,9 +994,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 const isManaged = Simplane.getAutoPilotAirspeedManaged();
                 if (isManaged) {
                     if (Simplane.getAutoPilotMachModeActive()) {
-                        redAirspeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH ? SimVar.GetSimVarValue("L:A32NX_AP_APPVLS", "knots") : SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotMachHoldValue());
+                        redAirspeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH ? SimVar.GetSimVarValue("L:A32NX_AP_APPVLS", "knots") : NXSpeedsUtils.convertMachToKCas(Simplane.getAutoPilotMachHoldValue());
                     } else {
-                        redAirspeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH ? SimVar.GetSimVarValue("L:A32NX_AP_APPVLS", "knots") : Simplane.getAutoPilotAirspeedHoldValue();
+                        redAirspeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH ? SimVar.GetSimVarValue("L:A32NX_AP_APPVLS", "knots") : Simplane.getAutoPilotAirspeedHoldValue() - _iasOffset;
                     }
                 }
             }

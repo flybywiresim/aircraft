@@ -738,8 +738,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     _onModeSelectedSpeed() {
         if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 0) {
-            const currentSpeed = Simplane.getIndicatedSpeed();
-            this.setAPSelectedSpeed(currentSpeed, Aircraft.A320_NEO);
+            this.setAPSelectedSpeed(this.kcas, Aircraft.A320_NEO);
         }
         SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
     }

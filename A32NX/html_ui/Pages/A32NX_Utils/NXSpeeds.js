@@ -370,14 +370,35 @@ function _convertMachToKTas(M, T) {
 }
 
 /**
+ * Convert TAS to Mach
+ * @param Vt {number} TAS
+ * @param T {number} Degree Kelvin
+ * @returns {number} True Air Speed
+ */
+function _convertKTASToMach(Vt, T) {
+    return Vt / 661.4786 / Math.sqrt(T / 288.15);
+}
+
+/**
  * Convert TAS to Calibrated Air Speed
  * @param Vt {number} velocity true air speed
- * @param T {number} current temperature degree Celsius
+ * @param T {number} current temperature degree Kelvin
  * @param p {number} current pressure hpa
  * @returns {number} Calibrated Air Speed
  */
 function _convertTasToKCas(Vt, T, p) {
     return 1479.1 * Math.sqrt((p / 1013 * ((1 + 1 / (T / 288.15) * (Vt / 1479.1) ** 2) ** 3.5 - 1) + 1) ** (1 / 3.5) - 1);
+}
+
+/**
+* Convert KCAS to KTAS
+* @param Vc {number} velocity true air speed
+* @param T {number} current temperature degree Kelvin
+* @param p {number} current pressure hpa
+* @returns {number} Calibrated Air Speed
+*/
+function _convertKCasToKTAS(Vc, T, p) {
+    return 1479.1 * Math.sqrt(T / 288.15 * ((1 / (p / 1013) * ((1 + 0.2 * (Vc / 661.4786) ** 2) ** 3.5 - 1) + 1) ** (1 / 3.5) - 1));
 }
 
 class NXSpeeds {
@@ -487,5 +508,20 @@ class NXSpeedsUtils {
      */
     static getKCasFromTas(Vt, T, p) {
         return _convertTasToKCas(Vt, _convertCtoK(T), p);
+    }
+
+    /**
+     * Converts KCAS to Mach
+     * @param Vc {number} velocity kcas
+     * @param T {number} current temperature degree Celsius
+     * @param p {number} current pressure hpa
+     * @returns {number} Mach
+     */
+    static convertKCasToMach(
+        Vc,
+        T = _convertCtoK(Simplane.getAmbientTemperature()),
+        p = SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar")
+    ) {
+        return _convertKTASToMach(_convertKCasToKTAS(Vc, T, p), T);
     }
 }
