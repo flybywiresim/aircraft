@@ -61,10 +61,7 @@ class NXApi {
             });
         }
 
-        // Delete old connection using an override token
-        if (this.hasTelexConnection()) {
-            this.disconnectTelex(NXApi.accessToken);
-        }
+        const oldToken = NXApi.accessToken;
 
         const connectBody = NXApi.buildTelexBody(flightNo);
         const headers = {"Content-Type": "application/json"};
@@ -73,6 +70,12 @@ class NXApi {
             .then((response) => {
                 if (!response.ok) {
                     throw (response);
+                }
+
+                // Delete old connection using an override token
+                // in case the new one is successful
+                if (!!oldToken) {
+                    this.disconnectTelex(oldToken);
                 }
 
                 return response.json()
