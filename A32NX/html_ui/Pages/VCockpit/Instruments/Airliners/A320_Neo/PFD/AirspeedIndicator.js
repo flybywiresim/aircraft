@@ -671,7 +671,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         return marker;
     }
     update(dTime) {
-        const indicatedSpeed = Simplane.getIndicatedSpeed();
+        const indicatedSpeed = SimVar.GetSimVarValue("L:A32NX_SPEEDS_KCAS", "number");
         if (!this.altOver20k && Simplane.getAltitude() >= 20000) {
             this.altOver20k = true;
         }
@@ -712,8 +712,8 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.updateSpeedMarkers(indicatedSpeed);
         this.updateMachSpeed(dTime);
         this.updateSpeedOverride(dTime);
-        this.updateVSpeeds();
-        this.updateFail();
+        this.updateVSpeeds(indicatedSpeed);
+        this.updateFail(indicatedSpeed);
     }
     smoothSpeeds(_indicatedSpeed, _dTime, _maxSpeed, _vls, _vaprot, _vamax, _vs) {
         const seconds = _dTime / 1000;
@@ -735,9 +735,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this._lastMaxSpeedOverrideTime = 0;
         }
     }
-    updateVSpeeds() {
+    updateVSpeeds(ias) {
         if (this.vSpeedSVG) {
-            if (Simplane.getIndicatedSpeed() < 30) {
+            if (ias < 30) {
                 this.vSpeedSVG.setAttribute("visibility", "visible");
                 this.v1Speed.textContent = Simplane.getV1Airspeed().toFixed(0);
                 this.vRSpeed.textContent = Simplane.getVRAirspeed().toFixed(0);
@@ -1315,10 +1315,10 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             _marker.svg.setAttribute("visibility", "hidden");
         }
     }
-    updateFail() {
+    updateFail(ias) {
         const failed = !(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1);
         if (!failed) {
-            if (Simplane.getIndicatedSpeed() < 72) {
+            if (ias < 72) {
                 this.bottomLine.setAttribute("stroke", "transparent");
             } else {
                 this.bottomLine.setAttribute("stroke", "white");

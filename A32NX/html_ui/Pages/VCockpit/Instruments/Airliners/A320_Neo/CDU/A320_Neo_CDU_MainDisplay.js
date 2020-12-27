@@ -73,6 +73,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             des: [],
             alternate: null
         };
+        this.kcas = 0;
+        this.athrDiff = 0;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -389,6 +391,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateDisplayedConstraints();
 
         this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+        this.kcas = SimVar.GetSimVarValue("L:A32NX_SPEEDS_KCAS", "number");
+        this.athrDiff = Simplane.getIndicatedSpeed() - this.kcas;
     }
 
     /**
@@ -651,7 +655,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (raw) {
             return wpt.speedConstraint;
         }
-        const diff = Simplane.getIndicatedSpeed() - wpt.speedConstraint + 5;
+        const diff = this.kcas - wpt.speedConstraint + 5;
         if (diff < wpt.distanceInFP) {
             return Infinity;
         }
@@ -823,8 +827,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         if (_event === "AP_DEC_SPEED" || _event === "AP_INC_SPEED") {
             if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 0) {
-                const currentSpeed = Simplane.getIndicatedSpeed();
-                this.setAPSelectedSpeed(currentSpeed, Aircraft.A320_NEO);
+                this.setAPSelectedSpeed(this.kcas, Aircraft.A320_NEO);
             }
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number", 1);
         }
@@ -1316,9 +1319,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         pathAngle -= 360;
                     }
                     const absPathAngle = 180 - Math.abs(pathAngle);
-                    const airspeed = Simplane.getIndicatedSpeed();
-                    if (airspeed < 400) {
-                        const turnRadius = airspeed * 360 / (1091 * 0.36 / airspeed) / 3600 / 2 / Math.PI;
+                    if (this.kcas < 400) {
+                        const turnRadius = this.kcas * 360 / (1091 * 0.36 / this.kcas) / 3600 / 2 / Math.PI;
                         const activateDistance = Math.pow(90 / absPathAngle, 1.6) * turnRadius * 1.2;
                         ;
                         const distanceToActive = Avionics.Utils.computeGreatCircleDistance(planeCoordinates, activeWaypoint.infos.coordinates);
@@ -1603,7 +1605,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_GATRK_MODE", "bool", 0);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", this.kcas);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
             //delete override logic when we have valid nav data -aka goaround path- after goaround!
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool", 0);

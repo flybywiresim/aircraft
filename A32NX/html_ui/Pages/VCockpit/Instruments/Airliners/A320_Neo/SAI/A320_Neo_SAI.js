@@ -298,7 +298,7 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
         this.centerSVG.appendChild(this.small_bugs[3]);
     }
     update(dTime) {
-        const indicatedSpeed = Simplane.getIndicatedSpeed();
+        const indicatedSpeed = SimVar.GetSimVarValue("L:A32NX_SPEEDS_KCAS", "number");
         this.updateArcScrolling(indicatedSpeed);
         this.updateGraduationScrolling(indicatedSpeed);
     }

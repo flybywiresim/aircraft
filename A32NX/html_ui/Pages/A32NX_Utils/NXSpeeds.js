@@ -350,6 +350,36 @@ function _getAngleDiff(a, b) {
     return 180 - Math.abs(Math.abs(a - b) - 180);
 }
 
+/**
+ * Convert degrees Celsius into degrees Kelvin
+ * @param T {number} degrees Celsius
+ * @returns {number} degrees Kelvin
+ */
+function _convertCtoK(T) {
+    return T + 273.15;
+}
+
+/**
+ * Convert Mach to True Air Speed
+ * @param M {number} Mach
+ * @param T {number} Degree Kelvin
+ * @returns {number} True Air Speed
+ */
+function _convertMachToKTas(M, T) {
+    return M * 661.4786 * Math.sqrt(T / 288.15);
+}
+
+/**
+ * Convert TAS to Calibrated Air Speed
+ * @param Vt {number} velocity true air speed
+ * @param T {number} current temperature degree Celsius
+ * @param p {number} current pressure hpa
+ * @returns {number} Calibrated Air Speed
+ */
+function _convertTasToKCas(Vt, T, p) {
+    return 1479.1 * Math.sqrt((p / 1013 * ((1 + 1 / (T / 288.15) * (Vt / 1479.1) ** 2) ** 3.5 - 1) + 1) ** (1 / 3.5) - 1);
+}
+
 class NXSpeeds {
     /**
      * Computes Vs, Vls, Vapp, F, S and GD
@@ -431,5 +461,31 @@ class NXSpeedsUtils {
         return Math.max(vapp, Math.min(Math.round(vapp + windDiff), Math.round(
             Simplane.getFlapsHandleIndex() === 4 ? Simplane.getMaxSpeed(Aircraft.A320_NEO) - 5 : Simplane.getNextFlapsExtendSpeed(Aircraft.A320_NEO)
         )));
+    }
+
+    /**
+     * Convert Mach to Calibrated Air Speed
+     * @param M {number} Mach
+     * @param T {number} Degree Kelvin
+     * @param p {number} current pressure hpa
+     * @returns {number} Calibrated Air Speed
+     */
+    static convertMachToKCas(
+        M,
+        T = _convertCtoK(Simplane.getAmbientTemperature()),
+        p = SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar")
+    ) {
+        return _convertTasToKCas(_convertMachToKTas(M, T), T, p);
+    }
+
+    /**
+     * Get Calibrated Air Speed from TAS
+     * @param Vt {number} velocity true air speed
+     * @param T {number} current temperature degree Celsius
+     * @param p {number} current pressure hpa
+     * @returns {number} Calibrated Air Speed
+     */
+    static getKCasFromTas(Vt, T, p) {
+        return _convertTasToKCas(Vt, _convertCtoK(T), p);
     }
 }

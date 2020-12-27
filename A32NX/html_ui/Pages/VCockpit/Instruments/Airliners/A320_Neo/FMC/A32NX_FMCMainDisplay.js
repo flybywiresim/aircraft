@@ -2535,7 +2535,7 @@ class FMCMainDisplay extends BaseAirliners {
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_GATRK_MODE", "bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
-                SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", this.kcas);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
                 //delete override logic when we have valid nav data -aka goaround path- after goaround!
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool", 0);
@@ -3480,12 +3480,12 @@ class FMCMainDisplay extends BaseAirliners {
     setAPSelectedSpeed(_speed, _aircraft) {
         if (isFinite(_speed)) {
             if (Simplane.getAutoPilotMachModeActive()) {
-                const mach = SimVar.GetGameVarValue("FROM KIAS TO MACH", "number", _speed);
+                const mach = SimVar.GetGameVarValue("FROM KIAS TO MACH", "number", _speed) + this.athrDiff;
                 Coherent.call("AP_MACH_VAR_SET", 1, mach);
                 SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
                 return;
             }
-            Coherent.call("AP_SPD_VAR_SET", 1, _speed);
+            Coherent.call("AP_SPD_VAR_SET", 1, _speed + this.athrDiff);
             SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
         }
     }
@@ -3495,12 +3495,12 @@ class FMCMainDisplay extends BaseAirliners {
             if (Simplane.getAutoPilotMachModeActive()) {
                 let mach = SimVar.GetGameVarValue("FROM KIAS TO MACH", "number", _speed);
                 const cruiseMach = SimVar.GetGameVarValue("AIRCRAFT CRUISE MACH", "mach");
-                mach = Math.min(mach, cruiseMach);
+                mach = Math.min(mach, cruiseMach) + this.athrDiff;
                 Coherent.call("AP_MACH_VAR_SET", 2, mach);
                 SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
                 return;
             }
-            Coherent.call("AP_SPD_VAR_SET", 2, _speed);
+            Coherent.call("AP_SPD_VAR_SET", 2, _speed + this.athrDiff);
             SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
         }
     }

@@ -14,12 +14,15 @@ class A32NX_Speeds {
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_S", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_KCAS", "number", 0);
         this.lastGw = 50;
         this.lastFhi = -1;
         this.curFhi = -1;
         this.ldgPos = -1;
         this.alt = -1;
-        this.cgw = 0;
+        this.tas = 0;
+        this.tat = 0;
+        this.p = 0;
 
         /**
          * Fetches aircraft parameter and checks against cached values.
@@ -39,7 +42,6 @@ class A32NX_Speeds {
             this.curFhi = this.lastFhi === 0 && fhi === 1 && fp > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
             this.lastFhi = fhi;
             this.lastGw = gw;
-            this.cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
             this.ldgPos = ldg;
             this.alt = alt;
 
@@ -55,6 +57,19 @@ class A32NX_Speeds {
     }
 
     update() {
+        const tas = Simplane.getTrueSpeed();
+        const tat = Simplane.getAmbientTemperature();
+        const p = SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar");
+
+        if (tas === this.tas && tat === this.tat && p === this.p) {
+            return;
+        }
+
+        this.tas = tas;
+        this.tat = tat;
+        this.p = p;
+
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_KCAS", "number", NXSpeedsUtils.getKCasFromTas(tas, tat, p));
     }
 
     /**

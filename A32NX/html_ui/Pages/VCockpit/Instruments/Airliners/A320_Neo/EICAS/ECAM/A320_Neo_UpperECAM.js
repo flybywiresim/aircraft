@@ -455,7 +455,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 flightPhasesInhib: [2, 3, 4, 8, 9, 10],
-                                isActive: () => Simplane.getIndicatedSpeed() > (A32NX_Selectors.VMAX() + 4),
+                                isActive: () => SimVar.GetSimVarValue("L:A32NX_SPEEDS_KCAS", "number") > (A32NX_Selectors.VMAX() + 4),
                             },
                         ]
                     },
