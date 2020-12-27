@@ -5,7 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.5.2
-1. [CDU] Added WIND page - @tyler58546 (tyler58546)
+1. [ND] Flight route now hidden in VOR ROSE and ILS ROSE modes - @2hwk (2Cas#1022)
 1. [MISC] Fix F/O displays being synced with the captain's displays - @tyler58546 (tyler58546)
 1. [FUEL] Fix outer tank fuel transfer - @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Preliminary fix for flaps 1 unrecoverable dives - @donstim (donbikes#4084)
