@@ -28,10 +28,8 @@ class CDUInitPage {
                     coRoute = "";
                 }
                 
-                let departure = mcdu.flightPlanManager.getOrigin();
-                let arrival = mcdu.flightPlanManager.getDestination();
-                NXDataStore.set("PLAN_ORIGIN", departure);
-                NXDataStore.set("PLAN_DESTINATION", arrival);
+                NXDataStore.set("PLAN_ORIGIN", mcdu.flightPlanManager.getOrigin().ident);
+                NXDataStore.set("PLAN_DESTINATION", mcdu.flightPlanManager.getDestination().ident);
 
                 //Need code to set the SimVarValue if user inputs FlNo
                 if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
