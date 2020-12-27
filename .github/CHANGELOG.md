@@ -12,8 +12,7 @@
 1. [SOUND] Seatbelt sign now has a delay - @hotshotp (Boris#9134)
 1. [FUEL] Fix outer tank fuel transfer - @donstim - (donbikes#4084)
 1. [PFD] Added auto brake status to FMA - @MisterChocker (Leon)
-1. [CDU] Add Transition Altitude & Level Options - @Kimbyeongjang (김병장#7165)
-1. [System] Add Transition Level Logic - @Kimbyeongjang (김병장#7165)
+1. [CDU] Add Transition Altitude Options - @Kimbyeongjang (김병장#7165)
 1. [System] Add Transition Altitude Database - @Kimbyeongjang (김병장#7165)
 
 ## 0.5.1
