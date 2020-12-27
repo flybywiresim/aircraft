@@ -1,9 +1,7 @@
 'use strict';
 
 /* global BaseInstrument */
-/* global Include */
 /* global registerInstrument */
-/* global g_modDebugMgr */
 
 // eslint-disable-next-line camelcase
 class A32NX_INSTRUMENT_NAME_Logic extends BaseInstrument {
@@ -22,10 +20,6 @@ class A32NX_INSTRUMENT_NAME_Logic extends BaseInstrument {
 
     connectedCallback() {
         super.connectedCallback();
-
-        Include.addScript('/JS/debug.js', () => {
-            g_modDebugMgr.AddConsole(null);
-        });
 
         // This is big hack, see `template.html`.
         {

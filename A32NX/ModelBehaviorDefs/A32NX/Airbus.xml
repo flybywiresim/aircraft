@@ -1,5 +1,23 @@
+<!--
+  ~ A32NX
+  ~ Copyright (C) 2020 FlyByWire Simulations and its contributors
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
 <ModelBehaviors>
-	<Template Name="ASOBO_RMP_BACKLIGHT_Template">
+	<Template Name="FBW_RMP_BACKLIGHT_Template">
 		<DefaultTemplateParameters>
 			<BACKLIGHT_NAME>PUSH_RADIO#SIDE#_#BASE_NAME#_SEQ1</BACKLIGHT_NAME>
 		</DefaultTemplateParameters>
@@ -18,7 +36,7 @@
 		</Component>
 	</Template>
 
-	<Template Name="ASOBO_RMP_BUTTON_Template">
+	<Template Name="FBW_RMP_BUTTON_Template">
 		<DefaultTemplateParameters>
 			<NODE_ID>PUSH_RADIO#SIDE#_#BASE_NAME#</NODE_ID>
 			<ANIM_NAME_BUTTON>PUSH_RADIO#SIDE#_#BASE_NAME#</ANIM_NAME_BUTTON>
@@ -65,19 +83,19 @@
 		</Component>
 	</Template>
 
-	<Template Name="ASOBO_RMP_BUTTON_WITH_LIGHTS_Template">
+	<Template Name="FBW_RMP_BUTTON_WITH_LIGHTS_Template">
 		<DefaultTemplateParameters>
 			<BASE_NAME>UNKNOWN</BASE_NAME>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_RMP_BACKLIGHT_Template">
+		<UseTemplate Name="FBW_RMP_BACKLIGHT_Template">
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_RMP_BUTTON_Template">
+		<UseTemplate Name="FBW_RMP_BUTTON_Template">
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_RMP_GROUPED_BUTTON_Template">
+	<Template Name="FBW_RMP_GROUPED_BUTTON_Template">
 		<DefaultTemplateParameters>
 			<NODE_ID>PUSH_RADIO#SIDE#_#BASE_NAME#</NODE_ID>
 			<ANIM_NAME_BUTTON>PUSH_RADIO#SIDE#_#BASE_NAME#</ANIM_NAME_BUTTON>
@@ -126,26 +144,26 @@
 		</Component>
 	</Template>
 
-	<Template Name="ASOBO_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+	<Template Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
 		<DefaultTemplateParameters>
 			<BASE_NAME>UNKNOWN</BASE_NAME>
 			<GROUP_NAME>NONE</GROUP_NAME>
 			<GROUP_INDEX>-1</GROUP_INDEX>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_RMP_BACKLIGHT_Template">
+		<UseTemplate Name="FBW_RMP_BACKLIGHT_Template">
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_RMP_GROUPED_BUTTON_Template">
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_Template">
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_RMP_RADIO_SELECTION_Template">
+	<Template Name="FBW_RMP_RADIO_SELECTION_Template">
 		<DefaultTemplateParameters>
 			<SIDE>UNKNOWN</SIDE>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
 			<BASE_NAME>VHF1</BASE_NAME>
 			<GROUP_NAME>FREQ</GROUP_NAME>
 			<GROUP_INDEX>1</GROUP_INDEX>
@@ -155,7 +173,7 @@
 			</OPTIONAL_ACTIVE_IF>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
 			<BASE_NAME>VHF2</BASE_NAME>
 			<GROUP_NAME>FREQ</GROUP_NAME>
 			<GROUP_INDEX>2</GROUP_INDEX>
@@ -165,7 +183,7 @@
 			</OPTIONAL_ACTIVE_IF>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
 			<BASE_NAME>VHF3</BASE_NAME>
 			<GROUP_NAME>FREQ</GROUP_NAME>
 			<GROUP_INDEX>3</GROUP_INDEX>
@@ -175,7 +193,7 @@
 			</OPTIONAL_ACTIVE_IF>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
 			<BASE_NAME>HF1</BASE_NAME>
 			<GROUP_NAME>FREQ</GROUP_NAME>
 			<GROUP_INDEX>4</GROUP_INDEX>
@@ -185,7 +203,7 @@
 			</OPTIONAL_ACTIVE_IF>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
 			<BASE_NAME>HF2</BASE_NAME>
 			<GROUP_NAME>FREQ</GROUP_NAME>
 			<GROUP_INDEX>5</GROUP_INDEX>
@@ -195,7 +213,7 @@
 			</OPTIONAL_ACTIVE_IF>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_RMP_BUTTON_WITH_LIGHTS_Template">
+		<UseTemplate Name="FBW_RMP_BUTTON_WITH_LIGHTS_Template">
 			<BASE_NAME>AM</BASE_NAME>
 			<OPTIONAL_ACTIVE_IF>
 			(* AM is only available when HF1/HF2 are active *)
@@ -206,7 +224,7 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_RMP_DISPLAY_Template">
+	<Template Name="FBW_RMP_DISPLAY_Template">
 		<DefaultTemplateParameters>
 			<SIDE>UNKNOWN</SIDE>
 		</DefaultTemplateParameters>
@@ -297,16 +315,16 @@
 				<TOOLTIPID>TT:COCKPIT.TOOLTIPS.RADIO_FREQUENCY_TRANSFER_KEY</TOOLTIPID>
 			</UseTemplate>
 
-			<UseTemplate Name="ASOBO_RMP_BACKLIGHT_Template">
+			<UseTemplate Name="FBW_RMP_BACKLIGHT_Template">
 				<BASE_NAME>ARROWS</BASE_NAME>
 			</UseTemplate>
 		</Component>
 
-		<UseTemplate Name="ASOBO_RMP_RADIO_SELECTION_Template">
+		<UseTemplate Name="FBW_RMP_RADIO_SELECTION_Template">
 		</UseTemplate>
 
 		<Component ID="RMP_SEL_#SIDE#">
-			<UseTemplate Name="ASOBO_RMP_BACKLIGHT_Template">
+			<UseTemplate Name="FBW_RMP_BACKLIGHT_Template">
 				<BASE_NAME>SEL</BASE_NAME>
 			</UseTemplate>
 
@@ -334,7 +352,7 @@
 					</EMISSIVE_CODE>
 				</UseTemplate>
 			</Component>
-		</UseTemplate>
+		</Component>
 
 		<Component ID="RMP_NAV_LOCK_#SIDE#" Node="LOCK_RADIO#SIDE#_NAV">
 			<UseTemplate Name="ASOBO_GT_Switch_Code">
@@ -351,7 +369,7 @@
 			</UseTemplate>
 		</Component>
 
-		<UseTemplate Name="ASOBO_RMP_BUTTON_WITH_LIGHTS_Template">
+		<UseTemplate Name="FBW_RMP_BUTTON_WITH_LIGHTS_Template">
 			<BASE_NAME>NAV</BASE_NAME>
 			<!--When the NAV button is inactive, the MODE buttons are disabled-->
 			<RUN_ON_PRESS>
@@ -365,19 +383,19 @@
 			</RUN_ON_PRESS>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
 			<BASE_NAME>VOR</BASE_NAME>
 			<GROUP_NAME>MODE</GROUP_NAME>
 			<GROUP_INDEX>1</GROUP_INDEX>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
 			<BASE_NAME>ILS</BASE_NAME>
 			<GROUP_NAME>MODE</GROUP_NAME>
 			<GROUP_INDEX>2</GROUP_INDEX>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
 			<BASE_NAME>MLS</BASE_NAME>
 			<GROUP_NAME>MODE</GROUP_NAME>
 			<GROUP_INDEX>3</GROUP_INDEX>
@@ -387,13 +405,13 @@
 			</OPTIONAL_ACTIVE_IF>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
 			<BASE_NAME>ADF</BASE_NAME>
 			<GROUP_NAME>MODE</GROUP_NAME>
 			<GROUP_INDEX>4</GROUP_INDEX>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_RMP_BUTTON_WITH_LIGHTS_Template">
+		<UseTemplate Name="FBW_RMP_BUTTON_WITH_LIGHTS_Template">
 			<BASE_NAME>BFO</BASE_NAME>
 			<OPTIONAL_ACTIVE_IF>
 			(* BFO is only available when ADF is active *)
@@ -404,7 +422,7 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_Dummy_Template">
+	<Template Name="FBW_AIRBUS_Push_Dummy_Template">
 		<DefaultTemplateParameters>
 			<Condition Check="FAULT_NODE_ID">
 				<NODE_ID_SEQ1>#FAULT_NODE_ID#</NODE_ID_SEQ1>
@@ -424,7 +442,7 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_ILS_Template">
+	<Template Name="FBW_AIRBUS_Push_ILS_Template">
 		<DefaultTemplateParameters>
 			<ID>1</ID>
 			<!--<ON_TOOLTIP>COCKPIT.TOOLTIPS.EFIS_PANEL_ILS_INFO_TURN_OFF</ON_TOOLTIP>
@@ -439,7 +457,7 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_CSTR_Template">
+	<Template Name="FBW_AIRBUS_Push_CSTR_Template">
 		<DefaultTemplateParameters>
 			<PART_ID>CSTR_Button</PART_ID>
 			<ID>1</ID>
@@ -451,7 +469,7 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_VORD_Template">
+	<Template Name="FBW_AIRBUS_Push_VORD_Template">
 		<DefaultTemplateParameters>
 			<ID>1</ID>
 			<BTN_TOOLTIP_ID>VORD</BTN_TOOLTIP_ID>
@@ -462,7 +480,7 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_WPT_Template">
+	<Template Name="FBW_AIRBUS_Push_WPT_Template">
 		<DefaultTemplateParameters>
 			<ID>1</ID>
 			<BTN_TOOLTIP_ID>WPT</BTN_TOOLTIP_ID>
@@ -473,7 +491,7 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_NDB_Template">
+	<Template Name="FBW_AIRBUS_Push_NDB_Template">
 		<DefaultTemplateParameters>
 			<ID>1</ID>
 			<BTN_TOOLTIP_ID>NDB</BTN_TOOLTIP_ID>
@@ -484,7 +502,7 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_ARPT_Template">
+	<Template Name="FBW_AIRBUS_Push_ARPT_Template">
 		<DefaultTemplateParameters>
 			<ID>1</ID>
 			<BTN_TOOLTIP_ID>ARPT</BTN_TOOLTIP_ID>
@@ -495,7 +513,7 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_Heading_Track_Template">
+	<Template Name="FBW_AIRBUS_Push_Heading_Track_Template">
 		<DefaultTemplateParameters>
 			<NODE_ID>AIRBUS_Push_Heading_Track</NODE_ID>
 			<ANIM_NAME>AIRBUS_Push_Heading_Track</ANIM_NAME>
@@ -514,7 +532,7 @@
 		</Component>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_Metric_Alt_Template">
+	<Template Name="FBW_AIRBUS_Push_Metric_Alt_Template">
 		<DefaultTemplateParameters>
 			<NODE_ID>AIRBUS_Push_Metric_Alt</NODE_ID>
 			<ANIM_NAME>AIRBUS_Push_Metric_Alt</ANIM_NAME>
@@ -533,7 +551,7 @@
 		</Component>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_Transfer_Template">
+	<Template Name="FBW_AIRBUS_Push_Transfer_Template">
 		<DefaultTemplateParameters>
 			<NODE_ID>AIRBUS_Push_Transfer</NODE_ID>
 			<ANIM_NAME>AIRBUS_Push_Transfer</ANIM_NAME>
@@ -550,7 +568,7 @@
 		</Component>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_NAV_AID_SWITCH_SubTemplate">
+	<Template Name="FBW_AIRBUS_NAV_AID_SWITCH_SubTemplate">
 		<DefaultTemplateParameters>
 			<ANIM_NAME>#BASE_NAME#</ANIM_NAME>
 			<NODE_ID>#BASE_NAME#</NODE_ID>
@@ -582,7 +600,7 @@
 		</Component>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_NAV_AID_SWITCH_Template">
+	<Template Name="FBW_AIRBUS_NAV_AID_SWITCH_Template">
 		<DefaultTemplateParameters>
 			<BASE_NAME>UNKNOWN</BASE_NAME>
 			<PART_ID>NAVAID_Switch</PART_ID>
@@ -596,20 +614,20 @@
 			<ANIMTIP_2>CC</ANIMTIP_2>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRBUS_NAV_AID_SWITCH_SubTemplate">
+		<UseTemplate Name="FBW_AIRBUS_NAV_AID_SWITCH_SubTemplate">
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_TERRONND_Template">
+	<Template Name="FBW_AIRBUS_Push_TERRONND_Template">
 		<DefaultTemplateParameters>
 			<ID>1</ID>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRBUS_Push_TERRONND_SubTemplate">
+		<UseTemplate Name="FBW_AIRBUS_Push_TERRONND_SubTemplate">
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_TERRONND_SubTemplate">
+	<Template Name="FBW_AIRBUS_Push_TERRONND_SubTemplate">
 		<DefaultTemplateParameters>
 			<NODE_ID>AIRBUS_Push_TERRONND</NODE_ID>
 			<ANIM_NAME>AIRBUS_Push_TERRONND</ANIM_NAME>
@@ -621,7 +639,7 @@
 			<TOOLTIPID>%((L:BTN_TERRONND_#ID#_ACTIVE, Bool))%{if}TT:COCKPIT.TOOLTIPS.TERRAIN_ON_ND_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.TERRAIN_ON_ND_TURN_ON%{en}</TOOLTIPID>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRLINER_SubNodes_Setter_Template">
+		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
 			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
 			<LEFT_SINGLE_CODE>(&gt;H:A320_Neo_MFD_BTN_TERRONND_#ID#)</LEFT_SINGLE_CODE>
 			<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
@@ -629,7 +647,7 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_ECAM_PAGE_BUTTON_SubTemplate">
+	<Template Name="FBW_ECAM_PAGE_BUTTON_SubTemplate">
 		<DefaultTemplateParameters>
 			<NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
 			<PART_ID>ECAM_Button</PART_ID>
@@ -676,19 +694,19 @@
 		</Condition>
 	</Template>
 
-	<Template Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+	<Template Name="FBW_ECAM_PAGE_BUTTON_Template">
 		<DefaultTemplateParameters>
 			<BASE_NAME>UNKNOWN</BASE_NAME>
 			<GROUP_INDEX>-1</GROUP_INDEX>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_SubTemplate">
+		<UseTemplate Name="FBW_ECAM_PAGE_BUTTON_SubTemplate">
 		</UseTemplate>
 	</Template>
 
 	<!---->
 
-	<Template Name="ASOBO_ECAM_BUTTON_SubTemplate">
+	<Template Name="FBW_ECAM_BUTTON_SubTemplate">
 		<DefaultTemplateParameters>
 			<NODE_ID>PUSH_ECAM_#BASE_NAME#</NODE_ID>
 			<ANIM_NAME_BUTTON>PUSH_ECAM_#BASE_NAME#</ANIM_NAME_BUTTON>
@@ -718,13 +736,13 @@
 		</Condition>
 	</Template>
 
-	<Template Name="ASOBO_ECAM_BUTTON_Template">
+	<Template Name="FBW_ECAM_BUTTON_Template">
 		<DefaultTemplateParameters>
 			<BASE_NAME>UNKNOWN</BASE_NAME>
 			<GROUP_INDEX>-1</GROUP_INDEX>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_ECAM_BUTTON_SubTemplate">
+		<UseTemplate Name="FBW_ECAM_BUTTON_SubTemplate">
 		</UseTemplate>
 	</Template>
 
@@ -801,78 +819,78 @@
 	</Template>
 
 	<!-- This whole section is modified -->
-	<Template Name="ASOBO_ECAM_PAGE_SELECTION_Template">
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+	<Template Name="FBW_ECAM_PAGE_SELECTION_Template">
+		<UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>ENG</BASE_NAME>
 			<PART_ID>ECAM_ENG</PART_ID>
 			<GROUP_INDEX>0</GROUP_INDEX>
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_ENG</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>BLEED</BASE_NAME>
 			<PART_ID>ECAM_BLEED</PART_ID>
 			<GROUP_INDEX>1</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_BLEED</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>PRESS</BASE_NAME>
 			<PART_ID>ECAM_PRESS</PART_ID>
 			<GROUP_INDEX>2</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_PRESS</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>ELEC</BASE_NAME>
 			<PART_ID>ECAM_ELEC</PART_ID>
 			<GROUP_INDEX>3</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_ELEC</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>HYD</BASE_NAME>
 			<PART_ID>ECAM_HYD</PART_ID>
 			<GROUP_INDEX>4</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_HYD</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>FUEL</BASE_NAME>
 			<PART_ID>ECAM_FUEL</PART_ID>
 			<GROUP_INDEX>5</GROUP_INDEX>
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_FUEL</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>APU</BASE_NAME>
 			<PART_ID>ECAM_APU</PART_ID>
 			<GROUP_INDEX>6</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_APU</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>COND</BASE_NAME>
 			<PART_ID>ECAM_COND</PART_ID>
 			<GROUP_INDEX>7</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_COND</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>DOOR</BASE_NAME>
 			<PART_ID>ECAM_DOOR</PART_ID>
 			<GROUP_INDEX>8</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_DOOR</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>WHEEL</BASE_NAME>
 			<PART_ID>ECAM_WHEEL</PART_ID>
 			<GROUP_INDEX>9</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_WHEEL</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>FTCL</BASE_NAME>
 			<PART_ID>ECAM_FCTL</PART_ID>
 			<GROUP_INDEX>10</GROUP_INDEX> <!--Change to positive to activate-->
@@ -887,13 +905,13 @@
 			<TOOLTIPID>Cycle through ECAM pages</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>STS</BASE_NAME>
 			<GROUP_INDEX>11</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>Display STS informations on ECAM</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_BUTTON_Template">
+		<UseTemplate Name="FBW_ECAM_BUTTON_Template">
 			<BASE_NAME>TOCONFIG</BASE_NAME>
 			<PART_ID>ECAM_TOCFG</PART_ID>
 			<TOOLTIPID>Test T.O CONFIG</TOOLTIPID>
@@ -911,14 +929,14 @@
 			<TOOLTIPID>Clear ECAM messages</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_BUTTON_Template">
+		<UseTemplate Name="FBW_ECAM_BUTTON_Template">
 			<BASE_NAME>RCL</BASE_NAME>
 			<PART_ID>ECAM_RCL</PART_ID>
 			<TOOLTIPID>Recall ECAM messages</TOOLTIPID>
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_Fuel_Pump_Template">
+	<Template Name="FBW_AIRBUS_Push_Fuel_Pump_Template">
 		<DefaultTemplateParameters>
 			<NODE_ID>AIRBUS_Push_Fuel_Pump</NODE_ID>
 			<ANIM_NAME>AIRBUS_Push_Fuel_Pump</ANIM_NAME>
@@ -927,7 +945,7 @@
 			<LEFT_SINGLE_CODE/>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRLINER_SubNodes_Setter_Template">
+		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
 			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
 			<LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE# #ID# (&gt;K:FUELSYSTEM_PUMP_TOGGLE)</LEFT_SINGLE_CODE>
 			<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
@@ -935,7 +953,7 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_Fuel_Valve_Template">
+	<Template Name="FBW_AIRBUS_Push_Fuel_Valve_Template">
 		<DefaultTemplateParameters>
 			<NODE_ID>AIRBUS_Push_Fuel_Valve</NODE_ID>
 			<ANIM_NAME>AIRBUS_Push_Fuel_Valve</ANIM_NAME>
@@ -949,70 +967,70 @@
 			<EXTRA_CONDITION>1</EXTRA_CONDITION>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRLINER_SubNodes_Setter_Template">
+		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
 			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
 			<LEFT_SINGLE_CODE>#EXTRA_CONDITION# if{ #LEFT_SINGLE_CODE# #ID# (&gt;K:FUELSYSTEM_VALVE_TOGGLE) }</LEFT_SINGLE_CODE>
 			<TOOLTIPID>%((A:FUELSYSTEM VALVE SWITCH:#ID#, Bool) !)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID> <!-- use <OFF_TOOLTIP></OFF_TOOLTIP> <ON_TOOLTIP></ON_TOOLTIP> to define tooltips -->
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Dummy_Radio">
+	<Template Name="FBW_AIRBUS_Dummy_Radio">
 		<DefaultTemplateParameters>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+		<UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
 			<NODE_ID>#NODE_ID_CALL1#</NODE_ID>
 			<POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+		<UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
 			<NODE_ID>#NODE_ID_CALL2#</NODE_ID>
 			<POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+		<UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
 			<NODE_ID>#NODE_ID_CALL3#</NODE_ID>
 			<POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+		<UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
 			<NODE_ID>#NODE_ID_CALL4#</NODE_ID>
 			<POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+		<UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
 			<NODE_ID>#NODE_ID_CALL5#</NODE_ID>
 			<POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+		<UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
 			<NODE_ID>#NODE_ID_MECH#</NODE_ID>
 			<POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+		<UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
 			<NODE_ID>#NODE_ID_ATT#</NODE_ID>
 			<POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+		<UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
 			<NODE_ID>#NODE_ID_VOICE#</NODE_ID>
 			<POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+		<UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
 			<NODE_ID>#NODE_ID_RESET#</NODE_ID>
 			<ONLY_SEQ2/>
 			<POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+		<UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
 			<NODE_ID>#NODE_ID_PA#</NODE_ID>
 			<ONLY_SEQ1/>
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_ELAC_Template">
+	<Template Name="FBW_AIRBUS_Push_ELAC_Template">
 		<DefaultTemplateParameters>
 			<ID>1</ID>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRBUS_Push_ELAC_SubTemplate">
+		<UseTemplate Name="FBW_AIRBUS_Push_ELAC_SubTemplate">
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_ELAC_SubTemplate">
+	<Template Name="FBW_AIRBUS_Push_ELAC_SubTemplate">
 		<DefaultTemplateParameters>
 			<NODE_ID>AIRBUS_Push_ELAC_#ID#</NODE_ID>
 			<ANIM_NAME>AIRBUS_Push_ELAC_#ID#</ANIM_NAME>
@@ -1025,23 +1043,23 @@
 			<TOOLTIPID>%((A:FLY BY WIRE ELAC SWITCH:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.ELAC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.ELAC#ID#_TURN_OFF%{end}</TOOLTIPID>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRLINER_SubNodes_Setter_Template">
+		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
 			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
 			<LEFT_SINGLE_CODE> #LEFT_SINGLE_CODE# #ID# (&gt;K:FLY_BY_WIRE_ELAC_TOGGLE)</LEFT_SINGLE_CODE>
 
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_SEC_Template">
+	<Template Name="FBW_AIRBUS_Push_SEC_Template">
 		<DefaultTemplateParameters>
 			<ID>1</ID>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRBUS_Push_SEC_SubTemplate">
+		<UseTemplate Name="FBW_AIRBUS_Push_SEC_SubTemplate">
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_SEC_SubTemplate">
+	<Template Name="FBW_AIRBUS_Push_SEC_SubTemplate">
 		<DefaultTemplateParameters>
 			<NODE_ID>AIRBUS_Push_SEC_#ID#</NODE_ID>
 			<ANIM_NAME>AIRBUS_Push_SEC_#ID#</ANIM_NAME>
@@ -1054,13 +1072,13 @@
 			<TOOLTIPID>%((A:FLY BY WIRE SEC SWITCH:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.SEC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.SEC#ID#_TURN_OFF%{end}</TOOLTIPID>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRLINER_SubNodes_Setter_Template">
+		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
 			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
 			<LEFT_SINGLE_CODE> #LEFT_SINGLE_CODE# #ID# (&gt;K:FLY_BY_WIRE_SEC_TOGGLE)</LEFT_SINGLE_CODE>
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_FAC_Template">
+	<Template Name="FBW_AIRBUS_Push_FAC_Template">
 		<DefaultTemplateParameters>
 			<ID>1</ID>
 			<WWISE_EVENT_1>elac_push_button_on</WWISE_EVENT_1>
@@ -1068,11 +1086,11 @@
 			<TOOLTIPID>%((A:FLY BY WIRE FAC SWITCH:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.FAC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.FAC#ID#_TURN_OFF%{end}</TOOLTIPID>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRBUS_Push_FAC_SubTemplate">
+		<UseTemplate Name="FBW_AIRBUS_Push_FAC_SubTemplate">
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_FAC_SubTemplate">
+	<Template Name="FBW_AIRBUS_Push_FAC_SubTemplate">
 		<DefaultTemplateParameters>
 			<NODE_ID>AIRBUS_Push_FAC_#ID#</NODE_ID>
 			<ANIM_NAME>AIRBUS_Push_FAC_#ID#</ANIM_NAME>
@@ -1082,13 +1100,13 @@
 			<LEFT_SINGLE_CODE/>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRLINER_SubNodes_Setter_Template">
+		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
 			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
 			<LEFT_SINGLE_CODE> #LEFT_SINGLE_CODE# #ID# (&gt;K:FLY_BY_WIRE_FAC_TOGGLE)</LEFT_SINGLE_CODE>
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Update_PTU_Template">
+	<Template Name="FBW_AIRBUS_Update_PTU_Template">
 		<DefaultTemplateParameters>
 			<MIN_N1>19</MIN_N1>
 		</DefaultTemplateParameters>
@@ -1101,7 +1119,7 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_WeatherRadar_Template">
+	<Template Name="FBW_AIRBUS_WeatherRadar_Template">
 		<DefaultTemplateParameters>
 			<NODE_ID_MODE_KNOB>AIRBUS_Knob_WeatherRader_Mode</NODE_ID_MODE_KNOB>
 			<ANIM_NAME_MODE_KNOB>AIRBUS_Knob_WeatherRader_Mode</ANIM_NAME_MODE_KNOB>
@@ -1151,16 +1169,16 @@
 		</Component>
 	</Template>
 
-	<Template Name="ASOBO_AIRLINER_Aircond_Knob_Template">
+	<Template Name="FBW_AIRLINER_Aircond_Knob_Template">
 		<DefaultTemplateParameters>
 			<ID>1</ID>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRLINER_Aircond_Knob_SubTemplate">
+		<UseTemplate Name="FBW_AIRLINER_Aircond_Knob_SubTemplate">
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRLINER_Aircond_Knob_SubTemplate">
+	<Template Name="FBW_AIRLINER_Aircond_Knob_SubTemplate">
 		<DefaultTemplateParameters>
 			<NODE_ID>KNOB_OVHD_AIRCOND_#ID#</NODE_ID>
 			<ANIM_NAME>KNOB_OVHD_AIRCOND_#ID#</ANIM_NAME>
@@ -1177,7 +1195,7 @@
 		</Component>
 	</Template>
 
-	<Template Name = "ASOBO_AIRBUS_Chronometer_Button">
+	<Template Name="FBW_AIRBUS_Chronometer_Button">
 		<DefaultTemplateParameters>
 			<HELPID/>
 			<PART_ID>Chrono</PART_ID>
@@ -1185,13 +1203,13 @@
 			<CURSOR>Grab</CURSOR>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRLINER_SubNodes_Setter_Template">
+		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
 			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
 			<LEFT_SINGLE_CODE>(L:#NODE_ID#) ! (>L:#NODE_ID#)</LEFT_SINGLE_CODE>
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRLINER_SIGNS_LIGHT_Template">
+	<Template Name="FBW_AIRLINER_SIGNS_LIGHT_Template">
 		<UseTemplate Name="ASOBO_GT_Push_Button_Airliner_Dummy">
 			<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
 			<SEQ2_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position) 2 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
@@ -1450,7 +1468,7 @@
 			<ONOFF_VARIABLE>L:BTN_#BTN_ID#_FILTER_ACTIVE</ONOFF_VARIABLE>
 		</DefaultTemplateParameters>
 
-		<UseTemplate Name="ASOBO_AIRLINER_SubNodes_Setter_Template">
+		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
 			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
 			<LEFT_SINGLE_CODE>(&gt;H:#PLANE_PREFIX#_MFD_BTN_#BTN_ID#) (&gt;H:#PLANE_PREFIX#_PFD_BTN_#BTN_ID#) and</LEFT_SINGLE_CODE>
 			<SEQ1_EMISSIVE_CODE>(L:BTN_#BTN_ID#_FILTER_ACTIVE)</SEQ1_EMISSIVE_CODE>
