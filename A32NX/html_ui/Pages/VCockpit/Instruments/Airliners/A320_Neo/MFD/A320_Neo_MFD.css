@@ -107,7 +107,7 @@ a320-neo-mfd-element #Mainframe #Map #MapOrientation {
   right: 0%;
   width: 10%;
   height: calc(3 * 1vh * var(--bodyHeightScale));
-  background-color:  rgba(4, 4, 5, 1);
+  background-color: rgba(4, 4, 5, 1);
   color: var(--displayWhite);
 }
 a320-neo-mfd-element #Mainframe #Map #WindData {
@@ -122,7 +122,7 @@ a320-neo-mfd-element #Mainframe #Map #MapRange {
   right: 0%;
   width: 7%;
   height: calc(3 * 1vh * var(--bodyHeightScale));
-  background-color: rgba(4, 4, 5, 1)
+  background-color: rgba(4, 4, 5, 1);
   color: var(--displayCyan);
 }
 a320-neo-mfd-element #Mainframe #Map #MapSVG,
@@ -360,5 +360,3 @@ a320-neo-mfd-element #Mainframe #Electricity #Wind_Separator {
 a320-neo-mfd-element #Mainframe #Electricity #Wind_Strength {
   font-size: var(--windLabelFontSize);
 }
-
-
