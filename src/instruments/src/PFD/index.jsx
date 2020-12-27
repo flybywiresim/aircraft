@@ -4,13 +4,21 @@ import { Horizon } from './AttitudeIndicatorHorizon.jsx';
 import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed.jsx';
 import { LandingSystem } from './LandingSystemIndicator.jsx';
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator.jsx';
-import { HeadingOfftape, HeadingTape } from "./HeadingIndicator.jsx";
+import { HeadingOfftape, HeadingTape } from './HeadingIndicator.jsx';
+import { AltitudeIndicatorOfftape, AltitudeIndicator } from './AltitudeIndicator.jsx';
 import {
     renderTarget,
     useInteractionEvent,
     useUpdate,
 } from '../util.mjs';
 import './style.scss';
+
+const AltModeSelected = () => {
+    if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue('L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT', 'number') !== 0) {
+        return false;
+    }
+    return true;
+};
 
 function PFD() {
     const [update, setUpdate] = useState(false);
@@ -40,6 +48,23 @@ function PFD() {
     const radioAlt = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND MINUS CG', 'feet');
     const decisionHeight = SimVar.GetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet');
 
+    const baroAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+    const mda = SimVar.GetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
+
+    const FlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
+
+    const pressureMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
+
+    let targetAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue();
+    let isManaged = false;
+    if (!AltModeSelected()) {
+        const CSTAlt = SimVar.GetSimVarValue('L:A32NX_AP_CSTN_ALT', 'feet');
+        if (Number.isFinite(CSTAlt)) {
+            isManaged = true;
+            targetAlt = CSTAlt;
+        }
+    }
+
     const FDActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${dispIndex}`, 'Bool');
 
     let selectedHeading = NaN;
@@ -61,8 +86,8 @@ function PFD() {
                 d="m32.138 101.25c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66z"
             />
             <HeadingTape heading={heading} groundTrack={groundTrack} ILSCourse={ILSCourse} />
+            <AltitudeIndicator altitude={baroAlt} FWCFlightPhase={FlightPhase} />
             <path id="SpeedTapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" className="TapeBackground" />
-            <path id="AltTapeBackground" d="m130.85 123.56h-13.096v-85.473h13.096z" className="TapeBackground" />
             <path
                 id="Mask2"
                 className="BackgroundFill"
@@ -73,6 +98,7 @@ function PFD() {
             <AttitudeIndicatorFixedCenter isOnGround={isOnGround} FDActive={FDActive} />
             <VerticalSpeedIndicator radioAlt={radioAlt} />
             <HeadingOfftape ILSCourse={ILSCourse} heading={heading} selectedHeading={selectedHeading} />
+            <AltitudeIndicatorOfftape altitude={baroAlt} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
         </svg>
     );
 }

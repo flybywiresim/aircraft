@@ -32,6 +32,10 @@
   font-size: 6.5px;
 }
 
+.FontMediumLarge {
+  font-size: 6px;
+}
+
 .FontMedium {
   font-size: 5.5px;
 }
@@ -122,6 +126,10 @@ text.Yellow {
 .Red {
   stroke: $display-red;
   fill: none;
+}
+.Red.Fill {
+  fill: $display-red;
+  stroke: none;
 }
 text.Red {
   fill: $display-red;

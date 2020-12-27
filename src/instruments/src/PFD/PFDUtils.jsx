@@ -72,7 +72,45 @@ export const HorizontalTape = ({
     });
 
     return (
-        <g id="HorizonHeadingTickGroup" transform={`translate(${-heading * distanceSpacing / valueSpacing} ${yOffset})`}>
+        <g transform={`translate(${-heading * distanceSpacing / valueSpacing} ${yOffset})`}>
+            {graduationElements}
+            {bugElements}
+        </g>
+    );
+};
+
+export const VerticalTape = ({
+    displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, tapeValue, lowerLimit = -Infinity, upperLimit = Infinity,
+}) => {
+    const numTicks = Math.round(displayRange * 2 / valueSpacing);
+
+    const clampedValue = Math.max(Math.min(tapeValue, upperLimit), lowerLimit);
+
+    let lowestValue = Math.max(Math.round((clampedValue - displayRange) / valueSpacing) * valueSpacing, lowerLimit);
+    if (lowestValue < tapeValue - displayRange) {
+        lowestValue += valueSpacing;
+    }
+
+    const graduationElements = [];
+    const bugElements = [];
+
+    for (let i = 0; i < numTicks; i++) {
+        const elementValue = lowestValue + i * valueSpacing;
+        if (elementValue <= upperLimit) {
+            const offset = -elementValue * distanceSpacing / valueSpacing;
+            graduationElements.push(graduationElementFunction(elementValue, offset));
+        }
+    }
+
+    bugs.forEach((currentElement) => {
+        const value = currentElement[1];
+
+        const offset = -value * distanceSpacing / valueSpacing;
+        bugElements.push(currentElement[0](offset, value));
+    });
+
+    return (
+        <g transform={`translate(0 ${clampedValue * distanceSpacing / valueSpacing})`}>
             {graduationElements}
             {bugElements}
         </g>
