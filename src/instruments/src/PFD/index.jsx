@@ -12,6 +12,7 @@ import {
     useInteractionEvent,
     useUpdate,
 } from '../util.mjs';
+import { SmoothSin } from './PFDUtils.jsx';
 import './style.scss';
 
 const AltModeSelected = () => {
@@ -32,6 +33,14 @@ class PFD extends Component {
         this.deltaTime = 0;
         this.prevAirspeed = 0;
 
+        this.VMax = 0;
+        this.VLs = 0;
+        this.VAlphaProt = 0;
+        this.VAlphaLim = 0;
+        this.VS = 0;
+
+        this.smoothFactor = 0.5;
+
         this.LSButtonPressed = false;
     }
 
@@ -47,6 +56,15 @@ class PFD extends Component {
     onLSButtonPressed() {
         this.LSButtonPressed = !this.LSButtonPressed;
         SimVar.SetSimVarValue(`L:BTN_LS_${this.dispIndex}_FILTER_ACTIVE`, 'Bool', this.LSButtonPressed);
+    }
+
+    smoothSpeeds(_indicatedSpeed, _dTime, _maxSpeed, _vls, _vaprot, _valim, _vs) {
+        const seconds = _dTime / 1000;
+        this.VMax = SmoothSin(this.VMax, _maxSpeed, this.smoothFactor, seconds);
+        this.VLs = SmoothSin(this.VLs, _vls, this.smoothFactor, seconds);
+        this.VAlphaProt = SmoothSin(this.VAlphaProt, _vaprot, this.smoothFactor, seconds);
+        this.VAlphaLim = SmoothSin(this.VAlphaLim, _valim, this.smoothFactor, seconds);
+        this.VS = SmoothSin(this.VS, _vs, this.smoothFactor, seconds);
     }
 
     update(_deltaTime) {
@@ -77,6 +95,12 @@ class PFD extends Component {
         const airspeedAcc = (airspeed - this.prevAirspeed) / this.deltaTime * 1000;
         this.prevAirspeed = airspeed;
         const mach = SimVar.GetSimVarValue('AIRSPEED MACH', 'mach');
+
+        const VS = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VS', 'number');
+        const VMax = 0;
+        const VLs = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number');
+
+        this.smoothSpeeds(airspeed, this.deltaTime, VMax, VLs, VS * 1.1, VS * 1.03, VS);
 
         let targetAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue();
         let isManaged = false;
@@ -125,7 +149,7 @@ class PFD extends Component {
                 />
                 <HeadingTape heading={heading} groundTrack={groundTrack} ILSCourse={ILSCourse} />
                 <AltitudeIndicator altitude={baroAlt} FWCFlightPhase={FlightPhase} />
-                <AirspeedIndicator airspeed={airspeed} airspeedAcc={airspeedAcc} FWCFlightPhase={FlightPhase} altitude={baroAlt} />
+                <AirspeedIndicator airspeed={airspeed} airspeedAcc={airspeedAcc} FWCFlightPhase={FlightPhase} altitude={baroAlt} VAlphaLim={this.VAlphaLim} VAlphaProt={this.VAlphaProt} VLs={this.VLs} />
                 <path
                     id="Mask2"
                     className="BackgroundFill"

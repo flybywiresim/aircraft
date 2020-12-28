@@ -116,3 +116,18 @@ export const VerticalTape = ({
         </g>
     );
 };
+
+export const SmoothSin = (origin, destination, smoothFactor, dTime) => {
+    if (origin === undefined) {
+        return destination;
+    }
+    if (Math.abs(destination - origin) < Number.EPSILON) {
+        return destination;
+    }
+    const delta = destination - origin;
+    let result = origin + delta * Math.sin(Math.min(smoothFactor * dTime, 1.0) * Math.PI / 2.0);
+    if ((origin < destination && result > destination) || (origin > destination && result < destination)) {
+        result = destination;
+    }
+    return result;
+};

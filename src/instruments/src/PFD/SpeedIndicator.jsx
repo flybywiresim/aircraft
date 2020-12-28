@@ -57,7 +57,9 @@ const VFENextBugElement = (offset) => (
     <path id="VFeNextMarker" transform={`translate(0 ${offset})`} className="NormalStroke Amber" d="m19.031 81.34h-2.8709m0-1.0079h2.8709" />
 );
 
-export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude }) => {
+export const AirspeedIndicator = ({
+    airspeed, airspeedAcc, FWCFlightPhase, altitude, VAlphaLim, VAlphaProt, VLs,
+}) => {
     const bugs = [];
 
     const clampedSpeed = Math.max(Math.min(airspeed, 660), 30);
@@ -100,7 +102,35 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
             {/* <SpeedTrendArrow airspeedAcc={airspeedAcc} /> */}
             {FWCFlightPhase <= 4
             && <V1Offtape airspeed={clampedSpeed} v1={v1} />}
+            <VAlphaLimBar airspeed={airspeed} VAlphalim={VAlphaLim} />
+            <VLsBar airspeed={airspeed} VLs={VLs} VAlphaProt={VAlphaProt} />
         </g>
+    );
+};
+
+const VAlphaLimBar = ({ VAlphalim, airspeed }) => {
+    if (VAlphalim - airspeed < -DisplayRange) {
+        return null;
+    }
+
+    const delta = airspeed - DisplayRange - VAlphalim;
+    const offset = delta * DistanceSpacing / ValueSpacing;
+
+    return (
+        <path id="VAlimIndicator" className="Fill Red" d={`m19.031 123.56h3.425v${offset}h-3.425z`} />
+    );
+};
+
+const VLsBar = ({ VAlphaProt, VLs, airspeed }) => {
+    if (VLs - airspeed < -DisplayRange) {
+        return null;
+    }
+
+    const VLsPos = (airspeed - VLs) * DistanceSpacing / ValueSpacing + 80.818;
+    const offset = (VLs - VAlphaProt) * DistanceSpacing / ValueSpacing;
+
+    return (
+        <path id="VLsIndicator" className="NormalStroke Amber" d={`m19.031 ${VLsPos}h1.9748v${offset}`} />
     );
 };
 
