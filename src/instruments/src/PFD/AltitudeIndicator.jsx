@@ -98,17 +98,17 @@ const SelectedAltIndicator = ({
     if (currentAlt - targetAlt > DisplayRange) {
         return (
             <g id="SelectedAltLowerGroup">
-                <text id="SelectedAltLowerText" className={`FontMediumLarge EndAlign ${color}`} x="135.74316" y="128.90233" xmlSpace="preserve">{text}</text>
+                <text id="SelectedAltLowerText" className={`FontMedium EndAlign ${color}`} x="135.41222" y="128.90233" xmlSpace="preserve">{text}</text>
                 {isSTD
-                && <text id="SelectedAltLowerFLText" className={`FontMedium MiddleAlign ${color}`} x="120.83108" y="128.97597">FL</text>}
+                && <text id="SelectedAltLowerFLText" className={`FontSmall MiddleAlign ${color}`} x="120.83108" y="128.97597">FL</text>}
             </g>
         );
     } if (currentAlt - targetAlt < -DisplayRange) {
         return (
             <g id="SelectedAltUpperGroup">
-                <text id="SelectedAltUpperText" className={`FontMediumLarge EndAlign ${color}`} x="135.74306" y="37.348804" xmlSpace="preserve">{text}</text>
+                <text id="SelectedAltUpperText" className={`FontMedium EndAlign ${color}`} x="135.41232" y="37.348804" xmlSpace="preserve">{text}</text>
                 {isSTD
-                && <text id="SelectedAltUpperFLText" className={`FontMedium MiddleAlign ${color}`} x="120.83106" y="37.337193">FL</text>}
+                && <text id="SelectedAltUpperFLText" className={`FontSmall MiddleAlign ${color}`} x="120.83106" y="37.337193">FL</text>}
             </g>
         );
     }
