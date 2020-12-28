@@ -6,6 +6,7 @@ import { LandingSystem } from './LandingSystemIndicator.jsx';
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator.jsx';
 import { HeadingOfftape, HeadingTape } from './HeadingIndicator.jsx';
 import { AltitudeIndicatorOfftape, AltitudeIndicator } from './AltitudeIndicator.jsx';
+import { AirspeedIndicatorOfftape, AirspeedIndicator } from './SpeedIndicator.jsx';
 import {
     renderTarget,
     useInteractionEvent,
@@ -23,8 +24,14 @@ const AltModeSelected = () => {
 function PFD() {
     const [update, setUpdate] = useState(false);
 
+    const airspeed = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
+    const [prevAirspeed, setPrevAirspeed] = useState(0);
+    const [airspeedAcc, setAirspeedAcc] = useState(0);
+
     useUpdate((deltaTime) => {
         setUpdate(!update);
+        setAirspeedAcc((airspeed - prevAirspeed) / deltaTime * 1000);
+        setPrevAirspeed(airspeed);
     });
 
     const [LSButtonPressed, setLSButtonPressed] = useState(false);
@@ -55,6 +62,8 @@ function PFD() {
 
     const pressureMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
 
+    const mach = SimVar.GetSimVarValue('AIRSPEED MACH', 'mach');
+
     let targetAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue();
     let isManaged = false;
     if (!AltModeSelected()) {
@@ -63,6 +72,21 @@ function PFD() {
             isManaged = true;
             targetAlt = CSTAlt;
         }
+    }
+
+    let targetSpeed = 0;
+    const isSelected = Simplane.getAutoPilotAirspeedSelected();
+    const isMach = Simplane.getAutoPilotMachModeActive();
+    if (isSelected) {
+        if (isMach) {
+            targetSpeed = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', Simplane.getAutoPilotMachHoldValue());
+        } else {
+            targetSpeed = Simplane.getAutoPilotAirspeedHoldValue();
+        }
+    } else if (isMach) {
+        targetSpeed = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', Simplane.getAutoPilotManagedMachHoldValue());
+    } else {
+        targetSpeed = Simplane.getAutoPilotManagedAirspeedHoldValue();
     }
 
     const FDActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${dispIndex}`, 'Bool');
@@ -87,7 +111,7 @@ function PFD() {
             />
             <HeadingTape heading={heading} groundTrack={groundTrack} ILSCourse={ILSCourse} />
             <AltitudeIndicator altitude={baroAlt} FWCFlightPhase={FlightPhase} />
-            <path id="SpeedTapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" className="TapeBackground" />
+            <AirspeedIndicator airspeed={airspeed} airspeedAcc={airspeedAcc} FWCFlightPhase={FlightPhase} altitude={baroAlt} />
             <path
                 id="Mask2"
                 className="BackgroundFill"
@@ -99,6 +123,7 @@ function PFD() {
             <VerticalSpeedIndicator radioAlt={radioAlt} />
             <HeadingOfftape ILSCourse={ILSCourse} heading={heading} selectedHeading={selectedHeading} />
             <AltitudeIndicatorOfftape altitude={baroAlt} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
+            <AirspeedIndicatorOfftape airspeed={airspeed} mach={mach} airspeedAcc={airspeedAcc} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
         </svg>
     );
 }
