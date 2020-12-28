@@ -49,6 +49,7 @@ var A320_Neo_ECAM_Common;
             this.extraMessageBorderWidthMultiplier = 0;
             this.extraMessageBorderHeightMultiplier = 0;
             this.cursorMultiplier = 1.1;
+            this.uppercam = false;
         }
         get mainArcRadius() {
             return (this.viewBoxSize.x * 0.5 * 0.975);
@@ -149,6 +150,7 @@ var A320_Neo_ECAM_Common;
             this.extraMessageBorderHeightMultiplier = 0.2;
             this.outerDynamicMarkerFunction = _gaugeDefinition.outerDynamicMarkerFunction;
             this.dangerMinDynamicFunction = _gaugeDefinition.dangerMinDynamicFunction;
+            this.uppercam = _gaugeDefinition.uppercam;
             this.endAngle = this.startAngle + _gaugeDefinition.arcSize;
             this.center = new Vec2(this.viewBoxSize.x * 0.5, this.viewBoxSize.y * 0.5);
             this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
@@ -250,13 +252,13 @@ var A320_Neo_ECAM_Common;
                 const borderHeight = this.currentValueBorderHeight * 1.2;
                 const borderPosX = textPosX - (borderWidth * 0.95);
                 const borderPosY = textPosY - (borderHeight * 0.55);
-                const currentValueBorder = document.createElementNS(Avionics.SVG.NS, "rect");
-                currentValueBorder.id = "CurrentValueBorder";
-                currentValueBorder.setAttribute("x", borderPosX.toString());
-                currentValueBorder.setAttribute("y", borderPosY.toString());
-                currentValueBorder.setAttribute("width", borderWidth.toString());
-                currentValueBorder.setAttribute("height", borderHeight.toString());
-                this.rootSVG.appendChild(currentValueBorder);
+                this.currentValueBorder = document.createElementNS(Avionics.SVG.NS, "rect");
+                this.currentValueBorder.id = "CurrentValueBorder";
+                this.currentValueBorder.setAttribute("x", borderPosX.toString());
+                this.currentValueBorder.setAttribute("y", borderPosY.toString());
+                this.currentValueBorder.setAttribute("width", borderWidth.toString());
+                this.currentValueBorder.setAttribute("height", borderHeight.toString());
+                this.rootSVG.appendChild(this.currentValueBorder);
             }
             if (this.extraMessageFunction != null) {
                 const extraMessageGroup = document.createElementNS(Avionics.SVG.NS, "g");
@@ -272,7 +274,7 @@ var A320_Neo_ECAM_Common;
                 this.extraMessageText.setAttribute("x", this.extraMessagePosX.toString());
                 this.extraMessageText.setAttribute("y", this.extraMessagePosY.toString());
                 this.extraMessageText.setAttribute("alignment-baseline", "central");
-                this.extraMessageText.setAttribute("class", "inactive");
+                this.extraMessageText.setAttribute("class", "active");
                 extraMessageGroup.appendChild(this.extraMessageText);
                 this.rootSVG.appendChild(extraMessageGroup);
             }
@@ -352,6 +354,9 @@ var A320_Neo_ECAM_Common;
             }
             if (this.currentValueText != null) {
                 this.currentValueText.setAttribute("class", style);
+                if (this.uppercam) {
+                    this.currentValueBorder.setAttribute('class', style);
+                }
                 if (!this.isActive) {
                     this.currentValueText.textContent = "XX";
                     this.currentValueTextdecimal.textContent = "";
@@ -407,6 +412,8 @@ var A320_Neo_ECAM_Common;
                     this.extraMessageText.setAttribute("alignment-baseline", "central");
                     this.extraMessageString = extraMessage;
                     style += (this.extraMessageString.length > 0) ? "active" : "inactive";
+                    this.extraMessageBorder.setAttribute("class", style);
+                    this.extraMessageText.setAttribute("class", style);
                     this.extraMessageText.textContent = this.extraMessageString;
                 }
             }
@@ -431,36 +438,34 @@ var A320_Neo_ECAM_Common;
             }
         }
         refreshMainValue(_value, _force = false) {
-            if ((_value != this.currentValue) || _force) {
-                this.currentValue = _value;
-                this.currentValueCursor = (_value <= this.minValue) ? this.cursorOffset + this.minValue : _value + this.cursorOffset;
-                const clampedValue = Utils.Clamp(this.currentValue, this.minValue, this.maxValue);
-                const clampedValueCursor = Utils.Clamp(this.currentValueCursor, this.minValue, this.maxValue);
-                let style = "";
-                if ((this.dangerRange[0] != this.dangerRange[1]) && (clampedValue >= this.dangerRange[0]) && (clampedValue <= this.dangerRange[1])) {
-                    style = "danger";
-                } else if ((this.warningRange[0] != this.warningRange[1]) && (clampedValue >= this.warningRange[0]) && (clampedValue <= this.warningRange[1])) {
-                    style = "warning";
-                } else {
-                    style = "active";
-                }
-                if (this.cursor != null) {
-                    const angle = this.valueToAngle(clampedValueCursor, false);
-                    this.cursor.setAttribute("transform", "rotate(" + angle + ")");
-                    this.cursor.setAttribute("class", style);
-                }
-                if (this.currentValueText != null) {
-                    const strValue = this.currentValue.toFixed(this.currentValuePrecision);
-                    this.currentValueText.textContent = strValue;
-                    this.currentValueText.setAttribute("class", style);
-                    if (this.currentValuePrecision > 0) {
-                        const strValueArray = strValue.split(".");
-                        this.currentValueText.textContent = strValueArray[0];
-                        this.currentValueTextdecimal.textContent = strValueArray[1];
-                        this.currentValueTextdecimal.setAttribute("class", style + " decimal");
-                        this.currentValueTextdecimalP.textContent = ".";
-                        this.currentValueTextdecimalP.setAttribute("class", style + " decimalpoint");
-                    }
+            this.currentValue = _value;
+            this.currentValueCursor = (_value <= this.minValue) ? this.cursorOffset + this.minValue : _value + this.cursorOffset;
+            const clampedValue = Utils.Clamp(this.currentValue, this.minValue, this.maxValue);
+            const clampedValueCursor = Utils.Clamp(this.currentValueCursor, this.minValue, this.maxValue);
+            let style = "";
+            if ((this.dangerRange[0] != this.dangerRange[1]) && (clampedValue >= this.dangerRange[0]) && (clampedValue <= this.dangerRange[1])) {
+                style = "danger";
+            } else if ((this.warningRange[0] != this.warningRange[1]) && (clampedValue >= this.warningRange[0]) && (clampedValue <= this.warningRange[1])) {
+                style = "warning";
+            } else {
+                style = "active";
+            }
+            if (this.cursor != null) {
+                const angle = this.valueToAngle(clampedValueCursor, false);
+                this.cursor.setAttribute("transform", "rotate(" + angle + ")");
+                this.cursor.setAttribute("class", style);
+            }
+            if (this.currentValueText != null) {
+                const strValue = this.currentValue.toFixed(this.currentValuePrecision);
+                this.currentValueText.textContent = strValue;
+                this.currentValueText.setAttribute("class", style);
+                if (this.currentValuePrecision > 0) {
+                    const strValueArray = strValue.split(".");
+                    this.currentValueText.textContent = strValueArray[0];
+                    this.currentValueTextdecimal.textContent = strValueArray[1];
+                    this.currentValueTextdecimal.setAttribute("class", style + " decimal");
+                    this.currentValueTextdecimalP.textContent = ".";
+                    this.currentValueTextdecimalP.setAttribute("class", style + " decimalpoint");
                 }
             }
         }
@@ -469,6 +474,7 @@ var A320_Neo_ECAM_Common;
                 this.outerIndicatorValue = _value;
                 if (this.outerIndicatorObject != null) {
                     const valueThrottlePosition = (_value <= this.minValue) ? this.cursorOffset + this.minValue : _value + this.cursorOffset;
+                    //const valueThrottlePosition = _value + this.cursorOffset;
                     const clampedValueThrottlePosition = Utils.Clamp(valueThrottlePosition , this.minValue, this.maxValue);
                     const angle = this.valueToAngle(clampedValueThrottlePosition, false);
                     this.outerIndicatorObject.setAttribute("transform", "rotate(" + angle + ")");

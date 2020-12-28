@@ -6,9 +6,7 @@ Welcome to the A32NX project repository. Thank you for your interest in contribu
 
 [git](https://git-scm.com/downloads)
 
-[nodejs v12+](https://nodejs.org/en/download/)
-
-[python 3.9+](https://www.python.org/downloads/)
+[Docker](https://docs.docker.com/get-docker/) (You do not need an account to use Docker)
 
 ## Optional
 
@@ -20,21 +18,23 @@ It's recommended to set gitbash as your default shell in vscode
 
 ## Cloning and setup
 
-`git clone https://github.com/flybywiresim/a32nx.git`
+```shell
+git clone https://github.com/flybywiresim/a32nx.git
+cd a32nx
+.\scripts\dev-env\run.cmd ./scripts/setup.sh
+```
 
-`cd a32nx`
+## Building
 
-`npm install`
+```shell
+.\scripts\dev-env\run.cmd ./scripts/build.sh
+```
 
-You will want to run `npm install` every time you pull or merge master into your branch
+Note that you should use `run.sh` instead of `run.cmd` if you are on Linux (including WSL).
 
 ## Asobo branch
 
 The master branch only contains files which have been modified from the original package. If you wish to work on a file that isn't present in the master branch, simply copy it over from the latest Asobo branch, and add it in its own commit. Please DO NOT add, modify, or delete files from the Asobo branch.
-
-## Committing changes
-
-After making any changes to files inside the `A32NX` directory, ensure you run the `build.py` script to regenerate the `layout.json` as necessary. There's also a CI check to ensure this has been done.
 
 ## Helping others
 

@@ -28,6 +28,9 @@ class WayPoint {
         this.instrument = _instrument;
         this.infos = new WayPointInfo(_instrument);
         this.transitionLLas = [];
+        this.liveDistanceTo = 0;
+        this.liveETATo = 0;
+        this.liveUTCTo = 0;
     }
     getSvgElement(index) {
         if (this.infos) {
@@ -767,6 +770,12 @@ class IntersectionInfo extends WayPointInfo {
         return "GPS/Intersection.png";
     }
     imageFileName() {
+        if (this.name == "(DECEL)") {
+            if (BaseInstrument.useSvgImages) {
+                return "A32NX_DECEL.svg";
+            }
+            return "A32NX_DECEL.png";
+        }
         if (BaseInstrument.useSvgImages) {
             return "ICON_MAP_INTERSECTION.svg";
         }
@@ -910,4 +919,3 @@ class Frequency {
         this.bcd16Value = _bcd16Value;
     }
 }
-//# sourceMappingURL=Waypoint.js.map

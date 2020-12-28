@@ -43,7 +43,7 @@ var A320_Neo_LowerECAM_DOOR;
             this.isInitialised = true;
         }
         update(_deltaTime) {
-            if (!this.isInitialised) {
+            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
 
@@ -110,4 +110,3 @@ var A320_Neo_LowerECAM_DOOR;
     A320_Neo_LowerECAM_DOOR.Page = Page;
 })(A320_Neo_LowerECAM_DOOR || (A320_Neo_LowerECAM_DOOR = {}));
 customElements.define("a320-neo-lower-ecam-door", A320_Neo_LowerECAM_DOOR.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_DOOR.js.map

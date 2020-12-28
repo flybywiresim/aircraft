@@ -239,4 +239,3 @@ var A320_Neo_BRK;
     }
 })(A320_Neo_BRK || (A320_Neo_BRK = {}));
 registerInstrument("a320-neo-brk", A320_Neo_BRK.Display);
-//# sourceMappingURL=A320_Neo_BRK.js.map

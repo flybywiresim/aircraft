@@ -102,10 +102,6 @@ class MapInstrument extends ISvgMapRootElement {
     get flightPlanManager() {
         return this._flightPlanManager;
     }
-    setNPCAirplaneManagerTCASMode(mode) {
-        this.npcAirplaneManager.useTCAS = mode;
-    }
-    ;
     getHideReachedWaypoints() {
         return this.flightPlanElement ? this.flightPlanElement.hideReachedWaypoints : false;
     }
@@ -263,6 +259,9 @@ class MapInstrument extends ISvgMapRootElement {
                 this.showFlightPlan = true;
                 this.updateFlightPlanVisibility();
             }
+            if (newValue == "false") {
+                this.updateFlightPlanVisibility();
+            }
         } else if (lowercaseName === "hide-flightplan-if-bushtrip") {
             this.bHideFlightPlanIfBushtrip = false;
             if (newValue === "true") {
@@ -397,7 +396,7 @@ class MapInstrument extends ISvgMapRootElement {
                     });
                 }
             };
-            this.npcAirplaneManager = new NPCAirplaneManager();
+            this.TCASManager = new A32NX_TCAS_Manager();
             this.airplaneIconElement = new SvgAirplaneElement();
             this.flightPlanElement = new SvgFlightPlanElement();
             this.flightPlanElement.source = this.flightPlanManager;
@@ -468,7 +467,6 @@ class MapInstrument extends ISvgMapRootElement {
         if (this.eBingMode !== EBingMode.HORIZON) {
             this.drawCounter++;
             this.drawCounter %= 100;
-            this.npcAirplaneManager.update();
             if (this.showRoads) {
                 const t0 = performance.now();
                 while (this.roadsBuffer.length > 0 && (performance.now() - t0 < 1)) {
@@ -515,10 +513,11 @@ class MapInstrument extends ISvgMapRootElement {
             }
             if (this.drawCounter === 45 || (this.showConstraints && (!this.constraints || this.constraints.length === 0))) {
                 if (this.showConstraints) {
+                    const transitionAltitude = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
                     const wpWithConstraints = this.flightPlanManager.getWaypointsWithAltitudeConstraints();
                     this.constraints = [];
                     for (let i = 0; i < wpWithConstraints.length; i++) {
-                        const svgConstraint = new SvgConstraintElement(wpWithConstraints[i]);
+                        const svgConstraint = new SvgConstraintElement(wpWithConstraints[i], transitionAltitude);
                         this.constraints.push(svgConstraint);
                     }
                 }
@@ -662,7 +661,7 @@ class MapInstrument extends ISvgMapRootElement {
                 }
                 if (this.showTraffic) {
                     if (this.getDeclutteredRange() < this.npcAirplaneMaxRange) {
-                        this.navMap.mapElements.push(...this.npcAirplaneManager.npcAirplanes);
+                        this.navMap.mapElements.push(...this.TCASManager.TrafficAircraft);
                     }
                 }
                 if (this.bShowAirplane && this.airplaneIconElement) {
@@ -804,7 +803,9 @@ class MapInstrument extends ISvgMapRootElement {
                     }
                     this.navMap.mapElements.push(...this.backOnTracks);
                     if ((SimVar.GetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number") === 1) && this.flightPlanManager.decelWaypoint) {
-                        this.navMap.mapElements.push(this.flightPlanManager.decelWaypoint.getSvgElement(this.navMap.index));
+                        var svg = this.flightPlanManager.decelWaypoint.getSvgElement(this.navMap.index);
+                        svg.ident = " ";
+                        this.navMap.mapElements.push(svg);
                     }
                     if (this.debugApproachFlightPlanElement) {
                         this.navMap.mapElements.push(this.debugApproachFlightPlanElement);
@@ -1429,4 +1430,3 @@ class MapInstrument extends ISvgMapRootElement {
 }
 customElements.define("map-instrument", MapInstrument);
 checkAutoload();
-//# sourceMappingURL=MapInstrument.js.map

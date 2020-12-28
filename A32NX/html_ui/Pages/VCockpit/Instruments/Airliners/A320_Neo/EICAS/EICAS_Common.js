@@ -17,6 +17,11 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         this.currentMinutes = 0;
         this.hoursText = this.querySelector("#HoursValue");
         this.minutesText = this.querySelector("#MinutesValue");
+        this.loadFactorContainer = this.querySelector("#LoadFactor");
+        this.loadFactorText = this.querySelector("#LoadFactorValue");
+        this.loadFactorSet = new NXLogic_ConfirmNode(2);
+        this.loadFactorReset = new NXLogic_ConfirmNode(5);
+        this.loadFactorVisible = new NXLogic_MemoryNode(true);
         this.gwUnit = this.querySelector("#GWUnit");
         this.gwValue = this.querySelector("#GWValue");
         this.refreshTAT(0, true);
@@ -32,6 +37,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         this.refreshTAT(Math.round(Simplane.getTotalAirTemperature()));
         this.refreshSAT(Math.round(Simplane.getAmbientTemperature()));
         this.refreshClock();
+        this.refreshLoadFactor(_deltaTime, SimVar.GetSimVarValue("G FORCE", "GFORCE"));
         this.refreshGrossWeight();
         this.refreshADIRS();
     }
@@ -59,6 +65,33 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         }
         //}
     }
+    refreshLoadFactor(_deltaTime, value) {
+        const conditionsMet = value > 1.4 || value < 0.7;
+        const loadFactorSet = this.loadFactorSet.write(conditionsMet, _deltaTime);
+        const loadFactorReset = this.loadFactorReset.write(!conditionsMet, _deltaTime);
+        const flightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
+        const isVisible = (
+            flightPhase >= 4 &&
+            flightPhase <= 8 &&
+            this.loadFactorVisible.write(loadFactorSet, loadFactorReset)
+        );
+
+        if (this.loadFactorContainer) {
+            if (!isVisible) {
+                this.loadFactorContainer.setAttribute("visibility", "hidden");
+                if (this.loadFactorText) {
+                    this.loadFactorText.textContent = "";
+                }
+                return;
+            }
+            this.loadFactorContainer.setAttribute("visibility", "visible");
+        }
+
+        if (this.loadFactorText) {
+            const clamped = Math.min(Math.max(value, -3), 5);
+            this.loadFactorText.textContent = (clamped >= 0 ? "+" : "") + clamped.toFixed(1);
+        }
+    }
     refreshClock() {
         const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         if (seconds != this.currentSeconds) {
@@ -77,12 +110,11 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         }
     }
     refreshGrossWeight(_force = false) {
-        const isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
-        const unit = isInMetric ? "kg" : "lbs";
-        const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", unit);
-        const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", unit);
-        const payloadWeight = this.getPayloadWeight(unit);
-        const gw = Math.round(emptyWeight + fuelWeight + payloadWeight);
+        const _correction = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+        const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg");
+        const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", "kg");
+        const payloadWeight = this.getPayloadWeight("kg");
+        const gw = Math.round((emptyWeight + fuelWeight + payloadWeight) * _correction);
         if ((gw != this.currentGW) || _force) {
             this.currentGW = gw;
             if (this.gwValue != null) {
@@ -90,7 +122,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
                 this.gwValue.textContent = (Math.floor(this.currentGW / 100) * 100).toString();
             }
             if (this.gwUnit) {
-                this.gwUnit.textContent = unit.toUpperCase();
+                this.gwUnit.textContent = _correction === 1 ? "KG" : "LBS";
             }
         }
     }
@@ -106,15 +138,18 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         if (this.tatText != null && this.satText != null) {
             if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2) {
                 this.tatText.textContent = "XX";
-                this.tatText.setAttribute("fill", "#E68000");
+                this.tatText.classList.add("Warning");
+                this.tatText.classList.remove("Value");
                 this.satText.textContent = "XX";
-                this.satText.setAttribute("fill", "#E68000");
+                this.satText.classList.add("Warning");
+                this.satText.classList.remove("Value");
             } else {
-                this.tatText.setAttribute("fill", "#00E64D");
-                this.satText.setAttribute("fill", "#00E64D");
+                this.satText.classList.add("Value");
+                this.satText.classList.remove("Warning");
+                this.tatText.classList.add("Value");
+                this.tatText.classList.remove("Warning");
             }
         }
     }
 }
 customElements.define("eicas-common-display", EICASCommonDisplay);
-//# sourceMappingURL=EICAS_Common.js.map

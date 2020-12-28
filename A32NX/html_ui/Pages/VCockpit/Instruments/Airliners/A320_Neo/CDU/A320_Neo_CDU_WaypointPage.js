@@ -6,11 +6,12 @@
 class CDUWaypointPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.WaypointPage;
 
         mcdu.setTemplate([
             ["WAYPOINT"],
-            ["IDENT"],
-            ["_______[color]red"],
+            ["\xa0IDENT"],
+            ["_______[color]amber"],
             [""],
             [""],
             [""],
@@ -23,18 +24,15 @@ class CDUWaypointPage {
             [""]
         ]);
 
-        mcdu.onLeftInput[0] = () => {
-            const INPUT = mcdu.inOut;
-            mcdu.clearUserInput();
-
-            const selectedWaypoint = mcdu.getOrSelectWaypointByIdent(INPUT, res => {
+        mcdu.onLeftInput[0] = (value) => {
+            const selectedWaypoint = mcdu.getOrSelectWaypointByIdent(value, res => {
                 if (res) {
                     mcdu.clearDisplay();
                     mcdu.setTemplate([
                         ["WAYPOINT"],
-                        ["IDENT"],
-                        [`${INPUT}`],
-                        ["LAT/LONG"],
+                        ["\xa0IDENT"],
+                        [`${value}`],
+                        ["\xa0LAT/LONG"],
                         [`${new LatLong(res.infos.coordinates.lat, res.infos.coordinates.long).toShortDegreeString()}[color]green`],
                         [""],
                         [""],
@@ -46,7 +44,7 @@ class CDUWaypointPage {
                         [""]
                     ]);
                 } else {
-                    mcdu.inOut = "INVALID ENTRY";
+                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
                 }
             });
         };

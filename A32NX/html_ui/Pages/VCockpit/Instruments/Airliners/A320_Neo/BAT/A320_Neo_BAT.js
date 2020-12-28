@@ -36,4 +36,3 @@ var A320_Neo_BAT;
     A320_Neo_BAT.Display = Display;
 })(A320_Neo_BAT || (A320_Neo_BAT = {}));
 registerInstrument("a320-neo-bat", A320_Neo_BAT.Display);
-//# sourceMappingURL=A320_Neo_BAT.js.map
