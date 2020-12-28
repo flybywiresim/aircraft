@@ -1,7 +1,7 @@
 # Development Resources
 
 ## Tools:
-- [WebUI-DevKit](https://github.com/dga711/msfs-webui-devkit) - In-game development overlay for html-ui content. Provides fast reload, console output, and more! **Be sure to download version 0.8.5 for now as version 0.9 is not yet compatible with the A320. See https://github.com/flybywiresim/a32nx/issues/2444.**
+- [WebUI-DevKit](https://github.com/dga711/msfs-webui-devkit) - In-game development overlay for html-ui content. Provides fast reload, console output, and more!
 - [devtools-backend-refurb](https://github.com/dga711/devtools-backend-refurb) - Chrome devtools server targeting Coherent GT. Gives you devtools for html-ui content. WARNING: This is still a work in progress, and tends to be very finnicky.
 
 
@@ -27,4 +27,4 @@ Then in `cmd`, run the command below. Be sure to replace each path with the prop
 mklink /J "C:\users\<user>\AppData\Microsoft Flight Simulator\Packages\Community\A32NX" "C:\path\to\cloned\repo\A32NX"
 ```
 
-And you're done! Be sure to run `npm run build` (or the build task in VSCode) when ever new files are added, **but don't commit the result!**
+And you're done! Be sure to run `build.py` (or the build task in VSCode) when ever new files are added, **but don't commit the result!**

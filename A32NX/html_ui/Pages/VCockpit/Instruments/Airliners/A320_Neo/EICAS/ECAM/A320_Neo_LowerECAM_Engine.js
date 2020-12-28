@@ -40,7 +40,7 @@ var A320_Neo_LowerECAM_Engine;
             this.isInitialised = true;
         }
         update(_deltaTime) {
-            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
+            if (!this.isInitialised) {
                 return;
             }
             if (this.engineLeft != null) {

@@ -1318,3 +1318,4 @@ var Airliners;
     }
     Airliners.PopupMenu_Handler = PopupMenu_Handler;
 })(Airliners || (Airliners = {}));
+//# sourceMappingURL=BaseAirliners.js.map

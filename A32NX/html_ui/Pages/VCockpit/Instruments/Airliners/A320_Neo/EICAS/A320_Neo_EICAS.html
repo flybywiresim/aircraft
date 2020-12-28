@@ -9,8 +9,8 @@
                 <svg>
                     <defs>
                         <radialGradient id="ECAMBacklight" cx="50%" cy="50%" r="75%">
-                            <stop offset="0%" style="stop-color:rgb(4, 4, 5);stop-opacity:1"/>
-                            <stop offset="100%" style="stop-color:rgb(4, 4, 5);stop-opacity:1"/>
+                            <stop offset="0%" style="stop-color:rgb(13,20,35);stop-opacity:1"/>
+                            <stop offset="100%" style="stop-color:rgb(13,20,35);stop-opacity:1"/>
                         </radialGradient>
                     </defs>
                 </svg>
@@ -20,35 +20,17 @@
                 <div class="SelfTestWrapper" id="TopSelfTest">
                     <svg class="SelfTest" viewBox="0 0 600 600">
                         <rect fill="url(#ECAMBacklight)" x="0" y="0" width="100%" height="100%"></rect>
-
-                        <!-- Disgusting hack, but we are rewriting this anyway :') -->
-                        <text style="font-size: 24px !important;" class="self_test_text valueText" text-anchor="middle" x="50%" y="50%" font-size="24px">SELF TEST IN PROGRESS</text>
-                        <text style="font-size: 24px !important;" class="self_test_text2 valueText" text-anchor="middle" x="50%" y="56%" font-size="24px">(MAX 40 SECONDS)</text>
+                        <text class="self_test_text valueText" text-anchor="middle" x="50%" y="50%" font-size="24px">SELF TEST IN PROGRESS</text>
+                        <text class="self_test_text2 valueText" text-anchor="middle" x="50%" y="56%" font-size="24px">(MAX 40 SECONDS)</text>
                     </svg>
                 </div>
-
-                <svg id="Eicas1EngTest" class="engineering-mode-overlay" viewBox="0 0 600 600">
-                    <text class="start" x="9" y="250">P/N : C19755BA01</text>
-                    <text class="start" x="10" y="270">S/N : C1975517332</text>
-                    <text class="start" x="10" y="344">EIS SW</text>
-                    <text class="start" x="10" y="366">P/N : C1975517332</text>
-                    <text x="445" y="250">THALES AVIONICS</text>
-                    <text x="538" y="366">LCDU 725</text>
-                </svg>
-                <svg id="Eicas1MaintMode" class="maintenance-mode-overlay" viewBox="0 0 600 600">
-                    <rect fill="url(#ECAMBacklight)" x="0" y="0" width="100%" height="100%"></rect>
-                    <text class="valueText" text-anchor="middle" x="50%" y="35%" font-size="24px">MAINTENANCE MODE</text>
-                </svg>
             </div>
 
             <div id="BottomScreen">
                 <a320-neo-lower-ecam-fuel id="FD" style="display:block"></a320-neo-lower-ecam-fuel>
                 <a320-neo-lower-ecam-engine style="display:none"></a320-neo-lower-ecam-engine> <!-- MODIFIED -->
-                <a320-neo-lower-ecam-elec style="display:none"></a320-neo-lower-ecam-elec> <!-- MODIFIED -->
                 <a320-neo-lower-ecam-apu style="display:none"></a320-neo-lower-ecam-apu>
-                <a320-neo-lower-ecam-cond style="display:none"></a320-neo-lower-ecam-cond> <!-- MODIFIED -->
                 <a320-neo-lower-ecam-bleed style="display:none"></a320-neo-lower-ecam-bleed> <!-- MODIFIED -->
-                <a320-neo-lower-ecam-press style="display:none"></a320-neo-lower-ecam-press> <!-- MODIFIED -->
                 <a320-neo-lower-ecam-door style="display:none"></a320-neo-lower-ecam-door> <!-- MODIFIED -->
                 <a320-neo-lower-ecam-ftcl style="display:none"></a320-neo-lower-ecam-ftcl> <!-- MODIFIED -->
                 <a320-neo-lower-ecam-wheel style="display:none"></a320-neo-lower-ecam-wheel> <!-- MODIFIED -->
@@ -56,30 +38,13 @@
                 <a320-neo-lower-ecam-crz style="display:none"></a320-neo-lower-ecam-crz> <!-- MODIFIED -->
                 <eicas-common-display id="CommonDisplay"></eicas-common-display>
 
-
-                <svg id="Eicas2EngTest" class="engineering-mode-overlay" viewBox="0 0 600 600" style="top: -5% !important;">
-                    <text class="start" x="9" y="250">P/N : C19755BA01</text>
-                    <text class="start" x="10" y="270">S/N : C1975517332</text>
-                    <text class="start" x="10" y="344">EIS SW</text>
-                    <text class="start" x="10" y="366">P/N : C1975517332</text>
-                    <text x="445" y="250">THALES AVIONICS</text>
-                    <text x="538" y="366">LCDU 725</text>
-                </svg>
-                <svg id="Eicas2MaintMode" class="maintenance-mode-overlay" viewBox="0 0 600 600" style="top: -5% !important;">
-                    <rect fill="url(#ECAMBacklight)" x="0" y="0" width="100%" height="100%"></rect>
-                    <text class="valueText" text-anchor="middle" x="50%" y="35%" font-size="24px">MAINTENANCE MODE</text>
-                </svg>
-
                 <div id="door-video-wrapper"/>
-
 
                 <div class="SelfTestWrapper" id="BottomSelfTest">
                     <svg class="SelfTest" viewBox="0 0 600 600">
                         <rect fill="url(#ECAMBacklight)" x="0" y="0" width="100%" height="100%"></rect>
-
-                        <!-- Disgusting hack, but we are rewriting this anyway :') -->
-                        <text style="font-size: 24px !important;" class="self_test_text valueText" text-anchor="middle" x="50%" y="50%" font-size="24px">SELF TEST IN PROGRESS</text>
-                        <text style="font-size: 24px !important;" class="self_test_text2 valueText" text-anchor="middle" x="50%" y="56%" font-size="24px">(MAX 40 SECONDS)</text>
+                        <text class="self_test_text valueText" text-anchor="middle" x="50%" y="50%" font-size="24px">SELF TEST IN PROGRESS</text>
+                        <text class="self_test_text2 valueText" text-anchor="middle" x="50%" y="56%" font-size="24px">(MAX 40 SECONDS)</text>
                     </svg>
                 </div>
             </div>
@@ -89,9 +54,7 @@
 
 <script type="text/html" import-script="/JS/SimPlane.js"></script>
 <script type="text/html" import-script="/JS/A32NX_Util.js"></script>
-<script type="text/html" import-script="/JS/dataStorage.js"></script>
-<script type="text/html" import-script="/Pages/A32NX_Utils/NXDataStore.js"></script>
-<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_DMC.js"></script>
+<script type="text/html" import-script="/JS/A32NX_Selectors.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
 
@@ -110,11 +73,8 @@
 
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Engine.html"></script> <!-- MODIFIED -->
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.html"></script>
-<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_COND.html"></script> <!-- MODIFIED -->
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Fuel.html"></script>
-<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Elec.html"></script>
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_BLEED.html"></script> <!-- MODIFIED -->
-<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_PRESS.html"></script> <!-- MODIFIED -->
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_DOOR.html"></script> <!-- MODIFIED -->
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_FTCL.html"></script> <!-- MODIFIED -->
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Status.html"></script> <!-- MODIFIED -->

@@ -48,9 +48,9 @@ var A320_Neo_LowerECAM_Fuel;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
-            this.allToggleElements.push(new JetFuelToggleElement(this, "#leftValve", "FUELSYSTEM VALVE SWITCH:1", "FUELSYSTEM VALVE OPEN:1"));
-            this.allToggleElements.push(new JetFuelToggleElement(this, "#middleValve", "FUELSYSTEM VALVE SWITCH:3", "FUELSYSTEM VALVE OPEN:3"));
-            this.allToggleElements.push(new JetFuelToggleElement(this, "#rightValve", "FUELSYSTEM VALVE SWITCH:2", "FUELSYSTEM VALVE OPEN:2"));
+            this.allToggleElements.push(new JetFuelToggleElement(this, "#leftValve", "FUELSYSTEM VALVE SWITCH:6", "FUELSYSTEM VALVE OPEN:6"));
+            this.allToggleElements.push(new JetFuelToggleElement(this, "#middleValve", "FUELSYSTEM VALVE SWITCH:1", "FUELSYSTEM VALVE OPEN:1"));
+            this.allToggleElements.push(new JetFuelToggleElement(this, "#rightValve", "FUELSYSTEM VALVE SWITCH:7", "FUELSYSTEM VALVE OPEN:7"));
             this.allToggleElements.push(new JetFuelToggleElement(this, "#leftPump1", "FUELSYSTEM PUMP SWITCH:2", "FUELSYSTEM PUMP ACTIVE:2"));
             this.allToggleElements.push(new JetFuelToggleElement(this, "#leftPump2", "FUELSYSTEM PUMP SWITCH:5", "FUELSYSTEM PUMP ACTIVE:5"));
             this.allToggleElements.push(new JetFuelToggleElement(this, "#rightPump1", "FUELSYSTEM PUMP SWITCH:3", "FUELSYSTEM PUMP ACTIVE:3"));
@@ -68,8 +68,9 @@ var A320_Neo_LowerECAM_Fuel;
             this.FOBUnit = this.querySelector("#fobUnit");
             this.fuelFlowUnit = this.querySelector("#ffUnit");
             this.middleFuelUnit = this.querySelector("#middleFuelUnit");
+            this.gallonToKg = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilogram");
+            this.gallonToPounds = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "lbs");
             this.fuelLevels = SimVar.GetGameVarValue("AIRCRAFT INITIAL FUEL LEVELS", "FuelLevels");
-            this.gallonToKG = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kg");
             this.apuElement = this.querySelector("#APU");
             this.apuLineElement = this.querySelector("#apuFuelLine");
             this.setAPUState(false, false, true);
@@ -80,12 +81,16 @@ var A320_Neo_LowerECAM_Fuel;
             this.middlePump1_Off = this.querySelector("#middlePump1_Off");
             this.middlePump2_Off = this.querySelector("#middlePump2_Off");
             this.isInitialised = true;
+            this.isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
         }
         update(_deltaTime) {
-            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
+            if (!this.isInitialised) {
                 return;
             }
-            const factor = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+            let factor = this.gallonToPounds;
+            if (this.isInMetric) {
+                factor = this.gallonToKg;
+            }
             this.updateQuantity(this.FOBValue, "FUEL TOTAL QUANTITY", factor);
             this.updateQuantity(this.centerTankValue, "FUEL TANK CENTER QUANTITY", factor);
             this.updateQuantity(this.leftInnerTankValue, "FUEL TANK LEFT MAIN QUANTITY", factor);
@@ -140,7 +145,7 @@ var A320_Neo_LowerECAM_Fuel;
                 this.middlePump2_On.setAttribute("visibility", "hidden");
             }
 
-            if (factor === 1) {
+            if (this.isInMetric) {
                 this.FOBUnit.textContent = "KG";
                 this.fuelFlowUnit.textContent = "KG/MIN";
                 this.middleFuelUnit.textContent = "KG";
@@ -157,14 +162,17 @@ var A320_Neo_LowerECAM_Fuel;
             }
         }
         updateFuelFlow(_unitFactor) {
-            const totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "gallons per hour") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "gallons per hour"))
-            * this.gallonToKG * _unitFactor / 60;
+            const totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "gallons per hour") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "gallons per hour")) * (_unitFactor / 60);
             this.fuelFlowValue.textContent = fastToFixed(totalFuelFlow, 0);
         }
         updateFuelConsumption(_unitFactor) {
             if (this.fuelLevels) {
-                const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "kg") * _unitFactor;
-                const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "kg") * _unitFactor;
+                const leftConsumption = this.isInMetric ?
+                    SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "KG") :
+                    SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "gallon") * _unitFactor * 0.001;
+                const rightConsumption = this.isInMetric ?
+                    SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "KG") :
+                    SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "gallon") * _unitFactor * 0.001;
 
                 const leftConsumptionShown = leftConsumption - (leftConsumption % 10);
                 const rightConsumptionShown = rightConsumption - (rightConsumption % 10);
@@ -178,11 +186,9 @@ var A320_Neo_LowerECAM_Fuel;
             }
         }
         updateQuantity(_elem, _simvar, _unitFactor) {
-            let quantity = SimVar.GetSimVarValue(_simvar, "gallons") * this.gallonToKG * _unitFactor;
+            let quantity = SimVar.GetSimVarValue(_simvar, "gallons");
+            quantity *= _unitFactor;
             quantity -= quantity % 20;
-            if (quantity < 0) {
-                quantity = 0;
-            }
             _elem.textContent = fastToFixed(quantity, 0);
         }
         setAPUState(_isOn, _isActive, _force = false) {
@@ -199,3 +205,4 @@ var A320_Neo_LowerECAM_Fuel;
     A320_Neo_LowerECAM_Fuel.Page = Page;
 })(A320_Neo_LowerECAM_Fuel || (A320_Neo_LowerECAM_Fuel = {}));
 customElements.define("a320-neo-lower-ecam-fuel", A320_Neo_LowerECAM_Fuel.Page);
+//# sourceMappingURL=A320_Neo_LowerECAM_Fuel.js.map

@@ -162,3 +162,4 @@ class A320_Neo_Clock extends BaseAirliners {
     }
 }
 registerInstrument("a320-neo-clock-element", A320_Neo_Clock);
+//# sourceMappingURL=A320_Neo_Clock.js.map

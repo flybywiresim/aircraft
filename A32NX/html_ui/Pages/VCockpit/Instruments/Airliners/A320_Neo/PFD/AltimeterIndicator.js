@@ -110,16 +110,16 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
             bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "#5A6573");
+            bg.setAttribute("fill", "#343B51");
             bg.setAttribute("stroke-width", "3");
             this.centerSVG.appendChild(bg);
 
             const topLine = document.createElementNS(Avionics.SVG.NS, "line");
             this.topLine = topLine;
             topLine.setAttribute("x1", _left.toString());
-            topLine.setAttribute("y1", (_top).toString());
+            topLine.setAttribute("y1", (_top + 2).toString());
             topLine.setAttribute("x2", (_left + _width + arcWidth).toString());
-            topLine.setAttribute("y2", (_top).toString());
+            topLine.setAttribute("y2", (_top + 2).toString());
             topLine.setAttribute("stroke", "white");
             topLine.setAttribute("stroke-width", "3");
             this.centerSVG.appendChild(topLine);
@@ -224,7 +224,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     this.targetAltitudeIndicatorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
                 }
                 this.targetAltitudeIndicatorSVGShape.setAttribute("fill", "none");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", "#00FFFF");// TBM later (should turn amber for Selected mode)
+                this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", "cyan");// TBM later (should turn amber for Selected mode)
                 this.targetAltitudeIndicatorSVGShape.setAttribute("stroke-width", "3");
                 this.targetAltitudeIndicatorSVGShape.setAttribute("d", "M 0 0 L 38 0 L 38 100 L 0 100 L 0 55 L 6 50 L 0 45 Z");
                 this.targetAltitudeIndicatorSVG.appendChild(this.targetAltitudeIndicatorSVGShape);
@@ -239,7 +239,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 this.targetAltitudeIndicatorSVGText.textContent = "35000";
                 this.targetAltitudeIndicatorSVGText.setAttribute("x", (8 + _width + 18).toString());
                 this.targetAltitudeIndicatorSVGText.setAttribute("y", "49");
-                this.targetAltitudeIndicatorSVGText.setAttribute("fill", "#00FFFF");
+                this.targetAltitudeIndicatorSVGText.setAttribute("fill", "cyan");
                 this.targetAltitudeIndicatorSVGText.setAttribute("font-size", (this.fontSize * 1.15).toString());
                 this.targetAltitudeIndicatorSVGText.setAttribute("font-family", "ECAMFontRegular");
                 this.targetAltitudeIndicatorSVGText.setAttribute("text-anchor", "end");
@@ -282,11 +282,11 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 integralsGroup.setAttribute("viewBox", "0 0 " + cursorWidth + " " + cursorHeight);
                 this.cursorSVG.appendChild(integralsGroup);
                 {
-                    this.cursorIntegrals[0].construct(integralsGroup, 1, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(0,255,0)");
-                    this.cursorIntegrals[1].construct(integralsGroup, 52, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(0,255,0)");
-                    this.cursorIntegrals[2].construct(integralsGroup, 103, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(0,255,0)");
+                    this.cursorIntegrals[0].construct(integralsGroup, 1, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(36,255,0)");
+                    this.cursorIntegrals[1].construct(integralsGroup, 52, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(36,255,0)");
+                    this.cursorIntegrals[2].construct(integralsGroup, 103, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(36,255,0)");
                 }
-                this.cursorDecimals.construct(this.cursorSVG, 114, _cursorPosY - 2, _width, "ECAMFontRegular", this.fontSize * 1.15, "rgb(0,255,0)");
+                this.cursorDecimals.construct(this.cursorSVG, 114, _cursorPosY - 2, _width, "ECAMFontRegular", this.fontSize * 1.15, "rgb(36,255,0)");
             }
             this.centerSVG.appendChild(this.cursorSVG);
             if (!this.targetAltitudeText) {
@@ -296,7 +296,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 Utils.RemoveAllChildren(this.targetAltitudeText);
             }
             this.targetAltitudeText.style.fontSize = "45px";
-            this.targetAltitudeText.style.color = "#00FFFF";
+            this.targetAltitudeText.style.color = "cyan";
             this.targetAltitudeText.style.position = "absolute";
             this.targetAltitudeText.style.top = "-5px";
             this.targetAltitudeText.style.left = "25px";
@@ -311,7 +311,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.STDpressureSVG.textContent = "STD";
         this.STDpressureSVG.setAttribute("x", "98");
         this.STDpressureSVG.setAttribute("y", (posY + height + 115 - 38));// - (this.fontSize * 1.3)).toString());
-        this.STDpressureSVG.setAttribute("fill", "#00FFFF");
+        this.STDpressureSVG.setAttribute("fill", "cyan");
         this.STDpressureSVG.setAttribute("font-size", (this.fontSize * 1.3).toString());//1.05
         this.STDpressureSVG.setAttribute("font-family", "ECAMFontRegular");
         this.STDpressureSVG.setAttribute("text-anchor", "start");
@@ -352,7 +352,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.pressureSVG.textContent = "---";
         this.pressureSVG.setAttribute("x", "130");
         this.pressureSVG.setAttribute("y", (posY + height + 80).toString());
-        this.pressureSVG.setAttribute("fill", "#00FFFF");
+        this.pressureSVG.setAttribute("fill", "cyan");
         this.pressureSVG.setAttribute("font-size", (this.fontSize * 1.3).toString());
         this.pressureSVG.setAttribute("font-family", "ECAMFontRegular");
         this.pressureSVG.setAttribute("text-anchor", "start");
@@ -389,7 +389,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.mtrsCursorSVGText.textContent = "-----";
         this.mtrsCursorSVGText.setAttribute("x", "153");
         this.mtrsCursorSVGText.setAttribute("y", (posY + height + 159 - 36));
-        this.mtrsCursorSVGText.setAttribute("fill", "rgb(0,255,0)");
+        this.mtrsCursorSVGText.setAttribute("fill", "lime");
         this.mtrsCursorSVGText.setAttribute("font-size", (this.fontSize * 1.3).toString());
         this.mtrsCursorSVGText.setAttribute("font-family", "ECAMFontRegular");
         this.mtrsCursorSVGText.setAttribute("text-anchor", "start");
@@ -404,7 +404,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.mtrsCursorSVGUnit.textContent = " M";
         this.mtrsCursorSVGUnit.setAttribute("x", "162");
         this.mtrsCursorSVGUnit.setAttribute("y", (posY + height + 159 - 36));
-        this.mtrsCursorSVGUnit.setAttribute("fill", "#00FFFF");
+        this.mtrsCursorSVGUnit.setAttribute("fill", "cyan");
         this.mtrsCursorSVGUnit.setAttribute("font-size", (this.fontSize * 1.3).toString());
         this.mtrsCursorSVGUnit.setAttribute("font-family", "ECAMFontRegular");
         this.mtrsCursorSVGUnit.setAttribute("text-anchor", "start");
@@ -454,139 +454,14 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.updateTargetAltitude(indicatedAltitude, selectedAltitude, baroMode);
         this.updateBaroPressure(baroMode);
         this.updateMtrs(indicatedAltitude, selectedAltitude);
-        this._updateAltitudeAlert(indicatedAltitude);
-        this._updateQNHAlert(indicatedAltitude, baroMode);
         this.updateFail();
     }
-
-    _pulseYellow() {
-        this.cursorSVGShape.classList.add("pulse-yellow");
-    }
-
-    _flashAmber() {
-        this.cursorSVGShape.classList.add("flash-amber");
-    }
-
-    _removeAltitudeWarnings() {
-        this.cursorSVGShape.classList.remove("pulse-yellow");
-        this.cursorSVGShape.classList.remove("flash-amber");
-    }
-
-    _updateAltitudeAlert(indicatedAltitude) {
-        // Clean any previous animation
-        this._removeAltitudeWarnings();
-
-        // Exit when:
-        // - Landing gear down
-        // - Glide slope captured
-        const landingGearIsDown = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
-        const glideSlopeCaptured = SimVar.GetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool") === 1;
-        if (landingGearIsDown || glideSlopeCaptured) {
-            return;
-        }
-
-        const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
-        // Use the constraint altitude if provided otherwise use selected altitude lock value
-        const targetAltitude = currentAltitudeConstraint && !this.getAutopilotMode() ? currentAltitudeConstraint : Simplane.getAutoPilotSelectedAltitudeLockValue();
-
-        // Exit when selected altitude is being changed
-        if (this.previousTargetAltitude !== targetAltitude) {
-            this.previousTargetAltitude = targetAltitude;
-            this._wasBellowThreshold = false;
-            this._wasAboveThreshold = false;
-            this._wasInRange = false;
-            return;
-        }
-
-        const delta = Math.abs(indicatedAltitude - targetAltitude);
-
-        if (delta < 250) {
-            this._wasBellowThreshold = true;
-            this._wasAboveThreshold = false;
-        }
-
-        if (750 < delta) {
-            this._wasAboveThreshold = true;
-            this._wasBellowThreshold = false;
-        }
-
-        if (250 <= delta && delta <= 750) {
-            this._wasInRange = true;
-        }
-
-        if (250 <= delta) {
-            if (this._wasBellowThreshold) {
-                this._flashAmber();
-            } else if (this._wasAboveThreshold && delta <= 750) {
-                this._pulseYellow();
-            } else if (750 < delta && this._wasInRange) {
-                this._flashAmber();
-            } else if (this._wasInRange) {
-                this._pulseYellow();
-            }
-        }
-    }
-
-    _blinkQNH() {
-        this.pressureSVGLegend.classList.add("blink");
-        this.pressureSVG.classList.add("blink");
-    }
-
-    _blinkSTD() {
-        this.STDpressureSVG.classList.add("blink");
-        this.STDpressureSVGShape.classList.add("blink");
-    }
-
-    _removeBlink() {
-        this.pressureSVGLegend.classList.remove("blink");
-        this.pressureSVG.classList.remove("blink");
-        this.STDpressureSVG.classList.remove("blink");
-        this.STDpressureSVGShape.classList.remove("blink");
-    }
-
-    _updateQNHAlert(indicatedAltitude, baroMode) {
-        this._removeBlink(); //Reset Blink
-
-        if (SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number") == 0) {
-            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 10000); //Default TRANS ALT to 10,000ft
-        }
-        if (SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number") == 0) {
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 10000); //Default TRANS LVL to 10,000ft
-        }
-
-        const transTakeoffAlt = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
-        const transApprAlt = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
-
-        if ((SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Number") > 1) && (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Number") <= 4)) {
-            if ((transTakeoffAlt <= indicatedAltitude) && (baroMode != "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
-                this._blinkQNH();
-            }
-            if ((transTakeoffAlt > indicatedAltitude) && (baroMode == "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
-                this._blinkSTD();
-            }
-        }
-
-        if ((SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Number") > 4) && (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Number") < 7)) {
-            if ((transApprAlt >= indicatedAltitude) && (baroMode == "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
-                this._blinkSTD();
-            }
-        }
-
-        if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Number") == 7) {
-            if ((transApprAlt <= indicatedAltitude) && (baroMode != "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
-                this._blinkQNH();
-            }
-            if ((transApprAlt > indicatedAltitude) && (baroMode == "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
-                this._blinkSTD();
-            }
-        }
-    }
-
     updateMtrs(_altitude, _selected) {
         if (this.mtrsVisible) {
             if (this.mtrsSelectedGroup) {
+                const APMode = this.getAutopilotMode();
                 const meters = Math.round(_selected * 0.3048);
-                this.mtrsSelectedGroup.style.color = this.getAutopilotMode() ? "#00FFFF" : "#FF94FF";
+                this.mtrsSelectedGroup.style.color = (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta";
                 this.mtrsSelectedGroup.textContent = meters.toString() + "M";
             }
             if (this.mtrsCursorGroup) {
@@ -751,40 +626,23 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             }
         }
     }
-    /**
-     * @returns {boolean} True: Selected Mode, False: Managed Mode
-     */
     getAutopilotMode() {
         if (this.aircraft == Aircraft.A320_NEO) {
             if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") != 0) {
-                return false;
+                return AutopilotMode.MANAGED;
             }
+            return AutopilotMode.SELECTED;
+        } else {
+            return AutopilotMode.SELECTED;
         }
-        return true;
-    }
-    /**
-     * @param alt {float}
-     * @param isStd {boolean}
-     * @param noFL {boolean}
-     * @returns alt or fl {string} if noFL 'FL' won't be added in front
-     */
-    getAltFL(alt, isStd, noFL = false) {
-        if (isStd && alt >= 1000) {
-            const convAlt = (alt / 100).toFixed(0).toString();
-            if (alt < 10000) {
-                return noFL ? "0" + convAlt : "FL0" + convAlt;
-            }
-            return noFL ? convAlt : "FL" + convAlt;
-        }
-        return alt.toFixed(0).toString();
     }
     updateTargetAltitude(currentAltitude, targetAltitude, baroMode) {
         let hudAltitude = 0;
         if (this.targetAltitudeIndicatorSVG) {
-            const APModeSelected = this.getAutopilotMode();
+            const APMode = this.getAutopilotMode();
             const stdMode = (baroMode == "STD") ? true : false;
             if (this.aircraft == Aircraft.CJ4 || this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-                if (APModeSelected) {
+                if (APMode != AutopilotMode.MANAGED) {
                     let divider = 100;
                     let refDelta = 275;
                     let textAlwaysVisible = false;
@@ -833,26 +691,26 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
                 }
             } else if (this.aircraft == Aircraft.A320_NEO) {
-                if (!APModeSelected) {
-                    const cstnAlt = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
-                    if (isFinite(cstnAlt)) {
-                        targetAltitude = cstnAlt;
-                    }
+                let textContent;
+                if (stdMode && targetAltitude >= 1000) {
+                    textContent = "FL" + Math.abs(targetAltitude / 100).toString();
+                } else {
+                    textContent = targetAltitude.toFixed(0);
                 }
                 const deltaAltitude = targetAltitude - currentAltitude;
                 if (deltaAltitude < -650) {
-                    this.targetAltitudeText.textContent = this.getAltFL(targetAltitude, stdMode);
+                    this.targetAltitudeText.textContent = textContent;
                     this.targetAltitudeText.style.top = "718px";
                     this.targetAltitudeText.style.left = "85px";
                     this.targetAltitudeText.style.display = "block";
-                    this.targetAltitudeText.style.color = APModeSelected ? "#00FFFF" : "#FF94FF";
+                    this.targetAltitudeText.style.color = (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta";
                     this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
                 } else if (deltaAltitude > 650) {
-                    this.targetAltitudeText.textContent = this.getAltFL(targetAltitude, stdMode);
+                    this.targetAltitudeText.textContent = textContent;
                     this.targetAltitudeText.style.top = "-16px";
                     this.targetAltitudeText.style.left = "85px";
                     this.targetAltitudeText.style.display = "block";
-                    this.targetAltitudeText.style.color = APModeSelected ? "#00FFFF" : "#FF94FF";
+                    this.targetAltitudeText.style.color = (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta";
                     this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
                 } else {
                     this.targetAltitudeText.style.display = "none";
@@ -860,14 +718,14 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     offsetY -= 51;
                     this.targetAltitudeIndicatorSVG.setAttribute("y", offsetY.toString());
                     this.targetAltitudeIndicatorSVG.setAttribute("visibility", "visible");
-                    this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", APModeSelected ? "#00FFFF" : "#FF94FF");
+                    this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta");
                     if (this.targetAltitudeIndicatorSVGText) {
                         if (targetAltitude >= 10) {
-                            this.targetAltitudeIndicatorSVGText.textContent = this.getAltFL(targetAltitude, stdMode, true);
+                            this.targetAltitudeIndicatorSVGText.textContent = targetAltitude.toFixed(0);
                         } else {
                             this.targetAltitudeIndicatorSVGText.textContent = "100";
                         }
-                        this.targetAltitudeIndicatorSVGText.setAttribute("fill", APModeSelected ? "#00FFFF" : "#FF94FF");
+                        this.targetAltitudeIndicatorSVGText.setAttribute("fill", (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta");
                     }
                 }
                 hudAltitude = targetAltitude;
@@ -887,7 +745,6 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.cursorSVGShape.setAttribute("stroke", "yellow");
             this.cursorIntegralsGroup.setAttribute("visibility", "visible");
             this.cursorDecimals.setAttribute("visibility", "visible");
-
             this.verticalLine.setAttribute("stroke", "white");
             // Code to add if visibilty issues with this part
 
@@ -955,3 +812,4 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     }
 }
 customElements.define("jet-pfd-altimeter-indicator", Jet_PFD_AltimeterIndicator);
+//# sourceMappingURL=AltimeterIndicator.js.map

@@ -1,6 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <WwiseDocument Type="WorkUnit" ID="{A6ECAC60-1A67-4597-952B-AAD68287560B}" SchemaVersion="97">
 	<AudioObjects>
-		<WorkUnit Name="Default Work Unit" ID="{A6ECAC60-1A67-4597-952B-AAD68287560B}" PersistMode="Standalone"/>
+		<WorkUnit Name="Default Work Unit" ID="{A6ECAC60-1A67-4597-952B-AAD68287560B}" PersistMode="Standalone">
+			<ChildrenList>
+				<Sound Name="solenoidunlock" ID="{60B2DE1E-04B0-479A-883E-E045C90BB731}" ShortID="377552300">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="solenoidunlock" ID="{28E2CF91-B27C-42BA-83E6-DBB4605679F3}">
+							<PropertyList>
+								<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+							</PropertyList>
+							<Language>SFX</Language>
+							<AudioFile>solenoidunlock.wav</AudioFile>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="solenoidunlock" ID="{28E2CF91-B27C-42BA-83E6-DBB4605679F3}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+			</ChildrenList>
+		</WorkUnit>
 	</AudioObjects>
 </WwiseDocument>

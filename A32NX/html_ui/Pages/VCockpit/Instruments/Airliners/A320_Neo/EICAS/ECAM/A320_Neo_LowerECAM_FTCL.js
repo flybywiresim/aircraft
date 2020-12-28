@@ -73,7 +73,7 @@ let A320_Neo_LowerECAM_FTCL;
         }
 
         update(_deltaTime) {
-            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
+            if (!this.isInitialised) {
                 return;
             }
 
@@ -123,7 +123,7 @@ let A320_Neo_LowerECAM_FTCL;
 
             // Update left/right elevators
             const elevatorDeflectPct = SimVar.GetSimVarValue("ELEVATOR DEFLECTION PCT", "percent over 100");
-            const elevatorDeflectPctNormalized = elevatorDeflectPct * (elevatorDeflectPct > 0 ? 70 : 52);
+            const elevatorDeflectPctNormalized = elevatorDeflectPct * 52;
             const leCursorPath = "M169," + (398 - elevatorDeflectPctNormalized) + " l15,-7 l0,14Z";
             const reCursorPath = "M431," + (398 - elevatorDeflectPctNormalized) + " l-15,-7 l0,14Z";
             this.leftElevatorCursor.setAttribute("d", leCursorPath);
@@ -327,3 +327,4 @@ let A320_Neo_LowerECAM_FTCL;
     A320_Neo_LowerECAM_FTCL.Page = Page;
 })(A320_Neo_LowerECAM_FTCL || (A320_Neo_LowerECAM_FTCL = {}));
 customElements.define("a320-neo-lower-ecam-ftcl", A320_Neo_LowerECAM_FTCL.Page);
+//# sourceMappingURL=A320_Neo_LowerECAM_FTCL.js.map

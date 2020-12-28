@@ -1,0 +1,132 @@
+<ModelBehaviors>
+    <Template Name="FBW_Airbus_FIRE_TEST_LIGHTS">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <DUMMY_BUTTON>True</DUMMY_BUTTON>
+            <SEQ1_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool)</SEQ2_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_FIRE_TEST_BUTTON">
+        <UseTemplate Name="FBW_Push_Held">
+            <HOLD_SIMVAR>L:A32NX_FIRE_TEST_#TYPE##ID#</HOLD_SIMVAR>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_FIRE_AGENT">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <SEQ1_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:A32NX_FIRE_BUTTON_#TYPE##ID#, Bool) or</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:A32NX_Fire_#TYPE##ID#_Agent#AGENT_ID#_Discharge) or</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>
+                (L:A32NX_FIRE_BUTTON_#TYPE##ID#, Bool) if{
+                1 (>L:A32NX_Fire_#TYPE##ID#_Agent#AGENT_ID#_Discharge)
+                }
+            </LEFT_SINGLE_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_FIRE_BUTTON">
+        <DefaultTemplateParameters>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <CURSOR>Grab</CURSOR>
+
+            <ANIM_LENGTH>100</ANIM_LENGTH>
+            <SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+            <SWITCH_POSITION_VAR>_ButtonAnimVar</SWITCH_POSITION_VAR>
+            <LEFT_SINGLE_CODE>1 (>L:A32NX_FIRE_BUTTON_#TYPE##ID#)</LEFT_SINGLE_CODE>
+            <LEFT_LEAVE_CODE/>
+            <ANIM_DURATION>0.3</ANIM_DURATION>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+
+            <Update Frequency = "10">
+                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 &gt; (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 0 &gt; or if{
+                (O:AnimGoingForward)
+                if{
+                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / + 1 min (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 == if{
+                0 (&gt;O:AnimGoingForward)
+                }
+                } els{
+                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / - (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) max (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+                }
+                }
+            </Update>
+
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <Condition Check="OVERRIDE_ANIM_CODE">
+                    <True>
+                        <ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
+                    </True>
+                    <False>
+                        <ANIM_CODE>#ANIM_LENGTH# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) *</ANIM_CODE>
+                    </False>
+                </Condition>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <EMISSIVE_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (A:ENG ON FIRE:#ID#, Bool) 1 == or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or </EMISSIVE_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_FIRE_GUARD_#TYPE##ID#) 1 == if{
+                    1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 1 (&gt;O:AnimGoingForward) #LEFT_SINGLE_CODE#
+                    }
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_Airbus_FIRE_GUARD">
+        <DefaultTemplateParameters>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <CURSOR>Grab</CURSOR>
+
+            <ANIM_LENGTH>100</ANIM_LENGTH>
+            <SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+            <SWITCH_POSITION_VAR>_ButtonAnimVar</SWITCH_POSITION_VAR>
+            <LEFT_SINGLE_CODE>1 (>L:FIRE_GUARD_#ID#)</LEFT_SINGLE_CODE>
+            <LEFT_LEAVE_CODE/>
+            <ANIM_DURATION>0.3</ANIM_DURATION>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+
+            <Update Frequency = "10">
+                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 &gt; (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 0 &gt; or if{
+                (O:AnimGoingForward) if{
+                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / + 1 min (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 == if{
+                0 (&gt;O:AnimGoingForward)
+                }
+                } els{
+                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / - (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) max (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+                }
+                }
+            </Update>
+
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <Condition Check="OVERRIDE_ANIM_CODE">
+                    <True>
+                        <ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
+                    </True>
+                    <False>
+                        <ANIM_CODE>#ANIM_LENGTH# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) *</ANIM_CODE>
+                    </False>
+                </Condition>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_FIRE_BUTTON_#TYPE##ID#) 0 == if{
+                    (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) ! (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown)
+                    (O:AnimGoingForward) ! (&gt;O:AnimGoingForward)
+                    (L:A32NX_FIRE_GUARD_#TYPE##ID#) ! (&gt;L:A32NX_FIRE_GUARD_#TYPE##ID#)
+                    }
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>

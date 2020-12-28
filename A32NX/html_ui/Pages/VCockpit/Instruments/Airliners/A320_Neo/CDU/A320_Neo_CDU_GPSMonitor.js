@@ -31,7 +31,6 @@ class CDUGPSMonitor {
         }
 
         mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.GPSMonitor;
         // ideally, this would update with the same frequency (is it known?) as the A320 GPS
         mcdu.refreshPageCallback = () => {
             CDUGPSMonitor.ShowPage(mcdu, merit1, merit2, sat1, sat2);

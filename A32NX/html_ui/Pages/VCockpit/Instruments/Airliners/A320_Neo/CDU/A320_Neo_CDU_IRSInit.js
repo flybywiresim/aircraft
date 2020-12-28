@@ -1,12 +1,11 @@
 class CDUIRSInit {
-    static ShowPage(mcdu, lon, originAirportLat, originAirportLon, referenceName, originAirportCoordinates, alignMsg = "ALIGN ON REF}[color]cyan") {
+    static ShowPage(mcdu, lon, originAirportLat, originAirportLon, referenceName, originAirportCoordinates, alignMsg = "ALIGN ON REF  }[color]blue") {
         mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.IRSInit;
         mcdu.setTitle('IRS INIT');
         const checkAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number");
         if (checkAligned === 0) {
             SimVar.SetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum", 0);
-            alignMsg = "ALIGN ON REF}[color]cyan";
+            alignMsg = "ALIGN ON REF }[color]blue";
         }
         const emptyIRSGpsString = "--°--.--/---°--.--";
         const arrowupdwn = "↑↓";
@@ -46,19 +45,19 @@ class CDUIRSInit {
             GPSPosTitle = ["LAT", "LONG", "GPS POSITION"];
             originAirportTitle = ["LAT" + larrowupdwn , rarrowupdwn + "LONG", "REFERENCE"];
             GPSPosAlign = ["--°--.--", "--°--.--", " "];
-            originAirportString = [originAirportLat['deg'] + "°{small}" + originAirportLat['min'] + "." + originAirportLat['sec'] + "{end}" + originAirportLat['dir'] + "[color]cyan", originAirportLon['deg'] + "°{small}" + originAirportLon['min'] + "." + originAirportLon['sec'] + "{end}" + originAirportLon['dir'] + "[color]cyan", referenceName];
-            if (SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_1", "Enum") || SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_2", "Enum") || SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_3", "Enum")) {
-                GPSPosAlign = [currentGPSLat['deg'] + "°{small}" + currentGPSLat['min'] + "." + Math.ceil(Number(currentGPSLat['sec'] / 100)) + "{end}" + currentGPSLat['dir'] + '[color]green', currentGPSLon['deg'] + "°{small}" + currentGPSLon['min'] + "." + Math.ceil(Number(currentGPSLon['sec'] / 100)) + "{end}" + currentGPSLon['dir'] + "[color]green", ""];
+            originAirportString = ['{IrsInitFont}' + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '[s-text]{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", referenceName];
+            if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") || SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") || SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum")) {
+                GPSPosAlign = ['{IrsInitFont}' + currentGPSLat['deg'] + '°{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + "{IrsInitFontEnd} [color]green", '{IrsInitFont}' + currentGPSLon['deg'] + '°{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLon['dir'] + "{IrsInitFontEnd} [color]green", ""];
                 alignType = "GPS";
             }
         }
 
-        let IRSAlignOnPos = currentGPSLat['deg'] + "°{small}" + currentGPSLat['min'] + "." + Math.ceil(Number(currentGPSLat['sec'] / 100)) + "{end}" + currentGPSLat['dir'] + "/" + currentGPSLon['deg'] + "°{small}" + currentGPSLon['min'] + "." + Math.ceil(Number(currentGPSLon['sec'] / 100)) + "{end}" + currentGPSLon['dir'];
+        let IRSAlignOnPos = "{IrsInitFont}" + currentGPSLat['deg'] + '°{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + currentGPSLon['deg'] + '°{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '{IrsInitFont}' + currentGPSLon['dir'] + '{IrsInitFontEnd}';
         if (SimVar.GetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum") === 1) {
             alignMsg = "";
             alignType = "REF";
             if (checkAligned !== 2) {
-                IRSAlignOnPos = originAirportLat['deg'] + "°{small}" + originAirportLat['min'] + "." + originAirportLat['sec'] + "{end}" + originAirportLat['dir'] + "/" + originAirportLon['deg'] + "°{small}" + originAirportLon['min'] + "." + originAirportLon['sec'] + "{end}" + originAirportLon['dir'];
+                IRSAlignOnPos = "{IrsInitFont}" + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '{IrsInitFont}' + originAirportLon['dir'] + '{IrsInitFontEnd}';
             }
         }
 
@@ -70,7 +69,7 @@ class CDUIRSInit {
         }
 
         let IRS1GpsString = emptyIRSGpsString;
-        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_1", "Enum") === 1) {
+        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") === 1) {
             if (checkAligned === 2) {
                 statusIRS1 = "IRS1 ALIGNED ON " + alignType;
             } else {
@@ -81,7 +80,7 @@ class CDUIRSInit {
             statusIRS1 = "IRS1 OFF";
         }
         let IRS2GpsString = emptyIRSGpsString;
-        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_2", "Enum") === 1) {
+        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") === 1) {
             if (checkAligned === 2) {
                 statusIRS2 = "IRS2 ALIGNED ON " + alignType;
             } else {
@@ -92,7 +91,7 @@ class CDUIRSInit {
             statusIRS2 = "IRS2 OFF";
         }
         let IRS3GpsString = emptyIRSGpsString;
-        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_3", "Enum") === 1) {
+        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") === 1) {
             if (checkAligned === 2) {
                 statusIRS3 = "IRS3 ALIGNED ON " + alignType;
             } else {
@@ -119,16 +118,26 @@ class CDUIRSInit {
             ["<RETURN", alignMsg]
         ]);
 
+        // IRS Font is different we loop over keywords to set correct font since at the moment we cannot adapt FMCMainDisplay.js to allow for extra keywords
+        mcdu._lineElements.forEach(function (ele) {
+            ele.forEach(function (el) {
+                if (el != null) {
+                    let newHtml = el;
+                    if (newHtml != null) {
+                        newHtml = newHtml.innerHTML.replace(/{IrsInitFont}/g, '<span class=\'irs-text\'>');
+                        newHtml = newHtml.replace(/{IrsInitFontEnd}/g, '</span>');
+                        el.innerHTML = newHtml;
+                    }
+                }
+            });
+        });
+
         mcdu.onLeftInput[0] = () => {
             lon = false;
         };
 
         mcdu.onRightInput[0] = () => {
             lon = true;
-        };
-
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onLeftInput[5] = () => {
@@ -140,7 +149,7 @@ class CDUIRSInit {
                 if (alignMsg.includes("CONFIRM")) {
                     SimVar.SetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum", 1);
                 } else {
-                    alignMsg = "CONFIRM ALIGN* [color]amber";
+                    alignMsg = "CONFIRM ALIGN* [color]red";
                 }
             }
         };
@@ -153,7 +162,7 @@ class CDUIRSInit {
                     activeReference = originAirportLon;
                 }
                 if (activeReference['deg'] >= 90 && !lon || activeReference['deg'] >= 180 && lon) {
-                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    mcdu.showErrorMessage("INVALID ENTRY");
                 } else {
                     activeReference['sec'] = activeReference['sec'] + 1;
                     if (activeReference['sec'] >= 9) {
@@ -176,7 +185,7 @@ class CDUIRSInit {
                     activeReference = originAirportLon;
                 }
                 if (activeReference['deg'] <= -90 && !lon || activeReference['deg'] <= -180 && lon) {
-                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    mcdu.showErrorMessage("INVALID ENTRY");
                 } else {
                     activeReference['sec'] = activeReference['sec'] - 1;
                     if (activeReference['sec'] < 0) {

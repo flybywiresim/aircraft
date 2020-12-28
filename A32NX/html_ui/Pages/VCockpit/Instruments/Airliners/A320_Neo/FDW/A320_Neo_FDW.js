@@ -422,3 +422,4 @@ class A320_Neo_FDW extends BaseAirliners {
     }
 }
 registerInstrument("a320-neo-fdw", A320_Neo_FDW);
+//# sourceMappingURL=A320_Neo_FDW.js.map

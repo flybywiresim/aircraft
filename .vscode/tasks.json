@@ -2,34 +2,11 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Setup",
-      "type": "shell",
-      "command": "${workspaceFolder}/scripts/dev-env/run.sh",
-      "args": ["./scripts/setup.sh"],
-      "windows": {
-        "command": "${workspaceFolder}/scripts/dev-env/run.cmd",
-        "args": ["./scripts/setup.sh"]
-      },
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
-    },
-    {
       "label": "Build",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/dev-env/run.sh",
-      "args": ["./scripts/build.sh"],
-      "windows": {
-        "command": "${workspaceFolder}/scripts/dev-env/run.cmd",
-        "args": ["./scripts/build.sh"]
-      },
+      "command": "python build.py",
       "options": {
-        "cwd": "${workspaceFolder}"
+        "cwd": "${workspaceFolder}/A32NX"
       },
       "problemMatcher": [],
       "group": {

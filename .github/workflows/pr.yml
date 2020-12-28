@@ -1,38 +1,33 @@
 name: PR
 on:
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
-      - ready_for_review
+    branches:
+      - master
 
 jobs:
   lint:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
       - name: install
-        run: npm install --no-optional
+        run: npm install
       - name: lint
-        run: ./scripts/dev-env/run.sh npm run lint
+        run: npm run lint
   build:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
       - name: Generate layout.json and update manifest.json
         run: |
-          ./scripts/dev-env/run.sh ./scripts/setup.sh
-          ./scripts/dev-env/run.sh ./scripts/build.sh
-
-          mkdir tmp_A32NX
-          mv A32NX tmp_A32NX/
-          mv tmp_A32NX A32NX
+          cd ./A32NX
+          python3 build.py
       - uses: actions/upload-artifact@v2
         with:
           name: A32NX
-          path: A32NX
+          path: ./A32NX/

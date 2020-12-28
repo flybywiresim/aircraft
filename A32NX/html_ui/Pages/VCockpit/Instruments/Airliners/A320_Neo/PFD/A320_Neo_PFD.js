@@ -99,10 +99,6 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.selfTestLastKnobValueFO = 1;
         this.selfTestLastKnobValueCAP = 1;
 
-        //ENGINEERING TEST
-        this.engTestDiv = document.querySelector('#PfdEngTest');
-        this.engMaintDiv = document.querySelector('#PfdMaintMode');
-
         this.electricity = document.querySelector('#Electricity');
     }
     onUpdate() {
@@ -136,7 +132,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         }
 
         const IsOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
-        const isAnyEngineSwitchOn = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:1", "Bool") || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:2", "Bool");
+        const isAnyEngineSwitchOn = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:6", "Bool") || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:7", "Bool");
 
         if (IsOnGround && isAnyEngineSwitchOn) {
             this.groundCursor.style.display = "block";
@@ -181,7 +177,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
         if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
-            this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
+            this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
         }
 
@@ -191,12 +187,6 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
                 this.selfTestDiv.style.display = "none";
                 this.selfTestTimerStarted = false;
             }
-        }
-
-        if (this.disp_index == 1) {
-            updateDisplayDMC("PFD1", this.engTestDiv, this.engMaintDiv);
-        } else {
-            updateDisplayDMC("PFD2", this.engTestDiv, this.engMaintDiv);
         }
 
         this.selfTestLastKnobValue = currentKnobValue;
@@ -466,3 +456,4 @@ class A320_Neo_PFD_ILS extends NavSystemElement {
     }
 }
 registerInstrument("a320-neo-pfd-element", A320_Neo_PFD);
+//# sourceMappingURL=A320_Neo_PFD.js.map

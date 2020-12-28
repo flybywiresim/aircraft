@@ -1,5 +1,4 @@
 {
-  "root": true,
   "env": {
     "browser": true,
     "es2021": true
@@ -13,6 +12,10 @@
         "SwitchCase": 1
       }
     ],
+    // "linebreak-style": [
+    //     "error",
+    //     "unix"
+    // ],
     "linebreak-style": "off",
     // No quotes option is really fully consistent, so probably best to jsut not enforce either type
     "quotes": "off",
@@ -48,7 +51,7 @@
     // The vanilla code already has over 100 console.logs, but maybe we can enable this in master and delete them there
     "no-console": "off",
     "no-debugger": "error",
-    "eol-last": ["error", "always"],
+    "eol-last": ["error", "never"],
     "no-multiple-empty-lines": [
       "error",
       {

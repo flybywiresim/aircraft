@@ -1,7 +1,6 @@
 class CDUIRSStatusFrozen {
     static ShowPage(mcdu, index, wind_dir) {
         mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.IRSStatusFrozen;
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
             SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
         if (currPos.includes("N")) {
@@ -37,7 +36,7 @@ class CDUIRSStatusFrozen {
             ["GPIRS POSITION"],
             [`${currPos}[color]green`],
             ["", ""],
-            ["{UNFREEZE[color]cyan", `${index < 3 ? "NEXT IRS>" : "RETURN>"}`]
+            ["{UNFREEZE[color]blue", `${index < 3 ? "NEXT IRS>" : "RETURN>"}`]
         ]);
 
         mcdu.onLeftInput[5] = () => {

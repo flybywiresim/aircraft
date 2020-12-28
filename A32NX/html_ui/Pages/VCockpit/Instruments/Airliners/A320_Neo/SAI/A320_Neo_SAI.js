@@ -2142,3 +2142,4 @@ class A320_Neo_SAI_LandingSysIndicator extends HTMLElement {
 customElements.define('a320-neo-sai-landingsys-indicator', A320_Neo_SAI_LandingSysIndicator);
 
 registerInstrument("a320-neo-sai", A320_Neo_SAI);
+//# sourceMappingURL=A320_Neo_SAI.js.map

@@ -70,3 +70,4 @@ class SvgPlanMaskElement extends SvgMaskElement {
         ;
     }
 }
+//# sourceMappingURL=SvgMaskElement.js.map

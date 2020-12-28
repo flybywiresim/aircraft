@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{B0C3474E-848C-457A-B3F1-28CC8E619509}" SchemaVersion="97">
+	<AudioObjects>
+		<WorkUnit Name="Asobo_B787_10_Improved" ID="{B0C3474E-848C-457A-B3F1-28CC8E619509}" PersistMode="Standalone">
+			<ChildrenList>
+				<Sound Name="78flaps" ID="{F165383D-2EEF-40F7-B2E1-C81028A7CE4B}" ShortID="613962404">
+					<PropertyList>
+						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="78flaps" ID="{41B2D674-57DF-48EF-AFD0-740B4A038760}">
+							<PropertyList>
+								<Property Name="LoopBegin" Type="Real64" Value="0.624144643107981"/>
+								<Property Name="LoopEnd" Type="Real64" Value="10.086177432625"/>
+								<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
+								<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+							</PropertyList>
+							<Language>SFX</Language>
+							<AudioFile>78flaps.wav</AudioFile>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="78flaps" ID="{41B2D674-57DF-48EF-AFD0-740B4A038760}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+			</ChildrenList>
+		</WorkUnit>
+	</AudioObjects>
+</WwiseDocument>

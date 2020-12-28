@@ -34,7 +34,6 @@ class CDUIRSStatus {
         wind_dir = smoothedAngle % 360;
 
         mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.IRSStatus;
         mcdu.setTemplate([
             [`IRS${index}`],
             ["POSITION"],
@@ -48,15 +47,11 @@ class CDUIRSStatus {
             ["GPIRS POSITION"],
             [`${currPos}[color]green`],
             ["", ""],
-            ["{FREEZE[color]cyan", `${index < 3 ? "NEXT IRS>" : "RETURN>"}`]
+            ["{FREEZE[color]blue", `${index < 3 ? "NEXT IRS>" : "RETURN>"}`]
         ]);
 
         mcdu.onLeftInput[5] = () => {
             CDUIRSStatusFrozen.ShowPage(mcdu, index, wind_dir);
-        };
-
-        mcdu.rightInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onRightInput[5] = () => {
