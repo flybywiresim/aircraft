@@ -39,6 +39,8 @@ class PFD extends Component {
         this.VAlphaLim = 0;
         this.VS = 0;
 
+        this.barTimer = 10;
+
         this.smoothFactor = 0.5;
 
         this.LSButtonPressed = false;
@@ -58,7 +60,7 @@ class PFD extends Component {
         SimVar.SetSimVarValue(`L:BTN_LS_${this.dispIndex}_FILTER_ACTIVE`, 'Bool', this.LSButtonPressed);
     }
 
-    smoothSpeeds(_indicatedSpeed, _dTime, _maxSpeed, _vls, _vaprot, _valim, _vs) {
+    smoothSpeeds(_dTime, _maxSpeed, _vls, _vaprot, _valim, _vs) {
         const seconds = _dTime / 1000;
         this.VMax = SmoothSin(this.VMax, _maxSpeed, this.smoothFactor, seconds);
         this.VLs = SmoothSin(this.VLs, _vls, this.smoothFactor, seconds);
@@ -97,10 +99,19 @@ class PFD extends Component {
         const mach = SimVar.GetSimVarValue('AIRSPEED MACH', 'mach');
 
         const VS = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VS', 'number');
-        const VMax = 0;
+        const VMax = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VFE', 'number');
         const VLs = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number');
 
-        this.smoothSpeeds(airspeed, this.deltaTime, VMax, VLs, VS * 1.1, VS * 1.03, VS);
+        let showSpeedBars = true;
+        if (isOnGround) {
+            showSpeedBars = false;
+            this.barTimer = 0;
+        } else if (this.barTimer < 10) {
+            showSpeedBars = false;
+            this.barTimer += this.deltaTime / 1000;
+        }
+
+        this.smoothSpeeds(this.deltaTime, VMax, VLs, VS * 1.1, VS * 1.03, VS);
 
         let targetAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue();
         let isManaged = false;
@@ -149,7 +160,7 @@ class PFD extends Component {
                 />
                 <HeadingTape heading={heading} groundTrack={groundTrack} ILSCourse={ILSCourse} />
                 <AltitudeIndicator altitude={baroAlt} FWCFlightPhase={FlightPhase} />
-                <AirspeedIndicator airspeed={airspeed} airspeedAcc={airspeedAcc} FWCFlightPhase={FlightPhase} altitude={baroAlt} VAlphaLim={this.VAlphaLim} VAlphaProt={this.VAlphaProt} VLs={this.VLs} />
+                <AirspeedIndicator airspeed={airspeed} airspeedAcc={airspeedAcc} FWCFlightPhase={FlightPhase} altitude={baroAlt} VAlphaLim={this.VAlphaLim} VAlphaProt={this.VAlphaProt} VLs={this.VLs} VMax={this.VMax} showBars={showSpeedBars} />
                 <path
                     id="Mask2"
                     className="BackgroundFill"

@@ -19,6 +19,12 @@
   font-family: "Ecam", monospace !important;
 }
 
+.Bar {
+  fill: $display-amber;
+  stroke: $display-amber;
+  stroke-width: 0.11px;
+}
+
 .NormalStroke {
   stroke-width: 0.18mm;
   stroke-linecap: round;

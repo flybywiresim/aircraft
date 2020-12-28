@@ -58,7 +58,7 @@ const VFENextBugElement = (offset) => (
 );
 
 export const AirspeedIndicator = ({
-    airspeed, airspeedAcc, FWCFlightPhase, altitude, VAlphaLim, VAlphaProt, VLs,
+    airspeed, airspeedAcc, FWCFlightPhase, altitude, VAlphaLim, VAlphaProt, VLs, VMax, showBars,
 }) => {
     const bugs = [];
 
@@ -102,8 +102,15 @@ export const AirspeedIndicator = ({
             {/* <SpeedTrendArrow airspeedAcc={airspeedAcc} /> */}
             {FWCFlightPhase <= 4
             && <V1Offtape airspeed={clampedSpeed} v1={v1} />}
-            <VAlphaLimBar airspeed={airspeed} VAlphalim={VAlphaLim} />
-            <VLsBar airspeed={airspeed} VLs={VLs} VAlphaProt={VAlphaProt} />
+            {showBars
+                && (
+                    <g>
+                        <VLsBar airspeed={airspeed} VLs={VLs} VAlphaProt={VAlphaProt} />
+                        <VAlphaProtBar airspeed={airspeed} VAlphaProt={VAlphaProt} />
+                        <VAlphaLimBar airspeed={airspeed} VAlphalim={VAlphaLim} />
+                    </g>
+                )}
+            <VMaxBar VMax={VMax} airspeed={airspeed} />
         </g>
     );
 };
@@ -131,6 +138,43 @@ const VLsBar = ({ VAlphaProt, VLs, airspeed }) => {
 
     return (
         <path id="VLsIndicator" className="NormalStroke Amber" d={`m19.031 ${VLsPos}h1.9748v${offset}`} />
+    );
+};
+
+// Both VAlphaProt and VMax are kind of not nice, need to rework maybe
+const VAlphaProtBar = ({ VAlphaProt, airspeed }) => {
+    if (VAlphaProt - airspeed < -DisplayRange) {
+        return null;
+    }
+    const delta = airspeed - DisplayRange - VAlphaProt;
+    const offset = delta * DistanceSpacing / ValueSpacing;
+
+    return (
+        <path id="VAlphaProtBarberpole" transform={`translate(0 ${offset})`} className="Bar" d="m21.952 206.2v1.4895m0-42.39v1.4899m0 37.999v-1.5119m0 2.923h-2.9213v-1.4111h2.9213zm0-4.3342v-1.5119m0 2.923h-2.9213v-1.4111h2.9213zm0-5.846v1.5119m0 1.4111h-2.9213v-1.4111h2.9213zm0-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v2.923h-2.9213v-1.4111h2.9213m0-2.923v-1.5119m-2.9213 2.923v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m-2.9213-1.5119v-1.4111h2.9213v1.4111zm2.9213-4.3122v-1.5119m0 2.923h-2.9213v-1.4111h2.9213zm0-4.3342v-1.5119m0 2.923h-2.9213v-1.4111h2.9213zm0-5.846v1.5119m0 1.4111h-2.9213v-1.4111h2.9213zm0-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v2.923h-2.9213v-1.4111h2.9213m0-2.923v-1.5119m-2.9213 2.923v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.8461v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-10.18h2.9213v1.4111h-2.9213zm2.9213 4.3341v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm2.9213-5.846v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm0-5.846v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m0-4.4349v1.5119m-2.9213 1.4111v-1.4111h2.9213v1.4111zm1.9748-4.3341h0.94654v1.4111h-2.9213v-1.4111zm-1.9748 90.569h2.9213v1.4111h-2.9213zm0-1.5119v-1.4111h2.9213v1.4111zm2.9213 0v1.5119m0-4.4349v1.5119m-2.9213-1.5119v-1.4111h2.9213v1.4111z" />
+    );
+};
+
+const VMaxBar = ({ VMax, airspeed }) => {
+    if (VMax - airspeed > DisplayRange) {
+        return null;
+    }
+
+    const showVProt = VMax > 240;
+
+    const delta = airspeed - VMax + DisplayRange;
+    const offset = delta * DistanceSpacing / ValueSpacing;
+
+    return (
+        <g transform={`translate(0 ${offset})`}>
+            <path id="OverspeedBarberpole" className="Fill Red" d="m22.053 -29.849h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm-3.022-10.079v2.419h3.022v-2.419zm3.022-20.159v2.419h-3.022v-2.419zm0 7.4587h-3.022v-2.419h3.022zm-3.022 2.6206v2.419h3.022v-2.419zm0 5.0397v2.4191h3.022v-2.4191zm0 78.017h3.022v-2.4191h-3.022zm3.022-17.538h-3.022v2.4191h3.022zm0 12.498v-2.4191h-3.022v2.4191zm0-7.4588v2.4191h-3.022v-2.4191zm0-37.898h-3.022v-2.419h3.022zm0 2.6206v2.419h-3.022v-2.419zm-3.022 25.198v2.419h3.022v-2.419zm3.022-20.159v2.419h-3.022v-2.419zm0 7.4587h-3.022v-2.419h3.022zm-3.022 2.6206v2.419h3.022v-2.419zm0 5.0397v2.4191h3.022v-2.4191z" />
+            {showVProt
+            && (
+                <g id="SpeedProtGroup">
+                    <path id="SpeedProt" className="NormalStroke Green" d="m13.994 32.107h3.022m-3.022-1.0079h3.022" />
+                    <path id="SpeedProtLost" className="NormalStroke Amber" d="m14.615 30.833 1.7808 1.7818m-1.7808 0 1.7808-1.7818" />
+                </g>
+            )}
+        </g>
     );
 };
 
@@ -213,9 +257,9 @@ const SpeedTrendArrow = ({ airspeedAcc }) => {
     if (ArrowShown) {
         let pathString;
         if (sign > 0) {
-            pathString = `m15.455 ${80.823 + offset} l -1.2531 2.4607 M15.455 ${80.823 + offset} l 1.2531 2.4607`
+            pathString = `m15.455 ${80.823 + offset} l -1.2531 2.4607 M15.455 ${80.823 + offset} l 1.2531 2.4607`;
         } else {
-            pathString = `m15.455 ${80.823 + offset} l 1.2531 -2.4607 M15.455 ${80.823 + offset} l -1.2531 -2.4607`
+            pathString = `m15.455 ${80.823 + offset} l 1.2531 -2.4607 M15.455 ${80.823 + offset} l -1.2531 -2.4607`;
         }
 
         return (
