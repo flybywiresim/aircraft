@@ -159,9 +159,7 @@ const SideslipIndicator = ({ isOnGround, roll }) => {
         const accInG = Math.min(0.3, Math.max(-0.3, latAcc));
         SIIndexOffset = -accInG * 15 / 0.3;
     } else {
-        // Not sure if this is accurate
-        const turnCoordinator = -Simplane.getInclinometer();
-        SIIndexOffset = turnCoordinator * 15;
+        SIIndexOffset = Math.max(Math.min(SimVar.GetSimVarValue('INCIDENCE BETA', 'degrees'), 15), -15);
     }
 
     return (

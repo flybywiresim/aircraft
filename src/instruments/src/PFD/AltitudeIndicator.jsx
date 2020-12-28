@@ -145,8 +145,6 @@ const LinearDeviationIndicator = ({ linearDeviation, alt }) => {
 };
 
 const AltimeterIndicator = ({ mode }) => {
-    const transAlt = SimVar.GetSimVarValue('L:AIRLINER_TRANS_ALT', 'number');
-
     if (mode === 'STD') {
         return (
             <g id="STDAltimeterModeGroup">
@@ -158,19 +156,17 @@ const AltimeterIndicator = ({ mode }) => {
 
     const units = Simplane.getPressureSelectedUnits();
     const pressure = Simplane.getPressureValue(units);
+    let text;
     if (units === 'millibar') {
-        const text = Math.round(pressure).toString();
-        return (
-            <g id="AltimeterGroup">
-                <text id="AltimeterModeText" className="FontMedium White" x="118.29047" y="138.03368">{mode}</text>
-                <text id="AltimeterSettingText" className="FontMedium MiddleAlign Cyan" x="140.86115" y="138.03368">{text}</text>
-            </g>
-        );
+        text = Math.round(pressure).toString();
+    } else {
+        text = pressure.toFixed(2);
     }
 
-    const text = pressure.toFixed(2);
     return (
         <g id="AltimeterGroup">
+            {mode === 'QFE'
+            && <path className="NormalStroke White" d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z" />}
             <text id="AltimeterModeText" className="FontMedium White" x="118.29047" y="138.03368">{mode}</text>
             <text id="AltimeterSettingText" className="FontMedium MiddleAlign Cyan" x="140.86115" y="138.03368">{text}</text>
         </g>
