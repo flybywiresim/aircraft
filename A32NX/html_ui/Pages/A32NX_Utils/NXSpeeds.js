@@ -380,7 +380,7 @@ function _getVfeNIdx(fi) {
 }
 
 /**
- * Convert degrees Celsius into degrees Kelvin
+ * Convert degrees Celsius into Kelvin
  * @param T {number} degrees Celsius
  * @returns {number} degrees Kelvin
  */
@@ -391,7 +391,7 @@ function _convertCtoK(T) {
 /**
  * Convert Mach to True Air Speed
  * @param M {number} Mach
- * @param T {number} Degree Kelvin
+ * @param T {number} Kelvin
  * @returns {number} True Air Speed
  */
 function _convertMachToKTas(M, T) {
@@ -401,7 +401,7 @@ function _convertMachToKTas(M, T) {
 /**
  * Convert TAS to Mach
  * @param Vt {number} TAS
- * @param T {number} Degree Kelvin
+ * @param T {number} Kelvin
  * @returns {number} True Air Speed
  */
 function _convertKTASToMach(Vt, T) {
@@ -411,7 +411,7 @@ function _convertKTASToMach(Vt, T) {
 /**
  * Convert TAS to Calibrated Air Speed
  * @param Vt {number} velocity true air speed
- * @param T {number} current temperature degree Kelvin
+ * @param T {number} current temperature Kelvin
  * @param p {number} current pressure hpa
  * @returns {number} Calibrated Air Speed
  */
@@ -422,7 +422,7 @@ function _convertTasToKCas(Vt, T, p) {
 /**
  * Convert KCAS to KTAS
  * @param Vc {number} velocity true air speed
- * @param T {number} current temperature degree Kelvin
+ * @param T {number} current temperature Kelvin
  * @param p {number} current pressure hpa
  * @returns {number} Calibrated Air Speed
  */
@@ -433,7 +433,7 @@ function _convertKCasToKTAS(Vc, T, p) {
 /**
  * Convert Mach to Calibrated Air Speed
  * @param M {number} Mach
- * @param T {number} Degree Kelvin
+ * @param T {number} Kelvin
  * @param p {number} current pressure hpa
  * @returns {number} Calibrated Air Speed
  */
