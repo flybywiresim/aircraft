@@ -138,7 +138,7 @@ const getSimBriefOfp = (mcdu, updateView) => {
     const simBriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
 
     if (!simBriefUsername && !simBriefUserId) {
-        mcdu.showErrorMessage("NO SIMBRIEF USER");
+        mcdu.addNewMessage(NXFictionalMessages.noSimBriefUser);
         throw ("No simbrief username/user ID provided");
     }
 
@@ -206,10 +206,7 @@ const insertUplink = (mcdu) => {
     const fromTo = `${originIcao}/${destinationIcao}`;
     const fltNbr = `${icao_airline}${flight_number}`;
 
-    const uplinkInProg = "UPLINK INSERT IN PROG";
-    const aocActFplnUplink = "AOC ACT F-PLN UPLINK";
-
-    mcdu.showErrorMessage(uplinkInProg);
+    mcdu.addNewMessage(NXSystemMessages.uplinkInsertInProg);
 
     /**
      * AOC ACT F-PLN UPLINK
@@ -222,7 +219,7 @@ const insertUplink = (mcdu) => {
 
             setTimeout(async () => {
                 await uplinkRoute(mcdu);
-                mcdu.showErrorMessage(aocActFplnUplink);
+                mcdu.addNewMessage(NXSystemMessages.aocActFplnUplink);
             }, mcdu.getDelayRouteChange());
 
             if (mcdu.page.Current === mcdu.page.InitPageA) {
@@ -261,7 +258,7 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
                     res(true);
                 } else {
                     console.log('AWY/WPT MISMATCH ' + routeIdent + " via " + via);
-                    mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                    mcdu.addNewMessage(NXSystemMessages.awyWptMismatch);
                     res(false);
                 }
             });
@@ -280,7 +277,7 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
                     });
                 } else {
                     console.log('NOT IN DATABASE ' + routeIdent);
-                    mcdu.showErrorMessage("NOT IN DATABASE");
+                    mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                     res(false);
                 }
             });

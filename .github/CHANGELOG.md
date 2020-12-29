@@ -5,9 +5,27 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.6.0
-1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 - (pareil6)
-1. [CDU] Fix incorrect block time display on INIT/REVIEW - @pareil6 - (pareil6)
+1. [ND] Flight route now hidden in VOR ROSE and ILS ROSE modes - @2hwk (2Cas#1022)
+1. [CDU] Added WIND page - @tyler58546 (tyler58546)
+1. [MISC] Fixed F/O displays being synced with the captain's displays - @tyler58546 (tyler58546)
+1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
+1. [SOUND] Added new vent test and ext pwr relay random sounds - @hotshotp (Boris#9134)
+1. [SOUND] Seatbelt sign now has a delay - @hotshotp (Boris#9134)
+1. [FUEL] Fix outer tank fuel transfer - @donstim - (donbikes#4084)
+1. [PFD] Added auto brake status to FMA - @MisterChocker (Leon)
+1. [FLIGHTMODEL] Preliminary fix for flaps 1 unrecoverable dives - @donstim (donbikes#4084)
+1. [UTILS] Added Vfe and Vfen table - @MisterChocker (Leon)
+1. [PFD] Fixed wrong Vfe and Vfen indication - @MisterChocker (Leon)
+
+## 0.5.1
+1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
+1. [CDU] Fix incorrect block time display on INIT/REVIEW - @pareil6 (pareil6)
 1. [ECAM] Improved PACKS indication - @MisterChocker (Leon)
+1. [CDU] Improved visuals of CDU Pages - @MisterChocker (Leon)
+1. [CDU] Improved ascent constraint algorithm - @MisterChocker (Leon)
+1. [CDU] Fixed FPLN airways showing as undefined - @pareil6 - (pareil6)
+1. [CDU] Allow SimBrief OFP to override previous flight plan - @pareil6 (pareil6)
+1. [MODEL] Incorporate new Asobo model changes - @pepperoni505 (pepperoni505)
 
 ## 0.5.0
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
@@ -170,12 +188,6 @@
 1. [Sound] Replaced sounds for various switches, levers, and buttons - @hotshotp (Boris)
 1. [CDU] Added Soft GA Logic - @MisterChocker (Leon)
 1. [ECAM] Improved Thrust Rating update condition - @MisterChocker (Leon)
-1. [OPTIONS] Added options entry to enable NO PORTABLE DEVICES memo - @wpine215 (Iceman)
-1. [ECAM] Added REFUELG, OUTR TK XFRD, CABIN READY, FUEL X FEED, and ADIRS SWTG memos - @wpine215 (Iceman)
-1. [ECAM] Added PACKS/NAI/WAI text indicator on upper ECAM - @wpine215 (Iceman)
-1. [Engines] Reduced idle thrust at low Mach to improve descent rate - @donstim - (donbkes#4084)
-1. [CDU] Added SIMBRIEF integration, INIT REQUEST and AOC INIT/REVIEW - @viniciusfont (subcomandante)
-1. [CDU] Added PERF W&B page allowing to Refuel and change Payload from the MCDU - @viniciusfont (subcomandante)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

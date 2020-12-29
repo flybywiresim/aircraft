@@ -11,32 +11,32 @@ const airDistanceCoeff = math.bignumber(math.matrix([
 
 // DO NOT TOUCH THESE VALUES
 const fuelConsumedCoeff = math.bignumber(math.matrix([
-    [-1.048830e+06, 1.100051e+02, -4.189034e-03, 9.135252e-07, 2.763159e-11, 2.262649e-14],
-    [1.504015e+04, -1.183834e+00, 2.259431e-05, -6.434822e-09, -6.773189e-13, 0],
-    [-8.582186e+01, 5.075198e-03, -9.780696e-09, 1.674814e-11, 0, 0],
-    [2.435581e-01, -9.912046e-06, -8.158594e-11, 0, 0, 0],
-    [-3.434985e-04, 7.483351e-09, 0, 0, 0, 0],
-    [1.923913e-07, 0, 0, 0, 0, 0]
+    [4.069435e+02, 1.080068e+01, 1.868617e-03, 4.469823e-06, -1.075694e-09, 1.699993e-13],
+    [-1.429171e+01, -8.078463e-02, -7.557951e-05, -6.795487e-09, -1.238178e-12, 0],
+    [1.984013e-01, 6.804436e-04, 2.789351e-07, 2.353046e-11, 0, 0],
+    [-1.330668e-03, -2.251760e-06, -3.946554e-10, 0, 0, 0],
+    [3.930031e-06, 2.634909e-09, 0, 0, 0, 0],
+    [-4.209321e-09, 0, 0, 0, 0, 0]
 ]));
 
 // DO NOT TOUCH THESE VALUES
 const timeCoeff = math.bignumber(math.matrix([
-    [5.614134e+05, -3.039145e+01, 4.316546e-04, -1.734017e-08, 1.426283e-12, 5.335886e-16],
-    [-8.194045e+03, 3.460325e-01, -2.939464e-06, 4.627882e-11, -1.714844e-14, 0],
-    [4.770323e+01, -1.464326e-03, 6.507908e-09, 1.329098e-13, 0, 0],
-    [-1.384741e-01, 2.744817e-06, -5.321168e-12, 0, 0, 0],
-    [2.004457e-04, -1.922998e-09, 0, 0, 0, 0],
-    [-1.157609e-07, 0, 0, 0, 0, 0]
+    [-2.307264e+02, 1.161741e+00, -1.208222e-03, 1.002013e-07, -2.440974e-11, 4.213891e-15],
+    [4.151808e+00, -1.124149e-02, 9.688891e-06, -1.392537e-10, -3.745942e-14, 0],
+    [-2.846925e-02, 5.221070e-05, -2.839090e-08, 5.961502e-13, 0, 0],
+    [8.892639e-05, -1.087864e-07, 2.572222e-11, 0, 0, 0],
+    [-1.236801e-07, 8.777364e-11, 0, 0, 0, 0],
+    [5.521856e-11, 0, 0, 0, 0, 0]
 ]));
 
 // DO NOT TOUCH THESE VALUES
 const correctionsCoef = math.bignumber(math.matrix ([
-    [5.766245e+05, 9.363354e+00, -1.459221e-04, 4.291358e-08, 1.138064e-11, -1.329147e-15],
-    [-8.522673e+03, -1.094951e-01, 8.738721e-07, -4.335285e-10, -2.309505e-15, 0],
-    [5.023988e+01, 4.795383e-04, -4.552810e-10, 6.393554e-13, 0, 0],
-    [-1.476505e-01, -9.295518e-07, -1.493682e-12, 0, 0, 0],
-    [2.163486e-04, 6.730100e-10, 0, 0, 0, 0],
-    [-1.264493e-07, 0, 0, 0, 0, 0]
+    [-4.502431e+00, -2.212160e-03, 1.379723e-05, 9.071250e-08, 3.291840e-12, 3.007572e-18],
+    [-1.410121e-01, 7.319389e-04, -1.299149e-06, -5.614996e-10, -1.371330e-14, 0],
+    [3.467151e-03, -1.438481e-06, 7.152032e-09, 9.475944e-13, 0, 0],
+    [-2.559041e-05, -4.887061e-09, -1.067236e-11, 0, 0, 0],
+    [7.616725e-08, 1.345230e-11, 0, 0, 0, 0],
+    [-7.977101e-11, 0, 0, 0, 0, 0]
 ]));
 
 // DO NOT TOUCH THESE VALUES
@@ -207,26 +207,13 @@ class A32NX_FuelPred {
         const flightLevelMatrix = _buildBMatrix6(flightLevel);
         const mmOfDistFL = math.multiply(flightLevelMatrix, airDistanceMatrix);
         //TODO Create logic for handling 200NM and FL390 = 0
-        if (!alternate) {
-            switch (computation) {
-                case this.computations.FUEL:
-                    const deviation = 0;
-                    return (Math.round(math.sum(math.dotMultiply(fuelConsumedCoeff,mmOfDistFL)))) + deviation;
-                case this.computations.TIME:
-                    return (Math.round(math.sum(math.dotMultiply(timeCoeff,mmOfDistFL))));
-                case this.computations.CORRECTIONS:
-                    return (Math.round(math.sum(math.dotMultiply(correctionsCoef,mmOfDistFL))));
-            }
-        } else {
-            switch (computation) {
-                case this.computations.FUEL:
-                    const deviation = 0;
-                    return (Math.round(math.sum(math.dotMultiply(altFuelConsumedCoef,mmOfDistFL)))) + deviation;
-                case this.computations.TIME:
-                    return (Math.round(math.sum(math.dotMultiply(altTimeCoef,mmOfDistFL))));
-                case this.computations.CORRECTIONS:
-                    return (Math.round(math.sum(math.dotMultiply(altCorrectionsCoeff,mmOfDistFL))));
-            }
+        switch (computation) {
+            case this.computations.FUEL:
+                return (Math.round(math.sum(math.dotMultiply((alternate ? altFuelConsumedCoef : fuelConsumedCoeff), mmOfDistFL))));
+            case this.computations.TIME:
+                return (Math.round(math.sum(math.dotMultiply((alternate ? altTimeCoef : timeCoeff), mmOfDistFL))));
+            case this.computations.CORRECTIONS:
+                return (Math.round(math.sum(math.dotMultiply((alternate ? altCorrectionsCoeff : correctionsCoef), mmOfDistFL))));
         }
     }
 

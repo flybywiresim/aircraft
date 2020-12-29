@@ -67,7 +67,7 @@ class CDUNavRadioPage {
                         });
                     }
                 } else {
-                    mcdu.showErrorMessage("ENTRY OUT OF RANGE");
+                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
                 }
             };
             vor1CourseCell = "[\xa0]";
@@ -87,7 +87,7 @@ class CDUNavRadioPage {
                     mcdu.vor1Course = 0;
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
-                    mcdu.showErrorMessage("ENTRY OUT OF RANGE");
+                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
                 }
             };
             ilsFrequencyCell = "[\xa0\xa0]/[\xa0\xa0.\xa0]";
@@ -144,7 +144,7 @@ class CDUNavRadioPage {
                     mcdu.radioNav.setADFActiveFrequency(1, 0);
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
-                    mcdu.showErrorMessage("ENTRY OUT OF RANGE");
+                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
                 }
             };
         }
@@ -192,7 +192,7 @@ class CDUNavRadioPage {
                         });
                     }
                 } else {
-                    mcdu.showErrorMessage("ENTRY OUT OF RANGE");
+                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
                 }
             };
             vor2CourseCell = "[\xa0]";
@@ -212,7 +212,7 @@ class CDUNavRadioPage {
                     mcdu.vor2Course = 0;
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
-                    mcdu.showErrorMessage("ENTRY OUT OF RANGE");
+                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
                 }
             };
             adf2FrequencyCell = "[\xa0\xa0\xa0.]/[\xa0\xa0]";
@@ -247,7 +247,7 @@ class CDUNavRadioPage {
                     adf2FrequencyCell = "[\xa0\xa0.]/[\xa0]";
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
-                    mcdu.showErrorMessage("ENTRY OUT OF RANGE");
+                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
                 }
             };
         }

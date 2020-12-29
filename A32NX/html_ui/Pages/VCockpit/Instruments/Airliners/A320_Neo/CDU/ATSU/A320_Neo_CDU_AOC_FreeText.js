@@ -87,17 +87,17 @@ class CDUAocFreeText {
                                 errors += 1;
                                 switch (err.status) {
                                     case 404:
-                                        mcdu.showErrorMessage("RECIPIENT NOT FOUND");
+                                        mcdu.addNewMessage(NXFictionalMessages.recipientNotFound);
                                         break;
                                     case 401:
                                     case 403:
-                                        mcdu.showErrorMessage("AUTH ERR");
+                                        mcdu.addNewMessage(NXFictionalMessages.authErr);
                                         break;
                                     case 400:
-                                        mcdu.showErrorMessage("INVALID MSG");
+                                        mcdu.addNewMessage(NXFictionalMessages.invalidMsg);
                                         break;
                                     default:
-                                        mcdu.showErrorMessage("UNKNOWN DOWNLINK ERR");
+                                        mcdu.addNewMessage(NXFictionalMessages.unknownDownlinkErr);
                                 }
                             });
                     }
@@ -132,7 +132,7 @@ class CDUAocFreeText {
                     }, 1000);
                 });
             } else {
-                mcdu.showErrorMessage("TELEX NOT ENABLED");
+                mcdu.addNewMessage(NXFictionalMessages.telexNotEnabled);
             }
         };
 
