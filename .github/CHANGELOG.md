@@ -5,6 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.6.0
+1. [CDU] Two tiny fixes for flightphase speeds - @Watsi01 (RogePete)
 1. [ND] Flight route now hidden in VOR ROSE and ILS ROSE modes - @2hwk (2Cas#1022)
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 1. [MISC] Fixed F/O displays being synced with the captain's displays - @tyler58546 (tyler58546)
