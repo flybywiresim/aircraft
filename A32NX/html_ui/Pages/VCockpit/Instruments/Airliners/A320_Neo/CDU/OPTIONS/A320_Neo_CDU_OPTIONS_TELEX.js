@@ -54,7 +54,7 @@ class CDU_OPTIONS_TELEX {
             switch (storedTelexStatus) {
                 case "ENABLED":
                     NXDataStore.set("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
-                    mcdu.showErrorMessage("FREE TEXT DISABLED");
+                    mcdu.addNewMessage(NXFictionalMessages.freeTextDisabled);
                     NXApi.disconnectTelex()
                         .catch((err) => {
                             if (err !== NXApi.disconnectedError) {
@@ -64,13 +64,13 @@ class CDU_OPTIONS_TELEX {
                     break;
                 default:
                     NXDataStore.set("CONFIG_ONLINE_FEATURES_STATUS", "ENABLED");
-                    mcdu.showErrorMessage("FREE TEXT ENABLED");
+                    mcdu.addNewMessage(NXFictionalMessages.freetextEnabled);
 
                     const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
                     NXApi.connectTelex(flightNo)
                         .catch((err) => {
                             if (err.status === 409) {
-                                mcdu.showErrorMessage("ENABLED. FLT NBR IN USE");
+                                mcdu.addNewMessage(NXFictionalMessages.enabledFltNbrInUse);
                             }
                         });
             }

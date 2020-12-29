@@ -259,6 +259,9 @@ class MapInstrument extends ISvgMapRootElement {
                 this.showFlightPlan = true;
                 this.updateFlightPlanVisibility();
             }
+            if (newValue == "false") {
+                this.updateFlightPlanVisibility();
+            }
         } else if (lowercaseName === "hide-flightplan-if-bushtrip") {
             this.bHideFlightPlanIfBushtrip = false;
             if (newValue === "true") {

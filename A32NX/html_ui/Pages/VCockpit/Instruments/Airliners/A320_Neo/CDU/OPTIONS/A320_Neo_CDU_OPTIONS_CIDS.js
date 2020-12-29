@@ -23,7 +23,7 @@ class CDU_OPTIONS_CIDS {
 
         mcdu.onLeftInput[0] = (value) => {
             if (value !== "") {
-                mcdu.showErrorMessage("NOT ALLOWED");
+                mcdu.addNewMessage(NXSystemMessages.notAllowed);
             } else {
                 const newNPDOption = storedUsingNPD ? "0" : "1";
                 NXDataStore.set("CONFIG_USING_PORTABLE_DEVICES", newNPDOption);
