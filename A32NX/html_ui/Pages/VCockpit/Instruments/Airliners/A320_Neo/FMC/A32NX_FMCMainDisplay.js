@@ -12,18 +12,13 @@ class FMCMainDisplay extends BaseAirliners {
         this.onRightInput = [];
         this.leftInputDelay = [];
         this.rightInputDelay = [];
-        this.lastPos = "";
         this.costIndex = 0;
         this.lastUserInput = "";
         this.isDisplayingErrorMessage = false;
         this.isDisplayingTypeTwoMessage = false;
         this.routeIndex = 0;
         this.coRoute = "";
-        this.routeIsSelected = false;
-        this.routePageCurrent = 1;
-        this.routePageCount = 2;
         this.tmpOrigin = "";
-        this.tmpDestination = "";
         this.transitionAltitude = 10000;
         this.perfTOTemp = 20;
         this._overridenFlapApproachSpeed = NaN;
@@ -33,12 +28,9 @@ class FMCMainDisplay extends BaseAirliners {
         this._routeFinalFuelTimeDefault = 30;
         this._routeReservedWeight = 0;
         this._routeReservedPercent = 5;
-        this._takeOffFlap = -1;
         this.takeOffWeight = NaN;
         this.landingWeight = NaN;
         this.averageWind = 0;
-        this.perfCrzWindHeading = NaN;
-        this.perfCrzWindSpeed = NaN;
         this.perfApprQNH = NaN;
         this.perfApprTemp = NaN;
         this.perfApprWindHeading = NaN;
@@ -47,8 +39,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.vApp = NaN;
         this.perfApprMDA = NaN;
         this.perfApprDH = NaN;
-        this._flightPhases = ["PREFLIGHT", "TAXI", "TAKEOFF", "CLIMB", "CRUISE", "DESCENT", "APPROACH", "GOAROUND"];
-        this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
         this._lockConnectIls = false;
         this._apNavIndex = 1;
         this._apLocalizerOn = false;
@@ -70,8 +60,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._radioNavOn = false;
         this._debug = 0;
         this._checkFlightPlan = 0;
-        this._smoothedTargetHeading = NaN;
-        this._smootherTargetPitch = NaN;
 
         this._windDirections = {
             TAILWIND : "TL",
@@ -708,7 +696,7 @@ class FMCMainDisplay extends BaseAirliners {
                 if (currentRunway) {
                     const departure = this.flightPlanManager.getDeparture();
                     const departureRunwayIndex = departure.runwayTransitions.findIndex(t => {
-                        return t.name.indexOf(currentRunway.designation) != -1;
+                        return t.name.indexOf(currentRunway.designation) !== -1;
                     });
                     if (departureRunwayIndex >= -1) {
                         return this.flightPlanManager.setDepartureRunwayIndex(departureRunwayIndex, () => {
@@ -1131,19 +1119,19 @@ class FMCMainDisplay extends BaseAirliners {
         const phase = Simplane.getCurrentFlightPhase();
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
         let flapSpeed = 100;
-        if (flapsHandleIndex == 1) {
+        if (flapsHandleIndex === 1) {
             let slatSpeed = 0;
-            if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
+            if (phase === FlightPhase.FLIGHT_PHASE_TAKEOFF || phase === FlightPhase.FLIGHT_PHASE_CLIMB || phase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 slatSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.25;
-            } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
+            } else if (phase === FlightPhase.FLIGHT_PHASE_DESCENT || phase === FlightPhase.FLIGHT_PHASE_APPROACH) {
                 slatSpeed = this.getSlatApproachSpeed();
             }
             return slatSpeed;
         }
-        if (flapsHandleIndex == 2 || flapsHandleIndex == 3) {
-            if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
+        if (flapsHandleIndex === 2 || flapsHandleIndex === 3) {
+            if (phase === FlightPhase.FLIGHT_PHASE_TAKEOFF || phase === FlightPhase.FLIGHT_PHASE_CLIMB || phase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 flapSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.26;
-            } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
+            } else if (phase === FlightPhase.FLIGHT_PHASE_DESCENT || phase === FlightPhase.FLIGHT_PHASE_APPROACH) {
                 flapSpeed = this.getFlapApproachSpeed();
             }
         }
@@ -1186,7 +1174,7 @@ class FMCMainDisplay extends BaseAirliners {
     getDesManagedSpeed() {
         const dCI = this.costIndex / 999;
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex != 0) {
+        if (flapsHandleIndex !== 0) {
             return this.getFlapSpeed();
         }
         let speed = 288 * (1 - dCI) + 260 * dCI;
@@ -1196,7 +1184,7 @@ class FMCMainDisplay extends BaseAirliners {
         return Math.min(speed, this.getSpeedConstraint(false));
     }
 
-    getFlapApproachSpeed(useCurrentWeight = true) {
+    getFlapApproachSpeed() {
         if (isFinite(this._overridenFlapApproachSpeed)) {
             return this._overridenFlapApproachSpeed;
         }
@@ -2141,7 +2129,7 @@ class FMCMainDisplay extends BaseAirliners {
     updateRadioNavState() {
         if (this.isPrimary) {
             const radioNavOn = this.isRadioNavActive();
-            if (radioNavOn != this._radioNavOn) {
+            if (radioNavOn !== this._radioNavOn) {
                 this._radioNavOn = radioNavOn;
                 if (!radioNavOn) {
                     this.initRadioNav(false);
@@ -2175,12 +2163,12 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                 }
             }
-            if (apNavIndex != this._apNavIndex) {
+            if (apNavIndex !== this._apNavIndex) {
                 SimVar.SetSimVarValue("K:AP_NAV_SELECT_SET", "number", apNavIndex);
                 this._apNavIndex = apNavIndex;
             }
             const curState = SimVar.GetSimVarValue("GPS DRIVES NAV1", "Bool");
-            if (curState != gpsDriven) {
+            if (curState !== gpsDriven) {
                 SimVar.SetSimVarValue("K:TOGGLE_GPS_DRIVES_NAV1", "Bool", 0);
             }
         }
@@ -2324,7 +2312,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
         this.tempCurve.add(-10 * 3.28084, 21.50);
-        this.tempCurve.add(0 * 3.28084, 15.00);
+        this.tempCurve.add(0, 15.00);
         this.tempCurve.add(10 * 3.28084, 8.50);
         this.tempCurve.add(20 * 3.28084, 2.00);
         this.tempCurve.add(30 * 3.28084, -4.49);
@@ -2698,6 +2686,3 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 }
-
-FMCMainDisplay.clrValue = "\xa0\xa0\xa0\xa0\xa0CLR";
-FMCMainDisplay._AvailableKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

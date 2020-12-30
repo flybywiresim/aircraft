@@ -207,7 +207,7 @@ class CDUFlightPlanPage {
                     mcdu.onLeftInput[i] = (value) => {
                         if (value === "") {
                             CDULateralRevisionPage.ShowPage(mcdu, mcdu.flightPlanManager.getDestination(), mcdu.flightPlanManager.getWaypointsCount() - 1);
-                        } else if (value === FMCMainDisplay.clrValue) {
+                        } else if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                         } else if (value.length > 0) {
                             mcdu.insertWaypoint(value, mcdu.flightPlanManager.getWaypointsCount() - 1, () => {
                                 CDUFlightPlanPage.ShowPage(mcdu, offset);
@@ -343,7 +343,7 @@ class CDUFlightPlanPage {
                                     if (waypoint) {
                                         CDULateralRevisionPage.ShowPage(mcdu, waypoint, fpIndex);
                                     }
-                                } else if (value === FMCMainDisplay.clrValue) {
+                                } else if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                                     mcdu.removeWaypoint(fpIndex, () => {
                                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                                     });

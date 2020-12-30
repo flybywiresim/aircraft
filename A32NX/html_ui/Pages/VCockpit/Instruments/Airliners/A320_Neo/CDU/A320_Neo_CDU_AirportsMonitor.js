@@ -214,13 +214,13 @@ class CDUAirportsMonitor {
         if (!this.page2) {
             mcdu.onLeftInput[4] = (value) => {
                 if (this.user_ap) {
-                    if (value === FMCMainDisplay.clrValue) {
+                    if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                         this.user_ap = undefined;
                         // trigger data update next frame
                         this.total_delta_t = update_ival_ms;
                         this.ShowPage(mcdu);
                     }
-                } else if (value !== '' && value !== FMCMainDisplay.clrValue) {
+                } else if (value !== '' && value !== A320_Neo_CDU_MainDisplay.clrValue) {
                     // GetAirportByIdent returns a Waypoint in the callback,
                     // which interally uses FacilityLoader (and further down calls Coherence)
                     mcdu.dataManager.GetAirportByIdent(value).then((ap_data) => {
