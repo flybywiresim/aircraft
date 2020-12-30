@@ -131,3 +131,42 @@ export const SmoothSin = (origin, destination, smoothFactor, dTime) => {
     }
     return result;
 };
+
+export class LagFilter {
+    constructor(timeConstant) {
+        this.PreviousInput = 0;
+        this.PreviousOutput = 0;
+
+        this.TimeConstant = timeConstant;
+    }
+
+    /**
+     *
+     * @param input Input to filter
+     * @param deltaTime in seconds
+     * @returns {number} Filtered output
+     */
+    step(input, deltaTime) {
+        const sum1 = input + this.PreviousInput;
+
+        const product0 = deltaTime * this.TimeConstant;
+        const sum0 = product0 + 2;
+
+        const product4 = product0 / sum0;
+        const product1 = sum1 * product4;
+        const sum3 = 2 - product0;
+
+        const product3 = sum3 / sum0;
+
+        const product2 = product3 * this.PreviousOutput;
+
+        const sum2 = product1 + product2;
+
+        this.PreviousInput = input;
+        if (Number.isFinite(sum2)) {
+            this.PreviousOutput = sum2;
+            return sum2;
+        }
+        return 0;
+    }
+}

@@ -12,7 +12,7 @@ import {
     useInteractionEvent,
     useUpdate,
 } from '../util.mjs';
-import { SmoothSin } from './PFDUtils.jsx';
+import { SmoothSin, LagFilter } from './PFDUtils.jsx';
 import './style.scss';
 
 const AltModeSelected = () => {
@@ -42,6 +42,8 @@ class PFD extends Component {
         this.barTimer = 10;
 
         this.smoothFactor = 0.5;
+
+        this.AirspeedAccFilter = new LagFilter(1);
 
         this.LSButtonPressed = false;
     }
@@ -93,9 +95,12 @@ class PFD extends Component {
 
         const pressureMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
 
-        const airspeed = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
-        const airspeedAcc = (airspeed - this.prevAirspeed) / this.deltaTime * 1000;
-        this.prevAirspeed = airspeed;
+        const clampedAirspeed = Math.max(SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots'), 30);
+        const airspeedAcc = (clampedAirspeed - this.prevAirspeed) / this.deltaTime * 1000;
+        this.prevAirspeed = clampedAirspeed;
+
+        const filteredAirspeedAcc = this.AirspeedAccFilter.step(airspeedAcc, this.deltaTime / 1000);
+
         const mach = SimVar.GetSimVarValue('AIRSPEED MACH', 'mach');
 
         const VS = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VS', 'number');
@@ -160,7 +165,7 @@ class PFD extends Component {
                 />
                 <HeadingTape heading={heading} groundTrack={groundTrack} ILSCourse={ILSCourse} />
                 <AltitudeIndicator altitude={baroAlt} FWCFlightPhase={FlightPhase} />
-                <AirspeedIndicator airspeed={airspeed} airspeedAcc={airspeedAcc} FWCFlightPhase={FlightPhase} altitude={baroAlt} VAlphaLim={this.VAlphaLim} VAlphaProt={this.VAlphaProt} VLs={this.VLs} VMax={this.VMax} showBars={showSpeedBars} />
+                <AirspeedIndicator airspeed={clampedAirspeed} airspeedAcc={filteredAirspeedAcc} FWCFlightPhase={FlightPhase} altitude={baroAlt} VAlphaLim={this.VAlphaLim} VAlphaProt={this.VAlphaProt} VLs={this.VLs} VMax={this.VMax} showBars={showSpeedBars} />
                 <path
                     id="Mask2"
                     className="BackgroundFill"
@@ -172,7 +177,7 @@ class PFD extends Component {
                 <VerticalSpeedIndicator radioAlt={radioAlt} />
                 <HeadingOfftape ILSCourse={ILSCourse} heading={heading} selectedHeading={selectedHeading} />
                 <AltitudeIndicatorOfftape altitude={baroAlt} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
-                <AirspeedIndicatorOfftape airspeed={airspeed} mach={mach} airspeedAcc={airspeedAcc} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
+                <AirspeedIndicatorOfftape airspeed={clampedAirspeed} mach={mach} airspeedAcc={filteredAirspeedAcc} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
             </svg>
         );
     }

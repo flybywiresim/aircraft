@@ -99,7 +99,7 @@ export const AirspeedIndicator = ({
             <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
             <SpeedTapeOutline airspeed={airspeed} />
             <VerticalTape tapeValue={clampedSpeed} bugs={bugs} graduationElementFunction={GraduationElement} lowerLimit={30} upperLimit={660} valueSpacing={ValueSpacing} displayRange={DisplayRange + 6} distanceSpacing={DistanceSpacing} />
-            {/* <SpeedTrendArrow airspeedAcc={airspeedAcc} /> */}
+            <SpeedTrendArrow airspeedAcc={airspeedAcc} />
             {FWCFlightPhase <= 4
             && <V1Offtape airspeed={clampedSpeed} v1={v1} />}
             {showBars
@@ -222,7 +222,7 @@ const SpeedTapeOutline = ({ airspeed }) => {
 };
 
 const MachNumber = ({ mach, airspeedAcc }) => {
-    if ((airspeedAcc > 0 && mach < 0.5) || (airspeedAcc < 0 && mach <= 0.45)) {
+    if ((airspeedAcc >= 0 && mach < 0.5) || (airspeedAcc < 0 && mach <= 0.45)) {
         return null;
     }
 
