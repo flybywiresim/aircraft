@@ -1317,6 +1317,7 @@
         <Sound WwiseData="true" WwiseEvent="firepbguard" Continuous="false" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="firepb" Continuous="false" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="revlever" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="mcdubuttons" Continuous="false" ViewPoint="Inside"/>
 
         <!-- AUTOPILOT =======================================================================================  -->
         <Sound WwiseData="true" WwiseEvent="autopilot_knob_push_button_on" ViewPoint="Inside"/>
