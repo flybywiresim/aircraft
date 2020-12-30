@@ -4,7 +4,7 @@ class CDUAtcPositionReport {
         mcdu.refreshPageCallback = () => {
             CDUAtcPositionReport.ShowPage(mcdu);
         };
-        const currUTCCell = FMCMainDisplay.secondsTohhmm(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        const currUTCCell = secondsTohhmm(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
             SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
 
@@ -42,11 +42,11 @@ class CDUAtcPositionReport {
 
         if (ovhdWaypoint) {
             ovhdWaypointCell = ovhdWaypoint.ident;
-            ovhdWaypointUTCCell = FMCMainDisplay.secondsTohhmm(ovhdWaypoint.infos.etaInFP);
+            ovhdWaypointUTCCell = secondsTohhmm(ovhdWaypoint.infos.etaInFP);
         }
         if (toWaypoint) {
             toWaypointCell = toWaypoint.ident;
-            toWaypointUTCCell = FMCMainDisplay.secondsTohhmm(toWaypoint.infos.etaInFP);
+            toWaypointUTCCell = secondsTohhmm(toWaypoint.infos.etaInFP);
             let nextWaypoint;
             if (mcdu.routeIndex + 1 === mcdu.flightPlanManager.getWaypointsCount()) {
                 nextWaypoint = mcdu.flightPlanManager.getDestination();
@@ -55,7 +55,7 @@ class CDUAtcPositionReport {
             }
             if (nextWaypoint) {
                 nextWaypointCell = nextWaypoint.ident;
-                nextWaypointUTCCell = FMCMainDisplay.secondsTohhmm(nextWaypoint.infos.etaInFP);
+                nextWaypointUTCCell = secondsTohhmm(nextWaypoint.infos.etaInFP);
             }
         }
         if (currentALt > transAlt) {

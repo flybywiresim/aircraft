@@ -272,10 +272,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (!this._minDestFobEntered) {
             this.tryUpdateMinDestFob();
         }
-        const EFOBBelMin = this.isAnEngineOn() ? this.getDestEFOB(true) : this.getDestEFOB(false);
+        const EFOBBelMin = isAnEngineOn() ? this.getDestEFOB(true) : this.getDestEFOB(false);
 
         if (EFOBBelMin < this._minDestFob) {
-            if (this.isAnEngineOn()) {
+            if (isAnEngineOn()) {
                 setTimeout(() => {
                     this.addNewMessage(NXSystemMessages.destEfobBelowMin, () => {
                         return this._EfobBelowMinClr === false;
@@ -428,11 +428,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * The INIT page B reverts to the FUEL PRED page 15 seconds after the first engine start and cannot be accessed after engine start.
      */
     updateMCDU() {
-        if (this.isAnEngineOn()) {
+        if (isAnEngineOn()) {
             if (!this.initB) {
                 this.initB = true;
                 setTimeout(() => {
-                    if (this.page.Current === this.page.InitPageB && this.isAnEngineOn()) {
+                    if (this.page.Current === this.page.InitPageB && isAnEngineOn()) {
                         CDUFuelPredPage.ShowPage(this);
                     }
                 }, 15000);
@@ -1227,34 +1227,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     _getV1Speed() {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
     }
-    _computeV1Speed() {
-        // computeV1Speed is called by inherited class so it must remain,
-        // but we need the calculation logic so that sits in it's own function now.
-        const nextV1 = this._getV1Speed();
-        this.v1Speed = nextV1;
-        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", nextV1);
-    }
 
     _getVRSpeed() {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).vr;
     }
-    _computeVRSpeed() {
-        // computeVRSpeed is called by inherited class so it must remain,
-        // but we need the calculation logic so that sits in it's own function now.
-        const nextVR = this._getVRSpeed();
-        this.vRSpeed = nextVR;
-        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", nextVR);
-    }
 
     _getV2Speed() {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
-    }
-    _computeV2Speed() {
-        // computeV2Speed is called by inherited class so it must remain,
-        // but we need the calculation logic so that sits in it's own function now.
-        const nextV2 = this._getV2Speed();
-        this.v2Speed = nextV2;
-        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", nextV2);
     }
 
     getThrustTakeOffLimit() {

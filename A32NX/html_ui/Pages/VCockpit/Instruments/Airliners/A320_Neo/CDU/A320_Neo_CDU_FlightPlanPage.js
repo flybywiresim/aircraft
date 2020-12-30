@@ -25,7 +25,7 @@ class CDUFlightPlanPage {
         let originTimeCell = "----";
         if (mcdu.flightPlanManager.getOrigin()) {
             if (isFlying) {
-                originTimeCell = FMCMainDisplay.secondsToUTC(mcdu.flightPlanManager._waypointReachedAt);
+                originTimeCell = secondsToUTC(mcdu.flightPlanManager._waypointReachedAt);
             } else {
                 originTimeCell = "0000";
                 mcdu.flightPlanManager._waypointReachedAt = utcTime;
@@ -63,10 +63,10 @@ class CDUFlightPlanPage {
             if (mcdu.flightPlanManager.getDestination()) {
                 destDistCell = mcdu.flightPlanManager.getDestination().liveDistanceTo.toFixed(0);
                 if (isFlying) {
-                    destTimeCell = FMCMainDisplay.secondsToUTC(mcdu.flightPlanManager.getDestination().liveUTCTo);
+                    destTimeCell = secondsToUTC(mcdu.flightPlanManager.getDestination().liveUTCTo);
                     destEFOBCell = (mcdu.getDestEFOB(true) * mcdu._conversionWeight).toFixed(1);
                 } else {
-                    destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().liveETATo);
+                    destTimeCell = secondsTohhmm(mcdu.flightPlanManager.getDestination().liveETATo);
                     destEFOBCell = (mcdu.getDestEFOB(false) * mcdu._conversionWeight).toFixed(1);
                 }
             }
@@ -197,9 +197,9 @@ class CDUFlightPlanPage {
                 if (mcdu.flightPlanManager.getDestination()) {
                     destDistCell = mcdu.flightPlanManager.getDestination().liveDistanceTo.toFixed(0);
                     if (isFlying) {
-                        destTimeCell = FMCMainDisplay.secondsToUTC(mcdu.flightPlanManager.getDestination().liveUTCTo);
+                        destTimeCell = secondsToUTC(mcdu.flightPlanManager.getDestination().liveUTCTo);
                     } else {
-                        destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().liveETATo);
+                        destTimeCell = secondsTohhmm(mcdu.flightPlanManager.getDestination().liveETATo);
                     }
                     mcdu.leftInputDelay[i] = () => {
                         return mcdu.getDelaySwitchPage();
@@ -235,11 +235,11 @@ class CDUFlightPlanPage {
                     let timeCell = "----";
                     if (isFlying) {
                         if (isFinite(waypoint.liveUTCTo) || isFinite(mcdu.flightPlanManager._waypointReachedAt)) {
-                            timeCell = FMCMainDisplay.secondsToUTC((index >= activeIndex || waypoint.ident === "(DECEL)" ? waypoint.liveUTCTo : mcdu.flightPlanManager._waypointReachedAt)) + "[s-text]";
+                            timeCell = secondsToUTC((index >= activeIndex || waypoint.ident === "(DECEL)" ? waypoint.liveUTCTo : mcdu.flightPlanManager._waypointReachedAt)) + "[s-text]";
                         }
                     } else {
                         if (isFinite(waypoint.liveETATo)) {
-                            timeCell = FMCMainDisplay.secondsTohhmm(index >= activeIndex || waypoint.ident === "(DECEL)" ? waypoint.liveETATo : 0) + "[s-text]";
+                            timeCell = secondsTohhmm(index >= activeIndex || waypoint.ident === "(DECEL)" ? waypoint.liveETATo : 0) + "[s-text]";
                         }
                     }
                     if (fpIndex > mcdu.flightPlanManager.getDepartureWaypointsCount()) {
@@ -409,9 +409,9 @@ class CDUFlightPlanPage {
                         if (mcdu.flightPlanManager.getDestination()) {
                             destDistCell = mcdu.flightPlanManager.getDestination().infos.totalDistInFP.toFixed(0);
                             if (isFlying) {
-                                destTimeCell = FMCMainDisplay.secondsToUTC(mcdu.flightPlanManager.getDestination().estimatedTimeOfArrivalFP);
+                                destTimeCell = secondsToUTC(mcdu.flightPlanManager.getDestination().estimatedTimeOfArrivalFP);
                             } else {
-                                destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().cumulativeEstimatedTimeEnRouteFP);
+                                destTimeCell = secondsTohhmm(mcdu.flightPlanManager.getDestination().cumulativeEstimatedTimeEnRouteFP);
                             }
                         }
                         mcdu.leftInputDelay[i] = () => {
