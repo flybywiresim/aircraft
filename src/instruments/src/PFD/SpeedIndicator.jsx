@@ -89,7 +89,7 @@ export const AirspeedIndicator = ({
         bugs.push([FlapRetractBugElement, FlapRetractSpeed]);
     }
 
-    if (altitude < 15000 && flapsHandleIndex < 3) {
+    if (altitude < 15000 && flapsHandleIndex < 4) {
         const VFENext = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number');
         bugs.push([VFENextBugElement, VFENext]);
     }
@@ -171,7 +171,7 @@ const VMaxBar = ({ VMax, airspeed }) => {
             && (
                 <g id="SpeedProtGroup">
                     <path id="SpeedProt" className="NormalStroke Green" d="m13.994 32.107h3.022m-3.022-1.0079h3.022" />
-                    <path id="SpeedProtLost" className="NormalStroke Amber" d="m14.615 30.833 1.7808 1.7818m-1.7808 0 1.7808-1.7818" />
+                    <path id="SpeedProtLost" style={{ display: 'none' }} className="NormalStroke Amber" d="m14.615 30.833 1.7808 1.7818m-1.7808 0 1.7808-1.7818" />
                 </g>
             )}
         </g>

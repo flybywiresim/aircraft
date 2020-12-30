@@ -61,7 +61,7 @@ export const Horizon = ({
                     <path d="m51.506 31.523h4m-4-1.4h4" />
                     <path d="m86.306 31.523h-4m4-1.4h-4" />
                 </g>
-                <g id="PitchProtLostUpper" className="NormalStroke Amber">
+                <g id="PitchProtLostUpper" style={{ display: 'none' }} className="NormalStroke Amber">
                     <path d="m52.699 30.116 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
                     <path d="m85.114 31.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
                 </g>
@@ -69,7 +69,7 @@ export const Horizon = ({
                     <path d="m59.946 104.52h4m-4-1.4h4" />
                     <path d="m77.867 104.52h-4m4-1.4h-4" />
                 </g>
-                <g id="PitchProtLostLower" className="NormalStroke Amber">
+                <g id="PitchProtLostLower" style={{ display: 'none' }} className="NormalStroke Amber">
                     <path d="m61.199 103.12 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
                     <path d="m76.614 104.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
                 </g>

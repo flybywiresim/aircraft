@@ -57,6 +57,15 @@ class PFD extends Component {
         });
     }
 
+    componentWillUnmount() {
+        renderTarget.parentElement.removeEventListener('update', (event) => {
+            this.update(event.detail);
+        });
+        renderTarget.parentElement.removeEventListener(`A320_Neo_PFD_BTN_LS_${this.dispIndex}`, () => {
+            this.onLSButtonPressed();
+        });
+    }
+
     onLSButtonPressed() {
         this.LSButtonPressed = !this.LSButtonPressed;
         SimVar.SetSimVarValue(`L:BTN_LS_${this.dispIndex}_FILTER_ACTIVE`, 'Bool', this.LSButtonPressed);

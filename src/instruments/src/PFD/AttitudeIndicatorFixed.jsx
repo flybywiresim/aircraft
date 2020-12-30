@@ -4,7 +4,7 @@ export const AttitudeIndicatorFixedUpper = () => (
             <path id="RollProtRight" d="m105.67 62.887 1.5707-0.8008m-1.5707-0.78293 1.3463-0.68639" />
             <path id="RollProtLeft" d="m32.138 61.303-1.3463-0.68639m1.3463 2.2701-1.5707-0.8008" />
         </g>
-        <g id="RollProtLost" className="NormalStroke Amber">
+        <g id="RollProtLost" style={{ display: 'none' }} className="NormalStroke Amber">
             <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
             <path id="RollProtLostLeft" d="m30.043 62.478 1.7808-1.7818m-1.7808 0 1.7808 1.7818" />
         </g>
