@@ -355,6 +355,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     onPowerOn() {
         super.onPowerOn();
+
+        const gpsDriven = SimVar.GetSimVarValue("GPS DRIVES NAV1", "Bool");
+        if (!gpsDriven) {
+            SimVar.SetSimVarValue("K:TOGGLE_GPS_DRIVES_NAV1", "Bool", 0);
+        }
+        this.initRadioNav(true);
+
         if (Simplane.getAutoPilotAirspeedManaged()) {
             this._onModeManagedSpeed();
         } else if (Simplane.getAutoPilotAirspeedSelected()) {
@@ -373,6 +380,31 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
+
+        if (this._debug++ > 180) {
+            this._debug = 0;
+        }
+        this.checkUpdateFlightPhase();
+        this._checkFlightPlan--;
+        if (this._checkFlightPlan <= 0) {
+            this._checkFlightPlan = 120;
+            this.flightPlanManager.updateFlightPlan();
+            this.flightPlanManager.updateCurrentApproach();
+        }
+        if (this.pageUpdate) {
+            this.pageUpdate();
+        }
+        if (SimVar.GetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number") === 1) {
+            SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 0);
+            if (this.refreshPageCallback) {
+                this.refreshPageCallback();
+            }
+        }
+        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+            // Is this LVar used by anything? It doesn't look like it...
+            SimVar.SetSimVarValue("L:AIRLINER_MANAGED_APPROACH_SPEED", "number", this.getManagedApproachSpeedMcdu());
+        }
+        this.updateRadioNavState();
 
         this.checkAocTimes();
 
@@ -739,10 +771,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
     }
+
     _onModeManagedSpeed() {
         SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 2);
         SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number", 0);
     }
+
     _onModeSelectedHeading() {
         if (SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "boolean")) {
             return;
@@ -753,6 +787,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 1);
         SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 1);
     }
+
     _onModeManagedHeading() {
         if (SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "boolean")) {
             return;
@@ -763,6 +798,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 2);
         SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 0);
     }
+
     _onModeSelectedAltitude() {
         if (!Simplane.getAutoPilotGlideslopeHold()) {
             SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
@@ -770,6 +806,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 1);
         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate);
     }
+
     _onModeManagedAltitude() {
         SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 2);
         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate);
@@ -780,8 +817,123 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             });
         }
     }
+
     onEvent(_event) {
         super.onEvent(_event);
+
+        if (_event.indexOf("1_BTN_") !== -1 || _event.indexOf("BTN_") !== -1) {
+            const input = _event.replace("1_BTN_", "").replace("BTN_", "");
+            if (this.onInputAircraftSpecific(input)) {
+                return;
+            }
+            if (input === "INIT") {
+                this.onInit();
+            } else if (input === "DEPARR") {
+                this.onDepArr();
+            } else if (input === "ATC") {
+                this.onAtc();
+            } else if (input === "FIX") {
+                this.onFix();
+            } else if (input === "HOLD") {
+                this.onHold();
+            } else if (input === "FMCCOMM") {
+                this.onFmcComm();
+            } else if (input === "PROG") {
+                this.onProg();
+            } else if (input === "MENU") {
+                this.onMenu();
+            } else if (input === "NAVRAD") {
+                this.onRad();
+            } else if (input === "PREVPAGE") {
+                const cur = this.page.Current;
+                setTimeout(() => {
+                    if (this.page.Current === cur) {
+                        this.onPrevPage();
+                    }
+                }, this.getDelaySwitchPage());
+            } else if (input === "NEXTPAGE") {
+                const cur = this.page.Current;
+                setTimeout(() => {
+                    if (this.page.Current === cur) {
+                        this.onNextPage();
+                    }
+                }, this.getDelaySwitchPage());
+            } else if (input === "SP") {
+                setTimeout(() => {
+                    this.onSp();
+                }, this.getDelaySwitchPage());
+            } else if (input === "DEL") {
+                setTimeout(() => {
+                    this.onDel();
+                }, this.getDelaySwitchPage());
+            } else if (input === "CLR") {
+                setTimeout(() => {
+                    this.onClr();
+                }, this.getDelaySwitchPage());
+            } else if (input === "DIV") {
+                setTimeout(() => {
+                    this.onDiv();
+                }, this.getDelaySwitchPage());
+            } else if (input === "DOT") {
+                setTimeout(() => {
+                    this.handlePreviousInputState();
+                    this.inOut += ".";
+                }, this.getDelaySwitchPage());
+            } else if (input === "PLUSMINUS") {
+                setTimeout(() => {
+                    this.handlePreviousInputState();
+                    const val = this.inOut;
+                    if (val === "") {
+                        this.inOut = "-";
+                    } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
+                        if (val.slice(-1) === "-") {
+                            this.inOut = this.inOut.slice(0, -1) + "+";
+                        } else if (val.slice(-1) === "+") {
+                            this.inOut = this.inOut.slice(0, -1) + "-";
+                        } else {
+                            this.inOut += "-";
+                        }
+                    }
+                }, this.getDelaySwitchPage());
+            } else if (input === "Localizer") {
+                this._apLocalizerOn = !this._apLocalizerOn;
+            } else if (input.length === 2 && input[0] === "L") {
+                const v = parseInt(input[1]);
+                if (isFinite(v)) {
+                    if (this.onLeftInput[v - 1]) {
+                        const value = this.clearUserInput();
+                        const cur = this.page.Current;
+                        setTimeout(() => {
+                            if (this.page.Current === cur) {
+                                this.onLeftInput[v - 1](value);
+                                this.tryClearOldUserInput();
+                            }
+                        }, this.leftInputDelay[v - 1] ? this.leftInputDelay[v - 1](value) : this.getDelayBasic());
+                    }
+                }
+            } else if (input.length === 2 && input[0] === "R") {
+                const v = parseInt(input[1]);
+                if (isFinite(v)) {
+                    if (this.onRightInput[v - 1]) {
+                        const value = this.clearUserInput();
+                        const cur = this.page.Current;
+                        setTimeout(() => {
+                            if (this.page.Current === cur) {
+                                this.onRightInput[v - 1](value);
+                                this.tryClearOldUserInput();
+                            }
+                        }, this.rightInputDelay[v - 1] ? this.rightInputDelay[v - 1]() : this.getDelayBasic());
+                    }
+                }
+            } else if (input.length === 1 && FMCMainDisplay._AvailableKeys.indexOf(input) !== -1) {
+                setTimeout(() => {
+                    this.onLetterInput(input);
+                }, this.getDelaySwitchPage());
+            } else {
+                console.log("'" + input + "'");
+            }
+        }
+
         // console.log("A320_Neo_CDU_MainDisplay onEvent " + _event);
         if (_event === "MODE_SELECTED_SPEED") {
             this._onModeSelectedSpeed();
@@ -970,7 +1122,29 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return false;
     }
     clearDisplay() {
-        super.clearDisplay();
+        this.setTitle("UNTITLED");
+        this.setPageCurrent(0);
+        this.setPageCount(0);
+        for (let i = 0; i < 6; i++) {
+            this.setLabel("", i, -1);
+        }
+        for (let i = 0; i < 6; i++) {
+            this.setLine("", i, -1);
+        }
+        this.onLeftInput = [];
+        this.onRightInput = [];
+        this.leftInputDelay = [];
+        this.rightInputDelay = [];
+        this.onPrevPage = () => {};
+        this.onNextPage = () => {};
+        this.pageUpdate = () => {};
+        this.refreshPageCallback = undefined;
+        if (this.page.Current === this.page.MenuPage) {
+            this.forceClearScratchpad();
+        }
+        this.page.Current = this.page.Clear;
+        this.tryDeleteTimeout();
+
         this.onUp = undefined;
         this.onDown = undefined;
         this.onLeft = undefined;
@@ -1050,32 +1224,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return 19;
     }
 
-    _getVSpeed(dWeightCoef, min, max) {
-        let runwayCoef = 1.0;
-        const runway = this.flightPlanManager.getDepartureRunway() || this.flightPlanManager.getDetectedCurrentRunway();
-        if (runway) {
-            const f = (runway.length - 1500) / (2500 - 1500);
-            runwayCoef = Utils.Clamp(f, 0, 1);
-        }
-
-        const flapsHandleIndex = this.flaps || Simplane.getFlapsHandleIndex();
-
-        let vSpeed = min * (1 - runwayCoef) + max * runwayCoef;
-        vSpeed *= dWeightCoef;
-        vSpeed += (3 - flapsHandleIndex) * 6;
-        return Math.round(vSpeed);
-    }
-
     _getV1Speed() {
-        /*let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
-        dWeightCoef = Utils.Clamp(dWeightCoef, 0, 1);
-        dWeightCoef = 0.7 + (1.0 - 0.7) * dWeightCoef;
-
-        const tempIndex = this._getTempIndex();
-        const min = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][0];
-        const max = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][1];
-
-        return this._getVSpeed(dWeightCoef, min, max);*/
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
     }
     _computeV1Speed() {
@@ -1087,15 +1236,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     _getVRSpeed() {
-        /*let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
-        dWeightCoef = Utils.Clamp(dWeightCoef, 0, 1);
-        dWeightCoef = 0.695 + (0.985 - 0.695) * dWeightCoef;
-
-        const tempIndex = this._getTempIndex();
-        const min = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][0];
-        const max = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][1];
-
-        return this._getVSpeed(dWeightCoef, min, max);*/
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).vr;
     }
     _computeVRSpeed() {
@@ -1107,15 +1247,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     _getV2Speed() {
-        /*let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
-        dWeightCoef = Utils.Clamp(dWeightCoef, 0, 1);
-        dWeightCoef = 0.71 + (0.96 - 0.71) * dWeightCoef;
-
-        const tempIndex = this._getTempIndex();
-        const min = A320_Neo_CDU_MainDisplay._v2sConf1[tempIndex][0];
-        const max = A320_Neo_CDU_MainDisplay._v2sConf1[tempIndex][1];
-
-        return this._getVSpeed(dWeightCoef, min, max);*/
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
     }
     _computeV2Speed() {
@@ -1144,21 +1275,27 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         return 88.4;
     }
+
     getThrustClimbLimit() {
         return this.getThrustTakeOffLimit() - 8;
     }
+
     isAirspeedManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT SPEED SLOT INDEX", "number") === 2;
     }
+
     isHeadingManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT HEADING SLOT INDEX", "number") === 2;
     }
+
     isAltitudeManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
     }
+
     isVerticalSpeedManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT VS SLOT INDEX", "number") === 2;
     }
+
     updateAutopilot() {
         const now = performance.now();
         const dt = now - this._lastUpdateAPTime;
@@ -1446,7 +1583,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.updateAutopilotCooldown = this._apCooldown;
         }
     }
-    // Asobo's getManagedApproachSpeed uses incorrect getCleanApproachSpeed for flaps 0
+
     getManagedApproachSpeedMcdu() {
         switch (Simplane.getFlapsHandleIndex()) {
             case 0: return this.getPerfGreenDotSpeed();
@@ -1455,6 +1592,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             default: return this.getFlapApproachSpeed();
         }
     }
+
     checkUpdateFlightPhase() {
         const airSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "knots");
         const flapsHandlePercent = Simplane.getFlapsHandlePercent();
@@ -1684,6 +1822,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
         }
     }
+
     checkAocTimes() {
         if (!this.aocTimes.off) {
             const isAirborne = !Simplane.getIsGrounded(); // TODO replace with proper flight mode in future
@@ -1740,6 +1879,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     getMessages() {
         return this.messages;
     }
+
     getMessage(id, type) {
         const messages = this.messages;
         const currentMessageIndex = messages.findIndex(m => m["id"].toString() === id.toString());
@@ -1756,14 +1896,17 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         return messages[currentMessageIndex];
     }
+
     getMessageIndex(id) {
         return this.messages.findIndex(m => m["id"].toString() === id.toString());
     }
+
     addMessage(message) {
         this.messages.unshift(message);
         const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
         SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt + 1);
     }
+
     deleteMessage(id) {
         if (!this.messages[id]["opened"]) {
             const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
@@ -1776,6 +1919,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     getSentMessages() {
         return this.sentMessages;
     }
+
     getSentMessage(id, type) {
         const messages = this.sentMessages;
         const currentMessageIndex = messages.findIndex(m => m["id"].toString() === id.toString());
@@ -1792,12 +1936,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         return messages[currentMessageIndex];
     }
+
     getSentMessageIndex(id) {
         return this.sentMessages.findIndex(m => m["id"].toString() === id.toString());
     }
+
     addSentMessage(message) {
         this.sentMessages.unshift(message);
     }
+
     deleteSentMessage(id) {
         this.sentMessages.splice(id, 1);
     }
