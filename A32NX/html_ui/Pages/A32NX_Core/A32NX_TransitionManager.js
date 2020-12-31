@@ -57,9 +57,15 @@ class A32NX_TransitionManager {
             .then((data) => {
                 let metar = data.metar;
                 if (/A\D/.search(metar) !== -1) {
-                    let QNH = metar.substr(/A\D/.search(metar), 6);
+                    let QNH = parseInt(((parseInt((metar.substr(/A\D/.search(metar), 6))))*3386.39).substr(0, 4));
+                    let arrivalTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+                    let transLVL = (arrivalTA + 28*(1013 - QNH) + 2500)/2
+                    SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LVL", "Number", transLVL);
                 } else if (/Q\D/.search(metar) !== -1) {
                     let HPA = metar.substr(/A\D/.search(metar), 5);
+                    let arrivalTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+                    let transLVL = (arrivalTA + 28*(1013 - HPA) + 2500)/2
+                    SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LVL", "Number", transLVL);
                 } else {
                     console.log("can not search value");
                 }
