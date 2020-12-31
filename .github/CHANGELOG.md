@@ -16,6 +16,7 @@
 1. [FLIGHTMODEL] Preliminary fix for flaps 1 unrecoverable dives - @donstim (donbikes#4084)
 1. [UTILS] Added Vfe and Vfen table - @MisterChocker (Leon)
 1. [PFD] Fixed wrong Vfe and Vfen indication - @MisterChocker (Leon)
+1. [CDU] Fix altitude button setting the speed on atc request - @brookemckim (brookemckim)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
