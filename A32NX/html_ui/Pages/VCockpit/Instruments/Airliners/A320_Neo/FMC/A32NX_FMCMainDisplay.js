@@ -340,7 +340,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setCruiseFlightLevelAndTemperature(input) {
-        if (input === FMCMainDisplay.clrValue) {
+        if (input === A320_Neo_CDU_MainDisplay.clrValue) {
             this.cruiseFlightLevel = undefined;
             this.cruiseTemperature = undefined;
             return true;
@@ -435,7 +435,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     tryUpdateFromTo(fromTo, callback = EmptyCallback.Boolean) {
-        if (fromTo === FMCMainDisplay.clrValue) {
+        if (fromTo === A320_Neo_CDU_MainDisplay.clrValue) {
             this.addNewMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
@@ -483,7 +483,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async trySetRouteAlternateFuel(altFuel) {
-        if (altFuel === FMCMainDisplay.clrValue) {
+        if (altFuel === A320_Neo_CDU_MainDisplay.clrValue) {
             this._routeAltFuelEntered = false;
             return true;
         }
@@ -508,7 +508,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async trySetMinDestFob(fuel) {
-        if (fuel === FMCMainDisplay.clrValue) {
+        if (fuel === A320_Neo_CDU_MainDisplay.clrValue) {
             this._minDestFobEntered = false;
             return true;
         }
@@ -530,7 +530,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async tryUpdateAltDestination(altDestIdent) {
-        if (altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
+        if (altDestIdent === "NONE" || altDestIdent === A320_Neo_CDU_MainDisplay.clrValue) {
             this.altDestination = undefined;
             this._DistanceToAlt = 0;
             return true;
@@ -1269,7 +1269,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async trySetTaxiFuelWeight(s) {
-        if (s === FMCMainDisplay.clrValue) {
+        if (s === A320_Neo_CDU_MainDisplay.clrValue) {
             this.taxiFuelWeight = this._defaultTaxiFuelWeight;
             this._taxiEntered = false;
             return true;
@@ -1320,7 +1320,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     async trySetRouteFinalTime(s) {
         if (s) {
-            if (s === FMCMainDisplay.clrValue) {
+            if (s === A320_Neo_CDU_MainDisplay.clrValue) {
                 this._routeFinalFuelTime = this._routeFinalFuelTimeDefault;
                 return true;
             }
@@ -1345,7 +1345,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {Promise<boolean>}
      */
     async trySetRouteFinalFuel(s) {
-        if (s === FMCMainDisplay.clrValue) {
+        if (s === A320_Neo_CDU_MainDisplay.clrValue) {
             this._routeFinalFuelTime = this._routeFinalFuelTimeDefault;
             this._rteFinalEntered = false;
             return true;
@@ -1395,7 +1395,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     trySetRouteReservedPercent(s) {
         if (s) {
-            if (s === FMCMainDisplay.clrValue) {
+            if (s === A320_Neo_CDU_MainDisplay.clrValue) {
                 this._rteReservedEntered = false;
                 this._routeReservedWeight = 0;
                 this._routeReservedPercent = 5;
@@ -1426,7 +1426,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {boolean} input passed checks
      */
     trySetCruiseFlCheckInput(input) {
-        if (input === FMCMainDisplay.clrValue) {
+        if (input === A320_Neo_CDU_MainDisplay.clrValue) {
             this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
@@ -1487,7 +1487,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     trySetRouteReservedFuel(s) {
         if (s) {
-            if (s === FMCMainDisplay.clrValue) {
+            if (s === A320_Neo_CDU_MainDisplay.clrValue) {
                 this._rteReservedEntered = false;
                 this._routeReservedWeight = 0;
                 this._routeReservedPercent = 5;
@@ -1508,7 +1508,7 @@ class FMCMainDisplay extends BaseAirliners {
                 if (this.isRteRsvPercentInRange(this.getRouteReservedPercent())) { // Bit of a hacky method due previous tight coupling of weight and percentage calculations
                     return true;
                 } else {
-                    this.trySetRouteReservedFuel(FMCMainDisplay.clrValue);
+                    this.trySetRouteReservedFuel(A320_Neo_CDU_MainDisplay.clrValue);
                     this._rteRsvPercentOOR = true;
                     return false;
                 }
@@ -1685,7 +1685,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     trySetBlockFuel(s, useLbs = false) {
-        if (s === FMCMainDisplay.clrValue) {
+        if (s === A320_Neo_CDU_MainDisplay.clrValue) {
             this.blockFuel = 0.0;
             this._blockFuelEntered = false;
             this._fuelPredDone = false;
@@ -1871,7 +1871,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfApprVApp(s) {
-        if (s === FMCMainDisplay.clrValue) {
+        if (s === A320_Neo_CDU_MainDisplay.clrValue) {
             this.vApp = NaN;
         }
         const value = parseFloat(s);
@@ -1913,7 +1913,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfApprMDA(s) {
-        if (s === FMCMainDisplay.clrValue) {
+        if (s === A320_Neo_CDU_MainDisplay.clrValue) {
             this.perfApprMDA = NaN;
             SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
             return true;
@@ -1930,7 +1930,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfApprDH(s) {
-        if (s === FMCMainDisplay.clrValue) {
+        if (s === A320_Neo_CDU_MainDisplay.clrValue) {
             this.perfApprDH = NaN;
             SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
             return true;
@@ -2045,7 +2045,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setIlsFrequency(s) {
-        if (s === FMCMainDisplay.clrValue) {
+        if (s === A320_Neo_CDU_MainDisplay.clrValue) {
             this.ilsFrequency = 0;
             this.radioNav.setILSActiveFrequency(1, 0);
             this._ilsFrequencyPilotEntered = false;
@@ -2295,7 +2295,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     handlePreviousInputState() {
-        if (this.inOut === FMCMainDisplay.clrValue) {
+        if (this.inOut === A320_Neo_CDU_MainDisplay.clrValue) {
             this.inOut = "";
         }
         if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
@@ -2381,8 +2381,8 @@ class FMCMainDisplay extends BaseAirliners {
         };
         this.onClr = () => {
             if (this.inOut === "") {
-                this.inOut = FMCMainDisplay.clrValue;
-            } else if (this.inOut === FMCMainDisplay.clrValue) {
+                this.inOut = A320_Neo_CDU_MainDisplay.clrValue;
+            } else if (this.inOut === A320_Neo_CDU_MainDisplay.clrValue) {
                 this.inOut = "";
             } else if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
                 this.tryRemoveMessage();

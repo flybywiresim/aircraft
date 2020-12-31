@@ -880,7 +880,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     const val = this.inOut;
                     if (val === "") {
                         this.inOut = "-";
-                    } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
+                    } else if (val !== A320_Neo_CDU_MainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
                         if (val.slice(-1) === "-") {
                             this.inOut = this.inOut.slice(0, -1) + "+";
                         } else if (val.slice(-1) === "+") {
@@ -920,7 +920,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         }, this.rightInputDelay[v - 1] ? this.rightInputDelay[v - 1]() : this.getDelayBasic());
                     }
                 }
-            } else if (input.length === 1 && FMCMainDisplay._AvailableKeys.indexOf(input) !== -1) {
+            } else if (input.length === 1 && A320_Neo_CDU_MainDisplay._AvailableKeys.indexOf(input) !== -1) {
                 setTimeout(() => {
                     this.onLetterInput(input);
                 }, this.getDelaySwitchPage());
