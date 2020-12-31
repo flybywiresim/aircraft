@@ -27,7 +27,7 @@ class CDUInitPage {
                 if (coRoute.includes("__________[color]amber")) {
                     coRoute = "";
                 }
-                
+
                 NXDataStore.set("PLAN_ORIGIN", mcdu.flightPlanManager.getOrigin().ident);
                 NXDataStore.set("PLAN_DESTINATION", mcdu.flightPlanManager.getDestination().ident);
 
