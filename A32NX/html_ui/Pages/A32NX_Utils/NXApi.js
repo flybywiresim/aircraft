@@ -13,6 +13,21 @@ class NXApi {
                 return response.json();
             });
     }
+    
+    static getAirport(icao) {
+        if (!icao) {
+            throw ("No ICAO provided");
+        }
+
+        return fetch(`${NXApi.url}/api/v1/airport/${icao}`)
+            .then((response) => {
+                if (!response.ok) {
+                    throw (response);
+                }
+
+                return response.json();
+            });
+    }
 
     static getTaf(icao, source) {
         if (!icao) {
