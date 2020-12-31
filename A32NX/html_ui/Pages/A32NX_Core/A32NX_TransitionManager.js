@@ -16,7 +16,7 @@ class A32NX_TransitionManager {
         if (mode === "AUTO") {
             const departureICAO = NXDataStore.get("PLAN_ORIGIN", "");
             const arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "");
-            if (totalDeltaTime > 180000) {
+            if (this.totalDeltaTime > 180000) {
                 this.departureLogic(departureICAO); //working every 3 min
                 this.arrivalLogic(arrivalICAO); //working every 3 min
                 this.totalDeltaTime = 0;
