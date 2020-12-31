@@ -13,7 +13,7 @@ class NXApi {
                 return response.json();
             });
     }
-    
+
     static getAirport(icao) {
         if (!icao) {
             throw ("No ICAO provided");
