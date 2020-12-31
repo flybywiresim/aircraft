@@ -1,5 +1,6 @@
 class A32NX_TransitionManager {
     init() {
+        this.UpdateTimer = 0;
         console.log('A32NX_TransitionManager init');
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
         if (mode !== "AUTO") {
@@ -10,13 +11,17 @@ class A32NX_TransitionManager {
         this.transitionSelector();
     }
     transitionSelector(_deltaTime) {
+        this.UpdateTimer += _deltaTime / 1000;
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
         if (mode === "AUTO") {
             const departureICAO = NXDataStore.get("PLAN_ORIGIN", "");
             const arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "");
-            this.departureLogic(departureICAO);
-            this.arrivalLogic(arrivalICAO);
-            //this.transLVL();
+            if (this.UpdateTimer > 120) {
+                this.departureLogic(departureICAO);
+                this.arrivalLogic(arrivalICAO);
+                //this.transLVL();
+                this.TrafficUpdateTimer = 0;
+            }
         }
     }
     transitionManual() {
