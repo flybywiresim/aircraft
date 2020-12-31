@@ -9,6 +9,7 @@
 1. [MISC] Fix F/O displays being synced with the captain's displays - @tyler58546 (tyler58546)
 1. [FUEL] Fix outer tank fuel transfer - @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Preliminary fix for flaps 1 unrecoverable dives - @donstim (donbikes#4084)
+1. [CDU] Fixed altitude button setting the speed on ATC request - @brookemckim (brookemckim)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)

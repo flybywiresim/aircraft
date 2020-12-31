@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUAtcRequest {
     static ShowPage(mcdu, store = {"dirTo": "", "flAlt": "", "spdMach": "", "dueTo": 0}) {
         mcdu.clearDisplay();
@@ -48,10 +66,10 @@ class CDUAtcRequest {
             CDUAtcRequest.ShowPage(mcdu, store);
         };
 
-        mcdu.rightInputDelay[0] = () => {
+        mcdu.rightInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[0] = (value) => {
+        mcdu.onRightInput[1] = (value) => {
             if (value != "") {
                 store["spdMach"] = "[" + value + "][color]cyan";
             }
