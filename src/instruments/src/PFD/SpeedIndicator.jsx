@@ -11,9 +11,7 @@ const GraduationElement = (speed, offset) => {
     }
 
     let text = '';
-    let isText = false;
     if (speed % 20 === 0) {
-        isText = true;
         text = Math.abs(speed).toString().padStart(3, '0');
     }
 

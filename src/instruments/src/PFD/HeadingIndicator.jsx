@@ -1,4 +1,4 @@
-import { HorizontalTape, getSmallestAngle } from "./PFDUtils.jsx";
+import { HorizontalTape, getSmallestAngle } from './PFDUtils.jsx';
 
 const DistanceSpacing = 7.555;
 const ValueSpacing = 5;

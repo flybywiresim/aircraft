@@ -65,20 +65,18 @@ export const AltitudeIndicator = ({ altitude, FWCFlightPhase }) => {
 
 export const AltitudeIndicatorOfftape = ({
     altitude, MDA, targetAlt, altIsManaged, mode, radioAlt,
-}) => {
-    return (
-        <g>
-            <path id="AltTapeOutline" className="NormalStroke White" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />
-            <LinearDeviationIndicator alt={altitude} linearDeviation={NaN} />
-            <SelectedAltIndicator currentAlt={altitude} targetAlt={targetAlt} altIsManaged={altIsManaged} mode={mode} />
-            <AltimeterIndicator mode={mode} />
-            <MetricAltIndicator altitude={altitude} MDA={MDA} targetAlt={targetAlt} altIsManaged={altIsManaged} />
-            <path id="AltReadoutBackground" className="BlackFill" d="m130.85 85.308h-13.13v-8.9706h13.13v-2.671h8.8647v14.313h-8.8647z" />
-            <RadioAltIndicator radioAlt={radioAlt} />
-            <DigitalAltitudeReadout altitude={altitude} MDA={MDA} />
-        </g>
-    );
-};
+}) => (
+    <g>
+        <path id="AltTapeOutline" className="NormalStroke White" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />
+        <LinearDeviationIndicator alt={altitude} linearDeviation={NaN} />
+        <SelectedAltIndicator currentAlt={altitude} targetAlt={targetAlt} altIsManaged={altIsManaged} mode={mode} />
+        <AltimeterIndicator mode={mode} />
+        <MetricAltIndicator altitude={altitude} MDA={MDA} targetAlt={targetAlt} altIsManaged={altIsManaged} />
+        <path id="AltReadoutBackground" className="BlackFill" d="m130.85 85.308h-13.13v-8.9706h13.13v-2.671h8.8647v14.313h-8.8647z" />
+        <RadioAltIndicator radioAlt={radioAlt} />
+        <DigitalAltitudeReadout altitude={altitude} MDA={MDA} />
+    </g>
+);
 
 const SelectedAltIndicator = ({
     currentAlt, targetAlt, altIsManaged, mode,
@@ -173,7 +171,9 @@ const AltimeterIndicator = ({ mode }) => {
     );
 };
 
-const MetricAltIndicator = ({ altitude, MDA, targetAlt, altIsManaged }) => {
+const MetricAltIndicator = ({
+    altitude, MDA, targetAlt, altIsManaged,
+}) => {
     const currentMetricAlt = Math.round(altitude * 0.3048 / 10) * 10;
 
     const targetMetric = Math.round(targetAlt * 0.3048 / 10) * 10;

@@ -31,7 +31,7 @@ export function LandingSystem({ LSButtonPressed }) {
             )}
         </g>
     );
-};
+}
 
 const LandingSystemInfo = ({ displayed, localizer }) => {
     if (!displayed || !localizer || localizer.freq === 0) {

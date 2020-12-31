@@ -1,5 +1,5 @@
 import ReactDOM from 'react-dom';
-import { useState, Component } from 'react';
+import { Component } from 'react';
 import { Horizon } from './AttitudeIndicatorHorizon.jsx';
 import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed.jsx';
 import { LandingSystem } from './LandingSystemIndicator.jsx';
@@ -7,11 +7,7 @@ import { VerticalSpeedIndicator } from './VerticalSpeedIndicator.jsx';
 import { HeadingOfftape, HeadingTape } from './HeadingIndicator.jsx';
 import { AltitudeIndicatorOfftape, AltitudeIndicator } from './AltitudeIndicator.jsx';
 import { AirspeedIndicatorOfftape, AirspeedIndicator } from './SpeedIndicator.jsx';
-import {
-    renderTarget,
-    useInteractionEvent,
-    useUpdate,
-} from '../util.mjs';
+import { renderTarget } from '../util.mjs';
 import { SmoothSin, LagFilter } from './PFDUtils.jsx';
 import './style.scss';
 
