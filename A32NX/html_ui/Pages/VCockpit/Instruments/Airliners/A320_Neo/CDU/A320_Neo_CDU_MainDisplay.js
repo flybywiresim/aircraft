@@ -387,8 +387,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateGPSMessage();
 
         this.updateDisplayedConstraints();
-
-        this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
     }
 
     /**

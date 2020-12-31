@@ -22,16 +22,10 @@ var A320_Neo_LowerECAM_CRZ;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
-            this.isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
+            this.unitConversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
 
             // Set units
-            if (this.isInMetric) {
-                this.querySelector("#FuelUsedUnit").textContent = "KG";
-                this.unitFactor = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilogram");
-            } else {
-                this.querySelector("#FuelUsedUnit").textContent = "LBS";
-                this.unitFactor = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "lbs");
-            }
+            this.querySelector("#FuelUsedUnit").textContent = this.unitConversion === 1 ? "KG" : "LBS";
 
             // Get value fields
             this.FuelUsedTotal = this.querySelector("#FuelUsedTotal");
@@ -118,18 +112,13 @@ var A320_Neo_LowerECAM_CRZ;
                 return;
             }
 
-            // Fuel
-            const leftConsumption = this.isInMetric ?
-                SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "KG") :
-                SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "gallon") * this.unitFactor * 0.001;
-            const rightConsumption = this.isInMetric ?
-                SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "KG") :
-                SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "gallon") * this.unitFactor * 0.001;
+            const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "KG") * this.unitConversion;
+            const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "KG") * this.unitConversion;
 
             const leftConsumptionShown = fastToFixed(leftConsumption - (leftConsumption % 10), 0);
             const rightConsumptionShown = fastToFixed(rightConsumption - (rightConsumption % 10), 0);
 
-            if ((leftConsumptionShown != this.LeftConsumptionDisplayed) || (rightConsumptionShown != this.RightConsumptionDisplayed)) {
+            if ((leftConsumptionShown !== this.LeftConsumptionDisplayed) || (rightConsumptionShown !== this.RightConsumptionDisplayed)) {
                 const totalConsumptionShown = parseInt(leftConsumptionShown) + parseInt(rightConsumptionShown);
                 this.FuelUsedTotal.textContent = totalConsumptionShown;
                 this.FuelUsedLeft.textContent = leftConsumptionShown;

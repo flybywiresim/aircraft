@@ -18,6 +18,7 @@
 1. [PFD] Fixed wrong Vfe and Vfen indication - @MisterChocker (Leon)
 1. [SOUND] Reworked interior and exterior apu sound - @hotshotp (Boris#9134)
 1. [SOUND] Added new MCDU button sounds - @hotshotp (Boris#9134)
+1. [OPTIONS] Changed unit option changes only effective after aircraft reload - @MisterChocker (Leon)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
