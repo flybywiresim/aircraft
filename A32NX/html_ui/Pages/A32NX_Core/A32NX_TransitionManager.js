@@ -10,14 +10,13 @@ class A32NX_TransitionManager {
         this.transitionSelector();
     }
     transitionSelector(_deltaTime) {
-        const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
-        if (mode === "AUTO") {
-            const departureICAO = NXDataStore.get("PLAN_ORIGIN", "");
-            const arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "");
-            this.departureLogic(departureICAO);
-            this.arrivalLogic(arrivalICAO);
-            //this.transLVL();
-            }
+    const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
+    if (mode === "AUTO") {
+        const departureICAO = NXDataStore.get("PLAN_ORIGIN", "");
+        const arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "");
+        this.departureLogic(departureICAO);
+        this.arrivalLogic(arrivalICAO);
+        //this.transLVL();
         }
     }
     transitionManual() {
