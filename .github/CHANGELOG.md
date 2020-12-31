@@ -19,6 +19,7 @@
 1. [SOUND] Reworked interior and exterior apu sound - @hotshotp (Boris#9134)
 1. [SOUND] Added new MCDU button sounds - @hotshotp (Boris#9134)
 1. [CDU] Fixed altitude button setting the speed on ATC request - @brookemckim (brookemckim)
+1. [FLIGHTMODEL] Fixed structural load factor limitations - @donstim - (donbikes#4084)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
