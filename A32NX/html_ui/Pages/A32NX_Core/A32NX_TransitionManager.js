@@ -14,8 +14,8 @@ class A32NX_TransitionManager {
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
         this.totalDeltaTime += _deltaTime;
         if (mode === "AUTO") {
-            let departureICAO = NXDataStore.get("PLAN_ORIGIN", "");
-            let arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "");
+            const departureICAO = NXDataStore.get("PLAN_ORIGIN", "");
+            const arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "");
             if (totalDeltaTime > 180000) {
                 this.departureLogic(departureICAO); //working every 3 min
                 this.arrivalLogic(arrivalICAO); //working every 3 min
@@ -26,34 +26,34 @@ class A32NX_TransitionManager {
     }
     transitionManual() {
         const storedDepartTransAlt = parseInt(NXDataStore.get("CONFIG_DEPART_TRANSALT", "10000"));
-        const storedArrivalTransAlt = parseInt(NXDataStore.get("CONFIG_ARRIVAL_TRANSALT", "10000"))
+        const storedArrivalTransAlt = parseInt(NXDataStore.get("CONFIG_ARRIVAL_TRANSALT", "10000"));
         SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", storedDepartTransAlt);
         SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", storedArrivalTransAlt);
     }
     async departureLogic(airport) {
         if (airport !== "") {
             await NXApi.getAirport(airport)
-            .then((data) => {
-                let departureTA = data.transAlt;
-                if (departureTA === -1) {
-                    console.log("NO DEPARTURE TA");
-                } else {
-                    SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", departureTA);
-                }
-            })
+                .then((data) => {
+                    let departureTA = data.transAlt;
+                    if (departureTA === -1) {
+                        console.log("NO DEPARTURE TA");
+                    } else {
+                        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", departureTA);
+                    }
+                });
         }
     }
     async arrivalLogic(airport) {
         if (airport !== "") {
             await NXApi.getAirport(airport)
-            .then((data) => {
-                let arrivalTA = data.transAlt;
-                if (arrivalTA === -1) {
-                    console.log("NO ARRIVAL TA");
-                } else {
-                    SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", arrivalTA);
-                }
-            })
+                .then((data) => {
+                    const arrivalTA = data.transAlt;
+                    if (arrivalTA === -1) {
+                        console.log("NO ARRIVAL TA");
+                    } else {
+                        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", arrivalTA);
+                    }
+                });
         }
     }
     /*async transLVL(airport) {
