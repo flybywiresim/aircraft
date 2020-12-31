@@ -34,7 +34,7 @@ class A32NX_TransitionManager {
         if (airport !== "") {
             await NXApi.getAirport(airport)
                 .then((data) => {
-                    let departureTA = data.transAlt;
+                    const departureTA = data.transAlt;
                     if (departureTA === -1) {
                         console.log("NO DEPARTURE TA");
                     } else {
