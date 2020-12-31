@@ -20,6 +20,7 @@ class A32NX_TransitionManager {
                 this.departureLogic(departureICAO); //working every 3 min
                 this.arrivalLogic(arrivalICAO); //working every 3 min
                 this.totalDeltaTime = 0;
+                //this.transLVL();
             }
         }
     }
@@ -55,29 +56,30 @@ class A32NX_TransitionManager {
             })
         }
     }
-    async transLVL(airport) {
+    /*async transLVL(airport) {
         if (airport !== "") {
             await NXApi.getMetar(airport, "ms")
             .then((data) => {
-                NXDataStore.set("testmetar", data.metar);
-                let metar = data.metar;
+                console.log(JSON.stringify(data));
+                console.log(JSON.stringify(data.metar));
+                let metarRaw = data.metar;
                 const formatQNH = /A[0-9]{4}/;
                 const formatHPA = /Q[0-9]{4}/;
-                if (formatQNH.search(metar) !== -1) {
-                    let QNH = parseInt(metar.substr(formatQNH.search(metar)+1, 5));
+                if (metarRaw.search(formatQNH) !== -1) {
+                    let QNH = parseInt(metarRaw.substr(metarRaw.search(formatQNH)+1, 5));
                     let HPA = parseInt(QNH*3386.39/10000);
                     let arrivalTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
                     let transLVL = ((arrivalTA + 28*(1013 - HPA) + 2500)/2);
-                    SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LVL", "Number", transLVL);
-                } else if (formatHPA.search(metar) !== -1) {
-                    let HPA = parseInt(metar.substr(formatHPA.search(metar)+1, 4));
+                        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LVL", "Number", transLVL);
+                } else if (metarRaw.search(formatHPA) !== -1) {
+                    let HPA = parseInt(metarRaw.substr(metarRaw.search(formatHPA)+1, 4));
                     let arrivalTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
                     let transLVL = ((arrivalTA + 28*(1013 - HPA) + 2500)/2);
-                    SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LVL", "Number", transLVL);
+                        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LVL", "Number", transLVL);
                 } else {
                     console.log("can not search value");
-                }
+            }
             })
         }
-    }
+    }*/
 }
