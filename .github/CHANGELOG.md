@@ -18,7 +18,7 @@
 1. [PFD] Fixed wrong Vfe and Vfen indication - @MisterChocker (Leon)
 1. [SOUND] Reworked interior and exterior apu sound - @hotshotp (Boris#9134)
 1. [SOUND] Added new MCDU button sounds - @hotshotp (Boris#9134)
-1. [API] Fixed connection issues when using default ATC and SimBrief - @nistei (nistei#1362)
+1. [API] Fix connection issues when using default ATC and SimBrief - @nistei (nistei#1362)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
