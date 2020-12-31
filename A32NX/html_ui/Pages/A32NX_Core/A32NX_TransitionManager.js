@@ -1,6 +1,5 @@
 class A32NX_TransitionManager {
     init() {
-        this.totalDeltaTime = 0;
         console.log('A32NX_TransitionManager init');
         this.totalDeltaTime = 0;
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
@@ -60,21 +59,25 @@ class A32NX_TransitionManager {
         if (airport !== "") {
             await NXApi.getMetar(airport, "ms")
             .then((data) => {
+                NXDataStore.set("testmetar", data.metar);
                 let metar = data.metar;
-                if (/A\D/.search(metar) !== -1) {
-                    let QNH = parseInt(((parseInt((metar.substr(/A\D/.search(metar), 6))))*3386.39).substr(0, 4));
+                const formatQNH = /A[0-9]{4}/;
+                const formatHPA = /Q[0-9]{4}/;
+                if (formatQNH.search(metar) !== -1) {
+                    let QNH = parseInt(metar.substr(formatQNH.search(metar)+1, 5));
+                    let HPA = parseInt(QNH*3386.39/10000);
                     let arrivalTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
-                    let transLVL = (arrivalTA + 28*(1013 - QNH) + 2500)/2
+                    let transLVL = ((arrivalTA + 28*(1013 - HPA) + 2500)/2);
                     SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LVL", "Number", transLVL);
-                } else if (/Q\D/.search(metar) !== -1) {
-                    let HPA = metar.substr(/A\D/.search(metar), 5);
+                } else if (formatHPA.search(metar) !== -1) {
+                    let HPA = parseInt(metar.substr(formatHPA.search(metar)+1, 4));
                     let arrivalTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
-                    let transLVL = (arrivalTA + 28*(1013 - HPA) + 2500)/2
+                    let transLVL = ((arrivalTA + 28*(1013 - HPA) + 2500)/2);
                     SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LVL", "Number", transLVL);
                 } else {
                     console.log("can not search value");
                 }
-            }
+            })
         }
     }
 }
