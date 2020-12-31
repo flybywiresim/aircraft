@@ -99,7 +99,7 @@ class CDUPerformancePage {
             }
         };
         let transAlt = "---[color]cyan";
-        let departTransAlt = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
+        const departTransAlt = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
         if (departTransAlt > 0) {
             transAlt = departTransAlt + "[color]cyan";
         }
@@ -545,7 +545,7 @@ class CDUPerformancePage {
             }
         };
         let transAltCell = "---";
-        let arrivalTransAlt = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+        const arrivalTransAlt = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
         if (arrivalTransAlt > 0) {
             transAltCell = arrivalTransAlt + "[color]cyan";
         }
