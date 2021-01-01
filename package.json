@@ -7,7 +7,8 @@
     "prettier": "prettier --write **/*.json **/*.yml src/instruments/**/*.css",
     "build:instruments": "rollup -c src/instruments/rollup.config.js",
     "postinstall": "husky install",
-    "serve:efb": "cd src/instruments/src/EFB/ && rollup -c ./rollup.development.config.js"
+    "serve:efb": "cd src/instruments/src/EFB/ && rollup -c ./rollup.development.config.js",
+    "build:flightplan": "rollup -c src/flightplan/rollup.config.js"
   },
   "lint-staged": {
     "*.{js,mjs,jsx}": "eslint --cache --fix",

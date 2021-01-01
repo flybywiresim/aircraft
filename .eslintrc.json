@@ -4,6 +4,7 @@
     "browser": true,
     "es2021": true
   },
+  "ignorePatterns": ["A32NX/html_ui/JS/flightPlan/bundle.js"],
   // DO NOT CHANGE THIS FILE (unless you are an admin) (if admin, make sure you change the same file in the latest asobo branch as well)
   "rules": {
     "indent": [
