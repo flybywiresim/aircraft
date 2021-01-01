@@ -3,6 +3,7 @@ import {
     calculateVerticalOffsetFromRoll,
     HorizontalTape,
 } from './PFDUtils.jsx';
+import { getSimVar } from '../util.mjs';
 
 const TickFunction = (heading, offset) => (
     <path transform={`translate(${offset} 0)`} className="NormalStroke White" d="m68.906 80.823v1.8" />
@@ -155,11 +156,11 @@ const SideslipIndicator = ({ isOnGround, roll }) => {
 
     if (isOnGround) {
         // on ground, lateral g is indicated. max 0.3g, max deflection is 15mm
-        const latAcc = SimVar.GetSimVarValue('ACCELERATION BODY X', 'G Force');
+        const latAcc = getSimVar('ACCELERATION BODY X', 'G Force');
         const accInG = Math.min(0.3, Math.max(-0.3, latAcc));
         SIIndexOffset = -accInG * 15 / 0.3;
     } else {
-        SIIndexOffset = Math.max(Math.min(SimVar.GetSimVarValue('INCIDENCE BETA', 'degrees'), 15), -15);
+        SIIndexOffset = Math.max(Math.min(getSimVar('INCIDENCE BETA', 'degrees'), 15), -15);
     }
 
     return (

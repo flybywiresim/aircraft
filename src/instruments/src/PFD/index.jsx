@@ -7,12 +7,12 @@ import { VerticalSpeedIndicator } from './VerticalSpeedIndicator.jsx';
 import { HeadingOfftape, HeadingTape } from './HeadingIndicator.jsx';
 import { AltitudeIndicatorOfftape, AltitudeIndicator } from './AltitudeIndicator.jsx';
 import { AirspeedIndicatorOfftape, AirspeedIndicator } from './SpeedIndicator.jsx';
-import { renderTarget } from '../util.mjs';
+import { getSimVar, setSimVar, renderTarget } from '../util.mjs';
 import { SmoothSin, LagFilter } from './PFDUtils.jsx';
 import './style.scss';
 
 const AltModeSelected = () => {
-    if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue('L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT', 'number') !== 0) {
+    if (Simplane.getAutoPilotAltitudeManaged() && getSimVar('L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT', 'number') !== 0) {
         return false;
     }
     return true;
@@ -64,7 +64,7 @@ class PFD extends Component {
 
     onLSButtonPressed() {
         this.LSButtonPressed = !this.LSButtonPressed;
-        SimVar.SetSimVarValue(`L:BTN_LS_${this.dispIndex}_FILTER_ACTIVE`, 'Bool', this.LSButtonPressed);
+        setSimVar(`L:BTN_LS_${this.dispIndex}_FILTER_ACTIVE`, 'Bool', this.LSButtonPressed);
     }
 
     smoothSpeeds(_dTime, _maxSpeed, _vls, _vaprot, _valim, _vs) {
@@ -82,35 +82,35 @@ class PFD extends Component {
     }
 
     render() {
-        const pitch = -SimVar.GetSimVarValue('PLANE PITCH DEGREES', 'degrees');
-        const roll = SimVar.GetSimVarValue('PLANE BANK DEGREES', 'degrees');
-        const heading = SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'degrees');
+        const pitch = -getSimVar('PLANE PITCH DEGREES', 'degrees');
+        const roll = getSimVar('PLANE BANK DEGREES', 'degrees');
+        const heading = getSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
 
-        const groundTrack = SimVar.GetSimVarValue('GPS GROUND MAGNETIC TRACK', 'degrees');
+        const groundTrack = getSimVar('GPS GROUND MAGNETIC TRACK', 'degrees');
 
-        const isOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'Bool');
+        const isOnGround = getSimVar('SIM ON GROUND', 'Bool');
 
-        const radioAlt = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND MINUS CG', 'feet');
-        const decisionHeight = SimVar.GetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet');
+        const radioAlt = getSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet');
+        const decisionHeight = getSimVar('L:AIRLINER_DECISION_HEIGHT', 'feet');
 
-        const baroAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
-        const mda = SimVar.GetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
+        const baroAlt = getSimVar('INDICATED ALTITUDE', 'feet');
+        const mda = getSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
 
-        const FlightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
+        const FlightPhase = getSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
 
         const pressureMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
 
-        const clampedAirspeed = Math.max(SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots'), 30);
+        const clampedAirspeed = Math.max(getSimVar('AIRSPEED INDICATED', 'knots'), 30);
         const airspeedAcc = (clampedAirspeed - this.prevAirspeed) / this.deltaTime * 1000;
         this.prevAirspeed = clampedAirspeed;
 
         const filteredAirspeedAcc = this.AirspeedAccFilter.step(airspeedAcc, this.deltaTime / 1000);
 
-        const mach = SimVar.GetSimVarValue('AIRSPEED MACH', 'mach');
+        const mach = getSimVar('AIRSPEED MACH', 'mach');
 
-        const VS = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VS', 'number');
-        const VMax = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VFE', 'number');
-        const VLs = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number');
+        const VS = getSimVar('L:A32NX_SPEEDS_VS', 'number');
+        const VMax = getSimVar('L:A32NX_SPEEDS_VFE', 'number');
+        const VLs = getSimVar('L:A32NX_SPEEDS_VLS', 'number');
 
         let showSpeedBars = true;
         if (isOnGround) {
@@ -126,7 +126,7 @@ class PFD extends Component {
         let targetAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue();
         let isManaged = false;
         if (!AltModeSelected()) {
-            const CSTAlt = SimVar.GetSimVarValue('L:A32NX_AP_CSTN_ALT', 'feet');
+            const CSTAlt = getSimVar('L:A32NX_AP_CSTN_ALT', 'feet');
             if (Number.isFinite(CSTAlt)) {
                 isManaged = true;
                 targetAlt = CSTAlt;
@@ -148,16 +148,16 @@ class PFD extends Component {
             targetSpeed = Simplane.getAutoPilotManagedAirspeedHoldValue();
         }
 
-        const FDActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${this.dispIndex}`, 'Bool');
+        const FDActive = getSimVar(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${this.dispIndex}`, 'Bool');
 
         let selectedHeading = NaN;
-        if (SimVar.GetSimVarValue('L:A320_FCU_SHOW_SELECTED_HEADING', 'number')) {
+        if (getSimVar('L:A320_FCU_SHOW_SELECTED_HEADING', 'number')) {
             selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
         }
 
         let ILSCourse = NaN;
         if (this.LSButtonPressed) {
-            ILSCourse = SimVar.GetSimVarValue('NAV LOCALIZER:3', 'degrees');
+            ILSCourse = getSimVar('NAV LOCALIZER:3', 'degrees');
         }
 
         return (

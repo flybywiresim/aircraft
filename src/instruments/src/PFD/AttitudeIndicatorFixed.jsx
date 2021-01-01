@@ -1,3 +1,5 @@
+import { getSimVar } from '../util.mjs';
+
 export const AttitudeIndicatorFixedUpper = () => (
     <g id="AttitudeUpperInfoGroup">
         <g id="RollProtGroup" className="NormalStroke Green">
@@ -28,8 +30,8 @@ export const AttitudeIndicatorFixedCenter = ({ isOnGround, FDActive }) => {
     let FDPitchOffset = 0;
 
     if (FDActive) {
-        const FDRollOrder = SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR BANK', 'Radians');
-        const FDPitchOrder = SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR PITCH', 'Radians');
+        const FDRollOrder = getSimVar('AUTOPILOT FLIGHT DIRECTOR BANK', 'Radians');
+        const FDPitchOrder = getSimVar('AUTOPILOT FLIGHT DIRECTOR PITCH', 'Radians');
 
         FDRollOffset = Math.min(Math.max(-FDRollOrder * 180 / Math.PI, -45), 45) * 0.44;
         FDPitchOffset = Math.min(Math.max(FDPitchOrder * 180 / Math.PI, -22.5), 22.5) * 0.89;
@@ -69,8 +71,8 @@ const SidestickIndicator = ({ isOnGround }) => {
         return null;
     }
 
-    const SidestickPosX = SimVar.GetSimVarValue('YOKE X POSITION', 'Position') * 29.56;
-    const SidestickPosY = -SimVar.GetSimVarValue('YOKE Y POSITION', 'Position') * 23.02;
+    const SidestickPosX = getSimVar('YOKE X POSITION', 'Position') * 29.56;
+    const SidestickPosY = -getSimVar('YOKE Y POSITION', 'Position') * 23.02;
 
     return (
         <g id="GroundCursorGroup" className="NormalStroke White">

@@ -1,4 +1,5 @@
 import * as RadNav from './RadioNav.jsx';
+import { getSimVar } from '../util.mjs';
 
 export function LandingSystem({ LSButtonPressed }) {
     let localizer = null;
@@ -45,12 +46,12 @@ const LandingSystemInfo = ({ displayed, localizer }) => {
     const freqTextLeading = freqTextSplit[0];
     const freqTextTrailing = freqTextSplit[1].padEnd(2, '0');
 
-    const hasDME = SimVar.GetSimVarValue(`NAV HAS DME:${localizer.id}`, 'Bool');
+    const hasDME = getSimVar(`NAV HAS DME:${localizer.id}`, 'Bool');
 
     let distLeading = '';
     let distTrailing = '';
     if (hasDME) {
-        const dist = Math.round(SimVar.GetSimVarValue(`NAV DME:${localizer.id}`, 'nautical miles') * 10) / 10;
+        const dist = Math.round(getSimVar(`NAV DME:${localizer.id}`, 'nautical miles') * 10) / 10;
 
         if (dist < 20) {
             const distSplit = dist.toString().split('.');
@@ -82,12 +83,12 @@ const LandingSystemInfo = ({ displayed, localizer }) => {
 };
 
 const LocalizerIndicator = ({ localizer }) => {
-    const hasLoc = SimVar.GetSimVarValue(`NAV HAS NAV:${localizer.id}`, 'Bool');
+    const hasLoc = getSimVar(`NAV HAS NAV:${localizer.id}`, 'Bool');
 
     let diamond = null;
 
     if (hasLoc) {
-        const deviation = SimVar.GetSimVarValue(`NAV RADIAL ERROR:${localizer.id}`, 'degrees');
+        const deviation = getSimVar(`NAV RADIAL ERROR:${localizer.id}`, 'degrees');
         const dots = deviation / 0.8;
 
         if (dots > 2) {
@@ -112,12 +113,12 @@ const LocalizerIndicator = ({ localizer }) => {
 };
 
 const GlideslopeIndicator = ({ localizer }) => {
-    const hasGlideslope = SimVar.GetSimVarValue(`NAV HAS GLIDE SLOPE:${localizer.id}`, 'Bool');
+    const hasGlideslope = getSimVar(`NAV HAS GLIDE SLOPE:${localizer.id}`, 'Bool');
 
     let diamond = null;
 
     if (hasGlideslope) {
-        const deviation = SimVar.GetSimVarValue(`NAV GLIDE SLOPE ERROR:${localizer.id}`, 'degrees');
+        const deviation = getSimVar(`NAV GLIDE SLOPE ERROR:${localizer.id}`, 'degrees');
         const dots = deviation / 0.4;
 
         if (dots > 2) {
@@ -141,7 +142,7 @@ const GlideslopeIndicator = ({ localizer }) => {
 };
 
 const VDevIndicator = () => {
-    const deviation = SimVar.GetSimVarValue('GPS VERTICAL ERROR', 'feet');
+    const deviation = getSimVar('GPS VERTICAL ERROR', 'feet');
     const dots = deviation / 100;
 
     let diamond;
@@ -181,7 +182,7 @@ const LDevIndicator = () => (
 );
 
 const MarkerBeaconIndicator = () => {
-    const markerState = SimVar.GetSimVarValue('MARKER BEACON STATE', 'Enum');
+    const markerState = getSimVar('MARKER BEACON STATE', 'Enum');
 
     let classNames = '';
     let markerText = '';

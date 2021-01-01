@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { VerticalTape } from './PFDUtils.jsx';
+import { getSimVar } from '../util.mjs';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
@@ -62,33 +63,33 @@ export const AirspeedIndicator = ({
 
     const clampedSpeed = Math.max(Math.min(airspeed, 660), 30);
 
-    const flapsHandleIndex = SimVar.GetSimVarValue('FLAPS HANDLE INDEX', 'Number');
+    const flapsHandleIndex = getSimVar('FLAPS HANDLE INDEX', 'Number');
 
     let v1 = NaN;
     if (FWCFlightPhase <= 4) {
-        v1 = SimVar.GetSimVarValue('L:AIRLINER_V1_SPEED', 'knots');
+        v1 = getSimVar('L:AIRLINER_V1_SPEED', 'knots');
         if (v1 !== 0) {
             bugs.push([V1BugElement, Math.max(Math.min(v1, 660), 30)]);
         }
-        const vr = SimVar.GetSimVarValue('L:AIRLINER_VR_SPEED', 'knots');
+        const vr = getSimVar('L:AIRLINER_VR_SPEED', 'knots');
         if (vr !== 0) {
             bugs.push([VRBugElement, Math.max(Math.min(vr, 660), 30)]);
         }
     }
 
     if (flapsHandleIndex === 0) {
-        const GreenDotSpeed = SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number');
+        const GreenDotSpeed = getSimVar('L:A32NX_SPEEDS_GD', 'number');
         bugs.push([GreenDotBugElement, GreenDotSpeed]);
     } else if (flapsHandleIndex === 1) {
-        const SlatRetractSpeed = SimVar.GetSimVarValue('L:A32NX_SPEEDS_S', 'number');
+        const SlatRetractSpeed = getSimVar('L:A32NX_SPEEDS_S', 'number');
         bugs.push([SlatRetractBugElement, SlatRetractSpeed]);
     } else if (flapsHandleIndex === 2 || flapsHandleIndex === 3) {
-        const FlapRetractSpeed = SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number');
+        const FlapRetractSpeed = getSimVar('L:A32NX_SPEEDS_F', 'number');
         bugs.push([FlapRetractBugElement, FlapRetractSpeed]);
     }
 
     if (altitude < 15000 && flapsHandleIndex < 4) {
-        const VFENext = SimVar.GetSimVarValue('L:A32NX_SPEEDS_VFEN', 'number');
+        const VFENext = getSimVar('L:A32NX_SPEEDS_VFEN', 'number');
         bugs.push([VFENextBugElement, VFENext]);
     }
 

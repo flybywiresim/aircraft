@@ -1,3 +1,5 @@
+import { getSimVar, setSimVar } from '../util.mjs';
+
 export var NavMode;
 (function (NavMode) {
     NavMode[NavMode.TWO_SLOTS = 0] = 'TWO_SLOTS';
@@ -44,48 +46,48 @@ export class RadioNav {
     }
 
     setRADIONAVActive(_index, _value) {
-        return SimVar.SetSimVarValue('L:RADIONAV ACTIVE:1', 'Bool', _value);
+        return setSimVar('L:RADIONAV ACTIVE:1', 'Bool', _value);
     }
 
     getRADIONAVActive(_index) {
-        return SimVar.GetSimVarValue('L:RADIONAV ACTIVE:1', 'Bool');
+        return getSimVar('L:RADIONAV ACTIVE:1', 'Bool');
     }
 
     getRADIONAVSource() {
-        return SimVar.GetSimVarValue('L:RADIONAV_SOURCE', 'number');
+        return getSimVar('L:RADIONAV_SOURCE', 'number');
     }
 
     setRADIONAVSource(_source) {
-        return SimVar.SetSimVarValue('L:RADIONAV_SOURCE', 'number', _source);
+        return setSimVar('L:RADIONAV_SOURCE', 'number', _source);
     }
 
     swapVORFrequencies(_index) {
-        return SimVar.SetSimVarValue(`K:NAV${_index}_RADIO_SWAP`, 'Bool', 1);
+        return setSimVar(`K:NAV${_index}_RADIO_SWAP`, 'Bool', 1);
     }
 
     setVORActiveFrequency(_index, _value) {
-        return SimVar.SetSimVarValue(`K:NAV${_index}_RADIO_SET_HZ`, 'Hz', _value * 1000000);
+        return setSimVar(`K:NAV${_index}_RADIO_SET_HZ`, 'Hz', _value * 1000000);
     }
 
     getVORActiveFrequency(_index) {
-        return SimVar.GetSimVarValue(`NAV ACTIVE FREQUENCY:${_index}`, 'MHz');
+        return getSimVar(`NAV ACTIVE FREQUENCY:${_index}`, 'MHz');
     }
 
     setVORStandbyFrequency(_index, _value) {
-        return SimVar.SetSimVarValue(`K:NAV${_index}_STBY_SET_HZ`, 'Hz', _value * 1000000);
+        return setSimVar(`K:NAV${_index}_STBY_SET_HZ`, 'Hz', _value * 1000000);
     }
 
     getVORStandbyFrequency(_index) {
-        return SimVar.GetSimVarValue(`NAV STANDBY FREQUENCY:${_index}`, 'MHz');
+        return getSimVar(`NAV STANDBY FREQUENCY:${_index}`, 'MHz');
     }
 
     setVORRadial(_index, _value) {
-        return SimVar.SetSimVarValue(`K:VOR${_index}_SET`, 'degrees', _value);
+        return setSimVar(`K:VOR${_index}_SET`, 'degrees', _value);
     }
 
     getVORRadial(_index) {
-        let value = SimVar.GetSimVarValue(`NAV OBS:${_index}`, 'degrees');
-        if (SimVar.GetSimVarValue('AUTOPILOT BACKCOURSE HOLD', 'bool')) {
+        let value = getSimVar(`NAV OBS:${_index}`, 'degrees');
+        if (getSimVar('AUTOPILOT BACKCOURSE HOLD', 'bool')) {
             value += 180;
         }
         return value;
@@ -129,19 +131,19 @@ export class RadioNav {
 
     _getVORBeacon(_index) {
         this.navBeacon.reset();
-        const hasNav = SimVar.GetSimVarValue(`NAV HAS NAV:${_index}`, 'boolean');
+        const hasNav = getSimVar(`NAV HAS NAV:${_index}`, 'boolean');
         if (hasNav) {
             this.navBeacon.id = _index;
-            this.navBeacon.freq = SimVar.GetSimVarValue(`NAV FREQUENCY:${_index}`, 'MHz');
-            this.navBeacon.name = SimVar.GetSimVarValue(`NAV NAME:${_index}`, 'string');
-            this.navBeacon.ident = SimVar.GetSimVarValue(`NAV IDENT:${_index}`, 'string');
-            const hasLocalizer = SimVar.GetSimVarValue(`NAV HAS LOCALIZER:${_index}`, 'Bool');
+            this.navBeacon.freq = getSimVar(`NAV FREQUENCY:${_index}`, 'MHz');
+            this.navBeacon.name = getSimVar(`NAV NAME:${_index}`, 'string');
+            this.navBeacon.ident = getSimVar(`NAV IDENT:${_index}`, 'string');
+            const hasLocalizer = getSimVar(`NAV HAS LOCALIZER:${_index}`, 'Bool');
             if (hasLocalizer) {
-                this.navBeacon.course = SimVar.GetSimVarValue(`NAV LOCALIZER:${_index}`, 'degree');
+                this.navBeacon.course = getSimVar(`NAV LOCALIZER:${_index}`, 'degree');
             } else {
-                this.navBeacon.course = SimVar.GetSimVarValue(`NAV OBS:${_index}`, 'degree');
+                this.navBeacon.course = getSimVar(`NAV OBS:${_index}`, 'degree');
             }
-            if (SimVar.GetSimVarValue('AUTOPILOT BACKCOURSE HOLD', 'bool')) {
+            if (getSimVar('AUTOPILOT BACKCOURSE HOLD', 'bool')) {
                 this.navBeacon.course += 180;
             }
         }
@@ -150,38 +152,38 @@ export class RadioNav {
 
     swapILSFrequencies(_index) {
         const index = (this.navMode == NavMode.FOUR_SLOTS) ? _index + 2 : _index;
-        return SimVar.SetSimVarValue(`K:NAV${index}_RADIO_SWAP`, 'Bool', 1);
+        return setSimVar(`K:NAV${index}_RADIO_SWAP`, 'Bool', 1);
     }
 
     setILSActiveFrequency(_index, _value) {
         const index = (this.navMode == NavMode.FOUR_SLOTS) ? _index + 2 : _index;
-        return SimVar.SetSimVarValue(`K:NAV${index}_RADIO_SET_HZ`, 'Hz', _value * 1000000);
+        return setSimVar(`K:NAV${index}_RADIO_SET_HZ`, 'Hz', _value * 1000000);
     }
 
     getILSActiveFrequency(_index) {
         const index = (this.navMode == NavMode.FOUR_SLOTS) ? _index + 2 : _index;
-        return SimVar.GetSimVarValue(`NAV ACTIVE FREQUENCY:${index}`, 'MHz');
+        return getSimVar(`NAV ACTIVE FREQUENCY:${index}`, 'MHz');
     }
 
     setILSStandbyFrequency(_index, _value) {
         const index = (this.navMode == NavMode.FOUR_SLOTS) ? _index + 2 : _index;
-        return SimVar.SetSimVarValue(`K:NAV${index}_STBY_SET_HZ`, 'Hz', _value * 1000000);
+        return setSimVar(`K:NAV${index}_STBY_SET_HZ`, 'Hz', _value * 1000000);
     }
 
     getILSStandbyFrequency(_index) {
         const index = (this.navMode == NavMode.FOUR_SLOTS) ? _index + 2 : _index;
-        return SimVar.GetSimVarValue(`NAV STANDBY FREQUENCY:${index}`, 'MHz');
+        return getSimVar(`NAV STANDBY FREQUENCY:${index}`, 'MHz');
     }
 
     setILSRadial(_index, _value) {
         const index = (this.navMode == NavMode.FOUR_SLOTS) ? _index + 2 : _index;
-        return SimVar.SetSimVarValue(`K:VOR${index}_SET`, 'degrees', _value);
+        return setSimVar(`K:VOR${index}_SET`, 'degrees', _value);
     }
 
     getILSRadial(_index) {
         const index = (this.navMode == NavMode.FOUR_SLOTS) ? _index + 2 : _index;
-        let value = SimVar.GetSimVarValue(`NAV OBS:${index}`, 'degrees');
-        if (SimVar.GetSimVarValue('AUTOPILOT BACKCOURSE HOLD', 'bool')) {
+        let value = getSimVar(`NAV OBS:${index}`, 'degrees');
+        if (getSimVar('AUTOPILOT BACKCOURSE HOLD', 'bool')) {
             value += 180;
         }
         return value;
@@ -204,13 +206,13 @@ export class RadioNav {
     _getILSBeacon(_index) {
         this.navBeacon.reset();
         const index = (this.navMode == NavMode.FOUR_SLOTS) ? _index + 2 : _index;
-        const hasLocalizer = SimVar.GetSimVarValue(`NAV HAS LOCALIZER:${index}`, 'Bool');
+        const hasLocalizer = getSimVar(`NAV HAS LOCALIZER:${index}`, 'Bool');
         if (hasLocalizer) {
             this.navBeacon.id = index;
-            this.navBeacon.freq = SimVar.GetSimVarValue(`NAV FREQUENCY:${index}`, 'MHz');
-            this.navBeacon.course = SimVar.GetSimVarValue(`NAV LOCALIZER:${index}`, 'degree');
-            this.navBeacon.name = SimVar.GetSimVarValue(`NAV NAME:${index}`, 'string');
-            this.navBeacon.ident = SimVar.GetSimVarValue(`NAV IDENT:${index}`, 'string');
+            this.navBeacon.freq = getSimVar(`NAV FREQUENCY:${index}`, 'MHz');
+            this.navBeacon.course = getSimVar(`NAV LOCALIZER:${index}`, 'degree');
+            this.navBeacon.name = getSimVar(`NAV NAME:${index}`, 'string');
+            this.navBeacon.ident = getSimVar(`NAV IDENT:${index}`, 'string');
         }
         return this.navBeacon;
     }
@@ -239,23 +241,23 @@ export class RadioNav {
 
     getClosestILSBeacon() {
         this.navBeacon.reset();
-        const hasCloseLocalizer = SimVar.GetSimVarValue('NAV HAS CLOSE LOCALIZER:1', 'Bool');
+        const hasCloseLocalizer = getSimVar('NAV HAS CLOSE LOCALIZER:1', 'Bool');
         if (hasCloseLocalizer) {
             this.navBeacon.id = 1;
-            this.navBeacon.freq = SimVar.GetSimVarValue('NAV CLOSE FREQUENCY:1', 'MHz');
-            this.navBeacon.course = SimVar.GetSimVarValue('NAV CLOSE LOCALIZER:1', 'degree');
-            this.navBeacon.name = SimVar.GetSimVarValue('NAV CLOSE NAME:1', 'string');
-            this.navBeacon.ident = SimVar.GetSimVarValue('NAV CLOSE IDENT:1', 'string');
+            this.navBeacon.freq = getSimVar('NAV CLOSE FREQUENCY:1', 'MHz');
+            this.navBeacon.course = getSimVar('NAV CLOSE LOCALIZER:1', 'degree');
+            this.navBeacon.name = getSimVar('NAV CLOSE NAME:1', 'string');
+            this.navBeacon.ident = getSimVar('NAV CLOSE IDENT:1', 'string');
         }
         return this.navBeacon;
     }
 
     tuneClosestILS(_tune) {
-        return SimVar.SetSimVarValue('K:NAV1_CLOSE_FREQ_SET', 'Bool', _tune);
+        return setSimVar('K:NAV1_CLOSE_FREQ_SET', 'Bool', _tune);
     }
 
     getADFActiveFrequency(_index) {
-        return SimVar.GetSimVarValue(`ADF ACTIVE FREQUENCY:${_index}`, 'KHz');
+        return getSimVar(`ADF ACTIVE FREQUENCY:${_index}`, 'KHz');
     }
 
     setADFActiveFrequency(_index, _value) {
@@ -263,11 +265,11 @@ export class RadioNav {
         if (_index > 1) {
             namePrefix += _index;
         }
-        return SimVar.SetSimVarValue(`${namePrefix}_COMPLETE_SET`, 'Frequency ADF BCD32', Avionics.Utils.make_adf_bcd32(_value * 1000));
+        return setSimVar(`${namePrefix}_COMPLETE_SET`, 'Frequency ADF BCD32', Avionics.Utils.make_adf_bcd32(_value * 1000));
     }
 
     swapVHFFrequencies(_userIndex, _vhfIndex) {
-        return SimVar.SetSimVarValue(`K:COM${_vhfIndex}_RADIO_SWAP`, 'Bool', 1);
+        return setSimVar(`K:COM${_vhfIndex}_RADIO_SWAP`, 'Bool', 1);
     }
 
     setVHFActiveFrequency(_userIndex, _vhfIndex, _value) {
@@ -275,11 +277,11 @@ export class RadioNav {
         if (_vhfIndex > 1) {
             namePrefix += _vhfIndex;
         }
-        return SimVar.SetSimVarValue(`${namePrefix}_RADIO_SET_HZ`, 'Hz', _value * 1000000);
+        return setSimVar(`${namePrefix}_RADIO_SET_HZ`, 'Hz', _value * 1000000);
     }
 
     getVHFActiveFrequency(_userIndex, _vhfIndex) {
-        return SimVar.GetSimVarValue(`COM ACTIVE FREQUENCY:${_vhfIndex}`, 'MHz');
+        return getSimVar(`COM ACTIVE FREQUENCY:${_vhfIndex}`, 'MHz');
     }
 
     setVHFStandbyFrequency(_userIndex, _vhfIndex, _value) {
@@ -287,11 +289,11 @@ export class RadioNav {
         if (_vhfIndex > 1) {
             namePrefix += _vhfIndex;
         }
-        return SimVar.SetSimVarValue(`${namePrefix}_STBY_RADIO_SET_HZ`, 'Hz', _value * 1000000);
+        return setSimVar(`${namePrefix}_STBY_RADIO_SET_HZ`, 'Hz', _value * 1000000);
     }
 
     getVHFStandbyFrequency(_userIndex, _vhfIndex) {
-        return SimVar.GetSimVarValue(`COM STANDBY FREQUENCY:${_vhfIndex}`, 'MHz');
+        return getSimVar(`COM STANDBY FREQUENCY:${_vhfIndex}`, 'MHz');
     }
 
     setVHF1ActiveFrequency(_index, _value) {
@@ -343,7 +345,7 @@ export class RadioNav {
     }
 
     getRadioDecisionHeight() {
-        return SimVar.GetSimVarValue('DECISION HEIGHT', 'feet');
+        return getSimVar('DECISION HEIGHT', 'feet');
     }
 
     static isHz833Compliant(_MHz) {

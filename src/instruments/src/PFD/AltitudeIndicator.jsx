@@ -1,5 +1,6 @@
 import { VerticalTape } from './PFDUtils.jsx';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout.jsx';
+import { getSimVar } from '../util.mjs';
 
 const DisplayRange = 570;
 const ValueSpacing = 100;
@@ -28,7 +29,7 @@ const LandingElevationIndicator = ({ altitude, FWCFlightPhase }) => {
         return null;
     }
 
-    const landingElevation = SimVar.GetSimVarValue('C:fs9gps:FlightPlanDestinationAltitude', 'feet');
+    const landingElevation = getSimVar('C:fs9gps:FlightPlanDestinationAltitude', 'feet');
     const delta = altitude - landingElevation;
     if (delta > DisplayRange) {
         return null;
@@ -181,7 +182,7 @@ const MetricAltIndicator = ({
 
     const currentMetricAltColor = altitude > MDA ? 'Green' : 'Amber';
 
-    const showMetricAlt = SimVar.GetSimVarValue('L:A32NX_METRIC_ALT_TOGGLE', 'bool');
+    const showMetricAlt = getSimVar('L:A32NX_METRIC_ALT_TOGGLE', 'bool');
     if (!showMetricAlt) {
         return null;
     }

@@ -1,6 +1,8 @@
+import { getSimVar } from '../util.mjs';
+
 export const VerticalSpeedIndicator = ({ radioAlt }) => {
     // This represents inertial vertical speed
-    const verticalSpeed = SimVar.GetSimVarValue('VELOCITY WORLD Y', 'feet per minute');
+    const verticalSpeed = getSimVar('VELOCITY WORLD Y', 'feet per minute');
 
     let isAmber = false;
     if ((Math.abs(verticalSpeed) > 6000 || (radioAlt < 2500 && radioAlt > 1000 && verticalSpeed < -2000) || (radioAlt < 1000 && verticalSpeed < -1200))) {
