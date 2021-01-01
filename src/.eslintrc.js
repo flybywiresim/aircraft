@@ -61,6 +61,9 @@ module.exports = {
         // buggy
         'prefer-destructuring': 'off',
 
+        // buggy
+        'prefer-destructuring': 'off',
+
         // Avoid typescript-eslint conflicts
         'import/no-unresolved': 'off',
         'no-unused-vars': 'off',
