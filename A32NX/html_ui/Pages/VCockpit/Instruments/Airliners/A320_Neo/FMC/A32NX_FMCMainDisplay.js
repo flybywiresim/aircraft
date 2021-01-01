@@ -1177,7 +1177,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (flapsHandleIndex !== 0) {
             return this.getFlapSpeed();
         }
-        let speed = 288 * (1 - dCI) + 260 * dCI;
+        let speed = 288 * (1 - dCI) + 300 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
