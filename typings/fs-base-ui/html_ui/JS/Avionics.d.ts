@@ -195,6 +195,14 @@ declare global {
             exists(key: any): boolean;
         }
     }
+
+    declare class BaseInstrument {
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+
+        facilityLoader: FacilityLoader;
+
+        instrumentIdentifier: string;
+    }
 }
 
 export {};
