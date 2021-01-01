@@ -98,7 +98,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[0] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 mcdu.aocWeight.blockFuel = "";
                 updateView();
                 return true;
@@ -118,7 +118,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 mcdu.aocWeight.taxiFuel = "";
                 updateView();
                 return true;
@@ -138,7 +138,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onRightInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 mcdu.aocWeight.tripFuel = "";
                 updateView();
                 return true;
@@ -271,7 +271,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[0] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 mcdu.aocWeight.payload = undefined;
                 mcdu.aocWeight.fwdBag = undefined;
                 mcdu.aocWeight.rearBag = undefined;
@@ -295,7 +295,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 mcdu.aocWeight.fwdBag = undefined;
                 updateView();
                 return true;
@@ -333,7 +333,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[2] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 mcdu.aocWeight.rearBag = undefined;
                 updatePayloadValue();
                 updateView();
@@ -361,7 +361,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onRightInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 mcdu.aocWeight.zfwcg = undefined;
                 setEstimatedBaggagePayload(mcdu);
                 updateView();

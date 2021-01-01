@@ -1,6 +1,6 @@
 class CDUIdentPage {
     static ShowPage(mcdu) {
-        const date = mcdu.getNavDataDateRange();
+        const date = getNavDataDateRange();
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.IdentPage;
         mcdu.activeSystem = 'FMGC';

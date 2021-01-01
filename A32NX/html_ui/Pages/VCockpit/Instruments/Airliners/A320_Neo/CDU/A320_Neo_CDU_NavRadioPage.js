@@ -35,7 +35,7 @@ class CDUNavRadioPage {
             }
             mcdu.onLeftInput[0] = (value) => {
                 const numValue = parseFloat(value);
-                if (value === FMCMainDisplay.clrValue) {
+                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.vor1Frequency = 0;
                     mcdu.vor1Course = 0;
                     mcdu.radioNav.setVORActiveFrequency(1, 0);
@@ -83,7 +83,7 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else if (value === FMCMainDisplay.clrValue) {
+                } else if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.vor1Course = 0;
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
@@ -139,7 +139,7 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else if (value === FMCMainDisplay.clrValue) {
+                } else if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.adf1Frequency = 0;
                     mcdu.radioNav.setADFActiveFrequency(1, 0);
                     CDUNavRadioPage.ShowPage(mcdu);
@@ -160,7 +160,7 @@ class CDUNavRadioPage {
             }
             mcdu.onRightInput[0] = (value) => {
                 const numValue = parseFloat(value);
-                if (value === FMCMainDisplay.clrValue) {
+                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.vor2Frequency = 0;
                     mcdu.vor2Course = 0;
                     mcdu.radioNav.setVORActiveFrequency(2, 0);
@@ -208,7 +208,7 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else if (value === FMCMainDisplay.clrValue) {
+                } else if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.vor2Course = 0;
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
@@ -241,7 +241,7 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else if (value === FMCMainDisplay.clrValue) {
+                } else if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.adf2Frequency = 0;
                     mcdu.radioNav.setADFActiveFrequency(2, 0);
                     adf2FrequencyCell = "[\xa0\xa0.]/[\xa0]";

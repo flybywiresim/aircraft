@@ -95,14 +95,14 @@ class CDUFuelPredPage {
                 if (mcdu._rteFinalEntered) {
                     if (isFinite(mcdu.getRouteFinalFuelWeight())) {
                         finalFuelCell = "{sp}{sp}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversionWeight).toFixed(1);
-                        finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
+                        finalTimeCell = minutesTohhmm(mcdu.getRouteFinalFuelTime());
                         finalColor = "[color]cyan";
                     }
                 } else {
                     mcdu.tryUpdateRouteFinalFuel();
                     if (isFinite(mcdu.getRouteFinalFuelWeight())) {
                         finalFuelCell = "{sp}{sp}{small}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversionWeight).toFixed(1) + "{end}";
-                        finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
+                        finalTimeCell = minutesTohhmm(mcdu.getRouteFinalFuelTime());
                         finalColor = "[color]cyan";
                     }
                 }
@@ -115,14 +115,14 @@ class CDUFuelPredPage {
                 if (mcdu._routeAltFuelEntered) {
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
                         altFuelCell = "{sp}{sp}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversionWeight).toFixed(1);
-                        altFuelTimeCell = "{small}{green}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
+                        altFuelTimeCell = "{small}{green}" + minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
                         altFuelColor = "[color]cyan";
                     }
                 } else {
                     mcdu.tryUpdateRouteAlternate();
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
                         altFuelCell = "{sp}{sp}{small}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversionWeight).toFixed(1);
-                        altFuelTimeCell = "{green}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
+                        altFuelTimeCell = "{green}" + minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
                         altFuelColor = "[color]cyan";
                     }
                 }
@@ -146,11 +146,11 @@ class CDUFuelPredPage {
                 }
                 destEFOBCell = (mcdu.getDestEFOB(true) * mcdu._conversionWeight).toFixed(1);
                 // Should we use predicted values or liveETATo and liveUTCto?
-                destTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime))
-                    : destTimeCell = FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime);
+                destTimeCell = isFlying ? secondsToUTC(utcTime + minuteToSeconds(mcdu._routeTripTime))
+                    : destTimeCell = minutesTohhmm(mcdu._routeTripTime);
                 if (mcdu.altDestination) {
-                    altTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime) + FMCMainDisplay.minuteToSeconds(mcdu.getRouteAltFuelTime()))
-                        : FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime());
+                    altTimeCell = isFlying ? secondsToUTC(utcTime + minuteToSeconds(mcdu._routeTripTime) + minuteToSeconds(mcdu.getRouteAltFuelTime()))
+                        : minutesTohhmm(mcdu.getRouteAltFuelTime());
                 }
                 destEFOBCellColor = "[color]green";
                 destTimeCellColor = "[color]green";
@@ -198,7 +198,7 @@ class CDUFuelPredPage {
                     extraFuelCell = "{small}" + (mcdu.tryGetExtraFuel(true) * mcdu._conversionWeight).toFixed(1);
                 }
                 extraCellColor = "[color]green";
-                extraTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.tryGetExtraTime(true)) + "{end}";
+                extraTimeCell = minutesTohhmm(mcdu.tryGetExtraTime(true)) + "{end}";
 
                 // Currently not updating as there's no simvar to retrieve this.
                 if (isFinite(mcdu.zeroFuelWeight)) {
