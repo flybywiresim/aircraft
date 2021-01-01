@@ -1100,6 +1100,24 @@ class FacilityLoader {
             });
         });
     }
+
+    async GetAirportFieldElevation(airportIcao) {
+        await this.waitRegistration();
+        return new Promise(resolve => {
+            SimVar.SetSimVarValue("C:fs9gps:WaypointAirportICAO", "string", airportIcao, this.instrument.instrumentIdentifier + "-loader").then(async () => {
+                let elevation = SimVar.GetSimVarValue("C:fs9gps:WaypointAirportElevation", "meters", this.instrument.instrumentIdentifier + "-loader");
+                let attempts = 0;
+                // Wait for the database query to complete
+                while (elevation === 0 && attempts < 10) {
+                    await new Promise(resolve => this.instrument.requestCall(resolve));
+                    elevation = SimVar.GetSimVarValue("C:fs9gps:WaypointAirportElevation", "meters", this.instrument.instrumentIdentifier + "-loader");
+                    attempts++;
+                }
+                console.log(elevation);
+                resolve(elevation * 3.2808);
+            });
+        });
+    }
 }
 class WaypointLoader {
     constructor(_instrument) {
