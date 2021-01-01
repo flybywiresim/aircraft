@@ -59,6 +59,16 @@ const VFENextBugElement = (offset) => (
 export const AirspeedIndicator = ({
     airspeed, airspeedAcc, FWCFlightPhase, altitude, VAlphaLim, VAlphaProt, VLs, VMax, showBars,
 }) => {
+    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+        return (
+            [
+                <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />,
+                <text id="SpeedFailText" className="Blink9Seconds FontLargest EndAlign Red" x="17.756115" y="83.386398">SPD</text>,
+                <SpeedTapeOutline airspeed={100} isRed />,
+            ]
+        );
+    }
+
     const bugs = [];
 
     const clampedSpeed = Math.max(Math.min(airspeed, 660), 30);
@@ -180,6 +190,15 @@ const VMaxBar = ({ VMax, airspeed }) => {
 export const AirspeedIndicatorOfftape = ({
     airspeed, mach, airspeedAcc, targetSpeed, speedIsManaged,
 }) => {
+    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+        return (
+            [
+                <path id="SpeedTapeOutlineUpper" className="NormalStroke Red" d="m1.9058 38.086h21.859" />,
+                <path id="SpeedTapeOutlineLower" className="NormalStroke Red" d="m1.9058 123.56h21.859" />,
+            ]
+        );
+    }
+
     const clampedSpeed = Math.max(Math.min(airspeed, 660), 30);
     const clampedTargetSpeed = Math.max(Math.min(targetSpeed, 660), 30);
     return (
@@ -212,11 +231,12 @@ const SpeedTarget = ({ airspeed, targetSpeed, isManaged }) => {
     );
 };
 
-const SpeedTapeOutline = ({ airspeed }) => {
+const SpeedTapeOutline = ({ airspeed, isRed = false }) => {
     const length = Math.max(Math.min(airspeed, 72), 30) * 1.01754 + 12.2104;
+    const className = isRed ? 'NormalStroke Red' : 'NormalStroke White';
 
     return (
-        <path id="SpeedTapeOutlineRight" className="NormalStroke White" d={`m19.031 38.086v${length}`} />
+        <path id="SpeedTapeOutlineRight" className={className} d={`m19.031 38.086v${length}`} />
     );
 };
 

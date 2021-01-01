@@ -16,6 +16,12 @@ const HeadingBug = (offset) => (
 export const Horizon = ({
     pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive,
 }) => {
+    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_ATT', 'Bool')) {
+        return null;
+    }
+
+    const headingAvail = getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum') === 2;
+
     const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch), 31.563), -31.563);
 
     const bugs = [];
@@ -112,7 +118,8 @@ export const Horizon = ({
             <path id="path1154" d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalStroke White SkyFill" />
             <SideslipIndicator isOnGround={isOnGround} roll={roll} />
             <RisingGround radioAlt={radioAlt} pitch={pitch} />
-            <HorizontalTape graduationElementFunction={TickFunction} bugs={bugs} yOffset={yOffset} displayRange={35} distanceSpacing={15} valueSpacing={10} heading={heading} />
+            {headingAvail
+            && <HorizontalTape graduationElementFunction={TickFunction} bugs={bugs} yOffset={yOffset} displayRange={35} distanceSpacing={15} valueSpacing={10} heading={heading} />}
             <RadioAltAndDH radioAlt={radioAlt} decisionHeight={decisionHeight} roll={roll} />
             <g style={{ display: 'none' }}>
                 <path id="FlightPathSymbol" d="m71.173 80.823h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199m2.2665 4.7877c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z" className="NormalStroke Green" />

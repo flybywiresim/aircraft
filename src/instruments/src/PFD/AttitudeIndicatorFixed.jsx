@@ -1,31 +1,43 @@
 import { getSimVar } from '../util.mjs';
 
-export const AttitudeIndicatorFixedUpper = () => (
-    <g id="AttitudeUpperInfoGroup">
-        <g id="RollProtGroup" className="NormalStroke Green">
-            <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
-            <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
+export const AttitudeIndicatorFixedUpper = () => {
+    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_ATT', 'Bool')) {
+        return null;
+    }
+
+    return (
+        <g id="AttitudeUpperInfoGroup">
+            <g id="RollProtGroup" className="NormalStroke Green">
+                <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
+                <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
+            </g>
+            <g id="RollProtLost" style={{ display: 'none' }} className="NormalStroke Amber">
+                <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
+                <path id="RollProtLostLeft" d="m30.043 62.478 1.7808-1.7818m-1.7808 0 1.7808 1.7818" />
+            </g>
+            <g className="NormalStroke White">
+                <path d="m98.645 51.067 2.8492-2.8509" />
+                <path d="m39.168 51.067-2.8492-2.8509" />
+                <path d="m90.858 44.839a42.133 42.158 0 0 0-43.904 0" />
+                <path d="m89.095 43.819 1.8313-3.1738 1.7448 1.0079-1.8313 3.1738" />
+                <path d="m84.259 41.563 0.90817-2.4967-1.8932-0.68946-0.90818 2.4966" />
+                <path d="m75.229 39.142 0.46109-2.6165 1.9841 0.35005-0.46109 2.6165" />
+                <path d="m60.6 39.492-0.46109-2.6165 1.9841-0.35005 0.46109 2.6165" />
+                <path d="m53.553 41.563-0.90818-2.4967 0.9466-0.34474 0.9466-0.34472 0.90818 2.4966" />
+                <path d="m46.973 44.827-1.8313-3.1738 1.7448-1.0079 1.8313 3.1738" />
+            </g>
+            <path className="NormalStroke Yellow CornerRound" d="m68.906 38.741-2.5184-4.7373h5.0367l-2.5184 4.7373" />
         </g>
-        <g id="RollProtLost" style={{ display: 'none' }} className="NormalStroke Amber">
-            <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
-            <path id="RollProtLostLeft" d="m30.043 62.478 1.7808-1.7818m-1.7808 0 1.7808 1.7818" />
-        </g>
-        <g className="NormalStroke White">
-            <path d="m98.645 51.067 2.8492-2.8509" />
-            <path d="m39.168 51.067-2.8492-2.8509" />
-            <path d="m90.858 44.839a42.133 42.158 0 0 0-43.904 0" />
-            <path d="m89.095 43.819 1.8313-3.1738 1.7448 1.0079-1.8313 3.1738" />
-            <path d="m84.259 41.563 0.90817-2.4967-1.8932-0.68946-0.90818 2.4966" />
-            <path d="m75.229 39.142 0.46109-2.6165 1.9841 0.35005-0.46109 2.6165" />
-            <path d="m60.6 39.492-0.46109-2.6165 1.9841-0.35005 0.46109 2.6165" />
-            <path d="m53.553 41.563-0.90818-2.4967 0.9466-0.34474 0.9466-0.34472 0.90818 2.4966" />
-            <path d="m46.973 44.827-1.8313-3.1738 1.7448-1.0079 1.8313 3.1738" />
-        </g>
-        <path className="NormalStroke Yellow CornerRound" d="m68.906 38.741-2.5184-4.7373h5.0367l-2.5184 4.7373" />
-    </g>
-);
+    );
+};
 
 export const AttitudeIndicatorFixedCenter = ({ isOnGround, FDActive }) => {
+    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_ATT', 'Bool')) {
+        return (
+            <text id="AttFailText" className="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
+        );
+    }
+
     let FDRollOffset = 0;
     let FDPitchOffset = 0;
 

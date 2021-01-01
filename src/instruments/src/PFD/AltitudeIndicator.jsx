@@ -53,11 +53,17 @@ const RadioAltIndicator = ({ radioAlt }) => {
 };
 
 export const AltitudeIndicator = ({ altitude, FWCFlightPhase }) => {
+    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+        return (
+            <AltTapeBackground />
+        );
+    }
+
     const bugs = [];
 
     return (
         <g>
-            <path id="AltTapeBackground" d="m130.85 123.56h-13.096v-85.473h13.096z" className="TapeBackground" />
+            <AltTapeBackground />
             <LandingElevationIndicator altitude={altitude} FWCFlightPhase={FWCFlightPhase} />
             <VerticalTape tapeValue={altitude} graduationElementFunction={GraduationElement} bugs={bugs} displayRange={DisplayRange + 30} valueSpacing={ValueSpacing} distanceSpacing={DistanceSpacing} lowerLimit={-1500} upperLimit={50000} />
         </g>
@@ -66,17 +72,33 @@ export const AltitudeIndicator = ({ altitude, FWCFlightPhase }) => {
 
 export const AltitudeIndicatorOfftape = ({
     altitude, MDA, targetAlt, altIsManaged, mode, radioAlt,
-}) => (
-    <g>
-        <path id="AltTapeOutline" className="NormalStroke White" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />
-        <LinearDeviationIndicator alt={altitude} linearDeviation={NaN} />
-        <SelectedAltIndicator currentAlt={altitude} targetAlt={targetAlt} altIsManaged={altIsManaged} mode={mode} />
-        <AltimeterIndicator mode={mode} />
-        <MetricAltIndicator altitude={altitude} MDA={MDA} targetAlt={targetAlt} altIsManaged={altIsManaged} />
-        <path id="AltReadoutBackground" className="BlackFill" d="m130.85 85.308h-13.13v-8.9706h13.13v-2.671h8.8647v14.313h-8.8647z" />
-        <RadioAltIndicator radioAlt={radioAlt} />
-        <DigitalAltitudeReadout altitude={altitude} MDA={MDA} />
-    </g>
+}) => {
+    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+        return (
+            [
+                <path id="AltTapeOutline" className="NormalStroke Red" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />,
+                <path id="AltReadoutBackground" className="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />,
+                <text id="AltFailText" className="Blink9Seconds FontLargest Red EndAlign" x="131.16769" y="83.433167">ALT</text>,
+            ]
+        );
+    }
+
+    return (
+        <g>
+            <path id="AltTapeOutline" className="NormalStroke White" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />
+            <LinearDeviationIndicator alt={altitude} linearDeviation={NaN} />
+            <SelectedAltIndicator currentAlt={altitude} targetAlt={targetAlt} altIsManaged={altIsManaged} mode={mode} />
+            <AltimeterIndicator mode={mode} />
+            <MetricAltIndicator altitude={altitude} MDA={MDA} targetAlt={targetAlt} altIsManaged={altIsManaged} />
+            <path id="AltReadoutBackground" className="BlackFill" d="m130.85 85.308h-13.13v-8.9706h13.13v-2.671h8.8647v14.313h-8.8647z" />
+            <RadioAltIndicator radioAlt={radioAlt} />
+            <DigitalAltitudeReadout altitude={altitude} MDA={MDA} />
+        </g>
+    );
+};
+
+const AltTapeBackground = () => (
+    <path id="AltTapeBackground" d="m130.85 123.56h-13.096v-85.473h13.096z" className="TapeBackground" />
 );
 
 const SelectedAltIndicator = ({

@@ -1,4 +1,5 @@
 import { HorizontalTape, getSmallestAngle } from './PFDUtils.jsx';
+import { getSimVar } from '../util.mjs';
 
 const DistanceSpacing = 7.555;
 const ValueSpacing = 5;
@@ -43,6 +44,10 @@ const QFUBug = (offset) => (
 export const HeadingTape = ({
     heading, groundTrack, ILSCourse,
 }) => {
+    if (getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum') !== 2) {
+        return null;
+    }
+
     const bugs = [];
 
     if (!Number.isNaN(ILSCourse)) {
@@ -59,14 +64,26 @@ export const HeadingTape = ({
     );
 };
 
-export const HeadingOfftape = ({ selectedHeading, heading, ILSCourse }) => (
-    <g id="HeadingOfftapeGroup">
-        <path id="HeadingTapeOutline" className="NormalStroke White" d="m32.138 156.23v-10.886h73.536v10.886" />
-        <SelectedHeading heading={heading} selectedHeading={selectedHeading} />
-        <path className="Fill Yellow" d="m68.201 147.31v-8.0635h1.4103v8.0635z" />
-        <QFUOfftape heading={heading} ILSCourse={ILSCourse} />
-    </g>
-);
+export const HeadingOfftape = ({ selectedHeading, heading, ILSCourse }) => {
+    if (getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum') !== 2) {
+        return (
+            [
+                <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" className="TapeBackground" />,
+                <path id="HeadingTapeOutline" className="NormalStroke Red" d="m32.138 156.23v-10.886h73.536v10.886" />,
+                <text id="HDGFailText" className="Blink9Seconds FontLargest EndAlign Red" x="75.926208" y="151.95506">HDG</text>,
+            ]
+        );
+    }
+
+    return (
+        <g id="HeadingOfftapeGroup">
+            <path id="HeadingTapeOutline" className="NormalStroke White" d="m32.138 156.23v-10.886h73.536v10.886" />
+            <SelectedHeading heading={heading} selectedHeading={selectedHeading} />
+            <path className="Fill Yellow" d="m68.201 147.31v-8.0635h1.4103v8.0635z" />
+            <QFUOfftape heading={heading} ILSCourse={ILSCourse} />
+        </g>
+    );
+};
 
 const SelectedHeading = ({ selectedHeading, heading }) => {
     if (Number.isNaN(selectedHeading)) {
