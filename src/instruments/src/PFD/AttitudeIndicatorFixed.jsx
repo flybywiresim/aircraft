@@ -3,8 +3,8 @@ import { getSimVar } from '../util.mjs';
 export const AttitudeIndicatorFixedUpper = () => (
     <g id="AttitudeUpperInfoGroup">
         <g id="RollProtGroup" className="NormalStroke Green">
-            <path id="RollProtRight" d="m105.67 62.887 1.5707-0.8008m-1.5707-0.78293 1.3463-0.68639" />
-            <path id="RollProtLeft" d="m32.138 61.303-1.3463-0.68639m1.3463 2.2701-1.5707-0.8008" />
+            <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
+            <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
         </g>
         <g id="RollProtLost" style={{ display: 'none' }} className="NormalStroke Amber">
             <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
@@ -21,7 +21,7 @@ export const AttitudeIndicatorFixedUpper = () => (
             <path d="m53.553 41.563-0.90818-2.4967 0.9466-0.34474 0.9466-0.34472 0.90818 2.4966" />
             <path d="m46.973 44.827-1.8313-3.1738 1.7448-1.0079 1.8313 3.1738" />
         </g>
-        <path className="NormalStroke Yellow" d="m68.906 38.741-2.5184-4.7373h5.0367l-2.5184 4.7373" />
+        <path className="NormalStroke Yellow CornerRound" d="m68.906 38.741-2.5184-4.7373h5.0367l-2.5184 4.7373" />
     </g>
 );
 

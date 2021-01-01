@@ -164,7 +164,7 @@ const SideslipIndicator = ({ isOnGround, roll }) => {
     }
 
     return (
-        <g id="RollTriangleGroup" transform={`translate(0 ${verticalOffset})`} className="NormalStroke Yellow">
+        <g id="RollTriangleGroup" transform={`translate(0 ${verticalOffset})`} className="NormalStroke Yellow CornerRound">
             <path d="m66.185 43.176h5.4437l-2.7218-3.427z" />
             <path id="SideSlipIndicator" transform={`translate(${SIIndexOffset} 0)`} d="m62.862 47.359 2.1615-2.7214h7.7653l2.1615 2.7214z" />
         </g>
