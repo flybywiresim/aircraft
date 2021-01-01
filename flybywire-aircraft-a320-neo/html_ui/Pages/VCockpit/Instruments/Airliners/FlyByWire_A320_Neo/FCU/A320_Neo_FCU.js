@@ -185,7 +185,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this.textSPD = this.getTextElement("SPD");
         this.textMACH = this.getTextElement("MACH");
         this.illuminator = this.getElement("circle", "Illuminator");
-        Coherent.call("AP_SPD_VAR_SET", 0, this.MIN_SPEED);
+        Coherent.call("AP_SPD_VAR_SET", 0, this.MIN_SPEED).catch(console.error);
         SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 0);
         this.onPull();
     }
@@ -239,7 +239,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             targetSpeed = this.clampSpeed(targetSpeed);
             // set target speed
             if (targetSpeed !== this.targetSpeed) {
-                Coherent.call("AP_SPD_VAR_SET", 0, targetSpeed);
+                Coherent.call("AP_SPD_VAR_SET", 0, targetSpeed).catch(console.error);
                 this.targetSpeed = targetSpeed;
             }
         } else {
@@ -672,7 +672,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", _showSelectedHeading == true ? 1 : 0);
             if (_value !== this.currentValue) {
                 SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_HEADING_SELECTED", "Degrees", _value);
-                Coherent.call("HEADING_BUG_SET", 1, Math.max(0, _value));
+                Coherent.call("HEADING_BUG_SET", 1, Math.max(0, _value)).catch(console.error);
             }
             this.isActive = _isActive;
             this.isManagedActive = _isManagedActive;
@@ -857,7 +857,7 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
         if (Simplane.getAltitudeAboveGround() > 1000) {
             initValue = Math.min(49000, Math.max(100, Math.round(Simplane.getAltitude() / 100) * 100));
         }
-        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 3, initValue, true);
+        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 3, initValue, true).catch(console.error);
         this.refresh(false, false, initValue, 0, true);
     }
 

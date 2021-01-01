@@ -3,6 +3,7 @@
 ## Contents
 
 1. [Uncategorized](#uncategorized)
+1. [EIS Display System](#eis-display-system)
 1. [Fly-By-Wire System](#fly-by-wire-system)
 1. [ADIRS](#adirs)
 1. [Autopilot System](#autopilot-system)
@@ -971,6 +972,88 @@
       --- | ---
       0 | inactive
       1 | active
+    
+## EIS Display System
+
+- A32NX_EFIS_{side}_NAVAID_{1|2}_MODE
+    - Enum
+    - Provides the selected NAVAIDs for display on the EFIS
+      Value | Meaning
+      --- | ---
+      0 | Off
+      1 | ADF
+      2 | VOR
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_ND_MODE
+    - Enum
+    - Provides the selected navigation display mode for the EFIS
+      Value | Meaning
+      --- | ---
+      0 | ROSE ILS
+      1 | ROSE VOR
+      2 | ROSE NAV
+      3 | ARC
+      4 | PLAN
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_ND_RANGE
+    - Enum
+    - Provides the selected navigation display range for the EFIS
+      Value | Meaning
+      --- | ---
+      0 | 10
+      1 | 20
+      2 | 40
+      3 | 80
+      4 | 160
+      5 | 320
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_OPTION
+    - Enum
+    - Provides the selected EFIS option/overlay
+      Value | Meaning
+      --- | ---
+      0 | None
+      1 | Constraints
+      2 | VOR/DMEs
+      3 | Waypoints
+      4 | NDBs
+      5 | Airports
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_ND_FM_MESSAGE_FLAGS
+    - Flag
+    - Provides a bitfield of the active FM messages to the NDs
+      Bit | Meaning
+      --- | ---
+      0  | SelectTrueRef
+      1  | CheckNorthRef
+      2  | NavAccuracyDowngrade
+      3  | NavAccuracyUpgradeNoGps
+      4  | SpecifiedVorDmeUnavailble
+      5  | NavAccuracyUpgradeGps
+      6  | GpsPrimary
+      7  | MapPartlyDisplayed
+      8  | SetOffsideRangeMode
+      9  | OffsideFmControl
+      10 | OffsideFmWxrControl
+      11 | OffsideWxrControl
+      12 | GpsPrimaryLost
+      13 | RtaMissed
+      14 | BackupNav
+    - {side}
+        - L
+        - R
 
 - A32NX_ISIS_LS_ACTIVE
 	- Bool
