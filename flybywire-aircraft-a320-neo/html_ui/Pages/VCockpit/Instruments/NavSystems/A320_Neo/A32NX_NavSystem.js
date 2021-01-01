@@ -48,8 +48,8 @@ class NavSystem extends BaseInstrument {
         this.contextualMenuElements = this.getChildById("ContextualMenuElements");
         this.menuSlider = this.getChildById("SliderMenu");
         this.menuSliderCursor = this.getChildById("SliderMenuCursor");
-        this.currFlightPlanManager = new FlightPlanManager(this);
-        this.currFlightPlan = new FlightPlan(this, this.currFlightPlanManager);
+        this.currFlightPlanManager = new fpm.FlightPlanManager(this);
+        this.currFlightPlan = new fpm.ManagedFlightPlan();
     }
     disconnectedCallback() {
         super.disconnectedCallback();
