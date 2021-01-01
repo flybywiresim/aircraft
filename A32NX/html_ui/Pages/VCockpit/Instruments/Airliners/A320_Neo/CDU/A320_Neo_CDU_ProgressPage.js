@@ -5,8 +5,8 @@ class CDUProgressPage {
         mcdu.activeSystem = 'FMGC';
         const flightPhase = "CRZ";
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
-        const flMax = mcdu.getMaxFlCorrected();
-        const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
+        const flMax = getMaxFlCorrected();
+        const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (isAllEngineOn() || Simplane.getIsGrounded())) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
         let flCrz = "-----";
         switch (Simplane.getCurrentFlightPhase()) {
             case FlightPhase.FLIGHT_PHASE_PREFLIGHT:
@@ -109,7 +109,7 @@ class CDUProgressPage {
         const nextWaypointAltCell = "---";
         if (toWaypoint) {
             toWaypointCell = toWaypoint.ident;
-            toWaypointUTCCell = FMCMainDisplay.secondsTohhmm(toWaypoint.infos.etaInFP);
+            toWaypointUTCCell = secondsTohhmm(toWaypoint.infos.etaInFP);
             let nextWaypoint;
             if (mcdu.routeIndex + 1 === mcdu.flightPlanManager.getWaypointsCount()) {
                 nextWaypoint = mcdu.flightPlanManager.getDestination();
@@ -118,7 +118,7 @@ class CDUProgressPage {
             }
             if (nextWaypoint) {
                 nextWaypointCell = nextWaypoint.ident;
-                nextWaypointUTCCell = FMCMainDisplay.secondsTohhmm(nextWaypoint.infos.etaInFP);
+                nextWaypointUTCCell = secondsTohhmm(nextWaypoint.infos.etaInFP);
             }
         }
         let destCell = "";
@@ -134,7 +134,7 @@ class CDUProgressPage {
                     destCell += destApproach.runway;
                 }
             }
-            destUTCCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
+            destUTCCell = secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
             destDistCell = mcdu.flightPlanManager.getDestination().infos.totalDistInFP.toFixed(0);
         }
         mcdu.setTemplate([
@@ -163,7 +163,7 @@ class CDUProgressPage {
             if (overrideDestETA) {
                 destETACell = overrideDestETA;
             } else {
-                destETACell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
+                destETACell = secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
             }
             mcdu.onRightInput[0] = (value) => {
                 CDUProgressPage.ShowPredictiveGPSPage(mcdu, value);
