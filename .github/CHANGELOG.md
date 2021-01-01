@@ -21,6 +21,7 @@
 1. [SOUND] Added new MCDU button sounds - @hotshotp (Boris#9134)
 1. [CDU] Fixed altitude button setting the speed on ATC request - @brookemckim (brookemckim)
 1. [CDU] Refactored CDU and FMS Main - @MisterChocker (Leon)
+1. [API] Fix connection issues when using default ATC and SimBrief - @nistei (nistei#1362)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
