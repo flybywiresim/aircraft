@@ -5425,7 +5425,22 @@
 						</Attenuation>
 						<Attenuation Name="aircraft_player_inside_3m" ID="{538CDAF5-4564-463A-A841-C73D21967E20}" ShortID="563836667">
 							<PropertyList>
-								<Property Name="RadiusMax" Type="Real64" Value="4"/>
+								<Property Name="ConeAttenuation" Type="Real64">
+									<ValueList>
+										<Value>-10</Value>
+									</ValueList>
+								</Property>
+								<Property Name="ConeLowPassFilterValue" Type="int32">
+									<ValueList>
+										<Value>30</Value>
+									</ValueList>
+								</Property>
+								<Property Name="ConeUse" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
+								<Property Name="RadiusMax" Type="Real64" Value="300"/>
 							</PropertyList>
 							<CurveUsageInfoList>
 								<VolumeDryUsage>
@@ -5437,24 +5452,11 @@
 											<PointList>
 												<Point>
 													<XPos>0</XPos>
-													<YPos>-0</YPos>
-													<Flags>5</Flags>
-													<SegmentShape>Log3</SegmentShape>
-												</Point>
-												<Point>
-													<XPos>3.24765</XPos>
 													<YPos>0</YPos>
-													<Flags>0</Flags>
-													<SegmentShape>Exp3</SegmentShape>
+													<Flags>5</Flags>
 												</Point>
 												<Point>
-													<XPos>3.38558</XPos>
-													<YPos>-200</YPos>
-													<Flags>0</Flags>
-													<SegmentShape>Log3</SegmentShape>
-												</Point>
-												<Point>
-													<XPos>4</XPos>
+													<XPos>300</XPos>
 													<YPos>-200</YPos>
 													<Flags>37</Flags>
 												</Point>
@@ -5479,19 +5481,19 @@
 													<SegmentShape>Exp3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>0.16508</XPos>
+													<XPos>12.381</XPos>
 													<YPos>-0.00061</YPos>
 													<Flags>0</Flags>
 													<SegmentShape>Log3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>1.76364</XPos>
+													<XPos>132.273</XPos>
 													<YPos>0</YPos>
 													<Flags>0</Flags>
 													<SegmentShape>Exp3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>4</XPos>
+													<XPos>300</XPos>
 													<YPos>-200</YPos>
 													<Flags>37</Flags>
 												</Point>
@@ -5500,7 +5502,7 @@
 									</CurveUsageInfo>
 								</VolumeWetUserUsage>
 								<LowPassFilterUsage>
-									<CurveUsageInfo Platform="Linked" CurveToUse="None">
+									<CurveUsageInfo Platform="Linked" CurveToUse="Custom">
 										<Curve Name="LowPassFilter" ID="{0E099C4F-8687-48D5-9168-F217038967B4}">
 											<PropertyList>
 												<Property Name="Flags" Type="int32" Value="65537"/>
@@ -5512,14 +5514,8 @@
 													<Flags>5</Flags>
 												</Point>
 												<Point>
-													<XPos>3.71787</XPos>
-													<YPos>0</YPos>
-													<Flags>0</Flags>
-													<SegmentShape>Log3</SegmentShape>
-												</Point>
-												<Point>
-													<XPos>4</XPos>
-													<YPos>52</YPos>
+													<XPos>300</XPos>
+													<YPos>4</YPos>
 													<Flags>37</Flags>
 												</Point>
 											</PointList>
@@ -5542,7 +5538,7 @@
 													<Flags>5</Flags>
 												</Point>
 												<Point>
-													<XPos>4</XPos>
+													<XPos>300</XPos>
 													<YPos>0</YPos>
 													<Flags>37</Flags>
 												</Point>
@@ -5563,7 +5559,7 @@
 													<Flags>5</Flags>
 												</Point>
 												<Point>
-													<XPos>4</XPos>
+													<XPos>300</XPos>
 													<YPos>0</YPos>
 													<Flags>37</Flags>
 												</Point>
