@@ -6,3 +6,4 @@ igniter.config.mjs
 src/instruments/ecam-page-template/template.js
 src/instruments/devServer/bundles/*
 flybywire-aircraft-a320-neo/html_ui/JS/generated/*.js
+src/fmgc/src/flightplanning/WorldMagneticModel.ts
