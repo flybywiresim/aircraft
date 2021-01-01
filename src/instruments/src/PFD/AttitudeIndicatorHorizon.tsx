@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Arinc429Word } from '@instruments/common/arinc429';
 import { useUpdate } from '@instruments/common/hooks';
+import { getSmallestAngle } from '@instruments/common/utils';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
-    getSmallestAngle,
     HorizontalTape,
     LagFilter,
 } from './PFDUtils';
