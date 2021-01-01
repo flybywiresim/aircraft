@@ -104,7 +104,7 @@ class CDUWindPage {
         mcdu.setTemplate(CDUWindPage.ShowWinds(template, mcdu, CDUWindPage.ShowDESPage, mcdu.winds.des, offset, 5));
 
         mcdu.onRightInput[0] = (value) => {
-            if (value == FMCMainDisplay.clrValue) {
+            if (value == A320_Neo_CDU_MainDisplay.clrValue) {
                 mcdu.winds.alternate = null;
                 CDUWindPage.ShowDESPage(mcdu, offset);
                 return;
@@ -145,7 +145,7 @@ class CDUWindPage {
                 rows[(i * 2) + 2][0] = `${CDUWindPage.FormatNumber(wind.direction, 2)}°/${CDUWindPage.FormatNumber(wind.speed, 2)}/FL${CDUWindPage.FormatNumber(wind.altitude, 2)}[color]cyan`;
                 entries = i + 1;
                 mcdu.onLeftInput[i] = (value) => {
-                    if (value == FMCMainDisplay.clrValue) {
+                    if (value == A320_Neo_CDU_MainDisplay.clrValue) {
                         _winds.splice(i + _offset, 1);
                         _showPage(mcdu, _offset);
                     }

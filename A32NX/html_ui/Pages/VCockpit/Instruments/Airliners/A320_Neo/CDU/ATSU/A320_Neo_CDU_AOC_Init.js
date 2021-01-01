@@ -21,7 +21,7 @@ class CDUAocInit {
         let gmt = "0000[color]green";
 
         const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
-        gmt = `{small}${FMCMainDisplay.secondsTohhmm(seconds)}{end}[color]green`;
+        gmt = `{small}${secondsTohhmm(seconds)}{end}[color]green`;
 
         function updateView() {
             if (mcdu.page.Current === mcdu.page.AOCInit) {
@@ -47,7 +47,7 @@ class CDUAocInit {
             fltNbr = `{small}${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}{end}[color]green`;
         }
         if (mcdu.simbrief.ete) {
-            ete = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.ete)}[color]cyan`;
+            ete = `${secondsTohhmm(mcdu.simbrief.ete)}[color]cyan`;
         }
 
         const currentFob = formatWeight(mcdu.getFOB() * mcdu._conversionWeight);
@@ -130,35 +130,35 @@ class CDUAocInit {
         let gmt = "0000[color]green";
 
         const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
-        gmt = `{small}${FMCMainDisplay.secondsTohhmm(seconds)}{end}[color]green`;
+        gmt = `{small}${secondsTohhmm(seconds)}{end}[color]green`;
 
         if (currentFob) {
             fob = `{small}${currentFob}{end}[color]green`;
         }
         if (mcdu.aocTimes.out) {
-            outTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.out)}[color]green`;
+            outTime = `${secondsTohhmm(mcdu.aocTimes.out)}[color]green`;
         }
         if (mcdu.aocTimes.doors) {
-            doorsTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.doors)}[color]green`;
+            doorsTime = `${secondsTohhmm(mcdu.aocTimes.doors)}[color]green`;
         }
         if (mcdu.aocTimes.off) {
-            offTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.off)}[color]green`;
+            offTime = `${secondsTohhmm(mcdu.aocTimes.off)}[color]green`;
             let currentfltTime = 0;
             if (mcdu.aocTimes.on) {
                 currentfltTime = mcdu.aocTimes.on - mcdu.aocTimes.off;
             } else {
                 currentfltTime = seconds - mcdu.aocTimes.off;
             }
-            fltTime = `${FMCMainDisplay.secondsTohhmm(currentfltTime)}[color]green`;
+            fltTime = `${secondsTohhmm(currentfltTime)}[color]green`;
         }
         if (mcdu.aocTimes.on) {
-            onTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.on)}[color]green`;
+            onTime = `${secondsTohhmm(mcdu.aocTimes.on)}[color]green`;
         }
         if (mcdu.aocTimes.in) {
-            inTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.in)}[color]green`;
+            inTime = `${secondsTohhmm(mcdu.aocTimes.in)}[color]green`;
         }
         if (mcdu.simbrief["blockTime"]) {
-            blockTime = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.blockTime)}[color]green`;
+            blockTime = `${secondsTohhmm(mcdu.simbrief.blockTime)}[color]green`;
         }
 
         function updateView() {

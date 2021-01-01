@@ -52,7 +52,7 @@ class CDUAocMessagesSent {
 
         mcdu.onLeftInput[0] = (value) => {
             if (messages[offset - 5]) {
-                if (value === FMCMainDisplay.clrValue) {
+                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.deleteSentMessage(offset - 5);
                     CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
                 } else {
@@ -67,7 +67,7 @@ class CDUAocMessagesSent {
 
         mcdu.onLeftInput[1] = (value) => {
             if (messages[offset - 4]) {
-                if (value === FMCMainDisplay.clrValue) {
+                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.deleteSentMessage(offset - 4);
                     CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
                 } else {
@@ -82,7 +82,7 @@ class CDUAocMessagesSent {
 
         mcdu.onLeftInput[2] = (value) => {
             if (messages[offset - 3]) {
-                if (value === FMCMainDisplay.clrValue) {
+                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.deleteSentMessage(offset - 3);
                     CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
                 } else {
@@ -97,7 +97,7 @@ class CDUAocMessagesSent {
 
         mcdu.onLeftInput[3] = (value) => {
             if (messages[offset - 2]) {
-                if (value === FMCMainDisplay.clrValue) {
+                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.deleteSentMessage(offset - 2);
                     CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
                 } else {
@@ -112,7 +112,7 @@ class CDUAocMessagesSent {
 
         mcdu.onLeftInput[4] = (value) => {
             if (messages[offset - 1]) {
-                if (value === FMCMainDisplay.clrValue) {
+                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.deleteSentMessage(offset - 1);
                     CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
                 } else {
