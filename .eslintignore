@@ -5,3 +5,4 @@ buildSrc/*
 igniter.config.mjs
 src/instruments/ecam-page-template/template.js
 src/instruments/devServer/bundles/*
+src/fmgc/src/flightplanning/WorldMagneticModel.ts
