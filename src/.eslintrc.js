@@ -52,12 +52,17 @@ module.exports = {
         'no-plusplus': 'off',
         'no-shadow': 'off',
         'no-continue': 'off',
-
+        'no-return-assign': 'off',
         'radix': 'off',
+        'max-classes-per-file': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
+
+        // buggy
+        'prefer-destructuring': 'off',
 
         // Avoid typescript-eslint conflicts
-        'import/no-unresolved': 'off',
         'no-unused-vars': 'off',
+        'import/no-unresolved': 'off',
         '@typescript-eslint/no-unused-vars': ['error', {
             vars: 'all',
             varsIgnorePattern: '^_',

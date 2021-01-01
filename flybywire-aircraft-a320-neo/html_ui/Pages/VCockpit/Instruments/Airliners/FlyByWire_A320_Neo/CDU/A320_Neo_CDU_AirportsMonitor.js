@@ -234,7 +234,7 @@ class CDUAirportsMonitor {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                             scratchpadCallback();
                         }
-                    });
+                    }).catch(console.error);
                 }
             };
         }
