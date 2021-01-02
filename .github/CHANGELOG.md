@@ -22,6 +22,7 @@
 1. [CDU] Fixed altitude button setting the speed on ATC request - @brookemckim (brookemckim)
 1. [CDU] Refactored CDU and FMS Main - @MisterChocker (Leon)
 1. [API] Fix connection issues when using default ATC and SimBrief - @nistei (nistei#1362)
+1. [CHECKLISTS] Fixed typo in Descent preparation checklist - @ronson1909 (Ronson1909)
 1. [FLIGHTMODEL] Improved fix for flaps 1 unrecoverable dives - @donstim (donbikes#4084)
 1. [ECAM/CORE] Improved flap auto-retraction detection - @MisterChocker (Leon)
 
