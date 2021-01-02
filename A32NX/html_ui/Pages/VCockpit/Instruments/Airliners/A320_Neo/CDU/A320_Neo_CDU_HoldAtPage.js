@@ -41,7 +41,7 @@ class CDUHoldAtPage {
                 resFuel = rteRsvWeight;
             }
 
-            const exitTime = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().estimatedTimeOfArrivalFP);
+            const exitTime = secondsTohhmm(mcdu.flightPlanManager.getDestination().estimatedTimeOfArrivalFP);
 
             if (mcdu.manualHoldData) {
                 holdTime = parseFloat(mcdu.manualHoldData.time);
