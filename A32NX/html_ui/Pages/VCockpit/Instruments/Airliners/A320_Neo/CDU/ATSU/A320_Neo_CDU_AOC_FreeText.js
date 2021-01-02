@@ -22,7 +22,7 @@ class CDUAocFreeText {
         updateView();
 
         mcdu.onLeftInput[0] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 store["msg_to"] = "";
             } else {
                 store["msg_to"] = value;
@@ -31,7 +31,7 @@ class CDUAocFreeText {
         };
 
         mcdu.onLeftInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 store["msg_line1"] = "";
             } else {
                 store["msg_line1"] = value;
@@ -40,7 +40,7 @@ class CDUAocFreeText {
         };
 
         mcdu.onLeftInput[2] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 store["msg_line2"] = "";
             } else {
                 store["msg_line2"] = value;
@@ -49,7 +49,7 @@ class CDUAocFreeText {
         };
 
         mcdu.onLeftInput[3] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 store["msg_line3"] = "";
             } else {
                 store["msg_line3"] = value;
@@ -58,7 +58,7 @@ class CDUAocFreeText {
         };
 
         mcdu.onLeftInput[4] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 store["msg_line4"] = "";
             } else {
                 store["msg_line4"] = value;

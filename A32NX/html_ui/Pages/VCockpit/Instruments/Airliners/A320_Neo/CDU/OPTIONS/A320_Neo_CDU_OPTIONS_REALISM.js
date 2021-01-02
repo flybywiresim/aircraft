@@ -37,7 +37,7 @@ class CDU_OPTIONS_REALISM {
         };
 
         mcdu.onRightInput[0] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 NXDataStore.set("CONFIG_SELF_TEST_TIME", "15");
             } else if (isNaN(value) || parseInt(value) < 5 || parseInt(value) > 40) {
                 mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);

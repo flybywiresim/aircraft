@@ -203,14 +203,14 @@ class CDUInitPage {
         ]);
 
         mcdu.onPrevPage = () => {
-            if (mcdu.isAnEngineOn()) {
+            if (isAnEngineOn()) {
                 CDUFuelPredPage.ShowPage(mcdu);
             } else {
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
         mcdu.onNextPage = () => {
-            if (mcdu.isAnEngineOn()) {
+            if (isAnEngineOn()) {
                 CDUFuelPredPage.ShowPage(mcdu);
             } else {
                 CDUInitPage.ShowPage2(mcdu);
@@ -397,7 +397,7 @@ class CDUInitPage {
         let finalTimeCell = "----";
         let finalColor = "[color]white";
         if (mcdu.getRouteFinalFuelTime() > 0) {
-            finalTimeCell = "{cyan}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime()) + "{end}";
+            finalTimeCell = "{cyan}" + minutesTohhmm(mcdu.getRouteFinalFuelTime()) + "{end}";
         }
         mcdu.onLeftInput[4] = async (value) => {
             if (await mcdu.trySetRouteFinalTime(value)) {
@@ -436,14 +436,14 @@ class CDUInitPage {
                 if (mcdu._rteFinalEntered) {
                     if (isFinite(mcdu.getRouteFinalFuelWeight())) {
                         finalWeightCell = "{sp}{sp}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversionWeight).toFixed(1);
-                        finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
+                        finalTimeCell = minutesTohhmm(mcdu.getRouteFinalFuelTime());
                         finalColor = "[color]cyan";
                     }
                 } else {
                     mcdu.tryUpdateRouteFinalFuel();
                     if (isFinite(mcdu.getRouteFinalFuelWeight())) {
                         finalWeightCell = "{sp}{sp}{small}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversionWeight).toFixed(1) + "{end}";
-                        finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
+                        finalTimeCell = minutesTohhmm(mcdu.getRouteFinalFuelTime());
                         finalColor = "[color]cyan";
                     }
                 }
@@ -460,14 +460,14 @@ class CDUInitPage {
                 if (mcdu._routeAltFuelEntered) {
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
                         altnWeightCell = "{sp}{sp}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversionWeight).toFixed(1);
-                        altnTimeCell = "{small}{green}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
+                        altnTimeCell = "{small}{green}" + minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
                         altnColor = "[color]cyan";
                     }
                 } else {
                     mcdu.tryUpdateRouteAlternate();
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
                         altnWeightCell = "{sp}{sp}{small}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversionWeight).toFixed(1);
-                        altnTimeCell = "{green}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
+                        altnTimeCell = "{green}" + minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
                         altnColor = "[color]cyan";
                     }
                 }
@@ -484,7 +484,7 @@ class CDUInitPage {
                 mcdu.tryUpdateRouteTrip();
                 if (isFinite(mcdu.getTotalTripFuelCons()) && isFinite(mcdu.getTotalTripTime())) {
                     tripWeightCell = "{sp}{sp}{small}" + (mcdu.getTotalTripFuelCons() * mcdu._conversionWeight).toFixed(1);
-                    tripTimeCell = FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime);
+                    tripTimeCell = minutesTohhmm(mcdu._routeTripTime);
                     tripColor = "[color]green";
                 }
 
@@ -548,7 +548,7 @@ class CDUInitPage {
                 mcdu.checkEFOBBelowMin();
 
                 extraWeightCell = "{small}" + (mcdu.tryGetExtraFuel() * mcdu._conversionWeight).toFixed(1);
-                extraTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.tryGetExtraTime()) + "{end}";
+                extraTimeCell = minutesTohhmm(mcdu.tryGetExtraTime()) + "{end}";
                 extraColor = "[color]green";
             }
         }

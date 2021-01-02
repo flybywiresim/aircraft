@@ -49,7 +49,7 @@ class CDUPerformancePage {
             v1 = mcdu.v1Speed + "[color]cyan";
         }
         mcdu.onLeftInput[0] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 mcdu.v1Speed = undefined;
                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", -1);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
@@ -67,7 +67,7 @@ class CDUPerformancePage {
             vR = mcdu.vRSpeed + "[color]cyan";
         }
         mcdu.onLeftInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 mcdu.vRSpeed = undefined;
                 SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", -1);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
@@ -85,7 +85,7 @@ class CDUPerformancePage {
             v2 = mcdu.v2Speed + "[color]cyan";
         }
         mcdu.onLeftInput[2] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 mcdu.v2Speed = undefined;
                 SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", -1);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
@@ -579,7 +579,7 @@ class CDUPerformancePage {
             mdaCell = mcdu.perfApprMDA.toFixed(0);
         }
         mcdu.onRightInput[1] = (value) => {
-            if (mcdu.setPerfApprMDA(value) && mcdu.setPerfApprDH(FMCMainDisplay.clrValue)) {
+            if (mcdu.setPerfApprMDA(value) && mcdu.setPerfApprDH(A320_Neo_CDU_MainDisplay.clrValue)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
@@ -590,7 +590,7 @@ class CDUPerformancePage {
             dhCell = "NO DH";
         }
         mcdu.onRightInput[2] = (value) => {
-            if (mcdu.setPerfApprDH(value) && mcdu.setPerfApprMDA(FMCMainDisplay.clrValue)) {
+            if (mcdu.setPerfApprDH(value) && mcdu.setPerfApprMDA(A320_Neo_CDU_MainDisplay.clrValue)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
