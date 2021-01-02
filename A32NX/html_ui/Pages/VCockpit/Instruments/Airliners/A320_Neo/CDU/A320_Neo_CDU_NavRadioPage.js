@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUNavRadioPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -35,7 +53,7 @@ class CDUNavRadioPage {
             }
             mcdu.onLeftInput[0] = (value) => {
                 const numValue = parseFloat(value);
-                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+                if (value === FMCMainDisplay.clrValue) {
                     mcdu.vor1Frequency = 0;
                     mcdu.vor1Course = 0;
                     mcdu.radioNav.setVORActiveFrequency(1, 0);
@@ -83,7 +101,7 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+                } else if (value === FMCMainDisplay.clrValue) {
                     mcdu.vor1Course = 0;
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
@@ -139,7 +157,7 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+                } else if (value === FMCMainDisplay.clrValue) {
                     mcdu.adf1Frequency = 0;
                     mcdu.radioNav.setADFActiveFrequency(1, 0);
                     CDUNavRadioPage.ShowPage(mcdu);
@@ -160,7 +178,7 @@ class CDUNavRadioPage {
             }
             mcdu.onRightInput[0] = (value) => {
                 const numValue = parseFloat(value);
-                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+                if (value === FMCMainDisplay.clrValue) {
                     mcdu.vor2Frequency = 0;
                     mcdu.vor2Course = 0;
                     mcdu.radioNav.setVORActiveFrequency(2, 0);
@@ -208,7 +226,7 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+                } else if (value === FMCMainDisplay.clrValue) {
                     mcdu.vor2Course = 0;
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
@@ -241,7 +259,7 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+                } else if (value === FMCMainDisplay.clrValue) {
                     mcdu.adf2Frequency = 0;
                     mcdu.radioNav.setADFActiveFrequency(2, 0);
                     adf2FrequencyCell = "[\xa0\xa0.]/[\xa0]";

@@ -1,10 +1,28 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUAtcPositionReport {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.refreshPageCallback = () => {
             CDUAtcPositionReport.ShowPage(mcdu);
         };
-        const currUTCCell = secondsTohhmm(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        const currUTCCell = FMCMainDisplay.secondsTohhmm(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
             SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
 
@@ -42,11 +60,11 @@ class CDUAtcPositionReport {
 
         if (ovhdWaypoint) {
             ovhdWaypointCell = ovhdWaypoint.ident;
-            ovhdWaypointUTCCell = secondsTohhmm(ovhdWaypoint.infos.etaInFP);
+            ovhdWaypointUTCCell = FMCMainDisplay.secondsTohhmm(ovhdWaypoint.infos.etaInFP);
         }
         if (toWaypoint) {
             toWaypointCell = toWaypoint.ident;
-            toWaypointUTCCell = secondsTohhmm(toWaypoint.infos.etaInFP);
+            toWaypointUTCCell = FMCMainDisplay.secondsTohhmm(toWaypoint.infos.etaInFP);
             let nextWaypoint;
             if (mcdu.routeIndex + 1 === mcdu.flightPlanManager.getWaypointsCount()) {
                 nextWaypoint = mcdu.flightPlanManager.getDestination();
@@ -55,7 +73,7 @@ class CDUAtcPositionReport {
             }
             if (nextWaypoint) {
                 nextWaypointCell = nextWaypoint.ident;
-                nextWaypointUTCCell = secondsTohhmm(nextWaypoint.infos.etaInFP);
+                nextWaypointUTCCell = FMCMainDisplay.secondsTohhmm(nextWaypoint.infos.etaInFP);
             }
         }
         if (currentALt > transAlt) {
