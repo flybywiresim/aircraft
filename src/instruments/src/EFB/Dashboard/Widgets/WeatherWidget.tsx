@@ -25,6 +25,7 @@ import { IconDroplet } from '@tabler/icons';
 import { IconTemperature } from '@tabler/icons';
 import { IconAccessPoint } from '@tabler/icons';
 import { IconRouter } from '@tabler/icons';
+import { IconPoint } from '@tabler/icons';
 
 declare type MetarParserType = {
     raw_text: string,
@@ -246,25 +247,25 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                             <div className="flex justify-center">
                                 <IconWind className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                             </div>
-                            {metar.wind.degrees.toFixed(0)}&deg; / {metar.wind.speed_kts.toFixed(0)} kts
+                            {metar.wind.degrees.toFixed(0)} <IconPoint className="inline-block -mx-1" size={20} stroke={1.5} strokeLinejoin="miter" /> / {metar.wind.speed_kts.toFixed(0)} kts
                         </div>
                         <div className="text-center text-lg mt-3">
                             <div className="flex justify-center">
                                 <IconTemperature className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                             </div>
-                            {metar.temperature.celsius.toFixed(0)} &deg; C
+                            {metar.temperature.celsius.toFixed(0)} <IconPoint className="inline-block -mx-1" size={20} stroke={1.5} strokeLinejoin="miter" /> C
                         </div>
                         <div className="text-center text-lg mt-3">
                             <div className="flex justify-center">
                                 <IconDroplet className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                             </div>
-                            {metar.dewpoint.celsius.toFixed(0)} &deg; C
+                            {metar.dewpoint.celsius.toFixed(0)} <IconPoint className="inline-block -mx-1" size={20} stroke={1.5} strokeLinejoin="miter" /> C
                         </div>
                     </div>
                 </div>
                 <div>
                     {
-                        <span className="font-medium leading-7"><IconRouter className="mr-2 inline-block -mt-2" size={23} stroke={1.5} strokeLinejoin="miter" /> {metar.raw_text !== "" ? metar.raw_text : '---------------------------------------------------'}</span>
+                        <span className="font-medium leading-7"><IconRouter className="mr-2 inline-block" size={23} stroke={1.5} strokeLinejoin="miter" /> {metar.raw_text !== "" ? metar.raw_text : '---------------------------------------------------'}</span>
                     }
                 </div>
                 </>
