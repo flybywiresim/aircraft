@@ -1257,7 +1257,7 @@
          <CheckpointDesc SubjectTT="TT:FMGS: PERF DES Page" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_DPREP_FMGS_PERF_APPR">
-         <CheckpointDesc SubjectTT="TT:FMGS: PEFR APPR Page" ExpectationTT="TT:CHECK" />
+         <CheckpointDesc SubjectTT="TT:FMGS: PERF APPR Page" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_DPREP_FMGS_GA">
          <CheckpointDesc SubjectTT="TT:FMGS: Go-Around Page" ExpectationTT="TT:CHECK" />
