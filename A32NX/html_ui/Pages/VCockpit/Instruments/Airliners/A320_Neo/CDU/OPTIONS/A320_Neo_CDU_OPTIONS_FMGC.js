@@ -23,7 +23,7 @@ class CDU_OPTIONS_FMGC {
         ]);
 
         mcdu.onRightInput[0] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 NXDataStore.set("CONFIG_ACCEL_ALT", "1500");
             } else if (isNaN(value) || parseInt(value) < 1000 || parseInt(value) > 5000) {
                 mcdu.addNewMessage(NXSystemMessages.notAllowed);

@@ -39,7 +39,7 @@ class CDUAocRequestsWeather {
         };
 
         mcdu.onRightInput[0] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 store["arpt1"] = "";
             } else {
                 store["arpt1"] = value;
@@ -52,7 +52,7 @@ class CDUAocRequestsWeather {
         };
 
         mcdu.onRightInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 store["arpt2"] = "";
             } else {
                 store["arpt2"] = value;
@@ -65,7 +65,7 @@ class CDUAocRequestsWeather {
         };
 
         mcdu.onRightInput[2] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 store["arpt3"] = "";
             } else {
                 store["arpt3"] = value;
@@ -78,7 +78,7 @@ class CDUAocRequestsWeather {
         };
 
         mcdu.onRightInput[3] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                 store["arpt4"] = "";
             } else {
                 store["arpt4"] = value;

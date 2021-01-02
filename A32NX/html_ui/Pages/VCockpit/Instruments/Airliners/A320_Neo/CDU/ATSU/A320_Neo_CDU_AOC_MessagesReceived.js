@@ -57,7 +57,7 @@ class CDUAocMessagesReceived {
 
         mcdu.onLeftInput[0] = (value) => {
             if (messages[offset - 5]) {
-                if (value === FMCMainDisplay.clrValue) {
+                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.deleteMessage(offset - 5);
                     CDUAocMessagesReceived.ShowPage(mcdu, messages, offset);
                 } else {
@@ -72,7 +72,7 @@ class CDUAocMessagesReceived {
 
         mcdu.onLeftInput[1] = (value) => {
             if (messages[offset - 4]) {
-                if (value === FMCMainDisplay.clrValue) {
+                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.deleteMessage(offset - 4);
                     CDUAocMessagesReceived.ShowPage(mcdu, messages, offset);
                 } else {
@@ -87,7 +87,7 @@ class CDUAocMessagesReceived {
 
         mcdu.onLeftInput[2] = (value) => {
             if (messages[offset - 3]) {
-                if (value === FMCMainDisplay.clrValue) {
+                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.deleteMessage(offset - 3);
                     CDUAocMessagesReceived.ShowPage(mcdu, messages, offset);
                 } else {
@@ -102,7 +102,7 @@ class CDUAocMessagesReceived {
 
         mcdu.onLeftInput[3] = (value) => {
             if (messages[offset - 2]) {
-                if (value === FMCMainDisplay.clrValue) {
+                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.deleteMessage(offset - 2);
                     CDUAocMessagesReceived.ShowPage(mcdu, messages, offset);
                 } else {
@@ -117,7 +117,7 @@ class CDUAocMessagesReceived {
 
         mcdu.onLeftInput[4] = (value) => {
             if (messages[offset - 1]) {
-                if (value === FMCMainDisplay.clrValue) {
+                if (value === A320_Neo_CDU_MainDisplay.clrValue) {
                     mcdu.deleteMessage(offset - 1);
                     CDUAocMessagesReceived.ShowPage(mcdu, messages, offset);
                 } else {
