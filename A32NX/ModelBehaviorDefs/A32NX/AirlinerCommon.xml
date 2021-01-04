@@ -225,16 +225,6 @@
                             <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ATC_SET_TO_ON</ANIMTIP_2>
                         </UseTemplate>
                     </Component>
-                    <Component ID="#KNOB_XPNDR_THRT_NODE_ID#" Node="#KNOB_XPNDR_THRT_NODE_ID#">
-                        <UseTemplate Name="ASOBO_GT_Switch_4States">
-                            <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
-                            <LEFTARROW>TurnLeft</LEFTARROW>
-                            <RIGHTARROW>TurnRight</RIGHTARROW>
-                            <ANIM_NAME>#KNOB_XPNDR_THRT_ANIM_NAME#</ANIM_NAME>
-                            <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                            <SWITCH_POSITION_VAR>XMLVAR_XPNDR_THRT_Switch</SWITCH_POSITION_VAR>
-                        </UseTemplate>
-                    </Component>
                 </Component>
             </Case>
         </Switch>
