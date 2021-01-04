@@ -185,7 +185,7 @@ class CDUAvailableArrivalsPage {
                 };
             } else {
                 mcdu.onLeftInput[5] = () => {
-                    CDUFlightPlanPage.ShowPage(mcdu)
+                    CDUFlightPlanPage.ShowPage(mcdu);
                 };
             }
             mcdu.setTemplate([
