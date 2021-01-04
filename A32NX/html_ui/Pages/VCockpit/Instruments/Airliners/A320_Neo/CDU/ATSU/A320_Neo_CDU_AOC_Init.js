@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /**
  * Value is rounded to 1000 and fixed to 1 decimal
  * @param {number | string} value
@@ -21,7 +39,7 @@ class CDUAocInit {
         let gmt = "0000[color]green";
 
         const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
-        gmt = `{small}${secondsTohhmm(seconds)}{end}[color]green`;
+        gmt = `{small}${FMCMainDisplay.secondsTohhmm(seconds)}{end}[color]green`;
 
         function updateView() {
             if (mcdu.page.Current === mcdu.page.AOCInit) {
@@ -47,7 +65,7 @@ class CDUAocInit {
             fltNbr = `{small}${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}{end}[color]green`;
         }
         if (mcdu.simbrief.ete) {
-            ete = `${secondsTohhmm(mcdu.simbrief.ete)}[color]cyan`;
+            ete = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.ete)}[color]cyan`;
         }
 
         const currentFob = formatWeight(mcdu.getFOB() * mcdu._conversionWeight);
@@ -130,35 +148,35 @@ class CDUAocInit {
         let gmt = "0000[color]green";
 
         const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
-        gmt = `{small}${secondsTohhmm(seconds)}{end}[color]green`;
+        gmt = `{small}${FMCMainDisplay.secondsTohhmm(seconds)}{end}[color]green`;
 
         if (currentFob) {
             fob = `{small}${currentFob}{end}[color]green`;
         }
         if (mcdu.aocTimes.out) {
-            outTime = `${secondsTohhmm(mcdu.aocTimes.out)}[color]green`;
+            outTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.out)}[color]green`;
         }
         if (mcdu.aocTimes.doors) {
-            doorsTime = `${secondsTohhmm(mcdu.aocTimes.doors)}[color]green`;
+            doorsTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.doors)}[color]green`;
         }
         if (mcdu.aocTimes.off) {
-            offTime = `${secondsTohhmm(mcdu.aocTimes.off)}[color]green`;
+            offTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.off)}[color]green`;
             let currentfltTime = 0;
             if (mcdu.aocTimes.on) {
                 currentfltTime = mcdu.aocTimes.on - mcdu.aocTimes.off;
             } else {
                 currentfltTime = seconds - mcdu.aocTimes.off;
             }
-            fltTime = `${secondsTohhmm(currentfltTime)}[color]green`;
+            fltTime = `${FMCMainDisplay.secondsTohhmm(currentfltTime)}[color]green`;
         }
         if (mcdu.aocTimes.on) {
-            onTime = `${secondsTohhmm(mcdu.aocTimes.on)}[color]green`;
+            onTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.on)}[color]green`;
         }
         if (mcdu.aocTimes.in) {
-            inTime = `${secondsTohhmm(mcdu.aocTimes.in)}[color]green`;
+            inTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.in)}[color]green`;
         }
         if (mcdu.simbrief["blockTime"]) {
-            blockTime = `${secondsTohhmm(mcdu.simbrief.blockTime)}[color]green`;
+            blockTime = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.blockTime)}[color]green`;
         }
 
         function updateView() {

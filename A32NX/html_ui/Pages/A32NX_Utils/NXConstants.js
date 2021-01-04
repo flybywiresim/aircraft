@@ -1,2 +1,0 @@
-const MAX_CRUISE_FL = 390;
-const MAX_CRUISE_ALT = MAX_CRUISE_FL * 100;

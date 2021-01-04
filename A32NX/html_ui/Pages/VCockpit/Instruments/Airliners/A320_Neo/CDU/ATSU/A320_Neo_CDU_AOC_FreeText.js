@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUAocFreeText {
     static ShowPage(mcdu, store = { "msg_to": "", "msg_line1": "", "msg_line2": "", "msg_line3": "", "msg_line4": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
@@ -22,7 +40,7 @@ class CDUAocFreeText {
         updateView();
 
         mcdu.onLeftInput[0] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 store["msg_to"] = "";
             } else {
                 store["msg_to"] = value;
@@ -31,7 +49,7 @@ class CDUAocFreeText {
         };
 
         mcdu.onLeftInput[1] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 store["msg_line1"] = "";
             } else {
                 store["msg_line1"] = value;
@@ -40,7 +58,7 @@ class CDUAocFreeText {
         };
 
         mcdu.onLeftInput[2] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 store["msg_line2"] = "";
             } else {
                 store["msg_line2"] = value;
@@ -49,7 +67,7 @@ class CDUAocFreeText {
         };
 
         mcdu.onLeftInput[3] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 store["msg_line3"] = "";
             } else {
                 store["msg_line3"] = value;
@@ -58,7 +76,7 @@ class CDUAocFreeText {
         };
 
         mcdu.onLeftInput[4] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 store["msg_line4"] = "";
             } else {
                 store["msg_line4"] = value;
