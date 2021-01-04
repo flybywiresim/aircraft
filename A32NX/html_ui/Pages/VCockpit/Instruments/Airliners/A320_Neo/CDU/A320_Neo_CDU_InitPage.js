@@ -202,7 +202,7 @@ class CDUInitPage {
         };
 
         mcdu.setTemplate([
-            ["INIT {}"], //Need to find the right unicode for left/right arrow
+            ["INIT"],
             ["\xa0CO RTE", "FROM/TO\xa0\xa0\xa0"],
             [coRoute, fromTo],
             ["ALTN/CO RTE", requestButtonLabel],
@@ -216,6 +216,8 @@ class CDUInitPage {
             ["CRZ FL/TEMP", "GND TEMP"],
             [cruiseFlTemp, "---°[color]inop"],
         ]);
+
+        mcdu.setArrows(false, false, true, true);
 
         mcdu.onPrevPage = () => {
             if (mcdu.isAnEngineOn()) {
@@ -583,6 +585,8 @@ class CDUInitPage {
             ["MIN DEST FOB", "EXTRA/\xa0TIME"],
             [minDestFob + minDestFobColor, extraWeightCell + "/" + extraTimeCell + extraColor],
         ]);
+
+        mcdu.setArrows(false, false, true, true);
 
         mcdu.onPrevPage = () => {
             CDUInitPage.ShowPage1(mcdu);
