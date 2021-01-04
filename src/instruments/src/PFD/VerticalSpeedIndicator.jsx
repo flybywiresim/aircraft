@@ -27,13 +27,13 @@ export const VerticalSpeedIndicator = ({ radioAlt }) => {
     let yOffset = 0;
 
     if (absVSpeed < 1000) {
-        yOffset = verticalSpeed / 1000 * -25.5255;
+        yOffset = verticalSpeed / 1000 * -27.22;
     } else if (absVSpeed < 2000) {
-        yOffset = (verticalSpeed - sign * 1000) / 1000 * -10.14 - sign * 25.5255;
+        yOffset = (verticalSpeed - sign * 1000) / 1000 * -10.1 - sign * 27.22;
     } else if (absVSpeed < 6000) {
-        yOffset = (verticalSpeed - sign * 2000) / 4000 * -10.14 - sign * 35.6655;
+        yOffset = (verticalSpeed - sign * 2000) / 4000 * -10.1 - sign * 37.32;
     } else {
-        yOffset = sign * -45.8055;
+        yOffset = sign * -47.37;
     }
 
     return (
@@ -41,28 +41,28 @@ export const VerticalSpeedIndicator = ({ radioAlt }) => {
             <path className="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />
             <g id="VerticalSpeedGroup">
                 <g className="Fill White">
-                    <path d="m151.84 54.566v1.4615h-1.914v-1.4615z" />
-                    <path d="m151.84 44.426v1.4615h-1.914v-1.4615z" />
-                    <path d="m149.93 35.685v-1.2095h1.914v1.2095z" />
-                    <path d="m151.84 107.08v-1.4615h-1.914v1.4615z" />
-                    <path d="m151.84 117.22v-1.4615h-1.914v1.4615z" />
-                    <path d="m151.84 125.96h-1.914v1.2095h1.914z" />
+                    <path d="m149.92 54.339v-1.4615h1.9151v1.4615z" />
+                    <path d="m149.92 44.26v-1.4615h1.9151v1.4615z" />
+                    <path d="m149.92 34.054v-1.2095h1.9151v1.2095z" />
+                    <path d="m151.84 107.31h-1.9151v1.4615h1.9151z" />
+                    <path d="m151.84 117.39h-1.9151v1.4615h1.9151z" />
+                    <path d="m151.84 127.59h-1.9151v1.2095h1.9151z" />
                 </g>
                 <g className="NormalStroke White">
-                    <path d="m149.93 68.122h1.7125h0" />
-                    <path d="m151.84 50.221h-1.914h0" />
-                    <path d="m151.84 40.069h-1.914h0" />
-                    <path d="m149.93 93.522h1.7125h0" />
-                    <path d="m151.84 111.42h-1.914h0" />
-                    <path d="m151.84 121.58h-1.914h0" />
+                    <path d="m149.92 67.216h1.7135" />
+                    <path d="m151.84 48.569h-1.9151" />
+                    <path d="m151.84 38.489h-1.9151" />
+                    <path d="m149.92 94.43h1.7135" />
+                    <path d="m151.84 113.08h-1.9151" />
+                    <path d="m151.84 123.16h-1.9151" />
                 </g>
                 <g className="FontSmallest MiddleAlign Fill White">
-                    <text x="148.07108" y="108.12872">1</text>
-                    <text x="148.14471" y="118.18059">2</text>
-                    <text x="148.07108" y="128.30609">6</text>
-                    <text x="148.09711" y="56.916523">1</text>
-                    <text x="148.06529" y="46.855984">2</text>
-                    <text x="148.11371" y="36.795124">6</text>
+                    <text x="148.07108" y="109.72845">1</text>
+                    <text x="148.14471" y="119.8801">2</text>
+                    <text x="148.07108" y="129.90607">6</text>
+                    <text x="148.09711" y="55.316456">1</text>
+                    <text x="148.06529" y="45.356102">2</text>
+                    <text x="148.11371" y="35.195072">6</text>
                 </g>
                 <path className="Fill Yellow" d="m145.8 81.679v-1.7135h6.0441v1.7135z" />
                 <VSpeedNeedle isAmber={isAmber} yOffset={yOffset} />
@@ -76,7 +76,7 @@ const VSpeedNeedle = ({ yOffset, isAmber }) => {
     const className = `NormalStroke ${isAmber ? 'Amber' : 'Green'}`;
 
     return (
-        <path className={className} id="VSpeedIndicator" d={`m162.74 80.822 l -12.125 ${yOffset}`} />
+        <path className={className} id="VSpeedIndicator" d={`m162.74 80.822 l -12 ${yOffset}`} />
     );
 };
 
