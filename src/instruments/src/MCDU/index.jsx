@@ -7,9 +7,9 @@ import {
     getSimVar,
 } from '../util.mjs';
 import './style.scss';
-import { Titlebar } from './Titlebar/Titlebar';
-import { PagesContainer } from './PagesContainer';
-import { Scratchpad } from './Scratchpad/Scratchpad';
+import { Titlebar } from './Titlebar/Titlebar.jsx';
+import { PagesContainer } from './PagesContainer.jsx';
+import { Scratchpad } from './Scratchpad/Scratchpad.jsx';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
@@ -46,7 +46,7 @@ function Idle() {
 
     return (
         <>
-            <svg className="mcdu-svg">
+            <svg className="mcdu-svg" viewBox="0 0 600 600">
                 <Titlebar />
                 <PagesContainer />
                 <Scratchpad />

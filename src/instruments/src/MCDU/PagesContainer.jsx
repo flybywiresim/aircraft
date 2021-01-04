@@ -18,18 +18,18 @@
 
 import { useState } from 'react/cjs/react.production.min.js';
 import { getSimVar, useInteractionEvent } from '../util.mjs';
-import { AirportPage } from './Pages/Airport';
-import { AtcCommPage } from './Pages/AtcComm';
-import { DataPage } from './Pages/Data';
-import { DirPage } from './Pages/Dir';
-import { FlightPlanPage } from './Pages/FlightPlan';
-import { FuelPredPage } from './Pages/FuelPred';
-import { InitPage } from './Pages/Init';
-import { MenuPage } from './Pages/Menu';
-import { PerfPage } from './Pages/Perf';
-import { ProgPage } from './Pages/Prog';
-import { RadNavPage } from './Pages/RadNav';
-import { SecFlightPlanPage } from './Pages/SecFlightPlan';
+import { AirportPage } from './Pages/Airport.jsx';
+import { AtcCommPage } from './Pages/AtcComm.jsx';
+import { DataPage } from './Pages/Data.jsx';
+import { DirPage } from './Pages/Dir.jsx';
+import { FlightPlanPage } from './Pages/FlightPlan.jsx';
+import { FuelPredPage } from './Pages/FuelPred.jsx';
+import { InitPage } from './Pages/Init.jsx';
+import { MenuPage } from './Pages/Menu.jsx';
+import { PerfPage } from './Pages/Perf.jsx';
+import { ProgPage } from './Pages/Prog.jsx';
+import { RadNavPage } from './Pages/RadNav.jsx';
+import { SecFlightPlanPage } from './Pages/SecFlightPlan.jsx';
 
 export const PagesContainer = () => {
     const [currentPage, setCurrentPage] = useState(0);

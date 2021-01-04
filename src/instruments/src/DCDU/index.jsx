@@ -7,9 +7,6 @@ import {
     getSimVar,
 } from '../util.mjs';
 import './style.scss';
-import { PagesContainer } from '../MCDU/PagesContainer';
-import { Titlebar } from '../MCDU/Titlebar/Titlebar.jsx';
-import { Scratchpad } from '../MCDU/Scratchpad/Scratchpad'
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {

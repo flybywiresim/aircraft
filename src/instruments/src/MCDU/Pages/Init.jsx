@@ -18,7 +18,7 @@
 
 import { useState } from 'react';
 import { getSimVar, useUpdate } from '../../util';
-import BasePage from './BasePage';
+import BasePage from './BasePage.jsx';
 
 export const InitPage = () => {
     const [labels, setLabels] = useState({
