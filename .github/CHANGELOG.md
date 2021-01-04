@@ -25,7 +25,6 @@
 1. [TCAS] Fixed TCAS traffic mode switch not turning - @Saschl (saschl#9432)
 1. [MCDU] Horizontal slew arrows now appear in the correct location - @tyler58546 (tyler58546)
 1. [MCDU] Vertical slew arrows have been added on pages that can be scrolled - @tyler58546 (tyler58546)
-1. [MCDU] When changing a departure or arrival procedure, the "ERASE" option has been replaced with "TMPY F-PLN" which shows the temporary flight plan instead of erasing it - @tyler58546 (tyler58546)
 1. [MCDU] The "F-PLN" title has been removed from the flight plan page - @tyler58546 (tyler58546)
 1. [MCDU] The flight plan page now shows the flight number in the top left corner - @tyler58546 (tyler58546)
 1. [MCDU] The flight plan page now shows "TMPY" in the top line when displaying the temporary flight plan - @tyler58546 (tyler58546)

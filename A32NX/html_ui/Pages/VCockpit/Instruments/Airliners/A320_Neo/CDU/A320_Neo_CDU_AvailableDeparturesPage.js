@@ -59,8 +59,7 @@ class CDUAvailableDeparturesPage {
                 }
             } else {
                 doInsertRunwayOnly = true;
-                insertRow = ["{F-PLN[color]yellow", "INSERT*[color]amber"];
-                rows[7] = ["{sp}TMPY[color]yellow"];
+                insertRow = ["{ERASE[color]amber", "INSERT*[color]amber"];
                 mcdu.onRightInput[5] = () => {
                     mcdu.insertTemporaryFlightPlan(() => {
                         mcdu.updateConstraints();
