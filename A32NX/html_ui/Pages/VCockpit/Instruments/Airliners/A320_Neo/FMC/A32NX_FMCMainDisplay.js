@@ -349,11 +349,14 @@ class FMCMainDisplay extends BaseAirliners {
         const tempString = input.split("/")[1];
         const onlyTemp = flString.length === 0;
 
-        if (tempString) {
-            const temp = parseFloat(tempString);
+        if (!!tempString) {
+            const temp = parseInt(tempString);
             if (isFinite(temp)) {
                 if (temp > -270 && temp < 100) {
                     this.cruiseTemperature = temp;
+                    if (onlyTemp) {
+                        return true;
+                    }
                 } else {
                     if (onlyTemp) {
                         this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -367,7 +370,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
         }
-        if (flString) {
+        if (!!flString && !onlyTemp) {
             if (this.trySetCruiseFl(parseFloat(flString))) {
                 if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") === 1 && SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
                     SimVar.SetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number", this.cruiseFlightLevel);
@@ -376,9 +379,10 @@ class FMCMainDisplay extends BaseAirliners {
                 }
                 return true;
             }
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
+        this.addNewMessage(NXSystemMessages.formatError);
         return false;
     }
 
