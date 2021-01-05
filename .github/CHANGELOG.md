@@ -23,6 +23,7 @@
 1. [API] Fix connection issues when using default ATC and SimBrief - @nistei (nistei#1362)
 1. [CHECKLISTS] Fixed typo in Descent preparation checklist - @ronson1909 (Ronson1909)
 1. [TCAS] Fixed TCAS traffic mode switch not turning - @Saschl (saschl#9432)
+1. [FLIGHTMODEL] Fixed spoiiler auto-retract after landing - @donstim - (donbikes#4084)
 1. [MCDU] Horizontal slew arrows now appear in the correct location - @tyler58546 (tyler58546)
 1. [MCDU] Vertical slew arrows have been added on pages that can be scrolled - @tyler58546 (tyler58546)
 1. [MCDU] The "F-PLN" title has been removed from the flight plan page - @tyler58546 (tyler58546)
