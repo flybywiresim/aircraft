@@ -583,6 +583,7 @@ var Jet_PFD_FlightDirector;
         constructor(_root) {
             this.group = null;
             this.isActive = false;
+            this.strokeWidth = 1.5;
             if (_root != null) {
                 this.group = document.createElementNS(Avionics.SVG.NS, "g");
                 this.group.setAttribute("id", this.getGroupName());
@@ -646,7 +647,10 @@ var Jet_PFD_FlightDirector;
             }
         }
         getStrokeWidth() {
-            return "1.5";
+            return this.strokeWidth;
+        }
+        setStrokeWidth(strokeWidth) {
+            this.strokeWidth = strokeWidth;
         }
     }
     DisplayBase.HEADING_MAX_POS_X = 60;
@@ -776,6 +780,7 @@ var Jet_PFD_FlightDirector;
             return "PathVector";
         }
         create() {
+            this.setStrokeWidth(3.5);
             const circleRadius = this.getCircleRadius();
             const verticalLineLength = this.getVerticalLineLength();
             const horizontalLineLength = this.getHorizontalLineLength();
@@ -820,6 +825,7 @@ var Jet_PFD_FlightDirector;
             return "FlightPathDirector";
         }
         create() {
+            this.setStrokeWidth(3.5);
             this.group.appendChild(this.createCircle(FPD_Airbus.CIRCLE_RADIUS));
             const path = document.createElementNS(Avionics.SVG.NS, "path");
             const d = [
@@ -842,7 +848,11 @@ var Jet_PFD_FlightDirector;
                 const currentHeading = getCurrentHeading(originalBodyVelocityZ);
                 const currentPitch = getCurrentPitch(originalBodyVelocityZ);
                 const x = this.calculatePosXFromBank(-currentHeading, 0);
-                const y = this.calculatePosYFromPitch(Simplane.getPitch(), Simplane.getFlightDirectorPitch()) + this.calculatePosYFromPitch(Simplane.getPitch(), currentPitch);
+
+                const y = Simplane.getAutoPilotVerticalSpeedHoldActive() ?
+                    this.calculatePosYFromPitch(Simplane.getPitch(), -SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree")) :
+                    this.calculatePosYFromPitch(Simplane.getPitch(), Simplane.getFlightDirectorPitch()) + this.calculatePosYFromPitch(Simplane.getPitch(), currentPitch);
+
                 const angle = Simplane.getBank() - Simplane.getFlightDirectorBank();
                 this.group.setAttribute("transform", "translate(" + x + ", " + y + ") rotate(" + angle + ")");
             }
