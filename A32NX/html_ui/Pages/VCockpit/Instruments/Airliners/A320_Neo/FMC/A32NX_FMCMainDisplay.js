@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
@@ -103,7 +121,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._fuelPredDone = false;
         this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
         this._blockFuelEntered = false;
-        this._predFailure = false;
         /* CPDLC Fields */
         this._cpdlcAtcCenter = "";
         this.tropo = "";
@@ -724,13 +741,10 @@ class FMCMainDisplay extends BaseAirliners {
                 airDistance = A32NX_FuelPred.computeAirDistance(Math.round(this._DistanceToAlt), -this.averageWind);
             }
 
-            this._predFailure = false;
             const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.CORRECTIONS, true);
             if ((20 < airDistance && airDistance < 200) && (100 < placeholderFl && placeholderFl < 290)) { //This will always be true until we can setup alternate routes
                 this._routeAltFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.FUEL, true) + deviation) / 1000;
                 this._routeAltFuelTime = A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.TIME, true);
-            } else {
-                this._predFailure = true;
             }
         }
     }
@@ -754,21 +768,12 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_DESCENT) {
             altToUse = SimVar.GetSimVarValue("PLANE ALTITUDE", 'Feet') / 100;
         }
-        this._predFailure = false;
 
-        // Use alternate coefficients - EXPERIMENTAL
-        if ((20 < airDistance && airDistance < 200) && (100 < altToUse && altToUse < 290)) {
-            const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight + this._routeAltFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.CORRECTIONS, true);
-
-            this._routeTripFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.FUEL, true) + deviation - 60) / 1000; // Deducted 60KG fuel as Alternate predictions include go-around
-            this._routeTripTime = A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.TIME, true);
-        } else if ((200 <= airDistance && airDistance <= 3100) && (290 <= altToUse && altToUse <= 390)) {
+        if ((20 <= airDistance && airDistance <= 3100) && (100 <= altToUse && altToUse <= 390)) {
             const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight + this._routeAltFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.CORRECTIONS, false);
 
             this._routeTripFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.FUEL, false) + deviation) / 1000;
             this._routeTripTime = A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.TIME, false);
-        } else {
-            this._predFailure = true;
         }
     }
 
@@ -782,10 +787,6 @@ class FMCMainDisplay extends BaseAirliners {
 
     tryUpdateLW() {
         this.landingWeight = this.takeOffWeight - this._routeTripFuelWeight;
-    }
-
-    tryGetPredFailure() {
-        return this._predFailure;
     }
 
     /**
@@ -1496,7 +1497,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (flapsHandleIndex != 0) {
             return this.getFlapSpeed();
         }
-        let speed = 288 * (1 - dCI) + 260 * dCI;
+        let speed = 288 * (1 - dCI) + 300 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
@@ -1765,7 +1766,7 @@ class FMCMainDisplay extends BaseAirliners {
                 return true;
             }
             const rteRsvPercent = parseFloat(s.split("/")[1]);
-            if ((0 > rteRsvPercent > 15)) {
+            if (!this.isRteRsvPercentInRange(rteRsvPercent)) {
                 this._rteRsvPercentOOR = true;
                 this.addNewMessage(NXSystemMessages.notAllowed);
                 return false;
@@ -1844,17 +1845,22 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    isRteRsvPercentInRange(value) {
+        return value > 0 && value < 15;
+    }
+
     trySetRouteReservedFuel(s) {
         if (s) {
             if (s === FMCMainDisplay.clrValue) {
                 this._rteReservedEntered = false;
                 this._routeReservedWeight = 0;
                 this._routeReservedPercent = 5;
+                this._rteRsvPercentOOR = false;
                 return true;
             }
             const rteRsvWeight = parseFloat(s.split("/")[0]) / this._conversionWeight;
             const rteRsvPercent = parseFloat(s.split("/")[1]);
-            if ((0 > rteRsvPercent && rteRsvPercent > 15)) {
+            if (!this.isRteRsvPercentInRange(rteRsvPercent)) {
                 this._rteRsvPercentOOR = true;
                 return true;
             }
@@ -1863,7 +1869,13 @@ class FMCMainDisplay extends BaseAirliners {
             if (isFinite(rteRsvWeight)) {
                 this._routeReservedWeight = rteRsvWeight;
                 this._routeReservedPercent = 0;
-                return true;
+                if (this.isRteRsvPercentInRange(this.getRouteReservedPercent())) { // Bit of a hacky method due previous tight coupling of weight and percentage calculations
+                    return true;
+                } else {
+                    this.trySetRouteReservedFuel(FMCMainDisplay.clrValue);
+                    this._rteRsvPercentOOR = true;
+                    return false;
+                }
             } else if (isFinite(rteRsvPercent)) {
                 this._routeReservedWeight = NaN;
                 this._routeReservedPercent = rteRsvPercent;

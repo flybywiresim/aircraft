@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUFlightPlanPage {
     static ShowPage(mcdu, offset = 0) {
         mcdu.clearDisplay();
@@ -59,16 +77,22 @@ class CDUFlightPlanPage {
         } else {
             let destTimeCell = "----";
             let destDistCell = "---";
+            let destEFOBCell = "---";
             if (mcdu.flightPlanManager.getDestination()) {
                 destDistCell = mcdu.flightPlanManager.getDestination().liveDistanceTo.toFixed(0);
                 if (isFlying) {
                     destTimeCell = FMCMainDisplay.secondsToUTC(mcdu.flightPlanManager.getDestination().liveUTCTo);
+                    destEFOBCell = (mcdu.getDestEFOB(true) * mcdu._conversionWeight).toFixed(1);
                 } else {
                     destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().liveETATo);
+                    destEFOBCell = (mcdu.getDestEFOB(false) * mcdu._conversionWeight).toFixed(1);
                 }
             }
+            if (!CDUInitPage.fuelPredConditionsMet(mcdu)) {
+                destEFOBCell = "---";
+            }
             rows[10] = ["\xa0DEST", "DIST EFOB", isFlying ? "\xa0UTC" : "TIME" ];//set last row
-            rows[11] = [destCell, destDistCell + " ----", destTimeCell];
+            rows[11] = [destCell, destDistCell + " " + destEFOBCell, destTimeCell];
             mcdu.leftInputDelay[5] = () => {
                 return mcdu.getDelaySwitchPage();
             };

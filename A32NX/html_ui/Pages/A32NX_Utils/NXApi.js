@@ -54,6 +54,15 @@ class NXApi {
             return Promise.reject(NXApi.disabledError);
         }
 
+        // Do not reconnect when using the same FLT NBR
+        if (flightNo === NXApi.activeFlight) {
+            return Promise.resolve({
+                flight: NXApi.activeFlight
+            });
+        }
+
+        const oldToken = NXApi.accessToken;
+
         const connectBody = NXApi.buildTelexBody(flightNo);
         const headers = {"Content-Type": "application/json"};
 
@@ -63,9 +72,16 @@ class NXApi {
                     throw (response);
                 }
 
+                // Delete old connection using an override token
+                // in case the new one is successful
+                if (!!oldToken) {
+                    this.disconnectTelex(oldToken);
+                }
+
                 return response.json()
                     .then((data) => {
                         NXApi.accessToken = data.accessToken;
+                        NXApi.activeFlight = data.flight;
                         return data;
                     });
             });
@@ -98,14 +114,14 @@ class NXApi {
             });
     }
 
-    static disconnectTelex() {
+    static disconnectTelex(tokenOverride) {
         // No connection
         if (!NXApi.hasTelexConnection()) {
             return Promise.reject(NXApi.disconnectedError);
         }
 
         const headers = {
-            Authorization: NXApi.buildToken()
+            Authorization: NXApi.buildToken(tokenOverride)
         };
 
         return fetch(`${NXApi.url}/txcxn`, {method: "DELETE", headers})
@@ -115,6 +131,7 @@ class NXApi {
                 }
 
                 NXApi.accessToken = "";
+                NXApi.activeFlight = "";
             });
     }
 
@@ -177,11 +194,11 @@ class NXApi {
     }
 
     static hasTelexConnection() {
-        return !!NXApi.accessToken;
+        return !!NXApi.accessToken && !!NXApi.activeFlight;
     }
 
-    static buildToken() {
-        return `Bearer ${NXApi.accessToken}`;
+    static buildToken(tokenOverride) {
+        return `Bearer ${!!tokenOverride ? tokenOverride : NXApi.accessToken}`;
     }
 
     static buildTelexBody(flightNo) {
@@ -215,6 +232,7 @@ NXApi.disabledError = "TELEX DISABLED";
 NXApi.disconnectedError = "TELEX DISCONNECTED";
 NXApi.noRecipientError = "NO RECIPIENT";
 NXApi.accessToken = "";
+NXApi.activeFlight = "";
 NXApi.updateRate = 15000;
 
 NXDataStore.set("PLAN_ORIGIN", "");
