@@ -16,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { getSimVar, useUpdate } from '../../util';
 import BasePage from './BasePage.jsx';
+import FMGCData from '../FMGC/FMGC.jsx';
 
 export const InitPage = () => {
     const [labels, setLabels] = useState({
@@ -83,7 +84,7 @@ export const InitPage = () => {
             color: 'white',
         },
     });
-    const [data, setData] = useState({
+    const [mcduText, setMcduText] = useState({
         L0: {
             text: 'Left Data 1',
             class: 'text__small__left',
@@ -145,8 +146,14 @@ export const InitPage = () => {
             color: 'green',
         },
     });
+    const { data, setData } = useContext(FMGCData);
+
+    setMcduText((prevState) => ({
+        ...prevState,
+        R0: `${data.flightPlanManager.origin.ident}/${data.flightPlanManager.destination.ident}`,
+    }));
 
     return (
-        <BasePage data={data} labels={labels} />
+        <BasePage data={mcduText} labels={labels} />
     );
 };
