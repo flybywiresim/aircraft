@@ -278,7 +278,7 @@ class CDUInitPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.InitPageB;
 
-        let initBTitle = "INIT {}";
+        let initBTitle = "INIT";
 
         let zfwColor = "[color]amber";
         let zfwCell = "___._";
