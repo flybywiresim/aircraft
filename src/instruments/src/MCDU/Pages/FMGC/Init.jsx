@@ -17,9 +17,73 @@
  */
 
 import { useState, useContext } from 'react';
-import { getSimVar, useUpdate } from '../../util.mjs';
+import { getSimVar, useUpdate } from '../../../util.mjs';
 import BasePage from './BasePage.jsx';
-import NXDataStore from '../../../../../A32NX/html_ui/Pages/A32NX_Utils/NXDataStore';
+import NXDataStore from '../../../../../../A32NX/html_ui/Pages/A32NX_Utils/NXDataStore';
+
+function populateDataFields(fmgc, fields) {
+    if (fmgc.booleans.fromToEntered) {
+        // FROM/TO
+        fields((prevState) => ({
+            ...prevState,
+            R0: {
+                text: `${fmgc.flightPlanManager.origin.ident}/${fmgc.flightPlanManager.destination.ident}`,
+                color: 'cyan',
+            },
+        }));
+
+        // FLIGHT NUMBER
+        if (getSimVar('ATC FLIGHT NUMBER', 'string')) {
+            fields((prevState) => ({
+                ...prevState,
+                L2: {
+                    text: `${getSimVar('ATC FLIGHT NUMBER', 'string')}`,
+                    color: 'cyan',
+                },
+            }));
+        }
+
+        // COST INDEX
+        if (fmgc.costIndex) {
+            fields((prevState) => ({
+                ...prevState,
+                L4: {
+                    text: `${fmgc.costIndex}`,
+                    color: 'cyan',
+                },
+            }));
+        }
+
+        // CRUISE
+        if (fmgc.booleans.cruiseEntered) {
+            fields((prevState) => ({
+                ...prevState,
+                L5: {
+                    text: `FL${fmgc.cruiseFlightLevel.toFixed(0).padStart(3, '0')}/-52°`,
+                    color: 'cyan',
+                },
+            }));
+        }
+
+        // Alternate
+        fields((prevState) => ({
+            ...prevState,
+            L1: {
+                text: 'NONE',
+                color: 'cyan',
+            },
+        }));
+        if (fmgc.flightPlanManager.alternate.ident) {
+            fields((prevState) => ({
+                ...prevState,
+                L1: {
+                    text: `${fmgc.flightPlanManager.alternate.ident}`,
+                    color: 'cyan',
+                },
+            }));
+        }
+    }
+}
 
 export const InitPage = () => {
     const mcduLabels = {
@@ -149,63 +213,7 @@ export const InitPage = () => {
     const FMGC_DATA = NXDataStore.get('FMGC_DATA', null);
 
     if (FMGC_DATA) {
-        if (FMGC_DATA.booleans.fromToEntered) {
-            setMcduText((prevState) => ({
-                ...prevState,
-                R0: {
-                    text: `${FMGC_DATA.flightPlanManager.origin.ident}/${FMGC_DATA.flightPlanManager.destination.ident}`,
-                    color: 'cyan',
-                },
-            }));
-
-            if (getSimVar('ATC FLIGHT NUMBER', 'string')) {
-                setMcduText((prevState) => ({
-                    ...prevState,
-                    L2: {
-                        text: `${getSimVar('ATC FLIGHT NUMBER', 'string')}`,
-                        color: 'cyan',
-                    },
-                }));
-            }
-
-            if (FMGC_DATA.costIndex) {
-                setMcduText((prevState) => ({
-                    ...prevState,
-                    L4: {
-                        text: `${FMGC_DATA.costIndex}`,
-                        color: 'cyan',
-                    },
-                }));
-            }
-
-            if (FMGC_DATA.booleans.cruiseEntered) {
-                setMcduText((prevState) => ({
-                    ...prevState,
-                    L5: {
-                        text: `FL${FMGC_DATA.cruiseFlightLevel.toFixed(0).padStart(3, '0')}/-52°`,
-                        color: 'cyan',
-                    },
-                }));
-            }
-
-            // Since CoRte isn't implemented, AltDest defaults to None Ref: Ares's documents
-            setMcduText((prevState) => ({
-                ...prevState,
-                L1: {
-                    text: 'NONE',
-                    color: 'cyan',
-                },
-            }));
-            if (FMGC_DATA.flightPlanManager.alternate.ident) {
-                setMcduText((prevState) => ({
-                    ...prevState,
-                    L1: {
-                        text: `${FMGC_DATA.flightPlanManager.alternate.ident}`,
-                        color: 'cyan',
-                    },
-                }));
-            }
-        }
+        populateDataFields(FMGC_DATA, setMcduText);
     }
 
     return (

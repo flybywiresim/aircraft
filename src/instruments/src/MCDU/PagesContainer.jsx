@@ -18,18 +18,18 @@
 
 import { useState } from 'react/cjs/react.production.min.js';
 import { getSimVar, useInteractionEvent } from '../util.mjs';
-import { AirportPage } from './Pages/Airport.jsx';
-import { AtcCommPage } from './Pages/AtcComm.jsx';
-import { DataPage } from './Pages/Data.jsx';
-import { DirPage } from './Pages/Dir.jsx';
-import { FlightPlanPage } from './Pages/FlightPlan.jsx';
-import { FuelPredPage } from './Pages/FuelPred.jsx';
-import { InitPage } from './Pages/Init.jsx';
-import { MenuPage } from './Pages/Menu.jsx';
-import { PerfPage } from './Pages/Perf.jsx';
-import { ProgPage } from './Pages/Prog.jsx';
-import { RadNavPage } from './Pages/RadNav.jsx';
-import { SecFlightPlanPage } from './Pages/SecFlightPlan.jsx';
+import { AirportPage } from './Pages/FMGC/Airport.jsx';
+import { AtcCommPage } from './Pages/FMGC/AtcComm.jsx';
+import { DataPage } from './Pages/FMGC/Data.jsx';
+import { DirPage } from './Pages/FMGC/Dir.jsx';
+import { FlightPlanPage } from './Pages/FMGC/FlightPlan.jsx';
+import { FuelPredPage } from './Pages/FMGC/FuelPred.jsx';
+import { InitPage } from './Pages/FMGC/Init.jsx';
+import { MenuPage } from './Pages/FMGC/Menu.jsx';
+import { PerfPage } from './Pages/FMGC/Perf.jsx';
+import { ProgPage } from './Pages/FMGC/Prog.jsx';
+import { RadNavPage } from './Pages/FMGC/RadNav.jsx';
+import { SecFlightPlanPage } from './Pages/FMGC/SecFlightPlan.jsx';
 
 export const PagesContainer = () => {
     const [currentPage, setCurrentPage] = useState(0);
@@ -51,5 +51,5 @@ export const PagesContainer = () => {
         11: <SecFlightPlanPage />,
     };
 
-    return pages[currentPage] || <text x={300} y={300} fill="white" fontSize={18} textAnchor="middle">invalid page</text>;
+    return pages[7] || <text x={300} y={300} fill="white" fontSize={18} textAnchor="middle">invalid page</text>;
 };
