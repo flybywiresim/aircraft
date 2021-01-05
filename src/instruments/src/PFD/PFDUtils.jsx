@@ -147,25 +147,15 @@ export class LagFilter {
      * @returns {number} Filtered output
      */
     step(input, deltaTime) {
-        const sum1 = input + this.PreviousInput;
+        const scaledDeltaTime = deltaTime * this.TimeConstant;
+        const sum0 = scaledDeltaTime + 2;
 
-        const product0 = deltaTime * this.TimeConstant;
-        const sum0 = product0 + 2;
-
-        const product4 = product0 / sum0;
-        const product1 = sum1 * product4;
-        const sum3 = 2 - product0;
-
-        const product3 = sum3 / sum0;
-
-        const product2 = product3 * this.PreviousOutput;
-
-        const sum2 = product1 + product2;
+        const output = (input + this.PreviousInput) * scaledDeltaTime / sum0 + (2 - scaledDeltaTime) / sum0 * this.PreviousOutput;
 
         this.PreviousInput = input;
-        if (Number.isFinite(sum2)) {
-            this.PreviousOutput = sum2;
-            return sum2;
+        if (Number.isFinite(output)) {
+            this.PreviousOutput = output;
+            return output;
         }
         return 0;
     }
