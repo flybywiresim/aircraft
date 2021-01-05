@@ -44,6 +44,9 @@ function Idle() {
                 ident: '',
             },
         },
+        booleans: {
+            fromToEntered: true,
+        },
     });
 
     useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {

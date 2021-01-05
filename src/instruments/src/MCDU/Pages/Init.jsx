@@ -86,73 +86,74 @@ export const InitPage = () => {
     });
     const [mcduText, setMcduText] = useState({
         L0: {
-            text: 'Left Data 1',
+            text: '__________',
             class: 'text__small__left',
-            color: 'green',
+            color: 'amber',
         },
         L1: {
-            text: 'Left Data 1',
+            text: '----|----------',
             class: 'text__small__left',
-            color: 'green',
+            color: 'white',
         },
         L2: {
-            text: 'Left Data 1',
+            text: '________',
             class: 'text__small__left',
-            color: 'green',
+            color: 'amber',
         },
         L3: {
-            text: 'Left Data 1',
+            text: '',
             class: 'text__small__left',
-            color: 'green',
+            color: 'white',
         },
         L4: {
-            text: 'Left Data 1',
+            text: '---',
             class: 'text__small__left',
-            color: 'green',
+            color: 'white',
         },
         L5: {
-            text: 'Left Data 1',
+            text: '-----|---°',
             class: 'text__small__left',
-            color: 'green',
+            color: 'white',
         },
         R0: {
-            text: 'Left Data 1',
+            text: '____|____',
             class: 'text__small__right',
-            color: 'green',
+            color: 'amber',
         },
         R1: {
-            text: 'Left Data 1',
+            text: 'REQUEST',
             class: 'text__small__right',
-            color: 'green',
+            color: 'AMBER',
         },
         R2: {
-            text: 'Left Data 1',
+            text: '',
             class: 'text__small__right',
-            color: 'green',
+            color: 'white',
         },
         R3: {
-            text: 'Left Data 1',
+            text: '',
             class: 'text__small__right',
-            color: 'green',
+            color: 'white',
         },
         R4: {
-            text: 'Left Data 1',
+            text: '',
             class: 'text__small__right',
-            color: 'green',
+            color: 'white',
         },
         R5: {
-            text: 'Left Data 1',
+            text: '36090',
             class: 'text__small__right',
-            color: 'green',
+            color: 'cyan',
         },
     });
     const { data, setData } = useContext(FMGCData);
 
-    setMcduText((prevState) => ({
-        ...prevState,
-        R0: `${data.flightPlanManager.origin.ident}/${data.flightPlanManager.destination.ident}`,
-    }));
-
+    if (data.booleans.fromToEntered) {
+        setMcduText((prevState) => ({
+            ...prevState,
+            R0: `${data.flightPlanManager.origin.ident}/${data.flightPlanManager.destination.ident}`,
+        }));
+    }
     return (
         <BasePage data={mcduText} labels={labels} />
     );
