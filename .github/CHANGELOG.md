@@ -22,9 +22,8 @@
 1. [CDU] Fixed altitude button setting the speed on ATC request - @brookemckim (brookemckim)
 1. [CDU] Refactored CDU and FMS Main - @MisterChocker (Leon)
 1. [API] Fix connection issues when using default ATC and SimBrief - @nistei (nistei#1362)
-1. [CDU] Add Transition Altitude Options - @Kimbyeongjang (김병장#7165)
-1. [System] Add Transition Altitude Database - @Kimbyeongjang (김병장#7165)
-1. [System] Add Transition Level Logic - @Kimbyeongjang (김병장#7165)
+1. [SYSTEM] Add Transition Altitude & Add Transition Level Logic - @Kimbyeongjang (김병장#7165)
+1. [API] Add Transition Altitude Database - @Kimbyeongjang (김병장#7165)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
