@@ -17,27 +17,26 @@
  */
 
 import { useState } from 'react';
-import PropTypes from 'prop-types';
 import BasePage from './BasePage.jsx';
-import { FMGC, activeSystems } from '../../../FMGC/FMGC.mjs';
+import NXDataStore from '../../../../../../A32NX/html_ui/Pages/A32NX_Utils/NXDataStore';
 
-function determineActiveSystem(textOptions, setTextOptions, setMcduText, fmgc) {
+function determineActiveSystem(textOptions, setTextOptions, setMcduText) {
     setTextOptions((prevState) => ({
         ...prevState,
         textFMGC: {
-            color: fmgc.getActiveSystem() === activeSystems.FMGC ? 'green' : 'white',
+            color: NXDataStore.get('ACTIVE_SYS', null) === 'FMGC' ? 'green' : 'white',
         },
         textATSU: {
-            color: fmgc.getActiveSystem() === activeSystems.ATSU ? 'green' : 'white',
+            color: NXDataStore.get('ACTIVE_SYS', null) === 'ATSU' ? 'green' : 'white',
         },
         textAIDS: {
-            color: fmgc.getActiveSystem() === activeSystems.AIDS ? 'green' : 'white',
+            color: NXDataStore.get('ACTIVE_SYS', null) === 'CFDS' ? 'green' : 'white',
         },
         textCFDS: {
-            color: fmgc.getActiveSystem() === activeSystems.CFDS ? 'green' : 'white',
+            color: NXDataStore.get('ACTIVE_SYS', null) === 'CFDS' ? 'green' : 'white',
         },
         textMaint: {
-            color: fmgc.getActiveSystem() === activeSystems.MAINT ? 'green' : 'white',
+            color: NXDataStore.get('ACTIVE_SYS', null) === 'MAINT' ? 'green' : 'white',
         },
     }));
 
@@ -65,8 +64,7 @@ function determineActiveSystem(textOptions, setTextOptions, setMcduText, fmgc) {
     }));
 }
 
-const MenuPage = (props) => {
-    const { fmgc } = props;
+export const MenuPage = () => {
     const mcduLabels = {
         L0: {
             text: '',
@@ -218,7 +216,7 @@ const MenuPage = (props) => {
         },
     });
 
-    determineActiveSystem(textOptions, setTextOptions, setMcduText, fmgc);
+    determineActiveSystem(textOptions, setTextOptions, setMcduText);
 
     /**
      * TODO create event handlers
@@ -229,9 +227,3 @@ const MenuPage = (props) => {
         <BasePage data={mcduText} labels={mcduLabels} />
     );
 };
-
-MenuPage.propTypes = {
-    fmgc: PropTypes.instanceOf(FMGC).isRequired,
-};
-
-export { MenuPage };

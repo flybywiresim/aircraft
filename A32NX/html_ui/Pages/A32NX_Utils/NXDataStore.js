@@ -13,3 +13,5 @@ class NXDataStore {
         SetStoredData(`A32NX_${key}`, val);
     }
 }
+
+export default NXDataStore

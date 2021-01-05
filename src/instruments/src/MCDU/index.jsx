@@ -12,6 +12,30 @@ import { PagesContainer } from './PagesContainer.jsx';
 import { Scratchpad } from './Scratchpad/Scratchpad.jsx';
 import NXDataStore from '../../../../A32NX/html_ui/Pages/A32NX_Utils/NXDataStore';
 
+function createTemplateData() {
+    const data = {
+        flightPlanManager: {
+            origin: {
+                ident: '',
+            },
+            destination: {
+                ident: '',
+            },
+            alternate: {
+                ident: '',
+            },
+        },
+        booleans: {
+            fromToEntered: true,
+            cruiseEntered: true,
+        },
+        cruiseFlightLevel: 0,
+        costIndex: 0,
+    };
+    NXDataStore.set('FMGC_DATA', data);
+    NXDataStore.set('ACTIVE_SYS', 'FMGC');
+}
+
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
     // These are inlined so they're only evaluated if prior conditions return false.
@@ -35,26 +59,7 @@ function SelfTest() {
 
 function Idle() {
     const [inop, setInop] = useState(false);
-    const data = {
-        flightPlanManager: {
-            origin: {
-                ident: '',
-            },
-            destination: {
-                ident: '',
-            },
-            alternate: {
-                ident: '',
-            },
-        },
-        booleans: {
-            fromToEntered: true,
-            cruiseEntered: true,
-        },
-        cruiseFlightLevel: 0,
-        costIndex: 0,
-    };
-    NXDataStore.set('FMGC_DATA', data);
+    createTemplateData();
 
     useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {
         if (!inop) {
