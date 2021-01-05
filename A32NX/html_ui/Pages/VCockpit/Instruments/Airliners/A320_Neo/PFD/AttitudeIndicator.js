@@ -476,7 +476,8 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             this.compassTicks.setAttribute("transform", `translate(${-offset} 0)`);
         }
         if (this.compassSelectedHeading) {
-            let hdgDiff = this.apHdg - this.compass;
+            const isTrkMode = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
+            let hdgDiff = (isTrkMode ? SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degree") : this.apHdg) - this.compass;
             if (hdgDiff > 180) {
                 hdgDiff -= 360;
             }
