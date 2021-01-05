@@ -117,6 +117,25 @@ export const VerticalTape = ({
     );
 };
 
+export const BarberpoleIndicator = (
+    tapeValue, border, isLowerBorder, displayRange, element, elementSize,
+) => {
+    const Elements = [];
+
+    const sign = isLowerBorder ? 1 : -1;
+    const isInRange = isLowerBorder ? border <= tapeValue + displayRange : border >= tapeValue - displayRange;
+    if (!isInRange) {
+        return Elements;
+    }
+    const numElements = Math.ceil((border + sign * tapeValue - sign * (displayRange + 2)) / elementSize);
+    for (let i = 0; i < numElements; i++) {
+        const elementValue = border + sign * elementSize * i;
+        Elements.push([element, elementValue]);
+    }
+
+    return Elements;
+};
+
 export const SmoothSin = (origin, destination, smoothFactor, dTime) => {
     if (origin === undefined) {
         return destination;

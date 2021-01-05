@@ -19,9 +19,14 @@
   font-family: "Ecam", monospace !important;
 }
 
-.Bar {
+.BarAmber {
   fill: $display-amber;
   stroke: $display-amber;
+  stroke-width: 0.13px;
+}
+.BarRed {
+  fill: $display-red;
+  stroke: $display-red;
   stroke-width: 0.11px;
 }
 
