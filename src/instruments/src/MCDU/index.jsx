@@ -10,6 +10,7 @@ import './style.scss';
 import { Titlebar } from './Titlebar/Titlebar.jsx';
 import { PagesContainer } from './PagesContainer.jsx';
 import { Scratchpad } from './Scratchpad/Scratchpad.jsx';
+import FMGCData from './FMGC/FMGC.jsx';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
@@ -34,6 +35,16 @@ function SelfTest() {
 
 function Idle() {
     const [inop, setInop] = useState(false);
+    const [data, setData] = useState({
+        flightPlanManager: {
+            origin: {
+                ident: '',
+            },
+            destination: {
+                ident: '',
+            },
+        },
+    });
 
     useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {
         if (!inop) {
@@ -46,11 +57,13 @@ function Idle() {
 
     return (
         <>
-            <svg className="mcdu-svg" viewBox="0 0 600 600">
-                <Titlebar />
-                <PagesContainer />
-                <Scratchpad />
-            </svg>
+            <FMGCData.Provider value={{ data, setData }}>
+                <svg className="mcdu-svg" viewBox="0 0 600 600">
+                    <Titlebar />
+                    <PagesContainer />
+                    <Scratchpad />
+                </svg>
+            </FMGCData.Provider>
         </>
     );
 }
