@@ -290,6 +290,18 @@ const s = [
 ];
 
 /**
+ * Vfe for Flaps/Slats
+ * @type {number[]}
+ */
+const vfeFS = [
+    215, // Config 1 + F
+    200, // Config 2
+    185, // Config 3
+    177, // Config Full
+    230 // Config 1
+];
+
+/**
  * Correct input function for cg
  * @param m {number} gross weight (t)
  * @param f {function} function to be called with cg variable
@@ -350,6 +362,20 @@ function _getAngleDiff(a, b) {
     return 180 - Math.abs(Math.abs(a - b) - 180);
 }
 
+/**
+ * Get next flaps index for vfeFS table
+ * @param fi {number} current flaps index
+ * @returns {number} vfeFS table index
+ * @private
+ */
+function _getVfeNIdx(fi) {
+    switch (fi) {
+        case 0: return 4;
+        case 5: return 1;
+        default: return fi;
+    }
+}
+
 class NXSpeeds {
     /**
      * Computes Vs, Vls, Vapp, F, S and GD
@@ -367,6 +393,8 @@ class NXSpeeds {
         this.f = f[cm](m);
         this.s = s[cm](m);
         this.gd = _computeGD(m);
+        this.vfe = fPos === 0 ? A32NX_Selectors.VMAX() : vfeFS[fPos - 1];
+        this.vfeN = fPos === 4 ? 0 : vfeFS[_getVfeNIdx(fPos)];
     }
 
     compensateForMachEffect(alt) {
