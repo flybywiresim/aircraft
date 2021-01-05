@@ -17,12 +17,12 @@
  */
 
 import { useState, useContext } from 'react';
-import { getSimVar, useUpdate } from '../../util';
+import { getSimVar, useUpdate } from '../../util.mjs';
 import BasePage from './BasePage.jsx';
-import FMGCData from '../FMGC/FMGC.jsx';
+import NXDataStore from '../../../../../A32NX/html_ui/Pages/A32NX_Utils/NXDataStore';
 
 export const InitPage = () => {
-    const [labels, setLabels] = useState({
+    const mcduLabels = {
         L0: {
             text: 'CO RTE',
             class: 'text__small__left__label',
@@ -64,7 +64,7 @@ export const InitPage = () => {
             color: 'amber',
         },
         R2: {
-            text: 'IRS INIT',
+            text: '',
             class: 'text__small__right',
             color: 'white',
         },
@@ -74,7 +74,7 @@ export const InitPage = () => {
             color: '',
         },
         R4: {
-            text: 'WIND/TEMP',
+            text: 'WIND/TEMP>',
             class: 'text__small__right__label',
             color: 'inop',
         },
@@ -83,7 +83,7 @@ export const InitPage = () => {
             class: 'text__small__right__label',
             color: 'white',
         },
-    });
+    };
     const [mcduText, setMcduText] = useState({
         L0: {
             text: '__________',
@@ -146,15 +146,69 @@ export const InitPage = () => {
             color: 'cyan',
         },
     });
-    const { data, setData } = useContext(FMGCData);
+    const FMGC_DATA = NXDataStore.get('FMGC_DATA', null);
 
-    if (data.booleans.fromToEntered) {
-        setMcduText((prevState) => ({
-            ...prevState,
-            R0: `${data.flightPlanManager.origin.ident}/${data.flightPlanManager.destination.ident}`,
-        }));
+    if (FMGC_DATA) {
+        if (FMGC_DATA.booleans.fromToEntered) {
+            setMcduText((prevState) => ({
+                ...prevState,
+                R0: {
+                    text: `${FMGC_DATA.flightPlanManager.origin.ident}/${FMGC_DATA.flightPlanManager.destination.ident}`,
+                    color: 'cyan',
+                },
+            }));
+
+            if (getSimVar('ATC FLIGHT NUMBER', 'string')) {
+                setMcduText((prevState) => ({
+                    ...prevState,
+                    L2: {
+                        text: `${getSimVar('ATC FLIGHT NUMBER', 'string')}`,
+                        color: 'cyan',
+                    },
+                }));
+            }
+
+            if (FMGC_DATA.costIndex) {
+                setMcduText((prevState) => ({
+                    ...prevState,
+                    L4: {
+                        text: `${FMGC_DATA.costIndex}`,
+                        color: 'cyan',
+                    },
+                }));
+            }
+
+            if (FMGC_DATA.booleans.cruiseEntered) {
+                setMcduText((prevState) => ({
+                    ...prevState,
+                    L5: {
+                        text: `FL${FMGC_DATA.cruiseFlightLevel.toFixed(0).padStart(3, '0')}/-52°`,
+                        color: 'cyan',
+                    },
+                }));
+            }
+
+            // Since CoRte isn't implemented, AltDest defaults to None Ref: Ares's documents
+            setMcduText((prevState) => ({
+                ...prevState,
+                L1: {
+                    text: 'NONE',
+                    color: 'cyan',
+                },
+            }));
+            if (FMGC_DATA.flightPlanManager.alternate.ident) {
+                setMcduText((prevState) => ({
+                    ...prevState,
+                    L1: {
+                        text: `${FMGC_DATA.flightPlanManager.alternate.ident}`,
+                        color: 'cyan',
+                    },
+                }));
+            }
+        }
     }
+
     return (
-        <BasePage data={mcduText} labels={labels} />
+        <BasePage data={mcduText} labels={mcduLabels} />
     );
 };

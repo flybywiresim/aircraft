@@ -10,7 +10,7 @@ import './style.scss';
 import { Titlebar } from './Titlebar/Titlebar.jsx';
 import { PagesContainer } from './PagesContainer.jsx';
 import { Scratchpad } from './Scratchpad/Scratchpad.jsx';
-import FMGCData from './FMGC/FMGC.jsx';
+import NXDataStore from '../../../../A32NX/html_ui/Pages/A32NX_Utils/NXDataStore';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
@@ -35,7 +35,7 @@ function SelfTest() {
 
 function Idle() {
     const [inop, setInop] = useState(false);
-    const [data, setData] = useState({
+    const data = {
         flightPlanManager: {
             origin: {
                 ident: '',
@@ -43,11 +43,18 @@ function Idle() {
             destination: {
                 ident: '',
             },
+            alternate: {
+                ident: '',
+            },
         },
         booleans: {
             fromToEntered: true,
+            cruiseEntered: true,
         },
-    });
+        cruiseFlightLevel: 0,
+        costIndex: 0,
+    };
+    NXDataStore.set('FMGC_DATA', data);
 
     useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {
         if (!inop) {
@@ -60,13 +67,11 @@ function Idle() {
 
     return (
         <>
-            <FMGCData.Provider value={{ data, setData }}>
-                <svg className="mcdu-svg" viewBox="0 0 600 600">
-                    <Titlebar />
-                    <PagesContainer />
-                    <Scratchpad />
-                </svg>
-            </FMGCData.Provider>
+            <svg className="mcdu-svg" viewBox="0 0 600 600">
+                <Titlebar />
+                <PagesContainer />
+                <Scratchpad />
+            </svg>
         </>
     );
 }
