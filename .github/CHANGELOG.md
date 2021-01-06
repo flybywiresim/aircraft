@@ -30,6 +30,7 @@
 1. [FLIGHTMODEL] Improved fix for flaps 1 unrecoverable dives - @donstim (donbikes#4084)
 1. [ECAM/CORE] Improved flap auto-retraction detection - @MisterChocker (Leon)
 1. [ECAM] Added missing unit conversion to cruise and engine page - @MisterChocker (Leon)
+1. [MCDU] Improved scratchpad handling on - @MisterChocker (Leon)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
