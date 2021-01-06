@@ -19,7 +19,7 @@
 import { useState, useContext } from 'react';
 import { getSimVar, useUpdate } from '../../../util.mjs';
 import BasePage from './BasePage.jsx';
-import NXDataStore from '../../../../../../A32NX/html_ui/Pages/A32NX_Utils/NXDataStore';
+import NXDataStore from '../../../NXDataStore.mjs';
 
 function populateDataFields(fmgc, fields) {
     if (fmgc.booleans.fromToEntered) {
