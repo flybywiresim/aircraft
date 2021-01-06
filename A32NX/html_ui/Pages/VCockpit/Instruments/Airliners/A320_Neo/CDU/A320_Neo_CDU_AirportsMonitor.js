@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUAirportsMonitor {
     static ShowPage(mcdu, reset = false) {
 
@@ -110,7 +128,7 @@ class CDUAirportsMonitor {
             if (this.page2) {
                 this.user_ap_line = [""];
             } else {
-                this.user_ap_line = ["[][color]blue", ""];
+                this.user_ap_line = ["[\xa0\xa0][color]cyan", ""];
             }
         } else if (this.total_delta_t === 0) {
             // calculate values for user selected airport
@@ -144,24 +162,25 @@ class CDUAirportsMonitor {
         // display data on MCDU
         if (this.icao1) {
             mcdu.clearDisplay();
+            mcdu.page.Current = mcdu.page.AirportsMonitor;
             if (this.page2) {
                 mcdu.setTemplate([
                     ["CLOSEST AIRPORTS"],
-                    ["", "EFF WIND", "EFOB"],
+                    ["", "EFF WIND\xa0", "EFOB"],
                     [`${this.icao1}[color]green`,
-                        `---[color]green`,
+                        `{small}[KTS]{end}{cyan}[\xa0\xa0\xa0]{end}`,
                         `${this.efob1.toString().padStart(3, "_")}[color]green`],
                     [""],
                     [`${this.icao2}[color]green`,
-                        `---[color]green`,
+                        `[\xa0\xa0\xa0][color]cyan`,
                         `${this.efob2.toString().padStart(3, "_")}[color]green`],
                     [""],
                     [`${this.icao3}[color]green`,
-                        `---[color]green`,
+                        `[\xa0\xa0\xa0][color]cyan`,
                         `${this.efob3.toString().padStart(3, "_")}[color]green`],
                     [""],
                     [`${this.icao4}[color]green`,
-                        `---[color]green`,
+                        `[\xa0\xa0\xa0][color]cyan`,
                         `${this.efob4.toString().padStart(3, "_")}[color]green`],
                     [""],
                     this.user_ap_line,
@@ -171,7 +190,7 @@ class CDUAirportsMonitor {
             } else {
                 mcdu.setTemplate([
                     ["CLOSEST AIRPORTS"],
-                    ["", "UTC", "BRG DIST"],
+                    ["", "BRG\xa0\xa0\xa0\xa0DIST\xa0\xa0\xa0UTC\xa0"],
                     [`${this.icao1}[color]green`,
                         `${this.eta1}[color]green`,
                         `${this.brng1.toString().padStart(3, "0")}°_${this.dist1.toString().padStart(5, "_")}[color]green`],
@@ -190,11 +209,11 @@ class CDUAirportsMonitor {
                     [""],
                     this.user_ap_line,
                     ["", "", this.frozen ? "LIST FROZEN" : ""],
-                    [this.frozen ? "{UNFREEZE[color]blue" : "{FREEZE[color]blue", "EFOB/WIND>"]
+                    [this.frozen ? "{UNFREEZE[color]cyan" : "{FREEZE[color]cyan", "EFOB/WIND>"]
                 ]);
 
                 // force spaces to emulate 4 columns
-                mcdu._labelElements[0][2].innerHTML = "BRG&nbsp;&nbsp;&nbsp;DIST";
+                mcdu._labelElements[0][2].innerHTML = "&nbsp;&nbsp;&nbsp;";
                 for (let i = 0; i < (this.user_ap ? 5 : 4); i++) {
                     mcdu._lineElements[i][2].innerHTML = mcdu._lineElements[i][2].innerHTML.replace(/_/g, "&nbsp;");
                 }
@@ -211,32 +230,26 @@ class CDUAirportsMonitor {
 
         // user-selected 5th airport (only possible to set on page 1)
         if (!this.page2) {
-            mcdu.onLeftInput[4] = () => {
+            mcdu.onLeftInput[4] = (value) => {
                 if (this.user_ap) {
-                    if (mcdu.inOut === FMCMainDisplay.clrValue) {
+                    if (value === FMCMainDisplay.clrValue) {
                         this.user_ap = undefined;
-                        mcdu.clearUserInput();
                         // trigger data update next frame
                         this.total_delta_t = update_ival_ms;
                         this.ShowPage(mcdu);
-                    } else {
-                        console.log(`"${mcdu.inOut}"`);
-                        console.log(`"${FMCMainDisplay.clrValue}"`);
                     }
-                } else if (mcdu.inOut !== '' && mcdu.inOut !== FMCMainDisplay.clrValue) {
-                    const ap = mcdu.inOut;
+                } else if (value !== '' && value !== FMCMainDisplay.clrValue) {
                     // GetAirportByIdent returns a Waypoint in the callback,
                     // which interally uses FacilityLoader (and further down calls Coherence)
-                    mcdu.dataManager.GetAirportByIdent(ap).then((ap_data) => {
+                    mcdu.dataManager.GetAirportByIdent(value).then((ap_data) => {
                         if (ap_data) {
                             this.user_ap = ap_data;
-                            mcdu.clearUserInput();
                             // trigger data update next frame
                             this.total_delta_t = update_ival_ms;
                             this.frozen = false;
                             this.ShowPage(mcdu);
                         } else {
-                            mcdu.showErrorMessage("NOT IN DATABASE");
+                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                         }
                     });
                 }
@@ -250,6 +263,10 @@ class CDUAirportsMonitor {
             // trigger data update next frame
             this.total_delta_t = update_ival_ms;
             this.ShowPage(mcdu);
+        };
+
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         // EFOB/WIND

@@ -14,8 +14,8 @@ class A320_Neo_RTPI extends BaseAirliners {
     disconnectedCallback() {
         super.disconnectedCallback();
     }
-    Update() {
-        super.Update();
+    onUpdate(_deltaTime) {
+        super.onUpdate(_deltaTime);
         this.refreshValue(SimVar.GetSimVarValue("RUDDER TRIM", "degrees"));
     }
     refreshValue(_value, _force = false) {
@@ -37,4 +37,3 @@ class A320_Neo_RTPI extends BaseAirliners {
     }
 }
 registerInstrument("a320-neo-rtpi", A320_Neo_RTPI);
-//# sourceMappingURL=A320_Neo_RTPI.js.map

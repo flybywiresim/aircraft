@@ -5,11 +5,12 @@
 			<svg width="100%" height="100%" >
 				<defs>
 					<radialGradient id="SAIBacklight" cx="50%" cy="50%" r="75%" >
-						<stop offset="0%" style="stop-color:rgb(13,20,35);stop-opacity:1" />
-						<stop offset="100%" style="stop-color:rgb(13,20,35);stop-opacity:1" />
+						<stop offset="0%" style="stop-color:rgb(4, 4, 5);stop-opacity:1" />
+						<stop offset="100%" style="stop-color:rgb(4, 4, 5);stop-opacity:1" />
 					</radialGradient>
 				</defs>
 			</svg>
+
             <a320-neo-sai-brightness id="Brightness"></a320-neo-sai-brightness>
             <a320-neo-sai-self-test id="SelfTest"></a320-neo-sai-self-test>
             <glasscockpit-highlight id="Highlight" style="position:absolute; width: 100%; height:100%; display:none;"></glasscockpit-highlight>
@@ -22,7 +23,7 @@
                 <a320-neo-sai-landingsys-indicator id="LandingSys"></a320-neo-sai-landingsys-indicator>
             </div>
             <div id="PressureHider">
-                <a320-neo-sai-pressure-indicator id="Pressure"></a32nx-sai-pressure-indicator>
+                <a320-neo-sai-pressure-indicator id="Pressure"></a320-neo-sai-pressure-indicator>
             </div>
         </div>
     </div>
@@ -30,7 +31,9 @@
 
 <link rel="stylesheet" href="A320_Neo_SAI.css" />
 
+<script type="text/html" src="/JS/Debug.js"></script>
 <script type="text/html" import-script="/JS/SimPlane.js"></script>
+<script type="text/html" import-script="/JS/A32NX_Avionics.js"></script>
 <script type="text/html" import-script="/JS/A32NX_Util.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
@@ -39,7 +42,7 @@
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/FlightPlan.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/LogicElements/A32NX_FlightPlanManager.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/Waypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/FlightElements/Waypoint.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/NearestWaypoint.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/Approach.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/Runway.js"></script>

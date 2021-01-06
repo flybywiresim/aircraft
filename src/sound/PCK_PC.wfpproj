@@ -10,6 +10,14 @@
           <ContentItemBase Id="0" Language="" FileName="" />
         </LayoutItems>
       </Package>
+      <Package Id="4d93b668-4418-4074-aec6-b24dc84e8ca0" Name="Asobo_A320_NEO_Improved2.PC.PCK">
+        <Items>
+          <PackageContentItem Id="3930137174" Language="SFX" FileName="Asobo_A320_NEO_Improved2" InclusionMode="BankAndStreamsAndLooseMedia" />
+        </Items>
+        <LayoutItems>
+          <ContentItemBase Id="0" Language="" FileName="" />
+        </LayoutItems>
+      </Package>
     </Packages>
     <DefaultLanguagePackageIds>
       <LanguagePackageIds Language="SFX" BankPackageId="00000000-0000-0000-0000-000000000000" StreamPackageId="00000000-0000-0000-0000-000000000000" LooseMediaPackageId="00000000-0000-0000-0000-000000000000" />

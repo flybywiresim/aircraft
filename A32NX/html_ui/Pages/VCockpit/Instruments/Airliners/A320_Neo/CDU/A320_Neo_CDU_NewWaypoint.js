@@ -1,14 +1,15 @@
 class CDUNewWaypoint {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.NewWaypoint;
         mcdu.setTemplate([
             ["NEW WAYPOINT"],
             ["IDENT"],
-            ["_______[color]red"],
+            ["_______[color]amber"],
             ["LAT/LONG"],
-            ["____.__|_____.__[color]red"],
+            ["____.__|_____.__[color]amber"],
             ["PLACE/BRG /DIST"],
-            ["_______|___° |___. _[color]red"],
+            ["_______|___° |___. _[color]amber"],
             ["PLACE-BRG  /PLACE-BRG"],
             ["_____-___°  |_____-___°"],
             [""],

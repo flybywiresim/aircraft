@@ -22,15 +22,10 @@ var A320_Neo_LowerECAM_CRZ;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
+            this.unitConversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
 
             // Set units
-            if (BaseAirliners.unitIsMetric(Aircraft.A320_NEO)) {
-                this.querySelector("#FuelUsedUnit").textContent = "KG";
-                this.unitFactor = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilogram");
-            } else {
-                this.querySelector("#FuelUsedUnit").textContent = "LBS";
-                this.unitFactor = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "lbs");
-            }
+            this.querySelector("#FuelUsedUnit").textContent = this.unitConversion === 1 ? "KG" : "LBS";
 
             // Get value fields
             this.FuelUsedTotal = this.querySelector("#FuelUsedTotal");
@@ -65,6 +60,36 @@ var A320_Neo_LowerECAM_CRZ;
             this.ForwardTemp = this.querySelector("#ForwardTemp");
             this.AftTemp = this.querySelector("#AftTemp");
 
+            this.CockpitTempValue = 0.0;
+            this.ForwardTempValue = 0.0;
+            this.AftTempValue = 0.0;
+
+            this.condTemp = [
+                {
+                    varName: "L:A32NX_CKPT_TEMP",
+                    type: "celsius",
+                    selector: this.CockpitTemp,
+                    value: this.CockpitTempValue,
+                    index: 1
+                },
+                {
+                    varName: "L:A32NX_FWD_TEMP",
+                    type: "celsius",
+                    selector: this.ForwardTemp,
+                    value: this.ForwardTempValue,
+                    index : 2
+                },
+                {
+                    varName: "L:A32NX_AFT_TEMP",
+                    type: "celsius",
+                    selector: this.AftTemp,
+                    value: this.AftTempValue,
+                    index: 3
+                },
+            ];
+
+            this.condTemp.forEach(this._condTempSelector);
+
             // Initialize displayed values
             this.LeftConsumptionDisplayed = -1;
             this.RightConsumptionDisplayed = -1;
@@ -83,18 +108,23 @@ var A320_Neo_LowerECAM_CRZ;
             this.isInitialised = true;
         }
         update(_deltaTime) {
-            if (!this.isInitialised) {
+            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
 
             // Fuel
-            const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "gallon") * this.unitFactor * 0.001;
-            const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "gallon") * this.unitFactor * 0.001;
+            const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "KG") * this.unitConversion;
+            const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "KG") * this.unitConversion;
 
             const leftConsumptionShown = fastToFixed(leftConsumption - (leftConsumption % 10), 0);
             const rightConsumptionShown = fastToFixed(rightConsumption - (rightConsumption % 10), 0);
 
-            if ((leftConsumptionShown != this.LeftConsumptionDisplayed) || (rightConsumptionShown != this.RightConsumptionDisplayed)) {
+            if ((leftConsumptionShown !== this.LeftConsumptionDisplayed) || (rightConsumptionShown !== this.RightConsumptionDisplayed)) {
+                const unitConversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+                if (unitConversion !== this.unitConversion) {
+                    this.unitConversion = unitConversion;
+                    this.querySelector("#FuelUsedUnit").textContent = this.unitConversion === 1 ? "KG" : "LBS";
+                }
                 const totalConsumptionShown = parseInt(leftConsumptionShown) + parseInt(rightConsumptionShown);
                 this.FuelUsedTotal.textContent = totalConsumptionShown;
                 this.FuelUsedLeft.textContent = leftConsumptionShown;
@@ -156,7 +186,8 @@ var A320_Neo_LowerECAM_CRZ;
             value = SimVar.GetSimVarValue("PRESSURIZATION CABIN ALTITUDE RATE", "feet per second");
             valueShown = fastToFixed(value, 0);
             if (valueShown != this.CabinVerticalSpeedDisplayed) {
-                this.CabinVerticalSpeed.textContent = valueShown;
+                const feet_per_minute = valueShown * 60;
+                this.CabinVerticalSpeed.textContent = feet_per_minute;
                 this.CabinVerticalSpeedDisplayed = valueShown;
             }
 
@@ -188,10 +219,18 @@ var A320_Neo_LowerECAM_CRZ;
                 this.CabinAltitudeDisplayed = valueShown;
                 this.OutsidePressureDisplayed = outsidePressureINHG;
             }
+
+            this.condTemp.forEach(this._condTempSelector);
+
+        }
+        _condTempSelector({varName, type, selector, value, index}) {
+            const currentValue = SimVar.GetSimVarValue(varName, type);
+            if (currentValue != value) {
+                selector.textContent = parseInt(currentValue);
+            }
         }
     }
     A320_Neo_LowerECAM_CRZ.Page = Page;
 
 })(A320_Neo_LowerECAM_CRZ || (A320_Neo_LowerECAM_CRZ = {}));
 customElements.define("a320-neo-lower-ecam-crz", A320_Neo_LowerECAM_CRZ.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_CRZ.js.map

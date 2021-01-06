@@ -1,8 +1,10 @@
 ﻿<link rel="stylesheet" href="./A320_Neo_UpperECAM.css" />
+<link rel="stylesheet" href="./A320_Neo_ECAMGauge.css" />
 
 <script type="text/html" id="UpperECAMTemplate">
     <div id="Separators">
         <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+            <text id="packsIndicator" class="Value" style="font-size: 12pt;" x="295" y="20" text-anchor="middle" alignment-baseline="central"></text>
             <line class="Separator" x1="0" y1="402" x2="345" y2="402" stroke-linecap="round" />
             <line class="Separator" x1="405" y1="402" x2="600" y2="402" stroke-linecap="round" />
             <line class="Separator" x1="375" y1="415" x2="375" y2="575" stroke-linecap="round" />
@@ -17,4 +19,9 @@
     </div>
 </script>
 
+<script type="text/html" import-script="/JS/dataStorage.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/NXDataStore.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/NXLogic.js"></script>
+
+<!-- LOCAL SCRIPTS -->
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_UpperECAM.js"></script>

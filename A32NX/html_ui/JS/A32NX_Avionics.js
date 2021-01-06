@@ -58,4 +58,3 @@ var A32NX_Avionics;
     }
     A32NX_Avionics.AltitudeScroller = AltitudeScroller;
 })(A32NX_Avionics || (A32NX_Avionics = {}));
-//# sourceMappingURL=A32NX_Avionics.js.map

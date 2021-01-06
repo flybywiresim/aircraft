@@ -17,7 +17,6 @@
                         - A320_Neo_BAT.Display <a320-neo-bat>
                         - A320_Neo_BRK.Display
                         - A320_Neo_Clock <a320-neo-clock-element>
-                        - A320_Neo_Com <a320-neo-com-element>
                         - A320_Neo_FCU
                         - A320_Neo_FDW
                         - A320_Neo_MFD

@@ -1,36 +1,58 @@
 class CDUDataIndexPage {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.DataIndexPage1;
+        mcdu.activeSystem = 'FMGC';
         mcdu.setTemplate([
             ["DATA INDEX", "1", "2"],
-            ["POSITION"],
+            ["\xa0POSITION"],
             ["<MONITOR"],
-            ["IRS"],
+            ["\xa0IRS"],
             ["<MONITOR"],
-            ["GPS"],
+            ["\xa0GPS"],
             ["<MONITOR"],
             [""],
             ["<A/C STATUS"],
-            ["CLOSEST", "PRINT"],
-            ["<AIRPORTS", "FUNCTION>"],
-            ["EQUITIME", "AOC"],
+            ["\xa0CLOSEST"],
+            ["<AIRPORTS"],
+            ["\xa0EQUITIME", "ACARS/PRINT\xa0"],
             ["<POINT", "FUNCTION>"]
         ]);
 
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onLeftInput[0] = () => {
             CDUPositionMonitorPage.ShowPage(mcdu);
+        };
+
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onLeftInput[1] = () => {
             CDUIRSMonitor.ShowPage(mcdu);
         };
 
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onLeftInput[2] = () => {
             CDUGPSMonitor.ShowPage(mcdu);
         };
 
+        mcdu.leftInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onLeftInput[3] = () => {
             CDUIdentPage.ShowPage(mcdu);
+        };
+
+        mcdu.leftInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onLeftInput[4] = () => {
@@ -46,19 +68,20 @@ class CDUDataIndexPage {
     }
     static ShowPage2(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.DataIndexPage2;
         mcdu.setTemplate([
             ["DATA INDEX", "2", "2"],
-            ["", "PILOTS"],
+            ["", "STORED\xa0"],
             ["<WAYPOINTS", "WAYPOINTS>"],
-            ["", "PILOTS"],
+            ["", "STORED\xa0"],
             ["<NAVAIDS", "NAVAIDS>"],
-            ["", "PILOTS"],
+            ["", "STORED\xa0"],
             ["<RUNWAYS", "RUNWAYS>"],
-            ["", "PILOTS"],
+            ["", "STORED\xa0"],
             ["<ROUTES", "ROUTES>"],
-            ["ACTIVE F-PLAN", ""],
+            ["\xa0ACTIVE F-PLAN", ""],
             ["<WINDS"],
-            ["SEC F-PLAN", ""],
+            ["\xa0SEC F-PLAN", ""],
             ["<WINDS"]
 
         ]);
@@ -67,12 +90,24 @@ class CDUDataIndexPage {
             CDUWaypointPage.ShowPage(mcdu);
         };
 
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onRightInput[0] = () => {
             CDUPilotsWaypoint.ShowPage(mcdu);
         };
 
+        mcdu.rightInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onLeftInput[1] = () => {
             CDUNavaidPage.ShowPage(mcdu);
+        };
+
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onNextPage = () => {
@@ -83,4 +118,3 @@ class CDUDataIndexPage {
         };
     }
 }
-//# sourceMappingURL=A320_Neo_CDU_DataIndexPage.js.map

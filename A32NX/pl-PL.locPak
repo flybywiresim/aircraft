@@ -1,0 +1,13 @@
+{
+  "LocalisationPackage": {
+    "Language": "pl-PL",
+    "Strings": {
+      "AIRCRAFT.DESCRIPTION": "Pierwszy model samolotu A320 został oddany do użytku przez firmę Airbus w marcu 1984 roku. Niemal 26 lat później, w roku 2010, firma ogłosiła narodziny najnowszego członka rodziny: modelu A320neo (ang. „new engine option” – nowy rodzaj silnika), którego celem była rewitalizacja linii wąskokadłubowych samolotów pasażerskich o dwóch silnikach turbowentylatorowych i utrzymanie pozycji lidera na rynku.<\/br><\/br>Po długim okresie przygotowawczym model A320neo został oficjalnie oddany do użytku w liniach Lufthansa na początku 2016 roku. Niemal natychmiast został najszybciej sprzedającym się komercyjnym statkiem powietrznym w historii – do dziś sprzedało się ponad 7000 egzemplarzy wykorzystywanych przez ponad 115 linii lotniczych.<\/br><\/br>Zgodnie z tradycją płatowiec modelu A320neo został zaprojektowany tak, by w ponad 95% przypominać formę wcześniejszych modeli z tej serii, w tym oryginalnego modelu A320, który obok Concorde'a był pierwszym samolotem pasażerskim z elektronicznym systemem sterowania FBW („fly-by-wire”) używanym podczas standardowych manewrów. Wyróżniały go jednak dwa silniki nowej generacji oraz zastrzeżone przez firmę końcówki skrzydeł typu „Sharklet”.<\/br><\/br>Dzięki zmniejszonemu zużyciu paliwa, krótszej odległości wymaganej do lądowania, zwiększonemu zasięgowi i większym możliwościom załadunkowym – a także dzięki znaczącej redukcji w zakresie emisji hałasu i dwutlenku węgla – model A320neo odniósł wielki sukces komercyjny i uznawany jest za milowy krok na drodze do zwiększenia odpowiedzialności za środowisko w sektorze lotniczym.",
+      "AIRCRAFT.UI_MANUFACTURER": "Airbus",
+      "AIRCRAFT.UI_MODEL": "A320neo",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Zmień wybrany kurs w lewo o (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Zmień wybrany kurs w prawo o (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)"
+    }
+  }
+}

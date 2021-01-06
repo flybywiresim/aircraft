@@ -1,0 +1,13 @@
+{
+  "LocalisationPackage": {
+    "Language": "fr-FR",
+    "Strings": {
+      "AIRCRAFT.DESCRIPTION": "Airbus a lancé son premier A320 en mars 1984. Presque 26 ans plus tard, en 2010, l'entreprise dévoile son A320neo (pour « new engine option », nouvelle option de moteur) comme nouveau membre de la famille, afin de revigorer et d'entretenir leur gamme d'avions de ligne de classe mondiale, à fuselage étroit et turboréacteur à double flux.<\/br><\/br>Après un processus de développement particulièrement long, l'A320neo entre en service début 2016 avec Lufthansa, et bat rapidement les records de vente pour un avion commercial, avec plus de 7 000 avions commandés par plus de 115 compagnies aériennes à ce jour.<\/br><\/br>Suivant la tradition établie par l'A320 original, qui a été le premier avion de ligne autre que Concorde à utiliser les commandes de vol électriques, l'A320neo partage 95 % de son fuselage avec les modèles précédents. Cependant, c'est l'introduction de deux nouveaux types de moteurs nouvelle génération, couplés aux saumons d'aile exclusifs « Sharklet » de l'entreprise, qui fait du neo un aéronef à part.<\/br><\/br>Économies de carburant, rayon d'action étendu, charge utile maximale améliorée et distance d'atterrissage raccourcie ; ces avancées clés -- ainsi qu'une réduction drastique du bruit et des émissions de dioxyde de carbone -- montrent en quoi l'A320neo n'est pas seulement un succès commercial, mais également un grand pas en avant en matière de responsabilité environnementale pour l'aviation.",
+      "AIRCRAFT.UI_MANUFACTURER": "Airbus",
+      "AIRCRAFT.UI_MODEL": "A320neo",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adapter le cap souhaité sur la gauche (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adapter le cap souhaité sur la droite (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)"
+    }
+  }
+}

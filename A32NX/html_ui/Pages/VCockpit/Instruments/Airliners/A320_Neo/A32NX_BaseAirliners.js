@@ -324,8 +324,8 @@ var Airliners;
             super.Init();
             console.log("ATC Init");
         }
-        Update() {
-            super.Update();
+        onUpdate(_deltaTime) {
+            super.onUpdate(_deltaTime);
 
             const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
             const lightsTestChanged = lightsTest !== this.lightsTest;
@@ -371,12 +371,15 @@ var Airliners;
                             for (var i = 3; i >= 0; i--) {
                                 if (this.currentDigits[i] >= 0) {
                                     this.currentDigits[i] = -1;
+                                    this.bLastInputIsCLR = true;
                                     break;
                                 }
                             }
                         }
                         this.refreshValue();
                     }
+                } else if (buttonSuffix.charAt(0) == 'I') {
+                    return;
                 } else {
                     let slot = -1;
                     {
@@ -1315,4 +1318,3 @@ var Airliners;
     }
     Airliners.PopupMenu_Handler = PopupMenu_Handler;
 })(Airliners || (Airliners = {}));
-//# sourceMappingURL=BaseAirliners.js.map

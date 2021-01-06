@@ -11,10 +11,10 @@
             <Test>
                <TestValue>
                   <Operator OpType="NOT">
-                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:6" Units="boolean" />
+                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:1" Units="boolean" />
                   </Operator>
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="6" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="1" />
                <Instrument Id="ENGINE_Switch_Master1" />
             </Test>
             <Test>
@@ -29,10 +29,10 @@
             <Test>
                <TestValue>
                   <Operator OpType="NOT">
-                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:7" Units="boolean" />
+                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:2" Units="boolean" />
                   </Operator>
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="7" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="2" />
                <Instrument Id="ENGINE_Switch_Master2" />
             </Test>
             <Test>
@@ -192,15 +192,15 @@
             <TestValue>
                <Operator OpType="AND">
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A320_Neo_ADIRS_KNOB_1)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_KNOB_1)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A320_Neo_ADIRS_KNOB_2)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_KNOB_2)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A320_Neo_ADIRS_KNOB_3)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_KNOB_3)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                </Operator>
@@ -378,7 +378,7 @@
          <CheckpointDesc SubjectTT="TT:GLARESHIELD" ExpectationTT="TT:" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_GLARESHIELD_LIGHTS">
-         <CheckpointDesc SubjectTT="TT:Glareshield Integral Light and Flood Flight" ExpectationTT="TT:SET" />
+         <CheckpointDesc SubjectTT="TT:Glareshield Integral Light and Flood Light" ExpectationTT="TT:SET" />
          <Instrument Id="Lighting_Knob_Glareshield_2"/>
          <Instrument Id="Lighting_Knob_Glareshield_3"/>
       </Checkpoint>
@@ -545,10 +545,10 @@
             <Test>
                <TestValue>
                   <Operator OpType="NOT">
-                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:6" Units="boolean" />
+                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:1" Units="boolean" />
                   </Operator>
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="6" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="1" />
                <Instrument Id="ENGINE_Switch_Master1" />
             </Test>
             <Test>
@@ -563,10 +563,10 @@
             <Test>
                <TestValue>
                   <Operator OpType="NOT">
-                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:7" Units="boolean" />
+                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:2" Units="boolean" />
                   </Operator>
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="7" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="2" />
                <Instrument Id="ENGINE_Switch_Master2" />
             </Test>
             <Test>
@@ -905,10 +905,7 @@
          <CheckpointDesc SubjectTT="TT:Flight Director" ExpectationTT="TT:ON" />
          <Test>
             <TestValue>
-               <Operator OpType="EQUAL">
-                  <Val SimVarName="AUTOPILOT FLIGHT DIRECTOR ACTIVE" Units="Boolean"/>
-                  <Val Value="0"/>
-               </Operator>
+               <Val SimVarName="AUTOPILOT FLIGHT DIRECTOR ACTIVE:1" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="TOGGLE_FLIGHT_DIRECTOR"/>
             <Instrument Id="AUTOPILOT_PUSH_FLIGHTDIRECTOR"/>
@@ -1260,7 +1257,7 @@
          <CheckpointDesc SubjectTT="TT:FMGS: PERF DES Page" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_DPREP_FMGS_PERF_APPR">
-         <CheckpointDesc SubjectTT="TT:FMGS: PEFR APPR Page" ExpectationTT="TT:CHECK" />
+         <CheckpointDesc SubjectTT="TT:FMGS: PERF APPR Page" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_DPREP_FMGS_GA">
          <CheckpointDesc SubjectTT="TT:FMGS: Go-Around Page" ExpectationTT="TT:CHECK" />
@@ -1466,7 +1463,7 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_LANDING_GEAR">
-         <CheckpointDesc SubjectTT="TT:Leading Gear" ExpectationTT="TT:DOWN" />
+         <CheckpointDesc SubjectTT="TT:Landing Gear" ExpectationTT="TT:DOWN" />
          <Instrument Id="LANDING_GEAR_Lever_Gear" />
          <Test>
             <TestValue>
@@ -1932,10 +1929,10 @@
             <Test>
                <TestValue>
                   <Operator OpType="NOT">
-                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:6" Units="boolean" />
+                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:1" Units="boolean" />
                   </Operator>
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="6" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="1" />
                <Instrument Id="ENGINE_Switch_Master1" />
             </Test>
             <Test>
@@ -1950,10 +1947,10 @@
             <Test>
                <TestValue>
                   <Operator OpType="NOT">
-                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:7" Units="boolean" />
+                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:2" Units="boolean" />
                   </Operator>
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="7" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="2" />
                <Instrument Id="ENGINE_Switch_Master2" />
             </Test>
             <Test>
@@ -2021,15 +2018,15 @@
             <TestValue>
                <Operator OpType="AND">
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A320_Neo_ADIRS_KNOB_1)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_KNOB_1)" Units="Enum"/>
                      <Val Value="0"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A320_Neo_ADIRS_KNOB_2)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_KNOB_2)" Units="Enum"/>
                      <Val Value="0"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A320_Neo_ADIRS_KNOB_3)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_KNOB_3)" Units="Enum"/>
                      <Val Value="0"/>
                   </Operator>
                </Operator>
@@ -2218,9 +2215,9 @@
          <Sequence SeqType="Unordered">
             <Test>
                <TestValue>
-                  <Val SimVarName="FUELSYSTEM VALVE SWITCH:6" Units="boolean" />
+                  <Val SimVarName="FUELSYSTEM VALVE SWITCH:1" Units="boolean" />
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="6" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="1" />
                <Instrument Id="ENGINE_Switch_Master1" />
             </Test>
             <Test>
@@ -2238,9 +2235,9 @@
          <Sequence SeqType="Unordered">
             <Test>
                <TestValue>
-                  <Val SimVarName="FUELSYSTEM VALVE SWITCH:7" Units="boolean" />
+                  <Val SimVarName="FUELSYSTEM VALVE SWITCH:2" Units="boolean" />
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="7" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="2" />
                <Instrument Id="ENGINE_Switch_Master2" />
             </Test>
             <Test>

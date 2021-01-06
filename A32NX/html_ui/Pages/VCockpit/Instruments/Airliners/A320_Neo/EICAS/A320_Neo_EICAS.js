@@ -13,6 +13,23 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         return this.urlConfig.index === 2;
     }
 
+    // The following two functions can be called from anywhere on the EICAS
+    static isOnTopScreen() {
+        const eicas = document.getElementsByTagName("a320-neo-eicas-element");
+        if (!eicas.length) {
+            return false;
+        }
+        return eicas[0].isTopScreen;
+    }
+
+    static isOnBottomScreen() {
+        const eicas = document.getElementsByTagName("a320-neo-eicas-element");
+        if (!eicas.length) {
+            return false;
+        }
+        return eicas[0].isBottomScreen;
+    }
+
     changePage(_pageName) {
         let pageName = _pageName.toUpperCase();
         for (let i = 0; i < this.lowerScreenPages.length; i++) {
@@ -92,6 +109,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.bottomSelfTestTimerStarted = false;
         this.bottomSelfTestLastKnobValue = 1;
 
+        this.upperEngTestDiv = this.querySelector("#Eicas1EngTest");
+        this.lowerEngTestDiv = this.querySelector("#Eicas2EngTest");
+        this.upperEngMaintDiv = this.querySelector("#Eicas1MaintMode");
+        this.lowerEngMaintDiv = this.querySelector("#Eicas2MaintMode");
+
         this.doorVideoPressed = false;
 
         // Using ternary in case the LVar is undefined
@@ -112,6 +134,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:91", "FLOAT64", 0.1);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92", "FLOAT64", 0.1);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93", "FLOAT64", 0.1);
+
+        this.ecamAllButtonPrevState = false;
     }
 
     onUpdate() {
@@ -149,6 +173,10 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             SimVar.SetSimVarValue("L:ACPowerAvailable", "bool", 0);
         }
 
+        // Engineering self-tests
+        updateDisplayDMC("EICAS1", this.upperEngTestDiv, this.upperEngMaintDiv);
+        updateDisplayDMC("EICAS2", this.lowerEngTestDiv, this.lowerEngMaintDiv);
+
         /**
          * Self test on top ECAM screen
          **/
@@ -157,7 +185,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         if (((topSelfTestCurrentKnobValue >= 0.1 && this.topSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.topSelfTestTimerStarted) {
             this.topSelfTestDiv.style.visibility = "visible";
-            this.topSelfTestTimer = 14.25;
+            this.topSelfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
             this.topSelfTestTimerStarted = true;
         }
 
@@ -179,7 +207,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         if (((bottomSelfTestCurrentKnobValue >= 0.1 && this.bottomSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.bottomSelfTestTimerStarted) {
             this.bottomSelfTestDiv.style.visibility = "visible";
-            this.bottomSelfTestTimer = 14.25;
+            this.bottomSelfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
             this.bottomSelfTestTimerStarted = true;
         }
 
@@ -269,22 +297,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const sFailPage = SimVar.GetSimVarValue("L:A32NX_ECAM_SFAIL", "Enum");
 
         if (sFailPage != -1) {
-            const ECAMPageIndices = {
-                0: "ENG",
-                1: "BLEED",
-                2: "PRESS",
-                3: "ELEC",
-                4: "HYD",
-                5: "FUEL",
-                6: "APU",
-                7: "COND",
-                8: "DOOR",
-                9: "WHEEL",
-                10: "FTCL",
-                11: "STS"
-            };
-
-            this.pageNameWhenUnselected = ECAMPageIndices[sFailPage];
+            this.pageNameWhenUnselected = this.lowerScreenPages[sFailPage].name;
 
             // Disable user selected page when new failure detected
             if (this.PrevFailPage !== sFailPage) {
@@ -296,9 +309,21 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         // switch page when desired page was changed, or new Failure detected
         if ((this.pageNameWhenUnselected != prevPage && this.currentPage == -1) || (this.PrevFailPage !== sFailPage)) {
             this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, this.pageNameWhenUnselected);
-
         }
 
+        // ECAM all button
+        this.ecamAllButtonState = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
+
+        if (this.ecamAllButtonState && !this.ecamAllButtonPrevState) { // button press
+            this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
+            this.ecamCycleInterval = setInterval(() => {
+                this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
+            }, 1000);
+        } else if (!this.ecamAllButtonState && this.ecamAllButtonPrevState) { // button release
+            clearInterval(this.ecamCycleInterval);
+        }
+
+        this.ecamAllButtonPrevState = this.ecamAllButtonState;
         this.PrevFailPage = sFailPage;
     }
 
@@ -357,25 +382,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 }
             }
 
-            if (this.beforeTakeoffPhase && starterOne && starterTwo) {
-                if (autoBrkValue == 3) {
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "T.O AUTO BRK MAX", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                } else {
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "T.O AUTO BRK......MAX[color]blue", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                }
-                infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0SIGNS ON", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                if (splrsArmed) {
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0SPLRS ARM", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                } else {
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0SPLRS.........ARM", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                }
-                if (flapsPosition > 0) {
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0FLAPS T.O", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                } else {
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0FLAPS.........T.O", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                }
-                infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0T.O CONFIG", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-            } else if (this.annunciations) {
+            if (this.annunciations) {
                 const onGround = Simplane.getIsGrounded();
                 for (let i = this.annunciations.displayWarning.length - 1; i >= 0; i--) {
                     if (!this.annunciations.displayWarning[i].Acknowledged) {

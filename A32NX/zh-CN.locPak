@@ -1,0 +1,13 @@
+{
+  "LocalisationPackage": {
+    "Language": "zh-CN",
+    "Strings": {
+      "AIRCRAFT.DESCRIPTION": "Airbus launched their first A320 in March of 1984. Nearly 26 years later, in 2010, they announced the A320neo (\"new engine option\") as the newest member of the family, to revitalize and sustain their line of world-leading, narrow-body, twin-turbofan airliners.<\/br><\/br>After an extended development process, the A320neo officially entered service in early 2016 with Lufthansa, and quickly became the fastest-selling commercial aircraft ever, with more than 7,000 planes ordered by more than 115 airlines to date.<\/br><\/br>Continuing the tradition established by the original A320, which was the first airliner other than Concorde to use fly-by-wire control for normal operations, the A320neo shares over 95 percent airframe commonality with predecessor models. However, it's the introduction of two new-generation engine types, paired with the company's proprietary 'Sharklet' wing-tips, that really sets the neo apart.<\/br><\/br>Fuel savings, extended range, increased max payload and shortened landing distance; these key advances -- along with a dramatic reduction in noise and CO₂ emissions -- prove why the A320neo is a not only a commercial success, but also a significant step forward on aviation's path to greater environmental responsibility.",
+      "AIRCRAFT.UI_MANUFACTURER": "Airbus",
+      "AIRCRAFT.UI_MODEL": "A320neo",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "向左调整所选航向(%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "向右调整所选航向(%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)"
+    }
+  }
+}
