@@ -76,7 +76,7 @@ export const AltitudeIndicatorOfftape = ({
     if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
         return (
             [
-                <path id="AltTapeOutline" className="NormalStroke Red" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />,
+                <path id="AltTapeOutline" className="NormalStroke Red" d="m117.75 123.56h13.096v-85.473h-13.096" />,
                 <path id="AltReadoutBackground" className="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />,
                 <text id="AltFailText" className="Blink9Seconds FontLargest Red EndAlign" x="131.16769" y="83.433167">ALT</text>,
             ]
