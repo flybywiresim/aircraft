@@ -2162,7 +2162,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async trySetAverageWind(s) {
-        const validDelims = ["HD", "H", "-", "TL", "T", "+"];
+        const validDelims = ["HD", "H", "-", "TL", "T", "+", ""]; // Based on arrays being iterated, it will check values like "23" last
         const matchedIndex = validDelims.findIndex(element => s.includes(element));
 
         if (matchedIndex >= 0) {
@@ -2182,6 +2182,9 @@ class FMCMainDisplay extends BaseAirliners {
                 this.addNewMessage(NXSystemMessages.formatError);
                 return false;
             }
+        } else {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return false;
         }
     }
 
