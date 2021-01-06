@@ -34,7 +34,7 @@ import { SecFlightPlanPage } from './Pages/FMGC/SecFlightPlan.jsx';
 export const PagesContainer = () => {
     const [currentPage, setCurrentPage] = useState(0);
 
-    useInteractionEvent('A32NX_MCDU_PAGE_CHANGED', () => setCurrentPage(getSimVar('L:A32NX_MCDU_CURRENT_PAGE_INDEX', 'number')));
+    // useInteractionEvent('A32NX_MCDU_PAGE_CHANGED', () => setCurrentPage(getSimVar('L:A32NX_MCDU_CURRENT_PAGE_INDEX', 'number')));
 
     const pages = {
         0: <AirportPage />,

@@ -10,7 +10,7 @@ import './style.scss';
 import { Titlebar } from './Titlebar/Titlebar.jsx';
 import { PagesContainer } from './PagesContainer.jsx';
 import { Scratchpad } from './Scratchpad/Scratchpad.jsx';
-import NXDataStore from '../../../../A32NX/html_ui/Pages/A32NX_Utils/NXDataStore';
+import NXDataStore from '../NXDataStore.mjs';
 
 function createTemplateData() {
     const data = {
@@ -60,15 +60,6 @@ function SelfTest() {
 function Idle() {
     const [inop, setInop] = useState(false);
     createTemplateData();
-
-    useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {
-        if (!inop) {
-            setInop(true);
-            setTimeout(() => {
-                setInop(false);
-            }, 3000);
-        }
-    });
 
     return (
         <>

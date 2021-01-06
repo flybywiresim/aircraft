@@ -1,6 +1,6 @@
-Include.addScript("/JS/dataStorage.js");
+Include.addScript('/JS/dataStorage.js');
 
-class NXDataStore {
+export default class NXDataStore {
     static get(key, defaultVal) {
         const val = GetStoredData(`A32NX_${key}`);
         if (!val) {
