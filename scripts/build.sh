@@ -19,6 +19,10 @@ build_behavior() {
     node "${DIR}/../src/behavior/build.js"
 }
 
+build_model() {
+    node "${DIR}/../src/model/build.js"
+}
+
 build_manifests() {
     node "${DIR}/build.js"
 }
@@ -44,6 +48,7 @@ if [ -z "$1" ]; then
     set -x
     build_instruments
     build_behavior
+    build_model
 else
     name="build_${1}"
     set -x

@@ -25,8 +25,12 @@
 1. [CHECKLISTS] Fixed typo in Descent preparation checklist - @ronson1909 (Ronson1909)
 1. [TCAS] Fixed TCAS traffic mode switch not turning - @Saschl (saschl#9432)
 1. [FLIGHTMODEL] Fixed spoiiler auto-retract after landing - @donstim - (donbikes#4084)
+1. [GENERAL] Added TRK/FPA mode including FPV/FPD on PFD - @theomessin (Theodore Messinezis)
 1. [DISPLAYS] Fixed background on DCDU and SAI to match other displays.- @nathaninnes (Nathan Innes)
 1. [MCDU] Enabled buttons on the F/O MCDU - @tyler58546 (tyler58546)
+1. [FLIGHTMODEL] Improved fix for flaps 1 unrecoverable dives - @donstim (donbikes#4084)
+1. [ECAM/CORE] Improved flap auto-retraction detection - @MisterChocker (Leon)
+1. [ECAM] Added missing unit conversion to cruise and engine page - @MisterChocker (Leon)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)

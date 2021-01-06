@@ -254,7 +254,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                 if (this.cursorSVGText) {
                     var displaySpeed = Math.floor(vSpeed / 100);
                     if (Math.abs(displaySpeed) > 2) {//text is displayed above +/-200ft/min only was 0
-                        this.cursorSVGText.textContent = Math.abs(displaySpeed).toString();
+                        this.cursorSVGText.textContent = Math.abs(displaySpeed).toString().padStart(2, '0');
                         let posY;
                         if (displaySpeed > 0) {
                             posY = this.cursorPosY1 - 13;

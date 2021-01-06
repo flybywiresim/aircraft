@@ -2409,7 +2409,7 @@ var A320_Neo_UpperECAM;
         update(_deltaTime) {
             super.update(_deltaTime);
             const slatsAngle = (SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
-            const flapsAngle = (SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
+            const flapsAngle = Math.max(0, (SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5);
             const handleIndex = Simplane.getFlapsHandleIndex(true);
             const slatsTargetIndex = handleIndex;
             let flapsTargetIndex = handleIndex;
@@ -2461,8 +2461,7 @@ var A320_Neo_UpperECAM;
                     switch (handleIndex) {
                         case 1:
                         {
-                            const flapsOut = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT INDEX", "Number");
-                            if (flapsOut > 0) {
+                            if (flapsAngle > 9.99) {
                                 this.currentStateText.textContent = "1+F";
                             } else {
                                 this.currentStateText.textContent = "1";
