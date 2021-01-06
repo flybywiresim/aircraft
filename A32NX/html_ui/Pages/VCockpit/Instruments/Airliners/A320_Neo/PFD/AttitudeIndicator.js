@@ -76,8 +76,6 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.borders.setAttribute("stroke-width", "3");
         this.borders.setAttribute("stroke-opacity", "1");
     }
-    showFPV(_active) {
-    }
     destroyLayout() {
         Utils.RemoveAllChildren(this);
         for (let i = 0; i < Jet_PFD_AttitudeIndicator.dynamicAttributes.length; i++) {
@@ -478,7 +476,8 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             this.compassTicks.setAttribute("transform", `translate(${-offset} 0)`);
         }
         if (this.compassSelectedHeading) {
-            let hdgDiff = this.apHdg - this.compass;
+            const isTrkMode = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
+            let hdgDiff = (isTrkMode ? SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degree") : this.apHdg) - this.compass;
             if (hdgDiff > 180) {
                 hdgDiff -= 360;
             }
@@ -585,6 +584,7 @@ var Jet_PFD_FlightDirector;
         constructor(_root) {
             this.group = null;
             this.isActive = false;
+            this.strokeWidth = 1.5;
             if (_root != null) {
                 this.group = document.createElementNS(Avionics.SVG.NS, "g");
                 this.group.setAttribute("id", this.getGroupName());
@@ -648,7 +648,10 @@ var Jet_PFD_FlightDirector;
             }
         }
         getStrokeWidth() {
-            return "1.5";
+            return this.strokeWidth;
+        }
+        setStrokeWidth(strokeWidth) {
+            this.strokeWidth = strokeWidth;
         }
     }
     DisplayBase.HEADING_MAX_POS_X = 60;
@@ -734,11 +737,51 @@ var Jet_PFD_FlightDirector;
             return 75;
         }
     }
+
+    function getCurrentHeading(originalBodyVelocityZ) {
+        const originalBodyVelocityX = SimVar.GetSimVarValue("VELOCITY BODY X", "feet per second");
+        const originalBodyVelocityXSquared = originalBodyVelocityX * originalBodyVelocityX;
+        const originalBodyVelocityZSquared = originalBodyVelocityZ * originalBodyVelocityZ;
+        let currentHeading = 0;
+        let bodyNorm = Math.sqrt(originalBodyVelocityXSquared + originalBodyVelocityZSquared);
+        const bodyNormInv = 1 / bodyNorm;
+        const bodyVelocityX = originalBodyVelocityX * bodyNormInv;
+        const bodyVelocityZ = originalBodyVelocityZ * bodyNormInv;
+        bodyNorm = Math.sqrt((bodyVelocityX * bodyVelocityX) + (bodyVelocityZ * bodyVelocityZ));
+        let angle = bodyVelocityZ / bodyNorm;
+        angle = Utils.Clamp(angle, -1, 1);
+        currentHeading = Math.acos(angle) * (180 / Math.PI);
+        if (bodyVelocityX > 0) {
+            currentHeading *= -1;
+        }
+        return currentHeading;
+    }
+
+    function getCurrentPitch(originalBodyVelocityZ) {
+        const originalBodyVelocityY = SimVar.GetSimVarValue("VELOCITY WORLD Y", "feet per second");
+        const originalBodyVelocityYSquared = originalBodyVelocityY * originalBodyVelocityY;
+        const originalBodyVelocityZSquared = originalBodyVelocityZ * originalBodyVelocityZ;
+        let currentPitch = 0;
+        let bodyNorm = Math.sqrt(originalBodyVelocityYSquared + originalBodyVelocityZSquared);
+        const bodyNormInv = 1 / bodyNorm;
+        const bodyVelocityY = originalBodyVelocityY * bodyNormInv;
+        const bodyVelocityZ = originalBodyVelocityZ * bodyNormInv;
+        bodyNorm = Math.sqrt((bodyVelocityY * bodyVelocityY) + (bodyVelocityZ * bodyVelocityZ));
+        let angle = bodyVelocityZ / bodyNorm;
+        angle = Utils.Clamp(angle, -1, 1);
+        currentPitch = Math.acos(angle) * (180 / Math.PI);
+        if (bodyVelocityY > 0) {
+            currentPitch *= -1;
+        }
+        return currentPitch;
+    }
+
     class PathVectorDisplay extends DisplayBase {
         getGroupName() {
             return "PathVector";
         }
         create() {
+            this.setStrokeWidth(3.5);
             const circleRadius = this.getCircleRadius();
             const verticalLineLength = this.getVerticalLineLength();
             const horizontalLineLength = this.getHorizontalLineLength();
@@ -751,44 +794,14 @@ var Jet_PFD_FlightDirector;
             if (this.group != null) {
                 const originalBodyVelocityZ = SimVar.GetSimVarValue("VELOCITY BODY Z", "feet per second");
                 if (originalBodyVelocityZ >= PathVectorDisplay.MIN_SPEED_TO_DISPLAY) {
-                    const originalBodyVelocityX = SimVar.GetSimVarValue("VELOCITY BODY X", "feet per second");
-                    const originalBodyVelocityY = SimVar.GetSimVarValue("VELOCITY WORLD Y", "feet per second");
-                    const originalBodyVelocityXSquared = originalBodyVelocityX * originalBodyVelocityX;
-                    const originalBodyVelocityYSquared = originalBodyVelocityY * originalBodyVelocityY;
-                    const originalBodyVelocityZSquared = originalBodyVelocityZ * originalBodyVelocityZ;
-                    let currentHeading = 0;
-                    {
-                        var bodyNorm = Math.sqrt(originalBodyVelocityXSquared + originalBodyVelocityZSquared);
-                        var bodyNormInv = 1 / bodyNorm;
-                        const bodyVelocityX = originalBodyVelocityX * bodyNormInv;
-                        var bodyVelocityZ = originalBodyVelocityZ * bodyNormInv;
-                        bodyNorm = Math.sqrt((bodyVelocityX * bodyVelocityX) + (bodyVelocityZ * bodyVelocityZ));
-                        var angle = bodyVelocityZ / bodyNorm;
-                        angle = Utils.Clamp(angle, -1, 1);
-                        currentHeading = Math.acos(angle) * (180 / Math.PI);
-                        if (bodyVelocityX > 0) {
-                            currentHeading *= -1;
-                        }
-                    }
-                    let currentPitch = 0;
-                    {
-                        var bodyNorm = Math.sqrt(originalBodyVelocityYSquared + originalBodyVelocityZSquared);
-                        var bodyNormInv = 1 / bodyNorm;
-                        const bodyVelocityY = originalBodyVelocityY * bodyNormInv;
-                        var bodyVelocityZ = originalBodyVelocityZ * bodyNormInv;
-                        bodyNorm = Math.sqrt((bodyVelocityY * bodyVelocityY) + (bodyVelocityZ * bodyVelocityZ));
-                        var angle = bodyVelocityZ / bodyNorm;
-                        angle = Utils.Clamp(angle, -1, 1);
-                        currentPitch = Math.acos(angle) * (180 / Math.PI);
-                        if (bodyVelocityY > 0) {
-                            currentPitch *= -1;
-                        }
-                    }
-                    const x = this.calculatePosXFromBank(currentHeading, 0);
-                    const y = this.calculatePosYFromPitch(currentPitch, 0);
+                    this.group.setAttribute("display", "block");
+                    const currentHeading = getCurrentHeading(originalBodyVelocityZ);
+                    const currentPitch = getCurrentPitch(originalBodyVelocityZ);
+                    const x = this.calculatePosXFromBank(-currentHeading, 0);
+                    const y = this.calculatePosYFromPitch(Simplane.getPitch(), currentPitch);
                     this.group.setAttribute("transform", "translate(" + x + ", " + y + ")");
                 } else {
-                    this.group.setAttribute("transform", "translate(0, 0)");
+                    this.group.setAttribute("display", "none");
                 }
             }
         }
@@ -799,7 +812,7 @@ var Jet_PFD_FlightDirector;
             return "#00FF00";
         }
         getCircleRadius() {
-            return 10;
+            return 8;
         }
         getVerticalLineLength() {
             return 15;
@@ -813,6 +826,7 @@ var Jet_PFD_FlightDirector;
             return "FlightPathDirector";
         }
         create() {
+            this.setStrokeWidth(3.5);
             this.group.appendChild(this.createCircle(FPD_Airbus.CIRCLE_RADIUS));
             const path = document.createElementNS(Avionics.SVG.NS, "path");
             const d = [
@@ -831,9 +845,16 @@ var Jet_PFD_FlightDirector;
         }
         refresh(_deltaTime) {
             if (this.group != null) {
-                const x = this.calculatePosXFromBank(Simplane.getBank(), Simplane.getFlightDirectorBank());
-                const y = this.calculatePosYFromPitch(Simplane.getPitch(), Simplane.getFlightDirectorPitch());
-                const angle = -Simplane.getBank();
+                const originalBodyVelocityZ = SimVar.GetSimVarValue("VELOCITY BODY Z", "feet per second");
+                const currentHeading = getCurrentHeading(originalBodyVelocityZ);
+                const currentPitch = getCurrentPitch(originalBodyVelocityZ);
+                const x = this.calculatePosXFromBank(-currentHeading, 0);
+
+                const y = Simplane.getAutoPilotVerticalSpeedHoldActive() ?
+                    this.calculatePosYFromPitch(Simplane.getPitch(), -SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree")) :
+                    this.calculatePosYFromPitch(Simplane.getPitch(), Simplane.getFlightDirectorPitch()) + this.calculatePosYFromPitch(Simplane.getPitch(), currentPitch);
+
+                const angle = Simplane.getBank() - Simplane.getFlightDirectorBank();
                 this.group.setAttribute("transform", "translate(" + x + ", " + y + ") rotate(" + angle + ")");
             }
         }
@@ -842,22 +863,19 @@ var Jet_PFD_FlightDirector;
         }
     }
     FPD_Airbus.CIRCLE_RADIUS = 5;
-    FPD_Airbus.LINE_LENGTH = 40;
+    FPD_Airbus.LINE_LENGTH = 65;
     FPD_Airbus.TRIANGLE_LENGTH = 20;
     FPD_Airbus.TRIANGLE_HEIGHT = 10;
     class Handler {
         constructor() {
             this.root = null;
             this.displayMode = new Array();
-            this.fFDPitchOffset = 0.0;
         }
         init(_root) {
             this.root = _root;
             if (this.root != null) {
-                this.initDefaultValues();
                 const group = document.createElementNS(Avionics.SVG.NS, "g");
                 group.setAttribute("id", "FlightDirectorDisplay");
-                group.setAttribute("transform", "translate(0, " + this.fFDPitchOffset + ")");
                 this.createDisplayModes(group);
                 this.root.appendChild(group);
             }
@@ -891,13 +909,10 @@ var Jet_PFD_FlightDirector;
                 fdActive = false;
             }
 
-            const trkfpaMode = Simplane.getAutoPilotTRKFPAModeActive();
+            const trkfpaMode = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
             this.setModeActive(0, fdActive && !trkfpaMode);
             this.setModeActive(1, trkfpaMode);
             this.setModeActive(2, fdActive && trkfpaMode);
-        }
-        initDefaultValues() {
-            this.fFDPitchOffset = -2.5;
         }
     }
     Jet_PFD_FlightDirector.A320_Neo_Handler = A320_Neo_Handler;
