@@ -51,6 +51,24 @@ a320-neo-fdw {
   position: relative;
   overflow: hidden;
   background-color: black; }
+  a320-neo-fdw #ActiveValueBack {
+    font-family: Digital;
+    font-size: 52px;
+    right: 5%;
+    text-anchor: end;
+    fill: #985c1c18 !important;
+    letter-spacing: 0px;
+    alignment-baseline: central;
+  }
+  a320-neo-fdw #StbyCrsValueBack {
+    font-family: Digital;
+    right: 5%;
+    font-size: 52px;
+    text-anchor: end;
+    fill: #985c1c18 !important;
+    letter-spacing: 0px;
+    alignment-baseline: central;
+  }
   a320-neo-fdw svg {
     width: 100%;
     height: 100%; }
@@ -70,4 +88,3 @@ a320-neo-fdw {
     top: 0%; }
   a320-neo-fdw #StbyCrs {
     top: 50%; }
-

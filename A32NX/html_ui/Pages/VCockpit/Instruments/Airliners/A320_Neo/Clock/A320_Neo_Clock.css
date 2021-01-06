@@ -51,14 +51,14 @@ a320-neo-clock-element {
   overflow: hidden; }
   a320-neo-clock-element #Mainframe {
     position: absolute;
-    top: -4%;
+    top: -5%;
     bottom: 0;
     left: 2%;
     right: 0; 
-    background-color: rgba(5, 40, 80, 0.623);
+    background-color: rgb(1, 5, 29);
     color: rgba(155, 148, 148, 0.911);}
     a320-neo-clock-element #Mainframe #TopSelector {
-      margin-top: 0%;
+      margin-top: 5%;
       width: 100%;
       height: 35%;
       display: flex;
@@ -98,7 +98,7 @@ a320-neo-clock-element {
           color: rgba(155, 148, 148, 0.911); }
 
     a320-neo-clock-element #Mainframe #BottomSelector {
-      margin-top: 1%;
+      top: -9%;
       width: 100%;
       height: 35%;
       display: flex;

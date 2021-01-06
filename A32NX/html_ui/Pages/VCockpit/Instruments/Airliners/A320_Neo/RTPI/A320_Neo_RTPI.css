@@ -67,7 +67,7 @@ a320-neo-rtpi {
     width: 105%;
     height: 100%;
     left: -5%;
-    top: -6%;
+    top: 6%;
     background-color: rgba(32, 19, 2, 0.884);}
   a320-neo-rtpi #Content #Direction {
       text-anchor: start; 
