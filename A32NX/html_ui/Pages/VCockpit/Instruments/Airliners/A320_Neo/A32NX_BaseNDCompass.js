@@ -192,15 +192,15 @@ class Jet_NDCompass extends HTMLElement {
     }
     updateCompass(_deltaTime) {
         const simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-        const simSelectedHeading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
+        const isTRKMode = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
+        const simSelectedHeading = isTRKMode ?
+            SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degree") :
+            SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
         let simTrack = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
         const simSelectedTrack = SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree");
         const simGroundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
-        if (Simplane.getAutoPilotTRKModeActive() || Simplane.getAutoPilotTRKFPAModeActive()) {
-            this._referenceMode = Jet_NDCompass_Reference.TRACK;
-        } else {
-            this._referenceMode = Jet_NDCompass_Reference.HEADING;
-        }
+        this._referenceMode = Jet_NDCompass_Reference.HEADING;
+
         let headingChanged = false;
         if (Math.round(simSelectedHeading) != this.lastSelectedHeading) {
             if (this.lastSelectedHeading >= 0) {
