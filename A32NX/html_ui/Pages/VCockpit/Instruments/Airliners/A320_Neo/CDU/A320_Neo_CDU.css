@@ -255,7 +255,7 @@ fmc-main-display::before {
 
 #arrow-horizontal {
   position: absolute;
-  right: 2%;
+  right: 1%;
   width: 100%;
   text-align: right;
 }
