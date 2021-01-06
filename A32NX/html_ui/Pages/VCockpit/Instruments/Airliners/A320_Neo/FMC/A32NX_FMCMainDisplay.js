@@ -3255,8 +3255,8 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     onEvent(_event) {
-        if (_event.indexOf("1_BTN_") !== -1 || _event.indexOf("BTN_") !== -1) {
-            const input = _event.replace("1_BTN_", "").replace("BTN_", "");
+        if (_event.indexOf("1_BTN_") !== -1 || _event.indexOf("2_BTN_") !== -1 || _event.indexOf("BTN_") !== -1) {
+            const input = _event.replace("1_BTN_", "").replace("2_BTN_", "").replace("BTN_", "");
             if (this.onInputAircraftSpecific(input)) {
                 return;
             }

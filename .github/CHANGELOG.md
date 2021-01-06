@@ -24,12 +24,14 @@
 1. [CHECKLISTS] Fixed typo in Descent preparation checklist - @ronson1909 (Ronson1909)
 1. [TCAS] Fixed TCAS traffic mode switch not turning - @Saschl (saschl#9432)
 1. [FLIGHTMODEL] Fixed spoiiler auto-retract after landing - @donstim - (donbikes#4084)
+1. [DISPLAYS] Fixed background on DCDU and SAI to match other displays.- @nathaninnes (Nathan Innes)
+1. [MCDU] Enabled buttons on the F/O MCDU - @tyler58546 (tyler58546)
 1. [MCDU] Horizontal slew arrows now appear in the correct location - @tyler58546 (tyler58546)
 1. [MCDU] Vertical slew arrows have been added on pages that can be scrolled - @tyler58546 (tyler58546)
 1. [MCDU] The "F-PLN" title has been removed from the flight plan page - @tyler58546 (tyler58546)
 1. [MCDU] The flight plan page now shows the flight number in the top left corner - @tyler58546 (tyler58546)
 1. [MCDU] The flight plan page now shows "TMPY" in the top line when displaying the temporary flight plan - @tyler58546 (tyler58546)
-1. [MCDU] The "FROM" indicator on the flight plan page now is now in the top line - @tyler58546 (tyler58546)
+1. [MCDU] The "FROM" indicator on the flight plan page is now in the top line - @tyler58546 (tyler58546)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
