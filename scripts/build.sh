@@ -20,7 +20,7 @@ build_behavior() {
 }
 
 build_model() {
-    npm run build:model
+    node "${DIR}/../src/model/build.js"
 }
 
 build_manifests() {
@@ -47,8 +47,8 @@ build_metadata() {
 if [ -z "$1" ]; then
     set -x
     build_instruments
-    build_model
     build_behavior
+    build_model
 else
     name="build_${1}"
     set -x
