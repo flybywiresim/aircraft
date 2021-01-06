@@ -39,7 +39,7 @@ function combineGltf(pathA, pathB, outputPath) {
             if (texture.source) {
                 texture.source += imagesCount;
             }
-            if (texture.extensions.MSFT_texture_dds) {
+            if (texture.extensions && texture.extensions.MSFT_texture_dds) {
                 texture.extensions.MSFT_texture_dds.source += imagesCount;
             }
             gltfA.textures.push(texture);
