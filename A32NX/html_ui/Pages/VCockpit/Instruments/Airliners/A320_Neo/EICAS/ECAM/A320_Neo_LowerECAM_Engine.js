@@ -45,11 +45,16 @@ var A320_Neo_LowerECAM_Engine;
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
+            const unitConversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+            if (this.unitConversion !== unitConversion) {
+                this.unitConversion = unitConversion;
+                this.querySelector("#FuelUsedUnit").textContent = this.unitConversion === 1 ? "KG" : "LBS";
+            }
             if (this.engineLeft != null) {
-                this.engineLeft.update(_deltaTime);
+                this.engineLeft.update(_deltaTime, this.unitConversion);
             }
             if (this.engineRight != null) {
-                this.engineRight.update(_deltaTime);
+                this.engineRight.update(_deltaTime, this.unitConversion);
             }
             this.updateIGN();
         }
@@ -140,6 +145,7 @@ var A320_Neo_LowerECAM_Engine;
         constructor(_engineIndex, _gaugeDiv, _fuelUsedValueText, _unitConversion, _oilTemperatureValueText, _engineBleedPressureValueText, _startValveOpenLine, _startValveClosedLine, _N1VibrationValueText, _N2VibrationValueText) {
             this.engineIndex = _engineIndex;
             this.fuelUsedValueText = _fuelUsedValueText;
+            this.unitConversion = _unitConversion;
             this.oilTemperatureValueText = _oilTemperatureValueText;
             this.engineBleedPressureValueText = _engineBleedPressureValueText;
             this.engineBleedValveOpenLine = _startValveOpenLine;

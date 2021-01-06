@@ -112,6 +112,7 @@ var A320_Neo_LowerECAM_CRZ;
                 return;
             }
 
+            // Fuel
             const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "KG") * this.unitConversion;
             const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "KG") * this.unitConversion;
 
