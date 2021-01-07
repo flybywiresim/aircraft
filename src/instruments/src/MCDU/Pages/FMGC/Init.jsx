@@ -17,9 +17,11 @@
  */
 
 import { useState, useContext } from 'react';
+import PropTypes from 'prop-types';
 import { getSimVar, useUpdate } from '../../../util.mjs';
 import BasePage from './BasePage.jsx';
 import NXDataStore from '../../../A32NX_Utils/NXDataStore.mjs';
+import { FMGC } from '../../../FMGC/FMGC.mjs';
 
 function populateDataFields(fmgc, fields) {
     if (fmgc.booleans.fromToEntered) {
@@ -85,7 +87,8 @@ function populateDataFields(fmgc, fields) {
     }
 }
 
-export const InitPage = () => {
+const InitPage = (props) => {
+    const { fmgc } = props;
     const mcduLabels = {
         L0: {
             text: 'CO RTE',
@@ -220,3 +223,9 @@ export const InitPage = () => {
         <BasePage data={mcduText} labels={mcduLabels} />
     );
 };
+
+InitPage.propTypes = {
+    fmgc: PropTypes.instanceOf(FMGC).isRequired,
+};
+
+export { InitPage };
