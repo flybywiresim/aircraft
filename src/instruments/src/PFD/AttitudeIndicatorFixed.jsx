@@ -72,7 +72,7 @@ const FlightDirector = ({ FDActive, FDRoll, FDPitch }) => {
     }
 
     return (
-        <g className="NormalStroke Green">
+        <g className="ThickStroke Green">
             <path id="FlightDirectorRoll" transform={`translate(${FDRoll} 0)`} d="m68.854 61.672v38.302" />
             <path id="FlightDirectorPitch" transform={`translate(0 ${FDPitch})`} d="m49.263 80.823h39.287" />
         </g>

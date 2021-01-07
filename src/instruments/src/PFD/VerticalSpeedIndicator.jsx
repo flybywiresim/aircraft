@@ -73,7 +73,7 @@ export const VerticalSpeedIndicator = ({ radioAlt }) => {
 };
 
 const VSpeedNeedle = ({ yOffset, isAmber }) => {
-    const className = `NormalStroke ${isAmber ? 'Amber' : 'Green'}`;
+    const className = `HugeStroke ${isAmber ? 'Amber' : 'Green'}`;
 
     return (
         <path className={className} id="VSpeedIndicator" d={`m162.74 80.822 l -12 ${yOffset}`} />

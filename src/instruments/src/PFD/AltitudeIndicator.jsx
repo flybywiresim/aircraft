@@ -17,7 +17,7 @@ const GraduationElement = (alt, offset) => {
     return (
         <g transform={`translate(0 ${offset})`}>
             {isText
-            && <path className="NormalStroke White" d="m115.58 79.56 1.5657 1.2686-1.5657 1.2686" />}
+            && <path className="NormalStroke White" d="m115.71 79.686 1.41 1.1418-1.41 1.1418" />}
             <path className="NormalStroke White" d="m130.85 80.819h-2.0147" />
             <text className="FontMedium MiddleAlign White" x="122.98842" y="82.939713">{text}</text>
         </g>
