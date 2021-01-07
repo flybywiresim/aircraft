@@ -21,95 +21,83 @@ const activeSystems = {
     MAINT: 'MAINT',
 };
 
-class FMGC {
+// TODO find a way to include FMCMainDisplay
+
+class FMGC extends FMCMainDisplay {
     constructor() {
-        this._activeSystem = activeSystems.FMGC;
-        this._costIndex = 0;
-        this._lastUserInput = '';
-        this._isDisplayingErrorMessage = false;
-        this._isDisplayingTypeTwoMessage = false;
-        this._maxCruiseFL = 390;
-        this._routeIndex = 0;
-        this._coRoute = '';
-        this._routeIsSelected = false;
-        this._routePageCurrent = 1;
-        this._routePageCount = 2;
-        this._tmpOrigin = '';
-        this._tmpDestination = '';
-        this._transitionAltitude = 10000;
-        this._perfTOTemp = 20;
-        this._overridenFlapApproachSpeed = NaN;
-        this._overridenSlatApproachSpeed = NaN;
-        this._routeFinalFuelWeight = 0;
-        this._routeFinalFuelTime = 30;
-        this._routeFinalFuelTimeDefault = 30;
-        this._routeReservedWeight = 0;
-        this._routeReservedPercent = 5;
-        this._takeOffFlap = -1;
-        this._takeOffWeight = NaN;
-        this._landingWeight = NaN;
-        this._averageWind = 0;
-        this._perfCrzWindHeading = NaN;
-        this._perfCrzWindSpeed = NaN;
-        this._perfApprQNH = NaN;
-        this._perfApprTemp = NaN;
-        this._perfApprWindHeading = NaN;
-        this._perfApprWindSpeed = NaN;
-        this._perfApprTransAlt = NaN;
-        this._vApp = NaN;
-        this._perfApprMDA = NaN;
-        this._perfApprDH = NaN;
-        this._currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
-        this._lockConnectIls = false;
-        this._apNavIndex = 1;
-        this._apLocalizerOn = false;
-        this._canSwitchToNav = false;
-
-        this._radios = {
-            vhf1Frequency: 0,
-        };
-
-        this._vhf2Frequency = 0;
-        this._vor1Frequency = 0;
-        this._vor1Course = 0;
-        this._vor2Frequency = 0;
-        this._vor2Course = 0;
-        this._ilsFrequency = 0;
-        this._ilsFrequencyPilotEntered = false;
-        this._ilsCourse = 0;
-        this._adf1Frequency = 0;
-        this._adf2Frequency = 0;
-        this._rcl1Frequency = 0;
-        this._pre2Frequency = 0;
-        this._atc1Frequency = 0;
-        this._radioNavOn = false;
-        this._debug = 0;
-        this._checkFlightPlan = 0;
-        this._smoothedTargetHeading = NaN;
-        this._smootherTargetPitch = NaN;
-        this._zeroFuelWeightZFWCGEntered = false;
-        this._taxiEntered = false;
-        this._windDir = windDirections.HEADWIND;
-        this._DistanceToAlt = 0;
-        this._routeAltFuelWeight = 0;
-        this._routeAltFuelTime = 0;
-        this._routeTripFuelWeight = 0;
-        this._routeTripTime = 0;
-        this._defaultTaxiFuelWeight = 0.2;
-        this._rteRsvPercentOOR = false;
-        this._rteReservedEntered = false;
-        this._rteFinalCoeffecient = 0;
-        this._rteFinalEntered = false;
-        this._routeAltFuelEntered = false;
-        this._minDestFob = 0;
-        this._minDestFobEntered = false;
-        this._defaultRouteFinalTime = 45;
-        this._fuelPredDone = false;
-        this._fuelPlanningPhase = fuelPlanningPhases.PLANNING;
+        super(...arguments);
+        this._registered = false;
+        this._forceNextAltitudeUpdate = false;
+        this._lastUpdateAPTime = NaN;
+        this.refreshFlightPlanCooldown = 0;
+        this.updateAutopilotCooldown = 0;
+        this._lastHasReachFlex = false;
+        this._apMasterStatus = false;
+        this._hasReachedTopOfDescent = false;
+        this._apCooldown = 500;
+        this._lastRequestedFLCModeWaypointIndex = -1;
+        this.messages = [];
+        this.sentMessages = [];
+        this.activeSystem = 'FMGC';
+        this._cruiseEntered = false;
         this._blockFuelEntered = false;
-        /* CPDLC Fields */
-        this._cpdlcAtcCenter = '';
-        this._tropo = '';
+        this._gpsprimaryack = 0;
+        this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
+        this.activeWaypointIdx = -1;
+        this.constraintAlt = 0;
+        this.constraintAltCached = 0;
+        this.fcuSelAlt = 0;
+        this.updateTypeIIMessage = false;
+        this.altLock = 0;
+        this.messageQueue = [];
+        this._destDataChecked = false;
+        this._towerHeadwind = 0;
+        this._conversionWeight = parseFloat(NXDataStore.get('CONFIG_USING_METRIC_UNIT', '1'));
+        this._EfobBelowMinClr = false;
+        this.simbrief = {
+            route: '',
+            cruiseAltitude: '',
+            originIcao: '',
+            destinationIcao: '',
+            blockFuel: '',
+            payload: undefined,
+            estZfw: '',
+            sendStatus: 'READY',
+            costIndex: '',
+            navlog: [],
+            icao_airline: '',
+            flight_number: '',
+            alternateIcao: '',
+            avgTropopause: '',
+            ete: '',
+            blockTime: '',
+            outTime: '',
+            onTime: '',
+            inTime: '',
+            offTime: '',
+            taxiFuel: '',
+            tripFuel: '',
+        };
+        this.aocWeight = {
+            blockFuel: undefined,
+            estZfw: undefined,
+            taxiFuel: undefined,
+            tripFuel: undefined,
+            payload: undefined,
+        };
+        this.aocTimes = {
+            doors: 0,
+            off: 0,
+            out: 0,
+            on: 0,
+            in: 0,
+        };
+        this.winds = {
+            climb: [],
+            cruise: [],
+            des: [],
+            alternate: null,
+        };
     }
 
     getVh1Frequency() {
@@ -136,7 +124,9 @@ class FMGC {
         this._minDestFob = value;
     }
 
-    init(_deltaTime) {
+    Init(_deltaTime) {
+        super.Init();
+
         this._A32NXCore = new A32NX_Core();
         this._A32NXCore.init(_deltaTime);
     }

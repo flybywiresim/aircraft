@@ -3,7 +3,6 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
     renderTarget,
-    useInteractionEvent,
     useUpdate,
     getSimVar,
 } from '../util.mjs';
@@ -35,7 +34,6 @@ function SelfTest() {
 }
 
 function Idle(props) {
-    const [inop, setInop] = useState(false);
     const { fmgc } = props;
 
     return (
@@ -60,7 +58,7 @@ function MCDU() {
         if (state === 'OFF') {
             if (powerAvailable()) {
                 setState('ON');
-                Core.init(_deltaTime);
+                Core.Init(_deltaTime);
             }
         } else if (!powerAvailable()) {
             setState('OFF');

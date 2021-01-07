@@ -77,6 +77,16 @@ module.exports = {
         'no-use-before-define': 'off',
         'eqeqeq': 'warn',
         'consistent-return': 'warn',
+        'radix': 'off',
+        'prefer-destructuring': 'warn',
+        'no-empty': 'warn',
+        'no-useless-constructor': 'warn',
+        'no-fallthrough': 'warn',
+        'block-scoped-var': 'warn',
+        'vars-on-top': 'warn',
+        'no-var': 'warn',
+        'no-redeclare': 'warn',
+        'prefer-rest-params': 'warn',
         'import/extensions': [
             'error',
             'ignorePackages',
@@ -91,5 +101,6 @@ module.exports = {
         SimVar: 'readonly',
         FlightPhase: 'readonly',
         Coherent: 'readonly',
+        Avionics: 'readonly',
     },
 };
