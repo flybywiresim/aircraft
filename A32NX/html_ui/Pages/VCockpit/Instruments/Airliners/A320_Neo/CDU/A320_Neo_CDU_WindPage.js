@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUWindPage {
 
     static Return() {}
@@ -161,17 +179,24 @@ class CDUWindPage {
             };
         }
 
-        mcdu.onDown = () => {
-            if (_winds.length > (_max - 1) && _offset > 0) {
-                _showPage(mcdu, _offset - 1);
-            }
-        };
+        let up = false;
+        let down = false;
 
-        mcdu.onUp = () => {
-            if (_offset < (_winds.length - (_max - 1))) {
+        if (_winds.length > (_max - 1) && _offset > 0) {
+            mcdu.onDown = () => {
+                _showPage(mcdu, _offset - 1);
+            };
+            down = true;
+        }
+
+        if (_offset < (_winds.length - (_max - 1))) {
+            mcdu.onUp = () => {
                 _showPage(mcdu, _offset + 1);
-            }
-        };
+            };
+            up = true;
+        }
+
+        mcdu.setArrows(up, down, false, false);
 
         return rows;
     }

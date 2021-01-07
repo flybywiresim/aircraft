@@ -30,7 +30,7 @@ class A32NX_Speeds {
         setInterval(() => {
             const fp = Simplane.getCurrentFlightPhase();
             let fhi = Simplane.getFlapsHandleIndex();
-            if (fhi === 1 && SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT INDEX", "Number") === 0) {
+            if (fhi === 1 && SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") < 9.99) {
                 fhi = 5;
             }
             const gw = this.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg")) / 1000;

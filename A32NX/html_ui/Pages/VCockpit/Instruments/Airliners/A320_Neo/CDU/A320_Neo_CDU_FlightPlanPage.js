@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUFlightPlanPage {
     static ShowPage(mcdu, offset = 0) {
         mcdu.clearDisplay();
@@ -14,6 +32,8 @@ class CDUFlightPlanPage {
             Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT && Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT;
         let originIdentCell = "----";
         let runway = null;
+        let showFrom = false;
+        let showTMPY = false;
         if (mcdu.flightPlanManager.getOrigin()) {
             originIdentCell = mcdu.flightPlanManager.getOrigin().ident;
             runway = mcdu.flightPlanManager.getDepartureRunway();
@@ -46,6 +66,7 @@ class CDUFlightPlanPage {
             rowsCount = 5;
             rows[10] = [" ", " "];
             rows[11] = ["{ERASE[color]amber", "INSERT*[color]amber"];
+            showTMPY = true;
             mcdu.onLeftInput[5] = async () => {
                 mcdu.eraseTemporaryFlightPlan(() => {
                     CDUFlightPlanPage.ShowPage(mcdu, 0);
@@ -145,10 +166,9 @@ class CDUFlightPlanPage {
             ];
         } else {
             if (offset === 0) {
-                rows[0] = ["\xa0FROM", "SPD/ALT\xa0\xa0\xa0", isFlying ? "\xa0UTC" : "TIME"];
-            } else {
-                rows[0] = ["", "SPD/ALT\xa0\xa0\xa0", isFlying ? "\xa0UTC" : "TIME"];
+                showFrom = true;
             }
+            rows[0] = ["", "SPD/ALT\xa0\xa0\xa0", isFlying ? "\xa0UTC" : "TIME"];
         }
         let iWaypoint = offset;
         let lastAltitudeConstraint = "";
@@ -285,7 +305,10 @@ class CDUFlightPlanPage {
                             dstnc = dstnc + "\xa0";
                         }
                         dstnc = dstnc + "[color]" + color;
-                        rows[2 * i] = [(index === 0 && offset == 0) ? "\xa0FROM" : airwayName, ((index >= activeIndex || waypoint.ident === "(DECEL)") && i != 0 ? dstnc : i === 0 ? "SPD/ALT\xa0\xa0\xa0" : ""), i === 0 ? (isFlying ? "\xa0UTC" : "TIME") : ""];
+                        if (index === 0 && offset == 0) {
+                            showFrom = true;
+                        }
+                        rows[2 * i] = [airwayName, ((index >= activeIndex || waypoint.ident === "(DECEL)") && i != 0 ? dstnc : i === 0 ? "SPD/ALT\xa0\xa0\xa0" : ""), i === 0 ? (isFlying ? "\xa0UTC" : "TIME") : ""];
                         let speedConstraint = "---";
                         if (waypoint.speedConstraint > 10) {
                             speedConstraint = "{magenta}*{end}" + waypoint.speedConstraint.toFixed(0);
@@ -435,29 +458,29 @@ class CDUFlightPlanPage {
             }
         }
         mcdu.setTemplate([
-            ["F-PLN"],
+            [`{left}{small}{sp}${showFrom ? "FROM" : "{sp}{sp}{sp}{sp}"}{end}{yellow}{sp}${showTMPY ? "TMPY" : ""}{end}{end}{right}{small}${SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")}{sp}{sp}{sp}{end}{end}`],
             ...rows
         ]);
-        mcdu.onDown = () => {//on page down decrement the page offset.
-            if (waypointsWithDiscontinuities.length > 4) {//scroll only if there are more than 5 points
+        const allowScroll = waypointsWithDiscontinuities.length > 4;
+        if (allowScroll) {//scroll only if there are more than 5 points
+            mcdu.onDown = () => {//on page down decrement the page offset.
                 if (offset > 0) { // if page not on top
                     offset--;
                 } else { // else go to the bottom
                     offset = waypointsWithDiscontinuities.length;
                 }
                 CDUFlightPlanPage.ShowPage(mcdu, offset);
-            }
-        };
-        mcdu.onUp = () => {
-            if (waypointsWithDiscontinuities.length > 4) {
+            };
+            mcdu.onUp = () => {
                 if (offset < waypointsWithDiscontinuities.length) { // if page not on bottom
                     offset++;
                 } else { // else go on top
                     offset = 0;
                 }
                 CDUFlightPlanPage.ShowPage(mcdu, offset);
-            }
-        };
+            };
+        }
+        mcdu.setArrows(allowScroll, allowScroll, true, true);
     }
 }
 CDUFlightPlanPage._timer = 0;
