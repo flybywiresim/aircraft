@@ -18,7 +18,7 @@
 
 import { useState } from 'react';
 import BasePage from './BasePage.jsx';
-import NXDataStore from '../../../NXDataStore.mjs';
+import NXDataStore from '../../../A32NX_Utils/NXDataStore.mjs';
 
 function determineActiveSystem(textOptions, setTextOptions, setMcduText) {
     setTextOptions((prevState) => ({
