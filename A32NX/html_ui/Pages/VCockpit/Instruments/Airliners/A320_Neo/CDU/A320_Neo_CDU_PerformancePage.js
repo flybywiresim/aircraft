@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUPerformancePage {
     static ShowPage(mcdu) {
         mcdu.activeSystem = 'FMGC';
@@ -49,7 +67,7 @@ class CDUPerformancePage {
             v1 = mcdu.v1Speed + "[color]cyan";
         }
         mcdu.onLeftInput[0] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 mcdu.v1Speed = undefined;
                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", -1);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
@@ -67,7 +85,7 @@ class CDUPerformancePage {
             vR = mcdu.vRSpeed + "[color]cyan";
         }
         mcdu.onLeftInput[1] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 mcdu.vRSpeed = undefined;
                 SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", -1);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
@@ -85,7 +103,7 @@ class CDUPerformancePage {
             v2 = mcdu.v2Speed + "[color]cyan";
         }
         mcdu.onLeftInput[2] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 mcdu.v2Speed = undefined;
                 SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", -1);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
@@ -579,7 +597,7 @@ class CDUPerformancePage {
             mdaCell = mcdu.perfApprMDA.toFixed(0);
         }
         mcdu.onRightInput[1] = (value) => {
-            if (mcdu.setPerfApprMDA(value) && mcdu.setPerfApprDH(A320_Neo_CDU_MainDisplay.clrValue)) {
+            if (mcdu.setPerfApprMDA(value) && mcdu.setPerfApprDH(FMCMainDisplay.clrValue)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
@@ -590,7 +608,7 @@ class CDUPerformancePage {
             dhCell = "NO DH";
         }
         mcdu.onRightInput[2] = (value) => {
-            if (mcdu.setPerfApprDH(value) && mcdu.setPerfApprMDA(A320_Neo_CDU_MainDisplay.clrValue)) {
+            if (mcdu.setPerfApprDH(value) && mcdu.setPerfApprMDA(FMCMainDisplay.clrValue)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };

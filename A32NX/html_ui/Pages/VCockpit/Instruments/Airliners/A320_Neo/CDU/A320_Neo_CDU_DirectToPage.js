@@ -85,15 +85,22 @@ class CDUDirectToPage {
             [eraseLabel, insertLabel],
             [waypointsCell[4], insertLine]
         ]);
-        mcdu.onUp = () => {
-            wptsListIndex++;
-            wptsListIndex = Math.min(wptsListIndex, totalWaypointsCount - 5);
-            CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
-        };
-        mcdu.onDown = () => {
-            wptsListIndex--;
-            wptsListIndex = Math.max(wptsListIndex, 0);
-            CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
-        };
+        let up = false;
+        let down = false;
+        if (wptsListIndex < totalWaypointsCount - 5) {
+            mcdu.onUp = () => {
+                wptsListIndex++;
+                CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
+            };
+            up = true;
+        }
+        if (wptsListIndex > 0) {
+            mcdu.onDown = () => {
+                wptsListIndex--;
+                CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
+            };
+            down = true;
+        }
+        mcdu.setArrows(up, down, false ,false);
     }
 }
