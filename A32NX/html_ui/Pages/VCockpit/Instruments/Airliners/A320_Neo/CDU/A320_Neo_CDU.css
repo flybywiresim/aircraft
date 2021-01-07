@@ -248,3 +248,24 @@ fmc-main-display::before {
 #in-out {
   padding-left: 4%;
 }
+
+#arrow-vertical {
+  float: right;
+}
+
+#arrow-horizontal {
+  position: absolute;
+  right: 1%;
+  width: 100%;
+  text-align: right;
+}
+
+.left {
+  margin-left: 4%;
+  float: left;
+}
+
+.right {
+  margin-right: 6%;
+  float: right;
+}
