@@ -253,6 +253,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             .replace(/{yellow}/g, "<span class='yellow'>")
             .replace(/{inop}/g, "<span class='inop'>")
             .replace(/{sp}/g, "&nbsp;")
+            .replace(/{left}/g, "<span class='left'>")
+            .replace(/{right}/g, "<span class='right'>")
             .replace(/{end}/g, "</span>");
     }
 
@@ -658,19 +660,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return 0;
     }
 
-    getSpeedConstraint(raw = true) {
+    getSpeedConstraint() {
         if (this.flightPlanManager.getIsDirectTo()) {
             return Infinity;
         }
         const wpt = this.flightPlanManager.getActiveWaypoint();
         if (typeof wpt === 'undefined' || !isFinite(wpt.speedConstraint) || wpt.speedConstraint < 100) {
-            return Infinity;
-        }
-        if (raw) {
-            return wpt.speedConstraint;
-        }
-        const diff = Simplane.getIndicatedSpeed() - wpt.speedConstraint + 5;
-        if (diff < wpt.distanceInFP) {
             return Infinity;
         }
         return wpt.speedConstraint;

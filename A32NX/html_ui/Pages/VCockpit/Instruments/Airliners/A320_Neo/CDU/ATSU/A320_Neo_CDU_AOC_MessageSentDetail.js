@@ -24,18 +24,23 @@ class CDUAocMessageSentDetail {
         ]);
 
         if (lines.length > 8) {
-            mcdu.onUp = () => {
-                if (lines[offset + 1]) {
+            let up = false;
+            let down = false;
+            if (lines[offset + 1]) {
+                mcdu.onUp = () => {
                     offset += 1;
-                }
-                CDUAocMessageSentDetail.ShowPage(mcdu, message, offset);
-            };
-            mcdu.onDown = () => {
-                if (lines[offset - 1]) {
+                    CDUAocMessageSentDetail.ShowPage(mcdu, message, offset);
+                };
+                up = true;
+            }
+            if (lines[offset - 1]) {
+                mcdu.onDown = () => {
                     offset -= 1;
-                }
-                CDUAocMessageSentDetail.ShowPage(mcdu, message, offset);
-            };
+                    CDUAocMessageSentDetail.ShowPage(mcdu, message, offset);
+                };
+                down = true;
+            }
+            mcdu.setArrows(up, down, false, false);
         }
 
         mcdu.onNextPage = () => {
