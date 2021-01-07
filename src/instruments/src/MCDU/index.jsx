@@ -1,5 +1,6 @@
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import {
     renderTarget,
     useInteractionEvent,
@@ -10,7 +11,7 @@ import './style.scss';
 import { Titlebar } from './Titlebar/Titlebar.jsx';
 import { PagesContainer } from './PagesContainer.jsx';
 import { Scratchpad } from './Scratchpad/Scratchpad.jsx';
-import FMGC from '../FMGC/FMGC.jsx';
+import { FMGC } from '../FMGC/FMGC.mjs';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
@@ -33,19 +34,24 @@ function SelfTest() {
     );
 }
 
-function Idle() {
+function Idle(props) {
     const [inop, setInop] = useState(false);
+    const { fmgc } = props;
 
     return (
         <>
             <svg className="mcdu-svg" viewBox="0 0 600 600">
                 <Titlebar />
-                <PagesContainer />
+                <PagesContainer fmgc={fmgc} />
                 <Scratchpad />
             </svg>
         </>
     );
 }
+
+Idle.propTypes = {
+    fmgc: PropTypes.instanceOf(FMGC).isRequired,
+};
 
 function MCDU() {
     const [state, setState] = useState('DEFAULT');
@@ -54,7 +60,7 @@ function MCDU() {
         if (state === 'OFF') {
             if (powerAvailable()) {
                 setState('ON');
-                Core.Init(_deltaTime);
+                Core.init(_deltaTime);
             }
         } else if (!powerAvailable()) {
             setState('OFF');
@@ -79,7 +85,7 @@ function MCDU() {
         }, 5000);
         return <SelfTest />;
     case 'IDLE':
-        return <Idle />;
+        return <Idle fmgc={Core} />;
     default:
         throw new RangeError();
     }

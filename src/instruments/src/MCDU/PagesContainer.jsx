@@ -17,6 +17,7 @@
  */
 
 import { useState } from 'react/cjs/react.production.min.js';
+import PropTypes from 'prop-types';
 import { getSimVar, useInteractionEvent } from '../util.mjs';
 import { AirportPage } from './Pages/FMGC/Airport.jsx';
 import { AtcCommPage } from './Pages/FMGC/AtcComm.jsx';
@@ -30,26 +31,34 @@ import { PerfPage } from './Pages/FMGC/Perf.jsx';
 import { ProgPage } from './Pages/FMGC/Prog.jsx';
 import { RadNavPage } from './Pages/FMGC/RadNav.jsx';
 import { SecFlightPlanPage } from './Pages/FMGC/SecFlightPlan.jsx';
+import { FMGC } from '../FMGC/FMGC.mjs';
 
-export const PagesContainer = () => {
+const PagesContainer = (props) => {
     const [currentPage, setCurrentPage] = useState(0);
+    const { fmgc } = props;
 
     // useInteractionEvent('A32NX_MCDU_PAGE_CHANGED', () => setCurrentPage(getSimVar('L:A32NX_MCDU_CURRENT_PAGE_INDEX', 'number')));
 
     const pages = {
-        0: <AirportPage />,
-        1: <AtcCommPage />,
-        2: <DataPage />,
-        3: <DirPage />,
-        4: <FlightPlanPage />,
-        5: <FuelPredPage />,
-        6: <InitPage />,
-        7: <MenuPage />,
-        8: <PerfPage />,
-        9: <ProgPage />,
-        10: <RadNavPage />,
-        11: <SecFlightPlanPage />,
+        0: <AirportPage fmgc={fmgc} />,
+        1: <AtcCommPage fmgc={fmgc} />,
+        2: <DataPage fmgc={fmgc} />,
+        3: <DirPage fmgc={fmgc} />,
+        4: <FlightPlanPage fmgc={fmgc} />,
+        5: <FuelPredPage fmgc={fmgc} />,
+        6: <InitPage fmgc={fmgc} />,
+        7: <MenuPage fmgc={fmgc} />,
+        8: <PerfPage fmgc={fmgc} />,
+        9: <ProgPage fmgc={fmgc} />,
+        10: <RadNavPage fmgc={fmgc} />,
+        11: <SecFlightPlanPage fmgc={fmgc} />,
     };
 
     return pages[7] || <text x={300} y={300} fill="white" fontSize={18} textAnchor="middle">invalid page</text>;
 };
+
+PagesContainer.propTypes = {
+    fmgc: PropTypes.instanceOf(FMGC).isRequired,
+};
+
+export { PagesContainer };
