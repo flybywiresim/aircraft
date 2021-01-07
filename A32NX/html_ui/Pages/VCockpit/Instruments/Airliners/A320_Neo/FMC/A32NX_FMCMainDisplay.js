@@ -368,6 +368,33 @@ class FMCMainDisplay extends BaseAirliners {
         }
         SimVar.SetSimVarValue("L:AIRLINER_MCDU_CURRENT_FPLN_WAYPOINT", "number", this.currentFlightPlanWaypointIndex);
     }
+
+    /**
+     * Sets what arrows will be displayed in the corner of the screen. Arrows are removed when clearDisplay() is called.
+     * @param {boolean} up - whether the up arrow will be displayed
+     * @param {boolean} down - whether the down arrow will be displayed
+     * @param {boolean} left - whether the left arrow will be displayed
+     * @param {boolean} right - whether the right arrow will be displayed
+     */
+    setArrows(up, down, left, right) {
+        this.arrowHorizontal.style.opacity = (left || right) ? "1" : "0";
+        this.arrowVertical.style.opacity = (up || down) ? "1" : "0";
+        if (up && down) {
+            this.arrowVertical.innerHTML = "↓↑\xa0";
+        } else if (up) {
+            this.arrowVertical.innerHTML = "↑\xa0";
+        } else {
+            this.arrowVertical.innerHTML = "↓\xa0\xa0";
+        }
+        if (left && right) {
+            this.arrowHorizontal.innerHTML = "←→\xa0";
+        } else if (right) {
+            this.arrowHorizontal.innerHTML = "→\xa0";
+        } else {
+            this.arrowHorizontal.innerHTML = "←\xa0\xa0";
+        }
+    }
+
     getNavDataDateRange() {
         return SimVar.GetGameVarValue("FLIGHT NAVDATA DATE RANGE", "string");
     }
@@ -1488,7 +1515,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return Math.min(speed, this.getSpeedConstraint(false));
+        return Math.min(speed, this.getSpeedConstraint());
     }
 
     getDesManagedSpeed() {
@@ -1501,7 +1528,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return Math.min(speed, this.getSpeedConstraint(false));
+        return Math.min(speed, this.getSpeedConstraint());
     }
 
     getFlapApproachSpeed(useCurrentWeight = true) {
@@ -3364,6 +3391,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.forceClearScratchpad();
         }
         this.page.Current = this.page.Clear;
+        this.setArrows(false, false);
         this.tryDeleteTimeout();
     }
 
@@ -3382,6 +3410,11 @@ class FMCMainDisplay extends BaseAirliners {
         const title = document.createElement("span");
         title.id = "title";
         header.appendChild(title);
+
+        this.arrowHorizontal = document.createElement("span");
+        this.arrowHorizontal.id = "arrow-horizontal";
+        this.arrowHorizontal.innerHTML = "←→\xa0";
+        header.appendChild(this.arrowHorizontal);
 
         parent.appendChild(header);
 
@@ -3440,7 +3473,13 @@ class FMCMainDisplay extends BaseAirliners {
         footer.classList.add("line");
         const inout = document.createElement("span");
         inout.id = "in-out";
+
+        this.arrowVertical = document.createElement("span");
+        this.arrowVertical.id = "arrow-vertical";
+        this.arrowVertical.innerHTML = "↓↑\xa0";
+
         footer.appendChild(inout);
+        footer.appendChild(this.arrowVertical);
         parent.appendChild(footer);
     }
     static secondsToUTC(seconds) {
