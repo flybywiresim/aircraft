@@ -38,6 +38,7 @@
 1. [MCDU] The flight plan page now shows "TMPY" in the top line when displaying the temporary flight plan - @tyler58546 (tyler58546)
 1. [MCDU] The "FROM" indicator on the flight plan page is now in the top line - @tyler58546 (tyler58546)
 1. [CDU] Error messages now print for invalid trip wind delims - @Lucky38i (Lucky38i)
+1. [TEXTURE] Fixed the overlapping text on the chronometer - @DarkOfNova (DarkOfNova)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
