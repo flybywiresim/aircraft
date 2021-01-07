@@ -10,31 +10,7 @@ import './style.scss';
 import { Titlebar } from './Titlebar/Titlebar.jsx';
 import { PagesContainer } from './PagesContainer.jsx';
 import { Scratchpad } from './Scratchpad/Scratchpad.jsx';
-import NXDataStore from '../NXDataStore.mjs';
-
-function createTemplateData() {
-    const data = {
-        flightPlanManager: {
-            origin: {
-                ident: '',
-            },
-            destination: {
-                ident: '',
-            },
-            alternate: {
-                ident: '',
-            },
-        },
-        booleans: {
-            fromToEntered: true,
-            cruiseEntered: true,
-        },
-        cruiseFlightLevel: 0,
-        costIndex: 0,
-    };
-    NXDataStore.set('FMGC_DATA', data);
-    NXDataStore.set('ACTIVE_SYS', 'FMGC');
-}
+import FMGC from '../FMGC/FMGC.jsx';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
@@ -59,7 +35,6 @@ function SelfTest() {
 
 function Idle() {
     const [inop, setInop] = useState(false);
-    createTemplateData();
 
     return (
         <>
@@ -74,10 +49,12 @@ function Idle() {
 
 function MCDU() {
     const [state, setState] = useState('DEFAULT');
+    const Core = new FMGC();
     useUpdate((_deltaTime) => {
         if (state === 'OFF') {
             if (powerAvailable()) {
                 setState('ON');
+                Core.Init(_deltaTime);
             }
         } else if (!powerAvailable()) {
             setState('OFF');

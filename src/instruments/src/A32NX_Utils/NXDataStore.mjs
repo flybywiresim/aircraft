@@ -1,3 +1,5 @@
+/* global GetStoredData, SetStoredData, Include */
+
 Include.addScript('/JS/dataStorage.js');
 
 export default class NXDataStore {

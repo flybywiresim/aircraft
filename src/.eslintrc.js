@@ -55,8 +55,41 @@ module.exports = {
         // Not needed with react 17+
         'react/jsx-uses-react': 'off',
         'react/react-in-jsx-scope': 'off',
+
+        'camelcase': 'off',
+        'max-len': ['error', 200], // Temporary until we can refactor the Core
+        'no-console': 'off', // May need to disable this
+        'no-underscore-dangle': 'off',
+        'max-classes-per-file': 'off',
+        'no-plusplus': 'off',
+        'no-restricted-globals': 'off',
+        'no-bitwise': 'off',
+        'no-restricted-properties': 'off',
+        'no-floating-decimal': 'off',
+        'no-mixed-operators': 'off',
+        'no-shadow': 'off',
+        'no-param-reassign': 'off',
+        'default-case': 'off',
+        'no-undef': 'warn',
+        'no-continue': 'off',
+        'no-await-in-loop': 'off',
+        'no-throw-literal': 'off',
+        'no-use-before-define': 'off',
+        'eqeqeq': 'warn',
+        'consistent-return': 'warn',
+        'import/extensions': [
+            'error',
+            'ignorePackages',
+            {
+                js: 'never',
+                jsx: 'always',
+            },
+        ],
     },
     globals: {
         Simplane: 'readonly',
+        SimVar: 'readonly',
+        FlightPhase: 'readonly',
+        Coherent: 'readonly',
     },
 };
