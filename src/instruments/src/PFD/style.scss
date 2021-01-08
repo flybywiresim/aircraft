@@ -103,6 +103,10 @@ text.Cyan {
   fill: $display-cyan;
   stroke: none;
 }
+tspan.Cyan {
+  fill: $display-cyan;
+  stroke: none;
+}
 
 .White {
   fill: none;
@@ -159,6 +163,11 @@ text.Yellow {
 text.Red {
   fill: $display-red;
   stroke: none;
+}
+
+.Grey {
+  stroke: $display-grey;
+  fill: none;
 }
 
 .EarthFill {
