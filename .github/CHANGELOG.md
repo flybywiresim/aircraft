@@ -5,6 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.6.0
+1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
 1. [CDU] Two tiny fixes for flightphase speeds - @Watsi01 (RogePete)
 1. [ND] Flight route now hidden in VOR ROSE and ILS ROSE modes - @2hwk (2Cas#1022)
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
@@ -30,6 +31,14 @@
 1. [FLIGHTMODEL] Improved fix for flaps 1 unrecoverable dives - @donstim (donbikes#4084)
 1. [ECAM/CORE] Improved flap auto-retraction detection - @MisterChocker (Leon)
 1. [ECAM] Added missing unit conversion to cruise and engine page - @MisterChocker (Leon)
+1. [MCDU] Horizontal slew arrows now appear in the correct location - @tyler58546 (tyler58546)
+1. [MCDU] Vertical slew arrows have been added on pages that can be scrolled - @tyler58546 (tyler58546)
+1. [MCDU] The "F-PLN" title has been removed from the flight plan page - @tyler58546 (tyler58546)
+1. [MCDU] The flight plan page now shows the flight number in the top left corner - @tyler58546 (tyler58546)
+1. [MCDU] The flight plan page now shows "TMPY" in the top line when displaying the temporary flight plan - @tyler58546 (tyler58546)
+1. [MCDU] The "FROM" indicator on the flight plan page is now in the top line - @tyler58546 (tyler58546)
+1. [CDU] Error messages now print for invalid trip wind delims - @Lucky38i (Lucky38i)
+1. [TEXTURE] Fixed the overlapping text on the chronometer - @DarkOfNova (DarkOfNova)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
