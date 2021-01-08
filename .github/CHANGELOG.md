@@ -42,6 +42,7 @@
 1. [CDU] Error messages now print for invalid trip wind delims - @Lucky38i (Lucky38i)
 1. [TEXTURE] Fixed the overlapping text on the chronometer - @DarkOfNova (DarkOfNova)
 1. [ADIRS] Added "ON BAT" light to ADIRS panel - @tyler58546 (tyler58546)
+1. [CDU] Fix APPR/GO AROUND page order - @beheh (Benedict Etzel)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
