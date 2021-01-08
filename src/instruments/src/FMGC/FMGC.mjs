@@ -1,4 +1,5 @@
 import A32NX_Core from '../A32NX_Core/A32NX_Core.mjs';
+import NXDataStore from '../A32NX_Utils/NXDataStore.mjs';
 
 const fuelPlanningPhases = {
     PLANNING: 1,
@@ -23,9 +24,9 @@ const activeSystems = {
 
 // TODO find a way to include FMCMainDisplay
 
-class FMGC extends FMCMainDisplay {
+class FMGC {
     constructor() {
-        super(...arguments);
+        this._A32NXCore = new A32NX_Core();
         this._registered = false;
         this._forceNextAltitudeUpdate = false;
         this._lastUpdateAPTime = NaN;
@@ -100,14 +101,6 @@ class FMGC extends FMCMainDisplay {
         };
     }
 
-    getVh1Frequency() {
-        return this._radios.vhf1Frequency;
-    }
-
-    setVh1Frequency(value) {
-        this._radios.vhf1Frequency = value;
-    }
-
     getActiveSystem() {
         return this._activeSystem;
     }
@@ -116,19 +109,12 @@ class FMGC extends FMCMainDisplay {
         this._activeSystem = value;
     }
 
-    getMinDestFob() {
-        return this._minDestFob;
-    }
-
-    setMinDestFOB(value) {
-        this._minDestFob = value;
-    }
-
     Init(_deltaTime) {
-        super.Init();
-
-        this._A32NXCore = new A32NX_Core();
         this._A32NXCore.init(_deltaTime);
+    }
+
+    update() {
+        this._A32NXCore.update();
     }
 }
 

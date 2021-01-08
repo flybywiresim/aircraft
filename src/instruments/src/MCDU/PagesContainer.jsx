@@ -54,7 +54,7 @@ const PagesContainer = (props) => {
         11: <SecFlightPlanPage fmgc={fmgc} />,
     };
 
-    return pages[7] || <text x={300} y={300} fill="white" fontSize={18} textAnchor="middle">invalid page</text>;
+    return <text x={300} y={300} fill="white" fontSize={18} textAnchor="middle">invalid page</text>;
 };
 
 PagesContainer.propTypes = {

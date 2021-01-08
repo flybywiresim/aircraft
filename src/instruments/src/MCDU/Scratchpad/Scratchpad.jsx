@@ -17,5 +17,5 @@
  */
 
 export const Scratchpad = () => (
-    <text x={5} y={27} fill="white" fontSize={24}>FlightPlan</text>
+    <text x={5} y={27} fill="white" fontSize={24}>scratchpad</text>
 );
