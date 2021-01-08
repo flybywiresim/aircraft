@@ -1,0 +1,88 @@
+$colour-background: hsl(53, 82%, 2%);
+$colour-inactive: hsl(0, 0%, 4%);
+$colour-active: hsl(32, 100%, 69%);
+
+:root {
+  background-color: black;
+}
+
+@font-face {
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-family: "Roboto";
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-family: "Roboto-Bold";
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf") format("truetype");
+  font-family: "Digital";
+  font-style: normal;
+  font-weight: 900;
+}
+
+svg {
+  height: 100%;
+  width: 100%;
+}
+
+text {
+  height: 100%;
+  width: 100%;
+}
+
+text.label {
+  font-family: Roboto-Regular;
+  font-size: 25px;
+}
+
+text.value {
+  font-family: Digital;
+  letter-spacing: 8px;
+  text-anchor: start;
+  font-size: 66px;
+}
+
+line {
+  stroke-width: 3;
+}
+
+.inactive {
+  stroke: $colour-inactive;
+  color: $colour-inactive;
+  fill: $colour-inactive;
+}
+
+.active {
+  stroke: $colour-active;
+  color: $colour-active;
+  fill: $colour-active;
+}
+
+.wrapper {
+  background-color: $colour-background;
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 8%;
+}
+
+.fcu-window {
+  display:inline-block;
+  height: 100%;
+  width: 20%;
+}
+
+.level-change {
+  position: absolute;
+  height: 100%;
+  width: 40%;
+  left: 60%;
+  top: 0;
+}
