@@ -22,6 +22,7 @@
 1. [MCDU] The flight plan page now shows the flight number in the top left corner - @tyler58546 (tyler58546)
 1. [MCDU] The flight plan page now shows "TMPY" in the top line when displaying the temporary flight plan - @tyler58546 (tyler58546)
 1. [MCDU] The "FROM" indicator on the flight plan page is now in the top line - @tyler58546 (tyler58546)
+1. [MISC] Fixed cockpit door button states - @ImenesFBW (Imenes)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
@@ -41,6 +42,7 @@
 1. [ECAM/CORE] Improved flap auto-retraction detection - @MisterChocker (Leon)
 1. [CDU] Error messages now print for invalid trip wind delims - @Lucky38i (Lucky38i)
 1. [TEXTURE] Fixed the overlapping text on the chronometer - @DarkOfNova (DarkOfNova)
+1. [ADIRS] Added "ON BAT" light to ADIRS panel - @tyler58546 (tyler58546)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
