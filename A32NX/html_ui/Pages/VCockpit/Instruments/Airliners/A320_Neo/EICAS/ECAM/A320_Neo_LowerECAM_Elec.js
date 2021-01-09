@@ -255,6 +255,8 @@ var A320_Neo_LowerECAM_Elec;
             this.setCONNECTION_TR1_DC1_OFF();
             this.setCONNECTION_TR2_DC2_OFF();
 
+            this.updateThrottler = new UpdateThrottler(500);
+
             this.isInitialised = true;
 
             this.updateVariables();
@@ -262,6 +264,10 @@ var A320_Neo_LowerECAM_Elec;
         }
 
         update(_deltaTime) {
+            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+            if (_deltaTime == -1) {
+                return;
+            }
             this.systemDraw();
         }
 

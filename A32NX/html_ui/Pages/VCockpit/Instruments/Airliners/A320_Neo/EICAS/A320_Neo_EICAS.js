@@ -136,13 +136,17 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93", "FLOAT64", 0.1);
 
         this.ecamAllButtonPrevState = false;
+        this.updateThrottler = new UpdateThrottler(500);
     }
 
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        var _deltaTime = this.getDeltaTime();
 
         super.onUpdate(_deltaTime);
-
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (_deltaTime == -1) {
+            return;
+        }
         this.updateDoorVideoState();
 
         this.updateAnnunciations();

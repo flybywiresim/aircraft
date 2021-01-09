@@ -89,10 +89,15 @@ var A320_Neo_LowerECAM_Fuel;
                 this.fuelFlowUnit.textContent = "LBS/MIN";
                 this.middleFuelUnit.textContent = "LBS";
             }
+            this.updateThrottler = new UpdateThrottler(500);
             this.isInitialised = true;
         }
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
+                return;
+            }
+            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+            if (_deltaTime == -1) {
                 return;
             }
             this.updateQuantity(this.FOBValue, "FUEL TOTAL QUANTITY");
@@ -103,6 +108,7 @@ var A320_Neo_LowerECAM_Fuel;
             this.updateQuantity(this.rightOuterTankValue, "FUEL TANK RIGHT AUX QUANTITY");
             this.updateFuelFlow();
             this.updateFuelConsumption();
+
             for (let i = 0; i < this.allToggleElements.length; ++i) {
                 if (this.allToggleElements[i] != null) {
                     this.allToggleElements[i].refresh();

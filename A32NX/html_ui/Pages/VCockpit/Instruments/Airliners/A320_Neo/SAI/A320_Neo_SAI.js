@@ -62,6 +62,7 @@ class A320_Neo_SAI_Airspeed extends NavSystemElement {
     init(root) {
         this.airspeedElement = this.gps.getChildById("Airspeed");
         this.bugsElement = this.gps.getChildById("Bugs");
+        this.updateThrottler = new UpdateThrottler(50);
     }
     onEnter() {
     }
@@ -69,6 +70,10 @@ class A320_Neo_SAI_Airspeed extends NavSystemElement {
         return true;
     }
     onUpdate(_deltaTime) {
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (_deltaTime == -1) {
+            return;
+        }
         this.airspeedElement.update(_deltaTime);
     }
     onExit() {
@@ -379,6 +384,7 @@ class A320_Neo_SAI_Altimeter extends NavSystemElement {
     init(root) {
         this.altimeterElement = this.gps.getChildById("Altimeter");
         this.bugsElement = this.gps.getChildById("Bugs");
+        this.updateThrottler = new UpdateThrottler(50);
     }
     onEnter() {
     }
@@ -387,6 +393,10 @@ class A320_Neo_SAI_Altimeter extends NavSystemElement {
         ;
     }
     onUpdate(_deltaTime) {
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (_deltaTime == -1) {
+            return;
+        }
         this.altimeterElement.update(_deltaTime);
     }
     onExit() {
@@ -691,10 +701,15 @@ class A320_Neo_SAI_Attitude extends NavSystemElement {
             const aspectRatio = this.gps.getAspectRatio();
             this.attitudeElement.setAttribute("aspect-ratio", aspectRatio.toString());
         }
+        this.updateThrottler = new UpdateThrottler(50);
     }
     onEnter() {
     }
     onUpdate(_deltaTime) {
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (_deltaTime == -1) {
+            return;
+        }
         const xyz = Simplane.getOrientationAxis();
         if (xyz) {
             const baro_plus = SimVar.GetSimVarValue("L:A32NX_BARO_ATT_RESET", "Bool");
@@ -1043,6 +1058,7 @@ customElements.define('a320-neo-sai-attitude-indicator', A320_Neo_SAI_AttitudeIn
 class A320_Neo_SAI_Pressure extends NavSystemElement {
     init(root) {
         this.pressureElement = this.gps.getChildById("Pressure");
+        this.updateThrottler = new UpdateThrottler(500);
     }
     onEnter() {
     }
@@ -1050,6 +1066,10 @@ class A320_Neo_SAI_Pressure extends NavSystemElement {
         return true;
     }
     onUpdate(_deltaTime) {
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (_deltaTime == -1) {
+            return;
+        }
         this.pressureElement.update(_deltaTime);
     }
     onExit() {
@@ -1208,6 +1228,7 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
             this.selfTestElement.offDisplay();
         }
         */
+        this.updateThrottler = new UpdateThrottler(500);
     }
     onEnter() {
     }
@@ -1234,6 +1255,10 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
         }
     }
     onUpdate(_deltaTime) {
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (_deltaTime == -1) {
+            return;
+        }
         const _dTime = this.getDeltaTime();
 
         const complete = this.selfTestElement.complete;
@@ -1443,6 +1468,7 @@ class A320_Neo_SAI_AttReset extends NavSystemElement {
         this.attResetElement = this.gps.getChildById("AttReset");
         this.bugsElement = this.gps.getChildById("Bugs");
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
+        this.updateThrottler = new UpdateThrottler(100);
     }
     onEnter() {
     }
@@ -1450,6 +1476,10 @@ class A320_Neo_SAI_AttReset extends NavSystemElement {
         return true;
     }
     onUpdate(_deltaTime) {
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (_deltaTime == -1) {
+            return;
+        }
         const _dTime = this.getDeltaTime();
         this.attResetElement.update(_dTime);
     }
