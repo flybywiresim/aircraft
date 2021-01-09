@@ -96,6 +96,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.selfTestDiv = document.querySelector('#SelfTestDiv');
         this.selfTestTimerStarted = false;
         this.selfTestTimer = -1;
+        this.resumeCountdown = -1;
         this.selfTestLastKnobValueFO = 1;
         this.selfTestLastKnobValueCAP = 1;
 
@@ -108,7 +109,20 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
     onUpdate() {
         const _deltaTime = this.getDeltaTime();
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
+        // If screen is off
         if (currentKnobValue <= 0.0) {
+            // start 10 sec cd if not init
+            if (this.resumeCountdown == -1) {
+                this.resumeCountdown = 10;
+            // countdown if init
+            } else if (this.resumeCountdown >= 0) {
+                const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
+                if (ACPowerAvailable) {
+                    this.resumeCountdown -= _deltaTime / 1000;
+                } else {
+                    this.resumeCountdown = -0.5;
+                }
+            }
             this.selfTestLastKnobValue = currentKnobValue;
             return;
         }
@@ -177,12 +191,24 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
 
-        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue <= 0.0);
 
         if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
-            this.selfTestDiv.style.display = "block";
-            this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
-            this.selfTestTimerStarted = true;
+            // Powered on
+            const currCount = this.resumeCountdown;
+            this.resumeCountdown = -1; // Reset 10 second cd
+            // If resumed within 10 sec cd
+            if (currCount > 0 && ACPowerAvailable) {
+                if (this.selfTestTimer <= 0) {
+                    this.selfTestDiv.style.display = "none";
+                    this.selfTestTimerStarted = false;
+                }
+            // first run or beyond 10 sec cd
+            } else {
+                this.selfTestDiv.style.display = "block";
+                this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
+                this.selfTestTimerStarted = true;
+            }
         }
 
         if (this.selfTestTimer >= 0) {
