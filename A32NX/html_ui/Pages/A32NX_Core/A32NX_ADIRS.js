@@ -10,6 +10,7 @@ class ADIRS {
         //  0 -> timer finished
         // >0 -> timer remaining
         this.timer = -1;
+        this.onBatTimer = 0; //start at 0 to prevent light from coming on when starting with ADIRS aligned
     }
 
     init() {
@@ -23,6 +24,7 @@ class ADIRS {
 
         if (this.knob === 0) {
             this.timer = -1;
+            this.onBatTimer = -1;
         } else {
             if (this.timer === -1) {
                 // Align time changes depending on latitude.
@@ -47,6 +49,11 @@ class ADIRS {
             } else if (this.timer > 0) {
                 this.timer = Math.max(this.timer - (deltaTime / 1000), 0);
             }
+            if (this.onBatTimer === -1) {
+                this.onBatTimer = 5.5;
+            } else if (this.onBatTimer > 0) {
+                this.onBatTimer = Math.max(this.onBatTimer - (deltaTime / 1000), 0);
+            }
         }
 
         SimVar.SetSimVarValue(`L:A32NX_ADIRS_TIMER_${this.num}`, 'Seconds', this.timer);
@@ -70,12 +77,16 @@ class A32NX_ADIRS {
 
     update(deltaTime) {
         let atLeastOneADIRS = false;
+        let onBat = false;
         let timeToAlign = Infinity;
         this.ADIRS.forEach((ADIRS) => {
             ADIRS.update(deltaTime);
 
             if (ADIRS.timer >= 0) {
                 atLeastOneADIRS = true;
+            }
+            if (ADIRS.onBatTimer > 0 && ADIRS.onBatTimer < 5) {
+                onBat = true;
             }
             if (ADIRS.timer !== -1 && ADIRS.timer < timeToAlign) {
                 timeToAlign = ADIRS.timer;
@@ -126,5 +137,6 @@ class A32NX_ADIRS {
             SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool", 0);
             SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool", 0);
         }
+        SimVar.SetSimVarValue("L:A32NX_ADIRS_ON_BAT", "Bool", onBat);
     }
 }
