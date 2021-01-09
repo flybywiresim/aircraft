@@ -56,10 +56,9 @@ Idle.propTypes = {
     fmgc: PropTypes.instanceOf(FMGC).isRequired,
 };
 
-const A32NX_FMGC = new FMGC();
-
 const MCDU = () => {
     const [state, setState] = useState('DEFAULT');
+    const [A32NX_FMGC, setA32NX_FMGC] = useState(() => new FMGC());
 
     useUpdate((_deltaTime) => {
         if (state === 'OFF') {
