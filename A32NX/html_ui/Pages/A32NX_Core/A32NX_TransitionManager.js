@@ -23,7 +23,7 @@ class A32NX_TransitionManager {
                 this.departureLogic(departureICAO);
                 this.arrivalLogic(arrivalICAO);
                 //this.transLVL();
-                this.TrafficUpdateTimer = 0;
+                this.UpdateTimer = 0;
             }
         }
     }
