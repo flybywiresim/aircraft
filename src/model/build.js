@@ -76,7 +76,17 @@ function combineGltf(pathA, pathB, outputPath) {
                 mesh.primitives[0].attributes[attribute] += accessorsCount;
             });
         mesh.primitives[0].indices += accessorsCount;
-        mesh.primitives[0].material += materialsCount;
+        // workaround to allow added meshes to use existing materials
+        if (!Number.isFinite(mesh.primitives[0].material)) {
+            for (let i = 0; i < gltfA.materials.length; i += 1) {
+                if (gltfA.materials[i].name === mesh.primitives[0].material) {
+                    mesh.primitives[0].material = i;
+                    break;
+                }
+            }
+        } else {
+            mesh.primitives[0].material += materialsCount;
+        }
         gltfA.meshes.push(mesh);
     }
 
