@@ -158,7 +158,7 @@ const getSimBriefOfp = (mcdu, updateView) => {
             mcdu.simbrief["paxCount"] = data.weights.pax_count;
             mcdu.simbrief["paxWeight"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.pax_weight : lbsToKg(data.weights.pax_weight);
             mcdu.simbrief["cargo"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.cargo : lbsToKg(data.weights.cargo);
-            mcdu.simbrief["costIndex"] = data.general.costindex;
+            mcdu.simbrief["costIndex"] = data.general.costindex * 10; // SimBrief cost index is 0-100, but ATSU cost index is 0-1000
             mcdu.simbrief["navlog"] = data.navlog.fix;
             mcdu.simbrief["icao_airline"] = typeof data.general.icao_airline === 'string' ? data.general.icao_airline : "";
             mcdu.simbrief["flight_number"] = data.general.flight_number;
