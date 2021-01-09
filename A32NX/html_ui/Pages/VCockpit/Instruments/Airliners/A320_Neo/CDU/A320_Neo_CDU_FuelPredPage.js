@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUFuelPredPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -95,14 +113,14 @@ class CDUFuelPredPage {
                 if (mcdu._rteFinalEntered) {
                     if (isFinite(mcdu.getRouteFinalFuelWeight())) {
                         finalFuelCell = "{sp}{sp}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversionWeight).toFixed(1);
-                        finalTimeCell = minutesTohhmm(mcdu.getRouteFinalFuelTime());
+                        finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
                         finalColor = "[color]cyan";
                     }
                 } else {
                     mcdu.tryUpdateRouteFinalFuel();
                     if (isFinite(mcdu.getRouteFinalFuelWeight())) {
                         finalFuelCell = "{sp}{sp}{small}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversionWeight).toFixed(1) + "{end}";
-                        finalTimeCell = minutesTohhmm(mcdu.getRouteFinalFuelTime());
+                        finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
                         finalColor = "[color]cyan";
                     }
                 }
@@ -115,14 +133,14 @@ class CDUFuelPredPage {
                 if (mcdu._routeAltFuelEntered) {
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
                         altFuelCell = "{sp}{sp}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversionWeight).toFixed(1);
-                        altFuelTimeCell = "{small}{green}" + minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
+                        altFuelTimeCell = "{small}{green}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
                         altFuelColor = "[color]cyan";
                     }
                 } else {
                     mcdu.tryUpdateRouteAlternate();
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
                         altFuelCell = "{sp}{sp}{small}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversionWeight).toFixed(1);
-                        altFuelTimeCell = "{green}" + minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
+                        altFuelTimeCell = "{green}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
                         altFuelColor = "[color]cyan";
                     }
                 }
@@ -146,11 +164,11 @@ class CDUFuelPredPage {
                 }
                 destEFOBCell = (mcdu.getDestEFOB(true) * mcdu._conversionWeight).toFixed(1);
                 // Should we use predicted values or liveETATo and liveUTCto?
-                destTimeCell = isFlying ? secondsToUTC(utcTime + minuteToSeconds(mcdu._routeTripTime))
-                    : destTimeCell = minutesTohhmm(mcdu._routeTripTime);
+                destTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime))
+                    : destTimeCell = FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime);
                 if (mcdu.altDestination) {
-                    altTimeCell = isFlying ? secondsToUTC(utcTime + minuteToSeconds(mcdu._routeTripTime) + minuteToSeconds(mcdu.getRouteAltFuelTime()))
-                        : minutesTohhmm(mcdu.getRouteAltFuelTime());
+                    altTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime) + FMCMainDisplay.minuteToSeconds(mcdu.getRouteAltFuelTime()))
+                        : FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime());
                 }
                 destEFOBCellColor = "[color]green";
                 destTimeCellColor = "[color]green";
@@ -198,7 +216,7 @@ class CDUFuelPredPage {
                     extraFuelCell = "{small}" + (mcdu.tryGetExtraFuel(true) * mcdu._conversionWeight).toFixed(1);
                 }
                 extraCellColor = "[color]green";
-                extraTimeCell = minutesTohhmm(mcdu.tryGetExtraTime(true)) + "{end}";
+                extraTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.tryGetExtraTime(true)) + "{end}";
 
                 // Currently not updating as there's no simvar to retrieve this.
                 if (isFinite(mcdu.zeroFuelWeight)) {

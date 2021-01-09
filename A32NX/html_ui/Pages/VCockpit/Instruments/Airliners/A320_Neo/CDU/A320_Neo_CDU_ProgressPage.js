@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUProgressPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -5,8 +23,8 @@ class CDUProgressPage {
         mcdu.activeSystem = 'FMGC';
         const flightPhase = "CRZ";
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
-        const flMax = getMaxFlCorrected();
-        const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (isAllEngineOn() || Simplane.getIsGrounded())) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
+        const flMax = mcdu.getMaxFlCorrected();
+        const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
         let flCrz = "-----";
         switch (Simplane.getCurrentFlightPhase()) {
             case FlightPhase.FLIGHT_PHASE_PREFLIGHT:
@@ -109,7 +127,7 @@ class CDUProgressPage {
         const nextWaypointAltCell = "---";
         if (toWaypoint) {
             toWaypointCell = toWaypoint.ident;
-            toWaypointUTCCell = secondsTohhmm(toWaypoint.infos.etaInFP);
+            toWaypointUTCCell = FMCMainDisplay.secondsTohhmm(toWaypoint.infos.etaInFP);
             let nextWaypoint;
             if (mcdu.routeIndex + 1 === mcdu.flightPlanManager.getWaypointsCount()) {
                 nextWaypoint = mcdu.flightPlanManager.getDestination();
@@ -118,7 +136,7 @@ class CDUProgressPage {
             }
             if (nextWaypoint) {
                 nextWaypointCell = nextWaypoint.ident;
-                nextWaypointUTCCell = secondsTohhmm(nextWaypoint.infos.etaInFP);
+                nextWaypointUTCCell = FMCMainDisplay.secondsTohhmm(nextWaypoint.infos.etaInFP);
             }
         }
         let destCell = "";
@@ -134,7 +152,7 @@ class CDUProgressPage {
                     destCell += destApproach.runway;
                 }
             }
-            destUTCCell = secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
+            destUTCCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
             destDistCell = mcdu.flightPlanManager.getDestination().infos.totalDistInFP.toFixed(0);
         }
         mcdu.setTemplate([
@@ -163,7 +181,7 @@ class CDUProgressPage {
             if (overrideDestETA) {
                 destETACell = overrideDestETA;
             } else {
-                destETACell = secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
+                destETACell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
             }
             mcdu.onRightInput[0] = (value) => {
                 CDUProgressPage.ShowPredictiveGPSPage(mcdu, value);

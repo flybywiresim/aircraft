@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUAocRequestsWeather {
     static ShowPage(mcdu, store = {"reqID": 0, "depIcao": "", "arrIcao": "", "arpt1": "", "arpt2": "", "arpt3": "", "arpt4": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
@@ -39,7 +57,7 @@ class CDUAocRequestsWeather {
         };
 
         mcdu.onRightInput[0] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 store["arpt1"] = "";
             } else {
                 store["arpt1"] = value;
@@ -52,7 +70,7 @@ class CDUAocRequestsWeather {
         };
 
         mcdu.onRightInput[1] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 store["arpt2"] = "";
             } else {
                 store["arpt2"] = value;
@@ -65,7 +83,7 @@ class CDUAocRequestsWeather {
         };
 
         mcdu.onRightInput[2] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 store["arpt3"] = "";
             } else {
                 store["arpt3"] = value;
@@ -78,7 +96,7 @@ class CDUAocRequestsWeather {
         };
 
         mcdu.onRightInput[3] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 store["arpt4"] = "";
             } else {
                 store["arpt4"] = value;

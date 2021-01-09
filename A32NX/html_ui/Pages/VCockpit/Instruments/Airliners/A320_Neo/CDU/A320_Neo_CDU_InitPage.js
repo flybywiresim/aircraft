@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUInitPage {
     static ShowPage1(mcdu, resetFlightNo = false) {
         mcdu.clearDisplay();
@@ -184,7 +202,7 @@ class CDUInitPage {
         };
 
         mcdu.setTemplate([
-            ["INIT {}"], //Need to find the right unicode for left/right arrow
+            ["INIT"],
             ["\xa0CO RTE", "FROM/TO\xa0\xa0\xa0"],
             [coRoute, fromTo],
             ["ALTN/CO RTE", requestButtonLabel],
@@ -199,15 +217,17 @@ class CDUInitPage {
             [cruiseFlTemp, "---°[color]inop"],
         ]);
 
+        mcdu.setArrows(false, false, true, true);
+
         mcdu.onPrevPage = () => {
-            if (isAnEngineOn()) {
+            if (mcdu.isAnEngineOn()) {
                 CDUFuelPredPage.ShowPage(mcdu);
             } else {
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
         mcdu.onNextPage = () => {
-            if (isAnEngineOn()) {
+            if (mcdu.isAnEngineOn()) {
                 CDUFuelPredPage.ShowPage(mcdu);
             } else {
                 CDUInitPage.ShowPage2(mcdu);
@@ -258,7 +278,7 @@ class CDUInitPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.InitPageB;
 
-        let initBTitle = "INIT {}";
+        let initBTitle = "INIT";
 
         let zfwColor = "[color]amber";
         let zfwCell = "___._";
@@ -394,7 +414,7 @@ class CDUInitPage {
         let finalTimeCell = "----";
         let finalColor = "[color]white";
         if (mcdu.getRouteFinalFuelTime() > 0) {
-            finalTimeCell = "{cyan}" + minutesTohhmm(mcdu.getRouteFinalFuelTime()) + "{end}";
+            finalTimeCell = "{cyan}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime()) + "{end}";
         }
         mcdu.onLeftInput[4] = async (value) => {
             if (await mcdu.trySetRouteFinalTime(value)) {
@@ -433,14 +453,14 @@ class CDUInitPage {
                 if (mcdu._rteFinalEntered) {
                     if (isFinite(mcdu.getRouteFinalFuelWeight())) {
                         finalWeightCell = "{sp}{sp}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversionWeight).toFixed(1);
-                        finalTimeCell = minutesTohhmm(mcdu.getRouteFinalFuelTime());
+                        finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
                         finalColor = "[color]cyan";
                     }
                 } else {
                     mcdu.tryUpdateRouteFinalFuel();
                     if (isFinite(mcdu.getRouteFinalFuelWeight())) {
                         finalWeightCell = "{sp}{sp}{small}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversionWeight).toFixed(1) + "{end}";
-                        finalTimeCell = minutesTohhmm(mcdu.getRouteFinalFuelTime());
+                        finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
                         finalColor = "[color]cyan";
                     }
                 }
@@ -457,14 +477,14 @@ class CDUInitPage {
                 if (mcdu._routeAltFuelEntered) {
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
                         altnWeightCell = "{sp}{sp}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversionWeight).toFixed(1);
-                        altnTimeCell = "{small}{green}" + minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
+                        altnTimeCell = "{small}{green}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
                         altnColor = "[color]cyan";
                     }
                 } else {
                     mcdu.tryUpdateRouteAlternate();
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
                         altnWeightCell = "{sp}{sp}{small}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversionWeight).toFixed(1);
-                        altnTimeCell = "{green}" + minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
+                        altnTimeCell = "{green}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
                         altnColor = "[color]cyan";
                     }
                 }
@@ -481,7 +501,7 @@ class CDUInitPage {
                 mcdu.tryUpdateRouteTrip();
                 if (isFinite(mcdu.getTotalTripFuelCons()) && isFinite(mcdu.getTotalTripTime())) {
                     tripWeightCell = "{sp}{sp}{small}" + (mcdu.getTotalTripFuelCons() * mcdu._conversionWeight).toFixed(1);
-                    tripTimeCell = minutesTohhmm(mcdu._routeTripTime);
+                    tripTimeCell = FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime);
                     tripColor = "[color]green";
                 }
 
@@ -545,7 +565,7 @@ class CDUInitPage {
                 mcdu.checkEFOBBelowMin();
 
                 extraWeightCell = "{small}" + (mcdu.tryGetExtraFuel() * mcdu._conversionWeight).toFixed(1);
-                extraTimeCell = minutesTohhmm(mcdu.tryGetExtraTime()) + "{end}";
+                extraTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.tryGetExtraTime()) + "{end}";
                 extraColor = "[color]green";
             }
         }
@@ -565,6 +585,8 @@ class CDUInitPage {
             ["MIN DEST FOB", "EXTRA/\xa0TIME"],
             [minDestFob + minDestFobColor, extraWeightCell + "/" + extraTimeCell + extraColor],
         ]);
+
+        mcdu.setArrows(false, false, true, true);
 
         mcdu.onPrevPage = () => {
             CDUInitPage.ShowPage1(mcdu);

@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /**
  * Value is rounded to 1000 and fixed to 1 decimal
  * @param {number | string} value
@@ -98,7 +116,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[0] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 mcdu.aocWeight.blockFuel = "";
                 updateView();
                 return true;
@@ -118,7 +136,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[1] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 mcdu.aocWeight.taxiFuel = "";
                 updateView();
                 return true;
@@ -138,7 +156,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onRightInput[1] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 mcdu.aocWeight.tripFuel = "";
                 updateView();
                 return true;
@@ -271,7 +289,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[0] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 mcdu.aocWeight.payload = undefined;
                 mcdu.aocWeight.fwdBag = undefined;
                 mcdu.aocWeight.rearBag = undefined;
@@ -295,7 +313,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[1] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 mcdu.aocWeight.fwdBag = undefined;
                 updateView();
                 return true;
@@ -333,7 +351,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[2] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 mcdu.aocWeight.rearBag = undefined;
                 updatePayloadValue();
                 updateView();
@@ -361,7 +379,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onRightInput[1] = (value) => {
-            if (value === A320_Neo_CDU_MainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue) {
                 mcdu.aocWeight.zfwcg = undefined;
                 setEstimatedBaggagePayload(mcdu);
                 updateView();
