@@ -23,6 +23,7 @@
 1. [MCDU] The flight plan page now shows "TMPY" in the top line when displaying the temporary flight plan - @tyler58546 (tyler58546)
 1. [MCDU] The "FROM" indicator on the flight plan page is now in the top line - @tyler58546 (tyler58546)
 1. [MISC] Fixed cockpit door button states - @ImenesFBW (Imenes)
+1. [TEXTURE] Various UV/texture fixes - @tyler58546 (tyler58546)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
