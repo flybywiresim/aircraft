@@ -6,6 +6,9 @@ class A32NX_TransitionManager {
         if (mode !== "AUTO") {
             this.transitionManual();
         }
+        if (mode === "AUTO") {
+            this.UpdateTimer = 130;
+        }
     }
     update(_deltaTime, _core) {
         this.transitionSelector();
