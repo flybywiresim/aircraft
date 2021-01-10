@@ -6,6 +6,11 @@
       "gltf": "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD00.gltf",
       "bin": "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD00.bin"
     },
-    "additions": []
+    "additions": [
+      {
+        "gltf": "./onbat/onbat.gltf",
+        "bin": "./onbat/onbat.bin"
+      }
+    ]
   }
 ]
