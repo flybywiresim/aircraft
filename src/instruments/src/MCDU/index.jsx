@@ -8,7 +8,7 @@ import {
 } from '../util.mjs';
 import './style.scss';
 import { Titlebar } from './Titlebar/Titlebar.jsx';
-// import { PagesContainer } from './PagesContainer.jsx';
+import { PagesContainer } from './PagesContainer.jsx';
 import { Scratchpad } from './Scratchpad/Scratchpad.jsx';
 import { FMGC } from '../FMGC/FMGC.mjs';
 
@@ -34,21 +34,16 @@ function SelfTest() {
 }
 
 function Idle({ fmgc }) {
-    console.log(`active system: ${fmgc.getActiveSystem()}`);
-
     useUpdate(() => {
         fmgc.update();
     });
 
     return (
-        <>
-            <svg className="titlebar-wrapper" viewBox="0 0 600 100">
-                <Titlebar />
-            </svg>
-            <svg className="scratchpad-wrapper" viewBox="0 0 600 100">
-                <Scratchpad />
-            </svg>
-        </>
+        <svg className="idle-wrapper" viewBox="0 0 600 100">
+            <Titlebar />
+            <PagesContainer fmgc={fmgc} />
+            <Scratchpad />
+        </svg>
     );
 }
 
@@ -58,13 +53,16 @@ Idle.propTypes = {
 
 const MCDU = () => {
     const [state, setState] = useState('DEFAULT');
-    const [A32NX_FMGC, setA32NX_FMGC] = useState(() => new FMGC());
+    const [fmgc, setFmgc] = useState(() => {
+        const temp = new FMGC();
+        temp.Init();
+        return temp;
+    });
 
     useUpdate((_deltaTime) => {
         if (state === 'OFF') {
             if (powerAvailable()) {
                 setState('ON');
-                A32NX_FMGC.Init(_deltaTime);
             }
         } else if (!powerAvailable()) {
             setState('OFF');
@@ -89,7 +87,7 @@ const MCDU = () => {
         }, 5000);
         return <SelfTest />;
     case 'IDLE':
-        return <Idle fmgc={A32NX_FMGC} />;
+        return <Idle fmgc={fmgc} />;
     default:
         throw new RangeError();
     }

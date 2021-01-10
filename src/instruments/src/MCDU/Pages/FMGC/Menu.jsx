@@ -16,14 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import BasePage from './BasePage.jsx';
 import { FMGC, activeSystems } from '../../../FMGC/FMGC.mjs';
 
 function determineActiveSystem(textOptions, setTextOptions, setMcduText, fmgc) {
-    setTextOptions((prevState) => ({
-        ...prevState,
+    setTextOptions((prevState) => Object.assign({}, prevState, {
         textFMGC: {
             color: fmgc.getActiveSystem() === activeSystems.FMGC ? 'green' : 'white',
         },
@@ -41,8 +40,7 @@ function determineActiveSystem(textOptions, setTextOptions, setMcduText, fmgc) {
         },
     }));
 
-    setMcduText((prevState) => ({
-        ...prevState,
+    setMcduText((prevState) => Object.assign({}, prevState, {
         L0: {
             text: textOptions.textFMGC.text,
             color: textOptions.textFMGC.color,
@@ -60,13 +58,13 @@ function determineActiveSystem(textOptions, setTextOptions, setMcduText, fmgc) {
             color: textOptions.textCFDS.color,
         },
         R5: {
-            text: textOptions.textReturn,
+            text: textOptions.textReturn.text,
+            color: textOptions.textReturn.color,
         },
     }));
 }
 
-const MenuPage = (props) => {
-    const { fmgc } = props;
+const MenuPage = ({ fmgc }) => {
     const mcduLabels = {
         L0: {
             text: '',
@@ -218,7 +216,7 @@ const MenuPage = (props) => {
         },
     });
 
-    determineActiveSystem(textOptions, setTextOptions, setMcduText, fmgc);
+    useEffect(() => determineActiveSystem(textOptions, setTextOptions, setMcduText, fmgc), []);
 
     /**
      * TODO create event handlers
