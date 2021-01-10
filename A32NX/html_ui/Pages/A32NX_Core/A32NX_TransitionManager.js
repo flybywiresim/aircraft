@@ -7,24 +7,19 @@ class A32NX_TransitionManager {
             this.transitionManual();
         }
         if (mode === "AUTO") {
-            this.UpdateTimer = 130;
+            this.transitionSelector();
         }
     }
     update(_deltaTime, _core) {
-        this.transitionSelector();
     }
-    transitionSelector(_deltaTime) {
-        this.UpdateTimer += _deltaTime / 1000;
+    transitionSelector() {
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
         if (mode === "AUTO") {
             const departureICAO = NXDataStore.get("PLAN_ORIGIN", "");
             const arrivalICAO = NXDataStore.get("PLAN_DESTINATION", "");
-            if (this.UpdateTimer > 120) {
-                this.departureLogic(departureICAO);
-                this.arrivalLogic(arrivalICAO);
-                //this.transLVL();
-                this.UpdateTimer = 0;
-            }
+            this.departureLogic(departureICAO);
+            this.arrivalLogic(arrivalICAO);
+            //this.transLVL();
         }
     }
     transitionManual() {
