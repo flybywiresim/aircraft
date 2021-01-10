@@ -6,6 +6,105 @@
       "gltf": "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD00.gltf",
       "bin": "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD00.bin"
     },
-    "additions": []
+    "additions": [
+      {
+        "gltf": "./onbat/onbat.gltf",
+        "bin": "./onbat/onbat.bin"
+      }
+    ],
+    "modifications": [
+      {
+        "accessors": [
+          "x0_PUSH_MPL_MS0MINUS_SEQ1_vertices#0_TEXCOORD_0",
+          "x0_PUSH_MPL_MS0MINUS_SEQ1_vertices#0_TEXCOORD_1",
+          "x0_PUSH_MPR_MS0MINUS_SEQ1_vertices#0_TEXCOORD_0",
+          "x0_PUSH_MPR_MS0MINUS_SEQ1_vertices#0_TEXCOORD_1"
+        ],
+        "data" : [
+          [0.353271484375, 0.53369140625],
+          [0.383056640625, 0.5561519861221313],
+          [0.353271484375, 0.55615234375],
+          [0.28644412755966187, 0.02115839719772339],
+          [0.29869693517684937, 0.0007421374320983887],
+          [0.29869693517684937, 0.02115839719772339],
+          [0.28644412755966187, 0.0007421374320983887],
+          [0.728515625, 0.0],
+          [0.72216796875, 0.020416259765625],
+          [0.72216796875, 0.0],
+          [0.728515625, 0.020416259765625],
+          [0.383056640625, 0.53369140625]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_MPL_MS0PLUS_SEQ1_vertices#0_TEXCOORD_0",
+          "x0_PUSH_MPL_MS0PLUS_SEQ1_vertices#0_TEXCOORD_1",
+          "x0_PUSH_MPR_MS0PLUS_SEQ1_vertices#0_TEXCOORD_0",
+          "x0_PUSH_MPR_MS0PLUS_SEQ1_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.705078125, 0.020416259765625],
+          [0.7158200144767761, 0.0],
+          [0.7158203125, 0.020416259765625],
+          [0.383056640625, 0.55615234375],
+          [0.353271484375, 0.53369140625],
+          [0.383056640625, 0.53369140625],
+          [0.353271484375, 0.55615234375],
+          [0.28661468625068665, 0.02059304714202881],
+          [0.29886749386787415, 0.00017684698104858398],
+          [0.29886749386787415, 0.02059304714202881],
+          [0.28661468625068665, 0.00017684698104858398],
+          [0.705078125, 0.0]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_OVHD_GPWS_LDG_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_OVHD_GPWS_LDG_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.6444091200828552, 0.9343857690691948],
+          [0.7191161513328552, 0.9631943628191948],
+          [0.6448974013328552, 0.9631943628191948],
+          [0.7191161513328552, 0.9348740503191948]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_OVHD_ELEC_COMMERCIAL_SEQ1_vertices#0_TEXCOORD_0",
+          "x0_PUSH_OVHD_ELEC_COMMERCIAL_SEQ1_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.404052734375, 0.6868896484375],
+          [0.466064453125, 0.7034912109375],
+          [0.404052734375, 0.7034912109375],
+          [0.466064453125, 0.6868896484375]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_OVHD_HYD_ELECPUMPY_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_OVHD_HYD_ELECPUMPY_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.6446850299835205, 0.935310497879982],
+          [0.7198803424835205, 0.9621659629046917],
+          [0.6441967487335205, 0.9626542441546917],
+          [0.7198803424835205, 0.935310497879982]
+        ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_OVHD_FUEL_XFEED_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_OVHD_FUEL_XFEED_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.64453125, 0.9347079396247864],
+          [0.7197265625, 0.9630282521247864],
+          [0.64404296875, 0.9635165333747864],
+          [0.7197265625, 0.9347079396247864]
+        ]
+      }
+    ]
   }
 ]

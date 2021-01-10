@@ -2,6 +2,41 @@
 
 const fs = require('fs');
 const path = require('path');
+const byteData = require('byte-data');
+
+const ComponentTypeSize = {
+    5120: 1,
+    5121: 1,
+    5122: 2,
+    5123: 2,
+    5125: 4,
+    5126: 4,
+};
+
+const ComponentTypeSigned = {
+    5120: true,
+    5121: false,
+    5122: true,
+    5123: false,
+    5125: false,
+    5126: true,
+};
+
+const ComponentTypeFloat = {
+    5120: false,
+    5121: false,
+    5122: true,
+    5123: true,
+    5125: false,
+    5126: true,
+};
+
+const AccessorType = {
+    SCALAR: 1,
+    VEC2: 2,
+    VEC3: 3,
+    VEC4: 4,
+};
 
 function combineGltf(pathA, pathB, outputPath) {
     const gltfA = JSON.parse(fs.readFileSync(pathA, 'utf8'));
@@ -76,7 +111,17 @@ function combineGltf(pathA, pathB, outputPath) {
                 mesh.primitives[0].attributes[attribute] += accessorsCount;
             });
         mesh.primitives[0].indices += accessorsCount;
-        mesh.primitives[0].material += materialsCount;
+        // workaround to allow added meshes to use existing materials
+        if (!Number.isFinite(mesh.primitives[0].material)) {
+            for (let i = 0; i < gltfA.materials.length; i += 1) {
+                if (gltfA.materials[i].name === mesh.primitives[0].material) {
+                    mesh.primitives[0].material = i;
+                    break;
+                }
+            }
+        } else {
+            mesh.primitives[0].material += materialsCount;
+        }
         gltfA.meshes.push(mesh);
     }
 
@@ -106,11 +151,50 @@ function combineGltf(pathA, pathB, outputPath) {
     fs.writeFileSync(outputPath, data);
 }
 
+function applyModifications(buffer, gltfPath, modifications) {
+    const gltf = JSON.parse(fs.readFileSync(gltfPath, 'utf8'));
+    for (const mod of modifications) {
+        for (const accessorName of mod.accessors) {
+            for (const accessor of gltf.accessors) {
+                if (accessor.name === accessorName) {
+                    const accessorByteOffset = accessor.byteOffset || 0;
+                    const bufferView = gltf.bufferViews[accessor.bufferView];
+                    const bufferViewByteOffset = bufferView.byteOffset || 0;
+                    const { byteStride } = bufferView;
+                    const byteOffset = accessorByteOffset + bufferViewByteOffset;
+                    for (let i = 0; i < mod.data.length; i += 1) {
+                        const item = mod.data[i];
+                        for (let j = 0; j < AccessorType[accessor.type]; j += 1) {
+                            // eslint-disable-next-line max-len
+                            const index = byteOffset + (j * ComponentTypeSize[accessor.componentType]) + (i * byteStride);
+                            byteData.packTo(item[j], {
+                                bits: (ComponentTypeSize[accessor.componentType] * 8),
+                                signed: ComponentTypeSigned[accessor.componentType],
+                                fp: ComponentTypeFloat[accessor.componentType],
+                            }, buffer, index);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return buffer;
+}
+
 const models = JSON.parse(fs.readFileSync(path.join(__dirname, 'models.json'), 'utf8'));
 const p = (n) => path.resolve(__dirname, n);
 for (const model of models) {
     fs.copyFileSync(p(model.gltf), p(model.output.gltf));
-    fs.copyFileSync(p(model.bin), p(model.output.bin));
+    if (model.modifications) {
+        const modifiedBin = applyModifications(
+            fs.readFileSync(p(model.bin)),
+            p(model.gltf),
+            model.modifications,
+        );
+        fs.writeFileSync(p(model.output.bin), modifiedBin);
+    } else {
+        fs.copyFileSync(p(model.bin), p(model.output.bin));
+    }
     for (const addition of model.additions) {
         combineGltf(p(model.output.gltf), p(addition.gltf), p(model.output.gltf));
         fs.appendFileSync(p(model.output.bin), fs.readFileSync(p(addition.bin)));
