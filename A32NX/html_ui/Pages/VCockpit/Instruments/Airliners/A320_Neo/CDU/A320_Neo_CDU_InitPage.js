@@ -33,6 +33,7 @@ class CDUInitPage {
         let requestButton = "REQUEST*[color]amber";
         let requestButtonLabel = "INIT [color]amber";
         let requestEnable = true;
+        this.TransitionManager = new A32NX_TransitionManager();
 
         if (mcdu.simbrief.sendStatus === "REQUESTING") {
             requestEnable = false;
@@ -168,11 +169,13 @@ class CDUInitPage {
                         CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
                         CDUPerformancePage.UpdateThrRedAccFromDestination(mcdu);
                         CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                        this.TransitionManager.transitionSelector();
                     }
                 });
             } else if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
                 if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
                     CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                    this.TransitionManager.transitionSelector();
                 }
             }
         };
