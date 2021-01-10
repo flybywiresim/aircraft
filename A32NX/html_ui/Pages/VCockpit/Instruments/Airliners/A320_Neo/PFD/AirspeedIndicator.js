@@ -679,12 +679,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.updateGraduationScrolling(indicatedSpeed);
         const iasAcceleration = this.computeIAS(indicatedSpeed);
         const speedTrend = iasAcceleration;
-        const crossSpeed = SimVar.GetGameVarValue("AIRCRAFT CROSSOVER SPEED", "Knots");
-        const cruiseMach = SimVar.GetGameVarValue("AIRCRAFT CRUISE MACH", "mach");
-        const crossSpeedFactor = Simplane.getCrossoverSpeedFactor(crossSpeed, cruiseMach);
-        const nextFlapSpeed = Simplane.getNextFlapsExtendSpeed(this.aircraft) * crossSpeedFactor;
         // Value used to draw the red VMAX barber pole
-        const maxSpeed = A32NX_Selectors.VMAX();
+        const vMax = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number");
+        const vfeN = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VFEN", "number");
         const greenDot = SimVar.GetSimVarValue("L:A32NX_SPEEDS_GD", "number");
         const vR = SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots");
         const planeOnGround = Simplane.getIsGrounded();
@@ -699,10 +696,10 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 || ((flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF || flightPhase === FlightPhase.FLIGHT_PHASE_PREFLIGHT)
                     && autobrakes !== 3 && SimVar.GetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool") === 1)
             );
-        this.smoothSpeeds(indicatedSpeed, dTime, maxSpeed, vls, vs * 1.1, vs * 1.03, vs);
+        this.smoothSpeeds(indicatedSpeed, dTime, vMax, vls, vs * 1.1, vs * 1.03, vs);
         this.updateSpeedTrendArrow(indicatedSpeed, speedTrend);
-        this.updateTargetSpeeds(indicatedSpeed, decel, iasOffset);
-        this.updateNextFlapSpeedIndicator(indicatedSpeed, nextFlapSpeed);
+        this.updateTargetSpeeds(indicatedSpeed, decel);
+        this.updateNextFlapSpeedIndicator(indicatedSpeed, vfeN);
         this.updateStrip(this.vMaxStripSVG, indicatedSpeed, this._maxSpeed, false, true);
         this.updateStrip(this.vlsStripSVG, indicatedSpeed, this._vls, planeOnGround, false);
         this.updateStrip(this.vaprotStripSVG, indicatedSpeed, this._vaprot, planeOnGround, false);

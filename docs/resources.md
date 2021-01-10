@@ -1,7 +1,7 @@
 # Development Resources
 
 ## Tools:
-- [WebUI-DevKit](https://github.com/dga711/msfs-webui-devkit) - In-game development overlay for html-ui content. Provides fast reload, console output, and more! **Be sure to download version 0.8.5 for now as version 0.9 is not yet compatible with the A320. See https://github.com/flybywiresim/a32nx/issues/2444.**
+- [WebUI-DevKit](https://github.com/dga711/msfs-webui-devkit) - In-game development overlay for html-ui content. Provides fast reload, console output, and more! Note that after setting up WebUI-DevKit sometimes panels don't load correctly. Reloading the panels one or more times using <kbd>ALT</kbd> + <kbd>R</kbd> usually "fixes" these problems.
 - [devtools-backend-refurb](https://github.com/dga711/devtools-backend-refurb) - Chrome devtools server targeting Coherent GT. Gives you devtools for html-ui content. WARNING: This is still a work in progress, and tends to be very finnicky.
 
 

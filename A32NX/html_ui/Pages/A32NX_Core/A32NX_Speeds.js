@@ -14,6 +14,8 @@ class A32NX_Speeds {
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_S", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_KCAS", "number", 0);
         this.lastGw = 50;
         this.lastFhi = -1;
@@ -30,7 +32,10 @@ class A32NX_Speeds {
          */
         setInterval(() => {
             const fp = Simplane.getCurrentFlightPhase();
-            const fhi = Simplane.getFlapsHandleIndex();
+            let fhi = Simplane.getFlapsHandleIndex();
+            if (fhi === 1 && SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") < 9.99) {
+                fhi = 5;
+            }
             const gw = this.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg")) / 1000;
             const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
             const alt = this.round(Simplane.getAltitude());
@@ -39,13 +44,12 @@ class A32NX_Speeds {
                 return;
             }
 
-            this.curFhi = this.lastFhi === 0 && fhi === 1 && fp > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
             this.lastFhi = fhi;
             this.lastGw = gw;
             this.ldgPos = ldg;
             this.alt = alt;
 
-            const speeds = new NXSpeeds(gw, this.curFhi, ldg, fp < FlightPhase.FLIGHT_PHASE_CLIMB);
+            const speeds = new NXSpeeds(gw, this.lastFhi, ldg, fp < FlightPhase.FLIGHT_PHASE_CLIMB);
             speeds.compensateForMachEffect(alt);
 
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_VS", "number", speeds.vs);
@@ -53,6 +57,8 @@ class A32NX_Speeds {
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_F", "number", speeds.f);
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_S", "number", speeds.s);
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", speeds.gd);
+            SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", speeds.vmax);
+            SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", speeds.vfeN);
         }, 500);
     }
 
