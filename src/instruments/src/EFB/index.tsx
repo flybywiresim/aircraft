@@ -18,7 +18,7 @@
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
 import Efb from './Efb';
-const { renderTarget, useUpdate, getSimVar } = require('../util.mjs');
+import { renderTarget, useUpdate, getSimVar } from './../util.mjs';
 import logo from './Assets/fbw-logo.svg';
 import './Assets/Boot.scss';
 
