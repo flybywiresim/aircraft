@@ -537,12 +537,16 @@ class FMCMainDisplay extends BaseAirliners {
         const onlyTemp = flString.length === 0;
 
         if (!!tempString) {
-            const temp = parseInt(tempString);
+            const temp = parseInt(tempString.replace("M", "-"));
             if (isFinite(temp)) {
                 if (temp > -270 && temp < 100) {
-                    this.cruiseTemperature = temp;
                     if (onlyTemp) {
-                        return true;
+                        if (this._cruiseEntered) {
+                            this.cruiseTemperature = temp;
+                            return true;
+                        }
+                        this.addNewMessage(NXSystemMessages.notAllowed);
+                        return false;
                     }
                 } else {
                     if (onlyTemp) {
