@@ -18,6 +18,12 @@ function RadioManagementPanel() {
         <svg>
             <text x="100%" y="60%">{data.standby}</text>
         </svg>
+        <svg>
+            <text x="100%" y="60%">888.888</text>
+        </svg>
+        <svg>
+            <text x="100%" y="60%">888.888</text>
+        </svg>
     </div>
 }
 
