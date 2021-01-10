@@ -42,7 +42,6 @@ type OverviewPageProps = {
     contFuelTime: number,
     resFuelTime: number,
     taxiOutTime: number,
-    nose: string
 };
 
 type OverviewPageState = {

@@ -15,13 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
-import Efb from './Efb.tsx';
+import Efb from './Efb';
 import { renderTarget, useUpdate, getSimVar } from '../util.mjs';
 import logo from './Assets/fbw-logo.svg';
 import './Assets/Boot.scss';
+
+declare var Simplane: any;
+declare var React: any;
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
@@ -54,7 +56,7 @@ function ScreenLoading() {
 
 function EFBLoad() {
     const [state, setState] = useState('DEFAULT');
-    const currentFLight = getSimVar('ATC FLIGHT NUMBER');
+    const currentFlight = getSimVar('ATC FLIGHT NUMBER');
 
     useUpdate((_deltaTime) => {
         if (state === 'OFF') {
@@ -84,7 +86,7 @@ function EFBLoad() {
         }, 6000);
         return <ScreenLoading />;
     case 'START':
-        return <Efb currentFLight={currentFLight} />;
+        return <Efb currentFlight={currentFlight} />;
     default:
         throw new RangeError();
     }

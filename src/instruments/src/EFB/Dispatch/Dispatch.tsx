@@ -43,7 +43,6 @@ type DispatchProps = {
     contFuelTime: number,
     resFuelTime: number,
     taxiOutTime: number,
-    nose: string
 };
 
 type DispatchState = {
@@ -70,7 +69,6 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
                 return <h1>Page 4</h1>;
             default:
                 return <OverviewPage
-                    nose={this.props.nose}
                     weights={this.props.weights}
                     fuels={this.props.fuels}
                     units={this.props.units}
