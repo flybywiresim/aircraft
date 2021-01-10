@@ -39,7 +39,7 @@ function Idle({ fmgc }) {
     });
 
     return (
-        <svg className="idle-wrapper" viewBox="0 0 600 100">
+        <svg className="main-wrapper" viewBox="0 0 1024 1024">
             <Titlebar />
             <PagesContainer fmgc={fmgc} />
             <Scratchpad />

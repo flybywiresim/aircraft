@@ -57,37 +57,37 @@
 }
 
 .bg {
-  background: var(--displayBackground);
+  fill: var(--displayBackground);
 }
 
 .white {
-  color: var(--mcduWhite);
+  fill: var(--mcduWhite);
 }
 
 .inop {
-  color: var(--mcduLightGrey);
+  fill: var(--mcduLightGrey);
 }
 
 .cyan {
-  color: var(--mcduCyan);
+  fill: var(--mcduCyan);
 }
 
 .yellow {
-  color: var(--mcduYellow);
+  fill: var(--mcduYellow);
 }
 
 .green {
-  color: var(--mcduGreen);
+  fill: var(--mcduGreen);
 }
 
 .amber {
-  color: var(--mcduAmber);
+  fill: var(--mcduAmber);
 }
 
 .red {
-  color: var(--mcduRed);
+  fill: var(--mcduRed);
 }
 
 .magenta {
-  color: var(--mcduMagenta);
+  fill: var(--mcduMagenta);
 }
