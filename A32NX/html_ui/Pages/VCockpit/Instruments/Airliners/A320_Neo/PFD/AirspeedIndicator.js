@@ -679,7 +679,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         const iasAcceleration = this.computeIAS(indicatedSpeed);
         const speedTrend = iasAcceleration;
         // Value used to draw the red VMAX barber pole
-        const vfe = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VFE", "number");
+        const vMax = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number");
         const vfeN = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VFEN", "number");
         const greenDot = SimVar.GetSimVarValue("L:A32NX_SPEEDS_GD", "number");
         const vR = SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots");
@@ -695,7 +695,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 || ((flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF || flightPhase === FlightPhase.FLIGHT_PHASE_PREFLIGHT)
                     && autobrakes !== 3 && SimVar.GetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool") === 1)
             );
-        this.smoothSpeeds(indicatedSpeed, dTime, vfe, vls, vs * 1.1, vs * 1.03, vs);
+        this.smoothSpeeds(indicatedSpeed, dTime, vMax, vls, vs * 1.1, vs * 1.03, vs);
         this.updateSpeedTrendArrow(indicatedSpeed, speedTrend);
         this.updateTargetSpeeds(indicatedSpeed, decel);
         this.updateNextFlapSpeedIndicator(indicatedSpeed, vfeN);
