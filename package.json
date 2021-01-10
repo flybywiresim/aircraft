@@ -34,9 +34,10 @@
     "rollup-plugin-css-only": "^2.1.0"
   },
   "dependencies": {
-    "sass": "~1.30.0",
+    "byte-data": "^19.0.1",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
-    "rollup-plugin-scss": "^2.6.1"
+    "rollup-plugin-scss": "^2.6.1",
+    "sass": "~1.30.0"
   }
 }
