@@ -1,4 +1,4 @@
 # Math JS External Library https://mathjs.org/
 A32NX/html_ui/Pages/A32NX_Core/math.js
 # This is a js test file containing global mocks
-src/instruments/src/EFB/mocks/globals.js
+src/instruments/src/EFB/Tests/globals.js

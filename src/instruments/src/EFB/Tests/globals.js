@@ -1,5 +1,5 @@
 const simvars = {
-    'ATC FLIGHT NUMBER': 'AB320',
+    'ATC FLIGHT NUMBER': 'AB123',
     'GPS POSITION LAT': 0,
     'L:APU_GEN_ONLINE': false,
     'EXTERNAL POWER AVAILABLE:1': false,
@@ -8,7 +8,7 @@ const simvars = {
 };
 
 function triggerSimVarUpdate() {
-    console.log('new simvars', simvars);
+    console.log('New Simvars 🍔', simvars);
     const parent = document.getElementById('parent');
     const event = new CustomEvent('update');
     parent.dispatchEvent(event);
@@ -19,10 +19,11 @@ Simplane = {
         return false;
     },
 };
+
 SimVar = {
     GetSimVarValue(s) {
         const result = simvars[s];
-        console.log(`returning simvar ${s} = ${result}`);
+        console.log(`🍙 Returning Simvar ${s} = ${result}`);
         return result;
     },
 };

@@ -53,7 +53,7 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
             if (("/" + tab.link) === url) {
                 index = tab.id;
             } else if (url === "/") {
-                index = 1;
+                index = 0;
             }
         });
         return index;
