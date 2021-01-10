@@ -1,8 +1,10 @@
 import React from 'react';
 
 import OverviewPage from './Pages/OverviewPage';
+import LoadsheetPage from './Pages/LoadsheetPage';
 
 type DispatchProps = {
+    loadsheet: string,
     weights: {
         cargo: number,
         estLandingWeight: number,
@@ -58,7 +60,8 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
     currentPage() {
         switch (this.state.currentPageIndex) {
             case 1:
-                return <h1 className="text-white font-semibold text-lg">Page 1</h1>;
+                return <LoadsheetPage
+                    loadsheet={this.props.loadsheet} />;
             case 2:
                 return <h1>Page 2</h1>;
             case 3:

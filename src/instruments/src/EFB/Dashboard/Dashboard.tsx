@@ -92,7 +92,9 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                     <h1 className="text-white font-medium mb-6 text-xl">Map</h1>
                     
                     <div className="bg-gray-800 rounded-xl p-6 text-white overflow-hidden">
-                        {/** <Map currentFlight={"IGO6564"} disableSearch={true} disableInfo={true} disableFlights={false} hideOthers={true} /> **/}
+                        <div className="w-full h-96 rounded-lg overflow-hidden">
+                            <Map currentFlight={""} disableMenu={true} hideOthers={false} />
+                        </div>
                     </div>
                 </div>
             </div>

@@ -21,7 +21,6 @@ import { useState } from 'react';
 import Efb from './Efb.tsx';
 import { renderTarget, useUpdate, getSimVar } from '../util.mjs';
 import logo from './Assets/fbw-logo.svg';
-import nose from './Assets/320neoOutline [Nose].svg';
 import './Assets/Boot.scss';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
@@ -85,7 +84,7 @@ function EFBLoad() {
         }, 6000);
         return <ScreenLoading />;
     case 'START':
-        return <Efb logo={logo} nose={nose} currentFLight={currentFLight} />;
+        return <Efb currentFLight={currentFLight} />;
     default:
         throw new RangeError();
     }

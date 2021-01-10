@@ -18,10 +18,10 @@
 
 import React from 'react';
 import { IconSettings } from '@tabler/icons';
+import logo from '../Assets/fbw-logo.svg';
 
 type ToolbarProps = {
     setPageIndex: (number) => void;
-    logo: string,
 };
 
 type ToolbarState = {
@@ -72,7 +72,7 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
                 <div className="flex justify-between py-3 px-6">
                     <div className="flex-1 flex items-center justify-start">
                         <div className="flex-shrink-0 flex items-center">
-                            <img className="h-20 mr-6" src={this.props.logo} />
+                            <img className="h-20 mr-6" src={logo} />
                         </div>
                         <div className="flex space-x-4 text-xl">
                             {

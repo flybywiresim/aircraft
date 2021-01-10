@@ -184,11 +184,6 @@ textarea:-ms-input-placeholder {
   color: #9ca3af;
 }
 
-input::-ms-input-placeholder,
-textarea::-ms-input-placeholder {
-  color: #9ca3af;
-}
-
 input::placeholder,
 textarea::placeholder {
   color: #9ca3af;
@@ -244,6 +239,7 @@ object,
 svg,
 video {
   display: block;
+  vertical-align: middle;
 }
 
 img,
@@ -367,6 +363,10 @@ video {
 
 .h-24 {
   height: 6rem;
+}
+
+.h-96 {
+  height: 24rem;
 }
 
 .text-lg {
@@ -495,6 +495,10 @@ video {
   overflow-x: hidden;
 }
 
+.overflow-y-scroll {
+  overflow-y: scroll;
+}
+
 .p-2 {
   padding: 0.5rem;
 }
@@ -618,23 +622,9 @@ video {
   --tw-rotate: 45deg;
 }
 
-@-webkit-keyframes spin {
-  to {
-    transform: rotate(1turn);
-  }
-}
-
 @keyframes spin {
   to {
     transform: rotate(1turn);
-  }
-}
-
-@-webkit-keyframes ping {
-  75%,
-  to {
-    transform: scale(2);
-    opacity: 0;
   }
 }
 
@@ -646,29 +636,9 @@ video {
   }
 }
 
-@-webkit-keyframes pulse {
-  50% {
-    opacity: 0.5;
-  }
-}
-
 @keyframes pulse {
   50% {
     opacity: 0.5;
-  }
-}
-
-@-webkit-keyframes bounce {
-  0%,
-  to {
-    transform: translateY(-25%);
-    -webkit-animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
-    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
-  }
-  50% {
-    transform: none;
-    -webkit-animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
   }
 }
 
@@ -676,12 +646,10 @@ video {
   0%,
   to {
     transform: translateY(-25%);
-    -webkit-animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
     animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
   }
   50% {
     transform: none;
-    -webkit-animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
     animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
   }
 }
@@ -692,4 +660,8 @@ body {
 
 .flip-vertical {
   transform: scaleX(-1);
+}
+
+.h-128 {
+  height: 42.5rem;
 }

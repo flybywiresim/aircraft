@@ -31,7 +31,8 @@ export interface ISimbriefData {
     fuel: IFuel,
     units: string,
     alternate: IAlternate,
-    times: ITimes
+    times: ITimes,
+    files: Files
 }
 
 interface IAirportInfo {
@@ -95,4 +96,8 @@ interface ITimes {
     sched_time_enroute: number,
     taxi_in: number,
     taxi_out: number,
+}
+
+interface Files {
+    loadsheet: string
 }

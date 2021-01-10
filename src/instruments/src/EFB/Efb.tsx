@@ -29,9 +29,7 @@ import Dispatch from "./Dispatch/Dispatch";
 import Settings from "./Settings/Settings";
 
 type EfbProps = {
-    logo: string,
-    currentFlight: string,
-    nose: string
+    currentFlight: string
 };
 
 type EfbState = {
@@ -61,7 +59,8 @@ type EfbState = {
     airline: string,
     flightNum: string,
     aircraftReg: string,
-    route: string
+    route: string,
+    loadsheet: string
 };
 
 document.body.classList.add('darkMode');
@@ -125,7 +124,8 @@ class Efb extends React.Component<EfbProps, EfbState> {
         resFuelTime: 0,
         taxiOutTime: 0,
         schedIn: '--:--',
-        schedOut: '--:--'
+        schedOut: '--:--',
+        loadsheet: "N/A",
     }
 
     updateCurrentTime(currentTime: Date) {
@@ -199,7 +199,8 @@ class Efb extends React.Component<EfbProps, EfbState> {
             resFuelTime:        simbriefData.times.reserve_time,
             taxiOutTime:        simbriefData.times.taxi_out,
             schedOut:           simbriefData.times.sched_out,
-            schedIn:            simbriefData.times.sched_in
+            schedIn:            simbriefData.times.sched_in,
+            loadsheet:          simbriefData.files.loadsheet
         });
     }
 
@@ -225,7 +226,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
         switch (this.state.currentPageIndex) {
             case 1:
                 return <Dispatch
-                    nose={this.props.nose}
+                    loadsheet={this.state.loadsheet}
                     weights={this.state.weights}
                     fuels={this.state.fuels}
                     units={this.state.units}
@@ -272,7 +273,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
         return (
             <div className="font-body overflow-x-hidden">
                 <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart} />
-                <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} logo={this.props.logo} />
+                <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} />
                 <div>
                     {this.currentPage()}
                 </div>

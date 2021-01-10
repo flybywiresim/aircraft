@@ -58,6 +58,7 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
     const fuel = simbriefJson.fuel;
     const params = simbriefJson.params;
     const alternate = simbriefJson.alternate;
+    const files = simbriefJson.files;
     return {
         airline: general.icao_airline,
         flightNumber: general.flight_number,
@@ -65,6 +66,9 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
         cruiseAltitude: general.initial_altitude,
         costIndex: general.costindex,
         route: general.route,
+        files : {
+            loadsheet: files.pdf.link
+        },
         origin: {
             iata: origin.iata_code,
             icao: origin.icao_code
