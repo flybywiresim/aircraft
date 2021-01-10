@@ -6,9 +6,7 @@ You can run a standalone version of the EFB by running the following:
 
 ```
 $ npm install
-$ npx webpack server
+$ npx webpack serve
 ```
 
 Then, navigate to http://localhost:8080.
-
-The error ```Cannot find module '../util.mjs' or its corresponding type declarations.``` is normal!

@@ -6,6 +6,9 @@ module.exports = {
     entry: path.join(__dirname, 'index.tsx'),
     mode: 'development',
     devtool: 'source-map',
+    devServer: {
+        watchContentBase: true,
+    },
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
     },
