@@ -8,7 +8,7 @@ import { HeadingOfftape, HeadingTape } from './HeadingIndicator.jsx';
 import { AltitudeIndicatorOfftape, AltitudeIndicator } from './AltitudeIndicator.jsx';
 import { AirspeedIndicatorOfftape, AirspeedIndicator } from './SpeedIndicator.jsx';
 import { FMA } from './FMA.jsx';
-import { getSimVar, setSimVar, renderTarget } from '../util.mjs';
+import { getSimVar, setSimVar, renderTarget, createDeltaTimeCalculator } from '../util.mjs';
 import { SmoothSin, LagFilter } from './PFDUtils.jsx';
 import './style.scss';
 
@@ -28,6 +28,7 @@ class PFD extends Component {
         this.dispIndex = parseInt(url.substring(url.length - 1), 10);
 
         this.deltaTime = 0;
+        this.GetDeltaTime = createDeltaTimeCalculator();
         this.prevAirspeed = 0;
 
         this.VMax = 0;
@@ -46,8 +47,8 @@ class PFD extends Component {
     }
 
     componentDidMount() {
-        renderTarget.parentElement.addEventListener('update', (event) => {
-            this.update(event.detail);
+        renderTarget.parentElement.addEventListener('update', () => {
+            this.update(this.GetDeltaTime());
         });
         renderTarget.parentElement.addEventListener(`A320_Neo_PFD_BTN_LS_${this.dispIndex}`, () => {
             this.onLSButtonPressed();
@@ -65,7 +66,7 @@ class PFD extends Component {
 
     onLSButtonPressed() {
         this.LSButtonPressed = !this.LSButtonPressed;
-        setSimVar(`L:BTN_LS_${this.dispIndex}_FILTER_ACTIVE`, 'Bool', this.LSButtonPressed);
+        setSimVar(`L:BTN_LS_${this.dispIndex}_FILTER_ACTIVE`, this.LSButtonPressed, 'Bool');
     }
 
     smoothSpeeds(_dTime, _maxSpeed, _vls, _vaprot, _valim, _vs) {
@@ -110,7 +111,7 @@ class PFD extends Component {
         const mach = getSimVar('AIRSPEED MACH', 'mach');
 
         const VS = getSimVar('L:A32NX_SPEEDS_VS', 'number');
-        const VMax = getSimVar('L:A32NX_SPEEDS_VFE', 'number');
+        const VMax = getSimVar('L:A32NX_SPEEDS_VMAX', 'number');
         const VLs = getSimVar('L:A32NX_SPEEDS_VLS', 'number');
 
         let showSpeedBars = true;

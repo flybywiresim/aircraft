@@ -46,7 +46,7 @@ export class RadioNav {
     }
 
     setRADIONAVActive(_index, _value) {
-        return setSimVar('L:RADIONAV ACTIVE:1', 'Bool', _value);
+        return setSimVar('L:RADIONAV ACTIVE:1', _value, 'Bool');
     }
 
     getRADIONAVActive(_index) {
@@ -58,15 +58,15 @@ export class RadioNav {
     }
 
     setRADIONAVSource(_source) {
-        return setSimVar('L:RADIONAV_SOURCE', 'number', _source);
+        return setSimVar('L:RADIONAV_SOURCE', _source, 'number');
     }
 
     swapVORFrequencies(_index) {
-        return setSimVar(`K:NAV${_index}_RADIO_SWAP`, 'Bool', 1);
+        return setSimVar(`K:NAV${_index}_RADIO_SWAP`, 1, 'Bool');
     }
 
     setVORActiveFrequency(_index, _value) {
-        return setSimVar(`K:NAV${_index}_RADIO_SET_HZ`, 'Hz', _value * 1000000);
+        return setSimVar(`K:NAV${_index}_RADIO_SET_HZ`, _value * 1000000, 'Hz');
     }
 
     getVORActiveFrequency(_index) {
@@ -74,7 +74,7 @@ export class RadioNav {
     }
 
     setVORStandbyFrequency(_index, _value) {
-        return setSimVar(`K:NAV${_index}_STBY_SET_HZ`, 'Hz', _value * 1000000);
+        return setSimVar(`K:NAV${_index}_STBY_SET_HZ`, _value * 1000000, 'Hz');
     }
 
     getVORStandbyFrequency(_index) {
@@ -82,7 +82,7 @@ export class RadioNav {
     }
 
     setVORRadial(_index, _value) {
-        return setSimVar(`K:VOR${_index}_SET`, 'degrees', _value);
+        return setSimVar(`K:VOR${_index}_SET`, _value, 'degrees');
     }
 
     getVORRadial(_index) {
@@ -152,12 +152,12 @@ export class RadioNav {
 
     swapILSFrequencies(_index) {
         const index = (this.navMode == NavMode.FOUR_SLOTS) ? _index + 2 : _index;
-        return setSimVar(`K:NAV${index}_RADIO_SWAP`, 'Bool', 1);
+        return setSimVar(`K:NAV${index}_RADIO_SWAP`, 1, 'Bool');
     }
 
     setILSActiveFrequency(_index, _value) {
         const index = (this.navMode == NavMode.FOUR_SLOTS) ? _index + 2 : _index;
-        return setSimVar(`K:NAV${index}_RADIO_SET_HZ`, 'Hz', _value * 1000000);
+        return setSimVar(`K:NAV${index}_RADIO_SET_HZ`, _value * 1000000, 'Hz');
     }
 
     getILSActiveFrequency(_index) {
@@ -167,7 +167,7 @@ export class RadioNav {
 
     setILSStandbyFrequency(_index, _value) {
         const index = (this.navMode == NavMode.FOUR_SLOTS) ? _index + 2 : _index;
-        return setSimVar(`K:NAV${index}_STBY_SET_HZ`, 'Hz', _value * 1000000);
+        return setSimVar(`K:NAV${index}_STBY_SET_HZ`, _value * 1000000, 'Hz');
     }
 
     getILSStandbyFrequency(_index) {
@@ -177,7 +177,7 @@ export class RadioNav {
 
     setILSRadial(_index, _value) {
         const index = (this.navMode == NavMode.FOUR_SLOTS) ? _index + 2 : _index;
-        return setSimVar(`K:VOR${index}_SET`, 'degrees', _value);
+        return setSimVar(`K:VOR${index}_SET`, _value, 'degrees');
     }
 
     getILSRadial(_index) {
@@ -253,7 +253,7 @@ export class RadioNav {
     }
 
     tuneClosestILS(_tune) {
-        return setSimVar('K:NAV1_CLOSE_FREQ_SET', 'Bool', _tune);
+        return setSimVar('K:NAV1_CLOSE_FREQ_SET', _tune, 'Bool');
     }
 
     getADFActiveFrequency(_index) {
@@ -265,11 +265,11 @@ export class RadioNav {
         if (_index > 1) {
             namePrefix += _index;
         }
-        return setSimVar(`${namePrefix}_COMPLETE_SET`, 'Frequency ADF BCD32', Avionics.Utils.make_adf_bcd32(_value * 1000));
+        return setSimVar(`${namePrefix}_COMPLETE_SET`, Avionics.Utils.make_adf_bcd32(_value * 1000), 'Frequency ADF BCD32');
     }
 
     swapVHFFrequencies(_userIndex, _vhfIndex) {
-        return setSimVar(`K:COM${_vhfIndex}_RADIO_SWAP`, 'Bool', 1);
+        return setSimVar(`K:COM${_vhfIndex}_RADIO_SWAP`, 1, 'Bool');
     }
 
     setVHFActiveFrequency(_userIndex, _vhfIndex, _value) {
@@ -277,7 +277,7 @@ export class RadioNav {
         if (_vhfIndex > 1) {
             namePrefix += _vhfIndex;
         }
-        return setSimVar(`${namePrefix}_RADIO_SET_HZ`, 'Hz', _value * 1000000);
+        return setSimVar(`${namePrefix}_RADIO_SET_HZ`, _value * 1000000, 'Hz');
     }
 
     getVHFActiveFrequency(_userIndex, _vhfIndex) {
@@ -289,7 +289,7 @@ export class RadioNav {
         if (_vhfIndex > 1) {
             namePrefix += _vhfIndex;
         }
-        return setSimVar(`${namePrefix}_STBY_RADIO_SET_HZ`, 'Hz', _value * 1000000);
+        return setSimVar(`${namePrefix}_STBY_RADIO_SET_HZ`, _value * 1000000, 'Hz');
     }
 
     getVHFStandbyFrequency(_userIndex, _vhfIndex) {

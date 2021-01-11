@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { getSimVar, renderTarget } from '../util.mjs';
+import { createDeltaTimeCalculator, getSimVar, renderTarget } from '../util.mjs';
 
 export const FMA = () => {
     const SharedMode = getSimVar('L:A32NX_SharedAPMode', 'enum');
@@ -308,12 +308,12 @@ class ShowTenSeconds extends Component {
 
         this.Timer = 10;
         this.PrevID = NaN;
-        const updateFunction = (event) => {
+
+        this.GetDeltaTime = createDeltaTimeCalculator();
+        const updateFunction = () => {
             if (this.Timer > 0) {
-                this.Timer -= event.detail / 1000;
+                this.Timer -= this.GetDeltaTime() / 1000;
             }
-            console.log(this.Timer);
-            console.log(event.detail);
             this.forceUpdate();
         };
         this.Update = updateFunction.bind(this);

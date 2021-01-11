@@ -35,7 +35,7 @@ const VRBugElement = (offset) => (
     <path id="RotateSpeedMarker" className="NormalStroke Cyan" transform={`translate(0 ${offset})`} d="m21.549 80.82a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />);
 
 const GreenDotBugElement = (offset) => (
-    <path id="GreenDotSpeedMarker" transform={`translate(0 ${offset})`} className="NormalStroke Green" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />
+    <path id="GreenDotSpeedMarker" transform={`translate(0 ${offset})`} className="ThickStroke Green" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />
 );
 
 const FlapRetractBugElement = (offset) => (
