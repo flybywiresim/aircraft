@@ -10,6 +10,7 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    container: ghcr.io/flybywiresim/dev-env:latest
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
@@ -17,17 +18,18 @@ jobs:
       - name: install
         run: npm install --no-optional
       - name: lint
-        run: ./scripts/dev-env/run.sh npm run lint
+        run: npm run lint
   build:
     runs-on: ubuntu-latest
+    container: ghcr.io/flybywiresim/dev-env:latest
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
-      - name: Generate layout.json and update manifest.json
+      - name: build
         run: |
-          ./scripts/dev-env/run.sh ./scripts/setup.sh
-          ./scripts/dev-env/run.sh ./scripts/build.sh
+          ./scripts/setup.sh
+          ./scripts/build.sh
 
           mkdir tmp_A32NX
           mv A32NX tmp_A32NX/
