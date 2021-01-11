@@ -1,100 +1,80 @@
+import { VeryHighFrequency } from './RadioFrequencyMode.mjs';
+import { HighFrequency } from './RadioFrequencyMode.mjs';
 import { AcceleratedKnob } from "./AcceleratedKnob.mjs";
-import { RadioModeSelector } from './RadioModeSelector.mjs';
 import { useInteractionEvent } from '../util.mjs';
 
 
-/**
- * @param {number} frequency The frequency to find the next frequency for (in kHz).
- * @param {boolean} supports833 Whether the frequency should be an 8.33 kHz spacing frequency.
- * @returns {number} The next frequency.
- */
-function nextFrequency(frequency, supports833) {
-    if (supports833 === false) return frequency + 25;
-    const trail = Math.round(frequency % 100);
-    if (trail === 15 || trail === 40 || trail === 65 || trail === 90) return frequency + 10;
-    return frequency + 5;
-}
+const vhf1 = new VeryHighFrequency(1);
+const vhf2 = new VeryHighFrequency(2);
+const vhf3 = new VeryHighFrequency(3);
+const hf1 = new HighFrequency(1);
+const hf2 = new HighFrequency(2);
 
-
-/**
- * @param {number} frequency The frequency to find the previous 8.33 kHz frequency for (in kHz).
- * @param {boolean} supports833 Whether the frequency should be an 8.33 kHz spacing frequency.
- * @returns {number} The previous 8.33 kHz frequency.
- */
-function previousFrequency(frequency, supports833) {
-    if (supports833 === false) return frequency - 25;
-    const trail = Math.round(frequency % 100);
-    if (trail === 0 || trail === 25 || trail === 50 || trail === 75) return frequency - 10;
-    return frequency - 5;
-}
-
-
-/**
- * @param {number} frequency The frequency to format in kHz.
- * @returns {string} The frequency formated as 123.456 MHz.
- */
-function formatFrequency(frequency) {
-    return (frequency / 1000).toFixed(3).padEnd(7, '0');
-}
-
-
-export class RadioManagementPanel {
-    constructor() {
+class RadioManagementPanel {
+    constructor(side) {
+        this.side = side;
+        this.mode = side === 'L' ? vhf1 : vhf2;
         this.innerKnob = new AcceleratedKnob();
         this.outerKnob = new AcceleratedKnob();
-        this.innerKnob.updateValue = (s) => this.updateDecimalValue(s);
-        this.outerKnob.updateValue = (s) => this.updateIntegerValue(s);
-        this.radioModeSelector = new RadioModeSelector(this);
+        this.innerKnob.updateValue = (s) => this.mode.changeStandbyDecimalValue(s);
+        this.outerKnob.updateValue = (s) => this.mode.changeStandbyIntegerValue(s);
     }
 
-    get data() {
+    frequencyKnobTurned(knob, direction) {
+        if (direction === 'anticlockwise') knob.decrease();
+        else if (direction === 'clockwise') knob.increase();
+        if (this.requestRender) this.requestRender();
+    }
+
+    transferButtonPressed() {
+        this.mode.transfer()
+        if (this.requestRender) this.requestRender();
+    }
+
+    modeButtonPressed(mode) {
+        this.mode = mode;
+        if (this.requestRender) this.requestRender();
+    }
+
+    registerCallbacks(requestRender) {
+        this.requestRender = requestRender;
+
+        useInteractionEvent(`A32NX_RMP_${this.side}_INNER_KNOB_TURNED_CLOCKWISE`, () => this.frequencyKnobTurned(this.innerKnob, 'clockwise'));
+        useInteractionEvent(`A32NX_RMP_${this.side}_INNER_KNOB_TURNED_ANTICLOCKWISE`, () => this.frequencyKnobTurned(this.innerKnob, 'anticlockwise'));
+        useInteractionEvent(`A32NX_RMP_${this.side}_OUTER_KNOB_TURNED_CLOCKWISE`, () => this.frequencyKnobTurned(this.outerKnob, 'clockwise'));
+        useInteractionEvent(`A32NX_RMP_${this.side}_OUTER_KNOB_TURNED_ANTICLOCKWISE`, () => this.frequencyKnobTurned(this.outerKnob, 'anticlockwise'));
+        useInteractionEvent(`A32NX_RMP_${this.side}_TRANSFER_BUTTON_PRESSED`, () => this.transferButtonPressed());
+
+        useInteractionEvent(`A320_Neo_FDW_BTN_${this.side}_VHF1`, () => this.modeButtonPressed(vhf1));
+        useInteractionEvent(`A320_Neo_FDW_BTN_${this.side}_VHF2`, () => this.modeButtonPressed(vhf2));
+        useInteractionEvent(`A320_Neo_FDW_BTN_${this.side}_VHF3`, () => this.modeButtonPressed(vhf3));
+        useInteractionEvent(`A320_Neo_FDW_BTN_${this.side}_HF1`, () => this.modeButtonPressed(hf1));
+        useInteractionEvent(`A320_Neo_FDW_BTN_${this.side}_HF2`, () => this.modeButtonPressed(hf2));
+    }
+}
+
+
+export class RadioManagementPanelPair {
+    constructor() {
+        this.left = new RadioManagementPanel('L');
+        this.right = new RadioManagementPanel('R');
+    }
+
+    registerCallbacks(renderCallback) {
+        this.renderCallback = renderCallback;
+        this.left.registerCallbacks(() => this.renderRequested());
+        this.right.registerCallbacks(() => this.renderRequested());
+    }
+
+    renderRequested() {
+        // We need to use setTimeout because SimVars do not update instantly, unfortunately...
+        if (this.renderCallback) setTimeout(() => this.renderCallback(this.frequencies), 50);
+    }
+
+    get frequencies() {
         return {
-            active: formatFrequency(this.radioMode.active.value),
-            standby: formatFrequency(this.radioMode.standby.value),
+            left: this.left.mode.frequencies,
+            right: this.right.mode.frequencies,
         };
-    }
-
-    dispatchDataUpdated() {
-        if (this.onDataUpdated) this.onDataUpdated(this.data);
-    }
-
-    setRadioMode(radioMode) {
-        this.radioMode = radioMode;
-        this.dispatchDataUpdated();
-    }
-
-    transfer() {
-        const temporary = this.radioMode.standby.value;
-        this.radioMode.standby.value = this.radioMode.active.value;
-        this.radioMode.active.value = temporary;
-        this.dispatchDataUpdated();
-    }
-
-    registerCallbacks(onDataUpdated) {
-        this.onDataUpdated = onDataUpdated;
-        this.radioModeSelector.registerCallbacks();
-        useInteractionEvent('A32NX_RMP_L_TRANSFER_BUTTON_PRESSED', () => this.transfer());
-        useInteractionEvent('A32NX_RMP_L_INNER_KNOB_TURNED_CLOCKWISE', () => this.innerKnob.increase());
-        useInteractionEvent('A32NX_RMP_L_INNER_KNOB_TURNED_ANTICLOCKWISE', () => this.innerKnob.decrease());
-        useInteractionEvent('A32NX_RMP_L_OUTER_KNOB_TURNED_CLOCKWISE', () => this.outerKnob.increase());
-        useInteractionEvent('A32NX_RMP_L_OUTER_KNOB_TURNED_ANTICLOCKWISE', () => this.outerKnob.decrease());
-    }
-
-    updateIntegerValue(speed) {
-        const frequency = this.radioMode.standby.value + (1000 * speed);
-        this.radioMode.standby.value = Utils.Clamp(frequency, this.radioMode.minimum, this.radioMode.maximum);
-        this.dispatchDataUpdated();
-    }
-
-    updateDecimalValue(speed) {
-        let frequency = this.radioMode.standby.value;
-        const getNewFrequency = speed > 0 ? nextFrequency : previousFrequency;
-
-        for (let i = 0; i < Math.abs(speed); i++) {
-            frequency = getNewFrequency(frequency, this.radioMode.supports833);
-        }
-
-        this.radioMode.standby.value = Utils.Clamp(frequency, this.radioMode.minimum, this.radioMode.maximum);
-        this.dispatchDataUpdated();
     }
 }
