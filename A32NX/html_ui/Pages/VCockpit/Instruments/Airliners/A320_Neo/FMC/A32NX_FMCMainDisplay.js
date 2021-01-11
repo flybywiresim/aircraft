@@ -408,6 +408,11 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:AIRLINER_CRUISE_ALTITUDE", "number", this._cruiseFlightLevel * 100);
     }
 
+    lastUserInputToScratchpad() {
+        this.inOut = this.lastUserInput;
+        this.lastUserInput = "";
+    }
+
     clearUserInput() {
         if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = this.inOut;
@@ -425,7 +430,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     _showTypeOneMessage(message, color = false) {
-        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage && this.inOut) {
+        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage && !this.lastUserInput) {
             this.lastUserInput = this.inOut;
         }
         this.isDisplayingErrorMessage = true;
@@ -2931,7 +2936,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.inOut = "";
         }
         if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
-            this.inOut = this.lastUserInput;
+            this.lastUserInputToScratchpad();
             this._inOutElement.className = "white";
             this.isDisplayingErrorMessage = false;
             this.isDisplayingTypeTwoMessage = false;
@@ -3018,7 +3023,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.inOut = "";
             } else if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
                 this.tryRemoveMessage();
-                this.inOut = this.lastUserInput;
+                this.lastUserInputToScratchpad();
                 this._inOutElement.className = "white";
                 this.isDisplayingErrorMessage = false;
                 this.isDisplayingTypeTwoMessage = false;
