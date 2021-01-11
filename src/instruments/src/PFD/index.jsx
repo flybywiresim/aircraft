@@ -44,6 +44,10 @@ class PFD extends Component {
         this.AirspeedAccFilter = new LagFilter(1);
 
         this.LSButtonPressed = false;
+
+        // for testing only
+        setSimVar('L:A32NX_MachPreselVal', -1, 'mach');
+        setSimVar('L:A32NX_SpeedPreselVal', -1, 'knots');
     }
 
     componentDidMount() {
@@ -51,15 +55,6 @@ class PFD extends Component {
             this.update(this.GetDeltaTime());
         });
         renderTarget.parentElement.addEventListener(`A320_Neo_PFD_BTN_LS_${this.dispIndex}`, () => {
-            this.onLSButtonPressed();
-        });
-    }
-
-    componentWillUnmount() {
-        renderTarget.parentElement.removeEventListener('update', (event) => {
-            this.update(event.detail);
-        });
-        renderTarget.parentElement.removeEventListener(`A320_Neo_PFD_BTN_LS_${this.dispIndex}`, () => {
             this.onLSButtonPressed();
         });
     }
