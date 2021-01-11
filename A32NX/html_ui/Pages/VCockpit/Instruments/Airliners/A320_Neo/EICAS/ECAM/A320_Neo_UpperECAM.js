@@ -455,7 +455,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 flightPhasesInhib: [2, 3, 4, 8, 9, 10],
-                                isActive: () => Simplane.getIndicatedSpeed() > (this.getCachedSimVar("L:A32NX_SPEEDS_VFE", "number") + 4),
+                                isActive: () => Simplane.getIndicatedSpeed() > (this.getCachedSimVar("L:A32NX_SPEEDS_VMAX", "number") + 4),
                             },
                         ]
                     },

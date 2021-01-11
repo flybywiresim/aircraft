@@ -14,7 +14,7 @@ class A32NX_Speeds {
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_S", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", 0);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFE", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", 0);
         this.lastGw = 50;
         this.lastFhi = -1;
@@ -55,7 +55,7 @@ class A32NX_Speeds {
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_F", "number", speeds.f);
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_S", "number", speeds.s);
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", speeds.gd);
-            SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFE", "number", speeds.vfe);
+            SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", speeds.vmax);
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", speeds.vfeN);
         }, 500);
     }
