@@ -200,7 +200,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
             taxiOutTime:        simbriefData.times.taxi_out,
             schedOut:           simbriefData.times.sched_out,
             schedIn:            simbriefData.times.sched_in,
-            loadsheet:          simbriefData.files.loadsheet
+            loadsheet:          simbriefData.text,
         });
     }
 

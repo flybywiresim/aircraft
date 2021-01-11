@@ -4,6 +4,7 @@
     "esModuleInterop": true,
     "jsx": "react",
     "moduleResolution": "node",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strictNullChecks": true
   }
 }

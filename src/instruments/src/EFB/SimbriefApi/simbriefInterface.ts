@@ -32,7 +32,8 @@ export interface ISimbriefData {
     units: string,
     alternate: IAlternate,
     times: ITimes,
-    files: Files
+    files: Files,
+    text: string,
 }
 
 interface IAirportInfo {

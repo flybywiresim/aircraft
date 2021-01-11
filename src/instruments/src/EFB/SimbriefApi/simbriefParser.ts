@@ -59,6 +59,7 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
     const params = simbriefJson.params;
     const alternate = simbriefJson.alternate;
     const files = simbriefJson.files;
+    const text = simbriefJson.text;
     return {
         airline: general.icao_airline,
         flightNumber: general.flight_number,
@@ -67,7 +68,7 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
         costIndex: general.costindex,
         route: general.route,
         files : {
-            loadsheet: files.pdf.link
+            loadsheet: files.pdf.link ? files.directory + files.pdf.link : undefined
         },
         origin: {
             iata: origin.iata_code,
@@ -133,6 +134,7 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
             sched_time_enroute: times.sched_time_enroute,
             taxi_in: times.taxi_in,
             taxi_out: times.taxi_out
-        }
+        },
+        text: text.plan_html,
     };
 };

@@ -13,7 +13,6 @@ module.exports = {
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
     },
     output: {
-        path: path.join(__dirname, '/dist'),
         filename: 'index_bundle.js',
     },
     module: {
