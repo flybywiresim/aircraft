@@ -25,6 +25,7 @@
 1. [UTILS] Added speed conversions and fixed Mmo - @MisterChocker (Leon)
 1. [MISC] Fixed cockpit door button states - @ImenesFBW (Imenes)
 1. [TEXTURE] Various UV/texture fixes - @tyler58546 (tyler58546)
+1. [CHECKLISTS] Removed various outdated INOPs from the checklist - @Venorcis (Venorcis)
 1. [MCDU] Improved scratchpad handling on - @MisterChocker (Leon)
 1. [ADIRS] Added "ON BAT" light to ADIRS panel - @tyler58546 (tyler58546)
 
