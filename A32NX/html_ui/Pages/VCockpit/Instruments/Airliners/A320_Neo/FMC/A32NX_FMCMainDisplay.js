@@ -1841,13 +1841,13 @@ class FMCMainDisplay extends BaseAirliners {
             fl = Math.floor(fl / 100);
         }
         if (fl > this.maxCruiseFL) {
-            this.addNewMessage(NXSystemMessages.notAllowed);
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
         const phase = Simplane.getCurrentFlightPhase();
         const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
         if (fl < selFl && phase === FlightPhase.FLIGHT_PHASE_CLIMB) {
-            this.addNewMessage(NXSystemMessages.notAllowed);
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
         if (fl > Math.floor(Simplane.getAltitude() / 100) && phase > FlightPhase.FLIGHT_PHASE_CRUISE) {
