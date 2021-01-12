@@ -120,11 +120,6 @@ var A320_Neo_LowerECAM_CRZ;
             const rightConsumptionShown = fastToFixed(rightConsumption - (rightConsumption % 10), 0);
 
             if ((leftConsumptionShown !== this.LeftConsumptionDisplayed) || (rightConsumptionShown !== this.RightConsumptionDisplayed)) {
-                const unitConversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
-                if (unitConversion !== this.unitConversion) {
-                    this.unitConversion = unitConversion;
-                    this.querySelector("#FuelUsedUnit").textContent = this.unitConversion === 1 ? "KG" : "LBS";
-                }
                 const totalConsumptionShown = parseInt(leftConsumptionShown) + parseInt(rightConsumptionShown);
                 this.FuelUsedTotal.textContent = totalConsumptionShown;
                 this.FuelUsedLeft.textContent = leftConsumptionShown;
