@@ -19,13 +19,20 @@
 import PropTypes from 'prop-types';
 import { MenuPage } from './Pages/FMGC/Menu.jsx';
 import { FMGC } from '../FMGC/FMGC.mjs';
+import { FuelPredPage } from './Pages/FMGC/FuelPred.jsx';
+import { useInteractionEvent } from '../util';
 
 const PagesContainer = ({ fmgc }) => {
+    const [currentPage, setCurrentPage] = useState('MENU');
+    const pages = {
+        FUEL: <FuelPredPage />,
+        MENU: <MenuPage fmgc={fmgc} />,
+    };
+
+    useInteractionEvent('H:A32NX_MCDU_1_BTN_FUEL', () => setCurrentPage('FUEL'));
+
     return <MenuPage fmgc={fmgc} />;
 };
-// const [currentPage, setCurrentPage] = useState(0);
-// const { fmgc } = props;
-
 // // useInteractionEvent('A32NX_MCDU_PAGE_CHANGED', () => setCurrentPage(getSimVar('L:A32NX_MCDU_CURRENT_PAGE_INDEX', 'number')));
 //
 // const pages = {

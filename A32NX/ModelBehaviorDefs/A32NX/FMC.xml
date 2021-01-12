@@ -144,39 +144,10 @@
 	</Template>
 
 	<Template Name="FBW_FMC_PushButton">
-		<DefaultTemplateParameters>
-			<Switch Param="TYPE">
-				<Case Value="A320">
-					<PREFIX>A320_Neo_CDU</PREFIX>
-				</Case>
-				<Case Value="B747">
-					<PREFIX>B747_8_FMC</PREFIX>
-				</Case>
-				<Case Value="AS01B">
-					<PREFIX>AS01B_FMC</PREFIX>
-				</Case>
-				<Case Value="AS02A">
-					<PREFIX>AS02A_FMC</PREFIX>
-				</Case>
-				<Case Value="CJ4">
-					<PREFIX>CJ4_FMC</PREFIX>
-				</Case>
-			</Switch>
-		</DefaultTemplateParameters>
-
 		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<Condition Valid="INOP_BUTTONS">
-				<True>
-					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner_Dummy">
-						<IS_INOP>True</IS_INOP>
-					</UseTemplate>
-				</True>
-				<False>
-					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-						<LEFT_SINGLE_CODE>(&gt;H:#PREFIX#_#ID#_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
-					</UseTemplate>
-				</False>
-			</Condition>
+            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <LEFT_SINGLE_CODE>(&gt;H:A32NX_MCDU_#ID#_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
+            </UseTemplate>
 		</Component>
 	</Template>
 
