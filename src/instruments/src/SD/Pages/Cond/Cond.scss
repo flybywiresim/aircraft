@@ -1,0 +1,91 @@
+@import "../../Common/definitions";
+
+#titleAndWarnings {
+    
+    text {
+        font-size: $font-size-xlarge;
+        fill: $display-white;
+    }
+
+    .PageTitle {
+        font-size: $font-size-title;
+        text-decoration: underline;
+        fill: $display-white;
+    }
+
+    .TempText {
+        font-size: $font-size-xlarge;
+        fill: $display-white;
+    }
+
+    .UnitText {
+        font-size: $font-size-large;
+        fill: $display-cyan;
+    }
+}
+
+
+.CondPlane {
+  stroke: $display-light-grey;
+  stroke-width: 1;
+  fill: none;
+}
+
+.Cond {
+
+    text-anchor: middle !important;
+
+    .title {
+        font-size: $font-size-larger;
+        fill: $display-white;
+    }
+
+    .valueText {
+        font-size: $font-size-medium;
+        fill: $display-green;
+    }
+
+    .DuctStatus {
+        fill: $display-white;
+        font-weight: bold;
+        font-size: $font-size-huge;
+    }
+    
+    .st5 {
+        fill: none;
+        stroke: $display-green;
+        stroke-width: 2;
+    }
+    
+    .Gauge {
+        fill: none;
+        stroke: $display-white;
+        stroke-width: 2;
+        stroke-miterlimit: 10;
+      }
+
+}
+
+#ValveAndTubes {
+
+    .st5 {
+        fill: none;
+        stroke: $display-green;
+        stroke-width: 2;
+    }
+
+    .valve-moving > .st5 {
+        stroke: $display-amber;
+    }
+
+    .DuctStatus {
+        fill: $display-white;
+        font-weight: bold;
+        font-size: $font-size-huge;
+    }
+
+    .Hide {
+        display:none;
+    }
+      
+}
