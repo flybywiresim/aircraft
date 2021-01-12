@@ -31,6 +31,7 @@
 1. [MCDU] Fixed INIT-A CRZ Temp insert - @MisterChocker (Leon)
 1. [MCDU] Fixed APPR/GO AROUND page order - @beheh (Benedict Etzel)
 1. [OPTIONS] Changed unit option changes only effective after aircraft reload - @MisterChocker (Leon)
+1. [ECAM] Fixed engineering mode overlay displaying on upper ECAM in some cases - @davidwalschots (David Walschots)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
