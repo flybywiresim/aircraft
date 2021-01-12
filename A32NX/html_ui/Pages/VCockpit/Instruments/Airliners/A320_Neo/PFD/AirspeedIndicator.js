@@ -935,7 +935,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     if (Simplane.getAutoPilotMachModeActive()) {
                         blueAirspeed = NXSpeedsUtils.convertMachToKCas(Simplane.getAutoPilotMachHoldValue());
                     } else {
-                        blueAirspeed = Simplane.getAutoPilotAirspeedHoldValue();
+                        blueAirspeed = Simplane.getAutoPilotAirspeedHoldValue() - _iasOffset;
                     }
                 }
             }
