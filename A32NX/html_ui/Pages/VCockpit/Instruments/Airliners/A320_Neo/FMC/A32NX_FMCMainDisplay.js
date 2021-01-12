@@ -1518,7 +1518,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return Math.min(speed, this.getSpeedConstraint());
+        return Math.min(speed);
     }
 
     getDesManagedSpeed() {
