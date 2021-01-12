@@ -28,6 +28,8 @@
 1. [CHECKLISTS] Removed various outdated INOPs from the checklist - @Venorcis (Venorcis)
 1. [MCDU] Improved scratchpad handling on - @MisterChocker (Leon)
 1. [ADIRS] Added "ON BAT" light to ADIRS panel - @tyler58546 (tyler58546)
+1. [MCDU] Fixed INIT-A CRZ Temp insert - @MisterChocker (Leon)
+1. [MCDU] Fixed APPR/GO AROUND page order - @beheh (Benedict Etzel)
 1. [ECAM] Fixed engineering mode overlay displaying on upper ECAM in some cases - @davidwalschots (David Walschots)
 
 ## 0.5.2
