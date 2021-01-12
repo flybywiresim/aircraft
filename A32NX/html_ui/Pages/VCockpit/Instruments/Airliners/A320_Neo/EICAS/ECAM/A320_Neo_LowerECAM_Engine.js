@@ -31,9 +31,9 @@ var A320_Neo_LowerECAM_Engine;
         }
         init() {
             this.unitConversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
-            this.querySelector("#FuelUsedUnit").textContent = this.unitConversion === 1 ? "KG" : "LBS";
             this.engineLeft = new EngineInfo(1, this.querySelector("#LeftGauges"), this.querySelector("#FuelUsedValueLeft"), this.unitConversion, this.querySelector("#OilTemperatureValueLeft"), this.querySelector("#EngineBleedPressureValueLeft"), this.querySelector("#StartValveLeft_OPEN"), this.querySelector("#StartValveLeft_CLOSED"), this.querySelector("#N1VibrationLevelValueLeft"), this.querySelector("#N2VibrationLevelValueLeft"));
             this.engineRight = new EngineInfo(2, this.querySelector("#RightGauges"), this.querySelector("#FuelUsedValueRight"), this.unitConversion, this.querySelector("#OilTemperatureValueRight"), this.querySelector("#EngineBleedPressureValueRight"), this.querySelector("#StartValveRight_OPEN"), this.querySelector("#StartValveRight_CLOSED"), this.querySelector("#N1VibrationLevelValueRight"), this.querySelector("#N2VibrationLevelValueRight"));
+            this.querySelector("#FuelUsedUnit").textContent = this.unitConversion === 1 ? "KG" : "LBS";
             this.ignTitleText = this.querySelector("#IGNTitle");
             this.ignLeftValueText = this.querySelector("#IGNValueLeft");
             this.ignRightValueText = this.querySelector("#IGNValueRight");
@@ -152,6 +152,7 @@ var A320_Neo_LowerECAM_Engine;
             this.engineBleedValveClosedLine = _startValveClosedLine;
             this.N1VibrationValueText = _N1VibrationValueText;
             this.N2VibrationValueText = _N2VibrationValueText;
+            this.unitConversion = _unitConversion;
             const gaugeDef = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef.startAngle = -180;
             gaugeDef.arcSize = 180;
@@ -190,8 +191,7 @@ var A320_Neo_LowerECAM_Engine;
             this.setN1VibrationValue(0, true);
             this.setN2VibrationValue(0, true);
         }
-        update(_deltaTime, _unitConversion) {
-            this.unitConversion = _unitConversion;
+        update(_deltaTime) {
             this.setFuelUsedValue(SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + this.engineIndex, "kg") * this.unitConversion);
             this.setOilTemperatureValue(SimVar.GetSimVarValue("GENERAL ENG OIL TEMPERATURE:" + this.engineIndex, "celsius"));
 
