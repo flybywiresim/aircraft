@@ -28,6 +28,10 @@
 1. [CHECKLISTS] Removed various outdated INOPs from the checklist - @Venorcis (Venorcis)
 1. [MCDU] Improved scratchpad handling on - @MisterChocker (Leon)
 1. [ADIRS] Added "ON BAT" light to ADIRS panel - @tyler58546 (tyler58546)
+1. [MCDU] Fixed INIT-A CRZ Temp insert - @MisterChocker (Leon)
+1. [MCDU] Fixed APPR/GO AROUND page order - @beheh (Benedict Etzel)
+1. [OPTIONS] Changed unit option changes only effective after aircraft reload - @MisterChocker (Leon)
+1. [ECAM] Fixed engineering mode overlay displaying on upper ECAM in some cases - @davidwalschots (David Walschots)
 1. [MCDU] Fixed "V1/VR/V2 DISAGREE" check - @MisterChocker (Leon)
 
 ## 0.5.2
@@ -48,8 +52,6 @@
 1. [ECAM/CORE] Improved flap auto-retraction detection - @MisterChocker (Leon)
 1. [CDU] Error messages now print for invalid trip wind delims - @Lucky38i (Lucky38i)
 1. [TEXTURE] Fixed the overlapping text on the chronometer - @DarkOfNova (DarkOfNova)
-1. [ADIRS] Added "ON BAT" light to ADIRS panel - @tyler58546 (tyler58546)
-1. [CDU] Fix APPR/GO AROUND page order - @beheh (Benedict Etzel)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
