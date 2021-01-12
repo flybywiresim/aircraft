@@ -28,7 +28,8 @@
 1. [CHECKLISTS] Removed various outdated INOPs from the checklist - @Venorcis (Venorcis)
 1. [MCDU] Improved scratchpad handling on - @MisterChocker (Leon)
 1. [ADIRS] Added "ON BAT" light to ADIRS panel - @tyler58546 (tyler58546)
-1. [CDU] Fixed APPR/GO AROUND page order - @beheh (Benedict Etzel)
+1. [MCDU] Fixed INIT-A CRZ Temp insert - @MisterChocker (Leon)
+1. [MCDU] Fixed APPR/GO AROUND page order - @beheh (Benedict Etzel)
 1. [OPTIONS] Changed unit option changes only effective after aircraft reload - @MisterChocker (Leon)
 
 ## 0.5.2
