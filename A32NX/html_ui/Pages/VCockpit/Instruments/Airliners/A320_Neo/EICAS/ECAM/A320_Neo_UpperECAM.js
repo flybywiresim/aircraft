@@ -1557,7 +1557,7 @@ var A320_Neo_UpperECAM;
             const v2Speed = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots");
             this.activeTakeoffConfigWarnings = [];
 
-            if (!(flaps >= 1 && flaps <= 2)) {
+            if (!(flaps >= 1 && flaps <= 3)) {
                 this.activeTakeoffConfigWarnings.push("flaps");
             }
             if (speedBrake > 0) {
