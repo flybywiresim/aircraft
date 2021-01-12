@@ -8,18 +8,17 @@ class A32NX_Speeds {
 
     init() {
         console.log('A32NX_VSPEEDS init');
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VS", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VLS", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_F", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_S", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", 0);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_KCAS", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VS", "number", 0).then();
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VLS", "number", 0).then();
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_F", "number", 0).then();
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_S", "number", 0).then();
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", 0).then();
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", 0).then();
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", 0).then();
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", 0).then();
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_KCAS", "number", 0).then();
         this.lastGw = 50;
         this.lastFhi = -1;
-        this.curFhi = -1;
         this.ldgPos = -1;
         this.alt = -1;
         this.tas = 0;
@@ -52,13 +51,13 @@ class A32NX_Speeds {
             const speeds = new NXSpeeds(gw, this.lastFhi, ldg, fp < FlightPhase.FLIGHT_PHASE_CLIMB);
             speeds.compensateForMachEffect(alt);
 
-            SimVar.SetSimVarValue("L:A32NX_SPEEDS_VS", "number", speeds.vs);
-            SimVar.SetSimVarValue("L:A32NX_SPEEDS_VLS", "number", speeds.vls);
-            SimVar.SetSimVarValue("L:A32NX_SPEEDS_F", "number", speeds.f);
-            SimVar.SetSimVarValue("L:A32NX_SPEEDS_S", "number", speeds.s);
-            SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", speeds.gd);
-            SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", speeds.vmax);
-            SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", speeds.vfeN);
+            SimVar.SetSimVarValue("L:A32NX_SPEEDS_VS", "number", speeds.vs).then();
+            SimVar.SetSimVarValue("L:A32NX_SPEEDS_VLS", "number", speeds.vls).then();
+            SimVar.SetSimVarValue("L:A32NX_SPEEDS_F", "number", speeds.f).then();
+            SimVar.SetSimVarValue("L:A32NX_SPEEDS_S", "number", speeds.s).then();
+            SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", speeds.gd).then();
+            SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", speeds.vmax).then();
+            SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", speeds.vfeN).then();
         }, 500);
     }
 
@@ -76,7 +75,7 @@ class A32NX_Speeds {
         this.p = p;
 
         const kcas = NXSpeedsUtils.getKCasFromTas(tas, tat, p);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_KCAS", "number", kcas);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_KCAS", "number", kcas).then();
     }
 
     /**

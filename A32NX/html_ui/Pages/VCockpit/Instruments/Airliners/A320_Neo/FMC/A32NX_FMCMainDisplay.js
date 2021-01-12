@@ -3550,7 +3550,7 @@ class FMCMainDisplay extends BaseAirliners {
                 SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
                 return;
             }
-            Coherent.call("AP_SPD_VAR_SET", 1, _speed + this.athrDiff);
+            Coherent.call("AP_SPD_VAR_SET", 1, _speed);
             SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
         }
     }

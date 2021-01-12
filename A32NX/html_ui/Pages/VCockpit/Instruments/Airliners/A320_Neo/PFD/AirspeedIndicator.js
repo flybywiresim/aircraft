@@ -677,8 +677,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.altOver20k = true;
         }
         this.updateGraduationScrolling(indicatedSpeed);
-        const iasAcceleration = this.computeIAS(indicatedSpeed);
-        const speedTrend = iasAcceleration;
+        const speedTrend = this.computeIAS(indicatedSpeed);
         // Value used to draw the red VMAX barber pole
         const vMax = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number");
         const vfeN = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VFEN", "number");
@@ -698,7 +697,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             );
         this.smoothSpeeds(indicatedSpeed, dTime, vMax, vls, vs * 1.1, vs * 1.03, vs);
         this.updateSpeedTrendArrow(indicatedSpeed, speedTrend);
-        this.updateTargetSpeeds(indicatedSpeed, decel);
+        this.updateTargetSpeeds(indicatedSpeed, decel, iasOffset);
         this.updateNextFlapSpeedIndicator(indicatedSpeed, vfeN);
         this.updateStrip(this.vMaxStripSVG, indicatedSpeed, this._maxSpeed, false, true);
         this.updateStrip(this.vlsStripSVG, indicatedSpeed, this._vls, planeOnGround, false);
@@ -936,12 +935,12 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     if (Simplane.getAutoPilotMachModeActive()) {
                         blueAirspeed = NXSpeedsUtils.convertMachToKCas(Simplane.getAutoPilotMachHoldValue());
                     } else {
-                        blueAirspeed = Simplane.getAutoPilotAirspeedHoldValue() - _iasOffset;
+                        blueAirspeed = Simplane.getAutoPilotAirspeedHoldValue();
                     }
                 }
             }
             if (blueAirspeed > this.graduationMinValue) {
-                const blueSpeedPosY = this.valueToSvg(currentAirspeed, blueAirspeed);
+                const blueSpeedPosY = this.valueToSvg(currentAirspeed, Math.round(blueAirspeed));
                 const blueSpeedHeight = 44;
                 switch (true) {
                     case (blueSpeedPosY > this.refHeight): {
@@ -998,7 +997,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 }
             }
             if (redAirspeed > this.graduationMinValue) {
-                const redSpeedPosY = this.valueToSvg(currentAirspeed, redAirspeed);
+                const redSpeedPosY = this.valueToSvg(currentAirspeed, Math.round(redAirspeed));
                 const redSpeedHeight = 44;
                 switch (true) {
                     case (redSpeedPosY > this.refHeight): {
