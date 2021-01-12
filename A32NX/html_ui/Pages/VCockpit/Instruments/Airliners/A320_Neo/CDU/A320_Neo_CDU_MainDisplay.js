@@ -410,7 +410,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.updateDisplayedConstraints();
 
-        this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
         this.kcas = SimVar.GetSimVarValue("L:A32NX_SPEEDS_KCAS", "number");
         this.athrDiff = Simplane.getIndicatedSpeed() - this.kcas;
     }
