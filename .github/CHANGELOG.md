@@ -28,6 +28,7 @@
 1. [CHECKLISTS] Removed various outdated INOPs from the checklist - @Venorcis (Venorcis)
 1. [MCDU] Improved scratchpad handling on - @MisterChocker (Leon)
 1. [ADIRS] Added "ON BAT" light to ADIRS panel - @tyler58546 (tyler58546)
+1. [APU] APS3200 APU - @davidwalschots (David Walschots)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
