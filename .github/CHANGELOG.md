@@ -31,6 +31,7 @@
 1. [MCDU] Fixed INIT-A CRZ Temp insert - @MisterChocker (Leon)
 1. [MCDU] Fixed APPR/GO AROUND page order - @beheh (Benedict Etzel)
 1. [CDU] Fixed APPR/GO AROUND page order - @beheh (Benedict Etzel)
+1. [OPTIONS] Changed unit option changes only effective after aircraft reload - @MisterChocker (Leon)
 1. [FLIGHTMODEL] Fixed structural load factor limitations - @donstim (donbikes#4084)
 
 ## 0.5.2
