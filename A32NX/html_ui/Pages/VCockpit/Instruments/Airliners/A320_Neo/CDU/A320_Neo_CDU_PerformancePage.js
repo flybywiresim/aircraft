@@ -196,7 +196,7 @@ class CDUPerformancePage {
         };
         if (!mcdu._v1Checked || !mcdu._vrChecked || !mcdu._v2Checked) {
             next = "CONFIRM";
-            nextPage = "TO DATA{small}*{end}";
+            nextPage = "TO DATA*";
             mcdu.onRightInput[5] = () => {
                 mcdu._v1Checked = true;
                 mcdu._vrChecked = true;
