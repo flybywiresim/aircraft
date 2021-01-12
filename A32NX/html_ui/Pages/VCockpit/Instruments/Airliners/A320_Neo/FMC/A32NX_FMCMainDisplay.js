@@ -408,6 +408,11 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:AIRLINER_CRUISE_ALTITUDE", "number", this._cruiseFlightLevel * 100);
     }
 
+    lastUserInputToScratchpad() {
+        this.inOut = this.lastUserInput;
+        this.lastUserInput = "";
+    }
+
     clearUserInput() {
         if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = this.inOut;
@@ -425,7 +430,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     _showTypeOneMessage(message, color = false) {
-        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage && this.inOut) {
+        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage && !this.lastUserInput) {
             this.lastUserInput = this.inOut;
         }
         this.isDisplayingErrorMessage = true;
@@ -536,36 +541,34 @@ class FMCMainDisplay extends BaseAirliners {
         const tempString = input.split("/")[1];
         const onlyTemp = flString.length === 0;
 
-        if (tempString) {
-            const temp = parseFloat(tempString);
-            if (isFinite(temp)) {
-                if (temp > -270 && temp < 100) {
-                    this.cruiseTemperature = temp;
-                } else {
-                    if (onlyTemp) {
-                        this.addNewMessage(NXSystemMessages.entryOutOfRange);
-                        return false;
-                    }
-                }
+        if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString))) {
+            if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") === 1 && SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
+                SimVar.SetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number", this.cruiseFlightLevel);
             } else {
-                if (onlyTemp) {
-                    this.addNewMessage(NXSystemMessages.notAllowed);
-                    return false;
-                }
+                SimVar.SetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool", 1);
             }
-        }
-        if (flString) {
-            if (this.trySetCruiseFl(parseFloat(flString))) {
-                if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") === 1 && SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
-                    SimVar.SetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number", this.cruiseFlightLevel);
-                } else {
-                    SimVar.SetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool", 1);
-                }
+            if (!tempString) {
                 return true;
             }
-            return false;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
+        if (!!tempString) {
+            const temp = parseInt(tempString.replace("M", "-"));
+            console.log("tS: " + tempString);
+            console.log("ti: " + temp);
+            if (isFinite(temp) && this._cruiseEntered) {
+                if (temp > -270 && temp < 100) {
+                    this.cruiseTemperature = temp;
+                    return true;
+                } else {
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    return false;
+                }
+            } else {
+                this.addNewMessage(NXSystemMessages.notAllowed);
+                return false;
+            }
+        }
+        this.addNewMessage(NXSystemMessages.formatError);
         return false;
     }
 
@@ -1843,13 +1846,13 @@ class FMCMainDisplay extends BaseAirliners {
             fl = Math.floor(fl / 100);
         }
         if (fl > this.maxCruiseFL) {
-            this.addNewMessage(NXSystemMessages.notAllowed);
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
         const phase = Simplane.getCurrentFlightPhase();
         const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
         if (fl < selFl && phase === FlightPhase.FLIGHT_PHASE_CLIMB) {
-            this.addNewMessage(NXSystemMessages.notAllowed);
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
         if (fl > Math.floor(Simplane.getAltitude() / 100) && phase > FlightPhase.FLIGHT_PHASE_CRUISE) {
@@ -1859,12 +1862,14 @@ class FMCMainDisplay extends BaseAirliners {
         if (fl < selFl && fl < 10 && phase === FlightPhase.FLIGHT_PHASE_CLIMB || phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             this.cruiseFlightLevel = selFl;
             this._cruiseEntered = true;
+            this.cruiseTemperature = undefined;
             this.updateConstraints();
             return true;
         }
         if (fl > 0 && fl <= this.maxCruiseFL) {
             this.cruiseFlightLevel = fl;
             this._cruiseEntered = true;
+            this.cruiseTemperature = undefined;
             this.updateConstraints();
             return true;
         }
@@ -2931,7 +2936,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.inOut = "";
         }
         if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
-            this.inOut = this.lastUserInput;
+            this.lastUserInputToScratchpad();
             this._inOutElement.className = "white";
             this.isDisplayingErrorMessage = false;
             this.isDisplayingTypeTwoMessage = false;
@@ -3018,7 +3023,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.inOut = "";
             } else if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
                 this.tryRemoveMessage();
-                this.inOut = this.lastUserInput;
+                this.lastUserInputToScratchpad();
                 this._inOutElement.className = "white";
                 this.isDisplayingErrorMessage = false;
                 this.isDisplayingTypeTwoMessage = false;
