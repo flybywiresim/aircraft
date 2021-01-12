@@ -1549,6 +1549,7 @@ var A320_Neo_UpperECAM;
         }
         updateTakeoffConfigWarnings(_test) {
             const flaps = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum");
+            const toFlaps = SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number");
             const speedBrake = SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "Position");
             const parkBrake = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
             const brakesHot = SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool");
@@ -1557,7 +1558,7 @@ var A320_Neo_UpperECAM;
             const v2Speed = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots");
             this.activeTakeoffConfigWarnings = [];
 
-            if (!(flaps >= 1 && flaps <= 3)) {
+            if (flaps !== toFlaps) {
                 this.activeTakeoffConfigWarnings.push("flaps");
             }
             if (speedBrake > 0) {
