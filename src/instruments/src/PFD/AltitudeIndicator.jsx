@@ -42,7 +42,7 @@ const LandingElevationIndicator = ({ altitude, FWCFlightPhase }) => {
 };
 
 const RadioAltIndicator = ({ radioAlt }) => {
-    if (radioAlt > 570) {
+    if (radioAlt > DisplayRange) {
         return null;
     }
     const offset = (radioAlt - DisplayRange) * DistanceSpacing / ValueSpacing;
@@ -148,12 +148,12 @@ const LinearDeviationIndicator = ({ linearDeviation, alt }) => {
     if (Number.isNaN(linearDeviation)) {
         return null;
     }
-
-    if (alt - linearDeviation > 540) {
+    const circleRadius = 30;
+    if (alt - linearDeviation > DisplayRange - circleRadius) {
         return (
             <path id="VDevDotLower" className="Fill Green" d="m116.24 121.85c4.9e-4 0.83465 0.67686 1.511 1.511 1.511 0.83418 0 1.5105-0.67636 1.511-1.511h-1.511z" />
         );
-    } if (alt - linearDeviation < -540) {
+    } if (alt - linearDeviation < -DisplayRange + circleRadius) {
         return (
             <path id="VDevDotUpper" className="Fill Green" d="m116.24 39.8c4.9e-4 -0.83466 0.67686-1.511 1.511-1.511 0.83418 0 1.5105 0.67635 1.511 1.511h-1.511z" />
         );

@@ -394,9 +394,9 @@ const BC1Cell = () => {
     return (
         <g>
             <ShowForSeconds timer={9} id={SharedAPMode}>
-                <path className="NormalStroke White" d="m51.186 1.8143h33.158v6.0476h-33.158z" />
+                <path className="NormalStroke White" d="m50.178 1.8143h35.174v6.0476h-35.174z" />
             </ShowForSeconds>
-            <text className="FontMedium MiddleAlign Green" x="67.9795" y="6.8893085">ROLL OUT</text>
+            <text className="FontMedium MiddleAlign Green" x="67.9795" y="6.8893085">{text}</text>
         </g>
     );
 };

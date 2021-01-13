@@ -130,7 +130,7 @@ class PFD extends Component {
             }
         }
 
-        let targetSpeed = 0;
+        let targetSpeed = Simplane.getV2Airspeed();
         const isSelected = Simplane.getAutoPilotAirspeedSelected();
         const isMach = Simplane.getAutoPilotMachModeActive();
         if (isSelected) {
@@ -139,10 +139,12 @@ class PFD extends Component {
             } else {
                 targetSpeed = Simplane.getAutoPilotAirspeedHoldValue();
             }
-        } else if (isMach) {
-            targetSpeed = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', Simplane.getAutoPilotManagedMachHoldValue());
-        } else {
-            targetSpeed = Simplane.getAutoPilotManagedAirspeedHoldValue();
+        } if (targetSpeed < 0) {
+            if (isMach) {
+                targetSpeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH ? getSimVar("L:A32NX_AP_APPVLS", "knots") : SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotMachHoldValue());
+            } else {
+                targetSpeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH ? getSimVar("L:A32NX_AP_APPVLS", "knots") : Simplane.getAutoPilotAirspeedHoldValue();
+            }
         }
 
         const FDActive = getSimVar(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${this.dispIndex}`, 'Bool');

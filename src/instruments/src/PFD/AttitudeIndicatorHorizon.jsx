@@ -115,7 +115,7 @@ export const Horizon = ({
                     <text x="101.38947" y="170.80959">80</text>
                 </g>
             </g>
-            <path id="path1154" d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalStroke White SkyFill" />
+            <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalStroke White SkyFill" />
             <SideslipIndicator isOnGround={isOnGround} roll={roll} />
             <RisingGround radioAlt={radioAlt} pitch={pitch} />
             {headingAvail

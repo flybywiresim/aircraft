@@ -259,11 +259,12 @@ const SpeedTrendArrow = ({ airspeedAcc }) => {
     }
 
     if (ArrowShown) {
+        const neutralPos = 80.823;
         let pathString;
         if (sign > 0) {
-            pathString = `m15.455 ${80.823 + offset} l -1.2531 2.4607 M15.455 ${80.823 + offset} l 1.2531 2.4607`;
+            pathString = `m15.455 ${neutralPos + offset} l -1.2531 2.4607 M15.455 ${neutralPos + offset} l 1.2531 2.4607`;
         } else {
-            pathString = `m15.455 ${80.823 + offset} l 1.2531 -2.4607 M15.455 ${80.823 + offset} l -1.2531 -2.4607`;
+            pathString = `m15.455 ${neutralPos + offset} l 1.2531 -2.4607 M15.455 ${neutralPos + offset} l -1.2531 -2.4607`;
         }
 
         return (

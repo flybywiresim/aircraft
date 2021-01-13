@@ -1,6 +1,7 @@
 import { HorizontalTape, getSmallestAngle } from './PFDUtils.jsx';
 import { getSimVar } from '../util.mjs';
 
+const DisplayRange = 24;
 const DistanceSpacing = 7.555;
 const ValueSpacing = 5;
 
@@ -59,7 +60,7 @@ export const HeadingTape = ({
     return (
         <g>
             <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" className="TapeBackground" />
-            <HorizontalTape heading={heading} graduationElementFunction={GraduationElement} bugs={bugs} displayRange={27} valueSpacing={ValueSpacing} distanceSpacing={DistanceSpacing} />
+            <HorizontalTape heading={heading} graduationElementFunction={GraduationElement} bugs={bugs} displayRange={DisplayRange + 3} valueSpacing={ValueSpacing} distanceSpacing={DistanceSpacing} />
         </g>
     );
 };
@@ -92,7 +93,7 @@ const SelectedHeading = ({ selectedHeading, heading }) => {
 
     const headingDelta = getSmallestAngle(selectedHeading, heading);
     const text = Math.round(selectedHeading).toString().padStart(3, '0');
-    if (Math.abs(headingDelta) < 24) {
+    if (Math.abs(headingDelta) < DisplayRange) {
         const offset = headingDelta * DistanceSpacing / ValueSpacing;
 
         return (
@@ -111,7 +112,7 @@ const SelectedHeading = ({ selectedHeading, heading }) => {
 const QFUOfftape = ({ ILSCourse, heading }) => {
     const delta = getSmallestAngle(ILSCourse, heading);
     const text = Math.round(ILSCourse).toString().padStart(3, '0');
-    if (Math.abs(delta) > 24) {
+    if (Math.abs(delta) > DisplayRange) {
         if (delta > 0) {
             return (
                 <g id="ILSCourseRight">
