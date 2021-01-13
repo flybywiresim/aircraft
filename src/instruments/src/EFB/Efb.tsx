@@ -33,7 +33,7 @@ type EfbProps = {
 };
 
 type EfbState = {
-    currentPageIndex: 0 | 1 | 2 | 3 | 4,
+    currentPageIndex: 0 | 1 | 2 | 3 | 4 | 5,
     simbriefUsername: string,
     departingAirport: string,
     departingIata: string,
@@ -247,6 +247,8 @@ class Efb extends React.Component<EfbProps, EfbState> {
             case 3:
                 return <h1>Page 3</h1>;
             case 4:
+                return <h1>Page 4</h1>;
+            case 5:
                 return <Settings />;
             default:
                 return <Dashboard

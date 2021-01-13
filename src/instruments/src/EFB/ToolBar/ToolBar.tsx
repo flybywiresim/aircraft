@@ -86,7 +86,7 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
                     </div>
                     <div className="flex items-center text-white">
                         <div>
-                            <a href="/profile">
+                            <a onClick={this.handleClick(5)}>
                                 <IconSettings size={25} stroke={1.5} strokeLinejoin="miter" />
                             </a>
                         </div>
