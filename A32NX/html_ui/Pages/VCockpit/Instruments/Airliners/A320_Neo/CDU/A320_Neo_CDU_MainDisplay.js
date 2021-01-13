@@ -253,6 +253,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             .replace(/{yellow}/g, "<span class='yellow'>")
             .replace(/{inop}/g, "<span class='inop'>")
             .replace(/{sp}/g, "&nbsp;")
+            .replace(/{left}/g, "<span class='left'>")
+            .replace(/{right}/g, "<span class='right'>")
             .replace(/{end}/g, "</span>");
     }
 
@@ -405,8 +407,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateGPSMessage();
 
         this.updateDisplayedConstraints();
-
-        this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
     }
 
     /**
@@ -545,7 +545,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.messageQueue[0][2](this)) {
                 this.messageQueue.splice(0, 1);
                 this._inOutElement.className = "white";
-                this.inOut = this.lastUserInput;
+                this.lastUserInputToScratchpad();
                 return this.tryShowMessage();
             }
             if (!this.isDisplayingErrorMessage) {
@@ -570,7 +570,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.messageQueue.splice(i, 1);
                 if (i === 0 && this.isDisplayingTypeTwoMessage) {
                     this._inOutElement.className = "white";
-                    this.inOut = this.lastUserInput;
+                    this.lastUserInputToScratchpad();
                 }
                 break;
             }
@@ -658,19 +658,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return 0;
     }
 
-    getSpeedConstraint(raw = true) {
+    getSpeedConstraint() {
         if (this.flightPlanManager.getIsDirectTo()) {
             return Infinity;
         }
         const wpt = this.flightPlanManager.getActiveWaypoint();
         if (typeof wpt === 'undefined' || !isFinite(wpt.speedConstraint) || wpt.speedConstraint < 100) {
-            return Infinity;
-        }
-        if (raw) {
-            return wpt.speedConstraint;
-        }
-        const diff = Simplane.getIndicatedSpeed() - wpt.speedConstraint + 5;
-        if (diff < wpt.distanceInFP) {
             return Infinity;
         }
         return wpt.speedConstraint;

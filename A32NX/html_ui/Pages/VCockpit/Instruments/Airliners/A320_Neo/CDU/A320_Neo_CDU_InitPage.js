@@ -76,22 +76,17 @@ class CDUInitPage {
                     }
                 };
 
-                cruiseFlTemp = "____\xa0|___°[color]amber";
-
-                if (mcdu._cruiseEntered) {
-                    //This is done so pilot enters a FL first, rather than using the computed one
-                    if (mcdu.cruiseFlightLevel) {
-                        let temp = mcdu.tempCurve.evaluate(mcdu.cruiseFlightLevel);
-                        if (isFinite(mcdu.cruiseTemperature)) {
-                            temp = mcdu.cruiseTemperature;
-                        }
-                        cruiseFlTemp = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "/" + temp.toFixed(0) + "°[color]cyan";
-                    }
+                cruiseFlTemp = "_____|____[color]amber";
+                //This is done so pilot enters a FL first, rather than using the computed one
+                if (mcdu._cruiseEntered && mcdu.cruiseFlightLevel) {
+                    cruiseFlTemp =
+                        "{cyan}FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "/" +
+                        (!!mcdu.cruiseTemperature ? mcdu.cruiseTemperature.toFixed(0) + "°" : "{small}" + mcdu.tempCurve.evaluate(mcdu.cruiseFlightLevel).toFixed(0) + "°{end}") +
+                        "{end}";
                 }
 
                 // CRZ FL / FLX TEMP
                 mcdu.onLeftInput[5] = (value) => {
-                    mcdu._cruiseEntered = true;
                     if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
                         CDUInitPage.ShowPage1(mcdu);
                     }
@@ -202,20 +197,22 @@ class CDUInitPage {
         };
 
         mcdu.setTemplate([
-            ["INIT {}"], //Need to find the right unicode for left/right arrow
+            ["INIT"],
             ["\xa0CO RTE", "FROM/TO\xa0\xa0\xa0"],
             [coRoute, fromTo],
             ["ALTN/CO RTE", requestButtonLabel],
             [altDest, requestButton],
             ["FLT NBR"],
             [flightNo + "[color]cyan", alignOption],
-            [],
-            ["", "WIND/TEMP>"],
+            ["PAX NBR"],
+            ["___[color]inop", "WIND/TEMP>"],
             ["COST INDEX", "TROPO"],
             [costIndex, tropo],
             ["CRZ FL/TEMP", "GND TEMP"],
             [cruiseFlTemp, "---°[color]inop"],
         ]);
+
+        mcdu.setArrows(false, false, true, true);
 
         mcdu.onPrevPage = () => {
             if (mcdu.isAnEngineOn()) {
@@ -276,7 +273,7 @@ class CDUInitPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.InitPageB;
 
-        let initBTitle = "INIT {}";
+        let initBTitle = "INIT";
 
         let zfwColor = "[color]amber";
         let zfwCell = "___._";
@@ -583,6 +580,8 @@ class CDUInitPage {
             ["MIN DEST FOB", "EXTRA/\xa0TIME"],
             [minDestFob + minDestFobColor, extraWeightCell + "/" + extraTimeCell + extraColor],
         ]);
+
+        mcdu.setArrows(false, false, true, true);
 
         mcdu.onPrevPage = () => {
             CDUInitPage.ShowPage1(mcdu);

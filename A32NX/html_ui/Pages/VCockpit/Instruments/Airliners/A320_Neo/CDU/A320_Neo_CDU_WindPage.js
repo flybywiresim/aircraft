@@ -179,17 +179,24 @@ class CDUWindPage {
             };
         }
 
-        mcdu.onDown = () => {
-            if (_winds.length > (_max - 1) && _offset > 0) {
-                _showPage(mcdu, _offset - 1);
-            }
-        };
+        let up = false;
+        let down = false;
 
-        mcdu.onUp = () => {
-            if (_offset < (_winds.length - (_max - 1))) {
+        if (_winds.length > (_max - 1) && _offset > 0) {
+            mcdu.onDown = () => {
+                _showPage(mcdu, _offset - 1);
+            };
+            down = true;
+        }
+
+        if (_offset < (_winds.length - (_max - 1))) {
+            mcdu.onUp = () => {
                 _showPage(mcdu, _offset + 1);
-            }
-        };
+            };
+            up = true;
+        }
+
+        mcdu.setArrows(up, down, false, false);
 
         return rows;
     }

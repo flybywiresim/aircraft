@@ -138,14 +138,14 @@
          <CheckpointDesc SubjectTT="TT:Check Overhead for White Lights" ExpectationTT="TT:EXTINGUISH" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_XBLEED">
-         <CheckpointDesc SubjectTT="TT:X-Bleed (INOP)" ExpectationTT="TT:AUTO" />
+         <CheckpointDesc SubjectTT="TT:X-Bleed" ExpectationTT="TT:AUTO" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_WEATHER_RADAR">
          <CheckpointDesc SubjectTT="TT:Weather Radar" ExpectationTT="TT:OFF" />
          <Instrument Id="Weather_Radar_SYS" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_CARGOHEAT">
-         <CheckpointDesc SubjectTT="TT:Cargo Heat Selector (INOP)" ExpectationTT="TT:AS REQUIRED" />
+         <CheckpointDesc SubjectTT="TT:Cargo Heat Selector" ExpectationTT="TT:AS REQUIRED" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_ELEC_PANEL">
          <CheckpointDesc SubjectTT="TT:Electrical Panel on Overhead Panel" ExpectationTT="TT:CHECKED" />
@@ -183,7 +183,7 @@
          <CheckpointDesc SubjectTT="TT:CVR Test (INOP)" ExpectationTT="TT:PRESS AND RELEASE" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_EVAC_CPT">
-         <CheckpointDesc SubjectTT="TT:EVAC CAPT and PURS/CAPT (INOP)" ExpectationTT="TT:AS REQUIRED" />
+         <CheckpointDesc SubjectTT="TT:EVAC CAPT and PURS/CAPT" ExpectationTT="TT:AS REQUIRED" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ADIRS">
          <CheckpointDesc SubjectTT="TT:ADIRS" ExpectationTT="TT:NAV" />
@@ -247,10 +247,10 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_LANDING_ELEVATION">
-         <CheckpointDesc SubjectTT="TT:Landing Elevation (INOP)" ExpectationTT="TT:AUTO" />
+         <CheckpointDesc SubjectTT="TT:Landing Elevation" ExpectationTT="TT:AUTO" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_PACK_FLOW">
-         <CheckpointDesc SubjectTT="TT:PACK Flow (INOP)" ExpectationTT="TT:AS REQUIRED" />
+         <CheckpointDesc SubjectTT="TT:PACK Flow" ExpectationTT="TT:AS REQUIRED" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ECAM_ELEC">
          <CheckpointDesc SubjectTT="TT:ECAM ELEC Page (INOP)" ExpectationTT="TT:CALL" />
@@ -279,7 +279,7 @@
          </Sequence>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_FUEL_MODE">
-         <CheckpointDesc SubjectTT="TT:Fuel Mode Selector (INOP)" ExpectationTT="TT:MANUAL" />
+         <CheckpointDesc SubjectTT="TT:Fuel Mode Selector" ExpectationTT="TT:MANUAL" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ENGINE_FIRE_TEST">
          <CheckpointDesc SubjectTT="TT:Engine 1 and 2 Fire Test" ExpectationTT="TT:PERFORM" />
@@ -414,7 +414,7 @@
          <CheckpointDesc SubjectTT="TT:Speed Mach Window" ExpectationTT="TT:DASHED" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_HDG_VS_TRK_FPA">
-         <CheckpointDesc SubjectTT="TT:HDG VS / TRK FPA (INOP)" ExpectationTT="TT:HDG V/S" />
+         <CheckpointDesc SubjectTT="TT:HDG VS / TRK FPA" ExpectationTT="TT:HDG V/S" />
          <Instrument Id="AIRBUS_Push_Heading_Track"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ALT_WIN">
@@ -488,7 +488,7 @@
          <CheckpointDesc SubjectTT="TT:ACP: VHF, HF (IF REQ)" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_WXR_PWR_SUPPLY">
-         <CheckpointDesc SubjectTT="TT:WXR: Power Supply (INOP)" ExpectationTT="TT:OFF" />
+         <CheckpointDesc SubjectTT="TT:WXR: Power Supply" ExpectationTT="TT:OFF" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_WXR_WINDSHEAR">
          <CheckpointDesc SubjectTT="TT:WXR: Windshear Switch" ExpectationTT="TT:OFF" />
@@ -512,10 +512,10 @@
          <CheckpointDesc SubjectTT="TT:Switching Panel" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_STS">
-         <CheckpointDesc SubjectTT="TT:STS (INOP)" ExpectationTT="TT:PRESS" />
+         <CheckpointDesc SubjectTT="TT:STS" ExpectationTT="TT:PRESS" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_PRESS">
-         <CheckpointDesc SubjectTT="TT:PRESS (INOP)" ExpectationTT="TT:PRESS" />
+         <CheckpointDesc SubjectTT="TT:PRESS" ExpectationTT="TT:PRESS" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_THRUST_LEVERS">
          <CheckpointDesc SubjectTT="TT:Thrust Levers" ExpectationTT="TT:IDLE" />
@@ -610,7 +610,7 @@
          <CheckpointDesc SubjectTT="TT:ATC" ExpectationTT="TT:SET" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ALT_REPORT">
-         <CheckpointDesc SubjectTT="TT:Altitude Reporting (INOP)" ExpectationTT="TT:ON" />
+         <CheckpointDesc SubjectTT="TT:Altitude Reporting" ExpectationTT="TT:ON" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_WXR_SYS_SEL">
          <CheckpointDesc SubjectTT="TT:WXR: SYS 1" ExpectationTT="TT:SELECT" />
@@ -976,7 +976,7 @@
          <CheckpointDesc SubjectTT="TT:TCAS Mode Selector" ExpectationTT="TT:TA OR TA/RA" />
       </Checkpoint>
       <Checkpoint Id="A320_BeforeTakeoff_PACKS">
-         <CheckpointDesc SubjectTT="TT:Packs (INOP)" ExpectationTT="TT:AS REQUIRED" />
+         <CheckpointDesc SubjectTT="TT:Packs" ExpectationTT="TT:AS REQUIRED" />
       </Checkpoint>
       <Checkpoint Id="A320_BeforeTakeoff_EXT_LIGHT">
          <CheckpointDesc SubjectTT="TT:Exterior Lights" ExpectationTT="TT:SET" />
@@ -1085,7 +1085,7 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_TO_PACKS">
-         <CheckpointDesc SubjectTT="TT:Packs 1 and 2 (INOP)" ExpectationTT="TT:ALL ON" />
+         <CheckpointDesc SubjectTT="TT:Packs 1 and 2" ExpectationTT="TT:ALL ON" />
       </Checkpoint>
       <Checkpoint Id="A320_TO_AT_ACCEL_SPACER">
          <CheckpointDesc SubjectTT="TT:AT ACCELERATION ALTITUDE" ExpectationTT="TT:" />
