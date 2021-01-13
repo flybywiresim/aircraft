@@ -1274,19 +1274,15 @@ class FMCMainDisplay extends BaseAirliners {
         this.v2Speed = 140;
     }
 
-    checkVSpeedDisagree(mcdu) {
-        return (!!mcdu.v1Speed && !!mcdu.vRSpeed ? mcdu.v1Speed <= mcdu.vRSpeed : true)
-            && (!!mcdu.vRSpeed && !!mcdu.v2Speed ? mcdu.vRSpeed <= mcdu.v2Speed : true)
-            && (!!mcdu.v1Speed && !!mcdu.v2Speed ? mcdu.v1Speed <= mcdu.v2Speed : true);
+    vSpeedsValid() {
+        return (!!this.v1Speed && !!this.vRSpeed ? this.v1Speed <= this.vRSpeed : true)
+            && (!!this.vRSpeed && !!this.v2Speed ? this.vRSpeed <= this.v2Speed : true)
+            && (!!this.v1Speed && !!this.v2Speed ? this.v1Speed <= this.v2Speed : true);
     }
 
-    vSpeedDisagreeCheck(
-        v1 = SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots"),
-        vr = SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots"),
-        v2 = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")
-    ) {
-        if ((!!v1 && !!vr ? v1 > vr : false) || (!!vr && !!v2 ? vr > v2 : false) || (!!v1 && !!v2 ? v1 > v2 : false)) {
-            this.addNewMessage(NXSystemMessages.vToDisagree, this.checkVSpeedDisagree);
+    vSpeedDisagreeCheck() {
+        if (!this.vSpeedsValid()) {
+            this.addNewMessage(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this));
         }
     }
 
