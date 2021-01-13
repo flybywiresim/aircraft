@@ -620,7 +620,7 @@ var A320_Neo_UpperECAM;
                                 id: "config_slats",
                                 message: "",
                                 level: 3,
-                                flightPhasesInhib: [5, 6, 7, 8, 10], // TODO
+                                flightPhasesInhib: [5, 6, 7, 8], // TODO
                                 isActive: () => this.activeTakeoffConfigWarnings.includes("slats"),
                                 alwaysShowCategory: true,
                                 actions: [
@@ -634,7 +634,7 @@ var A320_Neo_UpperECAM;
                                 id: "config_flaps",
                                 message: "",
                                 level: 3,
-                                flightPhasesInhib: [5, 6, 7, 8, 10], // TODO
+                                flightPhasesInhib: [5, 6, 7, 8], // TODO
                                 isActive: () => this.activeTakeoffConfigWarnings.includes("flaps"),
                                 alwaysShowCategory: true,
                                 actions: [
