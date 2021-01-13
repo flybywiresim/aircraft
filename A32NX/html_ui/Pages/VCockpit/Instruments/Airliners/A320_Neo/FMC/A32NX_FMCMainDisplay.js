@@ -541,36 +541,34 @@ class FMCMainDisplay extends BaseAirliners {
         const tempString = input.split("/")[1];
         const onlyTemp = flString.length === 0;
 
-        if (tempString) {
-            const temp = parseFloat(tempString);
-            if (isFinite(temp)) {
-                if (temp > -270 && temp < 100) {
-                    this.cruiseTemperature = temp;
-                } else {
-                    if (onlyTemp) {
-                        this.addNewMessage(NXSystemMessages.entryOutOfRange);
-                        return false;
-                    }
-                }
+        if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString))) {
+            if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") === 1 && SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
+                SimVar.SetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number", this.cruiseFlightLevel);
             } else {
-                if (onlyTemp) {
-                    this.addNewMessage(NXSystemMessages.notAllowed);
-                    return false;
-                }
+                SimVar.SetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool", 1);
             }
-        }
-        if (flString) {
-            if (this.trySetCruiseFl(parseFloat(flString))) {
-                if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") === 1 && SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
-                    SimVar.SetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number", this.cruiseFlightLevel);
-                } else {
-                    SimVar.SetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool", 1);
-                }
+            if (!tempString) {
                 return true;
             }
-            return false;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
+        if (!!tempString) {
+            const temp = parseInt(tempString.replace("M", "-"));
+            console.log("tS: " + tempString);
+            console.log("ti: " + temp);
+            if (isFinite(temp) && this._cruiseEntered) {
+                if (temp > -270 && temp < 100) {
+                    this.cruiseTemperature = temp;
+                    return true;
+                } else {
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    return false;
+                }
+            } else {
+                this.addNewMessage(NXSystemMessages.notAllowed);
+                return false;
+            }
+        }
+        this.addNewMessage(NXSystemMessages.formatError);
         return false;
     }
 
@@ -1277,7 +1275,19 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     checkVSpeedDisagree(mcdu) {
-        return mcdu.v1Speed && mcdu.vRSpeed && mcdu.v2Speed && mcdu.v1Speed <= mcdu.vRSpeed && mcdu.vRSpeed <= mcdu.v2Speed;
+        return (!!mcdu.v1Speed && !!mcdu.vRSpeed ? mcdu.v1Speed <= mcdu.vRSpeed : true)
+            && (!!mcdu.vRSpeed && !!mcdu.v2Speed ? mcdu.vRSpeed <= mcdu.v2Speed : true)
+            && (!!mcdu.v1Speed && !!mcdu.v2Speed ? mcdu.v1Speed <= mcdu.v2Speed : true);
+    }
+
+    vSpeedDisagreeCheck(
+        v1 = SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots"),
+        vr = SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots"),
+        v2 = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")
+    ) {
+        if ((!!v1 && !!vr ? v1 > vr : false) || (!!vr && !!v2 ? vr > v2 : false) || (!!v1 && !!v2 ? v1 > v2 : false)) {
+            this.addNewMessage(NXSystemMessages.vToDisagree, this.checkVSpeedDisagree);
+        }
     }
 
     trySetV1Speed(s) {
@@ -1289,10 +1299,9 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(v)) {
             if (v >= 90 && v < 1000) {
                 this.v1Speed = v;
-                SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
-                if ((v > SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.addNewMessage(NXSystemMessages.vToDisagree, this.checkVSpeedDisagree);
-                }
+                SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed).then(() => {
+                    this.vSpeedDisagreeCheck();
+                });
                 return true;
             }
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -1311,10 +1320,9 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(v)) {
             if (v >= 90 && v < 1000) {
                 this.vRSpeed = v;
-                SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
-                if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.addNewMessage(NXSystemMessages.vToDisagree, this.checkVSpeedDisagree);
-                }
+                SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed).then(() => {
+                    this.vSpeedDisagreeCheck();
+                });
                 return true;
             }
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -1333,10 +1341,9 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(v)) {
             if (v >= 90 && v < 1000) {
                 this.v2Speed = v;
-                SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
-                if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v < SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1) {
-                    this.addNewMessage(NXSystemMessages.vToDisagree, this.checkVSpeedDisagree);
-                }
+                SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed).then(() => {
+                    this.vSpeedDisagreeCheck();
+                });
                 return true;
             }
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -1520,7 +1527,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return Math.min(speed, this.getSpeedConstraint());
+        return speed;
     }
 
     getDesManagedSpeed() {
@@ -1848,13 +1855,13 @@ class FMCMainDisplay extends BaseAirliners {
             fl = Math.floor(fl / 100);
         }
         if (fl > this.maxCruiseFL) {
-            this.addNewMessage(NXSystemMessages.notAllowed);
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
         const phase = Simplane.getCurrentFlightPhase();
         const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
         if (fl < selFl && phase === FlightPhase.FLIGHT_PHASE_CLIMB) {
-            this.addNewMessage(NXSystemMessages.notAllowed);
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
         if (fl > Math.floor(Simplane.getAltitude() / 100) && phase > FlightPhase.FLIGHT_PHASE_CRUISE) {
@@ -1864,12 +1871,14 @@ class FMCMainDisplay extends BaseAirliners {
         if (fl < selFl && fl < 10 && phase === FlightPhase.FLIGHT_PHASE_CLIMB || phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             this.cruiseFlightLevel = selFl;
             this._cruiseEntered = true;
+            this.cruiseTemperature = undefined;
             this.updateConstraints();
             return true;
         }
         if (fl > 0 && fl <= this.maxCruiseFL) {
             this.cruiseFlightLevel = fl;
             this._cruiseEntered = true;
+            this.cruiseTemperature = undefined;
             this.updateConstraints();
             return true;
         }
