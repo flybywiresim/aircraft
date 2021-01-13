@@ -94,7 +94,7 @@
         <Sound WwiseData="true" WwiseEvent="apushut" Continuous="false" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
         <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
             <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
-            <Range LowerBound="75" UpperBound="99.99" />
+            <Range LowerBound="75" UpperBound="98" />
         </Sound>
         
           <Sound WwiseData="true" WwiseEvent="apustartinit" Continuous="false" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
@@ -174,9 +174,10 @@
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="apushutdownext" ConeHeading="180" Continuous="false" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-            <Range LowerBound="75" UpperBound="99.99" />
+            <Range LowerBound="75" UpperBound="98" />
         <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
             <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
 
         <!-- COCKPIT LOOPS SOUNDS ========================================================================================== -->
@@ -213,10 +214,43 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="apu_bleed_on" FadeOutType="2" FadeOutTime="3" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="packscockpit" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="2" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <Requires SimVar="APU PCT RPM" Units="PERCENT" Index="0">
                 <Range LowerBound="95" />
+            </Requires>
+            <Requires LocalVar="XMLVAR_ENG_MODE_SEL">
+                <Range LowerBound="1" UpperBound="1" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="packscabin" FadeOutType="2" FadeOutTime="2" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
+            <Range LowerBound="1.0" />
+            <Requires SimVar="APU PCT RPM" Units="PERCENT" Index="0">
+                <Range LowerBound="95" />
+            </Requires>
+            <Requires LocalVar="XMLVAR_ENG_MODE_SEL">
+                <Range LowerBound="1" UpperBound="1" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="pack1ext" NodeName="REACTOR_LEFT" FadeOutType="2" FadeOutTime="2" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
+            <Range LowerBound="1.0" />
+            <Requires SimVar="APU PCT RPM" Units="PERCENT" Index="0">
+                <Range LowerBound="95" />
+            </Requires>
+            <Requires LocalVar="XMLVAR_ENG_MODE_SEL">
+                <Range LowerBound="1" UpperBound="1" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="pack2ext" NodeName="REACTOR_RIGHT" FadeOutType="2" FadeOutTime="2" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
+            <Range LowerBound="1.0" />
+            <Requires SimVar="APU PCT RPM" Units="PERCENT" Index="0">
+                <Range LowerBound="95" />
+            </Requires>
+            <Requires LocalVar="XMLVAR_ENG_MODE_SEL">
+                <Range LowerBound="1" UpperBound="1" />
             </Requires>
         </Sound>
 
@@ -1318,6 +1352,8 @@
         <Sound WwiseData="true" WwiseEvent="firepb" Continuous="false" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="revlever" Continuous="false" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="mcdubuttons" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="SpoilerARM" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="SpoilerDISARM" Continuous="false" ViewPoint="Inside"/>
 
         <!-- AUTOPILOT =======================================================================================  -->
         <Sound WwiseData="true" WwiseEvent="autopilot_knob_push_button_on" ViewPoint="Inside"/>

@@ -143,6 +143,23 @@ function combineGltf(pathA, pathB, outputPath) {
         gltfA.scenes[0].nodes.push(i + nodesCount);
     }
 
+    // Add animations
+    if (gltfB.animations) {
+        if (!gltfA.animations) {
+            gltfA.animations = [];
+        }
+        for (const animation of gltfB.animations) {
+            for (const channel of animation.channels) {
+                channel.target.node += nodesCount;
+            }
+            for (const sampler of animation.samplers) {
+                sampler.input += accessorsCount;
+                sampler.output += accessorsCount;
+            }
+            gltfA.animations.push(animation);
+        }
+    }
+
     // Adjust buffer size
     gltfA.buffers[0].byteLength += gltfB.buffers[0].byteLength;
 

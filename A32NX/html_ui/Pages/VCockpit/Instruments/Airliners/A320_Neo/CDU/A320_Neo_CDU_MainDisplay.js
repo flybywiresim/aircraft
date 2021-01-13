@@ -407,8 +407,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateGPSMessage();
 
         this.updateDisplayedConstraints();
-
-        this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
     }
 
     /**
@@ -547,7 +545,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.messageQueue[0][2](this)) {
                 this.messageQueue.splice(0, 1);
                 this._inOutElement.className = "white";
-                this.inOut = this.lastUserInput;
+                this.lastUserInputToScratchpad();
                 return this.tryShowMessage();
             }
             if (!this.isDisplayingErrorMessage) {
@@ -572,7 +570,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.messageQueue.splice(i, 1);
                 if (i === 0 && this.isDisplayingTypeTwoMessage) {
                     this._inOutElement.className = "white";
-                    this.inOut = this.lastUserInput;
+                    this.lastUserInputToScratchpad();
                 }
                 break;
             }
