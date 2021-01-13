@@ -32,6 +32,7 @@
 1. [MCDU] Fixed APPR/GO AROUND page order - @beheh (Benedict Etzel)
 1. [OPTIONS] Changed unit option changes only effective after aircraft reload - @MisterChocker (Leon)
 1. [ECAM] Fixed engineering mode overlay displaying on upper ECAM in some cases - @davidwalschots (David Walschots)
+1. [MCDU] Fixed "V1/VR/V2 DISAGREE" check - @MisterChocker (Leon)
 1. [ECAM] Improved Ecam Memo TO Flaps and TO Config. Allows for Config 3 TO - @MisterChocker (Leon)
 
 ## 0.5.2
