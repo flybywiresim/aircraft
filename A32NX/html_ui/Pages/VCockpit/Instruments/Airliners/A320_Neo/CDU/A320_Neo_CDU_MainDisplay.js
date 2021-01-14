@@ -1418,5 +1418,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     deleteSentMessage(id) {
         this.sentMessages.splice(id, 1);
     }
+    printPage(lines) {
+        for (let [index, value] of lines.entries()) {
+            value = value.split("[color]")[0];
+            for (let i = 0; i < value.length; i++) {
+                SimVar.SetSimVarValue(`L:A32NX_PRINT_${index}_${i}`, "number", value.charCodeAt(i));
+            }
+            SimVar.SetSimVarValue(`L:A32NX_PRINT_LINE_LENGTH_${index}`, "number", value.length);
+        }
+        SimVar.SetSimVarValue("L:A32NX_PRINT_LINES", "number", lines.length);
+
+        setTimeout(() => {
+            SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 1);
+        }, 2500);
+    }
 }
 registerInstrument("a320-neo-cdu-main-display", A320_Neo_CDU_MainDisplay);
