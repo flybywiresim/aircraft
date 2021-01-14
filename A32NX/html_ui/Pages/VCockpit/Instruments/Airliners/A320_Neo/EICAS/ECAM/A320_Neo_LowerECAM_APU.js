@@ -206,6 +206,7 @@ var A320_Neo_LowerECAM_APU;
             gaugeDef2.currentValuePos.x = 0.8;
             gaugeDef2.currentValuePos.y = 0.74;
             gaugeDef2.currentValueFunction = this.getEgt.bind(this);
+            gaugeDef2.roundDisplayValueToNearest = 5;
             gaugeDef2.outerDynamicMarkerFunction = this.getCautionEgtForDynamicMarker.bind(this, "EGTCaution");
             this.apuEGTGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.apuEGTGauge.id = "APU_EGT_Gauge";

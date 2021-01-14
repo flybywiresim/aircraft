@@ -27,6 +27,7 @@ var A320_Neo_ECAM_Common;
             this.outerDynamicMarkerFunction = null;
             this.dangerMinDynamicFunction = null;
             this.outerMarkerValue = null;
+            this.roundDisplayValueToNearest = null;
         }
     }
     A320_Neo_ECAM_Common.GaugeDefinition = GaugeDefinition;
@@ -143,6 +144,7 @@ var A320_Neo_ECAM_Common;
             this.outerIndicatorFunction = _gaugeDefinition.outerIndicatorFunction;
             this.outerDynamicArcFunction = _gaugeDefinition.outerDynamicArcFunction;
             this.extraMessageFunction = _gaugeDefinition.extraMessageFunction;
+            this.roundDisplayValueToNearest = _gaugeDefinition.roundDisplayValueToNearest;
             this.extraMessagePosXMultiplier = 0.025;
             this.extraMessagePosYMultiplier = 0.025;
             this.extraMessageBorderPosXMultiplier = 0.2;
@@ -468,7 +470,11 @@ var A320_Neo_ECAM_Common;
                 this.cursor.setAttribute("class", style);
             }
             if (this.currentValueText != null) {
-                const strValue = this.currentValue.toFixed(this.currentValuePrecision);
+                let displayValue = this.currentValue;
+                if (this.roundDisplayValueToNearest) {
+                    displayValue = Math.round(displayValue / this.roundDisplayValueToNearest) * this.roundDisplayValueToNearest;
+                }
+                const strValue = displayValue.toFixed(this.currentValuePrecision);
                 this.currentValueText.textContent = strValue;
                 this.currentValueText.setAttribute("class", style);
                 if (this.currentValuePrecision > 0) {
