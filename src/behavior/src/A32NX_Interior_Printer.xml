@@ -1,0 +1,37 @@
+<ModelBehaviors>
+    <Template Name="FBW_Airbus_PRINTER">
+        <DefaultTemplateParameters>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <ANIM_NAME>PrintAnim</ANIM_NAME>
+            <CURSOR>Grab</CURSOR>
+
+            <ANIM_LENGTH>100</ANIM_LENGTH>
+            <LEFT_SINGLE_CODE/>
+            <LEFT_LEAVE_CODE/>
+            <ANIM_DURATION>1</ANIM_DURATION>
+
+            <TOGGLE_VAR>L:A32NX_PRINTER_PRINTING</TOGGLE_VAR>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+
+            <Update Frequency = "10">
+                (#TOGGLE_VAR#) if#{
+                    (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / + 1 min (&gt;O:_ButtonAnimVar)
+                } els{
+                (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / - (#TOGGLE_VAR#) max (&gt;O:_ButtonAnimVar)
+                }
+            </Update>
+
+            <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                <Condition Check="OVERRIDE_ANIM_CODE">
+                    <True>
+                        <ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
+                    </True>
+                    <False>
+                        <ANIM_CODE>#ANIM_LENGTH# (O:_ButtonAnimVar) *</ANIM_CODE>
+                    </False>
+                </Condition>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>

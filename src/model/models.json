@@ -10,6 +10,10 @@
       {
         "gltf": "./onbat/onbat.gltf",
         "bin": "./onbat/onbat.bin"
+      },
+      {
+        "gltf": "./printer/printer.gltf",
+        "bin": "./printer/printer.bin"
       }
     ],
     "modifications": [

@@ -1,0 +1,301 @@
+{
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 20,
+      "min": [
+        0.041666666666666664
+      ],
+      "max": [
+        0.8333333333333334
+      ],
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 20,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 20,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 20,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 14,
+      "min": [
+        -0.052653536200523376,
+        -0.04910803213715553,
+        -0.058603547513484955
+      ],
+      "max": [
+        0.05265352874994278,
+        0.016984188929200172,
+        0.017484251409769058
+      ],
+      "type": "VEC3",
+      "name": "Plane.001_vertices#0_POSITION"
+    },
+    {
+      "bufferView": 4,
+      "byteOffset": 12,
+      "componentType": 5120,
+      "count": 14,
+      "type": "VEC4",
+      "name": "Plane.001_vertices#0_TANGENT"
+    },
+    {
+      "bufferView": 4,
+      "byteOffset": 16,
+      "componentType": 5120,
+      "count": 14,
+      "type": "VEC4",
+      "name": "Plane.001_vertices#0_NORMAL"
+    },
+    {
+      "bufferView": 4,
+      "byteOffset": 20,
+      "componentType": 5122,
+      "count": 14,
+      "type": "VEC2",
+      "name": "Plane.001_vertices#0_TEXCOORD_0"
+    },
+    {
+      "bufferView": 4,
+      "byteOffset": 24,
+      "componentType": 5122,
+      "count": 14,
+      "type": "VEC2",
+      "name": "Plane.001_vertices#0_TEXCOORD_1"
+    },
+    {
+      "bufferView": 4,
+      "byteOffset": 28,
+      "componentType": 5123,
+      "count": 14,
+      "type": "VEC4",
+      "name": "Plane.001_vertices#0_COLOR_0"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5123,
+      "count": 36,
+      "type": "SCALAR",
+      "name": "Plane.001_indices#0"
+    }
+  ],
+  "animations": [
+    {
+      "name": "PrintAnim",
+      "channels": [
+        {
+          "sampler": 0,
+          "target": {
+            "node": 0,
+            "path": "translation"
+          }
+        },
+        {
+          "sampler": 1,
+          "target": {
+            "node": 0,
+            "path": "rotation"
+          }
+        },
+        {
+          "sampler": 2,
+          "target": {
+            "node": 0,
+            "path": "scale"
+          }
+        }
+      ],
+      "samplers": [
+        {
+          "input": 0,
+          "output": 1,
+          "interpolation": "LINEAR"
+        },
+        {
+          "input": 0,
+          "output": 2,
+          "interpolation": "LINEAR"
+        },
+        {
+          "input": 0,
+          "output": 3,
+          "interpolation": "LINEAR"
+        }
+      ]
+    }
+  ],
+  "asset": {
+    "generator": "Extended Khronos glTF Blender I/O v1.0.0",
+    "version": "2.0",
+    "extensions": {
+      "ASOBO_asset_optimized": {
+        "BoundingBoxMax": [
+          0.05265352874994278,
+          0.016984188929200172,
+          0.017484251409769058
+        ],
+        "BoundingBoxMin": [
+          -0.052653536200523376,
+          -0.04910803213715553,
+          -0.058603547513484955
+        ],
+        "MajorVersion": 4,
+        "MinorVersion": 2
+      },
+      "ASOBO_normal_map_convention": {
+        "tangent_space_convention": "DirectX"
+      }
+    }
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 80
+    },
+    {
+      "buffer": 0,
+      "byteLength": 240,
+      "byteOffset": 80
+    },
+    {
+      "buffer": 0,
+      "byteLength": 320,
+      "byteOffset": 320
+    },
+    {
+      "buffer": 0,
+      "byteLength": 240,
+      "byteOffset": 640
+    },
+    {
+      "buffer": 0,
+      "byteLength": 504,
+      "byteStride": 36,
+      "byteOffset": 880,
+      "target": 34962,
+      "name": "BufferViewVertexND"
+    },
+    {
+      "buffer": 0,
+      "byteLength": 72,
+      "byteOffset": 1384,
+      "target": 34963,
+      "name": "BufferViewIndex"
+    }
+  ],
+  "extensionsUsed": [
+    "ASOBO_normal_map_convention",
+    "MSFT_texture_dds",
+    "ASOBO_asset_optimized"
+  ],
+  "extensionsRequired": [
+    "MSFT_texture_dds"
+  ],
+  "materials": [
+    {
+      "name": "$PRINT",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.8992806,
+          0.8992806,
+          0.8992806,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.8
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "COLOR_0": 9,
+            "NORMAL": 6,
+            "POSITION": 4,
+            "TANGENT": 5,
+            "TEXCOORD_0": 7,
+            "TEXCOORD_1": 8
+          },
+          "indices": 10,
+          "material": 0,
+          "mode": 4,
+          "extras": {
+            "ASOBO_primitive": {
+              "PrimitiveCount": 12,
+              "VertexType": "VTX",
+              "VertexVersion": 2
+            }
+          }
+        }
+      ],
+      "name": "Plane.001"
+    }
+  ],
+  "nodes": [
+    {
+      "translation": [
+        -0.1333416998386383,
+        1.1468982696533203,
+        11.060064315795898
+      ],
+      "rotation": [
+        0,
+        -0.12319383025169373,
+        -0.9923826456069946,
+        3.609486043387733e-7
+      ],
+      "mesh": 0,
+      "name": "Print"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ],
+      "name": "Scene"
+    }
+  ],
+  "textures": [
+    {
+      "extensions": {
+        "MSFT_texture_dds": {
+          "source": 0
+        }
+      }
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 1456,
+      "uri": "printer.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "UNTITLED.PNG.DDS",
+      "name": "Untitled",
+      "extras": "ASOBO_image_converted_meta"
+    }
+  ]
+}
