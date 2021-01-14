@@ -356,3 +356,23 @@
 - A32NX_AUTOPILOT_FPA_SELECTED
     - Degrees
     - The selected flight path angle in the FCU
+
+- A32NX_APU_EGT_CAUTION
+    - Celsius
+    - The APU's exhaust gas temperature caution level, to be indicated in amber in the cockpit
+
+- A32NX_APU_EGT_WARNING
+    - Celsius
+    - The APU's exhaust gas temperature warning level, to be indicated in red in the cockpit
+
+- A32NX_APU_EGT
+    - Celsius
+    - The APU's exhaust gas temperature
+
+- A32NX_APU_N
+    - Percent
+    - The APU's rotations per minute in percentage of the maximum RPM
+
+- APU_START_ACTIVATED
+    - Bool
+    - True when the APU START push button is activated

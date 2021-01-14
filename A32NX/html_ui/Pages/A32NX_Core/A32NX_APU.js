@@ -4,32 +4,23 @@ class A32NX_APU {
     }
     init() {
         console.log('A32NX_APU init');
-        SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Percent", 0);
         this.lastAPUBleedState = -1;
     }
     update(_deltaTime) {
-        const currentAPUMasterState = SimVar.GetSimVarValue("A:FUELSYSTEM VALVE SWITCH:8", "Bool");
-        const apuFlapOpenPercent = SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Percent");
         const APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
+        const available = SimVar.GetSimVarValue("L:A32NX_APU_AVAILABLE", "Bool");
+        const apuSwitch = SimVar.GetSimVarValue("A:APU SWITCH", "Bool");
 
-        if (apuFlapOpenPercent === 100 && SimVar.GetSimVarValue("A:APU SWITCH", "Bool") === 0) {
-            const apuFuelsystemValveOpen = SimVar.GetSimVarValue("A:FUELSYSTEM VALVE OPEN:8", "Percent");
-            const apuStartButtonPressed = SimVar.GetSimVarValue("L:A32NX_APU_START_ACTIVATED", "Bool");
-            if (apuFuelsystemValveOpen === 100 && apuStartButtonPressed) {
-                // This fires the APU_STARTER key event, which will cause `A:APU SWITCH` to be set to 1
-                SimVar.SetSimVarValue("K:APU_STARTER", "Number", 1);
-            }
-        }
-
-        // Takes 20 seconds to open
-        const apuFlapOpenPercentSpeed = 20;
-
-        if (currentAPUMasterState === 1 && apuFlapOpenPercent < 100) {
-            const newFlap = Math.min(apuFlapOpenPercent + ((100 / apuFlapOpenPercentSpeed) * (_deltaTime / 1000)), 100);
-            SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Percent", newFlap);
-        } else if (currentAPUMasterState === 0 && apuFlapOpenPercent > 0 && APUPctRPM <= 7) {
-            const newFlap = Math.max(apuFlapOpenPercent - ((100 / apuFlapOpenPercentSpeed) * (_deltaTime / 1000)), 0);
-            SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Percent", newFlap);
+        // Until everything that depends on the APU is moved into WASM,
+        // we still need to synchronise some of the WASM state with the sim's state.
+        if (available && apuSwitch === 0) {
+            // This event will set `A:APU SWITCH` to 1, meaning the sim will start the APU.
+            // In systems.cfg, the `apu_pct_rpm_per_second` setting is set to 1, meaning the APU starts in one second.
+            SimVar.SetSimVarValue("K:APU_STARTER", "Number", 1);
+        } else if (!available && apuSwitch !== 0) {
+            // This event will set `A:APU SWITCH` to 0, meaning the sim will stop the APU.
+            // In systems.cfg, the `apu_pct_rpm_per_second` setting is set to 1, meaning the APU stops in one second.
+            SimVar.SetSimVarValue("K:APU_OFF_SWITCH", "Number", 1);
         }
 
         //APU start, stop

@@ -1371,7 +1371,6 @@
                     <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt;</EXTRA_CONDITION>
                     <LEFT_SINGLE_CODE>
                     (A:FUELSYSTEM VALVE SWITCH:8, Bool) if{
-                        (&gt;K:APU_OFF_SWITCH)
                         0 (&gt;L:A32NX_APU_START_ACTIVATED)
                     }
                     </LEFT_SINGLE_CODE>
