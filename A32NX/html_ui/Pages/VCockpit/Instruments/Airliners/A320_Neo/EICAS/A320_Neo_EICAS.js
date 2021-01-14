@@ -140,7 +140,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
 
     onUpdate() {
-        var _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
 
         super.onUpdate(_deltaTime);
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);

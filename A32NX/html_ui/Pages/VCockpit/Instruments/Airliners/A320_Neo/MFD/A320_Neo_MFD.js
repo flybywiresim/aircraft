@@ -167,9 +167,9 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.selfTestLastKnobValue = currentKnobValue;
             return;
         }
-        var _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
         super.onUpdate(_deltaTime);
-        var mapDeltaTime = this.mapUpdateThrottler.canUpdate(_deltaTime);
+        const mapDeltaTime = this.mapUpdateThrottler.canUpdate(_deltaTime);
         if (mapDeltaTime != -1) {
             this.updateMap(mapDeltaTime);
         }

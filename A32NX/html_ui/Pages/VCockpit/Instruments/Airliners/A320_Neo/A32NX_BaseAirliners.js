@@ -188,7 +188,7 @@ var Airliners;
             }
         }
         onUpdate() {
-            var _deltaTime = this.getDeltaTime();
+            const _deltaTime = this.getDeltaTime();
             super.onUpdate(_deltaTime);
             if (this.screen != null) {
                 this.screen.update(_deltaTime);
@@ -225,7 +225,7 @@ var Airliners;
             }
         }
         onUpdate() {
-            var _deltaTime = this.getDeltaTime();
+            const _deltaTime = this.getDeltaTime();
             if (this.page != null) {
                 this.page.update(_deltaTime);
             }
