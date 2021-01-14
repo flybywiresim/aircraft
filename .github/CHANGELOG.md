@@ -33,6 +33,7 @@
 1. [CDU] Fixed APPR/GO AROUND page order - @beheh (Benedict Etzel)
 1. [OPTIONS] Changed unit option changes only effective after aircraft reload - @MisterChocker (Leon)
 1. [ECAM] Fixed engineering mode overlay displaying on upper ECAM in some cases - @davidwalschots (David Walschots)
+1. [MCDU] Fixed "V1/VR/V2 DISAGREE" check - @MisterChocker (Leon)
 1. [FLIGHTMODEL] Fixed structural load factor limitations - @donstim (donbikes#4084)
 
 ## 0.5.2
