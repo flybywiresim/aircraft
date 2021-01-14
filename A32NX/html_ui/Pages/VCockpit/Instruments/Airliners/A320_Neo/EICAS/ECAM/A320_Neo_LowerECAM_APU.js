@@ -87,14 +87,14 @@ var A320_Neo_LowerECAM_APU;
                 this.APUGenLoad.classList.toggle("APUGenParamValue", loadWithinAcceptableRange);
                 this.APUGenLoad.classList.toggle("APUGenParamValueWarn", !loadWithinAcceptableRange);
 
-                const volts = SimVar.GetSimVarValue("L:APU_GEN_VOLTAGE","Volts");
+                const volts = SimVar.GetSimVarValue("L:A32NX_APU_GEN_VOLTAGE","Volts");
                 this.APUVolts.textContent = volts;
                 const voltsWithinAcceptableRange = 110 <= volts && volts <= 120;
                 this.APUVolts.classList.toggle("APUGenParamValue", voltsWithinAcceptableRange);
                 this.APUVolts.classList.toggle("APUGenParamValueWarn", !voltsWithinAcceptableRange);
 
-                const hertz = SimVar.GetSimVarValue("L:APU_GEN_FREQ","Hertz");
-                this.APUFrequency.textContent = hertz;
+                const hertz = SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ","Hertz");
+                this.APUFrequency.textContent = Math.round(hertz);
                 const hertzWithinAcceptableRange = 390 <= hertz && hertz <= 410;
                 this.APUFrequency.classList.toggle("APUGenParamValue", hertzWithinAcceptableRange);
                 this.APUFrequency.classList.toggle("APUGenParamValueWarn", !hertzWithinAcceptableRange);

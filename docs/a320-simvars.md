@@ -373,6 +373,18 @@
     - Percent
     - The APU's rotations per minute in percentage of the maximum RPM
 
-- APU_START_ACTIVATED
+- A32NX_APU_START_ACTIVATED
     - Bool
     - True when the APU START push button is activated
+
+- A32NX_APU_GEN_VOLTAGE:
+    - Volts
+    - The electric potential made available by the APU generator
+
+- A32NX_APU_GEN_AMPERAGE:
+    - Amperes
+    - The electric current made available by the APU generator
+
+- A32NX_APU_GEN_FREQ
+    - Hertz
+    - The alternating current frequency of the electric current made available by the APU generator

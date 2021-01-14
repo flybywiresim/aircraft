@@ -24,22 +24,16 @@ class A32NX_APU {
         }
 
         //APU start, stop
-        if (APUPctRPM >= 87) {
+        if (available) {
             SimVar.SetSimVarValue("L:APU_GEN_ONLINE","Bool",1);
-            SimVar.SetSimVarValue("L:APU_GEN_VOLTAGE","Volts",115);
-            SimVar.SetSimVarValue("L:APU_GEN_AMPERAGE","Amperes",782.609); // 1000 * 90 kVA / 115V = 782.609A
-            SimVar.SetSimVarValue("L:APU_GEN_FREQ","Hertz",Math.round((4.46 * APUPctRPM) - 46.15));
             SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",35);
             SimVar.SetSimVarValue(
                 "L:APU_LOAD_PERCENT",
                 "percent",
-                Math.max(SimVar.GetSimVarValue("L:APU_GEN_AMPERAGE","Amperes") / SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS","Amperes"), 0)
+                Math.max(SimVar.GetSimVarValue("L:A32NX_APU_GEN_AMPERAGE","Amperes") / SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS","Amperes"), 0)
             );
         } else {
             SimVar.SetSimVarValue("L:APU_GEN_ONLINE","Bool",0);
-            SimVar.SetSimVarValue("L:APU_GEN_VOLTAGE","Volts",0);
-            SimVar.SetSimVarValue("L:APU_GEN_AMPERAGE","Amperes",0);
-            SimVar.SetSimVarValue("L:APU_GEN_FREQ","Hertz",0);
             SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",0);
             SimVar.SetSimVarValue("L:APU_LOAD_PERCENT","percent",0);
         }

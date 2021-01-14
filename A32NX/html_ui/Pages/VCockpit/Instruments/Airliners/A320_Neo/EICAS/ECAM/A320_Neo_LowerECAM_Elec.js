@@ -282,9 +282,9 @@ var A320_Neo_LowerECAM_Elec;
             this.values.EXTPWR_FREQ = this.getSimVar_Number('EXT_GEN_FREQ');
 
             this.systems.APUGEN = this.getSimVar_ONOFF('APU_GEN_ONLINE');
-            this.values.APUGEN_VOLTS = this.getSimVar_Number('APU_GEN_VOLTAGE');
-            this.values.APUGEN_AMPS = this.getSimVar_Number('APU_GEN_AMPERAGE');
-            this.values.APUGEN_FREQ = this.getSimVar_Number('APU_GEN_FREQ');
+            this.values.APUGEN_VOLTS = this.getSimVar_Number('A32NX_APU_GEN_VOLTAGE');
+            this.values.APUGEN_AMPS = this.getSimVar_Number('A32NX_APU_GEN_AMPERAGE');
+            this.values.APUGEN_FREQ = this.getSimVar_Number('A32NX_APU_GEN_FREQ');
             this.values.APUGEN_LOAD = this.getSimVar_Number('APU_LOAD_PERCENT');
 
             this.systems.GEN1 = this.getSimVar_ONOFF('GEN1_ONLINE');
