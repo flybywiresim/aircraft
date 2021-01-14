@@ -46,6 +46,10 @@ a320-neo-lower-ecam-apu text.Title {
   fill: var(--displayGreen);
   font-size: 18px;
 }
+:root .APUGenTitleWarn {
+  fill: var(--displayAmber);
+  font-size: 18px;
+}
 :root #APUBleed {
   fill: var(--displayWhite);
   font-size: 20px;

@@ -19,7 +19,6 @@ var A320_Neo_LowerECAM_APU;
         init() {
             // Last state tracking inits to -1 since we don't know what the state is.
             // The first update sets it correctly for us.
-            this.lastAPUMasterState = -1;
             this.lastAdirsAligned = -1;
             this.lastAPUBleedState = -1;
 
@@ -64,16 +63,6 @@ var A320_Neo_LowerECAM_APU;
             // APU Logic that isn't tied to the APU ECAM SCREEN belongs in A32NX/html_ui/Pages/A32NX_Core/A32NX_APU.js
             // *******************************************************************************************************
 
-            const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
-
-            if (this.lastAPUMasterState != currentAPUMasterState) {
-                this.lastAPUMasterState = currentAPUMasterState;
-                if (currentAPUMasterState === 1) {
-                    this.APUGenInfo.setAttribute("visibility", "visible");
-                    this.APUGenTitle.setAttribute("class", "APUGenTitle");
-                }
-            }
-
             // Bleed
             const currentAPUBleedState = SimVar.GetSimVarValue("BLEED AIR APU","Bool");
 
@@ -89,12 +78,35 @@ var A320_Neo_LowerECAM_APU;
                 }
             }
 
-            //display volt,load,freq
-            this.APUGenLoad.textContent = Math.round(SimVar.GetSimVarValue("L:APU_LOAD_PERCENT","percent"));
-            this.APUVolts.textContent = SimVar.GetSimVarValue("L:APU_GEN_VOLTAGE","Volts");
-            this.APUVolts.setAttribute("class", "APUGenParamValue");
-            this.APUFrequency.textContent = SimVar.GetSimVarValue("L:APU_GEN_FREQ","Hertz");
-            this.APUFrequency.setAttribute("class", "APUGenParamValue");
+            const showApuData = shouldShowApuData();
+            let allParametersWithinAcceptableRange = false;
+            if (showApuData) {
+                const load = Math.round(SimVar.GetSimVarValue("L:APU_LOAD_PERCENT","percent"));
+                this.APUGenLoad.textContent = load;
+                const loadWithinAcceptableRange = load <= 100;
+                this.APUGenLoad.classList.toggle("APUGenParamValue", loadWithinAcceptableRange);
+                this.APUGenLoad.classList.toggle("APUGenParamValueWarn", !loadWithinAcceptableRange);
+
+                const volts = SimVar.GetSimVarValue("L:APU_GEN_VOLTAGE","Volts");
+                this.APUVolts.textContent = volts;
+                const voltsWithinAcceptableRange = 110 <= volts && volts <= 120;
+                this.APUVolts.classList.toggle("APUGenParamValue", voltsWithinAcceptableRange);
+                this.APUVolts.classList.toggle("APUGenParamValueWarn", !voltsWithinAcceptableRange);
+
+                const hertz = SimVar.GetSimVarValue("L:APU_GEN_FREQ","Hertz");
+                this.APUFrequency.textContent = hertz;
+                const hertzWithinAcceptableRange = 390 <= hertz && hertz <= 410;
+                this.APUFrequency.classList.toggle("APUGenParamValue", hertzWithinAcceptableRange);
+                this.APUFrequency.classList.toggle("APUGenParamValueWarn", !hertzWithinAcceptableRange);
+
+                allParametersWithinAcceptableRange = loadWithinAcceptableRange && voltsWithinAcceptableRange && hertzWithinAcceptableRange;
+            }
+
+            this.APUGenTitle.classList.toggle("APUGenTitle", showApuData && allParametersWithinAcceptableRange);
+            this.APUGenTitle.classList.toggle("APUGenTitleWarn", showApuData && !allParametersWithinAcceptableRange);
+            this.APUGenTitle.classList.toggle("APUGenTitleInactive", !showApuData);
+
+            this.APUGenInfo.setAttribute("visibility", showApuData ? "visible" : "hidden");
 
             const adirsAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number") === 2;
             const apuGenActive = SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") === 1;
@@ -132,11 +144,6 @@ var A320_Neo_LowerECAM_APU;
                     this.APUGenAvailArrow.setAttribute("visibility", "hidden");
                     this.APUBleedPressure.textContent = "XX";
                     this.APUBleedPressure.setAttribute("class", "APUGenParamValueWarn");
-
-                    if (currentAPUMasterState === 0) {
-                        this.APUGenInfo.setAttribute("visibility", "hidden");
-                        this.APUGenTitle.setAttribute("class", "APUGenTitleInactive");
-                    }
                 }
             }
 
@@ -170,7 +177,7 @@ var A320_Neo_LowerECAM_APU;
             gaugeDef1.dangerRange[1] = 110;
             gaugeDef1.currentValuePos.x = 0.8;
             gaugeDef1.currentValuePos.y = 0.74;
-            gaugeDef1.currentValueFunction = this.getN.bind(this);
+            gaugeDef1.currentValueFunction = getN.bind(this);
             this.apuNGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.apuNGauge.id = "APU_N_Gauge";
             this.apuNGauge.init(gaugeDef1);
@@ -214,16 +221,14 @@ var A320_Neo_LowerECAM_APU;
 
             // Last state tracking inits to -1 since we don't know what the state is.
             // The first update sets it correctly for us.
-            this.lastAPUMasterState = -1;
             this.apuShuttingDown = false;
             this.apuInactiveTimer = -1;
         }
 
         update(_deltaTime) {
-            const apuMasterSwitch = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
-            const shouldShowApuNAndEgt = apuMasterSwitch || this.getN() > 0;
-            this.apuEGTGauge.active = shouldShowApuNAndEgt;
-            this.apuNGauge.active = shouldShowApuNAndEgt;
+            const showApuData = shouldShowApuData();
+            this.apuEGTGauge.active = showApuData;
+            this.apuNGauge.active = showApuData;
 
             this.setCautionAndWarningRanges();
 
@@ -237,10 +242,6 @@ var A320_Neo_LowerECAM_APU;
             this.apuEGTGauge.dangerRange[0] = warningEgt;
             this.apuEGTGauge.warningRange[0] = this.getCautionEgt();
             this.apuEGTGauge.warningRange[1] = warningEgt;
-        }
-
-        getN() {
-            return SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
         }
 
         //function accepts ID of the marker and returns an array with ID and EGT
@@ -261,6 +262,15 @@ var A320_Neo_LowerECAM_APU;
         }
     }
     A320_Neo_LowerECAM_APU.APUInfo = APUInfo;
+
+    function shouldShowApuData() {
+        const apuMasterSwitch = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
+        return apuMasterSwitch || getN() > 0;
+    }
+
+    function getN() {
+        return SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
+    }
 })(A320_Neo_LowerECAM_APU || (A320_Neo_LowerECAM_APU = {}));
 
 customElements.define("a320-neo-lower-ecam-apu", A320_Neo_LowerECAM_APU.Page);
