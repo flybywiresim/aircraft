@@ -27,7 +27,5 @@
 .DS_Store
 node_modules
 /src/sound/.cache
-/A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD00.bin
-/A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD00.gltf
-/A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD00.bin
-/A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD00.gltf
+/A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/*.bin
+/A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/*.gltf
