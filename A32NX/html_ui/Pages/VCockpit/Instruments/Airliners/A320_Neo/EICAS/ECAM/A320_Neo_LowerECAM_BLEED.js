@@ -129,7 +129,7 @@ var A320_Neo_LowerECAM_BLEED;
                 return;
             }
 
-            const currentApuN = SimVar.GetSimVarValue("APU PCT RPM", "percent");
+            const currentApuN = SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
             const currentEng1N2 = SimVar.GetSimVarValue("ENG N2 RPM:1", "Rpm(0 to 16384 = 0 to 100%)");
             const currentEng2N2 = SimVar.GetSimVarValue("ENG N2 RPM:2", "Rpm(0 to 16384 = 0 to 100%)");
             const eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool");
