@@ -1200,14 +1200,14 @@ var A320_Neo_UpperECAM;
                         message: "APU AVAIL",
                         isActive: () => (
                             !this.getCachedSimVar("BLEED AIR APU", "Bool") &&
-                            this.getCachedSimVar("L:A32NX_APU_N", "Percent") >= 95
+                            this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool")
                         )
                     },
                     {
                         message: "APU BLEED",
                         isActive: () => (
                             this.getCachedSimVar("BLEED AIR APU", "Bool") &&
-                            this.getCachedSimVar("L:A32NX_APU_N", "Percent") >= 95
+                            this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool")
                         )
                     },
                     {
