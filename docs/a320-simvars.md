@@ -388,3 +388,7 @@
 - A32NX_APU_GEN_FREQ
     - Hertz
     - The alternating current frequency of the electric current made available by the APU generator
+
+- A32NX_APU_START_CONTACTOR_ENERGIZED
+    - Bool
+    - Indicates if the APU START contactor is energized
