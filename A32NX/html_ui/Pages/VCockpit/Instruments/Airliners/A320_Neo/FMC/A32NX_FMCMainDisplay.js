@@ -1242,8 +1242,16 @@ class FMCMainDisplay extends BaseAirliners {
         this.v2Speed = 140;
     }
 
-    checkVSpeedDisagree(mcdu) {
-        return mcdu.v1Speed && mcdu.vRSpeed && mcdu.v2Speed && mcdu.v1Speed <= mcdu.vRSpeed && mcdu.vRSpeed <= mcdu.v2Speed;
+    vSpeedsValid() {
+        return (!!this.v1Speed && !!this.vRSpeed ? this.v1Speed <= this.vRSpeed : true)
+            && (!!this.vRSpeed && !!this.v2Speed ? this.vRSpeed <= this.v2Speed : true)
+            && (!!this.v1Speed && !!this.v2Speed ? this.v1Speed <= this.v2Speed : true);
+    }
+
+    vSpeedDisagreeCheck() {
+        if (!this.vSpeedsValid()) {
+            this.addNewMessage(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this));
+        }
     }
 
     trySetV1Speed(s) {
@@ -1255,10 +1263,9 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(v)) {
             if (v >= 90 && v < 1000) {
                 this.v1Speed = v;
-                SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
-                if ((v > SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.addNewMessage(NXSystemMessages.vToDisagree, this.checkVSpeedDisagree);
-                }
+                SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed).then(() => {
+                    this.vSpeedDisagreeCheck();
+                });
                 return true;
             }
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -1277,10 +1284,9 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(v)) {
             if (v >= 90 && v < 1000) {
                 this.vRSpeed = v;
-                SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
-                if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.addNewMessage(NXSystemMessages.vToDisagree, this.checkVSpeedDisagree);
-                }
+                SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed).then(() => {
+                    this.vSpeedDisagreeCheck();
+                });
                 return true;
             }
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -1299,10 +1305,9 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(v)) {
             if (v >= 90 && v < 1000) {
                 this.v2Speed = v;
-                SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
-                if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v < SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1) {
-                    this.addNewMessage(NXSystemMessages.vToDisagree, this.checkVSpeedDisagree);
-                }
+                SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed).then(() => {
+                    this.vSpeedDisagreeCheck();
+                });
                 return true;
             }
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -1486,7 +1491,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return Math.min(speed, this.getSpeedConstraint());
+        return speed;
     }
 
     getDesManagedSpeed() {
