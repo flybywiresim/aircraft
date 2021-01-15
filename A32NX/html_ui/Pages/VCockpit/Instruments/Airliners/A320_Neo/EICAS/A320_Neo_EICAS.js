@@ -236,7 +236,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
         const ToPowerSet = (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
-        const apuN = SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
+        const apuAvailable = SimVar.GetSimVarValue("L:A32NX_APU_AVAILABLE", "Bool");
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
         const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number") != 0 || SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "percent") != 0;
 
@@ -255,11 +255,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 this.MainEngineStarterOffTimer -= _deltaTime / 1000;
             }
             this.pageNameWhenUnselected = "ENG";
-        } else if (currentAPUMasterState && (apuN <= 95 || this.ApuAboveThresholdTimer >= 0)) {
-            // Show Apu when master sw. is on, and N% is lower than 95, or until 10s after N% over 95
-            if (this.ApuAboveThresholdTimer <= 0 && apuN <= 95) {
+        } else if (currentAPUMasterState && (!apuAvailable || this.ApuAboveThresholdTimer >= 0)) {
+            // Show APU on Lower ECAM until 10s after it became available.
+            if (this.ApuAboveThresholdTimer <= 0 && !apuAvailable) {
                 this.ApuAboveThresholdTimer = 10;
-            } else if (apuN >= 95) {
+            } else if (apuAvailable) {
                 this.ApuAboveThresholdTimer -= _deltaTime / 1000;
             }
 
