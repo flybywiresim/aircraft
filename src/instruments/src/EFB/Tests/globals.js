@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* eslint-disable */
+
 const simvars = {
     'ATC FLIGHT NUMBER': 'AB123',
     'GPS POSITION LAT': 0,
