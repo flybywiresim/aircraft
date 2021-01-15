@@ -17,206 +17,37 @@
  */
 
 import { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import BasePage from './BasePage.jsx';
-import { FMGC, activeSystems } from '../../../FMGC/FMGC.mjs';
+import { BasePage, McduLabels, McduText } from '../Templates/BasePage.jsx';
 
-function determineActiveSystem(textOptions, setTextOptions, setMcduText, fmgc) {
-    setTextOptions((prevState) => Object.assign({}, prevState, {
-        textFMGC: {
-            color: fmgc.getActiveSystem() === activeSystems.FMGC ? 'green' : 'white',
-        },
-        textATSU: {
-            color: fmgc.getActiveSystem() === activeSystems.ATSU ? 'green' : 'white',
-        },
-        textAIDS: {
-            color: fmgc.getActiveSystem() === activeSystems.AIDS ? 'green' : 'white',
-        },
-        textCFDS: {
-            color: fmgc.getActiveSystem() === activeSystems.CFDS ? 'green' : 'white',
-        },
-        textMaint: {
-            color: fmgc.getActiveSystem() === activeSystems.MAINT ? 'green' : 'white',
-        },
-    }));
+const MenuPage = () => {
+    const [labels, setLabels] = useState(McduLabels);
+    const [text, _] = useState(McduText);
 
-    setMcduText((prevState) => Object.assign({}, prevState, {
-        L0: {
-            text: textOptions.textFMGC.text,
-            color: textOptions.textFMGC.color,
-        },
-        L1: {
-            text: textOptions.textATSU.text,
-            color: textOptions.textATSU.color,
-        },
-        L2: {
-            text: textOptions.textAIDS.text,
-            color: textOptions.textAIDS.color,
-        },
-        L3: {
-            text: textOptions.textCFDS.text,
-            color: textOptions.textCFDS.color,
-        },
-        R5: {
-            text: textOptions.textReturn.text,
-            color: textOptions.textReturn.color,
-        },
-    }));
-}
-
-const MenuPage = ({ fmgc }) => {
-    const mcduLabels = {
-        L0: {
-            text: '',
-            class: 'text__small__left__label',
-            color: 'white',
-        },
-        L1: {
-            text: '',
-            class: 'text__small__left__label',
-            color: 'white',
-        },
-        L2: {
-            text: '',
-            class: 'text__small__left__label',
-            color: 'white',
-        },
-        L3: {
-            text: '',
-            class: 'text__small__left__label',
-            color: 'white',
-        },
-        L4: {
-            text: '',
-            class: 'text__small__left__label',
-            color: 'white',
-        },
-        L5: {
-            text: '',
-            class: 'text__small__left__label',
-            color: 'white',
-        },
-        R0: {
-            text: 'SELECT\xa0',
-            class: 'text__small__right__label',
-            color: 'white',
-        },
-        R1: {
-            text: '',
-            class: 'text__small__right__label',
-            color: 'amber',
-        },
-        R2: {
-            text: '',
-            class: 'text__small__right',
-            color: 'white',
-        },
-        R3: {
-            text: '',
-            class: '',
-            color: '',
-        },
-        R4: {
-            text: '',
-            class: 'text__small__right__label',
-            color: 'inop',
-        },
-        R5: {
-            text: '',
-            class: 'text__small__right__label',
-            color: 'white',
-        },
-    };
-    const [textOptions, setTextOptions] = useState({
-        textFMGC: {
-            text: '<FMGC (REQ)',
-            color: 'white',
-        },
-        textATSU: {
-            text: '<ATSU',
-            color: 'white',
-        },
-        textAIDS: {
-            text: '<AIDS',
-            color: 'white',
-        },
-        textCFDS: {
-            text: '<CFDS',
-            color: 'white',
-        },
-        textMaint: {
-            text: 'MCDU MAINT>',
-            color: 'white',
-        },
-        textReturn: {
-            text: 'RETURN>',
-            color: 'white',
-        },
-    });
-    const [mcduText, setMcduText] = useState({
-        L0: {
-            text: '',
-            class: 'text__small__left',
-            color: 'amber',
-        },
-        L1: {
-            text: '',
-            class: 'text__small__left',
-            color: 'white',
-        },
-        L2: {
-            text: '',
-            class: 'text__small__left',
-            color: 'amber',
-        },
-        L3: {
-            text: '',
-            class: 'text__small__left',
-            color: 'white',
-        },
-        L4: {
-            text: '',
-            class: 'text__small__left',
-            color: 'white',
-        },
-        L5: {
-            text: '',
-            class: 'text__small__left',
-            color: 'white',
-        },
-        R0: {
-            text: '',
-            class: 'text__small__right',
-            color: 'amber',
-        },
-        R1: {
-            text: '',
-            class: 'text__small__right',
-            color: 'AMBER',
-        },
-        R2: {
-            text: '',
-            class: 'text__small__right',
-            color: 'white',
-        },
-        R3: {
-            text: '',
-            class: 'text__small__right',
-            color: 'white',
-        },
-        R4: {
-            text: '',
-            class: 'text__small__right',
-            color: 'white',
-        },
-        R5: {
-            text: '',
-            class: 'text__small__right',
-            color: 'cyan',
-        },
-    });
-
-    useEffect(() => determineActiveSystem(textOptions, setTextOptions, setMcduText, fmgc), []);
+    useEffect(() => {
+        setLabels((prevState) => ({
+            ...prevState,
+            L0: {
+                ...prevState.L0,
+                text: 'FMGC',
+            },
+            L1: {
+                ...prevState.L3,
+                text: 'ATSU',
+            },
+            L2: {
+                ...prevState.L2,
+                text: 'AIDS',
+            },
+            L3: {
+                ...prevState.L1,
+                text: 'CFDS',
+            },
+            L4: {
+                ...prevState.L4,
+                text: 'Return',
+            },
+        }));
+    }, []);
 
     /**
      * TODO create event handlers
@@ -224,12 +55,8 @@ const MenuPage = ({ fmgc }) => {
      */
 
     return (
-        <BasePage data={mcduText} labels={mcduLabels} />
+        <BasePage data={text} labels={labels} />
     );
-};
-
-MenuPage.propTypes = {
-    fmgc: PropTypes.instanceOf(FMGC).isRequired,
 };
 
 export { MenuPage };

@@ -1,0 +1,88 @@
+@import url('/Fonts/A32NX_Display_Common.css');
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+.bg {
+  fill: var(--displayBackground);
+  width: 100%;
+  height: 100%;
+}
+
+text {
+  font-family: Roboto;
+  fill: var(--mcduWhite);
+}
+
+.left {
+  text-anchor: start;
+  &__small {
+    @extend .left;
+    font-size: 4.2vw;
+    letter-spacing: 0.6vw;
+    line-height: 5.8vw;
+  }
+  &__big {
+    @extend .left;
+    font-size: 5.8vw;
+    letter-spacing: normal;
+  }
+}
+
+.right {
+  text-anchor: end;
+  &__small {
+    @extend .right;
+    font-size: 4.2vw;
+    letter-spacing: 0.6vw;
+    line-height: 5.8vw;
+  }
+  &__big {
+    @extend .right;
+    font-size: 5.8vw;
+    letter-spacing: normal;
+  }
+}
+
+.white {
+  fill: var(--mcduWhite);
+}
+
+.inop {
+  fill: var(--mcduLightGrey);
+}
+
+.cyan {
+  fill: var(--mcduCyan);
+}
+
+.yellow {
+  fill: var(--mcduYellow);
+}
+
+.green {
+  fill: var(--mcduGreen);
+}
+
+.amber {
+  fill: var(--mcduAmber);
+}
+
+.red {
+  fill: var(--mcduRed);
+}
+
+.magenta {
+  fill: var(--mcduMagenta);
+}

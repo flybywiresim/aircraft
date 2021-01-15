@@ -15,7 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+import './styles.scss';
 
-export const Scratchpad = () => (
-    <text x={5} y={27} fill="white" fontSize={24}>scratchpad</text>
+const Scratchpad = () => (
+    <g id="title" transform="translate(0 1024)">
+        <text className="scratchpad"><tspan className="amber">SCRATCHPAD FIELD</tspan></text>
+    </g>
 );
+export default Scratchpad;

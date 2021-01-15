@@ -83,6 +83,7 @@ module.exports = {
         'no-useless-constructor': 'warn',
         'no-fallthrough': 'warn',
         'block-scoped-var': 'warn',
+        'react/prop-types': 'off',
         'vars-on-top': 'warn',
         'no-var': 'warn',
         'no-redeclare': 'warn',

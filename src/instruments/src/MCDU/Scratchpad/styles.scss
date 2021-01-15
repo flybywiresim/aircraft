@@ -1,0 +1,54 @@
+@import url('/Fonts/A32NX_Display_Common.css');
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.scratchpad {
+  text-anchor: start;
+  font-family: Roboto;
+  fill: var(--mcduWhite);
+  font-size: 5.8vw;
+  letter-spacing: normal;
+}
+
+.white {
+  fill: var(--mcduWhite);
+}
+
+.inop {
+  fill: var(--mcduLightGrey);
+}
+
+.cyan {
+  fill: var(--mcduCyan);
+}
+
+.yellow {
+  fill: var(--mcduYellow);
+}
+
+.green {
+  fill: var(--mcduGreen);
+}
+
+.amber {
+  fill: var(--mcduAmber);
+}
+
+.red {
+  fill: var(--mcduRed);
+}
+
+.magenta {
+  fill: var(--mcduMagenta);
+}

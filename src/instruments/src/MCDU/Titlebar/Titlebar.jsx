@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export const Titlebar = () => (
-    <text x={5} y={27} fill="white" fontSize={24}>Titlebar</text>
+const Titlebar = () => (
+    <g id="title" transform="translate(512 100)">
+        <text className="title"><tspan className="green">TITLE FIELD</tspan></text>
+    </g>
 );
+
+export default Titlebar;

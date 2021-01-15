@@ -16,42 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import PropTypes from 'prop-types';
 import { MenuPage } from './Pages/FMGC/Menu.jsx';
-import { FMGC } from '../FMGC/FMGC.mjs';
 import { FuelPredPage } from './Pages/FMGC/FuelPred.jsx';
-import { useInteractionEvent } from '../util';
+import { useInteractionEvent } from '../util.mjs';
 
-const PagesContainer = ({ fmgc }) => {
+const PagesContainer = () => {
     const [currentPage, setCurrentPage] = useState('MENU');
     const pages = {
         FUEL: <FuelPredPage />,
-        MENU: <MenuPage fmgc={fmgc} />,
+        MENU: <MenuPage />,
     };
 
     useInteractionEvent('H:A32NX_MCDU_1_BTN_FUEL', () => setCurrentPage('FUEL'));
 
-    return <MenuPage fmgc={fmgc} />;
-};
-// // useInteractionEvent('A32NX_MCDU_PAGE_CHANGED', () => setCurrentPage(getSimVar('L:A32NX_MCDU_CURRENT_PAGE_INDEX', 'number')));
-//
-// const pages = {
-//     0: <AirportPage fmgc={fmgc} />,
-//     1: <AtcCommPage fmgc={fmgc} />,
-//     2: <DataPage fmgc={fmgc} />,
-//     3: <DirPage fmgc={fmgc} />,
-//     4: <FlightPlanPage fmgc={fmgc} />,
-//     5: <FuelPredPage fmgc={fmgc} />,
-//     6: <InitPage fmgc={fmgc} />,
-//     7: <MenuPage fmgc={fmgc} />,
-//     8: <PerfPage fmgc={fmgc} />,
-//     9: <ProgPage fmgc={fmgc} />,
-//     10: <RadNavPage fmgc={fmgc} />,
-//     11: <SecFlightPlanPage fmgc={fmgc} />,
-// };
-
-PagesContainer.propTypes = {
-    fmgc: PropTypes.instanceOf(FMGC).isRequired,
+    return pages[currentPage];
 };
 
-export { PagesContainer };
+export default PagesContainer;

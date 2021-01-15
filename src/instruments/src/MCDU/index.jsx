@@ -1,16 +1,14 @@
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
-import PropTypes from 'prop-types';
 import {
     renderTarget,
     useUpdate,
     getSimVar,
 } from '../util.mjs';
 import './style.scss';
-import { Titlebar } from './Titlebar/Titlebar.jsx';
-import { PagesContainer } from './PagesContainer.jsx';
-import { Scratchpad } from './Scratchpad/Scratchpad.jsx';
-import { FMGC } from '../FMGC/FMGC.mjs';
+import Titlebar from './Titlebar/Titlebar.jsx';
+import PagesContainer from './PagesContainer.jsx';
+import Scratchpad from './Scratchpad/Scratchpad.jsx';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
@@ -33,31 +31,18 @@ function SelfTest() {
     );
 }
 
-function Idle({ fmgc }) {
-    useUpdate(() => {
-        fmgc.update();
-    });
-
+function Idle() {
     return (
-        <svg className="main-wrapper" viewBox="0 0 1024 1024">
+        <svg className="main-wrapper" viewBox="0 0 1024 1024" width="1024" height="1024">
             <Titlebar />
-            <PagesContainer fmgc={fmgc} />
+            <PagesContainer />
             <Scratchpad />
         </svg>
     );
 }
 
-Idle.propTypes = {
-    fmgc: PropTypes.instanceOf(FMGC).isRequired,
-};
-
 const MCDU = () => {
     const [state, setState] = useState('DEFAULT');
-    const [fmgc, setFmgc] = useState(() => {
-        const temp = new FMGC();
-        temp.Init();
-        return temp;
-    });
 
     useUpdate((_deltaTime) => {
         if (state === 'OFF') {
@@ -87,7 +72,7 @@ const MCDU = () => {
         }, 5000);
         return <SelfTest />;
     case 'IDLE':
-        return <Idle fmgc={fmgc} />;
+        return <Idle />;
     default:
         throw new RangeError();
     }
