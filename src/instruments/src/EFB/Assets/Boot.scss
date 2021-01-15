@@ -1,0 +1,72 @@
+/*!
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap");
+
+.loading-screen {
+  background: rgb(0, 0, 0);
+  font-family: "Nunito", sans-serif;
+  font-size: 2.5rem;
+  font-weight: 100;
+  color: rgba(255, 255, 255, 0.9);
+
+  .center {
+    padding: 475px 0;
+    text-align: center;
+
+    .placeholder {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  .loading-bar {
+    display: flex;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 16px;
+    height: 3px;
+    width: 200px;
+    background: rgb(128, 128, 128);
+  }
+
+  .loaded {
+    height: 100%;
+    width: 100%;
+    background: rgb(255, 255, 255);
+    animation: 6s linear infinite loading;
+    transform-origin: 0%;
+  }
+
+  @keyframes loading {
+    0% {
+      transform: scaleX(0);
+    }
+    100% {
+      transform: scaleX(100%);
+    }
+  }
+}
+
+.fbw-logo {
+  width: 5rem;
+  margin-right: 16px;
+}
