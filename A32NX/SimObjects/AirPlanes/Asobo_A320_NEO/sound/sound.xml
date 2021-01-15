@@ -118,7 +118,7 @@
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="startcontactorsdc" NodeName="FUSES01" Continuous="false" ViewPoint="Inside" LocalVar="A32NX_APU_START_CONTACTOR_ENERGIZED" Units="BOOLEAN" Index="0">
-            <Range LowerBound="0" />
+            <Range UpperBound="0" />
         </Sound>
 
                 <!-- EXTERIOR ============================================================================================-->
