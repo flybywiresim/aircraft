@@ -35,13 +35,6 @@ var A320_Neo_LowerECAM_APU;
 
             this.apuInfo = new APUInfo(this.querySelector("#APUGauges"));
 
-            this.previousState = {
-                available: undefined,
-                adirsAligned: undefined,
-                apuGenActive: undefined,
-                externalPowerOn: undefined
-            };
-
             this.isInitialised = true;
         }
         update(_deltaTime) {
@@ -96,49 +89,26 @@ var A320_Neo_LowerECAM_APU;
             this.APUGenTitle.classList.toggle("APUGenTitleWarn", showApuData && !allParametersWithinAcceptableRange);
             this.APUGenTitle.classList.toggle("APUGenTitleInactive", !showApuData);
 
-            this.APUGenInfo.setAttribute("visibility", showApuData ? "visible" : "hidden");
+            toggleVisibility(this.APUGenInfo, showApuData);
 
             const adirsAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number") === 2;
             const apuGenActive = SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") === 1;
             const externalPowerOn = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0;
             const available = SimVar.GetSimVarValue("L:A32NX_APU_AVAILABLE", "Bool");
 
-            // AVAIL indication & bleed pressure
-            const doUpdateAvailAndBleed =
-                available !== this.previousState.available
-                || adirsAligned !== this.previousState.adirsAligned
-                || apuGenActive !== this.previousState.apuGenActive
-                || externalPowerOn !== this.previousState.externalPowerOn;
+            toggleVisibility(this.APUAvail, available);
+            toggleVisibility(this.APUGenAvailArrow, available && apuGenActive && externalPowerOn);
 
-            if (doUpdateAvailAndBleed) {
-                this.previousState.available = available;
-                this.previousState.adirsAligned = adirsAligned;
-                this.previousState.apuGenActive = apuGenActive;
-                this.previousState.externalPowerOn = apuGenActive;
-
-                if (available) {
-                    this.APUAvail.setAttribute("visibility", "visible");
-
-                    if (apuGenActive && externalPowerOn) {
-                        this.APUGenAvailArrow.setAttribute("visibility", "visible");
-                    } else {
-                        this.APUGenAvailArrow.setAttribute("visibility", "hidden");
-                    }
-
-                    this.APUBleedPressure.textContent = SimVar.GetSimVarValue("L:APU_BLEED_PRESSURE","PSI");
-                    this.APUBleedPressure.setAttribute("class", "APUGenParamValue");
-                }
-
-                if (!available || !adirsAligned) {
-                    this.APUAvail.setAttribute("visibility", "hidden");
-                    this.APUGenAvailArrow.setAttribute("visibility", "hidden");
-                    this.APUBleedPressure.textContent = "XX";
-                    this.APUBleedPressure.setAttribute("class", "APUGenParamValueWarn");
-                }
+            if (available && adirsAligned) {
+                this.APUBleedPressure.textContent = SimVar.GetSimVarValue("L:APU_BLEED_PRESSURE","PSI");
+                this.APUBleedPressure.setAttribute("class", "APUGenParamValue");
+            } else {
+                this.APUBleedPressure.textContent = "XX";
+                this.APUBleedPressure.setAttribute("class", "APUGenParamValueWarn");
             }
 
             const apuFlapOpenPercent = SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Percent");
-            this.APUFlapOpen.setAttribute("visibility", apuFlapOpenPercent === 100 ? "visible" : "hidden");
+            toggleVisibility(this.APUFlapOpen, apuFlapOpenPercent === 100);
 
             this.apuInfo.update(_deltaTime);
         }
@@ -253,6 +223,10 @@ var A320_Neo_LowerECAM_APU;
 
     function getN() {
         return SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
+    }
+
+    function toggleVisibility(element, condition) {
+        element.setAttribute("visibility", condition ? "visible" : "hidden");
     }
 })(A320_Neo_LowerECAM_APU || (A320_Neo_LowerECAM_APU = {}));
 
