@@ -1,6 +1,3 @@
-import A32NX_Core from '../A32NX_Core/A32NX_Core.mjs';
-import NXDataStore from '../A32NX_Utils/NXDataStore.mjs';
-
 const fuelPlanningPhases = {
     PLANNING: 1,
     IN_PROGRESS: 2,

@@ -20,62 +20,62 @@ import './styles.scss';
 const McduLabels = {
     L0: {
         text: 'label1',
-        class: 'big',
+        class: 'small',
         color: 'white',
     },
     L1: {
         text: 'label2',
-        class: 'big',
+        class: 'small',
         color: 'white',
     },
     L2: {
         text: 'label3',
-        class: 'big',
+        class: 'small',
         color: 'white',
     },
     L3: {
         text: 'label4',
-        class: 'big',
+        class: 'small',
         color: 'white',
     },
     L4: {
         text: 'label5',
-        class: 'big',
+        class: 'small',
         color: 'white',
     },
     L5: {
         text: 'label6',
-        class: 'big',
+        class: 'small',
         color: 'white',
     },
     R0: {
         text: 'label1',
-        class: 'big',
+        class: 'small',
         color: 'white',
     },
     R1: {
         text: 'label2',
-        class: 'big',
+        class: 'small',
         color: 'white',
     },
     R2: {
         text: 'label3',
-        class: 'big',
+        class: 'small',
         color: 'white',
     },
     R3: {
         text: 'label4',
-        class: 'big',
+        class: 'small',
         color: 'white',
     },
     R4: {
         text: 'label5',
-        class: 'big',
+        class: 'small',
         color: 'white',
     },
     R5: {
         text: 'label6',
-        class: 'big',
+        class: 'small',
         color: 'white',
     },
 };
@@ -83,62 +83,62 @@ const McduLabels = {
 const McduText = {
     L0: {
         text: 'LEFT DATA 1',
-        class: 'small',
+        class: 'big',
         color: 'green',
     },
     L1: {
         text: 'LEFT DATA 2',
-        class: 'small',
+        class: 'big',
         color: 'green',
     },
     L2: {
         text: 'LEFT DATA 3',
-        class: 'small',
+        class: 'big',
         color: 'green',
     },
     L3: {
         text: 'LEFT DATA 4',
-        class: 'small',
+        class: 'big',
         color: 'green',
     },
     L4: {
         text: 'LEFT DATA 5',
-        class: 'small',
+        class: 'big',
         color: 'green',
     },
     L5: {
         text: 'LEFT DATA 6',
-        class: 'small',
+        class: 'big',
         color: 'green',
     },
     R0: {
         text: 'RIGHT DATA 1',
-        class: 'small',
+        class: 'big',
         color: 'green',
     },
     R1: {
         text: 'RIGHT DATA 2',
-        class: 'small',
+        class: 'big',
         color: 'green',
     },
     R2: {
         text: 'RIGHT DATA 3',
-        class: 'small',
+        class: 'big',
         color: 'green',
     },
     R3: {
         text: 'RIGHT DATA 4',
-        class: 'small',
+        class: 'big',
         color: 'green',
     },
     R4: {
         text: 'RIGHT DATA 5',
-        class: 'small',
+        class: 'big',
         color: 'green',
     },
     R5: {
         text: 'RIGHT DATA 6',
-        class: 'small',
+        class: 'big',
         color: 'green',
     },
 };

@@ -58,8 +58,16 @@
 
 .main-wrapper {
   padding: 10px;
+  left: 80px;
+  right: 80px;
   width: 1024px;
   height: 1024px;
+
+  background: radial-gradient(
+      ellipse at center,
+      rgba(4,4,5,1) 0%,
+      rgba(4, 4, 5, 1) 100%
+  );
 
   text {
     fill: white;

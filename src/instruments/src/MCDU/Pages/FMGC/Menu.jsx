@@ -16,14 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { BasePage, McduLabels, McduText } from '../Templates/BasePage.jsx';
+import { RootContext } from '../../RootContext.jsx';
 
 const MenuPage = () => {
     const [labels, setLabels] = useState(McduLabels);
     const [text, _] = useState(McduText);
+    const [, , , setTitle] = useContext(RootContext);
 
     useEffect(() => {
+        setTitle('MCDU MENU');
         setLabels((prevState) => ({
             ...prevState,
             L0: {

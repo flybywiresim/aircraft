@@ -48,6 +48,7 @@ module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
                             runtime: 'automatic',
                         }],
                     ],
+                    plugins: ['@babel/plugin-proposal-object-rest-spread'],
                     babelHelpers: 'bundled',
                     exclude: /node_modules/,
                 }),

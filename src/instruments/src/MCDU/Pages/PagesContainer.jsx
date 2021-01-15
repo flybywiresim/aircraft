@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-import { MenuPage } from './Pages/FMGC/Menu.jsx';
-import { FuelPredPage } from './Pages/FMGC/FuelPred.jsx';
-import { useInteractionEvent } from '../util.mjs';
+import { useState } from 'react';
+import { MenuPage } from './FMGC/Menu.jsx';
+import { FuelPredPage } from './FMGC/FuelPred.jsx';
+import { useInteractionEvent } from '../../util.mjs';
 
 const PagesContainer = () => {
     const [currentPage, setCurrentPage] = useState('MENU');

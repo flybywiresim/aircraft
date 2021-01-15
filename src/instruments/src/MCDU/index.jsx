@@ -7,8 +7,9 @@ import {
 } from '../util.mjs';
 import './style.scss';
 import Titlebar from './Titlebar/Titlebar.jsx';
-import PagesContainer from './PagesContainer.jsx';
+import PagesContainer from './Pages/PagesContainer.jsx';
 import Scratchpad from './Scratchpad/Scratchpad.jsx';
+import { RootContext } from './RootContext.jsx';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
@@ -32,11 +33,18 @@ function SelfTest() {
 }
 
 function Idle() {
+    const [scratchpad, setScratchpad] = useState('SCRATCHPAD FIELD');
+    const [title, setTitle] = useState('TITLE FIELD');
+    // TODO find a way to do the below
+    // const [scratchpad, setScratchpad] = useState(() => ({text: "SCRATCHPAD FIELD", opacity: 0, }));
+    // const [title, setTitle] = useState(() => ({text: "TITLE FIELD", opacity: 0, }));
     return (
         <svg className="main-wrapper" viewBox="0 0 1024 1024" width="1024" height="1024">
-            <Titlebar />
-            <PagesContainer />
-            <Scratchpad />
+            <RootContext.Provider value={[scratchpad, setScratchpad, title, setTitle]}>
+                <Titlebar />
+                <PagesContainer />
+                <Scratchpad />
+            </RootContext.Provider>
         </svg>
     );
 }
