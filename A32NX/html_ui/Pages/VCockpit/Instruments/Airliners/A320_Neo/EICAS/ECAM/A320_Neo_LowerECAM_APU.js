@@ -92,12 +92,12 @@ var A320_Neo_LowerECAM_APU;
             toggleVisibility(this.APUGenInfo, showApuData);
 
             const adirsAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number") === 2;
-            const apuGenActive = SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") === 1;
-            const externalPowerOn = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0;
+            const apuGenOnline = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "Bool") === 1;
+            const externalPowerOff = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0;
             const available = SimVar.GetSimVarValue("L:A32NX_APU_AVAILABLE", "Bool");
 
             toggleVisibility(this.APUAvail, available);
-            toggleVisibility(this.APUGenAvailArrow, available && apuGenActive && externalPowerOn);
+            toggleVisibility(this.APUGenAvailArrow, available && apuGenOnline && externalPowerOff);
 
             if (available && adirsAligned) {
                 this.APUBleedPressure.textContent = SimVar.GetSimVarValue("L:APU_BLEED_PRESSURE","PSI");
