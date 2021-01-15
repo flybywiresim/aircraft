@@ -1,9 +1,6 @@
 /** @type A320_Neo_LowerECAM_APU */
 var A320_Neo_LowerECAM_APU;
 (function (A320_Neo_LowerECAM_APU) {
-    class Definitions {
-    }
-    A320_Neo_LowerECAM_APU.Definitions = Definitions;
     class Page extends Airliners.EICASTemplateElement {
         constructor() {
             super();
@@ -19,10 +16,8 @@ var A320_Neo_LowerECAM_APU;
         init() {
             // Last state tracking inits to -1 since we don't know what the state is.
             // The first update sets it correctly for us.
-            this.lastAdirsAligned = -1;
             this.lastAPUBleedState = -1;
 
-            //Generator
             this.APUGenInfo = this.querySelector("#APUGenInfo_On");
             this.APUGenAvailArrow = this.querySelector("#APUGenAvailArrow");
             this.APUGenLoad = this.querySelector("#APUGenLoad");
@@ -30,18 +25,14 @@ var A320_Neo_LowerECAM_APU;
             this.APUFrequency = this.querySelector("#APUGenFrequency");
             this.APUGenTitle = this.querySelector("#APUGenParams");
 
-            //Avail
             this.APUAvail = this.querySelector("#APUAvail_On");
 
-            //Flap Open
             this.APUFlapOpen = this.querySelector("#APUFlapOpen_On");
 
-            //Bleed
             this.APUBleedOn = this.querySelector("#APUBleed_On");
             this.APUBleedOff = this.querySelector("#APUBleed_Off");
             this.APUBleedPressure = this.querySelector("#APUBleedAirPressure");
 
-            //Gauges
             this.apuInfo = new APUInfo(this.querySelector("#APUGauges"));
 
             this.previousState = {
@@ -51,7 +42,6 @@ var A320_Neo_LowerECAM_APU;
                 externalPowerOn: undefined
             };
 
-            this.APUBleedTimer = 0;
             this.isInitialised = true;
         }
         update(_deltaTime) {
@@ -150,20 +140,13 @@ var A320_Neo_LowerECAM_APU;
             const apuFlapOpenPercent = SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Percent");
             this.APUFlapOpen.setAttribute("visibility", apuFlapOpenPercent === 100 ? "visible" : "hidden");
 
-            //Gauges
-            if (this.apuInfo != null) {
-                this.apuInfo.update(_deltaTime);
-            }
+            this.apuInfo.update(_deltaTime);
         }
     }
     A320_Neo_LowerECAM_APU.Page = Page;
 
     class APUInfo {
         constructor(_gaugeDiv) {
-
-            this.lastN = 0;
-            this.APUWarm = false;
-
             //APU N Gauge
             const gaugeDef1 = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef1.arcSize = 180;
@@ -262,7 +245,6 @@ var A320_Neo_LowerECAM_APU;
             return SimVar.GetSimVarValue("L:A32NX_APU_EGT", "celsius");
         }
     }
-    A320_Neo_LowerECAM_APU.APUInfo = APUInfo;
 
     function shouldShowApuData() {
         const apuMasterSwitch = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
