@@ -4,19 +4,19 @@
   --bodyHeightScale: 1;
 }
 
-
 @keyframes TemporaryShow {
-  0%, 100% {
+  0%,
+  100% {
     visibility: visible;
   }
 }
 
 @keyframes TemporaryHide {
-  0%, 100% {
+  0%,
+  100% {
     visibility: hidden;
   }
 }
-
 
 #highlight {
   position: absolute;
@@ -30,7 +30,7 @@
   height: 100%;
 }
 
-#Electricity[state=off] {
+#Electricity[state="off"] {
   display: none;
 }
 

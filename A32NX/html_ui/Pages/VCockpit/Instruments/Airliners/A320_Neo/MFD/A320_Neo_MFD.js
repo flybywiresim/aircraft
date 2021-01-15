@@ -2,6 +2,7 @@ class A320_Neo_MFD extends BaseAirliners {
     constructor() {
         super();
         this.initDuration = 11000;
+        this.showFlightPlan = true;
     }
     get templateID() {
         return "A320_Neo_MFD";
@@ -214,7 +215,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             document.querySelector("#Map").setAttribute("style", "");
         }
 
-        if (this.map.planMode) {
+        if (this.map.instrument.airplaneIconElement._image) {
             this.map.instrument.airplaneIconElement._image.setAttribute("visibility", ADIRSState != 2 ? "hidden" : "visible");
         }
 
@@ -432,8 +433,10 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         } else {
             this.map.instrument.tmpDirectToElement = undefined;
         }
-        this.map.updateTopOfDescent();
-        this.map.updateTopOfClimb();
+        if (this.showFlightPlan) {
+            this.map.updateTopOfDescent();
+            this.map.updateTopOfClimb();
+        }
     }
     // The BingMap is used by the A320 to render terrain and weather,
     // but it also renders airports, which the real A320 does not.
@@ -447,14 +450,33 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.map.instrument.bingMap.style.visibility = "hidden";
         }
     }
+    // Show/Hide the route
+    setFlightPlanVisibility(flightPlan) {
+        if (flightPlan != this.showFlightPlan) {
+            this.showFlightPlan = flightPlan;
+            this.map.instrument.attributeChangedCallback("show-flightplan", null, flightPlan ? "true" : "false");
+            if (!flightPlan) {
+                this.map.instrument.showConstraints = false;
+                this.map.removeTopOf();
+            } else {
+                const active = SimVar.GetSimVarValue("L:BTN_CSTR_" + this.screenIndex + "_FILTER_ACTIVE", "number");
+                if (active) {
+                    this.map.instrument.showConstraints = true;
+                }
+            }
+        }
+    }
+
     onEvent(_event) {
         switch (_event) {
             case "BTN_CSTR_" + this.screenIndex:
-                this.map.instrument.showConstraints = !this.map.instrument.showConstraints;
-                this.map.instrument.showIntersections = false;
-                this.map.instrument.showNDBs = false;
-                this.map.instrument.showAirports = false;
-                this.map.instrument.showVORs = false;
+                if (this.showFlightPlan) {
+                    this.map.instrument.showConstraints = !this.map.instrument.showConstraints;
+                    this.map.instrument.showIntersections = false;
+                    this.map.instrument.showNDBs = false;
+                    this.map.instrument.showAirports = false;
+                    this.map.instrument.showVORs = false;
+                }
                 this._updateNDFiltersStatuses();
                 break;
             case "BTN_VORD_" + this.screenIndex:
@@ -505,26 +527,31 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.compass.svg.setMode(Jet_NDCompass_Display.ROSE, Jet_NDCompass_Navigation.ILS);
                 this.map.setMode(Jet_NDCompass_Display.ROSE);
                 this.info.setMode(Jet_NDCompass_Navigation.ILS);
+                this.setFlightPlanVisibility(false);
                 break;
             case 1:
                 this.compass.svg.setMode(Jet_NDCompass_Display.ROSE, Jet_NDCompass_Navigation.VOR);
                 this.map.setMode(Jet_NDCompass_Display.ROSE);
                 this.info.setMode(Jet_NDCompass_Navigation.VOR);
+                this.setFlightPlanVisibility(false);
                 break;
             case 2:
                 this.compass.svg.setMode(Jet_NDCompass_Display.ROSE, Jet_NDCompass_Navigation.NAV);
                 this.map.setMode(Jet_NDCompass_Display.ROSE);
                 this.info.setMode(Jet_NDCompass_Navigation.NAV);
+                this.setFlightPlanVisibility(true);
                 break;
             case 3:
                 this.compass.svg.setMode(Jet_NDCompass_Display.ARC, Jet_NDCompass_Navigation.NAV);
                 this.map.setMode(Jet_NDCompass_Display.ARC);
                 this.info.setMode(Jet_NDCompass_Navigation.NAV);
+                this.setFlightPlanVisibility(true);
                 break;
             case 4:
                 this.compass.svg.setMode(Jet_NDCompass_Display.PLAN, Jet_NDCompass_Navigation.NAV);
                 this.map.setMode(Jet_NDCompass_Display.PLAN);
                 this.info.setMode(Jet_NDCompass_Navigation.NAV);
+                this.setFlightPlanVisibility(true);
                 break;
         }
     }
@@ -613,10 +640,15 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
             }
         }
     }
+
+    removeTopOf() {
+        this.instrument.topOfCurveElements = [];
+    }
+
     onTemplateLoaded() {
         super.onTemplateLoaded();
         this.compassModeMask = new SvgBottomMaskElement("a320-compass-mask", 0, -30);
-        this.wxMask = new SvgPlanMaskElement("a320-wx-mask", 0, 0, "M702 583 835 583 835 457 750 457 702 500z");
+        this.wxMask = new SvgPlanMaskElement("a320-wx-mask", 0, 0, "M702 600 850 600 850 457 750 457 702 500z");
         this.planModeMask = new SvgPlanMaskElement("a320-plan-mask", 0, 0, "M0,0 v1000 h1000 V0 H0 z M813.559,739.539 H186.442 v-471 h627.117 V739.539 z");
     }
     getAdaptiveRanges(_factor) {

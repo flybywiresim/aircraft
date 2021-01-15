@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUProgressPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -25,7 +43,9 @@ class CDUProgressPage {
                 } else if (mcdu.cruiseFlightLevel < alt) {
                     mcdu.cruiseFlightLevel = alt;
                     flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
-                    mcdu.addTypeTwoMessage("NEW CRZ ALT-" + mcdu.cruiseFlightLevel * 100);
+                    const msg = NXSystemMessages.newCrzAlt;
+                    msg.text = msg.text + mcdu.cruiseFlightLevel * 100;
+                    mcdu.addNewMessage(msg);
                 } else {
                     flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 }
@@ -35,7 +55,9 @@ class CDUProgressPage {
                 const fl = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
                 if (fl > mcdu.cruiseFlightLevel) {
                     mcdu.cruiseFlightLevel = fl;
-                    mcdu.addTypeTwoMessage("NEW CRZ ALT-" + mcdu.cruiseFlightLevel * 100);
+                    const msg = NXSystemMessages.newCrzAlt;
+                    msg.text = msg.text + mcdu.cruiseFlightLevel * 100;
+                    mcdu.addNewMessage(msg);
                 }
                 flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 break;
@@ -60,18 +82,18 @@ class CDUProgressPage {
         };
         mcdu.setTemplate([
             ["{green}ECON " + flightPhase + "{end} " + flightNo],
-            [flightPhase, "REC MAX", "OPT"],
-            [flCrz, "FL" + flMax.toString() + "[color]magenta", flOpt],
+            ["\xa0" + flightPhase, "REC MAX\xa0", "OPT"],
+            [flCrz, "FL" + flMax.toString() + "\xa0[color]magenta", flOpt],
             [""],
             ["<REPORT", ""],
-            ["UPDATE AT"],
-            ["*[][color]cyan"],
-            ["BRG / DIST"],
-            ["---°.----.-", "[ ][color]cyan", "TO"],
-            ["PREDICTIVE"],
+            ["\xa0POSITION UPDATE AT"],
+            ["{small}*{end}[\xa0\xa0\xa0\xa0][color]cyan"],
+            ["\xa0\xa0BRG / DIST"],
+            ["{small}\xa0---°/----.-{end}", "[][color]cyan", "{small}TO{end}"],
+            ["\xa0PREDICTIVE"],
             ["<GPS", "GPS PRIMARY[color]green"],
             ["REQUIRED", "ESTIMATED", "ACCUR"],
-            ["3.4NM[color]cyan", "0.07NM[color]green", "HIGH[color]green"]
+            ["{small}3.4NM{end}[color]cyan", "{small}0.07NM{end}[color]green", "HIGH[color]green"]
         ]);
         mcdu.page.SelfPtr = setTimeout(() => {
             if (mcdu.page.Current === mcdu.page.ProgressPage) {
@@ -135,17 +157,17 @@ class CDUProgressPage {
         }
         mcdu.setTemplate([
             ["REPORT"],
-            ["OVHD", "ALT", "UTC"],
+            ["\xa0OVHD", "ALT\xa0", "UTC"],
             ["", altCell + "[color]cyan"],
-            ["TO"],
+            ["\xa0TO"],
             [toWaypointCell + "[color]green", toWaypointAltCell + "[color]green", toWaypointUTCCell + "[color]green"],
-            ["NEXT"],
+            ["\xa0NEXT"],
             [nextWaypointCell + "[color]green", nextWaypointAltCell + "[color]green", nextWaypointUTCCell + "[color]green"],
-            ["SAT", "FOB", "T. WIND"],
+            ["\xa0SAT", "FOB\xa0", "T. WIND"],
             ["[][color]cyan"],
-            ["S/C", "", "UTC DIST"],
+            ["\xa0S/C", "", "UTC DIST"],
             [""],
-            ["DEST", "EFOB", "UTC DIST"],
+            ["\xa0DEST", "EFOB", "UTC DIST"],
             [destCell, "", destUTCCell + " " + destDistCell]
         ]);
     }
@@ -168,12 +190,12 @@ class CDUProgressPage {
         mcdu.setTemplate([
             ["PREDICTIVE GPS"],
             ["DEST", "ETA"],
-            [destIdentCell, destETACell + "[color]cyan", "PRIMARY"],
-            ["-15 -10", "+10 +15", "-5 ETA +5"],
-            ["N Y", "Y Y", "N Y Y"],
+            [destIdentCell, destETACell + "[color]cyan", "{small}PRIMARY{end}"],
+            ["\xa0\xa0-15 -10 -5 ETA+5 +10 +15"],
+            ["{small}\xa0\xa0\xa0\xa0Y\xa0\xa0Y\xa0\xa0\xa0Y\xa0\xa0Y\xa0\xa0Y\xa0\xa0\xa0Y\xa0\xa0Y{end}[color]green"],
             ["WPT", "ETA"],
-            ["[ ][color]cyan", "", "PRIMARY"],
-            ["-15 -10", "+10 +15", "-5 ETA +5"],
+            ["[ ][color]cyan", "", "{small}PRIMARY{end}"],
+            ["\xa0\xa0-15 -10 -5 ETA+5 +10 +15"],
             [""],
             ["", "", "DESELECTED SATELLITES"],
             ["[ ][color]cyan"],

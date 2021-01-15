@@ -22,6 +22,9 @@ The following aircraft configuration is currently simulated:
 
 Please note that this configuration may change in the future as the A32NX project evolves and changes.
 
+### SimBrief Airframe with the correct weights
+✈[SimBrief Airframe with the correct weights](https://www.simbrief.com/system/dispatch.php?sharefleet=eyJ0cyI6IjE2MDU4MjAwNzg5NDYiLCJiYXNldHlwZSI6IkEzMjAiLCJjb21tZW50cyI6IkZMWSBCWSBXSVJFIiwiaWNhbyI6IkEyME4iLCJuYW1lIjoiQTMyME5FTyBGQlciLCJlbmdpbmVzIjoiTEVBUC0xQTI2IiwicmVnIjoiQTIwTiIsImZpbiI6IiIsInNlbGNhbCI6IiIsImhleGNvZGUiOiIiLCJjYXQiOiJNIiwicGVyIjoiQyIsImVxdWlwIjoiU0RFM0ZHSElSV1kiLCJ0cmFuc3BvbmRlciI6IkxCMSIsInBibiI6IkExQjFDMUQxTzFTMSIsImV4dHJhcm1rIjoiIiwibWF4cGF4IjoiMTgwIiwid2d0dW5pdHMiOiJLR1MiLCJvZXciOiI0MTAwMCIsIm16ZnciOiI2MjUwMCIsIm10b3ciOiI3OTAwMCIsIm1sdyI6IjY2MDAwIiwibWF4ZnVlbCI6IjIxMjczIiwicGF4d2d0IjoiMTA0IiwiZGVmYXVsdGNpIjoiIiwiZnVlbGZhY3RvciI6IlAwMCIsImNydWlzZW9mZnNldCI6IlAwMDAwIn0-) Credits: [@viniciusfont](https://github.com/viniciusfont)
+
 ## Downloads
 
 ### A32NX Installer
@@ -111,7 +114,7 @@ A: The mod is added on top of the default A320neo from Asobo. If you want to uni
 
 **Q: What are the liveries available?**
 
-A: This project modifies the default A320neo from Asobo, therefore all liveries should be compatible.
+A: All liveries for the default A320 are compatible with the A32NX Mod. You can download some of your favourite liveries at [Flightsim.to](https://flightsim.to).
 
 **Q: When will it be released?**
 
@@ -119,7 +122,7 @@ A: The project is an ongoing rolling release. See [Downloads](#Downloads).
 
 **Q: When is the next update?**
 
-A: We don't know, since it depends on many factors. We'll however announce it each time there's an update!
+A: We don't know, since it depends on many factors. We will announce each Stable build update via [discord](https://discord.gg/flybywire) and our social media: [Facebook](https://www.facebook.com/FlyByWireSimulations), [Twitter](https://twitter.com/FlybywireSim).
 
 **Q: How do I join the team?**
 
@@ -131,4 +134,8 @@ A: No, it is a completely free aircraft, open-source.
 
 **Q: How do we report bugs?**
 
-A: Report bugs to us in the Discord server, under the #help channel, or by creating a GitHub issue. Just make sure to search for existing issues first before creating a new one.
+A: Report bugs to us in the [Discord server](https://discord.gg/flybywire), under the #help channel, or by creating a GitHub issue. Just make sure to search for existing issues first before creating a new one.
+
+**Q: Why is my version not the same as what I see others using?**
+
+A: We have two versions, the Stable and Developer (Master). The Stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The Developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time. If you find this to be the case, you can report these issues in #help in discord or via GitHub Issues (Check there is not an existing issue of the same nature as yours).

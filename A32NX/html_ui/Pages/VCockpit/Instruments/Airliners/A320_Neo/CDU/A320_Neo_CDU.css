@@ -124,12 +124,12 @@ fmc-main-display::before {
   left: 0;
   bottom: 0;
   right: 0;
-  background: linear-gradient(rgba(9,13, 20, 1) 50%, rgba(9,13, 20, 1) 50%),
+  background: linear-gradient(rgba(9, 13, 20, 1) 50%, rgba(9, 13, 20, 1) 50%),
     linear-gradient(
       90deg,
-      rgba(9,13,20, 1),
-      rgba(9,13,20, 1),
-      rgba(9,13,20, 1)
+      rgba(9, 13, 20, 1),
+      rgba(9, 13, 20, 1),
+      rgba(9, 13, 20, 1)
     );
   z-index: 2;
   background-size: 100% 2px, 3px 100%;
@@ -152,12 +152,30 @@ fmc-main-display::before {
   right: 5%;
 }
 
+#title-left {
+  display: block;
+  text-align: right;
+  position: absolute;
+  top: 5%;
+  left: 5%;
+}
+
+.b-text {
+  font-size: 5.8vw;
+  letter-spacing: normal;
+}
+
 .s-text {
   font-size: 4.2vw;
   /* font-size: 4.8vw; */
   /* letter-spacing: 0.9vw;  */
   letter-spacing: 0.6vw;
   line-height: 5.8vw;
+}
+
+.b-text {
+  font-size: 5.8vw;
+  letter-spacing: normal;
 }
 
 .msg-text {
@@ -176,6 +194,7 @@ fmc-main-display::before {
 .label {
   height: 5%;
   margin: 0;
+  white-space: pre;
 }
 
 .label-left {
@@ -202,6 +221,7 @@ fmc-main-display::before {
 .line {
   height: 8.1%;
   margin: 0;
+  white-space: pre;
 }
 
 .line-left {
@@ -227,4 +247,25 @@ fmc-main-display::before {
 
 #in-out {
   padding-left: 4%;
+}
+
+#arrow-vertical {
+  float: right;
+}
+
+#arrow-horizontal {
+  position: absolute;
+  right: 1%;
+  width: 100%;
+  text-align: right;
+}
+
+.left {
+  margin-left: 4%;
+  float: left;
+}
+
+.right {
+  margin-right: 6%;
+  float: right;
 }

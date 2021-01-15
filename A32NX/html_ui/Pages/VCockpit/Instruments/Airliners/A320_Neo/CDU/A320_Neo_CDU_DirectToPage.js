@@ -3,7 +3,7 @@ class CDUDirectToPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.DirectToPage;
         mcdu.activeSystem = 'FMGC';
-        let directWaypointCell = " ";
+        let directWaypointCell = "";
         if (directWaypoint) {
             directWaypointCell = directWaypoint.ident;
         } else if (mcdu.flightPlanManager.getDirectToTarget()) {
@@ -14,7 +14,7 @@ class CDUDirectToPage {
         let eraseLabel = "";
         if (directWaypoint) {
             iMax--;
-            eraseLabel = "DIR TO[color]amber";
+            eraseLabel = "\xa0DIR TO[color]amber";
             waypointsCell[4] = "{ERASE[color]amber";
             mcdu.onLeftInput[5] = () => {
                 SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 0);
@@ -61,7 +61,7 @@ class CDUDirectToPage {
         let insertLabel = "";
         let insertLine = "";
         if (directWaypoint) {
-            insertLabel = "TMPY[color]amber";
+            insertLabel = "\xa0TMPY[color]amber";
             insertLine = "DIRECT*[color]amber";
             mcdu.onRightInput[5] = () => {
                 mcdu.activateDirectToWaypoint(directWaypoint, () => {
@@ -72,28 +72,35 @@ class CDUDirectToPage {
         }
         mcdu.setTemplate([
             ["DIR TO"],
-            ["WAYPOINT", "DIST", "UTC"],
-            ["[" + directWaypointCell + "][color]cyan", "---", "----"],
-            ["F-PLN WPTS"],
+            ["\xa0WAYPOINT", "DIST\xa0", "UTC"],
+            ["*[" + (directWaypointCell ? directWaypointCell : "\xa0\xa0\xa0\xa0\xa0") + "][color]cyan", "---", "----"],
+            ["\xa0F-PLN WPTS"],
             [waypointsCell[0], "DIRECT TO[color]cyan"],
-            ["", "WITH"],
+            ["", "WITH\xa0"],
             [waypointsCell[1], "ABEAM PTS[color]cyan"],
-            ["", "RADIAL IN"],
+            ["", "RADIAL IN\xa0"],
             [waypointsCell[2], "[ ]°[color]cyan"],
-            ["", "RADIAL OUT"],
+            ["", "RADIAL OUT\xa0"],
             [waypointsCell[3], "[ ]°[color]cyan"],
             [eraseLabel, insertLabel],
             [waypointsCell[4], insertLine]
         ]);
-        mcdu.onUp = () => {
-            wptsListIndex++;
-            wptsListIndex = Math.min(wptsListIndex, totalWaypointsCount - 5);
-            CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
-        };
-        mcdu.onDown = () => {
-            wptsListIndex--;
-            wptsListIndex = Math.max(wptsListIndex, 0);
-            CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
-        };
+        let up = false;
+        let down = false;
+        if (wptsListIndex < totalWaypointsCount - 5) {
+            mcdu.onUp = () => {
+                wptsListIndex++;
+                CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
+            };
+            up = true;
+        }
+        if (wptsListIndex > 0) {
+            mcdu.onDown = () => {
+                wptsListIndex--;
+                CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
+            };
+            down = true;
+        }
+        mcdu.setArrows(up, down, false ,false);
     }
 }

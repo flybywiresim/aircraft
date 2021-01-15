@@ -28,7 +28,7 @@ class CDU_OPTIONS_METAR {
         }
 
         mcdu.setTemplate([
-            ["A32NX OPTIONS"],
+            ["A32NX OPTIONS AOC"],
             ["", "", "METAR UPLINK SRC"],
             [msfs],
             [""],
@@ -40,7 +40,7 @@ class CDU_OPTIONS_METAR {
             [""],
             [ivao],
             [""],
-            ["<RETURN[color]cyan"]
+            ["<RETURN"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {
@@ -56,10 +56,7 @@ class CDU_OPTIONS_METAR {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
+            mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
         };
         mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
@@ -92,7 +89,7 @@ class CDU_OPTIONS_METAR {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+            CDU_OPTIONS_AOC.ShowPage(mcdu);
         };
     }
 }

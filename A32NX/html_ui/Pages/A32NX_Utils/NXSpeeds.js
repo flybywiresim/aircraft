@@ -290,6 +290,21 @@ const s = [
 ];
 
 /**
+ * Vfe for Flaps/Slats
+ * @type {number[]}
+ */
+const vfeFS = [
+    215, // Config 1 + F
+    200, // Config 2
+    185, // Config 3
+    177, // Config Full
+    230 // Config 1
+];
+
+const Vmo = 350;
+const Mmo = 0.82;
+
+/**
  * Correct input function for cg
  * @param m {number} gross weight (t)
  * @param f {function} function to be called with cg variable
@@ -350,6 +365,91 @@ function _getAngleDiff(a, b) {
     return 180 - Math.abs(Math.abs(a - b) - 180);
 }
 
+/**
+ * Get next flaps index for vfeFS table
+ * @param fi {number} current flaps index
+ * @returns {number} vfeFS table index
+ * @private
+ */
+function _getVfeNIdx(fi) {
+    switch (fi) {
+        case 0: return 4;
+        case 5: return 1;
+        default: return fi;
+    }
+}
+
+/**
+ * Convert degrees Celsius into Kelvin
+ * @param T {number} degrees Celsius
+ * @returns {number} degrees Kelvin
+ */
+function _convertCtoK(T) {
+    return T + 273.15;
+}
+
+/**
+ * Convert Mach to True Air Speed
+ * @param M {number} Mach
+ * @param T {number} Kelvin
+ * @returns {number} True Air Speed
+ */
+function _convertMachToKTas(M, T) {
+    return M * 661.4786 * Math.sqrt(T / 288.15);
+}
+
+/**
+ * Convert TAS to Mach
+ * @param Vt {number} TAS
+ * @param T {number} Kelvin
+ * @returns {number} True Air Speed
+ */
+function _convertKTASToMach(Vt, T) {
+    return Vt / 661.4786 / Math.sqrt(T / 288.15);
+}
+
+/**
+ * Convert TAS to Calibrated Air Speed
+ * @param Vt {number} velocity true air speed
+ * @param T {number} current temperature Kelvin
+ * @param p {number} current pressure hpa
+ * @returns {number} Calibrated Air Speed
+ */
+function _convertTasToKCas(Vt, T, p) {
+    return 1479.1 * Math.sqrt((p / 1013 * ((1 + 1 / (T / 288.15) * (Vt / 1479.1) ** 2) ** 3.5 - 1) + 1) ** (1 / 3.5) - 1);
+}
+
+/**
+ * Convert KCAS to KTAS
+ * @param Vc {number} velocity true air speed
+ * @param T {number} current temperature Kelvin
+ * @param p {number} current pressure hpa
+ * @returns {number} Calibrated Air Speed
+ */
+function _convertKCasToKTAS(Vc, T, p) {
+    return 1479.1 * Math.sqrt(T / 288.15 * ((1 / (p / 1013) * ((1 + 0.2 * (Vc / 661.4786) ** 2) ** 3.5 - 1) + 1) ** (1 / 3.5) - 1));
+}
+
+/**
+ * Convert Mach to Calibrated Air Speed
+ * @param M {number} Mach
+ * @param T {number} Kelvin
+ * @param p {number} current pressure hpa
+ * @returns {number} Calibrated Air Speed
+ */
+function _convertMachToKCas(M, T, p) {
+    return _convertTasToKCas(_convertMachToKTas(M, T), T, p);
+}
+
+/**
+ * Get correct Vmax for Vmo and Mmo in knots
+ * @returns {number} Min(Vmo, Mmo)
+ * @private
+ */
+function _getVmo() {
+    return Math.min(Vmo, _convertMachToKCas(Mmo, _convertCtoK(Simplane.getAmbientTemperature()), SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar")));
+}
+
 class NXSpeeds {
     /**
      * Computes Vs, Vls, Vapp, F, S and GD
@@ -367,6 +467,8 @@ class NXSpeeds {
         this.f = f[cm](m);
         this.s = s[cm](m);
         this.gd = _computeGD(m);
+        this.vmax = fPos === 0 ? _getVmo() : vfeFS[fPos - 1];
+        this.vfeN = fPos === 4 ? 0 : vfeFS[_getVfeNIdx(fPos)];
     }
 
     compensateForMachEffect(alt) {

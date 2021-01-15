@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUAocFreeText {
     static ShowPage(mcdu, store = { "msg_to": "", "msg_line1": "", "msg_line2": "", "msg_line3": "", "msg_line4": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
@@ -87,17 +105,17 @@ class CDUAocFreeText {
                                 errors += 1;
                                 switch (err.status) {
                                     case 404:
-                                        mcdu.showErrorMessage("RECIPIENT NOT FOUND");
+                                        mcdu.addNewMessage(NXFictionalMessages.recipientNotFound);
                                         break;
                                     case 401:
                                     case 403:
-                                        mcdu.showErrorMessage("AUTH ERR");
+                                        mcdu.addNewMessage(NXFictionalMessages.authErr);
                                         break;
                                     case 400:
-                                        mcdu.showErrorMessage("INVALID MSG");
+                                        mcdu.addNewMessage(NXFictionalMessages.invalidMsg);
                                         break;
                                     default:
-                                        mcdu.showErrorMessage("UNKNOWN DOWNLINK ERR");
+                                        mcdu.addNewMessage(NXFictionalMessages.unknownDownlinkErr);
                                 }
                             });
                     }
@@ -132,7 +150,7 @@ class CDUAocFreeText {
                     }, 1000);
                 });
             } else {
-                mcdu.showErrorMessage("TELEX NOT ENABLED");
+                mcdu.addNewMessage(NXFictionalMessages.telexNotEnabled);
             }
         };
 

@@ -153,7 +153,7 @@ class CDUIRSInit {
                     activeReference = originAirportLon;
                 }
                 if (activeReference['deg'] >= 90 && !lon || activeReference['deg'] >= 180 && lon) {
-                    mcdu.showErrorMessage("INVALID ENTRY");
+                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
                 } else {
                     activeReference['sec'] = activeReference['sec'] + 1;
                     if (activeReference['sec'] >= 9) {
@@ -176,7 +176,7 @@ class CDUIRSInit {
                     activeReference = originAirportLon;
                 }
                 if (activeReference['deg'] <= -90 && !lon || activeReference['deg'] <= -180 && lon) {
-                    mcdu.showErrorMessage("INVALID ENTRY");
+                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
                 } else {
                     activeReference['sec'] = activeReference['sec'] - 1;
                     if (activeReference['sec'] < 0) {

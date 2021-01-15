@@ -20,7 +20,7 @@ class CDU_OPTIONS_TELEX {
         }
 
         mcdu.setTemplate([
-            ["A32NX OPTIONS"],
+            ["A32NX OPTIONS AOC"],
             ["", "", "ONLINE FEATURES"],
             ["WARNING:[color]amber"],
             ["[b-text]ENABLES FREE TEXT AND LIVE"],
@@ -32,7 +32,7 @@ class CDU_OPTIONS_TELEX {
             [""],
             ["[s-text]USE AT YOUR OWN RISK.[color]amber"],
             ["", "CONFIRM[color]cyan"],
-            firstTime ? ["<LATER[color]cyan", telexToggleText] : ["<RETURN[color]cyan", telexToggleText]
+            firstTime ? ["<LATER[color]cyan", telexToggleText] : ["<RETURN", telexToggleText]
         ]);
 
         mcdu.leftInputDelay[5] = () => {
@@ -40,11 +40,11 @@ class CDU_OPTIONS_TELEX {
         };
         mcdu.onLeftInput[5] = () => {
             if (firstTime) {
-                CDUMenuPage.ShowPage(mcdu);
+                CDU_OPTIONS_AOC.ShowPage(mcdu);
                 // Take "LATER" as disabling it
                 NXDataStore.set("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
             } else {
-                CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+                CDU_OPTIONS_AOC.ShowPage(mcdu);
             }
         };
         mcdu.rightInputDelay[5] = () => {
@@ -54,7 +54,7 @@ class CDU_OPTIONS_TELEX {
             switch (storedTelexStatus) {
                 case "ENABLED":
                     NXDataStore.set("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
-                    mcdu.showErrorMessage("FREE TEXT DISABLED");
+                    mcdu.addNewMessage(NXFictionalMessages.freeTextDisabled);
                     NXApi.disconnectTelex()
                         .catch((err) => {
                             if (err !== NXApi.disconnectedError) {
@@ -64,18 +64,18 @@ class CDU_OPTIONS_TELEX {
                     break;
                 default:
                     NXDataStore.set("CONFIG_ONLINE_FEATURES_STATUS", "ENABLED");
-                    mcdu.showErrorMessage("FREE TEXT ENABLED");
+                    mcdu.addNewMessage(NXFictionalMessages.freetextEnabled);
 
                     const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
                     NXApi.connectTelex(flightNo)
                         .catch((err) => {
                             if (err.status === 409) {
-                                mcdu.showErrorMessage("ENABLED. FLT NBR IN USE");
+                                mcdu.addNewMessage(NXFictionalMessages.enabledFltNbrInUse);
                             }
                         });
             }
             if (firstTime) {
-                CDUMenuPage.ShowPage(mcdu);
+                CDU_OPTIONS_AOC.ShowPage(mcdu);
             } else {
                 CDU_OPTIONS_TELEX.ShowPage(mcdu);
             }
