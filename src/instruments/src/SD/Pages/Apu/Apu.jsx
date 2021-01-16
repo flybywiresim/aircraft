@@ -16,6 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export const CondPage = () => (
-    <text x={5} y={27} fill="white" fontSize={24}>COND</text>
+import './Apu.scss';
+
+export const ApuPage = () => (
+    <>
+        <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+            {/* Texts */}
+            <g id="texts">
+                <text id="PageTitle" className="Title" x="300" y="16" textAnchor="middle" alignmentBaseline="central" textDecoration="underline">APU</text>
+            </g>
+        </svg>
+    </>
 );

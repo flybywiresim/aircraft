@@ -1,0 +1,13 @@
+@import "../../../Common/definitions.scss";
+
+#texts {
+
+    .Hide {
+        display:none;
+    }
+
+    .Title {
+        font-size: 24px;
+        fill: $display-white;
+    }
+}

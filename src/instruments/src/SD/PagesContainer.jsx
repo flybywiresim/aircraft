@@ -24,7 +24,7 @@ import { PressPage } from './Pages/Press.jsx';
 import { ElecPage } from './Pages/Elec.jsx';
 import { HydPage } from './Pages/Hyd.jsx';
 import { FuelPage } from './Pages/Fuel.jsx';
-import { ApuPage } from './Pages/Apu.jsx';
+import { ApuPage } from './Pages/Apu/Apu.jsx';
 import { CondPage } from './Pages/Cond/Cond.jsx';
 import { DoorPage } from './Pages/Door/Door.jsx';
 import { WheelPage } from './Pages/Wheel.jsx';
