@@ -366,6 +366,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (validEntry) {
                 this.flaps = nextFlaps;
                 this.ths = nextThs;
+                SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number", this.flaps).then();
                 return true;
             }
         }
