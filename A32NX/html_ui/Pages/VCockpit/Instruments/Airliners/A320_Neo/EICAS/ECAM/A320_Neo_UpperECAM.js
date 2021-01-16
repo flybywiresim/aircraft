@@ -617,10 +617,24 @@ var A320_Neo_UpperECAM;
                         name: "CONFIG",
                         messages: [
                             {
+                                id: "config_slats",
+                                message: "",
+                                level: 3,
+                                flightPhasesInhib: [5, 6, 7, 8], // TODO
+                                isActive: () => this.activeTakeoffConfigWarnings.includes("slats"),
+                                alwaysShowCategory: true,
+                                actions: [
+                                    {
+                                        style: "fail-3",
+                                        message: "SLATS NOT IN T.O CONFIG"
+                                    }
+                                ]
+                            },
+                            {
                                 id: "config_flaps",
                                 message: "",
                                 level: 3,
-                                flightPhasesInhib: [5, 6, 7, 8, 10], // TODO
+                                flightPhasesInhib: [5, 6, 7, 8], // TODO
                                 isActive: () => this.activeTakeoffConfigWarnings.includes("flaps"),
                                 alwaysShowCategory: true,
                                 actions: [
@@ -1316,7 +1330,7 @@ var A320_Neo_UpperECAM;
                     "FLAPS",
                     "T.O",
                     "T.O",
-                    () => SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum") >= 1
+                    () => this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") >= 1 && this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") <= 3
                 ),
                 new A320_Neo_UpperECAM.MemoItem(
                     "to-memo-config",
@@ -1548,7 +1562,10 @@ var A320_Neo_UpperECAM;
             }
         }
         updateTakeoffConfigWarnings(_test) {
-            const flaps = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum");
+            const slatsLeft = SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees");
+            const slatsRight = SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees");
+            const flapsLeft = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees");
+            const flapsRight = SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees");
             const speedBrake = SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "Position");
             const parkBrake = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
             const brakesHot = SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool");
@@ -1556,8 +1573,10 @@ var A320_Neo_UpperECAM;
             const vrSpeed = SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots");
             const v2Speed = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots");
             this.activeTakeoffConfigWarnings = [];
-
-            if (!(flaps >= 1 && flaps <= 2)) {
+            if (slatsLeft > 25 || slatsLeft < 17 || slatsRight > 25 || slatsRight < 17) {
+                this.activeTakeoffConfigWarnings.push("slats");
+            }
+            if (flapsLeft > 24 || flapsLeft < 2 || flapsRight > 24 || flapsRight < 2) {
                 this.activeTakeoffConfigWarnings.push("flaps");
             }
             if (speedBrake > 0) {
@@ -1577,6 +1596,7 @@ var A320_Neo_UpperECAM;
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 1);
             } else {
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
+                this.leftEcamMessagePanel.recall("config_slats");
                 this.leftEcamMessagePanel.recall("config_flaps");
                 this.leftEcamMessagePanel.recall("config_spd_brk");
                 this.leftEcamMessagePanel.recall("config_park_brake");
