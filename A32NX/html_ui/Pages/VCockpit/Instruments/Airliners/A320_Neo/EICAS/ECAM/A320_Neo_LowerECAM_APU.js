@@ -62,7 +62,7 @@ var A320_Neo_LowerECAM_APU;
             }
 
             _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-            if (_deltaTime == -1) {
+            if (_deltaTime === -1) {
                 return;
             }
 

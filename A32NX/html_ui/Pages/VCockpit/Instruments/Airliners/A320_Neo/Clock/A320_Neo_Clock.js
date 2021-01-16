@@ -29,8 +29,7 @@ class A320_Neo_Clock extends BaseAirliners {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
             return;
         }
         const absTime = SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds");

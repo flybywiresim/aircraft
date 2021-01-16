@@ -1391,13 +1391,13 @@ var A320_Neo_UpperECAM;
                 return;
             }
 
-            var newDeltaTime = this.updateThrottler.canUpdate(_deltaTime);
-            var deltaTimeEng = this.engUpdateThrottler.canUpdate(_deltaTime);
+            const newDeltaTime = this.updateThrottler.canUpdate(_deltaTime);
+            const deltaTimeEng = this.engUpdateThrottler.canUpdate(_deltaTime);
 
             for (let i = 0; i < this.allPanels.length; ++i) {
                 if (this.allPanels[i] != null) {
-                    var isEng = this.allPanels[i] instanceof A320_Neo_UpperECAM.EnginePanel;
-                    var panelDeltaTime = isEng ? deltaTimeEng : newDeltaTime;
+                    const isEng = this.allPanels[i] instanceof A320_Neo_UpperECAM.EnginePanel;
+                    const panelDeltaTime = isEng ? deltaTimeEng : newDeltaTime;
                     if (panelDeltaTime != -1) {
                         this.allPanels[i].update(panelDeltaTime);
                     }

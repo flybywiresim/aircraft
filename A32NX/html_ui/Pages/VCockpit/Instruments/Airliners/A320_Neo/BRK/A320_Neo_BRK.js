@@ -71,8 +71,7 @@ var A320_Neo_BRK;
         }
         onUpdate(_deltaTime) {
             super.onUpdate(_deltaTime);
-            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-            if (_deltaTime == -1) {
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
                 return;
             }
             const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");

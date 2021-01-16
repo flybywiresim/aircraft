@@ -17,8 +17,7 @@ var A320_Neo_BAT;
         }
         onUpdate(_deltaTime) {
             super.onUpdate(_deltaTime);
-            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-            if (_deltaTime == -1) {
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
                 return;
             }
             const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");

@@ -47,7 +47,7 @@ var A320_Neo_LowerECAM_Engine;
                 return;
             }
             _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-            if (_deltaTime == -1) {
+            if (_deltaTime === -1) {
                 return;
             }
             const unitConversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));

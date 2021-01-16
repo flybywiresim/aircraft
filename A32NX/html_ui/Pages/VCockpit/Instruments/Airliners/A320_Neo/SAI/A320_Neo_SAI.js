@@ -71,7 +71,7 @@ class A320_Neo_SAI_Airspeed extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        if (_deltaTime === -1) {
             return;
         }
         this.airspeedElement.update(_deltaTime);
@@ -394,7 +394,7 @@ class A320_Neo_SAI_Altimeter extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        if (_deltaTime === -1) {
             return;
         }
         this.altimeterElement.update(_deltaTime);
@@ -706,8 +706,7 @@ class A320_Neo_SAI_Attitude extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
             return;
         }
         const xyz = Simplane.getOrientationAxis();
@@ -1067,7 +1066,7 @@ class A320_Neo_SAI_Pressure extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        if (_deltaTime === -1) {
             return;
         }
         this.pressureElement.update(_deltaTime);
@@ -1255,8 +1254,7 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
         }
     }
     onUpdate(_deltaTime) {
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
             return;
         }
         const _dTime = this.getDeltaTime();
@@ -1476,8 +1474,7 @@ class A320_Neo_SAI_AttReset extends NavSystemElement {
         return true;
     }
     onUpdate(_deltaTime) {
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
             return;
         }
         const _dTime = this.getDeltaTime();

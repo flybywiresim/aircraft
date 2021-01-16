@@ -145,7 +145,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const knobChanged = (selfTestCurrentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
 
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1 && !knobChanged) {
+        if (_deltaTime === -1 && !knobChanged) {
             return;
         }
         this.updateDoorVideoState();

@@ -264,8 +264,7 @@ var A320_Neo_LowerECAM_Elec;
         }
 
         update(_deltaTime) {
-            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-            if (_deltaTime == -1) {
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
                 return;
             }
             this.systemDraw();

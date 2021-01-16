@@ -175,7 +175,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         }
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
         const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
-        if (_deltaTime == -1 && !KnobChanged) {
+        if (_deltaTime === -1 && !KnobChanged) {
             return;
         }
         this.updateNDInfo(_deltaTime);
@@ -590,7 +590,7 @@ class A320_Neo_MFD_Compass extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        if (_deltaTime === -1) {
             return;
         }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
@@ -800,7 +800,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        if (_deltaTime === -1) {
             return;
         }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");

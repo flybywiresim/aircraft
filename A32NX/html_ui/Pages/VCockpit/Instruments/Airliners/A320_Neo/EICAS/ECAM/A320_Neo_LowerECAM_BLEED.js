@@ -130,8 +130,7 @@ var A320_Neo_LowerECAM_BLEED;
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-            if (_deltaTime == -1) {
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
                 return;
             }
             const currentApuN = SimVar.GetSimVarValue("APU PCT RPM", "percent");

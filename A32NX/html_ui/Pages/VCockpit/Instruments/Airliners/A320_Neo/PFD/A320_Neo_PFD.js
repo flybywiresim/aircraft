@@ -59,7 +59,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.ils
         ]);
         const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
-        var dispIndex = parseInt(url.substring(url.length - 1));
+        const dispIndex = parseInt(url.substring(url.length - 1));
         this.updateThrottler = new UpdateThrottler(dispIndex == 1 ? 300 : 1000);
         this.yokePositionThrottler = new UpdateThrottler(dispIndex == 1 ? 33 : 66);
     }
@@ -132,7 +132,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
 
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1 && !KnobChanged) {
+        if (_deltaTime === -1 && !KnobChanged) {
             return;
         }
         this.flashTimer -= _deltaTime / 1000;
@@ -247,9 +247,7 @@ class A320_Neo_PFD_VSpeed extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        let _deltaTime = this.getDeltaTime();
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        if (this.updateThrottler.canUpdate(this.getDeltaTime()) === -1) {
             return;
         }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
@@ -288,9 +286,8 @@ class A320_Neo_PFD_Airspeed extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        let _deltaTime = this.getDeltaTime();
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        const _deltaTime = this.updateThrottler.canUpdate(this.getDeltaTime());
+        if (_deltaTime === -1) {
             return;
         }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
@@ -321,12 +318,10 @@ class A320_Neo_PFD_Altimeter extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        let _deltaTime = this.getDeltaTime();
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        const _deltaTime = this.updateThrottler.canUpdate(this.getDeltaTime());
+        if (_deltaTime === -1) {
             return;
         }
-        console.log(_deltaTime);
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         if (currentKnobValue <= 0.0) {
             return;
@@ -364,9 +359,8 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        let _deltaTime = this.getDeltaTime();
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        const _deltaTime = this.updateThrottler.canUpdate(this.getDeltaTime());
+        if (_deltaTime === -1) {
             return;
         }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
@@ -418,9 +412,8 @@ class A320_Neo_PFD_Compass extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        let _deltaTime = this.getDeltaTime();
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        const _deltaTime = this.updateThrottler.canUpdate(this.getDeltaTime());
+        if (_deltaTime === -1) {
             return;
         }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
@@ -454,9 +447,8 @@ class A320_Neo_PFD_NavStatus extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        let _deltaTime = this.getDeltaTime();
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        const _deltaTime = this.updateThrottler.canUpdate(this.getDeltaTime());
+        if (_deltaTime === -1) {
             return;
         }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
@@ -486,9 +478,8 @@ class A320_Neo_PFD_ILS extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        let _deltaTime = this.getDeltaTime();
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        const _deltaTime = this.updateThrottler.canUpdate(this.getDeltaTime());
+        if (_deltaTime === -1) {
             return;
         }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
