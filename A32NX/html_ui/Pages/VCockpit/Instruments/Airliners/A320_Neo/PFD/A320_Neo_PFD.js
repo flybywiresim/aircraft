@@ -110,7 +110,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.electricity = document.querySelector('#Electricity');
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         if (currentKnobValue <= 0.0) {
             this.selfTestLastKnobValue = currentKnobValue;
@@ -247,7 +247,7 @@ class A320_Neo_PFD_VSpeed extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
         if (_deltaTime == -1) {
             return;
@@ -288,7 +288,7 @@ class A320_Neo_PFD_Airspeed extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
         if (_deltaTime == -1) {
             return;
@@ -321,7 +321,7 @@ class A320_Neo_PFD_Altimeter extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
         if (_deltaTime == -1) {
             return;
@@ -364,7 +364,7 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        var _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
         if (_deltaTime == -1) {
             return;
@@ -418,7 +418,7 @@ class A320_Neo_PFD_Compass extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        var _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
         if (_deltaTime == -1) {
             return;
@@ -454,7 +454,7 @@ class A320_Neo_PFD_NavStatus extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
         if (_deltaTime == -1) {
             return;
@@ -486,7 +486,7 @@ class A320_Neo_PFD_ILS extends NavSystemElement {
     onEnter() {
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
         if (_deltaTime == -1) {
             return;
