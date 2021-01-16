@@ -1,13 +1,61 @@
 @import "../../../Common/definitions.scss";
 
-#texts {
+#ApuSd {
 
-    .Hide {
-        display:none;
+    #texts {
+
+        .Hide {
+            display:none;
+        }
+
+        .Title {
+            font-size: 24px;
+            fill: $display-white;
+        }
     }
 
-    .Title {
-        font-size: 24px;
+    #shapes {
+
+        .GreenLine {
+            stroke: $display-green;
+            stroke-width: 3;
+            fill: none;
+        }
+
+        .WhiteBox, .Separator {
+            stroke: $display-white;
+            stroke-width: 2;
+            fill: none;
+        }
+    }
+
+    .APUGen {
+        fill: $display-green;
+        font-size: $font-size-larger;
+    }
+
+    
+    .APUInfo {
+        fill: $display-green;
+        font-size: $font-size-title;
+    }
+
+
+    .APUGenParamValue {
+        fill: $display-green;
+        font-size: $font-size-xlarge;
+        text-anchor: end;
+    }
+
+    .APUGenParamUnit {
+        fill: $display-cyan;
+        font-size: $font-size-xlarge;
+        text-anchor: start;
+    }
+
+    .APUBleed {
         fill: $display-white;
+        font-size: $font-size-xlarge;
     }
+
 }
