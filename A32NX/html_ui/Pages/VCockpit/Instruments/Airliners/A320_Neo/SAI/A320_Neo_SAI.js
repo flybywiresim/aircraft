@@ -1057,7 +1057,6 @@ customElements.define('a320-neo-sai-attitude-indicator', A320_Neo_SAI_AttitudeIn
 class A320_Neo_SAI_Pressure extends NavSystemElement {
     init(root) {
         this.pressureElement = this.gps.getChildById("Pressure");
-        this.updateThrottler = new UpdateThrottler(500);
     }
     onEnter() {
     }
@@ -1065,10 +1064,6 @@ class A320_Neo_SAI_Pressure extends NavSystemElement {
         return true;
     }
     onUpdate(_deltaTime) {
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime === -1) {
-            return;
-        }
         this.pressureElement.update(_deltaTime);
     }
     onExit() {
