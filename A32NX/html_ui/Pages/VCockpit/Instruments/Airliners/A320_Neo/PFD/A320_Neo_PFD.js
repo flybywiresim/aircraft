@@ -129,8 +129,10 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.groundCursor.style.top = YokeYPosition.toString() + "%";
         }
 
+        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        if (_deltaTime == -1 && !KnobChanged) {
             return;
         }
         this.flashTimer -= _deltaTime / 1000;
@@ -186,8 +188,6 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
         const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
-
-        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
 
         if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";

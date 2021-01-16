@@ -75,11 +75,11 @@ class UpdateThrottler {
      */
     canUpdate(deltaTime) {
         this.currentTime += deltaTime;
-        var number = Math.floor((this.currentTime + this.refreshOffset) / this.intervalMs);
-        var update = number > this.refreshNumber;
+        const number = Math.floor((this.currentTime + this.refreshOffset) / this.intervalMs);
+        const update = number > this.refreshNumber;
         this.refreshNumber = number;
         if (update) {
-            var accumulatedDelta = this.currentTime - this.lastUpdateTime;
+            const accumulatedDelta = this.currentTime - this.lastUpdateTime;
             this.lastUpdateTime = this.currentTime;
             return accumulatedDelta;
         } else {

@@ -174,7 +174,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.updateMap(mapDeltaTime);
         }
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime == -1) {
+        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+        if (_deltaTime == -1 && !KnobChanged) {
             return;
         }
         this.updateNDInfo(_deltaTime);
@@ -231,8 +232,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 
         const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
-
-        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
 
         if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
