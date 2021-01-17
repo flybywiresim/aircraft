@@ -1617,7 +1617,7 @@ var A320_Neo_UpperECAM;
             if (brakesHot) {
                 this.activeTakeoffConfigWarnings.push("brakes_hot");
             }
-            if (flapsHandle !== flapsMcdu) {
+            if (flapsMcdu !== 0 && flapsHandle !== flapsMcdu) {
                 this.activeTakeoffConfigWarnings.push("flaps_disagree");
             }
             if (!(v1Speed <= vrSpeed && vrSpeed <= v2Speed)) {
