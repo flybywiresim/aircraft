@@ -42,6 +42,7 @@ const Row1 = () => (
         <A1A2Cell />
         <B1Cell />
         <C1Cell />
+        <D1D2Cell />
         <BC1Cell />
         <E1Cell />
     </g>
@@ -49,6 +50,8 @@ const Row1 = () => (
 
 const Row2 = () => (
     <g>
+        <B2Cell />
+        <C2Cell />
         <E2Cell />
     </g>
 );
@@ -312,6 +315,55 @@ const B1Cell = () => {
     );
 };
 
+const B2Cell = () => {
+    const armedVerticalMode1 = getSimVar('L:A32NX_ArmedVerticalAPMode1', 'enum');
+    const armedVerticalMode2 = getSimVar('L:A32NX_ArmedVerticalAPMode2', 'enum');
+
+    let text1;
+    let color1 = 'Cyan';
+    switch (armedVerticalMode1) {
+    case 1:
+        text1 = 'ALT';
+        color1 = 'Magenta';
+        break;
+    case 2:
+        text1 = 'ALT';
+        break;
+    case 3:
+        text1 = 'CLB';
+        break;
+    case 4:
+        text1 = 'DES';
+        break;
+    default:
+        text1 = null;
+    }
+
+    let text2;
+    switch (armedVerticalMode2) {
+    case 1:
+        text2 = 'F-G/S';
+        break;
+    case 2:
+        text2 = 'G/S';
+        break;
+    case 3:
+        text2 = 'FINAL';
+        break;
+    default:
+        text2 = null;
+    }
+
+    return (
+        <g>
+            {text1
+                && <text className={`FontMedium MiddleAlign ${color1}`} x="40.520622" y="14.130308">{text1}</text>}
+            {text2
+                && <text className="FontMedium MiddleAlign Cyan" x="55.275803" y="14.143736">{text2}</text>}
+        </g>
+    );
+};
+
 const C1Cell = () => {
     const activeLateralMode = getSimVar('L:A32NX_ActiveLateralAPMode', 'enum');
 
@@ -370,6 +422,35 @@ const C1Cell = () => {
     );
 };
 
+const C2Cell = () => {
+    const armedLateralMode = getSimVar('L:A32NX_ArmedLateralAPMode', 'enum');
+
+    let text;
+    switch (armedLateralMode) {
+    case 1:
+        text = 'LOC B/C';
+        break;
+    case 2:
+        text = 'LOC';
+        break;
+    case 3:
+        text = 'F-LOC';
+        break;
+    case 4:
+        text = 'APP NAV';
+        break;
+    case 5:
+        text = 'NAV';
+        break;
+    default:
+        return null;
+    }
+
+    return (
+        <text className="FontMedium MiddleAlign Cyan" x="84.536842" y="14.130308">{text}</text>
+    );
+};
+
 const BC1Cell = () => {
     const SharedAPMode = getSimVar('L:A32NX_SharedAPMode', 'enum');
 
@@ -397,6 +478,60 @@ const BC1Cell = () => {
                 <path className="NormalStroke White" d="m50.178 1.8143h35.174v6.0476h-35.174z" />
             </ShowForSeconds>
             <text className="FontMedium MiddleAlign Green" x="67.9795" y="6.8893085">{text}</text>
+        </g>
+    );
+};
+
+const D1D2Cell = () => {
+    const approachCapability = getSimVar('L:A32NX_ApproachCapability', 'enum');
+
+    let text1;
+    let text2 = null;
+    switch (approachCapability) {
+    case 1:
+        text1 = 'CAT1';
+        break;
+    case 2:
+        text1 = 'CAT2';
+        break;
+    case 3:
+        text1 = 'CAT3';
+        text2 = 'SINGLE';
+        break;
+    case 4:
+        text1 = 'CAT3';
+        text2 = 'DUAL';
+        break;
+    case 5:
+        text1 = 'AUTO';
+        text2 = 'LAND';
+        break;
+    case 6:
+        text1 = 'F-APP';
+        break;
+    case 7:
+        text1 = 'F-APP';
+        text2 = '+ RAW';
+        break;
+    case 8:
+        text1 = 'RAW';
+        text2 = 'ONLY';
+        break;
+    default:
+        return null;
+    }
+
+    const box = text2 ? <path className="NormalStroke White" d="m104.1 1.8143h27.994v13.506h-27.994z" />
+        : <path className="NormalStroke White" d="m104.1 1.8143h27.994v6.0476h-27.994z" />;
+
+    return (
+        <g>
+            <text className="FontMedium MiddleAlign White" x="118.09216" y="7.0131598">{text1}</text>
+            {text2
+            && <text className="FontMedium MiddleAlign White" x="118.15831" y="14.130308">{text2}</text>}
+            <ShowForSeconds id={approachCapability} timer={9}>
+                {box}
+            </ShowForSeconds>
         </g>
     );
 };
