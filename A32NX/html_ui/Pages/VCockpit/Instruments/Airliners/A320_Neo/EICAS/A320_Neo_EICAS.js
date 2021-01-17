@@ -203,7 +203,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         if ((knobChanged || ACPowerStateChange) && isACPowerAvailable && !this.selfTestTimerStarted) {
             // Powered on
-            const currCount = this.topResumeCountdown;
+            const currCount = this.resumeCountdown;
             this.resumeCountdown = -1; // Reset 10 second cd
 
             // If resumed within 10 sec cd
