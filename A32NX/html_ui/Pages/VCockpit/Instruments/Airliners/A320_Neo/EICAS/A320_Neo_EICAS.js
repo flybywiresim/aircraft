@@ -98,18 +98,14 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.PrevFailPage = -1;
 
         this.topSelfTestDiv = this.querySelector("#TopSelfTest");
-        this.topSelfTestTimer = -1;
-        this.topResumeCountdown = -1;
-        this.topSelfTestTimerStarted = false;
-        this.topSelfTestLastKnobValue = 1;
+        this.resumeCountdown = -1;
+        this.selfTestTimer = -1;
+        this.selfTestTimerStarted = false;
+        this.selfTestLastKnobValue = 1;
 
         this.doorVideoWrapper = this.querySelector("#door-video-wrapper");
 
         this.bottomSelfTestDiv = this.querySelector("#BottomSelfTest");
-        this.bottomSelfTestTimer = -1;
-        this.bottomResumeCountdown = -1;
-        this.bottomSelfTestTimerStarted = false;
-        this.bottomSelfTestLastKnobValue = 1;
 
         this.upperEngTestDiv = this.querySelector("#Eicas1EngTest");
         this.lowerEngTestDiv = this.querySelector("#Eicas2EngTest");
@@ -138,13 +134,21 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93", "FLOAT64", 0.1);
 
         this.ecamAllButtonPrevState = false;
+        this.updateThrottler = new UpdateThrottler(500);
     }
 
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
 
         super.onUpdate(_deltaTime);
 
+        const selfTestCurrentKnobValue = SimVar.GetSimVarValue(this.isTopScreen ? "LIGHT POTENTIOMETER:92" : "LIGHT POTENTIOMETER:93", "number");
+        const knobChanged = (selfTestCurrentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (_deltaTime === -1 && !knobChanged) {
+            return;
+        }
         this.updateDoorVideoState();
 
         this.updateAnnunciations();
@@ -180,100 +184,63 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         updateDisplayDMC("EICAS2", this.lowerEngTestDiv, this.lowerEngMaintDiv);
 
         /**
-         * Self test on top ECAM screen
+         * Self test on ECAM screen
          **/
-
-        const topSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:92", "number");
-
         // If screen is off
-        if (topSelfTestCurrentKnobValue <= 0.0) {
+        if (selfTestCurrentKnobValue <= 0.0) {
             // start 10 sec cd if not init
-            if (this.topResumeCountdown == -1) {
-                this.topResumeCountdown = 10;
+            if (this.resumeCountdown == -1) {
+                this.resumeCountdown = 10;
             // countdown if init
-            } else if (this.topResumeCountdown >= 0) {
+            } else if (this.resumeCountdown >= 0) {
                 if (isACPowerAvailable) {
-                    this.topResumeCountdown -= _deltaTime / 1000;
+                    this.resumeCountdown -= _deltaTime / 1000;
                 } else {
-                    this.topResumeCountdown = -0.5;
+                    this.resumeCountdown = -0.5;
                 }
             }
         }
 
-        if (((topSelfTestCurrentKnobValue >= 0.1 && this.topSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.topSelfTestTimerStarted) {
+        if ((knobChanged || ACPowerStateChange) && isACPowerAvailable && !this.selfTestTimerStarted) {
             // Powered on
-            const topCurrCount = this.topResumeCountdown;
-            this.topResumeCountdown = -1; // Reset 10 second cd
+            const currCount = this.topResumeCountdown;
+            this.resumeCountdown = -1; // Reset 10 second cd
+
             // If resumed within 10 sec cd
-            if (topCurrCount > 0 && isACPowerAvailable) {
-                if (this.topSelfTestTimer <= 0) {
+            if (currCount > 0 && isACPowerAvailable) {
+                if (this.selfTestTimer <= 0) {
+                    if (this.isTopScreen) {
+                        this.topSelfTestDiv.style.visibility = "hidden";
+                    } else {
+                        this.bottomSelfTestDiv.style.visibility = "hidden";
+                    }
+                    this.selfTestTimerStarted = false;
+                }
+            // Normal operation
+            } else {
+                if (this.isTopScreen) {
+                    this.topSelfTestDiv.style.visibility = "visible";
+                } else {
+                    this.bottomSelfTestDiv.style.visibility = "visible";
+                }
+                this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
+                this.selfTestTimerStarted = true;
+            }
+        }
+
+        if (this.selfTestTimer >= 0) {
+            this.selfTestTimer -= _deltaTime / 1000;
+            if (this.selfTestTimer <= 0) {
+                if (this.isTopScreen) {
                     this.topSelfTestDiv.style.visibility = "hidden";
-                    this.topSelfTestTimerStarted = false;
-                }
-            } else {
-                this.topSelfTestDiv.style.visibility = "visible";
-                this.topSelfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
-                this.topSelfTestTimerStarted = true;
-            }
-        }
-
-        if (this.topSelfTestTimer >= 0) {
-            this.topSelfTestTimer -= _deltaTime / 1000;
-            if (this.topSelfTestTimer <= 0) {
-                this.topSelfTestDiv.style.visibility = "hidden";
-                this.topSelfTestTimerStarted = false;
-            }
-        }
-
-        this.topSelfTestLastKnobValue = topSelfTestCurrentKnobValue;
-
-        /**
-         * Self test on bottom ECAM screen
-         **/
-
-        const bottomSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:93", "number");
-
-        // If screen is off
-        if (bottomSelfTestCurrentKnobValue <= 0.0) {
-            // start 10 sec cd if not init
-            if (this.bottomResumeCountdown == -1) {
-                this.bottomResumeCountdown = 10;
-            // countdown if init
-            } else if (this.bottomResumeCountdown >= 0) {
-                if (isACPowerAvailable) {
-                    this.bottomResumeCountdown -= _deltaTime / 1000;
                 } else {
-                    this.bottomResumeCountdown = -0.5;
-                }
-            }
-        }
-
-        if (((bottomSelfTestCurrentKnobValue >= 0.1 && this.bottomSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.bottomSelfTestTimerStarted) {
-            // Powered on
-            const bottomCurrCount = this.bottomResumeCountdown;
-            this.bottomResumeCountdown = -1; // Reset 10 second cd
-            // If resumed within 10 sec cd
-            if (bottomCurrCount > 0 && isACPowerAvailable) {
-                if (this.bottomSelfTestTimer <= 0) {
                     this.bottomSelfTestDiv.style.visibility = "hidden";
-                    this.bottomSelfTestTimerStarted = false;
                 }
-            } else {
-                this.bottomSelfTestDiv.style.visibility = "visible";
-                this.bottomSelfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
-                this.bottomSelfTestTimerStarted = true;
+                this.selfTestTimerStarted = false;
             }
         }
 
-        if (this.bottomSelfTestTimer >= 0) {
-            this.bottomSelfTestTimer -= _deltaTime / 1000;
-            if (this.bottomSelfTestTimer <= 0) {
-                this.bottomSelfTestDiv.style.visibility = "hidden";
-                this.bottomSelfTestTimerStarted = false;
-            }
-        }
-
-        this.bottomSelfTestLastKnobValue = bottomSelfTestCurrentKnobValue;
+        this.selfTestLastKnobValue = selfTestCurrentKnobValue;
 
         this.ACPowerLastState = isACPowerAvailable;
 

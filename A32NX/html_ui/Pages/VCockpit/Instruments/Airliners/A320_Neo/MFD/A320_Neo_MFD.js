@@ -124,6 +124,9 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.IsChronoDisplayed = 0;
 
         this.electricity = this.gps.getChildById("Electricity");
+
+        this.mapUpdateThrottler = new UpdateThrottler(this.screenIndex == 1 ? 100 : 400);
+        this.updateThrottler = new UpdateThrottler(this.screenIndex == 1 ? 300 : 500);
     }
     displayChronoTime() {
         const totalSeconds = this.getTotalChronoSeconds();
@@ -161,7 +164,18 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 
     onUpdate() {
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
-        const _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
+        super.onUpdate(_deltaTime);
+        const mapDeltaTime = this.mapUpdateThrottler.canUpdate(_deltaTime);
+        if (mapDeltaTime != -1) {
+            this.updateMap(mapDeltaTime);
+        }
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+        if (_deltaTime === -1 && !KnobChanged) {
+            return;
+        }
+        this.updateNDInfo(_deltaTime);
         // If screen is off
         if (currentKnobValue <= 0.0) {
             // start 10 sec cd if not init
@@ -179,9 +193,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.selfTestLastKnobValue = currentKnobValue;
             return;
         }
-        super.onUpdate(_deltaTime);
-        this.updateMap(_deltaTime);
-        this.updateNDInfo(_deltaTime);
 
         //TCAS
         this.map.instrument.TCASManager.update(_deltaTime);
@@ -235,8 +246,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 
         const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
-
-        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
 
         if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             // Powered on
@@ -601,10 +610,15 @@ class A320_Neo_MFD_Compass extends NavSystemElement {
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         this.screenIndex = parseInt(url.substring(url.length - 1));
         this.potIndex = this.screenIndex == 1 ? 89 : 91;
+        this.updateThrottler = new UpdateThrottler(this.screenIndex == 1 ? 20 : 100);
     }
     onEnter() {
     }
     onUpdate(_deltaTime) {
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (_deltaTime === -1) {
+            return;
+        }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
         if (currentKnobValue <= 0.0) {
             return;
@@ -806,10 +820,15 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         this.screenIndex = parseInt(url.substring(url.length - 1));
         this.potIndex = this.screenIndex == 1 ? 89 : 91;
+        this.updateThrottler = new UpdateThrottler(this.screenIndex == 1 ? 200 : 400);
     }
     onEnter() {
     }
     onUpdate(_deltaTime) {
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (_deltaTime === -1) {
+            return;
+        }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
         if (currentKnobValue <= 0.0) {
             return;

@@ -58,6 +58,10 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.navStatus,
             this.ils
         ]);
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        const dispIndex = parseInt(url.substring(url.length - 1));
+        this.updateThrottler = new UpdateThrottler(dispIndex == 1 ? 300 : 1000);
+        this.yokePositionThrottler = new UpdateThrottler(dispIndex == 1 ? 33 : 66);
     }
     init() {
         super.init();
@@ -107,7 +111,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.electricity = document.querySelector('#Electricity');
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         // If screen is off
         if (currentKnobValue <= 0.0) {
@@ -128,6 +132,21 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         }
         super.onUpdate(_deltaTime);
         if (!this.hasInitialized) {
+            return;
+        }
+
+        if (this.yokePositionThrottler.canUpdate(_deltaTime) != -1) {
+            const YokeXPosition = 40.45 + (18.4 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
+            const YokeYPosition = 47.95 - (14.45 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
+
+            this.groundCursor.style.left = YokeXPosition.toString() + "%";
+            this.groundCursor.style.top = YokeYPosition.toString() + "%";
+        }
+
+        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (_deltaTime === -1 && !KnobChanged) {
             return;
         }
         this.flashTimer -= _deltaTime / 1000;
@@ -159,13 +178,6 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.groundCursor.style.display = "none";
             this.groundCursorLimits.style.display = "none";
         }
-
-        const YokeXPosition = 40.45 + (18.4 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
-        const YokeYPosition = 47.95 - (14.45 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
-
-        this.groundCursor.style.left = YokeXPosition.toString() + "%";
-        this.groundCursor.style.top = YokeYPosition.toString() + "%";
-
         const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
         const PFDAlignedFirst = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool");
         const PFDAlignedATT = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool");
@@ -190,8 +202,6 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
         const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
-
-        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue <= 0.0);
 
         if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             // Powered on
@@ -258,11 +268,14 @@ class A320_Neo_PFD_VSpeed extends NavSystemElement {
         const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
         this.disp_index = parseInt(url.substring(url.length - 1));
         this.pot_index = this.disp_index == 1 ? 88 : 90;
+        this.updateThrottler = new UpdateThrottler(this.disp_index == 1 ? 50 : 100);
     }
     onEnter() {
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        if (this.updateThrottler.canUpdate(this.getDeltaTime()) === -1) {
+            return;
+        }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         if (currentKnobValue <= 0.0) {
             return;
@@ -294,11 +307,15 @@ class A320_Neo_PFD_Airspeed extends NavSystemElement {
         const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
         this.disp_index = parseInt(url.substring(url.length - 1));
         this.pot_index = this.disp_index == 1 ? 88 : 90;
+        this.updateThrottler = new UpdateThrottler(this.disp_index == 1 ? 50 : 100);
     }
     onEnter() {
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        const _deltaTime = this.updateThrottler.canUpdate(this.getDeltaTime());
+        if (_deltaTime === -1) {
+            return;
+        }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         if (currentKnobValue <= 0.0) {
             return;
@@ -322,11 +339,15 @@ class A320_Neo_PFD_Altimeter extends NavSystemElement {
         const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
         this.disp_index = parseInt(url.substring(url.length - 1));
         this.pot_index = this.disp_index == 1 ? 88 : 90;
+        this.updateThrottler = new UpdateThrottler(this.disp_index == 1 ? 25 : 100);
     }
     onEnter() {
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        const _deltaTime = this.updateThrottler.canUpdate(this.getDeltaTime());
+        if (_deltaTime === -1) {
+            return;
+        }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         if (currentKnobValue <= 0.0) {
             return;
@@ -359,11 +380,15 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
         const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
         this.disp_index = parseInt(url.substring(url.length - 1));
         this.pot_index = this.disp_index == 1 ? 88 : 90;
+        this.updateThrottler = new UpdateThrottler(this.disp_index == 1 ? 50 : 100);
     }
     onEnter() {
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        const _deltaTime = this.updateThrottler.canUpdate(this.getDeltaTime());
+        if (_deltaTime === -1) {
+            return;
+        }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         if (currentKnobValue <= 0.0) {
             return;
@@ -408,11 +433,15 @@ class A320_Neo_PFD_Compass extends NavSystemElement {
         const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
         this.disp_index = parseInt(url.substring(url.length - 1));
         this.pot_index = this.disp_index == 1 ? 88 : 90;
+        this.updateThrottler = new UpdateThrottler(this.disp_index == 1 ? 60 : 200);
     }
     onEnter() {
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        const _deltaTime = this.updateThrottler.canUpdate(this.getDeltaTime());
+        if (_deltaTime === -1) {
+            return;
+        }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         if (currentKnobValue <= 0.0) {
             return;
@@ -439,11 +468,15 @@ class A320_Neo_PFD_NavStatus extends NavSystemElement {
         const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
         this.disp_index = parseInt(url.substring(url.length - 1));
         this.pot_index = this.disp_index == 1 ? 88 : 90;
+        this.updateThrottler = new UpdateThrottler(this.disp_index == 1 ? 200 : 500);
     }
     onEnter() {
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        const _deltaTime = this.updateThrottler.canUpdate(this.getDeltaTime());
+        if (_deltaTime === -1) {
+            return;
+        }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         if (currentKnobValue <= 0.0) {
             return;
@@ -466,11 +499,15 @@ class A320_Neo_PFD_ILS extends NavSystemElement {
         const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
         this.disp_index = parseInt(url.substring(url.length - 1));
         this.pot_index = this.disp_index == 1 ? 88 : 90;
+        this.updateThrottler = new UpdateThrottler(this.disp_index == 1 ? 150 : 300);
     }
     onEnter() {
     }
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        const _deltaTime = this.updateThrottler.canUpdate(this.getDeltaTime());
+        if (_deltaTime === -1) {
+            return;
+        }
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         if (currentKnobValue <= 0.0) {
             return;

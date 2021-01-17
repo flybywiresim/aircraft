@@ -36,8 +36,8 @@
 1. [MCDU] Fixed "V1/VR/V2 DISAGREE" check - @MisterChocker (Leon)
 1. [FLIGHTMODEL] Fixed structural load factor limitations - @donstim (donbikes#4084)
 1. [ECAM] Improved Ecam Memo TO Flaps and TO Config. Allows for Config 3 TO - @MisterChocker (Leon)
-1. [PFD/MFD/ECAM] Fixed POST repeat when displays are switched off for <10 seconds - @2hwk (2Cas#1022)
-
+1. [DISPLAYS] Optimize performance by throttling instrument updates - @XSJoJo (Jorim Jaggi)
+1. [DISPLAYS] Fixed POST repeat when displays are switched off for <10 seconds - @2hwk (2Cas#1022)
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
 1. [CDU] Two tiny fixes for flightphase speeds - @Watsi01 (RogePete)
