@@ -28,7 +28,7 @@ import { ApuPage } from './Pages/Apu.jsx';
 import { CondPage } from './Pages/Cond/Cond.jsx';
 import { DoorPage } from './Pages/Door/Door.jsx';
 import { WheelPage } from './Pages/Wheel.jsx';
-import { FctlPage } from './Pages/Fctl.jsx';
+import { FctlPage } from './Pages/Fctl/Fctl.jsx';
 
 export const PagesContainer = () => {
     const [currentPage, setCurrentPage] = useState(0);

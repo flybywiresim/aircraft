@@ -1,0 +1,45 @@
+@import "../../../Common/definitions.scss";
+
+.GreenShapeThick {
+    fill: transparent;
+    stroke: $display-green;
+    stroke-width: 3;
+}
+
+.MainShape {
+    fill: transparent;
+    stroke: $display-green;
+    stroke-width: 2;
+}
+
+    .MainShapeWarning {
+    fill: transparent;
+    stroke: $display-amber;
+    stroke-width: 2;
+    }
+
+    .MainShape4 {
+    fill: transparent;
+    stroke: $display-green;
+    stroke-width: 4;
+    }
+
+    .GreenShape {
+    fill: transparent;
+    stroke: $display-green;
+    stroke-width: 2;
+    }
+
+
+    .WarningShape {
+    fill: transparent;
+    stroke: $display-amber;
+    stroke-width: 2
+    }
+
+    .HydBgShape {
+    fill: $display-light-grey;
+    stroke: none;
+    }
+
+
