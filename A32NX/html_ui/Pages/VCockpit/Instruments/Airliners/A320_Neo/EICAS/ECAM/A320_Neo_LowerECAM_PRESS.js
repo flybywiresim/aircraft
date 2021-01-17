@@ -1,6 +1,6 @@
 /*
  * A32NX
- * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,6 +98,7 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlPsiDecimal.setAttribute("visibility", "hidden");
             this.htmlPsiInt.setAttribute("visibility", "hidden");
 
+            this.updateThrottler = new UpdateThrottler(200);
         }
 
         //sets the packs to warning color
@@ -210,7 +211,9 @@ var A320_Neo_LowerECAM_PRESS;
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
+            }
             const inletValvePosition = SimVar.GetSimVarValue("L:VENT_INLET_VALVE", "Percent");
             const outletValvePosition = SimVar.GetSimVarValue("L:VENT_OUTLET_VALVE", "Percent");
             const safetyValvePosition = (SimVar.GetSimVarValue("L:SAFETY_VALVE_1", "Bool") || SimVar.GetSimVarValue("L:SAFETY_VALVE_2", "Bool"));

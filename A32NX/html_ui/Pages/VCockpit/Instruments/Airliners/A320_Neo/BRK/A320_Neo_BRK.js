@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 var A320_Neo_BRK_Definitions;
 (function (A320_Neo_BRK_Definitions) {
     class Common {
@@ -67,9 +85,13 @@ var A320_Neo_BRK;
             this.rightGauge.addMarker(2.5, true);
             this.rightGauge.addMarker(3, false);
             this.electricity = this.querySelector("#Electricity");
+            this.updateThrottler = new UpdateThrottler(100);
         }
         onUpdate(_deltaTime) {
             super.onUpdate(_deltaTime);
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
+            }
             const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
             const powerAvailable = SimVar.GetSimVarValue("L:DCPowerAvailable","Bool");
             if (this.topGauge != null) {

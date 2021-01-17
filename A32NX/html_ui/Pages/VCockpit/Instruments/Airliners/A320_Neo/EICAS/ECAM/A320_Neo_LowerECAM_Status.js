@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 var A320_Neo_LowerECAM_Status;
 (function (A320_Neo_LowerECAM_Status) {
     class Definitions {
@@ -25,7 +43,6 @@ var A320_Neo_LowerECAM_Status;
 
         constructor() {
             super();
-            this.frameCount = 0;
             this.isInitialised = false;
             this.statusMessages = {
                 failures: [
@@ -352,19 +369,20 @@ var A320_Neo_LowerECAM_Status;
             this.inopSysTitle = this.querySelector("#inop-sys-title");
             this.statusMessageArea.init();
             this.inopSystemsMessageArea.init();
+            this.updateThrottler = new UpdateThrottler(500);
             this.isInitialised = true;
         }
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-            this.frameCount++;
-            if (this.frameCount % 8 == 0) {
-                this.statusMessageArea.update();
-                this.inopSystemsMessageArea.update();
-                this.statusNormal.setAttribute("visibility", (this.statusMessageArea.hasActiveFailures || this.inopSystemsMessageArea.hasActiveMessages) ? "hidden" : "visible");
-                this.inopSysTitle.setAttribute("visibility", (this.statusMessageArea.hasActiveFailures || this.inopSystemsMessageArea.hasActiveMessages) ? "visible" : "hidden");
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
             }
+            this.statusMessageArea.update();
+            this.inopSystemsMessageArea.update();
+            this.statusNormal.setAttribute("visibility", (this.statusMessageArea.hasActiveFailures || this.inopSystemsMessageArea.hasActiveMessages) ? "hidden" : "visible");
+            this.inopSysTitle.setAttribute("visibility", (this.statusMessageArea.hasActiveFailures || this.inopSystemsMessageArea.hasActiveMessages) ? "visible" : "hidden");
         }
     }
     A320_Neo_LowerECAM_Status.Page = Page;

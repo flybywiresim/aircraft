@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class A320_Neo_Clock extends BaseAirliners {
     constructor() {
         super();
@@ -10,6 +28,7 @@ class A320_Neo_Clock extends BaseAirliners {
         this.lastFlightTime = null;
         this.lastLocalTime = 0;
         this.lastResetVal = null;
+        this.updateThrottler = new UpdateThrottler(200);
     }
     get templateID() {
         return "A320_Neo_Clock";
@@ -28,7 +47,9 @@ class A320_Neo_Clock extends BaseAirliners {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
-
+        if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+            return;
+        }
         const absTime = SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds");
         const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
         const lightsTestChanged = lightsTest !== this.lightsTest;

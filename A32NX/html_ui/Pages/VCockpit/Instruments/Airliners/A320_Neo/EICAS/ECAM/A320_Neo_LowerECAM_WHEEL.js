@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /**
  * Minimum temperature at which the brake indicator turns amber
  */
@@ -180,6 +198,8 @@ var A320_Neo_LowerECAM_WHEEL;
                 }
             };
 
+            this.updateThrottler = new UpdateThrottler(75);
+
             this.isInitialised = true;
 
             /**
@@ -243,7 +263,10 @@ var A320_Neo_LowerECAM_WHEEL;
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-
+            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+            if (_deltaTime === -1) {
+                return;
+            }
             this.updateHydraulicsAvailable(_deltaTime);
 
             this.updateBrakeTemp(_deltaTime);

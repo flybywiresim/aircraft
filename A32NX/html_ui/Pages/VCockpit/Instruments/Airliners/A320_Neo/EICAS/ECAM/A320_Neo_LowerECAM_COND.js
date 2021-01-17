@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 var A320_Neo_LowerECAM_COND;
 (function (A320_Neo_LowerECAM_COND) {
     class Definitions {
@@ -45,13 +63,17 @@ var A320_Neo_LowerECAM_COND;
             this.fanWarningIndication[1].setAttribute("visibility", "hidden");
 
             this.querySelector("#AltnMode").setAttribute("visibility", "hidden");
+
+            this.updateThrottler = new UpdateThrottler(500);
         }
 
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
+            }
             // Disaply trim valve position for each zone
             const gaugeOffset = -50; //Gauges range is from -50 degree to +50 degree, AC-selector value is 0-100 - added an offset for this
 

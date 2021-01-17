@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 var A320_Neo_LowerECAM_Fuel;
 (function (A320_Neo_LowerECAM_Fuel) {
     class JetFuelToggleElement {
@@ -79,10 +97,26 @@ var A320_Neo_LowerECAM_Fuel;
             this.middlePump2_On = this.querySelector("#middlePump2_On");
             this.middlePump1_Off = this.querySelector("#middlePump1_Off");
             this.middlePump2_Off = this.querySelector("#middlePump2_Off");
+            if (this.conversionWeight === 1) {
+                this.FOBUnit.textContent = "KG";
+                this.fuelFlowUnit.textContent = "KG/MIN";
+                this.middleFuelUnit.textContent = "KG";
+            } else {
+                this.FOBUnit.textContent = "LBS";
+                this.fuelFlowUnit.textContent = "LBS/MIN";
+                this.middleFuelUnit.textContent = "LBS";
+            }
+            this.updateThrottler = new UpdateThrottler(500);
             this.isInitialised = true;
         }
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
+                return;
+            }
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
+            }
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
                 return;
             }
             const factor = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
@@ -94,6 +128,7 @@ var A320_Neo_LowerECAM_Fuel;
             this.updateQuantity(this.rightOuterTankValue, "FUEL TANK RIGHT AUX QUANTITY", factor);
             this.updateFuelFlow(factor);
             this.updateFuelConsumption(factor);
+
             for (let i = 0; i < this.allToggleElements.length; ++i) {
                 if (this.allToggleElements[i] != null) {
                     this.allToggleElements[i].refresh();

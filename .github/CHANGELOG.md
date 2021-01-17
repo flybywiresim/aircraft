@@ -4,6 +4,42 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.6.0
+1. [CDU] Added WIND page - @tyler58546 (tyler58546)
+1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
+1. [SOUND] Added new vent test and ext pwr relay random sounds - @hotshotp (Boris#9134)
+1. [SOUND] Seatbelt sign now has a delay - @hotshotp (Boris#9134)
+1. [PFD] Added auto brake status to FMA - @MisterChocker (Leon)
+1. [UTILS] Added Vfe and Vfen table - @MisterChocker (Leon)
+1. [PFD] Fixed wrong Vfe and Vfen indication - @MisterChocker (Leon)
+1. [SOUND] Reworked interior and exterior apu sound - @hotshotp (Boris#9134)
+1. [SOUND] Added new MCDU button sounds - @hotshotp (Boris#9134)
+1. [GENERAL] Added TRK/FPA mode including FPV/FPD on PFD - @theomessin (Theodore Messinezis)
+1. [ECAM] Added missing unit conversion to cruise and engine page - @MisterChocker (Leon)
+1. [MCDU] Horizontal slew arrows now appear in the correct location - @tyler58546 (tyler58546)
+1. [MCDU] Vertical slew arrows have been added on pages that can be scrolled - @tyler58546 (tyler58546)
+1. [MCDU] The "F-PLN" title has been removed from the flight plan page - @tyler58546 (tyler58546)
+1. [MCDU] The flight plan page now shows the flight number in the top left corner - @tyler58546 (tyler58546)
+1. [MCDU] The flight plan page now shows "TMPY" in the top line when displaying the temporary flight plan - @tyler58546 (tyler58546)
+1. [MCDU] The "FROM" indicator on the flight plan page is now in the top line - @tyler58546 (tyler58546)
+1. [UTILS] Added speed conversions and fixed Mmo - @MisterChocker (Leon)
+1. [MISC] Fixed cockpit door button states - @ImenesFBW (Imenes)
+1. [TEXTURE] Various UV/texture fixes - @tyler58546 (tyler58546)
+1. [CHECKLISTS] Removed various outdated INOPs from the checklist - @Venorcis (Venorcis)
+1. [MCDU] Improved scratchpad handling on - @MisterChocker (Leon)
+1. [ADIRS] Added "ON BAT" light to ADIRS panel - @tyler58546 (tyler58546)
+1. [MCDU] Fixed INIT-A CRZ Temp insert - @MisterChocker (Leon)
+1. [MCDU] Fixed APPR/GO AROUND page order - @beheh (Benedict Etzel)
+1. [CDU] Fixed APPR/GO AROUND page order - @beheh (Benedict Etzel)
+1. [OPTIONS] Changed unit option changes only effective after aircraft reload - @MisterChocker (Leon)
+1. [ECAM] Fixed engineering mode overlay displaying on upper ECAM in some cases - @davidwalschots (David Walschots)
+1. [MCDU] Fixed "V1/VR/V2 DISAGREE" check - @MisterChocker (Leon)
+1. [FLIGHTMODEL] Fixed structural load factor limitations - @donstim (donbikes#4084)
+1. [ECAM] Improved Ecam Memo TO Flaps and TO Config. Allows for Config 3 TO - @MisterChocker (Leon)
+
+## 0.5.3
+1. [DISPLAYS] Optimize performance by throttling instrument updates - @XSJoJo (Jorim Jaggi)
+
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
 1. [CDU] Two tiny fixes for flightphase speeds - @Watsi01 (RogePete)
