@@ -36,6 +36,7 @@
 1. [MCDU] Fixed "V1/VR/V2 DISAGREE" check - @MisterChocker (Leon)
 1. [FLIGHTMODEL] Fixed structural load factor limitations - @donstim (donbikes#4084)
 1. [ECAM] Improved Ecam Memo TO Flaps and TO Config. Allows for Config 3 TO - @MisterChocker (Leon)
+1. [DISPLAYS] Optimize performance by throttling instrument updates - @XSJoJo (Jorim Jaggi)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
