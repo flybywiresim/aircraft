@@ -955,7 +955,7 @@ var A320_Neo_UpperECAM;
                                 id: "to_flaps_disagree",
                                 message: "FLAP/MCDU DISAGREE",
                                 level: 2,
-                                flightPhasesInhib: [5, 6, 7, 8], // TODO
+                                flightPhasesInhib: [1, 4, 5, 6, 7, 8, 9, 10],
                                 isActive: () => this.activeTakeoffConfigWarnings.includes("flaps_disagree") ||
                                     ((this.fwcFlightPhase === 2 && this.getCachedSimVar("L:A32NX_TO_CONFIG_NORMAL", "Bool") || this.fwcFlightPhase === 3) && this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") !== this.getCachedSimVar("L:A32NX_TO_CONFIG_FLAPS", "number"))
                             }
