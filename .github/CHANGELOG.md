@@ -36,6 +36,7 @@
 1. [MCDU] Fixed "V1/VR/V2 DISAGREE" check - @MisterChocker (Leon)
 1. [FLIGHTMODEL] Fixed structural load factor limitations - @donstim (donbikes#4084)
 1. [ECAM] Improved Ecam Memo TO Flaps and TO Config. Allows for Config 3 TO - @MisterChocker (Leon)
+1. [DISPLAYS] Optimize performance by throttling instrument updates - @XSJoJo (Jorim Jaggi)
 1. [ECAM] Added F/CTL FLAP/MCDU DISAGREE check - @MisterChocker (Leon)
 
 ## 0.5.2
