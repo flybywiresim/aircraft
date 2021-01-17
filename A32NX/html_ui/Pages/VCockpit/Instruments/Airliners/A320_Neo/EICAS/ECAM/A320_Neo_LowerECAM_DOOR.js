@@ -40,13 +40,17 @@ var A320_Neo_LowerECAM_DOOR;
             // Oxy text
             this.oxytext = this.querySelector("#oxy");
 
+            this.updateThrottler = new UpdateThrottler(500);
+
             this.isInitialised = true;
         }
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
+            }
             // Get door statuses
             const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
             const cateringDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:3", "percent");

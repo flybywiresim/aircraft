@@ -67,9 +67,13 @@ var A320_Neo_BRK;
             this.rightGauge.addMarker(2.5, true);
             this.rightGauge.addMarker(3, false);
             this.electricity = this.querySelector("#Electricity");
+            this.updateThrottler = new UpdateThrottler(100);
         }
         onUpdate(_deltaTime) {
             super.onUpdate(_deltaTime);
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
+            }
             const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
             const powerAvailable = SimVar.GetSimVarValue("L:DCPowerAvailable","Bool");
             if (this.topGauge != null) {
