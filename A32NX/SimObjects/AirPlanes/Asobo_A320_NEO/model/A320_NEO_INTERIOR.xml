@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
   ~ A32NX
-  ~ Copyright (C) 2020 FlyByWire Simulations and its contributors
+  ~ Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
   ~
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
@@ -34,6 +34,22 @@
         <Include ModelBehaviorFile="A32NX\A32NX_Interior_Generics.xml"/>
         <Include ModelBehaviorFile="Asobo\Common.xml"/>
         <Include ModelBehaviorFile="Asobo\Airliner\GlassCockpit.xml"/>
+
+        <!-- EFB -->
+
+        <Component ID="EFB_L" Node="SCREEN_EFB">
+            <DefaultTemplateParameters>
+                <NODE_ID>SCREEN_EFB</NODE_ID>
+            </DefaultTemplateParameters>
+
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <EMISSIVE_CODE>0.8</EMISSIVE_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
+                <LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
 
         <!-- MCDU -->
 
