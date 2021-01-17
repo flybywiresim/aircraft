@@ -1396,6 +1396,8 @@ var A320_Neo_UpperECAM;
             if (this.infoPanelsManager != null) {
                 this.infoPanelsManager.init(this.infoBottomLeftPanel, this.infoBottomRightPanel);
             }
+            this.updateThrottler = new UpdateThrottler(150);
+            this.engUpdateThrottler = new UpdateThrottler(50);
             this.isInitialised = true;
         }
         update(_deltaTime) {
@@ -1403,9 +1405,16 @@ var A320_Neo_UpperECAM;
                 return;
             }
 
+            const newDeltaTime = this.updateThrottler.canUpdate(_deltaTime);
+            const deltaTimeEng = this.engUpdateThrottler.canUpdate(_deltaTime);
+
             for (let i = 0; i < this.allPanels.length; ++i) {
                 if (this.allPanels[i] != null) {
-                    this.allPanels[i].update(_deltaTime);
+                    const isEng = this.allPanels[i] instanceof A320_Neo_UpperECAM.EnginePanel;
+                    const panelDeltaTime = isEng ? deltaTimeEng : newDeltaTime;
+                    if (panelDeltaTime != -1) {
+                        this.allPanels[i].update(panelDeltaTime);
+                    }
                 }
             }
 
@@ -1413,6 +1422,11 @@ var A320_Neo_UpperECAM;
             if (this.frameCount % 16 == 0) {
                 this.simVarCache = {};
             }
+
+            if (newDeltaTime == -1) {
+                return;
+            }
+            _deltaTime = newDeltaTime;
 
             // Packs indicator
             this.packsText = this.querySelector("#packsIndicator");
