@@ -423,7 +423,7 @@ var A320_Neo_UpperECAM;
                                         message: "APU",
                                         action: "START",
                                         isCompleted: () => {
-                                            return this.getCachedSimVar("L:A32NX_APU_N", "Percent") > 95;
+                                            return this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool") === 1;
                                         }
                                     },
                                     {
@@ -1453,7 +1453,7 @@ var A320_Neo_UpperECAM;
                 const eng1active = this.getCachedSimVar("ENG COMBUSTION:1", "Bool");
                 const eng2active = this.getCachedSimVar("ENG COMBUSTION:2", "Bool");
                 const xBleedPos = this.getCachedSimVar("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
-                const engBleedAndPackActive = xBleedPos === 2 || (xBleedPos === 1 && this.getCachedSimVar("L:A32NX_APU_N", "Percent") >= 95 && this.getCachedSimVar("BLEED AIR APU", "Bool")) ?
+                const engBleedAndPackActive = xBleedPos === 2 || (xBleedPos === 1 && this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool") === 1 && this.getCachedSimVar("BLEED AIR APU", "Bool")) ?
                     (this.getCachedSimVar("BLEED AIR ENGINE:1", "Bool") || this.getCachedSimVar("BLEED AIR ENGINE:2", "Bool"))
                     && ((this.getCachedSimVar("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && eng1active) || (this.getCachedSimVar("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && eng2active))
                     :
