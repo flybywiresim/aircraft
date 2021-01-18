@@ -207,7 +207,7 @@ var A320_Neo_LowerECAM_PRESS;
             return indicatorRot;
         }
 
-        update() {
+        update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
