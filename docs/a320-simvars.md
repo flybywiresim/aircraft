@@ -381,6 +381,10 @@
     - Volts
     - The electric potential made available by the APU generator
 
+- A32NX_APU_GEN_VOLTAGE_NORMAL:
+    - Bool
+    - Indicates if the APU generator potential is within the normal range
+
 - A32NX_APU_GEN_AMPERAGE:
     - Amperes
     - The electric current made available by the APU generator
@@ -388,6 +392,10 @@
 - A32NX_APU_GEN_FREQ
     - Hertz
     - The alternating current frequency of the electric current made available by the APU generator
+
+- A32NX_APU_GEN_FREQ_NORMAL
+    - Bool
+    - Indicates if the APU generator output frequency is within the normal range
 
 - A32NX_APU_START_CONTACTOR_ENERGIZED
     - Bool

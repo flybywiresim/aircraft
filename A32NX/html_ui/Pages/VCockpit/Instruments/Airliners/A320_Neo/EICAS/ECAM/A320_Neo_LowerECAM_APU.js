@@ -73,23 +73,23 @@ var A320_Neo_LowerECAM_APU;
             if (showApuData) {
                 const load = Math.round(SimVar.GetSimVarValue("L:APU_LOAD_PERCENT","percent"));
                 this.APUGenLoad.textContent = load;
-                const loadWithinAcceptableRange = load <= 100;
-                this.APUGenLoad.classList.toggle("APUGenParamValue", loadWithinAcceptableRange);
-                this.APUGenLoad.classList.toggle("APUGenParamValueWarn", !loadWithinAcceptableRange);
+                const loadWithinNormalRange = load <= 100;
+                this.APUGenLoad.classList.toggle("APUGenParamValue", loadWithinNormalRange);
+                this.APUGenLoad.classList.toggle("APUGenParamValueWarn", !loadWithinNormalRange);
 
                 const volts = SimVar.GetSimVarValue("L:A32NX_APU_GEN_VOLTAGE","Volts");
                 this.APUVolts.textContent = volts;
-                const voltsWithinAcceptableRange = 110 <= volts && volts <= 120;
-                this.APUVolts.classList.toggle("APUGenParamValue", voltsWithinAcceptableRange);
-                this.APUVolts.classList.toggle("APUGenParamValueWarn", !voltsWithinAcceptableRange);
+                const voltsWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_VOLTAGE_NORMAL", "Bool");
+                this.APUVolts.classList.toggle("APUGenParamValue", voltsWithinNormalRange);
+                this.APUVolts.classList.toggle("APUGenParamValueWarn", !voltsWithinNormalRange);
 
                 const hertz = SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ","Hertz");
                 this.APUFrequency.textContent = Math.round(hertz);
-                const hertzWithinAcceptableRange = 390 <= hertz && hertz <= 410;
-                this.APUFrequency.classList.toggle("APUGenParamValue", hertzWithinAcceptableRange);
-                this.APUFrequency.classList.toggle("APUGenParamValueWarn", !hertzWithinAcceptableRange);
+                const hertzWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ_NORMAL", "Bool");
+                this.APUFrequency.classList.toggle("APUGenParamValue", hertzWithinNormalRange);
+                this.APUFrequency.classList.toggle("APUGenParamValueWarn", !hertzWithinNormalRange);
 
-                allParametersWithinAcceptableRange = loadWithinAcceptableRange && voltsWithinAcceptableRange && hertzWithinAcceptableRange;
+                allParametersWithinAcceptableRange = loadWithinNormalRange && voltsWithinNormalRange && hertzWithinNormalRange;
             }
 
             this.APUGenTitle.classList.toggle("APUGenTitle", showApuData && allParametersWithinAcceptableRange);
