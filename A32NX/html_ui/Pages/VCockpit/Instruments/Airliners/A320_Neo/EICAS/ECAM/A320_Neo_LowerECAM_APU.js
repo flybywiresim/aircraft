@@ -14,10 +14,6 @@ var A320_Neo_LowerECAM_APU;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
-            // Last state tracking inits to -1 since we don't know what the state is.
-            // The first update sets it correctly for us.
-            this.lastAPUBleedState = -1;
-
             this.APUGenInfo = this.querySelector("#APUGenInfo_On");
             this.APUGenAvailArrow = this.querySelector("#APUGenAvailArrow");
             this.APUGenLoad = this.querySelector("#APUGenLoad");
@@ -54,19 +50,9 @@ var A320_Neo_LowerECAM_APU;
             // *******************************************************************************************************
 
             // Bleed
-            const currentAPUBleedState = SimVar.GetSimVarValue("BLEED AIR APU","Bool");
-
-            if (currentAPUBleedState !== this.lastAPUBleedState) {
-                this.lastAPUBleedState = currentAPUBleedState;
-
-                if (currentAPUBleedState === 1) {
-                    this.APUBleedOn.setAttribute("visibility", "visible");
-                    this.APUBleedOff.setAttribute("visibility", "hidden");
-                } else {
-                    this.APUBleedOn.setAttribute("visibility", "hidden");
-                    this.APUBleedOff.setAttribute("visibility", "visible");
-                }
-            }
+            const apuBleedAirValveOpen = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool");
+            toggleVisibility(this.APUBleedOn, apuBleedAirValveOpen);
+            toggleVisibility(this.APUBleedOff, !apuBleedAirValveOpen);
 
             const showApuData = shouldShowApuData();
             let allParametersWithinAcceptableRange = false;

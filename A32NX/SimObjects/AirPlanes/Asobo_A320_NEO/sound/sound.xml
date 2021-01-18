@@ -211,7 +211,7 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="packscockpit" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="2" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="packscockpit" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="2" LocalVar="A32NX_APU_BLEED_AIR_VALVE_OPEN" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <Requires LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
                 <Range LowerBound="95" />
@@ -221,7 +221,7 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="packscabin" FadeOutType="2" FadeOutTime="2" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="packscabin" FadeOutType="2" FadeOutTime="2" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_BLEED_AIR_VALVE_OPEN" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <Requires LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
                 <Range LowerBound="95" />
@@ -231,7 +231,7 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="pack1ext" NodeName="REACTOR_LEFT" FadeOutType="2" FadeOutTime="2" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="pack1ext" NodeName="REACTOR_LEFT" FadeOutType="2" FadeOutTime="2" LocalVar="A32NX_APU_BLEED_AIR_VALVE_OPEN" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <Requires LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
                 <Range LowerBound="95" />
@@ -241,7 +241,7 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="pack2ext" NodeName="REACTOR_RIGHT" FadeOutType="2" FadeOutTime="2" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="pack2ext" NodeName="REACTOR_RIGHT" FadeOutType="2" FadeOutTime="2" LocalVar="A32NX_APU_BLEED_AIR_VALVE_OPEN" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <Requires LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
                 <Range LowerBound="95" />

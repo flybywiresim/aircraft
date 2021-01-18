@@ -400,3 +400,7 @@
 - A32NX_APU_START_CONTACTOR_ENERGIZED
     - Bool
     - Indicates if the APU START contactor is energized
+
+- A32NX_APU_BLEED_AIR_VALVE_OPEN
+    - Bool
+    - Indicates if the APU bleed air valve is open
