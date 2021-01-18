@@ -51,12 +51,17 @@ export const AttitudeIndicatorFixedCenter = ({ isOnGround, FDActive }) => {
 
     return (
         <g id="AttitudeSymbolsGroup">
-            <path className="Yellow Fill" d="m106.58 81.679v-1.7135h8.9654v1.7135z" />
+            <path className="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
             <SidestickIndicator isOnGround={isOnGround} />
             <path className="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
             <path id="GroundYawSymbol" style={{ display: 'none' }} className="NormalStroke Green" d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z" />
             <FlightDirector FDActive={FDActive} FDPitch={FDPitchOffset} FDRoll={FDRollOffset} />
+            <path className="NormalOutline" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
             <path className="NormalStroke Yellow" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
+            <g className="NormalOutline">
+                <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
+                <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
+            </g>
             <g id="FixedAircraftReference" className="NormalStroke Yellow BlackFill">
                 <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
                 <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
@@ -71,12 +76,16 @@ const FlightDirector = ({ FDActive, FDRoll, FDPitch }) => {
         return null;
     }
 
-    return (
+    return ([
+        <g className="ThickOutline">
+            <path transform={`translate(${FDRoll} 0)`} d="m68.854 61.672v38.302" />
+            <path transform={`translate(0 ${FDPitch})`} d="m49.263 80.823h39.287" />
+        </g>,
         <g className="ThickStroke Green">
             <path id="FlightDirectorRoll" transform={`translate(${FDRoll} 0)`} d="m68.854 61.672v38.302" />
             <path id="FlightDirectorPitch" transform={`translate(0 ${FDPitch})`} d="m49.263 80.823h39.287" />
-        </g>
-    );
+        </g>,
+    ]);
 };
 
 const SidestickIndicator = ({ isOnGround }) => {

@@ -34,9 +34,10 @@ const V1BugElement = (offset) => (
 const VRBugElement = (offset) => (
     <path id="RotateSpeedMarker" className="NormalStroke Cyan" transform={`translate(0 ${offset})`} d="m21.549 80.82a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />);
 
-const GreenDotBugElement = (offset) => (
-    <path id="GreenDotSpeedMarker" transform={`translate(0 ${offset})`} className="ThickStroke Green" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />
-);
+const GreenDotBugElement = (offset) => ([
+    <path transform={`translate(0 ${offset})`} className="ThickOutline" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />,
+    <path id="GreenDotSpeedMarker" transform={`translate(0 ${offset})`} className="ThickStroke Green" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />,
+]);
 
 const FlapRetractBugElement = (offset) => (
     <g id="FlapsSlatsBug" transform={`translate(0 ${offset})`}>
@@ -65,6 +66,7 @@ const VMaxBar = (offset) => (
 
 const VProtBug = (offset) => (
     <g id="SpeedProtGroup" transform={`translate(0 ${offset})`}>
+        <path className="NormalOutline" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
         <path id="SpeedProt" className="NormalStroke Green" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
         <path id="SpeedProtLost" style={{ display: 'none' }} className="NormalStroke Amber" d="m14.615 79.915 1.7808 1.7818m-1.7808 0 1.7808-1.7818" />
     </g>
@@ -191,8 +193,8 @@ export const AirspeedIndicatorOfftape = ({
             <path id="SpeedTapeOutlineUpper" className="NormalStroke White" d="m1.9058 38.086h21.859" />
             <path id="SpeedTapeOutlineLower" className="NormalStroke White" d="m1.9058 123.56h21.859" />
             <SpeedTarget airspeed={clampedSpeed} targetSpeed={clampedTargetSpeed} isManaged={speedIsManaged} />
-            <path className="Fill Yellow" d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z" />
-            <path className="Fill Yellow" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
+            <path className="Fill Yellow SmallOutline" d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z" />
+            <path className="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
             <MachNumber mach={mach} airspeedAcc={airspeedAcc} />
         </g>
     );

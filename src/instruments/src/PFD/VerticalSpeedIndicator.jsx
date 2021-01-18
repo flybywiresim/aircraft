@@ -64,7 +64,7 @@ export const VerticalSpeedIndicator = ({ radioAlt }) => {
                     <text x="148.06529" y="45.356102">2</text>
                     <text x="148.11371" y="35.195072">6</text>
                 </g>
-                <path className="Fill Yellow" d="m145.8 81.679v-1.7135h6.0441v1.7135z" />
+                <path className="Fill Yellow" d="m145.79 80.067h6.0476v1.5119h-6.0476z" />
                 <VSpeedNeedle isAmber={isAmber} yOffset={yOffset} />
                 <VSpeedText yOffset={yOffset} isAmber={isAmber} VSpeed={verticalSpeed} />
             </g>
@@ -76,7 +76,10 @@ const VSpeedNeedle = ({ yOffset, isAmber }) => {
     const className = `HugeStroke ${isAmber ? 'Amber' : 'Green'}`;
 
     return (
-        <path className={className} id="VSpeedIndicator" d={`m162.74 80.822 l -12 ${yOffset}`} />
+        [
+            <path className="HugeOutline" d={`m162.74 80.822 l -12 ${yOffset}`} />,
+            <path className={className} id="VSpeedIndicator" d={`m162.74 80.822 l -12 ${yOffset}`} />,
+        ]
     );
 };
 

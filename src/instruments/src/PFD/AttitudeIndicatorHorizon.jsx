@@ -90,6 +90,7 @@ export const Horizon = ({
 
                 <path id="TailstrikeWarning" d="m72.682 50.223h2.9368l-6.7128 8-6.7128-8h2.9368l3.7759 4.5z" className="NormalStroke Amber" />
 
+                <path d="m23.906 80.823h90h0" className="NormalOutline" />
                 <path d="m23.906 80.823h90h0" className="NormalStroke White" />
 
                 <g className="FontSmall White Fill EndAlign">
@@ -115,7 +116,8 @@ export const Horizon = ({
                     <text x="101.38947" y="170.80959">80</text>
                 </g>
             </g>
-            <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalStroke White SkyFill" />
+            <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalOutline SkyFill" />
+            <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalStroke White" />
             <SideslipIndicator isOnGround={isOnGround} roll={roll} />
             <RisingGround radioAlt={radioAlt} pitch={pitch} />
             {headingAvail
@@ -183,5 +185,8 @@ const RisingGround = ({ radioAlt, pitch }) => {
 
     const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch - targetPitch) - 31.563, 0), -63.093);
 
-    return <path id="HorizonGroundRectangle" d="m113.95 157.74h-90.08v-45.357h90.08z" transform={`translate(0 ${targetOffset})`} className="NormalStroke White EarthFill" />;
+    return [
+        <path d="m113.95 157.74h-90.08v-45.357h90.08z" transform={`translate(0 ${targetOffset})`} className="NormalOutline EarthFill" />,
+        <path id="HorizonGroundRectangle" d="m113.95 157.74h-90.08v-45.357h90.08z" transform={`translate(0 ${targetOffset})`} className="NormalStroke White" />,
+    ];
 };

@@ -17,7 +17,7 @@ const GraduationElement = (alt, offset) => {
     return (
         <g transform={`translate(0 ${offset})`}>
             {isText
-            && <path className="NormalStroke White" d="m115.71 79.686 1.41 1.1418-1.41 1.1418" />}
+            && <path className="NormalStroke White" d="m115.79 81.889 1.3316-1.0783-1.3316-1.0783" />}
             <path className="NormalStroke White" d="m130.85 80.819h-2.0147" />
             <text className="FontMedium MiddleAlign White" x="122.98842" y="82.939713">{text}</text>
         </g>
@@ -48,7 +48,7 @@ const RadioAltIndicator = ({ radioAlt }) => {
     const offset = (radioAlt - DisplayRange) * DistanceSpacing / ValueSpacing;
 
     return (
-        <path id="AltTapeGroundReference" className="Fill Red" d={`m130.85 123.56h2.8709v${offset}h-2.8709z`} />
+        <path id="AltTapeGroundReference" className="Fill Red" d={`m131.15 123.56h2.8709v${offset}h-2.8709z`} />
     );
 };
 

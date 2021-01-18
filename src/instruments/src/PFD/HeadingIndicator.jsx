@@ -9,13 +9,16 @@ const GraduationElement = (heading, offset) => {
     let text = '';
     let classText = '';
     let tickLength = 3.8302;
+    let textYPos;
 
     const roundedHeading = Math.round(heading);
     if (roundedHeading % 10 === 0) {
         if (roundedHeading % 30 === 0) {
             classText = 'FontMedium';
+            textYPos = 154.64206;
         } else {
             classText = 'FontSmallest';
+            textYPos = 154.27985;
         }
         let textVal = Math.round(heading / 10) % 36;
         if (textVal < 0) {
@@ -29,18 +32,20 @@ const GraduationElement = (heading, offset) => {
     return (
         <g id="HeadingTick" transform={`translate(${offset} 0)`}>
             <path className="NormalStroke White" d={`m68.913 145.34v${tickLength}`} />
-            <text id="HeadingLabel" className={`White MiddleAlign ${classText}`} x="68.879425" y="154.64206">{text}</text>
+            <text id="HeadingLabel" className={`White MiddleAlign ${classText}`} x="68.879425" y={textYPos}>{text}</text>
         </g>
     );
 };
 
-const GroundTrackBug = (offset) => (
-    <path id="ActualTrackIndicator" className="NormalStroke Green" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
-);
+const GroundTrackBug = (offset) => ([
+    <path className="ThickOutline" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />,
+    <path id="ActualTrackIndicator" className="ThickStroke Green" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />,
+]);
 
-const QFUBug = (offset) => (
-    <path id="ILSCoursePointer" className="NormalStroke Magenta" transform={`translate(${offset} 0)`} d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />
-);
+const QFUBug = (offset) => ([
+    <path id="ILSCoursePointer" className="ThickOutline" transform={`translate(${offset} 0)`} d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />,
+    <path id="ILSCoursePointer" className="ThickStroke Magenta" transform={`translate(${offset} 0)`} d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />,
+]);
 
 export const HeadingTape = ({
     heading, groundTrack, ILSCourse,
@@ -80,7 +85,7 @@ export const HeadingOfftape = ({ selectedHeading, heading, ILSCourse }) => {
         <g id="HeadingOfftapeGroup">
             <path id="HeadingTapeOutline" className="NormalStroke White" d="m32.138 156.23v-10.886h73.536v10.886" />
             <SelectedHeading heading={heading} selectedHeading={selectedHeading} />
-            <path className="Fill Yellow" d="m68.201 147.31v-8.0635h1.4103v8.0635z" />
+            <path className="Fill Yellow" d="m69.61 147.31h-1.5119v-8.0635h1.5119z" />
             <QFUOfftape heading={heading} ILSCourse={ILSCourse} />
         </g>
     );

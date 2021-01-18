@@ -41,7 +41,31 @@
 }
 
 .HugeStroke {
+  stroke-width: 0.32mm;
+  stroke-linecap: round;
+}
+
+.SmallOutline {
+  stroke-width: 0.09mm;
+  stroke: $display-background !important;
+  paint-order: markers stroke fill;
+}
+.NormalOutline {
+  stroke-width: 0.22mm;
+  stroke: $display-background;
+  fill: none;
+  stroke-linecap: round;
+}
+.ThickOutline {
   stroke-width: 0.3mm;
+  stroke: $display-background;
+  fill: none;
+  stroke-linecap: round;
+}
+.HugeOutline {
+  stroke-width: 0.4mm;
+  stroke: $display-background;
+  fill: none;
   stroke-linecap: round;
 }
 

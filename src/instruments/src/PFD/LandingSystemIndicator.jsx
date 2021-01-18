@@ -107,7 +107,7 @@ const LocalizerIndicator = ({ localizer }) => {
             <path className="NormalStroke White" d="m85.024 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z" />
             <path className="NormalStroke White" d="m100.13 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
             {diamond}
-            <path id="LocalizerNeutralLine" className="Yellow Fill" d="m69.612 134.5h-1.4103v-8.0635h1.4103z" />
+            <path id="LocalizerNeutralLine" className="Yellow Fill" d="m68.098 134.5v-8.0635h1.5119v8.0635z" />
         </g>
     );
 };
