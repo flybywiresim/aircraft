@@ -98,16 +98,13 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.PrevFailPage = -1;
 
         this.topSelfTestDiv = this.querySelector("#TopSelfTest");
-        this.topSelfTestTimer = -1;
-        this.topSelfTestTimerStarted = false;
-        this.topSelfTestLastKnobValue = 1;
+        this.selfTestTimer = -1;
+        this.selfTestTimerStarted = false;
+        this.selfTestLastKnobValue = 1;
 
         this.doorVideoWrapper = this.querySelector("#door-video-wrapper");
 
         this.bottomSelfTestDiv = this.querySelector("#BottomSelfTest");
-        this.bottomSelfTestTimer = -1;
-        this.bottomSelfTestTimerStarted = false;
-        this.bottomSelfTestLastKnobValue = 1;
 
         this.upperEngTestDiv = this.querySelector("#Eicas1EngTest");
         this.lowerEngTestDiv = this.querySelector("#Eicas2EngTest");
@@ -136,13 +133,21 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93", "FLOAT64", 0.1);
 
         this.ecamAllButtonPrevState = false;
+        this.updateThrottler = new UpdateThrottler(500);
     }
 
     onUpdate() {
-        const _deltaTime = this.getDeltaTime();
+        let _deltaTime = this.getDeltaTime();
 
         super.onUpdate(_deltaTime);
 
+        const selfTestCurrentKnobValue = SimVar.GetSimVarValue(this.isTopScreen ? "LIGHT POTENTIOMETER:92" : "LIGHT POTENTIOMETER:93", "number");
+        const knobChanged = (selfTestCurrentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (_deltaTime === -1 && !knobChanged) {
+            return;
+        }
         this.updateDoorVideoState();
 
         this.updateAnnunciations();
@@ -178,48 +183,32 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         updateDisplayDMC("EICAS2", this.lowerEngTestDiv, this.lowerEngMaintDiv);
 
         /**
-         * Self test on top ECAM screen
+         * Self test on ECAM screen
          **/
 
-        const topSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:92", "number");
-
-        if (((topSelfTestCurrentKnobValue >= 0.1 && this.topSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.topSelfTestTimerStarted) {
-            this.topSelfTestDiv.style.visibility = "visible";
-            this.topSelfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
-            this.topSelfTestTimerStarted = true;
+        if ((knobChanged || ACPowerStateChange) && isACPowerAvailable && !this.selfTestTimerStarted) {
+            if (this.isTopScreen) {
+                this.topSelfTestDiv.style.visibility = "visible";
+            } else {
+                this.bottomSelfTestDiv.style.visibility = "visible";
+            }
+            this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
+            this.selfTestTimerStarted = true;
         }
 
-        if (this.topSelfTestTimer >= 0) {
-            this.topSelfTestTimer -= _deltaTime / 1000;
-            if (this.topSelfTestTimer <= 0) {
-                this.topSelfTestDiv.style.visibility = "hidden";
-                this.topSelfTestTimerStarted = false;
+        if (this.selfTestTimer >= 0) {
+            this.selfTestTimer -= _deltaTime / 1000;
+            if (this.selfTestTimer <= 0) {
+                if (this.isTopScreen) {
+                    this.topSelfTestDiv.style.visibility = "hidden";
+                } else {
+                    this.bottomSelfTestDiv.style.visibility = "hidden";
+                }
+                this.selfTestTimerStarted = false;
             }
         }
 
-        this.topSelfTestLastKnobValue = topSelfTestCurrentKnobValue;
-
-        /**
-         * Self test on bottom ECAM screen
-         **/
-
-        const bottomSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:93", "number");
-
-        if (((bottomSelfTestCurrentKnobValue >= 0.1 && this.bottomSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.bottomSelfTestTimerStarted) {
-            this.bottomSelfTestDiv.style.visibility = "visible";
-            this.bottomSelfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
-            this.bottomSelfTestTimerStarted = true;
-        }
-
-        if (this.bottomSelfTestTimer >= 0) {
-            this.bottomSelfTestTimer -= _deltaTime / 1000;
-            if (this.bottomSelfTestTimer <= 0) {
-                this.bottomSelfTestDiv.style.visibility = "hidden";
-                this.bottomSelfTestTimerStarted = false;
-            }
-        }
-
-        this.bottomSelfTestLastKnobValue = bottomSelfTestCurrentKnobValue;
+        this.selfTestLastKnobValue = selfTestCurrentKnobValue;
 
         this.ACPowerLastState = isACPowerAvailable;
 

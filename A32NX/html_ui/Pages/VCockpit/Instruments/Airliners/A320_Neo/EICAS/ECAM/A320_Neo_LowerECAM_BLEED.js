@@ -98,6 +98,8 @@ var A320_Neo_LowerECAM_BLEED;
             this.packInMultiplierApu = 0.8;
             this.packOutMultiplierApu = 0.1;
             this.temperatureVariationSpeed = 0.01;
+
+            this.updateThrottler = new UpdateThrottler(500);
         }
 
         setWarningColorVal(value, htmlObj, upperLimit, lowerLimit) {
@@ -126,6 +128,10 @@ var A320_Neo_LowerECAM_BLEED;
 
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
+                return;
+            }
+
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
                 return;
             }
 
