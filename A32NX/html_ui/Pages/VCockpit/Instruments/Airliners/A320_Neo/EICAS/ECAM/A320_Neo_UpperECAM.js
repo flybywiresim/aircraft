@@ -949,6 +949,19 @@ var A320_Neo_UpperECAM;
                         ]
                     },
                     {
+                        name: "F/CTL",
+                        messages: [
+                            {
+                                id: "to_flaps_disagree",
+                                message: "FLAP/MCDU DISAGREE",
+                                level: 2,
+                                flightPhasesInhib: [1, 4, 5, 6, 7, 8, 9, 10],
+                                isActive: () => this.activeTakeoffConfigWarnings.includes("flaps_disagree") ||
+                                    ((this.fwcFlightPhase === 2 && this.getCachedSimVar("L:A32NX_TO_CONFIG_NORMAL", "Bool") || this.fwcFlightPhase === 3) && this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") !== this.getCachedSimVar("L:A32NX_TO_CONFIG_FLAPS", "number"))
+                            }
+                        ]
+                    },
+                    {
                         name: "T.O",
                         messages: [
                             {
@@ -1580,6 +1593,8 @@ var A320_Neo_UpperECAM;
             const slatsRight = SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees");
             const flapsLeft = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees");
             const flapsRight = SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees");
+            const flapsHandle = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum");
+            const flapsMcdu = SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number");
             const speedBrake = SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "Position");
             const parkBrake = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
             const brakesHot = SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool");
@@ -1602,6 +1617,9 @@ var A320_Neo_UpperECAM;
             if (brakesHot) {
                 this.activeTakeoffConfigWarnings.push("brakes_hot");
             }
+            if (flapsMcdu !== 0 && flapsHandle !== flapsMcdu) {
+                this.activeTakeoffConfigWarnings.push("flaps_disagree");
+            }
             if (!(v1Speed <= vrSpeed && vrSpeed <= v2Speed)) {
                 this.activeTakeoffConfigWarnings.push("to_speeds_disagree");
             }
@@ -1615,6 +1633,7 @@ var A320_Neo_UpperECAM;
                 this.leftEcamMessagePanel.recall("config_spd_brk");
                 this.leftEcamMessagePanel.recall("config_park_brake");
                 this.leftEcamMessagePanel.recall("brakes_hot");
+                this.leftEcamMessagePanel.recall("to_flaps_disagree");
                 this.leftEcamMessagePanel.recall("to_speeds_disagree");
             }
         }
