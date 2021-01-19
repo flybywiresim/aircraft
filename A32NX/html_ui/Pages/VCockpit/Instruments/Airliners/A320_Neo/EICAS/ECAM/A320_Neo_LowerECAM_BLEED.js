@@ -98,6 +98,8 @@ var A320_Neo_LowerECAM_BLEED;
             this.packInMultiplierApu = 0.8;
             this.packOutMultiplierApu = 0.1;
             this.temperatureVariationSpeed = 0.01;
+
+            this.updateThrottler = new UpdateThrottler(500);
         }
 
         setWarningColorVal(value, htmlObj, upperLimit, lowerLimit) {
@@ -128,7 +130,9 @@ var A320_Neo_LowerECAM_BLEED;
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
+            }
             const currentApuN = SimVar.GetSimVarValue("APU PCT RPM", "percent");
             const currentEng1N2 = SimVar.GetSimVarValue("ENG N2 RPM:1", "Rpm(0 to 16384 = 0 to 100%)");
             const currentEng2N2 = SimVar.GetSimVarValue("ENG N2 RPM:2", "Rpm(0 to 16384 = 0 to 100%)");
