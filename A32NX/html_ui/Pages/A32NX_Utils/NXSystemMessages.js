@@ -40,5 +40,6 @@ const NXFictionalMessages = {
     firstIndexNotFound:     {text: "1ST INDEX NOT FOUND", isAmber: false, isTypeTwo: false},
     noRefWpt:               {text: "NO REF WAYPOINT", isAmber: false, isTypeTwo: false},
     noWptInfos:             {text: "NO WAYPOINT INFOS", isAmber: false, isTypeTwo: false},
-    emptyMessage:           {text: "", isAmber: false, isTypeTwo: false}
+    emptyMessage:           {text: "", isAmber: false, isTypeTwo: false},
+    weightUnitChanged:      {text: "UNIT CHANGED RELOAD A/C", isAmber: true, isTypeTwo: true}
 };

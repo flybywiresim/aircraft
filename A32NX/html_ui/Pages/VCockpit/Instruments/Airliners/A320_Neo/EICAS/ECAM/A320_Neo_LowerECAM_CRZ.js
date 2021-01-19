@@ -105,13 +105,17 @@ var A320_Neo_LowerECAM_CRZ;
             this.CabinAltitudeDisplayed = -1;
             this.OutsidePressureDisplayed = -1;
 
+            this.updateThrottler = new UpdateThrottler(500);
+
             this.isInitialised = true;
         }
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
+            }
             // Fuel
             const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "KG") * this.unitConversion;
             const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "KG") * this.unitConversion;
@@ -120,11 +124,6 @@ var A320_Neo_LowerECAM_CRZ;
             const rightConsumptionShown = fastToFixed(rightConsumption - (rightConsumption % 10), 0);
 
             if ((leftConsumptionShown !== this.LeftConsumptionDisplayed) || (rightConsumptionShown !== this.RightConsumptionDisplayed)) {
-                const unitConversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
-                if (unitConversion !== this.unitConversion) {
-                    this.unitConversion = unitConversion;
-                    this.querySelector("#FuelUsedUnit").textContent = this.unitConversion === 1 ? "KG" : "LBS";
-                }
                 const totalConsumptionShown = parseInt(leftConsumptionShown) + parseInt(rightConsumptionShown);
                 this.FuelUsedTotal.textContent = totalConsumptionShown;
                 this.FuelUsedLeft.textContent = leftConsumptionShown;

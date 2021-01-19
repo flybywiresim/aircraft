@@ -180,6 +180,8 @@ var A320_Neo_LowerECAM_WHEEL;
                 }
             };
 
+            this.updateThrottler = new UpdateThrottler(75);
+
             this.isInitialised = true;
 
             /**
@@ -243,7 +245,10 @@ var A320_Neo_LowerECAM_WHEEL;
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-
+            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+            if (_deltaTime === -1) {
+                return;
+            }
             this.updateHydraulicsAvailable(_deltaTime);
 
             this.updateBrakeTemp(_deltaTime);
