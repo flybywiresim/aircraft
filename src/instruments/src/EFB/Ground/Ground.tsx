@@ -20,7 +20,7 @@ import React from 'react';
 import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingBridge, IconBuildingArch, IconArchive } from '@tabler/icons'
 
 import './Ground.scss'
-import fuselage from '../Assets/320neoOutline [Upright].svg'
+import fuselage from '../Assets/320neo-outline-upright.svg'
 
 type GroundProps = {
 }
