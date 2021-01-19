@@ -31,7 +31,6 @@ class PFD extends Component {
         this.GetDeltaTime = createDeltaTimeCalculator();
         this.prevAirspeed = 0;
 
-        this.VMax = 0;
         this.VLs = 0;
         this.VAlphaProt = 0;
         this.VAlphaLim = 0;
@@ -64,9 +63,8 @@ class PFD extends Component {
         setSimVar(`L:BTN_LS_${this.dispIndex}_FILTER_ACTIVE`, this.LSButtonPressed, 'Bool');
     }
 
-    smoothSpeeds(_dTime, _maxSpeed, _vls, _vaprot, _valim, _vs) {
+    smoothSpeeds(_dTime, _vls, _vaprot, _valim, _vs) {
         const seconds = _dTime / 1000;
-        this.VMax = SmoothSin(this.VMax, _maxSpeed, this.smoothFactor, seconds);
         this.VLs = SmoothSin(this.VLs, _vls, this.smoothFactor, seconds);
         this.VAlphaProt = SmoothSin(this.VAlphaProt, _vaprot, this.smoothFactor, seconds);
         this.VAlphaLim = SmoothSin(this.VAlphaLim, _valim, this.smoothFactor, seconds);
@@ -118,7 +116,7 @@ class PFD extends Component {
             this.barTimer += this.deltaTime / 1000;
         }
 
-        this.smoothSpeeds(this.deltaTime, VMax, VLs, VS * 1.1, VS * 1.03, VS);
+        this.smoothSpeeds(this.deltaTime, VLs, VS * 1.1, VS * 1.03, VS);
 
         let targetAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue();
         let isManaged = false;
@@ -167,9 +165,9 @@ class PFD extends Component {
                     className="BackgroundFill"
                     d="m32.138 101.25c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66z"
                 />
-                <HeadingTape heading={heading} groundTrack={groundTrack} ILSCourse={ILSCourse} />
+                <HeadingTape heading={heading} ILSCourse={ILSCourse} />
                 <AltitudeIndicator altitude={baroAlt} FWCFlightPhase={FlightPhase} />
-                <AirspeedIndicator airspeed={clampedAirspeed} airspeedAcc={filteredAirspeedAcc} FWCFlightPhase={FlightPhase} altitude={baroAlt} VAlphaLim={this.VAlphaLim} VAlphaProt={this.VAlphaProt} VLs={this.VLs} VMax={this.VMax} showBars={showSpeedBars} />
+                <AirspeedIndicator airspeed={clampedAirspeed} airspeedAcc={filteredAirspeedAcc} FWCFlightPhase={FlightPhase} altitude={baroAlt} VAlphaLim={this.VAlphaLim} VAlphaProt={this.VAlphaProt} VLs={this.VLs} VMax={VMax} showBars={showSpeedBars} />
                 <path
                     id="Mask2"
                     className="BackgroundFill"
@@ -179,7 +177,7 @@ class PFD extends Component {
                 <AttitudeIndicatorFixedUpper />
                 <AttitudeIndicatorFixedCenter isOnGround={isOnGround} FDActive={FDActive} />
                 <VerticalSpeedIndicator radioAlt={radioAlt} />
-                <HeadingOfftape ILSCourse={ILSCourse} heading={heading} selectedHeading={selectedHeading} />
+                <HeadingOfftape ILSCourse={ILSCourse} groundTrack={groundTrack} heading={heading} selectedHeading={selectedHeading} />
                 <AltitudeIndicatorOfftape altitude={baroAlt} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
                 <AirspeedIndicatorOfftape airspeed={clampedAirspeed} mach={mach} airspeedAcc={filteredAirspeedAcc} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
                 <FMA />

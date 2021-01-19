@@ -37,30 +37,12 @@ const GraduationElement = (heading, offset) => {
     );
 };
 
-const GroundTrackBug = (offset) => ([
-    <path className="ThickOutline" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />,
-    <path id="ActualTrackIndicator" className="ThickStroke Green" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />,
-]);
-
-const QFUBug = (offset) => ([
-    <path id="ILSCoursePointer" className="ThickOutline" transform={`translate(${offset} 0)`} d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />,
-    <path id="ILSCoursePointer" className="ThickStroke Magenta" transform={`translate(${offset} 0)`} d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />,
-]);
-
-export const HeadingTape = ({
-    heading, groundTrack, ILSCourse,
-}) => {
+export const HeadingTape = ({ heading }) => {
     if (getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum') !== 2) {
         return null;
     }
 
     const bugs = [];
-
-    if (!Number.isNaN(ILSCourse)) {
-        bugs.push([QFUBug, ILSCourse]);
-    }
-
-    bugs.push([GroundTrackBug, groundTrack]);
 
     return (
         <g>
@@ -70,23 +52,24 @@ export const HeadingTape = ({
     );
 };
 
-export const HeadingOfftape = ({ selectedHeading, heading, ILSCourse }) => {
+export const HeadingOfftape = ({
+    selectedHeading, heading, ILSCourse, groundTrack,
+}) => {
     if (getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum') !== 2) {
-        return (
-            [
-                <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" className="TapeBackground" />,
-                <path id="HeadingTapeOutline" className="NormalStroke Red" d="m32.138 156.23v-10.886h73.536v10.886" />,
-                <text id="HDGFailText" className="Blink9Seconds FontLargest EndAlign Red" x="75.926208" y="151.95506">HDG</text>,
-            ]
-        );
+        return ([
+            <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" className="TapeBackground" />,
+            <path id="HeadingTapeOutline" className="NormalStroke Red" d="m32.138 156.23v-10.886h73.536v10.886" />,
+            <text id="HDGFailText" className="Blink9Seconds FontLargest EndAlign Red" x="75.926208" y="151.95506">HDG</text>,
+        ]);
     }
 
     return (
         <g id="HeadingOfftapeGroup">
             <path id="HeadingTapeOutline" className="NormalStroke White" d="m32.138 156.23v-10.886h73.536v10.886" />
             <SelectedHeading heading={heading} selectedHeading={selectedHeading} />
+            <QFUIndicator heading={heading} ILSCourse={ILSCourse} />
             <path className="Fill Yellow" d="m69.61 147.31h-1.5119v-8.0635h1.5119z" />
-            <QFUOfftape heading={heading} ILSCourse={ILSCourse} />
+            <GroundTrackBug groundTrack={groundTrack} heading={heading} />
         </g>
     );
 };
@@ -114,7 +97,19 @@ const SelectedHeading = ({ selectedHeading, heading }) => {
     );
 };
 
-const QFUOfftape = ({ ILSCourse, heading }) => {
+const GroundTrackBug = ({ heading, groundTrack }) => {
+    const offset = getSmallestAngle(groundTrack, heading) * DistanceSpacing / ValueSpacing;
+    return [
+        <path className="ThickOutline" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />,
+        <path id="ActualTrackIndicator" className="ThickStroke Green" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />,
+    ];
+};
+
+const QFUIndicator = ({ ILSCourse, heading }) => {
+    if (Number.isNaN(ILSCourse)) {
+        return null;
+    }
+
     const delta = getSmallestAngle(ILSCourse, heading);
     const text = Math.round(ILSCourse).toString().padStart(3, '0');
     if (Math.abs(delta) > DisplayRange) {
@@ -133,5 +128,10 @@ const QFUOfftape = ({ ILSCourse, heading }) => {
             </g>
         );
     }
-    return null;
+
+    const offset = getSmallestAngle(ILSCourse, heading) * DistanceSpacing / ValueSpacing;
+    return ([
+        <path id="ILSCoursePointer" className="ThickOutline" transform={`translate(${offset} 0)`} d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />,
+        <path id="ILSCoursePointer" className="ThickStroke Magenta" transform={`translate(${offset} 0)`} d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />,
+    ]);
 };
