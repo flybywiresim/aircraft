@@ -22,11 +22,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._registered = false;
         this._forceNextAltitudeUpdate = false;
         this._lastUpdateAPTime = NaN;
-        this.refreshFlightPlanCooldown = 0;
         this.updateAutopilotCooldown = 0;
         this._lastHasReachFlex = false;
         this._apMasterStatus = false;
-        this._hasReachedTopOfDescent = false;
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
         this.messages = [];
@@ -34,7 +32,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.activeSystem = 'FMGC';
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
-        this._gpsprimaryack = 0;
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
         this.activeWaypointIdx = -1;
         this.constraintAlt = 0;
@@ -1082,15 +1079,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     _getV1Speed() {
-        /*let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
-        dWeightCoef = Utils.Clamp(dWeightCoef, 0, 1);
-        dWeightCoef = 0.7 + (1.0 - 0.7) * dWeightCoef;
-
-        const tempIndex = this._getTempIndex();
-        const min = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][0];
-        const max = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][1];
-
-        return this._getVSpeed(dWeightCoef, min, max);*/
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
     }
     _computeV1Speed() {
@@ -1102,15 +1090,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     _getVRSpeed() {
-        /*let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
-        dWeightCoef = Utils.Clamp(dWeightCoef, 0, 1);
-        dWeightCoef = 0.695 + (0.985 - 0.695) * dWeightCoef;
-
-        const tempIndex = this._getTempIndex();
-        const min = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][0];
-        const max = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][1];
-
-        return this._getVSpeed(dWeightCoef, min, max);*/
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).vr;
     }
     _computeVRSpeed() {
@@ -1122,15 +1101,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     _getV2Speed() {
-        /*let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
-        dWeightCoef = Utils.Clamp(dWeightCoef, 0, 1);
-        dWeightCoef = 0.71 + (0.96 - 0.71) * dWeightCoef;
-
-        const tempIndex = this._getTempIndex();
-        const min = A320_Neo_CDU_MainDisplay._v2sConf1[tempIndex][0];
-        const max = A320_Neo_CDU_MainDisplay._v2sConf1[tempIndex][1];
-
-        return this._getVSpeed(dWeightCoef, min, max);*/
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
     }
     _computeV2Speed() {
@@ -1235,7 +1205,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const apTargetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
             let showTopOfClimb = false;
             let topOfClimbLlaHeading;
-            const planeHeading = Simplane.getHeadingMagnetic();
             const planeCoordinates = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
             if (apTargetAltitude > currentAltitude + 40) {
                 const vSpeed = Simplane.getVerticalSpeed();
@@ -1270,7 +1239,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     let topOfDescentLat;
                     let topOfDescentLong;
                     let topOfDescentHeading;
-                    this._hasReachedTopOfDescent = true;
                     if (currentAltitude > targetAltitude + 40) {
                         let vSpeed = Math.abs(Math.min(0, Simplane.getVerticalSpeed()));
                         if (vSpeed < 200) {
@@ -1284,9 +1252,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         topOfDescentLat = Avionics.Utils.lerpAngle(prevWaypoint.infos.lat, nextWaypoint.infos.lat, f);
                         topOfDescentLong = Avionics.Utils.lerpAngle(prevWaypoint.infos.long, nextWaypoint.infos.long, f);
                         topOfDescentHeading = nextWaypoint.bearingInFP;
-                        if (distanceToTarget + 1 > descentDistance) {
-                            this._hasReachedTopOfDescent = false;
-                        }
                     }
                     if (showTopOfDescent) {
                         SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 1);
@@ -1362,17 +1327,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
 
-                //This breaks everything, not sure why (from 1.8.3 update)
-                /* let altitude = Simplane.getAltitudeAboveGround();
-                let n1 = 100;
-                if (altitude < this.thrustReductionAltitude) {
-                    n1 = this.getThrustTakeOffLimit() / 100;
-                }
-                else {
-                    n1 = this.getThrustClimbLimit() / 100;
-                }
-                SimVar.SetSimVarValue("AUTOPILOT THROTTLE MAX THRUST", "number", n1); */
-
             } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
                 let speed;
                 if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
@@ -1394,17 +1348,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     const speed = this.getCrzManagedSpeed();
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
-                if (this.isAltitudeManaged()) {
-                }
-                /* let altitude = Simplane.getAltitudeAboveGround();
-                let n1 = 100;
-                if (altitude < this.thrustReductionAltitude) {
-                    n1 = this.getThrustTakeOffLimit() / 100;
-                }
-                else {
-                    n1 = this.getThrustClimbLimit() / 100;
-                }
-                SimVar.SetSimVarValue("AUTOPILOT THROTTLE MAX THRUST", "number", n1); */
             } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
                 if (this.isAirspeedManaged()) {
                     const speed = this.getDesManagedSpeed();
@@ -1448,8 +1391,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (this.isAirspeedManaged()) {
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
-
-                const selectedAltFCU = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
 
                 if (apLogicOn) {
                     //depending if on HDR/TRK or NAV mode, select approriate Alt Mode (WIP)
@@ -1526,7 +1467,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
 
             if (planeAltitudeMsl > accelerationAltitudeMsl) {
-                //console.log('switching to FLIGHT_PHASE_CLIMB: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
                 this.climbTransitionGroundAltitude = null;
             }
@@ -1534,25 +1474,17 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         //(Mostly) Default Asobo logic
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
-            let cruiseFlightLevel;
             let remainInClimb = false;
             if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
-                const selectedAltFCU = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
-                if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") == 1) {
-                    cruiseFlightLevel = SimVar.GetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number");
-                } else {
-                    cruiseFlightLevel = selectedAltFCU / 100;
+                if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") !== 1) {
                     remainInClimb = true;
                 }
             }
             const altitude = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
-            cruiseFlightLevel = this.cruiseFlightLevel * 100;
+            const cruiseFlightLevel = this.cruiseFlightLevel * 100;
             if (isFinite(cruiseFlightLevel)) {
                 if (altitude >= 0.96 * cruiseFlightLevel) {
-                    if (remainInClimb) {
-                        //console.log('remaining in FLIGHT_PHASE_CLIMB (no new DEST/CRZ ALT) : ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
-                    } else {
-                        //console.log('switching to FLIGHT_PHASE_CRUISE: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
+                    if (!remainInClimb) {
                         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CRUISE;
                         SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
                         Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
@@ -1566,7 +1498,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const cruiseFlightLevel = this.cruiseFlightLevel * 100;
             if (isFinite(cruiseFlightLevel)) {
                 if (altitude < 0.94 * cruiseFlightLevel) {
-                    //console.log('switching to FLIGHT_PHASE_DESCENT: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
                     this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_DESCENT;
                     Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
                 }
@@ -1653,7 +1584,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const accelerationAltitudeMsl = this.accelerationAltitudeGoaround;
 
             if (planeAltitudeMsl > accelerationAltitudeMsl) {
-                //console.log('switching to FLIGHT_PHASE_CLIMB from GA: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 1);
             }
@@ -1816,136 +1746,4 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.sentMessages.splice(id, 1);
     }
 }
-A320_Neo_CDU_MainDisplay._v1sConf1 = [
-    [145, 149],
-    [143, 151],
-    [141, 152],
-    [139, 150],
-    [137, 147],
-    [136, 145],
-    [134, 143],
-    [134, 142],
-    [133, 142],
-    [133, 143],
-    [133, 144],
-    [132, 145],
-    [132, 146],
-    [132, 146],
-    [132, 147],
-    [131, 148],
-    [131, 148],
-    [131, 149],
-    [130, 150],
-    [130, 150],
-];
-A320_Neo_CDU_MainDisplay._v1sConf2 = [
-    [130, 156],
-    [128, 154],
-    [127, 151],
-    [125, 149],
-    [123, 147],
-    [122, 145],
-    [121, 143],
-    [120, 143],
-    [120, 143],
-    [120, 142],
-    [119, 142],
-    [119, 142],
-    [119, 142],
-    [119, 141],
-    [118, 141],
-    [118, 141],
-    [118, 140],
-    [118, 140],
-    [117, 140],
-    [117, 140],
-];
-A320_Neo_CDU_MainDisplay._vRsConf1 = [
-    [146, 160],
-    [144, 160],
-    [143, 159],
-    [141, 158],
-    [139, 156],
-    [137, 154],
-    [136, 152],
-    [135, 151],
-    [135, 151],
-    [134, 151],
-    [134, 151],
-    [133, 151],
-    [133, 151],
-    [132, 150],
-    [132, 151],
-    [131, 151],
-    [131, 150],
-    [131, 150],
-    [130, 151],
-    [130, 150],
-];
-A320_Neo_CDU_MainDisplay._vRsConf2 = [
-    [130, 158],
-    [128, 156],
-    [127, 154],
-    [125, 152],
-    [123, 150],
-    [122, 148],
-    [121, 147],
-    [120, 146],
-    [120, 146],
-    [120, 145],
-    [119, 145],
-    [119, 144],
-    [119, 144],
-    [119, 143],
-    [118, 143],
-    [118, 142],
-    [118, 142],
-    [118, 141],
-    [117, 141],
-    [117, 140],
-];
-A320_Neo_CDU_MainDisplay._v2sConf1 = [
-    [152, 165],
-    [150, 165],
-    [148, 164],
-    [146, 163],
-    [144, 161],
-    [143, 159],
-    [141, 157],
-    [140, 156],
-    [140, 156],
-    [139, 156],
-    [139, 155],
-    [138, 155],
-    [138, 155],
-    [137, 155],
-    [137, 155],
-    [136, 155],
-    [136, 155],
-    [136, 155],
-    [135, 155],
-    [135, 155],
-];
-A320_Neo_CDU_MainDisplay._v2sConf2 = [
-    [135, 163],
-    [133, 160],
-    [132, 158],
-    [130, 157],
-    [129, 155],
-    [127, 153],
-    [127, 151],
-    [126, 150],
-    [125, 150],
-    [125, 149],
-    [124, 149],
-    [124, 148],
-    [124, 148],
-    [123, 147],
-    [123, 146],
-    [123, 146],
-    [123, 145],
-    [122, 145],
-    [122, 144],
-    [121, 144],
-];
 registerInstrument("a320-neo-cdu-main-display", A320_Neo_CDU_MainDisplay);
