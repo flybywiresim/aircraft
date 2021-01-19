@@ -33,12 +33,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
-        this.activeWaypointIdx = -1;
         this.constraintAlt = 0;
         this.constraintAltCached = 0;
         this.fcuSelAlt = 0;
-        this.updateTypeIIMessage = false;
-        this.altLock = 0;
         this.messageQueue = [];
         this._destDataChecked = false;
         this._towerHeadwind = 0;
@@ -392,6 +389,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
 
+        this.checkUpdateFlightPhase();
+
         this.checkAocTimes();
 
         this.A32NXCore.update();
@@ -602,58 +601,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.isDisplayingTypeTwoMessage = false;
         this._inOutElement.className = "white";
         this.inOut = data;
-    }
-
-    tryUpdateAltitudeConstraint(force = false) {
-        if (this.flightPlanManager.getIsDirectTo()) {
-            this.constraintAlt = 0;
-        }
-        const activeWptIdx = this.flightPlanManager.getActiveWaypointIndex();
-        const altLock = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
-        if (force || activeWptIdx !== this.activeWptIdx || altLock !== this.altLock) {
-            this.activeWptIdx = activeWptIdx;
-            this.altLock = altLock;
-            this.constraintAlt = this.getAltitudeConstraint();
-        }
-    }
-
-    getAltitudeConstraint() {
-        const rte = this.flightPlanManager.getWaypoints(0);
-        if (rte.length === 0) {
-            return 0;
-        }
-        const fph = Simplane.getCurrentFlightPhase();
-        const type = fph < FlightPhase.FLIGHT_PHASE_CRUISE || fph === FlightPhase.FLIGHT_PHASE_GOAROUND ? 3 : 2;
-        let tmp = 0;
-        for (let i = this.activeWptIdx; i < rte.length; i++) {
-            const wpt = rte[i];
-            if (!isFinite(wpt.legAltitude1)) {
-                continue;
-            }
-            // Ensure constraint waypoint after TOD is not a constraint for climb phase
-            if (tmp) {
-                if (type === 3 && (wpt.legAltitude1 < tmp || (isFinite(wpt.legAltitude2) && wpt.legAltitude2 < tmp))) {
-                    return 0;
-                }
-            } else {
-                tmp = wpt.legAltitude1;
-            }
-            if (wpt.legAltitudeDescription === 0) {
-                continue;
-            }
-            if (wpt.legAltitudeDescription === 4) {
-                if (type === 3 && this.altLock > wpt.legAltitude2) {
-                    return wpt.legAltitude2;
-                } else if (type === 2 && this.altLock < wpt.legAltitude1) {
-                    return wpt.legAltitude1;
-                }
-            } else if ((wpt.legAltitudeDescription === 1 || wpt.legAltitudeDescription === type) && (
-                (type === 3 && this.altLock > wpt.legAltitude1) || (type === 2 && this.altLock < wpt.legAltitude1)
-            )) {
-                return wpt.legAltitude1;
-            }
-        }
-        return 0;
     }
 
     getSpeedConstraint() {
@@ -985,6 +932,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onLeft = undefined;
         this.onRight = undefined;
     }
+
+    insertWaypoint(newWaypointTo, index, callback = EmptyCallback.Boolean) {
+        this.ensureCurrentFlightPlanIsTemporary(async () => {
+            this.getOrSelectWaypointByIdent(newWaypointTo, (waypoint) => {
+                if (!waypoint) {
+                    this.addNewMessage(NXSystemMessages.notInDatabase);
+                    return callback(false);
+                }
+                this.flightPlanManager.addWaypoint(waypoint.icao, index, () => {
+                    return callback(true);
+                });
+            });
+        });
+    }
+
     getOrSelectWaypointByIdent(ident, callback) {
         this.dataManager.GetWaypointsByIdent(ident).then((waypoints) => {
             if (!waypoints || waypoints.length === 0) {
@@ -1059,53 +1021,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return 19;
     }
 
-    _getVSpeed(dWeightCoef, min, max) {
-        let runwayCoef = 1.0;
-        const runway = this.flightPlanManager.getDepartureRunway() || this.flightPlanManager.getDetectedCurrentRunway();
-        if (runway) {
-            const f = (runway.length - 1500) / (2500 - 1500);
-            runwayCoef = Utils.Clamp(f, 0, 1);
-        }
-
-        const flapsHandleIndex = this.flaps || Simplane.getFlapsHandleIndex();
-
-        let vSpeed = min * (1 - runwayCoef) + max * runwayCoef;
-        vSpeed *= dWeightCoef;
-        vSpeed += (3 - flapsHandleIndex) * 6;
-        return Math.round(vSpeed);
-    }
-
     _getV1Speed() {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
-    }
-    _computeV1Speed() {
-        // computeV1Speed is called by inherited class so it must remain,
-        // but we need the calculation logic so that sits in it's own function now.
-        const nextV1 = this._getV1Speed();
-        this.v1Speed = nextV1;
-        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", nextV1);
     }
 
     _getVRSpeed() {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).vr;
     }
-    _computeVRSpeed() {
-        // computeVRSpeed is called by inherited class so it must remain,
-        // but we need the calculation logic so that sits in it's own function now.
-        const nextVR = this._getVRSpeed();
-        this.vRSpeed = nextVR;
-        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", nextVR);
-    }
 
     _getV2Speed() {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
-    }
-    _computeV2Speed() {
-        // computeV2Speed is called by inherited class so it must remain,
-        // but we need the calculation logic so that sits in it's own function now.
-        const nextV2 = this._getV2Speed();
-        this.v2Speed = nextV2;
-        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", nextV2);
     }
 
     getThrustTakeOffLimit() {
@@ -1126,9 +1051,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         return 88.4;
     }
-    getThrustClimbLimit() {
-        return this.getThrustTakeOffLimit() - 8;
-    }
+
     isAirspeedManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT SPEED SLOT INDEX", "number") === 2;
     }
@@ -1138,9 +1061,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     isAltitudeManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
     }
-    isVerticalSpeedManaged() {
-        return SimVar.GetSimVarValue("AUTOPILOT VS SLOT INDEX", "number") === 2;
-    }
+
     updateAutopilot() {
         const now = performance.now();
         const dt = now - this._lastUpdateAPTime;
@@ -1297,7 +1218,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     if (airspeed < 400) {
                         const turnRadius = airspeed * 360 / (1091 * 0.36 / airspeed) / 3600 / 2 / Math.PI;
                         const activateDistance = Math.pow(90 / absPathAngle, 1.6) * turnRadius * 1.2;
-                        ;
                         const distanceToActive = Avionics.Utils.computeGreatCircleDistance(planeCoordinates, activeWaypoint.infos.coordinates);
                         if (distanceToActive < activateDistance) {
                             this.flightPlanManager.setActiveWaypointIndex(this.flightPlanManager.getActiveWaypointIndex() + 1);
