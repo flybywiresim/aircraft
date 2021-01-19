@@ -22,8 +22,7 @@ import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, I
 import './Ground.scss'
 import fuselage from '../Assets/320neo-outline-upright.svg'
 
-type GroundProps = {
-}
+type GroundProps = {}
 
 type GroundState = {}
 
