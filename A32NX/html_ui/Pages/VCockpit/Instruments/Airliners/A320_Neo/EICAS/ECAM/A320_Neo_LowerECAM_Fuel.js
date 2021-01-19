@@ -70,6 +70,7 @@ var A320_Neo_LowerECAM_Fuel;
             this.middleFuelUnit = this.querySelector("#middleFuelUnit");
             this.fuelLevels = SimVar.GetGameVarValue("AIRCRAFT INITIAL FUEL LEVELS", "FuelLevels");
             this.gallonToKG = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kg");
+            this.conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
             this.apuElement = this.querySelector("#APU");
             this.apuLineElement = this.querySelector("#apuFuelLine");
             this.setAPUState(false, false, true);
@@ -79,21 +80,34 @@ var A320_Neo_LowerECAM_Fuel;
             this.middlePump2_On = this.querySelector("#middlePump2_On");
             this.middlePump1_Off = this.querySelector("#middlePump1_Off");
             this.middlePump2_Off = this.querySelector("#middlePump2_Off");
+            if (this.conversionWeight === 1) {
+                this.FOBUnit.textContent = "KG";
+                this.fuelFlowUnit.textContent = "KG/MIN";
+                this.middleFuelUnit.textContent = "KG";
+            } else {
+                this.FOBUnit.textContent = "LBS";
+                this.fuelFlowUnit.textContent = "LBS/MIN";
+                this.middleFuelUnit.textContent = "LBS";
+            }
+            this.updateThrottler = new UpdateThrottler(500);
             this.isInitialised = true;
         }
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-            const factor = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
-            this.updateQuantity(this.FOBValue, "FUEL TOTAL QUANTITY", factor);
-            this.updateQuantity(this.centerTankValue, "FUEL TANK CENTER QUANTITY", factor);
-            this.updateQuantity(this.leftInnerTankValue, "FUEL TANK LEFT MAIN QUANTITY", factor);
-            this.updateQuantity(this.leftOuterTankValue, "FUEL TANK LEFT AUX QUANTITY", factor);
-            this.updateQuantity(this.rightInnerTankValue, "FUEL TANK RIGHT MAIN QUANTITY", factor);
-            this.updateQuantity(this.rightOuterTankValue, "FUEL TANK RIGHT AUX QUANTITY", factor);
-            this.updateFuelFlow(factor);
-            this.updateFuelConsumption(factor);
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
+            }
+            this.updateQuantity(this.FOBValue, "FUEL TOTAL QUANTITY");
+            this.updateQuantity(this.centerTankValue, "FUEL TANK CENTER QUANTITY");
+            this.updateQuantity(this.leftInnerTankValue, "FUEL TANK LEFT MAIN QUANTITY");
+            this.updateQuantity(this.leftOuterTankValue, "FUEL TANK LEFT AUX QUANTITY");
+            this.updateQuantity(this.rightInnerTankValue, "FUEL TANK RIGHT MAIN QUANTITY");
+            this.updateQuantity(this.rightOuterTankValue, "FUEL TANK RIGHT AUX QUANTITY");
+            this.updateFuelFlow();
+            this.updateFuelConsumption();
+
             for (let i = 0; i < this.allToggleElements.length; ++i) {
                 if (this.allToggleElements[i] != null) {
                     this.allToggleElements[i].refresh();
@@ -140,31 +154,21 @@ var A320_Neo_LowerECAM_Fuel;
                 this.middlePump2_On.setAttribute("visibility", "hidden");
             }
 
-            if (factor === 1) {
-                this.FOBUnit.textContent = "KG";
-                this.fuelFlowUnit.textContent = "KG/MIN";
-                this.middleFuelUnit.textContent = "KG";
-            } else {
-                this.FOBUnit.textContent = "LBS";
-                this.fuelFlowUnit.textContent = "LBS/MIN";
-                this.middleFuelUnit.textContent = "LBS";
-            }
-
             this.setAPUState(SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool"), SimVar.GetSimVarValue("FUELSYSTEM VALVE OPEN:8", "Bool"));
         }
         onEvent(_event) {
             switch (_event) {
             }
         }
-        updateFuelFlow(_unitFactor) {
+        updateFuelFlow() {
             const totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "gallons per hour") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "gallons per hour"))
-            * this.gallonToKG * _unitFactor / 60;
+            * this.gallonToKG * this.conversionWeight / 60;
             this.fuelFlowValue.textContent = fastToFixed(totalFuelFlow, 0);
         }
-        updateFuelConsumption(_unitFactor) {
+        updateFuelConsumption() {
             if (this.fuelLevels) {
-                const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "kg") * _unitFactor;
-                const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "kg") * _unitFactor;
+                const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "kg") * this.conversionWeight;
+                const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "kg") * this.conversionWeight;
 
                 const leftConsumptionShown = leftConsumption - (leftConsumption % 10);
                 const rightConsumptionShown = rightConsumption - (rightConsumption % 10);
@@ -177,8 +181,8 @@ var A320_Neo_LowerECAM_Fuel;
                 this.fuelLevels = SimVar.GetGameVarValue("AIRCRAFT INITIAL FUEL LEVELS", "FuelLevels");
             }
         }
-        updateQuantity(_elem, _simvar, _unitFactor) {
-            let quantity = SimVar.GetSimVarValue(_simvar, "gallons") * this.gallonToKG * _unitFactor;
+        updateQuantity(_elem, _simvar) {
+            let quantity = SimVar.GetSimVarValue(_simvar, "gallons") * this.gallonToKG * this.conversionWeight;
             quantity -= quantity % 20;
             if (quantity < 0) {
                 quantity = 0;

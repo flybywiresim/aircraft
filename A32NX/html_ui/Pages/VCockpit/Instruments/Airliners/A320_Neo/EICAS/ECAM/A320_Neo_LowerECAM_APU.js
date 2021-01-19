@@ -53,10 +53,16 @@ var A320_Neo_LowerECAM_APU;
             };
 
             this.APUBleedTimer = 0;
+            this.updateThrottler = new UpdateThrottler(75);
             this.isInitialised = true;
         }
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
+                return;
+            }
+
+            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+            if (_deltaTime === -1) {
                 return;
             }
 
