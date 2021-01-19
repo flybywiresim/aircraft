@@ -69,11 +69,17 @@ let A320_Neo_LowerECAM_FTCL;
 
             this.hydraulicsAvailable = true;
 
+            this.updateThrottler = new UpdateThrottler(50);
+
             this.isInitialised = true;
         }
 
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
+                return;
+            }
+
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
                 return;
             }
 
