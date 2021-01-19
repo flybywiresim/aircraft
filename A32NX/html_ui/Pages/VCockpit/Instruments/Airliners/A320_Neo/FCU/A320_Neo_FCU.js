@@ -158,7 +158,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.isActive = _isActive;
             this.isManaged = _isManaged;
             this.showSelectedSpeed = _showSelectedSpeed;
-            this.currentValue = _value - (Simplane.getIndicatedSpeed() - SimVar.GetSimVarValue("L:A32NX_SPEEDS_KCAS", "number"));
+            this.currentValue = _value - (_machActive ? 0 : Simplane.getIndicatedSpeed() - SimVar.GetSimVarValue("L:A32NX_SPEEDS_KCAS", "number"));
             this.setTextElementActive(this.textSPD, !_machActive);
             this.setTextElementActive(this.textMACH, _machActive);
             this.lightsTest = _lightsTest;
