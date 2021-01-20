@@ -37,6 +37,7 @@
 1. [ECAM] Improved Ecam Memo TO Flaps and TO Config. Allows for Config 3 TO - @MisterChocker (Leon)
 1. [DISPLAYS] Optimize performance by throttling instrument updates - @XSJoJo (Jorim Jaggi)
 1. [ECAM] Added F/CTL FLAP/MCDU DISAGREE check - @MisterChocker (Leon)
+1. [MISC] Changed AIRCOND knobs starting position to 12 o'clock - @ImenesFBW (Imenes)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
