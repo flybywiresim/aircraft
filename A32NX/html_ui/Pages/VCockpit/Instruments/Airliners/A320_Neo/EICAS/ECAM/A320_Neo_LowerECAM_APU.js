@@ -23,6 +23,7 @@ var A320_Neo_LowerECAM_APU;
 
             this.APUAvail = this.querySelector("#APUAvail_On");
 
+            this.FuelLoPr = this.querySelector("#FuelLoPr_On");
             this.APUFlapOpen = this.querySelector("#APUFlapOpen_On");
 
             this.APUBleedOn = this.querySelector("#APUBleed_On");
@@ -103,6 +104,9 @@ var A320_Neo_LowerECAM_APU;
                 this.APUBleedPressure.textContent = "XX";
                 this.APUBleedPressure.setAttribute("class", "APUGenParamValueWarn");
             }
+
+            const lowFuelPressure = SimVar.GetSimVarValue("L:A32NX_APU_LOW_FUEL_PRESSURE_FAULT", "Bool");
+            toggleVisibility(this.FuelLoPr, lowFuelPressure);
 
             const apuFlapOpenPercent = SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Percent");
             toggleVisibility(this.APUFlapOpen, apuFlapOpenPercent === 100);

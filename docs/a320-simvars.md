@@ -404,3 +404,15 @@
 - A32NX_APU_BLEED_AIR_VALVE_OPEN
     - Bool
     - Indicates if the APU bleed air valve is open
+
+- A32NX_APU_MASTER_FAULT
+    - Bool
+    - Indicates if the MASTER SW FAULT light should be illuminated
+
+- A32NX_APU_LOW_FUEL_PRESSURE_FAULT
+    - Bool
+    - Indicates if the APU has an active LOW FUEL PRESSURE fault
+
+- A32NX_APU_IS_AUTO_SHUTDOWN
+    - Bool
+    - Indicates if the APU automatically shut down (for a reason other than fire)

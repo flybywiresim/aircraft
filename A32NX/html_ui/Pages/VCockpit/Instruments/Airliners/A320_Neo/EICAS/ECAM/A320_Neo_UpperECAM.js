@@ -1002,6 +1002,18 @@ var A320_Neo_UpperECAM;
                             },
                         ]
                     },
+                    {
+                        name: "APU",
+                        messages: [
+                            {
+                                message: "AUTO SHUTDOWN",
+                                level: 2,
+                                flightPhasesInhib: [3, 4, 5, 7, 8],
+                                isActive: () => this.getCachedSimVar("L:A32NX_APU_IS_AUTO_SHUTDOWN", "Bool")
+                            }
+                        ]
+
+                    }
                 ],
                 normal: [
                     {
