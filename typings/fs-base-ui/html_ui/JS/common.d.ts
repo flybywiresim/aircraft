@@ -920,8 +920,8 @@ declare global {
      * class defined in that script. The following attributes are available to handle these cases:
      * 
      * `import-async`: when set to false, **all** scripts imported from that moment onward are loaded
-     * synchronously. I.e. they are loaded in the order they are listed. As this impact loading
-     * times using this attribute is **not recommended**.
+     * synchronously. I.e. they are loaded in the order they are listed. Initial loading times will
+     * increase when using this attribute.
      * 
      * `import-after`: any resource listed in this attribute will be imported after the script
      * declared in the `import-script` attribute was imported. `import-after` supports

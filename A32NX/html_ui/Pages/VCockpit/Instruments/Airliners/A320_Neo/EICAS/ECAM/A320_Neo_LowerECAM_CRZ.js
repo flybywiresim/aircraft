@@ -105,13 +105,17 @@ var A320_Neo_LowerECAM_CRZ;
             this.CabinAltitudeDisplayed = -1;
             this.OutsidePressureDisplayed = -1;
 
+            this.updateThrottler = new UpdateThrottler(500);
+
             this.isInitialised = true;
         }
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
+            }
             // Fuel
             const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "KG") * this.unitConversion;
             const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "KG") * this.unitConversion;
