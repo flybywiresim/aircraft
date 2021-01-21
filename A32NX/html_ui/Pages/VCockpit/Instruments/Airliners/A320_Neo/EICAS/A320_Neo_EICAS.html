@@ -43,17 +43,17 @@
 
             <div id="BottomScreen">
                 <a320-neo-lower-ecam-fuel id="FD" style="display:block"></a320-neo-lower-ecam-fuel>
-                <a320-neo-lower-ecam-engine style="display:none"></a320-neo-lower-ecam-engine> <!-- MODIFIED -->
-                <a320-neo-lower-ecam-elec style="display:none"></a320-neo-lower-ecam-elec> <!-- MODIFIED -->
+                <a320-neo-lower-ecam-engine style="display:none"></a320-neo-lower-ecam-engine>
+                <a320-neo-lower-ecam-elec style="display:none"></a320-neo-lower-ecam-elec>
                 <a320-neo-lower-ecam-apu style="display:none"></a320-neo-lower-ecam-apu>
-                <a320-neo-lower-ecam-cond style="display:none"></a320-neo-lower-ecam-cond> <!-- MODIFIED -->
-                <a320-neo-lower-ecam-bleed style="display:none"></a320-neo-lower-ecam-bleed> <!-- MODIFIED -->
-                <a320-neo-lower-ecam-press style="display:none"></a320-neo-lower-ecam-press> <!-- MODIFIED -->
-                <a320-neo-lower-ecam-door style="display:none"></a320-neo-lower-ecam-door> <!-- MODIFIED -->
-                <a320-neo-lower-ecam-ftcl style="display:none"></a320-neo-lower-ecam-ftcl> <!-- MODIFIED -->
-                <a320-neo-lower-ecam-wheel style="display:none"></a320-neo-lower-ecam-wheel> <!-- MODIFIED -->
-                <a320-neo-lower-ecam-status style="display:none"></a320-neo-lower-ecam-status> <!-- MODIFIED -->
-                <a320-neo-lower-ecam-crz style="display:none"></a320-neo-lower-ecam-crz> <!-- MODIFIED -->
+                <a320-neo-lower-ecam-cond style="display:none"></a320-neo-lower-ecam-cond>
+                <a320-neo-lower-ecam-bleed style="display:none"></a320-neo-lower-ecam-bleed>
+                <a320-neo-lower-ecam-press style="display:none"></a320-neo-lower-ecam-press>
+                <a320-neo-lower-ecam-door style="display:none"></a320-neo-lower-ecam-door>
+                <a320-neo-lower-ecam-ftcl style="display:none"></a320-neo-lower-ecam-ftcl>
+                <a320-neo-lower-ecam-wheel style="display:none"></a320-neo-lower-ecam-wheel>
+                <a320-neo-lower-ecam-status style="display:none"></a320-neo-lower-ecam-status>
+                <a320-neo-lower-ecam-crz style="display:none"></a320-neo-lower-ecam-crz>
                 <eicas-common-display id="CommonDisplay"></eicas-common-display>
 
 
@@ -87,10 +87,11 @@
     </div>
 </script>
 
-<script type="text/html" import-script="/JS/SimPlane.js"></script>
+<script type="text/html" import-script="/JS/SimPlane.js" import-async="false"></script>
 <script type="text/html" import-script="/JS/A32NX_Util.js"></script>
 <script type="text/html" import-script="/JS/dataStorage.js"></script>
 <script type="text/html" import-script="/Pages/A32NX_Utils/NXDataStore.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/NXLogic.js"></script>
 <script type="text/html" import-script="/Pages/A32NX_Core/A32NX_DMC.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
@@ -107,7 +108,21 @@
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/A320_Neo/A32NX_NavSystem.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/A32NX_BaseAirliners.js" 
-    import-after="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/EICAS_Common.html,/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Engine.html,/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.html,/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_COND.html,/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Fuel.html,/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Elec.html,/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_BLEED.html,/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_PRESS.html,/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_DOOR.html,/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_FTCL.html,/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Status.html,/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_CRZ.html,/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_WHEEL.html,/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_UpperECAM.html"></script>
+
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/EICAS_Common.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Engine.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_COND.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Fuel.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Elec.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_BLEED.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_PRESS.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_DOOR.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_FTCL.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Status.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_CRZ.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_WHEEL.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_UpperECAM.html"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_ECAMGauge.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js"></script>
