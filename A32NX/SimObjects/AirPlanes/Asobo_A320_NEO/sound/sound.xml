@@ -943,7 +943,7 @@
         </Sound>
 
         <Sound WwiseEvent="nosetouch"  WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="PEDALS_LEFT" SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0">
-            <Range LowerBound="51" />
+            <Range LowerBound="60" />
             <Requires  SimVar="AIRSPEED INDICATED" Units="knots" Index="0">
                 <Range LowerBound="100" />
             </Requires>
