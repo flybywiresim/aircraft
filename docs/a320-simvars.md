@@ -416,3 +416,7 @@
 - A32NX_APU_IS_AUTO_SHUTDOWN
     - Bool
     - Indicates if the APU automatically shut down (for a reason other than fire)
+
+- A32NX_ECAM_INOP_SYS_APU
+    - Bool
+    - Indicates if the APU is inoperable
