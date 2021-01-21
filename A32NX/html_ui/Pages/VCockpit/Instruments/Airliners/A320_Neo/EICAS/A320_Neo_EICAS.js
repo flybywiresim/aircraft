@@ -57,6 +57,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                     pageName = this.pageNameWhenUnselected;
                     pageIndex = -1;
                 }
+
                 this.currentPage = pageIndex;
                 SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", pageIndex);
                 break;
@@ -100,6 +101,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         super.Init();
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         this.currentPage = -1;
+        this.ecamAllButtonTimer = 1000;
+        this.ecamAllButtonTimerStarted = false;
 
         this.pageNameWhenUnselected = "DOOR";
         //this prevents switching back to previous pages
@@ -160,12 +163,15 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         super.onUpdate(_deltaTime);
 
         const selfTestCurrentKnobValue = SimVar.GetSimVarValue(this.isTopScreen ? "LIGHT POTENTIOMETER:92" : "LIGHT POTENTIOMETER:93", "number");
+        // ECAM all button
+        const ecamAllButtonState = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
         const knobChanged = (selfTestCurrentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
 
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime === -1 && !knobChanged) {
+        if (_deltaTime === -1 && !knobChanged && !ecamAllButtonState) {
             return;
         }
+
         this.updateDoorVideoState();
 
         this.updateAnnunciations();
@@ -318,19 +324,25 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, this.pageNameWhenUnselected);
         }
 
-        // ECAM all button
-        this.ecamAllButtonState = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
+        if (ecamAllButtonState) { // button press
+            if (this.currentPage === SimVar.GetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number")) {
 
-        if (this.ecamAllButtonState && !this.ecamAllButtonPrevState) { // button press
-            this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
-            this.ecamCycleInterval = setInterval(() => {
-                this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
-            }, 1000);
+                if (!this.ecamAllButtonTimerStarted) {
+                    this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
+                    this.ecamAllButtonTimerStarted = true;
+
+                } else if (this.ecamAllButtonTimer <= 0) {
+                    this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
+                    this.ecamAllButtonTimer = 1000;
+                }
+                this.ecamAllButtonTimer -= _deltaTime;
+            }
         } else if (!this.ecamAllButtonState && this.ecamAllButtonPrevState) { // button release
-            clearInterval(this.ecamCycleInterval);
+            this.ecamAllButtonTimer = 1000;
+            this.ecamAllButtonTimerStarted = false;
         }
 
-        this.ecamAllButtonPrevState = this.ecamAllButtonState;
+        this.ecamAllButtonPrevState = ecamAllButtonState;
         this.PrevFailPage = sFailPage;
     }
 
