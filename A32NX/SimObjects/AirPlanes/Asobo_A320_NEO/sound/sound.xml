@@ -835,6 +835,9 @@
             <Requires SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
                 <Range LowerBound="1" />
             </Requires>
+            <Requires SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" >
+            	<Range LowerBound="80" />
+            	</Requires>
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
         
@@ -954,11 +957,6 @@
             <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
                 <Range UpperBound="-351" />
             </Requires>
-        </Sound>
-
-        <Sound WwiseEvent="nosetouch"  WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="PEDALS_LEFT" SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0">
-            <Range LowerBound="55" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
         </Sound>
 
         <Sound WwiseData="true" NodeName="PEDALS_LEFT" WwiseEvent="turbulence1" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
