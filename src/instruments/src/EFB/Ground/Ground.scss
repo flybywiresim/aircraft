@@ -1,0 +1,131 @@
+/*!
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@import "../Assets/Efb.scss";
+
+.wrapper {
+  flex-grow: 1;
+  // this lets us use position:absolute in widgets
+  position: relative;
+  padding: 1rem;
+}
+
+.airplane {
+  height: 100%;
+  max-width: 100%;
+  // position the image in the center of the screen while still being able to position elements on top of it
+  // basically this should be a background but I couldn't figure that out with rotation and sizing
+  position: relative;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.control-grid {
+  @extend .p-2;
+  @extend .grid;
+  @extend .bg-gray-800;
+  @extend .rounded-lg;
+  position: absolute;
+  color: #232b3d;
+  grid-gap: 0.5rem;
+}
+
+.control-grid h1 {
+  text-align: center;
+  grid-column: 1/-1;
+  padding: 0.2rem;
+}
+
+.control-grid > * {
+  display: block;
+}
+
+.control-grid > div {
+  @extend .rounded-lg;
+  height: 3rem;
+  width: 3rem;
+  margin: auto;
+}
+
+.control-grid > div > svg {
+  height: 100%;
+  width: 100%;
+}
+
+.pushback {
+  right: 3rem;
+  bottom: 3rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.fuel {
+  right: calc(55% + 18rem);
+  top: 21rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.baggage {
+  left: calc(50% + 4rem);
+  top: 4rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.catering {
+  left: calc(50% + 4rem);
+  bottom: 9rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.jetway {
+  right: calc(50% + 4rem);
+  top: 4rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.call {
+  @extend .bg-green-500;
+  grid-column: 1 / 1;
+}
+
+.selected {
+  @extend .text-white;
+  border-color: #ccc;
+  border-width: 2px;
+}
+
+.pushback .stop {
+  @extend .bg-red-500;
+  grid-column: 2 / 3;
+}
+
+.down-left {
+  @extend .bg-green-500;
+  grid-column: 1/1;
+}
+
+.down {
+  @extend .bg-green-500;
+  grid-column: 2/2;
+}
+
+.down-right {
+  @extend .bg-green-500;
+  grid-column: 3/3;
+}

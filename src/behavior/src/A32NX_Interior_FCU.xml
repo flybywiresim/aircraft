@@ -96,6 +96,9 @@
                 <WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
                 <WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
             </UseTemplate>
+            <!--Disables FCU baro knob emissive-->
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+            </UseTemplate>
         </Component>
     </Template>
 

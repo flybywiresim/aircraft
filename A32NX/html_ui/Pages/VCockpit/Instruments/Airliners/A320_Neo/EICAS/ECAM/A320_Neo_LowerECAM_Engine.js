@@ -39,10 +39,15 @@ var A320_Neo_LowerECAM_Engine;
             this.ignRightValueText = this.querySelector("#IGNValueRight");
             this.ignLeftCurrentState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
             this.ignRightCurrentState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
+            this.updateThrottler = new UpdateThrottler(200);
             this.isInitialised = true;
         }
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
+                return;
+            }
+            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+            if (_deltaTime === -1) {
                 return;
             }
             const unitConversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
