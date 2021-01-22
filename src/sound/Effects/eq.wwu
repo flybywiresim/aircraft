@@ -192,6 +192,49 @@
 						</Effect>
 					</ChildrenList>
 				</Folder>
+				<Effect Name="New_Wwise_Pitch_Shifter" ID="{0AE67B9F-969B-412E-AFAE-2AC613F09C21}" PluginName="Wwise Pitch Shifter" CompanyID="0" PluginID="136" PluginType="3">
+					<PropertyList>
+						<Property Name="FilterType" Type="int32" Value="7"/>
+						<Property Name="Pitch" Type="Real32">
+							<RTPCList>
+								<RTPC Name="" ID="{6F855EAC-6B18-4B40-80DF-ADF0686E357C}" ShortID="1061453229">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="SIMVAR_TURB_ENG_N1" ID="{23BAD005-E61B-45C7-9ADA-EB168F71B891}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{9D0CA6CF-BABE-408C-BD8E-23210C1F9BFD}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="1"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>0</YPos>
+												<Flags>5</Flags>
+											</Point>
+											<Point>
+												<XPos>29.1262</XPos>
+												<YPos>-871.17437</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>50.8090614886731</XPos>
+												<YPos>0</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>200</XPos>
+												<YPos>0</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
+						</Property>
+					</PropertyList>
+				</Effect>
 			</ChildrenList>
 		</WorkUnit>
 	</Effects>
