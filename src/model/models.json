@@ -1,10 +1,34 @@
 [
   {
-    "gltf": ["./a320-interior/A320_NEO_INTERIOR_LOD00.gltf", "./a320-interior/A320_NEO_INTERIOR_LOD01.gltf", "./a320-interior/A320_NEO_INTERIOR_LOD02.gltf", "./a320-interior/A320_NEO_INTERIOR_LOD03.gltf", "./a320-interior/A320_NEO_INTERIOR_LOD04.gltf"],
-    "bin": ["./a320-interior/A320_NEO_INTERIOR_LOD00.bin", "./a320-interior/A320_NEO_INTERIOR_LOD01.bin", "./a320-interior/A320_NEO_INTERIOR_LOD02.bin", "./a320-interior/A320_NEO_INTERIOR_LOD03.bin", "./a320-interior/A320_NEO_INTERIOR_LOD04.bin"],
+    "gltf": [
+      "./a320-interior/A320_NEO_INTERIOR_LOD00.gltf",
+      "./a320-interior/A320_NEO_INTERIOR_LOD01.gltf",
+      "./a320-interior/A320_NEO_INTERIOR_LOD02.gltf",
+      "./a320-interior/A320_NEO_INTERIOR_LOD03.gltf",
+      "./a320-interior/A320_NEO_INTERIOR_LOD04.gltf"
+    ],
+    "bin": [
+      "./a320-interior/A320_NEO_INTERIOR_LOD00.bin",
+      "./a320-interior/A320_NEO_INTERIOR_LOD01.bin",
+      "./a320-interior/A320_NEO_INTERIOR_LOD02.bin",
+      "./a320-interior/A320_NEO_INTERIOR_LOD03.bin",
+      "./a320-interior/A320_NEO_INTERIOR_LOD04.bin"
+    ],
     "output": {
-      "gltf": ["../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD00.gltf", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD01.gltf", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD02.gltf", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD03.gltf", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD04.gltf"],
-      "bin": ["../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD00.bin", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD01.bin", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD02.bin", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD03.bin", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD04.bin"]
+      "gltf": [
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD00.gltf",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD01.gltf",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD02.gltf",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD03.gltf",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD04.gltf"
+      ],
+      "bin": [
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD00.bin",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD01.bin",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD02.bin",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD03.bin",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD04.bin"
+      ]
     },
     "additions": [
       {
@@ -20,7 +44,7 @@
           "x0_PUSH_MPR_MS0MINUS_SEQ1_vertices#0_TEXCOORD_0",
           "x0_PUSH_MPR_MS0MINUS_SEQ1_vertices#0_TEXCOORD_1"
         ],
-        "data" : [
+        "data": [
           [0.353271484375, 0.53369140625],
           [0.383056640625, 0.5561519861221313],
           [0.353271484375, 0.55615234375],
@@ -108,11 +132,43 @@
     ]
   },
   {
-    "gltf": ["./a320-exterior/A320_NEO_LOD00.gltf", "./a320-exterior/A320_NEO_LOD01.gltf", "./a320-exterior/A320_NEO_LOD02.gltf", "./a320-exterior/A320_NEO_LOD03.gltf", "./a320-exterior/A320_NEO_LOD04.gltf", "./a320-exterior/A320_NEO_LOD05.gltf", "./a320-exterior/A320_NEO_LOD06.gltf"],
-    "bin": ["./a320-exterior/A320_NEO_LOD00.bin", "./a320-exterior/A320_NEO_LOD01.bin", "./a320-exterior/A320_NEO_LOD02.bin", "./a320-exterior/A320_NEO_LOD03.bin", "./a320-exterior/A320_NEO_LOD04.bin", "./a320-exterior/A320_NEO_LOD05.bin", "./a320-exterior/A320_NEO_LOD06.bin"],
+    "gltf": [
+      "./a320-exterior/A320_NEO_LOD00.gltf",
+      "./a320-exterior/A320_NEO_LOD01.gltf",
+      "./a320-exterior/A320_NEO_LOD02.gltf",
+      "./a320-exterior/A320_NEO_LOD03.gltf",
+      "./a320-exterior/A320_NEO_LOD04.gltf",
+      "./a320-exterior/A320_NEO_LOD05.gltf",
+      "./a320-exterior/A320_NEO_LOD06.gltf"
+    ],
+    "bin": [
+      "./a320-exterior/A320_NEO_LOD00.bin",
+      "./a320-exterior/A320_NEO_LOD01.bin",
+      "./a320-exterior/A320_NEO_LOD02.bin",
+      "./a320-exterior/A320_NEO_LOD03.bin",
+      "./a320-exterior/A320_NEO_LOD04.bin",
+      "./a320-exterior/A320_NEO_LOD05.bin",
+      "./a320-exterior/A320_NEO_LOD06.bin"
+    ],
     "output": {
-      "gltf": ["../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD00.gltf", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD01.gltf", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD02.gltf", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD03.gltf", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD04.gltf", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD05.gltf", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD06.gltf"],
-      "bin": ["../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD00.bin", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD01.bin", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD02.bin", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD03.bin", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD04.bin", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD05.bin", "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD06.bin"]
+      "gltf": [
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD00.gltf",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD01.gltf",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD02.gltf",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD03.gltf",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD04.gltf",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD05.gltf",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD06.gltf"
+      ],
+      "bin": [
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD00.bin",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD01.bin",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD02.bin",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD03.bin",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD04.bin",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD05.bin",
+        "../../A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_LOD06.bin"
+      ]
     },
     "additions": [
       {
