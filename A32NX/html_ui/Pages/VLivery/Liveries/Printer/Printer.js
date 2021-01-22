@@ -78,7 +78,10 @@ class LiveryPrinter extends TemplateElement {
         for (const value of (pages[displayedPage] || [])) {
             newLines += `<span class="line">${value}<br/></span>`;
         }
-        this.lines.innerHTML = newLines;
+        if (this.previousLines !== newLines) {
+            this.lines.innerHTML = newLines;
+        }
+        this.previousLines = newLines;
     }
 }
 registerLivery("livery-printer-element", LiveryPrinter);

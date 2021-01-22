@@ -64,7 +64,7 @@
             <PAGE_OFFSET_VAR>L:A32NX_PRINT_PAGE_OFFSET</PAGE_OFFSET_VAR>
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
                     (#PAGE_OFFSET_VAR#) #DIRECTION# + (&gt;#PAGE_OFFSET_VAR#)
                 </LEFT_SINGLE_CODE>
