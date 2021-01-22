@@ -2992,22 +2992,35 @@ var A320_Neo_UpperECAM;
                 //Action
                 const action = document.createElement("span");
                 action.className = "Action";
-                let actionText = _item.action;
-                for (let i = 0; i < (19 - _item.name.length - _item.action.length); i++) {
-                    actionText = "." + actionText;
+                let actionText;
+                if (typeof _item.action === 'function') {
+                    actionText = _item.action();
+                } else {
+                    actionText = _item.action;
                 }
-                action.textContent = actionText;
+                action.textContent = this.leftPad(actionText, ".", 19 - _item.name.length);
                 div.appendChild(action);
 
                 //Completed
                 const completed = document.createElement("span");
                 completed.className = "Completed";
-                completed.textContent = " " + _item.completed;
+                if (typeof _item.completed === 'function') {
+                    completed.textContent = " " + _item.completed();
+                } else {
+                    completed.textContent = " " + _item.completed;
+                }
                 div.appendChild(completed);
 
                 div.className = "InfoIndication";
                 div.setAttribute("id", _item.id);
             }
+        }
+
+        leftPad(_text, _pad, _length) {
+            for (let i = 0; i < (_length - _text.length); i++) {
+                _text = _pad + _text;
+            }
+            return _text;
         }
 
         /**
@@ -3020,9 +3033,16 @@ var A320_Neo_UpperECAM;
                     for (const child of div.children) {
                         if (child.className == "Action") {
                             child.style.display = _completed ? "none" : "inline";
+                            if (typeof _item.action === 'function') {
+                                const actionText = _item.action();
+                                child.textContent = this.leftPad(actionText, ".", 19 - _item.name.length);
+                            }
                         }
                         if (child.className == "Completed") {
                             child.style.display = _completed ? "inline" : "none";
+                            if (typeof _item.completed === 'function') {
+                                child.textContent = " " + _item.completed();
+                            }
                         }
                     }
                     return;
