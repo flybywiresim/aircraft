@@ -76,7 +76,7 @@ class CDUAocRequestsMessage {
         };
 
         mcdu.onRightInput[5] = () => {
-            mcdu.printPage(lines);
+            mcdu.printPage([lines.join(' ')]);
         };
 
     }

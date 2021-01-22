@@ -14,6 +14,10 @@
       {
         "gltf": "./printer/printer.gltf",
         "bin": "./printer/printer.bin"
+      },
+      {
+        "gltf": "./printer/print-static.gltf",
+        "bin": "./printer/print-static.bin"
       }
     ],
     "modifications": [
@@ -24,7 +28,7 @@
           "x0_PUSH_MPR_MS0MINUS_SEQ1_vertices#0_TEXCOORD_0",
           "x0_PUSH_MPR_MS0MINUS_SEQ1_vertices#0_TEXCOORD_1"
         ],
-        "data" : [
+        "data": [
           [0.353271484375, 0.53369140625],
           [0.383056640625, 0.5561519861221313],
           [0.353271484375, 0.55615234375],

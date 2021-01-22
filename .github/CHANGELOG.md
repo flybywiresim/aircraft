@@ -39,6 +39,7 @@
 1. [ECAM] Added F/CTL FLAP/MCDU DISAGREE check - @MisterChocker (Leon)
 1. [MISC] Changed AIRCOND knobs starting position to 12 o'clock - @ImenesFBW (Imenes)
 1. [FCU] Fixed baro knob overlapping text and emissive removed - @DarkOfNova (DarkOfNova), @ImenesFBW (Imenes)
+1. [MISC] Added printer - @tyler58546 (tyler58546), @DarkOfNova (DarkOfNova)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)

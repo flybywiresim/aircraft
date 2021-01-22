@@ -4,6 +4,7 @@
             <NODE_ID>#NODE_ID#</NODE_ID>
             <ANIM_NAME>PrintAnim</ANIM_NAME>
             <CURSOR>Grab</CURSOR>
+            <TOOLTIPID>Collect paper</TOOLTIPID>
 
             <ANIM_LENGTH>100</ANIM_LENGTH>
             <LEFT_SINGLE_CODE/>
@@ -14,11 +15,11 @@
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
 
-            <Update Frequency = "10">
+            <Update Frequency = "50">
                 (#TOGGLE_VAR#) if#{
-                    (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / + 1 min (&gt;O:_ButtonAnimVar)
+                    (O:_ButtonAnimVar) 0.02 #ANIM_DURATION# / + 1 min (&gt;O:_ButtonAnimVar)
                 } els{
-                (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / - (#TOGGLE_VAR#) max (&gt;O:_ButtonAnimVar)
+                    0 (&gt;O:_ButtonAnimVar)
                 }
             </Update>
 
@@ -31,6 +32,51 @@
                         <ANIM_CODE>#ANIM_LENGTH# (O:_ButtonAnimVar) *</ANIM_CODE>
                     </False>
                 </Condition>
+            </UseTemplate>
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    0 (&gt;#TOGGLE_VAR#)
+                    (L:A32NX_PAGES_PRINTED) 1 + (&gt;L:A32NX_PAGES_PRINTED)
+                    0 (&gt;L:A32NX_PRINT_PAGE_OFFSET)
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(#TOGGLE_VAR#)</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+    <Template Name="FBW_Airbus_PRINTER_PAPER">
+        <DefaultTemplateParameters>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <PAGE>1</PAGE>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#_#PAGE#" Node="#NODE_ID#_#PAGE#">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A32NX_PAGES_PRINTED) #PAGE# &gt;=</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+    <Template Name="FBW_Airbus_PAPER_PAGE_BUTTON">
+        <DefaultTemplateParameters>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <CURSOR>Grab</CURSOR>
+            <DIRECTION>1</DIRECTION>
+            <PAGE_OFFSET_VAR>L:A32NX_PRINT_PAGE_OFFSET</PAGE_OFFSET_VAR>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    (#PAGE_OFFSET_VAR#) #DIRECTION# + (&gt;#PAGE_OFFSET_VAR#)
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>
+                    #DIRECTION# 0 &lt; if#{
+                        (L:A32NX_PAGES_PRINTED) (L:A32NX_PRINT_PAGE_OFFSET) + 1 - 0 &gt;
+                    } els{
+                        (L:A32NX_PAGES_PRINTED) (L:A32NX_PRINT_PAGE_OFFSET) + 1 - (L:A32NX_PAGES_PRINTED) 1 - &lt;
+                    }
+                </VISIBILITY_CODE>
             </UseTemplate>
         </Component>
     </Template>
