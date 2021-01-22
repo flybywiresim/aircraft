@@ -338,15 +338,11 @@
         </UseTemplate>
     </Template>
     <Template Name="FBW_Airbus_APU_Starter_Switch">
-        <DefaultTemplateParameters>
-            <AVAIL_PERCENTAGE>95</AVAIL_PERCENTAGE>
-        </DefaultTemplateParameters>
-
         <UseTemplate Name="FBW_Push_Toggle">
             <SEQ1_CODE>(L:A32NX_APU_AVAILABLE, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(L:A32NX_APU_START_ACTIVATED, Bool)</SEQ2_CODE>
             <LEFT_SINGLE_CODE>#EXTRA_CONDITION# if{ 1 (&gt;L:A32NX_APU_START_ACTIVATED) }</LEFT_SINGLE_CODE>
-            <TOOLTIPID>%((L:A32NX_APU_N, Percent) 0 &gt; (L:A32NX_APU_N, Percent) #AVAIL_PERCENTAGE# &lt; and)%{if}TT:COCKPIT.TOOLTIPS.UNAVAILABLE%{end} %((L:A32NX_APU_N, Percent) #AVAIL_PERCENTAGE# &gt;= (A:APU SWITCH, Bool) and)%{if}TT:COCKPIT.TOOLTIPS.APU_STARTER_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.APU_STARTER_TURN_ON%{end}</TOOLTIPID>
+            <TOOLTIPID>%((L:A32NX_APU_START_ACTIVATED, Bool) (L:A32NX_APU_AVAILABLE, Bool) ! and)%{if}TT:COCKPIT.TOOLTIPS.UNAVAILABLE%{end} %((L:A32NX_APU_AVAILABLE, Bool))%{if}TT:COCKPIT.TOOLTIPS.APU_AVAILABLE%{else}TT:COCKPIT.TOOLTIPS.APU_STARTER_TURN_ON%{end}</TOOLTIPID>
         </UseTemplate>
     </Template>
     <Template Name="FBW_ENGINE_Switch_Master_Template">
