@@ -33,12 +33,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
-        this.activeWaypointIdx = -1;
         this.constraintAlt = 0;
         this.constraintAltCached = 0;
         this.fcuSelAlt = 0;
-        this.updateTypeIIMessage = false;
-        this.altLock = 0;
         this.messageQueue = [];
         this._destDataChecked = false;
         this._towerHeadwind = 0;
@@ -604,58 +601,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inOut = data;
     }
 
-    tryUpdateAltitudeConstraint(force = false) {
-        if (this.flightPlanManager.getIsDirectTo()) {
-            this.constraintAlt = 0;
-        }
-        const activeWptIdx = this.flightPlanManager.getActiveWaypointIndex();
-        const altLock = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
-        if (force || activeWptIdx !== this.activeWptIdx || altLock !== this.altLock) {
-            this.activeWptIdx = activeWptIdx;
-            this.altLock = altLock;
-            this.constraintAlt = this.getAltitudeConstraint();
-        }
-    }
-
-    getAltitudeConstraint() {
-        const rte = this.flightPlanManager.getWaypoints(0);
-        if (rte.length === 0) {
-            return 0;
-        }
-        const fph = Simplane.getCurrentFlightPhase();
-        const type = fph < FlightPhase.FLIGHT_PHASE_CRUISE || fph === FlightPhase.FLIGHT_PHASE_GOAROUND ? 3 : 2;
-        let tmp = 0;
-        for (let i = this.activeWptIdx; i < rte.length; i++) {
-            const wpt = rte[i];
-            if (!isFinite(wpt.legAltitude1)) {
-                continue;
-            }
-            // Ensure constraint waypoint after TOD is not a constraint for climb phase
-            if (tmp) {
-                if (type === 3 && (wpt.legAltitude1 < tmp || (isFinite(wpt.legAltitude2) && wpt.legAltitude2 < tmp))) {
-                    return 0;
-                }
-            } else {
-                tmp = wpt.legAltitude1;
-            }
-            if (wpt.legAltitudeDescription === 0) {
-                continue;
-            }
-            if (wpt.legAltitudeDescription === 4) {
-                if (type === 3 && this.altLock > wpt.legAltitude2) {
-                    return wpt.legAltitude2;
-                } else if (type === 2 && this.altLock < wpt.legAltitude1) {
-                    return wpt.legAltitude1;
-                }
-            } else if ((wpt.legAltitudeDescription === 1 || wpt.legAltitudeDescription === type) && (
-                (type === 3 && this.altLock > wpt.legAltitude1) || (type === 2 && this.altLock < wpt.legAltitude1)
-            )) {
-                return wpt.legAltitude1;
-            }
-        }
-        return 0;
-    }
-
     getSpeedConstraint() {
         if (this.flightPlanManager.getIsDirectTo()) {
             return Infinity;
@@ -985,17 +930,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onLeft = undefined;
         this.onRight = undefined;
     }
-    getOrSelectWaypointByIdent(ident, callback) {
-        this.dataManager.GetWaypointsByIdent(ident).then((waypoints) => {
-            if (!waypoints || waypoints.length === 0) {
-                return callback(undefined);
-            }
-            if (waypoints.length === 1) {
-                return callback(waypoints[0]);
-            }
-            A320_Neo_CDU_SelectWptPage.ShowPage(this, waypoints, callback);
-        });
-    }
 
     _getTempIndex() {
         const temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
@@ -1059,53 +993,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return 19;
     }
 
-    _getVSpeed(dWeightCoef, min, max) {
-        let runwayCoef = 1.0;
-        const runway = this.flightPlanManager.getDepartureRunway() || this.flightPlanManager.getDetectedCurrentRunway();
-        if (runway) {
-            const f = (runway.length - 1500) / (2500 - 1500);
-            runwayCoef = Utils.Clamp(f, 0, 1);
-        }
-
-        const flapsHandleIndex = this.flaps || Simplane.getFlapsHandleIndex();
-
-        let vSpeed = min * (1 - runwayCoef) + max * runwayCoef;
-        vSpeed *= dWeightCoef;
-        vSpeed += (3 - flapsHandleIndex) * 6;
-        return Math.round(vSpeed);
-    }
-
     _getV1Speed() {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
-    }
-    _computeV1Speed() {
-        // computeV1Speed is called by inherited class so it must remain,
-        // but we need the calculation logic so that sits in it's own function now.
-        const nextV1 = this._getV1Speed();
-        this.v1Speed = nextV1;
-        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", nextV1);
     }
 
     _getVRSpeed() {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).vr;
     }
-    _computeVRSpeed() {
-        // computeVRSpeed is called by inherited class so it must remain,
-        // but we need the calculation logic so that sits in it's own function now.
-        const nextVR = this._getVRSpeed();
-        this.vRSpeed = nextVR;
-        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", nextVR);
-    }
 
     _getV2Speed() {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
-    }
-    _computeV2Speed() {
-        // computeV2Speed is called by inherited class so it must remain,
-        // but we need the calculation logic so that sits in it's own function now.
-        const nextV2 = this._getV2Speed();
-        this.v2Speed = nextV2;
-        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", nextV2);
     }
 
     getThrustTakeOffLimit() {
@@ -1126,9 +1023,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         return 88.4;
     }
-    getThrustClimbLimit() {
-        return this.getThrustTakeOffLimit() - 8;
-    }
+
     isAirspeedManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT SPEED SLOT INDEX", "number") === 2;
     }
@@ -1138,9 +1033,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     isAltitudeManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
     }
-    isVerticalSpeedManaged() {
-        return SimVar.GetSimVarValue("AUTOPILOT VS SLOT INDEX", "number") === 2;
-    }
+
     updateAutopilot() {
         const now = performance.now();
         const dt = now - this._lastUpdateAPTime;
@@ -1297,7 +1190,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     if (airspeed < 400) {
                         const turnRadius = airspeed * 360 / (1091 * 0.36 / airspeed) / 3600 / 2 / Math.PI;
                         const activateDistance = Math.pow(90 / absPathAngle, 1.6) * turnRadius * 1.2;
-                        ;
                         const distanceToActive = Avionics.Utils.computeGreatCircleDistance(planeCoordinates, activeWaypoint.infos.coordinates);
                         if (distanceToActive < activateDistance) {
                             this.flightPlanManager.setActiveWaypointIndex(this.flightPlanManager.getActiveWaypointIndex() + 1);
@@ -1408,224 +1300,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             default: return this.getFlapApproachSpeed();
         }
     }
-    checkUpdateFlightPhase() {
-        const airSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "knots");
-        const flapsHandlePercent = Simplane.getFlapsHandlePercent();
-        const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
-        const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
-        const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
 
-        if (this.currentFlightPhase <= FlightPhase.FLIGHT_PHASE_TAKEOFF) {
-            const isAirborne = !Simplane.getIsGrounded(); // TODO replace with proper flight mode in future
-            const isTogaFlex = highestThrottleDetent === ThrottleMode.TOGA || highestThrottleDetent === ThrottleMode.FLEX_MCT;
-            const flapsSlatsRetracted = (
-                SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") === 0 &&
-                SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees") === 0 &&
-                SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees") === 0 &&
-                SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees") === 0
-            );
-            const pitchTakeoffEngaged = !isAirborne && isFinite(this.v2Speed) && isTogaFlex && !flapsSlatsRetracted;
-            const isTakeOffValid = pitchTakeoffEngaged ||
-                SimVar.GetSimVarValue("GPS GROUND SPEED", "knots") > 90 ||
-                (
-                    SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") >= 85 &&
-                    SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") >= 85
-                );
-
-            //End preflight when takeoff power is applied and engines are running
-            if (this.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF && isTakeOffValid) {
-                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
-            }
-
-            //Reset to preflight in case of RTO
-            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && !isTakeOffValid) {
-                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
-                this.climbTransitionGroundAltitude = null;
-            }
-        }
-
-        //Changes to climb phase when acceleration altitude is reached
-        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && airSpeed > 80) {
-            const planeAltitudeMsl = Simplane.getAltitude();
-            let accelerationAltitudeMsl = (this.accelerationAltitude || this.thrustReductionAltitude);
-
-            if (!accelerationAltitudeMsl) {
-                if (!this.climbTransitionGroundAltitude) {
-                    const origin = this.flightPlanManager.getOrigin();
-                    if (origin) {
-                        this.climbTransitionGroundAltitude = origin.altitudeinFP;
-                    }
-
-                    if (!this.climbTransitionGroundAltitude) {
-                        this.climbTransitionGroundAltitude = (parseInt(SimVar.GetSimVarValue("GROUND ALTITUDE", "feet")) || 0);
-                    }
-                }
-
-                accelerationAltitudeMsl = this.climbTransitionGroundAltitude + parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
-            }
-
-            if (planeAltitudeMsl > accelerationAltitudeMsl) {
-                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
-                this.climbTransitionGroundAltitude = null;
-            }
-        }
-
-        //(Mostly) Default Asobo logic
-        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
-            let remainInClimb = false;
-            if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
-                if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") !== 1) {
-                    remainInClimb = true;
-                }
-            }
-            const altitude = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
-            const cruiseFlightLevel = this.cruiseFlightLevel * 100;
-            if (isFinite(cruiseFlightLevel)) {
-                if (altitude >= 0.96 * cruiseFlightLevel) {
-                    if (!remainInClimb) {
-                        this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CRUISE;
-                        SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-                        Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
-                    }
-                }
-            }
-        }
-        //(Mostly) Default Asobo logic
-        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
-            const altitude = SimVar.GetSimVarValue("PLANE ALTITUDE", "feets");
-            const cruiseFlightLevel = this.cruiseFlightLevel * 100;
-            if (isFinite(cruiseFlightLevel)) {
-                if (altitude < 0.94 * cruiseFlightLevel) {
-                    this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_DESCENT;
-                    Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
-                }
-            }
-        }
-        //Default Asobo logic
-        // Switches from any phase to APPR if less than 40 distance(?) from DEST
-        if (this.flightPlanManager.getActiveWaypoint() === this.flightPlanManager.getDestination()) {
-            if (SimVar.GetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number") != 1) {
-                const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
-                const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
-                const planeLla = new LatLongAlt(lat, long);
-                const dist = Avionics.Utils.computeGreatCircleDistance(planeLla, this.flightPlanManager.getDestination().infos.coordinates);
-                if (dist < 40 && this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
-                    this.connectIls();
-                    this.flightPlanManager.activateApproach();
-                    if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
-                        console.log('switching to tryGoInApproachPhase: ' + JSON.stringify({lat, long, dist, prevPhase: this.currentFlightPhase}, null, 2));
-                        this.tryGoInApproachPhase();
-                    }
-                }
-            }
-        }
-        //Default Asobo logic
-        // Switches from any phase to APPR if less than 3 distance(?) from DECEL
-        if (SimVar.GetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number") === 1) {
-            if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
-                if (this.flightPlanManager.decelWaypoint) {
-                    const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
-                    const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
-                    const planeLla = new LatLongAlt(lat, long);
-                    const dist = Avionics.Utils.computeGreatCircleDistance(this.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
-                    if (dist < 3 && this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
-                        this.flightPlanManager._decelReached = true;
-                        this._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-                        if (Simplane.getAltitudeAboveGround() < 9500) {
-                            this.tryGoInApproachPhase();
-                        }
-                    }
-                }
-            }
-        }
-        //Logic to switch from APPR to GOAROUND
-        //another condition getIsGrounded < 30sec
-        if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_APPROACH && highestThrottleDetent == ThrottleMode.TOGA && flapsHandlePercent != 0 && !Simplane.getAutoPilotThrottleActive() && SimVar.GetSimVarValue("RADIO HEIGHT", "feets") < 2000) {
-
-            this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_GOAROUND;
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_GATRK_MODE", "bool", 0);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
-            //delete override logic when we have valid nav data -aka goaround path- after goaround!
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool", 0);
-
-            if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 1) {
-                SimVar.SetSimVarValue("K:AP_LOC_HOLD_ON", "number", 1); // Turns AP localizer hold !!ON/ARMED!! and glide-slope hold mode !!OFF!!
-                SimVar.SetSimVarValue("K:AP_LOC_HOLD_OFF", "number", 1); // Turns !!OFF!! localizer hold mode
-                SimVar.SetSimVarValue("K:AUTOPILOT_OFF", "number", 1);
-                SimVar.SetSimVarValue("K:AUTOPILOT_ON", "number", 1);
-                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_APPR_MODE", "bool", 0);
-                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool", 0);
-            } else if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 0 && SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "boolean") === 1) {
-                SimVar.SetSimVarValue("AP_APR_HOLD_OFF", "number", 1);
-                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_APPR_MODE", "bool", 0);
-                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool", 0);
-            }
-
-            const currentHeading = Simplane.getHeadingMagnetic();
-            Coherent.call("HEADING_BUG_SET", 1, currentHeading);
-
-            CDUPerformancePage.ShowGOAROUNDPage(this);
-        }
-
-        //Logic to switch back from GOAROUND to CLB/CRZ
-        //When missed approach or sec fpl are implemented this needs rework
-        //Exit Scenario after successful GOAROUND
-        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
-            if (highestThrottleDetent === ThrottleMode.FLEX_MCT) {
-                SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 1);
-            }
-
-            const planeAltitudeMsl = Simplane.getAltitude();
-            const accelerationAltitudeMsl = this.accelerationAltitudeGoaround;
-
-            if (planeAltitudeMsl > accelerationAltitudeMsl) {
-                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
-                SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 1);
-            }
-        }
-
-        //Resets flight phase to preflight 30 seconds after touchdown
-        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH && Simplane.getAltitudeAboveGround() < 1.5) {
-            if (this.landingResetTimer == null) {
-                this.landingResetTimer = 30;
-            }
-            if (this.landingAutoBrakeTimer == null) {
-                this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
-            }
-            if (this.lastPhaseUpdateTime == null) {
-                this.lastPhaseUpdateTime = Date.now();
-            }
-            const deltaTime = Date.now() - this.lastPhaseUpdateTime;
-            const deltaQuotient = deltaTime / 1000;
-            this.lastPhaseUpdateTime = Date.now();
-            this.landingResetTimer -= deltaQuotient;
-            this.landingAutoBrakeTimer -= deltaQuotient;
-            if (this.landingAutoBrakeTimer <= 0) {
-                this.landingAutoBrakeTimer = null;
-                SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 1);
-            }
-            if (this.landingResetTimer <= 0) {
-                this.landingResetTimer = null;
-                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
-                SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
-                CDUIdentPage.ShowPage(this);
-            }
-        } else {
-            //Reset timer to 30 when airborne in case of go around
-            this.landingResetTimer = 30;
-            this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
-        }
-
-        if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") !== this.currentFlightPhase) {
-            this.landingAutoBrakeTimer = null;
-            SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", this.currentFlightPhase);
-            this.onFlightPhaseChanged();
-            SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
-        }
-    }
     checkAocTimes() {
         if (!this.aocTimes.off) {
             const isAirborne = !Simplane.getIsGrounded(); // TODO replace with proper flight mode in future

@@ -224,7 +224,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                     <div className="flex items-center">
                         {props.editIcao == "yes" ?
                             <>
-                                <IconAccessPoint className="absolute" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                <IconAccessPoint size={35} stroke={1.5} strokeLinejoin="miter" />
                                 <input className="ml-12 border-none focus:outline-none text-2xl bg-transparent font-medium uppercase"
                                     type="text"
                                     placeholder={props.icao}

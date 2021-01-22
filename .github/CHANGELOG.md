@@ -38,8 +38,9 @@
 1. [DISPLAYS] Optimize performance by throttling instrument updates - @XSJoJo (Jorim Jaggi)
 1. [ECAM] Added F/CTL FLAP/MCDU DISAGREE check - @MisterChocker (Leon)
 1. [MISC] Changed AIRCOND knobs starting position to 12 o'clock - @ImenesFBW (Imenes)
+1. [FCU] Fixed baro knob overlapping text and emissive removed - @DarkOfNova (DarkOfNova), @ImenesFBW (Imenes)
 1. [SOUND] Reworked engine spool up and startup sounds - @hotshotp (Boris)
-1. [SOUND] Reworked pack spool up and startup sounds - @hotshotp (Boris)
+1. [SOUND] Reworked pack sounds - @hotshotp (Boris)
 1. [SOUND] Reworked touchdown sounds - @hotshotp (Boris)
 
 ## 0.5.2
