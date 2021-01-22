@@ -109,7 +109,7 @@
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
-									<ObjectRef Name="nosetouch" ID="{BE67DACA-A3CA-45E5-BEEE-DF1B2B0617C5}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+									<ObjectRef Name="nosetouch" ID="{88AB9FC1-30E2-4F13-BC03-7FFE47FD8614}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
