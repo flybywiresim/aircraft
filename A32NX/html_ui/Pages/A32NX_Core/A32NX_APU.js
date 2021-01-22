@@ -1,7 +1,6 @@
 class A32NX_APU {
     constructor() {
         console.log('A32NX_APU constructed');
-        this.previousApuGenActiveRaw = false;
     }
     init() {
         console.log('A32NX_APU init');
@@ -14,6 +13,8 @@ class A32NX_APU {
         // Until everything that depends on the APU is moved into WASM,
         // we still need to synchronise some of the WASM state with the sim's state.
         if (available && !apuSwitchIsOn) {
+            // This event will open the fuel valve leading to the APU.
+            SimVar.SetSimVarValue("K:FUELSYSTEM_VALVE_TOGGLE", "Number", 8);
             // This event will set `A:APU SWITCH` to 1, meaning the sim will start the APU.
             // In systems.cfg, the `apu_pct_rpm_per_second` setting is set to 1, meaning the APU starts in one second.
             SimVar.SetSimVarValue("K:APU_STARTER", "Number", 1);
@@ -21,33 +22,24 @@ class A32NX_APU {
             // This event will set `A:APU SWITCH` to 0, meaning the sim will stop the APU.
             // In systems.cfg, the `apu_pct_rpm_per_second` setting is set to 1, meaning the APU stops in one second.
             SimVar.SetSimVarValue("K:APU_OFF_SWITCH", "Number", 1);
+            // This event will close the fuel valve leading to the APU.
+            SimVar.SetSimVarValue("K:FUELSYSTEM_VALVE_TOGGLE", "Number", 8);
         }
 
-        // Something outside of our code is setting the APU SWITCH to 0, meaning the sim stops the APU.
-        // The code above will turn the APU back on, however the APU GENERATOR ACTIVE value will be wrong
-        // for a single update tick. Thus, to work around this problem until all electrical systems are handled
-        // by us, we will ignore a false value for one update tick.
-        // If the APU GENERATOR ACTIVE is false for two ticks, we can be sure it was due to manual user interaction.
-        const apuGenActiveRaw = SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool");
-        const apuGenActive = apuGenActiveRaw || this.previousApuGenActiveRaw;
-        this.previousApuGenActiveRaw = apuGenActiveRaw;
+        const apuGenActive = SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool");
+        const externalPowerOff = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0;
 
-        if (apuGenActive === apuGenActiveRaw) {
-            if (available && apuGenActive) {
-                SimVar.SetSimVarValue("L:APU_GEN_ONLINE", "Bool", 1);
-                SimVar.SetSimVarValue(
-                    "L:APU_LOAD_PERCENT",
-                    "percent",
-                    Math.max(
-                        SimVar.GetSimVarValue("L:A32NX_APU_GEN_AMPERAGE", "Amperes")
-                            / SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS", "Amperes")
-                        , 0)
-                );
-            } else {
-                SimVar.SetSimVarValue("L:APU_GEN_ONLINE", "Bool",0);
-                SimVar.SetSimVarValue("L:APU_LOAD_PERCENT", "percent", 0);
-            }
-        }
+        // This logic is consistently faulty in the JavaScript code: of course it should also take into
+        // account if engine generators are supplying electricity. We'll fix this when we create the electrical system.
+        SimVar.SetSimVarValue("L:APU_GEN_ONLINE", "Bool", available && apuGenActive ? 1 : 0);
+        SimVar.SetSimVarValue(
+            "L:APU_LOAD_PERCENT",
+            "percent",
+            available && apuGenActive && externalPowerOff
+                ? Math.max(SimVar.GetSimVarValue("L:A32NX_APU_GEN_AMPERAGE", "Amperes")
+                        / SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS", "Amperes"), 0)
+                : 0
+        );
 
         const apuBleedAirValveOpen = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
         if (apuBleedAirValveOpen !== this.lastAPUBleedState) {

@@ -213,7 +213,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.ACPowerLastState = isACPowerAvailable;
 
         // modification start here
-        const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
+        const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool");
 
         //Determine displayed page when no button is selected
         const prevPage = this.pageNameWhenUnselected;

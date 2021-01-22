@@ -373,6 +373,10 @@
     - Percent
     - The APU's rotations per minute in percentage of the maximum RPM
 
+- A32NX_APU_MASTER_SW_ACTIVATED
+    - Bool
+    - True when the APU MASTER SW is activated
+
 - A32NX_APU_START_ACTIVATED
     - Bool
     - True when the APU START push button is activated

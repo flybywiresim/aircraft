@@ -959,8 +959,6 @@
 			<ANIM_NAME>AIRBUS_Push_Fuel_Valve</ANIM_NAME>
 			<PART_ID>AIRBUS_Push_Fuel_Valve</PART_ID>
 			<ID>1</ID>
-			<SEQ1_EMISSIVE_CODE>(A:FUELSYSTEM VALVE OPEN:#ID#, Bool)</SEQ1_EMISSIVE_CODE>
-			<SEQ2_EMISSIVE_CODE>(A:FUELSYSTEM VALVE SWITCH:#ID#, Bool)</SEQ2_EMISSIVE_CODE>
 			<LEFT_SINGLE_CODE/>
 			<OFF_TOOLTIP></OFF_TOOLTIP>
 			<ON_TOOLTIP></ON_TOOLTIP>
@@ -969,8 +967,16 @@
 
 		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
 			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
-			<LEFT_SINGLE_CODE>#EXTRA_CONDITION# if{ #LEFT_SINGLE_CODE# #ID# (&gt;K:FUELSYSTEM_VALVE_TOGGLE) }</LEFT_SINGLE_CODE>
-			<TOOLTIPID>%((A:FUELSYSTEM VALVE SWITCH:#ID#, Bool) !)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID> <!-- use <OFF_TOOLTIP></OFF_TOOLTIP> <ON_TOOLTIP></ON_TOOLTIP> to define tooltips -->
+            <LEFT_SINGLE_CODE>
+                (L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) if{
+                    0 (&gt;L:A32NX_APU_MASTER_SW_ACTIVATED)
+                } els{
+                    #EXTRA_CONDITION# if{
+                        1 (&gt;L:A32NX_APU_MASTER_SW_ACTIVATED)
+                    }
+                }
+            </LEFT_SINGLE_CODE>
+			<TOOLTIPID>%((L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) !)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID> <!-- use <OFF_TOOLTIP></OFF_TOOLTIP> <ON_TOOLTIP></ON_TOOLTIP> to define tooltips -->
 		</UseTemplate>
 	</Template>
 

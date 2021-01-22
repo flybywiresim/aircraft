@@ -1368,9 +1368,10 @@
                     <ANIM_NAME>PUSH_OVHD_APU_MASTERSW</ANIM_NAME>
                     <PART_ID>ELECTRICAL_Switch_APU_Master</PART_ID>
                     <SEQ1_EMISSIVE_CODE>(L:A32NX_APU_MASTER_FAULT, Bool)</SEQ1_EMISSIVE_CODE>
+                    <SEQ2_EMISSIVE_CODE>(L:A32NX_APU_MASTER_SW_ACTIVATED, Bool)</SEQ2_EMISSIVE_CODE>
                     <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt;</EXTRA_CONDITION>
                     <LEFT_SINGLE_CODE>
-                    (A:FUELSYSTEM VALVE SWITCH:8, Bool) if{
+                    (L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) if{
                         0 (&gt;L:A32NX_APU_START_ACTIVATED)
                     }
                     </LEFT_SINGLE_CODE>
@@ -1385,7 +1386,7 @@
 
                 <UseTemplate Name="FBW_Airbus_APU_Starter_Switch">
                     <NODE_ID>PUSH_OVHD_APU_START</NODE_ID>
-                    <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (A:FUELSYSTEM VALVE SWITCH:8, Bool) and</EXTRA_CONDITION>
+                    <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) and</EXTRA_CONDITION>
                 </UseTemplate>
             </Component>
 
