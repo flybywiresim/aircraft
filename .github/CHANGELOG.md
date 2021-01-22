@@ -38,6 +38,9 @@
 1. [DISPLAYS] Optimize performance by throttling instrument updates - @XSJoJo (Jorim Jaggi)
 1. [ECAM] Added F/CTL FLAP/MCDU DISAGREE check - @MisterChocker (Leon)
 1. [MISC] Changed AIRCOND knobs starting position to 12 o'clock - @ImenesFBW (Imenes)
+1. [SOUND] Reworked engine spool up and startup sounds - @hotshotp (Boris)
+1. [SOUND] Reworked pack spool up and startup sounds - @hotshotp (Boris)
+1. [SOUND] Reworked touchdown sounds - @hotshotp (Boris)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
