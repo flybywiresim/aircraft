@@ -8,28 +8,27 @@
 
 .MainShape {
     fill: transparent;
-    stroke: $display-green;
+    stroke: $display-light-grey;
     stroke-width: 2;
 }
 
-    .MainShapeWarning {
+.MainShapeWarning {
     fill: transparent;
     stroke: $display-amber;
     stroke-width: 2;
     }
 
-    .MainShape4 {
+.MainShape4 {
     fill: transparent;
     stroke: $display-green;
     stroke-width: 4;
     }
 
-    .GreenShape {
+.GreenShape {
     fill: transparent;
     stroke: $display-green;
     stroke-width: 2;
     }
-
 
     .WarningShape {
     fill: transparent;
@@ -38,8 +37,23 @@
     }
 
     .HydBgShape {
-    fill: $display-light-grey;
+    fill: $display-grey;
     stroke: none;
+    }
+
+    .Warning {
+        font-size: $font-size-medium;
+        fill: $display-amber;
+    }
+
+    .Value {
+        font-size: $font-size-large;
+        fill: $display-green;
+    }
+
+    .Note {
+        font-size: $font-size-medium;
+        fill: $display-white;
     }
 
 

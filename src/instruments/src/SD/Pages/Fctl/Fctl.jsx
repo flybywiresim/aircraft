@@ -29,8 +29,10 @@ export const FctlPage = () => {
     // 5
     const speedbrakes = [];
     const speedbrakesArrows = [];
+    const speedbrakeText = [];
     for (let i = 0; i < 5; i += 1) {
         const YCoord = speedBrakeY - (i * 5);
+        const YCoordW = YCoord - 9;
         const leftX = leftSpeedBrakeX + (i * speedBrakeXChange);
         const rightX = rightSpeedBrakeX - (i * speedBrakeXChange);
         speedbrakes.push(<path className="GreenShapeThick" d={`M ${leftX} ${YCoord} l 15 0`} />);
@@ -39,6 +41,9 @@ export const FctlPage = () => {
         const index = 5 - i;
         speedbrakesArrows.push(<path id={`arrow${index}_left`} className="GreenShape" d={`M ${leftX + speedBrakeXArrowChange} ${YCoord} l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0`} />);
         speedbrakesArrows.push(<path id={`arrow${index}_right`} className="GreenShape" d={`M ${rightX - speedBrakeXArrowChange} ${YCoord} l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0`} />);
+        console.log(YCoordW);
+        speedbrakeText.push(<text id={`num${index}_left`} className="Warning" x={`${leftX + speedBrakeXArrowChange}`} y={`${YCoordW}`} textAnchor="middle" alignmentBaseline="central">{index}</text>);
+        speedbrakeText.push(<text id={`num${index}_right`} className="Warning" x={`${rightX - speedBrakeXArrowChange}`} y={`${YCoordW}`} textAnchor="middle" alignmentBaseline="central">{index}</text>);
     }
 
     return (
@@ -56,17 +61,7 @@ export const FctlPage = () => {
                 </g>
 
                 <g id="speedbrake_text">
-                    <text id="num5_left" className="Value15Warning" x="111" y="93" textAnchor="middle" alignmentBaseline="central">5</text>
-                    <text id="num4_left" className="Value15Warning" x="150" y="88" textAnchor="middle" alignmentBaseline="central">4</text>
-                    <text id="num3_left" className="Value15Warning" x="188" y="83" textAnchor="middle" alignmentBaseline="central">3</text>
-                    <text id="num2_left" className="Value15Warning" x="227" y="78" textAnchor="middle" alignmentBaseline="central">2</text>
-                    <text id="num1_left" className="Value15Warning" x="265" y="73" textAnchor="middle" alignmentBaseline="central">1</text>
-
-                    <text id="num5_right" className="Value15Warning" x="489" y="93" textAnchor="middle" alignmentBaseline="central">5</text>
-                    <text id="num4_right" className="Value15Warning" x="450" y="88" textAnchor="middle" alignmentBaseline="central">4</text>
-                    <text id="num3_right" className="Value15Warning" x="412" y="83" textAnchor="middle" alignmentBaseline="central">3</text>
-                    <text id="num2_right" className="Value15Warning" x="373" y="78" textAnchor="middle" alignmentBaseline="central">2</text>
-                    <text id="num1_right" className="Value15Warning" x="335" y="73" textAnchor="middle" alignmentBaseline="central">1</text>
+                    {speedbrakeText}
                 </g>
 
                 <g id="leftSpeedbrakeGroup">
@@ -83,9 +78,9 @@ export const FctlPage = () => {
                     <rect className="HydBgShape" x="269" y="14" width="18" height="24" rx="2" />
                     <rect className="HydBgShape" x="291" y="14" width="18" height="24" rx="2" />
                     <rect className="HydBgShape" x="313" y="14" width="18" height="24" rx="2" />
-                    <text id="speedbrakeHyd1" className="Value15" x="278" y="27" textAnchor="middle" alignmentBaseline="central">G</text>
-                    <text id="speedbrakeHyd2" className="Value15" x="300" y="27" textAnchor="middle" alignmentBaseline="central">B</text>
-                    <text id="speedbrakeHyd3" className="Value15" x="322" y="27" textAnchor="middle" alignmentBaseline="central">Y</text>
+                    <text id="speedbrakeHyd1" className="Value" x="278" y="27" textAnchor="middle" alignmentBaseline="central">G</text>
+                    <text id="speedbrakeHyd2" className="Value" x="300" y="27" textAnchor="middle" alignmentBaseline="central">B</text>
+                    <text id="speedbrakeHyd3" className="Value" x="322" y="27" textAnchor="middle" alignmentBaseline="central">Y</text>
                 </g>
 
                 {/* Left ailerons */}
@@ -104,8 +99,8 @@ export const FctlPage = () => {
                 <g id="leftAileronHyd">
                     <rect className="HydBgShape" x="94" y="233" width="18" height="24" rx="2" />
                     <rect className="HydBgShape" x="116" y="233" width="18" height="24" rx="2" />
-                    <text id="leftAileronHyd1" className="Value15" x="103" y="246" textAnchor="middle" alignmentBaseline="central">B</text>
-                    <text id="leftAileronHyd2" className="Value15" x="125" y="246" textAnchor="middle" alignmentBaseline="central">G</text>
+                    <text id="leftAileronHyd1" className="Value" x="103" y="246" textAnchor="middle" alignmentBaseline="central">B</text>
+                    <text id="leftAileronHyd2" className="Value" x="125" y="246" textAnchor="middle" alignmentBaseline="central">G</text>
                 </g>
 
                 {/* Right ailerons */}
@@ -124,26 +119,26 @@ export const FctlPage = () => {
                 <g id="rightAileronHyd">
                     <rect className="HydBgShape" x="466" y="233" width="18" height="24" rx="2" />
                     <rect className="HydBgShape" x="488" y="233" width="18" height="24" rx="2" />
-                    <text id="rightAileronHyd1" className="Value15" x="475" y="246" textAnchor="middle" alignmentBaseline="central">G</text>
-                    <text id="rightAileronHyd2" className="Value15" x="497" y="246" textAnchor="middle" alignmentBaseline="central">B</text>
+                    <text id="rightAileronHyd1" className="Value" x="475" y="246" textAnchor="middle" alignmentBaseline="central">G</text>
+                    <text id="rightAileronHyd2" className="Value" x="497" y="246" textAnchor="middle" alignmentBaseline="central">B</text>
                 </g>
 
                 <g id="elac">
                     <path id="elac1" className="MainShape" d="M170,190 l72,0 l0,-26 l-8,0" />
                     <path id="elac2" className="MainShape" d="M194,206 l72,0 l0,-26 l-8,0" />
-                    <text id="elacText" className="Note15" x="195" y="178" textAnchor="middle" alignmentBaseline="central">ELAC</text>
-                    <text id="elacText_1" className="Value15" x="232" y="178" textAnchor="middle" alignmentBaseline="central">1</text>
-                    <text id="elacText_2" className="Value15" x="256" y="194" textAnchor="middle" alignmentBaseline="central">2</text>
+                    <text id="elacText" className="Note" x="195" y="178" textAnchor="middle" alignmentBaseline="central">ELAC</text>
+                    <text id="elacText_1" className="Value" x="232" y="178" textAnchor="middle" alignmentBaseline="central">1</text>
+                    <text id="elacText_2" className="Value" x="256" y="194" textAnchor="middle" alignmentBaseline="central">2</text>
                 </g>
 
                 <g id="sec">
                     <path id="sec1" className="MainShape" d="M324,190 l72,0 l0,-26 l-8,0" />
                     <path id="sec2" className="MainShape" d="M348,206 l72,0 l0,-26 l-8,0" />
                     <path id="sec3" className="MainShape" d="M372,222 l72,0 l0,-26 l-8,0" />
-                    <text id="secText" className="Note15" x="350" y="178" textAnchor="middle" alignmentBaseline="central">SEC</text>
-                    <text id="secText_1" className="Value15" x="385" y="178" textAnchor="middle" alignmentBaseline="central">1</text>
-                    <text id="secText_2" className="Value15" x="409" y="194" textAnchor="middle" alignmentBaseline="central">2</text>
-                    <text id="secText_3" className="Value15" x="433" y="210" textAnchor="middle" alignmentBaseline="central">3</text>
+                    <text id="secText" className="Note" x="350" y="178" textAnchor="middle" alignmentBaseline="central">SEC</text>
+                    <text id="secText_1" className="Value" x="385" y="178" textAnchor="middle" alignmentBaseline="central">1</text>
+                    <text id="secText_2" className="Value" x="409" y="194" textAnchor="middle" alignmentBaseline="central">2</text>
+                    <text id="secText_3" className="Value" x="433" y="210" textAnchor="middle" alignmentBaseline="central">3</text>
                 </g>
 
                 {/* Left elevator */}
@@ -160,8 +155,8 @@ export const FctlPage = () => {
                 <g id="leftElevatorHyd">
                     <rect className="HydBgShape" x="108" y="407" width="18" height="24" rx="2" />
                     <rect className="HydBgShape" x="130" y="407" width="18" height="24" rx="2" />
-                    <text id="leftElevatorHyd1" className="Value15" x="117" y="420" textAnchor="middle" alignmentBaseline="central">B</text>
-                    <text id="leftElevatorHyd2" className="Value15" x="139" y="420" textAnchor="middle" alignmentBaseline="central">G</text>
+                    <text id="leftElevatorHyd1" className="Value" x="117" y="420" textAnchor="middle" alignmentBaseline="central">B</text>
+                    <text id="leftElevatorHyd2" className="Value" x="139" y="420" textAnchor="middle" alignmentBaseline="central">G</text>
                 </g>
 
                 {/* Right elevator */}
@@ -178,37 +173,37 @@ export const FctlPage = () => {
                 <g id="rightElevatorHyd">
                     <rect className="HydBgShape" x="452" y="407" width="18" height="24" rx="2" />
                     <rect className="HydBgShape" x="474" y="407" width="18" height="24" rx="2" />
-                    <text id="rightElevatorHyd1" className="Value15" x="461" y="420" textAnchor="middle" alignmentBaseline="central">Y</text>
-                    <text id="rightElevatorHyd2" className="Value15" x="483" y="420" textAnchor="middle" alignmentBaseline="central">B</text>
+                    <text id="rightElevatorHyd1" className="Value" x="461" y="420" textAnchor="middle" alignmentBaseline="central">Y</text>
+                    <text id="rightElevatorHyd2" className="Value" x="483" y="420" textAnchor="middle" alignmentBaseline="central">B</text>
                 </g>
 
                 {/* Pitch trim */}
 
                 <g id="pitchTrim">
-                    <text id="pitchTrimText" className="Note15" x="280" y="296" textAnchor="middle" alignmentBaseline="central">PITCH TRIM</text>
+                    <text id="pitchTrimText" className="Note" x="280" y="296" textAnchor="middle" alignmentBaseline="central">PITCH TRIM</text>
                     <rect className="HydBgShape" x="360" y="283" width="18" height="24" rx="2" />
                     <rect className="HydBgShape" x="382" y="283" width="18" height="24" rx="2" />
-                    <text id="pitchTrimLeadingDecimal" className="Value15" x="269" y="318" textAnchor="middle" alignmentBaseline="central">-</text>
+                    <text id="pitchTrimLeadingDecimal" className="Value" x="269" y="318" textAnchor="middle" alignmentBaseline="central">-</text>
                     <text id="pitchTrimDecimalPoint" className="Value" x="281" y="318" textAnchor="middle" alignmentBaseline="central">.</text>
                     <text id="pitchTrimTrailingDecimal" className="Value12" x="292" y="318" textAnchor="middle" alignmentBaseline="central">-</text>
                     <circle id="pitchTrimDegreePoint" className="MainShape" cx="310" cy="313" r="3" textAnchor="middle" alignmentBaseline="central">°</circle>
                     <text id="pitchTrimDirection" className="Value" x="335" y="318" textAnchor="middle" alignmentBaseline="central">UP</text>
-                    <text id="pitchTrimHyd1" className="Value15" x="369" y="296" textAnchor="middle" alignmentBaseline="central">G</text>
-                    <text id="pitchTrimHyd2" className="Value15" x="391" y="296" textAnchor="middle" alignmentBaseline="central">Y</text>
+                    <text id="pitchTrimHyd1" className="Value" x="369" y="296" textAnchor="middle" alignmentBaseline="central">G</text>
+                    <text id="pitchTrimHyd2" className="Value" x="391" y="296" textAnchor="middle" alignmentBaseline="central">Y</text>
                 </g>
 
                 {/* Stabilizer */}
 
                 <g id="stabilizer">
-                    <text id="pitchTrimText" className="Note15" x="300" y="356" textAnchor="middle" alignmentBaseline="central">RUD</text>
+                    <text id="pitchTrimText" className="Note" x="300" y="356" textAnchor="middle" alignmentBaseline="central">RUD</text>
                     <path id="stabLeft" className="MainShape" d="M268,357 l-55,4 l0,-18 l30,-15" />
                     <path id="stabRight" className="MainShape" d="M332,357 l55,4 l0,-18 l-30,-15" />
                     <rect className="HydBgShape" x="269" y="373" width="18" height="24" rx="2" />
                     <rect className="HydBgShape" x="291" y="373" width="18" height="24" rx="2" />
                     <rect className="HydBgShape" x="313" y="373" width="18" height="24" rx="2" />
-                    <text id="stabHyd1" className="Value15" x="278" y="386" textAnchor="middle" alignmentBaseline="central">G</text>
-                    <text id="stabHyd2" className="Value15" x="300" y="386" textAnchor="middle" alignmentBaseline="central">B</text>
-                    <text id="stabHyd3" className="Value15" x="322" y="386" textAnchor="middle" alignmentBaseline="central">Y</text>
+                    <text id="stabHyd1" className="Value" x="278" y="386" textAnchor="middle" alignmentBaseline="central">G</text>
+                    <text id="stabHyd2" className="Value" x="300" y="386" textAnchor="middle" alignmentBaseline="central">B</text>
+                    <text id="stabHyd3" className="Value" x="322" y="386" textAnchor="middle" alignmentBaseline="central">Y</text>
                 </g>
 
                 {/* Rudder */}
@@ -240,16 +235,16 @@ export const FctlPage = () => {
 
                 <g id="texts">
                     <text id="pageTitle" className="Title Large" x="45" y="18" textAnchor="middle" alignmentBaseline="central" textDecoration="underline">F/CTL</text>
-                    <text id="speedBrakeText" className="Note15" x="300" y="107" textAnchor="middle" alignmentBaseline="central">SPD BRK</text>
-                    <text id="leftAileronText1" className="Note15" x="32" y="153" textAnchor="middle" alignmentBaseline="central">L</text>
-                    <text id="leftAileronText2" className="Note15" x="32" y="175" textAnchor="middle" alignmentBaseline="central">AIL</text>
-                    <text id="rightAileronText1" className="Note15" x="568" y="153" textAnchor="middle" alignmentBaseline="central">R</text>
-                    <text id="rightAileronText2" className="Note15" x="568" y="175" textAnchor="middle" alignmentBaseline="central">AIL</text>
+                    <text id="speedBrakeText" className="Note" x="300" y="107" textAnchor="middle" alignmentBaseline="central">SPD BRK</text>
+                    <text id="leftAileronText1" className="Note" x="32" y="153" textAnchor="middle" alignmentBaseline="central">L</text>
+                    <text id="leftAileronText2" className="Note" x="32" y="175" textAnchor="middle" alignmentBaseline="central">AIL</text>
+                    <text id="rightAileronText1" className="Note" x="568" y="153" textAnchor="middle" alignmentBaseline="central">R</text>
+                    <text id="rightAileronText2" className="Note" x="568" y="175" textAnchor="middle" alignmentBaseline="central">AIL</text>
 
-                    <text id="leftElevatorText1" className="Note15" x="122" y="328" textAnchor="middle" alignmentBaseline="central">L</text>
-                    <text id="leftElevatorText2" className="Note15" x="122" y="350" textAnchor="middle" alignmentBaseline="central">ELEV</text>
-                    <text id="rightElevatorText1" className="Note15" x="478" y="328" textAnchor="middle" alignmentBaseline="central">R</text>
-                    <text id="rightElevatorText2" className="Note15" x="478" y="350" textAnchor="middle" alignmentBaseline="central">ELEV</text>
+                    <text id="leftElevatorText1" className="Note" x="122" y="328" textAnchor="middle" alignmentBaseline="central">L</text>
+                    <text id="leftElevatorText2" className="Note" x="122" y="350" textAnchor="middle" alignmentBaseline="central">ELEV</text>
+                    <text id="rightElevatorText1" className="Note" x="478" y="328" textAnchor="middle" alignmentBaseline="central">R</text>
+                    <text id="rightElevatorText2" className="Note" x="478" y="350" textAnchor="middle" alignmentBaseline="central">ELEV</text>
                 </g>
             </svg>
         </>
