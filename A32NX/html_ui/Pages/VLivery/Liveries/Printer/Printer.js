@@ -12,12 +12,8 @@ class LiveryPrinter extends TemplateElement {
         super.connectedCallback();
         const url = document.getElementsByTagName("livery-printer-element")[0].getAttribute("url");
         this.index = parseInt(url.substring(url.length - 1));
-        const buttons = this.querySelector("#buttons");
-        this.leftArrow = this.querySelector("#arrow-left");
-        this.rightArrow = this.querySelector("#arrow-right");
         if (this.index == 0) {
             localStorage.setItem("pages", "[]");
-            buttons.style.display = "none";
         }
         this.lines = this.querySelector("#lines");
         const updateLoop = () => {
@@ -61,13 +57,11 @@ class LiveryPrinter extends TemplateElement {
             const offset = SimVar.GetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number");
             displayedPage = pagesPrinted - 1 + offset;
 
-            this.leftArrow.style.display = displayedPage > 0 ? "block" : "none";
             if (displayedPage < 0) {
                 displayedPage = 0;
                 SimVar.SetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number", (pagesPrinted - 1) * -1);
             }
 
-            this.rightArrow.style.display = displayedPage < (pagesPrinted - 1) ? "block" : "none";
             if (displayedPage > (pagesPrinted - 1)) {
                 displayedPage = pagesPrinted - 1;
                 SimVar.SetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number", 0);
