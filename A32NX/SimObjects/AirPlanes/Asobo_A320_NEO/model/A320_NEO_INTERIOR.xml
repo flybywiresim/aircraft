@@ -1788,6 +1788,12 @@
                         <ID>3</ID>
                     </UseTemplate>
 
+                    <UseTemplate Name="FBW_Push_Toggle">
+                        <NODE_ID>PUSH_OVHD_ADIRS</NODE_ID>
+                        <SEQ1_CODE>(L:A32NX_ADIRS_ON_BAT, Bool)</SEQ1_CODE>
+                        <DUMMY_BUTTON/>
+                    </UseTemplate>
+
                     <UseTemplate Name="ASOBO_GT_Switch_Dummy">
                         <NODE_ID>LOCK_OVHD_EVAC_COMMAND</NODE_ID>
                         <ANIM_NAME>LOCK_OVHD_EVAC_COMMAND</ANIM_NAME>
