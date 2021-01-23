@@ -1425,11 +1425,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.printing = true;
         for (let i = 0; i < lines.length; i++) {
             let value = lines[i];
-            value = value.replace("[color]cyan", "<br/>");
+            while (value.includes("[color]cyan")) {
+                value = value.replace("[color]cyan", "<br/>");
+            }
             while (value.includes("[color]")) {
                 value = value.replace(/(\[color\][a-z]*)/g, "");
             }
-            value = value.replace("---------------------------", "");
+            value = value.replace(/-{3,}/g, "<br/><br/>");
             for (let j = 0; j < value.length; j++) {
                 SimVar.SetSimVarValue(`L:A32NX_PRINT_${i}_${j}`, "number", value.charCodeAt(j));
             }
