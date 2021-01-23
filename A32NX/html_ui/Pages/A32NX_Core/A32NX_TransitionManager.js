@@ -1,16 +1,27 @@
 class A32NX_TransitionManager {
     init() {
-        this.UpdateTimer = 0;
         console.log('A32NX_TransitionManager init');
+        this.FlightPlanManager = new FlightPlanManager();
+        this.currentOrigin = "";
+        this.currentDestination = "";
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
         if (mode !== "AUTO") {
             this.transitionManual();
         }
-        if (mode === "AUTO") {
-            this.transitionSelector();
-        }
     }
     update(_deltaTime, _core) {
+        const departureAirport = this.FlightPlanManager.getOrigin().ident;
+        const arrivalAirport = this.FlightPlanManager.getDestination().ident;
+        if (this.currentOrigin !== departureAirport) {
+            NXDataStore.set("PLAN_ORIGIN", departureAirport);
+            currentOrigin = departureAirport;
+            this.transitionSelector();
+        }
+        if (this.currentDestination !== arrivalAirport) {
+            NXDataStore.set("PLAN_DESTINATION", arrivalAirport);
+            currentOrigin = departureAirport;
+            this.transitionSelector();
+        }
     }
     transitionSelector() {
         const mode = NXDataStore.get("CONFIG_TRANSALT", "AUTO");
