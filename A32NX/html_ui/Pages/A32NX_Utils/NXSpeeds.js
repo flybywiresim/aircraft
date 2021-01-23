@@ -510,6 +510,7 @@ class NXApprSpeeds {
         this.f = f[cm](m);
         this.s = s[cm](m);
         this.gd = _computeGD(m);
+        this.valid = true;
     }
 }
 

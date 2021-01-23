@@ -60,6 +60,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.vApp = NaN;
         this.perfApprMDA = NaN;
         this.perfApprDH = NaN;
+        this.perfApprFlaps3 = false;
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
         this._lockConnectIls = false;
         this._apNavIndex = 1;
@@ -1986,14 +1987,14 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    /**
+     * VApp for _selected_ landing config
+     */
     getVApp() {
         if (isFinite(this.vApp)) {
             return this.vApp;
         }
-        if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-            return Math.ceil(this.getVLS() + NXSpeedsUtils.addWindComponent(this._towerHeadwind / 3));
-        }
-        return Math.ceil(this.getVLS() + NXSpeedsUtils.addWindComponent());
+        return this.approachSpeeds.vapp;
     }
 
     setPerfApprVApp(s) {
@@ -2009,33 +2010,25 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    /**
+     * VLS for current config (not selected landing config!)
+     */
     getVLS() {
-        const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-        const cg = this.zeroFuelWeightMassCenter;
-        if (((isNaN(cg)) ? 24 : cg) < 25) {
-            switch (true) {
-                case (dWeight <= 50):
-                    return 116;
-                case (dWeight >= 75):
-                    return Math.ceil(139 + .8 * (dWeight - 75));
-                case (dWeight <= 55):
-                    return Math.ceil(116 + .8 * (dWeight - 50));
-                case (dWeight <= 70):
-                    return Math.ceil(120 + dWeight - 55);
-                default:
-                    return Math.ceil(135 + .8 * (dWeight - 70));
-            }
+        return SimVar.GetSimVarValue("L:A32NX_SPEEDS_VLS", "Number");
+    }
+
+    /**
+     * Tries to estimate the landing weight at destination
+     * NaN on failure
+     */
+    tryEstimateLandingWeight() {
+        let landingWeight;
+        if (false /* TODO alt active */) {
+            landingWeight = this.getAltEFOB(true) + this.zeroFuelWeight;
+        } else {
+            landingWeight = this.getDestEFOB(true) + this.zeroFuelWeight;
         }
-        switch (true) {
-            case (dWeight <= 50):
-                return 116;
-            case (dWeight >= 75):
-                return Math.ceil(139 + .8 * (dWeight - 75));
-            case (dWeight <= 55):
-                return Math.ceil(116 + .6 * (dWeight - 50));
-            default:
-                return Math.ceil(119 + dWeight - 55);
-        }
+        return isFinite(landingWeight) ? landingWeight : NaN;
     }
 
     setPerfApprMDA(s) {
@@ -2086,6 +2079,10 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    setPerfApprFlaps3(s) {
+        this.perfApprFlaps3 = s;
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", s);
+    }
     getIsFlying() {
         return this.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_TAKEOFF;
     }
