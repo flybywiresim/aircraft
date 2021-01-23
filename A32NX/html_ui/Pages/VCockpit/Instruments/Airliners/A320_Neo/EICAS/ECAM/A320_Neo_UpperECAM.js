@@ -1259,7 +1259,7 @@ var A320_Neo_UpperECAM;
                     },
                     {
                         message: "GPWS FLAP 3",
-                        isActive: () => this.getCachedSimVar("L:PUSH_OVHD_GPWS_LDG", "Bool")
+                        isActive: () => this.getCachedSimVar("L:A32NX_GPWS_FLAPS3", "Bool")
                     },
                     {
                         message: "AUTO BRK LO",
