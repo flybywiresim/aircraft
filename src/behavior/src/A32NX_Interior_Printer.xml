@@ -59,7 +59,6 @@
     <Template Name="FBW_Airbus_PAPER_PAGE_BUTTON">
         <DefaultTemplateParameters>
             <NODE_ID>#NODE_ID#</NODE_ID>
-            <CURSOR>Grab</CURSOR>
             <DIRECTION>1</DIRECTION>
             <PAGE_OFFSET_VAR>L:A32NX_PRINT_PAGE_OFFSET</PAGE_OFFSET_VAR>
         </DefaultTemplateParameters>

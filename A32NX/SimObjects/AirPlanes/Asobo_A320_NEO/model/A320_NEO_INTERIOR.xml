@@ -821,12 +821,14 @@
                     <NODE_ID>PAPER_NEXT</NODE_ID>
                     <DIRECTION>1</DIRECTION>
                     <TOOLTIPID>Next page</TOOLTIPID>
+                    <CURSOR>RightArrow</CURSOR>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_PAPER_PAGE_BUTTON">
                     <NODE_ID>PAPER_PREV</NODE_ID>
                     <DIRECTION>-1</DIRECTION>
                     <TOOLTIPID>Previous page</TOOLTIPID>
+                    <CURSOR>LeftArrow</CURSOR>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
