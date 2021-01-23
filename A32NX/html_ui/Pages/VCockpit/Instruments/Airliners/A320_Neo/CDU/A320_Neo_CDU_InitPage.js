@@ -33,8 +33,8 @@ class CDUInitPage {
         let requestButton = "REQUEST*[color]amber";
         let requestButtonLabel = "INIT [color]amber";
         let requestEnable = true;
-        let currentOrigin = "";
-        let currentDestination = "";
+        const currentOrigin = "";
+        const currentDestination = "";
         this.TransitionManager = new A32NX_TransitionManager();
 
         if (mcdu.simbrief.sendStatus === "REQUESTING") {
