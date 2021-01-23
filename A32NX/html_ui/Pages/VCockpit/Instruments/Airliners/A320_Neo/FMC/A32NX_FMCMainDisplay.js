@@ -1336,30 +1336,8 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    getCleanApproachSpeed() {
-        let dWeight = (this.getWeight() - 42) / (75 - 42);
-        dWeight = Math.min(Math.max(dWeight, 0), 1);
-        const base = Math.max(172, this.getVLS() + 5);
-        return base + 40 * dWeight;
-    }
-
-    // Overridden by getManagedApproachSpeedMcdu in A320_Neo_CDU_MainDisplay
-    // Not sure what to do with this
-    getManagedApproachSpeed(flapsHandleIndex = NaN) {
-        switch (((isNaN(flapsHandleIndex)) ? Simplane.getFlapsHandleIndex() : flapsHandleIndex)) {
-            case 0:
-                return this.getCleanApproachSpeed();
-            case 1:
-                return this.getSlatApproachSpeed();
-            case 4:
-                return this.getVApp();
-            default:
-                return this.getFlapApproachSpeed();
-        }
-    }
-
     updateCleanApproachSpeed() {
-        const apprGreenDotSpeed = this.getCleanApproachSpeed();
+        const apprGreenDotSpeed = this.getPerfGreenDotSpeed();
         if (isFinite(apprGreenDotSpeed)) {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_GREEN_DOT_SPD", "Number", apprGreenDotSpeed);
         }
@@ -2955,7 +2933,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
             // Is this LVar used by anything? It doesn't look like it...
-            SimVar.SetSimVarValue("L:AIRLINER_MANAGED_APPROACH_SPEED", "number", this.getManagedApproachSpeed());
+            SimVar.SetSimVarValue("L:AIRLINER_MANAGED_APPROACH_SPEED", "number", this.getManagedApproachSpeedMcdu());
         }
         this.updateRadioNavState();
     }
