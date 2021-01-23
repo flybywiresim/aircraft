@@ -74,7 +74,6 @@ class LiveryPrinter extends TemplateElement {
                 localStorage.setItem("pages", JSON.stringify(pages));
                 pagesPrinted--;
                 SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", pagesPrinted);
-                SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", pagesPrinted);
                 SimVar.SetSimVarValue("L:A32NX_PAGE_ID", "number", SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1);
                 SimVar.SetSimVarValue("L:A32NX_DISCARD_PAGE", "bool", 0);
             }
