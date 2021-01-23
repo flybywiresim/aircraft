@@ -52,6 +52,8 @@ class A320_Neo_FDW_FrequencyHandler {
         this.setCrsSimVar = null;
         this.savedActive = 0;
         this.savedStby = 0;
+        this.autoRefreshTimer = 5.0;
+        this.disableAutoRefreshTimer = 0.0;
         this.index = _index;
         this.xmlRef = _xmlRef;
         this.radioNav = _radioNav;
@@ -80,7 +82,16 @@ class A320_Neo_FDW_FrequencyHandler {
     hasXMLRef(_xmlRef) {
         return (_xmlRef == this.xmlRef);
     }
-    apply(_activeText, _stbyText) {
+    update(_deltaTime, _activeText, _stbyText) {
+        this.disableAutoRefreshTimer -= _deltaTime;
+        if (this.disableAutoRefreshTimer <= 0.0) {
+            this.disableAutoRefreshTimer = 0.0;
+            this.autoRefreshTimer -= _deltaTime;
+            if (this.autoRefreshTimer <= 0.0) {
+                this.setFromSimvars();
+                this.autoRefreshTimer = 5.0;
+            }
+        }
         if (this.needRefresh) {
             if (_activeText != null) {
                 _activeText.textContent = this.active.toFixed(this.displayDP);
@@ -96,6 +107,9 @@ class A320_Neo_FDW_FrequencyHandler {
         }
     }
     show() {
+        this.setFromSimvars();
+    }
+    setFromSimvars() {
         if (this.getActiveSimVar != null) {
             if (this.savedActive != 0) {
                 this.active = this.savedActive;
@@ -216,6 +230,7 @@ class A320_Neo_FDW_FrequencyHandler {
             this.stby = newValue;
             this.setStbyValueSimVar();
             this.needRefresh = true;
+            this.disableAutoRefreshTimer = 5.0;
         }
     }
     modifyTargetCRSValue(_value) {
@@ -226,6 +241,7 @@ class A320_Neo_FDW_FrequencyHandler {
             this.targetCRS -= 360;
         }
         this.needRefresh = true;
+        this.disableAutoRefreshTimer = 5.0;
     }
     setActiveValueSimVar() {
         if (this.setActiveSimVar != null) {
@@ -347,8 +363,9 @@ class A320_Neo_FDW extends BaseAirliners {
             }
         }
         if (this.showValues) {
-            this.frequencyHandlers[this.currentFrequencyType].apply(this.valueTexts[0], this.valueTexts[1]);
+            this.frequencyHandlers[this.currentFrequencyType].update(this.deltaTime, this.valueTexts[0], this.valueTexts[1]);
         }
+
     }
     switchOn() {
         this.currentFrequencyType = A320_Neo_RadioManagement.FREQUENCY_TYPE.VHF1;
