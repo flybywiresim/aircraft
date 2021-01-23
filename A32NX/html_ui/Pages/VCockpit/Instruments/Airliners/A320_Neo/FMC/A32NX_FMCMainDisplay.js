@@ -1977,12 +1977,16 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprVApp(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.vApp = NaN;
-        }
-        const value = parseFloat(s);
-        if (isFinite(value) && value > 0) {
-            this.vApp = value;
-            return true;
+            if (isFinite(this.vApp)) {
+                this.vApp = NaN;
+                return true;
+            }
+        } else {
+            const value = parseFloat(s);
+            if (isFinite(value) && value > 0) {
+                this.vApp = value;
+                return true;
+            }
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
