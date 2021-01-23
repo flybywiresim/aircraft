@@ -1393,12 +1393,12 @@ var A320_Neo_UpperECAM;
                 new A320_Neo_UpperECAM.MemoItem(
                     "ldg-memo-flaps",
                     "FLAPS",
-                    () => SimVar.GetSimVarValue("L:A32NX_GPWS_FLAPS3", "Bool") ? "CONF 3" : "FULL",
-                    () => SimVar.GetSimVarValue("L:A32NX_GPWS_FLAPS3", "Bool") ? "CONF 3" : "FULL",
+                    () => this.getCachedSimVar("L:A32NX_GPWS_FLAPS3", "Bool") ? "CONF 3" : "FULL",
+                    () => this.getCachedSimVar("L:A32NX_GPWS_FLAPS3", "Bool") ? "CONF 3" : "FULL",
                     () => (
-                        SimVar.GetSimVarValue("L:A32NX_GPWS_FLAPS3", "Bool") ?
-                            SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum") === 3 :
-                            SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum") === 4
+                        this.getCachedSimVar("L:A32NX_GPWS_FLAPS3", "Bool") ?
+                            this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") === 3 :
+                            this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") === 4
                     )
 
                 ),
