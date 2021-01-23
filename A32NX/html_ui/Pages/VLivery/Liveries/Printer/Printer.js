@@ -53,9 +53,11 @@ class LiveryPrinter extends TemplateElement {
         if (this.index == 0) {
             displayedPage = pages.length - 1;
         } else {
-            const pagesPrinted = SimVar.GetSimVarValue("L:A32NX_PAGES_PRINTED", "number");
+            let pagesPrinted = SimVar.GetSimVarValue("L:A32NX_PAGES_PRINTED", "number");
             const offset = SimVar.GetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number");
             displayedPage = pagesPrinted - 1 + offset;
+
+            const discard = SimVar.GetSimVarValue("L:A32NX_DISCARD_PAGE", "bool");
 
             if (displayedPage < 0) {
                 displayedPage = 0;
@@ -65,6 +67,16 @@ class LiveryPrinter extends TemplateElement {
             if (displayedPage > (pagesPrinted - 1)) {
                 displayedPage = pagesPrinted - 1;
                 SimVar.SetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number", 0);
+            }
+
+            if (discard) {
+                pages.splice(displayedPage, 1);
+                localStorage.setItem("pages", JSON.stringify(pages));
+                pagesPrinted--;
+                SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", pagesPrinted);
+                SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", pagesPrinted);
+                SimVar.SetSimVarValue("L:A32NX_PAGE_ID", "number", SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") - 1);
+                SimVar.SetSimVarValue("L:A32NX_DISCARD_PAGE", "bool", 0);
             }
         }
 

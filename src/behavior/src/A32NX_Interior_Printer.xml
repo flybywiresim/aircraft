@@ -79,4 +79,23 @@
             </UseTemplate>
         </Component>
     </Template>
+    <Template Name="FBW_Airbus_PAPER_DISCARD_BUTTON">
+        <DefaultTemplateParameters>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <CURSOR>Grab</CURSOR>
+            <TOOLTIPID>Discard paper</TOOLTIPID>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>
+                    1 (&gt;L:A32NX_DISCARD_PAGE)
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>
+                    (L:A32NX_PAGES_PRINTED) 0 &gt;
+                </VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
 </ModelBehaviors>

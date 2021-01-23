@@ -831,6 +831,10 @@
                     <CURSOR>LeftArrow</CURSOR>
                 </UseTemplate>
 
+                <UseTemplate Name="FBW_Airbus_PAPER_DISCARD_BUTTON">
+                    <NODE_ID>PAPER_DISCARD</NODE_ID>
+                </UseTemplate>
+
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_PFD_L</NODE_ID>
                     <POTENTIOMETER>88</POTENTIOMETER>
