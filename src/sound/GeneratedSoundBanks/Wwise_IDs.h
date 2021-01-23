@@ -123,6 +123,7 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_LSPOOLEXT = 2357261761U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_LSPOOLEXTB = 4026719921U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_LSWITCH = 2441360683U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_LWHALE = 3021279154U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_LWHINE = 3053554464U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_LWHINEEXT = 1788429969U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_MCDUBUTTONS = 1777932087U;
@@ -174,6 +175,7 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_RUMBLELOWL = 3312026492U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_RUMBLELOWR = 3312026466U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_RUMBLER = 197736696U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_RWHALE = 837821644U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_RWHINE = 805546334U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_RWHINEEXT = 4094799643U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_SHUTL = 3133421133U;
@@ -853,6 +855,7 @@ namespace AK
         static const AkUniqueID SIMVAR_INCIDENCE_ALPHA = 3709807603U;
         static const AkUniqueID SIMVAR_INCIDENCE_BETA = 2281158207U;
         static const AkUniqueID SIMVAR_INTERACTIVE_POINT_OPEN = 4220647438U;
+        static const AkUniqueID SIMVAR_LEADING_EDGE_FLAPS_LEFT_PERCENT = 3128954395U;
         static const AkUniqueID SIMVAR_MASTER_IGNITION_SWITCH = 3117047763U;
         static const AkUniqueID SIMVAR_NAV_VOLUME = 1014571212U;
         static const AkUniqueID SIMVAR_OVERSPEED_WARNING = 2648716210U;
