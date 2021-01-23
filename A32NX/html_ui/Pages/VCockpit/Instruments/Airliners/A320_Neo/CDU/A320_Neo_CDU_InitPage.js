@@ -33,6 +33,8 @@ class CDUInitPage {
         let requestButton = "REQUEST*[color]amber";
         let requestButtonLabel = "INIT [color]amber";
         let requestEnable = true;
+        let currentOrigin = "";
+        let currentDestination = "";
         this.TransitionManager = new A32NX_TransitionManager();
 
         if (mcdu.simbrief.sendStatus === "REQUESTING") {
@@ -47,8 +49,18 @@ class CDUInitPage {
                     coRoute = "";
                 }
 
-                NXDataStore.set("PLAN_ORIGIN", mcdu.flightPlanManager.getOrigin().ident);
-                NXDataStore.set("PLAN_DESTINATION", mcdu.flightPlanManager.getDestination().ident);
+                const departureAirport = mcdu.flightPlanManager.getOrigin().ident;
+                const arrivalAirport = mcdu.flightPlanManager.getDestination().ident;
+                if (currentOrigin !== departureAirport) {
+                    NXDataStore.set("PLAN_ORIGIN", departureAirport);
+                    this.currentOrigin = departureAirport;
+                    this.TransitionManager.transitionSelector();
+                }
+                if (currentDestination !== arrivalAirport) {
+                    NXDataStore.set("PLAN_DESTINATION", arrivalAirport);
+                    this.currentOrigin = departureAirport;
+                    this.TransitionManager.transitionSelector();
+                }
 
                 //Need code to set the SimVarValue if user inputs FlNo
                 if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
