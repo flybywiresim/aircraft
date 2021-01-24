@@ -544,7 +544,7 @@
             <NODE_ID>HANDLING_Switch_Wipers</NODE_ID>
             <ANIM_NAME>HANDLING_Switch_Wipers</ANIM_NAME>
             <CIRCUIT_ID_WIPERS>1</CIRCUIT_ID_WIPERS>
-            <WWISE_EVENT>wipers_switch</WWISE_EVENT>
+            <WWISE_EVENT>turnknob</WWISE_EVENT>
             <POWER_NORM>100</POWER_NORM>
             <POWER_SLOW>75</POWER_SLOW>
             <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.WIPERS_SET_OFF</ANIMTIP_0>
