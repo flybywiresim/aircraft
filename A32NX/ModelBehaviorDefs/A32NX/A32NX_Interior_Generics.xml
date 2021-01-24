@@ -402,6 +402,8 @@
             <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
             <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_INCREASE</ANIMTIP_1>
             <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+
+            <WWISE_EVENT />
         </DefaultTemplateParameters>
 
         <UseTemplate Name="ASOBO_LIGHTING_Knob_SubTemplate">

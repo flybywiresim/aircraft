@@ -1284,6 +1284,7 @@
                     <ID>1</ID>
                 </UseTemplate>
 
+                <!-- EXT PWR -->
                 <UseTemplate Name="FBW_Airbus_External_Power_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_EXTPWR</NODE_ID>
                     <ID>1</ID>
@@ -1754,10 +1755,9 @@
 
             <Component ID="Overhead_Dummies">
                 <Component ID="Left_Column">
+                    <!-- PA -->
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_OVHD_PA</NODE_ID>
-                        <BLOCK_SEQ1>1</BLOCK_SEQ1>
-                        <BLOCK_SEQ2>1</BLOCK_SEQ2>
                     </UseTemplate>
 
                     <!-- COCKPIT DOOR VIDEO -->
@@ -2045,10 +2045,6 @@
                         <ANIM_CODE>50</ANIM_CODE>
                         <ANIM_NAME>KNOB_OVHD_AIRCOND_AFTCABIN</ANIM_NAME>
                         <NODE_ID>KNOB_OVHD_AIRCOND_AFTCABIN</NODE_ID>
-                    </UseTemplate>
-
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
                     </UseTemplate>
 
                     <UseTemplate Name="ASOBO_GT_Switch_Dummy">
@@ -2671,10 +2667,11 @@
                         <INVERT_ANIM>1</INVERT_ANIM>
                     </UseTemplate>
 
+                    <!-- MODE SEL -->
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_CAB_PRESS_MODE_MAN</TOGGLE_SIMVAR>
-                        <MOMENTARY/>
+
                         <SEQ1_CODE>(L:A32NX_CAB_PRESS_SYS_FAULT)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_CAB_PRESS_MODE_MAN)</SEQ2_CODE>
                     </UseTemplate>
@@ -2683,7 +2680,7 @@
                         <NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_CABINPRESS_DITCHING</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_DITCHING</TOGGLE_SIMVAR>
-                        <MOMENTARY/>
+
                         <SEQ2_CODE>(L:A32NX_DITCHING)</SEQ2_CODE>
                     </UseTemplate>
                 </Component>
