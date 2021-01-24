@@ -42,6 +42,7 @@
 1. [SOUND] Reworked engine spool up and startup sounds - @hotshotp (Boris)
 1. [SOUND] Reworked pack sounds - @hotshotp (Boris)
 1. [SOUND] Reworked touchdown sounds - @hotshotp (Boris)
+1. [MISC] Added printer - @tyler58546 (tyler58546), @DarkOfNova (DarkOfNova)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
