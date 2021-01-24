@@ -204,6 +204,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         }
 
         //const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
+        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
         // Workaround for FO side
         let ACPowerStateChange = false;
         if (this.acPwrState != ACPowerAvailable) {
@@ -212,7 +213,6 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
                 ACPowerStateChange = true;
             }
         }
-        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
 
         if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             // Powered on
