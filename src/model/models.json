@@ -42,6 +42,10 @@
       {
         "gltf": "./printer/print-static.gltf",
         "bin": "./printer/print-static.bin"
+      },
+      {
+        "gltf": "./printer/print-torn.gltf",
+        "bin": "./printer/print-torn.bin"
       }
     ],
     "modifications": [
