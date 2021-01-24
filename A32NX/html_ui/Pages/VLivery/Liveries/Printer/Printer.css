@@ -36,23 +36,3 @@ p {
   font-size: 42px;
   font-family: Roboto-Light;
 }
-
-.buttons {
-}
-
-#buttons #arrow-left {
-  position: absolute;
-  bottom: 30px;
-  left: 30px;
-}
-
-#buttons #arrow-right {
-  position: absolute;
-  bottom: 30px;
-  right: 36px;
-}
-
-#buttons img {
-  width: 64px;
-  height: 64px;
-}
