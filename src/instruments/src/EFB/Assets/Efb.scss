@@ -18,6 +18,21 @@
 
 @import url(https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap);
 
+// semantic styles go here
+
+.container {
+  @extend .font-body;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.content {
+  display: flex;
+  flex-grow: 1;
+  overflow: auto;
+}
+
 /*! modern-normalize v1.0.0 | MIT License | https://github.com/sindresorhus/modern-normalize */
 
 :root {
@@ -279,6 +294,11 @@ video {
 .bg-gray-800 {
   --tw-bg-opacity: 1;
   background-color: rgba(31, 41, 55, var(--tw-bg-opacity));
+}
+
+.bg-red-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgba(185, 16, 59, var(--tw-bg-opacity));
 }
 
 .bg-green-500 {
@@ -595,6 +615,11 @@ video {
   color: rgba(255, 255, 255, var(--tw-text-opacity));
 }
 
+.text-black {
+  --tw-text-opacity: 1;
+  color: rgba(0, 0, 0, var(--tw-text-opacity));
+}
+
 .uppercase {
   text-transform: uppercase;
 }
@@ -619,6 +644,10 @@ video {
   width: 100%;
 }
 
+.h-full {
+  height: 100%;
+}
+
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -638,6 +667,10 @@ video {
 
 .rotate-45 {
   --tw-rotate: 45deg;
+}
+
+.rotate-90 {
+  --tw-rotate: 90deg;
 }
 
 @keyframes spin {

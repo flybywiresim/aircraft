@@ -114,6 +114,7 @@ Game Parameter	ID	Name			Wwise Object Path	Notes
 	1649214721	SIMVAR_GROUND_VELOCITY			\simvar\physic\SIMVAR_GROUND_VELOCITY	Speed relative to the earths surface  Unit : Knots
 	2750389324	SIMVAR_TURB_ENG_N1			\simvar\engine\turbine\SIMVAR_TURB_ENG_N1	Turbine engine N1  Unit : Percent
 	3011087930	SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE			\simvar\instruments\SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE	Main bus voltage  Unit : Volts
+	3128954395	SIMVAR_LEADING_EDGE_FLAPS_LEFT_PERCENT			\simvar\flight_control_surfaces\SIMVAR_LEADING_EDGE_FLAPS_LEFT_PERCENT	Percent left trailing edge flap extended  Unit : Percent Over 100
 	3779073172	ENV_DOPPLERCENTS			\environment\common\ENV_DOPPLERCENTS	Absolute cents shift caused by Doppler Effect 
 	3852284635	SIMVAR_AIRSPEED_INDICATED			\simvar\physic\SIMVAR_AIRSPEED_INDICATED	Indicated airspeed  Unit : Knots
 	3898595254	SIMVAR_TURB_ENG_N1_DERIVED			\simvar\engine\turbine\SIMVAR_TURB_ENG_N1_DERIVED	
@@ -138,9 +139,10 @@ In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
 	149915249	engmaster4	H:\sound\.cache\Windows\SFX\engmaster4_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\engmaster\engmaster4		7802
 	152824243	triple_clic	H:\sound\.cache\Windows\SFX\triple_clic_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\triple_clic		11301
 	177306390	flaps1	H:\sound\.cache\Windows\SFX\flaps1_10D08852.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\flaps1		333326
-	180034175	roll3	H:\sound\.cache\Windows\SFX\roll3_A2C63EB2.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\roll3		254309
+	180034175	roll3	H:\sound\.cache\Windows\SFX\roll3_C2CD41BB.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\roll3		307280
 	181087662	turbulence2	H:\sound\.cache\Windows\SFX\turbulence2_89DC6E16.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\turbulence2		262546
-	200979317	pack2ext	H:\sound\.cache\Windows\SFX\pack2ext_E34971E5.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\pack2ext		342863
+	195325108	packscabin	H:\sound\.cache\Windows\SFX\packscabin_1BC63E68.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\packscabin		811261
+	200979317	pack2ext	H:\sound\.cache\Windows\SFX\pack2ext_E578C0A9.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\pack2ext		521396
 	203184629	pb1on3	H:\sound\.cache\Windows\SFX\pb1on3_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\pb1on\pb1on3		6432
 	214234767	flapnotch3	H:\sound\.cache\Windows\SFX\flapnotch3_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\flapnotch\flapnotch3		5152
 	215938221	RMPknob	H:\sound\.cache\Windows\SFX\RMPknob_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\RMPknob\RMPknob		2058
@@ -157,12 +159,14 @@ In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
 	338845622	fanhigh	H:\sound\.cache\Windows\SFX\fanhigh_D9099176.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\fanhigh		336236
 	340879894	WhaleL	H:\sound\.cache\Windows\SFX\WhaleL_C92EE952.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\WhaleL		12794
 	347665825	pb1on5	H:\sound\.cache\Windows\SFX\pb1on5_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\pb1on\pb1on5		8098
+	360868195	nosetouchmid	H:\sound\.cache\Windows\SFX\nosetouchmid_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\nosetouch\nosetouchmid		41102
 	371384298	startcontactorsdc	H:\sound\.cache\Windows\SFX\startcontactorsdc_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\startcontactorsdc		139175
 	373406307	spoilers50	H:\sound\.cache\Windows\SFX\spoilers50_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\spoilers50		4144
 	378388566	QNHknob	H:\sound\.cache\Windows\SFX\QNHknob_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\QNHknobturn\QNHknob		5306
 	381569574	clds2	H:\sound\.cache\Windows\SFX\clds2_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\clds\clds2		5405
 	384283986	engmaster	H:\sound\.cache\Windows\SFX\engmaster_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\engmaster\engmaster		9854
 	412489191	rudtrim2	H:\sound\.cache\Windows\SFX\rudtrim2_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\rudtrim\rudtrim2		5123
+	422974095	turbulence	H:\sound\.cache\Windows\SFX\turbulence_76D40859.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\turbulence		298162
 	427427379	turnknob3	H:\sound\.cache\Windows\SFX\turnknob3_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\turnknob\turnknob3		5859
 	441670955	Yellow_pump	H:\sound\.cache\Windows\SFX\Yellow_pump_4384E050.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Yellow_pump		438300
 	449655708	RevWindL	H:\sound\.cache\Windows\SFX\RevWindL_89DC6E16.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\LEAP1A\RevWindL		120267
@@ -187,8 +191,8 @@ In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
 	675594309	apustartinit	H:\sound\.cache\Windows\SFX\apustartinit_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\apustartinit		192948
 	679790442	engmaster3	H:\sound\.cache\Windows\SFX\engmaster3_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\engmaster\engmaster3		6926
 	681930164	spoilersDISARM2	H:\sound\.cache\Windows\SFX\spoilersDISARM2_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\SpoilersDISARM\spoilersDISARM2		16446
-	687827707	turbulence	H:\sound\.cache\Windows\SFX\turbulence_89DC6E16.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\turbulence		200711
 	696262278	RMPknob4	H:\sound\.cache\Windows\SFX\RMPknob4_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\RMPknob\RMPknob4		1865
+	701717158	noestouchsmooth	H:\sound\.cache\Windows\SFX\noestouchsmooth_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\nosetouch\noestouchsmooth		25479
 	715464597	pb1off2	H:\sound\.cache\Windows\SFX\pb1off2_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\pb1off\pb1off2		10289
 	740621411	PWRSpool	H:\sound\.cache\Windows\SFX\PWRSpool_89DC6E16.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\PWRSpool		19611
 	755616064	ISpoolR	H:\sound\.cache\Windows\SFX\ISpoolR_F9DAD686.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\ISpoolR		21685
@@ -214,11 +218,9 @@ In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
 	906236500	PWBuzzL	H:\sound\.cache\Windows\SFX\PWBuzzL_89DC6E16.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\PWBuzzL		80110
 	908106428	clds	H:\sound\.cache\Windows\SFX\clds_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\clds\clds		6477
 	914057037	pb1on4	H:\sound\.cache\Windows\SFX\pb1on4_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\pb1on\pb1on4		7802
-	922129606	packscabin	H:\sound\.cache\Windows\SFX\packscabin_1BC63E68.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\packscabin		811261
 	928856534	Spoilers0	H:\sound\.cache\Windows\SFX\Spoilers0_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Spoilers0		12358
-	933196377	pack1ext	H:\sound\.cache\Windows\SFX\pack1ext_08482AAD.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\pack1ext		376482
+	933196377	pack1ext	H:\sound\.cache\Windows\SFX\pack1ext_DA33D208.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\pack1ext		529844
 	941760732	initflapopenfinish	H:\sound\.cache\Windows\SFX\initflapopenfinish_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\initflapopenfinish		39036
-	951136660	nosetouch	H:\sound\.cache\Windows\SFX\nosetouch_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\nosetouch		45308
 	954451533	rudtrim3	H:\sound\.cache\Windows\SFX\rudtrim3_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\rudtrim\rudtrim3		5586
 	987123668	QNHknob2	H:\sound\.cache\Windows\SFX\QNHknob2_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\QNHknobturn\QNHknob2		4406
 	1007272746	apushutext	H:\sound\.cache\Windows\SFX\apushutext_3A7569C3.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\apuext\apushutext		438017
