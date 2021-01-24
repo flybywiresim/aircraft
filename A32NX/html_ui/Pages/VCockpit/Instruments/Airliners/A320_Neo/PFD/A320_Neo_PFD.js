@@ -104,6 +104,9 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.selfTestLastKnobValueFO = 1;
         this.selfTestLastKnobValueCAP = 1;
 
+        // ELEC
+        this.acPwrState = -1;
+
         //ENGINEERING TEST
         this.engTestDiv = document.querySelector('#PfdEngTest');
         this.engMaintDiv = document.querySelector('#PfdMaintMode');
@@ -200,7 +203,15 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.headingFail.setAttribute("style", "");
         }
 
-        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
+        //const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
+        // Workaround for FO side
+        let ACPowerStateChange = false;
+        if (this.acPwrState != ACPowerAvailable) {
+            this.acPwrState = ACPowerAvailable;
+            if (this.acPwrState != -1) {
+                ACPowerStateChange = true;
+            }
+        }
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
 
         if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {

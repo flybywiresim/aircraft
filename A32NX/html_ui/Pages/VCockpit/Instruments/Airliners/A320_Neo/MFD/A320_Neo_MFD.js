@@ -111,6 +111,9 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.selfTestTimer = -1;
         this.resumeCountdown = -1;
 
+        //ELEC
+        this.acPwrState = -1;
+
         //ENGINEERING TEST
         this.engTestDiv = document.querySelector("#MfdEngTest");
         this.engMaintDiv = document.querySelector("#MfdMaintMode");
@@ -244,7 +247,15 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.map.instrument.airplaneIconElement._image.setAttribute("visibility", ADIRSState != 2 ? "hidden" : "visible");
         }
 
-        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
+        //const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
+        // Workaround for FO side
+        let ACPowerStateChange = false;
+        if (this.acPwrState != ACPowerAvailable) {
+            this.acPwrState = ACPowerAvailable;
+            if (this.acPwrState != -1) {
+                ACPowerStateChange = true;
+            }
+        }
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
 
         if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
