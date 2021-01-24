@@ -15,10 +15,6 @@ h1 {
   color: black;
 }
 
-p {
-  font-size: 200px;
-}
-
 .text-wrapper {
   position: absolute;
   left: 0 !important;
@@ -33,6 +29,13 @@ p {
 
 .line {
   color: black;
-  font-size: 42px;
   font-family: Roboto-Light;
+}
+
+.large {
+  font-size: 40px;
+}
+
+.small {
+  font-size: 25px;
 }

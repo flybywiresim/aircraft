@@ -80,11 +80,17 @@ class LiveryPrinter extends TemplateElement {
         }
 
         let newLines = '';
-        for (const value of (pages[displayedPage] || [])) {
+        const page = pages[displayedPage] || [];
+        for (const value of page) {
             newLines += `<span class="line">${value}<br/></span>`;
         }
         if (this.previousLines !== newLines) {
             this.lines.innerHTML = newLines;
+            if (this.lines.clientHeight > 620) {
+                this.lines.setAttribute("class", "small");
+            } else {
+                this.lines.setAttribute("class", "large");
+            }
         }
         this.previousLines = newLines;
     }
