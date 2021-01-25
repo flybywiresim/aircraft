@@ -144,17 +144,17 @@ class CDUPerformancePage {
             }
         };
         let flpRetrCell = "---";
-        const flapSpeed = mcdu.getFlapTakeOffSpeed();
+        const flapSpeed = mcdu.this.computedVfs;
         if (isFinite(flapSpeed)) {
             flpRetrCell = flapSpeed.toFixed(0) + "[color]green";
         }
         let sltRetrCell = "---";
-        const slatSpeed = mcdu.getSlatTakeOffSpeed();
+        const slatSpeed = mcdu.this.computedVss;
         if (isFinite(slatSpeed)) {
             sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
         }
         let cleanCell = "---";
-        const cleanSpeed = mcdu.getPerfGreenDotSpeed();
+        const cleanSpeed = mcdu.computedVgd;
         if (isFinite(cleanSpeed)) {
             cleanCell = cleanSpeed.toFixed(0) + "[color]green";
         }
@@ -234,7 +234,7 @@ class CDUPerformancePage {
         let managedSpeedCell = "";
         let managedSpeed;
         if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
-            managedSpeed = mcdu.getPerfGreenDotSpeed();
+            managedSpeed = mcdu.computedVgd;
         } else {
             managedSpeed = mcdu.getClbManagedSpeed();
         }
@@ -611,17 +611,17 @@ class CDUPerformancePage {
             }
         };
         let flpRetrCell = "---";
-        const flapSpeed = mcdu.getFlapApproachSpeed();
+        const flapSpeed = mcdu.this.computedVfs;
         if (isFinite(flapSpeed)) {
             flpRetrCell = flapSpeed.toFixed(0) + "[color]green";
         }
         let sltRetrCell = "---";
-        const slatSpeed = mcdu.getSlatApproachSpeed();
+        const slatSpeed = mcdu.this.computedVss;
         if (isFinite(slatSpeed)) {
             sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
         }
         let cleanCell = "---";
-        const cleanSpeed = mcdu.getPerfGreenDotSpeed();
+        const cleanSpeed = mcdu.this.computedVgd;
         if (isFinite(cleanSpeed)) {
             cleanCell = cleanSpeed.toFixed(0) + "[color]green";
         }
@@ -729,17 +729,17 @@ class CDUPerformancePage {
             }
         };
         let flpRetrCell = "---";
-        const flapSpeed = mcdu.getFlapTakeOffSpeed();
+        const flapSpeed = mcdu.this.computedVfs;
         if (isFinite(flapSpeed)) {
             flpRetrCell = flapSpeed.toFixed(0) + "[color]green";
         }
         let sltRetrCell = "---";
-        const slatSpeed = mcdu.getSlatTakeOffSpeed();
+        const slatSpeed = mcdu.this.computedVss;
         if (isFinite(slatSpeed)) {
             sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
         }
         let cleanCell = "---";
-        const cleanSpeed = mcdu.getPerfGreenDotSpeed();
+        const cleanSpeed = mcdu.this.computedVgd;
         if (isFinite(cleanSpeed)) {
             cleanCell = cleanSpeed.toFixed(0) + "[color]green";
         }

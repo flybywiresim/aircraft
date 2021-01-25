@@ -40,8 +40,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.tmpOrigin = "";
         this.transitionAltitude = 10000;
         this.perfTOTemp = 20;
-        this._overridenFlapApproachSpeed = NaN;
-        this._overridenSlatApproachSpeed = NaN;
         this._routeFinalFuelWeight = 0;
         this._routeFinalFuelTime = 30;
         this._routeFinalFuelTimeDefault = 30;
@@ -1215,40 +1213,9 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    //TODO: resolve this
-    getFlapSpeed() {
-        const phase = Simplane.getCurrentFlightPhase();
-        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        let flapSpeed = 100;
-        if (flapsHandleIndex == 1) {
-            let slatSpeed = 0;
-            if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
-                slatSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.25;
-            } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
-                slatSpeed = this.getSlatApproachSpeed();
-            }
-            return slatSpeed;
-        }
-        if (flapsHandleIndex == 2 || flapsHandleIndex == 3) {
-            if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
-                flapSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.26;
-            } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
-                flapSpeed = this.getFlapApproachSpeed();
-            }
-        }
-        return flapSpeed;
-    }
-
-    //TODO: resolve this
-    getCleanTakeOffSpeed() {
-        const dWeight = (this.getWeight() - 42) / (75 - 42);
-        return 204 + 40 * dWeight;
-    }
-
-    updateCleanTakeOffSpeed() {
-        const toGreenDotSpeed = this.getCleanTakeOffSpeed(); //TODO: resolve this
-        if (isFinite(toGreenDotSpeed)) {
-            SimVar.SetSimVarValue("L:AIRLINER_TO_GREEN_DOT_SPD", "Number", toGreenDotSpeed);
+    updateCleanSpeed() {
+        if (isFinite(this.computedVgd)) {
+            SimVar.SetSimVarValue("L:AIRLINER_TO_GREEN_DOT_SPD", "Number", this.computedVgd);
         }
     }
 
@@ -1264,6 +1231,24 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    getClbManagedSpeed() {
+        let maxSpeed = Infinity;
+        if (isFinite(this.v2Speed)) {
+            const altitude = Simplane.getAltitude();
+            if (altitude < this.thrustReductionAltitude) {
+                maxSpeed = this.v2Speed + 50;
+            } else {
+                maxSpeed = this.getSpeedConstraint();
+            }
+        }
+        const dCI = (this.costIndex / 999) ** 2;
+        let speed = 290 * (1 - dCI) + 330 * dCI;
+        if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
+            speed = Math.min(speed, 250);
+        }
+        return Math.min(maxSpeed, speed);
+    }
+
     getCrzManagedSpeed() {
         const dCI = (this.costIndex / 999) ** 2;
         let speed = 290 * (1 - dCI) + 310 * dCI;
@@ -1277,7 +1262,7 @@ class FMCMainDisplay extends BaseAirliners {
         const dCI = this.costIndex / 999;
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
         if (flapsHandleIndex !== 0) {
-            return this.getFlapSpeed();
+            return flapsHandleIndex === 1 ? this.this.computedVss : this.computedVfs;
         }
         let speed = 288 * (1 - dCI) + 300 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
@@ -1286,80 +1271,15 @@ class FMCMainDisplay extends BaseAirliners {
         return Math.min(speed, this.getSpeedConstraint());
     }
 
-    //TODO: resolve this
-    getFlapApproachSpeed() {
-        if (isFinite(this._overridenFlapApproachSpeed)) {
-            return this._overridenFlapApproachSpeed;
-        }
-        const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-        switch (true) {
-            case (dWeight <= 50):
-                return 131;
-            case (dWeight <= 55):
-                return Math.ceil(131 + 1.2 * (dWeight - 50));
-            case (dWeight <= 60):
-                return Math.ceil(137 + 1.4 * (dWeight - 55));
-            case (dWeight <= 65):
-                return Math.ceil(144 + dWeight - 60);
-            case (dWeight <= 70):
-                return Math.ceil(149 + 1.2 * (dWeight - 65));
-            case (dWeight <= 75):
-                return Math.ceil(155 + dWeight - 70);
-            default:
-                return Math.ceil(160 + 1.20 * (dWeight - 75));
+    getAppManagedSpeed() {
+        switch (Simplane.getFlapsHandleIndex()) {
+            case 0: return this.computedVgd;
+            case 1: return this.computedVss;
+            case 4: return this.getVApp();
+            default: return this.computedVfs;
         }
     }
 
-    //TODO: resolve this
-    getSlatApproachSpeed() {
-        if (isFinite(this._overridenSlatApproachSpeed)) {
-            return this._overridenSlatApproachSpeed;
-        }
-        const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-        switch (true) {
-            case (dWeight <= 45):
-                return Math.ceil(152 + 1.8 * (dWeight - 40));
-            case (dWeight <= 50):
-                return Math.ceil(161 + 1.6 * (dWeight - 45));
-            case (dWeight <= 55):
-                return Math.ceil(169 + 1.8 * (dWeight - 50));
-            case (dWeight <= 60):
-                return Math.ceil(178 + 1.6 * (dWeight - 55));
-            default:
-                return Math.ceil(186 + 1.4 * (dWeight - 60));
-        }
-    }
-
-    //TODO: resolve this
-    getCleanApproachSpeed() {
-        let dWeight = (this.getWeight() - 42) / (75 - 42);
-        dWeight = Math.min(Math.max(dWeight, 0), 1);
-        const base = Math.max(172, this.getVLS() + 5);
-        return base + 40 * dWeight;
-    }
-
-    // Overridden by getManagedApproachSpeedMcdu in A320_Neo_CDU_MainDisplay
-    // Not sure what to do with this
-    //TODO: remove this
-    getManagedApproachSpeed(flapsHandleIndex = NaN) {
-        switch (((isNaN(flapsHandleIndex)) ? Simplane.getFlapsHandleIndex() : flapsHandleIndex)) {
-            case 0:
-                return this.getCleanApproachSpeed();
-            case 1:
-                return this.getSlatApproachSpeed();
-            case 4:
-                return this.getVApp();
-            default:
-                return this.getFlapApproachSpeed();
-        }
-    }
-
-    updateCleanApproachSpeed() {
-        const apprGreenDotSpeed = this.getCleanApproachSpeed(); //TODO: resolve this
-        if (isFinite(apprGreenDotSpeed)) {
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_GREEN_DOT_SPD", "Number", apprGreenDotSpeed);
-        }
-    }
     isTaxiFuelInRange(taxi) {
         return 0 <= taxi && taxi <= 9.9;
     }
@@ -1717,8 +1637,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
         this.updateTakeOffTrim();
-        this.updateCleanTakeOffSpeed();
-        this.updateCleanApproachSpeed();
+        this.updateCleanSpeed();
         return true;
     }
 
@@ -1746,8 +1665,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.setZeroFuelCG(zfwcg.toString());
 
                 this.updateTakeOffTrim();
-                this.updateCleanTakeOffSpeed();
-                this.updateCleanApproachSpeed();
+                this.updateCleanSpeed();
                 return true;
             } else {
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -2014,7 +1932,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    //TODO: resolve with local var/simvar
+    //TODO: wait for pr merge
     getVLS() {
         const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
         const cg = this.zeroFuelWeightMassCenter;
@@ -2965,7 +2883,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
             // Is this LVar used by anything? It doesn't look like it...
             //TODO: figure out usage
-            SimVar.SetSimVarValue("L:AIRLINER_MANAGED_APPROACH_SPEED", "number", this.getManagedApproachSpeed());
+            SimVar.SetSimVarValue("L:AIRLINER_MANAGED_APPROACH_SPEED", "number", this.getAppManagedSpeed());
         }
         this.updateRadioNavState();
     }

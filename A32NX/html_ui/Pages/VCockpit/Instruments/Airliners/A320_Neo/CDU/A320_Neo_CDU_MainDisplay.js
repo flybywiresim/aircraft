@@ -612,78 +612,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return wpt.speedConstraint;
     }
 
-    getClbManagedSpeed() {
-        let maxSpeed = Infinity;
-        if (isFinite(this.v2Speed)) {
-            const altitude = Simplane.getAltitude();
-            if (altitude < this.thrustReductionAltitude) {
-                maxSpeed = this.v2Speed + 50;
-            } else {
-                maxSpeed = this.getSpeedConstraint();
-            }
-        }
-        const dCI = (this.costIndex / 999) ** 2;
-        let speed = 290 * (1 - dCI) + 330 * dCI;
-        if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
-            speed = Math.min(speed, 250);
-        }
-        return Math.min(maxSpeed, speed);
-    }
-    //TODO: after pr merge, remove method
-    //TODO: replace this via reading simvar on updateAutopilot and writing to local var
-    getFlapTakeOffSpeed() {
-        const dWeight = (this.getWeight() - 47) / (78 - 47);
-        return 119 + 34 * dWeight;
-    }
-    //TODO: after pr merge, remove method
-    //TODO: replace this via reading simvar on updateAutopilot and writing to local var
-    getSlatTakeOffSpeed() {
-        const dWeight = (this.getWeight() - 47) / (78 - 47);
-        return 154 + 44 * dWeight;
-    }
-
-    /**
-     * Get aircraft takeoff and approach green dot speed
-     * Calculation:
-     * Gross weight in thousandths (KG) * 2 + 85 when below FL200
-     * @returns {number}
-     */
-    //TODO: after pr merge, remove method
-    //TODO: replace this via reading simvar on updateAutopilot and writing to local var
-    getPerfGreenDotSpeed() {
-        return ((this.getGrossWeight("kg") / 1000) * 2) + 85;
-    }
-
-    /**
-     * Get the gross weight of the aircraft from the addition
-     * of the ZFW, fuel and payload.
-     * @param unit
-     * @returns {number}
-     */
-    //TODO: no usage when getPerfGreenDotSpeed() is removed
-    getGrossWeight(unit) {
-        const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", unit);
-        const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", unit);
-        const payloadWeight = this.getPayloadWeight(unit);
-        return Math.round(emptyWeight + fuelWeight + payloadWeight);
-    }
-
-    /**
-     * Get the payload of the aircraft, taking in to account each
-     * payload station
-     * @param unit
-     * @returns {number}
-     */
-    //TODO: no usage when getPerfGreenDotSpeed() is removed
-    getPayloadWeight(unit) {
-        const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
-        let payloadWeight = 0;
-        for (let i = 1; i <= payloadCount; i++) {
-            payloadWeight += SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, unit);
-        }
-        return payloadWeight;
-    }
-
     updateTowerHeadwind() {
         if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
             const rwy = this.flightPlanManager.getApproachRunway();
@@ -805,7 +733,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this._destDataChecked = false;
             let preSelectedClbSpeed = this.preSelectedClbSpeed;
             if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
-                preSelectedClbSpeed = this.getPerfGreenDotSpeed();
+                preSelectedClbSpeed = this.computedVgd;
             }
             if (isFinite(preSelectedClbSpeed)) {
                 this.setAPSelectedSpeed(preSelectedClbSpeed, Aircraft.A320_NEO);
@@ -938,69 +866,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRight = undefined;
     }
 
-    //TODO: check usage, seems to have none
-    _getTempIndex() {
-        const temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
-        if (temp < -10) {
-            return 0;
-        }
-        if (temp < 0) {
-            return 1;
-        }
-        if (temp < 10) {
-            return 2;
-        }
-        if (temp < 20) {
-            return 3;
-        }
-        if (temp < 30) {
-            return 4;
-        }
-        if (temp < 40) {
-            return 5;
-        }
-        if (temp < 43) {
-            return 6;
-        }
-        if (temp < 45) {
-            return 7;
-        }
-        if (temp < 47) {
-            return 8;
-        }
-        if (temp < 49) {
-            return 9;
-        }
-        if (temp < 51) {
-            return 10;
-        }
-        if (temp < 53) {
-            return 11;
-        }
-        if (temp < 55) {
-            return 12;
-        }
-        if (temp < 57) {
-            return 13;
-        }
-        if (temp < 59) {
-            return 14;
-        }
-        if (temp < 61) {
-            return 15;
-        }
-        if (temp < 63) {
-            return 16;
-        }
-        if (temp < 65) {
-            return 17;
-        }
-        if (temp < 66) {
-            return 18;
-        }
-        return 19;
-    }
-
     //TODO: after pr merge, remove method _getVxSpeed due to lack of usage
     _getV1Speed() {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
@@ -1045,6 +910,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
     }
 
+    /**
+     * Updates performance speeds such as GD, F, S, Vls
+     * This method may use fms computed weights in the future instead actual GW
+     */
+    updatePerfSpeeds() {
+        this.computedVfs = SimVar.GetSimVarValue("L:A32NX_SPEEDS_F", "number");
+        this.computedVss = SimVar.GetSimVarValue("L:A32NX_SPEEDS_S", "number");
+        this.computedVgd = SimVar.GetSimVarValue("L:A32NX_SPEEDS_GD", "number");
+    }
+
     updateAutopilot() {
         const now = performance.now();
         const dt = now - this._lastUpdateAPTime;
@@ -1066,6 +941,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
         if (this.updateAutopilotCooldown < 0) {
+            this.updatePerfSpeeds();
             const currentApMasterStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "boolean");
             if (currentApMasterStatus !== this._apMasterStatus) {
                 this._apMasterStatus = currentApMasterStatus;
@@ -1228,14 +1104,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 SimVar.SetSimVarValue("AUTOPILOT THROTTLE MAX THRUST", "number", n1);
                 if (this.isAirspeedManaged()) {
                     // getCleanTakeOffSpeed is a final fallback and not truth to reality
-                    const speed = isFinite(this.v2Speed) ? this.v2Speed + 10 : this.getCleanTakeOffSpeed();
+                    const speed = isFinite(this.v2Speed) ? this.v2Speed + 10 : this.computedVgd;
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
 
             } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
                 let speed;
                 if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
-                    speed = this.getPerfGreenDotSpeed();
+                    speed = this.computedVgd;
                     //delete override logic when we have valid nav data -aka goaround path- after goaround!
                     if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool") === 0) {
                         console.log("only once per goaround override to HDG selected");
@@ -1261,7 +1137,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
                 if (this.isAirspeedManaged()) {
                     const ctn = this.getSpeedConstraint(false);
-                    let speed = this.getManagedApproachSpeedMcdu();
+                    let speed = this.getAppManagedSpeed();
                     let vls = this.getVApp();
                     if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
                         vls = NXSpeedsUtils.getVtargetGSMini(vls, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
@@ -1307,15 +1183,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
     // Asobo's getManagedApproachSpeed uses incorrect getCleanApproachSpeed for flaps 0
-    getManagedApproachSpeedMcdu() {
-        switch (Simplane.getFlapsHandleIndex()) {
-            case 0: return this.getPerfGreenDotSpeed(); //TODO: replace with local var
-            case 1: return this.getSlatApproachSpeed(); //TODO: replace with local var
-            case 4: return this.getVApp();
-            default: return this.getFlapApproachSpeed(); //TODO: replace with local var
-        }
-    }
-
     checkAocTimes() {
         if (!this.aocTimes.off) {
             const isAirborne = !Simplane.getIsGrounded(); // TODO replace with proper flight mode in future
