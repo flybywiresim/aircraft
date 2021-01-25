@@ -99,7 +99,7 @@ var A320_Neo_LowerECAM_APU;
             // Same when you select the air data selector to CAPT ON 3.
             // We'll wait for further implementation of those systems before making that functionality fully correct.
             const adirs1OnNav = SimVar.GetSimVarValue('L:A32NX_ADIRS_KNOB_1', 'Enum') === 1;
-            if (available && adirs1OnNav) {
+            if (adirs1OnNav) {
                 this.APUBleedPressure.textContent = SimVar.GetSimVarValue("L:APU_BLEED_PRESSURE","PSI");
                 this.APUBleedPressure.setAttribute("class", "APUGenParamValue");
             } else {

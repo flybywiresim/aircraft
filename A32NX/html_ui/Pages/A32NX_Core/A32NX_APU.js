@@ -41,10 +41,10 @@ class A32NX_APU {
                 : 0
         );
 
-        const apuBleedAirValveOpen = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
-        if (apuBleedAirValveOpen !== this.lastAPUBleedState) {
-            this.lastAPUBleedState = apuBleedAirValveOpen;
-            if (apuBleedAirValveOpen === 1) {
+        const apuBleedOn = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
+        if (apuBleedOn !== this.lastAPUBleedState) {
+            this.lastAPUBleedState = apuBleedOn;
+            if (apuBleedOn === 1) {
                 this.APUBleedTimer = 3;
             } else {
                 this.APUBleedTimer = 0;
@@ -52,7 +52,7 @@ class A32NX_APU {
         }
 
         const apuN = SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
-        if (apuN > 95) {
+        if (apuN > 95 && apuBleedOn) {
             if (this.APUBleedTimer > 0) {
                 this.APUBleedTimer -= _deltaTime / 1000;
                 SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE", "PSI", Math.round(35 - this.APUBleedTimer));
