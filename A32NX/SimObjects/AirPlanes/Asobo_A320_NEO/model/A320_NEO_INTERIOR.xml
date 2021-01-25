@@ -1317,7 +1317,7 @@
                     <ANIMTIP_2>Set pack flow to HIGH</ANIMTIP_2>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_COMMERCIAL</NODE_ID>
                     <ANIM_NAME>PUSH_OVHD_ELEC_COMMERCIAL</ANIM_NAME>
                     <SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_COMMERCIAL_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1328,9 +1328,10 @@
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                     <TOOLTIPID>%((L:A32NX_ELEC_COMMERCIAL_TOGGLE, Bool))%{if}Turn OFF commercial%{else}Turn ON commercial%{end}</TOOLTIPID>
                     <LEFT_SINGLE_CODE>(L:A32NX_ELEC_COMMERCIAL_TOGGLE) ! (>L:A32NX_ELEC_COMMERCIAL_TOGGLE)</LEFT_SINGLE_CODE>
+                    <DISABLE_SEQ1/>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_GALYCAB</NODE_ID>
                     <ANIM_NAME>PUSH_OVHD_ELEC_GALYCAB</ANIM_NAME>
                     <SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_GALYCAB_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1343,7 +1344,7 @@
                     <LEFT_SINGLE_CODE>(L:A32NX_ELEC_GALYCAB_TOGGLE) ! (>L:A32NX_ELEC_GALYCAB_TOGGLE)</LEFT_SINGLE_CODE>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_IDG1</NODE_ID>
                     <ANIM_NAME>PUSH_OVHD_ELEC_IDG1</ANIM_NAME>
                     <SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_IDG1_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1353,9 +1354,10 @@
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                     <LEFT_SINGLE_CODE>1 (>L:A32NX_ELEC_IDG1_FAULT)</LEFT_SINGLE_CODE>
+                    <DISABLE_SEQ2/>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_IDG2</NODE_ID>
                     <ANIM_NAME>PUSH_OVHD_ELEC_IDG2</ANIM_NAME>
                     <SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_IDG2_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1365,9 +1367,10 @@
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                     <LEFT_SINGLE_CODE>1 (>L:A32NX_ELEC_IDG2_FAULT)</LEFT_SINGLE_CODE>
+                    <DISABLE_SEQ2/>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_BUSTIE</NODE_ID>
                     <ANIM_NAME>PUSH_OVHD_ELEC_BUSTIE</ANIM_NAME>
                     <SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
@@ -1377,9 +1380,10 @@
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                     <LEFT_SINGLE_CODE>(L:A32NX_ELEC_BUSTIE_TOGGLE) ! (>L:A32NX_ELEC_BUSTIE_TOGGLE)</LEFT_SINGLE_CODE>
+                    <DISABLE_SEQ1/>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_ACESSFEED</NODE_ID>
                     <ANIM_NAME>PUSH_OVHD_ELEC_ACESSFEED</ANIM_NAME>
                     <SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_ACESSFEED_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1773,7 +1777,7 @@
                         <BLOCK_SEQ1>1</BLOCK_SEQ1>
                         <BLOCK_SEQ2>1</BLOCK_SEQ2>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_COCKPITDOORVIDEO</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_COCKPITDOORVIDEO</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>1 ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1784,6 +1788,7 @@
                         <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                         <TOOLTIPID>%((L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE, Bool))%{if}Turn OFF door video%{else}Turn ON door video%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE) ! (>L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE)</LEFT_SINGLE_CODE>
+                        <DISABLE_SEQ1/>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_DOORPANEL_VIDEO</NODE_ID>
@@ -1848,7 +1853,7 @@
                         <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                         <SWITCH_POSITION_VAR>A32NX_EVAC_COMMANDLOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_EVAC_COMMAND</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_EVAC_COMMAND</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_EVAC_COMMAND_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1881,7 +1886,7 @@
                         <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                         <SWITCH_POSITION_VAR>A32NX_EMERELECPWR_EMERTESTLOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_EMERELECPWR_GEN1</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_EMERELECPWR_GEN1</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_EMERELECPWR_GEN1_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1893,7 +1898,7 @@
                         <TOOLTIPID>%((L:A32NX_EMERELECPWR_GEN1_TOGGLE, Bool))%{if}Turn OFF gen 1 line%{else}Turn ON gen 1 line%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_EMERELECPWR_GEN1_TOGGLE) ! (>L:A32NX_EMERELECPWR_GEN1_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_EMERELECPWR_RAT</NODE_ID>
                         <ANIM_NAME></ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_EMERELECPWR_RAT_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1903,6 +1908,7 @@
                         <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                         <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                         <TOOLTIPID>%((L:A32NX_EMERELECPWR_RAT_FAULT, Bool))%{if}RAT and emer gen FAULT%{else}RAT and emer gen NORMAL%{end}</TOOLTIPID>
+                        <DISABLE_SEQ2/>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Switch_Dummy">
                         <NODE_ID>LOCK_OVHD_EMERELECPWR_MANON</NODE_ID>
@@ -1920,7 +1926,7 @@
                 </Component>
 
                 <Component ID="Center_Column">
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_ENG1PUMP</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_HYD_ENG1PUMP</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_HYD_ENG1PUMP_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1932,7 +1938,7 @@
                         <TOOLTIPID>%((L:A32NX_HYD_ENG1PUMP_TOGGLE, Bool))%{if}Turn OFF eng 1 hyd pump%{else}Turn ON eng 1 hyd pump%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_HYD_ENG1PUMP_TOGGLE) ! (>L:A32NX_HYD_ENG1PUMP_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_ENG2PUMP</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_HYD_ENG2PUMP</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_HYD_ENG2PUMP_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1952,7 +1958,7 @@
                         <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                         <SWITCH_POSITION_VAR>A32NX_HYD_RATMANONLOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_ELECPUMP</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_HYD_ELECPUMP</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_HYD_ELECPUMP_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1972,7 +1978,7 @@
                         <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                         <SWITCH_POSITION_VAR>A32NX_HYD_ELECPUMPLOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_PTU</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_HYD_PTU</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_HYD_PTU_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1984,7 +1990,7 @@
                         <TOOLTIPID>%((L:A32NX_HYD_PTU_TOGGLE, Bool))%{if}Turn OFF PTU%{else}Turn ON PTU%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_HYD_PTU_TOGGLE) ! (>L:A32NX_HYD_PTU_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_ELECPUMPY</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_HYD_ELECPUMPY</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_HYD_ELECPUMPY_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -1996,7 +2002,7 @@
                         <TOOLTIPID>%((L:A32NX_HYD_ELECPUMPY_TOGGLE, Bool))%{if}Turn ON yellow elec hyd pump%{else}Turn OFF yellow elec hyd pump%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_HYD_ELECPUMPY_TOGGLE) ! (>L:A32NX_HYD_ELECPUMPY_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_AIRCOND_PACK1</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_AIRCOND_PACK1</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_AIRCOND_PACK1_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -2008,7 +2014,7 @@
                         <TOOLTIPID>%((L:A32NX_AIRCOND_PACK1_TOGGLE, Bool))%{if}Turn OFF pack 1%{else}Turn ON pack 1%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_AIRCOND_PACK1_TOGGLE) ! (>L:A32NX_AIRCOND_PACK1_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_AIRCOND_PACK2</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_AIRCOND_PACK2</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_AIRCOND_PACK2_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -2020,7 +2026,7 @@
                         <TOOLTIPID>%((L:A32NX_AIRCOND_PACK2_TOGGLE, Bool))%{if}Turn OFF pack 2%{else}Turn ON pack 2%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_AIRCOND_PACK2_TOGGLE) ! (>L:A32NX_AIRCOND_PACK2_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_AIRCOND_HOTAIR</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_AIRCOND_HOTAIR</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_AIRCOND_HOTAIR_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -2032,7 +2038,7 @@
                         <TOOLTIPID>%((L:A32NX_AIRCOND_HOTAIR_TOGGLE, Bool))%{if}Turn OFF hot air%{else}Turn ON hot air%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_AIRCOND_HOTAIR_TOGGLE) ! (>L:A32NX_AIRCOND_HOTAIR_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_AIRCOND_RAMAIR</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_AIRCOND_RAMAIR</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_AIRCOND_RAMAIR_TOGGLE, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -2108,7 +2114,7 @@
                         <NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD2</NODE_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_VENTILATION_BLOWER</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_VENTILATION_BLOWER</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_VENTILATION_BLOWER_FAULT, Bool)  (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -2120,7 +2126,7 @@
                         <TOOLTIPID>%((L:A32NX_VENTILATION_BLOWER_TOGGLE, Bool))%{if}Turn OFF blower%{else}Turn ON blower%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_VENTILATION_BLOWER_TOGGLE) ! (>L:A32NX_VENTILATION_BLOWER_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_VENTILATION_EXTRACT</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_VENTILATION_EXTRACT</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>(L:A32NX_VENTILATION_EXTRACT_FAULT, Bool)  (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -2132,7 +2138,7 @@
                         <TOOLTIPID>%((L:A32NX_VENTILATION_EXTRACT_TOGGLE, Bool))%{if}Turn OFF extract%{else}Turn ON extract%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_VENTILATION_EXTRACT_TOGGLE) ! (>L:A32NX_VENTILATION_EXTRACT_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_VENTILATION_CABFANS</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_VENTILATION_CABFANS</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
@@ -2143,8 +2149,9 @@
                         <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                         <TOOLTIPID>%((L:A32NX_VENTILATION_CABFANS_TOGGLE, Bool))%{if}Turn OFF cabin fans%{else}Turn ON cabin fans%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_VENTILATION_CABFANS_TOGGLE) ! (>L:A32NX_VENTILATION_CABFANS_TOGGLE)</LEFT_SINGLE_CODE>
+                        <DISABLE_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_ENGMANSTART_1</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_ENGMANSTART_1</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
@@ -2155,6 +2162,7 @@
                         <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                         <TOOLTIPID>%((L:A32NX_ENGMANSTART1_TOGGLE, Bool))%{if}Turn OFF eng 1 man start%{else}Turn ON eng 1 man start%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_ENGMANSTART1_TOGGLE) ! (>L:A32NX_ENGMANSTART1_TOGGLE)</LEFT_SINGLE_CODE>
+                        <DISABLE_SEQ1/>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Switch_Dummy">
                         <NODE_ID>LOCK_OVHD_ENGMANSTART_1</NODE_ID>
@@ -2164,7 +2172,7 @@
                         <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                         <SWITCH_POSITION_VAR>A32NX_ENGMANSTART1LOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_ENGMANSTART_2</NODE_ID>
                         <ANIM_NAME>PUSH_OVHD_ENGMANSTART_2</ANIM_NAME>
                         <SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
@@ -2175,6 +2183,7 @@
                         <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                         <TOOLTIPID>%((L:A32NX_ENGMANSTART2_TOGGLE, Bool))%{if}Turn OFF eng 2 man start%{else}Turn ON eng 2 man start%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_ENGMANSTART2_TOGGLE) ! (>L:A32NX_ENGMANSTART2_TOGGLE)</LEFT_SINGLE_CODE>
+                        <DISABLE_SEQ1/>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Switch_Dummy">
                         <NODE_ID>LOCK_OVHD_ENGMANSTART_2</NODE_ID>
@@ -2562,6 +2571,7 @@
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_BLUEPUMP_OVRD</TOGGLE_SIMVAR>
 
                     <INVERTED/>
+                    <DISABLE_SEQ1/>
                 </UseTemplate>
 
                 <!-- "HYD LEAK MEASUREMENT VALVES" -->
@@ -2574,6 +2584,7 @@
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_G</TOGGLE_SIMVAR>
 
                     <INVERTED/>
+                    <DISABLE_SEQ1/>
                 </UseTemplate>
 
                 <!-- B -->
@@ -2584,6 +2595,7 @@
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_B</TOGGLE_SIMVAR>
 
                     <INVERTED/>
+                    <DISABLE_SEQ1/>
                 </UseTemplate>
 
                 <!-- Y -->
@@ -2594,6 +2606,7 @@
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y</TOGGLE_SIMVAR>
 
                     <INVERTED/>
+                    <DISABLE_SEQ1/>
                 </UseTemplate>
 
                 <!-- ENG FADEC GND PWR -->
@@ -2604,6 +2617,7 @@
                     <NODE_ID>PUSH_OVHD_ENG_FADEC2</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC2</LOCK_NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_1</TOGGLE_SIMVAR>
+                    <DISABLE_SEQ1/>
                 </UseTemplate>
 
                 <!-- 2 -->
@@ -2612,6 +2626,7 @@
                     <NODE_ID>PUSH_OVHD_ENG_FADEC1</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC1</LOCK_NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_2</TOGGLE_SIMVAR>
+                    <DISABLE_SEQ1/>
                 </UseTemplate>
 
                 <!-- APU AUTO EXITING -->

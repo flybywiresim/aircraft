@@ -126,7 +126,7 @@
             <!--XMLVAR_Autobrakes_Level it the SIMVAR that tracks the position of the autobrake pushbutton switches in A32NX.
                 In order for autobrakes to be set, anti-skid must be enabled. In addition, autobrakes MAX can only
                 be set if the aircraft is on the ground.-->
-            <UseTemplate Name="ASOBO_GT_Push_Button">
+            <UseTemplate Name="FBW_Push_Toggle">
                 <LEFT_SINGLE_CODE>
                 (A:ANTISKID BRAKES ACTIVE, Bool) ! (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == or if{
                     0 (&gt;L:XMLVAR_Autobrakes_Level)
@@ -225,7 +225,7 @@
         <Component ID="#NODE_ID_DECEL#" Node="#NODE_ID_DECEL#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>(A:AUTO BRAKE SWITCH CB, Enum) 1 != (A:ACCELERATION BODY Z, feet per second squared) #REF_DECEL_FPSS# &lt;= and (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
-                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+                <EMISSIVE_DRIVES_VISIBILITY>False</EMISSIVE_DRIVES_VISIBILITY>
             </UseTemplate>
         </Component>
         <Component ID="#NODE_ID_ON#" Node="#NODE_ID_ON#">
@@ -248,10 +248,10 @@
             <PART_ID>LANDING_GEAR_Light</PART_ID>
             <SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
         </DefaultTemplateParameters>
-        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+        <UseTemplate Name="FBW_Push_Toggle">
             <DUMMY_BUTTON>True</DUMMY_BUTTON>
-            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+            <SEQ1_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_CODE>
+            <SEQ2_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_CODE>
         </UseTemplate>
     </Template>
 
@@ -403,8 +403,6 @@
             <SEQ1_CODE>(L:A32NX_GPWS_Warning_Active, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(L:A32NX_GPWS_GS_Warning_Active, Bool)</SEQ2_CODE>
             <HOLD_SIMVAR>L:A32NX_GPWS_TEST</HOLD_SIMVAR>
-            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>True</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
 
             <TOOLTIPID>Test GPWS / Stop G/S alert</TOOLTIPID>
         </UseTemplate>
