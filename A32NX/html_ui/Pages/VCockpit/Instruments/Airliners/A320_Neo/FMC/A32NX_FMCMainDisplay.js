@@ -382,15 +382,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.tryShowMessage();
     }
 
-    _showTypeOneMessage(message, color = false) {
-        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage && !this.lastUserInput) {
-            this.lastUserInput = this.inOut;
-        }
-        this.isDisplayingErrorMessage = true;
-        this.inOut = message;
-        this._inOutElement.className = color ? "amber" : "white";
-    }
-
     /**
      * Returns true if an engine is running (FF > 0)
      * @returns {boolean}
@@ -798,7 +789,7 @@ class FMCMainDisplay extends BaseAirliners {
                 if (currentRunway) {
                     const departure = this.flightPlanManager.getDeparture();
                     const departureRunwayIndex = departure.runwayTransitions.findIndex(t => {
-                        return t.name.indexOf(currentRunway.designation) != -1;
+                        return t.name.indexOf(currentRunway.designation) !== -1;
                     });
                     if (departureRunwayIndex >= -1) {
                         return this.flightPlanManager.setDepartureRunwayIndex(departureRunwayIndex, () => {
@@ -1224,6 +1215,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: resolve this
     getFlapSpeed() {
         const phase = Simplane.getCurrentFlightPhase();
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
@@ -1247,18 +1239,20 @@ class FMCMainDisplay extends BaseAirliners {
         return flapSpeed;
     }
 
+    //TODO: resolve this
     getCleanTakeOffSpeed() {
         const dWeight = (this.getWeight() - 42) / (75 - 42);
         return 204 + 40 * dWeight;
     }
 
     updateCleanTakeOffSpeed() {
-        const toGreenDotSpeed = this.getCleanTakeOffSpeed();
+        const toGreenDotSpeed = this.getCleanTakeOffSpeed(); //TODO: resolve this
         if (isFinite(toGreenDotSpeed)) {
             SimVar.SetSimVarValue("L:AIRLINER_TO_GREEN_DOT_SPD", "Number", toGreenDotSpeed);
         }
     }
 
+    //TODO: with FADEC no longer needed
     setPerfTOFlexTemp(s) {
         const value = parseFloat(s);
         if (isFinite(value) && value > -270 && value < 150) {
@@ -1271,8 +1265,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getCrzManagedSpeed() {
-        let dCI = this.costIndex / 999;
-        dCI = dCI * dCI;
+        const dCI = (this.costIndex / 999) ** 2;
         let speed = 290 * (1 - dCI) + 310 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
@@ -1283,7 +1276,7 @@ class FMCMainDisplay extends BaseAirliners {
     getDesManagedSpeed() {
         const dCI = this.costIndex / 999;
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex != 0) {
+        if (flapsHandleIndex !== 0) {
             return this.getFlapSpeed();
         }
         let speed = 288 * (1 - dCI) + 300 * dCI;
@@ -1293,6 +1286,7 @@ class FMCMainDisplay extends BaseAirliners {
         return Math.min(speed, this.getSpeedConstraint());
     }
 
+    //TODO: resolve this
     getFlapApproachSpeed() {
         if (isFinite(this._overridenFlapApproachSpeed)) {
             return this._overridenFlapApproachSpeed;
@@ -1316,6 +1310,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: resolve this
     getSlatApproachSpeed() {
         if (isFinite(this._overridenSlatApproachSpeed)) {
             return this._overridenSlatApproachSpeed;
@@ -1335,6 +1330,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: resolve this
     getCleanApproachSpeed() {
         let dWeight = (this.getWeight() - 42) / (75 - 42);
         dWeight = Math.min(Math.max(dWeight, 0), 1);
@@ -1344,6 +1340,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     // Overridden by getManagedApproachSpeedMcdu in A320_Neo_CDU_MainDisplay
     // Not sure what to do with this
+    //TODO: remove this
     getManagedApproachSpeed(flapsHandleIndex = NaN) {
         switch (((isNaN(flapsHandleIndex)) ? Simplane.getFlapsHandleIndex() : flapsHandleIndex)) {
             case 0:
@@ -1358,7 +1355,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     updateCleanApproachSpeed() {
-        const apprGreenDotSpeed = this.getCleanApproachSpeed();
+        const apprGreenDotSpeed = this.getCleanApproachSpeed(); //TODO: resolve this
         if (isFinite(apprGreenDotSpeed)) {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_GREEN_DOT_SPD", "Number", apprGreenDotSpeed);
         }
@@ -1645,6 +1642,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: figure out usage of takeOffTrim
     updateTakeOffTrim() {
         let d = (this.zeroFuelWeightMassCenter - 13) / (33 - 13);
         d = Math.min(Math.max(d, -0.5), 1);
@@ -1655,6 +1653,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.takeOffTrim = minTrim * d + maxTrim * (1 - d);
     }
 
+    //TODO: figure out usage
     getZeroFuelWeight(useLbs = false) {
         if (useLbs) {
             return this.zeroFuelWeight * 2.204623;
@@ -1662,6 +1661,7 @@ class FMCMainDisplay extends BaseAirliners {
         return this.zeroFuelWeight;
     }
 
+    //TODO: refactor/remove useLbs
     setZeroFuelWeight(s, callback = EmptyCallback.Boolean, useLbs = false) {
         let value = parseFloat(s);
         if (isFinite(value)) {
@@ -1688,13 +1688,14 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     isZFWInRange(zfw) {
-        return 35.0 <= zfw && zfw <= 80.0; //TODO figure out how to handle LBs and KG input
+        return 35.0 <= zfw && zfw <= 80.0;
     }
 
     isZFWCGInRange(zfwcg) {
         return (8.0 <= zfwcg && zfwcg <= 50.0);
     }
 
+    //TODO: refactor/remove useLbs
     tryEditZeroFuelWeightZFWCG(zfw = 0, zfwcg = 0, useLbs = false) {
         if (zfw > 0) {
             if (this.isZFWInRange(zfw)) {
@@ -1721,6 +1722,7 @@ class FMCMainDisplay extends BaseAirliners {
         return true;
     }
 
+    //TODO: refactor/remove useLbs
     async trySetZeroFuelWeightZFWCG(s, useLbs = false) {
         let zfw = 0;
         let zfwcg = 0;
@@ -1764,6 +1766,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param useLbs states whether to return the weight back in tons or pounds
      * @returns {*}
      */
+    //TODO: refactor/remove useLbs
     getFOB(useLbs = false) {
         if (useLbs) {
             return SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound");
@@ -1807,6 +1810,7 @@ class FMCMainDisplay extends BaseAirliners {
         return 0 <= fuel && fuel <= 80;
     }
 
+    //TODO: refactor/remove useLbs
     trySetBlockFuel(s, useLbs = false) {
         if (s === FMCMainDisplay.clrValue) {
             this.blockFuel = 0.0;
@@ -1835,6 +1839,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: refactor/remove useLbs
     getWeight(useLbs = false) {
         let w = this.zeroFuelWeight + this.blockFuel;
         if (useLbs) {
@@ -2009,6 +2014,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: resolve with local var/simvar
     getVLS() {
         const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
         const cg = this.zeroFuelWeightMassCenter;
@@ -2218,15 +2224,15 @@ class FMCMainDisplay extends BaseAirliners {
         //Default Asobo logic
         // Switches from any phase to APPR if less than 40 distance(?) from DEST
         if (this.flightPlanManager.getActiveWaypoint() === this.flightPlanManager.getDestination()) {
-            if (SimVar.GetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number") != 1) {
+            if (SimVar.GetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number") !== 1) {
                 const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
                 const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
                 const planeLla = new LatLongAlt(lat, long);
                 const dist = Avionics.Utils.computeGreatCircleDistance(planeLla, this.flightPlanManager.getDestination().infos.coordinates);
-                if (dist < 40 && this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
+                if (dist < 40 && this.currentFlightPhase !== FlightPhase.FLIGHT_PHASE_GOAROUND) {
                     this.connectIls();
                     this.flightPlanManager.activateApproach();
-                    if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
+                    if (this.currentFlightPhase !== FlightPhase.FLIGHT_PHASE_APPROACH) {
                         console.log('switching to tryGoInApproachPhase: ' + JSON.stringify({lat, long, dist, prevPhase: this.currentFlightPhase}, null, 2));
                         this.tryGoInApproachPhase();
                     }
@@ -2236,13 +2242,13 @@ class FMCMainDisplay extends BaseAirliners {
         //Default Asobo logic
         // Switches from any phase to APPR if less than 3 distance(?) from DECEL
         if (SimVar.GetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number") === 1) {
-            if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
+            if (this.currentFlightPhase !== FlightPhase.FLIGHT_PHASE_APPROACH) {
                 if (this.flightPlanManager.decelWaypoint) {
                     const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
                     const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
                     const planeLla = new LatLongAlt(lat, long);
                     const dist = Avionics.Utils.computeGreatCircleDistance(this.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
-                    if (dist < 3 && this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
+                    if (dist < 3 && this.currentFlightPhase !== FlightPhase.FLIGHT_PHASE_GOAROUND) {
                         this.flightPlanManager._decelReached = true;
                         this._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
                         if (Simplane.getAltitudeAboveGround() < 9500) {
@@ -2254,7 +2260,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         //Logic to switch from APPR to GOAROUND
         //another condition getIsGrounded < 30sec
-        if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_APPROACH && highestThrottleDetent == ThrottleMode.TOGA && flapsHandlePercent != 0 && !Simplane.getAutoPilotThrottleActive() && SimVar.GetSimVarValue("RADIO HEIGHT", "feets") < 2000) {
+        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH && highestThrottleDetent === ThrottleMode.TOGA && flapsHandlePercent !== 0 && !Simplane.getAutoPilotThrottleActive() && SimVar.GetSimVarValue("RADIO HEIGHT", "feets") < 2000) {
 
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_GOAROUND;
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_GATRK_MODE", "bool", 0);
@@ -2474,7 +2480,7 @@ class FMCMainDisplay extends BaseAirliners {
     updateRadioNavState() {
         if (this.isPrimary) {
             const radioNavOn = this.isRadioNavActive();
-            if (radioNavOn != this._radioNavOn) {
+            if (radioNavOn !== this._radioNavOn) {
                 this._radioNavOn = radioNavOn;
                 if (!radioNavOn) {
                     this.initRadioNav(false);
@@ -2508,12 +2514,12 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                 }
             }
-            if (apNavIndex != this._apNavIndex) {
+            if (apNavIndex !== this._apNavIndex) {
                 SimVar.SetSimVarValue("K:AP_NAV_SELECT_SET", "number", apNavIndex);
                 this._apNavIndex = apNavIndex;
             }
             const curState = SimVar.GetSimVarValue("GPS DRIVES NAV1", "Bool");
-            if (curState != gpsDriven) {
+            if (curState !== gpsDriven) {
                 SimVar.SetSimVarValue("K:TOGGLE_GPS_DRIVES_NAV1", "Bool", 0);
             }
         }
@@ -2657,7 +2663,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
         this.tempCurve.add(-10 * 3.28084, 21.50);
-        this.tempCurve.add(0 * 3.28084, 15.00);
+        this.tempCurve.add(0, 15.00);
         this.tempCurve.add(10 * 3.28084, 8.50);
         this.tempCurve.add(20 * 3.28084, 2.00);
         this.tempCurve.add(30 * 3.28084, -4.49);
@@ -2958,6 +2964,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
             // Is this LVar used by anything? It doesn't look like it...
+            //TODO: figure out usage
             SimVar.SetSimVarValue("L:AIRLINER_MANAGED_APPROACH_SPEED", "number", this.getManagedApproachSpeed());
         }
         this.updateRadioNavState();
@@ -3193,14 +3200,12 @@ class FMCMainDisplay extends BaseAirliners {
     }
     static secondsToUTC(seconds) {
         const h = Math.floor(seconds / 3600);
-        seconds -= h * 3600;
-        const m = Math.floor(seconds / 60);
+        const m = Math.floor((seconds - h * 3600) / 60);
         return (h % 24).toFixed(0).padStart(2, "0") + m.toFixed(0).padStart(2, "0");
     }
     static secondsTohhmm(seconds) {
         const h = Math.floor(seconds / 3600);
-        seconds -= h * 3600;
-        const m = Math.floor(seconds / 60);
+        const m = Math.floor((seconds - h * 3600) / 60);
         return h.toFixed(0).padStart(2, "0") + m.toFixed(0).padStart(2, "0");
     }
 
@@ -3224,8 +3229,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     static minutesTohhmm(minutes) {
         const h = Math.floor(minutes / 60);
-        minutes -= h * 60;
-        const m = minutes;
+        const m = minutes - h * 60;
         return h.toFixed(0).padStart(2,"0") + m.toFixed(0).padStart(2, "0");
     }
 

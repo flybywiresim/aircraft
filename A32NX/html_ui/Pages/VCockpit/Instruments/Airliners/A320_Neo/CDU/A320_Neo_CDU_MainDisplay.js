@@ -469,15 +469,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         );
     }
 
-    tryUpdateConstraints() {
-        const activeWpIdx = this.flightPlanManager.getActiveWaypointIndex();
-        if (activeWpIdx === this.activeWpIdx) {
-            return;
-        }
-        this.activeWpIdx = activeWpIdx;
-        this.updateConstraints();
-    }
-
     updateConstraints() {
         this.constraintAltCached = A32NX_ConstraintManager.getConstraintAltitude(
             this.currentFlightPhase,
@@ -510,6 +501,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         } else {
             this._showTypeOneMessage(msg.text, msg.isAmber);
         }
+    }
+
+    _showTypeOneMessage(message, color = false) {
+        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage && !this.lastUserInput) {
+            this.lastUserInput = this.inOut;
+        }
+        this.isDisplayingErrorMessage = true;
+        this.inOut = message;
+        this._inOutElement.className = color ? "amber" : "white";
     }
 
     /**
@@ -622,18 +622,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 maxSpeed = this.getSpeedConstraint();
             }
         }
-        let dCI = this.costIndex / 999;
-        dCI = dCI * dCI;
+        const dCI = (this.costIndex / 999) ** 2;
         let speed = 290 * (1 - dCI) + 330 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
         return Math.min(maxSpeed, speed);
     }
+    //TODO: after pr merge, remove method
+    //TODO: replace this via reading simvar on updateAutopilot and writing to local var
     getFlapTakeOffSpeed() {
         const dWeight = (this.getWeight() - 47) / (78 - 47);
         return 119 + 34 * dWeight;
     }
+    //TODO: after pr merge, remove method
+    //TODO: replace this via reading simvar on updateAutopilot and writing to local var
     getSlatTakeOffSpeed() {
         const dWeight = (this.getWeight() - 47) / (78 - 47);
         return 154 + 44 * dWeight;
@@ -645,6 +648,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Gross weight in thousandths (KG) * 2 + 85 when below FL200
      * @returns {number}
      */
+    //TODO: after pr merge, remove method
+    //TODO: replace this via reading simvar on updateAutopilot and writing to local var
     getPerfGreenDotSpeed() {
         return ((this.getGrossWeight("kg") / 1000) * 2) + 85;
     }
@@ -655,6 +660,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param unit
      * @returns {number}
      */
+    //TODO: no usage when getPerfGreenDotSpeed() is removed
     getGrossWeight(unit) {
         const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", unit);
         const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", unit);
@@ -668,6 +674,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param unit
      * @returns {number}
      */
+    //TODO: no usage when getPerfGreenDotSpeed() is removed
     getPayloadWeight(unit) {
         const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
         let payloadWeight = 0;
@@ -931,6 +938,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRight = undefined;
     }
 
+    //TODO: check usage, seems to have none
     _getTempIndex() {
         const temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
         if (temp < -10) {
@@ -993,14 +1001,17 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return 19;
     }
 
+    //TODO: after pr merge, remove method _getVxSpeed due to lack of usage
     _getV1Speed() {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
     }
 
+    //TODO: after pr merge, remove method _getVxSpeed due to lack of usage
     _getVRSpeed() {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).vr;
     }
 
+    //TODO: after pr merge, remove method _getVxSpeed due to lack of usage
     _getV2Speed() {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
     }
@@ -1056,7 +1067,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         if (this.updateAutopilotCooldown < 0) {
             const currentApMasterStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "boolean");
-            if (currentApMasterStatus != this._apMasterStatus) {
+            if (currentApMasterStatus !== this._apMasterStatus) {
                 this._apMasterStatus = currentApMasterStatus;
                 apLogicOn = (this._apMasterStatus || Simplane.getAutoPilotFlightDirectorActive(1));
                 this._forceNextAltitudeUpdate = true;
@@ -1081,7 +1092,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             }
             const currentHasReachedFlex = Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT && Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT;
-            if (currentHasReachedFlex != this._lastHasReachFlex) {
+            if (currentHasReachedFlex !== this._lastHasReachFlex) {
                 this._lastHasReachFlex = currentHasReachedFlex;
                 console.log("Current Has Reached Flex = " + currentHasReachedFlex);
                 if (currentHasReachedFlex) {
@@ -1151,7 +1162,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     } else {
                         SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 0);
                     }
-                    this.tryUpdateConstraints();
+                    const activeWpIdx = this.flightPlanManager.getActiveWaypointIndex();
+                    if (activeWpIdx !== this.activeWpIdx) {
+                        this.activeWpIdx = activeWpIdx;
+                        this.updateConstraints();
+                    }
                     if (this.constraintAlt) {
                         SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", this.constraintAlt);
                         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, this.constraintAlt, this._forceNextAltitudeUpdate);
@@ -1197,9 +1212,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     }
                 }
             }
-            if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue("L:A320_NEO_FCU_STATE", "number") != 1) {
+            if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue("L:A320_NEO_FCU_STATE", "number") !== 1) {
                 const currentWaypointIndex = this.flightPlanManager.getActiveWaypointIndex();
-                if (currentWaypointIndex != this._lastRequestedFLCModeWaypointIndex) {
+                if (currentWaypointIndex !== this._lastRequestedFLCModeWaypointIndex) {
                     this._lastRequestedFLCModeWaypointIndex = currentWaypointIndex;
                     setTimeout(() => {
                         if (Simplane.getAutoPilotAltitudeManaged()) {
@@ -1259,7 +1274,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.setAPManagedSpeed(Math.max(speed, vls), Aircraft.A320_NEO);
                 }
             }
-            if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 const eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool");
                 const eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool");
 
@@ -1294,10 +1309,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     // Asobo's getManagedApproachSpeed uses incorrect getCleanApproachSpeed for flaps 0
     getManagedApproachSpeedMcdu() {
         switch (Simplane.getFlapsHandleIndex()) {
-            case 0: return this.getPerfGreenDotSpeed();
-            case 1: return this.getSlatApproachSpeed();
+            case 0: return this.getPerfGreenDotSpeed(); //TODO: replace with local var
+            case 1: return this.getSlatApproachSpeed(); //TODO: replace with local var
             case 4: return this.getVApp();
-            default: return this.getFlapApproachSpeed();
+            default: return this.getFlapApproachSpeed(); //TODO: replace with local var
         }
     }
 
@@ -1307,8 +1322,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && isAirborne) {
                 // Wheels off
                 // Off: remains blank until Take off time
-                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
-                this.aocTimes.off = seconds;
+                this.aocTimes.off = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
             }
         }
 
@@ -1316,8 +1330,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
             if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_PREFLIGHT && !currentPKGBrakeState) {
                 // Out: is when you set the brakes to off
-                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
-                this.aocTimes.out = seconds;
+                this.aocTimes.out = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
             }
         }
 
@@ -1325,8 +1338,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const isAirborne = !Simplane.getIsGrounded(); // TODO replace with proper flight mode in future
             if (this.aocTimes.off && !isAirborne) {
                 // On: remains blank until Landing time
-                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
-                this.aocTimes.on = seconds;
+                this.aocTimes.on = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
             }
         }
 
@@ -1335,16 +1347,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
             if (this.aocTimes.on && currentPKGBrakeState && cabinDoorPctOpen > 20) {
                 // In: remains blank until brakes set to park AND the first door opens
-                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
-                this.aocTimes.in = seconds;
+                this.aocTimes.in = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
             }
         }
 
-        if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_PREFLIGHT) {
+        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_PREFLIGHT) {
             const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
             if (!this.aocTimes.doors && cabinDoorPctOpen < 20) {
-                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
-                this.aocTimes.doors = seconds;
+                this.aocTimes.doors = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
             } else {
                 if (cabinDoorPctOpen > 20) {
                     this.aocTimes.doors = "";
@@ -1433,7 +1443,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             SimVar.SetSimVarValue(`L:A32NX_PRINT_LINE_LENGTH_${i}`, "number", value.length);
         }
-        if (SimVar.GetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool") == 1) {
+        if (SimVar.GetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool") === 1) {
             SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", SimVar.GetSimVarValue("L:A32NX_PAGES_PRINTED", "number") + 1);
             SimVar.SetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number", 0);
         }
