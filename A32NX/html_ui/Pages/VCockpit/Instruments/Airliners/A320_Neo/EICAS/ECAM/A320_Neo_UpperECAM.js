@@ -1009,7 +1009,15 @@ var A320_Neo_UpperECAM;
                                 message: "AUTO SHUT DOWN",
                                 level: 2,
                                 flightPhasesInhib: [3, 4, 5, 7, 8],
-                                isActive: () => this.getCachedSimVar("L:A32NX_APU_IS_AUTO_SHUTDOWN", "Bool")
+                                isActive: () => this.getCachedSimVar("L:A32NX_APU_IS_AUTO_SHUTDOWN", "Bool"),
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "MASTER SW",
+                                        action: "OFF",
+                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool"),
+                                    },
+                                ]
                             }
                         ]
 
