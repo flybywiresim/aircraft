@@ -1987,6 +1987,8 @@ class FMCMainDisplay extends BaseAirliners {
                 this.vApp = value;
                 return true;
             }
+            this.addNewMessage(NXSystemMessage.entryOutOfRange);
+            return false;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
