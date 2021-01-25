@@ -809,6 +809,52 @@
                     <ID>2</ID>
                 </UseTemplate>
 
+                <UseTemplate Name="FBW_Airbus_PRINTER">
+                    <NODE_ID>Print</NODE_ID>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PRINTER_PAPER">
+                    <NODE_ID>PAPER</NODE_ID>
+                    <PAGE>1</PAGE>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PRINTER_PAPER">
+                    <NODE_ID>PAPER</NODE_ID>
+                    <PAGE>2</PAGE>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PRINTER_PAPER">
+                    <NODE_ID>PAPER</NODE_ID>
+                    <PAGE>3</PAGE>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PRINTER_PAPER">
+                    <NODE_ID>PAPER</NODE_ID>
+                    <PAGE>4</PAGE>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PAPER_PAGE_BUTTON">
+                    <NODE_ID>PAPER_NEXT</NODE_ID>
+                    <DIRECTION>1</DIRECTION>
+                    <TOOLTIPID>Next page</TOOLTIPID>
+                    <CURSOR>RightArrow</CURSOR>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PAPER_PAGE_BUTTON">
+                    <NODE_ID>PAPER_PREV</NODE_ID>
+                    <DIRECTION>-1</DIRECTION>
+                    <TOOLTIPID>Previous page</TOOLTIPID>
+                    <CURSOR>LeftArrow</CURSOR>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PAPER_DISCARD_BUTTON">
+                    <NODE_ID>PAPER_DISCARD</NODE_ID>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PAPER_TORN">
+                    <NODE_ID>PRINT_TORN</NODE_ID>
+                </UseTemplate>
+
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_PFD_L</NODE_ID>
                     <POTENTIOMETER>88</POTENTIOMETER>

@@ -22,18 +22,18 @@ import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
 import StatusBar from "./StatusBar/StatusBar";
 import ToolBar from "./ToolBar/ToolBar";
 import Dashboard from "./Dashboard/Dashboard";
+import Dispatch from "./Dispatch/Dispatch";
+import Ground from './Ground/Ground';
+import Settings from "./Settings/Settings";
 
 import './Assets/Efb.scss';
-
-import Dispatch from "./Dispatch/Dispatch";
-import Settings from "./Settings/Settings";
 
 type EfbProps = {
     currentFlight: string
 };
 
 type EfbState = {
-    currentPageIndex: 0 | 1 | 2 | 3 | 4 | 5,
+    currentPageIndex: 0 | 1 | 2 | 3 | 4 | 5 | 6,
     simbriefUsername: string,
     departingAirport: string,
     departingIata: string,
@@ -249,6 +249,8 @@ class Efb extends React.Component<EfbProps, EfbState> {
             case 4:
                 return <h1>Page 4</h1>;
             case 5:
+                return <Ground />;
+            case 6:
                 return <Settings />;
             default:
                 return <Dashboard
@@ -273,10 +275,10 @@ class Efb extends React.Component<EfbProps, EfbState> {
 
     render() {
         return (
-            <div className="font-body overflow-x-hidden">
+            <div className="container">
                 <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart} />
                 <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} />
-                <div>
+                <div className="content">
                     {this.currentPage()}
                 </div>
             </div>

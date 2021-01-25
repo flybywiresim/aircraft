@@ -949,6 +949,23 @@ var A320_Neo_UpperECAM;
                         ]
                     },
                     {
+                        name: "F/CTL",
+                        messages: [
+                            {
+                                id: "to_flaps_disagree",
+                                message: "FLAP/MCDU DISAGREE",
+                                level: 2,
+                                flightPhasesInhib: [1, 4, 5, 6, 7, 8, 9, 10],
+                                isActive: () => this.activeTakeoffConfigWarnings.includes("flaps_disagree") ||
+                                    (
+                                        (this.fwcFlightPhase === 2 && this.getCachedSimVar("L:A32NX_TO_CONFIG_NORMAL", "Bool") || this.fwcFlightPhase === 3) &&
+                                        this.getCachedSimVar("L:A32NX_TO_CONFIG_FLAPS", "number") !== 0 &&
+                                        this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") !== this.getCachedSimVar("L:A32NX_TO_CONFIG_FLAPS", "number")
+                                    )
+                            }
+                        ]
+                    },
+                    {
                         name: "T.O",
                         messages: [
                             {
@@ -1242,7 +1259,7 @@ var A320_Neo_UpperECAM;
                     },
                     {
                         message: "GPWS FLAP 3",
-                        isActive: () => this.getCachedSimVar("L:PUSH_OVHD_GPWS_LDG", "Bool")
+                        isActive: () => this.getCachedSimVar("L:A32NX_GPWS_FLAPS3", "Bool")
                     },
                     {
                         message: "AUTO BRK LO",
@@ -1376,9 +1393,14 @@ var A320_Neo_UpperECAM;
                 new A320_Neo_UpperECAM.MemoItem(
                     "ldg-memo-flaps",
                     "FLAPS",
-                    "FULL",
-                    "FULL",
-                    () => SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum") === 4
+                    () => this.getCachedSimVar("L:A32NX_GPWS_FLAPS3", "Bool") ? "CONF 3" : "FULL",
+                    () => this.getCachedSimVar("L:A32NX_GPWS_FLAPS3", "Bool") ? "CONF 3" : "FULL",
+                    () => (
+                        this.getCachedSimVar("L:A32NX_GPWS_FLAPS3", "Bool") ?
+                            this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") === 3 :
+                            this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") === 4
+                    )
+
                 ),
             ]);
             this.allPanels.push(this.enginePanel);
@@ -1580,6 +1602,8 @@ var A320_Neo_UpperECAM;
             const slatsRight = SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees");
             const flapsLeft = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees");
             const flapsRight = SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees");
+            const flapsHandle = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum");
+            const flapsMcdu = SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number");
             const speedBrake = SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "Position");
             const parkBrake = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
             const brakesHot = SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool");
@@ -1602,6 +1626,9 @@ var A320_Neo_UpperECAM;
             if (brakesHot) {
                 this.activeTakeoffConfigWarnings.push("brakes_hot");
             }
+            if (flapsMcdu !== 0 && flapsHandle !== flapsMcdu) {
+                this.activeTakeoffConfigWarnings.push("flaps_disagree");
+            }
             if (!(v1Speed <= vrSpeed && vrSpeed <= v2Speed)) {
                 this.activeTakeoffConfigWarnings.push("to_speeds_disagree");
             }
@@ -1615,6 +1642,7 @@ var A320_Neo_UpperECAM;
                 this.leftEcamMessagePanel.recall("config_spd_brk");
                 this.leftEcamMessagePanel.recall("config_park_brake");
                 this.leftEcamMessagePanel.recall("brakes_hot");
+                this.leftEcamMessagePanel.recall("to_flaps_disagree");
                 this.leftEcamMessagePanel.recall("to_speeds_disagree");
             }
         }
@@ -2969,22 +2997,35 @@ var A320_Neo_UpperECAM;
                 //Action
                 const action = document.createElement("span");
                 action.className = "Action";
-                let actionText = _item.action;
-                for (let i = 0; i < (19 - _item.name.length - _item.action.length); i++) {
-                    actionText = "." + actionText;
+                let actionText;
+                if (typeof _item.action === 'function') {
+                    actionText = _item.action();
+                } else {
+                    actionText = _item.action;
                 }
-                action.textContent = actionText;
+                action.textContent = this.leftPad(actionText, ".", 19 - _item.name.length);
                 div.appendChild(action);
 
                 //Completed
                 const completed = document.createElement("span");
                 completed.className = "Completed";
-                completed.textContent = " " + _item.completed;
+                if (typeof _item.completed === 'function') {
+                    completed.textContent = " " + _item.completed();
+                } else {
+                    completed.textContent = " " + _item.completed;
+                }
                 div.appendChild(completed);
 
                 div.className = "InfoIndication";
                 div.setAttribute("id", _item.id);
             }
+        }
+
+        leftPad(_text, _pad, _length) {
+            for (let i = 0; i < (_length - _text.length); i++) {
+                _text = _pad + _text;
+            }
+            return _text;
         }
 
         /**
@@ -2997,9 +3038,16 @@ var A320_Neo_UpperECAM;
                     for (const child of div.children) {
                         if (child.className == "Action") {
                             child.style.display = _completed ? "none" : "inline";
+                            if (typeof _item.action === 'function') {
+                                const actionText = _item.action();
+                                child.textContent = this.leftPad(actionText, ".", 19 - _item.name.length);
+                            }
                         }
                         if (child.className == "Completed") {
                             child.style.display = _completed ? "inline" : "none";
+                            if (typeof _item.completed === 'function') {
+                                child.textContent = " " + _item.completed();
+                            }
                         }
                     }
                     return;
