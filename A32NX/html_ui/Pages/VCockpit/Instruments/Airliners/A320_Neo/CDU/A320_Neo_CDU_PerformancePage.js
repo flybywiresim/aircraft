@@ -796,7 +796,7 @@ class CDUPerformancePage {
             ["", "", "0=" + cleanCell + "[color]green"],
             [""],
             [""],
-            ["THR RED/ACC", "OUT ACC", "ENG"],
+            ["THR RED/ACC", "ENG OUT ACC"],
             [thrRedAcc + "[color]cyan", engOut + "[color]cyan]"],
             bottomRowLabels,
             bottomRowCells,
