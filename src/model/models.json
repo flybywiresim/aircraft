@@ -46,6 +46,10 @@
       {
         "gltf": "./printer/print-torn.gltf",
         "bin": "./printer/print-torn.bin"
+      },
+      {
+        "gltf": "./glass/glass.gltf",
+        "bin": "./glass/glass.bin"
       }
     ],
     "modifications": [
