@@ -744,6 +744,11 @@
                 <!--<POTENTIOMETER>85</POTENTIOMETER>-->
                 <EMISSIVE_CODE>0</EMISSIVE_CODE>
             </UseTemplate>
+            <!-- This disables tiller deflection emissive -->
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>YOKE_DECAL</NODE_ID>
+                <EMISSIVE_CODE>0</EMISSIVE_CODE>
+            </UseTemplate>
 
             <!-- NYI
         <UseTemplate Name="FBW_AIRBUS_Push_Transfer_Template">
