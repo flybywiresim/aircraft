@@ -955,13 +955,10 @@
             <Component ID="Brake_Fan">
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_BKRFAN</NODE_ID>
-                    <LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
-                    <SEQ1_CODE>0</SEQ1_CODE>
+                    <SEQ1_CODE>(L:A32NX_BRAKE_FAN)</SEQ1_CODE>
+                    <TOGGLE_SIMVAR>L:A32NX_BRAKE_FAN</TOGGLE_SIMVAR>
                     <SEQ1_NODE_ID>PUSH_AUTOBKR_SEQ1</SEQ1_NODE_ID>
-                    <TOOLTIPID>(Inop.)</TOOLTIPID>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.APU_SWITCH_SET_OFF</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.APU_SWITCH_SET_ON</ANIMTIP_1>
-                    <CURSOR/>
+                    <TOOLTIPID>%((L:A32NX_BRAKE_FAN, Bool))%{if}Turn OFF brake fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
                 </UseTemplate>
             </Component>
 
