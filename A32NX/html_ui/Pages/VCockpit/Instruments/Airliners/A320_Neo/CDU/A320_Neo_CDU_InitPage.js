@@ -433,7 +433,7 @@ class CDUInitPage {
         };
 
         if (CDUInitPage.fuelPredConditionsMet(mcdu)) {
-            initBTitle = "INIT FUEL PREDICTION {}";
+            initBTitle = "INIT FUEL PREDICTION{sp}";
             fuelPlanTopTitle = "";
             fuelPlanBottomTitle = "";
 

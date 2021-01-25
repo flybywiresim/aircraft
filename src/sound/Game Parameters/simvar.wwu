@@ -523,6 +523,13 @@ Unit : millimeters of water</Comment>
 								<Property Name="Max" Type="Real64" Value="200"/>
 							</PropertyList>
 						</GameParameter>
+						<GameParameter Name="SIMVAR_AMBIENT_TEMPERATURE" ID="{0821D3AA-067E-4542-A7C7-7A3646B44E92}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="30"/>
+								<Property Name="Max" Type="Real64" Value="30"/>
+								<Property Name="Min" Type="Real64" Value="-30"/>
+							</PropertyList>
+						</GameParameter>
 					</ChildrenList>
 				</Folder>
 				<Folder Name="physic" ID="{ACA1142A-5586-4512-ADC2-1A3B340E902F}" ShortID="835960093">
