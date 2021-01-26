@@ -1,21 +1,28 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUAocRequestsAtis {
-    static ShowPage(mcdu, store = {"reqID": 0, "formatID": 0, "arrIcao": "", "arpt1": "", "sendStatus": ""}) {
+    static ShowPage(mcdu, store = {"reqID": 0, "formatID": 1, "arrIcao": "", "arpt1": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
         let labelTimeout;
         let formatString;
 
-        const reqTypes = [
-            'ARRIVAL',
-            'DEPARTURE',
-            'ENROUTE'
-        ];
-
-        const formatTypes = [
-            'MCDU',
-            'PRINTER'
-        ];
-
-        if (store.formatID == 0) {
+        if (store.formatID === 0) {
             formatString = "PRINTER*[color]cyan";
         } else {
             formatString = "MCDU*[color]cyan";
@@ -29,18 +36,18 @@ class CDUAocRequestsAtis {
             store['arrIcao'] = mcdu.flightPlanManager.getDestination().ident;
         }
 
-        if (store.reqID == 0) {
+        if (store.reqID === 0) {
             arrivalText = "ARRIVAL[color]cyan";
-        } else if (store.reqID == 1) {
+        } else if (store.reqID === 1) {
             departureText = "DEPARTURE[color]cyan";
         } else {
             enrouteText = "ENROUTE[color]cyan";
         }
 
         let arrText;
-        if (store.arpt1 != "") {
+        if (store.arpt1 !== "") {
             arrText = store.arpt1;
-        } else if (store.arrIcao != "") {
+        } else if (store.arrIcao !== "") {
             arrText = store.arrIcao + "[s-text]";
         } else {
             arrText = "[ ]";
@@ -79,7 +86,7 @@ class CDUAocRequestsAtis {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = () => {
-            if (store.reqID != 0) {
+            if (store.reqID !== 0) {
                 store["reqID"] = 0;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
@@ -88,7 +95,7 @@ class CDUAocRequestsAtis {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[2] = () => {
-            if (store.reqID != 1) {
+            if (store.reqID !== 1) {
                 store["reqID"] = 1;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
@@ -112,7 +119,7 @@ class CDUAocRequestsAtis {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[1] = () => {
-            if (store.reqID != 2) {
+            if (store.reqID !== 2) {
                 store["reqID"] = 2;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
@@ -137,7 +144,12 @@ class CDUAocRequestsAtis {
                 store["sendStatus"] = "SENT";
                 setTimeout(() => {
                     newMessage["time"] = fetchTimeValue();
-                    mcdu.addMessage(newMessage);
+                    // Messages go straight to the printer if FORMAT FOR PRINTER is selected.
+                    if (store.formatID === 0) {
+                        mcdu.printPage([lines.join(' ')]);
+                    } else {
+                        mcdu.addMessage(newMessage);
+                    }
                 }, Math.floor(Math.random() * 10000) + 10000);
                 labelTimeout = setTimeout(() => {
                     store["sendStatus"] = "";
