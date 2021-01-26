@@ -86,10 +86,9 @@ class LiveryPrinter extends TemplateElement {
         }
         if (this.previousLines !== newLines) {
             this.lines.innerHTML = newLines;
-            if (this.lines.clientHeight > 620) {
+            this.lines.setAttribute("class", "large");
+            if (this.lines.clientHeight > 1024) {
                 this.lines.setAttribute("class", "small");
-            } else {
-                this.lines.setAttribute("class", "large");
             }
         }
         this.previousLines = newLines;
