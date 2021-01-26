@@ -421,6 +421,14 @@
     - Bool
     - Indicates if the APU automatically shut down (for a reason other than fire)
 
+- A32NX_APU_IS_EMERGENCY_SHUTDOWN
+    - Bool
+    - Indicates if the APU automatically shut down due to fire
+
 - A32NX_ECAM_INOP_SYS_APU
     - Bool
     - Indicates if the APU is inoperable
+
+- A32NX_FIRE_BUTTON_APU
+    - Bool
+    - Indicates if the APU fire button is released
