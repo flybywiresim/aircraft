@@ -38,8 +38,9 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
         { id: 0, name: 'Dashboard', link: 'dashboard'},
         { id: 1, name: 'Dispatch', link: 'dispatch'},
         { id: 2, name: 'Flight', link: 'flight' },
-        { id: 3, name: 'Performance', link: 'ground'},
-        { id: 4, name: 'Company', link: 'ground'}
+        { id: 3, name: 'Performance', link: 'performance'},
+        { id: 4, name: 'Company', link: 'company'},
+        { id: 5, name: 'Ground', link: 'ground'},
     ];
 
     state: ToolbarState = {

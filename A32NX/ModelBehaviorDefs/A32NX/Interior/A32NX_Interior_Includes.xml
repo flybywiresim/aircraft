@@ -27,4 +27,5 @@
     <Include RelativeFile="../generated/A32NX_Interior_Fire.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Misc.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Handling.xml"/>
+    <Include RelativeFile="../generated/A32NX_Interior_Printer.xml"/>
 </ModelBehaviors>
