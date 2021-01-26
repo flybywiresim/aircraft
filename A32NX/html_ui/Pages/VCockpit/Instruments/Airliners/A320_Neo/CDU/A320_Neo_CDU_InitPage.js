@@ -76,22 +76,17 @@ class CDUInitPage {
                     }
                 };
 
-                cruiseFlTemp = "____\xa0|___°[color]amber";
-
-                if (mcdu._cruiseEntered) {
-                    //This is done so pilot enters a FL first, rather than using the computed one
-                    if (mcdu.cruiseFlightLevel) {
-                        let temp = mcdu.tempCurve.evaluate(mcdu.cruiseFlightLevel);
-                        if (isFinite(mcdu.cruiseTemperature)) {
-                            temp = mcdu.cruiseTemperature;
-                        }
-                        cruiseFlTemp = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "/" + temp.toFixed(0) + "°[color]cyan";
-                    }
+                cruiseFlTemp = "_____|____[color]amber";
+                //This is done so pilot enters a FL first, rather than using the computed one
+                if (mcdu._cruiseEntered && mcdu.cruiseFlightLevel) {
+                    cruiseFlTemp =
+                        "{cyan}FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "/" +
+                        (!!mcdu.cruiseTemperature ? mcdu.cruiseTemperature.toFixed(0) + "°" : "{small}" + mcdu.tempCurve.evaluate(mcdu.cruiseFlightLevel).toFixed(0) + "°{end}") +
+                        "{end}";
                 }
 
                 // CRZ FL / FLX TEMP
                 mcdu.onLeftInput[5] = (value) => {
-                    mcdu._cruiseEntered = true;
                     if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
                         CDUInitPage.ShowPage1(mcdu);
                     }
@@ -209,8 +204,8 @@ class CDUInitPage {
             [altDest, requestButton],
             ["FLT NBR"],
             [flightNo + "[color]cyan", alignOption],
-            [],
-            ["", "WIND/TEMP>"],
+            ["PAX NBR"],
+            ["___[color]inop", "WIND/TEMP>"],
             ["COST INDEX", "TROPO"],
             [costIndex, tropo],
             ["CRZ FL/TEMP", "GND TEMP"],
@@ -438,7 +433,7 @@ class CDUInitPage {
         };
 
         if (CDUInitPage.fuelPredConditionsMet(mcdu)) {
-            initBTitle = "INIT FUEL PREDICTION {}";
+            initBTitle = "INIT FUEL PREDICTION{sp}";
             fuelPlanTopTitle = "";
             fuelPlanBottomTitle = "";
 

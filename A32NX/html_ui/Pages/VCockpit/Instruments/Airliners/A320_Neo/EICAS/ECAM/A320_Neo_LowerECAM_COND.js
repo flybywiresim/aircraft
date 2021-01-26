@@ -45,13 +45,17 @@ var A320_Neo_LowerECAM_COND;
             this.fanWarningIndication[1].setAttribute("visibility", "hidden");
 
             this.querySelector("#AltnMode").setAttribute("visibility", "hidden");
+
+            this.updateThrottler = new UpdateThrottler(500);
         }
 
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
+            }
             // Disaply trim valve position for each zone
             const gaugeOffset = -50; //Gauges range is from -50 degree to +50 degree, AC-selector value is 0-100 - added an offset for this
 

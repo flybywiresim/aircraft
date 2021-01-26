@@ -261,22 +261,22 @@ class CDUPerformancePage {
         if (isFlying) {
             timeLabel = "UTC";
         }
-        const bottomRowLabels = ["PREV", "NEXT"];
+        const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
             if (confirmAppr) {
-                bottomRowLabels[0] = "CONFIRM[color]amber";
-                bottomRowCells[0] = "{APPR PHASE[color]amber";
+                bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
+                bottomRowCells[0] = "*APPR PHASE[color]amber";
                 mcdu.onLeftInput[5] = async () => {
                     if (await mcdu.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
                     }
                 };
             } else {
-                bottomRowLabels[0] = "ACTIVATE[color]cyan";
+                bottomRowLabels[0] = "\xa0ACTIVATE[color]cyan";
                 bottomRowCells[0] = "{APPR PHASE[color]cyan";
                 mcdu.onLeftInput[5] = () => {
                     CDUPerformancePage.ShowCLBPage(mcdu, true);
@@ -362,22 +362,22 @@ class CDUPerformancePage {
         if (isFlying) {
             timeLabel = "UTC";
         }
-        const bottomRowLabels = ["PREV", "NEXT"];
+        const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             if (confirmAppr) {
-                bottomRowLabels[0] = "CONFIRM[color]amber";
-                bottomRowCells[0] = "{APPR PHASE[color]amber";
+                bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
+                bottomRowCells[0] = "*APPR PHASE[color]amber";
                 mcdu.onLeftInput[5] = async () => {
                     if (await mcdu.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
                     }
                 };
             } else {
-                bottomRowLabels[0] = "ACTIVATE[color]cyan";
+                bottomRowLabels[0] = "\xa0ACTIVATE[color]cyan";
                 bottomRowCells[0] = "{APPR PHASE[color]cyan";
                 mcdu.onLeftInput[5] = () => {
                     CDUPerformancePage.ShowCRZPage(mcdu, true);
@@ -458,22 +458,22 @@ class CDUPerformancePage {
         if (isFlying) {
             timeLabel = "UTC";
         }
-        const bottomRowLabels = ["PREV", "NEXT"];
+        const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
             if (confirmAppr) {
-                bottomRowLabels[0] = "CONFIRM[color]amber";
-                bottomRowCells[0] = "{APPR PHASE[color]amber";
+                bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
+                bottomRowCells[0] = "*APPR PHASE[color]amber";
                 mcdu.onLeftInput[5] = async () => {
                     if (await mcdu.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
                     }
                 };
             } else {
-                bottomRowLabels[0] = "ACTIVATE[color]cyan";
+                bottomRowLabels[0] = "\xa0ACTIVATE[color]cyan";
                 bottomRowCells[0] = "{APPR PHASE[color]cyan";
                 mcdu.onLeftInput[5] = () => {
                     CDUPerformancePage.ShowDESPage(mcdu, true);
@@ -625,6 +625,40 @@ class CDUPerformancePage {
         if (isFinite(cleanSpeed)) {
             cleanCell = cleanSpeed.toFixed(0) + "[color]green";
         }
+
+        const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
+        const bottomRowCells = ["<PHASE", "PHASE>"];
+        if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+            bottomRowLabels[0] = "";
+            bottomRowCells[0] = "";
+        } else {
+            if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
+                mcdu.leftInputDelay[5] = () => {
+                    return mcdu.getDelaySwitchPage();
+                };
+                mcdu.onLeftInput[5] = (value) => {
+                    CDUPerformancePage.ShowGOAROUNDPage(mcdu);
+                };
+            } else {
+                mcdu.leftInputDelay[5] = () => {
+                    return mcdu.getDelaySwitchPage();
+                };
+                mcdu.onLeftInput[5] = (value) => {
+                    CDUPerformancePage.ShowDESPage(mcdu);
+                };
+            }
+        }
+        if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
+            bottomRowLabels[1] = "";
+            bottomRowCells[1] = "";
+        } else {
+            mcdu.rightInputDelay[5] = () => {
+                return mcdu.getDelaySwitchPage();
+            };
+            mcdu.onRightInput[5] = (value) => {
+                CDUPerformancePage.ShowGOAROUNDPage(mcdu);
+            };
+        }
         mcdu.setTemplate([
             ["APPR[color]" + titleColor],
             ["QNH", "FINAL", "FLP RETR"],
@@ -637,23 +671,11 @@ class CDUPerformancePage {
             [transAltCell + "[color]cyan", "CONF3*[color]green"],
             ["VAPP", "", "VLS"],
             [vappCell + "[color]cyan", "FULL[color]green", vlsCell + "[color]green"],
-            ["PREV", "NEXT"],
-            ["<PHASE", "PHASE>"]
+            bottomRowLabels,
+            bottomRowCells,
         ]);
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[5] = () => {
-            CDUPerformancePage.ShowDESPage(mcdu);
-        };
-        mcdu.rightInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[5] = () => {
-            CDUPerformancePage.ShowGOAROUNDPage(mcdu);
-        };
     }
-    static ShowGOAROUNDPage(mcdu) {
+    static ShowGOAROUNDPage(mcdu, confirmAppr = false) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.PerformancePageGoAround;
         CDUPerformancePage._timer = 0;
@@ -722,6 +744,48 @@ class CDUPerformancePage {
             cleanCell = cleanSpeed.toFixed(0) + "[color]green";
         }
 
+        const bottomRowLabels = ["", ""];
+        const bottomRowCells = ["", ""];
+        if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
+            if (confirmAppr) {
+                bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
+                bottomRowCells[0] = "*APPR PHASE[color]amber";
+                mcdu.leftInputDelay[5] = () => {
+                    return mcdu.getDelaySwitchPage();
+                };
+                mcdu.onLeftInput[5] = async () => {
+                    if (await mcdu.tryGoInApproachPhase()) {
+                        CDUPerformancePage.ShowAPPRPage(mcdu);
+                    }
+                };
+            } else {
+                bottomRowLabels[0] = "\xa0ACTIVATE[color]cyan";
+                bottomRowCells[0] = "{APPR PHASE[color]cyan";
+                mcdu.leftInputDelay[5] = () => {
+                    return mcdu.getDelaySwitchPage();
+                };
+                mcdu.onLeftInput[5] = () => {
+                    CDUPerformancePage.ShowGOAROUNDPage(mcdu, true);
+                };
+            }
+            bottomRowLabels[1] = "NEXT\xa0";
+            bottomRowCells[1] = "PHASE>";
+            mcdu.rightInputDelay[5] = () => {
+                return mcdu.getDelaySwitchPage();
+            };
+            mcdu.onRightInput[5] = () => {
+                CDUPerformancePage.ShowAPPRPage(mcdu);
+            };
+        } else {
+            bottomRowLabels[0] = "\xa0PREV";
+            bottomRowCells[0] = "<PHASE";
+            mcdu.leftInputDelay[5] = () => {
+                return mcdu.getDelaySwitchPage();
+            };
+            mcdu.onLeftInput[5] = () => {
+                CDUPerformancePage.ShowAPPRPage(mcdu);
+            };
+        }
         mcdu.setTemplate([
             ["GO AROUND[color]" + titleColor],
             ["", "", "FLP RETR"],
@@ -732,17 +796,11 @@ class CDUPerformancePage {
             ["", "", "0=" + cleanCell + "[color]green"],
             [""],
             [""],
-            ["THR RED/ACC", "OUT ACC", "ENG"],
+            ["THR RED/ACC", "ENG OUT ACC"],
             [thrRedAcc + "[color]cyan", engOut + "[color]cyan]"],
-            ["PREV"],
-            ["<PHASE"]
+            bottomRowLabels,
+            bottomRowCells,
         ]);
-        mcdu.leftInputDelay[5] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[5] = () => {
-            CDUPerformancePage.ShowAPPRPage(mcdu);
-        };
     }
     static UpdateThrRedAccFromOrigin(mcdu) {
         const origin = mcdu.flightPlanManager.getOrigin();

@@ -16,8 +16,8 @@ The following aircraft configuration is currently simulated:
  ```
  Model      A320-251N
  Engine     LEAP 1A-26
- FMGS       Honeywell Pegasus Step 1A
- FWC Std.   H2F9C
+ FMGS       Honeywell Pegasus II
+ FWC Std.   H2F9E
  ```
 
 Please note that this configuration may change in the future as the A32NX project evolves and changes.
@@ -29,7 +29,7 @@ Please note that this configuration may change in the future as the A32NX projec
 
 ### A32NX Installer
 
-Download the new A32NX installer where you can select either the Stable or Developer build, and download and install the mod directly into your community folder, [download here](https://github.com/Externoak/A32NX-installer/releases/latest/download/A32NX_Downloader.zip) ([source](https://github.com/Externoak/A32NX-installer/)).
+Download the new A32NX installer where you can select either the Stable or Developer build, and download and install the mod directly into your community folder, [download here](https://api.flybywiresim.com/installer) ([source](https://github.com/flybywiresim/installer/)).
 
 ### Traditional Download Methods
 

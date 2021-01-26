@@ -5,6 +5,7 @@ var A320_Neo_BAT;
             super();
             this.batTexts = new Array(null, null);
             this.batValues = new Array(0, 0);
+            this.updateThrottler = new UpdateThrottler(500);
         }
         get templateID() {
             return "A320_Neo_BAT";
@@ -16,7 +17,9 @@ var A320_Neo_BAT;
         }
         onUpdate(_deltaTime) {
             super.onUpdate(_deltaTime);
-
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
+            }
             const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
             this.lightsTest = lightsTest;
 
