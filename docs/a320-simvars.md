@@ -409,6 +409,10 @@
     - Bool
     - Indicates if the APU bleed air valve is open
 
+- A32NX_APU_BLEED_FAULT
+    - Bool
+    - Indicates if the APU BLEED FAULT light should be illuminated
+
 - A32NX_APU_MASTER_FAULT
     - Bool
     - Indicates if the MASTER SW FAULT light should be illuminated
