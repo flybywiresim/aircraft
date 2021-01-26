@@ -499,14 +499,10 @@ class NXApprSpeeds {
      * @param {boolean} isConf3 CONF3 if true, else FULL
      * @param {number} [wind=live measured] tower headwind component
      */
-    constructor(m, isConf3, wind = NaN) {
+    constructor(m, isConf3, wind = (SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1)) {
         const cm = _correctMass(m);
         this.vls = vls[isConf3 ? 3 : 4][cm](m, 1);
-        if (isFinite(wind)) {
-            this.vapp = this.vls + NXSpeedsUtils.addWindComponent(wind / 3);
-        } else {
-            this.vapp = this.vls + NXSpeedsUtils.addWindComponent();
-        }
+        this.vapp = this.vls + NXSpeedsUtils.addWindComponent(wind / 3);
         this.f = f[cm](m);
         this.s = s[cm](m);
         this.gd = _computeGD(m);
