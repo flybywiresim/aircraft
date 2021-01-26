@@ -8,17 +8,6 @@ on:
       - ready_for_review
 
 jobs:
-  title:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: aslafy-z/conventional-pr-title-action@master
-        with:
-          success-state: Title follows the specification.
-          failure-state: Title does not follow the specification.
-          context-name: title
-          preset: conventional-changelog-angular@latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   lint:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
