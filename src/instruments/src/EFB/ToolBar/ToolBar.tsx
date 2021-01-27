@@ -87,7 +87,7 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
                     </div>
                     <div className="flex items-center text-white">
                         <div>
-                            <a onClick={this.handleClick(5)}>
+                            <a onClick={this.handleClick(6)}>
                                 <IconSettings size={25} stroke={1.5} strokeLinejoin="miter" />
                             </a>
                         </div>
