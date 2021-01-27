@@ -1652,18 +1652,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     //TODO: MCDU action
-    //TODO: figure out usage of takeOffTrim
-    updateTakeOffTrim() {
-        let d = (this.zeroFuelWeightMassCenter - 13) / (33 - 13);
-        d = Math.min(Math.max(d, -0.5), 1);
-        let dW = (this.getWeight(true) - 400) / (800 - 400);
-        dW = Math.min(Math.max(dW, 0), 1);
-        const minTrim = 3.5 * dW + 1.5 * (1 - dW);
-        const maxTrim = 8.6 * dW + 4.3 * (1 - dW);
-        this.takeOffTrim = minTrim * d + maxTrim * (1 - d);
-    }
-
-    //TODO: MCDU action
     //TODO: refactor/remove useLbs
     setZeroFuelWeight(s, callback = EmptyCallback.Boolean, useLbs = false) {
         let value = parseFloat(s);
@@ -1672,7 +1660,6 @@ class FMCMainDisplay extends BaseAirliners {
                 value = value / 2.204623;
             }
             this.zeroFuelWeight = value;
-            this.updateTakeOffTrim();
             return callback(true);
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
@@ -1684,7 +1671,6 @@ class FMCMainDisplay extends BaseAirliners {
         const value = parseFloat(s);
         if (isFinite(value) && value > 0 && value < 100) {
             this.zeroFuelWeightMassCenter = value;
-            this.updateTakeOffTrim();
             return callback(true);
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
@@ -1723,7 +1709,6 @@ class FMCMainDisplay extends BaseAirliners {
                 return false;
             }
         }
-        this.updateTakeOffTrim();
         this.updateCleanSpeed();
         return true;
     }
@@ -1752,7 +1737,6 @@ class FMCMainDisplay extends BaseAirliners {
                 this.setZeroFuelWeight(zfw.toString());
                 this.setZeroFuelCG(zfwcg.toString());
 
-                this.updateTakeOffTrim();
                 this.updateCleanSpeed();
                 return true;
             } else {
@@ -1839,7 +1823,6 @@ class FMCMainDisplay extends BaseAirliners {
                     value = value / 2.204623;
                 }
                 this.blockFuel = value;
-                this.updateTakeOffTrim();
                 this._blockFuelEntered = true;
                 return true;
             } else {
