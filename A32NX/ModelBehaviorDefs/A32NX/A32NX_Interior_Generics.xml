@@ -153,13 +153,13 @@
             - NODE_ID               <no default>    Switch node ID                          (anim name will be same)
             - TOGGLE_SIMVAR         <no default>    SimVar to contain the toggle state
             - MOMENTARY             <no default>    If present, the switch returns to it's original position
-                                                    If present, the switch will stay pressed.
+                                                    If not present, the switch will stay pressed.
+            - DOWN_CODE             Not present     Provides custom code to test for "pushed in" condition if TOGGLE_SIMVAR is not used
             - SEQ1_CODE             0               Sequence 1 emissive code
             - SEQ1_CODE             0               Sequence 2 emissive code
             - DISABLE_SEQ1          Not present     If present, the SEQ1 emissive is disabled
             - DISABLE_SEQ2          Not present     If present, the SEQ2 emissive is disabled
             - DUMMY_BUTTON          Not present     If true, the button will be a dummy button (not pressable, only emissive)
-            - INVERTED              Not present     If true and using TOGGLE_SIMVAR, the SEQ2 emissive will be activated
 
     Authors: Benjamin Dupont (@Benjozork), lukecologne 12/10/20
     -->
