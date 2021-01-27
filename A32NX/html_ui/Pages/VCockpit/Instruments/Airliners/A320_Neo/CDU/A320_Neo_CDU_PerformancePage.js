@@ -558,6 +558,7 @@ class CDUPerformancePage {
         mcdu.onLeftInput[2] = (value) => {
             if (mcdu.setPerfApprWind(value)) {
                 mcdu.updateTowerHeadwind();
+                mcdu.updateApproachSpeeds();
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
@@ -570,21 +571,37 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
+
         let vappCell = "---";
-        const vApp = mcdu.getVApp();
-        if (isFinite(vApp)) {
-            vappCell = vApp.toFixed(0);
+        let vlsCell = "---";
+        let flpRetrCell = "---";
+        let sltRetrCell = "---";
+        let cleanCell = "---";
+        if (mcdu.approachSpeeds && mcdu.approachSpeeds.valid) {
+            vappCell = mcdu.approachSpeeds.vapp.toFixed(0);
+            vlsCell = mcdu.approachSpeeds.vls.toFixed(0);
+            flpRetrCell = mcdu.approachSpeeds.f.toFixed(0) + "[color]green";
+            sltRetrCell = mcdu.approachSpeeds.s.toFixed(0) + "[color]green";
+            cleanCell = mcdu.approachSpeeds.gd.toFixed(0) + "[color]green";
+        }
+        if (isFinite(mcdu.vApp)) { // pilot override
+            vappCell = mcdu.vApp.toFixed(0);
         }
         mcdu.onLeftInput[4] = (value) => {
             if (mcdu.setPerfApprVApp(value)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
-        let vlsCell = "---";
-        const vls = mcdu.getVLS();
-        if (isFinite(vls)) {
-            vlsCell = vls.toFixed(0);
-        }
+        mcdu.onRightInput[3] = () => {
+            mcdu.setPerfApprFlaps3(true);
+            mcdu.updateApproachSpeeds();
+            CDUPerformancePage.ShowAPPRPage(mcdu);
+        };
+        mcdu.onRightInput[4] = () => {
+            mcdu.setPerfApprFlaps3(false);
+            mcdu.updateApproachSpeeds();
+            CDUPerformancePage.ShowAPPRPage(mcdu);
+        };
         let finalCell = "-----";
         const approach = mcdu.flightPlanManager.getApproach();
         if (approach && approach.name) {
@@ -610,21 +627,6 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
-        let flpRetrCell = "---";
-        const flapSpeed = mcdu.getFlapApproachSpeed();
-        if (isFinite(flapSpeed)) {
-            flpRetrCell = flapSpeed.toFixed(0) + "[color]green";
-        }
-        let sltRetrCell = "---";
-        const slatSpeed = mcdu.getSlatApproachSpeed();
-        if (isFinite(slatSpeed)) {
-            sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
-        }
-        let cleanCell = "---";
-        const cleanSpeed = mcdu.getPerfGreenDotSpeed();
-        if (isFinite(cleanSpeed)) {
-            cleanCell = cleanSpeed.toFixed(0) + "[color]green";
-        }
 
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
@@ -659,6 +661,7 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowGOAROUNDPage(mcdu);
             };
         }
+
         mcdu.setTemplate([
             ["APPR[color]" + titleColor],
             ["QNH", "FINAL", "FLP RETR"],
@@ -668,9 +671,9 @@ class CDUPerformancePage {
             ["MAG WIND", "DH", "CLEAN"],
             [magWindHeadingCell + "°/" + magWindSpeedCell + "[color]cyan", dhCell + "[color]cyan", "0=" + cleanCell + "[color]green"],
             ["TRANS ALT", "LDG CONF"],
-            [transAltCell + "[color]cyan", "CONF3*[color]green"],
+            [transAltCell + "[color]cyan", mcdu.perfApprFlaps3 ? "CONF3[color]cyan" : "[s-text]CONF3*[color]cyan"],
             ["VAPP", "", "VLS"],
-            [vappCell + "[color]cyan", "FULL[color]green", vlsCell + "[color]green"],
+            [vappCell + "[color]cyan", mcdu.perfApprFlaps3 ? "[s-text]FULL*[color]cyan" : "FULL[color]cyan", vlsCell + "[color]green"],
             bottomRowLabels,
             bottomRowCells,
         ]);
@@ -796,7 +799,7 @@ class CDUPerformancePage {
             ["", "", "0=" + cleanCell + "[color]green"],
             [""],
             [""],
-            ["THR RED/ACC", "OUT ACC", "ENG"],
+            ["THR RED/ACC", "ENG OUT ACC"],
             [thrRedAcc + "[color]cyan", engOut + "[color]cyan]"],
             bottomRowLabels,
             bottomRowCells,

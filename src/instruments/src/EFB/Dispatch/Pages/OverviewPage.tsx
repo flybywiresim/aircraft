@@ -18,8 +18,8 @@
 
 import React, {useState, useEffect} from 'react';
 import { IconAlignRight, IconBox, IconPlane, IconSwitchHorizontal, IconUsers, IconBolt } from '@tabler/icons';
-import nose from '../../Assets/320neoOutline [Nose].svg';
-import fuselage from '../../Assets/320neoOutline [Fuselage].svg';
+import nose from '../../Assets/320neo-outline-nose.svg';
+import fuselage from '../../Assets/320neo-outline-fuselage.svg';
 
 type OverviewPageProps = {
     weights: {
