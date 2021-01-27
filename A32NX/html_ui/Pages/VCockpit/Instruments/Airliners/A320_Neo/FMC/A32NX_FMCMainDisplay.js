@@ -1287,13 +1287,6 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    //TODO: MCDU action
-    updateCleanSpeed() {
-        if (isFinite(this.computedVgd)) {
-            SimVar.SetSimVarValue("L:AIRLINER_TO_GREEN_DOT_SPD", "Number", this.computedVgd);
-        }
-    }
-
     //TODO: with FADEC no longer needed
     setPerfTOFlexTemp(s) {
         const value = parseFloat(s);
@@ -1718,7 +1711,6 @@ class FMCMainDisplay extends BaseAirliners {
                 return false;
             }
         }
-        this.updateCleanSpeed();
         return true;
     }
 
@@ -1745,8 +1737,6 @@ class FMCMainDisplay extends BaseAirliners {
 
                 this.setZeroFuelWeight(zfw.toString());
                 this.setZeroFuelCG(zfwcg.toString());
-
-                this.updateCleanSpeed();
                 return true;
             } else {
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -2030,6 +2020,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Tries to estimate the landing weight at destination
      * NaN on failure
      */
+    //TODO: MCDU action
     tryEstimateLandingWeight() {
         const altActive = false;
         const landingWeight = this.zeroFuelWeight + (altActive ? this.getAltEFOB(true) : this.getDestEFOB(true));
