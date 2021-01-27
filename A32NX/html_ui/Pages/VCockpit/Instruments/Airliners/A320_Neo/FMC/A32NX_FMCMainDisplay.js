@@ -2518,7 +2518,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this._apNavIndex = apNavIndex;
             }
             const curState = SimVar.GetSimVarValue("GPS DRIVES NAV1", "Bool");
-            if (curState !== gpsDriven) {
+            if (!!curState !== gpsDriven) {
                 SimVar.SetSimVarValue("K:TOGGLE_GPS_DRIVES_NAV1", "Bool", 0);
             }
         }
