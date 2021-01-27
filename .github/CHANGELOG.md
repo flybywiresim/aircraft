@@ -45,6 +45,7 @@
 1. [MISC] Added printer - @tyler58546 (tyler58546), @DarkOfNova (DarkOfNova)
 1. [ECAM] Added CONF/FLAPS 3 memos when GPWS LDG FLAPS 3 enabled - @tracernz (Mike)
 1. [MISC] Disabled left tiller deflection emissive - @ImenesFBW (Imenes)
+1. [CDU] Add landing config selection (CONF3 or FULL) on Perf Appr page - @tracernz (Mike)
 1. [FLIGHTMODEL] Improve landing flare (remove float) - @donstim - (donbikes#4084)
 
 ## 0.5.2
