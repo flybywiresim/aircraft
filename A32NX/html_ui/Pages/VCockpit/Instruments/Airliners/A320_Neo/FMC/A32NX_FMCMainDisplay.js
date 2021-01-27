@@ -1982,7 +1982,11 @@ class FMCMainDisplay extends BaseAirliners {
                 return true;
             }
         } else {
-            const value = parseFloat(s);
+            if (s.includes(".")) {
+                this.addNewMessage(NXSystemMessages.formatError);
+                return false;
+            }
+            const value = parseInt(s);
             if (isFinite(value) && value >= 90 && value <= 350) {
                 this.vApp = value;
                 return true;
