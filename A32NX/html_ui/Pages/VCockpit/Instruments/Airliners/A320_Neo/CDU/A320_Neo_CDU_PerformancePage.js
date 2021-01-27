@@ -144,12 +144,12 @@ class CDUPerformancePage {
             }
         };
         let flpRetrCell = "---";
-        const flapSpeed = mcdu.this.computedVfs;
+        const flapSpeed = mcdu.computedVfs;
         if (isFinite(flapSpeed)) {
             flpRetrCell = flapSpeed.toFixed(0) + "[color]green";
         }
         let sltRetrCell = "---";
-        const slatSpeed = mcdu.this.computedVss;
+        const slatSpeed = mcdu.computedVss;
         if (isFinite(slatSpeed)) {
             sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
         }
@@ -732,17 +732,17 @@ class CDUPerformancePage {
             }
         };
         let flpRetrCell = "---";
-        const flapSpeed = mcdu.this.computedVfs;
+        const flapSpeed = mcdu.computedVfs;
         if (isFinite(flapSpeed)) {
             flpRetrCell = flapSpeed.toFixed(0) + "[color]green";
         }
         let sltRetrCell = "---";
-        const slatSpeed = mcdu.this.computedVss;
+        const slatSpeed = mcdu.computedVss;
         if (isFinite(slatSpeed)) {
             sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
         }
         let cleanCell = "---";
-        const cleanSpeed = mcdu.this.computedVgd;
+        const cleanSpeed = mcdu.computedVgd;
         if (isFinite(cleanSpeed)) {
             cleanCell = cleanSpeed.toFixed(0) + "[color]green";
         }
