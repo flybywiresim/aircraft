@@ -114,6 +114,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.tropo = "";
     }
 
+    //TODO: this is mcdu stuff
     getTitle() {
         if (this._title === undefined) {
             this._title = this._titleElement.textContent;
@@ -121,6 +122,7 @@ class FMCMainDisplay extends BaseAirliners {
         return this._title;
     }
 
+    //TODO: this is mcdu stuff
     setTitle(content) {
         let color = content.split("[color]")[1];
         if (!color) {
@@ -132,6 +134,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._titleElement.textContent = this._title;
     }
 
+    //TODO: this is mcdu stuff
     setTitleLeft(content) {
         if (!content) {
             this._titleLeftElement.textContent = "";
@@ -147,6 +150,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._titleLeftElement.textContent = this._titleLeft;
     }
 
+    //TODO: this is mcdu stuff
     setPageCurrent(value) {
         if (typeof (value) === "number") {
             this._pageCurrent = value;
@@ -156,6 +160,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._pageCurrentElement.textContent = (this._pageCurrent > 0 ? this._pageCurrent : "") + "";
     }
 
+    //TODO: this is mcdu stuff
     setPageCount(value) {
         if (typeof (value) === "number") {
             this._pageCount = value;
@@ -170,6 +175,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: this is mcdu stuff
     setLabel(label, row, col = -1) {
         if (col >= this._labelElements[row].length) {
             return;
@@ -212,6 +218,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._labelElements[row][col].textContent = label;
     }
 
+    //TODO: this is mcdu stuff
     setLine(content, row, col = -1) {
         if (col >= this._lineElements[row].length) {
             return;
@@ -252,10 +259,12 @@ class FMCMainDisplay extends BaseAirliners {
         this._lineElements[row][col].textContent = this._lines[row][col];
     }
 
+    //TODO: this is mcdu stuff
     get inOut() {
         return this.getInOut();
     }
 
+    //TODO: this is mcdu stuff
     getInOut() {
         if (this._inOut === undefined) {
             this._inOut = this._inOutElement.textContent;
@@ -263,15 +272,18 @@ class FMCMainDisplay extends BaseAirliners {
         return this._inOut;
     }
 
+    //TODO: this is mcdu stuff
     set inOut(v) {
         this.setInOut(v);
     }
 
+    //TODO: this is mcdu stuff
     setInOut(content) {
         this._inOut = content;
         this._inOutElement.textContent = this._inOut;
     }
 
+    //TODO: this is mcdu stuff
     setTemplate(template, large = false) {
         if (template[0]) {
             this.setTitle(template[0][0]);
@@ -327,6 +339,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {boolean} left - whether the left arrow will be displayed
      * @param {boolean} right - whether the right arrow will be displayed
      */
+    //TODO: this is mcdu stuff
     setArrows(up, down, left, right) {
         this.arrowHorizontal.style.opacity = (left || right) ? "1" : "0";
         this.arrowVertical.style.opacity = (up || down) ? "1" : "0";
@@ -359,11 +372,13 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:AIRLINER_CRUISE_ALTITUDE", "number", this._cruiseFlightLevel * 100);
     }
 
+    //TODO: this is mcdu stuff
     lastUserInputToScratchpad() {
         this.inOut = this.lastUserInput;
         this.lastUserInput = "";
     }
 
+    //TODO: this is mcdu stuff
     clearUserInput() {
         if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = this.inOut;
@@ -373,6 +388,7 @@ class FMCMainDisplay extends BaseAirliners {
         return this.lastUserInput;
     }
 
+    //TODO: this is mcdu stuff
     tryClearOldUserInput() {
         if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = "";
@@ -384,6 +400,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Returns true if an engine is running (FF > 0)
      * @returns {boolean}
      */
+    //TODO: can this be an util?
     isAnEngineOn() {
         return Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
     }
@@ -392,6 +409,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Returns true if all engines are running (FF > 0)
      * @returns {boolean}
      */
+    //TODO: can this be an util?
     isAllEngineOn() {
         return Simplane.getEngineActive(0) && Simplane.getEngineActive(1);
     }
@@ -401,6 +419,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param alt {number} altitude in ft
      * @returns {number} ISA temp in C°
      */
+    //TODO: can this be an util?
     getIsaTemp(alt = Simplane.getAltitude()) {
         return alt / 1000 * (-1.98) + 15;
     }
@@ -410,6 +429,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param alt {number} altitude in ft
      * @returns {number} ISA temp deviation from OAT in C°
      */
+    //TODO: can this be an util?
     getIsaTempDeviation(alt = Simplane.getAltitude()) {
         return SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius") - this.getIsaTemp(alt);
     }
@@ -420,6 +440,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param gw {number} GW in t
      * @returns {number} MAX FL
      */
+    //TODO: can this be an util?
     getMaxFL(temp = this.getIsaTempDeviation(), gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000) {
         return Math.round(temp <= 10 ? -2.778 * gw + 578.667 : (temp * (-0.039) - 2.389) * gw + temp * (-0.667) + 585.334);
     }
@@ -429,10 +450,12 @@ class FMCMainDisplay extends BaseAirliners {
      * @param fl {number} FL to check
      * @returns {number} maximum allowed cruise FL
      */
+    //TODO: can this be an util?
     getMaxFlCorrected(fl = this.getMaxFL()) {
         return fl >= this.maxCruiseFL ? this.maxCruiseFL : fl;
     }
 
+    //TODO: MCDU action
     setCruiseFlightLevelAndTemperature(input) {
         if (input === FMCMainDisplay.clrValue) {
             this.cruiseFlightLevel = undefined;
@@ -474,6 +497,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     tryUpdateCostIndex(costIndex) {
         const value = parseInt(costIndex);
         if (isFinite(value)) {
@@ -496,6 +520,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {string | number} tropo Format: NNNN or NNNNN Leading 0’s must be included. Entry is rounded to the nearest 10 ft
      * @return {boolean} Whether tropopause could be set or not
      */
+    //TODO: MCDU action
     tryUpdateTropo(tropo) {
         const _tropo = typeof tropo === 'number' ? tropo.toString() : tropo;
         if (_tropo.match(/^(?=(\D*\d){4,5}\D*$)/g)) {
@@ -512,6 +537,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: somewhat MCDU action (also simbrief)
     ensureCurrentFlightPlanIsTemporary(callback = EmptyCallback.Boolean) {
         if (this.flightPlanManager.getCurrentFlightPlanIndex() === 0) {
             this.flightPlanManager.copyCurrentFlightPlanInto(1, () => {
@@ -526,6 +552,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: MCDU action
     tryUpdateFromTo(fromTo, callback = EmptyCallback.Boolean) {
         if (fromTo === FMCMainDisplay.clrValue) {
             this.addNewMessage(NXSystemMessages.notAllowed);
@@ -569,10 +596,12 @@ class FMCMainDisplay extends BaseAirliners {
             this.altDestination.infos.coordinates);
     }
 
+    // only used by trySetRouteAlternateFuel
     isAltFuelInRange(fuel) {
         return 0 < fuel && fuel < (this.blockFuel - this._routeTripFuelWeight);
     }
 
+    //TODO: MCDU action
     async trySetRouteAlternateFuel(altFuel) {
         if (altFuel === FMCMainDisplay.clrValue) {
             this._routeAltFuelEntered = false;
@@ -594,10 +623,12 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    // only used by trySetMinDestFob
     isMinDestFobInRange(fuel) {
         return 0 <= fuel && fuel <= 80.0;
     }
 
+    //TODO: MCDU action
     async trySetMinDestFob(fuel) {
         if (fuel === FMCMainDisplay.clrValue) {
             this._minDestFobEntered = false;
@@ -620,6 +651,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     async tryUpdateAltDestination(altDestIdent) {
         if (altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
             this.altDestination = undefined;
@@ -639,6 +671,7 @@ class FMCMainDisplay extends BaseAirliners {
     /**
      * Updates the Fuel weight cell to tons. Uses a place holder FL120 for 30 min
      */
+    //TODO: MCDU action (also called by tryFuelPlanning)
     tryUpdateRouteFinalFuel() {
         if (this._routeFinalFuelTime <= 0) {
             this._routeFinalFuelTime = this._defaultRouteFinalTime;
@@ -650,6 +683,7 @@ class FMCMainDisplay extends BaseAirliners {
     /**
      * Updates the alternate fuel and time values using a place holder FL of 330 until that can be set
      */
+    //TODO: MCDU action (also called by tryFuelPlanning)
     tryUpdateRouteAlternate() {
         if (this._DistanceToAlt < 20) {
             this._routeAltFuelWeight = 0;
@@ -676,6 +710,7 @@ class FMCMainDisplay extends BaseAirliners {
      * static distance. Works down to 20NM airDistance and FL100 Up to 3100NM airDistance and FL390, anything out of those ranges and values
      * won't be updated.
      */
+    //TODO: MCDU action (also called by tryFuelPlanning)
     tryUpdateRouteTrip(dynamic = false) {
         let airDistance = 0;
         const groundDistance = dynamic ? this.flightPlanManager.getDestination().liveDistanceTo : this.flightPlanManager.getDestination().cumulativeDistanceInFP;
@@ -699,14 +734,17 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: MCDU action
     tryUpdateMinDestFob() {
         this._minDestFob = this._routeAltFuelWeight + this.getRouteFinalFuelWeight();
     }
 
+    //TODO: MCDU action
     tryUpdateTOW() {
         this.takeOffWeight = this.getGW() - this.taxiFuelWeight;
     }
 
+    //TODO: MCDU action
     tryUpdateLW() {
         this.landingWeight = this.takeOffWeight - this._routeTripFuelWeight;
     }
@@ -716,6 +754,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {boolean}useFOB - States whether to use the FOB rather than block fuel when computing extra fuel
      * @returns {number}
      */
+    //TODO: MCDU action
     tryGetExtraFuel(useFOB = false) {
         if (useFOB) {
             return this.getFOB() - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight;
@@ -728,6 +767,7 @@ class FMCMainDisplay extends BaseAirliners {
      * EXPERIMENTAL
      * Attempts to calculate the extra time
      */
+    //TODO: MCDU action
     tryGetExtraTime(useFOB = false) {
         if (this.tryGetExtraFuel(useFOB) <= 0) {
             return 0;
@@ -737,14 +777,17 @@ class FMCMainDisplay extends BaseAirliners {
         return (this.tryGetExtraFuel(useFOB) * 1000) / tempFFCoefficient;
     }
 
+    //TODO: MCDU action
     getRouteAltFuelWeight() {
         return this._routeAltFuelWeight;
     }
 
+    //TODO: MCDU action
     getRouteAltFuelTime() {
         return this._routeAltFuelTime;
     }
 
+    //TODO: MCDU action
     setOriginRunwayIndex(runwayIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setDepartureProcIndex(-1, () => {
@@ -755,6 +798,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    //TODO: MCDU action
     setRunwayIndex(runwayIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             const routeOriginInfo = this.flightPlanManager.getOrigin().infos;
@@ -780,6 +824,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    //TODO: MCDU action
     setDepartureIndex(departureIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             const currentRunway = this.flightPlanManager.getDepartureRunway();
@@ -800,6 +845,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    //TODO: MCDU action
     setApproachTransitionIndex(transitionIndex, callback = EmptyCallback.Boolean) {
         const arrivalIndex = this.flightPlanManager.getArrivalProcIndex();
         this.ensureCurrentFlightPlanIsTemporary(() => {
@@ -811,6 +857,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    //TODO: MCDU action
     setArrivalProcIndex(arrivalIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setArrivalProcIndex(arrivalIndex, () => {
@@ -819,6 +866,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    //TODO: MCDU action
     setArrivalIndex(arrivalIndex, transitionIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setArrivalEnRouteTransitionIndex(transitionIndex, () => {
@@ -829,6 +877,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    //TODO: MCDU action
     setApproachIndex(approachIndex, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.setApproachIndex(approachIndex, () => {
@@ -852,6 +901,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    //TODO: MCDU action
     updateFlightNo(flightNo, callback = EmptyCallback.Boolean) {
         if (flightNo.length > 7) {
             this.addNewMessage(NXSystemMessages.notAllowed);
@@ -874,6 +924,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    //TODO: MCDU action
     updateCoRoute(coRoute, callback = EmptyCallback.Boolean) {
         if (coRoute.length > 2) {
             if (coRoute.length < 10) {
@@ -889,14 +940,17 @@ class FMCMainDisplay extends BaseAirliners {
         return callback(false);
     }
 
+    //TODO: MCDU action
     getTotalTripTime() {
         return this._routeTripTime;
     }
 
+    //TODO: MCDU action, partial user may become routine
     getTotalTripFuelCons() {
         return this._routeTripFuelWeight;
     }
 
+    //TODO: MCDU action
     getOrSelectVORsByIdent(ident, callback) {
         this.dataManager.GetVORsByIdent(ident).then((navaids) => {
             if (!navaids || navaids.length === 0) {
@@ -909,6 +963,7 @@ class FMCMainDisplay extends BaseAirliners {
             A320_Neo_CDU_SelectWptPage.ShowPage(this, navaids, callback);
         });
     }
+    //TODO: MCDU action
     getOrSelectNDBsByIdent(ident, callback) {
         this.dataManager.GetNDBsByIdent(ident).then((navaids) => {
             if (!navaids || navaids.length === 0) {
@@ -922,6 +977,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    //TODO: MCDU action
     getOrSelectWaypointByIdent(ident, callback) {
         this.dataManager.GetWaypointsByIdent(ident).then((waypoints) => {
             if (!waypoints || waypoints.length === 0) {
@@ -934,6 +990,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    //TODO: MCDU action
     insertWaypoint(newWaypointTo, index, callback = EmptyCallback.Boolean) {
         this.ensureCurrentFlightPlanIsTemporary(async () => {
             this.getOrSelectWaypointByIdent(newWaypointTo, (waypoint) => {
@@ -948,6 +1005,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    //TODO: MCDU action
     activateDirectToWaypoint(waypoint, callback = EmptyCallback.Void) {
         const waypoints = this.flightPlanManager.getWaypoints();
         const indexInFlightPlan = waypoints.findIndex(w => {
@@ -969,6 +1027,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    //TODO: MCDU action
     async insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, callback = EmptyCallback.Boolean) {
         const referenceWaypoint = this.flightPlanManager.getWaypoint(index - 1);
         const lastWaypointIdentPadEnd = lastWaypointIdent.padEnd(5, " ");
@@ -1028,6 +1087,7 @@ class FMCMainDisplay extends BaseAirliners {
         return callback(false);
     }
 
+    //TODO: MCDU action
     // Copy airway selections from temporary to active flightplan
     async copyAirwaySelections() {
         const temporaryFPWaypoints = this.flightPlanManager.getWaypoints(1);
@@ -1040,12 +1100,14 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: MCDU action
     removeWaypoint(index, callback = EmptyCallback.Void) {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             this.flightPlanManager.removeWaypoint(index, true, callback);
         });
     }
 
+    //TODO: MCDU action
     eraseTemporaryFlightPlan(callback = EmptyCallback.Void) {
         this.flightPlanManager.setCurrentFlightPlanIndex(0, () => {
             SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
@@ -1054,6 +1116,7 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    //TODO: MCDU action
     insertTemporaryFlightPlan(callback = EmptyCallback.Void) {
         if (this.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
             this.flightPlanManager.copyCurrentFlightPlanInto(0, () => {
@@ -1066,18 +1129,21 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: Message system validity check
     vSpeedsValid() {
         return (!!this.v1Speed && !!this.vRSpeed ? this.v1Speed <= this.vRSpeed : true)
             && (!!this.vRSpeed && !!this.v2Speed ? this.vRSpeed <= this.v2Speed : true)
             && (!!this.v1Speed && !!this.v2Speed ? this.v1Speed <= this.v2Speed : true);
     }
 
+    //TODO: MCDU action
     vSpeedDisagreeCheck() {
         if (!this.vSpeedsValid()) {
             this.addNewMessage(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this));
         }
     }
 
+    //TODO: MCDU action
     trySetV1Speed(s) {
         if (!/^\d+$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
@@ -1099,6 +1165,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     trySetVRSpeed(s) {
         if (!/^\d+$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
@@ -1120,6 +1187,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     trySetV2Speed(s) {
         if (!/^\d+$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
@@ -1141,6 +1209,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     trySetTransAltitude(s) {
         if (!/^\d+$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
@@ -1156,6 +1225,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     trySetThrustReductionAccelerationAltitude(s) {
         let thrRed = NaN;
         let accAlt = NaN;
@@ -1179,6 +1249,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     trySetThrustReductionAccelerationAltitudeGoaround(s) {
         let thrRed = NaN;
         let accAlt = NaN;
@@ -1202,6 +1273,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     trySetEngineOutAcceleration(s) {
         const engOutAcc = parseInt(s);
         if (isFinite(engOutAcc)) {
@@ -1213,6 +1285,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     updateCleanSpeed() {
         if (isFinite(this.computedVgd)) {
             SimVar.SetSimVarValue("L:AIRLINER_TO_GREEN_DOT_SPD", "Number", this.computedVgd);
@@ -1280,6 +1353,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: MCDU action
     isTaxiFuelInRange(taxi) {
         return 0 <= taxi && taxi <= 9.9;
     }
@@ -1288,6 +1362,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Attempts to predict required block fuel for trip
      * @returns {boolean}
      */
+    //TODO: MCDU action (maybe make this part of an update routine?)
     tryFuelPlanning() {
         if (this._fuelPlanningPhase === this._fuelPlanningPhases.IN_PROGRESS) {
             this._blockFuelEntered = true;
@@ -1307,6 +1382,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._fuelPlanningPhase = this._fuelPlanningPhases.IN_PROGRESS;
         return true;
     }
+    //TODO: MCDU action
     async trySetTaxiFuelWeight(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.taxiFuelWeight = this._defaultTaxiFuelWeight;
@@ -1332,6 +1408,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     getRouteFinalFuelWeight() {
         if (isFinite(this._routeFinalFuelWeight)) {
             this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
@@ -1339,14 +1416,17 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: MCDU action
     getRouteFinalFuelTime() {
         return this._routeFinalFuelTime;
     }
 
+    //TODO: MCDU action
     isFinalFuelInRange(fuel) {
         return 0 <= fuel && fuel <= 100;
     }
 
+    //TODO: MCDU action
     isFinalTimeInRange(time) {
         const convertedTime = FMCMainDisplay.hhmmToMinutes(time.padStart(4,"0"));
         return 0 <= convertedTime && convertedTime <= 90;
@@ -1357,6 +1437,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {String} s - containing time value
      * @returns {boolean}
      */
+    //TODO: MCDU action
     async trySetRouteFinalTime(s) {
         if (s) {
             if (s === FMCMainDisplay.clrValue) {
@@ -1383,6 +1464,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {string} s
      * @returns {Promise<boolean>}
      */
+    //TODO: MCDU action
     async trySetRouteFinalFuel(s) {
         if (s === FMCMainDisplay.clrValue) {
             this._routeFinalFuelTime = this._routeFinalFuelTimeDefault;
@@ -1417,6 +1499,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     getRouteReservedWeight() {
         if (isFinite(this._routeReservedWeight) && this._routeReservedWeight !== 0) {
             return this._routeReservedWeight;
@@ -1425,12 +1508,14 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: MCDU action
     getRouteReservedPercent() {
         if (isFinite(this._routeReservedWeight) && isFinite(this.blockFuel) && this._routeReservedWeight !== 0) {
             return this._routeReservedWeight / this.blockFuel * 100;
         }
         return this._routeReservedPercent;
     }
+    //TODO: MCDU action
     trySetRouteReservedPercent(s) {
         if (s) {
             if (s === FMCMainDisplay.clrValue) {
@@ -1463,6 +1548,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param input
      * @returns {boolean} input passed checks
      */
+    //TODO: MCDU action
     trySetCruiseFlCheckInput(input) {
         if (input === FMCMainDisplay.clrValue) {
             this.addNewMessage(NXSystemMessages.notAllowed);
@@ -1481,6 +1567,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param fl {number} Altitude or FL
      * @returns {boolean} input passed checks
      */
+    //TODO: MCDU action
     trySetCruiseFl(fl) {
         if (!isFinite(fl)) {
             this.addNewMessage(NXSystemMessages.notAllowed);
@@ -1521,10 +1608,12 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     isRteRsvPercentInRange(value) {
         return value > 0 && value < 15;
     }
 
+    //TODO: MCDU action
     trySetRouteReservedFuel(s) {
         if (s) {
             if (s === FMCMainDisplay.clrValue) {
@@ -1562,6 +1651,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     //TODO: figure out usage of takeOffTrim
     updateTakeOffTrim() {
         let d = (this.zeroFuelWeightMassCenter - 13) / (33 - 13);
@@ -1573,14 +1663,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.takeOffTrim = minTrim * d + maxTrim * (1 - d);
     }
 
-    //TODO: figure out usage
-    getZeroFuelWeight(useLbs = false) {
-        if (useLbs) {
-            return this.zeroFuelWeight * 2.204623;
-        }
-        return this.zeroFuelWeight;
-    }
-
+    //TODO: MCDU action
     //TODO: refactor/remove useLbs
     setZeroFuelWeight(s, callback = EmptyCallback.Boolean, useLbs = false) {
         let value = parseFloat(s);
@@ -1596,6 +1679,7 @@ class FMCMainDisplay extends BaseAirliners {
         callback(false);
     }
 
+    //TODO: MCDU action
     setZeroFuelCG(s, callback = EmptyCallback.Boolean) {
         const value = parseFloat(s);
         if (isFinite(value) && value > 0 && value < 100) {
@@ -1607,14 +1691,17 @@ class FMCMainDisplay extends BaseAirliners {
         callback(false);
     }
 
+    //TODO: MCDU action
     isZFWInRange(zfw) {
         return 35.0 <= zfw && zfw <= 80.0;
     }
 
+    //TODO: MCDU action
     isZFWCGInRange(zfwcg) {
         return (8.0 <= zfwcg && zfwcg <= 50.0);
     }
 
+    //TODO: MCDU action
     //TODO: refactor/remove useLbs
     tryEditZeroFuelWeightZFWCG(zfw = 0, zfwcg = 0, useLbs = false) {
         if (zfw > 0) {
@@ -1641,6 +1728,7 @@ class FMCMainDisplay extends BaseAirliners {
         return true;
     }
 
+    //TODO: MCDU action
     //TODO: refactor/remove useLbs
     async trySetZeroFuelWeightZFWCG(s, useLbs = false) {
         let zfw = 0;
@@ -1684,6 +1772,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param useLbs states whether to return the weight back in tons or pounds
      * @returns {*}
      */
+    //TODO: MCDU action
     //TODO: refactor/remove useLbs
     getFOB(useLbs = false) {
         if (useLbs) {
@@ -1697,10 +1786,12 @@ class FMCMainDisplay extends BaseAirliners {
      * retrieves GW in Tons
      * @returns {number}
      */
+    //TODO: users are MCDU action
     getGW() {
         return (SimVar.GetSimVarValue("TOTAL WEIGHT", "Pounds") * 0.45359237) / 1000;
     }
 
+    //TODO: users are MCDU action
     getCG() {
         return SimVar.GetSimVarValue("CG PERCENT", "Percent over 100") * 100;
     }
@@ -1709,6 +1800,7 @@ class FMCMainDisplay extends BaseAirliners {
      *
      * @returns {number} Returns estimated fuel on board when arriving at the destination
      */
+    //TODO: users are MCDU action
     getDestEFOB(useFOB = false) {
         if (useFOB) {
             return this.getFOB() - this._routeTripFuelWeight - this.taxiFuelWeight;
@@ -1720,14 +1812,17 @@ class FMCMainDisplay extends BaseAirliners {
     /**
      * @returns {number} Returns EFOB when arriving at the alternate dest
      */
+    //TODO: MCDU action
     getAltEFOB(useFOB = false) {
         return this.getDestEFOB(useFOB) - this._routeAltFuelWeight;
     }
 
+    //TODO: users are MCDU action
     isBlockFuelInRange(fuel) {
         return 0 <= fuel && fuel <= 80;
     }
 
+    //TODO: MCDU action
     //TODO: refactor/remove useLbs
     trySetBlockFuel(s, useLbs = false) {
         if (s === FMCMainDisplay.clrValue) {
@@ -1757,6 +1852,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: user is MCDU action
     //TODO: refactor/remove useLbs
     getWeight(useLbs = false) {
         let w = this.zeroFuelWeight + this.blockFuel;
@@ -1766,6 +1862,7 @@ class FMCMainDisplay extends BaseAirliners {
         return w;
     }
 
+    //TODO: MCDU action
     async trySetTakeOffWeightLandingWeight(s) {
         let tow = NaN;
         let lw = NaN;
@@ -1787,10 +1884,12 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     isAvgWindInRange(wind) {
         return 0 <= wind && wind <= 250;
     }
 
+    //TODO: MCDU action
     async trySetAverageWind(s) {
         const validDelims = ["HD", "H", "-", "TL", "T", "+", ""]; // Based on arrays being iterated, it will check values like "23" last
         const matchedIndex = validDelims.findIndex(element => s.includes(element));
@@ -1818,6 +1917,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: MCDU action
     trySetPreSelectedClimbSpeed(s) {
         const v = parseFloat(s);
         if (isFinite(v)) {
@@ -1828,6 +1928,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     trySetPreSelectedCruiseSpeed(s) {
         const v = parseFloat(s);
         if (isFinite(v)) {
@@ -1838,6 +1939,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     trySetPreSelectedDescentSpeed(s) {
         const v = parseFloat(s);
         if (isFinite(v)) {
@@ -1848,6 +1950,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     setPerfApprQNH(s) {
         const value = parseFloat(s);
         const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
@@ -1863,6 +1966,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     setPerfApprTemp(s) {
         const value = parseFloat(s);
         if (isFinite(value) && value > -270 && value < 150) {
@@ -1873,6 +1977,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     setPerfApprWind(s) {
         let heading = NaN;
         let speed = NaN;
@@ -1894,6 +1999,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action
     setPerfApprTransAlt(s) {
         if (!/^\d+$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
@@ -1909,6 +2015,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: improve usage
     getVApp() {
         if (isFinite(this.vApp)) {
             return this.vApp;
@@ -1919,6 +2026,7 @@ class FMCMainDisplay extends BaseAirliners {
         return Math.ceil(this.getVLS() + NXSpeedsUtils.addWindComponent());
     }
 
+    //TODO: MCDU action
     setPerfApprVApp(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.vApp = NaN;
@@ -1932,6 +2040,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: improve usage
     //TODO: wait for pr merge
     getVLS() {
         const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
@@ -1962,6 +2071,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: MCDU action
     setPerfApprMDA(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.perfApprMDA = NaN;
@@ -1979,6 +2089,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: MCDU action
     setPerfApprDH(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.perfApprDH = NaN;
@@ -2010,6 +2121,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: MCDU action
     getIsFlying() {
         return this.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_TAKEOFF;
     }
@@ -2046,6 +2158,10 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: check for similar methods/functionalities/checks
+    // only called by FMCMainDisplay.onUpdate()
+    // after updating flight phase, calls CDU_MainDisplay.onFlightPhaseChanged()
+    // later: for independence introduce new simvar for current flight phase "L:A32NX_FLIGHT_PHASE_CURRENT"
     checkUpdateFlightPhase() {
         const airSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "knots");
         const flapsHandlePercent = Simplane.getFlapsHandlePercent();
@@ -2265,6 +2381,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: MCDU action
     connectIlsFrequency(_freq) {
         if (_freq >= 108 && _freq <= 111.95 && RadioNav.isHz50Compliant(_freq)) {
             switch (this.radioNav.mode) {
@@ -2283,6 +2400,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //TODO: MCDU action AND checkUpdateFlightPhase routine
     connectIls() {
         if (this.isRadioNavActive()) {
             return;
@@ -2313,6 +2431,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: MCDU action
     setIlsFrequency(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.ilsFrequency = 0;
@@ -2563,6 +2682,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._atc1Frequency = _frq;
     }
 
+    //TODO: MCDU action
     handlePreviousInputState() {
         if (this.inOut === FMCMainDisplay.clrValue) {
             this.inOut = "";
@@ -2575,6 +2695,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: Figure out how to solve mcdu usages
     Init() {
         super.Init();
         this.dataManager = new FMCDataManager(this);
@@ -2772,6 +2893,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Used for switching pages
      * @returns {number} delay in ms between 150 and 200
      */
+    //TODO: MCDU action
     getDelaySwitchPage() {
         return 150 + 50 * Math.random();
     }
@@ -2780,6 +2902,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Used for basic inputs e.g. alternate airport, ci, fl, temp, constraints, ...
      * @returns {number} delay in ms between 300 and 400
      */
+    //TODO: MCDU action
     getDelayBasic() {
         return 300 + 100 * Math.random();
     }
@@ -2788,6 +2911,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Used for e.g. loading time fore pages
      * @returns {number} delay in ms between 600 and 800
      */
+    //TODO: MCDU action
     getDelayMedium() {
         return 600 + 200 * Math.random();
     }
@@ -2796,6 +2920,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Used for intense calculation
      * @returns {number} delay in ms between 900 and 12000
      */
+    //TODO: MCDU action
     getDelayHigh() {
         return 900 + 300 * Math.random();
     }
@@ -2804,6 +2929,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Used for changes to the flight plan
      * @returns {number} dynamic delay in ms between ~300 and up to +2000 (depending on additional conditions)
      */
+    //TODO: MCDU action
     getDelayRouteChange() {
         if (this._zeroFuelWeightZFWCGEntered && this._blockFuelEntered) {
             return Math.pow(this.flightPlanManager.getWaypointsCount(), 2) + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
@@ -2816,6 +2942,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Used for calculation time for fuel pred page
      * @returns {number} dynamic delay in ms between 2000ms and 4000ms
      */
+    //TODO: MCDU action
     getDelayFuelPred() {
         return 225 * this.flightPlanManager.getWaypointsCount() + (this.flightPlanManager.getDestination().cumulativeDistanceInFP / 2);
     }
@@ -2824,6 +2951,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Used to load wind data into fms
      * @returns {number} dynamic delay in ms dependent on amount of waypoints
      */
+    //TODO: MCDU action
     getDelayWindLoad() {
         return Math.pow(this.flightPlanManager.getWaypointsCount(), 2);
     }
@@ -2831,6 +2959,7 @@ class FMCMainDisplay extends BaseAirliners {
     /**
      * Tries to delete a pages timeout
      */
+    //TODO: MCDU action
     tryDeleteTimeout() {
         if (this.page.SelfPtr) {
             clearTimeout(this.page.SelfPtr);
@@ -2847,6 +2976,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.initRadioNav(true);
     }
 
+    //TODO: MCDU action
     updateZfwVars() {
         const totalWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
         const blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
@@ -2854,6 +2984,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.zeroFuelWeightMassCenter = SimVar.GetSimVarValue("CG PERCENT", "percent");
     }
 
+    //TODO: MCDU action
     updateFuelVars() {
         this.blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
         this.updateZfwVars();
@@ -2883,11 +3014,13 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
             // Is this LVar used by anything? It doesn't look like it...
             //TODO: figure out usage
+            // looks similar to usage in updateAutopilot
             SimVar.SetSimVarValue("L:AIRLINER_MANAGED_APPROACH_SPEED", "number", this.getAppManagedSpeed());
         }
         this.updateRadioNavState();
     }
 
+    //TODO: MCDU action
     onEvent(_event) {
         if (_event.indexOf("1_BTN_") !== -1 || _event.indexOf("2_BTN_") !== -1 || _event.indexOf("BTN_") !== -1) {
             const input = _event.replace("1_BTN_", "").replace("2_BTN_", "").replace("BTN_", "");
@@ -3003,6 +3136,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //TODO: MCDU action
     clearDisplay() {
         this.setTitle("UNTITLED");
         this.setPageCurrent(0);
@@ -3029,6 +3163,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.tryDeleteTimeout();
     }
 
+    //TODO: MCDU action
     generateHTMLLayout(parent) {
         while (parent.children.length > 0) {
             parent.removeChild(parent.children[0]);
@@ -3116,21 +3251,25 @@ class FMCMainDisplay extends BaseAirliners {
         footer.appendChild(this.arrowVertical);
         parent.appendChild(footer);
     }
+    //TODO: can this be util?
     static secondsToUTC(seconds) {
         const h = Math.floor(seconds / 3600);
         const m = Math.floor((seconds - h * 3600) / 60);
         return (h % 24).toFixed(0).padStart(2, "0") + m.toFixed(0).padStart(2, "0");
     }
+    //TODO: can this be util?
     static secondsTohhmm(seconds) {
         const h = Math.floor(seconds / 3600);
         const m = Math.floor((seconds - h * 3600) / 60);
         return h.toFixed(0).padStart(2, "0") + m.toFixed(0).padStart(2, "0");
     }
 
+    //TODO: can this be util?
     static minuteToSeconds(minutes) {
         return minutes * 60;
     }
 
+    //TODO: can this be util?
     static hhmmToSeconds(hhmm) {
         if (!hhmm) {
             return NaN;
@@ -3145,6 +3284,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {number} minutes - minutes used to make the conversion
      * @returns {string} A string in the format "HHMM" e.g "0235"
      */
+    //TODO: can this be util?
     static minutesTohhmm(minutes) {
         const h = Math.floor(minutes / 60);
         const m = minutes - h * 60;
@@ -3156,6 +3296,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {string} hhmm - string used ot make the conversion
      * @returns {number} numbers in minutes form
      */
+    //TODO: can this be util?
     static hhmmToMinutes(hhmm) {
         if (!hhmm) {
             return NaN;

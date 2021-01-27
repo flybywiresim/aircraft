@@ -282,6 +282,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
+    //TODO: figure out where this belongs
+    // MCDU action
     checkEFOBBelowMin() {
         if (!this._minDestFobEntered) {
             this.tryUpdateMinDestFob();
@@ -368,6 +370,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.addNewMessage(NXSystemMessages.entryOutOfRange);
         return false;
     }
+    //TODO: figure out where this belongs
     onPowerOn() {
         super.onPowerOn();
         if (Simplane.getAutoPilotAirspeedManaged()) {
@@ -423,7 +426,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
-    // check GPS Primary state and display message accordingly
+    //TODO: figure out where this belongs (can't go into core)
+    // checks GPS Primary state and display message accordingly
     updateGPSMessage() {
         if (!SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "Bool")) {
             if (SimVar.GetSimVarValue("L:GPSPrimary", "Bool")) {
@@ -456,6 +460,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
+    //TODO: move to FMCMainDisplay
     updateDisplayedConstraints(force = false) {
         const fcuSelAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet");
         if (!force && fcuSelAlt === this.fcuSelAlt) {
@@ -469,6 +474,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         );
     }
 
+    //TODO: move to FMCMainDisplay
     updateConstraints() {
         this.constraintAltCached = A32NX_ConstraintManager.getConstraintAltitude(
             this.currentFlightPhase,
@@ -601,6 +607,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inOut = data;
     }
 
+    //TODO: move to FMCMainDisplay
     getSpeedConstraint() {
         if (this.flightPlanManager.getIsDirectTo()) {
             return Infinity;
@@ -612,6 +619,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return wpt.speedConstraint;
     }
 
+    //TODO: move to FMCMainDisplay
     updateTowerHeadwind() {
         if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
             const rwy = this.flightPlanManager.getApproachRunway();
@@ -621,6 +629,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
+    //TODO: move FCU actions into FMCMain, keep MCDU actions!
+    // FCU action below
     _onModeSelectedSpeed() {
         if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 0) {
             const currentSpeed = Simplane.getIndicatedSpeed();
@@ -670,7 +680,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
     onEvent(_event) {
-        super.onEvent(_event);
+        super.onEvent(_event); // TODO: handles MCDU input only, keep in CDU!
         // console.log("A320_Neo_CDU_MainDisplay onEvent " + _event);
         if (_event === "MODE_SELECTED_SPEED") {
             this._onModeSelectedSpeed();
@@ -725,6 +735,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
         }
     }
+    // FCU action above
+
+    // TODO: move to FMCMainDisplay
+    // Only called by FMCMainDisplay.checkUpdateFlightPhase() if flight phase changed
     onFlightPhaseChanged() {
         this.updateConstraints();
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
@@ -881,6 +895,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
     }
 
+    //TODO: move to FMCMainDisplay
     getThrustTakeOffLimit() {
         if (this.perfTOTemp <= 10) {
             return 92.8;
@@ -900,12 +915,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return 88.4;
     }
 
+    // TODO: move to FMCMainDisplay
     isAirspeedManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT SPEED SLOT INDEX", "number") === 2;
+
     }
+    // TODO: move to FMCMainDisplay
     isHeadingManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT HEADING SLOT INDEX", "number") === 2;
     }
+    // TODO: move to FMCMainDisplay
     isAltitudeManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
     }
@@ -914,12 +933,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Updates performance speeds such as GD, F, S, Vls
      * This method may use fms computed weights in the future instead actual GW
      */
+    // TODO: move to FMCMainDisplay
     updatePerfSpeeds() {
         this.computedVfs = SimVar.GetSimVarValue("L:A32NX_SPEEDS_F", "number");
         this.computedVss = SimVar.GetSimVarValue("L:A32NX_SPEEDS_S", "number");
         this.computedVgd = SimVar.GetSimVarValue("L:A32NX_SPEEDS_GD", "number");
     }
 
+    // TODO: move to FMCMainDisplay
     updateAutopilot() {
         const now = performance.now();
         const dt = now - this._lastUpdateAPTime;
@@ -1182,7 +1203,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.updateAutopilotCooldown = this._apCooldown;
         }
     }
-    // Asobo's getManagedApproachSpeed uses incorrect getCleanApproachSpeed for flaps 0
+
     checkAocTimes() {
         if (!this.aocTimes.off) {
             const isAirborne = !Simplane.getIsGrounded(); // TODO replace with proper flight mode in future
