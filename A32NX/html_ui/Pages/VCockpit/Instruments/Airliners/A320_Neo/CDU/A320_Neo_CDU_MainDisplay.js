@@ -85,6 +85,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             des: [],
             alternate: null
         };
+        this.approachSpeeds = undefined; // based on selected config, not current config
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -928,6 +929,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     isAltitudeManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
     }
+    updateApproachSpeeds() {
+        let weight = this.tryEstimateLandingWeight();
+        // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
+        // We also fall back to current weight when landing weight is unavailable
+        if (this.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_APPROACH || !isFinite(weight)) {
+            weight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000;
+        }
+        // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
+        if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+            this.approachSpeeds = new NXApprSpeeds(weight, this.perfApprFlaps3, this._towerHeadwind);
+        } else {
+            this.approachSpeeds = new NXApprSpeeds(weight, this.perfApprFlaps3);
+        }
+        this.approachSpeeds.valid = this.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_APPROACH || isFinite(weight);
+    }
 
     /**
      * Updates performance speeds such as GD, F, S, Vls
@@ -963,6 +979,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         if (this.updateAutopilotCooldown < 0) {
             this.updatePerfSpeeds();
+            this.updateApproachSpeeds(); //TODO: simplyfiy
             const currentApMasterStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "boolean");
             if (currentApMasterStatus !== this._apMasterStatus) {
                 this._apMasterStatus = currentApMasterStatus;
