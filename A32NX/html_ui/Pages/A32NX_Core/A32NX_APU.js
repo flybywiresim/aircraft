@@ -52,7 +52,8 @@ class A32NX_APU {
         }
 
         const apuN = SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
-        if (apuN > 95 && apuBleedOn) {
+        const apuMasterSwitch = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool");
+        if (apuN > 95 && apuBleedOn && apuMasterSwitch) {
             if (this.APUBleedTimer > 0) {
                 this.APUBleedTimer -= _deltaTime / 1000;
                 SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE", "PSI", Math.round(35 - this.APUBleedTimer));
