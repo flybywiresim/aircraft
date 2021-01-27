@@ -31,3 +31,5 @@ node_modules
 /A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/*.gltf
 /A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/*.bin
 *.wasm
+/src/systems/target
+/target
