@@ -558,7 +558,7 @@ class CDUPerformancePage {
         mcdu.onLeftInput[2] = (value) => {
             if (mcdu.setPerfApprWind(value)) {
                 mcdu.updateTowerHeadwind();
-                mcdu.updateApproachSpeeds();
+                mcdu.updatePerfSpeeds();
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
@@ -594,12 +594,12 @@ class CDUPerformancePage {
         };
         mcdu.onRightInput[3] = () => {
             mcdu.setPerfApprFlaps3(true);
-            mcdu.updateApproachSpeeds();
+            mcdu.updatePerfSpeeds();
             CDUPerformancePage.ShowAPPRPage(mcdu);
         };
         mcdu.onRightInput[4] = () => {
             mcdu.setPerfApprFlaps3(false);
-            mcdu.updateApproachSpeeds();
+            mcdu.updatePerfSpeeds();
             CDUPerformancePage.ShowAPPRPage(mcdu);
         };
         let finalCell = "-----";

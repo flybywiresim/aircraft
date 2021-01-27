@@ -625,6 +625,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     // only used by trySetMinDestFob
+    //TODO: Can this be util?
     isMinDestFobInRange(fuel) {
         return 0 <= fuel && fuel <= 80.0;
     }
@@ -1356,6 +1357,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     //TODO: MCDU action
+    // Can this be util?
     isTaxiFuelInRange(taxi) {
         return 0 <= taxi && taxi <= 9.9;
     }
@@ -1424,11 +1426,13 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     //TODO: MCDU action
+    // Can this be util?
     isFinalFuelInRange(fuel) {
         return 0 <= fuel && fuel <= 100;
     }
 
     //TODO: MCDU action
+    // Can this be util?
     isFinalTimeInRange(time) {
         const convertedTime = FMCMainDisplay.hhmmToMinutes(time.padStart(4,"0"));
         return 0 <= convertedTime && convertedTime <= 90;
@@ -1611,6 +1615,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     //TODO: MCDU action
+    // Can this be util?
     isRteRsvPercentInRange(value) {
         return value > 0 && value < 15;
     }
@@ -1680,11 +1685,13 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     //TODO: MCDU action
+    // Can this be util?
     isZFWInRange(zfw) {
         return 35.0 <= zfw && zfw <= 80.0;
     }
 
     //TODO: MCDU action
+    // Can this be util?
     isZFWCGInRange(zfwcg) {
         return (8.0 <= zfwcg && zfwcg <= 50.0);
     }
@@ -1760,6 +1767,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     //TODO: MCDU action
     //TODO: refactor/remove useLbs
+    // Can this be util?
     getFOB(useLbs = false) {
         if (useLbs) {
             return SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound");
@@ -1773,11 +1781,13 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number}
      */
     //TODO: users are MCDU action
+    // Can this be util?
     getGW() {
         return (SimVar.GetSimVarValue("TOTAL WEIGHT", "Pounds") * 0.45359237) / 1000;
     }
 
     //TODO: users are MCDU action
+    // Can this be util?
     getCG() {
         return SimVar.GetSimVarValue("CG PERCENT", "Percent over 100") * 100;
     }
@@ -1804,6 +1814,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     //TODO: users are MCDU action
+    // Can this be util?
     isBlockFuelInRange(fuel) {
         return 0 <= fuel && fuel <= 80;
     }
@@ -1837,16 +1848,6 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    //TODO: user is MCDU action
-    //TODO: refactor/remove useLbs
-    getWeight(useLbs = false) {
-        let w = this.zeroFuelWeight + this.blockFuel;
-        if (useLbs) {
-            w *= 2.204623;
-        }
-        return w;
-    }
-
     //TODO: MCDU action
     async trySetTakeOffWeightLandingWeight(s) {
         let tow = NaN;
@@ -1870,6 +1871,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     //TODO: MCDU action
+    // Can this be util?
     isAvgWindInRange(wind) {
         return 0 <= wind && wind <= 250;
     }
@@ -2000,7 +2002,6 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    //TODO: improve usage
     /**
      * VApp for _selected_ landing config
      */
@@ -2025,26 +2026,13 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    //TODO: improve usage
-    //TODO: wait for pr merge
-    /**
-     * VLS for current config (not selected landing config!)
-     */
-    getVLS() {
-        return SimVar.GetSimVarValue("L:A32NX_SPEEDS_VLS", "Number");
-    }
-
     /**
      * Tries to estimate the landing weight at destination
      * NaN on failure
      */
     tryEstimateLandingWeight() {
-        let landingWeight;
-        if (false /* TODO alt active */) {
-            landingWeight = this.getAltEFOB(true) + this.zeroFuelWeight;
-        } else {
-            landingWeight = this.getDestEFOB(true) + this.zeroFuelWeight;
-        }
+        const altActive = false;
+        const landingWeight = this.zeroFuelWeight + (altActive ? this.getAltEFOB(true) : this.getDestEFOB(true));
         return isFinite(landingWeight) ? landingWeight : NaN;
     }
 

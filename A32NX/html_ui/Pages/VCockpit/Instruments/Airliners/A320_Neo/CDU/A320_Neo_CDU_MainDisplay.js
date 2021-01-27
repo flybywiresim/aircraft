@@ -883,17 +883,17 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     //TODO: after pr merge, remove method _getVxSpeed due to lack of usage
     _getV1Speed() {
-        return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
+        return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
     }
 
     //TODO: after pr merge, remove method _getVxSpeed due to lack of usage
     _getVRSpeed() {
-        return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).vr;
+        return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).vr;
     }
 
     //TODO: after pr merge, remove method _getVxSpeed due to lack of usage
     _getV2Speed() {
-        return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
+        return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
     }
 
     //TODO: move to FMCMainDisplay
@@ -929,7 +929,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     isAltitudeManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
     }
-    updateApproachSpeeds() {
+
+    /**
+     * Updates performance speeds such as GD, F, S, Vls
+     * This method may use fms computed weights in the future instead actual GW
+     */
+    // TODO: move to FMCMainDisplay
+    updatePerfSpeeds() {
+        this.computedVgd = SimVar.GetSimVarValue("L:A32NX_SPEEDS_GD", "number");
+        this.computedVfs = SimVar.GetSimVarValue("L:A32NX_SPEEDS_F", "number");
+        this.computedVss = SimVar.GetSimVarValue("L:A32NX_SPEEDS_S", "number");
+        this.computedVls = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VLS", "number");
+
         let weight = this.tryEstimateLandingWeight();
         // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
         // We also fall back to current weight when landing weight is unavailable
@@ -938,22 +949,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
         if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-            this.approachSpeeds = new NXApprSpeeds(weight, this.perfApprFlaps3, this._towerHeadwind);
+            this.approachSpeeds = new NXSpeedsApp(weight, this.perfApprFlaps3, this._towerHeadwind);
         } else {
-            this.approachSpeeds = new NXApprSpeeds(weight, this.perfApprFlaps3);
+            this.approachSpeeds = new NXSpeedsApp(weight, this.perfApprFlaps3);
         }
         this.approachSpeeds.valid = this.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_APPROACH || isFinite(weight);
-    }
-
-    /**
-     * Updates performance speeds such as GD, F, S, Vls
-     * This method may use fms computed weights in the future instead actual GW
-     */
-    // TODO: move to FMCMainDisplay
-    updatePerfSpeeds() {
-        this.computedVfs = SimVar.GetSimVarValue("L:A32NX_SPEEDS_F", "number");
-        this.computedVss = SimVar.GetSimVarValue("L:A32NX_SPEEDS_S", "number");
-        this.computedVgd = SimVar.GetSimVarValue("L:A32NX_SPEEDS_GD", "number");
     }
 
     // TODO: move to FMCMainDisplay
@@ -979,7 +979,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         if (this.updateAutopilotCooldown < 0) {
             this.updatePerfSpeeds();
-            this.updateApproachSpeeds(); //TODO: simplyfiy
             const currentApMasterStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "boolean");
             if (currentApMasterStatus !== this._apMasterStatus) {
                 this._apMasterStatus = currentApMasterStatus;
@@ -1198,9 +1197,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 const gaAppSpeed = SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number");
 
                 if (eng1Running && eng2Running) {
-                    maxSpeed = this.getVLS() + 25;
+                    maxSpeed = this.computedVls + 25;
                 } else {
-                    maxSpeed = this.getVLS() + 15;
+                    maxSpeed = this.computedVls + 15;
                 }
 
                 speed = Math.max(gaInitSpeed, gaAppSpeed);
