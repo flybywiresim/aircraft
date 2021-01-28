@@ -2487,13 +2487,14 @@
                                 <TOOLTIPID>%((L:A32NX_GPWS_FLAP_OFF, Bool))%{if}Turn ON GPWS flap mode%{else}Turn OFF GPWS flap mode%{end}</TOOLTIPID>
                             </UseTemplate>
 
+                            <!-- LDG FLAP 3 -->
                             <UseTemplate Name="FBW_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
                                 <PART_ID>GPWS_Flap3</PART_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_FLAPS3</TOGGLE_SIMVAR>
-                                <DOWN_CODE>(L:A32NX_GPWS_FLAPS3, Bool) !</DOWN_CODE>
+                                <DOWN_CODE>(L:A32NX_GPWS_FLAPS3, Bool)</DOWN_CODE>
 
-                                <DISABLE_SEQ1/>
+                                <DISABLE_SEQ1 />
 
                                 <TOOLTIPID>%((L:A32NX_GPWS_FLAPS3, Bool))%{if}Switch landing flaps to FULL%{else}Switch landing flaps to 3%{end}</TOOLTIPID>
                             </UseTemplate>
@@ -3308,7 +3309,6 @@
             </Component>
         </Component>
 
->
         <Template Name="FBW_AUTOPILOT_Knob_Heading_Template">
             <DefaultTemplateParameters>
                 <ID>1</ID>
