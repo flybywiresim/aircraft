@@ -1,13 +1,6 @@
-[package]
-name = "systems"
-version = "1.0.0"
-authors = ["FlyByWire Simulations"]
-edition = "2018"
+[workspace]
 
-[lib]
-crate-type = ["cdylib"]
-
-[dependencies]
-uom = "0.30.0"
-airbus-systems = { git = "https://github.com/davidwalschots/airbus-systems", branch = "master" }
-msfs = { git = "https://github.com/flybywiresim/msfs-rs", branch = "main" }
+members = [
+    "a320",
+    "systems"
+]
