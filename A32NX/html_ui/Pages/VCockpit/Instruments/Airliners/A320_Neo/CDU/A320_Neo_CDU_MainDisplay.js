@@ -283,7 +283,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     }
 
                     const msgCount = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
-                    SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", msgCount + toDelete.length);
+                    SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", msgCount + toDelete.length).then();
                 })
                 .catch(err => {
                     if (err.status === 404 || err === NXApi.disabledError || err === NXApi.disconnectedError) {
@@ -293,7 +293,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 });
         }, NXApi.updateRate);
 
-        SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
+        SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0).then();
     }
 
     onUpdate(_deltaTime) {
@@ -303,7 +303,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.pageUpdate();
         }
         if (SimVar.GetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number") === 1) {
-            SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 0);
+            SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 0).then();
             if (this.refreshPageCallback) {
                 this.refreshPageCallback();
             }
@@ -597,7 +597,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (template[13]) {
             this.setInOut(template[13][0]);
         }
-        SimVar.SetSimVarValue("L:AIRLINER_MCDU_CURRENT_FPLN_WAYPOINT", "number", this.currentFlightPlanWaypointIndex);
+        SimVar.SetSimVarValue("L:AIRLINER_MCDU_CURRENT_FPLN_WAYPOINT", "number", this.currentFlightPlanWaypointIndex).then();
         // Apply formatting helper to title page, lines and labels
         if (this._titleElement !== null) {
             this._titleElement.innerHTML = this._formatCell(this._titleElement.innerHTML);
@@ -1275,13 +1275,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     addMessage(message) {
         this.messages.unshift(message);
         const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
-        SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt + 1);
+        SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt + 1).then();
     }
 
     deleteMessage(id) {
         if (!this.messages[id]["opened"]) {
             const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
-            SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
+            SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt <= 1 ? 0 : cMsgCnt - 1).then();
         }
         this.messages.splice(id, 1);
     }
@@ -1331,19 +1331,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             value = value.replace(/(\[color][a-z]*)/g, "");
             value = value.replace(/-{3,}/g, "<br/><br/>");
             for (let j = 0; j < value.length; j++) {
-                SimVar.SetSimVarValue(`L:A32NX_PRINT_${i}_${j}`, "number", value.charCodeAt(j));
+                SimVar.SetSimVarValue(`L:A32NX_PRINT_${i}_${j}`, "number", value.charCodeAt(j)).then();
             }
-            SimVar.SetSimVarValue(`L:A32NX_PRINT_LINE_LENGTH_${i}`, "number", value.length);
+            SimVar.SetSimVarValue(`L:A32NX_PRINT_LINE_LENGTH_${i}`, "number", value.length).then();
         }
         if (SimVar.GetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool") === 1) {
-            SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", SimVar.GetSimVarValue("L:A32NX_PAGES_PRINTED", "number") + 1);
-            SimVar.SetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number", 0);
+            SimVar.SetSimVarValue("L:A32NX_PAGES_PRINTED", "number", SimVar.GetSimVarValue("L:A32NX_PAGES_PRINTED", "number") + 1).then();
+            SimVar.SetSimVarValue("L:A32NX_PRINT_PAGE_OFFSET", "number", 0).then();
         }
-        SimVar.SetSimVarValue("L:A32NX_PRINT_LINES", "number", lines.length);
-        SimVar.SetSimVarValue("L:A32NX_PAGE_ID", "number", SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") + 1);
-        SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 0);
+        SimVar.SetSimVarValue("L:A32NX_PRINT_LINES", "number", lines.length).then();
+        SimVar.SetSimVarValue("L:A32NX_PAGE_ID", "number", SimVar.GetSimVarValue("L:A32NX_PAGE_ID", "number") + 1).then();
+        SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 0).then();
         setTimeout(() => {
-            SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 1);
+            SimVar.SetSimVarValue("L:A32NX_PRINTER_PRINTING", "bool", 1).then();
             this.printing = false;
         }, 2500);
     }
