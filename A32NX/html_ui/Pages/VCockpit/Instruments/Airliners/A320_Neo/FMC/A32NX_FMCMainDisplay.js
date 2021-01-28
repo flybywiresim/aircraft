@@ -2256,53 +2256,44 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    tryEditZeroFuelWeightZFWCG(zfw = 0, zfwcg = 0) {
-        if (zfw > 0) {
-            if (this.isZFWInRange(zfw)) {
-                this.zeroFuelWeight = zfw;
-            } else {
-                this.addNewMessage(NXSystemMessages.entryOutOfRange);
-                return false;
-            }
-        }
-        if (zfwcg > 0) {
-            if (this.isZFWCGInRange(zfwcg)) {
-                this.zeroFuelWeightMassCenter = zfwcg;
-            } else {
-                this.addNewMessage(NXSystemMessages.entryOutOfRange);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    //TODO: understand why checks and method calls are redundant
-    async trySetZeroFuelWeightZFWCG(s) {
-        let zfw = 0;
-        let zfwcg = 0;
+    trySetZeroFuelWeightZFWCG(s) {
         if (s) {
             if (s.includes("/")) {
                 const sSplit = s.split("/");
-                zfw = parseFloat(sSplit[0]) / this._conversionWeight;
-                zfwcg = parseFloat(sSplit[1]);
-            } else {
-                zfw = parseFloat(s) / this._conversionWeight;
-            }
-        }
-        if (zfw > 0 && zfwcg > 0) {
-            if (this.isZFWInRange(zfw) && this.isZFWCGInRange(zfwcg)) {
-                this._zeroFuelWeightZFWCGEntered = true;
-
-                this.zeroFuelWeight = zfw;
-                this.zeroFuelWeightMassCenter = zfwcg;
-                return true;
-            } else {
+                const zfw = parseFloat(sSplit[0]) / this._conversionWeight;
+                const zfwcg = parseFloat(sSplit[1]);
+                if (this.isZFWInRange(zfw) && this.isZFWCGInRange(zfwcg)) {
+                    this._zeroFuelWeightZFWCGEntered = true;
+                    this.zeroFuelWeight = zfw;
+                    this.zeroFuelWeightMassCenter = zfwcg;
+                    return true;
+                }
+                if (!this._zeroFuelWeightZFWCGEntered) {
+                    this.addNewMessage(NXSystemMessages.notAllowed);
+                    return false;
+                }
+                if (this.isZFWInRange(zfw)) {
+                    this.zeroFuelWeight = zfw;
+                    return true;
+                }
+                if (this.isZFWCGInRange(zfwcg)) {
+                    this.zeroFuelWeightMassCenter = zfwcg;
+                    return true;
+                }
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
                 return false;
             }
-        }
-        if (this._zeroFuelWeightZFWCGEntered) {
-            return this.tryEditZeroFuelWeightZFWCG(zfw, zfwcg);
+            if (!this._zeroFuelWeightZFWCGEntered) {
+                this.addNewMessage(NXSystemMessages.notAllowed);
+                return false;
+            }
+            const zfw = parseFloat(s) / this._conversionWeight;
+            if (this.isZFWInRange(zfw)) {
+                this.zeroFuelWeight = zfw;
+                return true;
+            }
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
         }
         this.addNewMessage(NXSystemMessages.formatError);
         return false;
