@@ -1,6 +1,6 @@
 <!--
   ~ A32NX
-  ~ Copyright (C) 2020 FlyByWire Simulations and its contributors
+  ~ Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
   ~
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
@@ -953,33 +953,6 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="FBW_AIRBUS_Push_Fuel_Valve_Template">
-		<DefaultTemplateParameters>
-			<NODE_ID>AIRBUS_Push_Fuel_Valve</NODE_ID>
-			<ANIM_NAME>AIRBUS_Push_Fuel_Valve</ANIM_NAME>
-			<PART_ID>AIRBUS_Push_Fuel_Valve</PART_ID>
-			<ID>1</ID>
-			<LEFT_SINGLE_CODE/>
-			<OFF_TOOLTIP></OFF_TOOLTIP>
-			<ON_TOOLTIP></ON_TOOLTIP>
-			<EXTRA_CONDITION>1</EXTRA_CONDITION>
-		</DefaultTemplateParameters>
-
-		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
-			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
-            <LEFT_SINGLE_CODE>
-                (L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) if{
-                    0 (&gt;L:A32NX_APU_MASTER_SW_ACTIVATED)
-                } els{
-                    #EXTRA_CONDITION# if{
-                        1 (&gt;L:A32NX_APU_MASTER_SW_ACTIVATED)
-                    }
-                }
-            </LEFT_SINGLE_CODE>
-			<TOOLTIPID>%((L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) !)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID> <!-- use <OFF_TOOLTIP></OFF_TOOLTIP> <ON_TOOLTIP></ON_TOOLTIP> to define tooltips -->
-		</UseTemplate>
-	</Template>
-
 	<Template Name="FBW_AIRBUS_Dummy_Radio">
 		<DefaultTemplateParameters>
 		</DefaultTemplateParameters>
@@ -1027,89 +1000,70 @@
 		</UseTemplate>
 	</Template>
 
+    <!-- ELAC switches -->
 	<Template Name="FBW_AIRBUS_Push_ELAC_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
+        <UseTemplate Name="FBW_Push_Toggle">
+            <Switch Param="ID">
+                <Case Value="1">
+                    <NODE_ID>PUSH_OVHD_FLTCTL_ELAC</NODE_ID>
+                </Case>
+                <Default>
+                    <NODE_ID>PUSH_OVHD_FLTCTL_ELAC#ID#</NODE_ID>
+                </Default>
+            </Switch>
 
-		<UseTemplate Name="FBW_AIRBUS_Push_ELAC_SubTemplate">
-		</UseTemplate>
+            <LEFT_SINGLE_CODE>#ID# (&gt;K:FLY_BY_WIRE_ELAC_TOGGLE)</LEFT_SINGLE_CODE>
+            <DOWN_CODE>(A:FLY BY WIRE ELAC SWITCH:#ID#, Bool)</DOWN_CODE>
+
+            <SEQ1_CODE>(A:FLY BY WIRE ELAC FAILED:#ID#, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(A:FLY BY WIRE ELAC SWITCH:#ID#, Bool) !</SEQ2_CODE>
+
+            <TOOLTIPID>%((A:FLY BY WIRE ELAC SWITCH:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.ELAC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.ELAC#ID#_TURN_OFF%{end}</TOOLTIPID>
+        </UseTemplate>
 	</Template>
 
-	<Template Name="FBW_AIRBUS_Push_ELAC_SubTemplate">
-		<DefaultTemplateParameters>
-			<NODE_ID>AIRBUS_Push_ELAC_#ID#</NODE_ID>
-			<ANIM_NAME>AIRBUS_Push_ELAC_#ID#</ANIM_NAME>
-			<PART_ID>AIRBUS_Push_ELAC</PART_ID>
-			<SEQ1_EMISSIVE_CODE>(A:FLY BY WIRE ELAC FAILED:#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-			<SEQ2_EMISSIVE_CODE>(A:FLY BY WIRE ELAC SWITCH:#ID#, Bool) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
-			<LEFT_SINGLE_CODE/>
-			<WWISE_EVENT_1>elac_push_button_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>elac_push_button_off</WWISE_EVENT_2>
-			<TOOLTIPID>%((A:FLY BY WIRE ELAC SWITCH:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.ELAC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.ELAC#ID#_TURN_OFF%{end}</TOOLTIPID>
-		</DefaultTemplateParameters>
-
-		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
-			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
-			<LEFT_SINGLE_CODE> #LEFT_SINGLE_CODE# #ID# (&gt;K:FLY_BY_WIRE_ELAC_TOGGLE)</LEFT_SINGLE_CODE>
-
-		</UseTemplate>
-	</Template>
-
+    <!-- SEC switches -->
 	<Template Name="FBW_AIRBUS_Push_SEC_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-		</DefaultTemplateParameters>
+        <UseTemplate Name="FBW_Push_Toggle">
+            <Switch Param="ID">
+                <Case Value="1">
+                    <NODE_ID>PUSH_OVHD_FLTCTL_SEC</NODE_ID>
+                </Case>
+                <Default>
+                    <NODE_ID>PUSH_OVHD_FLTCTL_SEC#ID#</NODE_ID>
+                </Default>
+            </Switch>
 
-		<UseTemplate Name="FBW_AIRBUS_Push_SEC_SubTemplate">
-		</UseTemplate>
+            <LEFT_SINGLE_CODE>#ID# (&gt;K:FLY_BY_WIRE_SEC_TOGGLE)</LEFT_SINGLE_CODE>
+            <DOWN_CODE>(A:FLY BY WIRE SEC SWITCH:#ID#, Bool)</DOWN_CODE>
+
+            <SEQ1_CODE>(A:FLY BY WIRE SEC FAILED:#ID#, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(A:FLY BY WIRE SEC SWITCH:#ID#, Bool) !</SEQ2_CODE>
+
+            <TOOLTIPID>%((A:FLY BY WIRE SEC SWITCH:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.SEC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.SEC#ID#_TURN_OFF%{end}</TOOLTIPID>
+        </UseTemplate>
 	</Template>
 
-	<Template Name="FBW_AIRBUS_Push_SEC_SubTemplate">
-		<DefaultTemplateParameters>
-			<NODE_ID>AIRBUS_Push_SEC_#ID#</NODE_ID>
-			<ANIM_NAME>AIRBUS_Push_SEC_#ID#</ANIM_NAME>
-			<PART_ID>AIRBUS_Push_SEC</PART_ID>
-			<SEQ1_EMISSIVE_CODE>(A:FLY BY WIRE SEC FAILED:#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-			<SEQ2_EMISSIVE_CODE>(A:FLY BY WIRE SEC SWITCH:#ID#, Bool) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
-			<LEFT_SINGLE_CODE/>
-			<WWISE_EVENT_1>elac_push_button_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>elac_push_button_off</WWISE_EVENT_2>
-			<TOOLTIPID>%((A:FLY BY WIRE SEC SWITCH:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.SEC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.SEC#ID#_TURN_OFF%{end}</TOOLTIPID>
-		</DefaultTemplateParameters>
-
-		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
-			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
-			<LEFT_SINGLE_CODE> #LEFT_SINGLE_CODE# #ID# (&gt;K:FLY_BY_WIRE_SEC_TOGGLE)</LEFT_SINGLE_CODE>
-		</UseTemplate>
-	</Template>
-
+    <!-- FAC switches -->
 	<Template Name="FBW_AIRBUS_Push_FAC_Template">
-		<DefaultTemplateParameters>
-			<ID>1</ID>
-			<WWISE_EVENT_1>elac_push_button_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>elac_push_button_off</WWISE_EVENT_2>
-			<TOOLTIPID>%((A:FLY BY WIRE FAC SWITCH:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.FAC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.FAC#ID#_TURN_OFF%{end}</TOOLTIPID>
-		</DefaultTemplateParameters>
+        <UseTemplate Name="FBW_Push_Toggle">
+            <Switch Param="ID">
+                <Case Value="1">
+                    <NODE_ID>PUSH_OVHD_FLTCTL_FAC</NODE_ID>
+                </Case>
+                <Default>
+                    <NODE_ID>PUSH_OVHD_FLTCTL_FAC#ID#</NODE_ID>
+                </Default>
+            </Switch>
 
-		<UseTemplate Name="FBW_AIRBUS_Push_FAC_SubTemplate">
-		</UseTemplate>
-	</Template>
+            <LEFT_SINGLE_CODE>#ID# (&gt;K:FLY_BY_WIRE_FAC_TOGGLE)</LEFT_SINGLE_CODE>
+            <DOWN_CODE>(A:FLY BY WIRE FAC SWITCH:#ID#, Bool)</DOWN_CODE>
 
-	<Template Name="FBW_AIRBUS_Push_FAC_SubTemplate">
-		<DefaultTemplateParameters>
-			<NODE_ID>AIRBUS_Push_FAC_#ID#</NODE_ID>
-			<ANIM_NAME>AIRBUS_Push_FAC_#ID#</ANIM_NAME>
-			<PART_ID>AIRBUS_Push_FAC</PART_ID>
-			<SEQ1_EMISSIVE_CODE>(A:FLY BY WIRE FAC FAILED:#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-			<SEQ2_EMISSIVE_CODE>(A:FLY BY WIRE FAC SWITCH:#ID#, Bool) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
-			<LEFT_SINGLE_CODE/>
-		</DefaultTemplateParameters>
+            <SEQ1_CODE>(A:FLY BY WIRE FAC FAILED:#ID#, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(A:FLY BY WIRE FAC SWITCH:#ID#, Bool) !</SEQ2_CODE>
 
-		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
-			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
-			<LEFT_SINGLE_CODE> #LEFT_SINGLE_CODE# #ID# (&gt;K:FLY_BY_WIRE_FAC_TOGGLE)</LEFT_SINGLE_CODE>
-		</UseTemplate>
+            <TOOLTIPID>%((A:FLY BY WIRE FAC SWITCH:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.FAC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.FAC#ID#_TURN_OFF%{end}</TOOLTIPID>
+        </UseTemplate>
 	</Template>
 
 	<Template Name="FBW_AIRBUS_Update_PTU_Template">
