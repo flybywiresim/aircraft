@@ -2480,12 +2480,22 @@ class FMCMainDisplay extends BaseAirliners {
     //Needs PR Merge #3154
     setPerfApprVApp(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.vApp = NaN;
-        }
-        const value = parseFloat(s);
-        if (isFinite(value) && value > 0) {
-            this.vApp = value;
-            return true;
+            if (isFinite(this.vApp)) {
+                this.vApp = NaN;
+                return true;
+            }
+        } else {
+            if (s.includes(".")) {
+                this.addNewMessage(NXSystemMessages.formatError);
+                return false;
+            }
+            const value = parseInt(s);
+            if (isFinite(value) && value >= 90 && value <= 350) {
+                this.vApp = value;
+                return true;
+            }
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
