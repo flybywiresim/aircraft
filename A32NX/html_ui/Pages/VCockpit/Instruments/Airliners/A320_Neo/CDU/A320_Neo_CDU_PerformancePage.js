@@ -578,7 +578,7 @@ class CDUPerformancePage {
         let sltRetrCell = "---";
         let cleanCell = "---";
         if (mcdu.approachSpeeds && mcdu.approachSpeeds.valid) {
-            vappCell = mcdu.approachSpeeds.vapp.toFixed(0);
+            vappCell = mcdu.approachSpeeds.vapp.toFixed(0) + "[s-text]";
             vlsCell = mcdu.approachSpeeds.vls.toFixed(0);
             flpRetrCell = mcdu.approachSpeeds.f.toFixed(0) + "[color]green";
             sltRetrCell = mcdu.approachSpeeds.s.toFixed(0) + "[color]green";
