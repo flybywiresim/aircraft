@@ -8,7 +8,7 @@ class A32NX_APU {
     }
     update(_deltaTime) {
         const available = SimVar.GetSimVarValue("L:A32NX_APU_AVAILABLE", "Bool");
-        const apuSwitchIsOn = SimVar.GetSimVarValue("A:APU SWITCH", "Bool") === 1;
+        const apuSwitchIsOn = !!SimVar.GetSimVarValue("A:APU SWITCH", "Bool");
 
         // Until everything that depends on the APU is moved into WASM,
         // we still need to synchronise some of the WASM state with the sim's state.
