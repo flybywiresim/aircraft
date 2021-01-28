@@ -48,8 +48,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.takeOffWeight = NaN;
         this.landingWeight = NaN;
         this.averageWind = 0;
-        this.perfCrzWindHeading = NaN;
-        this.perfCrzWindSpeed = NaN;
+        this.perfCrzWindHeading = NaN; //TODO: figure out usage
+        this.perfCrzWindSpeed = NaN; //TODO: figure out usage
         this.perfApprQNH = NaN;
         this.perfApprTemp = NaN;
         this.perfApprWindHeading = NaN;
@@ -1145,6 +1145,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    //Needs PR Merge #3082
     //TODO: MCDU action
     trySetV1Speed(s) {
         if (!/^\d+$/.test(s)) {
@@ -1167,6 +1168,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //Needs PR Merge #3082
     //TODO: MCDU action
     trySetVRSpeed(s) {
         if (!/^\d+$/.test(s)) {
@@ -1189,6 +1191,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //Needs PR Merge #3082
     //TODO: MCDU action
     trySetV2Speed(s) {
         if (!/^\d+$/.test(s)) {
@@ -1211,6 +1214,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //Needs PR Merge #3082
     //TODO: MCDU action
     trySetTransAltitude(s) {
         if (!/^\d+$/.test(s)) {
@@ -1227,6 +1231,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //Needs PR Merge #3082
     //TODO: MCDU action
     trySetThrustReductionAccelerationAltitude(s) {
         let thrRed = NaN;
@@ -1251,6 +1256,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //Needs PR Merge #3082
     //TODO: MCDU action
     trySetThrustReductionAccelerationAltitudeGoaround(s) {
         let thrRed = NaN;
@@ -1275,6 +1281,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //Needs PR Merge #3082
     //TODO: MCDU action
     trySetEngineOutAcceleration(s) {
         const engOutAcc = parseInt(s);
@@ -1287,6 +1294,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    //Needs PR Merge #3082
     //TODO: with FADEC no longer needed
     setPerfTOFlexTemp(s) {
         const value = parseFloat(s);
@@ -2002,6 +2010,7 @@ class FMCMainDisplay extends BaseAirliners {
         return this.approachSpeeds.vapp;
     }
 
+    //Needs PR Merge #3154
     //TODO: MCDU action
     setPerfApprVApp(s) {
         if (s === FMCMainDisplay.clrValue) {
