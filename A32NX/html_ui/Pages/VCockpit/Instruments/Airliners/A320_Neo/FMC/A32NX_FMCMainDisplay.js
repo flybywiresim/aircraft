@@ -35,8 +35,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.takeOffWeight = NaN;
         this.landingWeight = NaN;
         this.averageWind = 0;
-        this.perfCrzWindHeading = NaN; //TODO: figure out usage
-        this.perfCrzWindSpeed = NaN; //TODO: figure out usage
         this.perfApprQNH = NaN;
         this.perfApprTemp = NaN;
         this.perfApprWindHeading = NaN;
@@ -2258,38 +2256,10 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    //TODO: refactor/remove useLbs
-    setZeroFuelWeight(s, callback = EmptyCallback.Boolean, useLbs = false) {
-        let value = parseFloat(s);
-        if (isFinite(value)) {
-            if (useLbs) {
-                value = value / 2.204623;
-            }
-            this.zeroFuelWeight = value;
-            return callback(true);
-        }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        callback(false);
-    }
-
-    setZeroFuelCG(s, callback = EmptyCallback.Boolean) {
-        const value = parseFloat(s);
-        if (isFinite(value) && value > 0 && value < 100) {
-            this.zeroFuelWeightMassCenter = value;
-            return callback(true);
-        }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        callback(false);
-    }
-
-    //TODO: refactor/remove useLbs
-    tryEditZeroFuelWeightZFWCG(zfw = 0, zfwcg = 0, useLbs = false) {
+    tryEditZeroFuelWeightZFWCG(zfw = 0, zfwcg = 0) {
         if (zfw > 0) {
             if (this.isZFWInRange(zfw)) {
-                if (useLbs) {
-                    zfw = zfw / 2.204623;
-                }
-                this.setZeroFuelWeight(zfw.toString());
+                this.zeroFuelWeight = zfw;
             } else {
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
                 return false;
@@ -2297,7 +2267,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         if (zfwcg > 0) {
             if (this.isZFWCGInRange(zfwcg)) {
-                this.setZeroFuelCG(zfwcg.toString());
+                this.zeroFuelWeightMassCenter = zfwcg;
             } else {
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
                 return false;
@@ -2306,8 +2276,8 @@ class FMCMainDisplay extends BaseAirliners {
         return true;
     }
 
-    //TODO: refactor/remove useLbs
-    async trySetZeroFuelWeightZFWCG(s, useLbs = false) {
+    //TODO: understand why checks and method calls are redundant
+    async trySetZeroFuelWeightZFWCG(s) {
         let zfw = 0;
         let zfwcg = 0;
         if (s) {
@@ -2322,12 +2292,9 @@ class FMCMainDisplay extends BaseAirliners {
         if (zfw > 0 && zfwcg > 0) {
             if (this.isZFWInRange(zfw) && this.isZFWCGInRange(zfwcg)) {
                 this._zeroFuelWeightZFWCGEntered = true;
-                if (useLbs) {
-                    zfw = zfw / 2.204623;
-                }
 
-                this.setZeroFuelWeight(zfw.toString());
-                this.setZeroFuelCG(zfwcg.toString());
+                this.zeroFuelWeight = zfw;
+                this.zeroFuelWeightMassCenter = zfwcg;
                 return true;
             } else {
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -2335,7 +2302,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
         if (this._zeroFuelWeightZFWCGEntered) {
-            return this.tryEditZeroFuelWeightZFWCG(zfw, zfwcg, useLbs);
+            return this.tryEditZeroFuelWeightZFWCG(zfw, zfwcg);
         }
         this.addNewMessage(NXSystemMessages.formatError);
         return false;
@@ -2345,25 +2312,18 @@ class FMCMainDisplay extends BaseAirliners {
      *
      * @returns {number} Returns estimated fuel on board when arriving at the destination
      */
-    //TODO: refactor
     getDestEFOB(useFOB = false) {
-        if (useFOB) {
-            return this.getFOB() - this._routeTripFuelWeight - this.taxiFuelWeight;
-        } else {
-            return this.blockFuel - this._routeTripFuelWeight - this.taxiFuelWeight;
-        }
+        return (useFOB ? this.getFOB() : this.blockFuel) - this._routeTripFuelWeight - this.taxiFuelWeight;
     }
 
     /**
      * @returns {number} Returns EFOB when arriving at the alternate dest
      */
-    //TODO: refactor
     getAltEFOB(useFOB = false) {
         return this.getDestEFOB(useFOB) - this._routeAltFuelWeight;
     }
 
-    //TODO: refactor/remove useLbs
-    trySetBlockFuel(s, useLbs = false) {
+    trySetBlockFuel(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.blockFuel = 0.0;
             this._blockFuelEntered = false;
@@ -2371,12 +2331,9 @@ class FMCMainDisplay extends BaseAirliners {
             this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
             return true;
         }
-        let value = parseFloat(s) / this._conversionWeight;
+        const value = parseFloat(s) / this._conversionWeight;
         if (isFinite(value) && this.isBlockFuelInRange(value)) {
             if (this.isBlockFuelInRange(value)) {
-                if (useLbs) {
-                    value = value / 2.204623;
-                }
                 this.blockFuel = value;
                 this._blockFuelEntered = true;
                 return true;
@@ -2384,28 +2341,6 @@ class FMCMainDisplay extends BaseAirliners {
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
                 return false;
             }
-
-        }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
-    }
-
-    async trySetTakeOffWeightLandingWeight(s) {
-        let tow = NaN;
-        let lw = NaN;
-        if (s) {
-            const sSplit = s.split("/");
-            tow = parseFloat(sSplit[0]);
-            lw = parseFloat(sSplit[1]);
-        }
-        if (isFinite(tow) || isFinite(lw)) {
-            if (isFinite(tow)) {
-                this.takeOffWeight = tow;
-            }
-            if (isFinite(lw)) {
-                this.landingWeight = lw;
-            }
-            return true;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
@@ -3183,14 +3118,9 @@ class FMCMainDisplay extends BaseAirliners {
      * @param useLbs states whether to return the weight back in tons or pounds
      * @returns {*}
      */
-    //TODO: refactor/remove useLbs
-    // Can this be util?
-    getFOB(useLbs = false) {
-        if (useLbs) {
-            return SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound");
-        } else {
-            return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.453592) / 1000;
-        }
+    //TODO: Can this be util?
+    getFOB() {
+        return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.453592) / 1000;
     }
 
     /**
