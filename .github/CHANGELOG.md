@@ -50,6 +50,7 @@
 1. [MISC] Disabled left tiller deflection emissive - @ImenesFBW (Imenes)
 1. [CDU] Add landing config selection (CONF3 or FULL) on Perf Appr page - @tracernz (Mike)
 1. [TEXTURE] Added inHg/hPa above the QNH knob - @ImenesFBW (Imenes)
+1. [MCDU] Vapp entry/clear display and error improvements - @tracernz (Mike)
 1. [APU] Realistic start cycle in terms of time, N, and EGT - @davidwalschots (David Walschots)
 1. [APU] Usage of APU GEN and BLEED fluctuates EGT - @davidwalschots (David Walschots)
 1. [APU] APU GEN output appears around 84% N - @davidwalschots (David Walschots)
