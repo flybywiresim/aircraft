@@ -2262,11 +2262,15 @@ class FMCMainDisplay extends BaseAirliners {
                 const sSplit = s.split("/");
                 const zfw = parseFloat(sSplit[0]) / this._conversionWeight;
                 const zfwcg = parseFloat(sSplit[1]);
-                if (this.isZFWInRange(zfw) && this.isZFWCGInRange(zfwcg)) {
-                    this._zeroFuelWeightZFWCGEntered = true;
-                    this.zeroFuelWeight = zfw;
-                    this.zeroFuelWeightMassCenter = zfwcg;
-                    return true;
+                if (isFinite(zfw) && isFinite(zfwcg)) {
+                    if (this.isZFWInRange(zfw) && this.isZFWCGInRange(zfwcg)) {
+                        this._zeroFuelWeightZFWCGEntered = true;
+                        this.zeroFuelWeight = zfw;
+                        this.zeroFuelWeightMassCenter = zfwcg;
+                        return true;
+                    }
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    return false;
                 }
                 if (!this._zeroFuelWeightZFWCGEntered) {
                     this.addNewMessage(NXSystemMessages.notAllowed);
