@@ -35,6 +35,22 @@
         <Include ModelBehaviorFile="Asobo\Common.xml"/>
         <Include ModelBehaviorFile="Asobo\Airliner\GlassCockpit.xml"/>
 
+        <!-- EFB -->
+
+        <Component ID="EFB_L" Node="SCREEN_EFB">
+            <DefaultTemplateParameters>
+                <NODE_ID>SCREEN_EFB</NODE_ID>
+            </DefaultTemplateParameters>
+
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <EMISSIVE_CODE>0.8</EMISSIVE_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
+                <LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+
         <!-- MCDU -->
 
         <Component ID="MCDU">
