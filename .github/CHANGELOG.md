@@ -43,6 +43,12 @@
 1. [SOUND] Reworked pack sounds - @hotshotp (Boris)
 1. [SOUND] Reworked touchdown sounds - @hotshotp (Boris)
 1. [DISPLAYS] Fixed POST repeat when displays are switched off for <10 seconds - @2hwk (2Cas#1022)
+1. [MISC] Added printer - @tyler58546 (tyler58546), @DarkOfNova (DarkOfNova)
+1. [ECAM] Added CONF/FLAPS 3 memos when GPWS LDG FLAPS 3 enabled - @tracernz (Mike)
+1. [MISC] Disabled left tiller deflection emissive - @ImenesFBW (Imenes)
+1. [CDU] Add landing config selection (CONF3 or FULL) on Perf Appr page - @tracernz (Mike)
+1. [TEXTURE] Added inHg/hPa above the QNH knob - @ImenesFBW (Imenes)
+
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
 1. [CDU] Two tiny fixes for flightphase speeds - @Watsi01 (RogePete)

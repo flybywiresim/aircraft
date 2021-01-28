@@ -75,5 +75,9 @@ class CDUAocRequestsMessage {
             CDUAocMessagesReceived.ShowPage(mcdu);
         };
 
+        mcdu.onRightInput[5] = () => {
+            mcdu.printPage([lines.join(' ')]);
+        };
+
     }
 }

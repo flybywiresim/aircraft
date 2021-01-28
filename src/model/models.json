@@ -34,6 +34,18 @@
       {
         "gltf": "./onbat/onbat.gltf",
         "bin": "./onbat/onbat.bin"
+      },
+      {
+        "gltf": "./printer/printer.gltf",
+        "bin": "./printer/printer.bin"
+      },
+      {
+        "gltf": "./printer/print-static.gltf",
+        "bin": "./printer/print-static.bin"
+      },
+      {
+        "gltf": "./printer/print-torn.gltf",
+        "bin": "./printer/print-torn.bin"
       }
     ],
     "modifications": [

@@ -11,6 +11,7 @@ class A32NX_LocalVarUpdater {
         this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
         this.lastUpdatePackOne = NaN;
         this.updatePackCooldown = 0;
+        this.updatePackDelay = 0;
         this.isPacksOneSupplying = false;
         // track which compartment has gotten temperature initialization
         this.initializedCabinTemp = {
@@ -171,15 +172,32 @@ class A32NX_LocalVarUpdater {
         const xBleedPos = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
         const engineModeSelector = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum");
         const isApuDelivering = SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95 && SimVar.GetSimVarValue("BLEED AIR APU", "Bool") && engineModeSelector === 1;
-        const isEngineOneDelivering = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:1", "Rpm(0 to 16384 = 0 to 100%)") >= 55 && SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool");
-        const isEngineTwoDelivering = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:2", "Rpm(0 to 16384 = 0 to 100%)") >= 55 && SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool");
+        const isEngineOneRunning = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:1", "Rpm(0 to 16384 = 0 to 100%)") >= 55;
+        const isEngineTwoRunning = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:2", "Rpm(0 to 16384 = 0 to 100%)") >= 55;
+        const isEngineOneDelivering = isEngineOneRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool");
+        const isEngineTwoDelivering = isEngineTwoRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool");
 
         const isXBleedOpen = xBleedPos === 2 || (xBleedPos === 1 && (isApuDelivering || engineModeSelector !== 1));
-        const packOneHasAir = isApuDelivering || isEngineOneDelivering || (isEngineTwoDelivering && isXBleedOpen);
+        const packOneHasAir = this._isPackOpen(engineModeSelector, isEngineOneRunning || isEngineTwoRunning) &&
+            (isApuDelivering || isEngineOneDelivering || (isEngineTwoDelivering && isXBleedOpen));
 
         this.isPacksOneSupplying = packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool");
 
         return this.isPacksOneSupplying;
+    }
+
+    _isPackOpen(_engineModeSelector, _isAnEngineOn) {
+        if (_engineModeSelector === 1 || !_isAnEngineOn) {
+            this.updatePackDelay = 0;
+            return true;
+        }
+
+        if (this.updatePackDelay > 30) {
+            return true;
+        }
+
+        this.updatePackDelay += 1;
+        return false;
     }
 
     // New selectors go here...
