@@ -83,15 +83,15 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
 
                 <div className="w-3/12">
                     <h1 className="text-white font-medium mb-6 text-xl">Weather</h1>
-                        
+
                     <WeatherWidget name='origin' editIcao="yes" icao={this.props.departingAirport} />
                     <WeatherWidget name='dest' editIcao="yes" icao={this.props.arrivingAirport} />
                 </div>
 
                 <div className="w-5/12 ml-4">
                     <h1 className="text-white font-medium mb-6 text-xl">Map</h1>
-                    
-                    <div className="bg-gray-800 rounded-xl p-6 text-white overflow-hidden">
+
+                    <div className="bg-gray-800 rounded-xl text-white overflow-hidden">
                         <div className="w-full h-96 rounded-lg overflow-hidden">
                             <Map currentFlight={this.props.currentFlight} disableMenu={true} hideOthers={true} />
                         </div>
