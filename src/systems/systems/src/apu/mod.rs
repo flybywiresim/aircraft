@@ -207,6 +207,10 @@ impl AuxiliaryPowerUnit {
         self.ecb.is_inoperable()
     }
 
+    fn is_starting(&self) -> bool {
+        self.ecb.is_starting()
+    }
+
     #[cfg(test)]
     fn frequency_within_normal_range(&self) -> bool {
         self.generator.frequency_within_normal_range()
@@ -315,7 +319,11 @@ impl AuxiliaryPowerUnitOverheadPanel {
 
     pub fn update_after_apu(&mut self, apu: &AuxiliaryPowerUnit) {
         self.start.set_available(apu.is_available());
-        if self.start_is_on() && (apu.is_available() || apu.has_fault()) {
+        if self.start_is_on()
+            && (apu.is_available()
+                || apu.has_fault()
+                || (!self.master_is_on() && !apu.is_starting()))
+        {
             self.start.turn_off();
         }
 
@@ -601,6 +609,10 @@ pub mod tests {
                 < f64::EPSILON
         }
 
+        fn is_air_intake_flap_fully_closed(&self) -> bool {
+            (self.apu.get_air_intake_flap_open_amount().get::<percent>() - 0.).abs() < f64::EPSILON
+        }
+
         pub fn get_n(&self) -> Ratio {
             self.apu.get_n()
         }
@@ -808,6 +820,28 @@ pub mod tests {
 
             assert!(!tester.start_is_on());
             assert!(tester.start_shows_available());
+        }
+
+        #[test]
+        fn start_sw_on_light_turns_off_when_apu_not_yet_starting_and_master_sw_turned_off() {
+            let mut tester = tester_with()
+                .master_on()
+                .and()
+                .start_on()
+                .run(Duration::from_secs(1));
+
+            assert!(
+                !tester.is_air_intake_flap_fully_open(),
+                "The test assumes the air intake flap isn't fully open yet."
+            );
+            assert!(
+                !tester.is_air_intake_flap_fully_closed(),
+                "The test assumes the air intake flap isn't fully closed yet."
+            );
+
+            tester = tester.master_off().run(Duration::from_secs(0));
+
+            assert!(!tester.start_is_on());
         }
 
         #[test]

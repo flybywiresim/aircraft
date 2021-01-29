@@ -201,6 +201,10 @@ impl ElectronicControlBox {
     pub fn get_n(&self) -> Ratio {
         self.apu_n
     }
+
+    pub fn is_starting(&self) -> bool {
+        self.turbine_state == TurbineState::Starting
+    }
 }
 impl ApuStartContactorController for ElectronicControlBox {
     /// Indicates if the APU start contactor should be closed.
