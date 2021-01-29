@@ -2,3 +2,6 @@
 
 # Ensure LF for shell files, even on Windows, so that bash inside Docker does not panic
 *.sh text eol=lf
+
+# Prevent merge conflicts on CHANGELOG.md by simply taking lines from both versions instead of leaving conflict markers.
+/.github/CHANGELOG.md merge=union
