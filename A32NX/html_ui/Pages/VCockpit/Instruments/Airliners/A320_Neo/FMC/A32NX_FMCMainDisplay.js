@@ -60,6 +60,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.vApp = NaN;
         this.perfApprMDA = NaN;
         this.perfApprDH = NaN;
+        this.perfApprFlaps3 = false;
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
         this._lockConnectIls = false;
         this._apNavIndex = 1;
@@ -1335,30 +1336,8 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    getCleanApproachSpeed() {
-        let dWeight = (this.getWeight() - 42) / (75 - 42);
-        dWeight = Math.min(Math.max(dWeight, 0), 1);
-        const base = Math.max(172, this.getVLS() + 5);
-        return base + 40 * dWeight;
-    }
-
-    // Overridden by getManagedApproachSpeedMcdu in A320_Neo_CDU_MainDisplay
-    // Not sure what to do with this
-    getManagedApproachSpeed(flapsHandleIndex = NaN) {
-        switch (((isNaN(flapsHandleIndex)) ? Simplane.getFlapsHandleIndex() : flapsHandleIndex)) {
-            case 0:
-                return this.getCleanApproachSpeed();
-            case 1:
-                return this.getSlatApproachSpeed();
-            case 4:
-                return this.getVApp();
-            default:
-                return this.getFlapApproachSpeed();
-        }
-    }
-
     updateCleanApproachSpeed() {
-        const apprGreenDotSpeed = this.getCleanApproachSpeed();
+        const apprGreenDotSpeed = this.getPerfGreenDotSpeed();
         if (isFinite(apprGreenDotSpeed)) {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_GREEN_DOT_SPD", "Number", apprGreenDotSpeed);
         }
@@ -1986,56 +1965,58 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    /**
+     * VApp for _selected_ landing config
+     */
     getVApp() {
         if (isFinite(this.vApp)) {
             return this.vApp;
         }
-        if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-            return Math.ceil(this.getVLS() + NXSpeedsUtils.addWindComponent(this._towerHeadwind / 3));
-        }
-        return Math.ceil(this.getVLS() + NXSpeedsUtils.addWindComponent());
+        return this.approachSpeeds.vapp;
     }
 
     setPerfApprVApp(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.vApp = NaN;
-        }
-        const value = parseFloat(s);
-        if (isFinite(value) && value > 0) {
-            this.vApp = value;
-            return true;
+            if (isFinite(this.vApp)) {
+                this.vApp = NaN;
+                return true;
+            }
+        } else {
+            if (s.includes(".")) {
+                this.addNewMessage(NXSystemMessages.formatError);
+                return false;
+            }
+            const value = parseInt(s);
+            if (isFinite(value) && value >= 90 && value <= 350) {
+                this.vApp = value;
+                return true;
+            }
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
+    /**
+     * VLS for current config (not selected landing config!)
+     */
     getVLS() {
-        const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-        const cg = this.zeroFuelWeightMassCenter;
-        if (((isNaN(cg)) ? 24 : cg) < 25) {
-            switch (true) {
-                case (dWeight <= 50):
-                    return 116;
-                case (dWeight >= 75):
-                    return Math.ceil(139 + .8 * (dWeight - 75));
-                case (dWeight <= 55):
-                    return Math.ceil(116 + .8 * (dWeight - 50));
-                case (dWeight <= 70):
-                    return Math.ceil(120 + dWeight - 55);
-                default:
-                    return Math.ceil(135 + .8 * (dWeight - 70));
-            }
+        return SimVar.GetSimVarValue("L:A32NX_SPEEDS_VLS", "Number");
+    }
+
+    /**
+     * Tries to estimate the landing weight at destination
+     * NaN on failure
+     */
+    tryEstimateLandingWeight() {
+        let landingWeight;
+        if (false /* TODO alt active */) {
+            landingWeight = this.getAltEFOB(true) + this.zeroFuelWeight;
+        } else {
+            landingWeight = this.getDestEFOB(true) + this.zeroFuelWeight;
         }
-        switch (true) {
-            case (dWeight <= 50):
-                return 116;
-            case (dWeight >= 75):
-                return Math.ceil(139 + .8 * (dWeight - 75));
-            case (dWeight <= 55):
-                return Math.ceil(116 + .6 * (dWeight - 50));
-            default:
-                return Math.ceil(119 + dWeight - 55);
-        }
+        return isFinite(landingWeight) ? landingWeight : NaN;
     }
 
     setPerfApprMDA(s) {
@@ -2086,6 +2067,10 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    setPerfApprFlaps3(s) {
+        this.perfApprFlaps3 = s;
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", s);
+    }
     getIsFlying() {
         return this.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_TAKEOFF;
     }
@@ -2958,7 +2943,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
             // Is this LVar used by anything? It doesn't look like it...
-            SimVar.SetSimVarValue("L:AIRLINER_MANAGED_APPROACH_SPEED", "number", this.getManagedApproachSpeed());
+            SimVar.SetSimVarValue("L:AIRLINER_MANAGED_APPROACH_SPEED", "number", this.getManagedApproachSpeedMcdu());
         }
         this.updateRadioNavState();
     }
