@@ -10,7 +10,7 @@ class CDUWaypointPage {
 
         mcdu.setTemplate([
             ["WAYPOINT"],
-            ["IDENT"],
+            ["\xa0IDENT"],
             ["_______[color]amber"],
             [""],
             [""],
@@ -30,9 +30,9 @@ class CDUWaypointPage {
                     mcdu.clearDisplay();
                     mcdu.setTemplate([
                         ["WAYPOINT"],
-                        ["IDENT"],
+                        ["\xa0IDENT"],
                         [`${value}`],
-                        ["LAT/LONG"],
+                        ["\xa0LAT/LONG"],
                         [`${new LatLong(res.infos.coordinates.lat, res.infos.coordinates.long).toShortDegreeString()}[color]green`],
                         [""],
                         [""],
@@ -44,7 +44,7 @@ class CDUWaypointPage {
                         [""]
                     ]);
                 } else {
-                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
                 }
             });
         };

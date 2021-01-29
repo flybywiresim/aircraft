@@ -16,17 +16,20 @@ The following aircraft configuration is currently simulated:
  ```
  Model      A320-251N
  Engine     LEAP 1A-26
- FMGS       Honeywell Pegasus Step 1A
- FWC Std.   H2F9C
+ FMGS       Honeywell Pegasus II
+ FWC Std.   H2F9E
  ```
 
 Please note that this configuration may change in the future as the A32NX project evolves and changes.
+
+### SimBrief Airframe with the correct weights
+✈[SimBrief Airframe with the correct weights](https://www.simbrief.com/system/dispatch.php?sharefleet=eyJ0cyI6IjE2MDU4MjAwNzg5NDYiLCJiYXNldHlwZSI6IkEzMjAiLCJjb21tZW50cyI6IkZMWSBCWSBXSVJFIiwiaWNhbyI6IkEyME4iLCJuYW1lIjoiQTMyME5FTyBGQlciLCJlbmdpbmVzIjoiTEVBUC0xQTI2IiwicmVnIjoiQTIwTiIsImZpbiI6IiIsInNlbGNhbCI6IiIsImhleGNvZGUiOiIiLCJjYXQiOiJNIiwicGVyIjoiQyIsImVxdWlwIjoiU0RFM0ZHSElSV1kiLCJ0cmFuc3BvbmRlciI6IkxCMSIsInBibiI6IkExQjFDMUQxTzFTMSIsImV4dHJhcm1rIjoiIiwibWF4cGF4IjoiMTgwIiwid2d0dW5pdHMiOiJLR1MiLCJvZXciOiI0MTAwMCIsIm16ZnciOiI2MjUwMCIsIm10b3ciOiI3OTAwMCIsIm1sdyI6IjY2MDAwIiwibWF4ZnVlbCI6IjIxMjczIiwicGF4d2d0IjoiMTA0IiwiZGVmYXVsdGNpIjoiIiwiZnVlbGZhY3RvciI6IlAwMCIsImNydWlzZW9mZnNldCI6IlAwMDAwIn0-) Credits: [@viniciusfont](https://github.com/viniciusfont)
 
 ## Downloads
 
 ### A32NX Installer
 
-Download the new A32NX installer where you can select either the Stable or Developer build, and download and install the mod directly into your community folder, [download here](https://github.com/Externoak/A32NX-installer/releases/latest/download/A32NX_Downloader.zip) ([source](https://github.com/Externoak/A32NX-installer/)).
+Download the new A32NX installer where you can select either the Stable or Developer build, and download and install the mod directly into your community folder, [download here](https://api.flybywiresim.com/installer) ([source](https://github.com/flybywiresim/installer/)).
 
 ### Traditional Download Methods
 

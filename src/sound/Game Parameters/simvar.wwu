@@ -523,6 +523,13 @@ Unit : millimeters of water</Comment>
 								<Property Name="Max" Type="Real64" Value="200"/>
 							</PropertyList>
 						</GameParameter>
+						<GameParameter Name="SIMVAR_AMBIENT_TEMPERATURE" ID="{0821D3AA-067E-4542-A7C7-7A3646B44E92}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="30"/>
+								<Property Name="Max" Type="Real64" Value="30"/>
+								<Property Name="Min" Type="Real64" Value="-30"/>
+							</PropertyList>
+						</GameParameter>
 					</ChildrenList>
 				</Folder>
 				<Folder Name="physic" ID="{ACA1142A-5586-4512-ADC2-1A3B340E902F}" ShortID="835960093">
@@ -1001,6 +1008,13 @@ Unit Position (-16K to 0) -16K = full left</Comment>
 						</GameParameter>
 						<GameParameter Name="SIMVAR_SPOILERS_RIGHT_POSITION" ID="{CED7EF60-DE55-4946-99D2-B08C49A6BDF5}"/>
 						<GameParameter Name="SIMVAR_SPOILERS_LEFT_POSITION" ID="{0F485B84-73FD-4CD5-99F7-FF97BE9940E8}"/>
+						<GameParameter Name="SIMVAR_LEADING_EDGE_FLAPS_LEFT_PERCENT" ID="{5DD19AB1-30E5-4CBD-9AE0-87494EE9A6AF}">
+							<Comment>Percent left trailing edge flap extended	
+Unit : Percent Over 100</Comment>
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="0"/>
+							</PropertyList>
+						</GameParameter>
 					</ChildrenList>
 				</Folder>
 				<Folder Name="engine" ID="{A5564708-E5EC-48F9-B5B3-B21D87755A96}" ShortID="609095319">

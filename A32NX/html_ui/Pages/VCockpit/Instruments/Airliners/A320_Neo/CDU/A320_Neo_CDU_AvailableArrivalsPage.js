@@ -64,7 +64,7 @@ class CDUAvailableArrivalsPage {
                                 runwayCourse = Utils.leadingZeros(Math.round((runway.direction)), 3);
                             }
                         }
-                        rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name) + "[color]cyan", "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
+                        rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name.replace(/\s+/g, '')) + "[color]cyan", "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
                         rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachIndex(approach.index, () => {
@@ -179,6 +179,7 @@ class CDUAvailableArrivalsPage {
                 mcdu.onRightInput[5] = async () => {
                     mcdu.insertTemporaryFlightPlan(() => {
                         mcdu.updateTowerHeadwind();
+                        mcdu.updateConstraints();
                         CDUFlightPlanPage.ShowPage(mcdu);
                     });
                 };
@@ -188,7 +189,7 @@ class CDUAvailableArrivalsPage {
                 };
             }
             mcdu.setTemplate([
-                ["ARRIVAL {small}TO{end} {green}" + airport.ident + "{end} {}"],
+                ["ARRIVAL {small}TO{end} {green}" + airport.ident + "{end}"],
                 ["{sp}APPR", "STAR{sp}", "{sp}VIA"],
                 [selectedApproachCell + "[color]" + selectedApproachCellColor, selectedStarCell + "[color]" + selectedStarCellColor, "{sp}" + selectedViasCell + "[color]" + selectedViasCellColor],
                 [viasPageLabel, "TRANS{sp}"],
@@ -202,25 +203,30 @@ class CDUAvailableArrivalsPage {
                 rows[5],
                 bottomLine
             ]);
-            mcdu.onUp = () => {
-                pageCurrent++;
-                if (starSelection) {
-                    pageCurrent = Math.min(pageCurrent, airportInfo.arrivals.length - 2);
-                } else {
-                    pageCurrent = Math.min(pageCurrent, airportInfo.approaches.length - 3);
-                }
-                if (pageCurrent < 0) {
-                    pageCurrent = 0;
-                }
-                CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, starSelection, selectedStarIndex);
-            };
-            mcdu.onDown = () => {
-                pageCurrent--;
-                if (pageCurrent < 0) {
-                    pageCurrent = 0;
-                }
-                CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, starSelection, selectedStarIndex);
-            };
+            let up = false;
+            let down = false;
+            const maxPage = starSelection ? (airportInfo.arrivals.length - 2) : (pageCurrent, airportInfo.approaches.length - 3);
+            if (pageCurrent < maxPage) {
+                mcdu.onUp = () => {
+                    pageCurrent++;
+                    if (pageCurrent < 0) {
+                        pageCurrent = 0;
+                    }
+                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, starSelection, selectedStarIndex);
+                };
+                up = true;
+            }
+            if (pageCurrent > 0) {
+                mcdu.onDown = () => {
+                    pageCurrent--;
+                    if (pageCurrent < 0) {
+                        pageCurrent = 0;
+                    }
+                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, pageCurrent, starSelection, selectedStarIndex);
+                };
+                down = true;
+            }
+            mcdu.setArrows(up, down, true, true);
             mcdu.onPrevPage = () => {
                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, !starSelection);
             };
@@ -286,6 +292,8 @@ class CDUAvailableArrivalsPage {
                 };
                 mcdu.onRightInput[5] = async () => {
                     mcdu.insertTemporaryFlightPlan(() => {
+                        mcdu.updateTowerHeadwind();
+                        mcdu.updateConstraints();
                         CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
                     });
                 };
@@ -314,21 +322,30 @@ class CDUAvailableArrivalsPage {
                     CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
                 });
             };
-            mcdu.onUp = () => {
-                pageCurrent++;
-                pageCurrent = Math.min(pageCurrent, selectedApproach.transitions.length - 3);
-                if (pageCurrent < 0) {
-                    pageCurrent = 0;
-                }
-                CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, pageCurrent, selectedStarIndex);
-            };
-            mcdu.onDown = () => {
-                pageCurrent--;
-                if (pageCurrent < 0) {
-                    pageCurrent = 0;
-                }
-                CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, pageCurrent, selectedStarIndex);
-            };
+            let up = false;
+            let down = false;
+
+            if (pageCurrent < selectedApproach.transitions.length - 3) {
+                mcdu.onUp = () => {
+                    pageCurrent++;
+                    if (pageCurrent < 0) {
+                        pageCurrent = 0;
+                    }
+                    CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, pageCurrent, selectedStarIndex);
+                };
+                up = true;
+            }
+            if (pageCurrent > 0) {
+                mcdu.onDown = () => {
+                    pageCurrent--;
+                    if (pageCurrent < 0) {
+                        pageCurrent = 0;
+                    }
+                    CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, pageCurrent, selectedStarIndex);
+                };
+                down = true;
+            }
+            mcdu.setArrows(up, down, true, true);
         }
     }
 }

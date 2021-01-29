@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDUFuelPredPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -213,15 +231,15 @@ class CDUFuelPredPage {
 
         mcdu.setTemplate([
             ["FUEL PRED"],
-            ["AT", "EFOB", isFlying ? "UTC" : "TIME"],
+            ["\xa0AT", "EFOB", isFlying ? "UTC" : "TIME"],
             [destIdentCell + "[color]green", destEFOBCell + destEFOBCellColor, destTimeCell + destTimeCellColor],
             [""],
             [altIdentCell + "[color]green", altEFOBCell + altEFOBCellColor, altTimeCell + altTimeCellColor],
             ["RTE RSV/%", "ZFW/ZFWCG"],
             [rteRsvWeightCell + "/" + rteRsvPercentCell + rteRSvCellColor, zfwCell + "/" + zfwCgCell + zfwColor],
-            ["ALTN/TIME", "FOB{sp}{sp}{sp}{sp}{sp}"],
+            ["ALTN\xa0\xa0/TIME", "FOB{sp}{sp}{sp}{sp}{sp}"],
             [altFuelCell + "/" + altFuelTimeCell + altFuelColor, fobCell + "/" + fobOtherCell + "{sp}{sp}" + fobCellColor],
-            ["FINAL/TIME", "GW/{sp}{sp} CG"],
+            ["FINAL\xa0/TIME", "GW/{sp}{sp} CG"],
             [finalFuelCell + "/" + finalTimeCell + finalColor, gwCell + "/  " + cgCell + gwCgCellColor],
             ["MIN DEST FOB", "EXTRA TIME"],
             [minDestFobCell + minDestFobCellColor, extraFuelCell + "/" + extraTimeCell + extraCellColor]

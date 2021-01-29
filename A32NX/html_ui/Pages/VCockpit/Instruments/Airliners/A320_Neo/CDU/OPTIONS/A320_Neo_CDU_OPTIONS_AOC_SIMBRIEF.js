@@ -1,29 +1,47 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class CDU_OPTIONS_SIMBRIEF {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
 
         const simbriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "").replace(/_/g, ' ');
 
-        const simbriefUsernameString = simbriefUsername ? simbriefUsername : "[ ]";
+        const simbriefUsernameString = simbriefUsername ? `{green}[${simbriefUsername}]{end}` : "{cyan}*[\xa0\xa0\xa0\xa0\xa0]{end}";
 
         const simbriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
 
-        const simbriefUserIdString = simbriefUserId ? simbriefUserId : "[ ]";
+        const simbriefUserIdString = simbriefUserId ? `{green}[${simbriefUserId}]{end}` : "{cyan}*[\xa0\xa0\xa0\xa0\xa0]{end}";
 
         mcdu.setTemplate([
-            ["A32NX OPTIONS"],
+            ["A32NX OPTIONS AOC"],
             ["", "", "SIMBRIEF PROFILE"],
             [""],
-            ["USERNAME"],
-            [`${simbriefUsernameString}[color]blue`],
-            ["USER ID"],
-            [`${simbriefUserIdString}[color]blue`],
+            ["\xa0USERNAME"],
+            [simbriefUsernameString],
+            ["\xa0USER ID"],
+            [simbriefUserIdString],
             [""],
             [""],
             [""],
             [""],
             [""],
-            ["<RETURN[color]blue"]
+            ["<RETURN"]
         ]);
 
         mcdu.leftInputDelay[1] = () => {
@@ -43,7 +61,7 @@ class CDU_OPTIONS_SIMBRIEF {
             if (value === FMCMainDisplay.clrValue) {
                 NXDataStore.set("CONFIG_SIMBRIEF_USERID", "");
             } else if (!/^\d+$/.test(value)) {
-                mcdu.showErrorMessage("NOT ALLOWED");
+                mcdu.addNewMessage(NXSystemMessages.notAllowed);
             } else {
                 NXDataStore.set("CONFIG_SIMBRIEF_USERID", value);
                 NXDataStore.set("CONFIG_SIMBRIEF_USERNAME", "");
@@ -55,7 +73,7 @@ class CDU_OPTIONS_SIMBRIEF {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+            CDU_OPTIONS_AOC.ShowPage(mcdu);
         };
     }
 }

@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /** @type A320_Neo_LowerECAM_PRESS */
 var A320_Neo_LowerECAM_PRESS;
 (function (A320_Neo_LowerECAM_PRESS) {
@@ -74,12 +92,13 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlSYS1text.setAttribute("visibility", "visible");
             this.htmlSYS2text.setAttribute("visibility", "hidden");
             this.htmlMANtext.setAttribute("visibility", "hidden");
-            this.htmlTextSafetyW.setAttribute("visibility", "hidden");
-            this.htmlCabinAltValueW.setAttribute("visibility", "hidden");
-            this.htmlCabinVSValueW.setAttribute("visibility", "hidden");
-            this.htmlPsiDecimalW.setAttribute("visibility", "hidden");
-            this.htmlPsiIntW.setAttribute("visibility", "hidden");
+            this.htmlTextSafety.setAttribute("visibility", "hidden");
+            this.htmlCabinAltValue.setAttribute("visibility", "hidden");
+            this.htmlCabinVSValue.setAttribute("visibility", "hidden");
+            this.htmlPsiDecimal.setAttribute("visibility", "hidden");
+            this.htmlPsiInt.setAttribute("visibility", "hidden");
 
+            this.updateThrottler = new UpdateThrottler(200);
         }
 
         //sets the packs to warning color
@@ -188,11 +207,13 @@ var A320_Neo_LowerECAM_PRESS;
             return indicatorRot;
         }
 
-        update() {
+        update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-
+            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+                return;
+            }
             const inletValvePosition = SimVar.GetSimVarValue("L:VENT_INLET_VALVE", "Percent");
             const outletValvePosition = SimVar.GetSimVarValue("L:VENT_OUTLET_VALVE", "Percent");
             const safetyValvePosition = (SimVar.GetSimVarValue("L:SAFETY_VALVE_1", "Bool") || SimVar.GetSimVarValue("L:SAFETY_VALVE_2", "Bool"));
