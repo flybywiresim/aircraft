@@ -1,5 +1,14 @@
+/**
+ * Format the given frequency to be displayed.
+ * @param {number} frequency The frequency in Hertz.
+ * @return {string} The formatted frequency.
+ */
+function formatFrequency(frequency) {
+    return (frequency / 1000000).toFixed(3).padEnd(7, '0');
+}
+
 export function SevenSegmentDisplay(props) {
     return (<svg>
-        <text x="100%" y="60%">{props.lightsTest ? 888.888 : props.value}</text>
+        <text x="100%" y="60%">{props.lightsTest ? 888.888 : formatFrequency(props.value)}</text>
     </svg>);
 }
