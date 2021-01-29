@@ -36,6 +36,10 @@
         "bin": "./onbat/onbat.bin"
       },
       {
+        "gltf": "./efb/flypad.gltf",
+        "bin": "./efb/flypad.bin"
+      },
+      {
         "gltf": "./printer/printer.gltf",
         "bin": "./printer/printer.bin"
       },

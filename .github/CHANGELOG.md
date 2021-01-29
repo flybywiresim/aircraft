@@ -42,10 +42,15 @@
 1. [SOUND] Reworked engine spool up and startup sounds - @hotshotp (Boris)
 1. [SOUND] Reworked pack sounds - @hotshotp (Boris)
 1. [SOUND] Reworked touchdown sounds - @hotshotp (Boris)
+1. [SWITCHES] Make necessary push buttons momentary - @Benjozork (Benjamin Dupont)
+1. [SWITCHES] Change push button sound - @Benjozork (Benjamin Dupont)
+1. [SWITCHES] Change light switch sound - @Benjozork (Benjamin Dupont)
 1. [MISC] Added printer - @tyler58546 (tyler58546), @DarkOfNova (DarkOfNova)
 1. [ECAM] Added CONF/FLAPS 3 memos when GPWS LDG FLAPS 3 enabled - @tracernz (Mike)
 1. [MISC] Disabled left tiller deflection emissive - @ImenesFBW (Imenes)
 1. [CDU] Add landing config selection (CONF3 or FULL) on Perf Appr page - @tracernz (Mike)
+1. [TEXTURE] Added inHg/hPa above the QNH knob - @ImenesFBW (Imenes)
+1. [MCDU] Vapp entry/clear display and error improvements - @tracernz (Mike)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)

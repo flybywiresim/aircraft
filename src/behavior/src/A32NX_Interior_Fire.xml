@@ -22,6 +22,8 @@
                 1 (>L:A32NX_FIRE_#TYPE##ID#_AGENT#AGENT_ID#_Discharge)
                 }
             </LEFT_SINGLE_CODE>
+
+            <MOMENTARY/>
         </UseTemplate>
     </Template>
 
