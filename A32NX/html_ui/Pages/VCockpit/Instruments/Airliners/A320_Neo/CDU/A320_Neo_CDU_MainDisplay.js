@@ -1398,6 +1398,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.messages.unshift(message);
         const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
         SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt + 1);
+        if (this.refreshPageCallback) {
+            this.refreshPageCallback();
+        }
     }
     deleteMessage(id) {
         if (!this.messages[id]["opened"]) {

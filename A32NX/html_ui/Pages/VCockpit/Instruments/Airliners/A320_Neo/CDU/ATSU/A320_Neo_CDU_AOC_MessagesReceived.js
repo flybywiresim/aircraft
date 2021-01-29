@@ -23,6 +23,10 @@ class CDUAocMessagesReceived {
         }
         mcdu.clearDisplay();
 
+        mcdu.refreshPageCallback = () => {
+            this.ShowPage(mcdu);
+        };
+
         const msgTimeHeaders = [];
         msgTimeHeaders.length = 6;
         for (let i = 5; i > 0; i--) {
