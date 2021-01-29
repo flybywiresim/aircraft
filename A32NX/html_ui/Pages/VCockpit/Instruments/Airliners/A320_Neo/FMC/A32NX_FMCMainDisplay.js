@@ -392,7 +392,7 @@ class FMCMainDisplay extends BaseAirliners {
                     this.flightPlanManager.activateApproach();
                     if (this.currentFlightPhase !== FlightPhase.FLIGHT_PHASE_APPROACH) {
                         console.log('switching to tryGoInApproachPhase: ' + JSON.stringify({lat, long, dist, prevPhase: this.currentFlightPhase}, null, 2));
-                        this.tryGoInApproachPhase().then();
+                        this.tryGoInApproachPhase();
                     }
                 }
             }
@@ -410,7 +410,7 @@ class FMCMainDisplay extends BaseAirliners {
                         this.flightPlanManager._decelReached = true;
                         this._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
                         if (Simplane.getAltitudeAboveGround() < 9500) {
-                            this.tryGoInApproachPhase().then();
+                            this.tryGoInApproachPhase();
                         }
                     }
                 }
@@ -1445,17 +1445,14 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    //TODO: MCDU action
     tryUpdateMinDestFob() {
         this._minDestFob = this._routeAltFuelWeight + this.getRouteFinalFuelWeight();
     }
 
-    //TODO: MCDU action
     tryUpdateTOW() {
         this.takeOffWeight = this.getGW() - this.taxiFuelWeight;
     }
 
-    //TODO: MCDU action
     tryUpdateLW() {
         this.landingWeight = this.takeOffWeight - this._routeTripFuelWeight;
     }
@@ -1601,7 +1598,6 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
-    //TODO: MCDU action
     updateFlightNo(flightNo, callback = EmptyCallback.Boolean) {
         if (flightNo.length > 7) {
             this.addNewMessage(NXSystemMessages.notAllowed);
@@ -1624,7 +1620,6 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
-    //TODO: MCDU action
     updateCoRoute(coRoute, callback = EmptyCallback.Boolean) {
         if (coRoute.length > 2) {
             if (coRoute.length < 10) {
@@ -1640,17 +1635,14 @@ class FMCMainDisplay extends BaseAirliners {
         return callback(false);
     }
 
-    //TODO: MCDU action
     getTotalTripTime() {
         return this._routeTripTime;
     }
 
-    //TODO: MCDU action, partial user may become routine
     getTotalTripFuelCons() {
         return this._routeTripFuelWeight;
     }
 
-    //TODO: MCDU action
     getOrSelectVORsByIdent(ident, callback) {
         this.dataManager.GetVORsByIdent(ident).then((navaids) => {
             if (!navaids || navaids.length === 0) {
@@ -1820,7 +1812,6 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    //TODO: Message system validity check
     vSpeedsValid() {
         return (!!this.v1Speed && !!this.vRSpeed ? this.v1Speed <= this.vRSpeed : true)
             && (!!this.vRSpeed && !!this.v2Speed ? this.vRSpeed <= this.v2Speed : true)
@@ -2013,7 +2004,7 @@ class FMCMainDisplay extends BaseAirliners {
         return true;
     }
 
-    async trySetTaxiFuelWeight(s) {
+    trySetTaxiFuelWeight(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.taxiFuelWeight = this._defaultTaxiFuelWeight;
             this._taxiEntered = false;
@@ -2563,8 +2554,7 @@ class FMCMainDisplay extends BaseAirliners {
         return this.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_TAKEOFF;
     }
 
-    //TODO: figure out if this needs to be awaited or async can be removed
-    async tryGoInApproachPhase() {
+    tryGoInApproachPhase() {
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO).then();
@@ -3147,17 +3137,17 @@ class FMCMainDisplay extends BaseAirliners {
         return 0 <= wind && wind <= 250;
     }
 
-    //TODO: make this util?
+    //TODO: make this util or local var?
     isAirspeedManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT SPEED SLOT INDEX", "number") === 2;
     }
 
-    //TODO: make this util?
+    //TODO: make this util or local var?
     isHeadingManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT HEADING SLOT INDEX", "number") === 2;
     }
 
-    //TODO: make this util?
+    //TODO: make this util or local var?
     isAltitudeManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
     }

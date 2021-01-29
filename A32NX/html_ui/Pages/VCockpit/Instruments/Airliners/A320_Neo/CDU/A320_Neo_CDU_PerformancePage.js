@@ -271,7 +271,7 @@ class CDUPerformancePage {
                 bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
                 bottomRowCells[0] = "*APPR PHASE[color]amber";
                 mcdu.onLeftInput[5] = async () => {
-                    if (await mcdu.tryGoInApproachPhase()) {
+                    if (mcdu.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
                     }
                 };
@@ -372,7 +372,7 @@ class CDUPerformancePage {
                 bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
                 bottomRowCells[0] = "*APPR PHASE[color]amber";
                 mcdu.onLeftInput[5] = async () => {
-                    if (await mcdu.tryGoInApproachPhase()) {
+                    if (mcdu.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
                     }
                 };
@@ -468,7 +468,7 @@ class CDUPerformancePage {
                 bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
                 bottomRowCells[0] = "*APPR PHASE[color]amber";
                 mcdu.onLeftInput[5] = async () => {
-                    if (await mcdu.tryGoInApproachPhase()) {
+                    if (mcdu.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
                     }
                 };
@@ -757,7 +757,7 @@ class CDUPerformancePage {
                     return mcdu.getDelaySwitchPage();
                 };
                 mcdu.onLeftInput[5] = async () => {
-                    if (await mcdu.tryGoInApproachPhase()) {
+                    if (mcdu.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
                     }
                 };

@@ -369,7 +369,7 @@ class CDUInitPage {
         mcdu.onLeftInput[0] = async (value) => {
             if (mcdu._fuelPredDone) {
                 setTimeout(async () => {
-                    if (await mcdu.trySetTaxiFuelWeight(value)) {
+                    if (mcdu.trySetTaxiFuelWeight(value)) {
                         CDUInitPage.updateTowIfNeeded(mcdu);
                         if (mcdu.page.Current === mcdu.page.InitPageB) {
                             CDUInitPage.ShowPage2(mcdu);
@@ -377,7 +377,7 @@ class CDUInitPage {
                     }
                 }, mcdu.getDelayHigh());
             } else {
-                if (await mcdu.trySetTaxiFuelWeight(value)) {
+                if (mcdu.trySetTaxiFuelWeight(value)) {
                     CDUInitPage.updateTowIfNeeded(mcdu);
                     CDUInitPage.ShowPage2(mcdu);
                 }
