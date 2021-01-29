@@ -38,13 +38,12 @@ export class StatefulSimVar extends CachedSimVar {
      * Force update the SimVar state.
      */
     refresh() {
-        this.bust();
         this.setState(super.value);
     }
 
     /**
-     * Set the refresh rate for this simvar (refreshing busts the cache).
-     * @param refreshRate The refresh delay in ms. Pass zero to stop refreshing.
+     * Set the refresh rate for this simvar.
+     * @param refreshRate The refresh delay in ms. False-y to stop refreshing.
      */
     setRefreshRate(refreshRate) {
         this.rateScheduler.unschedule(this.refreshCallback);

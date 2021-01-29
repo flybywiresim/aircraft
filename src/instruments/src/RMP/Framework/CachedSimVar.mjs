@@ -4,6 +4,11 @@ const globalCache = new Map;
 
 export class CachedSimVar {
     constructor(options) {
+        // Used to store setTimeout.
+        this.timeout = undefined;
+        // Cache time to live.
+        this.ttl = options.ttl || 100;
+        // Used to store the cached value.
         this.cache = options.cache || globalCache;
         // The simvar used to get the value.
         this.simVarGetter = options.simVarGetter;
@@ -27,13 +32,8 @@ export class CachedSimVar {
      */
     set cached(value) {
         this.cache.set(this.identifier, value);
-    }
-
-    /**
-     * Delete cached value for this simvar.
-     */
-    bust() {
-        this.cache.delete(this.identifier);
+        if (this.timeout) clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => this.cache.delete(this.identifier), this.ttl);
     }
 
     /**
