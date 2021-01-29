@@ -1,30 +1,21 @@
 import ReactDOM from 'react-dom';
 import { renderTarget } from '../util.mjs';
 import './style.scss';
-import { useState } from 'react/cjs/react.production.min.js';
-import { RadioManagementPanelPair } from './RadioManagementPanel.mjs';
 
+import { StatefulSimVar } from "./Framework/StatefulSimVar.mjs";
+import { RadioManagementPanel } from "./Components/RadioManagementPanel.jsx";
 
-const radioManagementPanelPair = new RadioManagementPanelPair();
+function RootInstrumentDisplay() {
+    const lightsTestStatefulSimVar = new StatefulSimVar({
+        simVarGetter: "L:XMLVAR_LTS_Test",
+        simVarUnit: "Bool",
+        refreshRate: 1000,
+    });
 
-function RadioManagementPanelDisplay() {
-    const [frequencies, setFrequencies] = useState(radioManagementPanelPair.frequencies);
-    radioManagementPanelPair.registerCallbacks(setFrequencies);
-
-    return <div className="rnp-wrapper">
-        <svg>
-            <text x="100%" y="60%">{frequencies.left.active}</text>
-        </svg>
-        <svg>
-            <text x="100%" y="60%">{frequencies.left.standby}</text>
-        </svg>
-        <svg>
-            <text x="100%" y="60%">{frequencies.right.active}</text>
-        </svg>
-        <svg>
-            <text x="100%" y="60%">{frequencies.right.standby}</text>
-        </svg>
-    </div>
+    return (<div className="rmp-wrapper">
+        <RadioManagementPanel side="L" lightsTest={lightsTestStatefulSimVar.value} />
+        <RadioManagementPanel side="R" lightsTest={lightsTestStatefulSimVar.value} />
+    </div>);
 }
 
-ReactDOM.render(<RadioManagementPanelDisplay />, renderTarget);
+ReactDOM.render(<RootInstrumentDisplay />, renderTarget);

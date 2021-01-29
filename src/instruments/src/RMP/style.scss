@@ -13,16 +13,20 @@ $colour-main: hsl(31, 69%, 35%);
     font-weight: 900;
 }
 
-.rnp-wrapper {
+.rmp-wrapper {
     position: absolute;
     height: 100%;
     width: 100%;
     left: 0%;
 }
 
-.rnp-wrapper svg {
+.rmp-wrapper svg {
     height: 25%;
     width: 100%;
+}
+
+.rmp-unpowered {
+    visibility: hidden;
 }
 
 text {
