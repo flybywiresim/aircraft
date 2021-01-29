@@ -13,22 +13,21 @@ use uom::si::{
     temperature_interval, thermodynamic_temperature::degree_celsius,
 };
 
-pub struct Aps3200Turbine {}
-impl Aps3200Turbine {
-    pub fn new() -> impl Turbine {
-        ShutdownTurbine::new(ThermodynamicTemperature::new::<degree_celsius>(0.))
-    }
-}
-
-struct ShutdownTurbine {
+pub struct ShutdownAps3200Turbine {
     egt: ThermodynamicTemperature,
 }
-impl ShutdownTurbine {
-    fn new(egt: ThermodynamicTemperature) -> Self {
-        ShutdownTurbine { egt }
+impl ShutdownAps3200Turbine {
+    pub fn new() -> Self {
+        ShutdownAps3200Turbine {
+            egt: ThermodynamicTemperature::new::<degree_celsius>(0.),
+        }
+    }
+
+    fn new_with_egt(egt: ThermodynamicTemperature) -> Self {
+        ShutdownAps3200Turbine { egt }
     }
 }
-impl Turbine for ShutdownTurbine {
+impl Turbine for ShutdownAps3200Turbine {
     fn update(
         mut self: Box<Self>,
         context: &UpdateContext,
@@ -78,11 +77,11 @@ impl Starting {
         // Refer to APS3200.md for details on the values below and source data.
         const APU_N_TEMP_CONST: f64 = 0.8260770092912485;
         const APU_N_TEMP_X: f64 = -10.521171805148322;
-        const APU_N_TEMP_X2: f64 = 9.99178942595435338876;
-        const APU_N_TEMP_X3: f64 = -3.08275284793509220859;
-        const APU_N_TEMP_X4: f64 = 0.42614542950594842237;
-        const APU_N_TEMP_X5: f64 = -0.03117154621503876974;
-        const APU_N_TEMP_X6: f64 = 0.00138431867550105467;
+        const APU_N_TEMP_X2: f64 = 9.991789425954353;
+        const APU_N_TEMP_X3: f64 = -3.082752847935092;
+        const APU_N_TEMP_X4: f64 = 0.4261454295059484;
+        const APU_N_TEMP_X5: f64 = -0.03117154621503877;
+        const APU_N_TEMP_X6: f64 = 0.0013843186755010547;
         const APU_N_TEMP_X7: f64 = -0.00004016856934546301;
         const APU_N_TEMP_X8: f64 = 0.00000078892955962222;
         const APU_N_TEMP_X9: f64 = -0.00000001058955825891;
@@ -132,14 +131,14 @@ impl Starting {
     }
 
     fn calculate_n(&self) -> Ratio {
-        const APU_N_CONST: f64 = -0.08013606018640967497;
-        const APU_N_X: f64 = 2.12983273639453440535;
-        const APU_N_X2: f64 = 3.92827343878640406445;
-        const APU_N_X3: f64 = -1.88613299921213003406;
-        const APU_N_X4: f64 = 0.42749452749180915438;
-        const APU_N_X5: f64 = -0.05757707967690425694;
-        const APU_N_X6: f64 = 0.00502214279545100437;
-        const APU_N_X7: f64 = -0.00029612873626050868;
+        const APU_N_CONST: f64 = -0.08013606018640967;
+        const APU_N_X: f64 = 2.129832736394534;
+        const APU_N_X2: f64 = 3.928273438786404;
+        const APU_N_X3: f64 = -1.88613299921213;
+        const APU_N_X4: f64 = 0.42749452749180916;
+        const APU_N_X5: f64 = -0.05757707967690426;
+        const APU_N_X6: f64 = 0.005022142795451004;
+        const APU_N_X7: f64 = -0.00029612873626050866;
         const APU_N_X8: f64 = 0.00001204152497871946;
         const APU_N_X9: f64 = -0.00000033829604438116;
         const APU_N_X10: f64 = 0.00000000645140818528;
@@ -185,13 +184,13 @@ impl Turbine for Starting {
         _: bool,
         controller: &dyn TurbineController,
     ) -> Box<dyn Turbine> {
-        self.since = self.since + context.delta;
+        self.since += context.delta;
         self.n = self.calculate_n();
         self.egt = self.calculate_egt(context);
 
         if controller.should_stop() {
             Box::new(Stopping::new(self.egt, self.n))
-        } else if self.n.get::<percent>() == 100. {
+        } else if (self.n.get::<percent>() - 100.).abs() < f64::EPSILON {
             Box::new(Running::new(self.egt))
         } else {
             self
@@ -315,12 +314,12 @@ impl Turbine for Stopping {
         _: bool,
         _: &dyn TurbineController,
     ) -> Box<dyn Turbine> {
-        self.since = self.since + context.delta;
+        self.since += context.delta;
         self.n = self.calculate_n(context);
         self.egt = calculate_towards_ambient_egt(self.egt, context);
 
         if self.n.get::<percent>() == 0. {
-            Box::new(ShutdownTurbine::new(self.egt))
+            Box::new(ShutdownAps3200Turbine::new_with_egt(self.egt))
         } else {
             self
         }
@@ -411,15 +410,15 @@ impl Aps3200ApuGenerator {
             panic!("Should not be invoked for APU N below {}", n);
         } else if n < 100. {
             const APU_FREQ_CONST: f64 = 1076894372064.8204;
-            const APU_FREQ_X: f64 = -118009165327.71873606955288934986;
-            const APU_FREQ_X2: f64 = 5296044666.71179983947567172640;
-            const APU_FREQ_X3: f64 = -108419965.09400677044360088955;
-            const APU_FREQ_X4: f64 = -36793.31899267512494461444;
-            const APU_FREQ_X5: f64 = 62934.36386220135515418897;
-            const APU_FREQ_X6: f64 = -1870.51971585477668178674;
-            const APU_FREQ_X7: f64 = 31.37647374314980530193;
-            const APU_FREQ_X8: f64 = -0.35101507164597609613;
-            const APU_FREQ_X9: f64 = 0.00272649361414786631;
+            const APU_FREQ_X: f64 = -118009165327.71873;
+            const APU_FREQ_X2: f64 = 5296044666.7118;
+            const APU_FREQ_X3: f64 = -108419965.09400678;
+            const APU_FREQ_X4: f64 = -36793.31899267512;
+            const APU_FREQ_X5: f64 = 62934.36386220135;
+            const APU_FREQ_X6: f64 = -1870.5197158547767;
+            const APU_FREQ_X7: f64 = 31.376473743149806;
+            const APU_FREQ_X8: f64 = -0.3510150716459761;
+            const APU_FREQ_X9: f64 = 0.002726493614147866;
             const APU_FREQ_X10: f64 = -0.00001463272647792659;
             const APU_FREQ_X11: f64 = 0.00000005203375009496;
             const APU_FREQ_X12: f64 = -0.00000000011071318044;
@@ -466,12 +465,12 @@ impl ApuGenerator for Aps3200ApuGenerator {
 
     fn frequency_within_normal_range(&self) -> bool {
         let hz = self.output().get_frequency().get::<hertz>();
-        390. <= hz && hz <= 410.
+        (390.0..=410.0).contains(&hz)
     }
 
     fn potential_within_normal_range(&self) -> bool {
         let volts = self.output().get_potential().get::<volt>();
-        110. <= volts && volts <= 120.
+        (110.0..=120.0).contains(&volts)
     }
 }
 impl PowerConductor for Aps3200ApuGenerator {
@@ -541,7 +540,7 @@ mod apu_generator_tests {
                 assert!(tester.get_generator_output().get_potential().get::<volt>() > 0.);
             }
 
-            if n == 100. {
+            if (n - 100.).abs() < f64::EPSILON {
                 break;
             }
         }
@@ -559,7 +558,7 @@ mod apu_generator_tests {
                 assert!(tester.get_generator_output().get_frequency().get::<hertz>() > 0.);
             }
 
-            if n == 100. {
+            if (n - 100.).abs() < f64::EPSILON {
                 break;
             }
         }
@@ -573,7 +572,7 @@ mod apu_generator_tests {
             tester = tester.run(Duration::from_millis(50));
 
             let voltage = tester.get_generator_output().get_potential().get::<volt>();
-            assert!(114. <= voltage && voltage <= 115.)
+            assert!((114.0..=115.0).contains(&voltage))
         }
     }
 

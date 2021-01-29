@@ -90,7 +90,7 @@ impl SimulatorVisitor for ModelToSimulatorVisitor {
 
 /// Converts a given `f64` representing a boolean value in the simulator into an actual `bool` value.
 pub fn to_bool(value: f64) -> bool {
-    value == 1.
+    (value - 1.).abs() < f64::EPSILON
 }
 
 /// Converts a given `bool` value into an `f64` representing that boolean value in the simulator.

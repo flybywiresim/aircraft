@@ -62,6 +62,8 @@ impl AirIntakeFlap {
 
 #[cfg(test)]
 mod air_intake_flap_tests {
+    use ntest::assert_about_eq;
+
     use super::*;
     use crate::simulator::test_helpers::context_with;
 
@@ -116,7 +118,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert_ne!(flap.state.get::<percent>(), 100.);
+        assert!(flap.state.get::<percent>() < 100.);
     }
 
     #[test]
@@ -165,7 +167,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert_ne!(flap.state.get::<percent>(), 0.);
+        assert!(flap.state.get::<percent>() > 0.);
     }
 
     #[test]
@@ -179,7 +181,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert_eq!(flap.state.get::<percent>(), 0.);
+        assert_about_eq!(flap.state.get::<percent>(), 0.);
     }
 
     #[test]
@@ -193,7 +195,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert_eq!(flap.state.get::<percent>(), 100.);
+        assert_about_eq!(flap.state.get::<percent>(), 100.);
     }
 
     #[test]

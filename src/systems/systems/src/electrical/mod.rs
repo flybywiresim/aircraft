@@ -15,41 +15,33 @@ pub enum Current {
 }
 impl Current {
     pub fn is_powered(&self) -> bool {
-        match self {
-            Current::Alternating(..) => true,
-            Current::Direct(..) => true,
-            _ => false,
-        }
+        matches!(self, Current::Alternating(..) | Current::Direct(..))
     }
 
     #[cfg(test)]
     pub fn is_unpowered(&self) -> bool {
-        if let Current::None = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, Current::None)
     }
 
     pub fn get_potential(&self) -> ElectricPotential {
         match self {
-            Current::Alternating(_, _, potential, _) => potential.clone(),
-            Current::Direct(_, potential, _) => potential.clone(),
+            Current::Alternating(_, _, potential, _) => *potential,
+            Current::Direct(_, potential, _) => *potential,
             Current::None => ElectricPotential::new::<volt>(0.),
         }
     }
 
     pub fn get_frequency(&self) -> Frequency {
         match self {
-            Current::Alternating(_, frequency, _, _) => frequency.clone(),
+            Current::Alternating(_, frequency, _, _) => *frequency,
             _ => Frequency::new::<hertz>(0.),
         }
     }
 
     pub fn get_current(&self) -> ElectricCurrent {
         match self {
-            Current::Alternating(_, _, _, current) => current.clone(),
-            Current::Direct(_, _, current) => current.clone(),
+            Current::Alternating(_, _, _, current) => *current,
+            Current::Direct(_, _, current) => *current,
             Current::None => ElectricCurrent::new::<ampere>(0.),
         }
     }

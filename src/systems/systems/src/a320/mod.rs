@@ -33,6 +33,11 @@ impl A320 {
         }
     }
 }
+impl Default for A320 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl Aircraft for A320 {
     fn update(&mut self, context: &UpdateContext) {
         self.electrical_overhead.update(context);

@@ -20,7 +20,7 @@ mod air_intake_flap;
 mod aps3200;
 mod electronic_control_box;
 
-pub use aps3200::{Aps3200ApuGenerator, Aps3200Turbine};
+pub use aps3200::{Aps3200ApuGenerator, ShutdownAps3200Turbine};
 
 /// The APU start contactor is closed when the APU should start. This type exists because we
 /// don't have a full electrical implementation yet. Once we do, we will probably move this
@@ -103,7 +103,7 @@ pub struct AuxiliaryPowerUnit {
 impl AuxiliaryPowerUnit {
     pub fn new_aps3200() -> Self {
         AuxiliaryPowerUnit::new(
-            Box::new(Aps3200Turbine::new()),
+            Box::new(ShutdownAps3200Turbine::new()),
             Box::new(Aps3200ApuGenerator::new()),
         )
     }
@@ -522,7 +522,9 @@ pub mod tests {
             loop {
                 self = self.run(Duration::from_secs(1));
 
-                if self.apu.get_air_intake_flap_open_amount().get::<percent>() == 100. {
+                if (self.apu.get_air_intake_flap_open_amount().get::<percent>() - 100.).abs()
+                    < f64::EPSILON
+                {
                     break;
                 }
             }
@@ -595,7 +597,8 @@ pub mod tests {
         }
 
         fn is_air_intake_flap_fully_open(&self) -> bool {
-            self.apu.get_air_intake_flap_open_amount().get::<percent>() == 100.
+            (self.apu.get_air_intake_flap_open_amount().get::<percent>() - 100.).abs()
+                < f64::EPSILON
         }
 
         pub fn get_n(&self) -> Ratio {
@@ -692,7 +695,7 @@ pub mod tests {
                 .start_on()
                 .run(Duration::from_secs(15));
 
-            assert_eq!(tester.get_n().get::<percent>(), 0.);
+            assert_about_eq!(tester.get_n().get::<percent>(), 0.);
         }
 
         #[test]
@@ -719,7 +722,7 @@ pub mod tests {
                 .starting_apu()
                 .run(Duration::from_secs(APPROXIMATE_STARTUP_TIME));
 
-            assert_eq!(tester.get_n().get::<percent>(), 100.);
+            assert_about_eq!(tester.get_n().get::<percent>(), 100.);
         }
 
         #[test]
@@ -728,11 +731,7 @@ pub mod tests {
                 .starting_apu()
                 .run(Duration::from_millis(1500));
 
-            assert_eq!(
-                tester.get_n().get::<percent>(),
-                0.,
-                "Ignition started too early."
-            );
+            assert!((tester.get_n().get::<percent>() - 0.).abs() < f64::EPSILON);
 
             // The first 35ms ignition started but N hasn't increased beyond 0 yet.
             let tester = tester.then_continue_with().run(Duration::from_millis(36));
@@ -756,7 +755,7 @@ pub mod tests {
                 .starting_apu()
                 .run(Duration::from_secs(1));
 
-            assert_eq!(
+            assert_about_eq!(
                 tester.get_egt().get::<degree_celsius>(),
                 AMBIENT_TEMPERATURE
             );
@@ -1016,7 +1015,7 @@ pub mod tests {
                 .run(Duration::from_secs(1_000));
 
             let egt = tester.get_egt().get::<degree_celsius>();
-            assert!(340. <= egt && egt <= 350.);
+            assert!((340.0..=350.0).contains(&egt));
         }
 
         #[test]
@@ -1028,7 +1027,7 @@ pub mod tests {
                 .run(Duration::from_secs(1_000));
 
             let egt = tester.get_egt().get::<degree_celsius>();
-            assert!(350. <= egt && egt <= 365.);
+            assert!((350.0..=365.0).contains(&egt));
         }
 
         #[test]
@@ -1042,7 +1041,7 @@ pub mod tests {
                 .run(Duration::from_secs(1_000));
 
             let egt = tester.get_egt().get::<degree_celsius>();
-            assert!(370. <= egt && egt <= 390.);
+            assert!((370.0..=390.0).contains(&egt));
         }
 
         #[test]
@@ -1054,7 +1053,7 @@ pub mod tests {
                 .run(Duration::from_secs(1_000));
 
             let egt = tester.get_egt().get::<degree_celsius>();
-            assert!(380. <= egt && egt <= 405.);
+            assert!((380.0..=405.0).contains(&egt));
         }
 
         #[test]
@@ -1149,7 +1148,7 @@ pub mod tests {
                     assert!(!tester.start_contactor_energized());
                 }
 
-                if n == 100. {
+                if (n - 100.).abs() < f64::EPSILON {
                     break;
                 }
             }
@@ -1177,7 +1176,7 @@ pub mod tests {
                     assert_eq!(tester.start_contactor_energized(), false);
                 }
 
-                if n == 100. {
+                if (n - 100.).abs() < f64::EPSILON {
                     break;
                 }
             }
@@ -1247,7 +1246,7 @@ pub mod tests {
                 let n = tester.get_n().get::<percent>();
                 assert!((n > 99.5 && tester.apu_is_available()) || !tester.apu_is_available());
 
-                if n == 100. {
+                if (n - 100.).abs() < f64::EPSILON {
                     break;
                 }
             }
@@ -1275,7 +1274,7 @@ pub mod tests {
                 tester = tester.run(Duration::from_millis(50));
                 assert!(!tester.master_has_fault());
 
-                if tester.get_n().get::<percent>() == 100. {
+                if (tester.get_n().get::<percent>() - 100.).abs() < f64::EPSILON {
                     break;
                 }
             }
@@ -1421,7 +1420,7 @@ pub mod tests {
                 .then_continue_with()
                 .run(Duration::from_secs(60));
 
-            assert_eq!(tester.get_n().get::<percent>(), 0.);
+            assert!((tester.get_n().get::<percent>() - 0.).abs() < f64::EPSILON);
         }
     }
 }
