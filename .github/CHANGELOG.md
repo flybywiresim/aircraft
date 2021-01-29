@@ -51,6 +51,7 @@
 1. [CDU] Add landing config selection (CONF3 or FULL) on Perf Appr page - @tracernz (Mike)
 1. [TEXTURE] Added inHg/hPa above the QNH knob - @ImenesFBW (Imenes)
 1. [MCDU] Vapp entry/clear display and error improvements - @tracernz (Mike)
+1. [TEXTURE] Added throttle lever detent decal and removed extra S from compass - @ImenesFBW (Imenes)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
