@@ -2944,6 +2944,18 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    _getV1Speed() {
+        return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
+    }
+
+    _getVRSpeed() {
+        return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).vr;
+    }
+
+    _getV2Speed() {
+        return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
+    }
+
     /* END OF MCDU GET/SET METHODS */
     /* UNSORTED CODE BELOW */
 
@@ -3110,7 +3122,6 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      *
-     * @param useLbs states whether to return the weight back in tons or pounds
      * @returns {*}
      */
     //TODO: Can this be util?

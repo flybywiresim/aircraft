@@ -1349,21 +1349,5 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /* END OF MCDU AOC MESSAGE SYSTEM */
-    /* UNSORTED CODE */
-
-    //TODO: after pr merge, remove method _getVxSpeed due to lack of usage
-    _getV1Speed() {
-        return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
-    }
-
-    //TODO: after pr merge, remove method _getVxSpeed due to lack of usage
-    _getVRSpeed() {
-        return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).vr;
-    }
-
-    //TODO: after pr merge, remove method _getVxSpeed due to lack of usage
-    _getV2Speed() {
-        return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
-    }
 }
 registerInstrument("a320-neo-cdu-main-display", A320_Neo_CDU_MainDisplay);
