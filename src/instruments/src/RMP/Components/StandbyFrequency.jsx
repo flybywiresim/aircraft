@@ -69,8 +69,6 @@ function offsetFrequencyChannel(spacing, channel, offset) {
 }
 
 export function StandbyFrequency(props) {
-    // Update the standby frequency every half a second.
-    props.variable.setRefreshRate(500);
     // Used to change integer value of freq.
     const [outerKnob] = useState(new AcceleratedKnob());
     // Used to change decimal value of freq.
@@ -83,24 +81,27 @@ export function StandbyFrequency(props) {
 
     // Handle outer knob turned.
     outerKnob.updateValue = (offset) => {
-        // @todo temporarily disable standby refreshRate when using knobs.
         const frequency = Math.round(props.variable.value / 1000);
         let integer = Math.floor(frequency / 1000);
         const decimal = frequency % 1000;
-        // @todo determine correct min/max depending on mode.
-        const newFrequency = ((integer + offset) * 1000 + decimal) * 1000;
-        props.variable.value = newFrequency;
+        // @todo determine min/max depending on mode.
+        const maxInteger = decimal > 975 ? 135 : 136;
+        const newInteger = Utils.Clamp(integer + offset, 118, maxInteger);
+        props.variable.value = (newInteger * 1000 + decimal) * 1000;
     }
 
-    // Hangled inner knob turned.
+    // Handle inner knob turned.
     innerKnob.updateValue = (offset) => {
-        // @todo temporarily disable standby refreshRate when using knobs.
         const frequency = Math.round(props.variable.value / 1000);
+        if (Math.sign(offset) === 1 && frequency === 136975) return;
         const integer = Math.floor(frequency / 1000);
         // @todo determine correct frequency spacing depending on mode.
-        const newFrequency = integer * 1000 + offsetFrequencyChannel(8.33, frequency % 1000, offset);
-        props.variable.value = newFrequency * 1000;
-    };
+        const decimal = offsetFrequencyChannel(8.33, frequency % 1000, offset);
+        // @todo determine min/max depending on mode.
+        const maxDecimal = integer == 136 ? 975 : 1000;
+        const newDecimal = Utils.Clamp(decimal, 0, maxDecimal);
+        props.variable.value = (integer * 1000 + newDecimal) * 1000;
+    }
 
     return (<SevenSegmentDisplay value={props.variable.value} lightsTest={props.lightsTest} />);
 }

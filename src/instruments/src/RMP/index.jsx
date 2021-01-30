@@ -9,7 +9,7 @@ function RootInstrumentDisplay() {
     const lightsTestStatefulSimVar = new StatefulSimVar({
         simVarGetter: "L:XMLVAR_LTS_Test",
         simVarUnit: "Bool",
-        refreshRate: 1000,
+        refreshRate: 250,
     });
 
     return (<div className="rmp-wrapper">

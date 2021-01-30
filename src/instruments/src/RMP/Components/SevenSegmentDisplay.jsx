@@ -8,7 +8,11 @@ function formatFrequency(frequency) {
 }
 
 export function SevenSegmentDisplay(props) {
-    return (<svg>
-        <text x="100%" y="60%">{props.lightsTest ? 888.888 : formatFrequency(props.value)}</text>
-    </svg>);
+    let value = props.value;
+    const type = props.type || "8.33";
+    if (type === "8.33") value = formatFrequency(value);
+
+    return (<svg><text x="100%" y="60%">
+        {props.lightsTest ? 888.888 : value}
+    </text></svg>);
 }

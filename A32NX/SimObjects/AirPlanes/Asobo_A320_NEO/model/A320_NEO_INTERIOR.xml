@@ -3049,8 +3049,10 @@
                 </UseTemplate>
             </Component>
             <Component ID="Radio_Left">
-                <UseTemplate Name="FBW_RMP_DISPLAY_Template">
+                <UseTemplate Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
                     <SIDE>L</SIDE>
+                    <!-- The left RMP is powered by the DC bus. -->
+                    <ELEC_BUS>(L:DCPowerAvailable, boolean)</ELEC_BUS>
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Left">
@@ -3156,7 +3158,7 @@
             </Component>
 
             <Component ID="Radio_Right">
-                <UseTemplate Name="FBW_RMP_DISPLAY_Template">
+                <UseTemplate Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
                     <SIDE>R</SIDE>
                 </UseTemplate>
             </Component>
