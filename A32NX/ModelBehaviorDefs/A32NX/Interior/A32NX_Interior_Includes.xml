@@ -19,12 +19,12 @@
 <ModelBehaviors>
     <Include RelativeFile="../Airbus.xml"/>
     <Include RelativeFile="../AirlinerCommon.xml"/>
-    <Include RelativeFile="../FMC.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_ADIRS.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Autopilot.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Elec.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_FCU.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Fire.xml"/>
+    <Include RelativeFile="../generated/A32NX_Interior_MCDU.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Misc.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Handling.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Printer.xml"/>
