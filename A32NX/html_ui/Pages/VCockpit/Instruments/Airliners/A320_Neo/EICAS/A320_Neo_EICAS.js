@@ -59,11 +59,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 }
 
                 this.currentPage = pageIndex;
-                SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", pageIndex);
                 break;
             }
         }
         this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, pageName);
+        SimVar.SetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number", this.currentPage);
     }
 
     createUpperScreenPage() {
@@ -159,7 +159,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
     onUpdate() {
         let _deltaTime = this.getDeltaTime();
-
         super.onUpdate(_deltaTime);
 
         const selfTestCurrentKnobValue = SimVar.GetSimVarValue(this.isTopScreen ? "LIGHT POTENTIOMETER:92" : "LIGHT POTENTIOMETER:93", "number");
@@ -325,17 +324,15 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         }
 
         if (ecamAllButtonState) { // button press
-            if (this.currentPage === SimVar.GetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number")) {
+            this.ecamAllButtonTimer -= _deltaTime;
 
-                if (!this.ecamAllButtonTimerStarted) {
-                    this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
-                    this.ecamAllButtonTimerStarted = true;
+            if (!this.ecamAllButtonTimerStarted) {
+                this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
+                this.ecamAllButtonTimerStarted = true;
 
-                } else if (this.ecamAllButtonTimer <= 0) {
-                    this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
-                    this.ecamAllButtonTimer = 1000;
-                }
-                this.ecamAllButtonTimer -= _deltaTime;
+            } else if (this.ecamAllButtonTimer <= 0) {
+                this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
+                this.ecamAllButtonTimer = 1000;
             }
         } else if (!this.ecamAllButtonState && this.ecamAllButtonPrevState) { // button release
             this.ecamAllButtonTimer = 1000;
