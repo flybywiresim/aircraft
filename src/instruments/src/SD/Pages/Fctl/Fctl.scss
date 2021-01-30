@@ -1,44 +1,51 @@
 @import "../../../Common/definitions.scss";
 
-.GreenShapeThick {
-    fill: transparent;
-    stroke: $display-green;
-    stroke-width: 3;
-}
-
-.MainShape {
-    fill: transparent;
-    stroke: $display-light-grey;
-    stroke-width: 2;
-}
-
-.MainShapeWarning {
-    fill: transparent;
-    stroke: $display-amber;
-    stroke-width: 2;
+#ecam-fctl {
+    .PageTitle {
+        font-size: $font-size-title;
+        text-decoration: underline;
+        fill: $display-white;
     }
 
-.MainShape4 {
-    fill: transparent;
-    stroke: $display-green;
-    stroke-width: 4;
+    .GreenShapeThick {
+        fill: transparent;
+        stroke: $display-green;
+        stroke-width: 3;
     }
 
-.GreenShape {
-    fill: transparent;
-    stroke: $display-green;
-    stroke-width: 2;
+    .MainShape {
+        fill: transparent;
+        stroke: $display-light-grey;
+        stroke-width: 2;
+}   
+
+    .MainShapeWarning {
+        fill: transparent;
+        stroke: $display-amber;
+        stroke-width: 2;
+    }
+
+    .MainShape4 {
+        fill: transparent;
+        stroke: $display-green;
+        stroke-width: 4;
+    }
+
+    .GreenShape {
+        fill: transparent;
+        stroke: $display-green;
+        stroke-width: 2;
     }
 
     .WarningShape {
-    fill: transparent;
-    stroke: $display-amber;
-    stroke-width: 2
+        fill: transparent;
+        stroke: $display-amber;
+        stroke-width: 2
     }
 
     .HydBgShape {
-    fill: $display-grey;
-    stroke: none;
+        fill: $display-grey;
+        stroke: none;
     }
 
     .Warning {
@@ -47,13 +54,18 @@
     }
 
     .Value {
-        font-size: $font-size-large;
+        font-size: $font-size-larger;
         fill: $display-green;
+    }
+
+    .ValueWarning {
+        font-size: $font-size-larger;
+        fill: $display-amber;
     }
 
     .Note {
         font-size: $font-size-medium;
         fill: $display-white;
     }
-
+}
 

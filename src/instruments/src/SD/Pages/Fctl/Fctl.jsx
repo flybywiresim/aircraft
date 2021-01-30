@@ -52,33 +52,86 @@ export const FctlPage = () => {
     const aileronLeftDeflectionStatefulSimVar = new StatefulSimVar({
         simVarGetter: 'AILERON LEFT DEFLECTION PCT',
         simVarUnit: 'percent over 100',
-        refreshRate: 100,
+        refreshRate: 50,
     });
 
     const aileronRightDeflectionStatefulSimVar = new StatefulSimVar({
         simVarGetter: 'AILERON RIGHT DEFLECTION PCT',
         simVarUnit: 'percent over 100',
-        refreshRate: 100,
+        refreshRate: 50,
+    });
+
+    const elevatorDeflectionStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'ELEVATOR DEFLECTION PCT',
+        simVarUnit: 'percent over 100',
+        refreshRate: 50,
+    });
+
+    const elac1SwitchStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'FLY BY WIRE ELAC SWITCH:1',
+        simVarUnit: 'boolean',
+        refreshRate: 1000,
+    });
+
+    const elac1FailStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'FLY BY WIRE ELAC FAILED:1',
+        simVarUnit: 'boolean',
+        refreshRate: 1000,
+    });
+
+    const elac2SwitchStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'FLY BY WIRE ELAC SWITCH:2',
+        simVarUnit: 'boolean',
+        refreshRate: 1000,
+    });
+
+    const elac2FailStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'FLY BY WIRE ELAC FAILED:2',
+        simVarUnit: 'boolean',
+        refreshRate: 1000,
+    });
+
+    const sec1SwitchStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'FLY BY WIRE SEC SWITCH:1',
+        simVarUnit: 'boolean',
+        refreshRate: 1000,
+    });
+
+    const sec1FailStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'FLY BY WIRE SEC FAILED:1',
+        simVarUnit: 'boolean',
+        refreshRate: 1000,
+    });
+
+    const sec2SwitchStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'FLY BY WIRE SEC SWITCH:2',
+        simVarUnit: 'boolean',
+        refreshRate: 1000,
+    });
+
+    const sec2FailStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'FLY BY WIRE SEC FAILED:2',
+        simVarUnit: 'boolean',
+        refreshRate: 1000,
+    });
+
+    const sec3SwitchStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'FLY BY WIRE SEC SWITCH:3',
+        simVarUnit: 'boolean',
+        refreshRate: 1000,
+    });
+
+    const sec3FailStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'FLY BY WIRE SEC FAILED:3',
+        simVarUnit: 'boolean',
+        refreshRate: 1000,
     });
 
     // Update hydraulics available state
     // const hydraulicsShouldBeAvailable = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool") === 0 && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool") === 0;
     // let rawPitchTrim = SimVar.GetSimVarValue("ELEVATOR TRIM INDICATOR", "Position 16k") / 1213.6296;
-    // const leftAileronDeflectPct = SimVar.GetSimVarValue("AILERON LEFT DEFLECTION PCT", "percent over 100");
-    // const rightAileronDeflectPct = SimVar.GetSimVarValue("AILERON RIGHT DEFLECTION PCT", "percent over 100");
-    // const elevatorDeflectPct = SimVar.GetSimVarValue("ELEVATOR DEFLECTION PCT", "percent over 100");
     // const rudderDeflectPct = SimVar.GetSimVarValue("RUDDER DEFLECTION PCT", "percent over 100");
     // const IndicatedAirspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots");
-    // const elac1_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:1", "boolean");
-    // const elac2_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:2", "boolean");
-    // const elac1_Failed = SimVar.GetSimVarValue("FLY BY WIRE ELAC FAILED:1", "boolean");
-    // const elac2_Failed = SimVar.GetSimVarValue("FLY BY WIRE ELAC FAILED:2", "boolean");
-    // const sec1_On = SimVar.GetSimVarValue("FLY BY WIRE SEC SWITCH:1", "boolean");
-    // const sec2_On = SimVar.GetSimVarValue("FLY BY WIRE SEC SWITCH:2", "boolean");
-    // const sec3_On = SimVar.GetSimVarValue("FLY BY WIRE SEC SWITCH:3", "boolean");
-    // const sec1_Failed = SimVar.GetSimVarValue("FLY BY WIRE SEC FAILED:1", "boolean");
-    // const sec2_Failed = SimVar.GetSimVarValue("FLY BY WIRE SEC FAILED:2", "boolean");
-    // const sec3_Failed = SimVar.GetSimVarValue("FLY BY WIRE SEC FAILED:3", "boolean");
     // const spoilersArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "boolean");
     // const leftSpoilerDeflectPct = SimVar.GetSimVarValue("SPOILERS LEFT POSITION", "percent over 100");
     // const rightSpoilerDeflectPct = SimVar.GetSimVarValue("SPOILERS RIGHT POSITION", "percent over 100");
@@ -92,20 +145,10 @@ export const FctlPage = () => {
     //     rightAileronDeflectPct: 0,
     // });
 
-    // const [leftAileronCursor, setLeftAileronCursor] = useState('M73,204 l15,-7 l0,14Z');
-
-    // useUpdate(() => {
-    //     setAileron({
-    //         leftAileronDeflectPct: getSimVar('AILERON LEFT DEFLECTION PCT', 'percent over 100'),
-    //         rightAileronDeflectPct: getSimVar('AILERON RIGHT DEFLECTION PCT', 'percent over 100'),
-    //     });
-    //     console.log(aileron.leftAileronDeflectPct);
-    // });
-
     return (
         <>
-            <text x={5} y={27} fill="white" fontSize={24}>F/CTL</text>
-            <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+            <svg id="ecam-fctl" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+                <text id="pageTitle" className="PageTitle" x="45" y="18" textAnchor="middle" alignmentBaseline="central">F/CTL</text>
 
                 {/* Speedbrakes */}
                 <g id="speedbrakes">
@@ -141,65 +184,32 @@ export const FctlPage = () => {
 
                 {/* Left ailerons */}
 
-                <Aileron leftorright="left" x="72" aileronDeflection={aileronLeftDeflectionStatefulSimVar.value} />
+                <Aileron leftorright="left" x="72" aileronDeflection={aileronLeftDeflectionStatefulSimVar.value} hydArray={['B', 'G']} />
 
                 {/* Right ailerons */}
 
-                <Aileron leftorright="right" x="528" aileronDeflection={aileronRightDeflectionStatefulSimVar.value} />
+                <Aileron leftorright="right" x="528" aileronDeflection={aileronRightDeflectionStatefulSimVar.value} hydArray={['G', 'B']} />
 
                 <g id="elac">
-                    <path id="elac1" className="MainShape" d="M170,190 l72,0 l0,-26 l-8,0" />
-                    <path id="elac2" className="MainShape" d="M194,206 l72,0 l0,-26 l-8,0" />
                     <text id="elacText" className="Note" x="195" y="178" textAnchor="middle" alignmentBaseline="central">ELAC</text>
-                    <text id="elacText_1" className="Value" x="232" y="178" textAnchor="middle" alignmentBaseline="central">1</text>
-                    <text id="elacText_2" className="Value" x="256" y="194" textAnchor="middle" alignmentBaseline="central">2</text>
+                    <ElacSecShape id="elac1" x="170" y="190" number="1" fail={elac1FailStatefulSimVar.value} on={elac1SwitchStatefulSimVar.value} />
+                    <ElacSecShape id="elac1" x="194" y="206" number="2" fail={elac2FailStatefulSimVar.value} on={elac2SwitchStatefulSimVar.value} />
                 </g>
 
                 <g id="sec">
-                    <path id="sec1" className="MainShape" d="M324,190 l72,0 l0,-26 l-8,0" />
-                    <path id="sec2" className="MainShape" d="M348,206 l72,0 l0,-26 l-8,0" />
-                    <path id="sec3" className="MainShape" d="M372,222 l72,0 l0,-26 l-8,0" />
                     <text id="secText" className="Note" x="350" y="178" textAnchor="middle" alignmentBaseline="central">SEC</text>
-                    <text id="secText_1" className="Value" x="385" y="178" textAnchor="middle" alignmentBaseline="central">1</text>
-                    <text id="secText_2" className="Value" x="409" y="194" textAnchor="middle" alignmentBaseline="central">2</text>
-                    <text id="secText_3" className="Value" x="433" y="210" textAnchor="middle" alignmentBaseline="central">3</text>
+                    <ElacSecShape id="sec1" x="324" y="190" number="1" fail={sec1FailStatefulSimVar.value} on={sec1SwitchStatefulSimVar.value} />
+                    <ElacSecShape id="sec2" x="348" y="206" number="2" fail={sec2FailStatefulSimVar.value} on={sec2SwitchStatefulSimVar.value} />
+                    <ElacSecShape id="sec3" x="372" y="222" number="3" fail={sec3FailStatefulSimVar.value} on={sec3SwitchStatefulSimVar.value} />
                 </g>
 
                 {/* Left elevator */}
 
-                <g id="leftElevatorPointer">
-                    <path id="leftElevatorCursor" className="GreenShape" d="M169,398 l15,-7 l0,14Z" />
-                </g>
-
-                <g id="leftElevatorAxis">
-                    <path className="MainShape" d="M168,333 l-8,0 l0,-10 l8,0 l0,116 l-8,0 l0,-10 l8,0" />
-                    <path className="MainShape" d="M168,395 l-7,0 l0,5 l7,0" />
-                </g>
-
-                <g id="leftElevatorHyd">
-                    <rect className="HydBgShape" x="108" y="407" width="18" height="24" rx="2" />
-                    <rect className="HydBgShape" x="130" y="407" width="18" height="24" rx="2" />
-                    <text id="leftElevatorHyd1" className="Value" x="117" y="420" textAnchor="middle" alignmentBaseline="central">B</text>
-                    <text id="leftElevatorHyd2" className="Value" x="139" y="420" textAnchor="middle" alignmentBaseline="central">G</text>
-                </g>
+                <Elevator leftorright="left" x="168" elevatorDeflection={elevatorDeflectionStatefulSimVar.value} hydArray={['B', 'G']} />
 
                 {/* Right elevator */}
 
-                <g id="rightElevatorPointer">
-                    <path id="rightElevatorCursor" className="GreenShape" d="M431,398 l-15,-7 l0,14Z" />
-                </g>
-
-                <g id="rightElevatorAxis">
-                    <path className="MainShape" d="M432,333 l8,0 l0,-10 l-8,0 l0,116 l8,0 l0,-10 l-8,0" />
-                    <path className="MainShape" d="M432,395 l7,0 l0,5 l-7,0" />
-                </g>
-
-                <g id="rightElevatorHyd">
-                    <rect className="HydBgShape" x="452" y="407" width="18" height="24" rx="2" />
-                    <rect className="HydBgShape" x="474" y="407" width="18" height="24" rx="2" />
-                    <text id="rightElevatorHyd1" className="Value" x="461" y="420" textAnchor="middle" alignmentBaseline="central">Y</text>
-                    <text id="rightElevatorHyd2" className="Value" x="483" y="420" textAnchor="middle" alignmentBaseline="central">B</text>
-                </g>
+                <Elevator leftorright="right" x="432" elevatorDeflection={elevatorDeflectionStatefulSimVar.value} hydArray={['B', 'Y']} />
 
                 {/* Pitch trim */}
 
@@ -258,15 +268,7 @@ export const FctlPage = () => {
                 {/* Texts */}
 
                 <g id="texts">
-                    <text id="pageTitle" className="Title Large" x="45" y="18" textAnchor="middle" alignmentBaseline="central" textDecoration="underline">F/CTL</text>
                     <text id="speedBrakeText" className="Note" x="300" y="107" textAnchor="middle" alignmentBaseline="central">SPD BRK</text>
-                    <text id="rightAileronText1" className="Note" x="568" y="153" textAnchor="middle" alignmentBaseline="central">R</text>
-                    <text id="rightAileronText2" className="Note" x="568" y="175" textAnchor="middle" alignmentBaseline="central">AIL</text>
-
-                    <text id="leftElevatorText1" className="Note" x="122" y="328" textAnchor="middle" alignmentBaseline="central">L</text>
-                    <text id="leftElevatorText2" className="Note" x="122" y="350" textAnchor="middle" alignmentBaseline="central">ELEV</text>
-                    <text id="rightElevatorText1" className="Note" x="478" y="328" textAnchor="middle" alignmentBaseline="central">R</text>
-                    <text id="rightElevatorText2" className="Note" x="478" y="350" textAnchor="middle" alignmentBaseline="central">ELEV</text>
                 </g>
             </svg>
         </>
@@ -274,9 +276,9 @@ export const FctlPage = () => {
     );
 };
 
-const Aileron = ({ leftorright, x, aileronDeflection }) => {
-    console.log(`Inside aileron and LR is ${leftorright}`);
-
+const Aileron = ({
+    leftorright, x, aileronDeflection, hydArray,
+}) => {
     const textPositionX = leftorright === 'left' ? x - 40 : Number(x) + 40;
     const textLetter = leftorright === 'left' ? 'L' : 'R';
     const hydPositionX1 = leftorright === 'left' ? Number(x) + 22 : x - 62;
@@ -284,7 +286,6 @@ const Aileron = ({ leftorright, x, aileronDeflection }) => {
 
     const aileronDeflectPctNormalized = aileronDeflection * 54;
     const cursorPath = `M${leftorright === 'left' ? Number(x) + 1 : Number(x) - 1},${leftorright === 'left' ? 204 + aileronDeflectPctNormalized : 204 - aileronDeflectPctNormalized} l${leftorright === 'right' ? '-' : ''}15,-7 l0,14Z`;
-    console.log(cursorPath);
 
     return (
         <>
@@ -298,8 +299,8 @@ const Aileron = ({ leftorright, x, aileronDeflection }) => {
             <AileronAxis leftorright={leftorright} x={x} />
 
             <g id="leftAileronHyd">
-                <HydraulicIndicator id={`${leftorright}AileronHyd1`} x={hydPositionX1} y="246" letter="B" />
-                <HydraulicIndicator id={`${leftorright}AileronHyd2`} x={hydPositionX2} y="246" letter="G" />
+                <HydraulicIndicator id={`${leftorright}AileronHyd1`} x={hydPositionX1} y="246" letter={hydArray[0]} />
+                <HydraulicIndicator id={`${leftorright}AileronHyd2`} x={hydPositionX2} y="246" letter={hydArray[1]} />
             </g>
         </>
     );
@@ -318,6 +319,20 @@ const HydraulicIndicator = ({
     );
 };
 
+const ElacSecShape = ({
+    id, x, y, number, on = true, fail = false,
+}) => {
+    const textPositionX = Number(x) + 61;
+    const textPositionY = Number(y) - 12;
+    console.log(`This on status is ${on} and fail status is ${fail}`);
+    return (
+        <>
+            <path className={on && !fail ? 'MainShape' : 'MainShapeWarning'} d={`M${x},${y} l72,0 l0,-26 l-8,0`} />
+            <text id={id} className={on && !fail ? 'Value' : 'ValueWarning'} x={textPositionX} y={textPositionY} textAnchor="middle" alignmentBaseline="central">{number}</text>
+        </>
+    );
+};
+
 const AileronAxis = ({ leftorright, x }) => {
     const d1 = `M${x},164 l${leftorright === 'left' ? '-' : ''}8,0 l0,-20 l${leftorright === 'right' ? '-' : ''}8,0 l0,120 l${leftorright === 'left' ? '-' : ''}8,0 l0,-10 l${leftorright === 'right' ? '-' : ''}8,0`;
     const d2 = `M${x},200 l${leftorright === 'left' ? '-' : ''}7,0`;
@@ -331,6 +346,54 @@ const AileronAxis = ({ leftorright, x }) => {
                 <path className="MainShape" d={d2} />
                 <path className="MainShape" d={d3} />
                 <path className="MainShape" d={d4} />
+            </g>
+        </>
+    );
+};
+
+const Elevator = ({
+    leftorright, x, elevatorDeflection, hydArray,
+}) => {
+    console.log(`Inside aileron and LR is ${leftorright}`);
+
+    const textPositionX = leftorright === 'left' ? x - 42 : Number(x) + 42;
+    const textLetter = leftorright === 'left' ? 'L' : 'R';
+    const hydPositionX1 = leftorright === 'left' ? Number(x) - 60 : Number(x) + 40;
+    const hydPositionX2 = leftorright === 'left' ? Number(x) - 38 : Number(x) + 18;
+
+    const elevatorDeflectPctNormalized = elevatorDeflection * (elevatorDeflection > 0 ? 70 : 52);
+    const cursorPath = `M${leftorright === 'left' ? Number(x) + 1 : Number(x) - 1},${398 - elevatorDeflectPctNormalized} l${leftorright === 'right' ? '-' : ''}15,-7 l0,14Z`;
+    console.log(cursorPath);
+    console.log(elevatorDeflection);
+
+    return (
+        <>
+            <text id={`${leftorright}AileronText1`} className="Note" x={textPositionX} y="328" textAnchor="middle" alignmentBaseline="central">{textLetter}</text>
+            <text id={`${leftorright}AileronText2`} className="Note" x={textPositionX} y="350" textAnchor="middle" alignmentBaseline="central">ELEV</text>
+
+            <g id={`${leftorright}ElevatorPointer`}>
+                <path id={`${leftorright}ElevatorCursor`} className="GreenShape" d={cursorPath} />
+            </g>
+
+            <ElevatorAxis leftorright={leftorright} x={x} />
+
+            <g id="leftElevatorHyd">
+                <HydraulicIndicator id={`${leftorright}ElevatorHyd1`} x={hydPositionX1} y="407" letter={hydArray[0]} />
+                <HydraulicIndicator id={`${leftorright}ElevatorHyd2`} x={hydPositionX2} y="407" letter={hydArray[1]} />
+            </g>
+        </>
+    );
+};
+
+const ElevatorAxis = ({ leftorright, x }) => {
+    const d1 = `M${x},333 l${leftorright === 'left' ? '-' : ''}8,0 l0,-10 l${leftorright === 'right' ? '-' : ''}8,0 l0,116 l${leftorright === 'left' ? '-' : ''}8,0 l0,-10 l${leftorright === 'right' ? '-' : ''}8,0`;
+    const d2 = `M${x},395 l${leftorright === 'left' ? '-' : ''}7,0 l0,5 l${leftorright === 'right' ? '-' : ''}7,0`;
+
+    return (
+        <>
+            <g id={`${leftorright}ElevatorAxis`}>
+                <path className="MainShape" d={d1} />
+                <path className="MainShape" d={d2} />
             </g>
         </>
     );
