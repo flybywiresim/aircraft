@@ -1392,26 +1392,24 @@
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_APU_MASTERSW</NODE_ID>
                     <PART_ID>ELECTRICAL_Switch_APU_Master</PART_ID>
-
                     <LEFT_SINGLE_CODE>
-                        (A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; if{
-                            (A:FUELSYSTEM VALVE SWITCH:8, Bool) if{
-                                (&gt;K:APU_OFF_SWITCH)
-                                0 (&gt;L:A32NX_APU_START_ACTIVATED)
+                        (L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) if{
+                            0 (&gt;L:A32NX_APU_MASTER_SW_ACTIVATED)
+                        } els{
+                            (A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; if{
+                                1 (&gt;L:A32NX_APU_MASTER_SW_ACTIVATED)
                             }
-                            8 (&gt;K:FUELSYSTEM_VALVE_TOGGLE)
                         }
                     </LEFT_SINGLE_CODE>
-
-                    <SEQ2_CODE>(A:FUELSYSTEM VALVE SWITCH:8, Bool)</SEQ2_CODE>
-
-                    <TOOLTIPID>%((A:FUELSYSTEM VALVE SWITCH:8, Bool))%{if}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_ON%{end}</TOOLTIPID>
+                    <SEQ1_CODE>(L:A32NX_APU_MASTER_FAULT, Bool)</SEQ1_CODE>
+                    <SEQ2_CODE>(L:A32NX_APU_MASTER_SW_ACTIVATED, Bool)</SEQ2_CODE>
+                    <TOOLTIPID>%((L:A32NX_APU_MASTER_SW_ACTIVATED, Bool))%{if}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_ON%{end}</TOOLTIPID>
                 </UseTemplate>
 
                 <!-- APU START -->
                 <UseTemplate Name="FBW_Airbus_APU_Starter_Switch">
                     <NODE_ID>PUSH_OVHD_APU_START</NODE_ID>
-                    <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (A:FUELSYSTEM VALVE SWITCH:8, Bool) and</EXTRA_CONDITION>
+                    <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) and</EXTRA_CONDITION>
                 </UseTemplate>
             </Component>
 

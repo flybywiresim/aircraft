@@ -335,6 +335,12 @@ var A320_Neo_LowerECAM_Status;
                             return this.isInop("AUTO_BRK");
                         }
                     },
+                    {
+                        message: "APU",
+                        isActive: () => {
+                            return this.isInop("APU");
+                        }
+                    }
                 ]
             };
             this.inopSystemsMessageArea = new A320_Neo_LowerECAM_Status.StatusMessagePanel(this, "inop-systems", 15, this.inopMessages);
