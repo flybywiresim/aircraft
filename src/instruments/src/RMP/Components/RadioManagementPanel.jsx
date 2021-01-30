@@ -11,50 +11,50 @@ function createFrequencyModeVariables(side) {
     return {
         vhf1: {
             active: new StatefulSimVar({
-                simVarGetter: "COM ACTIVE FREQUENCY:1",
-                simVarSetter: "K:COM_RADIO_SET_HZ",
-                simVarUnit: "Hz",
+                simVarGetter: 'COM ACTIVE FREQUENCY:1',
+                simVarSetter: 'K:COM_RADIO_SET_HZ',
+                simVarUnit: 'Hz',
                 refreshRate: 250,
             }),
             standby: new StatefulSimVar({
-                simVarGetter: (side === "L") ? "COM STANDBY FREQUENCY:1" : `L:A32NX_RMP_${side}_VHF1_STANDBY_FREQUENCY`,
-                simVarSetter: (side === "L") ? "K:COM_STBY_RADIO_SET_HZ" : undefined,
-                simVarUnit: "Hz",
+                simVarGetter: (side === 'L') ? 'COM STANDBY FREQUENCY:1' : `L:A32NX_RMP_${side}_VHF1_STANDBY_FREQUENCY`,
+                simVarSetter: (side === 'L') ? 'K:COM_STBY_RADIO_SET_HZ' : undefined,
+                simVarUnit: 'Hz',
                 refreshRate: 250,
             }),
         },
 
         vhf2: {
             active: new StatefulSimVar({
-                simVarGetter: "COM ACTIVE FREQUENCY:2",
-                simVarSetter: "K:COM2_RADIO_SET_HZ",
-                simVarUnit: "Hz",
+                simVarGetter: 'COM ACTIVE FREQUENCY:2',
+                simVarSetter: 'K:COM2_RADIO_SET_HZ',
+                simVarUnit: 'Hz',
                 refreshRate: 250,
             }),
             standby: new StatefulSimVar({
-                simVarGetter: (side === "R") ? "COM STANDBY FREQUENCY:2" : `L:A32NX_RMP_${side}_VHF2_STANDBY_FREQUENCY`,
-                simVarSetter: (side === "R") ? "K:COM2_STBY_RADIO_SET_HZ" : undefined,
-                simVarUnit: "Hz",
+                simVarGetter: (side === 'R') ? 'COM STANDBY FREQUENCY:2' : `L:A32NX_RMP_${side}_VHF2_STANDBY_FREQUENCY`,
+                simVarSetter: (side === 'R') ? 'K:COM2_STBY_RADIO_SET_HZ' : undefined,
+                simVarUnit: 'Hz',
                 refreshRate: 250,
             }),
         },
 
         vhf3: {
             active: new StatefulSimVar({
-                simVarGetter: "COM ACTIVE FREQUENCY:3",
-                simVarSetter: "K:COM3_RADIO_SET_HZ",
-                simVarUnit: "Hz",
+                simVarGetter: 'COM ACTIVE FREQUENCY:3',
+                simVarSetter: 'K:COM3_RADIO_SET_HZ',
+                simVarUnit: 'Hz',
                 refreshRate: 250,
             }),
             standby: new StatefulSimVar({
                 // Future proofing for a potential RMP3 on side C.
-                simVarGetter: (side === "C") ? "COM STANDBY FREQUENCY:3" : `L:A32NX_RMP_${side}_VHF3_STANDBY_FREQUENCY`,
-                simVarSetter: (side === "C") ? "K:COM3_STBY_RADIO_SET_HZ" : undefined,
-                simVarUnit: "Hz",
+                simVarGetter: (side === 'C') ? 'COM STANDBY FREQUENCY:3' : `L:A32NX_RMP_${side}_VHF3_STANDBY_FREQUENCY`,
+                simVarSetter: (side === 'C') ? 'K:COM3_STBY_RADIO_SET_HZ' : undefined,
+                simVarUnit: 'Hz',
                 refreshRate: 250,
             }),
         },
-    }
+    };
 }
 
 /**
@@ -62,9 +62,15 @@ function createFrequencyModeVariables(side) {
  * @param {*} panelModeVariable
  */
 function usePanelModeSelectionButtonEvents(panelModeVariable, side, powered) {
-    useInteractionEvent(`A32NX_RMP_${side}_VHF1_BUTTON_PRESSED`, () => { if (powered) panelModeVariable.value = 1 });
-    useInteractionEvent(`A32NX_RMP_${side}_VHF2_BUTTON_PRESSED`, () => { if (powered) panelModeVariable.value = 2 });
-    useInteractionEvent(`A32NX_RMP_${side}_VHF3_BUTTON_PRESSED`, () => { if (powered) panelModeVariable.value = 3 });
+    useInteractionEvent(`A32NX_RMP_${side}_VHF1_BUTTON_PRESSED`, () => {
+        if (powered) panelModeVariable.value = 1;
+    });
+    useInteractionEvent(`A32NX_RMP_${side}_VHF2_BUTTON_PRESSED`, () => {
+        if (powered) panelModeVariable.value = 2;
+    });
+    useInteractionEvent(`A32NX_RMP_${side}_VHF3_BUTTON_PRESSED`, () => {
+        if (powered) panelModeVariable.value = 3;
+    });
 }
 
 /**
@@ -74,10 +80,12 @@ function usePanelModeSelectionButtonEvents(panelModeVariable, side, powered) {
  * @param {*} props
  */
 function renderVhfDisplays(frequencyVariables, mode, props) {
-    return (<span>
-        <SevenSegmentDisplay value={frequencyVariables[mode].active.value} lightsTest={props.lightsTest}/>
-        <StandbyFrequency variable={frequencyVariables[mode].standby} side={props.side} lightsTest={props.lightsTest} />
-    </span>);
+    return (
+        <span>
+            <SevenSegmentDisplay value={frequencyVariables[mode].active.value} lightsTest={props.lightsTest} />
+            <StandbyFrequency variable={frequencyVariables[mode].standby} side={props.side} lightsTest={props.lightsTest} />
+        </span>
+    );
 }
 
 export function RadioManagementPanel(props) {
@@ -90,14 +98,14 @@ export function RadioManagementPanel(props) {
 
     const panelSwitchVariable = new StatefulSimVar({
         simVarGetter: `L:A32NX_RMP_${props.side}_TOGGLE_SWITCH`,
-        simVarUnit: "Bool",
+        simVarUnit: 'Bool',
         refreshRate: 250,
     });
 
     const powerAvailVariable = new StatefulSimVar({
         // Left RMP is on DC bus, others are on AC bus.
-        simVarGetter: (props.side === "L") ? "L:DCPowerAvailable" : "L:ACPowerAvailable",
-        simVarUnit: "Boolean",
+        simVarGetter: (props.side === 'L') ? 'L:DCPowerAvailable' : 'L:ACPowerAvailable',
+        simVarUnit: 'Boolean',
         refreshRate: 250,
     });
 
@@ -107,30 +115,40 @@ export function RadioManagementPanel(props) {
     // Hook mode buttons to update panelModeVariable.
     usePanelModeSelectionButtonEvents(panelModeVariable, props.side, powered);
 
+    // Mode is selected by the panelMode SimVar.
+    let mode = undefined;
+    if (panelModeVariable.value === 1) mode = 'vhf1';
+    if (panelModeVariable.value === 2) mode = 'vhf2';
+    if (panelModeVariable.value === 3) mode = 'vhf3';
+
     // Handle Transfer Button Pressed.
     useInteractionEvent(`A32NX_RMP_${props.side}_TRANSFER_BUTTON_PRESSED`, () => {
-        if (powered == false || mode === undefined) return;
+        if (!powered || mode === undefined) return;
         // @todo will become more complex with Nav mode (due to course "submode").
         const previousStandbyValue = frequencyVariables[mode].standby.value;
         frequencyVariables[mode].standby.value = frequencyVariables[mode].active.value;
         frequencyVariables[mode].active.value = previousStandbyValue;
     });
 
-    // Mode is selected by the panelMode SimVar.
-    const mode = panelModeVariable.value === 1 ? 'vhf1' :
-        panelModeVariable.value === 2 ? 'vhf2' :
-        panelModeVariable.value === 3 ? 'vhf3' :
-        undefined;
-
     // If the panel is not powered, render two <svg> for spacing.
-    if (!powered) return (<span><svg/><svg/></span>);
+    if (!powered) {
+        return (
+            <span>
+                <svg />
+                <svg />
+            </span>
+        );
+    }
 
-    if (mode === "vhf1" || mode === "vhf2" || mode === "vhf3")
+    if (mode === 'vhf1' || mode === 'vhf2' || mode === 'vhf3') {
         return renderVhfDisplays(frequencyVariables, mode, props);
+    }
 
     // If we get here, something's gone wrong, we'll just render 888.888
-    return (<span>
-        <SevenSegmentDisplay lightsTest={true}/>
-        <SevenSegmentDisplay lightsTest={true}/>
-    </span>);
+    return (
+        <span>
+            <SevenSegmentDisplay lightsTest />
+            <SevenSegmentDisplay lightsTest />
+        </span>
+    );
 }

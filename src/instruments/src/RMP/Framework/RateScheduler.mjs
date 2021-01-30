@@ -4,7 +4,7 @@
  */
 export class RateScheduler {
     constructor() {
-        this.map = new Map;
+        this.map = new Map();
     }
 
     /**
@@ -30,7 +30,7 @@ export class RateScheduler {
      */
     unschedule(callback) {
         this.map.forEach((value) => {
-            value.callbacks = value.callbacks.filter(cb => cb != callback);
+            value.callbacks = value.callbacks.filter((cb) => cb !== callback);
         });
 
         this.cleanup();
@@ -42,7 +42,7 @@ export class RateScheduler {
     cleanup() {
         this.map.forEach((value, key, map) => {
             if (value.callbacks.length === 0) {
-                clearInterval(value.interval)
+                clearInterval(value.interval);
                 map.delete(key);
             }
         });
@@ -53,7 +53,10 @@ export class RateScheduler {
      * @param rate The rate of the interval that called.
      */
     tick(rate) {
-        if (!this.map.has(rate)) return;
+        if (!this.map.has(rate)) {
+            return;
+        }
+
         this.map.get(rate).callbacks.forEach((cb) => cb());
     }
 }

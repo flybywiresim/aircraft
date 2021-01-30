@@ -1,6 +1,6 @@
 // Currently a global cache.
 // Holland said it's okay!
-const globalCache = new Map;
+const globalCache = new Map();
 
 export class CachedSimVar {
     constructor(options) {
@@ -13,7 +13,7 @@ export class CachedSimVar {
         // The simvar used to get the value.
         this.simVarGetter = options.simVarGetter;
         // The unit used for both getting and setting values.
-        this.simVarUnit = options.simVarUnit || "Number";
+        this.simVarUnit = options.simVarUnit || 'Number';
         // A string identifiter used to identify this simvar in the cache.
         this.identifier = options.identifier || this.simVarGetter;
         // The simvar used to set the value (defaults to same as get).
@@ -41,10 +41,7 @@ export class CachedSimVar {
      * Returns cached if exists.
      */
     get value() {
-        if (!this.cached) {
-            this.cached = SimVar.GetSimVarValue(this.simVarGetter, this.simVarUnit);
-        }
-
+        if (!this.cached) this.cached = SimVar.GetSimVarValue(this.simVarGetter, this.simVarUnit);
         return this.cached;
     }
 

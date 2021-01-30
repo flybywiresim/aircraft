@@ -8,27 +8,35 @@
  */
 export class AcceleratedKnob {
     constructor(timeout = 300, increment = 0.20) {
-        this._currentSpeed = 0;
-        this._timeout = timeout;
-        this._increment = increment;
-        this._previousTimestamp = 0;
+        this.currentSpeed = 0;
+        this.timeout = timeout;
+        this.increment = increment;
+        this.previousTimestamp = 0;
     }
 
     increase() {
-        if (this._currentSpeed < 1 || (Date.now() - this._previousTimestamp) > this._timeout) this._currentSpeed = 1;
-        else this._currentSpeed += this._increment;
-        this._previousTimestamp = Date.now();
-        this.updateValue(Math.floor(this._currentSpeed));
+        if (this.currentSpeed < 1 || (Date.now() - this.previousTimestamp) > this.timeout) {
+            this.currentSpeed = 1;
+        } else {
+            this.currentSpeed += this.increment;
+        }
+
+        this.previousTimestamp = Date.now();
+        this.updateValue(Math.floor(this.currentSpeed));
     }
 
     decrease() {
-        if (this._currentSpeed > -1 || (Date.now() - this._previousTimestamp) > this._timeout) this._currentSpeed = -1;
-        else this._currentSpeed -= this._increment;
-        this._previousTimestamp = Date.now();
-        this.updateValue(Math.ceil(this._currentSpeed));
+        if (this.currentSpeed > -1 || (Date.now() - this.previousTimestamp) > this.timeout) {
+            this.currentSpeed = -1;
+        } else {
+            this.currentSpeed -= this.increment;
+        }
+
+        this.previousTimestamp = Date.now();
+        this.updateValue(Math.ceil(this.currentSpeed));
     }
 
     updateValue() {
         throw new Error('You have to implement the updateValue method!');
-     }
+    }
 }

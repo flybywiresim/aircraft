@@ -3,7 +3,7 @@ import { CachedSimVar } from './CachedSimVar.mjs';
 import { RateScheduler } from './RateScheduler.mjs';
 
 // Currently a global cache.
-const globalRateScheduler = new RateScheduler;
+const globalRateScheduler = new RateScheduler();
 
 export class StatefulSimVar extends CachedSimVar {
     constructor(options) {
