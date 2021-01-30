@@ -171,7 +171,8 @@ class A32NX_LocalVarUpdater {
 
         const xBleedPos = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
         const engineModeSelector = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum");
-        const isApuDelivering = SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95 && SimVar.GetSimVarValue("BLEED AIR APU", "Bool") && engineModeSelector === 1;
+
+        const isApuDelivering = SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95 && SimVar.GetSimVarValue("BLEED AIR APU", "Bool") && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") && engineModeSelector === 1;
         const isEngineOneRunning = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:1", "Rpm(0 to 16384 = 0 to 100%)") >= 55;
         const isEngineTwoRunning = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:2", "Rpm(0 to 16384 = 0 to 100%)") >= 55;
         const isEngineOneDelivering = isEngineOneRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool");
