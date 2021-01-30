@@ -17,6 +17,9 @@
  */
 
 import './Fctl.scss';
+// import { useState } from 'react';
+// import { getSimVar, useUpdate } from '../../../util.mjs';
+import { StatefulSimVar } from '../../../StatefulSimVar.mjs';
 
 export const FctlPage = () => {
     console.log('FCTL');
@@ -41,10 +44,63 @@ export const FctlPage = () => {
         const index = 5 - i;
         speedbrakesArrows.push(<path id={`arrow${index}_left`} className="GreenShape" d={`M ${leftX + speedBrakeXArrowChange} ${YCoord} l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0`} />);
         speedbrakesArrows.push(<path id={`arrow${index}_right`} className="GreenShape" d={`M ${rightX - speedBrakeXArrowChange} ${YCoord} l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0`} />);
-        console.log(YCoordW);
+        // console.log(YCoordW);
         speedbrakeText.push(<text id={`num${index}_left`} className="Warning" x={`${leftX + speedBrakeXArrowChange}`} y={`${YCoordW}`} textAnchor="middle" alignmentBaseline="central">{index}</text>);
         speedbrakeText.push(<text id={`num${index}_right`} className="Warning" x={`${rightX - speedBrakeXArrowChange}`} y={`${YCoordW}`} textAnchor="middle" alignmentBaseline="central">{index}</text>);
     }
+
+    const aileronLeftDeflectionStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'AILERON LEFT DEFLECTION PCT',
+        simVarUnit: 'percent over 100',
+        refreshRate: 100,
+    });
+
+    const aileronRightDeflectionStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'AILERON RIGHT DEFLECTION PCT',
+        simVarUnit: 'percent over 100',
+        refreshRate: 100,
+    });
+
+    // Update hydraulics available state
+    // const hydraulicsShouldBeAvailable = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool") === 0 && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool") === 0;
+    // let rawPitchTrim = SimVar.GetSimVarValue("ELEVATOR TRIM INDICATOR", "Position 16k") / 1213.6296;
+    // const leftAileronDeflectPct = SimVar.GetSimVarValue("AILERON LEFT DEFLECTION PCT", "percent over 100");
+    // const rightAileronDeflectPct = SimVar.GetSimVarValue("AILERON RIGHT DEFLECTION PCT", "percent over 100");
+    // const elevatorDeflectPct = SimVar.GetSimVarValue("ELEVATOR DEFLECTION PCT", "percent over 100");
+    // const rudderDeflectPct = SimVar.GetSimVarValue("RUDDER DEFLECTION PCT", "percent over 100");
+    // const IndicatedAirspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots");
+    // const elac1_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:1", "boolean");
+    // const elac2_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:2", "boolean");
+    // const elac1_Failed = SimVar.GetSimVarValue("FLY BY WIRE ELAC FAILED:1", "boolean");
+    // const elac2_Failed = SimVar.GetSimVarValue("FLY BY WIRE ELAC FAILED:2", "boolean");
+    // const sec1_On = SimVar.GetSimVarValue("FLY BY WIRE SEC SWITCH:1", "boolean");
+    // const sec2_On = SimVar.GetSimVarValue("FLY BY WIRE SEC SWITCH:2", "boolean");
+    // const sec3_On = SimVar.GetSimVarValue("FLY BY WIRE SEC SWITCH:3", "boolean");
+    // const sec1_Failed = SimVar.GetSimVarValue("FLY BY WIRE SEC FAILED:1", "boolean");
+    // const sec2_Failed = SimVar.GetSimVarValue("FLY BY WIRE SEC FAILED:2", "boolean");
+    // const sec3_Failed = SimVar.GetSimVarValue("FLY BY WIRE SEC FAILED:3", "boolean");
+    // const spoilersArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "boolean");
+    // const leftSpoilerDeflectPct = SimVar.GetSimVarValue("SPOILERS LEFT POSITION", "percent over 100");
+    // const rightSpoilerDeflectPct = SimVar.GetSimVarValue("SPOILERS RIGHT POSITION", "percent over 100");
+    // const planeOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "boolean");
+    // const eng1_mode = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:1", "number");
+    // const eng2_mode = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:2", "number");
+    // const gspeed = SimVar.GetSimVarValue("SURFACE RELATIVE GROUND SPEED", "feet_per_second");
+
+    // const [aileron, setAileron] = useState({
+    //     leftAileronDeflectPct: 0,
+    //     rightAileronDeflectPct: 0,
+    // });
+
+    // const [leftAileronCursor, setLeftAileronCursor] = useState('M73,204 l15,-7 l0,14Z');
+
+    // useUpdate(() => {
+    //     setAileron({
+    //         leftAileronDeflectPct: getSimVar('AILERON LEFT DEFLECTION PCT', 'percent over 100'),
+    //         rightAileronDeflectPct: getSimVar('AILERON RIGHT DEFLECTION PCT', 'percent over 100'),
+    //     });
+    //     console.log(aileron.leftAileronDeflectPct);
+    // });
 
     return (
         <>
@@ -85,43 +141,11 @@ export const FctlPage = () => {
 
                 {/* Left ailerons */}
 
-                <g id="leftAileronPointer">
-                    <path id="leftAileronCursor" className="GreenShape" d="M73,204 l15,-7 l0,14Z" />
-                </g>
-
-                <g id="leftAileronAxis">
-                    <path className="MainShape" d="M72,164 l-8,0 l0,-20 l8,0 l0,120 l-8,0 l0,-10 l8,0" />
-                    <path className="MainShape" d="M72,200 l-7,0" />
-                    <path className="MainShape" d="M72,205 l-7,0" />
-                    <path className="MainShape" d="M72,210 l-8,0 l0,6 l8,0" />
-                </g>
-
-                <g id="leftAileronHyd">
-                    <rect className="HydBgShape" x="94" y="233" width="18" height="24" rx="2" />
-                    <rect className="HydBgShape" x="116" y="233" width="18" height="24" rx="2" />
-                    <text id="leftAileronHyd1" className="Value" x="103" y="246" textAnchor="middle" alignmentBaseline="central">B</text>
-                    <text id="leftAileronHyd2" className="Value" x="125" y="246" textAnchor="middle" alignmentBaseline="central">G</text>
-                </g>
+                <Aileron leftorright="left" x="72" aileronDeflection={aileronLeftDeflectionStatefulSimVar.value} />
 
                 {/* Right ailerons */}
 
-                <g id="rightAileronPointer">
-                    <path id="rightAileronCursor" className="GreenShape" d="M527,204 l-15,-7 l0,14Z" />
-                </g>
-
-                <g id="rightAileronAxis">
-                    <path className="MainShape" d="M528,164 l8,0 l0,-20 l-8,0 l0,120 l8,0 l0,-10 l-8,0" />
-                    <path className="MainShape" d="M528,200 l7,0" />
-                    <path className="MainShape" d="M528,205 l7,0" />
-                    <path className="MainShape" d="M528,210 l8,0 l0,6 l-8,0" />
-                </g>
-
-                <g id="rightAileronHyd">
-                    <rect className="HydBgShape" x="466" y="233" width="18" height="24" rx="2" />
-                    <rect className="HydBgShape" x="488" y="233" width="18" height="24" rx="2" />
-                    <text id="rightAileronHyd1" className="Value" x="475" y="246" textAnchor="middle" alignmentBaseline="central">G</text>
-                    <text id="rightAileronHyd2" className="Value" x="497" y="246" textAnchor="middle" alignmentBaseline="central">B</text>
-                </g>
+                <Aileron leftorright="right" x="528" aileronDeflection={aileronRightDeflectionStatefulSimVar.value} />
 
                 <g id="elac">
                     <path id="elac1" className="MainShape" d="M170,190 l72,0 l0,-26 l-8,0" />
@@ -236,8 +260,6 @@ export const FctlPage = () => {
                 <g id="texts">
                     <text id="pageTitle" className="Title Large" x="45" y="18" textAnchor="middle" alignmentBaseline="central" textDecoration="underline">F/CTL</text>
                     <text id="speedBrakeText" className="Note" x="300" y="107" textAnchor="middle" alignmentBaseline="central">SPD BRK</text>
-                    <text id="leftAileronText1" className="Note" x="32" y="153" textAnchor="middle" alignmentBaseline="central">L</text>
-                    <text id="leftAileronText2" className="Note" x="32" y="175" textAnchor="middle" alignmentBaseline="central">AIL</text>
                     <text id="rightAileronText1" className="Note" x="568" y="153" textAnchor="middle" alignmentBaseline="central">R</text>
                     <text id="rightAileronText2" className="Note" x="568" y="175" textAnchor="middle" alignmentBaseline="central">AIL</text>
 
@@ -249,5 +271,67 @@ export const FctlPage = () => {
             </svg>
         </>
 
+    );
+};
+
+const Aileron = ({ leftorright, x, aileronDeflection }) => {
+    console.log(`Inside aileron and LR is ${leftorright}`);
+
+    const textPositionX = leftorright === 'left' ? x - 40 : Number(x) + 40;
+    const textLetter = leftorright === 'left' ? 'L' : 'R';
+    const hydPositionX1 = leftorright === 'left' ? Number(x) + 22 : x - 62;
+    const hydPositionX2 = leftorright === 'left' ? Number(x) + 44 : x - 40;
+
+    const aileronDeflectPctNormalized = aileronDeflection * 54;
+    const cursorPath = `M${leftorright === 'left' ? Number(x) + 1 : Number(x) - 1},${leftorright === 'left' ? 204 + aileronDeflectPctNormalized : 204 - aileronDeflectPctNormalized} l${leftorright === 'right' ? '-' : ''}15,-7 l0,14Z`;
+    console.log(cursorPath);
+
+    return (
+        <>
+            <text id={`${leftorright}AileronText1`} className="Note" x={textPositionX} y="153" textAnchor="middle" alignmentBaseline="central">{textLetter}</text>
+            <text id={`${leftorright}AileronText2`} className="Note" x={textPositionX} y="175" textAnchor="middle" alignmentBaseline="central">AIL</text>
+
+            <g id={`${leftorright}AileronPointer`}>
+                <path id={`${leftorright}AileronCursor`} className="GreenShape" d={cursorPath} />
+            </g>
+
+            <AileronAxis leftorright={leftorright} x={x} />
+
+            <g id="leftAileronHyd">
+                <HydraulicIndicator id={`${leftorright}AileronHyd1`} x={hydPositionX1} y="246" letter="B" />
+                <HydraulicIndicator id={`${leftorright}AileronHyd2`} x={hydPositionX2} y="246" letter="G" />
+            </g>
+        </>
+    );
+};
+
+const HydraulicIndicator = ({
+    id, x, y, letter,
+}) => {
+    const textPositionX = Number(x) + 9;
+    const textPositionY = Number(y) + 13;
+    return (
+        <>
+            <rect className="HydBgShape" x={x} y={y} width="18" height="24" rx="2" />
+            <text id={id} className="Value" x={textPositionX} y={textPositionY} textAnchor="middle" alignmentBaseline="central">{letter}</text>
+        </>
+    );
+};
+
+const AileronAxis = ({ leftorright, x }) => {
+    const d1 = `M${x},164 l${leftorright === 'left' ? '-' : ''}8,0 l0,-20 l${leftorright === 'right' ? '-' : ''}8,0 l0,120 l${leftorright === 'left' ? '-' : ''}8,0 l0,-10 l${leftorright === 'right' ? '-' : ''}8,0`;
+    const d2 = `M${x},200 l${leftorright === 'left' ? '-' : ''}7,0`;
+    const d3 = `M${x},205 l${leftorright === 'left' ? '-' : ''}7,0`;
+    const d4 = `M${x},210 l${leftorright === 'left' ? '-' : ''}8,0 l0,6 l${leftorright === 'right' ? '-' : ''}8,0`;
+
+    return (
+        <>
+            <g id={`${leftorright}AileronAxis`}>
+                <path className="MainShape" d={d1} />
+                <path className="MainShape" d={d2} />
+                <path className="MainShape" d={d3} />
+                <path className="MainShape" d={d4} />
+            </g>
+        </>
     );
 };
