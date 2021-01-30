@@ -1,0 +1,391 @@
+<ModelBehaviors>
+    <Template Name="FBW_MULTI_FUNCTION_CONTROL_DISPLAY_UNIT_Template">
+        <DefaultTemplateParameters>
+            <POTENTIOMETER>85</POTENTIOMETER>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_MCDU_SCREEN_Template" />
+        <UseTemplate Name="FBW_MCDU_LINE_SELECT_KEYS_Template" />
+        <UseTemplate Name="FBW_MCDU_PAGE_KEYS_Template" />
+        <UseTemplate Name="FBW_MCDU_SLEW_KEYS_Template" />
+        <UseTemplate Name="FBW_MCDU_NUMPAD_KEYS_Template" />
+        <UseTemplate Name="FBW_MCDU_ALPHABET_KEYS_Template" />
+        <UseTemplate Name="FBW_MCDU_BRIGHTNESS_KEYS_Template" />
+    </Template>
+
+    <Template Name="FBW_MCDU_LINE_SELECT_KEYS_Template">
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>L1</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>L2</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>L3</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>L4</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>L5</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>L6</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>R1</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>R2</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>R3</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>R4</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>R5</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>R6</BASE_NAME>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_MCDU_PAGE_KEYS_Template">
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>DIR</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>PROG</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>PERF</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>INIT</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>DATA</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>FPLN</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>RAD</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>FUEL</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>SEC</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>ATC</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>MENU</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>AIRPORT</BASE_NAME>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_MCDU_SLEW_KEYS_Template">
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>DARROW</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>UARROW</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>LARROW</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>RARROW</BASE_NAME>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_MCDU_NUMPAD_KEYS_Template">
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>0</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>1</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>2</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>3</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>4</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>5</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>6</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>7</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>8</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>9</BASE_NAME>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_MCDU_ALPHABET_KEYS_Template">
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>A</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>B</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>C</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>D</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>E</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>F</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>G</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>H</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>I</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>J</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>K</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>L</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>M</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>N</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>O</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>P</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>Q</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>R</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>S</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>T</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>U</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>V</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>W</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>X</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>Y</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>Z</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>DOT</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>PLUSMINUS</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>SP</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>SLASH</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>OVFY</BASE_NAME>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_MCDU_BUTTON_Template">
+            <BASE_NAME>CLR</BASE_NAME>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_MCDU_BUTTON_Template">
+        <DefaultTemplateParameters>
+            <NODE_ID>PUSH_MCDU#SIDE#_#BASE_NAME#</NODE_ID>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <NO_SEQ2/>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
+                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                <LEFT_SINGLE_CODE>(&gt;H:A32NX_MCDU_#SIDE#_#BASE_NAME#_BUTTON_PRESSED)</LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_MCDU_BRIGHTNESS_KEYS_Template">
+		<DefaultTemplateParameters>
+			<NORMALIZED_TIME_1>0.3</NORMALIZED_TIME_1>
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+			<WWISE_EVENT_1>fmc_push_button_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>fmc_push_button_off</WWISE_EVENT_2>
+            <NODE_ID_BRT_DIM>PUSH_MCDU#SIDE#_BRT</NODE_ID_BRT_DIM>
+			<ANIM_NAME_BRT_DIM>PUSH_MCDU#SIDE#_BRT</ANIM_NAME_BRT_DIM>
+            <NODE_ID_BRT_DIM_SEQ1>PUSH_MCDU#SIDE#_BRT_SEQ1</NODE_ID_BRT_DIM_SEQ1>
+            <NODE_ID_BRT_DIM_SEQ2>PUSH_MCDU#SIDE#_DIM_SEQ1</NODE_ID_BRT_DIM_SEQ2>
+		</DefaultTemplateParameters>
+
+        <Update Once="True">
+            0.5 (&gt;L:A32NX_MCDU_#SIDE#_BRIGHTNESS)
+        </Update>
+
+        <Component ID="#NODE_ID_BRT_DIM#" Node="#NODE_ID_BRT_DIM#">
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <UPARROW/>
+                <DOWNARROW/>
+                <LEFTARROW/>
+                <RIGHTARROW/>
+                <CURSOR>Hand</CURSOR>
+                <ANIM_NAME>#ANIM_NAME_BRT_DIM#</ANIM_NAME>
+                <CODE_POS_0>
+                (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) 0.03 + 1 min (&gt;L:A32NX_MCDU_#SIDE#_BRIGHTNESS)
+                </CODE_POS_0>
+                <CODE_POS_2>
+                (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) 0.03 - 0.05 max (&gt;L:A32NX_MCDU_#SIDE#_BRIGHTNESS)
+                </CODE_POS_2>
+                <STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
+                <STATE0_TIMER>0.01</STATE0_TIMER>
+                <MOMENTARY_REPEAT_FREQUENCY>5</MOMENTARY_REPEAT_FREQUENCY>
+                <MOMENTARY_SWITCH/>
+                <WWISE_EVENT>fmc_push_button_on</WWISE_EVENT>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="#NODE_ID_BRT_DIM_SEQ1#" Node="#NODE_ID_BRT_DIM_SEQ1#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="#NODE_ID_BRT_DIM_SEQ2#" Node="#NODE_ID_BRT_DIM_SEQ2#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_MCDU_SCREEN_Template">
+        <DefaultTemplateParameters>
+            <PART_ID>SCREEN_FMC</PART_ID>
+            <CAMERA_TITLE>ECAM</CAMERA_TITLE>
+            <NODE_ID_SCREEN>SCREEN_MCDU#SIDE#</NODE_ID_SCREEN>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID_SCREEN#" Node="#NODE_ID_SCREEN#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <DONT_OVERRIDE_BASE_EMISSIVE>False</DONT_OVERRIDE_BASE_EMISSIVE>
+                <EMISSIVE_CODE>(L:A32NX_MCDU_#SIDE#_BRIGHTNESS)</EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>
