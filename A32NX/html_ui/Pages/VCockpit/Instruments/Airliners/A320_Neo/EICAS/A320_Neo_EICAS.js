@@ -164,6 +164,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const selfTestCurrentKnobValue = SimVar.GetSimVarValue(this.isTopScreen ? "LIGHT POTENTIOMETER:92" : "LIGHT POTENTIOMETER:93", "number");
         // ECAM all button
         const ecamAllButtonState = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
+        if (ecamAllButtonState && this.ecamAllButtonTimerStarted) {
+            this.ecamAllButtonTimer -= _deltaTime;
+        }
         const knobChanged = (selfTestCurrentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
 
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
@@ -324,7 +327,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         }
 
         if (ecamAllButtonState) { // button press
-            this.ecamAllButtonTimer -= _deltaTime;
 
             if (!this.ecamAllButtonTimerStarted) {
                 this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
