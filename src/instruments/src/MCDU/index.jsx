@@ -5,7 +5,7 @@ import {
     useUpdate,
     getSimVar,
 } from '../util.mjs';
-import './style.scss';
+import './styles.scss';
 import Titlebar from './Titlebar/Titlebar.jsx';
 import PagesContainer from './Pages/PagesContainer.jsx';
 import Scratchpad from './Scratchpad/Scratchpad.jsx';
@@ -38,14 +38,46 @@ function Idle() {
     // TODO find a way to do the below
     // const [scratchpad, setScratchpad] = useState(() => ({text: "SCRATCHPAD FIELD", opacity: 0, }));
     // const [title, setTitle] = useState(() => ({text: "TITLE FIELD", opacity: 0, }));
+    // return (
+    //     <svg className="main-wrapper" viewBox="0 0 1024 1024" width="1024" height="1024">
+    //         <RootContext.Provider value={[scratchpad, setScratchpad, title, setTitle]}>
+    //             <Titlebar />
+    //             <PagesContainer />
+    //             <Scratchpad />
+    //         </RootContext.Provider>
+    //     </svg>
     return (
-        <svg className="main-wrapper" viewBox="0 0 1024 1024" width="1024" height="1024">
-            <RootContext.Provider value={[scratchpad, setScratchpad, title, setTitle]}>
-                <Titlebar />
-                <PagesContainer />
-                <Scratchpad />
-            </RootContext.Provider>
-        </svg>
+        <div className="mcdu-outer">
+            <div className="mcdu-inner">
+                <div className="flex-none">
+                    <p>TITLE</p>
+                </div>
+                <div className="mcdu-contents">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((value) => (
+                        <div className={value % 2 ? 'align-left' : 'align-right'}>
+                            <label>
+                                {value % 2 ? 'L' : 'R'}
+                                {' '}
+                                label
+                                {' '}
+                                {value}
+                            </label>
+                            <p>
+                                {value % 2 ? 'L' : 'R'}
+                                {' '}
+                                data
+                                {' '}
+                                {value}
+                            </p>
+                        </div>
+                    ))}
+
+                </div>
+                <div className="flex-none">
+                    <p>SCRATCHPAD</p>
+                </div>
+            </div>
+        </div>
     );
 }
 

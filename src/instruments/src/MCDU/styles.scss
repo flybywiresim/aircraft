@@ -1,0 +1,106 @@
+@import url('/CSS/A32NX_Display_Common.css');
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "ECAMFontRegular";
+  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.dcdu-lines {
+  position: absolute;
+  left: 10px !important;
+  top: 10px !important;
+  width: 492px;
+  height: 364px;
+
+  background: radial-gradient(
+      ellipse at center,
+      rgba(9, 13, 20, 1) 0%,
+      rgb(9, 13, 20) 100%
+  );
+
+  visibility: visible !important;
+
+  font-family: Roboto;
+
+  path {
+    stroke: white;
+    stroke-width: 3;
+  }
+}
+
+.mcdu-outer {
+  display: grid;
+  place-items: center;
+  max-height: 100vh;
+
+  background: radial-gradient(
+      ellipse at center,
+      rgba(4,4,5,1) 0%,
+      rgba(4, 4, 5, 1) 100%)
+}
+
+.mcdu-inner {
+  margin-left: -10px;
+  margin-top: 10px;
+  max-height: 960px;
+  max-width: 945px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.mcdu-contents {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr;
+  justify-items: stretch;
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+}
+
+.flex-none {
+  margin-bottom: 20px;
+  margin-top: 20px;
+  flex: none;
+}
+
+label {
+  font-family: "ECAMFontRegular" !important;
+  color: var(--mcduWhite);
+  font-size: 4.2vw;
+  letter-spacing: 0.6vw;
+  line-height: 5.8vw;
+  margin-bottom: 20px;
+}
+
+p {
+  font-family: "ECAMFontRegular" !important;
+  color: var(--mcduWhite);
+  font-size: 5.8vw;
+  letter-spacing: normal;
+}
+
+.align-left {
+  text-align: left;
+}
+
+.align-right {
+  text-align: right;
+}

@@ -32,38 +32,81 @@ text {
   fill: var(--mcduWhite);
 }
 
-.left {
-  text-anchor: start;
-  &__small {
-    @extend .left;
-    font-size: 4.2vw;
-    /* font-size: 4.8vw; */
-    /* letter-spacing: 0.9vw;  */
-    letter-spacing: 0.6vw;
-    line-height: 5.8vw;
-  }
-  &__big {
-    @extend .left;
-    font-size: 5.8vw;
-    letter-spacing: normal;
-  }
+.label {
+  height: 5%;
+  margin: 0;
+  white-space: pre;
 }
 
-.right {
-  text-anchor: end;
-  &__small {
-    @extend .right;
-    font-size: 4.2vw;
-    /* font-size: 4.8vw; */
-    /* letter-spacing: 0.9vw;  */
-    letter-spacing: 0.6vw;
-    line-height: 5.8vw;
-  }
-  &__big {
-    @extend .right;
-    font-size: 5.8vw;
-    letter-spacing: normal;
-  }
+.label-left {
+  @extend .label;
+  @extend .s-text;
+  position: absolute;
+  left: 4.5%;
+  width: 100%;
+  text-align: left;
+}
+
+.label-right {
+  @extend .label;
+  @extend .s-text;
+  position: absolute;
+  right: 5.5%;
+  width: 100%;
+  text-align: right;
+}
+
+.label-center {
+  @extend .label;
+  @extend .s-text;
+  position: absolute;
+  left: 0px;
+  width: 100%;
+  text-align: center;
+}
+
+.line {
+  height: 8.1%;
+  margin: 0;
+  white-space: pre;
+}
+
+.line-left {
+  @extend .line;
+  @extend .b-text;
+  position: absolute;
+  left: 4%;
+  width: 100%;
+  text-align: left;
+}
+
+.line-right {
+  @extend .line;
+  @extend .b-text;
+  position: absolute;
+  right: 6%;
+  width: 100%;
+  text-align: right;
+}
+
+.line-center {
+  @extend .line;
+  @extend .b-text;
+  position: absolute;
+  left: 0px;
+  width: 100%;
+  text-align: center;
+}
+
+.b-text {
+  font-size: 5.8vw;
+  letter-spacing: normal;
+}
+
+.s-text {
+  font-size: 4.2vw;
+  letter-spacing: 0.6vw;
+  line-height: 5.8vw;
 }
 
 .white {
