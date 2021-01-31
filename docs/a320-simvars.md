@@ -356,3 +356,115 @@
 - A32NX_AUTOPILOT_FPA_SELECTED
     - Degrees
     - The selected flight path angle in the FCU
+
+- A32NX_APU_EGT_CAUTION
+    - Celsius
+    - The APU's exhaust gas temperature caution level, to be indicated in amber in the cockpit
+
+- A32NX_APU_EGT_WARNING
+    - Celsius
+    - The APU's exhaust gas temperature warning level, to be indicated in red in the cockpit
+
+- A32NX_APU_EGT
+    - Celsius
+    - The APU's exhaust gas temperature
+
+- A32NX_APU_N
+    - Percent
+    - The APU's rotations per minute in percentage of the maximum RPM
+
+- A32NX_APU_MASTER_SW_ACTIVATED
+    - Bool
+    - True when the APU MASTER SW is activated
+
+- A32NX_APU_START_ACTIVATED
+    - Bool
+    - True when the APU START push button is activated
+
+- A32NX_APU_GEN_VOLTAGE:
+    - Volts
+    - The electric potential made available by the APU generator
+
+- A32NX_APU_GEN_VOLTAGE_NORMAL:
+    - Bool
+    - Indicates if the APU generator potential is within the normal range
+
+- A32NX_APU_GEN_AMPERAGE:
+    - Amperes
+    - The electric current made available by the APU generator
+
+- A32NX_APU_GEN_FREQ
+    - Hertz
+    - The alternating current frequency of the electric current made available by the APU generator
+
+- A32NX_APU_GEN_FREQ_NORMAL
+    - Bool
+    - Indicates if the APU generator output frequency is within the normal range
+
+- A32NX_APU_START_CONTACTOR_ENERGIZED
+    - Bool
+    - Indicates if the APU START contactor is energized
+
+- A32NX_APU_BLEED_AIR_VALVE_OPEN
+    - Bool
+    - Indicates if the APU bleed air valve is open
+
+- A32NX_APU_BLEED_FAULT
+    - Bool
+    - Indicates if the APU BLEED FAULT light should be illuminated
+
+- A32NX_APU_MASTER_FAULT
+    - Bool
+    - Indicates if the MASTER SW FAULT light should be illuminated
+
+- A32NX_APU_LOW_FUEL_PRESSURE_FAULT
+    - Bool
+    - Indicates if the APU has an active LOW FUEL PRESSURE fault
+
+- A32NX_APU_IS_AUTO_SHUTDOWN
+    - Bool
+    - Indicates if the APU automatically shut down (for a reason other than fire)
+
+- A32NX_APU_IS_EMERGENCY_SHUTDOWN
+    - Bool
+    - Indicates if the APU automatically shut down due to fire
+
+- A32NX_ECAM_INOP_SYS_APU
+    - Bool
+    - Indicates if the APU is inoperable
+
+- A32NX_FIRE_BUTTON_APU
+    - Bool
+    - Indicates if the APU fire button is released
+ 
+ - A32NX_RMP_L_TOGGLE_SWITCH
+    - Boolean
+    - Whether the left radio management panel toggle switch is on or off.
+
+- A32NX_RMP_R_TOGGLE_SWITCH
+    - Boolean
+    - Whether the right radio management panel toggle switch is on or off.
+
+- A32NX_RMP_L_SELECTED_MODE
+    - Number
+    - The current mode of the left radio management panel.
+
+- A32NX_RMP_R_SELECTED_MODE
+    - Number
+    - The current mode of the right radio management panel.
+
+- A32NX_RMP_L_VHF2_STANDBY
+    - Hz
+    - The VHF 2 standby frequency for the left RMP.
+
+- A32NX_RMP_L_VHF3_STANDBY
+    - Hz
+    - The VHF 3 standby frequency for the left RMP.
+
+- A32NX_RMP_R_VHF1_STANDBY
+    - Hz
+    - The VHF 1 standby frequency for the right RMP.
+
+- A32NX_RMP_R_VHF3_STANDBY
+    - Hz
+    - The VHF 3 standby frequency for the right RMP.

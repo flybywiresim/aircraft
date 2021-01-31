@@ -73,104 +73,101 @@
 
         <!-- APU  =========================================================================  -->
         
-        <Sound WwiseData="true" WwiseEvent="apuwhine" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-            <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
-            <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+        <Sound WwiseData="true" WwiseEvent="apuwhine" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
+            <WwiseRTPC LocalVar="A32NX_APU_N" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
+            <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
             <Range LowerBound="1.0" />
         </Sound>
         
-        <Sound WwiseData="true" WwiseEvent="apuwhine2" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-            <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
-            <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+        <Sound WwiseData="true" WwiseEvent="apuwhine2" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
+            <WwiseRTPC LocalVar="A32NX_APU_N" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
+            <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
             <Range LowerBound="1.0" />
         </Sound>
         
-        <Sound WwiseData="true" WwiseEvent="apubass" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-            <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
-            <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+        <Sound WwiseData="true" WwiseEvent="apubass" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
+            <WwiseRTPC LocalVar="A32NX_APU_N" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
+            <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+            <Range LowerBound="8.0" />
+        </Sound>
+        
+        <Sound WwiseData="true" WwiseEvent="apubass2" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
+            <WwiseRTPC LocalVar="A32NX_APU_N" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
+            <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
             <Range LowerBound="1.0" />
         </Sound>
         
-        <Sound WwiseData="true" WwiseEvent="apubass2" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-            <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
-            <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
-            <Range LowerBound="1.0" />
-        </Sound>
-        
-        <Sound WwiseData="true" WwiseEvent="apurun" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-            <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
-            <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+        <Sound WwiseData="true" WwiseEvent="apurun" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
+            <WwiseRTPC LocalVar="A32NX_APU_N" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
+            <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
             <Range LowerBound="1.0" />
         </Sound>
         
-        <Sound WwiseData="true" WwiseEvent="apushut" Continuous="false" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-        <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
-            <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+        <Sound WwiseData="true" WwiseEvent="apushut" Continuous="false" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
+        <WwiseRTPC LocalVar="A32NX_APU_N" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
+            <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
             <Range LowerBound="75" UpperBound="98" />
         </Sound>
         
-          <Sound WwiseData="true" WwiseEvent="apustartinit" Continuous="false" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-          <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+          <Sound WwiseData="true" WwiseEvent="apustartinit" Continuous="false" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
+          <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
             <Range LowerBound="1.0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="apuflapopen" FadeOutType="2" FadeOutTime="1" Continuous="true" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="FUELSYSTEM VALVE SWITCH" Units="BOOLEAN" Index="8">
+        <Sound WwiseData="true" WwiseEvent="apuflapopen" FadeOutType="2" FadeOutTime="1" Continuous="true" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_MASTER_SW_ACTIVATED" Units="BOOLEAN">
             <Range LowerBound="1.0" />
-            <Requires LocalVar="APU_FLAP_OPEN" Units="BOOLEAN" Index="0">
+            <Requires LocalVar="APU_FLAP_OPEN" Units="PERCENT" Index="0">
                 <Range UpperBound="99" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="apuflapopenfull" Continuous="false" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="APU_FLAP_OPEN" Units="BOOLEAN" Index="0">
+        <Sound WwiseData="true" WwiseEvent="apuflapopenfull" Continuous="false" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="APU_FLAP_OPEN" Units="PERCENT" Index="0">
             <Range LowerBound="100" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="startcontactors" NodeName="FUSES01" Continuous="false" ViewPoint="Inside" LocalVar="APU_FLAP_OPEN" Units="PERCENT" Index="0">
-            <Range LowerBound="100" />
-            <Requires SimVar="APU SWITCH" Units="BOOLEAN" Index="0">
-                <Range LowerBound="1" />
-            </Requires>
+        <Sound WwiseData="true" WwiseEvent="startcontactors" NodeName="FUSES01" Continuous="false" ViewPoint="Inside" LocalVar="A32NX_APU_START_CONTACTOR_ENERGIZED" Units="BOOLEAN" Index="0">
+            <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="startcontactorsdc" NodeName="FUSES01" Continuous="false" ViewPoint="Inside" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-            <Range LowerBound="55" />
+        <Sound WwiseData="true" WwiseEvent="startcontactorsdc" NodeName="FUSES01" Continuous="false" ViewPoint="Inside" LocalVar="A32NX_APU_START_CONTACTOR_ENERGIZED" Units="BOOLEAN" Index="0">
+            <Range UpperBound="0" />
         </Sound>
 
                 <!-- EXTERIOR ============================================================================================-->
 
 
-        <Sound WwiseData="true" WwiseEvent="apubassout" ViewPoint="Outside" ConeHeading="180" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-            <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
-            <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+        <Sound WwiseData="true" WwiseEvent="apubassout" ViewPoint="Outside" ConeHeading="180" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
+            <WwiseRTPC LocalVar="A32NX_APU_N" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
+            <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+            <Range LowerBound="8.0" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="apuwhineext" ViewPoint="Outside" ConeHeading="180" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
+            <WwiseRTPC LocalVar="A32NX_APU_N" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
+            <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
             <Range LowerBound="1.0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="apuwhineext" ViewPoint="Outside" ConeHeading="180" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-            <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
-            <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+        <Sound WwiseData="true" WwiseEvent="apuwhineext2" ViewPoint="Outside" ConeHeading="180" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
+            <WwiseRTPC LocalVar="A32NX_APU_N" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
+            <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
             <Range LowerBound="1.0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="apuwhineext2" ViewPoint="Outside" ConeHeading="180" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-            <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
-            <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
-            <Range LowerBound="1.0" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="apurunext" ConeHeading="180" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-            <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
-            <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+        <Sound WwiseData="true" WwiseEvent="apurunext" ConeHeading="180" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
+            <WwiseRTPC LocalVar="A32NX_APU_N" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
+            <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
             <Range LowerBound="1.0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="apustartinitext" ConeHeading="180" Continuous="false" ViewPoint="Outside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-          <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+        <Sound WwiseData="true" WwiseEvent="apustartinitext" ConeHeading="180" Continuous="false" ViewPoint="Outside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
+          <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
             <Range LowerBound="1.0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="apuflapopenext" FadeOutType="2" FadeOutTime="1" Continuous="true" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="FUELSYSTEM VALVE SWITCH" Units="BOOLEAN" Index="8">
+        <Sound WwiseData="true" WwiseEvent="apuflapopenext" FadeOutType="2" FadeOutTime="1" Continuous="true" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_MASTER_SW_ACTIVATED" Units="BOOLEAN">
             <Range LowerBound="1.0" />
             <Requires LocalVar="APU_FLAP_OPEN" Units="BOOLEAN" Index="0">
                 <Range UpperBound="99" />
@@ -181,15 +178,15 @@
             <Range LowerBound="100" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="apuexhaust" ViewPoint="Outside" ConeHeading="180" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-            <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
+        <Sound WwiseData="true" WwiseEvent="apuexhaust" ViewPoint="Outside" ConeHeading="180" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
+            <WwiseRTPC LocalVar="A32NX_APU_N" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
             <Range LowerBound="1.0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="apushutdownext" ConeHeading="180" Continuous="false" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="APU PCT RPM" Units="PERCENT" Index="0">
+        <Sound WwiseData="true" WwiseEvent="apushutdownext" ConeHeading="180" Continuous="false" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
             <Range LowerBound="75" UpperBound="98" />
-        <WwiseRTPC SimVar="APU PCT RPM" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
-            <WwiseRTPC SimVar="APU PCT RPM" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
+        <WwiseRTPC LocalVar="A32NX_APU_N" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM" />
+            <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
 
@@ -244,15 +241,15 @@
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" >
             <Range LowerBound="28" />
             </Requires >
-         </Sound>
+        </Sound>
          
-         <Sound WwiseData="true" WwiseEvent="brakefan2" NodeName="BASE_RIGHT" FadeOutType="2" FadeOutTime="2" LocalVar="A32NX_BRAKE_FAN" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="brakefan2" NodeName="BASE_RIGHT" FadeOutType="2" FadeOutTime="2" LocalVar="A32NX_BRAKE_FAN" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" >
             <Range LowerBound="28" />
             </Requires >
-         </Sound>
+        </Sound>
 
         <Sound WwiseData="true" WwiseEvent="packscockpit" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="2" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
@@ -268,12 +265,12 @@
             <Range LowerBound="1.0" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
-         </Sound>
+        </Sound>
 
         <Sound WwiseData="true" WwiseEvent="pack2ext" NodeName="SOUND_ENGINE_RIGHT" FadeOutType="2" FadeOutTime="2" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-             <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
+            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
