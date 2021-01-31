@@ -7,7 +7,8 @@
       "AIRCRAFT.UI_MODEL": "A320neo",
       "AIRCRAFT.UI_VARIATION": "Airbus",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Ajustar el rumbo seleccionado a la izquierda (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ajustar el rumbo seleccionado a la derecha (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)"
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ajustar el rumbo seleccionado a la derecha (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU available"
     }
   }
 }

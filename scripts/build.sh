@@ -27,6 +27,13 @@ build_manifests() {
     node "${DIR}/build.js"
 }
 
+build_systems() {
+    cd src/systems/a320
+    cargo build --target wasm32-wasi --release
+    cd ../../..
+    cp src/systems/target/wasm32-wasi/release/systems.wasm A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/panel/
+}
+
 build_metadata() {
     if [ -z "${GITHUB_ACTOR}" ]; then
         GITHUB_ACTOR="$(git log -1 --pretty=format:'%an <%ae>')"
@@ -49,6 +56,7 @@ if [ -z "$1" ]; then
     build_instruments
     build_behavior
     build_model
+    build_systems
 else
     name="build_${1}"
     set -x

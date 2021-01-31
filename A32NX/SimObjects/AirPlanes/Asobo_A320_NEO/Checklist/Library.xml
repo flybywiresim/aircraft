@@ -2055,7 +2055,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FUELSYSTEM VALVE SWITCH:8" Units="Bool"/>
+                  <Val Code="(L:A32NX_APU_MASTER_SW_ACTIVATED)"/>
                   <Val Value="0"/>
                </Operator>
             </TestValue>
