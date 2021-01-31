@@ -13,6 +13,12 @@
         stroke-width: 3;
     }
 
+    .WarningShapeThick {
+        fill: transparent;
+        stroke: $display-amber;
+        stroke-width: 3;
+    }
+
     .MainShape {
         fill: transparent;
         stroke: $display-light-grey;

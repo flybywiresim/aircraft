@@ -17,37 +17,12 @@
  */
 
 import './Fctl.scss';
-// import { useState } from 'react';
+import { useEffect } from 'react';
 // import { getSimVar, useUpdate } from '../../../util.mjs';
 import { StatefulSimVar } from '../../../StatefulSimVar.mjs';
 
 export const FctlPage = () => {
     console.log('FCTL');
-    const speedBrakeY = 104;
-    const leftSpeedBrakeX = 103;
-    const rightSpeedBrakeX = 497;
-    const speedBrakeXChange = 38;
-    const speedBrakeXArrowChange = 8;
-    // 38
-    // 5
-    const speedbrakes = [];
-    const speedbrakesArrows = [];
-    const speedbrakeText = [];
-    for (let i = 0; i < 5; i += 1) {
-        const YCoord = speedBrakeY - (i * 5);
-        const YCoordW = YCoord - 9;
-        const leftX = leftSpeedBrakeX + (i * speedBrakeXChange);
-        const rightX = rightSpeedBrakeX - (i * speedBrakeXChange);
-        speedbrakes.push(<path className="GreenShapeThick" d={`M ${leftX} ${YCoord} l 15 0`} />);
-        speedbrakes.push(<path className="GreenShapeThick" d={`M ${rightX} ${YCoord} l -15 0`} />);
-        // Speedbrake arrows
-        const index = 5 - i;
-        speedbrakesArrows.push(<path id={`arrow${index}_left`} className="GreenShape" d={`M ${leftX + speedBrakeXArrowChange} ${YCoord} l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0`} />);
-        speedbrakesArrows.push(<path id={`arrow${index}_right`} className="GreenShape" d={`M ${rightX - speedBrakeXArrowChange} ${YCoord} l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0`} />);
-        // console.log(YCoordW);
-        speedbrakeText.push(<text id={`num${index}_left`} className="Warning" x={`${leftX + speedBrakeXArrowChange}`} y={`${YCoordW}`} textAnchor="middle" alignmentBaseline="central">{index}</text>);
-        speedbrakeText.push(<text id={`num${index}_right`} className="Warning" x={`${rightX - speedBrakeXArrowChange}`} y={`${YCoordW}`} textAnchor="middle" alignmentBaseline="central">{index}</text>);
-    }
 
     const aileronLeftDeflectionStatefulSimVar = new StatefulSimVar({
         simVarGetter: 'AILERON LEFT DEFLECTION PCT',
@@ -153,6 +128,21 @@ export const FctlPage = () => {
 
     const rudderAngle = -rudderDeflectionStatefulSimVar.value * 25;
 
+    // Update rudder limits
+    const indicatedAirspeednStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'AIRSPEED INDICATED',
+        simVarUnit: 'knots',
+        refreshRate: 500,
+    });
+
+    let MaxAngleNorm = 1;
+    if (indicatedAirspeednStatefulSimVar.value > 380) {
+        MaxAngleNorm = 3.4 / 25;
+    } else if (indicatedAirspeednStatefulSimVar.value > 160) {
+        MaxAngleNorm = (69.2667 - 0.351818 * indicatedAirspeednStatefulSimVar.value
+            + 0.00047 * indicatedAirspeednStatefulSimVar.value ** 2) / 25;
+    }
+
     // Check Hydraulics state
     // Will probably need changing once hydraulics fully implemented.
 
@@ -168,18 +158,72 @@ export const FctlPage = () => {
         refreshRate: 1000,
     });
 
-    const hydraulicsAvailable = engine1StatefulSimVar.value && engine2StatefulSimVar.value;
+    const hydraulicGAvailable = engine1StatefulSimVar.value && engine2StatefulSimVar.value;
+    const hydraulicYAvailable = hydraulicGAvailable;
+    const hydraulicBAvailable = hydraulicGAvailable;
 
-    console.log(`Hydraulics status ${hydraulicsAvailable}`);
+    const leftSpoilerStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'SPOILERS LEFT POSITION',
+        simVarUnit: 'percent over 100',
+        refreshRate: 50,
+    });
 
-    // const IndicatedAirspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots");
-    // const spoilersArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "boolean");
-    // const leftSpoilerDeflectPct = SimVar.GetSimVarValue("SPOILERS LEFT POSITION", "percent over 100");
-    // const rightSpoilerDeflectPct = SimVar.GetSimVarValue("SPOILERS RIGHT POSITION", "percent over 100");
-    // const planeOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "boolean");
-    // const eng1_mode = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:1", "number");
-    // const eng2_mode = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:2", "number");
-    // const gspeed = SimVar.GetSimVarValue("SURFACE RELATIVE GROUND SPEED", "feet_per_second");
+    const rightSpoilerStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'SPOILERS RIGHT POSITION',
+        simVarUnit: 'percent over 100',
+        refreshRate: 50,
+    });
+
+    const groundSpeedStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'SURFACE RELATIVE GROUND SPEED',
+        simVarUnit: 'feet_per_second',
+        refreshRate: 50,
+    });
+
+    const spoilersArmedStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'SPOILERS ARMED',
+        simVarUnit: 'boolean',
+        refreshRate: 500,
+    });
+
+    const onGroundStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'SIM ON GROUND',
+        simVarUnit: 'boolean',
+        refreshRate: 500,
+    });
+
+    const engine1ModeStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'GENERAL ENG THROTTLE MANAGED MODE:1',
+        simVarUnit: 'number',
+        refreshRate: 1000,
+    });
+
+    const engine2ModeStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'GENERAL ENG THROTTLE MANAGED MODE:2',
+        simVarUnit: 'number',
+        refreshRate: 1000,
+    });
+
+    const spoilersArmed = !!(spoilersArmedStatefulSimVar.value
+        && onGroundStatefulSimVar.value
+        && groundSpeedStatefulSimVar.value > 45
+        && engine1ModeStatefulSimVar.value <= 2
+        && engine2ModeStatefulSimVar.value <= 2);
+
+    const speedBrakeY = 104;
+    const leftSpeedBrakeX = 103;
+    const rightSpeedBrakeX = 497;
+    const speedBrakeXChange = 38;
+    const spoilers = [];
+    for (let i = 0; i < 5; i += 1) {
+        const YCoord = speedBrakeY - (i * 5);
+        const YCoordW = YCoord - 9;
+        const leftX = leftSpeedBrakeX + (i * speedBrakeXChange);
+        const rightX = rightSpeedBrakeX - (i * speedBrakeXChange);
+        const index = 5 - i;
+        spoilers.push(<Spoiler leftorright="left" index={index} x={leftX} y={YCoord} yw={YCoordW} hydAvail={hydraulicGAvailable || hydraulicBAvailable || hydraulicYAvailable} spoilerpos={leftSpoilerStatefulSimVar.value} ailpos={aileronLeftDeflectionStatefulSimVar.value} spoilersArmed={spoilersArmed} />);
+        spoilers.push(<Spoiler leftorright="right" index={index} x={rightX} y={YCoord} yw={YCoordW} hydAvail={hydraulicGAvailable || hydraulicBAvailable || hydraulicYAvailable} spoilerpos={rightSpoilerStatefulSimVar.value} ailpos={aileronRightDeflectionStatefulSimVar} spoilersArmed={spoilersArmed} />);
+    }
 
     return (
         <>
@@ -190,21 +234,13 @@ export const FctlPage = () => {
                 <text id="speedBrakeText" className="Note" x="300" y="107" textAnchor="middle" alignmentBaseline="central">SPD BRK</text>
 
                 <g id="speedbrakeHyd">
-                    <HydraulicIndicator id="pitchTrimHyd1" x="269" y="14" letter="G" hydAvail={hydraulicsAvailable} />
-                    <HydraulicIndicator id="pitchTrimHyd1" x="291" y="14" letter="B" hydAvail={hydraulicsAvailable} />
-                    <HydraulicIndicator id="pitchTrimHyd1" x="313" y="14" letter="Y" hydAvail={hydraulicsAvailable} />
+                    <HydraulicIndicator id="pitchTrimHyd1" x="269" y="14" letter="G" hydAvail={hydraulicGAvailable} />
+                    <HydraulicIndicator id="pitchTrimHyd1" x="291" y="14" letter="B" hydAvail={hydraulicBAvailable} />
+                    <HydraulicIndicator id="pitchTrimHyd1" x="313" y="14" letter="Y" hydAvail={hydraulicYAvailable} />
                 </g>
 
-                <g id="speedbrakes">
-                    {speedbrakes}
-                </g>
-
-                <g id="speedbrake_arrows">
-                    {speedbrakesArrows}
-                </g>
-
-                <g id="speedbrake_text">
-                    {speedbrakeText}
+                <g id="spoilers">
+                    {spoilers}
                 </g>
 
                 <g id="leftSpeedbrakeGroup">
@@ -219,11 +255,11 @@ export const FctlPage = () => {
 
                 {/* Left ailerons */}
 
-                <Aileron leftorright="left" x="72" aileronDeflection={aileronLeftDeflectionStatefulSimVar.value} hydArray={['B', 'G']} hydAvail={hydraulicsAvailable} />
+                <Aileron leftorright="left" x="72" aileronDeflection={aileronLeftDeflectionStatefulSimVar.value} hydArray={['B', 'G']} hydAvail={[hydraulicBAvailable, hydraulicGAvailable]} />
 
                 {/* Right ailerons */}
 
-                <Aileron leftorright="right" x="528" aileronDeflection={aileronRightDeflectionStatefulSimVar.value} hydArray={['G', 'B']} hydAvail={hydraulicsAvailable} />
+                <Aileron leftorright="right" x="528" aileronDeflection={aileronRightDeflectionStatefulSimVar.value} hydArray={['G', 'B']} hydAvail={[hydraulicGAvailable, hydraulicBAvailable]} />
 
                 <g id="elac">
                     <text id="elacText" className="Note" x="195" y="178" textAnchor="middle" alignmentBaseline="central">ELAC</text>
@@ -240,26 +276,26 @@ export const FctlPage = () => {
 
                 {/* Left elevator */}
 
-                <Elevator leftorright="left" x="168" elevatorDeflection={elevatorDeflectionStatefulSimVar.value} hydArray={['B', 'G']} hydAvail={hydraulicsAvailable} />
+                <Elevator leftorright="left" x="168" elevatorDeflection={elevatorDeflectionStatefulSimVar.value} hydArray={['B', 'G']} hydAvail={[hydraulicBAvailable, hydraulicGAvailable]} />
 
                 {/* Right elevator */}
 
-                <Elevator leftorright="right" x="432" elevatorDeflection={elevatorDeflectionStatefulSimVar.value} hydArray={['B', 'Y']} hydAvail={hydraulicsAvailable} />
+                <Elevator leftorright="right" x="432" elevatorDeflection={elevatorDeflectionStatefulSimVar.value} hydArray={['B', 'Y']} hydAvail={[hydraulicBAvailable, hydraulicYAvailable]} />
 
                 {/* Pitch trim */}
 
                 <g id="pitchTrim">
                     <text id="pitchTrimText" className="Note" x="280" y="296" textAnchor="middle" alignmentBaseline="central">PITCH TRIM</text>
 
-                    <text id="pitchTrimLeadingDecimal" className={hydraulicsAvailable ? 'Value' : 'Warning'} x="269" y="318" textAnchor="middle" alignmentBaseline="central">{pitchValueArray[0]}</text>
-                    <text id="pitchTrimDecimalPoint" className={hydraulicsAvailable ? 'Value' : 'Warning'} x="281" y="318" textAnchor="middle" alignmentBaseline="central">.</text>
-                    <text id="pitchTrimTrailingDecimal" className={hydraulicsAvailable ? 'Value' : 'Warning'} x="292" y="318" textAnchor="middle" alignmentBaseline="central">{pitchValueArray[1]}</text>
+                    <text id="pitchTrimLeadingDecimal" className={hydraulicGAvailable || hydraulicYAvailable ? 'Value' : 'Warning'} x="269" y="318" textAnchor="middle" alignmentBaseline="central">{pitchValueArray[0]}</text>
+                    <text id="pitchTrimDecimalPoint" className={hydraulicGAvailable || hydraulicYAvailable ? 'Value' : 'Warning'} x="281" y="318" textAnchor="middle" alignmentBaseline="central">.</text>
+                    <text id="pitchTrimTrailingDecimal" className={hydraulicGAvailable || hydraulicYAvailable ? 'Value' : 'Warning'} x="292" y="318" textAnchor="middle" alignmentBaseline="central">{pitchValueArray[1]}</text>
 
                     <circle id="pitchTrimDegreePoint" className="MainShape" cx="310" cy="313" r="3" textAnchor="middle" alignmentBaseline="central">°</circle>
-                    <text id="pitchTrimDirection" className={hydraulicsAvailable ? 'Value' : 'Warning'} x="335" y="318" textAnchor="middle" alignmentBaseline="central">{pitchTrimSign === -1 ? 'DN' : 'UP'}</text>
+                    <text id="pitchTrimDirection" className={hydraulicGAvailable || hydraulicYAvailable ? 'Value' : 'Warning'} x="335" y="318" textAnchor="middle" alignmentBaseline="central">{pitchTrimSign === -1 ? 'DN' : 'UP'}</text>
 
-                    <HydraulicIndicator id="pitchTrimHyd1" x="360" y="283" letter="G" hydAvail={hydraulicsAvailable} />
-                    <HydraulicIndicator id="pitchTrimHyd2" x="382" y="283" letter="Y" hydAvail={hydraulicsAvailable} />
+                    <HydraulicIndicator id="pitchTrimHyd1" x="360" y="283" letter="G" hydAvail={hydraulicGAvailable} />
+                    <HydraulicIndicator id="pitchTrimHyd2" x="382" y="283" letter="Y" hydAvail={hydraulicYAvailable} />
                 </g>
 
                 {/* Stabilizer */}
@@ -267,9 +303,9 @@ export const FctlPage = () => {
                 <g id="stabilizer">
                     <path id="stabLeft" className="MainShape" d="M268,357 l-55,4 l0,-18 l30,-15" />
                     <path id="stabRight" className="MainShape" d="M332,357 l55,4 l0,-18 l-30,-15" />
-                    <HydraulicIndicator id="stabHyd1" x="269" y="373" letter="G" hydAvail={hydraulicsAvailable} />
-                    <HydraulicIndicator id="stabHyd1" x="291" y="373" letter="B" hydAvail={hydraulicsAvailable} />
-                    <HydraulicIndicator id="stabHyd1" x="313" y="373" letter="Y" hydAvail={hydraulicsAvailable} />
+                    <HydraulicIndicator id="stabHyd1" x="269" y="373" letter="G" hydAvail={hydraulicGAvailable} />
+                    <HydraulicIndicator id="stabHyd1" x="291" y="373" letter="B" hydAvail={hydraulicBAvailable} />
+                    <HydraulicIndicator id="stabHyd1" x="313" y="373" letter="Y" hydAvail={hydraulicYAvailable} />
                 </g>
 
                 {/* Rudder */}
@@ -282,19 +318,19 @@ export const FctlPage = () => {
                     <path id="rudderLeftBorder" className="MainShape" d="m257 472-2 5 7 3 2-5" />
                 </g>
 
-                <g id="rudderLeftMaxAngle">
+                <g id="rudderLeftMaxAngle" transform={`rotate(${-26.4 * (1 - MaxAngleNorm)} 300 385)`}>
                     <path id="rudderLeftLimitGreen" className="GreenShape" d="m250 484 6 3" />
                     <path id="rudderLeftLimitWhite" className="GreenShape" d="m257 472-7 13" />
                 </g>
 
-                <g id="rudderRightMaxAngle">
+                <g id="rudderRightMaxAngle" transform={`rotate(${26.4 * (1 - MaxAngleNorm)} 300 385)`}>
                     <path id="rudderRightLimitGreen" className="GreenShape" d="m350 484-6 3" />
                     <path id="rudderRightLimitWhite" className="GreenShape" d="m343 472 7 13" />
                 </g>
 
                 <g id="rudderCursor" transform={`rotate(${rudderAngle} 300 380)`}>
-                    <path id="rudderCircle" className={hydraulicsAvailable ? 'GreenShape' : 'WarningShape'} d="M 292 434 A 8 8 0 0 1 308 434" />
-                    <path id="rudderTail" className={hydraulicsAvailable ? 'GreenShape' : 'WarningShape'} d="M292,434 l8,48 l8,-48" />
+                    <path id="rudderCircle" className={hydraulicGAvailable || hydraulicBAvailable || hydraulicYAvailable ? 'GreenShape' : 'WarningShape'} d="M 292 434 A 8 8 0 0 1 308 434" />
+                    <path id="rudderTail" className={hydraulicGAvailable || hydraulicBAvailable || hydraulicYAvailable ? 'GreenShape' : 'WarningShape'} d="M292,434 l8,48 l8,-48" />
                 </g>
             </svg>
         </>
@@ -319,14 +355,14 @@ const Aileron = ({
             <text id={`${leftorright}AileronText2`} className="Note" x={textPositionX} y="175" textAnchor="middle" alignmentBaseline="central">AIL</text>
 
             <g id={`${leftorright}AileronPointer`}>
-                <path id={`${leftorright}AileronCursor`} className={hydAvail ? 'GreenShape' : 'WarningShape'} d={cursorPath} />
+                <path id={`${leftorright}AileronCursor`} className={hydAvail[0] || hydAvail[1] ? 'GreenShape' : 'WarningShape'} d={cursorPath} />
             </g>
 
             <AileronAxis leftorright={leftorright} x={x} />
 
             <g id="leftAileronHyd">
-                <HydraulicIndicator id={`${leftorright}AileronHyd1`} x={hydPositionX1} y="246" letter={hydArray[0]} hydAvail={hydAvail} />
-                <HydraulicIndicator id={`${leftorright}AileronHyd2`} x={hydPositionX2} y="246" letter={hydArray[1]} hydAvail={hydAvail} />
+                <HydraulicIndicator id={`${leftorright}AileronHyd1`} x={hydPositionX1} y="246" letter={hydArray[0]} hydAvail={hydAvail[0]} />
+                <HydraulicIndicator id={`${leftorright}AileronHyd2`} x={hydPositionX2} y="246" letter={hydArray[1]} hydAvail={hydAvail[1]} />
             </g>
         </>
     );
@@ -350,7 +386,6 @@ const ElacSecShape = ({
 }) => {
     const textPositionX = Number(x) + 61;
     const textPositionY = Number(y) - 12;
-    console.log(`This on status is ${on} and fail status is ${fail}`);
     return (
         <>
             <path className={on && !fail ? 'MainShape' : 'MainShapeWarning'} d={`M${x},${y} l72,0 l0,-26 l-8,0`} />
@@ -380,8 +415,6 @@ const AileronAxis = ({ leftorright, x }) => {
 const Elevator = ({
     leftorright, x, elevatorDeflection, hydArray, hydAvail,
 }) => {
-    console.log(`Inside aileron and LR is ${leftorright}`);
-
     const textPositionX = leftorright === 'left' ? x - 42 : Number(x) + 42;
     const textLetter = leftorright === 'left' ? 'L' : 'R';
     const hydPositionX1 = leftorright === 'left' ? Number(x) - 60 : Number(x) + 40;
@@ -389,8 +422,6 @@ const Elevator = ({
 
     const elevatorDeflectPctNormalized = elevatorDeflection * (elevatorDeflection > 0 ? 70 : 52);
     const cursorPath = `M${leftorright === 'left' ? Number(x) + 1 : Number(x) - 1},${398 - elevatorDeflectPctNormalized} l${leftorright === 'right' ? '-' : ''}15,-7 l0,14Z`;
-    console.log(cursorPath);
-    console.log(elevatorDeflection);
 
     return (
         <>
@@ -398,14 +429,14 @@ const Elevator = ({
             <text id={`${leftorright}AileronText2`} className="Note" x={textPositionX} y="350" textAnchor="middle" alignmentBaseline="central">ELEV</text>
 
             <g id={`${leftorright}ElevatorPointer`}>
-                <path id={`${leftorright}ElevatorCursor`} className={hydAvail ? 'GreenShape' : 'WarningShape'} d={cursorPath} />
+                <path id={`${leftorright}ElevatorCursor`} className={hydAvail[0] || hydAvail[1] ? 'GreenShape' : 'WarningShape'} d={cursorPath} />
             </g>
 
             <ElevatorAxis leftorright={leftorright} x={x} />
 
             <g id="leftElevatorHyd">
-                <HydraulicIndicator id={`${leftorright}ElevatorHyd1`} x={hydPositionX1} y="407" letter={hydArray[0]} hydAvail={hydAvail} />
-                <HydraulicIndicator id={`${leftorright}ElevatorHyd2`} x={hydPositionX2} y="407" letter={hydArray[1]} hydAvail={hydAvail} />
+                <HydraulicIndicator id={`${leftorright}ElevatorHyd1`} x={hydPositionX1} y="407" letter={hydArray[0]} hydAvail={hydAvail[0]} />
+                <HydraulicIndicator id={`${leftorright}ElevatorHyd2`} x={hydPositionX2} y="407" letter={hydArray[1]} hydAvail={hydAvail[1]} />
             </g>
         </>
     );
@@ -421,6 +452,34 @@ const ElevatorAxis = ({ leftorright, x }) => {
                 <path className="MainShape" d={d1} />
                 <path className="MainShape" d={d2} />
             </g>
+        </>
+    );
+};
+
+const Spoiler = ({
+    index, leftorright, x, y, yw, hydAvail, spoilerpos, ailpos, spoilersArmed,
+}) => {
+    let showspoiler = false;
+    if (spoilerpos > 0.07 && index > 1) {
+        showspoiler = true;
+        if (index === 5) {
+            if ((leftorright === 'left' && ailpos < -0.05) || (leftorright === 'right' && ailpos > 0.05)) {
+                showspoiler = true;
+            } else {
+                showspoiler = false;
+            }
+        }
+    }
+
+    if (spoilersArmed && ailpos > 0.0625 && (index === 1 || index === 5)) {
+        showspoiler = true;
+    }
+
+    return (
+        <>
+            <path className={hydAvail === 1 ? 'GreenShapeThick' : 'WarningShapeThick'} d={`M ${x} ${y} l ${leftorright === 'right' ? '-' : ''}15 0`} />
+            <path id={`arrow${index}_${leftorright}`} visibility={showspoiler && hydAvail === 1 ? 'visible' : 'hidden'} className="GreenShape" d={`M ${leftorright === 'left' ? Number(x) + 8 : Number(x) - 8} ${y} l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0`} />
+            <text id={`num${index}_${leftorright}`} visibility={hydAvail === 0 ? 'visible' : 'hidden'} className="Warning" x={`${leftorright === 'left' ? Number(x) + 8 : Number(x) - 8}`} y={`${yw}`} textAnchor="middle" alignmentBaseline="central">{index}</text>
         </>
     );
 };
