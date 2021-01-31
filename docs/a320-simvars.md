@@ -436,3 +436,35 @@
 - A32NX_FIRE_BUTTON_APU
     - Bool
     - Indicates if the APU fire button is released
+ 
+ - A32NX_RMP_L_TOGGLE_SWITCH
+    - Boolean
+    - Whether the left radio management panel toggle switch is on or off.
+
+- A32NX_RMP_R_TOGGLE_SWITCH
+    - Boolean
+    - Whether the right radio management panel toggle switch is on or off.
+
+- A32NX_RMP_L_SELECTED_MODE
+    - Number
+    - The current mode of the left radio management panel.
+
+- A32NX_RMP_R_SELECTED_MODE
+    - Number
+    - The current mode of the right radio management panel.
+
+- A32NX_RMP_L_VHF2_STANDBY
+    - Hz
+    - The VHF 2 standby frequency for the left RMP.
+
+- A32NX_RMP_L_VHF3_STANDBY
+    - Hz
+    - The VHF 3 standby frequency for the left RMP.
+
+- A32NX_RMP_R_VHF1_STANDBY
+    - Hz
+    - The VHF 1 standby frequency for the right RMP.
+
+- A32NX_RMP_R_VHF3_STANDBY
+    - Hz
+    - The VHF 3 standby frequency for the right RMP.
