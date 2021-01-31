@@ -18,9 +18,6 @@
 
 import ReactDOM from 'react-dom';
 import { renderTarget } from '../util.mjs';
+import Efb from './Efb.tsx';
 
-const Efb = () => (
-    <div />
-);
-
-ReactDOM.render(<Efb />, renderTarget);
+ReactDOM.render(<Efb currentFlight="TS516" />, renderTarget);
