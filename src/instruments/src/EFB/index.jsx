@@ -84,7 +84,9 @@ function EFBLoad() {
         }, 6000);
         return <ScreenLoading />;
     case 'START':
-        return <Efb logo={logo} />;
+        const currentFlight = getSimVar('ATC FLIGHT NUMBER', 'string');
+
+        return <Efb currentFlight={currentFlight} logo={logo} />;
     default:
         throw new RangeError();
     }

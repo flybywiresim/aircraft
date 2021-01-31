@@ -407,6 +407,10 @@ video {
   height: 24rem;
 }
 
+.h-128 {
+  height: 40.2rem;
+}
+
 .text-lg {
   font-size: 1.125rem;
 }
@@ -711,8 +715,4 @@ body {
 
 .flip-vertical {
   transform: scaleX(-1);
-}
-
-.h-128 {
-  height: 42.5rem;
 }
