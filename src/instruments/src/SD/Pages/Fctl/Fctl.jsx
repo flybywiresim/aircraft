@@ -127,10 +127,51 @@ export const FctlPage = () => {
         refreshRate: 1000,
     });
 
-    // Update hydraulics available state
-    // const hydraulicsShouldBeAvailable = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool") === 0 && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool") === 0;
-    // let rawPitchTrim = SimVar.GetSimVarValue("ELEVATOR TRIM INDICATOR", "Position 16k") / 1213.6296;
-    // const rudderDeflectPct = SimVar.GetSimVarValue("RUDDER DEFLECTION PCT", "percent over 100");
+    const pitchTrimStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'ELEVATOR TRIM INDICATOR',
+        simVarUnit: 'Position 16k',
+        refreshRate: 50,
+    });
+
+    let rawPitchTrim = pitchTrimStatefulSimVar.value / 1213.6296;
+    console.log(rawPitchTrim);
+    // Cap pitch trim at 13.5 up, 4 down
+    if (rawPitchTrim > 16384.0) {
+        rawPitchTrim = 16384.0;
+    } else if (rawPitchTrim < -4854) {
+        rawPitchTrim = -4854;
+    }
+
+    const pitchValueArray = Math.abs(rawPitchTrim).toFixed(1).toString().split('.');
+    const pitchTrimSign = Math.sign(rawPitchTrim);
+
+    const rudderDeflectionStatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'RUDDER DEFLECTION PCT',
+        simVarUnit: 'percent over 100',
+        refreshRate: 50,
+    });
+
+    const rudderAngle = -rudderDeflectionStatefulSimVar.value * 25;
+
+    // Check Hydraulics state
+    // Will probably need changing once hydraulics fully implemented.
+
+    const engine1StatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'ENG COMBUSTION:1',
+        simVarUnit: 'bool',
+        refreshRate: 1000,
+    });
+
+    const engine2StatefulSimVar = new StatefulSimVar({
+        simVarGetter: 'ENG COMBUSTION:2',
+        simVarUnit: 'bool',
+        refreshRate: 1000,
+    });
+
+    const hydraulicsAvailable = engine1StatefulSimVar.value && engine2StatefulSimVar.value;
+
+    console.log(`Hydraulics status ${hydraulicsAvailable}`);
+
     // const IndicatedAirspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots");
     // const spoilersArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "boolean");
     // const leftSpoilerDeflectPct = SimVar.GetSimVarValue("SPOILERS LEFT POSITION", "percent over 100");
@@ -140,17 +181,20 @@ export const FctlPage = () => {
     // const eng2_mode = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:2", "number");
     // const gspeed = SimVar.GetSimVarValue("SURFACE RELATIVE GROUND SPEED", "feet_per_second");
 
-    // const [aileron, setAileron] = useState({
-    //     leftAileronDeflectPct: 0,
-    //     rightAileronDeflectPct: 0,
-    // });
-
     return (
         <>
             <svg id="ecam-fctl" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
                 <text id="pageTitle" className="PageTitle" x="45" y="18" textAnchor="middle" alignmentBaseline="central">F/CTL</text>
 
                 {/* Speedbrakes */}
+                <text id="speedBrakeText" className="Note" x="300" y="107" textAnchor="middle" alignmentBaseline="central">SPD BRK</text>
+
+                <g id="speedbrakeHyd">
+                    <HydraulicIndicator id="pitchTrimHyd1" x="269" y="14" letter="G" hydAvail={hydraulicsAvailable} />
+                    <HydraulicIndicator id="pitchTrimHyd1" x="291" y="14" letter="B" hydAvail={hydraulicsAvailable} />
+                    <HydraulicIndicator id="pitchTrimHyd1" x="313" y="14" letter="Y" hydAvail={hydraulicsAvailable} />
+                </g>
+
                 <g id="speedbrakes">
                     {speedbrakes}
                 </g>
@@ -173,22 +217,13 @@ export const FctlPage = () => {
                     <path className="MainShape" d="M465,110 l0,5 l-105,-12 l0,-5" />
                 </g>
 
-                <g id="speedbrakeHyd">
-                    <rect className="HydBgShape" x="269" y="14" width="18" height="24" rx="2" />
-                    <rect className="HydBgShape" x="291" y="14" width="18" height="24" rx="2" />
-                    <rect className="HydBgShape" x="313" y="14" width="18" height="24" rx="2" />
-                    <text id="speedbrakeHyd1" className="Value" x="278" y="27" textAnchor="middle" alignmentBaseline="central">G</text>
-                    <text id="speedbrakeHyd2" className="Value" x="300" y="27" textAnchor="middle" alignmentBaseline="central">B</text>
-                    <text id="speedbrakeHyd3" className="Value" x="322" y="27" textAnchor="middle" alignmentBaseline="central">Y</text>
-                </g>
-
                 {/* Left ailerons */}
 
-                <Aileron leftorright="left" x="72" aileronDeflection={aileronLeftDeflectionStatefulSimVar.value} hydArray={['B', 'G']} />
+                <Aileron leftorright="left" x="72" aileronDeflection={aileronLeftDeflectionStatefulSimVar.value} hydArray={['B', 'G']} hydAvail={hydraulicsAvailable} />
 
                 {/* Right ailerons */}
 
-                <Aileron leftorright="right" x="528" aileronDeflection={aileronRightDeflectionStatefulSimVar.value} hydArray={['G', 'B']} />
+                <Aileron leftorright="right" x="528" aileronDeflection={aileronRightDeflectionStatefulSimVar.value} hydArray={['G', 'B']} hydAvail={hydraulicsAvailable} />
 
                 <g id="elac">
                     <text id="elacText" className="Note" x="195" y="178" textAnchor="middle" alignmentBaseline="central">ELAC</text>
@@ -205,44 +240,42 @@ export const FctlPage = () => {
 
                 {/* Left elevator */}
 
-                <Elevator leftorright="left" x="168" elevatorDeflection={elevatorDeflectionStatefulSimVar.value} hydArray={['B', 'G']} />
+                <Elevator leftorright="left" x="168" elevatorDeflection={elevatorDeflectionStatefulSimVar.value} hydArray={['B', 'G']} hydAvail={hydraulicsAvailable} />
 
                 {/* Right elevator */}
 
-                <Elevator leftorright="right" x="432" elevatorDeflection={elevatorDeflectionStatefulSimVar.value} hydArray={['B', 'Y']} />
+                <Elevator leftorright="right" x="432" elevatorDeflection={elevatorDeflectionStatefulSimVar.value} hydArray={['B', 'Y']} hydAvail={hydraulicsAvailable} />
 
                 {/* Pitch trim */}
 
                 <g id="pitchTrim">
                     <text id="pitchTrimText" className="Note" x="280" y="296" textAnchor="middle" alignmentBaseline="central">PITCH TRIM</text>
-                    <rect className="HydBgShape" x="360" y="283" width="18" height="24" rx="2" />
-                    <rect className="HydBgShape" x="382" y="283" width="18" height="24" rx="2" />
-                    <text id="pitchTrimLeadingDecimal" className="Value" x="269" y="318" textAnchor="middle" alignmentBaseline="central">-</text>
-                    <text id="pitchTrimDecimalPoint" className="Value" x="281" y="318" textAnchor="middle" alignmentBaseline="central">.</text>
-                    <text id="pitchTrimTrailingDecimal" className="Value12" x="292" y="318" textAnchor="middle" alignmentBaseline="central">-</text>
+
+                    <text id="pitchTrimLeadingDecimal" className={hydraulicsAvailable ? 'Value' : 'Warning'} x="269" y="318" textAnchor="middle" alignmentBaseline="central">{pitchValueArray[0]}</text>
+                    <text id="pitchTrimDecimalPoint" className={hydraulicsAvailable ? 'Value' : 'Warning'} x="281" y="318" textAnchor="middle" alignmentBaseline="central">.</text>
+                    <text id="pitchTrimTrailingDecimal" className={hydraulicsAvailable ? 'Value' : 'Warning'} x="292" y="318" textAnchor="middle" alignmentBaseline="central">{pitchValueArray[1]}</text>
+
                     <circle id="pitchTrimDegreePoint" className="MainShape" cx="310" cy="313" r="3" textAnchor="middle" alignmentBaseline="central">°</circle>
-                    <text id="pitchTrimDirection" className="Value" x="335" y="318" textAnchor="middle" alignmentBaseline="central">UP</text>
-                    <text id="pitchTrimHyd1" className="Value" x="369" y="296" textAnchor="middle" alignmentBaseline="central">G</text>
-                    <text id="pitchTrimHyd2" className="Value" x="391" y="296" textAnchor="middle" alignmentBaseline="central">Y</text>
+                    <text id="pitchTrimDirection" className={hydraulicsAvailable ? 'Value' : 'Warning'} x="335" y="318" textAnchor="middle" alignmentBaseline="central">{pitchTrimSign === -1 ? 'DN' : 'UP'}</text>
+
+                    <HydraulicIndicator id="pitchTrimHyd1" x="360" y="283" letter="G" hydAvail={hydraulicsAvailable} />
+                    <HydraulicIndicator id="pitchTrimHyd2" x="382" y="283" letter="Y" hydAvail={hydraulicsAvailable} />
                 </g>
 
                 {/* Stabilizer */}
 
                 <g id="stabilizer">
-                    <text id="pitchTrimText" className="Note" x="300" y="356" textAnchor="middle" alignmentBaseline="central">RUD</text>
                     <path id="stabLeft" className="MainShape" d="M268,357 l-55,4 l0,-18 l30,-15" />
                     <path id="stabRight" className="MainShape" d="M332,357 l55,4 l0,-18 l-30,-15" />
-                    <rect className="HydBgShape" x="269" y="373" width="18" height="24" rx="2" />
-                    <rect className="HydBgShape" x="291" y="373" width="18" height="24" rx="2" />
-                    <rect className="HydBgShape" x="313" y="373" width="18" height="24" rx="2" />
-                    <text id="stabHyd1" className="Value" x="278" y="386" textAnchor="middle" alignmentBaseline="central">G</text>
-                    <text id="stabHyd2" className="Value" x="300" y="386" textAnchor="middle" alignmentBaseline="central">B</text>
-                    <text id="stabHyd3" className="Value" x="322" y="386" textAnchor="middle" alignmentBaseline="central">Y</text>
+                    <HydraulicIndicator id="stabHyd1" x="269" y="373" letter="G" hydAvail={hydraulicsAvailable} />
+                    <HydraulicIndicator id="stabHyd1" x="291" y="373" letter="B" hydAvail={hydraulicsAvailable} />
+                    <HydraulicIndicator id="stabHyd1" x="313" y="373" letter="Y" hydAvail={hydraulicsAvailable} />
                 </g>
 
                 {/* Rudder */}
 
                 <g id="rudderAxis">
+                    <text id="pitchTrimText" className="Note" x="300" y="356" textAnchor="middle" alignmentBaseline="central">RUD</text>
                     <path id="rudderPath" className="MainShape" d="M 350 469 A 100 100 0 0 1 250 469" />
                     <path id="rudderCenter" className="MainShape" d="m302 482-6e-3 6-4 0.01 0.05-6" />
                     <path id="rudderRightBorder" className="MainShape" d="m343 472 2 5-7 3-2-5" />
@@ -259,16 +292,9 @@ export const FctlPage = () => {
                     <path id="rudderRightLimitWhite" className="GreenShape" d="m343 472 7 13" />
                 </g>
 
-                <g id="rudderCursor">
-                    <path id="rudderCircle" className="GreenShape" d="M 292 434 A 8 8 0 0 1 308 434" />
-                    <path id="rudderTail" className="GreenShape" d="M292,434 l8,48 l8,-48" />
-                </g>
-                v
-
-                {/* Texts */}
-
-                <g id="texts">
-                    <text id="speedBrakeText" className="Note" x="300" y="107" textAnchor="middle" alignmentBaseline="central">SPD BRK</text>
+                <g id="rudderCursor" transform={`rotate(${rudderAngle} 300 380)`}>
+                    <path id="rudderCircle" className={hydraulicsAvailable ? 'GreenShape' : 'WarningShape'} d="M 292 434 A 8 8 0 0 1 308 434" />
+                    <path id="rudderTail" className={hydraulicsAvailable ? 'GreenShape' : 'WarningShape'} d="M292,434 l8,48 l8,-48" />
                 </g>
             </svg>
         </>
@@ -277,7 +303,7 @@ export const FctlPage = () => {
 };
 
 const Aileron = ({
-    leftorright, x, aileronDeflection, hydArray,
+    leftorright, x, aileronDeflection, hydArray, hydAvail,
 }) => {
     const textPositionX = leftorright === 'left' ? x - 40 : Number(x) + 40;
     const textLetter = leftorright === 'left' ? 'L' : 'R';
@@ -293,28 +319,28 @@ const Aileron = ({
             <text id={`${leftorright}AileronText2`} className="Note" x={textPositionX} y="175" textAnchor="middle" alignmentBaseline="central">AIL</text>
 
             <g id={`${leftorright}AileronPointer`}>
-                <path id={`${leftorright}AileronCursor`} className="GreenShape" d={cursorPath} />
+                <path id={`${leftorright}AileronCursor`} className={hydAvail ? 'GreenShape' : 'WarningShape'} d={cursorPath} />
             </g>
 
             <AileronAxis leftorright={leftorright} x={x} />
 
             <g id="leftAileronHyd">
-                <HydraulicIndicator id={`${leftorright}AileronHyd1`} x={hydPositionX1} y="246" letter={hydArray[0]} />
-                <HydraulicIndicator id={`${leftorright}AileronHyd2`} x={hydPositionX2} y="246" letter={hydArray[1]} />
+                <HydraulicIndicator id={`${leftorright}AileronHyd1`} x={hydPositionX1} y="246" letter={hydArray[0]} hydAvail={hydAvail} />
+                <HydraulicIndicator id={`${leftorright}AileronHyd2`} x={hydPositionX2} y="246" letter={hydArray[1]} hydAvail={hydAvail} />
             </g>
         </>
     );
 };
 
 const HydraulicIndicator = ({
-    id, x, y, letter,
+    id, x, y, letter, hydAvail,
 }) => {
     const textPositionX = Number(x) + 9;
     const textPositionY = Number(y) + 13;
     return (
         <>
             <rect className="HydBgShape" x={x} y={y} width="18" height="24" rx="2" />
-            <text id={id} className="Value" x={textPositionX} y={textPositionY} textAnchor="middle" alignmentBaseline="central">{letter}</text>
+            <text id={id} className={hydAvail ? 'Value' : 'Warning'} x={textPositionX} y={textPositionY} textAnchor="middle" alignmentBaseline="central">{letter}</text>
         </>
     );
 };
@@ -352,7 +378,7 @@ const AileronAxis = ({ leftorright, x }) => {
 };
 
 const Elevator = ({
-    leftorright, x, elevatorDeflection, hydArray,
+    leftorright, x, elevatorDeflection, hydArray, hydAvail,
 }) => {
     console.log(`Inside aileron and LR is ${leftorright}`);
 
@@ -372,14 +398,14 @@ const Elevator = ({
             <text id={`${leftorright}AileronText2`} className="Note" x={textPositionX} y="350" textAnchor="middle" alignmentBaseline="central">ELEV</text>
 
             <g id={`${leftorright}ElevatorPointer`}>
-                <path id={`${leftorright}ElevatorCursor`} className="GreenShape" d={cursorPath} />
+                <path id={`${leftorright}ElevatorCursor`} className={hydAvail ? 'GreenShape' : 'WarningShape'} d={cursorPath} />
             </g>
 
             <ElevatorAxis leftorright={leftorright} x={x} />
 
             <g id="leftElevatorHyd">
-                <HydraulicIndicator id={`${leftorright}ElevatorHyd1`} x={hydPositionX1} y="407" letter={hydArray[0]} />
-                <HydraulicIndicator id={`${leftorright}ElevatorHyd2`} x={hydPositionX2} y="407" letter={hydArray[1]} />
+                <HydraulicIndicator id={`${leftorright}ElevatorHyd1`} x={hydPositionX1} y="407" letter={hydArray[0]} hydAvail={hydAvail} />
+                <HydraulicIndicator id={`${leftorright}ElevatorHyd2`} x={hydPositionX2} y="407" letter={hydArray[1]} hydAvail={hydAvail} />
             </g>
         </>
     );
