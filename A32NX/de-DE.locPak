@@ -7,7 +7,8 @@
       "AIRCRAFT.UI_MODEL": "A320neo",
       "AIRCRAFT.UI_VARIATION": "Airbus",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Ausgewählten Steuerkurs nach links anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!)",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ausgewählten Steuerkurs nach rechts anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!)"
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ausgewählten Steuerkurs nach rechts anpassen (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!)",
+      "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU verfügbar"
     }
   }
 }

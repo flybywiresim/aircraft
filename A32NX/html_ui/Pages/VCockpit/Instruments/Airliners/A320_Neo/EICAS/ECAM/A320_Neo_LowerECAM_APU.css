@@ -33,6 +33,10 @@ a320-neo-lower-ecam-apu text.Title {
   fill: var(--displayGreen);
   font-size: 25px;
 }
+:root #FuelLoPr {
+  fill: var(--displayAmber);
+  font-size: 25px;
+}
 :root .WhiteBox {
   stroke: var(--displayWhite);
   stroke-width: 2;
@@ -44,6 +48,10 @@ a320-neo-lower-ecam-apu text.Title {
 }
 :root .APUGenTitle {
   fill: var(--displayGreen);
+  font-size: 18px;
+}
+:root .APUGenTitleWarn {
+  fill: var(--displayAmber);
   font-size: 18px;
 }
 :root #APUBleed {
