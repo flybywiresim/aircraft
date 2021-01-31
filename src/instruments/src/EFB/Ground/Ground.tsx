@@ -33,18 +33,33 @@ class Ground extends React.Component<GroundProps, GroundState> {
 
     performGroundAction(action: GroundServices, value: any = 1, type: any = "boolean") {
         return (() =>{
-            console.log("Bruheg");
             console.log(setSimVar(action,value,type));
         })
     }
 
-    manageTugHeading(action: GroundServices, value: any = 1, type: any = "boolean") {
+    setTugHeading(action: GroundServices, value: any = 1, type: any = "boolean") {
         return (() =>{
             const currentHeading = getSimVar("PLANE HEADING DEGREES TRUE", "degrees");
-            const desiredHeading = (currentHeading * 180 /3.141 + value) % 360;
-            console.log("Heading to get "+desiredHeading * 11930465);
+            let desiredHeading = Math.floor(currentHeading)  + value;
+            desiredHeading %=360;
             setSimVar(action,desiredHeading* 11930465,type);
         })
+    }
+
+    getTugHeading(value: number): number {
+        const currentHeading = getSimVar("PLANE HEADING DEGREES TRUE", "degrees");
+        let desiredHeading: number = Math.floor(currentHeading)  + value;
+        desiredHeading %=360;
+
+        console.log("desired hzeadimng" + desiredHeading);
+        return desiredHeading;
+    }
+
+    togglePushback() {
+        return () => {
+            setSimVar(GroundServices.PUSHBACK_TURN,this.getTugHeading(0)* 11930465,"number");
+            setSimVar(GroundServices.TOGGLE_PUSHBACK,1,"boolean");
+        }
     }
 
     render() {
@@ -53,11 +68,10 @@ class Ground extends React.Component<GroundProps, GroundState> {
             <div className="wrapper flex-grow flex flex-col">
                 <div className="pushback control-grid">
                     <h1 className="text-white font-medium text-xl">Pushback</h1>
-                    <div onClick={this.performGroundAction(GroundServices.TOGGLE_PUSHBACK)} className="stop"><IconHandStop/>
-                    </div>
-                    <div onClick={this.manageTugHeading(GroundServices.PUSHBACK_TURN, 90,"number")} className="down-left"><IconCornerDownLeft/></div>
-                    <div onClick={this.performGroundAction(GroundServices.TOGGLE_PUSHBACK)} className="down selected"><IconArrowDown /></div>
-                    <div onClick={this.manageTugHeading(GroundServices.PUSHBACK_TURN, 270, "number")} className="down-right"><IconCornerDownRight/></div>
+                    <div onClick={this.togglePushback()} className="stop"><IconHandStop/></div>
+                    <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 90,"number")} className="down-left"><IconCornerDownLeft/></div>
+                    <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 0, "number")} className="down selected"><IconArrowDown /></div>
+                    <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 270, "number")} className="down-right"><IconCornerDownRight/></div>
                 </div>
                 <div className="fuel control-grid">
                     <h1 className="text-white font-medium text-xl">Fuel</h1>
@@ -80,5 +94,16 @@ class Ground extends React.Component<GroundProps, GroundState> {
         );
     }
 }
+
+enum GroundServices {
+    TOGGLE_PUSHBACK = "K:TOGGLE_PUSHBACK",
+    PUSHBACK_TURN = "K:KEY_TUG_HEADING",
+    TOGGLE_JETWAY= "K:TOGGLE_JETWAY",
+    TOGGLE_STAIRS="K:TOGGLE_RAMPTRUCK",
+    TOGGLE_CARGO="K:REQUEST_LUGGAGE",
+    TOGGLE_CATERING="K:REQUEST_CATERING",
+    TOGGLE_FUEL="K:REQUEST_FUEL_KEY"
+}
+
 
 export default Ground;
