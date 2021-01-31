@@ -20,6 +20,7 @@ import React from 'react';
 import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive } from '@tabler/icons'
 
 import './Ground.scss'
+import { CachedSimVar } from '../../RMP/Framework/types/CachedSimVar';
 import fuselage from '../Assets/320neo-outline-upright.svg'
 
 type GroundProps = {}
@@ -28,12 +29,26 @@ type GroundState = {}
 
 class Ground extends React.Component<GroundProps, GroundState> {
 
+
+    handleClick() {
+        return (() =>{
+        const panelModeVariable = new CachedSimVar({
+            simVarGetter: `TOGGLE_PUSHBACK`,
+            refreshRate: 250,
+        });
+        panelModeVariable.value(1);
+    })
+
+    }
+
     render() {
         return (
             <div className="wrapper flex-grow flex flex-col">
                 <div className="pushback control-grid">
                     <h1 className="text-white font-medium text-xl">Pushback</h1>
-                    <div className="stop"><IconHandStop/></div>
+                    <div className="stop"><IconHandStop/>
+                        <a onClick={this.handleClick()}></a>
+                    </div>
                     <div className="down-left"><IconCornerDownLeft/></div>
                     <div className="down selected"><IconArrowDown /></div>
                     <div className="down-right"><IconCornerDownRight/></div>
