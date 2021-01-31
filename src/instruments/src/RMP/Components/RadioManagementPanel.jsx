@@ -14,13 +14,11 @@ function createFrequencyModeVariables(side) {
                 simVarGetter: 'COM ACTIVE FREQUENCY:1',
                 simVarSetter: 'K:COM_RADIO_SET_HZ',
                 simVarUnit: 'Hz',
-                refreshRate: 250,
             }),
             standby: new StatefulSimVar({
                 simVarGetter: (side === 'L') ? 'COM STANDBY FREQUENCY:1' : `L:A32NX_RMP_${side}_VHF1_STANDBY_FREQUENCY`,
                 simVarSetter: (side === 'L') ? 'K:COM_STBY_RADIO_SET_HZ' : undefined,
                 simVarUnit: 'Hz',
-                refreshRate: 250,
             }),
         },
 
@@ -29,13 +27,11 @@ function createFrequencyModeVariables(side) {
                 simVarGetter: 'COM ACTIVE FREQUENCY:2',
                 simVarSetter: 'K:COM2_RADIO_SET_HZ',
                 simVarUnit: 'Hz',
-                refreshRate: 250,
             }),
             standby: new StatefulSimVar({
                 simVarGetter: (side === 'R') ? 'COM STANDBY FREQUENCY:2' : `L:A32NX_RMP_${side}_VHF2_STANDBY_FREQUENCY`,
                 simVarSetter: (side === 'R') ? 'K:COM2_STBY_RADIO_SET_HZ' : undefined,
                 simVarUnit: 'Hz',
-                refreshRate: 250,
             }),
         },
 
@@ -44,14 +40,12 @@ function createFrequencyModeVariables(side) {
                 simVarGetter: 'COM ACTIVE FREQUENCY:3',
                 simVarSetter: 'K:COM3_RADIO_SET_HZ',
                 simVarUnit: 'Hz',
-                refreshRate: 250,
             }),
             standby: new StatefulSimVar({
                 // Future proofing for a potential RMP3 on side C.
                 simVarGetter: (side === 'C') ? 'COM STANDBY FREQUENCY:3' : `L:A32NX_RMP_${side}_VHF3_STANDBY_FREQUENCY`,
                 simVarSetter: (side === 'C') ? 'K:COM3_STBY_RADIO_SET_HZ' : undefined,
                 simVarUnit: 'Hz',
-                refreshRate: 250,
             }),
         },
     };
@@ -120,6 +114,14 @@ export function RadioManagementPanel(props) {
     if (panelModeVariable.value === 1) mode = 'vhf1';
     if (panelModeVariable.value === 2) mode = 'vhf2';
     if (panelModeVariable.value === 3) mode = 'vhf3';
+
+    // Stop refreshing unused variables, refresh used ones.
+    for (const [key] of Object.entries(frequencyVariables)) {
+        // RefreshRate of 0 means no refreshing.
+        const variableRefreshRate = (key === mode) ? 250 : 0;
+        frequencyVariables[key].active.setRefreshRate(variableRefreshRate);
+        frequencyVariables[key].standby.setRefreshRate(variableRefreshRate);
+    }
 
     // Handle Transfer Button Pressed.
     useInteractionEvent(`A32NX_RMP_${props.side}_TRANSFER_BUTTON_PRESSED`, () => {
