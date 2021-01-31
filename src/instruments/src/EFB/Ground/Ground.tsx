@@ -33,15 +33,17 @@ class Ground extends React.Component<GroundProps, GroundState> {
 
     performGroundAction(action: GroundServices, value: any = 1, type: any = "boolean") {
         return (() =>{
-            setSimVar(action,value,type);
+            console.log("Bruheg");
+            console.log(setSimVar(action,value,type));
         })
     }
 
     manageTugHeading(action: GroundServices, value: any = 1, type: any = "boolean") {
         return (() =>{
             const currentHeading = getSimVar("PLANE HEADING DEGREES TRUE", "degrees");
-            const desiredHeading = (currentHeading + value) % 360;
-            setSimVar(action,desiredHeading,type);
+            const desiredHeading = (currentHeading * 180 /3.141 + value) % 360;
+            console.log("Heading to get "+desiredHeading * 11930465);
+            setSimVar(action,desiredHeading* 11930465,type);
         })
     }
 
@@ -53,9 +55,9 @@ class Ground extends React.Component<GroundProps, GroundState> {
                     <h1 className="text-white font-medium text-xl">Pushback</h1>
                     <div onClick={this.performGroundAction(GroundServices.TOGGLE_PUSHBACK)} className="stop"><IconHandStop/>
                     </div>
-                    <div onClick={this.performGroundAction(GroundServices.PUSHBACK_TURN_LEFT, 270,"number")} className="down-left"><IconCornerDownLeft/></div>
+                    <div onClick={this.manageTugHeading(GroundServices.PUSHBACK_TURN, 90,"number")} className="down-left"><IconCornerDownLeft/></div>
                     <div onClick={this.performGroundAction(GroundServices.TOGGLE_PUSHBACK)} className="down selected"><IconArrowDown /></div>
-                    <div onClick={this.performGroundAction(GroundServices.PUSHBACK_TURN_RIGHT,90, "number")} className="down-right"><IconCornerDownRight/></div>
+                    <div onClick={this.manageTugHeading(GroundServices.PUSHBACK_TURN, 270, "number")} className="down-right"><IconCornerDownRight/></div>
                 </div>
                 <div className="fuel control-grid">
                     <h1 className="text-white font-medium text-xl">Fuel</h1>
