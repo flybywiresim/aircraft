@@ -1,0 +1,112 @@
+.performance-icon {
+  position: absolute;
+  width: 120px;
+  top: 10px;
+  left: 10px;
+}
+
+.performance-widget-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.performance-widgets {
+  display: flex;
+  height: max-content;
+}
+
+.performance-widget {
+  position: relative;
+}
+
+.columns {
+  display: flex;
+}
+
+.column {
+  flex: 1 1 0;
+  margin: 10px;
+}
+
+.column-right .input-field {
+  flex-direction: row-reverse;
+
+  .input-label {
+    justify-content: flex-start;
+  }
+}
+
+.input-field {
+  display: flex;
+
+  .input-label {
+    flex-grow: 1;
+    margin: 10px;
+  }
+}
+
+.input-container,
+.output-container {
+  display: flex;
+  align-items: center;
+
+  input,
+  select {
+    width: 100px;
+    padding: 4px 10px;
+    background-color: #111827;
+    border-radius: 5px;
+
+    &:disabled {
+      background-color: #303747;
+    }
+  }
+}
+
+.input-label {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.calculate-button {
+  box-sizing: border-box;
+  margin: 10px 0;
+}
+
+.results {
+  border-top: 1px solid white;
+  padding-top: 10px;
+
+  .section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+
+    .values {
+      display: flex;
+    }
+
+    .output-field {
+      margin: 0 5px;
+    }
+
+    .output-label {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 5px 15px;
+    }
+
+    .output-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      input {
+        text-align: center;
+      }
+    }
+  }
+}
