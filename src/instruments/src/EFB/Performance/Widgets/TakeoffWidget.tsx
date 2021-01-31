@@ -41,13 +41,13 @@ export default class TakeoffWidget extends React.Component<WakeoffWidgetProps, T
 								</div>
 							</div>
 							<div className="input-field">
-								<div className="input-label">Runway Length</div>
+								<div className="input-label">Rwy Length</div>
 								<div className="input-container">
 									<input placeholder="Meters"/>
 								</div>
 							</div>
 							<div className="input-field">
-								<div className="input-label">Runway Heading</div>
+								<div className="input-label">Rwy Heading</div>
 								<div className="input-container">
 									<input />
 								</div>
@@ -67,7 +67,7 @@ export default class TakeoffWidget extends React.Component<WakeoffWidgetProps, T
 								</div>
 							</div>
 							<div className="input-field">
-								<div className="input-label">Runway Condition</div>
+								<div className="input-label">Rwy Condition</div>
 								<div className="input-container">
 									<select defaultValue="0">
 										<option value="0">Dry</option>

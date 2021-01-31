@@ -30,11 +30,11 @@ export default class Performance extends React.Component<PerformanceProps, Perfo
 		return (
 			<div className="flex p-6 w-full">
 				<div className="performance-widgets w-full">
-					<div className="performance-widget-container w-4/12 mr-4">
+					<div className="performance-widget-container w-5/12 mr-4">
 						<h1 className="text-white font-medium mb-6 text-xl">Takeoff</h1>
 						<TakeoffWidget />
 					</div>
-					<div className="performance-widget-container w-4/12 mr-4">
+					<div className="performance-widget-container w-5/12 mr-4">
 						<h1 className="text-white font-medium mb-6 text-xl">Landing</h1>
 						<FlexWidget />
 					</div>

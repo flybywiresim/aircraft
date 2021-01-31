@@ -339,7 +339,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 								</div>
 							</div>
 							<div className="input-field">
-								<div className="input-label">Runway Heading</div>
+								<div className="input-label">Rwy Heading</div>
 								<div className="input-container">
 									<input onChange={this.handleRunwayHeadingChange} />
 								</div>
@@ -362,7 +362,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 								</div>
 							</div>
 							<div className="input-field">
-								<div className="input-label">Runway Condition</div>
+								<div className="input-label">Rwy Condition</div>
 								<div className="input-container">
 									<select defaultValue="0" onChange={this.handleRunwayConditionChange}>
 										<option value="0">Dry</option>
