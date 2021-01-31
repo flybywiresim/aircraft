@@ -76,16 +76,18 @@ const FlightDirector = ({ FDActive, FDRoll, FDPitch }) => {
         return null;
     }
 
-    return ([
-        <g className="ThickOutline">
-            <path transform={`translate(${FDRoll} 0)`} d="m68.854 61.672v38.302" />
-            <path transform={`translate(0 ${FDPitch})`} d="m49.263 80.823h39.287" />
-        </g>,
-        <g className="ThickStroke Green">
-            <path id="FlightDirectorRoll" transform={`translate(${FDRoll} 0)`} d="m68.854 61.672v38.302" />
-            <path id="FlightDirectorPitch" transform={`translate(0 ${FDPitch})`} d="m49.263 80.823h39.287" />
-        </g>,
-    ]);
+    return (
+        <>
+            <g className="ThickOutline">
+                <path transform={`translate(${FDRoll} 0)`} d="m68.854 61.672v38.302" />
+                <path transform={`translate(0 ${FDPitch})`} d="m49.263 80.823h39.287" />
+            </g>
+            <g className="ThickStroke Green">
+                <path id="FlightDirectorRoll" transform={`translate(${FDRoll} 0)`} d="m68.854 61.672v38.302" />
+                <path id="FlightDirectorPitch" transform={`translate(0 ${FDPitch})`} d="m49.263 80.823h39.287" />
+            </g>
+        </>
+    );
 };
 
 const SidestickIndicator = ({ isOnGround }) => {

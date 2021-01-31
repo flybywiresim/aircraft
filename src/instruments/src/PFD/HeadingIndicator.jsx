@@ -56,11 +56,13 @@ export const HeadingOfftape = ({
     selectedHeading, heading, ILSCourse, groundTrack,
 }) => {
     if (getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum') !== 2) {
-        return ([
-            <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" className="TapeBackground" />,
-            <path id="HeadingTapeOutline" className="NormalStroke Red" d="m32.138 156.23v-10.886h73.536v10.886" />,
-            <text id="HDGFailText" className="Blink9Seconds FontLargest EndAlign Red" x="75.926208" y="151.95506">HDG</text>,
-        ]);
+        return (
+            <>
+                <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" className="TapeBackground" />
+                <path id="HeadingTapeOutline" className="NormalStroke Red" d="m32.138 156.23v-10.886h73.536v10.886" />
+                <text id="HDGFailText" className="Blink9Seconds FontLargest EndAlign Red" x="75.926208" y="151.95506">HDG</text>
+            </>
+        );
     }
 
     return (
@@ -99,10 +101,12 @@ const SelectedHeading = ({ selectedHeading, heading }) => {
 
 const GroundTrackBug = ({ heading, groundTrack }) => {
     const offset = getSmallestAngle(groundTrack, heading) * DistanceSpacing / ValueSpacing;
-    return [
-        <path className="ThickOutline" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />,
-        <path id="ActualTrackIndicator" className="ThickStroke Green" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />,
-    ];
+    return (
+        <>
+            <path className="ThickOutline" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
+            <path id="ActualTrackIndicator" className="ThickStroke Green" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
+        </>
+    );
 };
 
 const QFUIndicator = ({ ILSCourse, heading }) => {
@@ -130,8 +134,10 @@ const QFUIndicator = ({ ILSCourse, heading }) => {
     }
 
     const offset = getSmallestAngle(ILSCourse, heading) * DistanceSpacing / ValueSpacing;
-    return ([
-        <path id="ILSCoursePointer" className="ThickOutline" transform={`translate(${offset} 0)`} d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />,
-        <path id="ILSCoursePointer" className="ThickStroke Magenta" transform={`translate(${offset} 0)`} d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />,
-    ]);
+    return (
+        <>
+            <path id="ILSCoursePointer" className="ThickOutline" transform={`translate(${offset} 0)`} d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />
+            <path id="ILSCoursePointer" className="ThickStroke Magenta" transform={`translate(${offset} 0)`} d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />
+        </>
+    );
 };

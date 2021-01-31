@@ -185,8 +185,10 @@ const RisingGround = ({ radioAlt, pitch }) => {
 
     const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch - targetPitch) - 31.563, 0), -63.093);
 
-    return [
-        <path d="m113.95 157.74h-90.08v-45.357h90.08z" transform={`translate(0 ${targetOffset})`} className="NormalOutline EarthFill" />,
-        <path id="HorizonGroundRectangle" d="m113.95 157.74h-90.08v-45.357h90.08z" transform={`translate(0 ${targetOffset})`} className="NormalStroke White" />,
-    ];
+    return (
+        <>
+            <path d="m113.95 157.74h-90.08v-45.357h90.08z" transform={`translate(0 ${targetOffset})`} className="NormalOutline EarthFill" />
+            <path id="HorizonGroundRectangle" d="m113.95 157.74h-90.08v-45.357h90.08z" transform={`translate(0 ${targetOffset})`} className="NormalStroke White" />
+        </>
+    );
 };

@@ -77,11 +77,11 @@ export const AirspeedIndicator = ({
 }) => {
     if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
         return (
-            [
-                <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />,
-                <text id="SpeedFailText" className="Blink9Seconds FontLargest EndAlign Red" x="17.756115" y="83.386398">SPD</text>,
-                <SpeedTapeOutline airspeed={100} isRed />,
-            ]
+            <>
+                <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
+                <text id="SpeedFailText" className="Blink9Seconds FontLargest EndAlign Red" x="17.756115" y="83.386398">SPD</text>
+                <SpeedTapeOutline airspeed={100} isRed />
+            </>
         );
     }
 
@@ -179,10 +179,10 @@ export const AirspeedIndicatorOfftape = ({
 }) => {
     if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
         return (
-            [
-                <path id="SpeedTapeOutlineUpper" className="NormalStroke Red" d="m1.9058 38.086h21.859" />,
-                <path id="SpeedTapeOutlineLower" className="NormalStroke Red" d="m1.9058 123.56h21.859" />,
-            ]
+            <>
+                <path id="SpeedTapeOutlineUpper" className="NormalStroke Red" d="m1.9058 38.086h21.859" />
+                <path id="SpeedTapeOutlineLower" className="NormalStroke Red" d="m1.9058 123.56h21.859" />
+            </>
         );
     }
 
