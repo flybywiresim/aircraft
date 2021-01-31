@@ -755,7 +755,7 @@
 			<HELPID/>
 			<PART_ID>Chrono</PART_ID>
 			<MouseFlags>LeftSingle</MouseFlags>
-			<CURSOR>Grab</CURSOR>
+			<CURSOR>Hand</CURSOR>
 		</DefaultTemplateParameters>
 
 		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">
