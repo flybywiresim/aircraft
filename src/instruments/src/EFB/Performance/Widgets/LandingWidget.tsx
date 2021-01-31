@@ -91,7 +91,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 	}
 
 	private calculateRequiredLandingDistance = (): number => {
-		let requiredLandingDistanceReference = this.getRequiredLandingDistanceReference(this.state.weight, this.state.flaps, this.state.runwayCondition);
+		let requiredLandingDistanceReference = this.getRequiredLandingDistanceReference(this.state.weight, this.state.flaps,
+			this.state.autobrakeMode, this.state.runwayCondition);
 
 		let approachSpeedCorrection = requiredLandingDistanceReference * this.getApproachSpeedCorrection(this.state.approachSpeed);
 		let windCorrection = requiredLandingDistanceReference * this.getWindCorrection(this.state.windDirection, this.state.windMagnitude, this.state.runwayHeading, this.state.runwayCondition);
@@ -101,19 +102,22 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		return Math.round(requiredLandingDistance);
 	}
 
-	private getRequiredLandingDistanceReference = (weight: number, flapsConfig: FlapsConfig, runwayCondition: RunwayConditions): number => {
+	private getRequiredLandingDistanceReference = (weight: number, flapsConfig: FlapsConfig, autobrakeMode: AutobrakeMode, runwayCondition: RunwayConditions): number => {
+		// TODO: This shouldn't be linear, use look-up table
 		let minWeight: number = 58000;
 		let maxWeight: number = 94000;
 		let minWeightRefDistance: number;
 		let maxWeightRefDistance: number
 
-		if (flapsConfig == FlapsConfig.Conf3) {
-			//                      Dry, Wet,  Snow, Slush, Water, Ice
-			minWeightRefDistance = ([860, 1110, 1390, 1490, 1550, 2780])[runwayCondition];
-			maxWeightRefDistance = ([1570, 1860, 1980, 2370, 2520, 3950])[runwayCondition];
-		} else { // Full flaps
-			minWeightRefDistance = ([820, 1040, 1310, 1390, 1430, 2590])[runwayCondition];
-			maxWeightRefDistance = ([1470, 1720, 1860, 2210, 2340, 3690])[runwayCondition];
+		if (autobrakeMode == AutobrakeMode.Medium) {
+			minWeightRefDistance = this.getMediumAutobrakeMinWeightRefDist(flapsConfig, runwayCondition);
+			maxWeightRefDistance = this.getMediumAutobrakeMaxWeightRefDist(flapsConfig, runwayCondition);
+		} else if (autobrakeMode == AutobrakeMode.Low) {
+			minWeightRefDistance = this.getLowAutobrakeMinWeightRefDist(flapsConfig, runwayCondition);
+			maxWeightRefDistance = this.getLowAutobrakeMaxWeightRefDist(flapsConfig, runwayCondition);
+		} else {
+			minWeightRefDistance = this.getMaxBrakeMinWeightRefDist(flapsConfig, runwayCondition);
+			maxWeightRefDistance = this.getMaxBrakeMaxWeightRefDist(flapsConfig, runwayCondition);
 		}
 
 		// Compute straight line between the minimum and maximum weight points
@@ -126,6 +130,48 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		return (weight * gradient) + offset;
 	}
 
+	private getMediumAutobrakeMinWeightRefDist = (flapsConfig: FlapsConfig, runwayCondition: RunwayConditions): number => {
+		if (flapsConfig == FlapsConfig.Conf3) {
+			return ([1340, 1410, 1580, 1700, 1770, 2980])[runwayCondition];
+		}
+		return ([1280, 1330, 1500, 1590, 1660, 2790])[runwayCondition]
+	}
+
+	private getMediumAutobrakeMaxWeightRefDist = (flapsConfig: FlapsConfig, runwayCondition: RunwayConditions): number => {
+		if (flapsConfig == FlapsConfig.Conf3) {
+			return ([1970, 2200, 2170, 2690, 2700, 4290])[runwayCondition];
+		}
+		return ([1800, 1980, 1970, 2440, 2580, 3940])[runwayCondition];
+	}
+
+	private getLowAutobrakeMinWeightRefDist = (flapsConfig: FlapsConfig, runwayCondition: RunwayConditions): number => {
+		if (flapsConfig == FlapsConfig.Conf3) {
+			return ([1920, 1920, 1870, 1860, 1900, 3000])[runwayCondition];
+		}
+		return ([1830, 1830, 1780, 1770, 1810, 2810])[runwayCondition];
+	}
+
+	private getLowAutobrakeMaxWeightRefDist = (flapsConfig: FlapsConfig, runwayCondition: RunwayConditions): number => {
+		if (flapsConfig == FlapsConfig.Conf3) {
+			return ([2810, 2810, 2730, 2790, 2940, 4320])[runwayCondition];
+		}
+		return ([2590, 2590, 2520, 2540, 2660, 3960])[runwayCondition];
+	}
+
+	private getMaxBrakeMinWeightRefDist = (flapsConfig: FlapsConfig, runwayCondition: RunwayConditions): number => {
+		if (flapsConfig == FlapsConfig.Conf3) {
+			return ([860, 1110, 1390, 1490, 1550, 2780])[runwayCondition];
+		}
+		return ([820, 1040, 1310, 1390, 1430, 2590])[runwayCondition];
+	}
+
+	private getMaxBrakeMaxWeightRefDist = (flapsConfig: FlapsConfig, runwayCondition: RunwayConditions): number => {
+		if (flapsConfig == FlapsConfig.Conf3) {
+			return ([1570, 1860, 1980, 2370, 2520, 3950])[runwayCondition];
+		}
+		return ([1470, 1720, 1860, 2210, 2340, 3690])[runwayCondition];
+	}
+
 	private getApproachSpeedCorrection = (approachSpeed: number): number => {
 		let approachSpeedDifference = approachSpeed - targetApproachSpeed;
 		if (approachSpeedDifference < 0) {
@@ -133,7 +179,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		}
 
 		let multiplier = approachSpeedDifference / 5;
-		return 0.8 * multiplier;
+		return 0.08 * multiplier;
 	}
 
 	private getWindCorrection = (windDirection: number, windMagnitude: number, runwayHeading: number, runwayCondition: RunwayConditions): number => {
@@ -229,7 +275,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 	private handleFlapsChange = (event: React.FormEvent<HTMLSelectElement>): void => {
 		let flaps: FlapsConfig = parseInt(event.currentTarget.value);
 
-		if (!flaps) {
+		if (flaps !== FlapsConfig.Full && flaps !== FlapsConfig.Conf3) {
 			flaps = FlapsConfig.Full;
 		}
 
@@ -256,10 +302,6 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 
 	private handleAutobrakeChange = (event: React.FormEvent<HTMLSelectElement>): void => {
 		let autobrakeMode: AutobrakeMode = parseInt(event.currentTarget.value);
-
-		if (!autobrakeMode) {
-			autobrakeMode = AutobrakeMode.Low;
-		}
 
 		this.setState(prevState => {
 			let newState = { ...prevState };
@@ -313,9 +355,9 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 							<div className="input-field">
 								<div className="input-label">Flaps</div>
 								<div className="input-container">
-									<select defaultValue="full" onChange={this.handleFlapsChange}>
-										<option value="full">Full</option>
-										<option value="conf3">CONF 3</option>
+									<select defaultValue="1" onChange={this.handleFlapsChange}>
+										<option value="1">Full</option>
+										<option value="0">CONF 3</option>
 									</select>
 								</div>
 							</div>
