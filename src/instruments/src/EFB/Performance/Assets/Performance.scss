@@ -1,10 +1,3 @@
-.performance-icon {
-  position: absolute;
-  width: 120px;
-  top: 10px;
-  left: 10px;
-}
-
 .performance-widget-container {
   display: flex;
   flex-direction: column;
@@ -13,10 +6,6 @@
 .performance-widgets {
   display: flex;
   height: max-content;
-}
-
-.performance-widget {
-  position: relative;
 }
 
 .columns {

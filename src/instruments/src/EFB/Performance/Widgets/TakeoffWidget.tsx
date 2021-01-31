@@ -25,7 +25,6 @@ export default class TakeoffWidget extends React.Component<WakeoffWidgetProps, T
 	public render() {
 		return (
 			<div className="performance-widget bg-gray-800 rounded-xl p-6 text-white shadow-lg h-full">
-				<img className="performance-icon" src="../Assets/cfm_leap1-a.svg"></img>
 				<div className="inputs text-center mb-6">
 					<div className="columns">
 						<div className="column column-left">
