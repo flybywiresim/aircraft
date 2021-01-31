@@ -113,6 +113,12 @@
 .pushback .stop {
   @apply bg-red-500;
   grid-column: 2 / 3;
+  visibility: visible;
+}
+
+.pushback .start {
+  @extend .bg-gray-500;
+  grid-column: 2 / 3;
 }
 
 .down-left {

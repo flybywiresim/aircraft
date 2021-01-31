@@ -22,18 +22,26 @@ import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, I
 import './Ground.scss'
 import fuselage from '../Assets/320neo-outline-upright.svg'
 import {setSimVar, getSimVar} from '../../util.mjs'
-import { GroundServices } from './GroundServices';
 
 type GroundProps = {}
 
-type GroundState = {}
+type GroundState = {
+    tugStatus: boolean;
+}
 
 class Ground extends React.Component<GroundProps, GroundState> {
 
+    constructor(props) {
+        super(props);
 
-    performGroundAction(action: GroundServices, value: any = 1, type: any = "boolean") {
+        this.state = {
+            tugStatus: false,
+        };
+      }
+
+    toggleGroundAction(action: GroundServices) {
         return (() =>{
-            console.log(setSimVar(action,value,type));
+            setSimVar(action,"1","boolean");
         })
     }
 
@@ -42,7 +50,10 @@ class Ground extends React.Component<GroundProps, GroundState> {
             const currentHeading = getSimVar("PLANE HEADING DEGREES TRUE", "degrees");
             let desiredHeading = Math.floor(currentHeading)  + value;
             desiredHeading %=360;
-            setSimVar(action,desiredHeading* 11930465,type);
+            setSimVar(action,desiredHeading * 11930465,type);
+            if(!this.state.tugStatus) {
+                this.togglePushback();
+            }
         })
     }
 
@@ -50,16 +61,17 @@ class Ground extends React.Component<GroundProps, GroundState> {
         const currentHeading = getSimVar("PLANE HEADING DEGREES TRUE", "degrees");
         let desiredHeading: number = Math.floor(currentHeading)  + value;
         desiredHeading %=360;
-
-        console.log("desired hzeadimng" + desiredHeading);
         return desiredHeading;
     }
 
     togglePushback() {
-        return () => {
-            setSimVar(GroundServices.PUSHBACK_TURN,this.getTugHeading(0)* 11930465,"number");
+            const tugActive = this.state.tugStatus;
+            //setSimVar(GroundServices.PUSHBACK_TURN,this.getTugHeading(0)* 11930465,"number");
             setSimVar(GroundServices.TOGGLE_PUSHBACK,1,"boolean");
-        }
+            this.setState ({
+                tugStatus: !tugActive
+            });
+
     }
 
     render() {
@@ -68,26 +80,26 @@ class Ground extends React.Component<GroundProps, GroundState> {
             <div className="wrapper flex-grow flex flex-col">
                 <div className="pushback control-grid">
                     <h1 className="text-white font-medium text-xl">Pushback</h1>
-                    <div onClick={this.togglePushback()} className="stop"><IconHandStop/></div>
+                    <div onClick={() => this.state.tugStatus?this.togglePushback():""} className= { this.state.tugStatus?"stop":"start"}><IconHandStop/></div>
                     <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 90,"number")} className="down-left"><IconCornerDownLeft/></div>
-                    <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 0, "number")} className="down selected"><IconArrowDown /></div>
+                    <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 0, "number")} className="down"><IconArrowDown /></div>
                     <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 270, "number")} className="down-right"><IconCornerDownRight/></div>
                 </div>
                 <div className="fuel control-grid">
                     <h1 className="text-white font-medium text-xl">Fuel</h1>
-                    <div onClick={this.performGroundAction(GroundServices.TOGGLE_FUEL)} className="call"><IconTruck/></div>
+                    <div onClick={this.toggleGroundAction(GroundServices.TOGGLE_FUEL)} className="call"><IconTruck/></div>
                 </div>
                 <div className="baggage control-grid">
                     <h1 className="text-white font-medium text-xl">Baggage</h1>
-                    <div onClick={this.performGroundAction(GroundServices.TOGGLE_CARGO)} className="call"><IconBriefcase/></div>
+                    <div onClick={this.toggleGroundAction(GroundServices.TOGGLE_CARGO)} className="call"><IconBriefcase/></div>
                 </div>
                 <div className="catering control-grid">
                     <h1 className="text-white font-medium text-xl">Catering</h1>
-                    <div onClick={this.performGroundAction(GroundServices.TOGGLE_CATERING)} className="call"><IconArchive/></div>
+                    <div onClick={this.toggleGroundAction(GroundServices.TOGGLE_CATERING)} className="call"><IconArchive/></div>
                 </div>
                 <div className="jetway control-grid">
                     <h1 className="text-white font-medium text-xl">Jetway</h1>
-                    <div onClick={this.performGroundAction(GroundServices.TOGGLE_JETWAY)}  className="call"><IconBuildingArch/></div>
+                    <div onClick={this.toggleGroundAction(GroundServices.TOGGLE_JETWAY)}  className="call"><IconBuildingArch/></div>
                 </div>
                 <img className="airplane w-full" src={fuselage} />
             </div>
