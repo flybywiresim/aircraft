@@ -71,6 +71,7 @@
 1. [RMP] Separate radio management panels for each side and complete rewrite - @theomessin (Theodore Messinezis)
 1. [FLIGHTMODEL] Updated landing gear contact point values to closer match reality - @wpine215 (Iceman) and @donstim (donbikes#4084)
 1. [TEXTURE] Various cockpit decal texture fixes and updates - @ImenesFBW (Imenes)
+1. [MCDU] Rework PERF TAKE OFF page - @beheh (Benedict Etzel)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
