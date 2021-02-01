@@ -244,9 +244,17 @@ class Efb extends React.Component<EfbProps, EfbState> {
                     taxiOutTime={this.state.taxiOutTime}
                 />;
             case 2:
-                return <h1>Page 2</h1>;
+                return (
+                    <div className="w-full h-full">
+                        <p className="text-white font-medium mt-6 ml-4 text-3xl">INOP</p>
+                    </div>
+                );
             case 3:
-                return <h1>Page 3</h1>;
+                return (
+                    <div className="w-full h-full">
+                        <p className="text-white font-medium mt-6 ml-4 text-3xl">INOP</p>
+                    </div>
+                );
             case 4:
                 return <Company simbriefUsername={this.state.simbriefUsername} changeSimbriefUsername={this.changeSimbriefUsername} />;
             case 5:
