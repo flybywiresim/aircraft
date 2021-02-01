@@ -228,7 +228,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         CDUMenuPage.ShowPage(this);
 
-        this.updateApproachSpeeds();
+        this.updatePerfSpeeds();
 
         // support spawning in with a custom flight phases from the .flt files
         const initialFlightPhase = SimVar.GetSimVarValue("L:A32NX_INITIAL_FLIGHT_PHASE", "number");
