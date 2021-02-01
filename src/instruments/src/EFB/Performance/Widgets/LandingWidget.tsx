@@ -16,9 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- /* Speeds and distances source:
-	A320 Quick Reference Handbook (Revision 40)
- */
+ // Data and calculations obtained from Quick Reference Handbook (In Flight Procedures, Landing Performance Assessment/Landing Distance)
 
 import React from 'react';
 
@@ -33,8 +31,7 @@ type LandingWidgetState = {
 	runwayCondition: RunwayConditions,
 	autobrakeMode: AutobrakeMode,
 	reverseThrust: boolean,
-	landingDistance: number,
-	minimumRunwayLength: number
+	landingDistance: number
 };
 
 enum RunwayConditions {
@@ -60,6 +57,69 @@ enum AutobrakeMode {
 
 const targetApproachSpeed: number = 131.5;
 
+type LandingData = {
+	refDistance: number,
+	weightAdjustAbove: number, // per 1T above 68T
+	weightAdjustBelow: number, // per 1T below 68T
+	speedAdjust: number, // Per 5kt
+	altitudeAdjust: number, // Per 1000ft ASL
+	windAdjust: number, // Per 5KT tail wind
+	tempAdjust: number, // Per 10 deg C above ISA
+	slopeAdjust: number, // Per 1% down slope
+	reverserAdjust: number, // Per thrust reverser operative
+	overweightProcedureAdjust: number // If overweight procedure applied
+};
+
+type FlapsConfigLandingData = {
+	[flapsConfig in FlapsConfig]: LandingData
+};
+
+const maximumBrakeData: FlapsConfigLandingData = {
+	[FlapsConfig.Full]: {
+		refDistance: 1060,
+		weightAdjustAbove: 50,
+		weightAdjustBelow: -10,
+		speedAdjust: 70,
+		altitudeAdjust: 40,
+		windAdjust: 130,
+		tempAdjust: 30,
+		slopeAdjust: 20,
+		reverserAdjust: 0,
+		overweightProcedureAdjust: 910
+	},
+	[FlapsConfig.Conf3]: {
+		refDistance: 1210,
+		weightAdjustAbove: 50,
+		weightAdjustBelow: -10,
+		speedAdjust: 80,
+		altitudeAdjust: 50,
+		windAdjust: 130,
+		tempAdjust: 40,
+		slopeAdjust: 30,
+		reverserAdjust: -10,
+		overweightProcedureAdjust: 1080
+	},
+};
+
+const mediumAutobrakeData: FlapsConfigLandingData = {
+	[FlapsConfig.Full]: {
+		refDistance: 1330,
+		weightAdjustAbove: 30,
+		weightAdjustBelow: -10,
+		speedAdjust: 90,
+		altitudeAdjust: 50,
+		windAdjust: 140,
+		tempAdjust: 40,
+		slopeAdjust: 10,
+		reverserAdjust: 0,
+		overweightProcedureAdjust: 220
+	},
+	[FlapsConfig.Conf3]: {
+		refDistance: 1510,
+
+	}
+}
+
 export default class LandingWidget extends React.Component<LandingWidgetProps, LandingWidgetState> {
 	constructor(props: LandingWidget) {
 		super(props);
@@ -73,8 +133,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 			runwayCondition: RunwayConditions.Dry,
 			autobrakeMode: AutobrakeMode.Low,
 			reverseThrust: false,
-			landingDistance: 0,
-			minimumRunwayLength: 0
+			landingDistance: 0
 		};
 	}
 
@@ -85,7 +144,6 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		this.setState(prevState => {
 			let newState = { ...prevState };
 			newState.landingDistance = Math.round(operationalLandingDistance);
-			newState.minimumRunwayLength = Math.round(operationalLandingDistance / 0.6);
 			return newState;
 		});
 	}
@@ -408,12 +466,6 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 								<div className="output-label">Landing Distance</div>
 								<div className="output-container">
 									<input disabled id="landing-distance-output" value={this.state.landingDistance + "m"}></input>
-								</div>
-							</div>
-							<div className="output-field">
-								<div className="output-label">Min Runway Length</div>
-								<div className="output-container">
-									<input disabled id="landing-distance-output" value={this.state.minimumRunwayLength + "m"}></input>
 								</div>
 							</div>
 						</div>
