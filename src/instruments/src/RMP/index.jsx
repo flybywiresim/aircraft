@@ -2,22 +2,23 @@ import ReactDOM from 'react-dom';
 import { renderTarget } from '../util.mjs';
 import './style.scss';
 
-import { StatefulSimVar } from './Framework/StatefulSimVar.mjs';
-import { RadioManagementPanel } from './Components/RadioManagementPanel.jsx';
+import { SevenSegmentDisplay } from './Components/SevenSegmentDisplay.jsx';
+import { SimVarProvider, useSimVar } from '../Framework/SimVarProvider.jsx';
+import { useInteractionEvent } from '../util.mjs';
 
 function RootInstrumentDisplay() {
-    const lightsTestStatefulSimVar = new StatefulSimVar({
-        simVarGetter: 'L:XMLVAR_LTS_Test',
-        simVarUnit: 'Bool',
-        refreshRate: 250,
-    });
+    console.log("render");
+    const [lightsTest] = useSimVar('L:XMLVAR_LTS_Test', 'Bool');
+    const [toggleSwitch] = useSimVar('L:A32NX_RMP_L_TOGGLE_SWITCH', 'Bool');
 
     return (
         <div className="rmp-wrapper">
-            <RadioManagementPanel side="L" lightsTest={lightsTestStatefulSimVar.value} />
-            <RadioManagementPanel side="R" lightsTest={lightsTestStatefulSimVar.value} />
+            <SevenSegmentDisplay type="string" value={toggleSwitch ? "123.455" : ""} lightsTest={lightsTest} />
+            <SevenSegmentDisplay type="string" value={toggleSwitch ? "123.455" : ""} lightsTest={lightsTest} />
+            {/* <RadioManagementPanel side="L" lightsTest={lightsTestStatefulSimVar.value} /> */}
+            {/* <RadioManagementPanel side="R" lightsTest={lightsTestStatefulSimVar.value} /> */}
         </div>
     );
 }
 
-ReactDOM.render(<RootInstrumentDisplay />, renderTarget);
+ReactDOM.render(<SimVarProvider><RootInstrumentDisplay /></SimVarProvider>, renderTarget);
