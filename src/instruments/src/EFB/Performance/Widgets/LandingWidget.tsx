@@ -20,6 +20,7 @@
  // TODO: good-to-medium and medium-to-poor conditions
 
 import React from 'react';
+import { getTailWind } from '../CommonCalculations';
 
 type LandingWidgetProps = {};
 type LandingWidgetState = {
@@ -57,6 +58,10 @@ enum AutobrakeMode {
 	Max // Manual brake is the same as max auto
 }
 
+
+/**
+ * Landing data for a specific aircraft configuration with a specific runway condition
+ */
 type LandingData = {
 	refDistance: number,
 	weightCorrectionAbove: number, // per 1T above 68T
@@ -406,6 +411,10 @@ const poorRunwayLandingData: AutobrakeConfigLandingData = {
 	}
 }
 
+/**
+ * Stores all landing data for the aircraft.
+ * Retrieve with runwayConditionLandingData[runwayCondition][autobrakeMode][flapsConfig]
+ */
 const runwayConditionLandingData: RunwayConditionLandingData = {
 	[RunwayConditions.Dry]: dryRunwayLandingData,
 	[RunwayConditions.Good]: goodRunwayLandingData,
@@ -450,7 +459,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 
 		let landingData = runwayConditionLandingData[this.state.runwayCondition][this.state.autobrakeMode][this.state.flaps];
 
-		let tailWind = this.getTailWind(this.state.windDirection, this.state.windMagnitude, this.state.runwayHeading);
+		let tailWind = getTailWind(this.state.windDirection, this.state.windMagnitude, this.state.runwayHeading);
 		if (tailWind < 0) {
 			tailWind = 0;
 		}
@@ -495,21 +504,13 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		return Math.round(requiredLandingDistance);
 	}
 
-	private getTailWind = (windDirection: number, windMagnitude: number, runwayHeading: number): number => {
-		let windDirectionRelativeToRwy = windDirection - runwayHeading;
-		let windDirectionRelativeToRwyRadians = windDirectionRelativeToRwy * (Math.PI / 180);
-
-		let tailWind = Math.cos(Math.PI - windDirectionRelativeToRwyRadians) * windMagnitude;
-		return tailWind;
-	}
-
 	private handleWindChange = (event: React.FormEvent<HTMLInputElement>): void => {
 		let wind = event.currentTarget.value;
 		let splitWind = wind.split('/');
 		let direction = parseInt(splitWind[0]);
 		let magnitude = parseInt(splitWind[1]);
 
-		if (!direction || !magnitude) {
+		if (Number.isNaN(direction) || Number.isNaN(magnitude)) {
 			direction = 0;
 			magnitude = 0;
 		}
