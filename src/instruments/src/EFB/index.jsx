@@ -17,24 +17,14 @@
  */
 
 import ReactDOM from 'react-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Efb from './Efb.tsx';
-import { renderTarget, useUpdate, getSimVar } from '../util.mjs';
+import {
+    renderTarget, getSimVar, setSimVar,
+} from '../util.mjs';
 import logo from './Assets/fbw-logo.svg';
 
 import './Assets/Boot.scss';
-
-// TODO: Move anything dependent on ac power change to A32NX_Core
-function powerAvailable() {
-    // These are inlined so they're only evaluated if prior conditions return false.
-    return (
-        Simplane.getEngineActive(0) === 1 || Simplane.getEngineActive(1) === 1
-    ) || (
-        getSimVar('L:APU_GEN_ONLINE')
-    ) || (
-        getSimVar('EXTERNAL POWER AVAILABLE:1') && getSimVar('EXTERNAL POWER ON')
-    );
-}
 
 function ScreenLoading() {
     return (
@@ -54,42 +44,38 @@ function ScreenLoading() {
 }
 
 function EFBLoad() {
-    const [state, setState] = useState('DEFAULT');
+    const [content, setContent] = useState(<></>);
+    const [loadingTimeout, setLoadingTimeout] = useState();
 
-    useUpdate((_deltaTime) => {
-        if (state === 'OFF') {
-            if (powerAvailable()) {
-                setState('ON');
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const nowPoweredOn = getSimVar('L:A32NX_EFB_TURNED_ON', 'number');
+
+            switch (nowPoweredOn) {
+            case 0:
+                setContent(<></>);
+                break;
+            case 1:
+                setContent(<ScreenLoading />);
+                if (!loadingTimeout) {
+                    setLoadingTimeout(setTimeout(() => {
+                        setSimVar('L:A32NX_EFB_TURNED_ON', 2, 'number');
+                        setLoadingTimeout(undefined);
+                    }, 6_000));
+                }
+                break;
+            case 2:
+                setContent(<Efb currentFlight={getSimVar('ATC FLIGHT NUMBER', 'string')} logo={logo} />);
+                break;
+            default:
+                throw new RangeError();
             }
-        } else if (!powerAvailable()) {
-            setState('OFF');
-        }
-    });
+        }, 100);
 
-    switch (state) {
-    case 'DEFAULT':
-        if (getSimVar('L:A32NX_COLD_AND_DARK_SPAWN')) {
-            setState('OFF');
-        } else {
-            setState('START');
-        }
-        return <></>;
-    case 'OFF':
-        return <></>;
-    case 'ON':
-        setTimeout(() => {
-            if (powerAvailable()) {
-                setState('START');
-            }
-        }, 6000);
-        return <ScreenLoading />;
-    case 'START':
-        const currentFlight = getSimVar('ATC FLIGHT NUMBER', 'string');
+        return () => clearInterval(interval);
+    }, [loadingTimeout]);
 
-        return <Efb currentFlight={currentFlight} logo={logo} />;
-    default:
-        throw new RangeError();
-    }
+    return content;
 }
 
 ReactDOM.render(<EFBLoad />, renderTarget);
