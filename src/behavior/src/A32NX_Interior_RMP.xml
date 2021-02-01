@@ -1,0 +1,262 @@
+<ModelBehaviors>
+    <Template Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
+        <DefaultTemplateParameters>
+            <ELEC_BUS>(L:ACPowerAvailable, boolean)</ELEC_BUS>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_RMP_CONTROLS_Template" />
+        <UseTemplate Name="FBW_RMP_COMMS_MODE_SELECTION_Template" />
+        <UseTemplate Name="FBW_RMP_NAV_MODE_SELECTION_Template" />
+    </Template>
+
+    <Template Name="FBW_RMP_CONTROLS_Template">
+        <!-- Panel ON/OFF Toggle Switch -->
+        <Component ID="RMP_TOGGLE_SWITCH_#SIDE#" Node="SWITCH_RADIO#SIDE#_1">
+            <UseTemplate Name="ASOBO_GT_Switch_Code">
+                <ANIM_LENGTH>100</ANIM_LENGTH>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                <ANIM_NAME>SWITCH_RADIO#SIDE#_1</ANIM_NAME>
+                <WWISE_EVENT_1>radio_switch_on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>radio_switch_off</WWISE_EVENT_2>
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RADIO_SELECT_TURN_RMP_ON</ANIMTIP_0>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RADIO_SELECT_TURN_RMP_OFF</ANIMTIP_1>
+                <ANIM_CODE type="rnp" return="number">
+                    alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, number);
+                    toggleSwitch * 100
+                </ANIM_CODE>
+                <LEFT_SINGLE_CODE type="rnp">
+                    alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
+                    toggleSwitch = !toggleSwitch;
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <!-- Outer frequency integer selection knob -->
+        <Component ID="RMP_DIAL_LARGE_#SIDE#" Node="KNOB_RADIO#SIDE#_BIG">
+            <UseTemplate Name="ASOBO_GT_Knob_Infinite">
+                <COUNT>36</COUNT>
+                <ANIMREF_ID>0</ANIMREF_ID>
+                <WWISE_EVENT>RMPknob</WWISE_EVENT>
+                <ANIMCURSOR_MIN>-1</ANIMCURSOR_MIN>
+                <ANIMCURSOR_MAX>-1</ANIMCURSOR_MAX>
+                <ANIM_NAME>KNOB_RADIO#SIDE#_BIG</ANIM_NAME>
+                <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+                <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RADIO_TUNE_SBY_FREQUENCY_DEC</ANIMTIP_0>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RADIO_TUNE_SBY_FREQUENCY_INC</ANIMTIP_1>
+                <CLOCKWISE_CODE>(&gt;H:A32NX_RMP_#SIDE#_OUTER_KNOB_TURNED_CLOCKWISE)</CLOCKWISE_CODE>
+                <ANTICLOCKWISE_CODE>(&gt;H:A32NX_RMP_#SIDE#_OUTER_KNOB_TURNED_ANTICLOCKWISE)</ANTICLOCKWISE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <!-- Inner frequency decimal / course selection knob -->
+        <Component ID="RMP_DIAL_SMALL_#SIDE#" Node="KNOB_RADIO#SIDE#_SMALL">
+            <UseTemplate Name="ASOBO_GT_Knob_Infinite">
+                <COUNT>36</COUNT>
+                <ANIMREF_ID>0</ANIMREF_ID>
+                <WWISE_EVENT>RMPknob</WWISE_EVENT>
+                <ANIMCURSOR_MIN>-1</ANIMCURSOR_MIN>
+                <ANIMCURSOR_MAX>-1</ANIMCURSOR_MAX>
+                <ANIM_NAME>KNOB_RADIO#SIDE#_SMALL</ANIM_NAME>
+                <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+                <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RADIO_TUNE_SBY_FREQUENCY_DEC</ANIMTIP_0>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RADIO_TUNE_SBY_FREQUENCY_INC</ANIMTIP_1>
+                <CLOCKWISE_CODE>(&gt;H:A32NX_RMP_#SIDE#_INNER_KNOB_TURNED_CLOCKWISE)</CLOCKWISE_CODE>
+                <ANTICLOCKWISE_CODE>(&gt;H:A32NX_RMP_#SIDE#_INNER_KNOB_TURNED_ANTICLOCKWISE)</ANTICLOCKWISE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <!-- Panel transfer button -->
+        <Component ID="RMP_TRANSFER_BUTTON_#SIDE#" Node="PUSH_RADIO#SIDE#_ARROWS">
+            <UseTemplate Name="ASOBO_GT_Push_Button">
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                <ANIM_NAME>PUSH_RADIO#SIDE#_ARROWS</ANIM_NAME>
+                <WWISE_EVENT_1>radio_push_button_on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>radio_push_button_off</WWISE_EVENT_2>
+                <TOOLTIPID>TT:COCKPIT.TOOLTIPS.RADIO_FREQUENCY_TRANSFER_KEY</TOOLTIPID>
+                <LEFT_SINGLE_CODE>(&gt;H:A32NX_RMP_#SIDE#_TRANSFER_BUTTON_PRESSED)</LEFT_SINGLE_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_RMP_BACKLIGHT_Template">
+                <BASE_NAME>ARROWS</BASE_NAME>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_RMP_COMMS_MODE_SELECTION_Template">
+        <!-- VHF1 mode selection button -->
+        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+            <MODE_ID>1</MODE_ID>
+            <BASE_NAME>VHF1</BASE_NAME>
+        </UseTemplate>
+
+        <!-- VHF2 mode selection button -->
+        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+            <MODE_ID>2</MODE_ID>
+            <BASE_NAME>VHF2</BASE_NAME>
+        </UseTemplate>
+
+        <!-- VHF3 mode selection button -->
+        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+            <MODE_ID>3</MODE_ID>
+            <BASE_NAME>VHF3</BASE_NAME>
+        </UseTemplate>
+
+        <!-- Inop HF1 mode button and led -->
+        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+            <INOP>1</INOP>
+            <BASE_NAME>HF1</BASE_NAME>
+        </UseTemplate>
+
+        <!-- Inop HF2 mode button and led -->
+        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+            <INOP>1</INOP>
+            <BASE_NAME>HF2</BASE_NAME>
+        </UseTemplate>
+
+        <!-- Inop AM mode button and led -->
+        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+            <INOP>1</INOP>
+            <BASE_NAME>AM</BASE_NAME>
+        </UseTemplate>
+
+        <!-- SEL indicator led light -->
+        <Component ID="PUSH_RADIO#SIDE#_SEL_SEQ2" Node="PUSH_RADIO#SIDE#_SEL_SEQ2">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE type="rnp" return="boolean">
+                    let elecBus = #ELEC_BUS, bool#;
+                    alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
+                    alias selectedModeLeft = (L:A32NX_RMP_L_SELECTED_MODE, number);
+                    alias selectedModeRight = (L:A32NX_RMP_R_SELECTED_MODE, number);
+                    // @todo abnormal defined differently with NAV modes available.
+                    let rmpLeftAbnormal = selectedModeLeft != 1;
+                    let rmpRightAbnormal = selectedModeRight != 2;
+                    elecBus and toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal)
+                </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <!-- SEL indicator backlighting -->
+        <UseTemplate Name="FBW_RMP_BACKLIGHT_Template">
+            <BASE_NAME>SEL</BASE_NAME>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_RMP_NAV_MODE_SELECTION_Template">
+        <!-- NAV mode button guard -->
+        <Component ID="RMP_NAV_LOCK_#SIDE#" Node="LOCK_RADIO#SIDE#_NAV">
+            <UseTemplate Name="ASOBO_GT_Switch_Code">
+                <ANIM_NAME>LOCK_RADIO#SIDE#_NAV</ANIM_NAME>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
+                <ANIM_CODE>(L:XMLVAR_RMP_#SIDE#_NavLockOff) 100 *</ANIM_CODE>
+                <LEFT_SINGLE_CODE>(L:XMLVAR_RMP_#SIDE#_NavLockOff) ! (&gt;L:XMLVAR_RMP_#SIDE#_NavLockOff)</LEFT_SINGLE_CODE>
+                <WWISE_EVENT_1>radio_lock_on</WWISE_EVENT_1>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <WWISE_EVENT_2>radio_lock_off</WWISE_EVENT_2>
+                <NORMALIZED_TIME_2>0.</NORMALIZED_TIME_2>
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.GENERIC_BUTTON_GUARD_ON</ANIMTIP_0>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.GENERIC_BUTTON_GUARD_OFF</ANIMTIP_1>
+            </UseTemplate>
+        </Component>
+
+        <!-- Inop NAV mode button and led -->
+        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+            <INOP>1</INOP>
+            <BASE_NAME>NAV</BASE_NAME>
+        </UseTemplate>
+
+        <!-- Inop VOR mode button and led -->
+        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+            <INOP>1</INOP>
+            <BASE_NAME>VOR</BASE_NAME>
+        </UseTemplate>
+
+        <!-- Inop ILS mode button and led -->
+        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+            <INOP>1</INOP>
+            <BASE_NAME>ILS</BASE_NAME>
+        </UseTemplate>
+
+        <!-- Inop MLS mode button and led -->
+        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+            <INOP>1</INOP>
+            <BASE_NAME>MLS</BASE_NAME>
+        </UseTemplate>
+
+        <!-- Inop ADF mode button and led -->
+        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+            <INOP>1</INOP>
+            <BASE_NAME>ADF</BASE_NAME>
+        </UseTemplate>
+
+        <!-- Inop BFO mode button and led -->
+        <UseTemplate Name="FBW_RMP_MODE_BUTTON_AND_LED">
+            <INOP>1</INOP>
+            <BASE_NAME>BFO</BASE_NAME>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_RMP_MODE_BUTTON_AND_LED">
+        <DefaultTemplateParameters>
+            <INOP>0</INOP>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <NODE_ID>PUSH_RADIO#SIDE#_#BASE_NAME#</NODE_ID>
+            <WWISE_EVENT_1>radio_push_button_on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>radio_push_button_off</WWISE_EVENT_2>
+            <ANIM_NAME_BUTTON>PUSH_RADIO#SIDE#_#BASE_NAME#</ANIM_NAME_BUTTON>
+            <TOOLTIPID>TT:COCKPIT.TOOLTIPS.RADIO_SELECT_#BASE_NAME#</TOOLTIPID>
+        </DefaultTemplateParameters>
+
+        <!-- Button to be pressed -->
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button">
+                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+                <LEFT_SINGLE_CODE>(&gt;H:A32NX_RMP_#SIDE#_#BASE_NAME#_BUTTON_PRESSED)</LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <!-- LED light next to button indicating if mode is active -->
+        <UseTemplate Name="FBW_RMP_MODE_SELECTED_LED" />
+
+        <!-- Button label backlight -->
+        <UseTemplate Name="FBW_RMP_BACKLIGHT_Template" />
+    </Template>
+
+    <Template Name="FBW_RMP_MODE_SELECTED_LED">
+        <DefaultTemplateParameters>
+            <INOP>0</INOP>
+            <LED_NODE_ID>PUSH_RADIO#SIDE#_#BASE_NAME#_SEQ2</LED_NODE_ID>
+        </DefaultTemplateParameters>
+
+        <Component ID="#LED_NODE_ID#" Node="#LED_NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE type="rnp" return="boolean">
+                    let inop = #INOP, boolean#;
+                    let elecBus = #ELEC_BUS, bool#;
+                    let modeId = (#MODE_ID, number#);
+                    alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
+                    alias selectedMode = (L:A32NX_RMP_#SIDE#_SELECTED_MODE, number);
+                    !inop and elecBus and toggleSwitch and (selectedMode == modeId)
+                </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_RMP_BACKLIGHT_Template">
+        <DefaultTemplateParameters>
+            <BACKLIGHT_NAME>PUSH_RADIO#SIDE#_#BASE_NAME#_SEQ1</BACKLIGHT_NAME>
+        </DefaultTemplateParameters>
+
+        <Component ID="#BACKLIGHT_NAME#" Node="#BACKLIGHT_NAME#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE>
+                   (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)
+                </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>

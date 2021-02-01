@@ -200,20 +200,6 @@
 						</Action>
 					</ChildrenList>
 				</Event>
-				<Event Name="Play_Asobo_A320_NEO_taxirattle" ID="{A315B1BB-3283-4D8D-B20D-24F78AF83B4E}">
-					<ChildrenList>
-						<Action Name="" ID="{44CD7921-251C-49A2-BA2E-6153A313D881}" ShortID="430282912">
-							<PropertyList>
-								<Property Name="ActionType" Type="int16" Value="1"/>
-							</PropertyList>
-							<ReferenceList>
-								<Reference Name="Target">
-									<ObjectRef Name="taxirattle" ID="{9B266226-F281-457F-A3EF-A1C7F4E6B9A6}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
-								</Reference>
-							</ReferenceList>
-						</Action>
-					</ChildrenList>
-				</Event>
 				<Event Name="Play_Asobo_A320_NEO_Betterwind" ID="{A929CABB-1B68-4D3D-88C5-45E54D3D089C}">
 					<ChildrenList>
 						<Action Name="" ID="{14A16F72-0093-4C42-9335-60C3650DFE7D}" ShortID="1039902741">
@@ -2085,6 +2071,20 @@
 							<ReferenceList>
 								<Reference Name="Target">
 									<ObjectRef Name="mcdubuttons" ID="{BBB260A3-3659-4EB1-A1B4-4B2781E029A9}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_transformers" ID="{9219C81B-25A4-42A3-B9B0-CF95BC6FF84D}">
+					<ChildrenList>
+						<Action Name="" ID="{18D63CE9-856B-41A3-A410-F35F36E875B4}" ShortID="1063929178">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="transformers" ID="{DE4113FF-7EED-4FB6-B045-9F10F7F86292}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
