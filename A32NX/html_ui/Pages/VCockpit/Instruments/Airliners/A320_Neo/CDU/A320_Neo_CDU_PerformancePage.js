@@ -48,158 +48,291 @@ class CDUPerformancePage {
                 }
             }
         };
+
         let titleColor = "white";
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
             titleColor = "green";
         }
-        let runway = "---";
-        const selectedRunway = mcdu.flightPlanManager.getDepartureRunway();
-        if (selectedRunway) {
-            runway = Avionics.Utils.formatRunway(selectedRunway.designation);
-        } else {
-            const predictedRunway = mcdu.flightPlanManager.getDetectedCurrentRunway();
-            if (predictedRunway) {
-                runway = Avionics.Utils.formatRunway(predictedRunway.designation);
+
+        // check if we even have an airport
+        const hasOrigin = !!mcdu.flightPlanManager.getOrigin();
+
+        // runway
+        let runway = "";
+        let hasRunway = false;
+        if (hasOrigin) {
+            const runwayObj = mcdu.flightPlanManager.getDepartureRunway();
+            if (runwayObj) {
+                runway = `{green}${Avionics.Utils.formatRunway(runwayObj.designation)}{end}`;
+                hasRunway = true;
             }
         }
-        let v1 = "___[color]amber";
-        if (mcdu.v1Speed) {
-            v1 = mcdu.v1Speed + "[color]cyan";
+
+        // v speeds
+        let v1 = "---";
+        let vR = "---";
+        let v2 = "---";
+        if (mcdu.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+            v1 = "{amber}___{end}";
+            if (mcdu.v1Speed) {
+                v1 = `{cyan}${("" + mcdu.v1Speed).padEnd(3)}{end}`;
+            }
+            mcdu.onLeftInput[0] = (value) => {
+                if (value === "") {
+                    // not real: v-speed helper
+                    mcdu.sendDataToScratchpad(mcdu._getV1Speed().toString());
+                    CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                } else {
+                    if (mcdu.trySetV1Speed(value)) {
+                        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                    }
+                }
+            };
+            vR = "{amber}___{end}";
+            if (mcdu.vRSpeed) {
+                vR = `{cyan}${("" + mcdu.vRSpeed).padEnd(3)}{end}`;
+            }
+            mcdu.onLeftInput[1] = (value) => {
+                if (value === "") {
+                    mcdu.sendDataToScratchpad(mcdu._getVRSpeed().toString());
+                    CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                } else {
+                    if (mcdu.trySetVRSpeed(value)) {
+                        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                    }
+                }
+            };
+            v2 = "{amber}___{end}";
+            if (mcdu.v2Speed) {
+                v2 = `{cyan}${("" + mcdu.v2Speed).padEnd(3)}{end}`;
+            }
+            mcdu.onLeftInput[2] = (value) => {
+                if (value === "") {
+                    mcdu.sendDataToScratchpad(mcdu._getV2Speed().toString());
+                    CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                } else {
+                    if (mcdu.trySetV2Speed(value)) {
+                        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                    }
+                }
+            };
+        } else {
+            v1 = "\xa0\xa0\xa0";
+            vR = "\xa0\xa0\xa0";
+            v2 = "\xa0\xa0\xa0";
+            if (mcdu.v1Speed) {
+                v1 = `{green}${("" + mcdu.v1Speed).padEnd(3)}{end}`;
+            }
+            if (mcdu.vRSpeed) {
+                vR = `{green}${("" + mcdu.vRSpeed).padEnd(3)}{end}`;
+            }
+            if (mcdu.v2Speed) {
+                v2 = `{green}${("" + mcdu.v2Speed).padEnd(3)}{end}`;
+            }
+            mcdu.onLeftInput[0] = (value) => {
+                if (value !== "") {
+                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                }
+            };
+            mcdu.onLeftInput[1] = (value) => {
+                if (value !== "") {
+                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                }
+            };
+            mcdu.onLeftInput[2] = (value) => {
+                if (value !== "") {
+                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                }
+            };
         }
-        mcdu.onLeftInput[0] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                mcdu.v1Speed = undefined;
-                SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", -1);
-                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
-            } else if (value === "") {
-                mcdu.sendDataToScratchpad(mcdu._getV1Speed().toString());
-                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+
+        // transition altitude - remains editable during take off
+        let transAltCell = "";
+        if (hasOrigin) {
+            const transAltitude = mcdu.getTransitionAltitude();
+            if (isFinite(transAltitude)) {
+                transAltCell = `{cyan}${transAltitude}{end}`;
+                if (!mcdu.transitionAltitudeIsPilotEntered) {
+                    transAltCell += "[s-text]";
+                }
             } else {
-                if (mcdu.trySetV1Speed(value)) {
+                transAltCell = "{cyan}[]{end}";
+            }
+            mcdu.onLeftInput[3] = (value) => {
+                if (mcdu.trySetTakeOffTransAltitude(value)) {
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 }
-            }
-        };
-        let vR = "___[color]amber";
-        if (mcdu.vRSpeed) {
-            vR = mcdu.vRSpeed + "[color]cyan";
+            };
         }
-        mcdu.onLeftInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                mcdu.vRSpeed = undefined;
-                SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", -1);
-                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
-            } else if (value === "") {
-                mcdu.sendDataToScratchpad(mcdu._getVRSpeed().toString());
-                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
-            } else {
-                if (mcdu.trySetVRSpeed(value)) {
-                    CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+
+        // thrust reduction / acceleration altitude
+        let thrRedAcc = "-----/-----";
+        if (hasOrigin) {
+            if (mcdu.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+                let thrRed = "[\xa0]";
+                if (isFinite(mcdu.thrustReductionAltitude)) {
+                    thrRed = ("" + mcdu.thrustReductionAltitude.toFixed(0)).padStart(5, "\xa0");
                 }
-            }
-        };
-        let v2 = "___[color]amber";
-        if (mcdu.v2Speed) {
-            v2 = mcdu.v2Speed + "[color]cyan";
-        }
-        mcdu.onLeftInput[2] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                mcdu.v2Speed = undefined;
-                SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", -1);
-                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
-            } else if (value === "") {
-                mcdu.sendDataToScratchpad(mcdu._getV2Speed().toString());
-                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
-            } else {
-                if (mcdu.trySetV2Speed(value)) {
-                    CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                if (!mcdu.thrustReductionAltitudeIsPilotEntered) {
+                    thrRed = `{small}${thrRed}{end}`;
                 }
+                let acc = "[\xa0]";
+                if (isFinite(mcdu.accelerationAltitude)) {
+                    acc = mcdu.accelerationAltitude.toFixed(0);
+                }
+                acc = "/" + acc;
+                if (!mcdu.accelerationAltitudeIsPilotEntered) {
+                    acc = `{small}${acc}{end}`;
+                }
+                thrRedAcc = `${thrRed}${acc}[color]cyan`;
+                mcdu.onLeftInput[4] = (value) => {
+                    if (mcdu.trySetThrustReductionAccelerationAltitude(value)) {
+                        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                    }
+                };
+            } else {
+                let thrRed = "-----";
+                if (isFinite(mcdu.thrustReductionAltitude)) {
+                    thrRed = ("" + mcdu.thrustReductionAltitude.toFixed(0)).padStart(5, "\xa0");
+                }
+                if (!mcdu.thrustReductionAltitudeIsPilotEntered) {
+                    thrRed = `{small}${thrRed}{end}`;
+                }
+                let acc = "-----";
+                if (isFinite(mcdu.accelerationAltitude)) {
+                    acc = mcdu.accelerationAltitude.toFixed(0);
+                }
+                acc = "/" + acc;
+                if (!mcdu.accelerationAltitudeIsPilotEntered) {
+                    acc = `{small}${acc}{end}`;
+                }
+                thrRedAcc = `${thrRed}${acc}[color]green`;
             }
-        };
-        let transAlt = "---[color]cyan";
-        if (isFinite(mcdu.transitionAltitude)) {
-            transAlt = mcdu.transitionAltitude + "[color]cyan";
+        } else if (mcdu.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+            thrRedAcc = "";
         }
-        mcdu.onLeftInput[3] = (value) => {
-            if (mcdu.trySetTransAltitude(value)) {
-                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
-            }
-        };
-        let thrRedAcc = "";
-        if (isFinite(mcdu.thrustReductionAltitude)) {
-            thrRedAcc = mcdu.thrustReductionAltitude.toFixed(0);
-        } else {
-            thrRedAcc = "---";
-        }
-        thrRedAcc += " /";
-        if (isFinite(mcdu.accelerationAltitude)) {
-            thrRedAcc += mcdu.accelerationAltitude.toFixed(0);
-        } else {
-            thrRedAcc += "---";
-        }
-        thrRedAcc += "[color]cyan";
-        mcdu.onLeftInput[4] = (value) => {
-            if (mcdu.trySetThrustReductionAccelerationAltitude(value)) {
-                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
-            }
-        };
+
+        // center column
         let flpRetrCell = "---";
-        const flapSpeed = mcdu.getFlapTakeOffSpeed();
-        if (isFinite(flapSpeed)) {
-            flpRetrCell = flapSpeed.toFixed(0) + "[color]green";
-        }
         let sltRetrCell = "---";
-        const slatSpeed = mcdu.getSlatTakeOffSpeed();
-        if (isFinite(slatSpeed)) {
-            sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
-        }
         let cleanCell = "---";
-        const cleanSpeed = mcdu.getPerfGreenDotSpeed();
-        if (isFinite(cleanSpeed)) {
-            cleanCell = cleanSpeed.toFixed(0) + "[color]green";
+        const flapSpeed = SimVar.GetSimVarValue("L:A32NX_SPEEDS_F", "number");
+        if (flapSpeed !== 0) {
+            flpRetrCell = `{green}${flapSpeed.toFixed(0)}{end}`;
         }
-        let flapsThs = "[]/[]";
-        if (mcdu.flaps) {
-            flapsThs = mcdu.flaps + "/";
-            if (mcdu.ths) {
-                flapsThs += mcdu.ths;
+        const slatSpeed = SimVar.GetSimVarValue("L:A32NX_SPEEDS_S", "number");
+        if (slatSpeed !== 0) {
+            sltRetrCell = `{green}${slatSpeed.toFixed(0)}{end}`;
+        }
+        const cleanSpeed = SimVar.GetSimVarValue("L:A32NX_SPEEDS_GD", "number");
+        if (cleanSpeed !== 0) {
+            cleanCell = `{green}${cleanSpeed.toFixed(0)}{end}`;
+        }
+
+        // takeoff shift
+        let toShiftCell = "{inop}----{end}\xa0";
+        if (hasOrigin && hasRunway) {
+            toShiftCell = "{inop}{small}[M]{end}[\xa0\xa0]*{end}";
+            // TODO store and show TO SHIFT
+        }
+
+        // flaps / trim horizontal stabilizer
+        let flapsThs = "[]/[\xa0\xa0\xa0][color]cyan";
+        // The following line uses a special Javascript concept that is signed
+        // zeroes. In Javascript -0 is strictly equal to 0, so for most cases we
+        // don't care about that difference. But here, we use that fact to show
+        // the pilot the precise value they entered: DN0.0 or UP0.0. The only
+        // way to figure that difference out is using Object.is, as
+        // Object.is(+0, -0) returns false. Alternatively we could use a helper
+        // variable (yuck) or encode it using a very small, but negative value
+        // such as -0.001.
+        const formattedThs = !isNaN(mcdu.ths)
+            ? (mcdu.ths >= 0 && !Object.is(mcdu.ths, -0) ? `UP${Math.abs(mcdu.ths).toFixed(1)}` : `DN${Math.abs(mcdu.ths).toFixed(1)}`)
+            : '';
+        if (mcdu.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+            const flaps = !isNaN(mcdu.flaps) ? mcdu.flaps : "[]";
+            const ths = formattedThs ? formattedThs : "[\xa0\xa0\xa0]";
+            flapsThs = `${flaps}/${ths}[color]cyan`;
+            mcdu.onRightInput[2] = (value) => {
+                if (mcdu.trySetFlapsTHS(value)) {
+                    CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                }
+            };
+        } else {
+            const flaps = !isNaN(mcdu.flaps) ? mcdu.flaps : "";
+            const ths = formattedThs ? formattedThs : "\xa0\xa0\xa0\xa0\xa0";
+            flapsThs = `${flaps}/${ths}[color]green`;
+        }
+
+        // flex takeoff temperature
+        let flexTakeOffTempCell = "[\xa0\xa0]°[color]cyan";
+        if (mcdu.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+            if (isFinite(mcdu.perfTOTemp)) {
+                flexTakeOffTempCell = `${mcdu.perfTOTemp.toFixed(0)}°[color]cyan`;
+            }
+            mcdu.onRightInput[3] = (value) => {
+                if (mcdu.setPerfTOFlexTemp(value)) {
+                    CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                }
+            };
+        } else {
+            if (isFinite(mcdu.perfTOTemp)) {
+                flexTakeOffTempCell = `${mcdu.perfTOTemp.toFixed(0)}°[color]green`;
             } else {
-                flapsThs += "[]";
+                flexTakeOffTempCell = "";
             }
         }
-        mcdu.onRightInput[2] = (value) => {
-            if (mcdu.trySetFlapsTHS(value)) {
-                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+
+        // eng out acceleration altitude
+        let engOutAcc = "-----";
+        if (hasOrigin) {
+            if (mcdu.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+                if (isFinite(mcdu.engineOutAccelerationAltitude)) {
+                    engOutAcc = mcdu.engineOutAccelerationAltitude.toFixed(0);
+                    if (mcdu.engineOutAccelerationAltitudeIsPilotEntered) {
+                        engOutAcc = `${engOutAcc}[color]cyan`;
+                    } else {
+                        engOutAcc = `${engOutAcc}[s-text][color]cyan`;
+                    }
+                } else {
+                    engOutAcc = "[][color]cyan";
+                }
+                mcdu.onRightInput[4] = (value) => {
+                    if (mcdu.trySetEngineOutAcceleration(value)) {
+                        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                    }
+                };
+            } else if (isFinite(mcdu.engineOutAccelerationAltitude)) {
+                if (mcdu.engineOutAccelerationAltitudeIsPilotEntered) {
+                    engOutAcc = `${mcdu.engineOutAccelerationAltitude}[color]green`;
+                } else {
+                    engOutAcc = `${mcdu.engineOutAccelerationAltitude}[s-text][color]green`;
+                }
             }
-        };
-        let flexTakeOffTempCell = "[]°";
-        if (isFinite(mcdu.perfTOTemp)) {
-            flexTakeOffTempCell = mcdu.perfTOTemp + "°";
+        } else if (mcdu.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+            engOutAcc = "";
         }
-        mcdu.onRightInput[3] = (value) => {
-            if (mcdu.setPerfTOFlexTemp(value)) {
-                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
-            }
-        };
+
         mcdu.setTemplate([
-            ["TAKE OFF[color]" + titleColor],
-            ["V1", "RWY", "FLP RETR"],
-            [v1, runway + "[color]green", "F=" + flpRetrCell],
-            ["VR", "TO SHIFT", "SLT RETR"],
-            [vR, "[M][]*[color]cyan", "S=" + sltRetrCell],
-            ["V2", "FLAPS/THS", "CLEAN"],
-            [v2, flapsThs + "[color]cyan", "O=" + cleanCell],
+            ["TAKE OFF RWY " + runway.padStart(3, "\xa0") + "[color]" + titleColor],
+            ["\xa0V1\xa0\xa0\xa0\xa0FLP RETR", ""],
+            [v1 + "\xa0\xa0\xa0\xa0\xa0F=" + flpRetrCell, ""],
+            ["\xa0VR\xa0\xa0\xa0\xa0SLT RETR", "TO SHIFT\xa0"],
+            [vR + "\xa0\xa0\xa0\xa0\xa0S=" + sltRetrCell, toShiftCell],
+            ["\xa0V2\xa0\xa0\xa0\xa0\xa0\xa0\xa0CLEAN", "FLAPS/THS"],
+            [v2 + "\xa0\xa0\xa0\xa0\xa0O=" + cleanCell, flapsThs],
             ["TRANS ALT", "FLEX TO TEMP"],
-            [transAlt, flexTakeOffTempCell + "[color]cyan"],
+            [transAltCell, flexTakeOffTempCell],
             ["THR RED/ACC", "ENG OUT ACC"],
-            [thrRedAcc, "1680[color]cyan"],
-            ["", "NEXT"],
-            ["", "PHASE>"]
+            [thrRedAcc, engOutAcc],
+            ["\xa0UPLINK[color]inop", "NEXT\xa0"],
+            ["<TO DATA[color]inop", "PHASE>"]
         ]);
+
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[5] = () => {
+        mcdu.onRightInput[5] = (value) => {
             CDUPerformancePage.ShowCLBPage(mcdu);
         };
     }
@@ -727,7 +860,7 @@ class CDUPerformancePage {
         engOut += "[color]cyan";
 
         mcdu.onRightInput[4] = (value) => {
-            if (mcdu.trySetEngineOutAcceleration(value)) {
+            if (mcdu.trySetEngineOutAccelerationGoaround(value)) {
                 CDUPerformancePage.ShowGOAROUNDPage(mcdu);
             }
         };
@@ -805,22 +938,43 @@ class CDUPerformancePage {
             bottomRowCells,
         ]);
     }
-    static UpdateThrRedAccFromOrigin(mcdu) {
+    static UpdateThrRedAccFromOrigin(mcdu, updateThrRedAlt = true, updateAccAlt = true) {
         const origin = mcdu.flightPlanManager.getOrigin();
-        const thrRedAccAltitude = origin && origin.altitudeinFP
-            ? origin.altitudeinFP + 1500
-            : undefined;
+        const elevation = origin ? origin.altitudeinFP : 0;
 
-        mcdu.thrustReductionAltitude = thrRedAccAltitude;
-        mcdu.accelerationAltitude = thrRedAccAltitude;
+        if (updateThrRedAlt) {
+            const thrRedOffset = +NXDataStore.get("CONFIG_THR_RED_ALT", "1500");
+            const thrRedAltitude = Math.round((elevation + thrRedOffset) / 10) * 10;
 
-        SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", thrRedAccAltitude || 0);
-        SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", thrRedAccAltitude || 0);
+            mcdu.thrustReductionAltitude = thrRedAltitude;
+            mcdu.thrustReductionAltitudeIsPilotEntered = false;
+            SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", thrRedAltitude);
+        }
+
+        if (updateAccAlt) {
+            const accOffset = +NXDataStore.get("CONFIG_ACCEL_ALT", "1500");
+            const accAlt = Math.round((elevation + accOffset) / 10) * 10;
+
+            mcdu.accelerationAltitude = accAlt;
+            mcdu.accelerationAltitudeIsPilotEntered = false;
+            SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", accAlt);
+        }
+    }
+    static UpdateEngOutAccFromOrigin(mcdu) {
+        const origin = mcdu.flightPlanManager.getOrigin();
+        const elevation = origin ? origin.altitudeinFP : 0;
+
+        const offset = +NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500");
+        const alt = Math.round((elevation + offset) / 10) * 10;
+
+        mcdu.engineOutAccelerationAltitude = alt;
+        mcdu.engineOutAccelerationAltitudeIsPilotEntered = false;
+        SimVar.SetSimVarValue("L:A32NX_ENG_OUT_ACC_ALT", "feet", alt);
     }
     static UpdateThrRedAccFromDestination(mcdu) {
         const destination = mcdu.flightPlanManager.getDestination();
         const thrRedAccAltitude = destination && destination.altitudeinFP
-            ? destination.altitudeinFP + 800
+            ? Math.round((origin.altitudeinFP + 800) / 10) * 10
             : undefined;
 
         mcdu.thrustReductionAltitudeGoaround = thrRedAccAltitude;
