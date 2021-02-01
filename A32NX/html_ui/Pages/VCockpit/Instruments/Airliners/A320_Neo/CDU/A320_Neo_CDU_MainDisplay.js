@@ -311,65 +311,79 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     trySetFlapsTHS(s) {
-        if (s) {
-            let validEntry = false;
-            let nextFlaps = this.flaps;
-            let nextThs = this.ths;
-            let [flaps, ths] = s.split("/");
+        if (s === FMCMainDisplay.clrValue) {
+            this.flaps = NaN;
+            this.ths = NaN;
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number", 0);
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", false);
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS", "degree", 0);
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", false);
+            return true;
+        }
 
-            // Parse flaps
-            if (flaps && flaps.length > 0) {
-                if (!/^\d+$/.test(flaps)) {
-                    this.addNewMessage(NXSystemMessages.formatError);
-                    return false;
-                }
+        let newFlaps = null;
+        let newThs = null;
 
-                const vFlaps = parseInt(flaps);
-                if (isFinite(vFlaps) && vFlaps > 0 && vFlaps < 4) {
-                    nextFlaps = vFlaps;
-                    validEntry = true;
-                }
+        let [flaps, ths] = s.split("/");
+
+        if (flaps && flaps.length > 0) {
+            if (!/^\d$/.test(flaps)) {
+                this.addNewMessage(NXSystemMessages.formatError);
+                return false;
             }
 
-            // Parse THS
-            if (ths) {
-                if (!/^((UP|DN)(\d?\.?\d)|(\d?\.?\d)(UP|DN))$/.test(ths)) {
-                    this.addNewMessage(NXSystemMessages.formatError);
-                    return false;
-                }
-
-                let direction = null;
-                ths = ths.replace(/(UP|DN)/g, (substr) => {
-                    direction = substr;
-                    return "";
-                });
-
-                if (direction) {
-                    const vThs = parseFloat(ths.trim());
-                    if (isFinite(vThs) && vThs >= 0.0 && vThs <= 2.5) {
-
-                        if (vThs === 0.0) {
-                            // DN0.0 should be corrected to UP0.0
-                            direction = "UP";
-                        }
-
-                        nextThs = `${direction}${vThs.toFixed(1)}`;
-                        validEntry = true;
-                    }
-                }
+            flaps = parseInt(flaps);
+            if (flaps < 0 || flaps > 3) {
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                return false;
             }
 
-            // Commit changes.
-            if (validEntry) {
-                this.flaps = nextFlaps;
-                this.ths = nextThs;
-                SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number", this.flaps).then();
-                return true;
+            newFlaps = flaps;
+        }
+
+        if (ths && ths.length > 0) {
+            // allow AAN.N and N.NAA, where AA is UP or DN
+            if (!/^(UP|DN)(\d|\d?\.\d|\d\.\d?)|(\d|\d?\.\d|\d\.\d?)(UP|DN)$/.test(ths)) {
+                this.addNewMessage(NXSystemMessages.formatError);
+                return false;
+            }
+
+            let direction = null;
+            ths = ths.replace(/(UP|DN)/g, (substr) => {
+                direction = substr;
+                return "";
+            });
+
+            if (direction) {
+                ths = parseFloat(ths);
+                if (direction === "DN") {
+                    // Note that 0 *= -1 will result in -0, which is strictly
+                    // the same as 0 (that is +0 === -0) and doesn't make a
+                    // difference for the calculation itself. However, in order
+                    // to differentiate between DN0.0 and UP0.0 we'll do check
+                    // later when displaying this value using Object.is to
+                    // determine whether the pilot entered DN0.0 or UP0.0.
+                    ths *= -1;
+                }
+                if (!isFinite(ths) || ths < -5 || ths > 7) {
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    return false;
+                }
+                newThs = ths;
             }
         }
 
-        this.addNewMessage(NXSystemMessages.entryOutOfRange);
-        return false;
+        if (newFlaps !== null) {
+            this.flaps = newFlaps;
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number", newFlaps);
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", true);
+        }
+        if (newThs !== null) {
+            this.ths = newThs;
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS", "degree", newThs);
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", true);
+        }
+        return true;
     }
     onPowerOn() {
         super.onPowerOn();
