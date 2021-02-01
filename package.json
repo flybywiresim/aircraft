@@ -43,6 +43,7 @@
     "lint-staged": "10.4.0",
     "prettier": "2.1.2",
     "rollup": "^2.32.0",
+    "rollup-plugin-postcss": "~4.0.0",
     "rollup-plugin-css-only": "^2.1.0",
     "sass-loader": "^10.1.0",
     "style-loader": "^2.0.0",
@@ -63,6 +64,8 @@
     "react-router-dom": "~5.2.0",
     "react-leaflet": "~3.0.5",
     "rollup-plugin-scss": "^2.6.1",
-    "sass": "~1.30.0"
+    "sass": "~1.30.0",
+    "@tailwindcss/postcss7-compat": "^2.0.2",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2"
   }
 }

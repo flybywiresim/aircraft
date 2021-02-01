@@ -27,11 +27,19 @@ const commonjs = require('@rollup/plugin-commonjs');
 const replace = require('@rollup/plugin-replace');
 const scss = require('rollup-plugin-scss');
 const scssCompiler = require('sass');
+const postcss = require('rollup-plugin-postcss');
+const tailwindcss = require('tailwindcss');
 const template = require('./template/rollup.js');
 
 const TMPDIR = `${os.tmpdir()}/a32nx-instruments-gen`;
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
+
+function makePostcssPluginList(instrumentName) {
+    const usesTailwind = fs.existsSync(`${__dirname}/src/${instrumentName}/tailwind.config.js`);
+
+    return [tailwindcss(usesTailwind ? `${__dirname}/src/${instrumentName}/tailwind.config.js` : undefined)];
+}
 
 module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
     .filter((d) => d.isDirectory() && fs.existsSync(`${__dirname}/src/${d.name}/config.json`))
@@ -72,17 +80,18 @@ module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
                 replace({
                     'process.env.NODE_ENV': '"production"',
                 }),
-                scss({
-                    sass: scssCompiler,
-                    output: (generatedBundle) => {
-                        cssBundle = generatedBundle;
+                postcss({
+                    use: {
+                        sass: {},
                     },
+                    plugins: makePostcssPluginList(name),
+                    extract: `${TMPDIR}/${name}-gen.css`,
                 }),
                 template({
                     name,
                     config,
                     getCssBundle() {
-                        return cssBundle;
+                        return fs.readFileSync(`${TMPDIR}/${name}-gen.css`).toString();
                     },
                     outputDir: `${__dirname}/../../A32NX/html_ui/Pages/VCockpit/Instruments/generated`,
                 }),
