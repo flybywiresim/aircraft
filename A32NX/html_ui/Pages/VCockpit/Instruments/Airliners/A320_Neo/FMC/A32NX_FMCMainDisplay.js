@@ -26,7 +26,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.coRoute = "";
         this.tmpOrigin = "";
         this.transitionAltitude = 10000;
-        this.perfTOTemp = 20;
+        this.perfTOTemp = NaN;
+        this._overridenFlapApproachSpeed = NaN;
+        this._overridenSlatApproachSpeed = NaN;
         this._routeFinalFuelWeight = 0;
         this._routeFinalFuelTime = 30;
         this._routeFinalFuelTimeDefault = 30;
@@ -66,6 +68,12 @@ class FMCMainDisplay extends BaseAirliners {
         this._radioNavOn = false;
         this._debug = 0;
         this._checkFlightPlan = 0;
+        this.thrustReductionAltitude = NaN;
+        this.thrustReductionAltitudeIsPilotEntered = false;
+        this.accelerationAltitude = NaN;
+        this.accelerationAltitudeIsPilotEntered = false;
+        this.engineOutAccelerationAltitude = NaN;
+        this.engineOutAccelerationAltitudeIsPilotEntered = false;
 
         this._windDirections = {
             TAILWIND : "TL",
@@ -1826,108 +1834,192 @@ class FMCMainDisplay extends BaseAirliners {
 
     //Needs PR Merge #3082
     trySetV1Speed(s) {
-        if (!/^\d+$/.test(s)) {
-            this.addNewMessage(NXSystemMessages.formatError);
+        if (s === FMCMainDisplay.clrValue) {
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
         const v = parseInt(s);
-        if (isFinite(v)) {
-            if (v >= 90 && v < 1000) {
-                this.v1Speed = v;
-                SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed).then(() => {
-                    this.vSpeedDisagreeCheck();
-                });
-                return true;
-            }
+        if (!isFinite(v) || !/^\d{2,3}$/.test(s)) {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return false;
+        }
+        if (v < 90 || v > 350) {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
+        this.v1Speed = v;
+        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed).then(() => {
+            this.vSpeedDisagreeCheck();
+        });
+        return true;
     }
 
     //Needs PR Merge #3082
     trySetVRSpeed(s) {
-        if (!/^\d+$/.test(s)) {
-            this.addNewMessage(NXSystemMessages.formatError);
+        if (s === FMCMainDisplay.clrValue) {
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
         const v = parseInt(s);
-        if (isFinite(v)) {
-            if (v >= 90 && v < 1000) {
-                this.vRSpeed = v;
-                SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed).then(() => {
-                    this.vSpeedDisagreeCheck();
-                });
-                return true;
-            }
+        if (!isFinite(v) || !/^\d{2,3}$/.test(s)) {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return false;
+        }
+        if (v < 90 || v > 350) {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
+        this.vRSpeed = v;
+        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed).then(() => {
+            this.vSpeedDisagreeCheck();
+        });
+        return true;
     }
 
     //Needs PR Merge #3082
     trySetV2Speed(s) {
-        if (!/^\d+$/.test(s)) {
-            this.addNewMessage(NXSystemMessages.formatError);
+        if (s === FMCMainDisplay.clrValue) {
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
         const v = parseInt(s);
-        if (isFinite(v)) {
-            if (v >= 90 && v < 1000) {
-                this.v2Speed = v;
-                SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed).then(() => {
-                    this.vSpeedDisagreeCheck();
-                });
-                return true;
-            }
+        if (!isFinite(v) || !/^\d{2,3}$/.test(s)) {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return false;
+        }
+        if (v < 90 || v > 350) {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
+        this.v2Speed = v;
+        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed).then(() => {
+            this.vSpeedDisagreeCheck();
+        });
+        return true;
     }
 
-    //Needs PR Merge #3082
-    trySetTransAltitude(s) {
-        if (!/^\d+$/.test(s)) {
+    trySetTakeOffTransAltitude(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.transitionAltitude = NaN;
+            this.transitionAltitudeIsPilotEntered = false;
+            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
+            return true;
+        }
+
+        let value = parseInt(s);
+        if (!isFinite(value) || !/^\d{4,5}$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
-        const v = parseInt(s);
-        if (isFinite(v) && v > 0) {
-            this.transitionAltitude = v;
-            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", v);
-            return true;
+
+        value = Math.round(value / 10) * 10;
+        if (value < 1000 || value > 45000) {
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
+
+        this.transitionAltitude = value;
+        this.transitionAltitudeIsPilotEntered = true;
+        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", value);
+        return true;
+    }
+
+    getTransitionAltitude() {
+        if (isFinite(this.transitionAltitude)) {
+            return this.transitionAltitude;
+        }
+
+        // TODO fetch this from the nav database once we have it in future
+        return 10000;
     }
 
     //Needs PR Merge #3082
     trySetThrustReductionAccelerationAltitude(s) {
-        let thrRed = NaN;
-        let accAlt = NaN;
-        if (s) {
-            const sSplit = s.split("/");
-            thrRed = parseInt(sSplit[0]);
-            accAlt = parseInt(sSplit[1]);
-        }
-        if (isFinite(thrRed) || isFinite(accAlt)) {
-            if (isFinite(thrRed)) {
-                this.thrustReductionAltitude = thrRed;
-                SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
-            }
-            if (isFinite(accAlt)) {
-                this.accelerationAltitude = accAlt;
-                SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", this.accelerationAltitude);
-            }
+        if (s === FMCMainDisplay.clrValue) {
+            CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
             return true;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
+
+        const origin = this.flightPlanManager.getOrigin();
+        const elevation = origin ? origin.altitudeinFP : 0;
+        const minimumAltitude = elevation + 400;
+
+        let newThrRedAlt = null;
+        let newAccAlt = null;
+
+        let [thrRedAlt, accAlt] = s.split("/");
+
+        if (thrRedAlt && thrRedAlt.length > 0) {
+            if (!/^\d{4,5}$/.test(thrRedAlt)) {
+                this.addNewMessage(NXSystemMessages.formatError);
+                return false;
+            }
+
+            thrRedAlt = parseInt(thrRedAlt);
+            thrRedAlt = Math.round(thrRedAlt / 10) * 10;
+            if (thrRedAlt < minimumAltitude || thrRedAlt > 45000) {
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                return false;
+            }
+
+            newThrRedAlt = thrRedAlt;
+        }
+
+        if (accAlt && accAlt.length > 0) {
+            if (!/^\d{4,5}$/.test(accAlt)) {
+                this.addNewMessage(NXSystemMessages.formatError);
+                return false;
+            }
+
+            accAlt = parseInt(accAlt);
+            accAlt = Math.round(accAlt / 10) * 10;
+            if (accAlt < minimumAltitude || accAlt > 45000) {
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                return false;
+            }
+
+            newAccAlt = accAlt;
+        }
+
+        if (newThrRedAlt !== null) {
+            this.thrustReductionAltitude = newThrRedAlt;
+            this.thrustReductionAltitudeIsPilotEntered = true;
+            SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", newThrRedAlt);
+        }
+        if (newAccAlt !== null) {
+            this.accelerationAltitude = newAccAlt;
+            this.accelerationAltitudeIsPilotEntered = true;
+            SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", newAccAlt);
+        }
+        return true;
+    }
+
+    trySetEngineOutAcceleration(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
+            return true;
+        }
+
+        if (!/^\d{4,5}$/.test(s)) {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        const origin = this.flightPlanManager.getOrigin();
+        const elevation = origin ? origin.altitudeinFP : 0;
+        const minimumAltitude = elevation + 400;
+
+        let engineOutAccAlt = parseInt(s);
+        engineOutAccAlt = Math.round(engineOutAccAlt / 10) * 10;
+        if (engineOutAccAlt < minimumAltitude || engineOutAccAlt > 45000) {
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+
+        this.engineOutAccelerationAltitude = engineOutAccAlt;
+        this.engineOutAccelerationAltitudeIsPilotEntered = true;
+        SimVar.SetSimVarValue("L:A32NX_ENG_OUT_ACC_ALT", "feet", engineOutAccAlt);
+        return true;
     }
 
     //Needs PR Merge #3082
@@ -1954,8 +2046,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    //Needs PR Merge #3082
-    trySetEngineOutAcceleration(s) {
+    trySetEngineOutAccelerationGoaround(s) {
         const engOutAcc = parseInt(s);
         if (isFinite(engOutAcc)) {
             this.engineOutAccelerationGoaround = engOutAcc;
@@ -1969,14 +2060,31 @@ class FMCMainDisplay extends BaseAirliners {
     //Needs PR Merge #3082
     //TODO: with FADEC no longer needed
     setPerfTOFlexTemp(s) {
-        const value = parseFloat(s);
-        if (isFinite(value) && value > -270 && value < 150) {
-            this.perfTOTemp = value;
-            SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", this.perfTOTemp);
+        if (s === FMCMainDisplay.clrValue) {
+            this.perfTOTemp = NaN;
+            // In future we probably want a better way of checking this, as 0 is
+            // in the valid flex temperature range (-99 to 99).
+            SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", 0);
             return true;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
+        let value = parseInt(s);
+        if (!isFinite(value) || !/^[+\-]?\d{1,2}$/.test(s)) {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return false;
+        }
+        if (value < -99 || value > 99) {
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+        // As the sim uses 0 as a sentinel value to detect that no flex
+        // temperature is set, we'll just use 0.1 as the actual value for flex 0
+        // and make sure we never display it with decimals.
+        if (value === 0) {
+            value = 0.1;
+        }
+        this.perfTOTemp = value;
+        SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", value);
+        return true;
     }
 
     /**
@@ -2439,7 +2547,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfApprTransAlt(s) {
-        if (!/^\d+$/.test(s)) {
+        if (!/^\d{4,5}$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
@@ -2849,65 +2957,79 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     trySetFlapsTHS(s) {
-        if (s) {
-            let validEntry = false;
-            let nextFlaps = this.flaps;
-            let nextThs = this.ths;
-            let [flaps, ths] = s.split("/");
+        if (s === FMCMainDisplay.clrValue) {
+            this.flaps = NaN;
+            this.ths = NaN;
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number", 0);
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", false);
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS", "degree", 0);
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", false);
+            return true;
+        }
 
-            // Parse flaps
-            if (flaps && flaps.length > 0) {
-                if (!/^\d+$/.test(flaps)) {
-                    this.addNewMessage(NXSystemMessages.formatError);
-                    return false;
-                }
+        let newFlaps = null;
+        let newThs = null;
 
-                const vFlaps = parseInt(flaps);
-                if (isFinite(vFlaps) && vFlaps > 0 && vFlaps < 4) {
-                    nextFlaps = vFlaps;
-                    validEntry = true;
-                }
+        let [flaps, ths] = s.split("/");
+
+        if (flaps && flaps.length > 0) {
+            if (!/^\d$/.test(flaps)) {
+                this.addNewMessage(NXSystemMessages.formatError);
+                return false;
             }
 
-            // Parse THS
-            if (ths) {
-                if (!/^((UP|DN)(\d?\.?\d)|(\d?\.?\d)(UP|DN))$/.test(ths)) {
-                    this.addNewMessage(NXSystemMessages.formatError);
-                    return false;
-                }
-
-                let direction = null;
-                ths = ths.replace(/(UP|DN)/g, (substr) => {
-                    direction = substr;
-                    return "";
-                });
-
-                if (direction) {
-                    const vThs = parseFloat(ths.trim());
-                    if (isFinite(vThs) && vThs >= 0.0 && vThs <= 2.5) {
-
-                        if (vThs === 0.0) {
-                            // DN0.0 should be corrected to UP0.0
-                            direction = "UP";
-                        }
-
-                        nextThs = `${direction}${vThs.toFixed(1)}`;
-                        validEntry = true;
-                    }
-                }
+            flaps = parseInt(flaps);
+            if (flaps < 0 || flaps > 3) {
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                return false;
             }
 
-            // Commit changes.
-            if (validEntry) {
-                this.flaps = nextFlaps;
-                this.ths = nextThs;
-                SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number", this.flaps);
-                return true;
+            newFlaps = flaps;
+        }
+
+        if (ths && ths.length > 0) {
+            // allow AAN.N and N.NAA, where AA is UP or DN
+            if (!/^(UP|DN)(\d|\d?\.\d|\d\.\d?)|(\d|\d?\.\d|\d\.\d?)(UP|DN)$/.test(ths)) {
+                this.addNewMessage(NXSystemMessages.formatError);
+                return false;
+            }
+
+            let direction = null;
+            ths = ths.replace(/(UP|DN)/g, (substr) => {
+                direction = substr;
+                return "";
+            });
+
+            if (direction) {
+                ths = parseFloat(ths);
+                if (direction === "DN") {
+                    // Note that 0 *= -1 will result in -0, which is strictly
+                    // the same as 0 (that is +0 === -0) and doesn't make a
+                    // difference for the calculation itself. However, in order
+                    // to differentiate between DN0.0 and UP0.0 we'll do check
+                    // later when displaying this value using Object.is to
+                    // determine whether the pilot entered DN0.0 or UP0.0.
+                    ths *= -1;
+                }
+                if (!isFinite(ths) || ths < -5 || ths > 7) {
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    return false;
+                }
+                newThs = ths;
             }
         }
 
-        this.addNewMessage(NXSystemMessages.entryOutOfRange);
-        return false;
+        if (newFlaps !== null) {
+            this.flaps = newFlaps;
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number", newFlaps);
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", true);
+        }
+        if (newThs !== null) {
+            this.ths = newThs;
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS", "degree", newThs);
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", true);
+        }
+        return true;
     }
 
     checkEFOBBelowMin() {

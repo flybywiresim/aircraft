@@ -56,7 +56,15 @@
         </DefaultTemplateParameters>
 
         <UseTemplate Name="FBW_Push_Toggle">
-            <LEFT_SINGLE_CODE>#ID# (&gt;K:TOGGLE_EXTERNAL_POWER)</LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>
+                (A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) ! and if{
+                    #ID# (&gt;K:TOGGLE_EXTERNAL_POWER)
+                } els{
+                    (A:EXTERNAL POWER ON:#ID#, Bool) if{
+                        #ID# (&gt;K:TOGGLE_EXTERNAL_POWER)
+                    }
+                }
+            </LEFT_SINGLE_CODE>
 
             <MOMENTARY />
 
