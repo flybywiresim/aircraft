@@ -433,10 +433,18 @@
     - Bool
     - Indicates if the APU is inoperable
 
+- A32NX_APU_FLAP_OPEN_PERCENTAGE
+    - Percent
+    - Indicates the percentage the APU air intake flap is open
+
+- A32NX_APU_FLAP_ECAM_OPEN
+    - Bool
+    - Indicates if the APU air intake flap should be indicated as open on the APU ECAM
+
 - A32NX_FIRE_BUTTON_APU
     - Bool
     - Indicates if the APU fire button is released
- 
+
  - A32NX_RMP_L_TOGGLE_SWITCH
     - Boolean
     - Whether the left radio management panel toggle switch is on or off.
