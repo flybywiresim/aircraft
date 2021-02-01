@@ -57,6 +57,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprWindHeading = NaN;
         this.perfApprWindSpeed = NaN;
         this.perfApprTransAlt = NaN;
+        this._v1Checked = true;
+        this._vrChecked = true;
+        this._v2Checked = true;
         this.vApp = NaN;
         this.perfApprMDA = NaN;
         this.perfApprDH = NaN;
@@ -3347,6 +3350,15 @@ class FMCMainDisplay extends BaseAirliners {
             Coherent.call("AP_SPD_VAR_SET", 2, _speed);
             SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
         }
+    }
+
+    onToDataChanged() {
+        this._v1Checked = !isFinite(this.v1Speed);
+        this._vrChecked = !isFinite(this.vRSpeed);
+        this._v2Checked = !isFinite(this.v2Speed);
+        this.addNewMessage(NXSystemMessages.checkToData, (mcdu) => {
+            return mcdu._v1Checked && mcdu._vrChecked && mcdu._v2Checked;
+        });
     }
 }
 
