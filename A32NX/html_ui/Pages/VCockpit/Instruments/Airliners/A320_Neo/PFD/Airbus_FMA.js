@@ -586,7 +586,7 @@ var Airbus_FMA;
                                 this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM, true);
                                 this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP, true);
                                 this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
-                                let temperatureText = Airbus_FMA.CurrentPlaneState.flexTemperature >= 0 ? "+" : "-";
+                                let temperatureText = Airbus_FMA.CurrentPlaneState.flexTemperature >= 0 ? "+" : "";
                                 temperatureText += Airbus_FMA.CurrentPlaneState.flexTemperature.toFixed(0);
                                 this.setRowMultiText(1, "FLX", Airbus_FMA.MODE_STATE.STATUS, temperatureText, Airbus_FMA.MODE_STATE.ARMED);
                                 break;
@@ -735,7 +735,7 @@ var Airbus_FMA;
 
         IsActive_MANFLX() {
             if (!Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleArmed && (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.FLEX_MCT)) {
-                if ((Airbus_FMA.CurrentPlaneState.flightPhase <= FlightPhase.FLIGHT_PHASE_TAKEOFF) && (Airbus_FMA.CurrentPlaneState.flexTemperature > 0)) {
+                if ((Airbus_FMA.CurrentPlaneState.flightPhase <= FlightPhase.FLIGHT_PHASE_TAKEOFF) && (Airbus_FMA.CurrentPlaneState.flexTemperature !== 0)) {
                     return true;
                 }
             }
@@ -760,7 +760,7 @@ var Airbus_FMA;
 
         IsActive_MANMCT() {
             if (!Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleArmed && (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.FLEX_MCT)) {
-                if ((Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF) || (Airbus_FMA.CurrentPlaneState.flexTemperature <= 0)) {
+                if ((Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF) || (Airbus_FMA.CurrentPlaneState.flexTemperature == 0)) {
                     return true;
                 }
             }
@@ -1243,7 +1243,7 @@ var Airbus_FMA;
             if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
                 if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) {
                     SRSEnabled = true;
-                } else if ((Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.FLEX_MCT) && (Airbus_FMA.CurrentPlaneState.flexTemperature > 0)) {
+                } else if ((Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.FLEX_MCT) && (Airbus_FMA.CurrentPlaneState.flexTemperature !== 0)) {
                     SRSEnabled = true;
                 }
             } else if (Airbus_FMA.CurrentPlaneState.flightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {

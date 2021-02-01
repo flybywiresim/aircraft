@@ -214,6 +214,7 @@ const insertUplink = (mcdu) => {
     mcdu.tryUpdateFromTo(fromTo, async (result) => {
         if (result) {
             CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
+            CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
 
             await mcdu.tryUpdateAltDestination(alternateIcao);
 

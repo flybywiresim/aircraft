@@ -472,3 +472,23 @@
 - A32NX_RMP_R_VHF3_STANDBY
     - Hz
     - The VHF 3 standby frequency for the right RMP.
+
+- A32NX_TO_CONFIG_FLAPS_ENTERED
+    - Bool
+    - True if the pilot has entered a FLAPS value in the PERF TAKE OFF takeoff
+
+- A32NX_TO_CONFIG_FLAPS
+    - Enum
+    - The pilot-entered FLAPS value in the PERF TAKE OFF page. 0 is a valid entry.
+
+- A32NX_TO_CONFIG_THS_ENTERED
+    - Bool
+    - True if the pilot has entered a THS value in the PERF TAKEO FF takeoff
+
+- A32NX_TO_CONFIG_THS
+    - Degrees
+    - The pilot-entered THS value in the PERF TAKE OFF page. 0 is a valid entry.
+  
+- A32NX_ENG_OUT_ACC_ALT
+    - feet
+    - The engine out acceleration altitude, set in the PERF TAKE OFF page.
