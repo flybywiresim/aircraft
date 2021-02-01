@@ -17,7 +17,65 @@
  */
 
 import ReactDOM from 'react-dom';
-import { renderTarget } from '../util.mjs';
+import { useState, useEffect } from 'react';
 import Efb from './Efb.tsx';
+import {
+    renderTarget, useUpdate, getSimVar, setSimVar,
+} from '../util.mjs';
+import logo from './Assets/fbw-logo.svg';
 
-ReactDOM.render(<Efb currentFlight="TS516" />, renderTarget);
+import './Assets/Boot.scss';
+
+function ScreenLoading() {
+    return (
+        <div className="loading-screen">
+            <div className="center">
+                <div className="placeholder">
+                    <img src={logo} className="fbw-logo" alt="logo" />
+                    {' '}
+                    flyPad
+                </div>
+                <div className="loading-bar">
+                    <div className="loaded" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function EFBLoad() {
+    const [content, setContent] = useState(<></>);
+    const [loadingTimeout, setLoadingTimeout] = useState();
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const nowPoweredOn = getSimVar('L:A32NX_EFB_TURNED_ON', 'number');
+
+            switch (nowPoweredOn) {
+            case 0:
+                setContent(<></>);
+                break;
+            case 1:
+                setContent(<ScreenLoading />);
+                if (!loadingTimeout) {
+                    setLoadingTimeout(setTimeout(() => {
+                        setSimVar('L:A32NX_EFB_TURNED_ON', 2, 'number');
+                        setLoadingTimeout(undefined);
+                    }, 6_000));
+                }
+                break;
+            case 2:
+                setContent(<Efb currentFlight={getSimVar('ATC FLIGHT NUMBER', 'string')} logo={logo} />);
+                break;
+            default:
+                throw new RangeError();
+            }
+        }, 100);
+
+        return () => clearInterval(interval);
+    }, [loadingTimeout]);
+
+    return content;
+}
+
+ReactDOM.render(<EFBLoad />, renderTarget);
