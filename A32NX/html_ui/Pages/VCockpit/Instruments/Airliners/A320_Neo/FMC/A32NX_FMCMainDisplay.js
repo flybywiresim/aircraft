@@ -2963,7 +2963,7 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number", 0);
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", false);
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS", "degree", 0);
-            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", false);
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS_ENTERED", "bool", false);
             return true;
         }
 
@@ -3027,7 +3027,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (newThs !== null) {
             this.ths = newThs;
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS", "degree", newThs);
-            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", true);
+            SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS_ENTERED", "bool", true);
         }
         return true;
     }
