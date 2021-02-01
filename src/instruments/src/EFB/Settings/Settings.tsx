@@ -63,7 +63,7 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
     render() {
         return (
             <div className="w-full h-full">
-                <p className="text-white font-medium mt-6 ml-4 text-3xl">INOP</p>
+                <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
             </div>
         );
     };

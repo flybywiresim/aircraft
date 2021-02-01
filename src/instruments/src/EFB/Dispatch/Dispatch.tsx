@@ -82,19 +82,19 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
             case 2:
                 return (
                     <div className="w-full h-full">
-                        <p className="text-white font-medium mt-6 ml-4 text-3xl">INOP</p>
+                        <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
                     </div>
                 );
             case 3:
                 return (
                     <div className="w-full h-full">
-                        <p className="text-white font-medium mt-6 ml-4 text-3xl">INOP</p>
+                        <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
                     </div>
                 );
             case 4:
                 return (
                     <div className="w-full h-full">
-                        <p className="text-white font-medium mt-6 ml-4 text-3xl">INOP</p>
+                        <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
                     </div>
                 );
             default:
