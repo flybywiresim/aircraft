@@ -413,6 +413,10 @@
     - Bool
     - Indicates if the APU BLEED FAULT light should be illuminated
 
+- A32NX_APU_BLEED_ON
+    - Bool
+    - Indicates if the APU BLEED is ON
+
 - A32NX_APU_MASTER_FAULT
     - Bool
     - Indicates if the MASTER SW FAULT light should be illuminated
@@ -436,7 +440,7 @@
 - A32NX_FIRE_BUTTON_APU
     - Bool
     - Indicates if the APU fire button is released
- 
+
  - A32NX_RMP_L_TOGGLE_SWITCH
     - Boolean
     - Whether the left radio management panel toggle switch is on or off.
