@@ -116,11 +116,6 @@
   visibility: visible;
 }
 
-.pushback .start {
-  @extend .bg-gray-500;
-  grid-column: 2 / 3;
-}
-
 .down-left {
   @apply bg-green-500;
   grid-column: 1/1;

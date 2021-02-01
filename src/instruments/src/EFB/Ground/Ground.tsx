@@ -66,12 +66,10 @@ class Ground extends React.Component<GroundProps, GroundState> {
 
     togglePushback() {
             const tugActive = this.state.tugStatus;
-            //setSimVar(GroundServices.PUSHBACK_TURN,this.getTugHeading(0)* 11930465,"number");
             setSimVar(GroundServices.TOGGLE_PUSHBACK,1,"boolean");
             this.setState ({
                 tugStatus: !tugActive
             });
-
     }
 
     render() {
@@ -80,7 +78,7 @@ class Ground extends React.Component<GroundProps, GroundState> {
             <div className="wrapper flex-grow flex flex-col">
                 <div className="pushback control-grid">
                     <h1 className="text-white font-medium text-xl">Pushback</h1>
-                    <div onClick={() => this.state.tugStatus?this.togglePushback():""} className= { this.state.tugStatus?"stop":"start"}><IconHandStop/></div>
+                    <div onClick={() => this.state.tugStatus?this.togglePushback():{}} className="stop"><IconHandStop/></div>
                     <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 90,"number")} className="down-left"><IconCornerDownLeft/></div>
                     <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 0, "number")} className="down"><IconArrowDown /></div>
                     <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 270, "number")} className="down-right"><IconCornerDownRight/></div>
@@ -114,7 +112,8 @@ enum GroundServices {
     TOGGLE_STAIRS="K:TOGGLE_RAMPTRUCK",
     TOGGLE_CARGO="K:REQUEST_LUGGAGE",
     TOGGLE_CATERING="K:REQUEST_CATERING",
-    TOGGLE_FUEL="K:REQUEST_FUEL_KEY"
+    TOGGLE_FUEL="K:REQUEST_FUEL_KEY",
+    TOGGLE_POWER="K:TOGGLE_EXTERNAL_POWER",
 }
 
 
