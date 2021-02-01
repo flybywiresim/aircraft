@@ -41,18 +41,17 @@ class Ground extends React.Component<GroundProps, GroundState> {
 
     toggleGroundAction(action: GroundServices) {
         return (() =>{
-            setSimVar(action,"1","boolean");
+            setSimVar(action, "1", "boolean");
         })
     }
 
-    setTugHeading(action: GroundServices, value: any = 1, type: any = "boolean") {
+    setTugHeading(action: GroundServices, value: number, type: string) {
         return (() =>{
-            const currentHeading = getSimVar("PLANE HEADING DEGREES TRUE", "degrees");
-            let desiredHeading = Math.floor(currentHeading)  + value;
-            desiredHeading %=360;
-            setSimVar(action,desiredHeading * 11930465,type);
             if(!this.state.tugStatus) {
                 this.togglePushback();
+                setSimVar(action, this.getTugHeading(0) * 11930465, type);
+            } else {
+                setSimVar(action, this.getTugHeading(value) * 11930465, type);
             }
         })
     }
@@ -60,26 +59,26 @@ class Ground extends React.Component<GroundProps, GroundState> {
     getTugHeading(value: number): number {
         const currentHeading = getSimVar("PLANE HEADING DEGREES TRUE", "degrees");
         let desiredHeading: number = Math.floor(currentHeading)  + value;
-        desiredHeading %=360;
+        desiredHeading %= 360;
         return desiredHeading;
     }
 
     togglePushback() {
             const tugActive = this.state.tugStatus;
-            setSimVar(GroundServices.TOGGLE_PUSHBACK,1,"boolean");
+            setSimVar(GroundServices.TOGGLE_PUSHBACK, 1, "boolean");
+            setSimVar(GroundServices.PUSHBACK_TURN, this.getTugHeading(0)* 11930465, "number");
             this.setState ({
                 tugStatus: !tugActive
             });
     }
 
     render() {
-
         return (
             <div className="wrapper flex-grow flex flex-col">
                 <div className="pushback control-grid">
                     <h1 className="text-white font-medium text-xl">Pushback</h1>
                     <div onClick={() => this.state.tugStatus?this.togglePushback():{}} className="stop"><IconHandStop/></div>
-                    <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 90,"number")} className="down-left"><IconCornerDownLeft/></div>
+                    <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 90, "number")} className="down-left"><IconCornerDownLeft/></div>
                     <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 0, "number")} className="down"><IconArrowDown /></div>
                     <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 270, "number")} className="down-right"><IconCornerDownRight/></div>
                 </div>
@@ -112,9 +111,6 @@ enum GroundServices {
     TOGGLE_STAIRS="K:TOGGLE_RAMPTRUCK",
     TOGGLE_CARGO="K:REQUEST_LUGGAGE",
     TOGGLE_CATERING="K:REQUEST_CATERING",
-    TOGGLE_FUEL="K:REQUEST_FUEL_KEY",
-    TOGGLE_POWER="K:TOGGLE_EXTERNAL_POWER",
+    TOGGLE_FUEL="K:REQUEST_FUEL_KEY"
 }
-
-
 export default Ground;
