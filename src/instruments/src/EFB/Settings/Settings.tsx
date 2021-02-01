@@ -62,11 +62,8 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
 
     render() {
         return (
-            <div className="Settings">
-                <div id="SettingsItem1" className="SettingsItem">
-                    <p>Dark Mode</p>
-                    <p className="Switch" onClick={() => this.handleDarkToggle()}>{this.state.darkMode ? "On" : "Off"}</p>
-                </div>
+            <div className="w-full h-full">
+                <p className="text-white font-medium mt-6 ml-4 text-3xl">INOP</p>
             </div>
         );
     };
