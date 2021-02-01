@@ -17,6 +17,7 @@
  */
 
  // Data and calculations obtained from Quick Reference Handbook (In Flight Procedures, Landing Performance Assessment/Landing Distance)
+ // TODO: good-to-medium and medium-to-poor conditions
 
 import React from 'react';
 
@@ -31,16 +32,18 @@ type LandingWidgetState = {
 	runwayCondition: RunwayConditions,
 	autobrakeMode: AutobrakeMode,
 	reverseThrust: boolean,
+	altitude: number,
+	temperature: number,
+	slope: number,
+	overweightProcedure: boolean,
 	landingDistance: number
 };
 
 enum RunwayConditions {
 	Dry,
-	Wet,
-	Snow,
-	Slush,
-	Water,
-	Ice
+	Good,
+	Medium,
+	Poor,
 }
 
 enum FlapsConfig {
@@ -49,75 +52,365 @@ enum FlapsConfig {
 }
 
 enum AutobrakeMode {
-	Manual,
 	Low,
 	Medium,
-	Max
+	Max // Manual brake is the same as max auto
 }
-
-const targetApproachSpeed: number = 131.5;
 
 type LandingData = {
 	refDistance: number,
-	weightAdjustAbove: number, // per 1T above 68T
-	weightAdjustBelow: number, // per 1T below 68T
-	speedAdjust: number, // Per 5kt
-	altitudeAdjust: number, // Per 1000ft ASL
-	windAdjust: number, // Per 5KT tail wind
-	tempAdjust: number, // Per 10 deg C above ISA
-	slopeAdjust: number, // Per 1% down slope
-	reverserAdjust: number, // Per thrust reverser operative
-	overweightProcedureAdjust: number // If overweight procedure applied
+	weightCorrectionAbove: number, // per 1T above 68T
+	weightCorrectionBelow: number, // per 1T below 68T
+	speedCorrection: number, // Per 5kt
+	altitudeCorrection: number, // Per 1000ft ASL
+	windCorrection: number, // Per 5KT tail wind
+	tempCorrection: number, // Per 10 deg C above ISA
+	slopeCorrection: number, // Per 1% down slope
+	reverserCorrection: number, // Per thrust reverser operative
+	overweightProcedureCorrection: number // If overweight procedure applied
 };
 
 type FlapsConfigLandingData = {
 	[flapsConfig in FlapsConfig]: LandingData
 };
 
-const maximumBrakeData: FlapsConfigLandingData = {
-	[FlapsConfig.Full]: {
-		refDistance: 1060,
-		weightAdjustAbove: 50,
-		weightAdjustBelow: -10,
-		speedAdjust: 70,
-		altitudeAdjust: 40,
-		windAdjust: 130,
-		tempAdjust: 30,
-		slopeAdjust: 20,
-		reverserAdjust: 0,
-		overweightProcedureAdjust: 910
+type AutobrakeConfigLandingData = {
+	[autobrakeConfig in AutobrakeMode]: FlapsConfigLandingData
+}
+
+type RunwayConditionLandingData = {
+	[runwayCondition in RunwayConditions]: AutobrakeConfigLandingData;
+}
+
+const dryRunwayLandingData: AutobrakeConfigLandingData = {
+	[AutobrakeMode.Max]: {
+		[FlapsConfig.Full]: {
+			refDistance: 1060,
+			weightCorrectionAbove: 50,
+			weightCorrectionBelow: -10,
+			speedCorrection: 70,
+			altitudeCorrection: 40,
+			windCorrection: 130,
+			tempCorrection: 30,
+			slopeCorrection: 20,
+			reverserCorrection: 0,
+			overweightProcedureCorrection: 910
+		},
+		[FlapsConfig.Conf3]: {
+			refDistance: 1210,
+			weightCorrectionAbove: 50,
+			weightCorrectionBelow: -10,
+			speedCorrection: 80,
+			altitudeCorrection: 50,
+			windCorrection: 130,
+			tempCorrection: 40,
+			slopeCorrection: 30,
+			reverserCorrection: -10,
+			overweightProcedureCorrection: 1080
+		}
 	},
-	[FlapsConfig.Conf3]: {
-		refDistance: 1210,
-		weightAdjustAbove: 50,
-		weightAdjustBelow: -10,
-		speedAdjust: 80,
-		altitudeAdjust: 50,
-		windAdjust: 130,
-		tempAdjust: 40,
-		slopeAdjust: 30,
-		reverserAdjust: -10,
-		overweightProcedureAdjust: 1080
+	[AutobrakeMode.Medium]: {
+		[FlapsConfig.Full]: {
+			refDistance: 1330,
+			weightCorrectionAbove: 30,
+			weightCorrectionBelow: -10,
+			speedCorrection: 90,
+			altitudeCorrection: 50,
+			windCorrection: 140,
+			tempCorrection: 40,
+			slopeCorrection: 10,
+			reverserCorrection: 0,
+			overweightProcedureCorrection: 220
+		},
+		[FlapsConfig.Conf3]: {
+			refDistance: 1510,
+			weightCorrectionAbove: 40,
+			weightCorrectionBelow: -10,
+			speedCorrection: 100,
+			altitudeCorrection: 50,
+			windCorrection: 140,
+			tempCorrection: 50,
+			slopeCorrection: 10,
+			reverserCorrection: 0,
+			overweightProcedureCorrection: 230
+		}
 	},
+	[AutobrakeMode.Low]: {
+		[FlapsConfig.Full]: {
+			refDistance: 1860,
+			weightCorrectionAbove: 40,
+			weightCorrectionBelow: -10,
+			speedCorrection: 130,
+			altitudeCorrection: 70,
+			windCorrection: 200,
+			tempCorrection: 70,
+			slopeCorrection: 30,
+			reverserCorrection: 0,
+			overweightProcedureCorrection: 210
+		},
+		[FlapsConfig.Conf3]: {
+			refDistance: 2160,
+			weightCorrectionAbove: 50,
+			weightCorrectionBelow: -10,
+			speedCorrection: 140,
+			altitudeCorrection: 80,
+			windCorrection: 220,
+			tempCorrection: 70,
+			slopeCorrection: 30,
+			reverserCorrection: -10,
+			overweightProcedureCorrection: 230
+		}
+	}
 };
 
-const mediumAutobrakeData: FlapsConfigLandingData = {
-	[FlapsConfig.Full]: {
-		refDistance: 1330,
-		weightAdjustAbove: 30,
-		weightAdjustBelow: -10,
-		speedAdjust: 90,
-		altitudeAdjust: 50,
-		windAdjust: 140,
-		tempAdjust: 40,
-		slopeAdjust: 10,
-		reverserAdjust: 0,
-		overweightProcedureAdjust: 220
+const goodRunwayLandingData: AutobrakeConfigLandingData = {
+	[AutobrakeMode.Max]: {
+		[FlapsConfig.Full]: {
+			refDistance: 1320,
+			weightCorrectionAbove: 50,
+			weightCorrectionBelow: -10,
+			speedCorrection: 110,
+			altitudeCorrection: 70,
+			windCorrection: 200,
+			tempCorrection: 60,
+			slopeCorrection: 50,
+			reverserCorrection: -20,
+			overweightProcedureCorrection: 710
+		},
+		[FlapsConfig.Conf3]: {
+			refDistance: 1570,
+			weightCorrectionAbove: 60,
+			weightCorrectionBelow: -20,
+			speedCorrection: 120,
+			altitudeCorrection: 80,
+			windCorrection: 230,
+			tempCorrection: 70,
+			slopeCorrection: 50,
+			reverserCorrection: -30,
+			overweightProcedureCorrection: 810
+		}
 	},
-	[FlapsConfig.Conf3]: {
-		refDistance: 1510,
-
+	[AutobrakeMode.Medium]: {
+		[FlapsConfig.Full]: {
+			refDistance: 1380,
+			weightCorrectionAbove: 50,
+			weightCorrectionBelow: -10,
+			speedCorrection: 110,
+			altitudeCorrection: 70,
+			windCorrection: 200,
+			tempCorrection: 60,
+			slopeCorrection: 50,
+			reverserCorrection: 0,
+			overweightProcedureCorrection: 200
+		},
+		[FlapsConfig.Conf3]: {
+			refDistance: 1630,
+			weightCorrectionAbove: 50,
+			weightCorrectionBelow: -20,
+			speedCorrection: 120,
+			altitudeCorrection: 80,
+			windCorrection: 230,
+			tempCorrection: 70,
+			slopeCorrection: 60,
+			reverserCorrection: -20,
+			overweightProcedureCorrection: 290
+		}
+	},
+	[AutobrakeMode.Low]: {
+		[FlapsConfig.Full]: {
+			refDistance: 1860,
+			weightCorrectionAbove: 40,
+			weightCorrectionBelow: -10,
+			speedCorrection: 130,
+			altitudeCorrection: 70,
+			windCorrection: 200,
+			tempCorrection: 70,
+			slopeCorrection: 30,
+			reverserCorrection: 0,
+			overweightProcedureCorrection: 210
+		},
+		[FlapsConfig.Conf3]: {
+			refDistance: 2160,
+			weightCorrectionAbove: 50,
+			weightCorrectionBelow: -20,
+			speedCorrection: 140,
+			altitudeCorrection: 80,
+			windCorrection: 220,
+			tempCorrection: 70,
+			slopeCorrection: 30,
+			reverserCorrection: -10,
+			overweightProcedureCorrection: 230
+		}
 	}
+}
+
+const mediumRunwayLandingData: AutobrakeConfigLandingData = {
+	[AutobrakeMode.Max]: {
+		[FlapsConfig.Full]: {
+			refDistance: 1760,
+			weightCorrectionAbove: 40,
+			weightCorrectionBelow: -10,
+			speedCorrection: 100,
+			altitudeCorrection: 70,
+			windCorrection: 220,
+			tempCorrection: 60,
+			slopeCorrection: 110,
+			reverserCorrection: -90,
+			overweightProcedureCorrection: 750
+		},
+		[FlapsConfig.Conf3]: {
+			refDistance: 2050,
+			weightCorrectionAbove: 50,
+			weightCorrectionBelow: -20,
+			speedCorrection: 110,
+			altitudeCorrection: 80,
+			windCorrection: 240,
+			tempCorrection: 70,
+			slopeCorrection: 120,
+			reverserCorrection: -120,
+			overweightProcedureCorrection: 880
+		}
+	},
+	[AutobrakeMode.Medium]: {
+		[FlapsConfig.Full]: {
+			refDistance: 1810,
+			weightCorrectionAbove: 40,
+			weightCorrectionBelow: -10,
+			speedCorrection: 110,
+			altitudeCorrection: 70,
+			windCorrection: 230,
+			tempCorrection: 60,
+			slopeCorrection: 110,
+			reverserCorrection: -100,
+			overweightProcedureCorrection: 200
+		},
+		[FlapsConfig.Conf3]: {
+			refDistance: 2100,
+			weightCorrectionAbove: 50,
+			weightCorrectionBelow: -20,
+			speedCorrection: 110,
+			altitudeCorrection: 80,
+			windCorrection: 240,
+			tempCorrection: 70,
+			slopeCorrection: 130,
+			reverserCorrection: -140,
+			overweightProcedureCorrection: 300
+		}
+	},
+	[AutobrakeMode.Low]: {
+		[FlapsConfig.Full]: {
+			refDistance: 1960,
+			weightCorrectionAbove: 40,
+			weightCorrectionBelow: -10,
+			speedCorrection: 130,
+			altitudeCorrection: 70,
+			windCorrection: 240,
+			tempCorrection: 70,
+			slopeCorrection: 100,
+			reverserCorrection: -40,
+			overweightProcedureCorrection: 230
+		},
+		[FlapsConfig.Conf3]: {
+			refDistance: 2270,
+			weightCorrectionAbove: 50,
+			weightCorrectionBelow: -20,
+			speedCorrection: 140,
+			altitudeCorrection: 80,
+			windCorrection: 250,
+			tempCorrection: 80,
+			slopeCorrection: 110,
+			reverserCorrection: -70,
+			overweightProcedureCorrection: 260
+		}
+	}
+};
+
+const poorRunwayLandingData: AutobrakeConfigLandingData = {
+	[AutobrakeMode.Max]: {
+		[FlapsConfig.Full]: {
+			refDistance: 2760,
+			weightCorrectionAbove: 60,
+			weightCorrectionBelow: -20,
+			speedCorrection: 140,
+			altitudeCorrection: 110,
+			windCorrection: 430,
+			tempCorrection: 110,
+			slopeCorrection: 460,
+			reverserCorrection: -370,
+			overweightProcedureCorrection: 550
+		},
+		[FlapsConfig.Conf3]: {
+			refDistance: 3250,
+			weightCorrectionAbove: 70,
+			weightCorrectionBelow: -30,
+			speedCorrection: 150,
+			altitudeCorrection: 130,
+			windCorrection: 470,
+			tempCorrection: 130,
+			slopeCorrection: 550,
+			reverserCorrection: -490,
+			overweightProcedureCorrection: 660
+		}
+	},
+	[AutobrakeMode.Medium]: {
+		[FlapsConfig.Full]: {
+			refDistance: 2790,
+			weightCorrectionAbove: 60,
+			weightCorrectionBelow: -20,
+			speedCorrection: 130,
+			altitudeCorrection: 110,
+			windCorrection: 440,
+			tempCorrection: 100,
+			slopeCorrection: 470,
+			reverserCorrection: -380,
+			overweightProcedureCorrection: 230
+		},
+		[FlapsConfig.Conf3]: {
+			refDistance: 2280,
+			weightCorrectionAbove: 70,
+			weightCorrectionBelow: -30,
+			speedCorrection: 150,
+			altitudeCorrection: 130,
+			windCorrection: 470,
+			tempCorrection: 120,
+			slopeCorrection: 560,
+			reverserCorrection: -490,
+			overweightProcedureCorrection: 310
+		}
+	},
+	[AutobrakeMode.Low]: {
+		[FlapsConfig.Full]: {
+			refDistance: 2830,
+			weightCorrectionAbove: 60,
+			weightCorrectionBelow: -20,
+			speedCorrection: 140,
+			altitudeCorrection: 110,
+			windCorrection: 440,
+			tempCorrection: 110,
+			slopeCorrection: 470,
+			reverserCorrection: -380,
+			overweightProcedureCorrection: 220
+		},
+		[FlapsConfig.Conf3]: {
+			refDistance: 3330,
+			weightCorrectionAbove: 70,
+			weightCorrectionBelow: -30,
+			speedCorrection: 140,
+			altitudeCorrection: 130,
+			windCorrection: 470,
+			tempCorrection: 120,
+			slopeCorrection: 560,
+			reverserCorrection: -500,
+			overweightProcedureCorrection: 290
+		}
+	}
+}
+
+const runwayConditionLandingData: RunwayConditionLandingData = {
+	[RunwayConditions.Dry]: dryRunwayLandingData,
+	[RunwayConditions.Good]: goodRunwayLandingData,
+	[RunwayConditions.Medium]: mediumRunwayLandingData,
+	[RunwayConditions.Poor]: poorRunwayLandingData
 }
 
 export default class LandingWidget extends React.Component<LandingWidgetProps, LandingWidgetState> {
@@ -131,14 +424,17 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 			approachSpeed: 0,
 			flaps: FlapsConfig.Full,
 			runwayCondition: RunwayConditions.Dry,
-			autobrakeMode: AutobrakeMode.Low,
+			autobrakeMode: AutobrakeMode.Medium,
 			reverseThrust: false,
+			altitude: 0,
+			slope: 0,
+			temperature: 0,
+			overweightProcedure: false,
 			landingDistance: 0
 		};
 	}
 
 	private calculateLanding = (): void => {
-		// let operationalLandingDistance = this.calculateOperationalLandingDistance();
 		let operationalLandingDistance = this.calculateRequiredLandingDistance();
 
 		this.setState(prevState => {
@@ -149,116 +445,54 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 	}
 
 	private calculateRequiredLandingDistance = (): number => {
-		let requiredLandingDistanceReference = this.getRequiredLandingDistanceReference(this.state.weight, this.state.flaps,
-			this.state.autobrakeMode, this.state.runwayCondition);
+		// TODO: Get target speed from VLS table, QRH section VAPP DETERMINATION WITHOUT FAILURE
+		let targetApproachSpeed: number = 131.5;
 
-		let approachSpeedCorrection = requiredLandingDistanceReference * this.getApproachSpeedCorrection(this.state.approachSpeed);
-		let windCorrection = requiredLandingDistanceReference * this.getWindCorrection(this.state.windDirection, this.state.windMagnitude, this.state.runwayHeading, this.state.runwayCondition);
-		let reverseThrustCorrection = requiredLandingDistanceReference * this.getReverseThrustCorrection(this.state.reverseThrust, this.state.runwayCondition);
+		let landingData = runwayConditionLandingData[this.state.runwayCondition][this.state.autobrakeMode][this.state.flaps];
 
-		let requiredLandingDistance = requiredLandingDistanceReference + approachSpeedCorrection + windCorrection + reverseThrustCorrection;
-		return Math.round(requiredLandingDistance);
-	}
-
-	private getRequiredLandingDistanceReference = (weight: number, flapsConfig: FlapsConfig, autobrakeMode: AutobrakeMode, runwayCondition: RunwayConditions): number => {
-		// TODO: This shouldn't be linear, use look-up table
-		let minWeight: number = 58000;
-		let maxWeight: number = 94000;
-		let minWeightRefDistance: number;
-		let maxWeightRefDistance: number
-
-		if (autobrakeMode == AutobrakeMode.Medium) {
-			minWeightRefDistance = this.getMediumAutobrakeMinWeightRefDist(flapsConfig, runwayCondition);
-			maxWeightRefDistance = this.getMediumAutobrakeMaxWeightRefDist(flapsConfig, runwayCondition);
-		} else if (autobrakeMode == AutobrakeMode.Low) {
-			minWeightRefDistance = this.getLowAutobrakeMinWeightRefDist(flapsConfig, runwayCondition);
-			maxWeightRefDistance = this.getLowAutobrakeMaxWeightRefDist(flapsConfig, runwayCondition);
-		} else {
-			minWeightRefDistance = this.getMaxBrakeMinWeightRefDist(flapsConfig, runwayCondition);
-			maxWeightRefDistance = this.getMaxBrakeMaxWeightRefDist(flapsConfig, runwayCondition);
-		}
-
-		// Compute straight line between the minimum and maximum weight points
-		let dy = maxWeightRefDistance - minWeightRefDistance;
-		let dx = maxWeight - minWeight;
-
-		let gradient = dy / dx;
-		let offset = minWeightRefDistance - (minWeight * gradient);
-
-		return (weight * gradient) + offset;
-	}
-
-	private getMediumAutobrakeMinWeightRefDist = (flapsConfig: FlapsConfig, runwayCondition: RunwayConditions): number => {
-		if (flapsConfig == FlapsConfig.Conf3) {
-			return ([1340, 1410, 1580, 1700, 1770, 2980])[runwayCondition];
-		}
-		return ([1280, 1330, 1500, 1590, 1660, 2790])[runwayCondition]
-	}
-
-	private getMediumAutobrakeMaxWeightRefDist = (flapsConfig: FlapsConfig, runwayCondition: RunwayConditions): number => {
-		if (flapsConfig == FlapsConfig.Conf3) {
-			return ([1970, 2200, 2170, 2690, 2700, 4290])[runwayCondition];
-		}
-		return ([1800, 1980, 1970, 2440, 2580, 3940])[runwayCondition];
-	}
-
-	private getLowAutobrakeMinWeightRefDist = (flapsConfig: FlapsConfig, runwayCondition: RunwayConditions): number => {
-		if (flapsConfig == FlapsConfig.Conf3) {
-			return ([1920, 1920, 1870, 1860, 1900, 3000])[runwayCondition];
-		}
-		return ([1830, 1830, 1780, 1770, 1810, 2810])[runwayCondition];
-	}
-
-	private getLowAutobrakeMaxWeightRefDist = (flapsConfig: FlapsConfig, runwayCondition: RunwayConditions): number => {
-		if (flapsConfig == FlapsConfig.Conf3) {
-			return ([2810, 2810, 2730, 2790, 2940, 4320])[runwayCondition];
-		}
-		return ([2590, 2590, 2520, 2540, 2660, 3960])[runwayCondition];
-	}
-
-	private getMaxBrakeMinWeightRefDist = (flapsConfig: FlapsConfig, runwayCondition: RunwayConditions): number => {
-		if (flapsConfig == FlapsConfig.Conf3) {
-			return ([860, 1110, 1390, 1490, 1550, 2780])[runwayCondition];
-		}
-		return ([820, 1040, 1310, 1390, 1430, 2590])[runwayCondition];
-	}
-
-	private getMaxBrakeMaxWeightRefDist = (flapsConfig: FlapsConfig, runwayCondition: RunwayConditions): number => {
-		if (flapsConfig == FlapsConfig.Conf3) {
-			return ([1570, 1860, 1980, 2370, 2520, 3950])[runwayCondition];
-		}
-		return ([1470, 1720, 1860, 2210, 2340, 3690])[runwayCondition];
-	}
-
-	private getApproachSpeedCorrection = (approachSpeed: number): number => {
-		let approachSpeedDifference = approachSpeed - targetApproachSpeed;
-		if (approachSpeedDifference < 0) {
-			return 0;
-		}
-
-		let multiplier = approachSpeedDifference / 5;
-		return 0.08 * multiplier;
-	}
-
-	private getWindCorrection = (windDirection: number, windMagnitude: number, runwayHeading: number, runwayCondition: RunwayConditions): number => {
-		let tailWind = this.getTailWind(windDirection, windMagnitude, runwayHeading);
+		let tailWind = this.getTailWind(this.state.windDirection, this.state.windMagnitude, this.state.runwayHeading);
 		if (tailWind < 0) {
-			return 0;
+			tailWind = 0;
 		}
 
-		let multiplier = tailWind / 10;
-		// 			  Dry,   Wet,  Snow, Slush, Water,Ice
-		let offset = ([0.16, 0.21, 0.16, 0.22, 0.24, 0.27])[runwayCondition];
-
-		return offset * multiplier;
-	}
-
-	private getReverseThrustCorrection = (reverseThrust: boolean, runwayCondition: RunwayConditions): number => {
-		if (reverseThrust) {
-			// 	     Dry,   Wet,  Snow,  Slush,  Water,  Ice
-			return ([-0.04, -0.08, -0.11, -0.15, -0.16, -0.28])[runwayCondition];
+		let weightDifference = (this.state.weight / 1000) - 68;
+		let weightCorrection: number;
+		if (weightDifference < 0) {
+			weightCorrection = landingData.weightCorrectionBelow * Math.abs(weightDifference);
+		} else {
+			weightCorrection = landingData.weightCorrectionAbove * weightDifference;
 		}
-		return 0;
+
+		let speedDifference = this.state.approachSpeed - targetApproachSpeed;
+		if (speedDifference < 0) {
+			speedDifference = 0;
+		}
+
+		let speedCorrection = (speedDifference / 5) * landingData.speedCorrection;
+		let windCorrection = tailWind * landingData.windCorrection;
+		let reverserCorrection;
+		if (this.state.reverseThrust) {
+			reverserCorrection = landingData.reverserCorrection * 2;
+		} else {
+			reverserCorrection = 0;
+		}
+
+		let altitudeCorrection = (this.state.altitude / 1000) * landingData.altitudeCorrection;
+		let slopeCorrection = this.state.slope < 0
+			? Math.abs(this.state.slope) * landingData.slopeCorrection
+			: 0;
+		let temperatureCorrection = this.state.temperature > 15
+			? ((this.state.temperature - 15) / 10) * landingData.tempCorrection
+			: 0;
+		let overweightProcCorrection = this.state.overweightProcedure
+			? landingData.overweightProcedureCorrection
+			: 0;
+
+		let requiredLandingDistance =
+			landingData.refDistance + weightCorrection + speedCorrection + windCorrection + reverserCorrection
+			+ altitudeCorrection + slopeCorrection + temperatureCorrection + overweightProcCorrection;
+
+		return Math.round(requiredLandingDistance);
 	}
 
 	private getTailWind = (windDirection: number, windMagnitude: number, runwayHeading: number): number => {
@@ -330,6 +564,34 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
+	private handleAltitudeChange = (event: React.FormEvent<HTMLInputElement>): void => {
+		let altitude = parseInt(event.currentTarget.value);
+
+		if (!altitude) {
+			altitude = 0;
+		}
+
+		this.setState(prevState => {
+			let newState = { ...prevState };
+			newState.altitude = altitude;
+			return newState;
+		});
+	}
+
+	private handleTemperatureChange = (event: React.FormEvent<HTMLInputElement>): void => {
+		let temperature = parseInt(event.currentTarget.value);
+
+		if (!temperature) {
+			temperature = 0;
+		}
+
+		this.setState(prevState => {
+			let newState = { ...prevState };
+			newState.temperature = temperature;
+			return newState;
+		});
+	}
+
 	private handleFlapsChange = (event: React.FormEvent<HTMLSelectElement>): void => {
 		let flaps: FlapsConfig = parseInt(event.currentTarget.value);
 
@@ -378,6 +640,30 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
+	private handleRunwaySlopeChange = (event: React.FormEvent<HTMLInputElement>): void => {
+		let slope = parseInt(event.currentTarget.value);
+
+		if (!slope) {
+			slope = 0;
+		}
+
+		this.setState(prevState => {
+			let newState = { ...prevState };
+			newState.slope = slope;
+			return newState;
+		});
+	}
+
+	private handleOverweightProcedureChange = (event: React.FormEvent<HTMLSelectElement>): void => {
+		let overweightProcedure: boolean = parseInt(event.currentTarget.value) == 1;
+
+		this.setState(prevState => {
+			let newState = { ...prevState };
+			newState.overweightProcedure = overweightProcedure;
+			return newState;
+		});
+	}
+
 	public render() {
 		return (
 			<div className="performance-widget bg-gray-800 rounded-xl p-6 text-white shadow-lg h-full">
@@ -408,6 +694,18 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 									<input placeholder="KTS" onChange={this.handleApproachSpeedChange} />
 								</div>
 							</div>
+							<div className="input-field">
+								<div className="input-label">Rwy Altitude</div>
+								<div className="input-container">
+									<input placeholder='" ASL' onChange={this.handleAltitudeChange} />
+								</div>
+							</div>
+							<div className="input-field">
+								<div className="input-label">Temperature</div>
+								<div className="input-container">
+									<input placeholder='°C' onChange={this.handleTemperatureChange} />
+								</div>
+							</div>
 						</div>
 						<div className="column column-right">
 							<div className="input-field">
@@ -424,11 +722,9 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 								<div className="input-container">
 									<select defaultValue="0" onChange={this.handleRunwayConditionChange}>
 										<option value="0">Dry</option>
-										<option value="1">Wet</option>
-										<option value="2">Snow</option>
-										<option value="3">Slush</option>
-										<option value="4">Standing Water</option>
-										<option value="5">Ice</option>
+										<option value="1">Good</option>
+										<option value="2">Medium</option>
+										<option value="3">Poor</option>
 									</select>
 								</div>
 							</div>
@@ -436,10 +732,9 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 								<div className="input-label">Autobrake Mode</div>
 								<div className="input-container">
 									<select defaultValue="1" onChange={this.handleAutobrakeChange}>
-										<option value="0">Manual</option>
-										<option value="1">Low</option>
-										<option value="2">Medium</option>
-										<option value="3">Max</option>
+										<option value="0">Low</option>
+										<option value="1">Medium</option>
+										<option value="2">Max</option>
 									</select>
 								</div>
 							</div>
@@ -447,6 +742,21 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 								<div className="input-label">Reverse Thrust</div>
 								<div className="input-container">
 									<select defaultValue="0" onChange={this.handleReverseThrustChange}>
+										<option value="0">No</option>
+										<option value="1">Yes</option>
+									</select>
+								</div>
+							</div>
+							<div className="input-field">
+								<div className="input-label">Rwy Slope</div>
+								<div className="input-container">
+									<input placeholder='%' onChange={this.handleRunwaySlopeChange} />
+								</div>
+							</div>
+							<div className="input-field">
+								<div className="input-label">Overweight Proc</div>
+								<div className="input-container">
+									<select defaultValue="0" onChange={this.handleOverweightProcedureChange}>
 										<option value="0">No</option>
 										<option value="1">Yes</option>
 									</select>
