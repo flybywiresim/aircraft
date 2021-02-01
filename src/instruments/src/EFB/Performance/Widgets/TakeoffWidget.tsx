@@ -215,7 +215,7 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 	}
 
 	/**
-	 * Converts mass into an index from 0-9 for use with TO table
+	 * Converts mass into an index from 0-8 for use with TO table
 	 * @param mass Mass in tons
 	 */
 	private getTakeoffTableIndex = (mass: number): number => {

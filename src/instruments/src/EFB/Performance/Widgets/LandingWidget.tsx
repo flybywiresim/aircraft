@@ -422,6 +422,29 @@ const runwayConditionLandingData: RunwayConditionLandingData = {
 	[RunwayConditions.Poor]: poorRunwayLandingData
 }
 
+/**
+ * VLS speed (kts) for full flap configuration
+ * Index 0 = 40T, Index 8 = 80T, 5T increment
+ */
+const confFullVls = [116, 116, 116, 120, 125, 130, 135, 139, 143];
+
+/**
+ * VLS speed (kts) for conf 3 flaps
+ * Index 0 = 40T, Index 8 = 80T, 5T increment
+ */
+const conf3Vls = [116, 116, 124, 130, 136, 141, 146, 151, 155];
+
+/**
+ * Converts mass into an index from 0-8 for use with VLS tables
+ * @param mass Mass in tons
+ */
+function getVlsTableIndex(mass: number): number {
+	let index = Math.ceil(((mass > 80 ? 80 : mass) - 40) / 5);
+	return index >= 0
+		? index
+		: 0;
+}
+
 export default class LandingWidget extends React.Component<LandingWidgetProps, LandingWidgetState> {
 	constructor(props: LandingWidget) {
 		super(props);
@@ -454,8 +477,13 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 	}
 
 	private calculateRequiredLandingDistance = (): number => {
-		// TODO: Get target speed from VLS table, QRH section VAPP DETERMINATION WITHOUT FAILURE
-		let targetApproachSpeed: number = 131.5;
+		let targetApproachSpeed: number;
+		let vlsTableIndex = getVlsTableIndex(this.state.weight / 1000);
+		if (this.state.flaps == FlapsConfig.Full) {
+			targetApproachSpeed = confFullVls[vlsTableIndex];
+		} else {
+			targetApproachSpeed = conf3Vls[vlsTableIndex];
+		}
 
 		let landingData = runwayConditionLandingData[this.state.runwayCondition][this.state.autobrakeMode][this.state.flaps];
 
