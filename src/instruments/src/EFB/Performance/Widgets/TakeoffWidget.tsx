@@ -19,12 +19,12 @@
  // Reference Operational Data Manual for approximations of weather impact on V speed
 
 import React from 'react';
-import { getTailWind } from '../CommonCalculations';
+import TakeoffCalculator, { TakeoffFlapsConfig } from '../Calculators/TakeoffCalculator';
 
 type TakeoffWidgetProps = {};
 type TakeoffWidgetState = {
 	weight: number,
-	flaps: FlapsConfig,
+	flaps: TakeoffFlapsConfig,
 	temperature: number,
 	windDirection: number,
 	windMagnitude: number,
@@ -35,68 +35,16 @@ type TakeoffWidgetState = {
 	flexTemp: string,
 };
 
-/**
- * V2 speed table for takeoff
- * Indexes: 0 - Config 1 + F, 1 - Config 2, 2 - Config 3.
- * Sub-Indexes: 0 to 9 represent gross weight (t) in 5t steps from 40 to 80.
- */
-const takeoffV2Speeds = [
-    [
-        () => 126,
-        () => 126,
-        () => 126,
-        (m) => 126 + 0.2 * (m - 50),
-        (m) => 127 + m - 55,
-        (m) => 132 + m - 60,
-        (m) => 137 + m - 65,
-        (m) => 142 + m - 70,
-        (m) => 147 + m - 75,
-        () => 151
-    ], // Conf 1 + F
-    [
-        () => 126,
-        () => 126,
-        () => 126,
-        () => 126,
-        (m) => 126 + 0.2 * (m - 55),
-        (m) => 127 + m - 60,
-        (m) => 132 + m - 65,
-        (m) => 137 + 0.8 * (m - 70),
-        (m) => 141 + m - 75,
-        () => 146
-    ], // Conf 2
-    [
-        () => 125,
-        () => 125,
-        () => 125,
-        () => 125,
-        () => 125,
-        (m) => 125 + 0.6 * (m - 60),
-        (m) => 128 + 0.8 * (m - 65),
-        (m) => 128 + m - 70,
-        (m) => 128 + 0.8 * (m - 75),
-        () => 141
-    ] // Conf 3
-];
-
-enum FlapsConfig {
-	Conf1F,
-	Conf2,
-	Conf3
-}
-
-// Hacky numbers used to guess flex temp
-const maxTOWeightAt40Degrees = 75000;
-const maxTOWeightAt68Degrees = 52500;
-
 const invalidValueDisplay: string = "---";
 
 export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, TakeoffWidgetState> {
+	private calculator: TakeoffCalculator = new TakeoffCalculator();
+
 	constructor(props: TakeoffWidgetProps) {
 		super(props);
 		this.state = {
 			weight: 0,
-			flaps: FlapsConfig.Conf1F,
+			flaps: TakeoffFlapsConfig.Conf1F,
 			temperature: 0,
 			windDirection: 0,
 			windMagnitude: 0,
@@ -116,114 +64,29 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		let flaps = this.state.flaps;
 		let altitude = 0;
 
-		let v2 = this.getV2(mass, flaps, altitude, this.state.temperature);
-        let vr = v2 - 4;
-		let v1 = v2 - 5;
+		let takeoffPerformance = this.calculator.calculateTakeoffPerformance(this.state.weight,
+			this.state.flaps,
+			this.state.temperature,
+			this.state.windDirection,
+			this.state.windMagnitude,
+			this.state.runwayHeading);
 
-		let flexTemp = this.getFlexTemp(this.state.weight);
-
-		let flexV2 = this.getV2(mass, flaps, altitude, flexTemp);
-
-		let flexTempString = flexTemp.toString();
-
-		if (flexTemp <= 40) {
-			flexTempString = invalidValueDisplay;
-		}
+		let flexTempString = takeoffPerformance.flexTemp
+			? takeoffPerformance.flexTemp.toString()
+			: invalidValueDisplay;
 
 
 		this.setState(prevState => {
 			let newState = { ...prevState };
 
-			newState.v1 = v1;
-			newState.vr = vr;
-			newState.v2 = v2;
+			newState.v1 = takeoffPerformance.v1;
+			newState.vr = takeoffPerformance.vr;
+			newState.v2 = takeoffPerformance.v2;
 			newState.flexTemp = flexTempString;
 
 			return newState;
 		});
 	};
-
-	private getV2(mass: number, flaps: FlapsConfig, altitude: number, temperature: number): number {
-		let v2 = Math.floor(takeoffV2Speeds[flaps][this.getTakeoffTableIndex(mass)](mass) + (flaps === 1 ? (Math.abs(altitude * 0.0002)) : 0));
-
-		v2 += this.getTemperatureOffset(v2, temperature)
-		v2 += this.getWindOffset(this.state.windDirection, this.state.windMagnitude, this.state.runwayHeading);
-
-		return Math.round(v2);;
-	}
-
-	/**
-	 * Find the temperature at which our current weight is the maximum allowed TOW
-	 * This is then the flex takeoff temp
-	 * @param weight Weight in KGs
-	 */
-	private getFlexTemp(weight: number): number {
-		if (weight < maxTOWeightAt68Degrees) {
-			return 68;
-		}
-		if (weight > maxTOWeightAt40Degrees) {
-			return 40;
-		}
-
-		// Solve straight line between TOW @ 40 degrees and TOW @ 68 degrees
-		// weight = (gradient * temp) + offset
-		// therefore: temp = (weight - offset) / gradient
-		let dy = maxTOWeightAt68Degrees - maxTOWeightAt40Degrees;
-		let dx = 28;
-		let gradient = dy / dx;
-		let offset = maxTOWeightAt40Degrees - (gradient * 40);
-
-		let temperature = (weight - offset) / gradient;
-		return Math.round(temperature);
-	}
-
-	/**
-	 * Returns an offset for a given takeoff speed
-	 * Approximation based on linear 1kt decrease per 2°C increase after 44°C
-	 * Minimum speed 125kts
-	 * @param speed
-	 * @param temperature
-	 */
-	private getTemperatureOffset(speed: number, temperature: number): number {
-		if (temperature < 44) {
-			return 0;
-		}
-		let decrease = (temperature - 44) / 2;
-		let newSpeed = speed - decrease;
-		return newSpeed > 125
-			? -decrease
-			: -(speed - 125);
-	}
-
-	/**
-	 * Returns an offset for the takeoff speed
-	 * Approximation based on tail wind calculation with fixed change per 10kts
-	 * @param windDirection Wind direction relative to North
-	 * @param windMagnitude Wind magnitude in kts
-	 * @param runwayHeading Runway heading
-	 */
-	private getWindOffset(windDirection: number, windMagnitude: number, runwayHeading: number): number {
-		var tailWindOffsetPer10kts = -6.7;
-		var headWindOffsetPer10kts = 5;
-
-		var tailWind = getTailWind(windDirection, windMagnitude, runwayHeading);
-
-		if (tailWind > 0) {
-			return (tailWind / 10) * tailWindOffsetPer10kts;
-		}
-		return ((-tailWind) / 10) * headWindOffsetPer10kts;
-	}
-
-	/**
-	 * Converts mass into an index from 0-8 for use with TO table
-	 * @param mass Mass in tons
-	 */
-	private getTakeoffTableIndex = (mass: number): number => {
-		let index = Math.ceil(((mass > 80 ? 80 : mass) - 40) / 5);
-		return index >= 0
-			? index
-			: 0;
-	}
 
 	private handleWeightChange = (event: React.FormEvent<HTMLInputElement>): void => {
 		let weight = parseInt(event.currentTarget.value);
@@ -254,7 +117,7 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 	}
 
 	private handleFlapsChange = (event: React.FormEvent<HTMLSelectElement>): void => {
-		let flaps: FlapsConfig = parseInt(event.currentTarget.value);
+		let flaps: TakeoffFlapsConfig = parseInt(event.currentTarget.value);
 
 		this.setState(prevState => {
 			let newState = { ...prevState };
