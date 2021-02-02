@@ -29,6 +29,7 @@ type TakeoffWidgetState = {
 	windDirection: number,
 	windMagnitude: number,
 	runwayHeading: number,
+	pressure: number,
 	v1: number,
 	vr: number,
 	v2: number,
@@ -49,6 +50,7 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			windDirection: 0,
 			windMagnitude: 0,
 			runwayHeading: 0,
+			pressure: 0,
 			v1: 0,
 			vr: 0,
 			v2: 0,
@@ -60,13 +62,10 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 	 * Updates displayed V Speeds for the current values in state
 	 */
 	private updateVSpeeds = (): void => {
-		let mass = this.state.weight / 1000;
-		let flaps = this.state.flaps;
-		let altitude = 0;
-
 		let takeoffPerformance = this.calculator.calculateTakeoffPerformance(this.state.weight,
 			this.state.flaps,
 			this.state.temperature,
+			this.state.pressure,
 			this.state.windDirection,
 			this.state.windMagnitude,
 			this.state.runwayHeading);
@@ -103,7 +102,7 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 	}
 
 	private handleTemperatureChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let temperature = parseInt(event.currentTarget.value);
+		let temperature = parseFloat(event.currentTarget.value);
 
 		if (!temperature) {
 			temperature = 0;
@@ -159,6 +158,20 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		});
 	}
 
+	private handlePressureChange = (event: React.FormEvent<HTMLInputElement>): void => {
+		let pressure = parseFloat(event.currentTarget.value);
+
+		if (!pressure) {
+			pressure = 0;
+		}
+
+		this.setState(prevState => {
+			let newState = { ...prevState };
+			newState.pressure = pressure;
+			return newState;
+		});
+	}
+
 	public render() {
 		return (
 			<div className="performance-widget bg-gray-800 rounded-xl p-6 text-white shadow-lg h-full">
@@ -199,6 +212,12 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 										<option value="1">2</option>
 										<option value="2">3</option>
 									</select>
+								</div>
+							</div>
+							<div className="input-field">
+								<div className="input-label">Pressure</div>
+								<div className="input-container">
+									<input placeholder="mb" onChange={this.handlePressureChange}/>
 								</div>
 							</div>
 						</div>

@@ -162,7 +162,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 	}
 
 	private handleTemperatureChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let temperature = parseInt(event.currentTarget.value);
+		let temperature = parseFloat(event.currentTarget.value);
 
 		if (!temperature) {
 			temperature = 0;
