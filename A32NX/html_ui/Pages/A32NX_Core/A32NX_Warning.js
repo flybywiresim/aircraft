@@ -31,7 +31,7 @@ class A32NX_Warning {
         }
 
         this.autopilotDisconnect(_deltaTime, this.cautionLeft, this.cautionRight, this.warningLeft, this.warningRight);
-    } 
+    }
 
     autopilotDisconnect(_deltaTime, cautionLeft, cautionRight, warningLeft, warningRight) {
         const apStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool");
