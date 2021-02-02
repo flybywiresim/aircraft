@@ -167,6 +167,10 @@ impl AuxiliaryPowerUnit {
         self.ecb.is_available()
     }
 
+    fn air_intake_flap_is_apu_ecam_open(&self) -> bool {
+        self.air_intake_flap.is_apu_ecam_open()
+    }
+
     fn get_air_intake_flap_open_amount(&self) -> Ratio {
         self.air_intake_flap.get_open_amount()
     }
@@ -234,8 +238,9 @@ impl SimulatorVisitable for AuxiliaryPowerUnit {
 }
 impl SimulatorReadWritable for AuxiliaryPowerUnit {
     fn write(&self, state: &mut SimulatorWriteState) {
-        state.apu_bleed_air_valve_open = self.bleed_air_valve_is_open();
+        state.apu_air_intake_flap_is_ecam_open = self.air_intake_flap_is_apu_ecam_open();
         state.apu_air_intake_flap_opened_for = self.get_air_intake_flap_open_amount();
+        state.apu_bleed_air_valve_open = self.bleed_air_valve_is_open();
         state.apu_caution_egt = self.get_egt_caution_temperature();
         state.apu_egt = self.get_egt();
         state.apu_inoperable = self.is_inoperable();
@@ -611,6 +616,10 @@ pub mod tests {
 
         fn is_air_intake_flap_fully_closed(&self) -> bool {
             (self.apu.get_air_intake_flap_open_amount().get::<percent>() - 0.).abs() < f64::EPSILON
+        }
+
+        fn air_intake_flap_is_apu_ecam_open(&self) -> bool {
+            self.apu.air_intake_flap_is_apu_ecam_open()
         }
 
         pub fn get_n(&self) -> Ratio {
@@ -1455,6 +1464,94 @@ pub mod tests {
                 .run(Duration::from_secs(60));
 
             assert!((tester.get_n().get::<percent>() - 0.).abs() < f64::EPSILON);
+        }
+
+        #[test]
+        fn air_intake_flap_is_apu_ecam_open_returns_false_when_air_intake_flap_fully_closed() {
+            let tester = tester_with().master_off().run(Duration::from_secs(1_000));
+
+            assert!(!tester.air_intake_flap_is_apu_ecam_open());
+        }
+
+        #[test]
+        fn air_intake_flap_is_apu_ecam_open_returns_false_when_air_intake_flap_opening_from_a_previously_fully_closed_position(
+        ) {
+            let tester = tester_with().master_on().run(Duration::from_secs(2));
+
+            assert!(
+                !tester.is_air_intake_flap_fully_closed()
+                    && !tester.is_air_intake_flap_fully_open(),
+                "The test's precondition is that the air intake flap is not fully open nor closed."
+            );
+
+            assert!(!tester.air_intake_flap_is_apu_ecam_open());
+        }
+
+        #[test]
+        fn air_intake_flap_is_apu_ecam_open_returns_true_when_air_intake_flap_opening_from_a_previously_fully_open_position(
+        ) {
+            let tester = tester_with()
+                .apu_ready_to_start()
+                .and()
+                .master_off()
+                .run(Duration::from_secs(2))
+                .then_continue_with()
+                .master_on()
+                .run(Duration::from_secs(1));
+
+            assert!(
+                !tester.is_air_intake_flap_fully_closed()
+                    && !tester.is_air_intake_flap_fully_open(),
+                "The test's precondition is that the air intake flap is not fully open nor closed."
+            );
+
+            assert!(tester.air_intake_flap_is_apu_ecam_open());
+        }
+
+        #[test]
+        fn air_intake_flap_is_apu_ecam_open_returns_true_when_air_intake_flap_fully_open() {
+            let tester = tester_with()
+                .apu_ready_to_start()
+                .run(Duration::from_secs(1_000));
+
+            assert!(tester.air_intake_flap_is_apu_ecam_open());
+        }
+
+        #[test]
+        fn air_intake_flap_is_apu_ecam_open_returns_true_when_air_intake_flap_closing_from_a_previously_fully_open_position(
+        ) {
+            let tester = tester_with()
+                .apu_ready_to_start()
+                .and()
+                .master_off()
+                .run(Duration::from_secs(2));
+
+            assert!(
+                !tester.is_air_intake_flap_fully_closed()
+                    && !tester.is_air_intake_flap_fully_open(),
+                "The test's precondition is that the air intake flap is not fully open nor closed."
+            );
+
+            assert!(tester.air_intake_flap_is_apu_ecam_open());
+        }
+
+        #[test]
+        fn air_intake_flap_is_apu_ecam_open_returns_false_when_air_intake_flap_closing_from_a_previously_fully_closed_position(
+        ) {
+            let tester = tester_with()
+                .master_on()
+                .run(Duration::from_secs(2))
+                .then_continue_with()
+                .master_off()
+                .run(Duration::from_secs(1));
+
+            assert!(
+                !tester.is_air_intake_flap_fully_closed()
+                    && !tester.is_air_intake_flap_fully_open(),
+                "The test's precondition is that the air intake flap is not fully open nor closed."
+            );
+
+            assert!(!tester.air_intake_flap_is_apu_ecam_open());
         }
     }
 }
