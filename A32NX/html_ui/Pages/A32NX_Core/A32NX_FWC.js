@@ -65,6 +65,7 @@ class A32NX_FWC {
         this.AutothrottleWarningCanceled = false;
         this.athrdeltaTime = 0;
         this.apdeltaTime = 0;
+        this.tripleclickTime = 0;
     }
 
     update(_deltaTime, _core) {
@@ -337,6 +338,7 @@ class A32NX_FWC {
 
         if (apStatus === 1) {
             SimVar.SetSimVarValue("L:A32NX_AP_DISC", "Bool", false);
+            SimVar.SetSimVarValue("L:A32NX_AP_CAPABILITY", "Bool", false);
             SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
             this.AutopiloteWarningCanceled = false;
             this.apdeltaTime = 0;
@@ -346,6 +348,11 @@ class A32NX_FWC {
             SimVar.SetSimVarValue("L:A32NX_AP_DISC", "Bool", true);
             SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
             this.apdeltaTime += _deltaTime;
+            this.tripleclickTime += _deltaTime;
+            if (this.tripleclickTime >= 2500) {
+                SimVar.SetSimVarValue("L:A32NX_AP_CAPABILITY", "Bool", false); //TODO : Capability
+                this.tripleclickTime = 0;
+            }
             if (this.warningPressed = true || (this.apdeltaTime / 1000) >= 3) {
                 this.AutopiloteWarningCanceled = true;
                 SimVar.SetSimVarValue("L:A32NX_AP_DISC", "Bool", false);
