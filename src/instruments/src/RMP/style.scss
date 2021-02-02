@@ -1,0 +1,36 @@
+$colour-main: hsl(31, 69%, 35%);
+
+:root {
+    background-color: black;
+    height: 100%;
+    width: 100%;
+}
+
+@font-face {
+    src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf") format("truetype");
+    font-family: "Digital";
+    font-style: normal;
+    font-weight: 900;
+}
+
+.rmp-wrapper {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0%;
+}
+
+.rmp-wrapper svg {
+    height: 25%;
+    width: 100%;
+}
+
+text {
+    alignment-baseline: central;
+    font-family: Digital;
+    letter-spacing: 0px;
+    fill: $colour-main;
+    text-anchor: end;
+    font-size: 52px;
+    height: 100%;
+}

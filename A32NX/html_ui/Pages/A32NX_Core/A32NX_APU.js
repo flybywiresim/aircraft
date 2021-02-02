@@ -4,72 +4,75 @@ class A32NX_APU {
     }
     init() {
         console.log('A32NX_APU init');
-        SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Percent", 0);
         this.lastAPUBleedState = -1;
     }
     update(_deltaTime) {
-        const currentAPUMasterState = SimVar.GetSimVarValue("A:FUELSYSTEM VALVE SWITCH:8", "Bool");
-        const apuFlapOpenPercent = SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Percent");
-        const APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
+        const available = SimVar.GetSimVarValue("L:A32NX_APU_AVAILABLE", "Bool");
+        const apuSwitchIsOn = !!SimVar.GetSimVarValue("A:APU SWITCH", "Bool");
 
-        if (apuFlapOpenPercent === 100 && SimVar.GetSimVarValue("A:APU SWITCH", "Bool") === 0) {
-            const apuFuelsystemValveOpen = SimVar.GetSimVarValue("A:FUELSYSTEM VALVE OPEN:8", "Percent");
-            const apuStartButtonPressed = SimVar.GetSimVarValue("L:A32NX_APU_START_ACTIVATED", "Bool");
-            if (apuFuelsystemValveOpen === 100 && apuStartButtonPressed) {
-                // This fires the APU_STARTER key event, which will cause `A:APU SWITCH` to be set to 1
-                SimVar.SetSimVarValue("K:APU_STARTER", "Number", 1);
-            }
+        // Until everything that depends on the APU is moved into WASM,
+        // we still need to synchronise some of the WASM state with the sim's state.
+        if (available && !apuSwitchIsOn) {
+            // This event will open the fuel valve leading to the APU.
+            SimVar.SetSimVarValue("K:FUELSYSTEM_VALVE_TOGGLE", "Number", 8);
+            // This event will set `A:APU SWITCH` to 1, meaning the sim will start the APU.
+            // In systems.cfg, the `apu_pct_rpm_per_second` setting is set to 1, meaning the APU starts in one second.
+            SimVar.SetSimVarValue("K:APU_STARTER", "Number", 1);
+        } else if (!available && apuSwitchIsOn) {
+            // This event will set `A:APU SWITCH` to 0, meaning the sim will stop the APU.
+            // In systems.cfg, the `apu_pct_rpm_per_second` setting is set to 1, meaning the APU stops in one second.
+            SimVar.SetSimVarValue("K:APU_OFF_SWITCH", "Number", 1);
+            // This event will close the fuel valve leading to the APU.
+            SimVar.SetSimVarValue("K:FUELSYSTEM_VALVE_TOGGLE", "Number", 8);
         }
 
-        // Takes 20 seconds to open
-        const apuFlapOpenPercentSpeed = 20;
+        const apuGenActive = SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool");
+        const externalPowerOff = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0;
 
-        if (currentAPUMasterState === 1 && apuFlapOpenPercent < 100) {
-            const newFlap = Math.min(apuFlapOpenPercent + ((100 / apuFlapOpenPercentSpeed) * (_deltaTime / 1000)), 100);
-            SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Percent", newFlap);
-        } else if (currentAPUMasterState === 0 && apuFlapOpenPercent > 0 && APUPctRPM <= 7) {
-            const newFlap = Math.max(apuFlapOpenPercent - ((100 / apuFlapOpenPercentSpeed) * (_deltaTime / 1000)), 0);
-            SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Percent", newFlap);
-        }
+        // This logic is consistently faulty in the JavaScript code: of course it should also take into
+        // account if engine generators are supplying electricity. We'll fix this when we create the electrical system.
+        SimVar.SetSimVarValue("L:APU_GEN_ONLINE", "Bool", available && apuGenActive ? 1 : 0);
+        SimVar.SetSimVarValue(
+            "L:APU_LOAD_PERCENT",
+            "percent",
+            available && apuGenActive && externalPowerOff
+                ? Math.max(SimVar.GetSimVarValue("L:A32NX_APU_GEN_AMPERAGE", "Amperes")
+                        / SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS", "Amperes"), 0)
+                : 0
+        );
 
-        //APU start, stop
-        if (APUPctRPM >= 87) {
-            SimVar.SetSimVarValue("L:APU_GEN_ONLINE","Bool",1);
-            SimVar.SetSimVarValue("L:APU_GEN_VOLTAGE","Volts",115);
-            SimVar.SetSimVarValue("L:APU_GEN_AMPERAGE","Amperes",782.609); // 1000 * 90 kVA / 115V = 782.609A
-            SimVar.SetSimVarValue("L:APU_GEN_FREQ","Hertz",Math.round((4.46 * APUPctRPM) - 46.15));
-            SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",35);
-            SimVar.SetSimVarValue(
-                "L:APU_LOAD_PERCENT",
-                "percent",
-                Math.max(SimVar.GetSimVarValue("L:APU_GEN_AMPERAGE","Amperes") / SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS","Amperes"), 0)
-            );
-        } else {
-            SimVar.SetSimVarValue("L:APU_GEN_ONLINE","Bool",0);
-            SimVar.SetSimVarValue("L:APU_GEN_VOLTAGE","Volts",0);
-            SimVar.SetSimVarValue("L:APU_GEN_AMPERAGE","Amperes",0);
-            SimVar.SetSimVarValue("L:APU_GEN_FREQ","Hertz",0);
-            SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",0);
-            SimVar.SetSimVarValue("L:APU_LOAD_PERCENT","percent",0);
-        }
-
-        //Bleed
-        const currentAPUBleedState = SimVar.GetSimVarValue("BLEED AIR APU","Bool");
-        if (currentAPUBleedState !== this.lastAPUBleedState) {
-            this.lastAPUBleedState = currentAPUBleedState;
-            if (currentAPUBleedState === 1) {
+        const apuBleedOn = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_ON", "Bool");
+        if (apuBleedOn !== this.lastAPUBleedState) {
+            this.lastAPUBleedState = apuBleedOn;
+            if (apuBleedOn === 1) {
                 this.APUBleedTimer = 3;
             } else {
                 this.APUBleedTimer = 0;
             }
         }
 
-        //AVAIL indication & bleed pressure
-        if (APUPctRPM > 95) {
+        const apuN = SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
+        const bleedAirValveOpen = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool");
+        let psi = 0;
+        if (apuN > 95 && bleedAirValveOpen) {
             if (this.APUBleedTimer > 0) {
                 this.APUBleedTimer -= _deltaTime / 1000;
-                SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",Math.round(35 - this.APUBleedTimer));
+                psi = Math.round(35 - this.APUBleedTimer);
+            } else {
+                psi = 35;
             }
+        }
+        SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE", "PSI", psi);
+
+        // Until everything that depends on the APU is moved into WASM,
+        // we still need to synchronise some of the WASM state with the sim's state.
+        const simApuBleedAirOn = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
+        if (psi > 0 && !simApuBleedAirOn) {
+            // This event will open the sim's APU bleed air valve.
+            SimVar.SetSimVarValue("K:APU_BLEED_AIR_SOURCE_TOGGLE", "Number", 0);
+        } else if (psi === 0 && simApuBleedAirOn) {
+            // This event will close the sim's APU bleed air valve.
+            SimVar.SetSimVarValue("K:APU_BLEED_AIR_SOURCE_TOGGLE", "Number", 0);
         }
     }
 }

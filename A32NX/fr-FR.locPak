@@ -7,7 +7,8 @@
       "AIRCRAFT.UI_MODEL": "A320neo",
       "AIRCRAFT.UI_VARIATION": "Airbus",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adapter le cap souhaité sur la gauche (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
-      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adapter le cap souhaité sur la droite (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)"
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adapter le cap souhaité sur la droite (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU available"
     }
   }
 }
