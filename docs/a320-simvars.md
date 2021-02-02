@@ -413,6 +413,10 @@
     - Bool
     - Indicates if the APU BLEED FAULT light should be illuminated
 
+- A32NX_APU_BLEED_ON
+    - Bool
+    - Indicates if the APU BLEED is ON
+
 - A32NX_APU_MASTER_FAULT
     - Bool
     - Indicates if the MASTER SW FAULT light should be illuminated
