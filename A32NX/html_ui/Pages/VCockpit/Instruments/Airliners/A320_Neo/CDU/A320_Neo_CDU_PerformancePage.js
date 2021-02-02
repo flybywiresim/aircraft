@@ -149,7 +149,8 @@ class CDUPerformancePage {
         // transition altitude - remains editable during take off
         let transAltCell = "";
         if (hasOrigin) {
-            const transAltitude = mcdu.getTransitionAltitude();
+            const departICAO = mcdu.flightPlanManager.getOrigin().ident;
+            const transAltitude = mcdu.getTransitionAltitude(departICAO);
             if (isFinite(transAltitude)) {
                 transAltCell = `{cyan}${transAltitude}{end}`;
                 if (!mcdu.transitionAltitudeIsPilotEntered) {
@@ -661,6 +662,8 @@ class CDUPerformancePage {
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
             titleColor = "green";
         }
+        // check if we even have an airport
+        const hasDestination = !!mcdu.flightPlanManager.getDestination();
         let qnhCell = "[ ]";
         const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
         if (isFinite(mcdu.perfApprQNH) || QNH_REGEX.test(mcdu.perfApprQNH)) {
@@ -695,15 +698,25 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
+
         let transAltCell = "---";
-        if (isFinite(mcdu.perfApprTransAlt)) {
-            transAltCell = mcdu.perfApprTransAlt.toFixed(0);
-        }
-        mcdu.onLeftInput[3] = (value) => {
-            if (mcdu.setPerfApprTransAlt(value)) {
-                CDUPerformancePage.ShowAPPRPage(mcdu);
+        if (hasDestination) {
+            const arrivalICAO = mcdu.flightPlanManager.getDestination().ident;
+            const transArrivalAltitude = mcdu.getArrivalTransitionAltitude(arrivalICAO);
+            if (isFinite(transArrivalAltitude)) {
+                transAltCell = `{cyan}${transArrivalAltitude}{end}`;
+                if (!mcdu.transitionArrivalAltitudeIsPilotEntered) {
+                    transAltCell += "[s-text]";
+                }
+            } else {
+                transAltCell = "{cyan}[]{end}";
             }
-        };
+            mcdu.onLeftInput[3] = (value) => {
+                if (mcdu.trySetTakeOffTransAltitude(value)) {
+                    CDUPerformancePage.ShowAPPRPage(mcdu);
+                }
+            };
+        }
 
         let vappCell = "---";
         let vlsCell = "---";

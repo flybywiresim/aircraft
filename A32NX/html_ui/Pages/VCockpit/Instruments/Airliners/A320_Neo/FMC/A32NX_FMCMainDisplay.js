@@ -1185,13 +1185,18 @@ class FMCMainDisplay extends BaseAirliners {
         return true;
     }
 
-    getTransitionAltitude() {
-        if (isFinite(this.transitionAltitude)) {
-            return this.transitionAltitude;
-        }
-
-        // TODO fetch this from the nav database once we have it in future
-        return 10000;
+    async getTransitionAltitude(departICAO) {
+        await NXApi.getAirport(departICAO)
+            .then((data) => {
+                this.transitionAltitude = data.transAlt;
+                if (this.transitionAltitude === -1) {
+                    console.log("NO DEPARTURE TA");
+                    return 10000;
+                } else {
+                    SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", this.transitionAltitude);
+                    return this.transitionAltitude;
+                }
+            })
     }
 
     trySetThrustReductionAccelerationAltitude(s) {
@@ -2041,6 +2046,46 @@ class FMCMainDisplay extends BaseAirliners {
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
+    }
+
+    trySetPerfApprTransAlt(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.transitionArrivalAltitude = NaN;
+            this.transitionArrivalAltitudeIsPilotEntered = false;
+            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 0);
+            return true;
+        }
+
+        let value = parseInt(s);
+        if (!isFinite(value) || !/^\d{4,5}$/.test(s)) {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        value = Math.round(value / 10) * 10;
+        if (value < 1000 || value > 45000) {
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+
+        this.transitionArrivalAltitude = value;
+        this.transitionArrivalAltitudeIsPilotEntered = true;
+        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", value);
+        return true;
+    }
+
+    async getArrivalTransitionAltitude(arrivalICAO) {
+        await NXApi.getAirport(arrivalICAO)
+            .then((data) => {
+                this.transitionApprAltitude = data.transAlt;
+                if (this.transitionApprAltitude === -1) {
+                    console.log("NO ARRIVAL TA");
+                    return 10000;
+                } else {
+                    SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", this.transitionApprAltitude);
+                    return this.transitionApprAltitude;
+                }
+            })
     }
 
     setPerfApprTransAlt(s) {
