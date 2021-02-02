@@ -1277,7 +1277,7 @@
         <!-- ATHR warning =================================================================================-->
 
         <Sound WwiseData="true" WwiseEvent="improved_tone_caution" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ATHR_DISC" Continuous="false">
-            <Range LowerBound="0.5" />
+            <Range LowerBound="1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
                 <Range LowerBound="28" />
             </Requires>
