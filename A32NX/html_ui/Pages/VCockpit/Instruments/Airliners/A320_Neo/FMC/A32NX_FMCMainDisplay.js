@@ -193,6 +193,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.dataManager = new FMCDataManager(this);
 
         this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
+        this._flightGuidance = new NXFlightGuidance(this);
 
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
@@ -308,6 +309,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.A32NXCore.update();
 
         this.updateAutopilot();
+
+        if (this._flightGuidance) {
+            this._flightGuidance.update(_deltaTime);
+        }
     }
 
     /**
@@ -556,7 +561,7 @@ class FMCMainDisplay extends BaseAirliners {
                 console.log("Current Has Reached Flex = " + currentHasReachedFlex);
                 if (currentHasReachedFlex) {
                     if (!SimVar.GetSimVarValue("AUTOPILOT THROTTLE ARM", "boolean")) {
-                        SimVar.SetSimVarValue("K:AUTO_THROTTLE_ARM", "number", 1);
+                        //SimVar.SetSimVarValue("K:AUTO_THROTTLE_ARM", "number", 1);
                     }
                 }
             }
@@ -1007,7 +1012,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._onModeSelectedSpeed();
         }
         if (_event === "MODE_MANAGED_SPEED") {
-            if (this.flightPlanManager.getWaypointsCount() === 0) {
+            if (SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") <= 100) {
                 return;
             }
             this._onModeManagedSpeed();
