@@ -201,7 +201,7 @@ var A320_Neo_LowerECAM_Engine;
             this.setOilTemperatureValue(SimVar.GetSimVarValue("GENERAL ENG OIL TEMPERATURE:" + this.engineIndex, "celsius"));
 
             let bleedPressure = 0;
-            if (SimVar.GetSimVarValue("BLEED AIR APU","Bool")) {
+            if (SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool")) {
                 bleedPressure = SimVar.GetSimVarValue("L:APU_BLEED_PRESSURE", "psi");
             }
             this.setEngineBleedPressureValue(bleedPressure);
