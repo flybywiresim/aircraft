@@ -87,12 +87,9 @@ See [Contributing.md](.github/Contributing.md)
 
 ## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the master branch)
 
-- Captain's PFD may occasionally turn off during flight
+- Captain's PFD may occasionally turn off during flight.
 - No Smoking switch doesn't use a full range of motion.
-- F/CTL page does not have working speedbrake integration
-- BLEED page is not fully functional
-- Automatic ECAM page switching has minor bugs
-- APU/Engine fire covers cannot be retracted once opened
+- Automatic ECAM page switching has minor bugs.
 
 ## License
 
