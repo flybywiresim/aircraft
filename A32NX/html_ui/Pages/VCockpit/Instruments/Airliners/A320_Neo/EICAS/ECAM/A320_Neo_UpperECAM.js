@@ -1146,19 +1146,19 @@ var A320_Neo_UpperECAM;
                         isActive: () => this.showLandingInhibit,
                     },
                     {
-                        message: "A/THR OFF",
-                        style: "InfoCaution",
-                        important: true,
-                        isActive: () => {
-                            return this.getCachedSimVar("L:A32NX_ATHR_DISC", "Bool");
-                        }
-                    },
-                    {
                         message: "AP OFF",
                         style: "fail-3",
                         important: true,
                         isActive: () => {
                             return this.getCachedSimVar("L:A32NX_AP_DISC", "Bool");
+                        }
+                    },
+                    {
+                        message: "A/THR OFF",
+                        style: "InfoCaution",
+                        important: true,
+                        isActive: () => {
+                            return this.getCachedSimVar("L:A32NX_ATHR_DISC", "Bool");
                         }
                     },
 

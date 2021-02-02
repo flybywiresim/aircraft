@@ -12,8 +12,7 @@ class A32NX_Core {
             new A32NX_FWC(),
             new A32NX_GPWS(this),
             new A32NX_GroundReference(),
-            new A32NX_Speeds(),
-            new A32NX_Warning
+            new A32NX_Speeds()
         ];
 
         this.soundManager = new A32NX_SoundManager();
