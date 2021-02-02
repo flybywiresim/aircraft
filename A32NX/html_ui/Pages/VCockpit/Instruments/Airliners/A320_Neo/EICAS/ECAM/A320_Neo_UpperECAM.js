@@ -423,7 +423,7 @@ var A320_Neo_UpperECAM;
                                         message: "APU",
                                         action: "START",
                                         isCompleted: () => {
-                                            return this.getCachedSimVar("APU PCT RPM", "Percent") > 95;
+                                            return this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool") === 1;
                                         }
                                     },
                                     {
@@ -956,11 +956,13 @@ var A320_Neo_UpperECAM;
                                 message: "FLAP/MCDU DISAGREE",
                                 level: 2,
                                 flightPhasesInhib: [1, 4, 5, 6, 7, 8, 9, 10],
-                                isActive: () => this.activeTakeoffConfigWarnings.includes("flaps_disagree") ||
-                                    (
-                                        (this.fwcFlightPhase === 2 && this.getCachedSimVar("L:A32NX_TO_CONFIG_NORMAL", "Bool") || this.fwcFlightPhase === 3) &&
-                                        this.getCachedSimVar("L:A32NX_TO_CONFIG_FLAPS", "number") !== 0 &&
-                                        this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") !== this.getCachedSimVar("L:A32NX_TO_CONFIG_FLAPS", "number")
+                                isActive: () => this.getCachedSimVar("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool") &&
+                                    (this.activeTakeoffConfigWarnings.includes("flaps_disagree") ||
+                                        (
+                                            (this.fwcFlightPhase === 2 && this.getCachedSimVar("L:A32NX_TO_CONFIG_NORMAL", "Bool") || this.fwcFlightPhase === 3) &&
+                                            this.getCachedSimVar("L:A32NX_TO_CONFIG_FLAPS", "number") !== 0 &&
+                                            this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") !== this.getCachedSimVar("L:A32NX_TO_CONFIG_FLAPS", "number")
+                                        )
                                     )
                             }
                         ]
@@ -1006,6 +1008,40 @@ var A320_Neo_UpperECAM;
                             },
                         ]
                     },
+                    {
+                        name: "APU",
+                        messages: [
+                            {
+                                message: "AUTO SHUT DOWN",
+                                level: 2,
+                                flightPhasesInhib: [3, 4, 5, 7, 8],
+                                isActive: () => this.getCachedSimVar("L:A32NX_APU_IS_AUTO_SHUTDOWN", "Bool"),
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "MASTER SW",
+                                        action: "OFF",
+                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool"),
+                                    },
+                                ]
+                            },
+                            {
+                                message: "EMER SHUT DOWN",
+                                level: 2,
+                                flightPhasesInhib: [3, 4, 5, 7, 8],
+                                isActive: () => this.getCachedSimVar("L:A32NX_APU_IS_EMERGENCY_SHUTDOWN", "Bool"),
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "MASTER SW",
+                                        action: "OFF",
+                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool"),
+                                    },
+                                ]
+                            }
+                        ]
+
+                    }
                 ],
                 normal: [
                     {
@@ -1246,15 +1282,15 @@ var A320_Neo_UpperECAM;
                     {
                         message: "APU AVAIL",
                         isActive: () => (
-                            !this.getCachedSimVar("BLEED AIR APU", "Bool") &&
-                            this.getCachedSimVar("APU PCT RPM", "Percent") >= 95
+                            !SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") &&
+                                this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool")
                         )
                     },
                     {
                         message: "APU BLEED",
                         isActive: () => (
-                            this.getCachedSimVar("BLEED AIR APU", "Bool") &&
-                            this.getCachedSimVar("APU PCT RPM", "Percent") >= 95
+                            SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") &&
+                                this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool")
                         )
                     },
                     {
@@ -1478,7 +1514,7 @@ var A320_Neo_UpperECAM;
                 const eng1active = this.getCachedSimVar("ENG COMBUSTION:1", "Bool");
                 const eng2active = this.getCachedSimVar("ENG COMBUSTION:2", "Bool");
                 const xBleedPos = this.getCachedSimVar("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
-                const engBleedAndPackActive = xBleedPos === 2 || (xBleedPos === 1 && this.getCachedSimVar("APU PCT RPM", "Percent") >= 95 && this.getCachedSimVar("BLEED AIR APU", "Bool")) ?
+                const engBleedAndPackActive = xBleedPos === 2 || (xBleedPos === 1 && this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool") === 1 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool")) ?
                     (this.getCachedSimVar("BLEED AIR ENGINE:1", "Bool") || this.getCachedSimVar("BLEED AIR ENGINE:2", "Bool"))
                     && ((this.getCachedSimVar("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && eng1active) || (this.getCachedSimVar("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && eng2active))
                     :
@@ -1620,6 +1656,7 @@ var A320_Neo_UpperECAM;
             const flapsRight = SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees");
             const flapsHandle = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum");
             const flapsMcdu = SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number");
+            const flapsMcduEntered = SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool");
             const speedBrake = SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "Position");
             const parkBrake = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
             const brakesHot = SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool");
@@ -1642,7 +1679,7 @@ var A320_Neo_UpperECAM;
             if (brakesHot) {
                 this.activeTakeoffConfigWarnings.push("brakes_hot");
             }
-            if (flapsMcdu !== 0 && flapsHandle !== flapsMcdu) {
+            if (flapsMcduEntered && flapsHandle !== flapsMcdu) {
                 this.activeTakeoffConfigWarnings.push("flaps_disagree");
             }
             if (!(v1Speed <= vrSpeed && vrSpeed <= v2Speed)) {
@@ -2233,7 +2270,7 @@ var A320_Neo_UpperECAM;
                     if (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) {
                         if ((throttleMode !== ThrottleMode.TOGA) && (throttleMode !== ThrottleMode.REVERSE)) {
                             const flexTemp = Simplane.getFlexTemperature();
-                            this.setFlexTemperature((flexTemp > 0), flexTemp);
+                            this.setFlexTemperature(flexTemp !== 0, flexTemp);
                         } else {
                             this.setFlexTemperature(false);
                         }
