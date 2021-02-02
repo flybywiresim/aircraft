@@ -32,21 +32,25 @@ class A32NX_Warning {
 
     autopilotDisconnect(_deltaTime, cautionLeft, cautionRight) {
         this.AutothrottleWarningCanceled = false;
+        this.deltaTime = 0;
 
         const apStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool");
         const atherStatus = SimVar.GetSimVarValue("AUTOTHROTTLE ACTIVE", "Bool");
 
         if (atherStatus === true) {
             this.AutothrottleWarningCanceled = false;
+            this.deltaTime = 0;
         }
 
-        if (atherStatus === false && this.AutothrottleWarningCanceled === false) {
-            if (cautionLeft === 1 || cautionRight === 1) {
+        if (atherStatus === false && this.AutothrottleWarningCanceled === false && this.deltaTime != 3) {
+            if (cautionLeft === 1 || cautionRight === 1 || this.deltaTime === 3) {
                 this.AutothrottleWarningCanceled === true
                 SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", false);
                 SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
                 SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
+                this.deltaTime = 0;
             }
+            this.deltaTime =+ _deltaTime*1000;
             SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", true);
             SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", true);
             SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", true);
