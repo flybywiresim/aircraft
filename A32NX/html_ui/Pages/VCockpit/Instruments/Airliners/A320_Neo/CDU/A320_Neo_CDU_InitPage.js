@@ -45,8 +45,6 @@ class CDUInitPage {
                 if (coRoute.includes("__________[color]amber")) {
                     coRoute = "";
                 }
-                mcdu.getTransitionAltitude(mcdu.flightPlanManager.getOrigin().ident);
-                mcdu.getArrivalTransitionAltitude(mcdu.flightPlanManager.getDestination().ident);
 
                 //Need code to set the SimVarValue if user inputs FlNo
                 if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {

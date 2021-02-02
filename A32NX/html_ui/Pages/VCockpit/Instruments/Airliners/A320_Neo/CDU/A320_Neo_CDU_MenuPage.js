@@ -14,6 +14,20 @@ class CDUMenuPage {
         let selectedAIDS = false;
         let selectedCFDS = false;
         let selectedMaint = false;
+        let currentOrigin = "";
+        let currentDestination = "";
+
+        const departureAirport = mcdu.flightPlanManager.getOrigin().ident;
+        const arrivalAirport = mcdu.flightPlanManager.getDestination().ident;
+        if (currentOrigin !== departureAirport) {
+            NXDataStore.set("PLAN_ORIGIN", departureAirport);
+            mcdu.getTransitionAltitude(departureAirport);
+        }
+        if (currentDestination !== arrivalAirport) {
+            NXDataStore.set("PLAN_DESTINATION", arrivalAirport);
+            currentDestination = departureAirport;
+            mcdu.getArrivalTransitionAltitude(arrivalAirport);
+        }
 
         const updateView = () => {
             textFMGC = "<FMGC (REQ)";
