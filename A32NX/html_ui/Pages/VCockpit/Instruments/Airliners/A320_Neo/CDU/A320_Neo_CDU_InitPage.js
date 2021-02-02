@@ -45,6 +45,8 @@ class CDUInitPage {
                 if (coRoute.includes("__________[color]amber")) {
                     coRoute = "";
                 }
+                mcdu.getTransitionAltitude(mcdu.flightPlanManager.getOrigin().ident);
+                mcdu.getArrivalTransitionAltitude(mcdu.flightPlanManager.getDestination().ident);
 
                 //Need code to set the SimVarValue if user inputs FlNo
                 if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
@@ -161,11 +163,15 @@ class CDUInitPage {
                         CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
                         CDUPerformancePage.UpdateThrRedAccFromDestination(mcdu);
                         CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                        mcdu.getTransitionAltitude(mcdu.flightPlanManager.getOrigin().ident);
+                        mcdu.getArrivalTransitionAltitude(mcdu.flightPlanManager.getDestination().ident);
                     }
                 });
             } else if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
                 if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
                     CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                    mcdu.getTransitionAltitude(mcdu.flightPlanManager.getOrigin().ident);
+                    mcdu.getArrivalTransitionAltitude(mcdu.flightPlanManager.getDestination().ident);
                 }
             }
         };

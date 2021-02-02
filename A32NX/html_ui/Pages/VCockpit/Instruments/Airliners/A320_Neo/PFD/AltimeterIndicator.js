@@ -547,13 +547,6 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     _updateQNHAlert(indicatedAltitude, baroMode) {
         this._removeBlink(); //Reset Blink
 
-        if (SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number") == 0) {
-            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 10000); //Default TRANS ALT to 10,000ft
-        }
-        if (SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number") == 0) {
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 10000); //Default TRANS LVL to 10,000ft
-        }
-
         const transTakeoffAlt = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
         const transApprAlt = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
 
