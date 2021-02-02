@@ -88,7 +88,7 @@ export const Horizon = ({
                 <path d="m61.401-13.177h-4.0414l11.547 20 11.547-20h-4.0414l-7.5056 13z" className="NormalStroke Red" />
                 <path d="m68.906-26.177-9.5-9.5h6.5v-3.5h-15l18 18 18-18h-15v3.5h6.5z" className="NormalStroke Red" />
 
-                <path id="TailstrikeWarning" d="m72.682 50.223h2.9368l-6.7128 8-6.7128-8h2.9368l3.7759 4.5z" className="NormalStroke Amber" />
+                <TailstrikeIndicator />
 
                 <path d="m23.906 80.823h90h0" className="NormalOutline" />
                 <path d="m23.906 80.823h90h0" className="NormalStroke White" />
@@ -128,6 +128,21 @@ export const Horizon = ({
                 <path id="FlightPathDirector" d="m69.914 80.823a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125" className="NormalStroke Green" />
             </g>
         </g>
+    );
+};
+
+const TailstrikeIndicator = () => {
+    // should also not be displayed when thrust levers are at or above FLX/MCT, but I don't know if there is a simvar
+    // for that
+    if (getSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet') > 400
+        || getSimVar('AIRSPEED INDICATED', 'knots') < 50
+        || getSimVar('GENERAL ENG THROTTLE LEVER POSITION:1', 'percent over 100') >= 0.95
+        || getSimVar('GENERAL ENG THROTTLE LEVER POSITION:2', 'percent over 100') >= 0.95) {
+        return null;
+    }
+
+    return (
+        <path id="TailstrikeWarning" d="m72.682 50.223h2.9368l-6.7128 8-6.7128-8h2.9368l3.7759 4.5z" className="NormalStroke Amber" />
     );
 };
 
