@@ -36,23 +36,23 @@ class A32NX_Warning {
         const apStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool");
         const atherStatus = SimVar.GetSimVarValue("AUTOTHROTTLE ACTIVE", "Bool");
 
-        if (atherStatus === true) {
+        if (atherStatus === 1) {
+            SimVar.GetSimVarValue("L:A32NX_ATHR_DISC", "Bool", false);
+            SimVar.GetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
             this.AutothrottleWarningCanceled = false;
             this.deltaTime = 0;
         }
 
-        if (atherStatus === false && this.AutothrottleWarningCanceled === false && this.deltaTime != 3) {
-            if (cautionLeft === 1 || cautionRight === 1 || this.deltaTime === 3) {
-                this.AutothrottleWarningCanceled === true
+        if (atherStatus === 0 && this.AutothrottleWarningCanceled === false) {
+            SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", true);
+            SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", true);
+            this.deltaTime += _deltaTime;
+            if (cautionLeft === 1 || cautionRight === 1 || (this.deltaTime / 1000) >= 3) {
+                this.AutothrottleWarningCanceled = true;
                 SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", false);
-                SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
                 SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
                 this.deltaTime = 0;
             }
-            this.deltaTime =+ _deltaTime*1000;
-            SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", true);
-            SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", true);
-            SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", true);
         }
     }
 }

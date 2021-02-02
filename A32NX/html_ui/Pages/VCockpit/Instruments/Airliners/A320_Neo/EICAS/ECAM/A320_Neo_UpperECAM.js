@@ -1114,7 +1114,7 @@ var A320_Neo_UpperECAM;
                         style: "InfoCaution",
                         important: true,
                         isActive: () => {
-                            SimVar.GetSimVarValue("L:A32NX_ATHR_DIS", "Bool") === true;
+                            return this.getCachedSimVar("L:A32NX_ATHR_DISC", "Bool")
                         }
                     }
 
