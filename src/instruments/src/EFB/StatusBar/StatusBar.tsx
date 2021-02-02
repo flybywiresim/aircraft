@@ -20,6 +20,8 @@ import React from "react";
 import { IconBatteryCharging } from '@tabler/icons';
 import { IconWifi } from '@tabler/icons';
 
+declare const SimVar;
+
 type TimeProps = {
     initTime: Date,
     updateTimeSinceStart: Function,
