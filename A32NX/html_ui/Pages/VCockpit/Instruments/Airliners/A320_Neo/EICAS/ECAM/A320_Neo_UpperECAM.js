@@ -1109,6 +1109,14 @@ var A320_Neo_UpperECAM;
                         important: true,
                         isActive: () => this.showLandingInhibit,
                     },
+                    {
+                        message: "A/THR OFF",
+                        style: "InfoCaution",
+                        important: true,
+                        isActive: () => {
+                            SimVar.GetSimVarValue("L:A32NX_ATHR_DIS", "Bool") === true;
+                        }
+                    }
 
                     //Secondary failures
                     {

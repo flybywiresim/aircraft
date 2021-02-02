@@ -26,5 +26,30 @@ class A32NX_Warning {
             SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
             SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
         }
+
+        this.autopilotDisconnect(_deltaTime, this.cautionLeft, this.cautionRight);
+    }
+
+    autopilotDisconnect(_deltaTime, cautionLeft, cautionRight) {
+        this.AutothrottleWarningCanceled = false;
+
+        const apStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool");
+        const atherStatus = SimVar.GetSimVarValue("AUTOTHROTTLE ACTIVE", "Bool");
+
+        if (atherStatus === true) {
+            this.AutothrottleWarningCanceled = false;
+        }
+
+        if (atherStatus === false && this.AutothrottleWarningCanceled === false) {
+            if (cautionLeft === 1 || cautionRight === 1) {
+                this.AutothrottleWarningCanceled === true
+                SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", false);
+                SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
+                SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
+            }
+            SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", true);
+            SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", true);
+            SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", true);
+        }
     }
 }
