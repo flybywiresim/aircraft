@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { createDeltaTimeCalculator, getSimVar, renderTarget } from '../util.mjs';
 
-export const FMA = () => {
+export const FMA = ({ isAttExcessive }) => {
     const SharedMode = getSimVar('L:A32NX_SharedAPMode', 'enum');
     const engineMessage = getSimVar('L:A32NX_Engine_Message', 'enum');
     const BC3Message = getSimVar('L:A32NX_BC3Message', 'enum');
@@ -9,7 +9,7 @@ export const FMA = () => {
         || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && BC3Message === 0 && engineMessage === 0;
 
     let secondBorder;
-    if (SharedMode !== 0) {
+    if (SharedMode !== 0 && !isAttExcessive) {
         secondBorder = '';
     } else if (BC3Message !== 0) {
         secondBorder = 'm66.241 0.33732v15.766';
@@ -18,7 +18,7 @@ export const FMA = () => {
     }
 
     let firstBorder;
-    if (AB3Message) {
+    if (AB3Message && !isAttExcessive) {
         firstBorder = 'm33.117 0.33732v15.766';
     } else {
         firstBorder = 'm33.117 0.33732v20.864';
@@ -30,37 +30,49 @@ export const FMA = () => {
             <path d={secondBorder} />
             <path d="m102.52 0.33732v20.864" />
             <path d="m133.72 0.33732v20.864" />
-            <Row1 />
-            <Row2 />
-            <Row3 />
+            <Row1 isAttExcessive={isAttExcessive} />
+            <Row2 isAttExcessive={isAttExcessive} />
+            <Row3 isAttExcessive={isAttExcessive} />
         </g>
     );
 };
 
-const Row1 = () => (
+const Row1 = ({ isAttExcessive }) => (
     <g>
         <A1A2Cell />
-        <B1Cell />
-        <C1Cell />
-        <D1D2Cell />
-        <BC1Cell />
+        {!isAttExcessive && (
+            <>
+                <B1Cell />
+                <C1Cell />
+                <D1D2Cell />
+                <BC1Cell />
+            </>
+        )}
         <E1Cell />
     </g>
 );
 
-const Row2 = () => (
+const Row2 = ({ isAttExcessive }) => (
     <g>
-        <B2Cell />
-        <C2Cell />
+        {!isAttExcessive && (
+            <>
+                <B2Cell />
+                <C2Cell />
+            </>
+        )}
         <E2Cell />
     </g>
 );
 
-const Row3 = () => (
+const Row3 = ({ isAttExcessive }) => (
     <g>
         <A3Cell />
-        <AB3Cell />
-        <D3Cell />
+        {!isAttExcessive && (
+            <>
+                <AB3Cell />
+                <D3Cell />
+            </>
+        )}
         <E3Cell />
     </g>
 );

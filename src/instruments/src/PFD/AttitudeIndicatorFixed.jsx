@@ -31,7 +31,7 @@ export const AttitudeIndicatorFixedUpper = () => {
     );
 };
 
-export const AttitudeIndicatorFixedCenter = ({ isOnGround, FDActive }) => {
+export const AttitudeIndicatorFixedCenter = ({ isOnGround, FDActive, isAttExcessive }) => {
     if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_ATT', 'Bool')) {
         return (
             <text id="AttFailText" className="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
@@ -54,8 +54,12 @@ export const AttitudeIndicatorFixedCenter = ({ isOnGround, FDActive }) => {
             <path className="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
             <SidestickIndicator isOnGround={isOnGround} />
             <path className="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
-            <path id="GroundYawSymbol" style={{ display: 'none' }} className="NormalStroke Green" d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z" />
-            <FlightDirector FDActive={FDActive} FDPitch={FDPitchOffset} FDRoll={FDRollOffset} />
+            {!isAttExcessive && (
+                <>
+                    <path id="GroundYawSymbol" style={{ display: 'none' }} className="NormalStroke Green" d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z" />
+                    <FlightDirector FDActive={FDActive} FDPitch={FDPitchOffset} FDRoll={FDRollOffset} />
+                </>
+            )}
             <path className="NormalOutline" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
             <path className="NormalStroke Yellow" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
             <g className="NormalOutline">

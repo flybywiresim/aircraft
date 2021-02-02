@@ -14,7 +14,7 @@ const HeadingBug = (offset) => (
 );
 
 export const Horizon = ({
-    pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive,
+    pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive
 }) => {
     if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_ATT', 'Bool')) {
         return null;
@@ -122,7 +122,8 @@ export const Horizon = ({
             <RisingGround radioAlt={radioAlt} pitch={pitch} />
             {headingAvail
             && <HorizontalTape graduationElementFunction={TickFunction} bugs={bugs} yOffset={yOffset} displayRange={35} distanceSpacing={15} valueSpacing={10} heading={heading} />}
-            <RadioAltAndDH radioAlt={radioAlt} decisionHeight={decisionHeight} roll={roll} />
+            {!isAttExcessive
+            && <RadioAltAndDH radioAlt={radioAlt} decisionHeight={decisionHeight} roll={roll} />}
             <g style={{ display: 'none' }}>
                 <path id="FlightPathSymbol" d="m71.173 80.823h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199m2.2665 4.7877c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z" className="NormalStroke Green" />
                 <path id="FlightPathDirector" d="m69.914 80.823a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125" className="NormalStroke Green" />

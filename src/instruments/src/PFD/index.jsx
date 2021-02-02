@@ -42,6 +42,8 @@ class PFD extends Component {
 
         this.smoothFactor = 0.5;
 
+        this.isAttExcessive = false;
+
         this.AirspeedAccFilter = new LagFilter(1.2);
         this.AirspeedAccRateLimiter = new RateLimiter(1.2, -1.2);
 
@@ -83,6 +85,12 @@ class PFD extends Component {
         const pitch = -getSimVar('PLANE PITCH DEGREES', 'degrees');
         const roll = getSimVar('PLANE BANK DEGREES', 'degrees');
         const heading = getSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
+
+        if (!this.isAttExcessive && (pitch > 25 || pitch < -13 || Math.abs(roll) > 45)) {
+            this.isAttExcessive = true;
+        } else if (this.isAttExcessive && pitch < 22 && pitch > -10 && Math.abs(roll) < 40) {
+            this.isAttExcessive = false;
+        }
 
         const groundTrack = getSimVar('GPS GROUND MAGNETIC TRACK', 'degrees');
 
@@ -163,7 +171,7 @@ class PFD extends Component {
 
         return (
             <svg className="pfd-svg" version="1.1" viewBox="0 0 158.75 158.75" xmlns="http://www.w3.org/2000/svg">
-                <Horizon pitch={pitch} roll={roll} heading={heading} FDActive={FDActive} selectedHeading={selectedHeading} isOnGround={isOnGround} radioAlt={radioAlt} decisionHeight={decisionHeight} />
+                <Horizon pitch={pitch} roll={roll} heading={heading} FDActive={FDActive} selectedHeading={selectedHeading} isOnGround={isOnGround} radioAlt={radioAlt} decisionHeight={decisionHeight} isAttExcessive={this.isAttExcessive} />
                 <path
                     id="Mask1"
                     className="BackgroundFill"
@@ -179,12 +187,12 @@ class PFD extends Component {
                 />
                 <LandingSystem LSButtonPressed={this.LSButtonPressed} />
                 <AttitudeIndicatorFixedUpper />
-                <AttitudeIndicatorFixedCenter isOnGround={isOnGround} FDActive={FDActive} />
+                <AttitudeIndicatorFixedCenter isOnGround={isOnGround} FDActive={FDActive} isAttExcessive={this.isAttExcessive} />
                 <VerticalSpeedIndicator radioAlt={radioAlt} />
                 <HeadingOfftape ILSCourse={ILSCourse} groundTrack={groundTrack} heading={heading} selectedHeading={selectedHeading} />
                 <AltitudeIndicatorOfftape altitude={baroAlt} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
                 <AirspeedIndicatorOfftape airspeed={clampedAirspeed} mach={mach} airspeedAcc={filteredAirspeedAcc} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
-                <FMA />
+                <FMA isAttExcessive={this.isAttExcessive} />
             </svg>
         );
     }
