@@ -6,6 +6,8 @@ class A32NX_Warning {
         this.warningRight = false;
         this.cautionLeft = false;
         this.cautionRight = false;
+        this.AutothrottleWarningCanceled = false;
+        this.deltaTime = 0;
     }
 
     init() {
@@ -31,9 +33,6 @@ class A32NX_Warning {
     }
 
     autopilotDisconnect(_deltaTime, cautionLeft, cautionRight) {
-        this.AutothrottleWarningCanceled = false;
-        this.deltaTime = 0;
-
         const apStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool");
         const atherStatus = SimVar.GetSimVarValue("AUTOTHROTTLE ACTIVE", "Bool");
 
