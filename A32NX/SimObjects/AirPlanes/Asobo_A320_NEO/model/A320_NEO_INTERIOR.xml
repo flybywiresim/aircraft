@@ -42,7 +42,7 @@
                 <NODE_ID>SCREEN_EFB</NODE_ID>
             </DefaultTemplateParameters>
 
-            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+            <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
                 <EMISSIVE_CODE>0.7</EMISSIVE_CODE>
             </UseTemplate>
 
