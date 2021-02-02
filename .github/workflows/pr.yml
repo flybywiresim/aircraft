@@ -36,7 +36,7 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
-      - name: Generate layout.json and update manifest.json
+      - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
           ./scripts/dev-env/run.sh ./scripts/build.sh
