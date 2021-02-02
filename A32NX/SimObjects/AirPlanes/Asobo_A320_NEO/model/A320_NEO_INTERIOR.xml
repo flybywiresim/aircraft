@@ -2966,6 +2966,8 @@
             <UseTemplate Name="ASOBO_AUTOPILOT_Switch_Altitude_Increment_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_ALT</ANIM_NAME>
+                <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
 
             </UseTemplate>
 
