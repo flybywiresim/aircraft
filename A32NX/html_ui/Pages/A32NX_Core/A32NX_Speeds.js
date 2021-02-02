@@ -47,7 +47,7 @@ class A32NX_Speeds {
             this.ldgPos = ldg;
             this.alt = alt;
 
-            const speeds = new NXSpeeds(gw, this.lastFhi, ldg, fp < FlightPhase.FLIGHT_PHASE_CLIMB);
+            const speeds = new NXSpeeds(gw, this.lastFhi, ldg, fp < FlightPhase.FLIGHT_PHASE_CRUISE);
             speeds.compensateForMachEffect(alt);
 
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_VS", "number", speeds.vs);
