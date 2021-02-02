@@ -345,7 +345,9 @@ class A32NX_FWC {
         }
 
         if (apStatus === 0 && this.AutopiloteWarningCanceled === false) {
-            SimVar.SetSimVarValue("L:A32NX_AP_DISC", "Bool", true);  //TODO : This only working 1 times, should 3 times
+            if (this.apdeltaTime / 1000 <= 1.5){
+                Coherent.call("PLAY_INSTRUMENT_SOUND", cavcharge);
+            }
             SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
             this.apdeltaTime += _deltaTime;
             this.tripleclickTime += _deltaTime;
@@ -355,7 +357,6 @@ class A32NX_FWC {
             }
             if (this.warningPressed = true || (this.apdeltaTime / 1000) >= 3) {
                 this.AutopiloteWarningCanceled = true;
-                SimVar.SetSimVarValue("L:A32NX_AP_DISC", "Bool", false);
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
                 this.apdeltaTime = 0;
             }
