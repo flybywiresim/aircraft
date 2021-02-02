@@ -26,49 +26,58 @@ import {setSimVar, getSimVar} from '../../util.mjs'
 type GroundProps = {}
 
 type GroundState = {
-    tugStatus: boolean;
+    tugActive: boolean;
+    lastTugHeading: number;
 }
 
 class Ground extends React.Component<GroundProps, GroundState> {
 
-    constructor(props) {
+    constructor(props: GroundProps) {
         super(props);
 
         this.state = {
-            tugStatus: false,
+            tugActive: false,
+            lastTugHeading: 0,
         };
       }
 
     toggleGroundAction(action: GroundServices) {
-        return (() =>{
+        return (() => {
             setSimVar(action, "1", "boolean");
         })
     }
 
     setTugHeading(action: GroundServices, value: number, type: string) {
-        return (() =>{
-            if(!this.state.tugStatus) {
+        return (() => {
+            if(!this.state.tugActive) {
                 this.togglePushback();
-                setSimVar(action, this.getTugHeading(0) * 11930465, type);
             } else {
+                const lastTugHeading = this.state.lastTugHeading;
                 setSimVar(action, this.getTugHeading(value) * 11930465, type);
+                if(value === 90 || lastTugHeading === 270) {
+                    setSimVar("Rotation Velocity Body Y", 0.003, "feet per second");
+                } else if (value === 270 || lastTugHeading === 90) {
+                    setSimVar("Rotation Velocity Body Y", -0.003, "feet per second");
+                }
+                this.setState({
+                    lastTugHeading: value
+                });
             }
         })
     }
 
     getTugHeading(value: number): number {
         const currentHeading = getSimVar("PLANE HEADING DEGREES TRUE", "degrees");
-        let desiredHeading: number = Math.floor(currentHeading)  + value;
+        let desiredHeading: number = Math.round(currentHeading)  + value;
         desiredHeading %= 360;
         return desiredHeading;
     }
 
     togglePushback() {
-            const tugActive = this.state.tugStatus;
+            const tugActive = this.state.tugActive;
             setSimVar(GroundServices.TOGGLE_PUSHBACK, 1, "boolean");
-            setSimVar(GroundServices.PUSHBACK_TURN, this.getTugHeading(0)* 11930465, "number");
-            this.setState ({
-                tugStatus: !tugActive
+            this.setState({
+                tugActive: !tugActive
             });
     }
 
@@ -77,7 +86,7 @@ class Ground extends React.Component<GroundProps, GroundState> {
             <div className="wrapper flex-grow flex flex-col">
                 <div className="pushback control-grid">
                     <h1 className="text-white font-medium text-xl">Pushback</h1>
-                    <div onClick={() => this.state.tugStatus ? this.togglePushback() : {}} className="stop"><IconHandStop/></div>
+                    <div onClick={() => this.state.tugActive ? this.togglePushback() : {}} className="stop"><IconHandStop/></div>
                     <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 90, "number")} className="down-left"><IconCornerDownLeft/></div>
                     <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 0, "number")} className="down selected"><IconArrowDown /></div>
                     <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 270, "number")} className="down-right"><IconCornerDownRight/></div>
@@ -107,10 +116,11 @@ class Ground extends React.Component<GroundProps, GroundState> {
 enum GroundServices {
     TOGGLE_PUSHBACK = "K:TOGGLE_PUSHBACK",
     PUSHBACK_TURN = "K:KEY_TUG_HEADING",
-    TOGGLE_JETWAY= "K:TOGGLE_JETWAY",
-    TOGGLE_STAIRS="K:TOGGLE_RAMPTRUCK",
-    TOGGLE_CARGO="K:REQUEST_LUGGAGE",
-    TOGGLE_CATERING="K:REQUEST_CATERING",
-    TOGGLE_FUEL="K:REQUEST_FUEL_KEY"
+    TOGGLE_JETWAY = "K:TOGGLE_JETWAY",
+    TOGGLE_STAIRS = "K:TOGGLE_RAMPTRUCK",
+    TOGGLE_CARGO = "K:REQUEST_LUGGAGE",
+    TOGGLE_CATERING = "K:REQUEST_CATERING",
+    TOGGLE_FUEL = "K:REQUEST_FUEL_KEY"
 }
+
 export default Ground;
