@@ -40,7 +40,8 @@ pub struct A320SimulatorReadWriter {
     apu_egt_caution: NamedVariable,
     apu_egt_warning: NamedVariable,
     apu_fire_button_released: NamedVariable,
-    apu_flap_open: NamedVariable,
+    apu_air_intake_flap_is_ecam_open: NamedVariable,
+    apu_flap_open_percentage: NamedVariable,
     apu_gen_amperage: NamedVariable,
     apu_gen_frequency: NamedVariable,
     apu_gen_frequency_within_normal_range: NamedVariable,
@@ -75,7 +76,8 @@ impl A320SimulatorReadWriter {
             apu_egt_caution: NamedVariable::from("A32NX_APU_EGT_CAUTION"),
             apu_egt_warning: NamedVariable::from("A32NX_APU_EGT_WARNING"),
             apu_fire_button_released: NamedVariable::from("A32NX_FIRE_BUTTON_APU"),
-            apu_flap_open: NamedVariable::from("APU_FLAP_OPEN"),
+            apu_air_intake_flap_is_ecam_open: NamedVariable::from("A32NX_APU_FLAP_ECAM_OPEN"),
+            apu_flap_open_percentage: NamedVariable::from("A32NX_APU_FLAP_OPEN_PERCENTAGE"),
             apu_gen_amperage: NamedVariable::from("A32NX_APU_GEN_AMPERAGE"),
             apu_gen_frequency: NamedVariable::from("A32NX_APU_GEN_FREQ"),
             apu_gen_frequency_within_normal_range: NamedVariable::from("A32NX_APU_GEN_FREQ_NORMAL"),
@@ -146,7 +148,9 @@ impl SimulatorReadWriter for A320SimulatorReadWriter {
             .set_value(state.apu_caution_egt.get::<degree_celsius>());
         self.apu_egt_warning
             .set_value(state.apu_warning_egt.get::<degree_celsius>());
-        self.apu_flap_open
+        self.apu_air_intake_flap_is_ecam_open
+            .set_value(from_bool(state.apu_air_intake_flap_is_ecam_open));
+        self.apu_flap_open_percentage
             .set_value(state.apu_air_intake_flap_opened_for.get::<percent>());
         self.apu_gen_amperage
             .set_value(state.apu_gen_current.get::<ampere>());
