@@ -25,8 +25,6 @@ const { babel } = require('@rollup/plugin-babel');
 const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const replace = require('@rollup/plugin-replace');
-const scss = require('rollup-plugin-scss');
-const scssCompiler = require('sass');
 const postcss = require('rollup-plugin-postcss');
 const tailwindcss = require('tailwindcss');
 const template = require('./template/rollup.js');
@@ -45,7 +43,6 @@ module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
     .filter((d) => d.isDirectory() && fs.existsSync(`${__dirname}/src/${d.name}/config.json`))
     .map(({ name }) => {
         const config = JSON.parse(fs.readFileSync(`${__dirname}/src/${name}/config.json`));
-        let cssBundle;
         return {
             input: `${__dirname}/src/${name}/${config.index}`,
             output: {
