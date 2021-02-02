@@ -41,18 +41,15 @@ class A32NX_Speeds {
             const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
             const alt = this.round(Simplane.getAltitude());
 
-            /** During Take Off allow to change this.isTo */
-            if (fp === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
-                this.isTo = isTo;
-            }
-
-            if (fhi === this.lastFhi && gw === this.lastGw && ldg === this.ldgPos && alt === this.alt) {
+            if (fhi === this.lastFhi && gw === this.lastGw && ldg === this.ldgPos && alt === this.alt && isTo === this.isTo) {
                 return;
             }
 
-            /** if we are in take off config and change the fhi, we no longer are in take off config
-             * However when in TakeOff flight phase, we will transition back into take off config if conditions met */
-            if (this.isTo && this.lastFhi !== fhi) {
+            /** During Take Off allow to change this.isTo
+            * Otherwise if we are in take off config and change the fhi, we no longer are in take off config */
+            if (fp === FlightPhase.FLIGHT_PHASE_TAKEOFF && Simplane.getAltitudeAboveGround() < 1.5) {
+                this.isTo = isTo;
+            } else if (this.isTo && this.lastFhi !== fhi) {
                 this.isTo = false;
             }
 

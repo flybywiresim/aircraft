@@ -462,16 +462,7 @@ class NXSpeeds {
     constructor(m, fPos, gPos, isTo, wind = 0) {
         const cm = _correctMass(m);
         this.vs = vs[fPos][cm](m, gPos);
-        if (isTo) {
-            this.vls = vlsTo[fPos][cm](m, gPos);
-            /** While in Take Off coning and only during Take Off, check if Vls is below V2, and if so set Vls to V2 */
-            const v2 = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots");
-            if (isFinite(v2) && this.vls < v2) {
-                this.vls = v2;
-            }
-        } else {
-            this.vls = vls[fPos][cm](m, gPos);
-        }
+        this.vls = (isTo ? vlsTo : vls)[fPos][cm](m, gPos);
         this.vapp = this.vls + _addWindComponent(wind);
         this.f = f[cm](m);
         this.s = s[cm](m);
