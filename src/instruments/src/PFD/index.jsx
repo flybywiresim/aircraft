@@ -8,8 +8,10 @@ import { HeadingOfftape, HeadingTape } from './HeadingIndicator.jsx';
 import { AltitudeIndicatorOfftape, AltitudeIndicator } from './AltitudeIndicator.jsx';
 import { AirspeedIndicatorOfftape, AirspeedIndicator } from './SpeedIndicator.jsx';
 import { FMA } from './FMA.jsx';
-import { getSimVar, setSimVar, renderTarget, createDeltaTimeCalculator } from '../util.mjs';
-import { SmoothSin, LagFilter } from './PFDUtils.jsx';
+import {
+    getSimVar, setSimVar, renderTarget, createDeltaTimeCalculator
+} from '../util.mjs';
+import { SmoothSin, LagFilter, RateLimiter } from './PFDUtils.jsx';
 import './style.scss';
 
 const AltModeSelected = () => {
@@ -40,7 +42,8 @@ class PFD extends Component {
 
         this.smoothFactor = 0.5;
 
-        this.AirspeedAccFilter = new LagFilter(1);
+        this.AirspeedAccFilter = new LagFilter(1.2);
+        this.AirspeedAccRateLimiter = new RateLimiter(1.2, -1.2);
 
         this.LSButtonPressed = false;
 
@@ -99,7 +102,8 @@ class PFD extends Component {
         const airspeedAcc = (clampedAirspeed - this.prevAirspeed) / this.deltaTime * 1000;
         this.prevAirspeed = clampedAirspeed;
 
-        const filteredAirspeedAcc = this.AirspeedAccFilter.step(airspeedAcc, this.deltaTime / 1000);
+        const rateLimitedAirspeedAcc = this.AirspeedAccRateLimiter.step(airspeedAcc, this.deltaTime / 1000);
+        const filteredAirspeedAcc = this.AirspeedAccFilter.step(rateLimitedAirspeedAcc, this.deltaTime / 1000);
 
         const mach = getSimVar('AIRSPEED MACH', 'mach');
 

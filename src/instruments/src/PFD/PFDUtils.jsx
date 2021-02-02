@@ -179,3 +179,23 @@ export class LagFilter {
         return 0;
     }
 }
+
+export class RateLimiter {
+    constructor(risingRate, fallingRate) {
+        this.PreviousOutput = 0;
+
+        this.RisingRate = risingRate;
+        this.FallingRate = fallingRate;
+    }
+
+    step(input, deltaTime) {
+        const subInput = input - this.PreviousOutput;
+
+        const scaledUpper = deltaTime * this.RisingRate;
+        const scaledLower = deltaTime * this.FallingRate;
+
+        const output = this.PreviousOutput + Math.max(Math.min(scaledUpper, subInput), scaledLower);
+        this.PreviousOutput = output;
+        return output;
+    }
+}
