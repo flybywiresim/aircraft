@@ -182,8 +182,11 @@ export default class TakeoffCalculator {
 		let altitude = 0;
 
 		let v2 = this.getV2(weightTons, flaps, altitude, temperature, pressure, windDirection, windMagnitude, runwayHeading);
-		let vr = v2 - 4;
+		let vr = this.getVr(weightTons, flaps, altitude, temperature, pressure, windDirection, windMagnitude, runwayHeading)
 		let v1 = v2 - 5;
+
+		vr = v1 > vr ? v1 : vr; // vr must be >= v1
+		v2 = vr > v2 ? vr : v2; // v2 must be >= vr
 
 		let flexTemp: number | null = this.getFlexTemp(weight);
 
@@ -221,6 +224,29 @@ export default class TakeoffCalculator {
 		let v2 = Math.max(stallSpeed * 1.13, vmuVmcaMinV2, vmcgVmcaMinV2);
 
 		return Math.round(v2);
+	}
+
+	/**
+	 * Calculates VR for the given conditions
+	 * @param weightTons Aircraft weight in tons
+	 * @param flaps
+	 * @param altitude
+	 * @param temperature OAT in °C
+	 * @param windDirection Direction wind is coming from relative to north
+	 * @param windMagnitude Wind magnitude in kts
+	 * @param runwayHeading
+	 */
+	private getVr(weightTons: number, flaps: TakeoffFlapsConfig, altitude: number, temperature: number, pressure: number,
+		windDirection: number, windMagnitude: number, runwayHeading: number): number {
+
+		let pressureAltitude = this.getPressureAltitude(pressure);
+
+		let stallSpeed = stallSpeeds[flaps][this.getTakeoffTableIndex(weightTons)](weightTons);
+		let vmcgVmcaMinVr = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinVrSpeeds, vrV2PressureAltitudeIndexes);
+
+		let vr = Math.max(stallSpeed, vmcgVmcaMinVr);
+
+		return Math.round(vr);
 	}
 
 	/**

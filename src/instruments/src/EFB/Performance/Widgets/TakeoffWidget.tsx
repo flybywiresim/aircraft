@@ -50,7 +50,7 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			windDirection: 0,
 			windMagnitude: 0,
 			runwayHeading: 0,
-			pressure: 0,
+			pressure: 1013.25,
 			v1: 0,
 			vr: 0,
 			v2: 0,
@@ -162,7 +162,7 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		let pressure = parseFloat(event.currentTarget.value);
 
 		if (!pressure) {
-			pressure = 0;
+			pressure = 1013.25;
 		}
 
 		this.setState(prevState => {
