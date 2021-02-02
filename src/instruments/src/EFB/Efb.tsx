@@ -27,8 +27,6 @@ import Ground from './Ground/Ground';
 import Company from "./Company/Company";
 import Settings from "./Settings/Settings";
 
-import './Assets/Efb.scss';
-
 type EfbProps = {
     currentFlight: string
 };
@@ -284,10 +282,10 @@ class Efb extends React.Component<EfbProps, EfbState> {
 
     render() {
         return (
-            <div className="container">
+            <div className="w-full h-screen bg-blue-darker flex flex-col">
                 <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart} />
                 <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} />
-                <div className="content">
+                <div className="w-full flex-1 flex flex-col">
                     {this.currentPage()}
                 </div>
             </div>
