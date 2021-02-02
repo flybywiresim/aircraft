@@ -79,7 +79,7 @@ const Row3 = ({ isAttExcessive }) => (
 );
 
 const A1A2Cell = () => {
-    const AThrMode = getSimVar('L:A32NX_ThrustLimitMode', 'enum');
+    const AThrMode = getSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum');
 
     let text;
 
@@ -185,7 +185,7 @@ const A1A2Cell = () => {
 };
 
 const A3Cell = () => {
-    const engineMessage = getSimVar('L:A32NX_Engine_Message', 'enum');
+    const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
 
     let text;
     let className;
@@ -258,13 +258,8 @@ const B1Cell = () => {
     // case 4:
     //     text = 'F-G/S*';
     //     break;
-    // case 5:
-    //     text = 'EXP DES';
-    //     break;
-    // case 6:
-    //     text = 'EXP CLB';
-    //     break;
     case 40:
+    case 41:
         text = 'SRS';
         break;
     // case 8:
@@ -277,13 +272,21 @@ const B1Cell = () => {
         text = 'DES';
         break;
     case 13:
-        text = 'OP DES';
+        if (getSimVar('L:A32NX_FMA_EXPEDITE_MODE', 'bool')) {
+            text = 'EXP DES';
+        } else {
+            text = 'OP DES';
+        }
         break;
     case 22:
         text = 'CLB';
         break;
     case 12:
-        text = 'OP CLB';
+        if (getSimVar('L:A32NX_FMA_EXPEDITE_MODE', 'bool')) {
+            text = 'EXP CLB';
+        } else {
+            text = 'OP CLB';
+        }
         break;
     case 10:
         if (getSimVar('L:A32NX_FMA_SOFT_ALT_MODE', 'Bool')) {
@@ -638,19 +641,21 @@ const E2Cell = () => {
 };
 
 const E3Cell = () => {
-    const AThrArm = getSimVar('AUTOPILOT THROTTLE ARM', 'bool');
-    const AThrActive = getSimVar('AUTOPILOT MANAGED THROTTLE ACTIVE', 'bool');
+    const status = getSimVar('L:A32NX_AUTOTHRUST_STATUS', 'enum');
 
     let color;
     let id = 0;
-    if (!AThrArm && !AThrActive) {
-        return null;
-    } if (AThrArm && !AThrActive) {
+    switch (status) {
+    case 1:
         color = 'Cyan';
         id = 1;
-    } else if (AThrActive) {
+        break;
+    case 2:
         color = 'White';
         id = 2;
+        break;
+    default:
+        return null;
     }
 
     return (
