@@ -21,7 +21,7 @@ import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, I
 
 import './Ground.scss'
 import fuselage from '../Assets/320neo-outline-upright.svg'
-import {setSimVar, getSimVar} from '../../util.mjs'
+import {setSimVar, getSimVar} from '../../types/util'
 
 type GroundProps = {}
 
@@ -29,8 +29,6 @@ type GroundState = {
     tugActive: boolean;
     lastTugHeading: number,
     activeButton: string,
-    lastHeading: number,
-    aInterval: any,
 }
 
 class Ground extends React.Component<GroundProps, GroundState> {
@@ -42,8 +40,6 @@ class Ground extends React.Component<GroundProps, GroundState> {
             tugActive: false,
             lastTugHeading: 0,
             activeButton: 'none',
-            lastHeading: -1,
-            aInterval: null
         };
       }
 
@@ -73,9 +69,6 @@ class Ground extends React.Component<GroundProps, GroundState> {
 
     getTugHeading(value: number): number {
         const currentHeading = getSimVar("PLANE HEADING DEGREES TRUE", "degrees");
-        this.setState({
-            lastHeading: currentHeading
-        })
         let desiredHeading: number = currentHeading  + value;
         desiredHeading %= 360;
         return desiredHeading;
