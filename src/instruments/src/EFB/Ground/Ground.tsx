@@ -21,13 +21,12 @@ import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, I
 
 import './Ground.scss'
 import fuselage from '../Assets/320neo-outline-upright.svg'
-import {setSimVar, getSimVar} from '../../types/util'
+import {setSimVar, getSimVar} from '../../util.mjs'
 
 type GroundProps = {}
 
 type GroundState = {
     tugActive: boolean;
-    lastTugHeading: number,
     activeButton: string,
 }
 
@@ -38,32 +37,21 @@ class Ground extends React.Component<GroundProps, GroundState> {
 
         this.state = {
             tugActive: false,
-            lastTugHeading: 0,
             activeButton: 'none',
         };
       }
 
-    toggleGroundAction(action: GroundServices, event: React.MouseEvent) {
+    toggleGroundAction(action: GroundServices) {
             setSimVar(action, "1", "boolean");
-            this.setState({
-                activeButton: event.currentTarget.id
-            });
     }
 
-    setTugHeading(action: GroundServices, value: number, type: string, event: React.MouseEvent) {
+    setTugHeading(action: GroundServices, direction: number) {
             if (!this.state.tugActive) {
                 this.togglePushback();
             } else {
-                let tuhHeading = this.getTugHeading(value);
-                console.log("HEADING to go " + tuhHeading);
-
+                let tuhHeading = this.getTugHeading(direction);
                 // KEY_TUG_HEADING is an unsigned integer, so let's convert
-                setSimVar(action, (tuhHeading * 11930464) & 0xffffffff, "UINT32");
-
-                this.setState({
-                    lastTugHeading: value,
-                    activeButton: event.currentTarget.id
-                });
+                setSimVar(action, (tuhHeading * 11930465) & 0xffffffff, "UINT32");
             }
         }
 
@@ -84,8 +72,15 @@ class Ground extends React.Component<GroundProps, GroundState> {
 
     unselectButton() {
         this.setState({
-            activeButton : "none"
+            activeButton: "none"
         })
+    }
+
+    handleClick(callBack: () => void, event: React.MouseEvent) {
+        this.setState({
+            activeButton: event.currentTarget.id
+        });
+        callBack();
     }
 
     render() {
@@ -94,34 +89,58 @@ class Ground extends React.Component<GroundProps, GroundState> {
                 <img className="airplane w-full" src={fuselage} />
                 <div className="pushback control-grid">
                     <h1 className="text-white font-medium text-xl">Pushback</h1>
-                    <div onClick={() => this.state.tugActive ? this.togglePushback() : {}} className="stop"><IconHandStop/></div>
-                    <div onClick={(e: React.MouseEvent) => this.setTugHeading(GroundServices.PUSHBACK_TURN, 90, "number", e)} className="down-left"><IconCornerDownLeft/></div>
-                    <div onClick={(e: React.MouseEvent) => this.setTugHeading(GroundServices.PUSHBACK_TURN, 0, "number", e)} className="down"><IconArrowDown /></div>
-                    <div onClick={(e: React.MouseEvent) => this.setTugHeading(GroundServices.PUSHBACK_TURN, 270, "number", e)} className="down-right"><IconCornerDownRight/></div>
+                    <div id="stop"
+                         onMouseDown={(e) => this.handleClick(() => this.state.tugActive ? this.togglePushback() : {}, e)}
+                         onMouseUp={() => this.unselectButton()}
+                         className={this.state.activeButton === "stop" ? "stop selected" : "stop"}><IconHandStop/>
+                    </div>
+                    <div id="turnleft"
+                         onMouseDown={(e) => this.handleClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 90), e)}
+                         onMouseUp={() => this.unselectButton()}
+                         className={this.state.activeButton === "turnleft" ? "down-left selected" : "down-left"}><IconCornerDownLeft/>
+                    </div>
+                    <div id="down"
+                         onMouseDown={(e) => this.handleClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 0), e)}
+                         onMouseUp={() => this.unselectButton()}
+                         className={this.state.activeButton === "down" ? "down selected" : "down"}><IconArrowDown />
+                    </div>
+                    <div id="turnright"
+                         onMouseDown={(e) => this.handleClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 270), e)}
+                         onMouseUp={() => this.unselectButton()}
+                         className={this.state.activeButton === "turnright" ? "down-right selected" : "down-right"}><IconCornerDownRight/>
+                   </div>
                 </div>
                 <div className="fuel control-grid">
                     <h1 className="text-white font-medium text-xl">Fuel</h1>
-                    <div id="fuel" onMouseDown={(e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_FUEL,e)}
-                    onMouseUp={() => this.unselectButton()}
-                    className={this.state.activeButton === "fuel" ? "call selected" : "call"}><IconTruck/></div>
+                    <div id="fuel"
+                         onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_FUEL), e)}
+                         onMouseUp={() => this.unselectButton()}
+                         className={this.state.activeButton === "fuel" ? "call selected" : "call"}><IconTruck/>
+                    </div>
                 </div>
                 <div className="baggage control-grid">
                     <h1 className="text-white font-medium text-xl">Baggage</h1>
-                    <div id="baggage" onMouseDown={(e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_CARGO,e)}
-                    onMouseUp={() => this.unselectButton()}
-                    className={this.state.activeButton === "baggage" ? "call selected" : "call"}><IconBriefcase/></div>
+                    <div id="baggage"
+                         onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_CARGO), e)}
+                         onMouseUp={() => this.unselectButton()}
+                         className={this.state.activeButton === "baggage" ? "call selected" : "call"}><IconBriefcase/>
+                   </div>
                 </div>
                 <div className="catering control-grid">
                     <h1 className="text-white font-medium text-xl">Catering</h1>
-                    <div id="catering" onMouseDown={(e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_CATERING,e)}
-                    onMouseUp={() => this.unselectButton()}
-                    className={this.state.activeButton === "catering" ? "call selected" : "call"}><IconArchive/></div>
+                    <div id="catering"
+                         onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_CATERING), e)}
+                         onMouseUp={() => this.unselectButton()}
+                         className={this.state.activeButton === "catering" ? "call selected" : "call"}><IconArchive/>
+                   </div>
                 </div>
                 <div className="jetway control-grid">
                     <h1 className="text-white font-medium text-xl">Jetway</h1>
-                    <div id="jetway" onMouseDown={ (e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_JETWAY,e )}
-                    onMouseUp={() => this.unselectButton()}
-                    className={this.state.activeButton === "jetway" ? "call selected" : "call"}><IconBuildingArch/></div>
+                    <div id="jetway"
+                         onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_JETWAY), e)}
+                         onMouseUp={() => this.unselectButton()}
+                         className={this.state.activeButton === "jetway" ? "call selected" : "call"}><IconBuildingArch/>
+                   </div>
                 </div>
             </div>
         );
