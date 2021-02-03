@@ -41,10 +41,17 @@ build_metadata() {
     if [ -z "${GITHUB_EVENT_NAME}" ]; then
         GITHUB_EVENT_NAME="manual"
     fi
+    if [ -z "${GITHUB_REF}" ]; then
+        GITHUB_REF="$(git show-ref HEAD)"
+    fi
+    if [ -z "${GITHUB_SHA}" ]; then
+        GITHUB_SHA="$(git show-ref -s HEAD)"
+    fi
+    GITHUB_BUILT="$(date -u -Iseconds)"
     jq -n \
-        --arg built "$(date -u -Iseconds)" \
-        --arg ref "$(git show-ref HEAD | awk '{print $2}')" \
-        --arg sha "$(git show-ref -s HEAD)" \
+        --arg built "${GITHUB_BUILT}" \
+        --arg ref "${GITHUB_REF##*/}" \
+        --arg sha "${GITHUB_SHA}" \
         --arg actor "${GITHUB_ACTOR}" \
         --arg event_name "${GITHUB_EVENT_NAME}" \
         '{ built: $built, ref: $ref, sha: $sha, actor: $actor, event_name: $event_name }' \

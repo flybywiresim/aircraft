@@ -156,6 +156,8 @@ impl SimulatorReadState {
 /// into the the simulator.
 #[derive(Default)]
 pub struct SimulatorWriteState {
+    pub apu_air_intake_flap_is_ecam_open: bool,
+    pub apu_air_intake_flap_opened_for: Ratio,
     pub apu_bleed_air_valve_open: bool,
     pub apu_bleed_fault: bool,
     pub apu_caution_egt: ThermodynamicTemperature,
@@ -175,5 +177,4 @@ pub struct SimulatorWriteState {
     pub apu_start_sw_available: bool,
     pub apu_start_sw_on: bool,
     pub apu_warning_egt: ThermodynamicTemperature,
-    pub apu_air_intake_flap_opened_for: Ratio,
 }
