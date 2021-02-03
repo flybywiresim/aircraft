@@ -58,7 +58,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprWindSpeed = NaN;
         this.perfApprTransAlt = NaN;
         this._v1Checked = true;
-        this._vrChecked = true;
+        this._vRChecked = true;
         this._v2Checked = true;
         this.vApp = NaN;
         this.perfApprMDA = NaN;
@@ -1088,9 +1088,11 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     vSpeedsValid() {
-        return (!!this.v1Speed && !!this.vRSpeed ? this.v1Speed <= this.vRSpeed : true)
+        return this._v1Checked && this._vRChecked && this._v2Checked ? (
+            (!!this.v1Speed && !!this.vRSpeed ? this.v1Speed <= this.vRSpeed : true)
             && (!!this.vRSpeed && !!this.v2Speed ? this.vRSpeed <= this.v2Speed : true)
-            && (!!this.v1Speed && !!this.v2Speed ? this.v1Speed <= this.v2Speed : true);
+            && (!!this.v1Speed && !!this.v2Speed ? this.v1Speed <= this.v2Speed : true)
+        ) : true;
     }
 
     vSpeedDisagreeCheck() {
@@ -1113,6 +1115,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
+        this._v1Checked = true;
         this.v1Speed = v;
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed).then(() => {
             this.vSpeedDisagreeCheck();
@@ -1134,6 +1137,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
+        this._vRChecked = true;
         this.vRSpeed = v;
         SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed).then(() => {
             this.vSpeedDisagreeCheck();
@@ -1155,6 +1159,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
+        this._v2Checked = true;
         this.v2Speed = v;
         SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed).then(() => {
             this.vSpeedDisagreeCheck();
@@ -3354,10 +3359,10 @@ class FMCMainDisplay extends BaseAirliners {
 
     onToDataChanged() {
         this._v1Checked = !isFinite(this.v1Speed);
-        this._vrChecked = !isFinite(this.vRSpeed);
+        this._vRChecked = !isFinite(this.vRSpeed);
         this._v2Checked = !isFinite(this.v2Speed);
         this.addNewMessage(NXSystemMessages.checkToData, (mcdu) => {
-            return mcdu._v1Checked && mcdu._vrChecked && mcdu._v2Checked;
+            return mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked;
         });
     }
 }

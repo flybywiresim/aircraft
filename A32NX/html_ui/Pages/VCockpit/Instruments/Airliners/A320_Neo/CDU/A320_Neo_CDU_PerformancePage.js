@@ -92,6 +92,7 @@ class CDUPerformancePage {
                     } else {
                         mcdu._v1Checked = true;
                         mcdu.tryRemoveMessage(NXSystemMessages.checkToData.text);
+                        mcdu.vSpeedDisagreeCheck();
                     }
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 } else {
@@ -102,7 +103,7 @@ class CDUPerformancePage {
             };
             vR = "{amber}___{end}";
             if (mcdu.vRSpeed) {
-                if (mcdu._vrChecked) {
+                if (mcdu._vRChecked) {
                     vR = `{cyan}${("" + mcdu.vRSpeed).padEnd(3)}{end}`;
                 } else {
                     vRCheck = `{small}{cyan}\xa0${("" + mcdu.vRSpeed).padEnd(3)}{end}{end}`;
@@ -110,11 +111,12 @@ class CDUPerformancePage {
             }
             mcdu.onLeftInput[1] = (value) => {
                 if (value === "") {
-                    if (mcdu._vrChecked) {
+                    if (mcdu._vRChecked) {
                         mcdu.sendDataToScratchpad(mcdu._getVRSpeed().toString());
                     } else {
-                        mcdu._vrChecked = true;
+                        mcdu._vRChecked = true;
                         mcdu.tryRemoveMessage(NXSystemMessages.checkToData.text);
+                        mcdu.vSpeedDisagreeCheck();
                     }
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 } else {
@@ -138,6 +140,7 @@ class CDUPerformancePage {
                     } else {
                         mcdu._v2Checked = true;
                         mcdu.tryRemoveMessage(NXSystemMessages.checkToData.text);
+                        mcdu.vSpeedDisagreeCheck();
                     }
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 } else {
@@ -347,13 +350,14 @@ class CDUPerformancePage {
 
         let next = "NEXT\xa0";
         let nextPhase = "PHASE>";
-        if ((!mcdu._v1Checked || !mcdu._vrChecked || !mcdu._v2Checked) && mcdu.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+        if ((!mcdu._v1Checked || !mcdu._vRChecked || !mcdu._v2Checked) && mcdu.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF) {
             next = "CONFIRM\xa0";
             nextPhase = "TO DATA*";
             mcdu.onRightInput[5] = (value) => {
                 mcdu._v1Checked = true;
-                mcdu._vrChecked = true;
+                mcdu._vRChecked = true;
                 mcdu._v2Checked = true;
+                mcdu.vSpeedDisagreeCheck();
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             };
         } else {
