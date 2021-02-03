@@ -134,18 +134,17 @@ const lbsToKg = (value) => {
  * @param {() => void} updateView
  */
 const getSimBriefOfp = (mcdu, updateView) => {
-    const simBriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "");
     const simBriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
 
-    if (!simBriefUsername && !simBriefUserId) {
+    if (!simBriefUserId) {
         mcdu.addNewMessage(NXFictionalMessages.noSimBriefUser);
-        throw ("No simbrief username/user ID provided");
+        throw ("No SimBrief pilot ID provided");
     }
 
     mcdu.simbrief["sendStatus"] = "REQUESTING";
     updateView();
 
-    return SimBriefApi.getSimBriefOfp(simBriefUsername, simBriefUserId)
+    return SimBriefApi.getSimBriefOfp(simBriefUserId)
         .then(data => {
             mcdu.simbrief["units"] = data.params.units;
             mcdu.simbrief["route"] = data.general.route;
@@ -182,6 +181,28 @@ const getSimBriefOfp = (mcdu, updateView) => {
             console.log(_err.message);
 
             mcdu.simbrief["sendStatus"] = "READY";
+            updateView();
+        });
+};
+
+const getSimBriefUser = (value, mcdu, updateView) => {
+    if (!value) {
+        throw ("No SimBrief username/pilot ID provided");
+    }
+
+    SimBriefApi.getSimBriefUser(value)
+        .then(data => {
+            if (data.fetch.status === "Error: Unknown UserID") {
+                mcdu.sendDataToScratchpad(value);
+                mcdu.addNewMessage(NXFictionalMessages.noSimBriefUser);
+            } else {
+                NXDataStore.set("CONFIG_SIMBRIEF_USERID", data.fetch.userid);
+            }
+
+            updateView();
+        })
+        .catch(_err => {
+            console.log(_err.message);
             updateView();
         });
 };
