@@ -41,7 +41,7 @@ class A32NX_APU {
                 : 0
         );
 
-        const apuBleedOn = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
+        const apuBleedOn = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_ON", "Bool");
         if (apuBleedOn !== this.lastAPUBleedState) {
             this.lastAPUBleedState = apuBleedOn;
             if (apuBleedOn === 1) {
@@ -52,16 +52,27 @@ class A32NX_APU {
         }
 
         const apuN = SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
-        const apuMasterSwitch = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool");
-        if (apuN > 95 && apuBleedOn && apuMasterSwitch) {
+        const bleedAirValveOpen = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool");
+        let psi = 0;
+        if (apuN > 95 && bleedAirValveOpen) {
             if (this.APUBleedTimer > 0) {
                 this.APUBleedTimer -= _deltaTime / 1000;
-                SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE", "PSI", Math.round(35 - this.APUBleedTimer));
+                psi = Math.round(35 - this.APUBleedTimer);
             } else {
-                SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE", "PSI", 35);
+                psi = 35;
             }
-        } else {
-            SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE", "PSI", 0);
+        }
+        SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE", "PSI", psi);
+
+        // Until everything that depends on the APU is moved into WASM,
+        // we still need to synchronise some of the WASM state with the sim's state.
+        const simApuBleedAirOn = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
+        if (psi > 0 && !simApuBleedAirOn) {
+            // This event will open the sim's APU bleed air valve.
+            SimVar.SetSimVarValue("K:APU_BLEED_AIR_SOURCE_TOGGLE", "Number", 0);
+        } else if (psi === 0 && simApuBleedAirOn) {
+            // This event will close the sim's APU bleed air valve.
+            SimVar.SetSimVarValue("K:APU_BLEED_AIR_SOURCE_TOGGLE", "Number", 0);
         }
     }
 }
