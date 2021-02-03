@@ -18,7 +18,7 @@ const Company = (props: CompanyProps) => {
                     type={'text'}
                     value={props.simbriefUsername}
                     onChange={(value) => props.changeSimbriefUsername(value)}
-                    leftComponent={<IconUser color={'white'} size={40} />}
+                    leftComponent={<IconUser color={'white'} size={35} />}
                 />
             </div>
         </div>
