@@ -32,7 +32,7 @@ class CDUIdentPage {
             ["{small}{03DEC-30DEC{end}[color]inop"],
             ["", ""],//["", "STORED"]
             ["", ""],//["{green}10{end}{small}RTES\xa0{end}{green}10{end}{small}RWYS{end}"] Orginal code
-            ["CHG CODE", ""],//["CHG CODE", "[b-text]{big}{green}20{end}{end}WPTS\xa0{big}{green}20{end}{end}NAVS"] Orginal code 
+            ["CHG CODE", ""],//["CHG CODE", "[b-text]{big}{green}20{end}{end}WPTS\xa0{big}{green}20{end}{end}NAVS"] Orginal code
             ["{small}[  ]{end}[color]inop", ""], //["{small}[  ]{end}[color]cyan", "DELETE ALL}[color]cyan"], Orginal code
             ["IDLE/PERF", "SOFTWARE"],
             ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"]
