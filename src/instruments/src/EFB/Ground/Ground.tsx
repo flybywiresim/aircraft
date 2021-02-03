@@ -75,11 +75,17 @@ class Ground extends React.Component<GroundProps, GroundState> {
     }
 
     togglePushback() {
-            const tugActive = this.state.tugActive;
-            setSimVar(GroundServices.TOGGLE_PUSHBACK, 1, "boolean");
-            this.setState({
-                tugActive: !tugActive
-            });
+        const tugActive = this.state.tugActive;
+        setSimVar(GroundServices.TOGGLE_PUSHBACK, 1, "boolean");
+        this.setState({
+            tugActive: !tugActive
+        });
+    }
+
+    unselectButton() {
+        this.setState({
+            activeButton : "none"
+        })
     }
 
     render() {
@@ -95,19 +101,27 @@ class Ground extends React.Component<GroundProps, GroundState> {
                 </div>
                 <div className="fuel control-grid">
                     <h1 className="text-white font-medium text-xl">Fuel</h1>
-                    <div id="fuel" onMouseDown={(e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_FUEL,e)} className={this.state.activeButton === "fuel" ? "call selected" : "call"}><IconTruck/></div>
+                    <div id="fuel" onMouseDown={(e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_FUEL,e)}
+                    onMouseUp={() => this.unselectButton()}
+                    className={this.state.activeButton === "fuel" ? "call selected" : "call"}><IconTruck/></div>
                 </div>
                 <div className="baggage control-grid">
                     <h1 className="text-white font-medium text-xl">Baggage</h1>
-                    <div id="baggage" onMouseDown={(e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_CARGO,e)} className={this.state.activeButton === "baggage" ? "call selected" : "call"}><IconBriefcase/></div>
+                    <div id="baggage" onMouseDown={(e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_CARGO,e)}
+                    onMouseUp={() => this.unselectButton()}
+                    className={this.state.activeButton === "baggage" ? "call selected" : "call"}><IconBriefcase/></div>
                 </div>
                 <div className="catering control-grid">
                     <h1 className="text-white font-medium text-xl">Catering</h1>
-                    <div id="catering" onMouseDown={(e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_CATERING,e)} className={this.state.activeButton === "catering" ? "call selected" : "call"}><IconArchive/></div>
+                    <div id="catering" onMouseDown={(e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_CATERING,e)}
+                    onMouseUp={() => this.unselectButton()}
+                    className={this.state.activeButton === "catering" ? "call selected" : "call"}><IconArchive/></div>
                 </div>
                 <div className="jetway control-grid">
                     <h1 className="text-white font-medium text-xl">Jetway</h1>
-                    <div id="jetway" onMouseDown={ (e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_JETWAY,e )}  className={this.state.activeButton === "jetway" ? "call selected" : "call"}><IconBuildingArch/></div>
+                    <div id="jetway" onMouseDown={ (e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_JETWAY,e )}
+                    onMouseUp={() => this.unselectButton()}
+                    className={this.state.activeButton === "jetway" ? "call selected" : "call"}><IconBuildingArch/></div>
                 </div>
             </div>
         );
