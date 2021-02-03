@@ -71,9 +71,7 @@ module.exports = {
                 { src: 'src/Assets/**', dest: 'web/Assets' },
             ],
         }),
-        serve({
-            contentBase: `${__dirname}/web`,
-        }),
+        serve(),
         livereload('web'),
     ],
     output: {
