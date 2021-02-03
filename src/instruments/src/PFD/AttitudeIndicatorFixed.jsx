@@ -38,17 +38,6 @@ export const AttitudeIndicatorFixedCenter = ({ isOnGround, FDActive, isAttExcess
         );
     }
 
-    let FDRollOffset = 0;
-    let FDPitchOffset = 0;
-
-    if (FDActive) {
-        const FDRollOrder = getSimVar('AUTOPILOT FLIGHT DIRECTOR BANK', 'Radians');
-        const FDPitchOrder = getSimVar('AUTOPILOT FLIGHT DIRECTOR PITCH', 'Radians');
-
-        FDRollOffset = Math.min(Math.max(-FDRollOrder * 180 / Math.PI, -45), 45) * 0.44;
-        FDPitchOffset = Math.min(Math.max(FDPitchOrder * 180 / Math.PI, -22.5), 22.5) * 0.89;
-    }
-
     return (
         <g id="AttitudeSymbolsGroup">
             <path className="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
@@ -56,8 +45,8 @@ export const AttitudeIndicatorFixedCenter = ({ isOnGround, FDActive, isAttExcess
             <path className="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
             {!isAttExcessive && (
                 <>
-                    <path id="GroundYawSymbol" style={{ display: 'none' }} className="NormalStroke Green" d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z" />
-                    <FlightDirector FDActive={FDActive} FDPitch={FDPitchOffset} FDRoll={FDRollOffset} />
+                    <FDYawBar FDActive={FDActive} />
+                    <FlightDirector FDActive={FDActive} />
                 </>
             )}
             <path className="NormalOutline" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
@@ -74,21 +63,60 @@ export const AttitudeIndicatorFixedCenter = ({ isOnGround, FDActive, isAttExcess
     );
 };
 
-const FlightDirector = ({ FDActive, FDRoll, FDPitch }) => {
-    // The FD bars actually also need an active mode to be displayed. This is todo.
+const FDYawBar = ({ FDActive }) => {
+    const lateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+
+    if (!FDActive || !(lateralMode === 40 || lateralMode === 33 || lateralMode === 34)) {
+        return null;
+    }
+
+    const FDYawCommand = getSimVar('L:A32NX_FLIGHT_DIRECTOR_YAW', 'number');
+    const offset = -Math.max(Math.min(FDYawCommand, 45), -45) * 0.44;
+
+    return (
+        <path id="GroundYawSymbol" className="NormalStroke Green" transform={`translate(${offset} 0)`} d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z" />
+    );
+};
+
+const FlightDirector = ({ FDActive }) => {
     if (!FDActive) {
         return null;
+    }
+
+    const lateralAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+    const verticalAPMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+
+    const showLateralFD = lateralAPMode !== 0 && lateralAPMode !== 34 && lateralAPMode !== 40;
+    const showVerticalFD = verticalAPMode !== 0 && verticalAPMode !== 34;
+
+    let FDRollOffset;
+    let FDPitchOffset;
+
+    if (showLateralFD) {
+        const FDRollOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_BANK', 'number');
+        const currentRoll = getSimVar('PLANE BANK DEGREES', 'degrees');
+        FDRollOffset = Math.min(Math.max(currentRoll - FDRollOrder, -45), 45) * 0.44;
+    }
+
+    if (showVerticalFD) {
+        const FDPitchOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_PITCH', 'number');
+        const currentPitch = -getSimVar('PLANE PITCH DEGREES', 'degrees');
+        FDPitchOffset = Math.min(Math.max(FDPitchOrder + currentPitch, -22.5), 22.5) * 0.89;
     }
 
     return (
         <>
             <g className="ThickOutline">
-                <path transform={`translate(${FDRoll} 0)`} d="m68.854 61.672v38.302" />
-                <path transform={`translate(0 ${FDPitch})`} d="m49.263 80.823h39.287" />
+                {showLateralFD
+                    && <path transform={`translate(${FDRollOffset} 0)`} d="m68.854 61.672v38.302" />}
+                {showVerticalFD
+                    && <path transform={`translate(0 ${FDPitchOffset})`} d="m49.263 80.823h39.287" />}
             </g>
             <g className="ThickStroke Green">
-                <path id="FlightDirectorRoll" transform={`translate(${FDRoll} 0)`} d="m68.854 61.672v38.302" />
-                <path id="FlightDirectorPitch" transform={`translate(0 ${FDPitch})`} d="m49.263 80.823h39.287" />
+                {showLateralFD
+                && <path id="FlightDirectorRoll" transform={`translate(${FDRollOffset} 0)`} d="m68.854 61.672v38.302" />}
+                {showVerticalFD
+                && <path id="FlightDirectorPitch" transform={`translate(0 ${FDPitchOffset})`} d="m49.263 80.823h39.287" />}
             </g>
         </>
     );
@@ -100,8 +128,8 @@ const SidestickIndicator = ({ isOnGround }) => {
         return null;
     }
 
-    const SidestickPosX = getSimVar('YOKE X POSITION', 'Position') * 29.56;
-    const SidestickPosY = -getSimVar('YOKE Y POSITION', 'Position') * 23.02;
+    const SidestickPosX = getSimVar('L:A32NX_SIDESTICK_POSITION_X', 'number') * 29.56;
+    const SidestickPosY = -getSimVar('L:A32NX_SIDESTICK_POSITION_Y', 'number') * 23.02;
 
     return (
         <g id="GroundCursorGroup" className="NormalStroke White">

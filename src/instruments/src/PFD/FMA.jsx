@@ -2,14 +2,15 @@ import { Component } from 'react';
 import { createDeltaTimeCalculator, getSimVar, renderTarget } from '../util.mjs';
 
 export const FMA = ({ isAttExcessive }) => {
-    const SharedMode = getSimVar('L:A32NX_SharedAPMode', 'enum');
+    const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+    const sharedModeActive = activeLateralMode === 32 || activeLateralMode === 33 || activeLateralMode === 34;
     const engineMessage = getSimVar('L:A32NX_Engine_Message', 'enum');
     const BC3Message = getSimVar('L:A32NX_BC3Message', 'enum');
     const AB3Message = (getSimVar('L:A32NX_MachPreselVal', 'mach') !== -1
         || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && BC3Message === 0 && engineMessage === 0;
 
     let secondBorder;
-    if (SharedMode !== 0 && !isAttExcessive) {
+    if (sharedModeActive && !isAttExcessive) {
         secondBorder = '';
     } else if (BC3Message !== 0) {
         secondBorder = 'm66.241 0.33732v15.766';
@@ -240,77 +241,87 @@ const AB3Cell = () => {
 };
 
 const B1Cell = () => {
-    const activeVerticalMode = getSimVar('L:A32NX_ActiveVerticalAPMode', 'enum');
+    const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
 
     let text;
 
     switch (activeVerticalMode) {
-    case 1:
+    case 31:
         text = 'G/S';
         break;
-    case 2:
-        text = 'F-G/S';
-        break;
-    case 3:
+    // case 2:
+    //     text = 'F-G/S';
+    //     break;
+    case 30:
         text = 'G/S*';
         break;
-    case 4:
-        text = 'F-G/S*';
-        break;
-    case 5:
-        text = 'EXP DES';
-        break;
-    case 6:
-        text = 'EXP CLB';
-        break;
-    case 7:
+    // case 4:
+    //     text = 'F-G/S*';
+    //     break;
+    // case 5:
+    //     text = 'EXP DES';
+    //     break;
+    // case 6:
+    //     text = 'EXP CLB';
+    //     break;
+    case 40:
         text = 'SRS';
         break;
-    case 8:
-        text = 'TCAS';
-        break;
-    case 9:
-        text = 'FINAL';
-        break;
-    case 10:
+    // case 8:
+    //     text = 'TCAS';
+    //     break;
+    // case 9:
+    //     text = 'FINAL';
+    //     break;
+    case 23:
         text = 'DES';
         break;
-    case 11:
+    case 13:
         text = 'OP DES';
         break;
-    case 12:
+    case 22:
         text = 'CLB';
         break;
-    case 13:
+    case 12:
         text = 'OP CLB';
         break;
-    case 14:
+    case 10:
         text = 'ALT';
         break;
-    case 15:
+    case 11:
         text = 'ALT*';
         break;
-    case 16:
+    case 21:
         text = 'ALT CST*';
         break;
-    case 17:
+    case 20:
         text = 'ALT CST';
         break;
-    case 18:
-        text = 'ALT CRZ';
-        break;
-    case 19: {
+    // case 18:
+    //     text = 'ALT CRZ';
+    //     break;
+    case 15: {
         const FPA = getSimVar('L:A32NX_AUTOPILOT_FPA_SELECTED', 'Degree');
         const FPAText = `${(FPA >= 0 ? '+' : '')}${(Math.round(FPA * 10) / 10).toFixed(1)}°`;
 
-        text = [<tspan>FPA</tspan>, <tspan className="Cyan">{FPAText}</tspan>];
+        text = (
+            <>
+                <tspan>FPA</tspan>
+                <tspan className="Cyan">{FPAText}</tspan>
+            </>
+        );
         break;
     }
-    case 20: {
-        const VS = getSimVar('AUTOPILOT VERTICAL HOLD VAR', 'feet per minute');
+    case 14: {
+        const VS = getSimVar('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
         const VSText = `${(VS >= 0 ? '+' : '')}${Math.round(VS).toString()}`.padStart(5, ' ');
 
-        text = [<tspan>V/S</tspan>, <tspan className="Cyan">{VSText}</tspan>];
+        text = (
+            <>
+                <tspan>V/S</tspan>
+                <tspan className="Cyan">{VSText}</tspan>
+            </>
+        );
         break;
     }
     default:
@@ -328,41 +339,39 @@ const B1Cell = () => {
 };
 
 const B2Cell = () => {
-    const armedVerticalMode1 = getSimVar('L:A32NX_ArmedVerticalAPMode1', 'enum');
-    const armedVerticalMode2 = getSimVar('L:A32NX_ArmedVerticalAPMode2', 'enum');
+    const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
+
+    const altArmed = (armedVerticalBitmask >> 0) & 1;
+    const altCstArmed = (armedVerticalBitmask >> 1) & 1;
+    const clbArmed = (armedVerticalBitmask >> 2) & 1;
+    const desArmed = (armedVerticalBitmask >> 3) & 1;
+    const gsArmed = (armedVerticalBitmask >> 4) & 1;
 
     let text1;
     let color1 = 'Cyan';
-    switch (armedVerticalMode1) {
-    case 1:
+    if (altCstArmed) {
         text1 = 'ALT';
         color1 = 'Magenta';
-        break;
-    case 2:
+    } else if (altArmed) {
         text1 = 'ALT';
-        break;
-    case 3:
+    } else if (clbArmed) {
         text1 = 'CLB';
-        break;
-    case 4:
+    } else if (desArmed) {
         text1 = 'DES';
-        break;
-    default:
+    } else {
         text1 = null;
     }
 
     let text2;
-    switch (armedVerticalMode2) {
-    case 1:
-        text2 = 'F-G/S';
-        break;
-    case 2:
+    // case 1:
+    //     text2 = 'F-G/S';
+    //     break;
+    if (gsArmed) {
         text2 = 'G/S';
-        break;
-    case 3:
-        text2 = 'FINAL';
-        break;
-    default:
+    } else {
+    // case 3:
+    //     text2 = 'FINAL';
+    //     break;
         text2 = null;
     }
 
@@ -377,47 +386,47 @@ const B2Cell = () => {
 };
 
 const C1Cell = () => {
-    const activeLateralMode = getSimVar('L:A32NX_ActiveLateralAPMode', 'enum');
+    const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
 
     let text;
     switch (activeLateralMode) {
-    case 1:
+    case 50:
         text = 'GA TRK';
         break;
-    case 2:
-        text = 'LOC B/C*';
-        break;
-    case 3:
+    // case 2:
+    //     text = 'LOC B/C*';
+    //     break;
+    case 30:
         text = 'LOC*';
         break;
-    case 4:
-        text = 'F-LOC*';
-        break;
-    case 5:
+    // case 4:
+    //     text = 'F-LOC*';
+    //     break;
+    case 10:
         text = 'HDG';
         break;
-    case 6:
+    case 40:
         text = 'RWY';
         break;
-    case 7:
+    case 41:
         text = 'RWY TRK';
         break;
-    case 8:
+    case 11:
         text = 'TRACK';
         break;
-    case 9:
-        text = 'LOC B/C';
-        break;
-    case 10:
+    // case 9:
+    //     text = 'LOC B/C';
+    //     break;
+    case 31:
         text = 'LOC';
         break;
-    case 11:
-        text = 'F-LOC';
-        break;
-    case 12:
-        text = 'APP NAV';
-        break;
-    case 13:
+    // case 11:
+    //     text = 'F-LOC';
+    //     break;
+    // case 12:
+    //     text = 'APP NAV';
+    //     break;
+    case 20:
         text = 'NAV';
         break;
     default:
@@ -435,26 +444,26 @@ const C1Cell = () => {
 };
 
 const C2Cell = () => {
-    const armedLateralMode = getSimVar('L:A32NX_ArmedLateralAPMode', 'enum');
+    const armedLateralBitmask = getSimVar('L:A32NX_FMA_LATERAL_ARMED', 'number');
+
+    const navArmed = (armedLateralBitmask >> 0) & 1;
+    const locArmed = (armedLateralBitmask >> 1) & 1;
 
     let text;
-    switch (armedLateralMode) {
-    case 1:
-        text = 'LOC B/C';
-        break;
-    case 2:
+    if (locArmed) {
+        // case 1:
+        //     text = 'LOC B/C';
+        //     break;
         text = 'LOC';
-        break;
-    case 3:
-        text = 'F-LOC';
-        break;
-    case 4:
-        text = 'APP NAV';
-        break;
-    case 5:
+        // case 3:
+        //     text = 'F-LOC';
+        //     break;
+        // case 4:
+        //     text = 'APP NAV';
+        //     break;
+    } else if (navArmed) {
         text = 'NAV';
-        break;
-    default:
+    } else {
         return null;
     }
 
@@ -464,22 +473,22 @@ const C2Cell = () => {
 };
 
 const BC1Cell = () => {
-    const SharedAPMode = getSimVar('L:A32NX_SharedAPMode', 'enum');
+    const SharedAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
 
     let text;
     switch (SharedAPMode) {
-    case 1:
+    case 34:
         text = 'ROLL OUT';
         break;
-    case 2:
+    case 33:
         text = 'FLARE';
         break;
-    case 3:
+    case 32:
         text = 'LAND';
         break;
-    case 4:
-        text = 'FINAL APP';
-        break;
+    // case 4:
+    //     text = 'FINAL APP';
+    //     break;
     default:
         return null;
     }
@@ -570,8 +579,8 @@ const D3Cell = () => {
 };
 
 const E1Cell = () => {
-    const AP1Engaged = getSimVar('L:XMLVAR_Autopilot_1_Status', 'bool');
-    const AP2Engaged = getSimVar('L:XMLVAR_Autopilot_2_Status', 'bool');
+    const AP1Engaged = getSimVar('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool');
+    const AP2Engaged = getSimVar('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool');
 
     let text;
     let id = 0;
@@ -602,7 +611,7 @@ const E2Cell = () => {
     const FD1Active = getSimVar('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', 'bool');
     const FD2Active = getSimVar('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', 'bool');
 
-    if (!FD1Active && !FD2Active && !getSimVar('L:XMLVAR_Autopilot_1_Status', 'bool') && !getSimVar('L:XMLVAR_Autopilot_2_Status', 'bool')) {
+    if (!FD1Active && !FD2Active && !getSimVar('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool') && !getSimVar('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool')) {
         return null;
     }
 
@@ -647,8 +656,9 @@ class ShowForSeconds extends Component {
 
         this.GetDeltaTime = createDeltaTimeCalculator();
         const updateFunction = () => {
+            const deltaTime = this.GetDeltaTime();
             if (this.Timer > 0) {
-                this.Timer -= this.GetDeltaTime() / 1000;
+                this.Timer -= deltaTime / 1000;
             }
             this.forceUpdate();
         };
