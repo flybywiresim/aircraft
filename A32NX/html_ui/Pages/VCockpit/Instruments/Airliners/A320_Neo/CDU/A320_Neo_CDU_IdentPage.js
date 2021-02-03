@@ -33,9 +33,9 @@ class CDUIdentPage {
             ["", ""],
             ["", ""],
             ["CHG CODE", "[b-text]{big}{green}{end}"],
-            ["{small}[  ]{end}[color]cyan",""],
-            ["IDLE/PERF", "[color]inop", "SOFTWARE"],
-            ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"]
+            ["{small}[  ]{end}[color]cyan", ""],
+            ["IDLE/PERF", "SOFTWARE[color]txs"],
+            ["+0.0/+0.0[color]green", "STATUS/XLOAD[color]inop"]
         ]);
     }
 }
