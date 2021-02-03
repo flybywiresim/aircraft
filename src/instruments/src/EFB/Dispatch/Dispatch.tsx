@@ -150,7 +150,7 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
 
     render() {
         return (
-            <div>
+            <div className="w-full">
                 <nav className="bg-none">
                     <div className="flex justify-between p-6">
                         <div className="flex-1 flex items-center justify-start">
