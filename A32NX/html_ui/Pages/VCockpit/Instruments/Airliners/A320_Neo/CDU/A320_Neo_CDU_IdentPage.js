@@ -29,11 +29,11 @@ class CDUIdentPage {
             ["\xa0ACTIVE NAV DATA BASE"],
             ["\xa0" + (date.length === 13 ? date[3] + date[4] + date[0] + date[1] + date[2] + "-" + date[8] + date[9] + date[5] + date[6] + date[7] : date) + "[color]cyan", "AIRAC[color]green"],
             ["\xa0SECOND NAV DATA BASE"],
-            ["{small}{04MAY-04JUL{end}[color]cyan"],
+            ["{small}{3DEC-30DEC{end}[color]cyan"],
             ["", "STORED"],
-            ["", "{green}10{end}{small}RTES\xa0{end}{green}10{end}{small}RWYS{end}"],
-            ["CHG CODE", "[b-text]{big}{green}20{end}{end}WPTS\xa0{big}{green}20{end}{end}NAVS"],
-            ["{small}[  ]{end}[color]cyan", "DELETE ALL}[color]cyan"],
+            ["", ""],
+            ["CHG CODE", "[b-text]{big}{green}{end}"],
+            ["{small}[  ]{end}[color]cyan",""],
             ["IDLE/PERF", "SOFTWARE"],
             ["+0.0/+0.0[color]green", "STATUS/XLOAD>"]
         ]);
