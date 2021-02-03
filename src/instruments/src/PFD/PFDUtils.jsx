@@ -80,7 +80,8 @@ export const HorizontalTape = ({
 };
 
 export const VerticalTape = ({
-    displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, tapeValue, lowerLimit = -Infinity, upperLimit = Infinity,
+    displayRange, valueSpacing, distanceSpacing, graduationElementFunction, bugs, tapeValue,
+    lowerLimit = -Infinity, upperLimit = Infinity,
 }) => {
     const numTicks = Math.round(displayRange * 2 / valueSpacing);
 
@@ -169,7 +170,8 @@ export class LagFilter {
         const scaledDeltaTime = deltaTime * this.TimeConstant;
         const sum0 = scaledDeltaTime + 2;
 
-        const output = (input + this.PreviousInput) * scaledDeltaTime / sum0 + (2 - scaledDeltaTime) / sum0 * this.PreviousOutput;
+        const output = (input + this.PreviousInput) * scaledDeltaTime / sum0
+            + (2 - scaledDeltaTime) / sum0 * this.PreviousOutput;
 
         this.PreviousInput = input;
         if (Number.isFinite(output)) {

@@ -9,7 +9,7 @@ import { AltitudeIndicatorOfftape, AltitudeIndicator } from './AltitudeIndicator
 import { AirspeedIndicatorOfftape, AirspeedIndicator } from './SpeedIndicator.jsx';
 import { FMA } from './FMA.jsx';
 import {
-    getSimVar, setSimVar, renderTarget, createDeltaTimeCalculator
+    getSimVar, setSimVar, renderTarget, createDeltaTimeCalculator,
 } from '../util.mjs';
 import { SmoothSin, LagFilter, RateLimiter } from './PFDUtils.jsx';
 import './style.scss';
@@ -151,9 +151,12 @@ class PFD extends Component {
             }
         } if (targetSpeed < 0) {
             if (isMach) {
-                targetSpeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH ? getSimVar("L:A32NX_AP_APPVLS", "knots") : SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotMachHoldValue());
+                targetSpeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH
+                    ? getSimVar('L:A32NX_AP_APPVLS', 'knots')
+                    : SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', Simplane.getAutoPilotMachHoldValue());
             } else {
-                targetSpeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH ? getSimVar("L:A32NX_AP_APPVLS", "knots") : Simplane.getAutoPilotAirspeedHoldValue();
+                targetSpeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH
+                    ? getSimVar('L:A32NX_AP_APPVLS', 'knots') : Simplane.getAutoPilotAirspeedHoldValue();
             }
         }
 

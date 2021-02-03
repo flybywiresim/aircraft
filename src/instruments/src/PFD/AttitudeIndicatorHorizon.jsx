@@ -14,7 +14,7 @@ const HeadingBug = (offset) => (
 );
 
 export const Horizon = ({
-    pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive
+    pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive,
 }) => {
     if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_ATT', 'Bool')) {
         return null;
