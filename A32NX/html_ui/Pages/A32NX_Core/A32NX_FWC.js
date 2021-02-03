@@ -337,7 +337,7 @@ class A32NX_FWC {
             return;
         }
 
-        if (warningLeft === 1 || warningRight === 1) {
+        if (this.warningPressed === true) {
             this._wasBellowThreshold = false;
             this._wasInRange = false;
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
@@ -362,15 +362,15 @@ class A32NX_FWC {
 
         if (250 <= delta) {
             if (this._wasBellowThreshold) {
-                SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", 1);
+                SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", true);
             } else if (this._wasAboveThreshold && delta <= 750) {
-                if (SimVar.GetSimVarValue("L:XMLVAR_Autopilot_1_Status", "Bool") === true && SimVar.GetSimVarValue("L:XMLVAR_Autopilot_2_Status", "Bool") === true) {
+                if (SimVar.GetSimVarValue("L:XMLVAR_Autopilot_1_Status", "Bool") === 0 && SimVar.GetSimVarValue("L:XMLVAR_Autopilot_2_Status", "Bool") === 0) {
                     SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", true);
                 }
             } else if (750 < delta && this._wasInRange) {
-                SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", 1);
+                SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", true);
             } else if (this._wasInRange) {
-                if (SimVar.GetSimVarValue("L:XMLVAR_Autopilot_1_Status", "Bool") === true && SimVar.GetSimVarValue("L:XMLVAR_Autopilot_2_Status", "Bool") === true) {
+                if (SimVar.GetSimVarValue("L:XMLVAR_Autopilot_1_Status", "Bool") === 0 && SimVar.GetSimVarValue("L:XMLVAR_Autopilot_2_Status", "Bool") === 0) {
                     SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", true);
                 }
             }
