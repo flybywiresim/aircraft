@@ -1,0 +1,84 @@
+/*!
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.default-input-container {
+  border: 0.1rem solid #1f2937;
+  background-color: #1f2937;
+  border-radius: 0.7rem;
+  margin-bottom: 50px;
+  padding: 0.8rem 1.5rem;
+  height: 5.5rem;
+
+  &.focus-active {
+    border-color: #01c2cb;
+  }
+
+  .label {
+    color: #03bac4;
+    font-size: 1.1rem;
+    display: inline-block;
+    font-weight: 100;
+    margin-bottom: -0.6rem;
+    overflow: hidden;
+  }
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  > * {
+    margin-right: 1rem;
+  }
+
+  :last-child {
+    margin-right: 0;
+  }
+
+  .input-row-container {
+    flex: 1;
+
+    .input-container {
+      position: relative;
+
+      input {
+        width: 100%;
+        height: 100%;
+        background-color: transparent;
+        color: white;
+        font-size: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:focus {
+          outline: 0;
+        }
+      }
+
+      .placeholder {
+        position: absolute;
+        height: 100%;
+        top: 0;
+        display: flex;
+        align-items: center;
+        font-size: 1.8rem;
+        color: #797979;
+      }
+    }
+  }
+}
