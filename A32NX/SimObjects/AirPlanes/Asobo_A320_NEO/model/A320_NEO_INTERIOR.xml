@@ -3405,19 +3405,19 @@
             <UseTemplate Name="FBW_Push_Held">
                 <NODE_ID>PUSH_AUTOPILOT_MASTERAWARN_L</NODE_ID>
                 <HOLD_SIMVAR>L:PUSH_AUTOPILOT_MASTERAWARN_L</HOLD_SIMVAR>
-            <UseTemplate>
+            </UseTemplate>
             <UseTemplate Name="FBW_Push_Held">
                 <NODE_ID>PUSH_AUTOPILOT_MASTERAWARN_R</NODE_ID>
                 <HOLD_SIMVAR>L:PUSH_AUTOPILOT_MASTERAWARN_R</HOLD_SIMVAR>
-            <UseTemplate>
+            </UseTemplate>
             <UseTemplate Name="FBW_Push_Held">
                 <NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_L</NODE_ID>
                 <HOLD_SIMVAR>L:PUSH_AUTOPILOT_MASTERCAUT_L</HOLD_SIMVAR>
-            <UseTemplate>
+            </UseTemplate>
             <UseTemplate Name="FBW_Push_Held">
                 <NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_R</NODE_ID>
                 <HOLD_SIMVAR>L:PUSH_AUTOPILOT_MASTERCAUT_R</HOLD_SIMVAR>
-            <UseTemplate>
+            </UseTemplate>
         </Component>
 
         <Component ID="DOOR_PANEL">
