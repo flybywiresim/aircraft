@@ -49,17 +49,15 @@ class Ground extends React.Component<GroundProps, GroundState> {
             if (!this.state.tugActive) {
                 this.togglePushback();
             } else {
-                let tuhHeading = this.getTugHeading(direction);
+                const tugHeading = this.getTugHeading(direction);
                 // KEY_TUG_HEADING is an unsigned integer, so let's convert
-                setSimVar(action, (tuhHeading * 11930465) & 0xffffffff, "UINT32");
+                setSimVar(action, (tugHeading * 11930465) & 0xffffffff, "UINT32");
             }
-        }
+    }
 
     getTugHeading(value: number): number {
         const currentHeading = getSimVar("PLANE HEADING DEGREES TRUE", "degrees");
-        let desiredHeading: number = currentHeading  + value;
-        desiredHeading %= 360;
-        return desiredHeading;
+        return (currentHeading  + value) % 360;
     }
 
     togglePushback() {
@@ -108,7 +106,7 @@ class Ground extends React.Component<GroundProps, GroundState> {
                          onMouseDown={(e) => this.handleClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 270), e)}
                          onMouseUp={() => this.unselectButton()}
                          className={this.state.activeButton === "turnright" ? "down-right selected" : "down-right"}><IconCornerDownRight/>
-                   </div>
+                    </div>
                 </div>
                 <div className="fuel control-grid">
                     <h1 className="text-white font-medium text-xl">Fuel</h1>
@@ -124,7 +122,7 @@ class Ground extends React.Component<GroundProps, GroundState> {
                          onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_CARGO), e)}
                          onMouseUp={() => this.unselectButton()}
                          className={this.state.activeButton === "baggage" ? "call selected" : "call"}><IconBriefcase/>
-                   </div>
+                    </div>
                 </div>
                 <div className="catering control-grid">
                     <h1 className="text-white font-medium text-xl">Catering</h1>
@@ -132,7 +130,7 @@ class Ground extends React.Component<GroundProps, GroundState> {
                          onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_CATERING), e)}
                          onMouseUp={() => this.unselectButton()}
                          className={this.state.activeButton === "catering" ? "call selected" : "call"}><IconArchive/>
-                   </div>
+                    </div>
                 </div>
                 <div className="jetway control-grid">
                     <h1 className="text-white font-medium text-xl">Jetway</h1>
@@ -140,7 +138,7 @@ class Ground extends React.Component<GroundProps, GroundState> {
                          onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_JETWAY), e)}
                          onMouseUp={() => this.unselectButton()}
                          className={this.state.activeButton === "jetway" ? "call selected" : "call"}><IconBuildingArch/>
-                   </div>
+                    </div>
                 </div>
             </div>
         );
