@@ -160,6 +160,10 @@ const stallSpeeds = [
     ] // Conf 3
 ];
 
+// Percentage safety margin over stall speed, usually determined by airport.
+// 1.05 = 5% margin
+const stallSafetyMargin = 1.05;
+
 // Hacky numbers used to approximate flex temp
 const maxTOWeightAt40Degrees = 75000;
 const maxTOWeightAt68Degrees = 52500;
@@ -215,7 +219,7 @@ export default class TakeoffCalculator {
 	private getV2(weightTons: number, flaps: TakeoffFlapsConfig, altitude: number, temperature: number, pressure: number,
 		windDirection: number, windMagnitude: number, runwayHeading: number): number {
 
-		let pressureAltitude = this.getPressureAltitude(pressure);
+		let pressureAltitude = altitude + this.getPressureAltitude(pressure);
 
 		let stallSpeed = stallSpeeds[flaps][this.getTakeoffTableIndex(weightTons)](weightTons);
 		let vmuVmcaMinV2 = Math.floor(vmuVmcaMinV2Speeds[flaps][this.getTakeoffTableIndex(weightTons)](weightTons));
@@ -239,12 +243,12 @@ export default class TakeoffCalculator {
 	private getVr(weightTons: number, flaps: TakeoffFlapsConfig, altitude: number, temperature: number, pressure: number,
 		windDirection: number, windMagnitude: number, runwayHeading: number): number {
 
-		let pressureAltitude = this.getPressureAltitude(pressure);
+		let pressureAltitude = altitude + this.getPressureAltitude(pressure);
 
 		let stallSpeed = stallSpeeds[flaps][this.getTakeoffTableIndex(weightTons)](weightTons);
 		let vmcgVmcaMinVr = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinVrSpeeds, vrV2PressureAltitudeIndexes);
 
-		let vr = Math.max(stallSpeed, vmcgVmcaMinVr);
+		let vr = Math.max(stallSpeed * stallSafetyMargin, vmcgVmcaMinVr);
 
 		return Math.round(vr);
 	}
