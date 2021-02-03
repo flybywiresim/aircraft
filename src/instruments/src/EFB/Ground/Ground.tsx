@@ -27,7 +27,10 @@ type GroundProps = {}
 
 type GroundState = {
     tugActive: boolean;
-    lastTugHeading: number;
+    lastTugHeading: number,
+    activeButton: string,
+    lastHeading: number,
+    aInterval: any,
 }
 
 class Ground extends React.Component<GroundProps, GroundState> {
@@ -38,37 +41,42 @@ class Ground extends React.Component<GroundProps, GroundState> {
         this.state = {
             tugActive: false,
             lastTugHeading: 0,
+            activeButton: 'none',
+            lastHeading: -1,
+            aInterval: null
         };
       }
 
-    toggleGroundAction(action: GroundServices) {
-        return (() => {
+    toggleGroundAction(action: GroundServices, event: React.MouseEvent) {
             setSimVar(action, "1", "boolean");
-        })
+            this.setState({
+                activeButton: event.currentTarget.id
+            });
     }
 
-    setTugHeading(action: GroundServices, value: number, type: string) {
-        return (() => {
-            if(!this.state.tugActive) {
+    setTugHeading(action: GroundServices, value: number, type: string, event: React.MouseEvent) {
+            if (!this.state.tugActive) {
                 this.togglePushback();
             } else {
-                const lastTugHeading = this.state.lastTugHeading;
-                setSimVar(action, this.getTugHeading(value) * 11930465, type);
-                if(value === 90 || lastTugHeading === 270) {
-                    setSimVar("Rotation Velocity Body Y", 0.003, "feet per second");
-                } else if (value === 270 || lastTugHeading === 90) {
-                    setSimVar("Rotation Velocity Body Y", -0.003, "feet per second");
-                }
+                let tuhHeading = this.getTugHeading(value);
+                console.log("HEADING to go " + tuhHeading);
+
+                // KEY_TUG_HEADING is an unsigned integer, so let's convert
+                setSimVar(action, (tuhHeading * 11930464) & 0xffffffff, "UINT32");
+
                 this.setState({
-                    lastTugHeading: value
+                    lastTugHeading: value,
+                    activeButton: event.currentTarget.id
                 });
             }
-        })
-    }
+        }
 
     getTugHeading(value: number): number {
         const currentHeading = getSimVar("PLANE HEADING DEGREES TRUE", "degrees");
-        let desiredHeading: number = Math.round(currentHeading)  + value;
+        this.setState({
+            lastHeading: currentHeading
+        })
+        let desiredHeading: number = currentHeading  + value;
         desiredHeading %= 360;
         return desiredHeading;
     }
@@ -84,30 +92,30 @@ class Ground extends React.Component<GroundProps, GroundState> {
     render() {
         return (
             <div className="wrapper flex-grow flex flex-col">
+                <img className="airplane w-full" src={fuselage} />
                 <div className="pushback control-grid">
                     <h1 className="text-white font-medium text-xl">Pushback</h1>
                     <div onClick={() => this.state.tugActive ? this.togglePushback() : {}} className="stop"><IconHandStop/></div>
-                    <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 90, "number")} className="down-left"><IconCornerDownLeft/></div>
-                    <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 0, "number")} className="down selected"><IconArrowDown /></div>
-                    <div onClick={this.setTugHeading(GroundServices.PUSHBACK_TURN, 270, "number")} className="down-right"><IconCornerDownRight/></div>
+                    <div onClick={(e: React.MouseEvent) => this.setTugHeading(GroundServices.PUSHBACK_TURN, 90, "number", e)} className="down-left"><IconCornerDownLeft/></div>
+                    <div onClick={(e: React.MouseEvent) => this.setTugHeading(GroundServices.PUSHBACK_TURN, 0, "number", e)} className="down"><IconArrowDown /></div>
+                    <div onClick={(e: React.MouseEvent) => this.setTugHeading(GroundServices.PUSHBACK_TURN, 270, "number", e)} className="down-right"><IconCornerDownRight/></div>
                 </div>
                 <div className="fuel control-grid">
                     <h1 className="text-white font-medium text-xl">Fuel</h1>
-                    <div onClick={this.toggleGroundAction(GroundServices.TOGGLE_FUEL)} className="call"><IconTruck/></div>
+                    <div id="fuel" onMouseDown={(e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_FUEL,e)} className={this.state.activeButton === "fuel" ? "call selected" : "call"}><IconTruck/></div>
                 </div>
                 <div className="baggage control-grid">
                     <h1 className="text-white font-medium text-xl">Baggage</h1>
-                    <div onClick={this.toggleGroundAction(GroundServices.TOGGLE_CARGO)} className="call"><IconBriefcase/></div>
+                    <div id="baggage" onMouseDown={(e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_CARGO,e)} className={this.state.activeButton === "baggage" ? "call selected" : "call"}><IconBriefcase/></div>
                 </div>
                 <div className="catering control-grid">
                     <h1 className="text-white font-medium text-xl">Catering</h1>
-                    <div onClick={this.toggleGroundAction(GroundServices.TOGGLE_CATERING)} className="call"><IconArchive/></div>
+                    <div id="catering" onMouseDown={(e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_CATERING,e)} className={this.state.activeButton === "catering" ? "call selected" : "call"}><IconArchive/></div>
                 </div>
                 <div className="jetway control-grid">
                     <h1 className="text-white font-medium text-xl">Jetway</h1>
-                    <div onClick={this.toggleGroundAction(GroundServices.TOGGLE_JETWAY)}  className="call"><IconBuildingArch/></div>
+                    <div id="jetway" onMouseDown={ (e: React.MouseEvent) => this.toggleGroundAction(GroundServices.TOGGLE_JETWAY,e )}  className={this.state.activeButton === "jetway" ? "call selected" : "call"}><IconBuildingArch/></div>
                 </div>
-                <img className="airplane w-full" src={fuselage} />
             </div>
         );
     }
