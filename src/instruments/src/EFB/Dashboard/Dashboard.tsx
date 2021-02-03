@@ -61,7 +61,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         return (
             <div className="flex p-6 w-full">
                 <div className="w-4/12 mr-4">
-                    <h1 className="text-white font-medium mb-6 text-xl">Today's Flight</h1>
+                    <h1 className="text-white font-medium mb-4 text-2xl">Today's Flight</h1>
 
                     <FlightWidget
                         name="todays"
@@ -82,14 +82,14 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                 </div>
 
                 <div className="w-3/12">
-                    <h1 className="text-white font-medium mb-6 text-xl">Weather</h1>
+                    <h1 className="text-white font-medium mb-4 text-2xl">Weather</h1>
 
                     <WeatherWidget name='origin' editIcao="yes" icao={this.props.departingAirport} />
                     <WeatherWidget name='dest' editIcao="yes" icao={this.props.arrivingAirport} />
                 </div>
 
                 <div className="w-5/12 ml-4">
-                    <h1 className="text-white font-medium mb-6 text-xl">Map</h1>
+                    <h1 className="text-white font-medium mb-4 text-2xl">Map</h1>
 
                     <div className="bg-gray-800 rounded-xl text-white overflow-hidden">
                         <div className="w-full h-map rounded-lg overflow-hidden">
