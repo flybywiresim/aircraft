@@ -29,7 +29,7 @@ class A32NX_BrakeTemp {
      * @param wheelRpm {number}
      */
     calculateHeatUp(brakePosition, wheelRpm) {
-        return HEAT_UP_SCALE * (brakePosition / 32767) * (wheelRpm ** 2);
+        return HEAT_UP_SCALE * (brakePosition / 32767) * ((wheelRpm/2) ** 2);
     }
 
     calculateDeltaCoolDown(deltaTemp, speed, gearExtended) {
