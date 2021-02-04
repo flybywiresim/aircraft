@@ -500,3 +500,91 @@
 - A32NX_ENG_OUT_ACC_ALT
     - feet
     - The engine out acceleration altitude, set in the PERF TAKE OFF page.
+
+- A32NX_RAIN_REPELLENT_RIGHT_ON
+    -Bool
+    -True if rain repellent is activated on the right windshield.  
+
+- A32NX_RAIN_REPELLENT_LEFT_ON
+    -Bool
+    -True if rain repellent is activated on the left windshield.  
+
+- A32NX_RCDR_TEST
+    -Bool
+    -True if RCDR being tested.
+
+- A32NX_RADAR_MULTISCAN_AUTO
+    -Bool
+    -True if multiscan switch is set to AUTO.
+
+- A32NX_RADAR_GCS_AUTO
+    -Bool
+    -True if GCS switch is set to AUTO.
+
+-A32NX_OXYGEN_MASKS_DEPLOYED
+    -Bool
+    -True if cabin oxygen masks have been deployed.
+
+-A32NX_RCDR_GROUND_CONTROL_ON
+    -Bool
+    -True if ground control is on.
+
+-A32NX_EMERELECPWR_MAN_ON
+    -Bool
+    -True if Ram Air Turbine has been manually deployed.
+
+-A32NX_EMERELECPWR_GEN_TEST
+    -Bool
+    -True if emergency generator is being tested.
+
+-A32NX_OXYGEN_PASSENGER_LIGHT_ON
+    -Bool
+    -True if cabin oxygen mask doors open.
+
+-A32NX_OXYGEN_TMR_RESET
+    -Bool
+    -True if oxygen timer is being reset. 
+
+-A32NX_OXYGEN_TMR_RESET_FAULT
+    -Bool
+    -True if fault with oxygen timer.
+
+-A32NX_APU_AUTOEXITING_RESET
+    -Bool
+    -True if APU autoexiting is being reset.
+
+-A32NX_ELT_TEST_RESET
+    -Bool
+    -True if ELT is being tested/reset.
+
+-A32NX_ELT_ON
+    -Bool
+    -True if ELT is on.
+
+-A32NX_DLS_SELCTL
+    -Bool
+    -True if select/control is being pressed on data loading selector. 
+
+-A32NX_DLS_PREV
+    -Bool
+    -True if previous is being pressed on data loading selector. 
+
+-A32NX_DLS_NEXT
+    -Bool
+    -True if next is being pressed on data loading selector. 
+
+-A32NX_DLS_ON
+    -Bool
+    -True if data loading selector is on. 
+
+-A32NX_CREW_HEAD_SET
+    -Bool
+    -True if CVR crew head set is being pressed.
+
+-A32NX_SVGEINT_OVRD_ON
+    -Bool
+    -True if SVGE INT OVRD is on.
+
+-A32NX_AVIONICS_COMPLT_ON
+    -Bool
+    -True if avionics comp lt is on.
