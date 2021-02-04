@@ -1269,7 +1269,14 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="3click" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_AP_CAPABILITY" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+            <Range UpperBound="0" />
+            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
+                <Range LowerBound="1" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
             <Range UpperBound="0" />
             <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
                 <Range LowerBound="1" />

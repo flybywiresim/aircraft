@@ -63,9 +63,9 @@ class A32NX_FWC {
 
         // autopilot disconnect
         this.AutothrottleWarningCanceled = false;
+        this.AutopilotWarningCanceled = false;
         this.athrdeltaTime = 0;
         this.apdeltaTime = 0;
-        this.tripleclickTime = 0;
     }
 
     update(_deltaTime, _core) {
@@ -338,25 +338,16 @@ class A32NX_FWC {
 
         if (apStatus === 1) {
             SimVar.SetSimVarValue("L:A32NX_AP_DISC", "Bool", false);
-            SimVar.SetSimVarValue("L:A32NX_AP_CAPABILITY", "Bool", false);
             SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
-            this.AutopiloteWarningCanceled = false;
+            this.AutopilotWarningCanceled = false;
             this.apdeltaTime = 0;
         }
 
         if (apStatus === 0 && this.AutopiloteWarningCanceled === false) {
-            if (this.apdeltaTime / 1000 <= 1.5){
-                Coherent.call("PLAY_INSTRUMENT_SOUND", cavcharge);
-            }
             SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
             this.apdeltaTime += _deltaTime;
-            this.tripleclickTime += _deltaTime;
-            if (this.tripleclickTime >= 2500) {
-                SimVar.SetSimVarValue("L:A32NX_AP_CAPABILITY", "Bool", false); //TODO : Capability
-                this.tripleclickTime = 0;
-            }
             if (this.warningPressed = true || (this.apdeltaTime / 1000) >= 3) {
-                this.AutopiloteWarningCanceled = true;
+                this.AutopilotWarningCanceled = true;
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
                 this.apdeltaTime = 0;
             }
