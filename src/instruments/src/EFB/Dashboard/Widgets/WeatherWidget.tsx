@@ -221,7 +221,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                 <p>Loading ...</p>
                 :
                 <><div className="mb-6">
-                    <div className="flex items-center">
+                    <div className="inline-flex items-center">
                         {props.editIcao == "yes" ?
                             <>
                                 <IconAccessPoint size={35} stroke={1.5} strokeLinejoin="miter" />
@@ -265,7 +265,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                 </div>
                 <div>
                     {
-                        <span className="font-medium leading-7"><IconRouter className="mr-2 inline-block" size={23} stroke={1.5} strokeLinejoin="miter" /> {metar.raw_text !== "" ? metar.raw_text : '---------------------------------------------------'}</span>
+                        <span className="font-medium leading-7"><IconRouter className="mr-2 inline-block" size={23} stroke={1.5} strokeLinejoin="miter" /> {metar.raw_text !== "" ? metar.raw_text : '-------------------------------------------------'}</span>
                     }
                 </div>
                 </>
