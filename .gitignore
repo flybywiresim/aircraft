@@ -30,3 +30,7 @@ node_modules
 /src/instruments/src/EFB/dist
 /A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/*.gltf
 /A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/*.bin
+*.wasm
+/src/systems/target
+/target
+/src/instruments/src/EFB/web/

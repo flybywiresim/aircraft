@@ -27,6 +27,7 @@ var A320_Neo_ECAM_Common;
             this.outerDynamicMarkerFunction = null;
             this.dangerMinDynamicFunction = null;
             this.outerMarkerValue = null;
+            this.roundDisplayValueToNearest = null;
         }
     }
     A320_Neo_ECAM_Common.GaugeDefinition = GaugeDefinition;
@@ -131,6 +132,7 @@ var A320_Neo_ECAM_Common;
             this.minValue = _gaugeDefinition.minValue;
             this.maxValue = _gaugeDefinition.maxValue;
             this.minRedValue = _gaugeDefinition.minRedValue;
+            this.previousUpdateMinRedValue = _gaugeDefinition.minRedValue;
             this.maxRedValue = _gaugeDefinition.maxRedValue;
             this.warningRange[0] = _gaugeDefinition.warningRange[0];
             this.warningRange[1] = _gaugeDefinition.warningRange[1];
@@ -142,6 +144,7 @@ var A320_Neo_ECAM_Common;
             this.outerIndicatorFunction = _gaugeDefinition.outerIndicatorFunction;
             this.outerDynamicArcFunction = _gaugeDefinition.outerDynamicArcFunction;
             this.extraMessageFunction = _gaugeDefinition.extraMessageFunction;
+            this.roundDisplayValueToNearest = _gaugeDefinition.roundDisplayValueToNearest;
             this.extraMessagePosXMultiplier = 0.025;
             this.extraMessagePosYMultiplier = 0.025;
             this.extraMessageBorderPosXMultiplier = 0.2;
@@ -168,23 +171,9 @@ var A320_Neo_ECAM_Common;
             }
             this.rootSVG.appendChild(this.mainArc);
             if (this.minRedValue != this.maxRedValue) {
-                const minRedDir = this.valueToDir(this.minRedValue + this.cursorOffset);
-                const maxRedDir = this.valueToDir(this.maxRedValue + this.cursorOffset);
-                const topRight = new Vec2(this.center.x + (maxRedDir.x * this.mainArcRadius), this.center.y + (maxRedDir.y * this.mainArcRadius));
-                const topLeft = new Vec2(this.center.x + (minRedDir.x * this.mainArcRadius), this.center.y + (minRedDir.y * this.mainArcRadius));
-                const bottomRight = new Vec2(this.center.x + (maxRedDir.x * this.redArcInnerRadius), this.center.y + (maxRedDir.y * this.redArcInnerRadius));
-                const bottomLeft = new Vec2(this.center.x + (minRedDir.x * this.redArcInnerRadius), this.center.y + (minRedDir.y * this.redArcInnerRadius));
-                var d = [
-                    "M", topRight.x, topRight.y,
-                    "A", this.mainArcRadius, this.mainArcRadius, 0, "0", 0, topLeft.x, topLeft.y,
-                    "L", bottomLeft.x, bottomLeft.y,
-                    "M", topRight.x, topRight.y,
-                    "L", bottomRight.x, bottomRight.y,
-                    "A", this.redArcInnerRadius, this.redArcInnerRadius, 0, "0", 0, bottomLeft.x, bottomLeft.y
-                ].join(" ");
                 this.redArc = document.createElementNS(Avionics.SVG.NS, "path");
                 this.redArc.id = "RedArc";
-                this.redArc.setAttribute("d", d);
+                this.redArc.setAttribute("d", this.calculateRedArcD());
                 this.rootSVG.appendChild(this.redArc);
             }
             this.graduationsGroup = document.createElementNS(Avionics.SVG.NS, "g");
@@ -382,6 +371,9 @@ var A320_Neo_ECAM_Common;
                 if (this.dangerMinDynamicFunction != null) {
                     this.refreshDangerMinFunction(this.dangerMinDynamicFunction());
                 }
+                if (this.previousUpdateMinRedValue != this.minRedValue) {
+                    this.refreshRedArc();
+                }
             }
             if ((this.extraMessageFunction != null) && (this.extraMessageText != null) && (this.extraMessageBorder != null)) {
                 const extraMessage = this.isActive ? this.extraMessageFunction().toString() : "";
@@ -417,6 +409,28 @@ var A320_Neo_ECAM_Common;
                     this.extraMessageText.textContent = this.extraMessageString;
                 }
             }
+        }
+        refreshRedArc() {
+            if (this.redArc) {
+                this.redArc.setAttribute("d", this.calculateRedArcD());
+                this.previousUpdateMinRedValue = this.minRedValue;
+            }
+        }
+        calculateRedArcD() {
+            const minRedDir = this.valueToDir(this.minRedValue + this.cursorOffset);
+            const maxRedDir = this.valueToDir(this.maxRedValue + this.cursorOffset);
+            const topRight = new Vec2(this.center.x + (maxRedDir.x * this.mainArcRadius), this.center.y + (maxRedDir.y * this.mainArcRadius));
+            const topLeft = new Vec2(this.center.x + (minRedDir.x * this.mainArcRadius), this.center.y + (minRedDir.y * this.mainArcRadius));
+            const bottomRight = new Vec2(this.center.x + (maxRedDir.x * this.redArcInnerRadius), this.center.y + (maxRedDir.y * this.redArcInnerRadius));
+            const bottomLeft = new Vec2(this.center.x + (minRedDir.x * this.redArcInnerRadius), this.center.y + (minRedDir.y * this.redArcInnerRadius));
+            return [
+                "M", topRight.x, topRight.y,
+                "A", this.mainArcRadius, this.mainArcRadius, 0, "0", 0, topLeft.x, topLeft.y,
+                "L", bottomLeft.x, bottomLeft.y,
+                "M", topRight.x, topRight.y,
+                "L", bottomRight.x, bottomRight.y,
+                "A", this.redArcInnerRadius, this.redArcInnerRadius, 0, "0", 0, bottomLeft.x, bottomLeft.y
+            ].join(" ");
         }
         //accepts ID_EGT, _value[0] = _id, _value[1] = EGT
         refreshOuterMarkerFunction(_value, _force = false) {
@@ -456,7 +470,11 @@ var A320_Neo_ECAM_Common;
                 this.cursor.setAttribute("class", style);
             }
             if (this.currentValueText != null) {
-                const strValue = this.currentValue.toFixed(this.currentValuePrecision);
+                let displayValue = this.currentValue;
+                if (this.roundDisplayValueToNearest) {
+                    displayValue = Math.round(displayValue / this.roundDisplayValueToNearest) * this.roundDisplayValueToNearest;
+                }
+                const strValue = displayValue.toFixed(this.currentValuePrecision);
                 this.currentValueText.textContent = strValue;
                 this.currentValueText.setAttribute("class", style);
                 if (this.currentValuePrecision > 0) {

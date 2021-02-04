@@ -130,10 +130,12 @@ var A320_Neo_LowerECAM_BLEED;
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
+
             if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
                 return;
             }
-            const currentApuN = SimVar.GetSimVarValue("APU PCT RPM", "percent");
+
+            const currentApuN = SimVar.GetSimVarValue("L:A32NX_APU_N", "percent");
             const currentEng1N2 = SimVar.GetSimVarValue("ENG N2 RPM:1", "Rpm(0 to 16384 = 0 to 100%)");
             const currentEng2N2 = SimVar.GetSimVarValue("ENG N2 RPM:2", "Rpm(0 to 16384 = 0 to 100%)");
             const eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool");
@@ -141,10 +143,10 @@ var A320_Neo_LowerECAM_BLEED;
             const xBleedValveOpen = SimVar.GetSimVarValue("L:x_bleed_valve", "bool");
             const throttleEng1 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "number");
             const throttleEng2 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "number");
-            const currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
+            const apuBleedAirValveOpen = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool");
             const currentXbleedState = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
             const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
-            const apuSwitchState = SimVar.GetSimVarValue("L:A32NX_APU_START_ACTIVATED", "bool");
+            const apuSwitchState = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool") || SimVar.GetSimVarValue("L:A32NX_APU_BLEED_ON", "Bool");
             const fadecStatus = [SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool"), SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool")];
             const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second");
             const wingAntiInceState = SimVar.GetSimVarValue("STRUCTURAL DEICE SWITCH", "bool");
@@ -189,7 +191,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.flying = false;
             }
 
-            if (!this.apuProvidesBleed && (currentApuN > 0.94)) {
+            if (!this.apuProvidesBleed && currentApuN > 95) {
                 this.apuProvidesBleed = true;
             }
 
@@ -283,7 +285,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.centerLines[1].setAttribute("visibility", "visible");
                 this.xBleed[0].setAttribute("visibility", "visible");
                 this.xBleed[1].setAttribute("visibility", "hidden");
-            } else if (currentApuBleedSate && currentXbleedState == 1) {
+            } else if (apuBleedAirValveOpen && currentXbleedState == 1) {
                 SimVar.SetSimVarValue("L:x_bleed_valve", "bool", 1);
                 this.centerLines[2].setAttribute("visibility", "visible");
                 this.centerLines[1].setAttribute("visibility", "visible");
@@ -298,7 +300,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             //find if the APU bleed is on
-            if (currentApuBleedSate) {
+            if (apuBleedAirValveOpen) {
                 this.apuBleedIndication[0].setAttribute("visibility", 'visible');
                 this.apuBleedIndication[1].setAttribute("visibility", "hidden");
                 this.centerLines[1].setAttribute("visibility", "visible");
@@ -393,8 +395,8 @@ var A320_Neo_LowerECAM_BLEED;
             const eng2TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:2", "Celsius");
             const eng2PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:2", "Ratio (0-16384)") / 2.9);
 
-            const apuTMPcomputed = parseInt(currentApuN * 2.5);
-            const apuPSI = parseInt(currentApuN * 0.35);
+            const apuTMPcomputed = parseInt(currentApuN ? 100 * 2.5 : 0);
+            const apuPSI = parseInt(currentApuN ? 100 * 0.35 : 0);
 
             let eng1TMPcomputed;
             let eng2TMPcomputed;
@@ -454,12 +456,12 @@ var A320_Neo_LowerECAM_BLEED;
                 this.packOutMultiplierApu += packTemperatureVariationAPU * (this.temperatureVariationSpeed * (1.2));
             }
 
-            if (currentEngineBleedState[1] && !currentEngineBleedState[0] && !currentApuBleedSate && eng2Running && !xBleedValveOpen) {
+            if (currentEngineBleedState[1] && !currentEngineBleedState[0] && !apuBleedAirValveOpen && eng2Running && !xBleedValveOpen) {
                 this.htmlEng2Tmp.textContent = eng2TMPcomputed;
                 this.htmlEng2Psi.textContent = eng2PSI;
                 this.htmlEng1Tmp.textContent = "XXX";
                 this.htmlEng1Psi.textContent = "xx";
-            } else if (currentEngineBleedState[1] && !currentEngineBleedState[0] && currentApuBleedSate && eng2Running && !xBleedValveOpen) {
+            } else if (currentEngineBleedState[1] && !currentEngineBleedState[0] && apuBleedAirValveOpen && eng2Running && !xBleedValveOpen) {
                 this.htmlEng1Tmp.textContent = apuTMPcomputed;
                 this.htmlEng1Psi.textContent = apuPSI;
                 this.htmlEng2Tmp.textContent = eng2TMPcomputed;
@@ -469,7 +471,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.htmlEng1Psi.textContent = eng2PSI;
                 this.htmlEng2Tmp.textContent = eng2TMPcomputed;
                 this.htmlEng2Psi.textContent = eng2PSI;
-            } else if (xBleedValveOpen && currentApuBleedSate && !currentEngineBleedState[0] && !currentEngineBleedState[1] && apuSwitchState) {
+            } else if (xBleedValveOpen && apuBleedAirValveOpen && !currentEngineBleedState[0] && !currentEngineBleedState[1] && apuSwitchState) {
                 this.htmlEng1Tmp.textContent = apuTMPcomputed;
                 this.htmlEng1Psi.textContent = apuPSI;
                 this.htmlEng2Tmp.textContent = apuTMPcomputed;
@@ -494,7 +496,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.htmlEng1Psi.textContent = eng1PSI;
                 this.htmlEng2Tmp.textContent = eng2TMPcomputed;
                 this.htmlEng2Psi.textContent = eng2PSI;
-            } else if (!currentEngineBleedState[0] && !currentEngineBleedState[1] && !xBleedValveOpen && currentApuBleedSate) {
+            } else if (!currentEngineBleedState[0] && !currentEngineBleedState[1] && !xBleedValveOpen && apuBleedAirValveOpen) {
                 this.htmlEng1Tmp.textContent = apuTMPcomputed;
                 this.htmlEng1Psi.textContent = apuPSI;
                 this.htmlEng2Tmp.textContent = "XXX";
@@ -524,7 +526,7 @@ var A320_Neo_LowerECAM_BLEED;
             } else if (currentLeftPackState && xBleedValveOpen && eng2Running && currentEngineBleedState[1]) {
                 this.htmlLeftPackIn.textContent = packTMPComputedIn[1];
                 this.htmlLeftPackOut.textContent = packTMPComputedOut[1];
-            } else if (currentLeftPackState && currentApuBleedSate && this.apuProvidesBleed) {
+            } else if (currentLeftPackState && apuBleedAirValveOpen && this.apuProvidesBleed) {
                 this.htmlLeftPackIn.textContent = packTMPComputedIn[2];
                 this.htmlLeftPackOut.textContent = packTMPComputedOut[2];
             } else {
@@ -544,7 +546,7 @@ var A320_Neo_LowerECAM_BLEED;
             } else if (currentRightPackState && xBleedValveOpen && eng1Running && currentEngineBleedState[0]) {
                 this.htmlRightPackIn.textContent = packTMPComputedIn[0];
                 this.htmlRightPackOut.textContent = packTMPComputedOut[0];
-            } else if (currentRightPackState && currentApuBleedSate && xBleedValveOpen && this.apuProvidesBleed) {
+            } else if (currentRightPackState && apuBleedAirValveOpen && xBleedValveOpen && this.apuProvidesBleed) {
                 this.htmlRightPackIn.textContent = packTMPComputedIn[2];
                 this.htmlRightPackOut.textContent = packTMPComputedOut[2];
             } else {

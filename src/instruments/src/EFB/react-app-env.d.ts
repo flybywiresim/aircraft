@@ -18,7 +18,7 @@
  */
 
 declare module "util.mjs" {
-
+    function setSimVar(name: string, value: any, unit: string)
 }
 
 declare module "*.svg" {

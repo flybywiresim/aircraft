@@ -17,9 +17,9 @@
 
             <Update Frequency = "50">
                 (#TOGGLE_VAR#) if#{
-                    (O:_ButtonAnimVar) 0.01 #ANIM_DURATION# / + 1 min (&gt;O:_ButtonAnimVar)
+                    (O:_ButtonAnimVar) 0.002 #ANIM_DURATION# / + 1 min (&gt;O:_ButtonAnimVar)
                 } els{
-                    0.2 (&gt;O:_ButtonAnimVar)
+                    0.3 (&gt;O:_ButtonAnimVar)
                 }
             </Update>
 

@@ -158,6 +158,7 @@ class CDUInitPage {
                 mcdu.tryUpdateFromTo(value, (result) => {
                     if (result) {
                         CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
+                        CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
                         CDUPerformancePage.UpdateThrRedAccFromDestination(mcdu);
                         CDUAvailableFlightPlanPage.ShowPage(mcdu);
                     }
@@ -204,8 +205,8 @@ class CDUInitPage {
             [altDest, requestButton],
             ["FLT NBR"],
             [flightNo + "[color]cyan", alignOption],
-            ["PAX NBR"],
-            ["___[color]inop", "WIND/TEMP>"],
+            [""],
+            ["", "WIND/TEMP>"],
             ["COST INDEX", "TROPO"],
             [costIndex, tropo],
             ["CRZ FL/TEMP", "GND TEMP"],
