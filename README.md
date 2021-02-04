@@ -97,13 +97,6 @@ See [Contributing.md](.github/Contributing.md)
 - Ruder keybindings not working (you have to set your keybinding to rudder axis right and left)
 - Wing dips on landing (due to bad transition to direct law in flare, same with the default A320)  [Workaround use minimal aileron input on landing]
 - Black screens / unable to start (conflict with another mod/livery or incorrect installation of the A32NX mod, use the [installer](https://api.flybywiresim.com/installer))
-- AP not following the flight plan (leaking input values affect, but don't disconnect the AP) [Workaround: Set dead-zones for your input device higher] 
-- Autopilot goes direct to RWY on APP (same with the default A320) [Workaround: Use DIR to a waypoint or selected heading]
-- Upper ECAM displays wrong THR levers position / N1 rating.
-- Newly added ASOBO A320 liveries are incompatible with the A32NX mod. 
-- Ruder keybindings not working (you have to set your keybinding to rudder axis right and left)
-- Wing dips on landing (due to bad transition to direct law in flare, same with the default A320)  [Workaround use minimal aileron input on landing]
-- Black screens / unable to start (conflict with another mod/livery or incorrect installation of the A32NX mod, use the [installer](https://api.flybywiresim.com/installer))
 
 ## License
 
