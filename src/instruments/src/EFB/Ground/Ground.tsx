@@ -17,7 +17,7 @@
  */
 
 import React from 'react';
-import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive } from '@tabler/icons'
+import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconHandFinger } from '@tabler/icons'
 
 import './Ground.scss'
 import fuselage from '../Assets/320neo-outline-upright.svg'
@@ -27,8 +27,10 @@ type GroundProps = {}
 
 type GroundState = {
     tugActive: boolean;
-    activeButton: string,
+    activeButton: string
 }
+
+let timer: number;
 
 class Ground extends React.Component<GroundProps, GroundState> {
 
@@ -39,14 +41,18 @@ class Ground extends React.Component<GroundProps, GroundState> {
             tugActive: false,
             activeButton: 'none',
         };
-      }
+    }
+
+    componentWillUnmount() {
+        clearTimeout(timer);
+    }
 
     toggleGroundAction(action: GroundServices) {
-            setSimVar(action, "1", "boolean");
+        setSimVar(action, "1", "boolean");
     }
 
     setTugHeading(action: GroundServices, direction: number) {
-            if (!this.state.tugActive && direction === 0) {
+            if (!this.state.tugActive) {
                 this.togglePushback(true);
             } else {
                 const tugHeading = this.getTugHeading(direction);
@@ -72,16 +78,37 @@ class Ground extends React.Component<GroundProps, GroundState> {
     }
 
     handleClick(callBack: () => void, event: React.MouseEvent) {
-        if (event.currentTarget.id === this.state.activeButton) {
-            this.setState({
-                activeButton: "none"
-            })
+        if (!this.state.tugActive) {
+            if (event.currentTarget.id === this.state.activeButton) {
+                this.setState({
+                    activeButton: "none"
+                });
+            } else if (!event.currentTarget.id.includes("down-")) {
+                this.setState({
+                    activeButton: event.currentTarget.id
+                });
+            }
+            callBack();
         } else {
-            this.setState({
-                activeButton: event.currentTarget.id
-            });
+            if (event.currentTarget.id.match("(down)|(stop)")) {
+                this.setState({
+                    activeButton: event.currentTarget.id
+                });
+                callBack();
+            }
         }
-        callBack();
+    }
+
+    timedClick(callBack: () => void, event: React.MouseEvent) {
+        let handler: TimerHandler = () => {
+            if (this.state.activeButton === 'stop') {
+                this.setState({
+                    activeButton: 'none'
+                });
+            }
+        }
+        this.handleClick(callBack, event);
+        timer = setTimeout(handler, 2000);
     }
 
     applySelected(className: string, id?: string) {
@@ -98,7 +125,7 @@ class Ground extends React.Component<GroundProps, GroundState> {
                 <div className="pushback control-grid">
                     <h1 className="text-white font-medium text-xl">Pushback</h1>
                     <div id="stop"
-                         onMouseDown={(e) => this.handleClick(() => this.togglePushback(false), e)}
+                         onMouseDown={(e) => this.timedClick(() => this.togglePushback(false), e)}
                          className={this.applySelected('stop')}><IconHandStop/>
                     </div>
                     <div id="down-left"
