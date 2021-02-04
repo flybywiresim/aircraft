@@ -35,12 +35,13 @@ pub struct A320SimulatorReadWriter {
     ambient_temperature: AircraftVariable,
     apu_bleed_air_valve_open: NamedVariable,
     apu_bleed_fault: NamedVariable,
-    apu_bleed_sw_on: AircraftVariable,
+    apu_bleed_sw_on: NamedVariable,
     apu_egt: NamedVariable,
     apu_egt_caution: NamedVariable,
     apu_egt_warning: NamedVariable,
     apu_fire_button_released: NamedVariable,
-    apu_flap_open: NamedVariable,
+    apu_air_intake_flap_is_ecam_open: NamedVariable,
+    apu_flap_open_percentage: NamedVariable,
     apu_gen_amperage: NamedVariable,
     apu_gen_frequency: NamedVariable,
     apu_gen_frequency_within_normal_range: NamedVariable,
@@ -70,12 +71,13 @@ impl A320SimulatorReadWriter {
             ambient_temperature: AircraftVariable::from("AMBIENT TEMPERATURE", "celsius", 0)?,
             apu_bleed_air_valve_open: NamedVariable::from("A32NX_APU_BLEED_AIR_VALVE_OPEN"),
             apu_bleed_fault: NamedVariable::from("A32NX_APU_BLEED_FAULT"),
-            apu_bleed_sw_on: AircraftVariable::from("BLEED AIR APU", "Bool", 0)?,
+            apu_bleed_sw_on: NamedVariable::from("A32NX_APU_BLEED_ON"),
             apu_egt: NamedVariable::from("A32NX_APU_EGT"),
             apu_egt_caution: NamedVariable::from("A32NX_APU_EGT_CAUTION"),
             apu_egt_warning: NamedVariable::from("A32NX_APU_EGT_WARNING"),
             apu_fire_button_released: NamedVariable::from("A32NX_FIRE_BUTTON_APU"),
-            apu_flap_open: NamedVariable::from("APU_FLAP_OPEN"),
+            apu_air_intake_flap_is_ecam_open: NamedVariable::from("A32NX_APU_FLAP_ECAM_OPEN"),
+            apu_flap_open_percentage: NamedVariable::from("A32NX_APU_FLAP_OPEN_PERCENTAGE"),
             apu_gen_amperage: NamedVariable::from("A32NX_APU_GEN_AMPERAGE"),
             apu_gen_frequency: NamedVariable::from("A32NX_APU_GEN_FREQ"),
             apu_gen_frequency_within_normal_range: NamedVariable::from("A32NX_APU_GEN_FREQ_NORMAL"),
@@ -119,7 +121,7 @@ impl SimulatorReadWriter for A320SimulatorReadWriter {
             ambient_temperature: ThermodynamicTemperature::new::<degree_celsius>(
                 self.ambient_temperature.get(),
             ),
-            apu_bleed_sw_on: to_bool(self.apu_bleed_sw_on.get()),
+            apu_bleed_sw_on: to_bool(self.apu_bleed_sw_on.get_value()),
             apu_fire_button_released: to_bool(self.apu_fire_button_released.get_value()),
             apu_gen_sw_on: to_bool(self.apu_gen_sw_on.get()),
             apu_master_sw_on: to_bool(self.apu_master_sw.get_value()),
@@ -146,7 +148,9 @@ impl SimulatorReadWriter for A320SimulatorReadWriter {
             .set_value(state.apu_caution_egt.get::<degree_celsius>());
         self.apu_egt_warning
             .set_value(state.apu_warning_egt.get::<degree_celsius>());
-        self.apu_flap_open
+        self.apu_air_intake_flap_is_ecam_open
+            .set_value(from_bool(state.apu_air_intake_flap_is_ecam_open));
+        self.apu_flap_open_percentage
             .set_value(state.apu_air_intake_flap_opened_for.get::<percent>());
         self.apu_gen_amperage
             .set_value(state.apu_gen_current.get::<ampere>());

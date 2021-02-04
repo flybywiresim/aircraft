@@ -38,10 +38,10 @@
 }
 
 .control-grid {
-  @extend .p-2;
-  @extend .grid;
-  @extend .bg-gray-800;
-  @extend .rounded-lg;
+  @apply p-2;
+  @apply grid;
+  @apply bg-gray-800;
+  @apply rounded-lg;
   position: absolute;
   color: #232b3d;
   grid-gap: 0.5rem;
@@ -58,7 +58,7 @@
 }
 
 .control-grid > div {
-  @extend .rounded-lg;
+  @apply rounded-lg;
   height: 3rem;
   width: 3rem;
   margin: auto;
@@ -100,32 +100,32 @@
 }
 
 .call {
-  @extend .bg-green-500;
+  @apply bg-green-500;
   grid-column: 1 / 1;
 }
 
 .selected {
-  @extend .text-white;
+  @apply text-white;
   border-color: #ccc;
   border-width: 2px;
 }
 
 .pushback .stop {
-  @extend .bg-red-500;
+  @apply bg-red-500;
   grid-column: 2 / 3;
 }
 
 .down-left {
-  @extend .bg-green-500;
+  @apply bg-green-500;
   grid-column: 1/1;
 }
 
 .down {
-  @extend .bg-green-500;
+  @apply bg-green-500;
   grid-column: 2/2;
 }
 
 .down-right {
-  @extend .bg-green-500;
+  @apply bg-green-500;
   grid-column: 3/3;
 }
