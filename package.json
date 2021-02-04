@@ -57,19 +57,20 @@
     "webpack-dev-server": "^3.11.1"
   },
   "dependencies": {
-    "byte-data": "^19.0.1",
     "@flybywiresim/api-client": "~0.7.0",
     "@flybywiresim/map": "~0.4.2",
     "@tabler/icons": "^1.38.0",
+    "@tailwindcss/postcss7-compat": "^2.0.2",
     "aewx-metar-parser": "~0.10.1",
+    "byte-data": "^19.0.1",
+    "classnames": "^2.2.6",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
+    "react-leaflet": "~3.0.5",
     "react-router": "~5.2.0",
     "react-router-dom": "~5.2.0",
-    "react-leaflet": "~3.0.5",
     "rollup-plugin-scss": "^2.6.1",
     "sass": "~1.30.0",
-    "@tailwindcss/postcss7-compat": "^2.0.2",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2"
   }
 }

@@ -2,12 +2,12 @@
 title: EFB Takeoff Calculations
 ...
 
-In the real world for calculating takeoff performance (V.Speeds, Flex Temp etc.) the airport authority produces several RTOW charts which are specific
+In the real world for calculating takeoff performance (V.Speeds, Flex Temp etc.) several RTOW charts are produced which are specific
 to that runway, and specific runway conditions. The Airbus FCOM does not directly state how to calculate V.Speeds, they are obtained from the RTOW charts
 for the specific runway.
 
 For the EFB, we are not able to store every RTOW chart for every airport. Therefore we must try to calculate the V.Speeds ourselves in a similar way
-to how the airport authority would determine them, based on the factors that affect takeoff performance (wind, runway length, runway condition, temperature,
+to how they would be determined for RTOW charts, based on the factors that affect takeoff performance (wind, runway length, runway condition, temperature,
 pressure etc.).
 
 This document details the methods that can be used to gain accurate estimates for what data is likely to be published by the airport authority for given runway
@@ -74,7 +74,7 @@ $D_{V_1}(V) = D(t(V))$
 
 $D_{\text{BRAKE}}(V) = \frac{mV^2}{2B}$
 
-$D(t) = 2T (\frac{me^{\frac{-bt}{m}} - m}{b^2} - \frac{t}{b})$
+$D(t) = 2T (\frac{me^{\frac{-bt}{m}} - m}{b^2} + \frac{t}{b})$
 
 $t(V) = \frac{-m \ln (1 - \frac{Vb}{2T})}{b}$
 
@@ -138,7 +138,6 @@ A &= 2T \\
 V &= \frac{2T}{b} - \frac{2T}{b}e^{\frac{-bt}{m}}
 \end{align*}
 
-\clearpage
 ### Getting values for air resistance constant
 The limit of the velocity equation is the maximum speed the plane can reach with the given thrust, which we can use to obtain the air resistance contant $b$.
 We could calculate the limit mathematically to determine this, however it is much easier to use a graphing tool (Desmos was used for this example) to plot the

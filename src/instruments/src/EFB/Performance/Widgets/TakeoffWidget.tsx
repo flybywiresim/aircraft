@@ -19,6 +19,7 @@
  // Reference Operational Data Manual for approximations of weather impact on V speed
 
 import React from 'react';
+import classNames from "classnames";
 import TakeoffCalculator, { TakeoffFlapsConfig } from '../Calculators/TakeoffCalculator';
 
 type TakeoffWidgetProps = {};
@@ -30,13 +31,13 @@ type TakeoffWidgetState = {
 	windMagnitude: number,
 	runwayHeading: number,
 	pressure: number,
+	runwayLength: number,
+	altitude: number,
+	runwayTooShort: boolean,
 	v1: number,
 	vr: number,
-	v2: number,
-	flexTemp: string,
+	v2: number
 };
-
-const invalidValueDisplay: string = "---";
 
 export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, TakeoffWidgetState> {
 	private calculator: TakeoffCalculator = new TakeoffCalculator();
@@ -51,10 +52,12 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			windMagnitude: 0,
 			runwayHeading: 0,
 			pressure: 1013.25,
+			runwayLength: 0,
+			altitude: 0,
+			runwayTooShort: false,
 			v1: 0,
 			vr: 0,
-			v2: 0,
-			flexTemp: invalidValueDisplay
+			v2: 0
 		}
 	}
 
@@ -68,20 +71,17 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			this.state.pressure,
 			this.state.windDirection,
 			this.state.windMagnitude,
-			this.state.runwayHeading);
-
-		let flexTempString = takeoffPerformance.flexTemp
-			? takeoffPerformance.flexTemp.toString()
-			: invalidValueDisplay;
-
+			this.state.runwayHeading,
+			this.state.runwayLength,
+			this.state.altitude);
 
 		this.setState(prevState => {
 			let newState = { ...prevState };
 
-			newState.v1 = takeoffPerformance.v1;
-			newState.vr = takeoffPerformance.vr;
-			newState.v2 = takeoffPerformance.v2;
-			newState.flexTemp = flexTempString;
+			newState.v1 = Math.round(takeoffPerformance.v1);
+			newState.vr = Math.round(takeoffPerformance.vr);
+			newState.v2 = Math.round(takeoffPerformance.v2);
+			newState.runwayTooShort = takeoffPerformance.runwayTooShort;
 
 			return newState;
 		});
@@ -158,6 +158,20 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		});
 	}
 
+	private handleRunwayLengthChange = (event: React.FormEvent<HTMLInputElement>): void => {
+		let runwayLength = parseInt(event.currentTarget.value);
+
+		if (!runwayLength) {
+			runwayLength = 0;
+		}
+
+		this.setState(prevState => {
+			let newState = { ...prevState };
+			newState.runwayLength = runwayLength;
+			return newState;
+		});
+	}
+
 	private handlePressureChange = (event: React.FormEvent<HTMLInputElement>): void => {
 		let pressure = parseFloat(event.currentTarget.value);
 
@@ -171,6 +185,21 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			return newState;
 		});
 	}
+
+	private handleAltitudeChange = (event: React.FormEvent<HTMLInputElement>): void => {
+		let altitude = parseInt(event.currentTarget.value);
+
+		if (!altitude) {
+			altitude = 0;
+		}
+
+		this.setState(prevState => {
+			let newState = { ...prevState };
+			newState.altitude = altitude;
+			return newState;
+		});
+	}
+
 
 	public render() {
 		return (
@@ -194,6 +223,12 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 								<div className="input-label">Rwy Heading</div>
 								<div className="input-container">
 									<input onChange={this.handleRunwayHeadingChange}/>
+								</div>
+							</div>
+							<div className="input-field">
+								<div className="input-label">Rwy Length</div>
+								<div className="input-container">
+									<input placeholder="m" onChange={this.handleRunwayLengthChange}/>
 								</div>
 							</div>
 						</div>
@@ -220,6 +255,12 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 									<input placeholder="mb" onChange={this.handlePressureChange}/>
 								</div>
 							</div>
+							<div className="input-field">
+								<div className="input-label">Altitude</div>
+								<div className="input-container">
+									<input placeholder="m" onChange={this.handleAltitudeChange}/>
+								</div>
+							</div>
 						</div>
 					</div>
 					<button className="calculate-button w-full font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
@@ -227,39 +268,31 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 				</div>
 				<div className="results">
 					<div className="section">
-						<h1>TOGA</h1>
+						<h1>Takeoff Speeds</h1>
 						<div className="values">
 							<div className="output-field">
 								<div className="output-label">V1</div>
 								<div className="output-container">
-									<input disabled value={this.state.v1}></input>
+									<input disabled className={classNames({disabled: true, error: this.state.runwayTooShort})} value={this.state.v1}></input>
 								</div>
 							</div>
 							<div className="output-field">
 								<div className="output-label">VR</div>
 								<div className="output-container">
-									<input disabled value={this.state.vr}></input>
+									<input className={classNames({disabled: true, error: this.state.runwayTooShort})} value={this.state.vr}></input>
 								</div>
 							</div>
 							<div className="output-field">
 								<div className="output-label">V2</div>
 								<div className="output-container">
-									<input disabled value={this.state.v2}></input>
+									<input className={classNames({disabled: true, error: this.state.runwayTooShort})} value={this.state.v2}></input>
 								</div>
 							</div>
 						</div>
 					</div>
-					<div className="section">
-						<h1>Flex</h1>
-						<div className="values">
-							<div className="output-field">
-								<div className="output-label">Temperature</div>
-								<div className="output-container">
-									<input disabled value={this.state.flexTemp + " °C"}></input>
-								</div>
-							</div>
-						</div>
-					</div>
+					{this.state.runwayTooShort &&
+						<div className="error-message">Runway too short for takeoff!</div>
+					}
 				</div>
 			</div>
 		);

@@ -428,6 +428,32 @@ function getVlsTableIndex(mass: number): number {
 
 export default class LandingCalculator {
 	/**
+	 * Calculates the landing distances for each autobrake mode for the given conditions
+	 * @param weight Aircraft weight in KGs
+	 * @param flaps Flap Configuration
+	 * @param runwayCondition
+	 * @param approachSpeed Actual approach speed in kts
+	 * @param windDirection Heading wind is coming from, relative to north
+	 * @param windMagnitude Magnitude of wind in Knots
+	 * @param runwayHeading Heading of runway relative to north
+	 * @param reverseThrust Indicates if reverse thrust is active
+	 * @param altitude Runway altitude in feet ASL
+	 * @param temperature OAT of runway
+	 * @param slope Runway slope in %. Negative is downward slope
+	 * @param overweightProcedure Overweight procedure is being used if true
+	 */
+	public calculateLandingDistances(weight: number, flaps: LandingFlapsConfig, runwayCondition: LandingRunwayConditions,
+		approachSpeed: number, windDirection: number, windMagnitude: number, runwayHeading: number, reverseThrust: boolean, altitude: number,
+		temperature: number, slope: number, overweightProcedure: boolean): { maxAutobrakeDist: number, mediumAutobrakeDist: number, lowAutobrakeDist: number} {
+
+		return {
+			maxAutobrakeDist: this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Max, approachSpeed, windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure),
+			mediumAutobrakeDist: this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Medium, approachSpeed, windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure),
+			lowAutobrakeDist: this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Low, approachSpeed, windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure)
+		}
+	}
+
+	/**
 	 * Calculates the required landing distance for the given conditions
 	 * @param weight Aircraft weight in KGs
 	 * @param flaps Flap Configuration
@@ -443,7 +469,7 @@ export default class LandingCalculator {
 	 * @param slope Runway slope in %. Negative is downward slope
 	 * @param overweightProcedure Overweight procedure is being used if true
 	 */
-	public calculateRequiredLandingDistance(weight: number, flaps: LandingFlapsConfig, runwayCondition: LandingRunwayConditions, autobrakeMode: AutobrakeMode,
+	private calculateRequiredLandingDistance(weight: number, flaps: LandingFlapsConfig, runwayCondition: LandingRunwayConditions, autobrakeMode: AutobrakeMode,
 		approachSpeed: number, windDirection: number, windMagnitude: number, runwayHeading: number, reverseThrust: boolean, altitude: number,
 		temperature: number, slope: number, overweightProcedure: boolean): number {
 		let targetApproachSpeed: number;

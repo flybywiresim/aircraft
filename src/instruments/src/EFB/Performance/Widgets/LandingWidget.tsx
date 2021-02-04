@@ -20,7 +20,8 @@
  // TODO: good-to-medium and medium-to-poor conditions
 
 import React from 'react';
-import LandingCalculator, { AutobrakeMode, LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
+import classNames from "classnames";
+import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 
 type LandingWidgetProps = {};
 type LandingWidgetState = {
@@ -31,13 +32,15 @@ type LandingWidgetState = {
 	approachSpeed: number,
 	flaps: LandingFlapsConfig,
 	runwayCondition: LandingRunwayConditions,
-	autobrakeMode: AutobrakeMode,
 	reverseThrust: boolean,
 	altitude: number,
 	temperature: number,
 	slope: number,
 	overweightProcedure: boolean,
-	landingDistance: number
+	runwayLength: number,
+	maxAutobrakeLandingDist: number,
+	mediumAutobrakeLandingDist: number,
+	lowAutobrakeLandingDist: number
 };
 
 export default class LandingWidget extends React.Component<LandingWidgetProps, LandingWidgetState> {
@@ -52,22 +55,23 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 			approachSpeed: 0,
 			flaps: LandingFlapsConfig.Full,
 			runwayCondition: LandingRunwayConditions.Dry,
-			autobrakeMode: AutobrakeMode.Medium,
 			reverseThrust: false,
 			altitude: 0,
 			slope: 0,
 			temperature: 0,
 			overweightProcedure: false,
-			landingDistance: 0
+			runwayLength: 0,
+			maxAutobrakeLandingDist: 0,
+			mediumAutobrakeLandingDist: 0,
+			lowAutobrakeLandingDist: 0
 		};
 	}
 
 	private calculateLanding = (): void => {
-		let operationalLandingDistance = this.calculator.calculateRequiredLandingDistance(
+		let landingDistances = this.calculator.calculateLandingDistances(
 			this.state.weight,
 			this.state.flaps,
 			this.state.runwayCondition,
-			this.state.autobrakeMode,
 			this.state.approachSpeed,
 			this.state.windDirection,
 			this.state.windMagnitude,
@@ -81,7 +85,9 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 
 		this.setState(prevState => {
 			let newState = { ...prevState };
-			newState.landingDistance = Math.round(operationalLandingDistance);
+			newState.maxAutobrakeLandingDist = Math.round(landingDistances.maxAutobrakeDist);
+			newState.mediumAutobrakeLandingDist = Math.round(landingDistances.mediumAutobrakeDist);
+			newState.lowAutobrakeLandingDist = Math.round(landingDistances.lowAutobrakeDist);
 			return newState;
 		});
 	}
@@ -203,16 +209,6 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleAutobrakeChange = (event: React.FormEvent<HTMLSelectElement>): void => {
-		let autobrakeMode: AutobrakeMode = parseInt(event.currentTarget.value);
-
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.autobrakeMode = autobrakeMode;
-			return newState;
-		});
-	}
-
 	private handleReverseThrustChange = (event: React.FormEvent<HTMLSelectElement>): void => {
 		let reverseThrust: boolean = parseInt(event.currentTarget.value) == 1;
 
@@ -233,6 +229,20 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		this.setState(prevState => {
 			let newState = { ...prevState };
 			newState.slope = slope;
+			return newState;
+		});
+	}
+
+	private handleRunwayLengthChange = (event: React.FormEvent<HTMLInputElement>): void => {
+		let runwayLength = parseInt(event.currentTarget.value);
+
+		if (!runwayLength) {
+			runwayLength = 0;
+		}
+
+		this.setState(prevState => {
+			let newState = { ...prevState };
+			newState.runwayLength = runwayLength;
 			return newState;
 		});
 	}
@@ -312,16 +322,6 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 								</div>
 							</div>
 							<div className="input-field">
-								<div className="input-label">Autobrake Mode</div>
-								<div className="input-container">
-									<select defaultValue="1" onChange={this.handleAutobrakeChange}>
-										<option value="0">Low</option>
-										<option value="1">Medium</option>
-										<option value="2">Max</option>
-									</select>
-								</div>
-							</div>
-							<div className="input-field">
 								<div className="input-label">Reverse Thrust</div>
 								<div className="input-container">
 									<select defaultValue="0" onChange={this.handleReverseThrustChange}>
@@ -345,6 +345,12 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 									</select>
 								</div>
 							</div>
+							<div className="input-field">
+								<div className="input-label">Rwy Length</div>
+								<div className="input-container">
+									<input placeholder='m' onChange={this.handleRunwayLengthChange} />
+								</div>
+							</div>
 						</div>
 					</div>
 					<button onClick={this.calculateLanding}
@@ -356,9 +362,42 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 					<div className="section">
 						<div className="values">
 							<div className="output-field">
-								<div className="output-label">Landing Distance</div>
+								<div className="output-label">MAX</div>
 								<div className="output-container">
-									<input disabled id="landing-distance-output" value={this.state.landingDistance + "m"}></input>
+									<input
+										className={classNames({
+											disabled: true,
+											error: this.state.maxAutobrakeLandingDist > this.state.runwayLength
+										})}
+										id="landing-distance-output"
+										value={this.state.maxAutobrakeLandingDist + "m"}>
+									</input>
+								</div>
+							</div>
+							<div className="output-field">
+								<div className="output-label">MEDIUM</div>
+								<div className="output-container">
+									<input
+										className={classNames({
+											disabled: true,
+											error: this.state.mediumAutobrakeLandingDist > this.state.runwayLength
+										})}
+										id="landing-distance-output"
+										value={this.state.mediumAutobrakeLandingDist + "m"}>
+									</input>
+								</div>
+							</div>
+							<div className="output-field">
+								<div className="output-label">LOW</div>
+								<div className="output-container">
+									<input
+										className={classNames({
+											disabled: true,
+											error: this.state.lowAutobrakeLandingDist > this.state.runwayLength
+										})}
+										id="landing-distance-output"
+										value={this.state.lowAutobrakeLandingDist + "m"}>
+									</input>
 								</div>
 							</div>
 						</div>

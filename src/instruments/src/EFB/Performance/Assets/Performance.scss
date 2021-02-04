@@ -46,8 +46,12 @@
     background-color: #111827;
     border-radius: 5px;
 
-    &:disabled {
+    &.disabled {
       background-color: #303747;
+    }
+
+    &.error {
+      background-color: #c42c2c;
     }
   }
 }
@@ -98,4 +102,9 @@
       }
     }
   }
+}
+
+.error-message {
+  color: #c42c2c;
+  text-align: center;
 }

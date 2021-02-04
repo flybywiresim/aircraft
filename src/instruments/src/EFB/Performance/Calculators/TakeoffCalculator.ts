@@ -21,6 +21,8 @@
 
 import { getTailWind } from '../Calculators/CommonCalculations';
 
+declare const SimVar;
+
 export enum TakeoffFlapsConfig {
 	Conf1F,
 	Conf2,
@@ -120,53 +122,96 @@ const vmcgVmcaMinV2Speeds = [
 
 
 /**
- * Stall speeds
- * Indexes: 0 - Config 1 + F, 1 - Config 2, 2 - Config 3.
- * Sub-Indexes: 0 to 8 represent gross weight (t) in 5t steps from 40 to 80.
+ * Stall speed table
+ * calls function(gross weight (t), landing gear) which returns CAS.
+ * Indexes: 0 - Config 1 + F, 1 - Config 2, 2 - Config 3, 3 - Config Full
+ * Sub-Indexes: 0 to 9 represent gross weight (t) in 5t steps from 40 to 80.
  */
-const stallSpeeds = [
+const vs = [
 	[
-		() => 106,
-		() => 106,
-		(m) => 106 + (m - 50),
-		(m) => 111 + 1.2 * (m - 55),
-		(m) => 117 + 0.8 * (m - 60),
-		(m) => 121 + (m - 65),
-		(m) => 126 + 0.8 * (m - 70),
-		(m) => 130 + (m - 75),
-		(m) => 135 + (m - 80)
+        () => 93,
+        (m) => 93 + m - 40,
+        (m) => 98 + m - 45,
+        (m) => 103 + m - 50,
+        (m) => 108 + .8 * (m - 55),
+        (m) => 112 + m - 60,
+        (m) => 117 + .8 + (m - 65),
+        (m) => 121 + .8 + (m - 70),
+        (m) => 125 + m - 75,
+        () => 130
     ], // Conf 1 + F
     [
-        () => 100, // TODO: Conf 2 isn't included in FCOM operating speeds so can't be calculated, used 50% between 1+F and conf 3
-        (m) => 100 + 0.6 * (m - 45),
-        (m) => 103 + (m - 50),
-        (m) => 108 + (m - 55),
-        (m) => 113 + (m - 60),
-        (m) => 118 + 0.8 * (m - 65),
-        (m) => 122 + 1.2 * (m - 70),
-        (m) => 128 + 0.6 * (m - 75),
-        (m) => 131 + (m - 80)
+        () => 91,
+        (m) => 91 + m - 40,
+        (m) => 96 + m - 45,
+        (m) => 101 + .8 * (m - 50),
+        (m) => 105 + m - 55,
+        (m) => 110 + .8 * (m - 60),
+        (m) => 114 + m - 65,
+        (m) => 119 + .6 * (m - 70),
+        (m) => 122 + .8 * (m - 75),
+        () => 126
     ], // Conf 2
     [
-        () => 94,
-        (m) => 94 + 1.2 * (m - 45),
-        (m) => 100 + (m - 50),
-        (m) => 105 + 0.8 * (m - 55),
-        (m) => 109 + (m - 60),
-        (m) => 114 + 0.8 * (m - 65),
-        (m) => 118 + 0.8 * (m - 70),
-        (m) => 122 + 0.8 * (m - 75),
-        (m) => 126 + 0.8 * (m - 80)
-    ] // Conf 3
+        (_, ldg) => 91 - ldg * 2,
+        (m, ldg) => 91 + m - 40 - ldg * 2,
+        (m, ldg) => 96 + m - 45 - ldg * 2,
+        (m, ldg) => 101 + .8 * (m - 50) - ldg * 2,
+        (m, ldg) => 105 + m - 55 - ldg * 2,
+        (m, ldg) => 110 + .8 * (m - 60) - ldg * 2,
+        (m, ldg) => 114 + m - 65 - ldg * 2,
+        (m, ldg) => 119 + .6 * (m - 70) - ldg * 2,
+        (m, ldg) => 122 + .8 * (m - 75) - ldg * 2,
+        (_, ldg) => 126 - ldg * 2
+    ], // Conf 3
+    [
+        () => 84,
+        (m) => 84 + .8 * (m - 40),
+        (m) => 88 + m - 45,
+        (m) => 93 + .8 * (m - 50),
+        (m) => 97 + .8 * (m - 55),
+        (m) => 101 + .8 * (m - 60),
+        (m) => 105 + .8 * (m - 65),
+        (m) => 109 + .8 * (m - 70),
+        (m) => 113 + .6 * (m - 75),
+        () => 116
+    ] // Conf Full
 ];
+
+function getVDist(V: number, m: number, b: number, T: number): number {
+	return distanceAtAccelTime(timeAtAccelVelocity(V, m, b, T), T, m, b);
+}
+
+function getBrakingDistance(V: number, m: number, B: number): number {
+	return (m * (V ** 2)) / (2 * B);
+}
+
+function distanceAtAccelTime(t: number, T: number, m: number, b: number): number {
+	return 2 * T * ((m * (Math.E ** ((-b * t)/m)) - m) / b**2 + t / b);
+}
+
+function timeAtAccelVelocity(V: number, m: number, b: number, T: number): number {
+	return (-m * Math.log(1 - ((V * b) / (2 * T)))) / b;
+}
+
+const bFlaps = [
+	2170, // 1 + F
+	2370, // 2
+	2540 // 3
+]
+
+// Max thrust output of single engine in Newtons
+const tMax = 120640;
+
+// Braking force in Newtons
+const brakeForce = 180000;
 
 // Percentage safety margin over stall speed, usually determined by airport.
 // 1.05 = 5% margin
 const stallSafetyMargin = 1.05;
 
-// Hacky numbers used to approximate flex temp
-const maxTOWeightAt40Degrees = 75000;
-const maxTOWeightAt68Degrees = 52500;
+// Knots to m/s
+const knotsToMS = 0.51444444
 
 export default class TakeoffCalculator {
 	/**
@@ -178,31 +223,37 @@ export default class TakeoffCalculator {
 	 * @param windDirection Direction wind is coming from relative to north
 	 * @param windMagnitude Wind magnitude in kts
 	 * @param runwayHeading
+	 * @param runwayLength Runway length in meters
 	 */
 	public calculateTakeoffPerformance(weight: number, flaps: TakeoffFlapsConfig, temperature: number, pressure: number,
-		windDirection: number, windMagnitude: number, runwayHeading: number): { v1: number, vr: number, v2: number, flexTemp: number | null } {
+		windDirection: number, windMagnitude: number, runwayHeading: number, runwayLength: number, altitude: number):
+		{ v1: number, vr: number, v2: number, runwayTooShort: boolean, v1Dist: number, rtoDist: number } {
 
 		let weightTons = weight / 1000;
-		let altitude = 0;
 
-		let v2 = this.getV2(weightTons, flaps, altitude, temperature, pressure, windDirection, windMagnitude, runwayHeading);
-		let vr = this.getVr(weightTons, flaps, altitude, temperature, pressure, windDirection, windMagnitude, runwayHeading)
-		let v1 = v2 - 5;
+		let pressureAltitude = altitude + this.getPressureAltitude(pressure);
 
-		vr = v1 > vr ? v1 : vr; // vr must be >= v1
-		v2 = vr > v2 ? vr : v2; // v2 must be >= vr
+		let v2 = this.getV2(weightTons, flaps, pressureAltitude, temperature, pressure, windDirection, windMagnitude, runwayHeading);
+		let vr = this.getVr(weightTons, flaps, pressureAltitude, temperature, pressure, windDirection, windMagnitude, runwayHeading)
+		let v1Data = this.getV1(weightTons, flaps, pressureAltitude, temperature, pressure, windDirection, windMagnitude, runwayHeading, runwayLength, vr);
 
-		let flexTemp: number | null = this.getFlexTemp(weight);
+		let v1 = v1Data.v1;
 
-		if (flexTemp == null || flexTemp <= temperature) {
-			flexTemp = null;
+		if (!v1Data.valid) {
+			vr = 0;
+			v2 = 0;
+		} else {
+			vr = v1 > vr ? v1 : vr; // vr must be >= v1
+			v2 = vr > v2 ? vr : v2; // v2 must be >= vr
 		}
 
 		return {
 			v1,
 			vr,
 			v2,
-			flexTemp
+			v1Dist: v1Data.v1Dist,
+			rtoDist: v1Data.rtoDist,
+			runwayTooShort: !v1Data.valid
 		};
 	};
 
@@ -216,18 +267,14 @@ export default class TakeoffCalculator {
 	 * @param windMagnitude Wind magnitude in kts
 	 * @param runwayHeading
 	 */
-	private getV2(weightTons: number, flaps: TakeoffFlapsConfig, altitude: number, temperature: number, pressure: number,
+	private getV2(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, temperature: number, pressure: number,
 		windDirection: number, windMagnitude: number, runwayHeading: number): number {
 
-		let pressureAltitude = altitude + this.getPressureAltitude(pressure);
-
-		let stallSpeed = stallSpeeds[flaps][this.getTakeoffTableIndex(weightTons)](weightTons);
+		let stallSpeed = vs[flaps][this.getTakeoffTableIndex(weightTons)](weightTons, true);
 		let vmuVmcaMinV2 = Math.floor(vmuVmcaMinV2Speeds[flaps][this.getTakeoffTableIndex(weightTons)](weightTons));
 		let vmcgVmcaMinV2 = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinV2Speeds, vrV2PressureAltitudeIndexes);
 
-		let v2 = Math.max(stallSpeed * 1.13, vmuVmcaMinV2, vmcgVmcaMinV2);
-
-		return Math.round(v2);
+		return Math.max(stallSpeed * 1.13, vmuVmcaMinV2, vmcgVmcaMinV2);
 	}
 
 	/**
@@ -240,42 +287,62 @@ export default class TakeoffCalculator {
 	 * @param windMagnitude Wind magnitude in kts
 	 * @param runwayHeading
 	 */
-	private getVr(weightTons: number, flaps: TakeoffFlapsConfig, altitude: number, temperature: number, pressure: number,
+	private getVr(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, temperature: number, pressure: number,
 		windDirection: number, windMagnitude: number, runwayHeading: number): number {
 
-		let pressureAltitude = altitude + this.getPressureAltitude(pressure);
-
-		let stallSpeed = stallSpeeds[flaps][this.getTakeoffTableIndex(weightTons)](weightTons);
+		let stallSpeed = vs[flaps][this.getTakeoffTableIndex(weightTons)](weightTons, true);
 		let vmcgVmcaMinVr = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinVrSpeeds, vrV2PressureAltitudeIndexes);
 
-		let vr = Math.max(stallSpeed * stallSafetyMargin, vmcgVmcaMinVr);
-
-		return Math.round(vr);
+		return Math.max(stallSpeed * stallSafetyMargin, vmcgVmcaMinVr);
 	}
 
-	/**
-	 * Find the temperature at which our current weight is the maximum allowed TOW
-	 * This is then the flex takeoff temp
-	 * @param weight Weight in tons
-	 */
-	private getFlexTemp(weight: number): number | null {
-		if (weight < maxTOWeightAt68Degrees) {
-			return 68;
-		}
-		if (weight > maxTOWeightAt40Degrees) {
-			return null;
+	private getV1(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, temperature: number, pressure: number,
+		windDirection: number, windMagnitude: number, runwayHeading: number, runwayLength: number, targetVr: number): { v1: number, v1Dist: number, brakeDist: number, rtoDist: number, valid: boolean } {
+
+		let stallSpeed = Math.round(vs[flaps][this.getTakeoffTableIndex(weightTons)](weightTons, true) * knotsToMS * stallSafetyMargin);
+		let vmcgVmcaMinV1 = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinV1Speeds, v1PressureAltitudeIndexes) * knotsToMS;
+
+		let minV1Speed = Math.max(stallSpeed, vmcgVmcaMinV1);
+
+		let b = bFlaps[flaps];
+
+		let mass = weightTons * 1000;
+
+		let v1 = minV1Speed;
+		let v1Dist: number = getVDist(minV1Speed, mass, b, tMax);
+		let brakeDist: number = getBrakingDistance(minV1Speed, mass, brakeForce);
+
+		if (v1Dist + brakeDist > runwayLength) {
+			return {
+				v1: 0,
+				v1Dist: 0,
+				brakeDist: 0,
+				rtoDist: 0,
+				valid: false
+			}
 		}
 
-		// Solve straight line between TOW @ 40 degrees and TOW @ 68 degrees
-		// weight = (gradient * temp) + offset
-		// therefore: temp = (weight - offset) / gradient
-		let dy = maxTOWeightAt68Degrees - maxTOWeightAt40Degrees;
-		let dx = 28;
-		let gradient = dy / dx;
-		let offset = maxTOWeightAt40Degrees - (gradient * 40);
 
-		let temperature = (weight - offset) / gradient;
-		return Math.round(temperature);
+		for (let candidateSpeed = stallSpeed + 0.5; candidateSpeed <= targetVr * knotsToMS; candidateSpeed += 0.5) {
+			let candidateVDist = getVDist(candidateSpeed, mass, b, tMax);
+			let candidateBrakeDist = getBrakingDistance(candidateSpeed, mass, brakeForce);
+
+			if (candidateVDist + candidateBrakeDist > runwayLength) {
+				break;
+			} else {
+				v1 = candidateSpeed;
+				v1Dist = candidateVDist;
+				brakeDist = candidateBrakeDist;
+			}
+		}
+
+		return {
+			v1: v1 / knotsToMS,
+			v1Dist,
+			brakeDist,
+			rtoDist: v1Dist + brakeDist,
+			valid: true
+		}
 	}
 
 	/**
