@@ -46,8 +46,8 @@ class Ground extends React.Component<GroundProps, GroundState> {
     }
 
     setTugHeading(action: GroundServices, direction: number) {
-            if (!this.state.tugActive) {
-                this.togglePushback();
+            if (!this.state.tugActive && direction === 0) {
+                this.togglePushback(true);
             } else {
                 const tugHeading = this.getTugHeading(direction);
                 // KEY_TUG_HEADING is an unsigned integer, so let's convert
@@ -60,26 +60,36 @@ class Ground extends React.Component<GroundProps, GroundState> {
         return (currentHeading  + value) % 360;
     }
 
-    togglePushback() {
+    togglePushback(targetState: boolean) {
         const tugActive = this.state.tugActive;
-        setSimVar(GroundServices.TOGGLE_PUSHBACK, 1, "boolean");
-        this.setState({
-            tugActive: !tugActive
-        });
-    }
 
-    unselectButton() {
-        this.setState({
-            activeButton: "none"
-        })
+        if (tugActive != targetState) {
+            setSimVar(GroundServices.TOGGLE_PUSHBACK, 1, "boolean");
+            this.setState({
+                tugActive: targetState
+            });
+        }
     }
 
     handleClick(callBack: () => void, event: React.MouseEvent) {
-        this.setState({
-            activeButton: event.currentTarget.id
-        });
+        if (event.currentTarget.id === this.state.activeButton) {
+            this.setState({
+                activeButton: "none"
+            })
+        } else {
+            this.setState({
+                activeButton: event.currentTarget.id
+            });
+        }
         callBack();
     }
+
+    applySelected(className: string, id?: string) {
+        if (id) {
+            return className + (this.state.activeButton === id ? ' selected' : '');
+        }
+        return className + (this.state.activeButton === className ? ' selected' : '');
+     }
 
     render() {
         return (
@@ -88,56 +98,48 @@ class Ground extends React.Component<GroundProps, GroundState> {
                 <div className="pushback control-grid">
                     <h1 className="text-white font-medium text-xl">Pushback</h1>
                     <div id="stop"
-                         onMouseDown={(e) => this.handleClick(() => this.state.tugActive ? this.togglePushback() : {}, e)}
-                         onMouseUp={() => this.unselectButton()}
-                         className={this.state.activeButton === "stop" ? "stop selected" : "stop"}><IconHandStop/>
+                         onMouseDown={(e) => this.handleClick(() => this.togglePushback(false), e)}
+                         className={this.applySelected('stop')}><IconHandStop/>
                     </div>
-                    <div id="turnleft"
+                    <div id="down-left"
                          onMouseDown={(e) => this.handleClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 90), e)}
-                         onMouseUp={() => this.unselectButton()}
-                         className={this.state.activeButton === "turnleft" ? "down-left selected" : "down-left"}><IconCornerDownLeft/>
+                         className={this.applySelected('down-left')}><IconCornerDownLeft/>
                     </div>
                     <div id="down"
                          onMouseDown={(e) => this.handleClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 0), e)}
-                         onMouseUp={() => this.unselectButton()}
-                         className={this.state.activeButton === "down" ? "down selected" : "down"}><IconArrowDown />
+                         className={this.applySelected('down')}><IconArrowDown />
                     </div>
-                    <div id="turnright"
+                    <div id="down-right"
                          onMouseDown={(e) => this.handleClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 270), e)}
-                         onMouseUp={() => this.unselectButton()}
-                         className={this.state.activeButton === "turnright" ? "down-right selected" : "down-right"}><IconCornerDownRight/>
+                         className={this.applySelected('down-right')}><IconCornerDownRight/>
                     </div>
                 </div>
                 <div className="fuel control-grid">
                     <h1 className="text-white font-medium text-xl">Fuel</h1>
                     <div id="fuel"
                          onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_FUEL), e)}
-                         onMouseUp={() => this.unselectButton()}
-                         className={this.state.activeButton === "fuel" ? "call selected" : "call"}><IconTruck/>
+                         className={this.applySelected('call', 'fuel')}><IconTruck/>
                     </div>
                 </div>
                 <div className="baggage control-grid">
                     <h1 className="text-white font-medium text-xl">Baggage</h1>
                     <div id="baggage"
                          onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_CARGO), e)}
-                         onMouseUp={() => this.unselectButton()}
-                         className={this.state.activeButton === "baggage" ? "call selected" : "call"}><IconBriefcase/>
+                         className={this.applySelected('call', 'baggage')}><IconBriefcase/>
                     </div>
                 </div>
                 <div className="catering control-grid">
                     <h1 className="text-white font-medium text-xl">Catering</h1>
                     <div id="catering"
                          onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_CATERING), e)}
-                         onMouseUp={() => this.unselectButton()}
-                         className={this.state.activeButton === "catering" ? "call selected" : "call"}><IconArchive/>
+                         className={this.applySelected('call', 'catering')}><IconArchive/>
                     </div>
                 </div>
                 <div className="jetway control-grid">
                     <h1 className="text-white font-medium text-xl">Jetway</h1>
                     <div id="jetway"
                          onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_JETWAY), e)}
-                         onMouseUp={() => this.unselectButton()}
-                         className={this.state.activeButton === "jetway" ? "call selected" : "call"}><IconBuildingArch/>
+                         className={this.applySelected('call', 'jetway')}><IconBuildingArch/>
                     </div>
                 </div>
             </div>
