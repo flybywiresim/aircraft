@@ -33,3 +33,4 @@ node_modules
 *.wasm
 /src/systems/target
 /target
+/src/instruments/src/EFB/web/

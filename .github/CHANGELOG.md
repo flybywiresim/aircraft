@@ -70,6 +70,7 @@
 1. [APU] BLEED PSI is shown as 0 when the APU bleed air valve is not open, as the pressure transducer is downstream of the valve. - @davidwalschots (David Walschots)
 1. [RMP] Separate radio management panels for each side and complete rewrite - @theomessin (Theodore Messinezis)
 1. [FLIGHTMODEL] Updated landing gear contact point values to closer match reality - @wpine215 (Iceman) and @donstim (donbikes#4084)
+1. [TEXTURE] Various cockpit decal texture fixes and updates - @ImenesFBW (Imenes)
 1. [MCDU] Rework PERF TAKE OFF page - @beheh (Benedict Etzel)
 1. [MCDU] Added Check TO Data - @MisterChocker (Leon)
 
