@@ -97,10 +97,10 @@ class CDUIdentPage {
             ["\xa0" + calculateActiveDate(date) + "[color]cyan", "AIRAC[color]green"],
             ["\xa0SECOND NAV DATA BASE"],
             ["{small}{" + calculateSecDate(date) + "{end}[color]inop"],
-            ["", ""],//["", "STORED"]
-            ["", ""],//["{green}10{end}{small}RTES\xa0{end}{green}10{end}{small}RWYS{end}"] Orginal code
-            ["CHG CODE", ""],//["CHG CODE", "[b-text]{big}{green}20{end}{end}WPTS\xa0{big}{green}20{end}{end}NAVS"] Orginal code
-            ["{small}[  ]{end}[color]inop", ""], //["{small}[  ]{end}[color]cyan", "DELETE ALL}[color]cyan"], Orginal code
+            ["", ""],
+            ["", ""],
+            ["CHG CODE", ""],
+            ["{small}[  ]{end}[color]inop", ""], 
             ["IDLE/PERF", "SOFTWARE"],
             ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"]
         ]);
