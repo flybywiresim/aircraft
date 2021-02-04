@@ -42,12 +42,18 @@
                 <NODE_ID>SCREEN_EFB</NODE_ID>
             </DefaultTemplateParameters>
 
-            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                <EMISSIVE_CODE>0.8</EMISSIVE_CODE>
+            <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
+                <EMISSIVE_CODE>0.7</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
-                <LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_EFB_TURNED_ON) 0 == if{
+                        1 (&gt;L:A32NX_EFB_TURNED_ON)
+                    }
+                </LEFT_SINGLE_CODE>
+
+                <TOOLTIPID>%((L:A32NX_EFB_TURNED_ON) 0 ==)%{if}Turn on flyPad%{end}</TOOLTIPID>
             </UseTemplate>
         </Component>
 

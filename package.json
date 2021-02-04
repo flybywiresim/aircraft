@@ -6,7 +6,8 @@
     "lint-fix": "npm run lint -- --fix",
     "prettier": "prettier --write **/*.json **/*.yml src/instruments/**/*.css",
     "build:instruments": "rollup -c src/instruments/rollup.config.js",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "serve:efb": "cd src/instruments/src/EFB/ && rollup -c ./rollup.development.config.js"
   },
   "lint-staged": {
     "*.{js,mjs,jsx}": "eslint --cache --fix",
@@ -20,9 +21,9 @@
     "@babel/preset-env": "^7.12.1",
     "@babel/preset-react": "^7.12.1",
     "@babel/preset-typescript": "~7.12.7",
+    "@rollup/plugin-image": "~2.0.6",
     "@rollup/plugin-babel": "^5.2.1",
     "@rollup/plugin-commonjs": "^15.1.0",
-    "@rollup/plugin-image": "^2.0.5",
     "@rollup/plugin-node-resolve": "^9.0.0",
     "@rollup/plugin-replace": "^2.3.3",
     "@rollup/plugin-typescript": "~8.0.0",
@@ -43,6 +44,10 @@
     "lint-staged": "10.4.0",
     "prettier": "2.1.2",
     "rollup": "^2.32.0",
+    "rollup-plugin-copy": "~3.3.0",
+    "rollup-plugin-serve": "~1.1.0",
+    "rollup-plugin-livereload": "~2.0.0",
+    "rollup-plugin-postcss": "~4.0.0",
     "rollup-plugin-css-only": "^2.1.0",
     "sass-loader": "^10.1.0",
     "style-loader": "^2.0.0",
@@ -54,7 +59,7 @@
   "dependencies": {
     "byte-data": "^19.0.1",
     "@flybywiresim/api-client": "~0.7.0",
-    "@flybywiresim/map": "~0.3.4",
+    "@flybywiresim/map": "~0.4.2",
     "@tabler/icons": "^1.38.0",
     "aewx-metar-parser": "~0.10.1",
     "react": "^17.0.0",
@@ -63,6 +68,8 @@
     "react-router-dom": "~5.2.0",
     "react-leaflet": "~3.0.5",
     "rollup-plugin-scss": "^2.6.1",
-    "sass": "~1.30.0"
+    "sass": "~1.30.0",
+    "@tailwindcss/postcss7-compat": "^2.0.2",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2"
   }
 }
