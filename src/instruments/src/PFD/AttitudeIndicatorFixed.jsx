@@ -79,7 +79,7 @@ const FDYawBar = ({ FDActive }) => {
 };
 
 const FlightDirector = ({ FDActive }) => {
-    if (!FDActive) {
+    if (!FDActive || getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
         return null;
     }
 

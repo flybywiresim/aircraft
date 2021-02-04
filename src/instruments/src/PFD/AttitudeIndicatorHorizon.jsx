@@ -1,9 +1,14 @@
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
+    getSmallestAngle,
     HorizontalTape,
 } from './PFDUtils.jsx';
 import { getSimVar } from '../util.mjs';
+
+const DisplayRange = 35;
+const DistanceSpacing = 15;
+const ValueSpacing = 10;
 
 const TickFunction = (heading, offset) => (
     <path transform={`translate(${offset} 0)`} className="NormalStroke White" d="m68.906 80.823v1.8" />
@@ -121,13 +126,81 @@ export const Horizon = ({
             <SideslipIndicator isOnGround={isOnGround} roll={roll} />
             <RisingGround radioAlt={radioAlt} pitch={pitch} />
             {headingAvail
-            && <HorizontalTape graduationElementFunction={TickFunction} bugs={bugs} yOffset={yOffset} displayRange={35} distanceSpacing={15} valueSpacing={10} heading={heading} />}
+            && <HorizontalTape graduationElementFunction={TickFunction} bugs={bugs} yOffset={yOffset} displayRange={DisplayRange} distanceSpacing={DistanceSpacing} valueSpacing={ValueSpacing} heading={heading} />}
             {!isAttExcessive
             && <RadioAltAndDH radioAlt={radioAlt} decisionHeight={decisionHeight} roll={roll} />}
-            <g style={{ display: 'none' }}>
-                <path id="FlightPathSymbol" d="m71.173 80.823h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199m2.2665 4.7877c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z" className="NormalStroke Green" />
-                <path id="FlightPathDirector" d="m69.914 80.823a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125" className="NormalStroke Green" />
-            </g>
+            <FlightPathVector />
+            {!isAttExcessive
+            && <FlightPathDirector FDActive={FDActive} />}
+        </g>
+    );
+};
+
+const FlightPathVector = () => {
+    if (!getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
+        return null;
+    }
+
+    const roll = getSimVar('PLANE BANK DEGREES', 'degrees');
+    const pitch = -getSimVar('PLANE PITCH DEGREES', 'degrees');
+    const AOA = getSimVar('INCIDENCE ALPHA', 'degrees');
+    const FPA = pitch - (Math.cos(roll * Math.PI / 180) * AOA);
+    const DA = getSmallestAngle(getSimVar('GPS GROUND TRUE TRACK', 'degrees'), getSimVar('GPS GROUND TRUE HEADING', 'degrees'));
+
+    const xOffset = Math.max(Math.min(DA, 21), -21) * DistanceSpacing / ValueSpacing;
+    const yOffset = calculateHorizonOffsetFromPitch(pitch) - calculateHorizonOffsetFromPitch(FPA);
+
+    return (
+        <g transform={`translate(${xOffset} ${yOffset})`}>
+            <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
+                <g transform={`rotate(${-roll} 15.5 15.5)`}>
+                    <path className="NormalOutline" d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z" />
+                    <path className="ThickOutline" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
+                    <path className="NormalStroke Green" d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z" />
+                    <path className="ThickStroke Green" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
+                </g>
+            </svg>
+        </g>
+    );
+};
+
+const FlightPathDirector = ({ FDActive }) => {
+    if (!FDActive || !getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
+        return null;
+    }
+
+    const lateralAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+    const verticalAPMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+    const showLateralFD = lateralAPMode !== 0 && lateralAPMode !== 34 && lateralAPMode !== 40;
+    const showVerticalFD = verticalAPMode !== 0 && verticalAPMode !== 34;
+
+    if (!showVerticalFD && !showLateralFD) {
+        return null;
+    }
+
+    const FDRollOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_BANK', 'number');
+    const currentRoll = getSimVar('PLANE BANK DEGREES', 'degrees');
+    const FDRollOffset = -FDRollOrder * 0.77;
+
+    const DA = getSmallestAngle(getSimVar('GPS GROUND TRUE TRACK', 'degrees'), getSimVar('GPS GROUND TRUE HEADING', 'degrees'));
+
+    const xOffset = Math.max(Math.min(DA, 21), -21) * DistanceSpacing / ValueSpacing;
+
+    const FDPitchOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_PITCH', 'number');
+    const currentPitch = -getSimVar('PLANE PITCH DEGREES', 'degrees');
+    const AOA = getSimVar('INCIDENCE ALPHA', 'degrees');
+    const FPA = currentPitch - (Math.cos(currentRoll * Math.PI / 180) * AOA);
+
+    const yOffset = calculateHorizonOffsetFromPitch(currentPitch) - calculateHorizonOffsetFromPitch(FPA) + (FDPitchOrder + currentPitch) * 0.44;
+
+    return (
+        <g transform={`translate(${xOffset} ${yOffset})`}>
+            <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
+                <g transform={`rotate(${FDRollOffset} 15.5 15.5)`}>
+                    <path className="NormalOutline" d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125" />
+                    <path className="NormalStroke Green" d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125" />
+                </g>
+            </svg>
         </g>
     );
 };

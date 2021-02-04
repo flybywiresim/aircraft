@@ -85,7 +85,7 @@ module.exports = {
         'react/destructuring-assignment': 'off',
         'no-param-reassign': 'off',
         'no-undef-init': 'off',
-        'max-len': ['error', { code: 128 }],
+        'max-len': ['error', { code: 500 }],
     },
     globals: {
         Simplane: 'readonly',
