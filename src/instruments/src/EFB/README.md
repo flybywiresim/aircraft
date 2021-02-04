@@ -6,7 +6,7 @@ You can run a standalone version of the EFB by running the following:
 
 ```
 $ npm install
-$ npx webpack serve -c webpack.development.config.js
+$ npm run serve
 ```
 
 Then, navigate to http://localhost:8080.

@@ -6,7 +6,8 @@
     "lint-fix": "npm run lint -- --fix",
     "prettier": "prettier --write **/*.json **/*.yml src/instruments/**/*.css",
     "build:instruments": "rollup -c src/instruments/rollup.config.js",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "serve:efb": "cd src/instruments/src/EFB/ && rollup -c ./rollup.development.config.js"
   },
   "lint-staged": {
     "*.{js,mjs,jsx}": "eslint --cache --fix",
@@ -43,6 +44,9 @@
     "lint-staged": "10.4.0",
     "prettier": "2.1.2",
     "rollup": "^2.32.0",
+    "rollup-plugin-copy": "~3.3.0",
+    "rollup-plugin-serve": "~1.1.0",
+    "rollup-plugin-livereload": "~2.0.0",
     "rollup-plugin-postcss": "~4.0.0",
     "rollup-plugin-css-only": "^2.1.0",
     "sass-loader": "^10.1.0",
