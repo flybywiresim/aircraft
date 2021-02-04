@@ -16,6 +16,73 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+function findNewMonthIndex(index) {
+    if (index === 0) {
+        return 11;
+    } else {
+        return index - 1;
+    }
+}
+
+function lessThan10(num) {
+    if (num < 10) {
+        return `0${num}`;
+    } else {
+        return num;
+    }
+}
+
+function calculateActiveDate(date) {
+    if (date.length === 13) {
+        const startMonth = date.slice(0, 3);
+        const startDay = date.slice(3, 5);
+
+        const endMonth = date.slice(5, 8);
+        const endDay = date.slice(8, 10);
+
+        return `${startDay}${startMonth}-${endDay}${endMonth}`;
+    } else {
+        return date;
+    }
+}
+
+function calculateSecDate(date) {
+    if (date.length === 13) {
+        const primStartMonth = date.slice(0, 3);
+        const primStartDay = date.slice(3, 5);
+
+        const primStartMonthIndex = months.findIndex((item) => item === primStartMonth);
+
+        if (primStartMonthIndex === -1) {
+            return "ERR";
+        }
+
+        let newEndMonth = primStartMonth;
+        let newEndDay = primStartDay - 1;
+
+        let newStartDay = newEndDay - 27;
+        let newStartMonth = primStartMonth;
+
+        if (newEndDay === 0) {
+            newEndMonth = months[findNewMonthIndex(primStartMonthIndex)];
+            newEndDay = monthLength[findNewMonthIndex(primStartMonthIndex)];
+        }
+
+        if (newStartDay <= 0) {
+            newStartMonth = months[findNewMonthIndex(primStartMonthIndex)];
+            newStartDay = monthLength[findNewMonthIndex(primStartMonthIndex)] + newStartDay;
+        }
+
+        return `${lessThan10(newStartDay)}${newStartMonth}-${lessThan10(newEndDay)}${newEndMonth}`;
+    } else {
+        return "ERR";
+    }
+
+}
+
 class CDUIdentPage {
     static ShowPage(mcdu) {
         const date = mcdu.getNavDataDateRange();
@@ -27,9 +94,9 @@ class CDUIdentPage {
             ["\xa0ENG"],
             ["LEAP-1A26[color]green"],
             ["\xa0ACTIVE NAV DATA BASE"],
-            ["\xa0" + (date.length === 13 ? date[3] + date[4] + date[0] + date[1] + date[2] + "-" + date[8] + date[9] + date[5] + date[6] + date[7] : date) + "[color]cyan", "FBW2014001[color]green"],
+            ["\xa0" + calculateActiveDate(date) + "[color]cyan", "AIRAC[color]green"],
             ["\xa0SECOND NAV DATA BASE"],
-            ["{small}{03DEC-30DEC{end}[color]inop"],
+            ["{small}{" + calculateSecDate(date) + "{end}[color]inop"],
             ["", ""],//["", "STORED"]
             ["", ""],//["{green}10{end}{small}RTES\xa0{end}{green}10{end}{small}RWYS{end}"] Orginal code
             ["CHG CODE", ""],//["CHG CODE", "[b-text]{big}{green}20{end}{end}WPTS\xa0{big}{green}20{end}{end}NAVS"] Orginal code
