@@ -111,7 +111,7 @@ const OverviewPage = (props: OverviewPageProps) => {
                             <span className="mt-2 text-lg">174,200 [lb]</span>
 
                             <h3 className="text-xl font-medium flex items-center mt-6"><IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> Max Fuel Capacity</h3>
-                            <span className="mt-2 text-lg">26,725 [kg]</span>
+                            <span className="mt-2 text-lg">21,005 [kg]</span>
 
                             <h3 className="text-xl font-medium flex items-center mt-6"><IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> Max Cargo</h3>
                             <span className="mt-2 text-lg">44,000 [kg]</span>
