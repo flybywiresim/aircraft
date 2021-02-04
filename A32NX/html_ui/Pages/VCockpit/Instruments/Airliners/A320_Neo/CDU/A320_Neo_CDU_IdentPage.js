@@ -90,7 +90,7 @@ class CDUIdentPage {
         mcdu.page.Current = mcdu.page.IdentPage;
         mcdu.activeSystem = 'FMGC';
         mcdu.setTemplate([
-            ["A320-200"],
+            ["A320-200"],//This aircraft code is correct and does not include the engine type.
             ["\xa0ENG"],
             ["LEAP-1A26[color]green"],
             ["\xa0ACTIVE NAV DATA BASE"],
