@@ -221,7 +221,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                 <p>Loading ...</p>
                 :
                 <><div className="mb-6">
-                    <div className="flex items-center">
+                    <div className="inline-flex items-center">
                         {props.editIcao == "yes" ?
                             <>
                                 <IconAccessPoint size={35} stroke={1.5} strokeLinejoin="miter" />
