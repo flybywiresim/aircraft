@@ -56,7 +56,6 @@ export default class Performance extends React.Component<PerformanceProps, Perfo
 		return (
 			<div className="px-6 pt-2 pb-6 w-full h-full mr-4 flex flex-col">
 				<Navbar tabs={["Takeoff", "Landing"]} onSelected={(index) => this.switchPage(index)}></Navbar>
-
 				{this.getPage()}
             </div>
 		)

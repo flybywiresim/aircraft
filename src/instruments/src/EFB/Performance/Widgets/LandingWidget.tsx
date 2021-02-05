@@ -281,8 +281,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 	public render() {
 		return (
 			<div className="flex flex-grow">
-				<div className="w-5/12 mr-5 bg-gray-800 rounded-xl p-6 text-white shadow-lg flex items-center relative">
-					<div className="text-white text-2xl absolute -top-2 right-3 transform -translate-y-full">Data input</div>
+				<div className="w-5/12 mr-5 bg-gray-800 rounded-xl p-6 text-white shadow-lg flex items-center">
 					<div className="w-full">
 						<div className="inputs text-center mb-6">
 							<div className="flex">
@@ -429,8 +428,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 						</div>
 					</div>
 				</div>
-				<div className="bg-gray-800 rounded-xl px-2 py-8 text-white shadow-lg flex items-center relative">
-					<div className="text-white text-2xl absolute -top-2 right-3 transform -translate-y-full">Runway</div>
+				<div className="bg-gray-800 rounded-xl px-2 py-8 text-white shadow-lg flex items-center">
 					<RunwayVisualizationWidget runwayLength={this.state.runwayLength} labels={this.state.runwayVisualizationLabels} runwayNumber={this.state.runwayNumber} />
 				</div>
 			</div>
