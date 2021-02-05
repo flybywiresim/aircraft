@@ -27,7 +27,7 @@ type GroundProps = {}
 
 type GroundState = {
     tugActive: boolean;
-    activeButton: string
+    activeButtons: Array<string>
 }
 
 let timer: number;
@@ -39,7 +39,7 @@ class Ground extends React.Component<GroundProps, GroundState> {
 
         this.state = {
             tugActive: false,
-            activeButton: 'none',
+            activeButtons: new Array(),
         };
     }
 
@@ -54,11 +54,11 @@ class Ground extends React.Component<GroundProps, GroundState> {
     setTugHeading(action: GroundServices, direction: number) {
             if (!this.state.tugActive) {
                 this.togglePushback(true);
-            } else {
-                const tugHeading = this.getTugHeading(direction);
-                // KEY_TUG_HEADING is an unsigned integer, so let's convert
-                setSimVar(action, (tugHeading * 11930465) & 0xffffffff, "UINT32");
             }
+            const tugHeading = this.getTugHeading(direction);
+            // KEY_TUG_HEADING is an unsigned integer, so let's convert
+            setSimVar(action, (tugHeading * 11930465) & 0xffffffff, "UINT32");
+
     }
 
     getTugHeading(value: number): number {
@@ -78,44 +78,63 @@ class Ground extends React.Component<GroundProps, GroundState> {
     }
 
     handleClick(callBack: () => void, event: React.MouseEvent) {
+        let updatedState = this.state.activeButtons;
         if (!this.state.tugActive) {
-            if (event.currentTarget.id === this.state.activeButton) {
+            const index = this.state.activeButtons.indexOf(event.currentTarget.id, 0);
+            if (index > -1) {
+                updatedState.splice(index, 1);
                 this.setState({
-                    activeButton: "none"
+                    activeButtons: updatedState
                 });
-            } else if (!event.currentTarget.id.includes("down-")) {
-                this.setState({
-                    activeButton: event.currentTarget.id
-                });
-            }
-            callBack();
-        } else {
-            if (event.currentTarget.id.match("(down)|(stop)")) {
-                this.setState({
-                    activeButton: event.currentTarget.id
+                callBack();
+            } else {
+                updatedState.push(event.currentTarget.id)
+                    this.setState({
+                        activeButtons: updatedState
                 });
                 callBack();
             }
         }
     }
 
-    timedClick(callBack: () => void, event: React.MouseEvent) {
-        let handler: TimerHandler = () => {
-            if (this.state.activeButton === 'stop') {
+    handlePushBackClick(callBack: () => void, event: React.MouseEvent) {
+        if(event.currentTarget.id === "stop") {
+            if(this.state.tugActive) {
+                this.timedClick(event);
                 this.setState({
-                    activeButton: 'none'
+                    activeButtons: [event.currentTarget.id]
+                });
+                callBack();
+            }
+        } else {
+            this.setState({
+                activeButtons: [event.currentTarget.id]
+            });
+            callBack();
+        }
+    }
+
+    timedClick(event: React.MouseEvent) {
+        const buttonId = event.currentTarget.id;
+        let handler: TimerHandler = () => {
+            const timedButtonId = buttonId;
+            const index = this.state.activeButtons.indexOf(timedButtonId, 0);
+            if(index > -1) {
+                const updatedState = this.state.activeButtons;
+                updatedState.splice(index, 1);
+                this.setState({
+                    activeButtons: updatedState
                 });
             }
         }
-        this.handleClick(callBack, event);
         timer = setTimeout(handler, 2000);
     }
 
     applySelected(className: string, id?: string) {
         if (id) {
-            return className + (this.state.activeButton === id ? ' selected' : '');
+            return className + (this.state.activeButtons.includes(id) ? ' selected' : '');
         }
-        return className + (this.state.activeButton === className ? ' selected' : '');
+        return className + (this.state.activeButtons.includes(className) ? ' selected' : '');
      }
 
     render() {
@@ -125,19 +144,19 @@ class Ground extends React.Component<GroundProps, GroundState> {
                 <div className="pushback control-grid">
                     <h1 className="text-white font-medium text-xl">Pushback</h1>
                     <div id="stop"
-                         onMouseDown={(e) => this.timedClick(() => this.togglePushback(false), e)}
+                         onMouseDown={(e) => this.handlePushBackClick(() => this.togglePushback(false), e)}
                          className={this.applySelected('stop')}><IconHandStop/>
                     </div>
                     <div id="down-left"
-                         onMouseDown={(e) => this.handleClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 90), e)}
+                         onMouseDown={(e) => this.handlePushBackClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 90), e)}
                          className={this.applySelected('down-left')}><IconCornerDownLeft/>
                     </div>
                     <div id="down"
-                         onMouseDown={(e) => this.handleClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 0), e)}
+                         onMouseDown={(e) => this.handlePushBackClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 0), e)}
                          className={this.applySelected('down')}><IconArrowDown />
                     </div>
                     <div id="down-right"
-                         onMouseDown={(e) => this.handleClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 270), e)}
+                         onMouseDown={(e) => this.handlePushBackClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 270), e)}
                          className={this.applySelected('down-right')}><IconCornerDownRight/>
                     </div>
                 </div>
