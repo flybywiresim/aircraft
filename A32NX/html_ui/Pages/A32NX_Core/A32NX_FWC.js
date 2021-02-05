@@ -344,10 +344,12 @@ class A32NX_FWC {
         }
 
         if (apStatus === 0 && this.AutopilotWarningCanceled === false) {
+            SimVar.SetSimVarValue("L:A32NX_AP_DISC", "Bool", true);
             SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
             this.apdeltaTime += _deltaTime;
             if (this.warningPressed === true || (this.apdeltaTime / 1000) >= 3) {
                 this.AutopilotWarningCanceled = true;
+                SimVar.SetSimVarValue("L:A32NX_AP_DISC", "Bool", false);
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
                 this.apdeltaTime = 0;
             }
