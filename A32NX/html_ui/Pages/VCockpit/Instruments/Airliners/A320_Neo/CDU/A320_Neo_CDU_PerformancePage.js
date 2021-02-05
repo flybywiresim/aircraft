@@ -149,8 +149,10 @@ class CDUPerformancePage {
         // transition altitude - remains editable during take off
         let transAltCell = "";
         if (hasOrigin) {
-            const transAltitude = mcdu.getTransitionAltitude();
-            if (isFinite(transAltitude)) {
+            const departICAO = mcdu.flightPlanManager.getOrigin().ident;
+            mcdu.getTransitionAltitude(departICAO);
+            const transAltitude = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
+            if (SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number") > 0) {
                 transAltCell = `{cyan}${transAltitude}{end}`;
                 if (!mcdu.transitionAltitudeIsPilotEntered) {
                     transAltCell += "[s-text]";
@@ -657,6 +659,8 @@ class CDUPerformancePage {
                 }
             }
         };
+        // check if we even have an airport
+        const hasDestination = !!mcdu.flightPlanManager.getDestination();
         let titleColor = "white";
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
             titleColor = "green";
@@ -696,14 +700,24 @@ class CDUPerformancePage {
             }
         };
         let transAltCell = "---";
-        if (isFinite(mcdu.perfApprTransAlt)) {
-            transAltCell = mcdu.perfApprTransAlt.toFixed(0);
-        }
-        mcdu.onLeftInput[3] = (value) => {
-            if (mcdu.setPerfApprTransAlt(value)) {
-                CDUPerformancePage.ShowAPPRPage(mcdu);
+        if (hasDestination) {
+            const departICAO = mcdu.flightPlanManager.getOrigin().ident;
+            mcdu.getArrivalTransitionAltitude(departICAO);
+            const arrivalTransAltitude = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+            if (arrivalTransAltitude > 0) {
+                transAltCell = `{cyan}${arrivalTransAltitude}{end}`;
+                if (!mcdu.transitionAltitudeIsPilotEntered) {
+                    transAltCell += "[s-text]";
+                }
+            } else {
+                transAltCell = "{cyan}---{end}";
             }
-        };
+            mcdu.onLeftInput[3] = (value) => {
+                if (mcdu.trySetPerfApprTransAlt(value)) {
+                    CDUPerformancePage.ShowAPPRPage(mcdu);
+                }
+            };
+        }
 
         let vappCell = "---";
         let vlsCell = "---";
