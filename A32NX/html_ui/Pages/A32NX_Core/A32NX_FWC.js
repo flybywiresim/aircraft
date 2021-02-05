@@ -343,7 +343,7 @@ class A32NX_FWC {
             this.apdeltaTime = 0;
         }
 
-        if (apStatus === 0 && this.AutopiloteWarningCanceled === false) {
+        if (apStatus === 0 && this.AutopilotWarningCanceled === false) {
             SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
             this.apdeltaTime += _deltaTime;
             if (this.warningPressed === true || (this.apdeltaTime / 1000) >= 3) {
