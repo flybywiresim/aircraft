@@ -40,7 +40,6 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
       'Dispatch',
       'Flight',
       'Performance',
-      'Company',
       'Ground',
     ];
 

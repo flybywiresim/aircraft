@@ -18,9 +18,10 @@
 
 import { useState, useEffect } from 'react';
 import Efb from './Efb.tsx';
-import { getSimVar, setSimVar } from '../util.mjs';
+import { getSimVar, setSimVar } from '../util.js';
 import logo from './Assets/fbw-logo.svg';
 
+import './Assets/Reset.scss';
 import './Assets/Efb.scss';
 import { render } from '../Common/index.tsx';
 

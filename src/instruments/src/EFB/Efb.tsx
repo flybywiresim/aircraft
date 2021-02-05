@@ -26,6 +26,7 @@ import Dispatch from "./Dispatch/Dispatch";
 import Ground from './Ground/Ground';
 import Company from "./Company/Company";
 import Settings from "./Settings/Settings";
+import { ControlPanel } from "./ControlPanel";
 
 type EfbProps = {
     currentFlight: string
@@ -283,6 +284,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
     render() {
         return (
             <div className="w-full h-screen bg-blue-darker flex flex-col">
+                {/*<ControlPanel />*/}
                 <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart} />
                 <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} />
                 <div className="w-full flex-1 flex flex-col">
