@@ -25,7 +25,7 @@ export type NavbarProps = {
 
 const c = {
     active: "border-b-2 text-white px-3 pb-2 font-medium",
-    inactive: "text-white hover:text-blue-light px-3 pb-2 font-medium"
+    inactive: "text-white hover:text-blue-light px-3 pb-2 font-medium transition duration-300"
 };
 
 export const Navbar = (props: NavbarProps) => {
