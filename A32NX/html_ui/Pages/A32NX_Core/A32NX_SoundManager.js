@@ -138,6 +138,14 @@ const soundList = {
         name: "aural_100ft",
         length: 0.6
     },
+    alt_70: {
+        name: "aural_70ft",
+        length: 0.4
+    },
+    alt_60: {
+        name: "aural_60ft",
+        length: 0.4
+    },
     alt_50: {
         name: "aural_50ft",
         length: 0.4

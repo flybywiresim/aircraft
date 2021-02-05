@@ -502,11 +502,25 @@ class A32NX_GPWS {
                 }
                 break;
             case "over50":
-                if (radioAlt > 100) {
+                if (radioAlt > 60) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 50) {
                     this.core.soundManager.tryPlaySound(soundList.alt_50);
                     this.AltCallState.action("down");
+                }
+                break;
+            case "over60":
+                if (radioAlt > 70) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 60) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_60);
+                }
+                break;
+            case "over70":
+                if (radioAlt > 100) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 70) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_70);
                 }
                 break;
             case "over100":
@@ -684,10 +698,30 @@ const AltCallStateMachine = {
     over100: {
         transitions: {
             down: {
-                target: "over50"
+                target: "over70"
             },
             up: {
                 target: "over200"
+            }
+        }
+    },
+    over70: {
+        transitions: {
+            down: {
+                target: "over60"
+            },
+            up: {
+                target: "over100"
+            }
+        }
+    },
+    over60: {
+        transitions: {
+            down: {
+                target: "over50"
+            },
+            up: {
+                target: "over70"
             }
         }
     },
@@ -697,7 +731,7 @@ const AltCallStateMachine = {
                 target: "over40"
             },
             up: {
-                target: "over100"
+                target: "over60"
             }
         }
     },
