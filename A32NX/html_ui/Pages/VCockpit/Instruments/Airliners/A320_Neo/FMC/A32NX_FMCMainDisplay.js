@@ -168,6 +168,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._apMasterStatus = false;
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
+        this.currentOrigin = "";
+        this.currentDestination = "";
     }
 
     Init() {
@@ -291,6 +293,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.updateGPSMessage();
 
         this.updateDisplayedConstraints();
+
+        this.updateDepartArrive();
     }
 
     //TODO: for independence introduce new simvar for current flight phase "L:A32NX_FLIGHT_PHASE_CURRENT"
@@ -3313,6 +3317,25 @@ class FMCMainDisplay extends BaseAirliners {
     //TODO: make this util or local var?
     isAltitudeManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
+    }
+
+    updateDepartArrive() { 
+        if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident) {
+            if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
+                const departureAirport = this.flightPlanManager.getOrigin().ident;
+                const arrivalAirport = this.flightPlanManager.getDestination().ident;
+                if (this.currentOrigin !== departureAirport) {
+                    NXDataStore.set("PLAN_ORIGIN", departureAirport);
+                    this.currentOrigin = departureAirport;
+                    this.getTransitionAltitude(departureAirport);
+                }
+                if (this.currentDestination !== arrivalAirport) {
+                    NXDataStore.set("PLAN_DESTINATION", arrivalAirport);
+                    this.currentDestination = departureAirport;
+                    this.getArrivalTransitionAltitude(arrivalAirport);
+                }
+            }
+        }
     }
 }
 
