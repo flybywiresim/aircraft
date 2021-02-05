@@ -514,6 +514,7 @@ class A32NX_GPWS {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 60) {
                     this.core.soundManager.tryPlaySound(soundList.alt_60);
+                    this.AltCallState.action("down");
                 }
                 break;
             case "over70":
@@ -521,6 +522,7 @@ class A32NX_GPWS {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 70) {
                     this.core.soundManager.tryPlaySound(soundList.alt_70);
+                    this.AltCallState.action("down");
                 }
                 break;
             case "over100":
