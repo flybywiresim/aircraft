@@ -17,10 +17,20 @@
  */
 
 import React from "react";
-import classNames from 'classnames';
+import GroundSpeed from "./GroundSpeed/GroundSpeed";
+import Data from "./Data/Data";
+import Result from "./Result/Result";
 
-const Divider = ({className, ...props}) => {
-    return <div className={classNames(['bg-white h-0.5', className])} {...props} />;
+const TODCalculator = () => {
+    return (
+        <div className="flex p-6 w-full">
+            <GroundSpeed className={'w-4/12 mr-4'} />
+
+            <Data className={'w-3/12'} />
+
+            <Result className={'w-5/12 ml-4'} />
+        </div>
+    );
 };
 
-export default Divider
+export default TODCalculator;

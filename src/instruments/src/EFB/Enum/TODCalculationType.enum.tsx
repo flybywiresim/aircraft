@@ -16,11 +16,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from "react";
-import classNames from 'classnames';
-
-const Divider = ({className, ...props}) => {
-    return <div className={classNames(['bg-white h-0.5', className])} {...props} />;
-};
-
-export default Divider
+export enum TOD_CALCULATION_TYPE {DISTANCE, VERTICAL_SPEED}

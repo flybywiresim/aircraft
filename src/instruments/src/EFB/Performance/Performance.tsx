@@ -16,11 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from "react";
-import classNames from 'classnames';
+import React, {useState} from 'react';
+import {map} from 'lodash';
 
-const Divider = ({className, ...props}) => {
-    return <div className={classNames(['bg-white h-0.5', className])} {...props} />;
+import { Navbar } from "../Components/Navbar";
+import TODCalculator from "../TODCalculator/TODCalculator";
+
+const tabs = [
+    {name: 'TOD Calculator', renderComponent: () => <TODCalculator />}
+];
+
+const Performance = () => {
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    return (
+        <div className="w-full">
+            <Navbar tabs={map(tabs, 'name')} onSelected={activeIndex => setActiveIndex(activeIndex)} />
+            <div>
+                {tabs[activeIndex].renderComponent()}
+            </div>
+        </div>
+    );
 };
 
-export default Divider
+export default Performance;

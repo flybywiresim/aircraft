@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.divider {
-  @apply bg-white h-0.5;
+.ground-speed-container {
+  & > :last-child {
+    margin-bottom: 0;
+  }
 }
