@@ -1,20 +1,20 @@
 import React from 'react';
-import classNames from 'classnames';
 
 type PerformanceOutputDisplayProps = {
 	label: string,
 	value: string | number,
-	error?: boolean
+	error?: boolean,
+	reverse?: boolean
 };
 type PerformanceOutputDisplayState = {};
 
 export default class PerformanceOutputDisplay extends React.Component<PerformanceOutputDisplayProps, PerformanceOutputDisplayState> {
 	render() {
 		return (
-			<div className="output-field">
-				<div className="output-label">{this.props.label}</div>
-				<div className="output-container">
-					<input disabled className={classNames({disabled: true, error: this.props.error})} value={this.props.value}></input>
+			<div className="mx-2">
+				<div className="flex justify-center items-center mx-6 my-2">{this.props.label}</div>
+				<div className="flex justify-center items-center">
+					<input disabled className={"w-24 px-3 py-1.5 rounded disabled text-center " + (this.props.error ? "error" : "")} value={this.props.value}></input>
 				</div>
 			</div>
 		);

@@ -296,36 +296,36 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 									<PerformanceInput label="Temperature" placeholder='°C' onChange={this.handleTemperatureChange} />
 								</div>
 								<div className="flex-1 m-2.5 column-right">
-									<PerformanceSelectInput label="Flaps" defaultValue="1" onChange={this.handleFlapsChange}>
+									<PerformanceSelectInput label="Flaps" defaultValue="1" onChange={this.handleFlapsChange} reverse>
 										<option value="1">Full</option>
 										<option value="0">CONF 3</option>
 									</PerformanceSelectInput>
-									<PerformanceSelectInput label="Rwy Condition" defaultValue="0" onChange={this.handleRunwayConditionChange}>
+									<PerformanceSelectInput label="Rwy Condition" defaultValue="0" onChange={this.handleRunwayConditionChange} reverse>
 										<option value="0">Dry</option>
 										<option value="1">Good</option>
 										<option value="2">Medium</option>
 										<option value="3">Poor</option>
 									</PerformanceSelectInput>
-									<PerformanceSelectInput label="Reverse Thrust" defaultValue="0" onChange={this.handleReverseThrustChange}>
+									<PerformanceSelectInput label="Reverse Thrust" defaultValue="0" onChange={this.handleReverseThrustChange} reverse>
 										<option value="0">No</option>
 										<option value="1">Yes</option>
 									</PerformanceSelectInput>
-									<PerformanceInput label="Rwy Slope" placeholder="%" onChange={this.handleRunwaySlopeChange} />
-									<PerformanceSelectInput label="Overweight Proc" defaultValue="0" onChange={this.handleOverweightProcedureChange}>
+									<PerformanceInput label="Rwy Slope" placeholder="%" onChange={this.handleRunwaySlopeChange} reverse />
+									<PerformanceSelectInput label="Overweight Proc" defaultValue="0" onChange={this.handleOverweightProcedureChange} reverse>
 										<option value="0">No</option>
 										<option value="1">Yes</option>
 									</PerformanceSelectInput>
-									<PerformanceInput label="Rwy Length" placeholder="m" onChange={this.handleRunwayLengthChange} />
+									<PerformanceInput label="Rwy Length" placeholder="m" onChange={this.handleRunwayLengthChange} reverse/>
 								</div>
 							</div>
 							<button onClick={this.calculateLanding}
-								className="calculate-button w-full font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none">
+								className="my-3 w-full font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none">
 								Calculate
 							</button>
 						</div>
-						<div className="results">
-							<div className="section">
-								<div className="values">
+						<div className="border-t border-white pt-3">
+							<div className="flex flex-col items-center m-3">
+								<div className="flex">
 									<PerformanceOutputDisplay label="MAX" value={this.state.maxAutobrakeLandingDist + "m"} error={this.state.maxAutobrakeLandingDist > this.state.runwayLength} />
 									<PerformanceOutputDisplay label="MEDIUM" value={this.state.mediumAutobrakeLandingDist + "m"} error={this.state.mediumAutobrakeLandingDist > this.state.runwayLength} />
 									<PerformanceOutputDisplay label="LOW" value={this.state.lowAutobrakeLandingDist + "m"} error={this.state.lowAutobrakeLandingDist > this.state.runwayLength} />

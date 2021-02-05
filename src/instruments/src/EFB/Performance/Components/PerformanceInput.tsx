@@ -3,17 +3,18 @@ import React from 'react';
 type PerformanceInputProps = {
 	label: string,
 	placeholder?: string,
-	onChange?: (event: React.FormEvent<HTMLInputElement>) => void
+	onChange?: (event: React.FormEvent<HTMLInputElement>) => void,
+	reverse?: boolean
 };
 type PerformanceInputState = {};
 
 export default class PerformanceInput extends React.Component<PerformanceInputProps, PerformanceInputState> {
 	render() {
 		return (
-			<div className="input-field">
-				<div className="input-label">{this.props.label}</div>
-				<div className="input-container">
-					<input placeholder={this.props.placeholder ?? ""} onChange={this.props.onChange} />
+			<div className={"flex " + (this.props.reverse ? "flex-row-reverse" : "flex-row")}>
+				<div className={"flex flex-grow m-2.5 items-center " + (this.props.reverse ? "justify-start" : "justify-end")}>{this.props.label}</div>
+				<div className="flex items-center">
+					<input className="w-24 bg-gray-900 px-3 py-1.5 rounded" placeholder={this.props.placeholder ?? ""} onChange={this.props.onChange} />
 				</div>
 			</div>
 		);
