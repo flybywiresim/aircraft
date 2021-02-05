@@ -20,6 +20,8 @@ import React from "react";
 import { IconBatteryCharging } from '@tabler/icons';
 import { IconWifi } from '@tabler/icons';
 
+declare const SimVar;
+
 type TimeProps = {
     initTime: Date,
     updateTimeSinceStart: Function,
@@ -72,7 +74,8 @@ export default class StatusBar extends React.Component<TimeProps, any> {
                 <div className="flex items-center">
                     <IconWifi className="mr-2" size={22} stroke={1.5} strokeLinejoin="miter" />
                     100%
-                    <IconBatteryCharging className="ml-2" color="yellow" size={25} stroke={1.5} strokeLinejoin="miter" />
+                    {/* TODO find a way to use `setSimVar` here */}
+                    <IconBatteryCharging onClick={() => SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0)} className="ml-2" color="yellow" size={25} stroke={1.5} strokeLinejoin="miter" />
                 </div>
             </div>
         );
