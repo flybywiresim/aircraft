@@ -22,6 +22,9 @@ import React from 'react';
 import classNames from "classnames";
 import TakeoffCalculator, { TakeoffFlapsConfig } from '../Calculators/TakeoffCalculator';
 import RunwayVisualizationWidget, { DistanceLabel } from './RunwayVisualizationWidget';
+import PerformanceInput from '../Components/PerformanceInput';
+import PerformanceSelectInput from '../Components/PerformanceSelectInput';
+import PerformanceOutputDisplay from '../Components/PerformanceOutputDisplay';
 
 type TakeoffWidgetProps = {};
 type TakeoffWidgetState = {
@@ -220,63 +223,23 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			<div className="flex flex-grow">
 				<div className="w-5/12 mr-5 bg-gray-800 rounded-xl p-6 text-white shadow-lg flex items-center">
 					<div className="w-full">
-						<div className="inputs text-center mb-6">
+						<div className="text-center mb-6">
 							<div className="flex">
-								<div className="column column-left">
-									<div className="input-field">
-										<div className="input-label">OAT</div>
-										<div className="input-container">
-											<input placeholder="°C" onChange={this.handleTemperatureChange}/>
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Wind (KTS)</div>
-										<div className="input-container">
-											<input placeholder="DIR/MAG" onChange={this.handleWindChange} />
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Rwy Heading</div>
-										<div className="input-container">
-											<input onChange={this.handleRunwayHeadingChange}/>
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Rwy Length</div>
-										<div className="input-container">
-											<input placeholder="m" onChange={this.handleRunwayLengthChange}/>
-										</div>
-									</div>
+								<div className="flex-1 m-2.5 column-left">
+									<PerformanceInput label="OAT" placeholder="°C" onChange={this.handleTemperatureChange} />
+									<PerformanceInput label="Wind (KTS)" placeholder="DIR/MAG" onChange={this.handleWindChange} />
+									<PerformanceInput label="Rwy Heading" onChange={this.handleRunwayHeadingChange} />
+									<PerformanceInput label="Rwy Length" placeholder="m" onChange={this.handleRunwayLengthChange} />
 								</div>
-								<div className="column column-right">
-									<div className="input-field">
-										<div className="input-label">Weight</div>
-										<div className="input-container">
-											<input placeholder="KG" onChange={this.handleWeightChange}/>
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Flaps</div>
-										<div className="input-container">
-											<select defaultValue="0" onChange={this.handleFlapsChange}>
-												<option value="0">1 + F</option>
-												<option value="1">2</option>
-												<option value="2">3</option>
-											</select>
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Pressure</div>
-										<div className="input-container">
-											<input placeholder="mb" onChange={this.handlePressureChange}/>
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Altitude</div>
-										<div className="input-container">
-											<input placeholder="m" onChange={this.handleAltitudeChange}/>
-										</div>
-									</div>
+								<div className="flex-1 m-2.5 column-right">
+									<PerformanceInput label="Weight" placeholder="KG" onChange={this.handleWeightChange} />
+									<PerformanceSelectInput label="Flaps" defaultValue="0" onChange={this.handleFlapsChange}>
+										<option value="0">1 + F</option>
+										<option value="1">2</option>
+										<option value="2">3</option>
+									</PerformanceSelectInput>
+									<PerformanceInput label="Pressure" placeholder="mb" onChange={this.handlePressureChange} />
+									<PerformanceInput label="Altitude" placeholder={"\" ASL"} onChange={this.handleAltitudeChange} />
 								</div>
 							</div>
 							<button className="calculate-button w-full font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
@@ -286,24 +249,9 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 							<div className="section">
 								<h1>Takeoff Speeds</h1>
 								<div className="values">
-									<div className="output-field">
-										<div className="output-label">V1</div>
-										<div className="output-container">
-											<input disabled className={classNames({disabled: true, error: this.state.runwayTooShort})} value={this.state.v1}></input>
-										</div>
-									</div>
-									<div className="output-field">
-										<div className="output-label">VR</div>
-										<div className="output-container">
-											<input className={classNames({disabled: true, error: this.state.runwayTooShort})} value={this.state.vr}></input>
-										</div>
-									</div>
-									<div className="output-field">
-										<div className="output-label">V2</div>
-										<div className="output-container">
-											<input className={classNames({disabled: true, error: this.state.runwayTooShort})} value={this.state.v2}></input>
-										</div>
-									</div>
+									<PerformanceOutputDisplay label="V1" value={this.state.v1} error={this.state.runwayTooShort} />
+									<PerformanceOutputDisplay label="VR" value={this.state.vr} error={this.state.runwayTooShort} />
+									<PerformanceOutputDisplay label="V2" value={this.state.v2} error={this.state.runwayTooShort} />
 								</div>
 							</div>
 							{this.state.runwayTooShort &&

@@ -19,9 +19,11 @@
  // Data and calculations obtained from Quick Reference Handbook (In Flight Procedures, Landing Performance Assessment/Landing Distance)
 
 import React from 'react';
-import classNames from "classnames";
 import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { DistanceLabel } from './RunwayVisualizationWidget';
+import PerformanceInput from '../Components/PerformanceInput';
+import PerformanceSelectInput from '../Components/PerformanceSelectInput';
+import PerformanceOutputDisplay from '../Components/PerformanceOutputDisplay';
 
 type LandingWidgetProps = {};
 type LandingWidgetState = {
@@ -283,97 +285,37 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 			<div className="flex flex-grow">
 				<div className="w-5/12 mr-5 bg-gray-800 rounded-xl p-6 text-white shadow-lg flex items-center">
 					<div className="w-full">
-						<div className="inputs text-center mb-6">
+						<div className="text-center mb-6">
 							<div className="flex">
-								<div className="column column-left">
-									<div className="input-field">
-										<div className="input-label">Wind (KTS)</div>
-										<div className="input-container">
-											<input placeholder="DIR/MAG" onChange={this.handleWindChange} />
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Weight</div>
-										<div className="input-container">
-											<input placeholder="KG" onChange={this.handleWeightChange} />
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Rwy Heading</div>
-										<div className="input-container">
-											<input onChange={this.handleRunwayHeadingChange} />
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Approach Speed</div>
-										<div className="input-container">
-											<input placeholder="KTS" onChange={this.handleApproachSpeedChange} />
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Rwy Altitude</div>
-										<div className="input-container">
-											<input placeholder='" ASL' onChange={this.handleAltitudeChange} />
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Temperature</div>
-										<div className="input-container">
-											<input placeholder='°C' onChange={this.handleTemperatureChange} />
-										</div>
-									</div>
+								<div className="flex-1 m-2.5 column-left">
+									<PerformanceInput label="Wind (KTS)" placeholder="DIR/MAG" onChange={this.handleWindChange} />
+									<PerformanceInput label="Weight" placeholder="KG" onChange={this.handleWeightChange} />
+									<PerformanceInput label="Rwy Heading" onChange={this.handleRunwayHeadingChange} />
+									<PerformanceInput label="Approach Speed" placeholder="KTS" onChange={this.handleApproachSpeedChange} />
+									<PerformanceInput label="Rwy Altitude" placeholder='" ASL' onChange={this.handleAltitudeChange} />
+									<PerformanceInput label="Temperature" placeholder='°C' onChange={this.handleTemperatureChange} />
 								</div>
-								<div className="column column-right">
-									<div className="input-field">
-										<div className="input-label">Flaps</div>
-										<div className="input-container">
-											<select defaultValue="1" onChange={this.handleFlapsChange}>
-												<option value="1">Full</option>
-												<option value="0">CONF 3</option>
-											</select>
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Rwy Condition</div>
-										<div className="input-container">
-											<select defaultValue="0" onChange={this.handleRunwayConditionChange}>
-												<option value="0">Dry</option>
-												<option value="1">Good</option>
-												<option value="2">Medium</option>
-												<option value="3">Poor</option>
-											</select>
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Reverse Thrust</div>
-										<div className="input-container">
-											<select defaultValue="0" onChange={this.handleReverseThrustChange}>
-												<option value="0">No</option>
-												<option value="1">Yes</option>
-											</select>
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Rwy Slope</div>
-										<div className="input-container">
-											<input placeholder='%' onChange={this.handleRunwaySlopeChange} />
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Overweight Proc</div>
-										<div className="input-container">
-											<select defaultValue="0" onChange={this.handleOverweightProcedureChange}>
-												<option value="0">No</option>
-												<option value="1">Yes</option>
-											</select>
-										</div>
-									</div>
-									<div className="input-field">
-										<div className="input-label">Rwy Length</div>
-										<div className="input-container">
-											<input placeholder='m' onChange={this.handleRunwayLengthChange} />
-										</div>
-									</div>
+								<div className="flex-1 m-2.5 column-right">
+									<PerformanceSelectInput label="Flaps" defaultValue="1" onChange={this.handleFlapsChange}>
+										<option value="1">Full</option>
+										<option value="0">CONF 3</option>
+									</PerformanceSelectInput>
+									<PerformanceSelectInput label="Rwy Condition" defaultValue="0" onChange={this.handleRunwayConditionChange}>
+										<option value="0">Dry</option>
+										<option value="1">Good</option>
+										<option value="2">Medium</option>
+										<option value="3">Poor</option>
+									</PerformanceSelectInput>
+									<PerformanceSelectInput label="Reverse Thrust" defaultValue="0" onChange={this.handleReverseThrustChange}>
+										<option value="0">No</option>
+										<option value="1">Yes</option>
+									</PerformanceSelectInput>
+									<PerformanceInput label="Rwy Slope" placeholder="%" onChange={this.handleRunwaySlopeChange} />
+									<PerformanceSelectInput label="Overweight Proc" defaultValue="0" onChange={this.handleOverweightProcedureChange}>
+										<option value="0">No</option>
+										<option value="1">Yes</option>
+									</PerformanceSelectInput>
+									<PerformanceInput label="Rwy Length" placeholder="m" onChange={this.handleRunwayLengthChange} />
 								</div>
 							</div>
 							<button onClick={this.calculateLanding}
@@ -384,45 +326,9 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 						<div className="results">
 							<div className="section">
 								<div className="values">
-									<div className="output-field">
-										<div className="output-label">MAX</div>
-										<div className="output-container">
-											<input
-												className={classNames({
-													disabled: true,
-													error: this.state.maxAutobrakeLandingDist > this.state.runwayLength
-												})}
-												id="landing-distance-output"
-												value={this.state.maxAutobrakeLandingDist + "m"}>
-											</input>
-										</div>
-									</div>
-									<div className="output-field">
-										<div className="output-label">MEDIUM</div>
-										<div className="output-container">
-											<input
-												className={classNames({
-													disabled: true,
-													error: this.state.mediumAutobrakeLandingDist > this.state.runwayLength
-												})}
-												id="landing-distance-output"
-												value={this.state.mediumAutobrakeLandingDist + "m"}>
-											</input>
-										</div>
-									</div>
-									<div className="output-field">
-										<div className="output-label">LOW</div>
-										<div className="output-container">
-											<input
-												className={classNames({
-													disabled: true,
-													error: this.state.lowAutobrakeLandingDist > this.state.runwayLength
-												})}
-												id="landing-distance-output"
-												value={this.state.lowAutobrakeLandingDist + "m"}>
-											</input>
-										</div>
-									</div>
+									<PerformanceOutputDisplay label="MAX" value={this.state.maxAutobrakeLandingDist + "m"} error={this.state.maxAutobrakeLandingDist > this.state.runwayLength} />
+									<PerformanceOutputDisplay label="MEDIUM" value={this.state.mediumAutobrakeLandingDist + "m"} error={this.state.mediumAutobrakeLandingDist > this.state.runwayLength} />
+									<PerformanceOutputDisplay label="LOW" value={this.state.lowAutobrakeLandingDist + "m"} error={this.state.lowAutobrakeLandingDist > this.state.runwayLength} />
 								</div>
 							</div>
 						</div>

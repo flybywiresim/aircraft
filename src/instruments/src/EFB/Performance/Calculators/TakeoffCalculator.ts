@@ -19,9 +19,10 @@
  // Reference Operational Data Manual for approximations of weather impact on V speed
  // QRH Operating speeds used to determine stall speeds (operating speed = 1.23 * VS)
 
-import { getTailWind } from '../Calculators/CommonCalculations';
+ // TODO: Factor temperature into V1 calculation
+ // TODO: Adjust v-speeds for tail/head wind
 
-declare const SimVar;
+import { getTailWind } from '../Calculators/CommonCalculations';
 
 export enum TakeoffFlapsConfig {
 	Conf1F,

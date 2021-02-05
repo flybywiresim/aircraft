@@ -71,7 +71,7 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
 		if (this.props.runwayNumber) {
 			let paddedNumber = this.props.runwayNumber.toString().padStart(2, '0')
 			return (
-				<div className="runway-id text-white text-4xl absolute left-1/2 bottom-14 transform -translate-x-1/2 opacity-40">{paddedNumber}</div>
+				<div className="runway-id text-white text-4xl absolute left-1/2 bottom-20 transform -translate-x-1/2 opacity-40">{paddedNumber}</div>
 			)
 		}
 	}
@@ -99,21 +99,26 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
 		return (
 			<div className="px-10 h-full flex flex-col relative">
 				<div className="flex-grow bg-red-900 opacity-30"></div>
-				<div className="w-40 bg-black relative"
+				<div className="runway w-40 relative"
 					style={ { height: `${this.runwayHeightPercentage()}%`}}>
 					{this.runwayLengthLabel()}
-					<div className="w-1 h-full bg-white opacity-40 absolute left-0"></div>
-					<div className="w-1 h-full bg-white opacity-40 absolute right-0"></div>
+					<div className="w-1 h-full bg-white opacity-30 absolute left-0"></div>
+					<div className="w-1 h-full bg-white opacity-30 absolute right-0"></div>
 					<div className="flex absolute left-1/2 bottom-2 transform -translate-x-1/2">
-						<div className="mr-2 w-2 h-10 bg-white opacity-40"></div>
-						<div className="mr-2 w-2 h-10 bg-white opacity-40"></div>
-						<div className="mr-2 w-2 h-10 bg-white opacity-40"></div>
-						<div className="mr-5 w-2 h-10 bg-white opacity-40"></div>
-						<div className="mr-2 w-2 h-10 bg-white opacity-40"></div>
-						<div className="mr-2 w-2 h-10 bg-white opacity-40"></div>
-						<div className="mr-2 w-2 h-10 bg-white opacity-40"></div>
-						<div className="w-2 h-10 bg-white opacity-40"></div>
+						<div className="mr-2 w-2 h-14 bg-white opacity-30"></div>
+						<div className="mr-2 w-2 h-14 bg-white opacity-30"></div>
+						<div className="mr-2 w-2 h-14 bg-white opacity-30"></div>
+						<div className="mr-5 w-2 h-14 bg-white opacity-30"></div>
+						<div className="mr-2 w-2 h-14 bg-white opacity-30"></div>
+						<div className="mr-2 w-2 h-14 bg-white opacity-30"></div>
+						<div className="mr-2 w-2 h-14 bg-white opacity-30"></div>
+						<div className="w-2 h-14 bg-white opacity-30"></div>
 					</div>
+					<div className="relative h-full overflow-hidden">
+						<div className="w-1.5 h-20 bg-white opacity-10 absolute left-1/2 bottom-40 transform -translate-x-1/2"></div>
+						<div className="w-1.5 h-20 bg-white opacity-10 absolute left-1/2 bottom-72 transform -translate-x-1/2"></div>
+					</div>
+
 					{this.runwayNumber()}
 				</div>
 				{this.labels()}
