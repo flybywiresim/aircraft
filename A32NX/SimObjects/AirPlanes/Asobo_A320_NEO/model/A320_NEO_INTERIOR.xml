@@ -1890,6 +1890,7 @@
                             <LEFT_SINGLE_CODE>(L:A32NX_EVAC_CAPT_TOGGLE) ! (>L:A32NX_EVAC_CAPT_TOGGLE)</LEFT_SINGLE_CODE>
                         </UseTemplate>
                     </Component>
+                    
 
                     <Component ID="EMER_ELEC_PWR">
                         <!-- EMER GEN TEST -->
@@ -1918,10 +1919,10 @@
                         <!-- RAT & EMER GEN -->
                         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
                             <NODE_ID>PUSH_OVHD_EMERELECPWR_RAT</NODE_ID>
-                            <ANIM_NAME></ANIM_NAME>
                             <SEQ1_EMISSIVE_CODE>(L:A32NX_EMERELECPWR_RAT_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
                             <SEQ2_EMISSIVE_CODE>1 ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
                             <TOOLTIPID>%((L:A32NX_EMERELECPWR_RAT_FAULT, Bool))%{if}RAT and emer gen FAULT%{else}RAT and emer gen NORMAL%{end}</TOOLTIPID>
+                            <DUMMY_BUTTON/>
                         </UseTemplate>
 
                         <!-- MAN ON -->
@@ -3531,11 +3532,15 @@
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>KNOB_EFIS_FO_LOUDSPKR</NODE_ID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>LOCK_ECAM_EMERCANC</NODE_ID>
+            <UseTemplate Name="FBW_ECAM_BUTTON_Template">
+                <BASE_NAME>EMERCANC</BASE_NAME>
+                <PART_ID>ECAM_EMERCANC</PART_ID>
+                <TOOLTIPID>Emergency cancel</TOOLTIPID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_ECAM_EMERCANC</NODE_ID>
+            <UseTemplate Name="FBW_Covered_Push_Toggle">
+                <LOCK_NODE_ID>LOCK_ECAM_EMERCANC</LOCK_NODE_ID>
+
+               <TOOLTIPID>Emergency cancel</TOOLTIPID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUDIOL_RESET</NODE_ID>
