@@ -92,10 +92,10 @@ const OverviewPage = (props: OverviewPageProps) => {
                             <span className="mt-2 text-lg">3400 [nm]</span>
 
                             <h3 className="text-xl font-medium flex items-center mt-6"><IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> MRW</h3>
-                            <span className="mt-2 text-lg">175,000 [lb]</span>
+                            <span className="mt-2 text-lg">79,400 [kg]</span>
 
                             <h3 className="text-xl font-medium flex items-center mt-6"><IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> MZFW</h3>
-                            <span className="mt-2 text-lg">141,800 [lb]</span>
+                            <span className="mt-2 text-lg">64,300 [kg]</span>
 
                             <h3 className="text-xl font-medium flex items-center mt-6"><IconUsers className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> Max PAX</h3>
                             <span className="mt-2 text-lg">180</span>
@@ -108,13 +108,13 @@ const OverviewPage = (props: OverviewPageProps) => {
                             <span className="mt-2 text-lg">0.82</span>
 
                             <h3 className="text-xl font-medium flex items-center mt-6"><IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> MTOW</h3>
-                            <span className="mt-2 text-lg">174,200 [lb]</span>
+                            <span className="mt-2 text-lg">79,000 [kg]</span>
 
                             <h3 className="text-xl font-medium flex items-center mt-6"><IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> Max Fuel Capacity</h3>
-                            <span className="mt-2 text-lg">21,005 [kg]</span>
+                            <span className="mt-2 text-lg">23,721 [l]</span>
 
                             <h3 className="text-xl font-medium flex items-center mt-6"><IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> Max Cargo</h3>
-                            <span className="mt-2 text-lg">44,000 [kg]</span>
+                            <span className="mt-2 text-lg">9,435 [kg]</span>
                         </div>
                     </div>
                 </div>
