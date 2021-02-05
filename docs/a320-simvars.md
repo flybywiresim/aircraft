@@ -42,22 +42,6 @@
     - Used in the `.flt` files to set a default value for the ALT RPTG 2 way switch on the TCAS panel
     - Maps to the `I:XMLVAR_ALT_MODE_REQUESTED` variable which is the actual backing var for the switch
 
-- A32NX_ELEC_COMMERCIAL_TOGGLE
-    - Bool
-    - True if electrical commercial push button on
-
-- A32NX_ELEC_COMMERCIAL_FAULT
-    - Bool
-    - True if fault in electrical commercial system
-
-- A32NX_ELEC_GALYCAB_TOGGLE
-    - Bool
-    - True if electrical galy & cab push button on
-
-- A32NX_ELEC_GALYCAB_FAULT
-    - Bool
-    - True if fault in electrical galy & cab system
-
 - A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position
     - Position (0-2)
     - 0 is SHUT, 1 is AUTO, 2 is OPEN
@@ -496,7 +480,71 @@
 - A32NX_TO_CONFIG_THS
     - Degrees
     - The pilot-entered THS value in the PERF TAKE OFF page. 0 is a valid entry.
-  
+
 - A32NX_ENG_OUT_ACC_ALT
     - feet
     - The engine out acceleration altitude, set in the PERF TAKE OFF page.
+
+- A32NX_ELEC_BATTERY_10_FAULT
+    - Bool
+    - Indicates if the BAT 1 FAULT light should be illuminated
+
+- A32NX_ELEC_BATTERY_10_ACTIVATED
+    - Bool
+    - True when the BAT 1 push button is activated
+
+- A32NX_ELEC_BATTERY_11_FAULT
+    - Bool
+    - Indicates if the BAT 2 FAULT light should be illuminated
+
+- A32NX_ELEC_BATTERY_11_ACTIVATED
+    - Bool
+    - True when the BAT 2 push button is activated
+
+- A32NX_ELEC_IDG_1_FAULT
+    - Bool
+    - Indicates if the IDG 1 FAULT light should be illuminated
+
+- A32NX_ELEC_IDG_1_ACTIVATED
+    - Bool
+    - True when the IDG 1 push button is activated
+
+- A32NX_ELEC_IDG_2_FAULT
+    - Bool
+    - Indicates if the IDG 2 FAULT light should be illuminated
+
+- A32NX_ELEC_IDG_2_ACTIVATED
+    - Bool
+    - True when the IDG 2 push button is activated
+
+- A32NX_ELEC_GEN_1_FAULT
+    - Bool
+    - True when the GEN 1 FAULT light should be illuminated
+
+- A32NX_ELEC_GEN_2_FAULT
+    - Bool
+    - True when the GEN 2 FAULT light should be illuminated
+
+- A32NX_ELEC_BUS_TIE_ACTIVATED
+    - Bool
+    - True when the BUS TIE push button is activated
+
+- A32NX_ELEC_AC_ESS_FEED_FAULT
+    - Bool
+    - True when the AC ESS FEED FAULT light should be illuminated
+
+- A32NX_ELEC_AC_ESS_FEED_ACTIVATED
+    - Bool
+    - True when the AC ESS FEED push button is activated
+
+- A32NX_ELEC_GALY_CAB_ACTIVATED
+    - Bool
+    - True when the GALY & CAB push button is activated
+
+- A32NX_ELEC_GALY_CAB_FAULT
+    - Bool
+    - True when the GALY & CAB FAULT light should be illuminated
+
+- A32NX_ELEC_COMMERCIAL_ACTIVATED
+    - Bool
+    - True when the COMMERCIAL push button is activated

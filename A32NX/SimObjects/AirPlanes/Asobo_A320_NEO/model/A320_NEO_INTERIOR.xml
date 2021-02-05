@@ -1336,24 +1336,23 @@
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_COMMERCIAL</NODE_ID>
 
-                    <TOGGLE_SIMVAR>L:A32NX_ELEC_COMMERCIAL_TOGGLE</TOGGLE_SIMVAR>
+                    <TOGGLE_SIMVAR>L:A32NX_ELEC_COMMERCIAL_ACTIVATED</TOGGLE_SIMVAR>
 
-                    <SEQ1_CODE>(L:A32NX_ELEC_COMMERCIAL_FAULT, Bool)</SEQ1_CODE>
-                    <SEQ2_CODE>(L:A32NX_ELEC_COMMERCIAL_TOGGLE, Bool) !</SEQ2_CODE>
+                    <SEQ2_CODE>(L:A32NX_ELEC_COMMERCIAL_ACTIVATED, Bool) !</SEQ2_CODE>
 
-                    <TOOLTIPID>%((L:A32NX_ELEC_COMMERCIAL_TOGGLE, Bool))%{if}Turn OFF commercial%{else}Turn ON commercial%{end}</TOOLTIPID>
+                    <TOOLTIPID>%((L:A32NX_ELEC_COMMERCIAL_ACTIVATED, Bool))%{if}Turn OFF commercial%{else}Turn ON commercial%{end}</TOOLTIPID>
                 </UseTemplate>
 
                 <!-- ELEC GALY & CAB AUTO -->
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_GALYCAB</NODE_ID>
 
-                    <TOGGLE_SIMVAR>L:A32NX_ELEC_GALYCAB_TOGGLE</TOGGLE_SIMVAR>
+                    <TOGGLE_SIMVAR>L:A32NX_ELEC_GALY_CAB_ACTIVATED</TOGGLE_SIMVAR>
 
-                    <SEQ1_CODE>(L:A32NX_ELEC_GALYCAB_FAULT, Bool)</SEQ1_CODE>
-                    <SEQ2_CODE>(L:A32NX_ELEC_GALYCAB_TOGGLE, Bool) !</SEQ2_CODE>
+                    <SEQ1_CODE>(L:A32NX_ELEC_GALY_CAB_FAULT, Bool)</SEQ1_CODE>
+                    <SEQ2_CODE>(L:A32NX_ELEC_GALY_CAB_ACTIVATED, Bool) !</SEQ2_CODE>
 
-                    <TOOLTIPID>%((L:A32NX_ELEC_GALYCAB_TOGGLE, Bool))%{if}Turn OFF galy &amp; cab%{else}Turn ON galy &amp; cab%{end}</TOOLTIPID>
+                    <TOOLTIPID>%((L:A32NX_ELEC_GALY_CAB_ACTIVATED, Bool))%{if}Turn OFF galy &amp; cab%{else}Turn ON galy &amp; cab%{end}</TOOLTIPID>
                 </UseTemplate>
 
                 <!-- IDG 1 -->
@@ -1361,9 +1360,9 @@
                     <NODE_ID>PUSH_OVHD_ELEC_IDG1</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ELEC_IDG1</LOCK_NODE_ID>
 
-                    <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_ELEC_IDG1_FAULT)</LEFT_SINGLE_CODE>
+                    <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_ELEC_IDG_1_ACTIVATED)</LEFT_SINGLE_CODE>
 
-                    <SEQ1_CODE>(L:A32NX_ELEC_IDG1_FAULT)</SEQ1_CODE>
+                    <SEQ1_CODE>(L:A32NX_ELEC_IDG_1_FAULT)</SEQ1_CODE>
 
                     <MOMENTARY/>
                 </UseTemplate>
@@ -1373,9 +1372,9 @@
                     <NODE_ID>PUSH_OVHD_ELEC_IDG2</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ELEC_IDG2</LOCK_NODE_ID>
 
-                    <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_ELEC_IDG2_FAULT)</LEFT_SINGLE_CODE>
+                    <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_ELEC_IDG_2_ACTIVATED)</LEFT_SINGLE_CODE>
 
-                    <SEQ1_CODE>(L:A32NX_ELEC_IDG2_FAULT)</SEQ1_CODE>
+                    <SEQ1_CODE>(L:A32NX_ELEC_IDG_2_FAULT)</SEQ1_CODE>
 
                     <MOMENTARY/>
                 </UseTemplate>
@@ -1384,19 +1383,19 @@
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_BUSTIE</NODE_ID>
 
-                    <TOGGLE_SIMVAR>L:A32NX_ELEC_BUSTIE_TOGGLE</TOGGLE_SIMVAR>
+                    <TOGGLE_SIMVAR>L:A32NX_ELEC_BUS_TIE_ACTIVATED</TOGGLE_SIMVAR>
 
-                    <SEQ2_CODE>(L:A32NX_ELEC_BUSTIE_TOGGLE, Bool) !</SEQ2_CODE>
+                    <SEQ2_CODE>(L:A32NX_ELEC_BUS_TIE_ACTIVATED, Bool) !</SEQ2_CODE>
                 </UseTemplate>
 
                 <!-- AC ESS FEED -->
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_ACESSFEED</NODE_ID>
 
-                    <TOGGLE_SIMVAR>L:A32NX_ELEC_ACESSFEED_TOGGLE</TOGGLE_SIMVAR>
+                    <TOGGLE_SIMVAR>L:A32NX_ELEC_AC_ESS_FEED_ACTIVATED</TOGGLE_SIMVAR>
 
-                    <SEQ1_CODE>(L:A32NX_ELEC_ACESSFEED_FAULT, Bool)</SEQ1_CODE>
-                    <SEQ2_CODE>(L:A32NX_ELEC_ACESSFEED_TOGGLE, Bool) !</SEQ2_CODE>
+                    <SEQ1_CODE>(L:A32NX_ELEC_AC_ESS_FEED_FAULT, Bool)</SEQ1_CODE>
+                    <SEQ2_CODE>(L:A32NX_ELEC_AC_ESS_FEED_ACTIVATED, Bool) !</SEQ2_CODE>
                 </UseTemplate>
 
                 <!-- APU MASTER SW -->

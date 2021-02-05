@@ -339,9 +339,9 @@ var A320_Neo_LowerECAM_Elec;
             this.internals.AC_AVAIL = this.getSimVar_Bool('ACPowerAvailable');
             this.internals.DC_AVAIL = this.getSimVar_Bool('DCPowerAvailable');
 
-            this.switches.ACESS_FEED_AUTO = this.getSimVar_Bool('A32NX_ELEC_ACESSFEED_TOGGLE');
-            this.switches.COMMERCIAL_ON = this.getSimVar_Bool('A32NX_ELEC_COMMERCIAL_TOGGLE');
-            this.switches.GALYCAB_ON = this.getSimVar_Bool('A32NX_ELEC_GALYCAB_TOGGLE');
+            this.switches.ACESS_FEED_AUTO = this.getSimVar_Bool('A32NX_ELEC_AC_ESS_FEED_ACTIVATED');
+            this.switches.COMMERCIAL_ON = this.getSimVar_Bool('A32NX_ELEC_COMMERCIAL_ACTIVATED');
+            this.switches.GALYCAB_ON = this.getSimVar_Bool('A32NX_ELEC_GALY_CAB_ACTIVATED');
         }
 
         getSimVar_Bool(varName) {
@@ -363,7 +363,7 @@ var A320_Neo_LowerECAM_Elec;
 
         systemDraw() {
 
-            this.switches.ACESS_FEED_AUTO = SimVar.GetSimVarValue('L:A32NX_ELEC_ACESSFEED_TOGGLE', 'bool') !== 0;
+            this.switches.ACESS_FEED_AUTO = SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_FEED_ACTIVATED', 'bool') !== 0;
 
             // Level 1 - Generators
             if (this.systems.GEN1 === 'ON') {
