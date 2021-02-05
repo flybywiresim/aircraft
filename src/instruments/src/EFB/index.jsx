@@ -65,7 +65,7 @@ function EFBLoad() {
                 }
                 break;
             case 2:
-                setContent(<Efb currentFlight={getSimVar('ATC FLIGHT NUMBER', 'string')} logo={logo} />);
+                setContent(<Efb currentFlight={getSimVar('ATC FLIGHT NUMBER', 'string')} />);
                 break;
             default:
                 throw new RangeError();
