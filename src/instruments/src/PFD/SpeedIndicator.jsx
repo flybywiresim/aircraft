@@ -214,7 +214,7 @@ const SpeedTarget = ({ airspeed, targetSpeed, isManaged }) => {
     }
     const offset = (airspeed - targetSpeed) * DistanceSpacing / ValueSpacing;
     return (
-        <path className={`NormalStroke ${color}`} transform={`translate(0 ${offset})`} d="m19.274 81.895 5.3577 1.9512v-6.0476l-5.3577 1.9512" />
+        <path className={`NormalStroke ${color} CornerRound`} transform={`translate(0 ${offset})`} d="m19.274 81.895 5.3577 1.9512v-6.0476l-5.3577 1.9512" />
     );
 };
 

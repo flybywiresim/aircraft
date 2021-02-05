@@ -87,7 +87,7 @@ const SelectedHeading = ({ selectedHeading, heading }) => {
         const offset = headingDelta * DistanceSpacing / ValueSpacing;
 
         return (
-            <path id="HeadingTargetIndicator" className="NormalStroke Cyan" transform={`translate(${offset} 0)`} d="m69.978 145.1 1.9501-5.3609h-6.0441l1.9501 5.3609" />
+            <path id="HeadingTargetIndicator" className="NormalStroke Cyan CornerRound" transform={`translate(${offset} 0)`} d="m69.978 145.1 1.9501-5.3609h-6.0441l1.9501 5.3609" />
         );
     } if (headingDelta > 0) {
         return (
@@ -103,8 +103,8 @@ const GroundTrackBug = ({ heading, groundTrack }) => {
     const offset = getSmallestAngle(groundTrack, heading) * DistanceSpacing / ValueSpacing;
     return (
         <>
-            <path className="ThickOutline" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
-            <path id="ActualTrackIndicator" className="ThickStroke Green" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
+            <path className="ThickOutline CornerRound" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
+            <path id="ActualTrackIndicator" className="ThickStroke Green CornerRound" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
         </>
     );
 };

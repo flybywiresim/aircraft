@@ -196,7 +196,7 @@ const FlightPathDirector = ({ FDActive }) => {
     return (
         <g transform={`translate(${xOffset} ${yOffset})`}>
             <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
-                <g transform={`rotate(${FDRollOffset} 15.5 15.5)`}>
+                <g transform={`rotate(${FDRollOffset} 15.5 15.5)`} className="CornerRound">
                     <path className="NormalOutline" d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125" />
                     <path className="NormalStroke Green" d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125" />
                 </g>
