@@ -1,17 +1,3 @@
-.performance-widget-container {
-  display: flex;
-  flex-direction: column;
-}
-
-.performance-widgets {
-  display: flex;
-  height: max-content;
-}
-
-.columns {
-  display: flex;
-}
-
 .column {
   flex: 1 1 0;
   margin: 10px;
@@ -104,7 +90,11 @@
   }
 }
 
-.error-message {
-  color: #c42c2c;
+.error {
   text-align: center;
+}
+
+.error-label {
+  color: #c42c2c;
+  background-color: #c42c2c;
 }

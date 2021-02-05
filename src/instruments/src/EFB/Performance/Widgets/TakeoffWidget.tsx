@@ -21,6 +21,7 @@
 import React from 'react';
 import classNames from "classnames";
 import TakeoffCalculator, { TakeoffFlapsConfig } from '../Calculators/TakeoffCalculator';
+import RunwayVisualizationWidget, { DistanceLabel } from './RunwayVisualizationWidget';
 
 type TakeoffWidgetProps = {};
 type TakeoffWidgetState = {
@@ -36,7 +37,8 @@ type TakeoffWidgetState = {
 	runwayTooShort: boolean,
 	v1: number,
 	vr: number,
-	v2: number
+	v2: number,
+	runwayVisualisationLabels: DistanceLabel[]
 };
 
 export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, TakeoffWidgetState> {
@@ -57,7 +59,8 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			runwayTooShort: false,
 			v1: 0,
 			vr: 0,
-			v2: 0
+			v2: 0,
+			runwayVisualisationLabels: []
 		}
 	}
 
@@ -82,6 +85,17 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			newState.vr = Math.round(takeoffPerformance.vr);
 			newState.v2 = Math.round(takeoffPerformance.v2);
 			newState.runwayTooShort = takeoffPerformance.runwayTooShort;
+
+			newState.runwayVisualisationLabels = [
+				{
+					label: 'RTO',
+					distance: takeoffPerformance.rtoDist
+				},
+				{
+					label: 'V1',
+					distance: takeoffPerformance.v1Dist
+				}
+			]
 
 			return newState;
 		});
@@ -202,10 +216,10 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 
 
 	public render() {
-		return (
-			<div className="performance-widget bg-gray-800 rounded-xl p-6 text-white shadow-lg h-full">
+		return [(
+			<div className="w-5/12 bg-gray-800 rounded-xl p-6 text-white shadow-lg">
 				<div className="inputs text-center mb-6">
-					<div className="columns">
+					<div className="flex">
 						<div className="column column-left">
 							<div className="input-field">
 								<div className="input-label">OAT</div>
@@ -291,10 +305,10 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 						</div>
 					</div>
 					{this.state.runwayTooShort &&
-						<div className="error-message">Runway too short for takeoff!</div>
+						<div className="error">Runway too short for takeoff!</div>
 					}
 				</div>
-			</div>
-		);
+			</div>),
+			<RunwayVisualizationWidget runwayLength={this.state.runwayLength} labels={ this.state.runwayVisualisationLabels }/>];
 	}
 }

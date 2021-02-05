@@ -17,11 +17,11 @@
  */
 
  // Data and calculations obtained from Quick Reference Handbook (In Flight Procedures, Landing Performance Assessment/Landing Distance)
- // TODO: good-to-medium and medium-to-poor conditions
 
 import React from 'react';
 import classNames from "classnames";
 import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
+import RunwayVisualizationWidget, { DistanceLabel } from './RunwayVisualizationWidget';
 
 type LandingWidgetProps = {};
 type LandingWidgetState = {
@@ -40,7 +40,8 @@ type LandingWidgetState = {
 	runwayLength: number,
 	maxAutobrakeLandingDist: number,
 	mediumAutobrakeLandingDist: number,
-	lowAutobrakeLandingDist: number
+	lowAutobrakeLandingDist: number,
+	runwayVisualizationLabels: DistanceLabel[]
 };
 
 export default class LandingWidget extends React.Component<LandingWidgetProps, LandingWidgetState> {
@@ -63,7 +64,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 			runwayLength: 0,
 			maxAutobrakeLandingDist: 0,
 			mediumAutobrakeLandingDist: 0,
-			lowAutobrakeLandingDist: 0
+			lowAutobrakeLandingDist: 0,
+			runwayVisualizationLabels: []
 		};
 	}
 
@@ -88,6 +90,22 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 			newState.maxAutobrakeLandingDist = Math.round(landingDistances.maxAutobrakeDist);
 			newState.mediumAutobrakeLandingDist = Math.round(landingDistances.mediumAutobrakeDist);
 			newState.lowAutobrakeLandingDist = Math.round(landingDistances.lowAutobrakeDist);
+
+			newState.runwayVisualizationLabels = [
+				{
+					label: 'MAX',
+					distance: landingDistances.maxAutobrakeDist
+				},
+				{
+					label: 'MEDIUM',
+					distance: landingDistances.mediumAutobrakeDist
+				},
+				{
+					label: 'LOW',
+					distance: landingDistances.lowAutobrakeDist
+				}
+			]
+
 			return newState;
 		});
 	}
@@ -258,10 +276,10 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 	}
 
 	public render() {
-		return (
-			<div className="performance-widget bg-gray-800 rounded-xl p-6 text-white shadow-lg h-full">
+		return [(
+			<div className="w-5/12 bg-gray-800 rounded-xl p-6 text-white shadow-lg">
 				<div className="inputs text-center mb-6">
-					<div className="columns">
+					<div className="flex">
 						<div className="column column-left">
 							<div className="input-field">
 								<div className="input-label">Wind (KTS)</div>
@@ -403,7 +421,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 						</div>
 					</div>
 				</div>
-			</div>
-    	);
+			</div>),
+			<RunwayVisualizationWidget runwayLength={this.state.runwayLength} labels={this.state.runwayVisualizationLabels} />];
 	}
 }

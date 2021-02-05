@@ -17,28 +17,58 @@
  */
 
 import React from 'react';
-import FlexWidget from './Widgets/LandingWidget';
-import TakeoffWidget from './Widgets/TakeoffWidget';
+import classNames from "classnames";
 
 import './Assets/Performance.scss';
+import TakeoffWidget from './Widgets/TakeoffWidget';
+import LandingWidget from './Widgets/LandingWidget';
 
 type PerformanceProps = {};
-type PerformanceState = {};
+type PerformanceState = {
+	currentTabIndex: number
+};
 
 export default class Performance extends React.Component<PerformanceProps, PerformanceState> {
+	constructor(props: PerformanceProps) {
+		super(props);
+
+		this.state = {
+			currentTabIndex: 0
+		}
+	}
+
+	private getPage(): JSX.Element | undefined {
+		switch (this.state.currentTabIndex) {
+			case 0:
+				return <TakeoffWidget />
+			case 1:
+				return <LandingWidget />
+		}
+	}
+
+	private switchPage(page: number): void {
+		this.setState({
+			currentTabIndex: page
+		})
+	}
+
 	public render() {
 		return (
-			<div className="flex p-6 w-full">
-				<div className="performance-widgets w-full">
-					<div className="performance-widget-container w-5/12 mr-4">
-						<h1 className="text-white font-medium mb-6 text-xl">Takeoff</h1>
-						<TakeoffWidget />
-					</div>
-					<div className="performance-widget-container w-5/12 mr-4">
-						<h1 className="text-white font-medium mb-6 text-xl">Landing</h1>
-						<FlexWidget />
-					</div>
+			<div className="p-6 w-full h-full mr-4 flex flex-col">
+				<div className="w-full flex">
+					<button onClick={() => { this.switchPage(0) }}
+						className={"text-white font-medium p-4 m-2 text-xl rounded-xl "
+							+ (this.state.currentTabIndex == 0 ? "bg-blue-800" : "bg-gray-800")}>
+						Takeoff
+					</button>
+					<button onClick={() => { this.switchPage(1) }}
+						className={"text-white font-medium p-4 m-2 text-xl rounded-xl "
+							+ (this.state.currentTabIndex == 1 ? "bg-blue-800" : "bg-gray-800")}>
+						Landing
+					</button>
 				</div>
+
+				<div className="flex items-start flex-grow">{this.getPage()}</div>
             </div>
 		)
 	}
