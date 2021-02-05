@@ -17,6 +17,411 @@
   -->
 
 <ModelBehaviors>
+	<Template Name="FBW_RMP_BACKLIGHT_Template">
+		<DefaultTemplateParameters>
+			<BACKLIGHT_NAME>PUSH_RADIO#SIDE#_#BASE_NAME#_SEQ1</BACKLIGHT_NAME>
+		</DefaultTemplateParameters>
+
+		<Component ID="#BACKLIGHT_NAME#" Node="#BACKLIGHT_NAME#">
+			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				<Condition Check="POTENTIOMETER">
+					<True>
+						<EMISSIVE_CODE>(L:XMLVAR_RMP_#SIDE#_On, bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) *</EMISSIVE_CODE>
+					</True>
+					<False>
+						<EMISSIVE_CODE>(L:XMLVAR_RMP_#SIDE#_On, bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+					</False>
+				</Condition>
+			</UseTemplate>
+		</Component>
+	</Template>
+
+	<Template Name="FBW_RMP_BUTTON_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID>PUSH_RADIO#SIDE#_#BASE_NAME#</NODE_ID>
+			<ANIM_NAME_BUTTON>PUSH_RADIO#SIDE#_#BASE_NAME#</ANIM_NAME_BUTTON>
+			<LED_NODE_ID>PUSH_RADIO#SIDE#_#BASE_NAME#_SEQ2</LED_NODE_ID>
+			<EVENT_NAME>A320_Neo_FDW_BTN_#SIDE#_#BASE_NAME#</EVENT_NAME>
+			<STATE_VAR_NAME>XMLVAR_RMP_#SIDE#_#BASE_NAME#_Active</STATE_VAR_NAME>
+			<OPTIONAL_ACTIVE_IF>1</OPTIONAL_ACTIVE_IF>
+			<RUN_ON_PRESS></RUN_ON_PRESS>
+			<WWISE_EVENT_1>radio_push_button_on</WWISE_EVENT_1>
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<WWISE_EVENT_2>radio_push_button_off</WWISE_EVENT_2>
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.RADIO_SELECT_#BASE_NAME#</TOOLTIPID>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<LED_NODE_ID></LED_NODE_ID>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Push_Button">
+				<ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+				<LEFT_SINGLE_CODE>
+					<!--Only respond when power is on-->
+				(L:XMLVAR_RMP_#SIDE#_On) #OPTIONAL_ACTIVE_IF# and if{
+					(&gt;H:#EVENT_NAME#) (L:#STATE_VAR_NAME#) ! (&gt;L:#STATE_VAR_NAME#)
+					#RUN_ON_PRESS#
+				}
+				</LEFT_SINGLE_CODE>
+			</UseTemplate>
+		</Component>
+
+		<Component ID="#LED_NODE_ID#" Node="#LED_NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				<EMISSIVE_CODE>
+				(L:XMLVAR_RMP_#SIDE#_On, bool) if{
+					(L:#STATE_VAR_NAME#, bool) #OPTIONAL_ACTIVE_IF# and
+				}
+				els{ 0 }
+				(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+				</EMISSIVE_CODE>
+			</UseTemplate>
+		</Component>
+	</Template>
+
+	<Template Name="FBW_RMP_BUTTON_WITH_LIGHTS_Template">
+		<DefaultTemplateParameters>
+			<BASE_NAME>UNKNOWN</BASE_NAME>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="FBW_RMP_BACKLIGHT_Template">
+		</UseTemplate>
+
+		<UseTemplate Name="FBW_RMP_BUTTON_Template">
+		</UseTemplate>
+	</Template>
+
+	<Template Name="FBW_RMP_GROUPED_BUTTON_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID>PUSH_RADIO#SIDE#_#BASE_NAME#</NODE_ID>
+			<ANIM_NAME_BUTTON>PUSH_RADIO#SIDE#_#BASE_NAME#</ANIM_NAME_BUTTON>
+			<LED_NODE_ID>PUSH_RADIO#SIDE#_#BASE_NAME#_SEQ2</LED_NODE_ID>
+			<EVENT_NAME>A320_Neo_FDW_BTN_#SIDE#_#BASE_NAME#</EVENT_NAME>
+			<GROUP_STATE_VAR_NAME>XMLVAR_RMP_#SIDE#_GROUP_#GROUP_NAME#_IS_DISABLED</GROUP_STATE_VAR_NAME>
+			<CURRENT_BUTTON_VAR_NAME>XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_#GROUP_NAME#</CURRENT_BUTTON_VAR_NAME>
+			<OPTIONAL_ACTIVE_IF>1</OPTIONAL_ACTIVE_IF>
+			<RUN_ON_PRESS></RUN_ON_PRESS>
+			<WWISE_EVENT_1>radio_push_button_on</WWISE_EVENT_1>
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<WWISE_EVENT_2>radio_push_button_off</WWISE_EVENT_2>
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.RADIO_SELECT_#BASE_NAME#</TOOLTIPID>
+		</DefaultTemplateParameters>
+
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Push_Button">
+				<ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+				<LEFT_SINGLE_CODE>
+					<!--Only respond when power is on AND the group isn't disabled AND the optional requirement is valid-->
+				(L:XMLVAR_RMP_#SIDE#_On) if{
+					(L:#GROUP_STATE_VAR_NAME#) ! if{
+						#OPTIONAL_ACTIVE_IF# if{
+							(&gt;H:#EVENT_NAME#) #GROUP_INDEX# (&gt;L:#CURRENT_BUTTON_VAR_NAME#)
+							#RUN_ON_PRESS#
+						}
+					}
+				}
+				</LEFT_SINGLE_CODE>
+			</UseTemplate>
+		</Component>
+
+		<Component ID="#LED_NODE_ID#" Node="#LED_NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				<EMISSIVE_CODE>
+				(L:XMLVAR_RMP_#SIDE#_On, bool) (L:#GROUP_STATE_VAR_NAME#) ! and if{
+					(L:#CURRENT_BUTTON_VAR_NAME#) #GROUP_INDEX# == #OPTIONAL_ACTIVE_IF# and
+				}
+				els{
+					0
+				}
+				(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+				</EMISSIVE_CODE>
+			</UseTemplate>
+		</Component>
+	</Template>
+
+	<Template Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+		<DefaultTemplateParameters>
+			<BASE_NAME>UNKNOWN</BASE_NAME>
+			<GROUP_NAME>NONE</GROUP_NAME>
+			<GROUP_INDEX>-1</GROUP_INDEX>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="FBW_RMP_BACKLIGHT_Template">
+		</UseTemplate>
+
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_Template">
+		</UseTemplate>
+	</Template>
+
+	<Template Name="FBW_RMP_RADIO_SELECTION_Template">
+		<DefaultTemplateParameters>
+			<SIDE>UNKNOWN</SIDE>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+			<BASE_NAME>VHF1</BASE_NAME>
+			<GROUP_NAME>FREQ</GROUP_NAME>
+			<GROUP_INDEX>1</GROUP_INDEX>
+			<OPTIONAL_ACTIVE_IF>
+			(* FREQ buttons are only available when nothing is active in the MODE group *)
+			(L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_MODE) 0 ==
+			</OPTIONAL_ACTIVE_IF>
+		</UseTemplate>
+
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+			<BASE_NAME>VHF2</BASE_NAME>
+			<GROUP_NAME>FREQ</GROUP_NAME>
+			<GROUP_INDEX>2</GROUP_INDEX>
+			<OPTIONAL_ACTIVE_IF>
+			(* FREQ buttons are only available when nothing is active in the MODE group *)
+			(L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_MODE) 0 ==
+			</OPTIONAL_ACTIVE_IF>
+		</UseTemplate>
+
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+			<BASE_NAME>VHF3</BASE_NAME>
+			<GROUP_NAME>FREQ</GROUP_NAME>
+			<GROUP_INDEX>3</GROUP_INDEX>
+			<OPTIONAL_ACTIVE_IF>
+			(* FREQ buttons are only available when nothing is active in the MODE group *)
+			(L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_MODE) 0 ==
+			</OPTIONAL_ACTIVE_IF>
+		</UseTemplate>
+
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+			<BASE_NAME>HF1</BASE_NAME>
+			<GROUP_NAME>FREQ</GROUP_NAME>
+			<GROUP_INDEX>4</GROUP_INDEX>
+			<OPTIONAL_ACTIVE_IF>
+			(* FREQ buttons are only available when nothing is active in the MODE group *)
+			(L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_MODE) 0 ==
+			</OPTIONAL_ACTIVE_IF>
+		</UseTemplate>
+
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+			<BASE_NAME>HF2</BASE_NAME>
+			<GROUP_NAME>FREQ</GROUP_NAME>
+			<GROUP_INDEX>5</GROUP_INDEX>
+			<OPTIONAL_ACTIVE_IF>
+			(* FREQ buttons are only available when nothing is active in the MODE group *)
+			(L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_MODE) 0 ==
+			</OPTIONAL_ACTIVE_IF>
+		</UseTemplate>
+
+		<UseTemplate Name="FBW_RMP_BUTTON_WITH_LIGHTS_Template">
+			<BASE_NAME>AM</BASE_NAME>
+			<OPTIONAL_ACTIVE_IF>
+			(* AM is only available when HF1/HF2 are active *)
+			(L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_MODE) 0 == (L:XMLVAR_RMP_#SIDE#_GROUP_FREQ_IS_DISABLED) ! and if{
+				(L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_FREQ) 4 == (L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_FREQ) 5 == or
+			}
+			</OPTIONAL_ACTIVE_IF>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="FBW_RMP_DISPLAY_Template">
+		<DefaultTemplateParameters>
+			<SIDE>UNKNOWN</SIDE>
+		</DefaultTemplateParameters>
+
+		<Component ID="RMP_SWITCH_#SIDE#" Node="SWITCH_RADIO#SIDE#_1">
+			<UseTemplate Name="ASOBO_GT_Switch_Code">
+				<ANIM_NAME>SWITCH_RADIO#SIDE#_1</ANIM_NAME>
+				<ANIM_LENGTH>100</ANIM_LENGTH>
+				<ANIM_CODE>(L:XMLVAR_RMP_#SIDE#_On) 100 *</ANIM_CODE>
+				<LEFT_SINGLE_CODE>
+				(L:XMLVAR_RMP_#SIDE#_On) ! (&gt;L:XMLVAR_RMP_#SIDE#_On)
+				(L:XMLVAR_RMP_#SIDE#_On) if{
+					0 (&gt;L:XMLVAR_RMP_#SIDE#_GROUP_FREQ_IS_DISABLED)			(* FREQ group enabled *)
+					1 (&gt;L:XMLVAR_RMP_#SIDE#_GROUP_MODE_IS_DISABLED)			(* MODE group disabled *)
+					1 (&gt;L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_FREQ)	(* Default FREQ group is button 1 (VHF1) *)
+					0 (&gt;L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_MODE)	(* Default MODE group is button 0 (NONE) *)
+					0 (&gt;L:XMLVAR_RMP_#SIDE#_AM_Active)						(* AM button off *)
+					0 (&gt;L:XMLVAR_RMP_#SIDE#_NAV_Active)						(* NAV button off *)
+					0 (&gt;L:XMLVAR_RMP_#SIDE#_BFO_Active)						(* BFO button off *)
+				}
+				(&gt;H:A320_Neo_FDW_SWITCH_#SIDE#_TOGGLE)
+				</LEFT_SINGLE_CODE>
+				<WWISE_EVENT_1>radio_switch_on</WWISE_EVENT_1>
+				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+				<WWISE_EVENT_2>radio_switch_off</WWISE_EVENT_2>
+				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RADIO_SELECT_TURN_RMP_ON</ANIMTIP_0>
+				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RADIO_SELECT_TURN_RMP_OFF</ANIMTIP_1>
+			</UseTemplate>
+
+			<UseTemplate Name="ASOBO_GT_Update">
+				<FREQUENCY>1</FREQUENCY>
+				<UPDATE_CODE>
+				(L:XMLVAR_RMP_#SIDE#_INIT) ! if{
+					1 (&gt;L:XMLVAR_RMP_#SIDE#_On)								(* Start with the switch on *)
+					1 (&gt;L:XMLVAR_RMP_#SIDE#_GROUP_MODE_IS_DISABLED)			(* MODE group disabled *)
+					1 (&gt;L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_FREQ)	(* Default FREQ group is button 1 (VHF1) *)
+					(&gt;H:A320_Neo_FDW_SWITCH_#SIDE#_TOGGLE)
+					1 (&gt;L:XMLVAR_RMP_#SIDE#_INIT)							(* INIT complete *)
+				}
+				</UPDATE_CODE>
+			</UseTemplate>
+		</Component>
+
+		<Component ID="RMP_DIAL_LARGE_#SIDE#" Node="KNOB_RADIO#SIDE#_BIG">
+			<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+				<ANIM_NAME>KNOB_RADIO#SIDE#_BIG</ANIM_NAME>
+				<PART_ID>KNOB_Radio_Freq_Knob</PART_ID>
+				<CLOCKWISE_CODE>(&gt;H:A320_Neo_FDW_DIAL_#SIDE#_INTEGER_INC)</CLOCKWISE_CODE>
+				<ANTICLOCKWISE_CODE>(&gt;H:A320_Neo_FDW_DIAL_#SIDE#_INTEGER_DEC)</ANTICLOCKWISE_CODE>
+				<WWISE_EVENT>RMPknob</WWISE_EVENT>
+				<COUNT>36</COUNT>
+				<ANIMREF_ID>0</ANIMREF_ID>
+				<ANIMCURSOR_MIN>-1</ANIMCURSOR_MIN>
+				<ANIMCURSOR_MAX>-1</ANIMCURSOR_MAX>
+				<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+				<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RADIO_TUNE_SBY_FREQUENCY_DEC</ANIMTIP_0>
+				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RADIO_TUNE_SBY_FREQUENCY_INC</ANIMTIP_1>
+			</UseTemplate>
+		</Component>
+
+		<Component ID="RMP_DIAL_SMALL_#SIDE#" Node="KNOB_RADIO#SIDE#_SMALL">
+			<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+				<ANIM_NAME>KNOB_RADIO#SIDE#_SMALL</ANIM_NAME>
+				<CLOCKWISE_CODE>(&gt;H:A320_Neo_FDW_DIAL_#SIDE#_DECIMAL_INC)</CLOCKWISE_CODE>
+				<ANTICLOCKWISE_CODE>(&gt;H:A320_Neo_FDW_DIAL_#SIDE#_DECIMAL_DEC)</ANTICLOCKWISE_CODE>
+				<WWISE_EVENT>RMPknob</WWISE_EVENT>
+				<COUNT>36</COUNT>
+				<ANIMREF_ID>0</ANIMREF_ID>
+				<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+				<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+				<ANIMCURSOR_MIN>-1</ANIMCURSOR_MIN>
+				<ANIMCURSOR_MAX>-1</ANIMCURSOR_MAX>
+				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RADIO_TUNE_SBY_FREQUENCY_DEC</ANIMTIP_0>
+				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RADIO_TUNE_SBY_FREQUENCY_INC</ANIMTIP_1>
+			</UseTemplate>
+		</Component>
+
+		<Component ID="RMP_ARROWS_#SIDE#" Node="PUSH_RADIO#SIDE#_ARROWS">
+			<UseTemplate Name="ASOBO_GT_Push_Button">
+				<ANIM_NAME>PUSH_RADIO#SIDE#_ARROWS</ANIM_NAME>
+				<LEFT_SINGLE_CODE>(L:XMLVAR_RMP_#SIDE#_On) if{ (&gt;H:A320_Neo_FDW_BTN_#SIDE#_TRANSFER) }</LEFT_SINGLE_CODE>
+				<WWISE_EVENT_1>radio_push_button_on</WWISE_EVENT_1>
+				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+				<WWISE_EVENT_2>radio_push_button_off</WWISE_EVENT_2>
+				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+				<TOOLTIPID>TT:COCKPIT.TOOLTIPS.RADIO_FREQUENCY_TRANSFER_KEY</TOOLTIPID>
+			</UseTemplate>
+
+			<UseTemplate Name="FBW_RMP_BACKLIGHT_Template">
+				<BASE_NAME>ARROWS</BASE_NAME>
+			</UseTemplate>
+		</Component>
+
+		<UseTemplate Name="FBW_RMP_RADIO_SELECTION_Template">
+		</UseTemplate>
+
+		<Component ID="RMP_SEL_#SIDE#">
+			<UseTemplate Name="FBW_RMP_BACKLIGHT_Template">
+				<BASE_NAME>SEL</BASE_NAME>
+			</UseTemplate>
+
+			<Component ID="PUSH_RADIO#SIDE#_SEL_SEQ2" Node="PUSH_RADIO#SIDE#_SEL_SEQ2">
+				<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+					<EMISSIVE_CODE>
+					(* Both RMPs must be on *)
+					(L:XMLVAR_RMP_L_On, bool) (L:XMLVAR_RMP_R_On, bool) and if{
+						(* Both frequency groups must be active *)
+						(L:XMLVAR_RMP_L_GROUP_FREQ_IS_DISABLED) ! (L:XMLVAR_RMP_R_GROUP_FREQ_IS_DISABLED) ! and if{
+							(* The currently selected frequency must be valid *)
+							(L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_FREQ) 0 &gt; if{
+								(* Both RMPs must be in the default mode *)
+								(L:XMLVAR_RMP_L_CURRENT_BUTTON_IN_GROUP_MODE) 0 == (L:XMLVAR_RMP_R_CURRENT_BUTTON_IN_GROUP_MODE) 0 == and if{
+									(* SEL will now be highlighted when both RMPs have the same frequency set *)
+									(L:XMLVAR_RMP_L_CURRENT_BUTTON_IN_GROUP_FREQ) (L:XMLVAR_RMP_R_CURRENT_BUTTON_IN_GROUP_FREQ) ==
+								}
+								els{ 0 }
+							}
+							els{ 0 }
+						}
+						els{ 0 }
+					}
+					els{ 0 }
+					</EMISSIVE_CODE>
+				</UseTemplate>
+			</Component>
+		</Component>
+
+		<Component ID="RMP_NAV_LOCK_#SIDE#" Node="LOCK_RADIO#SIDE#_NAV">
+			<UseTemplate Name="ASOBO_GT_Switch_Code">
+				<ANIM_NAME>LOCK_RADIO#SIDE#_NAV</ANIM_NAME>
+				<ANIM_LENGTH>100</ANIM_LENGTH>
+				<ANIM_CODE>(L:XMLVAR_RMP_#SIDE#_NavLockOff) 100 *</ANIM_CODE>
+				<LEFT_SINGLE_CODE>(L:XMLVAR_RMP_#SIDE#_NavLockOff) ! (&gt;L:XMLVAR_RMP_#SIDE#_NavLockOff)</LEFT_SINGLE_CODE>
+				<WWISE_EVENT_1>radio_lock_on</WWISE_EVENT_1>
+				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+				<WWISE_EVENT_2>radio_lock_off</WWISE_EVENT_2>
+				<NORMALIZED_TIME_2>0.</NORMALIZED_TIME_2>
+				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.GENERIC_BUTTON_GUARD_ON</ANIMTIP_0>
+				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.GENERIC_BUTTON_GUARD_OFF</ANIMTIP_1>
+			</UseTemplate>
+		</Component>
+
+		<UseTemplate Name="FBW_RMP_BUTTON_WITH_LIGHTS_Template">
+			<BASE_NAME>NAV</BASE_NAME>
+			<!--When the NAV button is inactive, the MODE buttons are disabled-->
+			<RUN_ON_PRESS>
+			0 (L:XMLVAR_RMP_#SIDE#_NAV_Active) == if{
+				1 (&gt;L:XMLVAR_RMP_#SIDE#_GROUP_MODE_IS_DISABLED)
+				0 (&gt;L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_MODE)
+			}
+			els{
+				0 (&gt;L:XMLVAR_RMP_#SIDE#_GROUP_MODE_IS_DISABLED)
+			}
+			</RUN_ON_PRESS>
+		</UseTemplate>
+
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+			<BASE_NAME>VOR</BASE_NAME>
+			<GROUP_NAME>MODE</GROUP_NAME>
+			<GROUP_INDEX>1</GROUP_INDEX>
+		</UseTemplate>
+
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+			<BASE_NAME>ILS</BASE_NAME>
+			<GROUP_NAME>MODE</GROUP_NAME>
+			<GROUP_INDEX>2</GROUP_INDEX>
+		</UseTemplate>
+
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+			<BASE_NAME>MLS</BASE_NAME>
+			<GROUP_NAME>MODE</GROUP_NAME>
+			<GROUP_INDEX>3</GROUP_INDEX>
+			<OPTIONAL_ACTIVE_IF>
+			(* MLS isn't working in videos showing RMP functionality. It is also not working in X-Plane. Ours now doesn't work either! *)
+			0
+			</OPTIONAL_ACTIVE_IF>
+		</UseTemplate>
+
+		<UseTemplate Name="FBW_RMP_GROUPED_BUTTON_WITH_LIGHTS_Template">
+			<BASE_NAME>ADF</BASE_NAME>
+			<GROUP_NAME>MODE</GROUP_NAME>
+			<GROUP_INDEX>4</GROUP_INDEX>
+		</UseTemplate>
+
+		<UseTemplate Name="FBW_RMP_BUTTON_WITH_LIGHTS_Template">
+			<BASE_NAME>BFO</BASE_NAME>
+			<OPTIONAL_ACTIVE_IF>
+			(* BFO is only available when ADF is active *)
+			(L:XMLVAR_RMP_#SIDE#_GROUP_MODE_IS_DISABLED) ! if{
+				(L:XMLVAR_RMP_#SIDE#_CURRENT_BUTTON_IN_GROUP_MODE) 4 ==
+			}
+			</OPTIONAL_ACTIVE_IF>
+		</UseTemplate>
+	</Template>
+
 	<Template Name="FBW_AIRBUS_Push_Dummy_Template">
 		<DefaultTemplateParameters>
 			<Condition Check="FAULT_NODE_ID">
@@ -840,8 +1245,8 @@
 				<WWISE_EVENT>clds</WWISE_EVENT>
 				<CODE_POS_0>0 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)</CODE_POS_0>
 				<CODE_POS_2>1 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)</CODE_POS_2>
-				<STATE_MAX_TIMER>0.3</STATE_MAX_TIMER>
-			    <STATE0_TIMER>0.3</STATE0_TIMER>
+				<STATE_MAX_TIMER>0.3</STATE_MAX_TIMER>	
+			    <STATE0_TIMER>0.3</STATE0_TIMER>				
 			    <STATE2_TIMER>0.3</STATE2_TIMER>
 				<REST_STATE>1</REST_STATE>
 				<MOMENTARY_SWITCH/>

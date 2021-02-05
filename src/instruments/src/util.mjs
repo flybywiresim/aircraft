@@ -1,3 +1,5 @@
+/* global SimVar */
+
 import { useEffect, useRef } from 'react';
 
 export const renderTarget = document.getElementById('A32NX_REACT_MOUNT');
@@ -63,7 +65,6 @@ export function getSimVar(name, type) {
     if (!SIMVAR_CACHE.has(name)) {
         SIMVAR_CACHE.set(name, SimVar.GetSimVarValue(name, type || SIMVAR_TYPES[name]));
     }
-
     return SIMVAR_CACHE.get(name);
 }
 

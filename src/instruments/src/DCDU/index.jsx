@@ -87,7 +87,6 @@ function DCDU() {
         } else {
             setState('IDLE');
         }
-
         return <></>;
     case 'OFF':
         return <></>;

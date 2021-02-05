@@ -53,7 +53,7 @@ module.exports = {
         'arrow-parens': ['error', 'always'],
         'brace-style': ['error', '1tbs', { allowSingleLine: false }],
         'class-methods-use-this': 'off',
-        'curly': ['error', 'multi-line'],
+        'curly': ['error', 'all'],
         'import/prefer-default-export': 'off',
         'import/no-extraneous-dependencies': ['error', {
             devDependencies: true,
@@ -75,17 +75,8 @@ module.exports = {
         // Not needed with react 17+
         'react/jsx-uses-react': 'off',
         'react/react-in-jsx-scope': 'off',
-
-        'import/extensions': 'off',
-        'react/prop-types': 'off',
-        'react/destructuring-assignment': 'off',
-        'no-param-reassign': 'off',
-        'no-undef-init': 'off',
-        'max-len': ['error', { code: 128 }],
     },
     globals: {
         Simplane: 'readonly',
-        SimVar: 'readonly',
-        Utils: 'readonly',
     },
 };
