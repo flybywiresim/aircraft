@@ -328,7 +328,7 @@ class A32NX_FWC {
             SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", true);
             SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", true);
             this.athrdeltaTime += _deltaTime;
-            if (this.cautionPressed = true || (this.athrdeltaTime / 1000) >= 3) {
+            if (this.cautionPressed === true || (this.athrdeltaTime / 1000) >= 3) {
                 this.AutothrottleWarningCanceled = true;
                 SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", false);
                 SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
@@ -346,7 +346,7 @@ class A32NX_FWC {
         if (apStatus === 0 && this.AutopiloteWarningCanceled === false) {
             SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
             this.apdeltaTime += _deltaTime;
-            if (this.warningPressed = true || (this.apdeltaTime / 1000) >= 3) {
+            if (this.warningPressed === true || (this.apdeltaTime / 1000) >= 3) {
                 this.AutopilotWarningCanceled = true;
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
                 this.apdeltaTime = 0;
