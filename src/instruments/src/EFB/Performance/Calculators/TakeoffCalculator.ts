@@ -204,7 +204,7 @@ const bFlaps = [
 const tMax = 120640;
 
 // Braking force in Newtons
-const brakeForce = 180000;
+const brakeForce = 135000;
 
 // Percentage safety margin over stall speed, usually determined by airport.
 // 1.05 = 5% margin
