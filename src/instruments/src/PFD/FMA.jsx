@@ -319,7 +319,7 @@ const B1Cell = () => {
         text = (
             <>
                 <tspan>V/S</tspan>
-                <tspan className="Cyan">{VSText}</tspan>
+                <tspan className="Cyan" xmlSpace="preserve">{VSText}</tspan>
             </>
         );
         break;
@@ -397,7 +397,7 @@ const C1Cell = () => {
     //     text = 'LOC B/C*';
     //     break;
     case 30:
-        text = 'LOC*';
+        text = 'LOC *';
         break;
     // case 4:
     //     text = 'F-LOC*';
