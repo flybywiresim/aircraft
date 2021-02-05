@@ -27,7 +27,8 @@ export type DistanceLabel = {
 
 type RunwayVisualizationProps = {
 	runwayLength?: number,
-	labels?: DistanceLabel[]
+	labels?: DistanceLabel[],
+	runwayNumber?: number
 };
 type RunwayVisualizationState = {};
 
@@ -60,10 +61,17 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
 		return label.distance > (this.props.runwayLength ?? 0);
 	}
 
-	private runwayLengthLabel(): JSX.Element | undefined {
-		if (this.props.runwayLength) {
+	private runwayLengthLabel(): JSX.Element {
+		return (
+			<div className="text-white absolute top-1/2 -right-3 transform -rotate-90 translate-x-1/2">{ this.props.runwayLength ?? 0 }m</div>
+		)
+	}
+
+	private runwayNumber(): JSX.Element | undefined {
+		if (this.props.runwayNumber) {
+			let paddedNumber = this.props.runwayNumber.toString().padStart(2, '0')
 			return (
-				<div className="text-white absolute top-1/2 -right-3 transform -rotate-90 translate-x-1/2">{ this.props.runwayLength }m</div>
+				<div className="runway-id text-white text-4xl absolute left-1/2 bottom-14 transform -translate-x-1/2 opacity-40">{paddedNumber}</div>
 			)
 		}
 	}
@@ -75,7 +83,7 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
 			let bottomPercentage = (label.distance / this.maxDist()) * 100;
 
 			elements.push(
-				(<div className={"w-40 h-1 bg-white text-white absolute left-1/2 transform -translate-x-1/2 "
+				(<div className={"w-32 h-1 bg-white text-white absolute left-1/2 transform -translate-x-1/2 "
 					+ ((this.isLabelFurtherThanRunway(label)) ? "error-label" : "")}
 					style={{ bottom: `${bottomPercentage}%` }}>
 					<div className="w-full text-center absolute -top-0.5 transform -translate-y-full">{ label.label }</div>
@@ -91,16 +99,22 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
 		return (
 			<div className="px-10 h-full flex flex-col relative">
 				<div className="flex-grow bg-red-900 opacity-30"></div>
-				<div className="w-48 bg-black relative"
+				<div className="w-40 bg-black relative"
 					style={ { height: `${this.runwayHeightPercentage()}%`}}>
 					{this.runwayLengthLabel()}
 					<div className="w-1 h-full bg-white opacity-40 absolute left-0"></div>
 					<div className="w-1 h-full bg-white opacity-40 absolute right-0"></div>
-					<div className="flex absolute left-1/2 bottom-10 transform -translate-x-1/2">
-						<div className="mr-5 w-6 h-20 bg-white opacity-40"></div>
-						<div className="mr-5 w-6 h-20 bg-white opacity-40"></div>
-						<div className="w-6 h-20 bg-white opacity-40"></div>
+					<div className="flex absolute left-1/2 bottom-2 transform -translate-x-1/2">
+						<div className="mr-2 w-2 h-10 bg-white opacity-40"></div>
+						<div className="mr-2 w-2 h-10 bg-white opacity-40"></div>
+						<div className="mr-2 w-2 h-10 bg-white opacity-40"></div>
+						<div className="mr-5 w-2 h-10 bg-white opacity-40"></div>
+						<div className="mr-2 w-2 h-10 bg-white opacity-40"></div>
+						<div className="mr-2 w-2 h-10 bg-white opacity-40"></div>
+						<div className="mr-2 w-2 h-10 bg-white opacity-40"></div>
+						<div className="w-2 h-10 bg-white opacity-40"></div>
 					</div>
+					{this.runwayNumber()}
 				</div>
 				{this.labels()}
             </div>

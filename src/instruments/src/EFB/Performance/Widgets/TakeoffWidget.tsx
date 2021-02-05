@@ -38,7 +38,8 @@ type TakeoffWidgetState = {
 	v1: number,
 	vr: number,
 	v2: number,
-	runwayVisualisationLabels: DistanceLabel[]
+	runwayVisualisationLabels: DistanceLabel[],
+	runwayNumber?: number
 };
 
 export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, TakeoffWidgetState> {
@@ -64,10 +65,7 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		}
 	}
 
-	/**
-	 * Updates displayed V Speeds for the current values in state
-	 */
-	private updateVSpeeds = (): void => {
+	private calculate = (): void => {
 		let takeoffPerformance = this.calculator.calculateTakeoffPerformance(this.state.weight,
 			this.state.flaps,
 			this.state.temperature,
@@ -96,6 +94,8 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 					distance: takeoffPerformance.v1Dist
 				}
 			]
+
+			newState.runwayNumber = Math.round(this.state.runwayHeading / 10);
 
 			return newState;
 		});
@@ -216,99 +216,108 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 
 
 	public render() {
-		return [(
-			<div className="w-5/12 bg-gray-800 rounded-xl p-6 text-white shadow-lg">
-				<div className="inputs text-center mb-6">
-					<div className="flex">
-						<div className="column column-left">
-							<div className="input-field">
-								<div className="input-label">OAT</div>
-								<div className="input-container">
-									<input placeholder="°C" onChange={this.handleTemperatureChange}/>
+		return (
+			<div className="flex flex-grow">
+				<div className="w-5/12 mr-5 bg-gray-800 rounded-xl p-6 text-white shadow-lg flex items-center relative">
+					<div className="text-white text-2xl absolute -top-2 right-3 transform -translate-y-full">Data input</div>
+					<div className="w-full">
+						<div className="inputs text-center mb-6">
+							<div className="flex">
+								<div className="column column-left">
+									<div className="input-field">
+										<div className="input-label">OAT</div>
+										<div className="input-container">
+											<input placeholder="°C" onChange={this.handleTemperatureChange}/>
+										</div>
+									</div>
+									<div className="input-field">
+										<div className="input-label">Wind (KTS)</div>
+										<div className="input-container">
+											<input placeholder="DIR/MAG" onChange={this.handleWindChange} />
+										</div>
+									</div>
+									<div className="input-field">
+										<div className="input-label">Rwy Heading</div>
+										<div className="input-container">
+											<input onChange={this.handleRunwayHeadingChange}/>
+										</div>
+									</div>
+									<div className="input-field">
+										<div className="input-label">Rwy Length</div>
+										<div className="input-container">
+											<input placeholder="m" onChange={this.handleRunwayLengthChange}/>
+										</div>
+									</div>
+								</div>
+								<div className="column column-right">
+									<div className="input-field">
+										<div className="input-label">Weight</div>
+										<div className="input-container">
+											<input placeholder="KG" onChange={this.handleWeightChange}/>
+										</div>
+									</div>
+									<div className="input-field">
+										<div className="input-label">Flaps</div>
+										<div className="input-container">
+											<select defaultValue="0" onChange={this.handleFlapsChange}>
+												<option value="0">1 + F</option>
+												<option value="1">2</option>
+												<option value="2">3</option>
+											</select>
+										</div>
+									</div>
+									<div className="input-field">
+										<div className="input-label">Pressure</div>
+										<div className="input-container">
+											<input placeholder="mb" onChange={this.handlePressureChange}/>
+										</div>
+									</div>
+									<div className="input-field">
+										<div className="input-label">Altitude</div>
+										<div className="input-container">
+											<input placeholder="m" onChange={this.handleAltitudeChange}/>
+										</div>
+									</div>
 								</div>
 							</div>
-							<div className="input-field">
-								<div className="input-label">Wind (KTS)</div>
-								<div className="input-container">
-									<input placeholder="DIR/MAG" onChange={this.handleWindChange} />
-								</div>
-							</div>
-							<div className="input-field">
-								<div className="input-label">Rwy Heading</div>
-								<div className="input-container">
-									<input onChange={this.handleRunwayHeadingChange}/>
-								</div>
-							</div>
-							<div className="input-field">
-								<div className="input-label">Rwy Length</div>
-								<div className="input-container">
-									<input placeholder="m" onChange={this.handleRunwayLengthChange}/>
-								</div>
-							</div>
+							<button className="calculate-button w-full font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
+								onClick={this.calculate}>Calculate</button>
 						</div>
-						<div className="column column-right">
-							<div className="input-field">
-								<div className="input-label">Weight</div>
-								<div className="input-container">
-									<input placeholder="KG" onChange={this.handleWeightChange}/>
+						<div className="results">
+							<div className="section">
+								<h1>Takeoff Speeds</h1>
+								<div className="values">
+									<div className="output-field">
+										<div className="output-label">V1</div>
+										<div className="output-container">
+											<input disabled className={classNames({disabled: true, error: this.state.runwayTooShort})} value={this.state.v1}></input>
+										</div>
+									</div>
+									<div className="output-field">
+										<div className="output-label">VR</div>
+										<div className="output-container">
+											<input className={classNames({disabled: true, error: this.state.runwayTooShort})} value={this.state.vr}></input>
+										</div>
+									</div>
+									<div className="output-field">
+										<div className="output-label">V2</div>
+										<div className="output-container">
+											<input className={classNames({disabled: true, error: this.state.runwayTooShort})} value={this.state.v2}></input>
+										</div>
+									</div>
 								</div>
 							</div>
-							<div className="input-field">
-								<div className="input-label">Flaps</div>
-								<div className="input-container">
-									<select defaultValue="0" onChange={this.handleFlapsChange}>
-										<option value="0">1 + F</option>
-										<option value="1">2</option>
-										<option value="2">3</option>
-									</select>
-								</div>
-							</div>
-							<div className="input-field">
-								<div className="input-label">Pressure</div>
-								<div className="input-container">
-									<input placeholder="mb" onChange={this.handlePressureChange}/>
-								</div>
-							</div>
-							<div className="input-field">
-								<div className="input-label">Altitude</div>
-								<div className="input-container">
-									<input placeholder="m" onChange={this.handleAltitudeChange}/>
-								</div>
-							</div>
+							{this.state.runwayTooShort &&
+								<div className="error-message">Runway too short for takeoff!</div>
+							}
 						</div>
 					</div>
-					<button className="calculate-button w-full font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
-						onClick={this.updateVSpeeds}>Calculate</button>
 				</div>
-				<div className="results">
-					<div className="section">
-						<h1>Takeoff Speeds</h1>
-						<div className="values">
-							<div className="output-field">
-								<div className="output-label">V1</div>
-								<div className="output-container">
-									<input disabled className={classNames({disabled: true, error: this.state.runwayTooShort})} value={this.state.v1}></input>
-								</div>
-							</div>
-							<div className="output-field">
-								<div className="output-label">VR</div>
-								<div className="output-container">
-									<input className={classNames({disabled: true, error: this.state.runwayTooShort})} value={this.state.vr}></input>
-								</div>
-							</div>
-							<div className="output-field">
-								<div className="output-label">V2</div>
-								<div className="output-container">
-									<input className={classNames({disabled: true, error: this.state.runwayTooShort})} value={this.state.v2}></input>
-								</div>
-							</div>
-						</div>
-					</div>
-					{this.state.runwayTooShort &&
-						<div className="error">Runway too short for takeoff!</div>
-					}
+				<div className="bg-gray-800 rounded-xl px-2 py-8 text-white shadow-lg flex items-center relative">
+					<div className="text-white text-2xl absolute -top-2 right-3 transform -translate-y-full">Runway</div>
+					<RunwayVisualizationWidget runwayLength={this.state.runwayLength} labels={this.state.runwayVisualisationLabels} runwayNumber={this.state.runwayNumber} />
 				</div>
-			</div>),
-			<RunwayVisualizationWidget runwayLength={this.state.runwayLength} labels={ this.state.runwayVisualisationLabels }/>];
+			</div>
+		);
 	}
 }

@@ -315,9 +315,9 @@ export default class TakeoffCalculator {
 		if (v1Dist + brakeDist > runwayLength) {
 			return {
 				v1: 0,
-				v1Dist: 0,
-				brakeDist: 0,
-				rtoDist: 0,
+				v1Dist: v1Dist,
+				brakeDist: brakeDist,
+				rtoDist: v1Dist + brakeDist,
 				valid: false
 			}
 		}

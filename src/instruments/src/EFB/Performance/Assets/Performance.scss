@@ -94,7 +94,15 @@
   text-align: center;
 }
 
+.error-message,
 .error-label {
   color: #c42c2c;
+}
+
+.error-label {
   background-color: #c42c2c;
+}
+
+.error-message {
+  text-align: center;
 }
