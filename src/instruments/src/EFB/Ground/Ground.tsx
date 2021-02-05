@@ -21,7 +21,8 @@ import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, I
 
 import './Ground.scss'
 import fuselage from '../Assets/320neo-outline-upright.svg'
-import {setSimVar, getSimVar} from '../../util.mjs'
+import {setSimVar, getSimVar} from '../../util.mjs'^
+import { StatefulSimVar } from '../../RMP/Framework/StatefulSimVar.mjs'
 
 type GroundProps = {}
 
@@ -42,6 +43,12 @@ class Ground extends React.Component<GroundProps, GroundState> {
             activeButtons: new Array(),
         };
     }
+
+    const jetWay = new StatefulSimVar({
+        simVarGetter: 'A:EXIT_TYPE',
+        refreshRate: 1,
+        simVarUnit: 'Enum',
+    });
 
     componentWillUnmount() {
         clearTimeout(timer);
@@ -131,10 +138,12 @@ class Ground extends React.Component<GroundProps, GroundState> {
     }
 
     applySelected(className: string, id?: string) {
-        if (id) {
+       /* if (id) {
             return className + (this.state.activeButtons.includes(id) ? ' selected' : '');
         }
         return className + (this.state.activeButtons.includes(className) ? ' selected' : '');
+        */
+       return className + (this.jetWay.value === 0 ? className+ ' selected':'');
      }
 
     render() {
