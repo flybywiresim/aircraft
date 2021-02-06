@@ -19,7 +19,6 @@
  // Reference Operational Data Manual for approximations of weather impact on V speed
  // QRH Operating speeds used to determine stall speeds (operating speed = 1.23 * VS)
 
- // TODO: Factor temperature into V1 calculation
  // TODO: Adjust v-speeds for tail/head wind
 
 import { getTailWind } from '../Calculators/CommonCalculations';
