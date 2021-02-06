@@ -2721,6 +2721,19 @@
 
                     <CameraTitle>Overhead</CameraTitle>
                 </Component>
+                
+                <Component ID = "Right_Pedestal_Misc">
+                    <UseTemplate Name="FBW_Push_Held">
+                        <NODE_ID>PUSH_PANELCS_AIDS</NODE_ID>
+                        <HOLD_SIMVAR>L:A32NX_AIDS_PRINT_ON</HOLD_SIMVAR>
+                        <TOOLTIP>Print data</TOOLTIP>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Push_Held">
+                        <NODE_ID>PUSH_PANELCS_DFDR</NODE_ID>
+                        <HOLD_SIMVAR>L:A32NX_DFDR_EVENT_ON</HOLD_SIMVAR>
+                        <TOOLTIP>Print data</TOOLTIP>
+                    </UseTemplate>
+                </Component>
 
                 <Component ID="Overhead_Reading_Lights">
                     <!-- Left knob -->
@@ -3843,12 +3856,6 @@
                 <NODE_ID>KNOB_RADAR_TILT</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_PANELCS_AIDS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_PANELCS_DFDR</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>KNOB_ATC_1</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -3998,27 +4005,27 @@
             <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
             <!--                <NODE_ID>LOCK_OVHD_HYD_BLUEPUMPOVRD</NODE_ID>-->
             <!--            </UseTemplate>-->
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_CKPTDOOR_BOT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_CKPTDOOR_MID</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_CKPTDOOR_TOP</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_CKPTDOOR_LEFT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_CKPTDOOR_RIGHT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_CKPTDOOR_CHAN2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_CKPTDOOR_CHAN1</NODE_ID>
-            </UseTemplate>
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>PUSH_OVHD_CKPTDOOR_BOT</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>PUSH_OVHD_CKPTDOOR_MID</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>PUSH_OVHD_CKPTDOOR_TOP</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>PUSH_OVHD_CKPTDOOR_LEFT</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>PUSH_OVHD_CKPTDOOR_RIGHT</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>PUSH_OVHD_CKPTDOOR_CHAN2</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>PUSH_OVHD_CKPTDOOR_CHAN1</NODE_ID>-->
+            <!--            </UseTemplate>-->
         </Component>
 
         <Component ID="COFFEE">

@@ -592,3 +592,11 @@
 -A32NX_CARGOSMOKE_AFT_DISCHARGED
     -Bool
     -True if cargosmoke two bottle is discharged
+
+-A32NX_AIDS_PRINT_ON
+    -Bool
+    -True if AIDS print is on.
+
+-A32NX_DFDR_EVENT_ON
+    -Bool
+    -True if DFDR event is on.

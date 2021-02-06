@@ -1,10 +1,12 @@
 # Changelog
+
 <!-- ⚠⚠ Please follow the format provided ⚠⚠ -->
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.6.0
+
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
 1. [SOUND] Added new vent test and ext pwr relay random sounds - @hotshotp (Boris#9134)
@@ -87,8 +89,10 @@
 1. [Sound] Enchanced APU and gear extension/retraction sounds - @hotshotp (Boris)
 1. [MISC] Added coffee cup to cockpit - @tyler58546 (tyler58546), @Pleasure0102 (Pleasure)
 1. [ND] Waypoints on the ND now use the correct font - @tyler58546 (tyler58546)
+1. [OVHD] Implement even more additional overhead button/switch functionality (MASK MAN ON, EMER ELEC PWR MAN ON, Cargo smoke DISCH, etc.)
 
 ## 0.5.2
+
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
 1. [CDU] Two tiny fixes for flightphase speeds - @Watsi01 (RogePete)
 1. [ND] Flight route now hidden in VOR ROSE and ILS ROSE modes - @2hwk (2Cas#1022)
@@ -108,6 +112,7 @@
 1. [TEXTURE] Fixed the overlapping text on the chronometer - @DarkOfNova (DarkOfNova)
 
 ## 0.5.1
+
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
 1. [CDU] Fix incorrect block time display on INIT/REVIEW - @pareil6 (pareil6)
 1. [ECAM] Improved PACKS indication - @MisterChocker (Leon)
@@ -118,6 +123,7 @@
 1. [MODEL] Incorporate new Asobo model changes - @pepperoni505 (pepperoni505)
 
 ## 0.5.0
+
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Reworked flaps - @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Reworked drag/thrust ratio - @donstim - (donbikes#4084)
@@ -137,7 +143,7 @@
 1. [PFD] Added proper speed bug behaviour when outside range (approach phase) - @MisterChocker (Leon)
 1. [ECAM] Fixed thrust rating mode START in flight misbehavior - @MisterChocker (Leon)
 1. [CDU] Fixed wrong VLS calculation - @MisterChocker (Leon)
-1. [PFD] Fixed wrong managed speed calculation on approach  - @MisterChocker (Leon)
+1. [PFD] Fixed wrong managed speed calculation on approach - @MisterChocker (Leon)
 1. [ECAM] Applied FADEC power logic to thrust rating mode and value - @MisterChocker (Leon)
 1. [ECAM] Implemented thrust rating mode indication and logic - @MisterChocker (Leon)
 1. [CDU] Added actual VLS and VApp calculation - @MisterChocker (Leon)
@@ -179,7 +185,7 @@
 1. [AUTO BRK] Fixed autobrake disarm behavior to match real life. MAX can no longer be selected when the aircraft is in the air. @geoffda (Geoff Darst)
 1. [FCU] Remember selected pressure mode when returning from Std mode - @lhoenig (Lukas Hoenig)
 1. [TEXTURES] upgraded to 4k Textures (pedestal,throttle unit) fixed decal texture - @Pleasure0102 (Pleasure)
-1. [PFD] Added FMAs ALT CST and ALT CST* as well as CLB magenta and DES or CLB blue - @MisterChocker (Leon)
+1. [PFD] Added FMAs ALT CST and ALT CST\* as well as CLB magenta and DES or CLB blue - @MisterChocker (Leon)
 1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (Nistei), @Edwin B
 1. [CDU] Fixed error messages delete input - @MisterChocker (Leon)
 1. [CDU] Added input delay paging left/right and input 1-6L/1-6R - @MisterChocker (Leon)
@@ -280,6 +286,7 @@
 1. [ECAM] Improved Thrust Rating update condition - @MisterChocker (Leon)
 
 ## 0.4.0
+
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 1. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
 1. [TEXTURES] Changed roughness of glareshield - @Pleasure (Pleasure)
