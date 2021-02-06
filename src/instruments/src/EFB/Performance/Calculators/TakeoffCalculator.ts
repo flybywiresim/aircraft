@@ -76,9 +76,9 @@ const vmuVmcaMinV2Speeds = [
 
 /**
  * The value at a given index corresponds to the pressure altitude represented
- * in `vmcgVmcaMinV1Speeds` at the same index, in feet
+ * in `vmcgVmcaMinV1Speeds`, `vmcgVmcaMinVrSpeeds` and `vmcgVmcaMinV2Speeds` at the same index, in feet
  */
-const v1PressureAltitudeIndexes = [-2000, 0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9200, 14100];
+const pressureAltitudeIndexes = [-2000, 0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9200, 10200];
 
 /**
  * Minimum V1 limited by VMCG/VMCA
@@ -86,17 +86,11 @@ const v1PressureAltitudeIndexes = [-2000, 0, 1000, 2000, 3000, 4000, 5000, 6000,
  * Sub-Indexes: Retrieve from `v1PressureAltitudeIndexes`
  */
 const vmcgVmcaMinV1Speeds = [
-	[117, 115, 114, 113, 112, 112, 111, 110, 109, 108, 106, 100], // Conf 1 + F
-	[115, 113, 112, 111, 111, 110, 109, 108, 107, 106, 104, 100], // Conf 2
-	[114, 112, 111, 110, 110, 110, 109, 108, 107, 105, 104, 100] // Conf 3
+	[122, 121, 121, 121, 120, 120, 118, 116, 115, 107, 106], // Conf 1 + F
+	[122, 121, 121, 121, 120, 120, 118, 116, 115, 107, 106], // Conf 2
+	[122, 121, 121, 121, 120, 120, 118, 116, 115, 107, 106] // Conf 3
 ];
 
-
-/**
- * The value at a given index corresponds to the pressure altitude represented
- * in `vmcgVmcaMinVrSpeeds` and `vmcgVmcaMinV2Speeds` at the same index, in feet
- */
-const vrV2PressureAltitudeIndexes = [-2000, 0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9200, 10200];
 
 /**
  * Minimum Vr limited by VMCG/VMCA
@@ -104,9 +98,9 @@ const vrV2PressureAltitudeIndexes = [-2000, 0, 1000, 2000, 3000, 4000, 5000, 600
  * Sub-Indexes: Retrieve from `vrV2PressureAltitudeIndexes`
  */
 const vmcgVmcaMinVrSpeeds = [
-    [121, 119, 118, 116, 116, 116, 115, 114, 113, 111, 110, 102], // Conf 1 + F
-    [119, 117, 116, 115, 114, 114, 113, 112, 111, 109, 108, 100], // Conf 2
-    [118, 116, 115, 114, 114, 114, 113, 112, 110, 109, 107, 100] // Conf 3
+    [123, 122, 122, 122, 122, 121, 120, 117, 116, 107, 106], // Conf 1 + F
+    [123, 122, 122, 122, 122, 121, 120, 117, 116, 107, 106], // Conf 2
+    [123, 122, 122, 122, 122, 121, 120, 117, 116, 107, 106] // Conf 3
 ];
 
 /**
@@ -115,9 +109,9 @@ const vmcgVmcaMinVrSpeeds = [
  * Sub-Indexes: Retrieve from `vrV2PressureAltitudeIndexes`
  */
 const vmcgVmcaMinV2Speeds = [
-    [124, 121, 120, 119, 119, 119, 118, 117, 115, 114, 112, 104], // Conf 1 + F
-    [123, 121, 120, 119, 119, 119, 117, 116, 115, 114, 112, 103], // Conf 2
-    [123, 121, 120, 119, 119, 118, 117, 116, 115, 114, 112, 103] // Conf 3
+    [127, 126, 126, 125, 125, 124, 123, 120, 118, 109, 107], // Conf 1 + F
+    [127, 126, 126, 125, 125, 124, 123, 120, 118, 109, 107], // Conf 2
+    [126, 125, 125, 124, 124, 123, 122, 119, 117, 108, 106] // Conf 3
 ];
 
 
@@ -234,7 +228,7 @@ export default class TakeoffCalculator {
 		let pressureAltitude = altitude + this.getPressureAltitude(pressure);
 
 		let v2 = this.getV2(weightTons, flaps, pressureAltitude);
-		let vr = this.getVr(weightTons, flaps, pressureAltitude)
+		let vr = this.getVr(weightTons, flaps, pressureAltitude, v2)
 		let v1Data = this.getV1(weightTons, flaps, pressureAltitude, temperature, runwayLength, vr);
 
 		let v1 = v1Data.v1;
@@ -271,7 +265,7 @@ export default class TakeoffCalculator {
 
 		let stallSpeed = vs[flaps][this.getTakeoffTableIndex(weightTons)](weightTons, true);
 		let vmuVmcaMinV2 = Math.floor(vmuVmcaMinV2Speeds[flaps][this.getTakeoffTableIndex(weightTons)](weightTons));
-		let vmcgVmcaMinV2 = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinV2Speeds, vrV2PressureAltitudeIndexes);
+		let vmcgVmcaMinV2 = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinV2Speeds);
 
 		return Math.max(stallSpeed * 1.13, vmuVmcaMinV2, vmcgVmcaMinV2);
 	}
@@ -286,18 +280,19 @@ export default class TakeoffCalculator {
 	 * @param windMagnitude Wind magnitude in kts
 	 * @param runwayHeading
 	 */
-	private getVr(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number): number {
+	private getVr(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, v2: number): number {
 
 		let stallSpeed = vs[flaps][this.getTakeoffTableIndex(weightTons)](weightTons, true);
-		let vmcgVmcaMinVr = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinVrSpeeds, vrV2PressureAltitudeIndexes);
+		let vmcgVmcaMinVr = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinVrSpeeds);
+		let targetVr = v2 - 4;
 
-		return Math.max(stallSpeed * stallSafetyMargin, vmcgVmcaMinVr);
+		return Math.max(stallSpeed * stallSafetyMargin, vmcgVmcaMinVr, targetVr);
 	}
 
 	private getV1(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, temperature: number, runwayLength: number, targetVr: number): { v1: number, v1Dist: number, brakeDist: number, rtoDist: number, valid: boolean } {
 
 		let stallSpeed = Math.round(vs[flaps][this.getTakeoffTableIndex(weightTons)](weightTons, true) * knotsToMS * stallSafetyMargin);
-		let vmcgVmcaMinV1 = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinV1Speeds, v1PressureAltitudeIndexes) * knotsToMS;
+		let vmcgVmcaMinV1 = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinV1Speeds) * knotsToMS;
 
 		let minV1Speed = Math.max(stallSpeed, vmcgVmcaMinV1);
 
@@ -321,6 +316,7 @@ export default class TakeoffCalculator {
 		let brakeDist: number = getBrakingDistance(minV1Speed, mass, brakeForce);
 
 		if (v1Dist + brakeDist > runwayLength) {
+			console.log(`v1: ${v1}, rtoDist: ${v1Dist + brakeDist}`);
 			return {
 				v1: 0,
 				v1Dist: v1Dist,
@@ -331,7 +327,7 @@ export default class TakeoffCalculator {
 		}
 
 
-		for (let candidateSpeed = stallSpeed + 0.5; candidateSpeed <= targetVr * knotsToMS; candidateSpeed += 0.5) {
+		for (let candidateSpeed = minV1Speed + 0.5; candidateSpeed <= targetVr * knotsToMS; candidateSpeed += 0.5) {
 			let candidateVDist = getVDist(candidateSpeed, mass, b, thrust);
 			let candidateBrakeDist = getBrakingDistance(candidateSpeed, mass, brakeForce);
 
@@ -346,6 +342,8 @@ export default class TakeoffCalculator {
 
 		let v1Knots = v1 / knotsToMS;
 
+		console.log(`v1: ${v1}, rtoDist: ${v1Dist + brakeDist}`);
+
 		return {
 			v1: v1Knots,
 			v1Dist,
@@ -353,26 +351,6 @@ export default class TakeoffCalculator {
 			rtoDist: v1Dist + brakeDist,
 			valid: true
 		}
-	}
-
-	/**
-	 * Returns an offset for the takeoff speed
-	 * Approximation based on tail wind calculation with fixed change per 10kts
-	 * Offset based off average change in example RTOW charts from FCOM
-	 * @param windDirection Wind direction relative to North
-	 * @param windMagnitude Wind magnitude in kts
-	 * @param runwayHeading Runway heading
-	 */
-	private getWindOffset(windDirection: number, windMagnitude: number, runwayHeading: number): number {
-		var tailWindOffsetPer10kts = -6.7;
-		var headWindOffsetPer10kts = 5;
-
-		var tailWind = getTailWind(windDirection, windMagnitude, runwayHeading);
-
-		if (tailWind > 0) {
-			return (tailWind / 10) * tailWindOffsetPer10kts;
-		}
-		return ((-tailWind) / 10) * headWindOffsetPer10kts;
 	}
 
 	/**
@@ -400,10 +378,10 @@ export default class TakeoffCalculator {
 	 * @param table The speed table
 	 * @param altitudeIndexes Altitude "headings" for the table, indexes match table and from smallest to largest
 	 */
-	private getMinSpeedFromPressureAltitudeTable(pressureAltitude: number, flaps: TakeoffFlapsConfig, table: number[][], altitudeIndexes: number[]): number {
+	private getMinSpeedFromPressureAltitudeTable(pressureAltitude: number, flaps: TakeoffFlapsConfig, table: number[][]): number {
 		let data = table[flaps];
 
-		let previousAltitude = altitudeIndexes[0];
+		let previousAltitude = pressureAltitudeIndexes[0];
 		let previousValue = data[0];
 
 		if (pressureAltitude < previousAltitude) {
@@ -411,7 +389,7 @@ export default class TakeoffCalculator {
 		}
 
 		for (let i = 0; i < data.length; i++) {
-			let currentAltitude = altitudeIndexes[i];
+			let currentAltitude = pressureAltitudeIndexes[i];
 			let currentValue = data[i];
 			if (currentAltitude > pressureAltitude) {
 				return previousValue + (currentValue - previousValue) * ((pressureAltitude - previousAltitude) / (currentAltitude - previousAltitude));

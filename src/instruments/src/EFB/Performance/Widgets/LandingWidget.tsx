@@ -98,7 +98,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 
 			newState.runwayVisualizationLabels = [
 				{
-					label: 'MAX',
+					label: 'MAX / MANUAL',
 					distance: landingDistances.maxAutobrakeDist
 				},
 				{
@@ -328,8 +328,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 						</div>
 						<div className="border-t border-white pt-3">
 							<div className="flex flex-col items-center m-3">
-								<div className="flex">
-									<PerformanceOutputDisplay label="MAX" value={this.state.maxAutobrakeLandingDist + "m"} error={this.state.maxAutobrakeLandingDist > this.state.displayedRunwayLength} />
+								<div className="flex items-end">
+									<PerformanceOutputDisplay label="MAX / MANUAL" value={this.state.maxAutobrakeLandingDist + "m"} error={this.state.maxAutobrakeLandingDist > this.state.displayedRunwayLength} />
 									<PerformanceOutputDisplay label="MEDIUM" value={this.state.mediumAutobrakeLandingDist + "m"} error={this.state.mediumAutobrakeLandingDist > this.state.displayedRunwayLength} />
 									<PerformanceOutputDisplay label="LOW" value={this.state.lowAutobrakeLandingDist + "m"} error={this.state.lowAutobrakeLandingDist > this.state.displayedRunwayLength} />
 								</div>
