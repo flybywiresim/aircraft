@@ -312,9 +312,6 @@ class A32NX_FWC {
 
     altitudeWarning(_deltaTime) {
         const indicatedAltitude = Simplane.getAltitude();
-        SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
-        SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
-
         // Exit when:
         // - Landing gear down
         // - Glide slope captured
@@ -334,6 +331,8 @@ class A32NX_FWC {
             this._wasBellowThreshold = false;
             this._wasAboveThreshold = false;
             this._wasInRange = false;
+            SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
+            SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
             return;
         }
 
@@ -341,6 +340,7 @@ class A32NX_FWC {
             this._wasBellowThreshold = false;
             this._wasAboveThreshold = false;
             this._wasInRange = false;
+            SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
             return;
         }
