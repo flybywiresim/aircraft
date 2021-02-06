@@ -168,6 +168,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._apMasterStatus = false;
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
+        this.flightPhaseUpdateThrottler = new UpdateThrottler(800);
     }
 
     Init() {
@@ -269,7 +270,9 @@ class FMCMainDisplay extends BaseAirliners {
         if (this._debug++ > 180) {
             this._debug = 0;
         }
-        this.checkUpdateFlightPhase();
+        if (this.flightPhaseUpdateThrottler.canUpdate(_deltaTime) !== -1) {
+            this.checkUpdateFlightPhase();
+        }
         this._checkFlightPlan--;
         if (this._checkFlightPlan <= 0) {
             this._checkFlightPlan = 120;
