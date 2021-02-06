@@ -227,17 +227,16 @@ export default class TakeoffCalculator {
 	 * @param runwayHeading
 	 * @param runwayLength Runway length in meters
 	 */
-	public calculateTakeoffPerformance(weight: number, flaps: TakeoffFlapsConfig, temperature: number, pressure: number,
-		windDirection: number, windMagnitude: number, runwayHeading: number, runwayLength: number, altitude: number):
+	public calculateTakeoffPerformance(weight: number, flaps: TakeoffFlapsConfig, temperature: number, pressure: number, runwayLength: number, altitude: number):
 		{ v1: number, vr: number, v2: number, runwayTooShort: boolean, v1Dist: number, rtoDist: number } {
 
 		let weightTons = weight / 1000;
 
 		let pressureAltitude = altitude + this.getPressureAltitude(pressure);
 
-		let v2 = this.getV2(weightTons, flaps, pressureAltitude, temperature, pressure, windDirection, windMagnitude, runwayHeading);
-		let vr = this.getVr(weightTons, flaps, pressureAltitude, temperature, pressure, windDirection, windMagnitude, runwayHeading)
-		let v1Data = this.getV1(weightTons, flaps, pressureAltitude, temperature, windDirection, windMagnitude, runwayHeading, runwayLength, vr);
+		let v2 = this.getV2(weightTons, flaps, pressureAltitude);
+		let vr = this.getVr(weightTons, flaps, pressureAltitude)
+		let v1Data = this.getV1(weightTons, flaps, pressureAltitude, temperature, runwayLength, vr);
 
 		let v1 = v1Data.v1;
 
@@ -269,8 +268,7 @@ export default class TakeoffCalculator {
 	 * @param windMagnitude Wind magnitude in kts
 	 * @param runwayHeading
 	 */
-	private getV2(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, temperature: number, pressure: number,
-		windDirection: number, windMagnitude: number, runwayHeading: number): number {
+	private getV2(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number): number {
 
 		let stallSpeed = vs[flaps][this.getTakeoffTableIndex(weightTons)](weightTons, true);
 		let vmuVmcaMinV2 = Math.floor(vmuVmcaMinV2Speeds[flaps][this.getTakeoffTableIndex(weightTons)](weightTons));
@@ -289,8 +287,7 @@ export default class TakeoffCalculator {
 	 * @param windMagnitude Wind magnitude in kts
 	 * @param runwayHeading
 	 */
-	private getVr(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, temperature: number, pressure: number,
-		windDirection: number, windMagnitude: number, runwayHeading: number): number {
+	private getVr(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number): number {
 
 		let stallSpeed = vs[flaps][this.getTakeoffTableIndex(weightTons)](weightTons, true);
 		let vmcgVmcaMinVr = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinVrSpeeds, vrV2PressureAltitudeIndexes);
@@ -298,8 +295,7 @@ export default class TakeoffCalculator {
 		return Math.max(stallSpeed * stallSafetyMargin, vmcgVmcaMinVr);
 	}
 
-	private getV1(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, temperature: number,
-		windDirection: number, windMagnitude: number, runwayHeading: number, runwayLength: number, targetVr: number): { v1: number, v1Dist: number, brakeDist: number, rtoDist: number, valid: boolean } {
+	private getV1(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, temperature: number, runwayLength: number, targetVr: number): { v1: number, v1Dist: number, brakeDist: number, rtoDist: number, valid: boolean } {
 
 		let stallSpeed = Math.round(vs[flaps][this.getTakeoffTableIndex(weightTons)](weightTons, true) * knotsToMS * stallSafetyMargin);
 		let vmcgVmcaMinV1 = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinV1Speeds, v1PressureAltitudeIndexes) * knotsToMS;
@@ -350,14 +346,9 @@ export default class TakeoffCalculator {
 		}
 
 		let v1Knots = v1 / knotsToMS;
-		let windCorrection = this.getWindOffset(windDirection, windMagnitude, runwayHeading);
-
-		if (v1Knots + windCorrection < minV1Speed) {
-			windCorrection = 0
-		}
 
 		return {
-			v1: v1Knots + windCorrection,
+			v1: v1Knots,
 			v1Dist,
 			brakeDist,
 			rtoDist: v1Dist + brakeDist,

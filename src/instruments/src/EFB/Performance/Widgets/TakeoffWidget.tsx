@@ -30,8 +30,6 @@ type TakeoffWidgetState = {
 	weight: number,
 	flaps: TakeoffFlapsConfig,
 	temperature: number,
-	windDirection: number,
-	windMagnitude: number,
 	runwayHeading: number,
 	pressure: number,
 	runwayLength: number,
@@ -54,8 +52,6 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			weight: 0,
 			flaps: TakeoffFlapsConfig.Conf1F,
 			temperature: 0,
-			windDirection: 0,
-			windMagnitude: 0,
 			runwayHeading: 0,
 			pressure: 1013.25,
 			runwayLength: 0,
@@ -74,9 +70,6 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			this.state.flaps,
 			this.state.temperature,
 			this.state.pressure,
-			this.state.windDirection,
-			this.state.windMagnitude,
-			this.state.runwayHeading,
 			this.state.runwayLength,
 			this.state.altitude);
 
@@ -140,25 +133,6 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		this.setState(prevState => {
 			let newState = { ...prevState };
 			newState.flaps = flaps;
-			return newState;
-		});
-	}
-
-	private handleWindChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let wind = event.currentTarget.value;
-		let splitWind = wind.split('/');
-		let direction = parseInt(splitWind[0]);
-		let magnitude = parseInt(splitWind[1]);
-
-		if (Number.isNaN(direction) || Number.isNaN(magnitude)) {
-			direction = 0;
-			magnitude = 0;
-		}
-
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.windDirection = direction;
-			newState.windMagnitude = magnitude;
 			return newState;
 		});
 	}
@@ -229,9 +203,9 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 							<div className="flex">
 								<div className="flex-1 m-2.5 column-left">
 									<PerformanceInput label="OAT" placeholder="°C" onChange={this.handleTemperatureChange}/>
-									<PerformanceInput label="Wind (KTS)" placeholder="DIR/MAG" onChange={this.handleWindChange} />
 									<PerformanceInput label="Rwy Heading" onChange={this.handleRunwayHeadingChange} />
 									<PerformanceInput label="Rwy Length" placeholder="m" onChange={this.handleRunwayLengthChange} />
+									<PerformanceInput label="Altitude" placeholder={"\" ASL"} onChange={this.handleAltitudeChange}/>
 								</div>
 								<div className="flex-1 m-2.5 column-right">
 									<PerformanceInput label="Weight" placeholder="KG" onChange={this.handleWeightChange} reverse/>
@@ -241,7 +215,6 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 										<option value="2">3</option>
 									</PerformanceSelectInput>
 									<PerformanceInput label="Pressure" placeholder="mb" onChange={this.handlePressureChange} reverse/>
-									<PerformanceInput label="Altitude" placeholder={"\" ASL"} onChange={this.handleAltitudeChange} reverse/>
 								</div>
 							</div>
 							<button className="my-3 w-full font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
