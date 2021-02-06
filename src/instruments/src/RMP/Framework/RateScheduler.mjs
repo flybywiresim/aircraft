@@ -10,6 +10,7 @@ export class RateScheduler {
 
     /**
      * Schedule a new callback to be called at a set rate.
+     * @param identifier The identifier for the callback
      * @param callback The callback to be scheduled
      * @param rate The rate that this callback should be called at.
      */
@@ -28,8 +29,8 @@ export class RateScheduler {
     }
 
     /**
-     * Remove a given callback (from all rates).
-     * @param callback The callback to unschedule.
+     * Remove a given identifier (from all rates).
+     * @param identifier The identifier to unschedule.
      */
     unschedule(identifier) {
         this.callbacks.delete(identifier);
@@ -42,7 +43,7 @@ export class RateScheduler {
     }
 
     /**
-     * Clears intervals that have no callbacks.
+     * Clears intervals that have no intervals.
      */
     cleanup() {
         this.rates.forEach((value, key, map) => {
