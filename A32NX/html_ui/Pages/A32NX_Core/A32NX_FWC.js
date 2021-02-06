@@ -312,6 +312,8 @@ class A32NX_FWC {
 
     altitudeWarning(_deltaTime) {
         const indicatedAltitude = Simplane.getAltitude();
+        SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
+        SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
         // Exit when:
         // - Landing gear down
         // - Glide slope captured
