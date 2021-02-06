@@ -1,4 +1,4 @@
-import { useInteractionEvent } from '../../util.mjs';
+import { useInteractionEvent } from '../../util.js';
 import { StandbyFrequency } from './StandbyFrequency.jsx';
 import { SevenSegmentDisplay } from './SevenSegmentDisplay.jsx';
 import { StatefulSimVar } from '../Framework/StatefulSimVar.mjs';
