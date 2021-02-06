@@ -1,4 +1,4 @@
-/*
+/*!
  * A32NX
  * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
  *
@@ -16,10 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import './Assets/Efb.scss';
+.default-input-container {
+  @apply h-16 px-4 py-3 border-2 border-blue-dark bg-blue-medium-contrast rounded-lg;
+  @apply flex flex-row items-center;
 
-import React from "react";
-import ReactDOM from "react-dom";
-import Efb from "./Efb";
+  &.focus-active {
+    @apply border-blue-light;
+  }
 
-ReactDOM.render(<Efb currentFlight="UAK049" />, document.getElementById('A32NX_REACT_MOUNT'));
+  > * {
+    @apply mr-4;
+  }
+
+  :last-child {
+    @apply mr-0;
+  }
+}
