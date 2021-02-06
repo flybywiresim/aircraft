@@ -89,7 +89,7 @@
 1. [Sound] Enchanced APU and gear extension/retraction sounds - @hotshotp (Boris)
 1. [MISC] Added coffee cup to cockpit - @tyler58546 (tyler58546), @Pleasure0102 (Pleasure)
 1. [ND] Waypoints on the ND now use the correct font - @tyler58546 (tyler58546)
-1. [OVHD] Implement even more additional overhead button/switch functionality (MASK MAN ON, EMER ELEC PWR MAN ON, Cargo smoke DISCH, etc.)
+1. [OVHD] Implement even more additional overhead button/switch functionality (MASK MAN ON, EMER ELEC PWR MAN ON, Cargo smoke DISCH, etc.) - @ErickSharp (Erick Torres)
 
 ## 0.5.2
 
