@@ -8,16 +8,16 @@
 
 .error {
   text-align: center;
-  background-color: #c42c2c;
+  background-color: #c42c2c !important; // important not required in browser but needed in the game for some reason
 }
 
 .error-message,
 .error-label {
-  color: #c42c2c;
+  color: #c42c2c !important;
 }
 
 .error-label {
-  background-color: #c42c2c;
+  background-color: #c42c2c !important;
 }
 
 .error-message {

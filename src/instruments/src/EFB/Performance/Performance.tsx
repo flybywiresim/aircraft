@@ -18,7 +18,7 @@
 
 import React from 'react';
 
-import './Assets/Performance.scss';
+import '../Assets/Performance.scss';
 import TakeoffWidget from './Widgets/TakeoffWidget';
 import LandingWidget from './Widgets/LandingWidget';
 import { Navbar } from '../Components/Navbar';

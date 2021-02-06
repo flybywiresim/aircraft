@@ -127,8 +127,8 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		})
 	}
 
-	private handleFlapsChange = (event: React.FormEvent<HTMLSelectElement>): void => {
-		let flaps: TakeoffFlapsConfig = parseInt(event.currentTarget.value);
+	private handleFlapsChange = (newValue: number | string): void => {
+		let flaps: TakeoffFlapsConfig = parseInt(newValue.toString());
 
 		this.setState(prevState => {
 			let newState = { ...prevState };
@@ -197,7 +197,7 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 	public render() {
 		return (
 			<div className="flex flex-grow">
-				<div className="w-5/12 mr-5 bg-gray-800 rounded-xl p-6 text-white shadow-lg flex items-center">
+				<div className="w-1/2 mr-5 bg-gray-800 rounded-xl p-6 text-white shadow-lg flex items-center">
 					<div className="w-full">
 						<div className="text-center mb-6">
 							<div className="flex">
@@ -209,11 +209,11 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 								</div>
 								<div className="flex-1 m-2.5 column-right">
 									<PerformanceInput label="Weight" placeholder="KG" onChange={this.handleWeightChange} reverse/>
-									<PerformanceSelectInput label="Flaps" defaultValue="0" onChange={this.handleFlapsChange} reverse>
-										<option value="0">1 + F</option>
-										<option value="1">2</option>
-										<option value="2">3</option>
-									</PerformanceSelectInput>
+									<PerformanceSelectInput label="Flaps" defaultValue="0" onChange={this.handleFlapsChange} reverse options={[
+										[0, "1 + F"],
+										[1, "2"],
+										[2, "3"]
+									]} />
 									<PerformanceInput label="Pressure" placeholder="mb" onChange={this.handlePressureChange} reverse/>
 								</div>
 							</div>

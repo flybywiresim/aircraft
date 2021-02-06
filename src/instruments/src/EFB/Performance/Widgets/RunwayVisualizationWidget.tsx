@@ -18,7 +18,7 @@
 
 import React from 'react';
 
-import '../Assets/Performance.scss';
+import '../../Assets/Performance.scss';
 
 export type DistanceLabel = {
 	distance: number,

@@ -207,8 +207,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleFlapsChange = (event: React.FormEvent<HTMLSelectElement>): void => {
-		let flaps: LandingFlapsConfig = parseInt(event.currentTarget.value);
+	private handleFlapsChange = (newValue: number | string): void => {
+		let flaps: LandingFlapsConfig = parseInt(newValue.toString());
 
 		if (flaps !== LandingFlapsConfig.Full && flaps !== LandingFlapsConfig.Conf3) {
 			flaps = LandingFlapsConfig.Full;
@@ -221,8 +221,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleRunwayConditionChange = (event: React.FormEvent<HTMLSelectElement>): void => {
-		let runwayCondition: LandingRunwayConditions = parseInt(event.currentTarget.value);
+	private handleRunwayConditionChange = (newValue: number | string): void => {
+		let runwayCondition: LandingRunwayConditions = parseInt(newValue.toString());
 
 		if (!runwayCondition) {
 			runwayCondition = LandingRunwayConditions.Dry;
@@ -235,8 +235,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleReverseThrustChange = (event: React.FormEvent<HTMLSelectElement>): void => {
-		let reverseThrust: boolean = parseInt(event.currentTarget.value) == 1;
+	private handleReverseThrustChange = (newValue: number | string): void => {
+		let reverseThrust: boolean = parseInt(newValue.toString()) == 1;
 
 		this.setState(prevState => {
 			let newState = { ...prevState };
@@ -273,8 +273,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleOverweightProcedureChange = (event: React.FormEvent<HTMLSelectElement>): void => {
-		let overweightProcedure: boolean = parseInt(event.currentTarget.value) == 1;
+	private handleOverweightProcedureChange = (newValue: number | string): void => {
+		let overweightProcedure: boolean = parseInt(newValue.toString()) == 1;
 
 		this.setState(prevState => {
 			let newState = { ...prevState };
@@ -286,7 +286,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 	public render() {
 		return (
 			<div className="flex flex-grow">
-				<div className="w-5/12 mr-5 bg-gray-800 rounded-xl p-6 text-white shadow-lg flex items-center">
+				<div className="w-1/2 mr-5 bg-gray-800 rounded-xl p-6 text-white shadow-lg flex items-center">
 					<div className="w-full">
 						<div className="text-center mb-6">
 							<div className="flex">
@@ -299,25 +299,25 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 									<PerformanceInput label="Temperature" placeholder='°C' onChange={this.handleTemperatureChange} />
 								</div>
 								<div className="flex-1 m-2.5 column-right">
-									<PerformanceSelectInput label="Flaps" defaultValue="1" onChange={this.handleFlapsChange} reverse>
-										<option value="1">Full</option>
-										<option value="0">CONF 3</option>
-									</PerformanceSelectInput>
-									<PerformanceSelectInput label="Rwy Condition" defaultValue="0" onChange={this.handleRunwayConditionChange} reverse>
-										<option value="0">Dry</option>
-										<option value="1">Good</option>
-										<option value="2">Medium</option>
-										<option value="3">Poor</option>
-									</PerformanceSelectInput>
-									<PerformanceSelectInput label="Reverse Thrust" defaultValue="0" onChange={this.handleReverseThrustChange} reverse>
-										<option value="0">No</option>
-										<option value="1">Yes</option>
-									</PerformanceSelectInput>
+									<PerformanceSelectInput label="Flaps" defaultValue="1" onChange={this.handleFlapsChange} reverse options={[
+										[1, "Full"],
+										[0, "CONF 3"]
+									]} />
+									<PerformanceSelectInput label="Rwy Condition" defaultValue="0" onChange={this.handleRunwayConditionChange} reverse options={[
+										[0, "Dry"],
+										[1, "Good"],
+										[2, "Medium"],
+										[3, "Poor"]
+									]} />
+									<PerformanceSelectInput label="Reverse Thrust" defaultValue="0" onChange={this.handleReverseThrustChange} reverse options={[
+										[0, "No"],
+										[1, "Yes"]
+									]} />
 									<PerformanceInput label="Rwy Slope" placeholder="%" onChange={this.handleRunwaySlopeChange} reverse />
-									<PerformanceSelectInput label="Overweight Proc" defaultValue="0" onChange={this.handleOverweightProcedureChange} reverse>
-										<option value="0">No</option>
-										<option value="1">Yes</option>
-									</PerformanceSelectInput>
+									<PerformanceSelectInput label="Overweight Proc" defaultValue="0" onChange={this.handleOverweightProcedureChange} reverse options={[
+										[0, "No"],
+										[1, "Yes"]
+									]} />
 									<PerformanceInput label="Rwy Length" placeholder="m" onChange={this.handleRunwayLengthChange} reverse/>
 								</div>
 							</div>
