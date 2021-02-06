@@ -17,9 +17,7 @@ lengths and environmental conditions.
 Stall speeds are used to calculate V2 and Vr, and also are used to determine if a runway is long enough for takeoff (if there is no v1 speed greater than stall speed,
 the runway is too short for safe takeoff).
 
-Stall speeds for the a320Neo aren't published directly, however the operating speeds are. The minimum operating speed is calculated as 1.23 * stall speed, so from
-we can re-calculate the stall speed from this data by simply dividing by 1.23. Unfortunately this data does not include CONF 2 flaps, so until we can find data for this
-flaps 2 will have to be interpolated between 1+F and conf 3. The minimum operating speeds are published in the Quick Reference Handbook (QRH).
+We already have stall speeds calculated which are used in the CDU we will use, determined from the QRH.
 
 ![QRH Operating Speeds](images/QRH-operating-speeds.png "QRH Operating Speeds")
 
@@ -66,7 +64,26 @@ We can calculate the $V_1$ speed provided we know:
     * This can be found based on FCOM data, which will be explained later
 
 ## Overview
-The acceleration distance ($D_{V_1}$), braking distance ($D_{\text{BRAKE}}$) and total distance ($D_{RTO}$) for a rejected takeoff for a given candidate $V_1$ speed can be calculated with the following functions:
+
+First, find the value of $\rho$ for the air pressure and temperature:
+
+$\rho = \frac{p}{287.058 \times \text{temp}}$
+
+Where $p$ is pressure **in Pascals** and $\text{temp}$ is the temperature **in Kelvin**.
+
+Then find $b$ for the given flap configuration:
+
+* $Cd_1 = 1671.16$ Flaps 1 + F
+* $Cd_2 = 1825.18$ Flaps 2
+* $Cd_3 = 1956.10$ Flaps 3
+
+$b = Cd \times \rho$
+
+Then find the thrust $T$ per engine:
+
+If $\rho >= 1.2985$ then $T = T_{\text{MAX}}$, otherwise $T = T_{\text{MAX}} \times \frac{\rho}{1.2985}$
+
+Then the acceleration distance ($D_{V_1}$), braking distance ($D_{\text{BRAKE}}$) and total distance ($D_{RTO}$) for a rejected takeoff for a given candidate $V_1$ speed can be calculated with the following functions:
 
 $D_{\text{RTO}} = D_{V_1}(V) + D_{\text{BRAKE}}(V)$
 
@@ -84,16 +101,15 @@ Where:
 * $B$ is the braking force of the brakes at max in Newtons. The real value of this is currently unknown, likely higher than $T$
 * $T$ is the thrust of a single engine in Newtons. The A320NEO CFM International LEAP 1A26, [is rated at 120,640N takeoff thrust](https://en.wikipedia.org/wiki/CFM_International_LEAP#Specifications)
 * $b$ is the drag coefficient
-    * $b_1 = 2170$ Flaps 1 + F
-    * $b_2 = 2370$ Flaps 2
-    * $b_3 = 2540$ Flaps 3
 * $m$ is the aircraft mass in KGs
 
 The output of the distance functions is in meters.
 
 Iteratively increase the candidate speed, starting from the stall speed, to find the highest value that $D_{\text{RTO}}$ is not longer than the available runway length.
+
 If $V_R$ is a valid $V_1$ speed, then $V_1 = V_R$
-If the stall speed * safety margin RTO distance is longer than the available runway length, then safe takeoff is not possible.
+
+If the RTO distance of stall speed $\times$ safety margin is longer than the available runway length, then safe takeoff is not possible.
 
 ## Proof
 
@@ -232,6 +248,31 @@ Gradually increase the candidate speed until the RTO distance is longer than the
 or we reach the calculated $V_R$ speed, whichever is sooner.
 
 If $V_R$ is a valid $V_1$ speed, then $V_1 = V_R$. Otherwise, the last valid candidate speed is $V_1$
+
+### Effect of pressure and temperature on V1
+Up until now we have ignored the effect of pressure and temperature - these are included in the constant $b$. However the value for $b$ should really be $b = C_d * \rho$ where $C_d$ is a constant specific to the aircraft/flaps configuration and $\rho$ is air density.
+
+Air density $\rho$ is given as $\rho = \frac{p}{R_{\text{specific}}T}$ where $p$ is pressure in Pa, $R_{\text{specific}}$ for dry air is 287.058 J/(kg K) and $T$ is temperature in Kelvin.
+
+Pressure in millibars can be converted to Pa by by multiplying by 100. Temperature in Celcius can be converted to Kelvin by adding 273.15.
+
+Our previous values where for at the International Standard Atmosphere, which has a $\rho$ of 1.2985. We can find $C_d$ by dividing by this constant:
+
+* $Cd_1 = 2170 / 1.2985 = 1671.16$ Flaps 1 + F
+* $Cd_2 = 2370 / 1.2985 = 1825.18$ Flaps 2
+* $Cd_3 = 2540 / 1.2985 = 1956.10$ Flaps 3
+
+Then $b = Cd (\frac{p}{287.058 \times \text{temp}})$
+
+The air density will also affect the performance of the engines. A linear approximation of this effect will be sufficient.
+
+If $\rho < 1.2985$ then:
+
+$\text{Thrust} = \text{Thrust}_{\text{MAX}} \times \frac{\rho}{1.2985}$
+
+https://en.wikipedia.org/wiki/Density_of_air
+
+https://en.wikipedia.org/wiki/International_Standard_Atmosphere
 
 ### Raise to minimum chart value
 If the calculated possible $V_1$ value is less than indicated in the FCOM VMCG/VMCA charts listed at the start of this document, $V_1$ should be raised to this minimum.

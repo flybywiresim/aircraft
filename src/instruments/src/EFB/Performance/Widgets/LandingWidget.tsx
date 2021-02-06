@@ -44,7 +44,8 @@ type LandingWidgetState = {
 	mediumAutobrakeLandingDist: number,
 	lowAutobrakeLandingDist: number,
 	runwayVisualizationLabels: DistanceLabel[],
-	runwayNumber?: number
+	runwayNumber?: number,
+	displayedRunwayLength: number
 };
 
 export default class LandingWidget extends React.Component<LandingWidgetProps, LandingWidgetState> {
@@ -68,7 +69,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 			maxAutobrakeLandingDist: 0,
 			mediumAutobrakeLandingDist: 0,
 			lowAutobrakeLandingDist: 0,
-			runwayVisualizationLabels: []
+			runwayVisualizationLabels: [],
+			displayedRunwayLength: 0
 		};
 	}
 
@@ -110,6 +112,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 			]
 
 			newState.runwayNumber = Math.round(this.state.runwayHeading / 10);
+			newState.displayedRunwayLength = this.state.runwayLength;
 
 			return newState;
 		});
@@ -326,16 +329,16 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 						<div className="border-t border-white pt-3">
 							<div className="flex flex-col items-center m-3">
 								<div className="flex">
-									<PerformanceOutputDisplay label="MAX" value={this.state.maxAutobrakeLandingDist + "m"} error={this.state.maxAutobrakeLandingDist > this.state.runwayLength} />
-									<PerformanceOutputDisplay label="MEDIUM" value={this.state.mediumAutobrakeLandingDist + "m"} error={this.state.mediumAutobrakeLandingDist > this.state.runwayLength} />
-									<PerformanceOutputDisplay label="LOW" value={this.state.lowAutobrakeLandingDist + "m"} error={this.state.lowAutobrakeLandingDist > this.state.runwayLength} />
+									<PerformanceOutputDisplay label="MAX" value={this.state.maxAutobrakeLandingDist + "m"} error={this.state.maxAutobrakeLandingDist > this.state.displayedRunwayLength} />
+									<PerformanceOutputDisplay label="MEDIUM" value={this.state.mediumAutobrakeLandingDist + "m"} error={this.state.mediumAutobrakeLandingDist > this.state.displayedRunwayLength} />
+									<PerformanceOutputDisplay label="LOW" value={this.state.lowAutobrakeLandingDist + "m"} error={this.state.lowAutobrakeLandingDist > this.state.displayedRunwayLength} />
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 				<div className="bg-gray-800 rounded-xl px-2 py-8 text-white shadow-lg flex items-center">
-					<RunwayVisualizationWidget runwayLength={this.state.runwayLength} labels={this.state.runwayVisualizationLabels} runwayNumber={this.state.runwayNumber} />
+					<RunwayVisualizationWidget runwayLength={this.state.displayedRunwayLength} labels={this.state.runwayVisualizationLabels} runwayNumber={this.state.runwayNumber} />
 				</div>
 			</div>
 			);

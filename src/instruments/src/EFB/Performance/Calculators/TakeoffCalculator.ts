@@ -195,10 +195,11 @@ function timeAtAccelVelocity(V: number, m: number, b: number, T: number): number
 	return (-m * Math.log(1 - ((V * b) / (2 * T)))) / b;
 }
 
-const bFlaps = [
-	2170, // 1 + F
-	2370, // 2
-	2540 // 3
+// Coefficient of drag for each flap configuration
+const cdFlaps = [
+	1671.16, // 1 + F
+	1825.18, // 2
+	1956.1 // 3
 ]
 
 // Max thrust output of single engine in Newtons
@@ -236,7 +237,7 @@ export default class TakeoffCalculator {
 
 		let v2 = this.getV2(weightTons, flaps, pressureAltitude, temperature, pressure, windDirection, windMagnitude, runwayHeading);
 		let vr = this.getVr(weightTons, flaps, pressureAltitude, temperature, pressure, windDirection, windMagnitude, runwayHeading)
-		let v1Data = this.getV1(weightTons, flaps, pressureAltitude, temperature, pressure, windDirection, windMagnitude, runwayHeading, runwayLength, vr);
+		let v1Data = this.getV1(weightTons, flaps, pressureAltitude, temperature, windDirection, windMagnitude, runwayHeading, runwayLength, vr);
 
 		let v1 = v1Data.v1;
 
@@ -297,7 +298,7 @@ export default class TakeoffCalculator {
 		return Math.max(stallSpeed * stallSafetyMargin, vmcgVmcaMinVr);
 	}
 
-	private getV1(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, temperature: number, pressure: number,
+	private getV1(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, temperature: number,
 		windDirection: number, windMagnitude: number, runwayHeading: number, runwayLength: number, targetVr: number): { v1: number, v1Dist: number, brakeDist: number, rtoDist: number, valid: boolean } {
 
 		let stallSpeed = Math.round(vs[flaps][this.getTakeoffTableIndex(weightTons)](weightTons, true) * knotsToMS * stallSafetyMargin);
@@ -305,12 +306,23 @@ export default class TakeoffCalculator {
 
 		let minV1Speed = Math.max(stallSpeed, vmcgVmcaMinV1);
 
-		let b = bFlaps[flaps];
+		let pressure = this.altitudeToPressure(pressureAltitude);
+		let pressurePascals = pressure * 100;
+		let temperatureKelvin = temperature + 273.15;
+
+		let airDensity = pressurePascals / (287.058 * temperatureKelvin);
+
+		let b = cdFlaps[flaps] * airDensity;
+
+		let thrust = tMax;
+		if (airDensity < 1.2985) {
+			thrust *= (airDensity / 1.2985);
+		}
 
 		let mass = weightTons * 1000;
 
 		let v1 = minV1Speed;
-		let v1Dist: number = getVDist(minV1Speed, mass, b, tMax);
+		let v1Dist: number = getVDist(minV1Speed, mass, b, thrust);
 		let brakeDist: number = getBrakingDistance(minV1Speed, mass, brakeForce);
 
 		if (v1Dist + brakeDist > runwayLength) {
@@ -325,7 +337,7 @@ export default class TakeoffCalculator {
 
 
 		for (let candidateSpeed = stallSpeed + 0.5; candidateSpeed <= targetVr * knotsToMS; candidateSpeed += 0.5) {
-			let candidateVDist = getVDist(candidateSpeed, mass, b, tMax);
+			let candidateVDist = getVDist(candidateSpeed, mass, b, thrust);
 			let candidateBrakeDist = getBrakingDistance(candidateSpeed, mass, brakeForce);
 
 			if (candidateVDist + candidateBrakeDist > runwayLength) {
@@ -337,8 +349,15 @@ export default class TakeoffCalculator {
 			}
 		}
 
+		let v1Knots = v1 / knotsToMS;
+		let windCorrection = this.getWindOffset(windDirection, windMagnitude, runwayHeading);
+
+		if (v1Knots + windCorrection < minV1Speed) {
+			windCorrection = 0
+		}
+
 		return {
-			v1: v1 / knotsToMS,
+			v1: v1Knots + windCorrection,
 			v1Dist,
 			brakeDist,
 			rtoDist: v1Dist + brakeDist,
@@ -347,26 +366,9 @@ export default class TakeoffCalculator {
 	}
 
 	/**
-	 * Returns an offset for a given takeoff speed
-	 * Approximation based on linear 1kt decrease per 2°C increase after 44°C
-	 * Minimum speed 125kts
-	 * @param speed
-	 * @param temperature
-	 */
-	private getTemperatureOffset(speed: number, temperature: number): number {
-		if (temperature < 44) {
-			return 0;
-		}
-		let decrease = (temperature - 44) / 2;
-		let newSpeed = speed - decrease;
-		return newSpeed > 125
-			? -decrease
-			: -(speed - 125);
-	}
-
-	/**
 	 * Returns an offset for the takeoff speed
 	 * Approximation based on tail wind calculation with fixed change per 10kts
+	 * Offset based off average change in example RTOW charts from FCOM
 	 * @param windDirection Wind direction relative to North
 	 * @param windMagnitude Wind magnitude in kts
 	 * @param runwayHeading Runway heading
@@ -391,6 +393,14 @@ export default class TakeoffCalculator {
 	private getPressureAltitude(pressure: number): number {
 		// See https://en.wikipedia.org/wiki/Pressure_altitude
 		return 145366.45 * (1 - Math.pow(pressure / 1013.25, 0.190284));
+	}
+
+	/**
+	 * Inverse of getPressureAltitude. Gets ISA standard pressure (mb) from altitude
+	 * @param altitude Altitude ASL in feet
+	 */
+	private altitudeToPressure(altitude: number): number {
+		return 1013.25 * (1- (altitude / 145366.45) )**5.2553026
 	}
 
 	/**
