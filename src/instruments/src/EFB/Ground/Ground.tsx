@@ -16,191 +16,246 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconHandFinger } from '@tabler/icons'
 
 import './Ground.scss'
 import fuselage from '../Assets/320neo-outline-upright.svg'
-import {setSimVar, getSimVar} from '../../util.mjs'^
+import {setSimVar, getSimVar} from '../../util.mjs'
 import { StatefulSimVar } from '../../RMP/Framework/StatefulSimVar.mjs'
 
-type GroundProps = {}
 
 type GroundState = {
     tugActive: boolean;
-    activeButtons: Array<string>
+    activeButtons: Array<string>;
+   // jetWay: StatefulSimVar;
 }
 
-let timer: number;
+function Ground() {
 
-class Ground extends React.Component<GroundProps, GroundState> {
+    const [tugActive, setTugActive] = useState(false);
+    const [activeButtons, setActiveButtons] = useState(new Array<string>());
 
-    constructor(props: GroundProps) {
-        super(props);
+    let timer;
 
-        this.state = {
-            tugActive: false,
-            activeButtons: new Array(),
-        };
-    }
+    console.log("BRUH");
 
-    const jetWay = new StatefulSimVar({
-        simVarGetter: 'A:EXIT_TYPE',
-        refreshRate: 1,
-        simVarUnit: 'Enum',
+    const jetWayActive = new StatefulSimVar({
+        simVarGetter: `A:EXIT OPEN:0`,
+        refreshRate: 1000,
+        simVarType: 'Enum'
     });
 
-    componentWillUnmount() {
-        clearTimeout(timer);
-    }
 
-    toggleGroundAction(action: GroundServices) {
+    const cargoActive = new StatefulSimVar({
+        simVarGetter: `A:EXIT OPEN:5`,
+        refreshRate: 1000,
+        simVarType: 'Enum'
+    });
+
+    const cateringActive = new StatefulSimVar({
+        simVarGetter: `A:EXIT OPEN:3`,
+        refreshRate: 1000,
+        simVarType: 'Enum'
+    });
+    const jetWayActive1 = new StatefulSimVar({
+        simVarGetter: `A:EXIT OPEN:0`,
+        refreshRate: 1000,
+        simVarType: 'Enum'
+    });
+
+
+    const cargoActive1 = new StatefulSimVar({
+        simVarGetter: `A:EXIT OPEN:5`,
+        refreshRate: 1000,
+        simVarType: 'Enum'
+    });
+
+    const cateringActive1 = new StatefulSimVar({
+        simVarGetter: `A:EXIT OPEN:3`,
+        refreshRate: 1000,
+        simVarType: 'Enum'
+    });
+    const jetWayActive2 = new StatefulSimVar({
+        simVarGetter: `A:EXIT OPEN:0`,
+        refreshRate: 1000,
+        simVarType: 'Enum'
+    });
+
+
+    const cargoActive2 = new StatefulSimVar({
+        simVarGetter: `A:EXIT OPEN:5`,
+        refreshRate: 1000,
+        simVarType: 'Enum'
+    });
+
+    const cateringActive2 = new StatefulSimVar({
+        simVarGetter: `A:EXIT OPEN:3`,
+        refreshRate: 1000,
+        simVarType: 'Enum'
+    });
+
+    const jetWayActive3 = new StatefulSimVar({
+        simVarGetter: `A:EXIT OPEN:0`,
+        refreshRate: 1000,
+        simVarType: 'Enum'
+    });
+
+
+    const cargoActive3 = new StatefulSimVar({
+        simVarGetter: `A:EXIT OPEN:5`,
+        refreshRate: 1000000,
+        simVarType: 'Enum'
+    });
+
+    const cateringActive3 = new StatefulSimVar({
+        simVarGetter: `A:EXIT OPEN:3`,
+        refreshRate: 1000000,
+        simVarType: 'Enum'
+    });
+
+
+    useEffect(() => {
+        console.log("HELLP");
+        return () => clearTimeout(timer);
+    })
+
+
+    const toggleGroundAction = (action: GroundServices) => {
         setSimVar(action, "1", "boolean");
     }
 
-    setTugHeading(action: GroundServices, direction: number) {
-            if (!this.state.tugActive) {
-                this.togglePushback(true);
+    const setTugHeading = (action: GroundServices, direction: number) => {
+            if (!tugActive) {
+                togglePushback(true);
             }
-            const tugHeading = this.getTugHeading(direction);
+            const tugHeading = getTugHeading(direction);
             // KEY_TUG_HEADING is an unsigned integer, so let's convert
             setSimVar(action, (tugHeading * 11930465) & 0xffffffff, "UINT32");
 
     }
 
-    getTugHeading(value: number): number {
+    const getTugHeading = (value: number): number => {
         const currentHeading = getSimVar("PLANE HEADING DEGREES TRUE", "degrees");
         return (currentHeading  + value) % 360;
     }
 
-    togglePushback(targetState: boolean) {
-        const tugActive = this.state.tugActive;
-
+    const togglePushback = (targetState: boolean) => {
         if (tugActive != targetState) {
             setSimVar(GroundServices.TOGGLE_PUSHBACK, 1, "boolean");
-            this.setState({
-                tugActive: targetState
-            });
+            setTugActive(targetState);
         }
     }
 
-    handleClick(callBack: () => void, event: React.MouseEvent) {
-        let updatedState = this.state.activeButtons;
-        if (!this.state.tugActive) {
-            const index = this.state.activeButtons.indexOf(event.currentTarget.id, 0);
+    const handleClick = (callBack: () => void, event: React.MouseEvent) => {
+        let updatedState = activeButtons;
+        if (!tugActive) {
+            const index = activeButtons.indexOf(event.currentTarget.id, 0);
             if (index > -1) {
                 updatedState.splice(index, 1);
-                this.setState({
-                    activeButtons: updatedState
-                });
+                setActiveButtons(updatedState);
                 callBack();
             } else {
                 updatedState.push(event.currentTarget.id)
-                    this.setState({
-                        activeButtons: updatedState
-                });
+                setActiveButtons(updatedState);
                 callBack();
             }
         }
     }
 
-    handlePushBackClick(callBack: () => void, event: React.MouseEvent) {
+    const handlePushBackClick = (callBack: () => void, event: React.MouseEvent) => {
         if(event.currentTarget.id === "stop") {
-            if(this.state.tugActive) {
-                this.timedClick(event);
-                this.setState({
-                    activeButtons: [event.currentTarget.id]
-                });
+            if(tugActive) {
+                timedClick(event);
+                setActiveButtons([event.currentTarget.id]);
                 callBack();
             }
         } else {
-            this.setState({
-                activeButtons: [event.currentTarget.id]
-            });
+            setActiveButtons([event.currentTarget.id]);
             callBack();
         }
     }
 
-    timedClick(event: React.MouseEvent) {
+    const timedClick = (event: React.MouseEvent) => {
         const buttonId = event.currentTarget.id;
         let handler: TimerHandler = () => {
             const timedButtonId = buttonId;
-            const index = this.state.activeButtons.indexOf(timedButtonId, 0);
+            const index = activeButtons.indexOf(timedButtonId, 0);
             if(index > -1) {
-                const updatedState = this.state.activeButtons;
+                const updatedState = activeButtons;
                 updatedState.splice(index, 1);
-                this.setState({
-                    activeButtons: updatedState
-                });
+                setActiveButtons(updatedState);
             }
         }
         timer = setTimeout(handler, 2000);
     }
 
-    applySelected(className: string, id?: string) {
-       /* if (id) {
-            return className + (this.state.activeButtons.includes(id) ? ' selected' : '');
+    const applySelected = (className: string, id?: string, gameSync?: StatefulSimVar) => {
+        if(gameSync) {
+          //  console.log("GAMESYNC "+gameSync.value);
+
+            return className + (gameSync.value > 0.5 ?  ' selected':'');
         }
-        return className + (this.state.activeButtons.includes(className) ? ' selected' : '');
-        */
-       return className + (this.jetWay.value === 0 ? className+ ' selected':'');
+        if (id) {
+            return className + (activeButtons.includes(id) ? ' selected' : '');
+        }
+        return className + (activeButtons.includes(className) ? ' selected' : '');
+
      }
 
-    render() {
-        return (
-            <div className="wrapper flex-grow flex flex-col">
-                <img className="airplane w-full" src={fuselage} />
-                <div className="pushback control-grid">
-                    <h1 className="text-white font-medium text-xl">Pushback</h1>
-                    <div id="stop"
-                         onMouseDown={(e) => this.handlePushBackClick(() => this.togglePushback(false), e)}
-                         className={this.applySelected('stop')}><IconHandStop/>
-                    </div>
-                    <div id="down-left"
-                         onMouseDown={(e) => this.handlePushBackClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 90), e)}
-                         className={this.applySelected('down-left')}><IconCornerDownLeft/>
-                    </div>
-                    <div id="down"
-                         onMouseDown={(e) => this.handlePushBackClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 0), e)}
-                         className={this.applySelected('down')}><IconArrowDown />
-                    </div>
-                    <div id="down-right"
-                         onMouseDown={(e) => this.handlePushBackClick(() => this.setTugHeading(GroundServices.PUSHBACK_TURN, 270), e)}
-                         className={this.applySelected('down-right')}><IconCornerDownRight/>
-                    </div>
+    return (
+        <div className="wrapper flex-grow flex flex-col">
+            <img className="airplane w-full" src={fuselage} />
+            <div className="pushback control-grid">
+                <h1 className="text-white font-medium text-xl">Pushback</h1>
+                <div id="stop"
+                    onMouseDown={(e) => handlePushBackClick(() => togglePushback(false), e)}
+                    className={applySelected('stop')}><IconHandStop/>
+                </div>
+                <div id="down-left"
+                    onMouseDown={(e) => handlePushBackClick(() => setTugHeading(GroundServices.PUSHBACK_TURN, 90), e)}
+                    className={applySelected('down-left')}><IconCornerDownLeft/>
+                </div>
+                <div id="down"
+                    onMouseDown={(e) => handlePushBackClick(() => setTugHeading(GroundServices.PUSHBACK_TURN, 0), e)}
+                    className={applySelected('down')}><IconArrowDown />
+                </div>
+                <div id="down-right"
+                    onMouseDown={(e) => handlePushBackClick(() => setTugHeading(GroundServices.PUSHBACK_TURN, 270), e)}
+                    className={applySelected('down-right')}><IconCornerDownRight/>
+                </div>
                 </div>
                 <div className="fuel control-grid">
                     <h1 className="text-white font-medium text-xl">Fuel</h1>
                     <div id="fuel"
-                         onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_FUEL), e)}
-                         className={this.applySelected('call', 'fuel')}><IconTruck/>
+                         onMouseDown={(e) => handleClick(() => toggleGroundAction(GroundServices.TOGGLE_FUEL), e)}
+                         className={applySelected('call', 'fuel')}><IconTruck/>
                     </div>
                 </div>
                 <div className="baggage control-grid">
                     <h1 className="text-white font-medium text-xl">Baggage</h1>
                     <div id="baggage"
-                         onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_CARGO), e)}
-                         className={this.applySelected('call', 'baggage')}><IconBriefcase/>
+                         onMouseDown={(e) => handleClick(() => toggleGroundAction(GroundServices.TOGGLE_CARGO), e)}
+                         className={applySelected('call', '',cargoActive)}><IconBriefcase/>
                     </div>
                 </div>
                 <div className="catering control-grid">
                     <h1 className="text-white font-medium text-xl">Catering</h1>
                     <div id="catering"
-                         onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_CATERING), e)}
-                         className={this.applySelected('call', 'catering')}><IconArchive/>
+                         onMouseDown={(e) => handleClick(() => toggleGroundAction(GroundServices.TOGGLE_CATERING), e)}
+                         className={applySelected('call', '',cateringActive)}><IconArchive/>
                     </div>
                 </div>
                 <div className="jetway control-grid">
                     <h1 className="text-white font-medium text-xl">Jetway</h1>
                     <div id="jetway"
-                         onMouseDown={(e) => this.handleClick(() => this.toggleGroundAction(GroundServices.TOGGLE_JETWAY), e)}
-                         className={this.applySelected('call', 'jetway')}><IconBuildingArch/>
+                         onMouseDown={(e) => handleClick(() => toggleGroundAction(GroundServices.TOGGLE_JETWAY), e)}
+                         className={applySelected('call', '',jetWayActive)}><IconBuildingArch/>
                     </div>
                 </div>
             </div>
         );
-    }
-}
+    };
 
 enum GroundServices {
     TOGGLE_PUSHBACK = "K:TOGGLE_PUSHBACK",
