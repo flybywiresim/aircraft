@@ -17,7 +17,7 @@
  */
 
 import React from 'react';
-import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingBridge, IconBuildingArch, IconArchive } from '@tabler/icons'
+import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive } from '@tabler/icons'
 
 import './Ground.scss'
 import fuselage from '../Assets/320neo-outline-upright.svg'
@@ -30,7 +30,7 @@ class Ground extends React.Component<GroundProps, GroundState> {
 
     render() {
         return (
-            <div className="wrapper">
+            <div className="wrapper flex-grow flex flex-col">
                 <div className="pushback control-grid">
                     <h1 className="text-white font-medium text-xl">Pushback</h1>
                     <div className="stop"><IconHandStop/></div>
@@ -54,7 +54,7 @@ class Ground extends React.Component<GroundProps, GroundState> {
                     <h1 className="text-white font-medium text-xl">Jetway</h1>
                     <div className="call"><IconBuildingArch/></div>
                 </div>
-                <img className="airplane" src={fuselage} />
+                <img className="airplane w-full" src={fuselage} />
             </div>
         );
     }

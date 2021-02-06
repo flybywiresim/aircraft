@@ -478,7 +478,7 @@ class NXSpeeds {
     }
 }
 
-class NXToSpeeds {
+class NXSpeedsTo {
     /**
      * Computes TakeOff speeds
      * @param m {number} mass: tow in t
@@ -492,7 +492,7 @@ class NXToSpeeds {
     }
 }
 
-class NXApprSpeeds {
+class NXSpeedsApp {
     /**
      * Calculates VLS and Vapp for selected landing configuration
      * @param {number} m Projected landing mass in t
