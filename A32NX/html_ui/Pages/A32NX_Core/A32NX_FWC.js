@@ -326,7 +326,7 @@ class A32NX_FWC {
 
         const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
         // Use the constraint altitude if provided otherwise use selected altitude lock value
-        const targetAltitude = currentAltitudeConstraint && !this.getAutopilotMode() ? currentAltitudeConstraint : Simplane.getAutoPilotSelectedAltitudeLockValue();
+        const targetAltitude = currentAltitudeConstraint && !this.hasAltitudeConstraint() ? currentAltitudeConstraint : Simplane.getAutoPilotSelectedAltitudeLockValue();
 
         // Exit when selected altitude is being changed
         if (this.previousTargetAltitude !== targetAltitude) {
@@ -339,6 +339,7 @@ class A32NX_FWC {
 
         if (this.warningPressed === true) {
             this._wasBellowThreshold = false;
+            this._wasAboveThreshold = false;
             this._wasInRange = false;
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
             return;
@@ -377,7 +378,7 @@ class A32NX_FWC {
         }
     }
 
-    getAutopilotMode() {
+    hasAltitudeConstraint() {
         if (this.aircraft == Aircraft.A320_NEO) {
             if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") != 0) {
                 return false;
