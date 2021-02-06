@@ -2833,9 +2833,10 @@
 
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_APU_AUTOEXITING_TEST</NODE_ID>
-                         <BLOCK_SEQ1>1</BLOCK_SEQ1>
-                         <BLOCK_SEQ2>1</BLOCK_SEQ2>
-                         <DUMMY_BUTTON/>
+                        <TOGGLE_SIMVAR>L:A32NX_APU_AUTOEXITING_TEST_ON</TOGGLE_SIMVAR>
+                         <SEQ1_CODE>(L:A32NX_APU_AUTOEXITING_TEST_OK)</SEQ1_CODE>
+                         <SEQ2_CODE>(L:A32NX_APU_AUTOEXITING_TEST_ON)</SEQ2_CODE>
+                         <TOOLTIPID>Test APU autoexiting</TOOLTIPID>
                     </UseTemplate>
 
                     <!-- APU AUTO EXITING RESET-->

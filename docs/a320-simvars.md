@@ -600,3 +600,11 @@
 -A32NX_DFDR_EVENT_ON
     -Bool
     -True if DFDR event is on.
+
+-A32NX_APU_AUTOEXITING_TEST_ON
+    -Bool
+    -True if APU AUTOEXITING is being tested.
+
+-A32NX_APU_AUTOEXITING_TEST_OK
+    -Bool
+    -True if APU AUTOEXITING TEST returns OK.
