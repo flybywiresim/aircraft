@@ -9,7 +9,6 @@ export class StatefulSimVar extends CachedSimVar {
     constructor(options) {
         super(options);
 
-        this.refreshCallback = () => this.refresh();
         this.rateScheduler = options.rateScheduler || globalRateScheduler;
 
         const [state, setState] = useState(super.value);
@@ -46,7 +45,7 @@ export class StatefulSimVar extends CachedSimVar {
      * @param refreshRate The refresh delay in ms. False-y to stop refreshing.
      */
     setRefreshRate(refreshRate) {
-        this.rateScheduler.unschedule(this.refreshCallback);
-        if (refreshRate) this.rateScheduler.schedule(this.refreshCallback, refreshRate);
+        this.rateScheduler.unschedule(this.identifier);
+        if (refreshRate) this.rateScheduler.schedule(this.identifier, this.refresh.bind(this), refreshRate);
     }
 }

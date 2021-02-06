@@ -16,6 +16,63 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap');
+
+* {
+  font-family: 'Nunito Sans', sans-serif;
+  letter-spacing: .35px;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+
+  Custom CSS for a32nx [EFB]
+
+*/
+
+.loading-screen {
+  @apply bg-black text-4xl font-thin text-gray-100;
+
+  .center {
+    padding: 475px 0;
+    @apply text-center;
+
+    .placeholder {
+      @apply w-full flex justify-center items-center;
+    }
+  }
+
+  .loading-bar {
+    @apply flex justify-center mx-auto bg-gray-500;
+    margin-top: 16px;
+    height: 3px;
+    width: 200px;
+  }
+
+  .loaded {
+    @apply w-full h-full bg-white;
+    animation: 6s linear infinite loading;
+    transform-origin: 0%;
+  }
+
+  @keyframes loading {
+    0% {
+      transform: scaleX(0);
+    }
+    100% {
+      transform: scaleX(100%);
+    }
+  }
+}
+
+.fbw-logo {
+  width: 5rem;
+  margin-right: 16px;
+}
+
 .flip-vertical {
   transform: scaleX(-1);
 }
