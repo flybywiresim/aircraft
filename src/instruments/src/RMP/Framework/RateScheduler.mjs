@@ -4,8 +4,8 @@
  */
 export class RateScheduler {
     constructor() {
-        this.rates = new Map;
-        this.callbacks = new Map;
+        this.rates = new Map();
+        this.callbacks = new Map();
     }
 
     /**
@@ -35,8 +35,7 @@ export class RateScheduler {
         this.callbacks.delete(identifier);
 
         this.rates.forEach((value) => {
-            value.identifiers = value.identifiers.filter((ident) => ident != identifier);
-            console.log(value.identifiers.length);
+            value.identifiers = value.identifiers.filter((ident) => ident !== identifier);
         });
 
         this.cleanup();
