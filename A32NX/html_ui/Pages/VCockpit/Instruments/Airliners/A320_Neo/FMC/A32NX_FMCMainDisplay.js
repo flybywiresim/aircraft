@@ -988,7 +988,7 @@ class FMCMainDisplay extends BaseAirliners {
         const dCI = this.costIndex / 999;
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
         if (flapsHandleIndex !== 0) {
-            return flapsHandleIndex === 1 ? this.this.computedVss : this.computedVfs;
+            return flapsHandleIndex === 1 ? this.computedVss : this.computedVfs;
         }
         let speed = 288 * (1 - dCI) + 300 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
