@@ -945,6 +945,15 @@ var A320_Neo_UpperECAM;
                                 ],
                                 flightPhasesInhib: [3, 4, 5, 7, 8],
                                 isActive: () => !this.isInFlightPhase(1, 10) && this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") !== 2,
+                            },
+                            {
+                                message: "TCAS STBY",
+                                level: 2,
+                                inopSystems: [
+                                    "TCAS"
+                                ],
+                                flightPhasesInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+                                isActive: () => this.getCachedSimVar("L:A32NX_SWITCH_TCAS_Position", "Enum") == 0,
                             }
                         ]
                     },
