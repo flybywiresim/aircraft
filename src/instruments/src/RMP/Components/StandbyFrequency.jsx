@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useInteractionEvent } from '../../util.mjs';
+import { useInteractionEvent } from '../../util.js';
 import { AcceleratedKnob } from '../Framework/AcceleratedKnob.mjs';
 import { SevenSegmentDisplay } from './SevenSegmentDisplay.jsx';
 
