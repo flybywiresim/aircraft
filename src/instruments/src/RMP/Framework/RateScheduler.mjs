@@ -4,7 +4,8 @@
  */
 export class RateScheduler {
     constructor() {
-        this.map = new Map();
+        this.rates = new Map;
+        this.callbacks = new Map;
     }
 
     /**
@@ -12,15 +13,17 @@ export class RateScheduler {
      * @param callback The callback to be scheduled
      * @param rate The rate that this callback should be called at.
      */
-    schedule(callback, rate) {
-        if (this.map.has(rate)) {
-            this.map.get(rate).callbacks.push(callback);
+    schedule(identifier, callback, rate) {
+        this.callbacks.set(identifier, callback);
+
+        if (this.rates.has(rate)) {
+            this.rates.get(rate).identifiers.push(identifier);
             return;
         }
 
-        this.map.set(rate, {
+        this.rates.set(rate, {
             interval: setInterval(() => this.tick(rate), rate),
-            callbacks: [callback],
+            identifiers: [identifier],
         });
     }
 
@@ -28,9 +31,12 @@ export class RateScheduler {
      * Remove a given callback (from all rates).
      * @param callback The callback to unschedule.
      */
-    unschedule(callback) {
-        this.map.forEach((value) => {
-            value.callbacks = value.callbacks.filter((cb) => cb !== callback);
+    unschedule(identifier) {
+        this.callbacks.delete(identifier);
+
+        this.rates.forEach((value) => {
+            value.identifiers = value.identifiers.filter((ident) => ident != identifier);
+            console.log(value.identifiers.length);
         });
 
         this.cleanup();
@@ -40,8 +46,8 @@ export class RateScheduler {
      * Clears intervals that have no callbacks.
      */
     cleanup() {
-        this.map.forEach((value, key, map) => {
-            if (value.callbacks.length === 0) {
+        this.rates.forEach((value, key, map) => {
+            if (value.identifiers.length === 0) {
                 clearInterval(value.interval);
                 map.delete(key);
             }
@@ -53,10 +59,11 @@ export class RateScheduler {
      * @param rate The rate of the interval that called.
      */
     tick(rate) {
-        if (!this.map.has(rate)) {
-            return;
-        }
+        if (!this.rates.has(rate)) return;
 
-        this.map.get(rate).callbacks.forEach((cb) => cb());
+        this.rates.get(rate).identifiers.forEach((identifier) => {
+            const callback = this.callbacks.get(identifier);
+            if (typeof callback === 'function') callback();
+        });
     }
 }
