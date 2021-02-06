@@ -102,7 +102,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         };
 
         this.PageTimeout = {
-            Prog: 5000,
+            Prog: 2000,
             Dyn: 1500
         };
         this.page = {
