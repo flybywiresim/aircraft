@@ -561,18 +561,6 @@
     -Bool
     -True if ELT is on.
 
--A32NX_DLS_SELCTL
-    -Bool
-    -True if select/control is being pressed on data loading selector. 
-
--A32NX_DLS_PREV
-    -Bool
-    -True if previous is being pressed on data loading selector. 
-
--A32NX_DLS_NEXT
-    -Bool
-    -True if next is being pressed on data loading selector. 
-
 -A32NX_DLS_ON
     -Bool
     -True if data loading selector is on. 
@@ -588,3 +576,19 @@
 -A32NX_AVIONICS_COMPLT_ON
     -Bool
     -True if avionics comp lt is on.
+
+-A32NX_ENG1N1_ON
+    -Bool
+    -True if engine one n1 is on. 
+
+-A32NX_ENG2N1_ON
+    -Bool
+    -True if engine two n1 is on. 
+
+-A32NX_CARGOSMOKE_FWD_DISCHARGED
+    -Bool
+    -True if cargosmoke one bottle is discharged
+
+-A32NX_CARGOSMOKE_AFT_DISCHARGED
+    -Bool
+    -True if cargosmoke two bottle is discharged
