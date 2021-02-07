@@ -71,3 +71,15 @@ export function setSimVar(name, value, type = SIMVAR_TYPES[name]) {
     SIMVAR_CACHE.delete(name);
     return SimVar.SetSimVarValue(name, type, value);
 }
+
+export const createDeltaTimeCalculator = (startTime = Date.now()) => {
+    let lastTime = startTime;
+
+    return () => {
+        const nowTime = Date.now();
+        const deltaTime = nowTime - lastTime;
+        lastTime = nowTime;
+
+        return deltaTime;
+    };
+};

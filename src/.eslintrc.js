@@ -50,6 +50,10 @@ module.exports = {
     ],
     // overrides airbnb, use sparingly
     rules: {
+        'no-bitwise': 'off',
+        'linebreak-style': 'off',
+        'no-mixed-operators': 'off',
+        'no-plusplus': 'off',
         'arrow-parens': ['error', 'always'],
         'brace-style': ['error', '1tbs', { allowSingleLine: false }],
         'class-methods-use-this': 'off',
@@ -81,7 +85,7 @@ module.exports = {
         'react/destructuring-assignment': 'off',
         'no-param-reassign': 'off',
         'no-undef-init': 'off',
-        'max-len': ['error', { code: 128 }],
+        'max-len': ['error', { code: 500 }],
     },
     globals: {
         Simplane: 'readonly',
