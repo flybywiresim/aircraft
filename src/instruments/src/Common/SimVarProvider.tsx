@@ -267,7 +267,7 @@ const SimVarProvider: React.FC = ({ children }) => {
             // The refresh time is given by the *smallest* maximum update
             // interval.
             const threshold = Math.min(...intervals);
-            const lastUpdatedAgo = (cache[key].lastUpdatedAgo || 0) + deltaTime;
+            const lastUpdatedAgo = (cache[key] ? cache[key].lastUpdatedAgo || 0 : 0) + deltaTime;
 
             if (lastUpdatedAgo >= threshold) {
                 // At this point, as we haven't updated this SimVar recently, we
