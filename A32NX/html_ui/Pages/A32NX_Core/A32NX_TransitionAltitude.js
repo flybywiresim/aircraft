@@ -23,7 +23,7 @@ class A32NX_TransitionAltitude {
         }
         const departTA = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
         const arrivalTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
-        if ((this.checkstartsec >= 30*1000) && departTA === 0 && arrivalTA === 0) {
+        if ((this.checkstartsec >= 30 * 1000) && departTA === 0 && arrivalTA === 0) {
             this.offline = true;
             this.checkstart = false;
         }

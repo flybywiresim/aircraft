@@ -1944,7 +1944,7 @@ class FMCMainDisplay extends BaseAirliners {
                     SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", this.transitionAltitude);
                     return this.transitionAltitude;
                 }
-            })
+            });
     }
 
     //Needs PR Merge #3082
@@ -2597,7 +2597,7 @@ class FMCMainDisplay extends BaseAirliners {
                     SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", this.transitionApprAltitude);
                     return this.transitionApprAltitude;
                 }
-            })
+            });
     }
 
     /**
@@ -3324,10 +3324,11 @@ class FMCMainDisplay extends BaseAirliners {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
     }
 
+    //only update when changing departure & arrival airport.
     updateDepartArrive(_deltaTime) {
         if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident) {
             const departureAirport = this.flightPlanManager.getOrigin().ident;
-            if (this.currentOrigin !== departureAirport) {  //only update when changing departure & arrival airport.
+            if (this.currentOrigin !== departureAirport) {
                 NXDataStore.set("PLAN_ORIGIN", departureAirport);
                 this.getTransitionAltitude(departureAirport);
                 this.offlineTACore.tryCheckAPI();
