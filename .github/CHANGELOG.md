@@ -74,6 +74,7 @@
 1. [MCDU] Rework PERF TAKE OFF page - @beheh (Benedict Etzel)
 1. [SOUND] Fixed FCU knobs sounds - @ImenesFBW (Imenes)
 1. [MCDU] Fix AOC RCVD MSGS scrolling, add arrows, and update on receipt - @tracernz (Mike)
+1. [ND] Removed label from smallest circle in arc mode - @tyler58546 (tyler58546)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
