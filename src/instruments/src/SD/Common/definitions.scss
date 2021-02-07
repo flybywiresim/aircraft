@@ -1,6 +1,36 @@
-$font-size-large: 20px;
-$font-size-xlarge: 22px;
+/*!
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-$display-white: white;
-$display-green: green;
-$display-cyan: cyan;
+$font-size-small: 14px;
+$font-size-medium: 16px;
+$font-size-large: 17px;
+$font-size-larger: 18px;
+$font-size-xlarge: 20px;
+$font-size-huge: 22px;
+$font-size-title: 24px;
+
+$display-white: #ffffff;
+$display-grey: #787878;
+$display-dark-grey: #b3b3b3;
+$display-light-grey: lightgray;
+$display-amber: #e68000;
+$display-cyan: #00ffff;
+$display-green: #00ff00;
+$display-magenta: #ff94ff;
+$display-red: #ff0000;
+$display-yellow: #ffff00;

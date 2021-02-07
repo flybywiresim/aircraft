@@ -1,4 +1,22 @@
-﻿<link rel="stylesheet" href="A320_Neo_EICAS.css"/>
+﻿<!--
+  ~ A32NX
+  ~ Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<link rel="stylesheet" href="A320_Neo_EICAS.css" xmlns=""/>
 <link rel="stylesheet" href="/CSS/A32NX_Display_Common.css"/>
 
 <script type="text/html" id="A320_Neo_EICAS">
@@ -49,13 +67,13 @@
                 <a320-neo-lower-ecam-cond style="display:none"></a320-neo-lower-ecam-cond>
                 <a320-neo-lower-ecam-bleed style="display:none"></a320-neo-lower-ecam-bleed>
                 <a320-neo-lower-ecam-press style="display:none"></a320-neo-lower-ecam-press>
-                <a320-neo-lower-ecam-door style="display:none"></a320-neo-lower-ecam-door>
+<!--                <a320-neo-lower-ecam-door style="display:none"></a320-neo-lower-ecam-door>-->
+                <a32nx-door-page-element style="display: none"></a32nx-door-page-element>
                 <a320-neo-lower-ecam-ftcl style="display:none"></a320-neo-lower-ecam-ftcl>
                 <a320-neo-lower-ecam-wheel style="display:none"></a320-neo-lower-ecam-wheel>
                 <a320-neo-lower-ecam-status style="display:none"></a320-neo-lower-ecam-status>
                 <a320-neo-lower-ecam-crz style="display:none"></a320-neo-lower-ecam-crz>
                 <eicas-common-display id="CommonDisplay"></eicas-common-display>
-
 
                 <svg id="Eicas2EngTest" class="engineering-mode-overlay" viewBox="0 0 600 600" style="top: -5% !important;">
                     <text class="start" x="9" y="250">P/N : C19755BA01</text>
@@ -117,7 +135,8 @@
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Elec.html"></script>
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_BLEED.html"></script>
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_PRESS.html"></script>
-<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_DOOR.html"></script>
+<!--<script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_DOOR.html"></script>-->
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/generated/EcamPages/door-page/template.html"></script>
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_FTCL.html"></script>
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Status.html"></script>
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_CRZ.html"></script>
