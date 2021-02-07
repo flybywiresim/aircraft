@@ -1,4 +1,4 @@
-/*
+/*!
  * A32NX
  * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
  *
@@ -16,11 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ReactDOM from 'react-dom';
-import { renderTarget } from '../util.mjs';
+.default-input-container {
+  @apply h-16 px-4 py-3 border-2 border-blue-dark bg-blue-medium-contrast rounded-lg;
+  @apply flex flex-row items-center;
 
-const Efb = () => (
-    <div />
-);
+  &.focus-active {
+    @apply border-blue-light;
+  }
 
-ReactDOM.render(<Efb />, renderTarget);
+  > * {
+    @apply mr-4;
+  }
+
+  :last-child {
+    @apply mr-0;
+  }
+}

@@ -1,4 +1,6 @@
 import React, {useState} from "react"
+import { IconUser } from '@tabler/icons';
+import Input from "../Components/Form/Input/Input";
 
 type CompanyProps = {
     simbriefUsername: string,
@@ -10,12 +12,14 @@ const Company = (props: CompanyProps) => {
         <div className="flex p-6 w-full">
             <div className="w-4/12 mr-4">
                 <h1 className="text-white font-medium ml-2 mb-4 text-xl">Simbrief</h1>
-                <input
-                    className="text-2xl font-medium rounded-lg"
-                    type="text"
-                    placeholder="Insert Username"
+
+                <Input
+                    label={'Username'}
+                    type={'text'}
                     value={props.simbriefUsername}
-                    onChange={(event) => props.changeSimbriefUsername(event.target.value)} />
+                    onChange={(value) => props.changeSimbriefUsername(value)}
+                    leftComponent={<IconUser color={'white'} size={35} />}
+                />
             </div>
         </div>
     )
