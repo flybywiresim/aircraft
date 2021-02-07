@@ -1,8 +1,8 @@
 import React from 'react';
 import { StandbyFrequency } from './StandbyFrequency';
+import { useSplitSimVar } from '../../Common/simVars';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 import { useInteractionEvent } from '../../Common/hooks';
-import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 
 /**
  *
@@ -25,6 +25,9 @@ const useActiveVhfFrequency = (transciever: number) => {
  *
  */
 const useStandbyVhfFrequency = (side: string, transciever: number) => {
+    let variableReadName = `COM STANDBY FREQUENCY:${transciever}`;
+    let variableWriteName = `K:COM${transciever === 1 ? '' : transciever}_STBY_RADIO_SET_HZ`;
+
     // Use custom SimVars for abnormal standby frequency.
     // Allows true-to-life independent standby frequencies per RMP.
     // @todo, if we ever add a third RMP (e.g. C), update this.
@@ -32,11 +35,10 @@ const useStandbyVhfFrequency = (side: string, transciever: number) => {
         (side === 'L' && transciever !== 1) ||
         (side === 'R' && transciever !== 2)
     ) {
-        return useSimVar(`L:A32NX_RMP_${side}_VHF${transciever}_STANDBY_FREQUENCY`, 'Hz', 100);
+        variableReadName = `L:A32NX_RMP_${side}_VHF${transciever}_STANDBY_FREQUENCY`;
+        variableWriteName = variableReadName;
     }
 
-    const variableReadName = `COM STANDBY FREQUENCY:${transciever}`;
-    const variableWriteName = `K:COM${transciever === 1 ? '' : transciever}_STBY_RADIO_SET_HZ`;
     return useSplitSimVar(variableReadName, 'Hz', variableWriteName,  'Hz', 100);
 }
 
