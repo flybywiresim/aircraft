@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from "react"
+import { useInteractionEvent } from "./ReactInstrument"
 
 // We assume that these two elements will be found. @todo maybe check?
 export const renderTarget = document.getElementById('A32NX_REACT_MOUNT') as HTMLElement;
@@ -38,7 +39,7 @@ export const normalizeUnitName = (unit: UnitName): UnitName => {
 
 type SimVarSetter = <T extends SimVarValue>(oldValue: T) => T;
 
-type RetrieveSimVar = (name: string, unit: UnitName) => SimVarValue;
+type RetrieveSimVar = (name: string, unit: UnitName, force?: boolean) => SimVarValue;
 type UpdateSimVar = (name: string, unit: UnitName, newValueOrSetter: SimVarValue | SimVarSetter, proxy?: string) => void;
 type RegisterSimVar = (name: string, unit: UnitName, maxStaleness: number) => void;
 type UnregisterSimVar = (name: string, unit: UnitName, maxStaleness: number) => void;
@@ -138,9 +139,9 @@ const SimVarProvider: React.FC = ({ children }) => {
         return `${name}/${normalizeUnitName(unit)}`;
     }
 
-    const retrieve: RetrieveSimVar = (name, unit) => {
+    const retrieve: RetrieveSimVar = (name, unit, force?: boolean) => {
         const key = getKey(name, unit);
-        if (cache[key]) {
+        if (cache[key] && !force) {
             return cache[key].value;
         }
 
@@ -295,9 +296,30 @@ export const useSimVarSetter = (
 export const useSimVar = (
     name: string,
     unit: UnitName,
-    maxStaleness: number,
+    maxStaleness: number = 0,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter) => void] => {
     const value = useSimVarValue(name, unit, maxStaleness);
+    const setter = useSimVarSetter(name, unit);
+    return [value, setter];
+}
+
+/**
+ * Like useSimVar, but triggers an immediate update on an interaction event.
+ */
+export const useInteractionSimVar = (
+    name: string,
+    unit: UnitName,
+    interactionEvent: string,
+    maxStaleness: number = 1000,
+): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter) => void] => {
+    const contextValue = React.useContext(context);
+    const value = useSimVarValue(name, unit, maxStaleness);
+
+    useInteractionEvent(interactionEvent, () => {
+        // force an update
+        contextValue.retrieve(name, unit, true);
+    });
+
     const setter = useSimVarSetter(name, unit);
     return [value, setter];
 }
