@@ -1,6 +1,6 @@
 /*
  * A32NX
- * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,9 @@
  */
 
 import './Door.scss';
+import ReactDOM from 'react-dom';
 import { useState } from 'react';
-import { getSimVar, useUpdate } from '../../../util.mjs';
+import { getSimVar, renderTarget, useUpdate } from '../../../util.mjs';
 
 export const DoorPage = () => {
     const [cabinDoors, setCabinDoors] = useState({
@@ -53,7 +54,8 @@ export const DoorPage = () => {
 
     return (
         <>
-            <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+            {/* This is already in an svg so we should remove the containing one - TODO remove style once we are not in the Asobo ECAM */}
+            <svg viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
                 <g id="fuselage">
                     <path className="MainShape" d="M 267 473 l -5 -13 l 0 -340 C 260,102 276,52 300,40" />
                     <path className="MainShape" d="M 333 473 l 5 -13 l 0 -340 C 340,102 324,52 300,40" />
@@ -114,3 +116,5 @@ export const DoorPage = () => {
         </>
     );
 };
+
+ReactDOM.render(<DoorPage />, renderTarget);
