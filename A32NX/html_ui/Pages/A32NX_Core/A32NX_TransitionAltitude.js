@@ -30,8 +30,8 @@ class A32NX_TransitionAltitude {
     }
 
     offlineTransAlt() {
-        let Departure = NXDataStore.get("PLAN_ORIGIN", "");
-        let Arrival = NXDataStore.get("PLAN_DESTINATION", "");
+        const Departure = NXDataStore.get("PLAN_ORIGIN", "");
+        const Arrival = NXDataStore.get("PLAN_DESTINATION", "");
         this.departureLogic(Departure);
         this.arrivalLogic(Arrival);
         if (this.currentDeparture !== Departure) {
@@ -45,8 +45,8 @@ class A32NX_TransitionAltitude {
     }
 
     departureLogic(airport) {
-        let airportDepart_1 = airport.substr(0,1);
-        let airportDepart_2 = airport.substr(0,2);
+        const airportDepart_1 = airport.substr(0,1);
+        const airportDepart_2 = airport.substr(0,2);
         if (airportDepart_1 === "K" || airportDepart_1 === "C") {
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000); //Canada & USA fixed to 18,000ft
         } else if (airportDepart_1 === "Y") {
@@ -61,8 +61,8 @@ class A32NX_TransitionAltitude {
         }
     }
     arrivalLogic(airport) {
-        let airportArrive_1 = airport.substr(0,1);
-        let airportArrive_2 = airport.substr(0,2);
+        const airportArrive_1 = airport.substr(0,1);
+        const airportArrive_2 = airport.substr(0,2);
         if (airportArrive_1 === "K" || airportArrive_1 === "C") {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000); //Canada & USA fixed to 18,000ft
         } else if (airportArrive_1 === "Y") {
