@@ -316,7 +316,7 @@ class A32NX_FWC {
         if (reset === true) {
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
         }
-        
+
         if (this.warningPressed === true) {
             this._wasBellowThreshold = false;
             this._wasAboveThreshold = false;
