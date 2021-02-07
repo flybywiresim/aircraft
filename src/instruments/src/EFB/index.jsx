@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ReactDOM from 'react-dom';
 import { useState, useEffect } from 'react';
+import * as ReactInstrument from '../Common/ReactInstrument.tsx';
 import Efb from './Efb.tsx';
 import {
-    renderTarget, getSimVar, setSimVar,
+    getSimVar, setSimVar,
 } from '../util.mjs';
 import logo from './Assets/fbw-logo.svg';
 
@@ -78,4 +78,4 @@ function EFBLoad() {
     return content;
 }
 
-ReactDOM.render(<EFBLoad />, renderTarget);
+ReactInstrument.render(<EFBLoad />);

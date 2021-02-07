@@ -22,51 +22,30 @@ import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, I
 import './Ground.scss'
 import fuselage from '../Assets/320neo-outline-upright.svg'
 import {setSimVar, getSimVar} from '../../util.mjs'
-import { StatefulSimVar } from '../../RMP/Framework/StatefulSimVar.mjs'
+import { useSimVar } from '../../Common/SimVarProvider';
 import SimPlane from '../../../../../typings/fs-base-ui/html_ui/JS/SimPlane'
 
-
-type GroundState = {
-    tugActive: boolean;
-    activeButtons: Array<string>;
-   // jetWay: StatefulSimVar;
-}
 
 function Ground() {
 
     const [tugActive, setTugActive] = useState(false);
-    const [activeButtons, setActiveButtons] = useState(new Array<string>());
-
-    const jetWayActive = new StatefulSimVar({
-        simVarGetter: `A:EXIT OPEN:0`,
-        refreshRate: 1000,
-        simVarType: 'Enum'
-    });
-
-
-    const cargoActive = new StatefulSimVar({
-        simVarGetter: `A:EXIT OPEN:5`,
-        refreshRate: 1000,
-        simVarType: 'Enum'
-    });
-
-    const cateringActive = new StatefulSimVar({
-        simVarGetter: `A:EXIT OPEN:3`,
-        refreshRate: 1000,
-        simVarType: 'Enum'
-    });
+    const [activeButtons, setActiveButtons] = useState(new Array<StatefulButton>());
+    const [jetWayActive] = useSimVar('A:EXIT OPEN:0', 'Enum', 500);
+    const [cargoActive] = useSimVar('A:EXIT OPEN:5', 'Enum', 500);
+    const [cateringActive] = useSimVar('A:EXIT OPEN:3', 'Enum', 500);
+    const [fuelingActive] = useSimVar('A:INTERACTIVE POINT OPEN:9','percent', 500);
 
     const toggleGroundAction = (action: GroundServices) => {
-        setSimVar(action, "1", "boolean");
+        setSimVar(action, "1", "bool");
     }
 
     const setTugHeading = (action: GroundServices, direction: number) => {
-            if (!tugActive) {
-                togglePushback(true);
-            }
-            const tugHeading = getTugHeading(direction);
-            // KEY_TUG_HEADING is an unsigned integer, so let's convert
-            setSimVar(action, (tugHeading * 11930465) & 0xffffffff, "UINT32");
+        if (!tugActive) {
+            togglePushback(true);
+        }
+        const tugHeading = getTugHeading(direction);
+        // KEY_TUG_HEADING is an unsigned integer, so let's convert
+        setSimVar(action, (tugHeading * 11930465) & 0xffffffff, "UINT32");
     }
 
     const getTugHeading = (value: number): number => {
@@ -76,7 +55,7 @@ function Ground() {
 
     const togglePushback = (targetState: boolean) => {
         if (tugActive != targetState) {
-            setSimVar(GroundServices.TOGGLE_PUSHBACK, 1, "boolean");
+            setSimVar(GroundServices.TOGGLE_PUSHBACK, 1, "bool");
             setTugActive(targetState);
         }
     }
@@ -84,13 +63,13 @@ function Ground() {
     const handleClick = (callBack: () => void, event: React.MouseEvent) => {
         let updatedState = activeButtons;
         if (!tugActive) {
-            const index = activeButtons.indexOf(event.currentTarget.id, 0);
+            const index = activeButtons.findIndex( b => b.id === event.currentTarget.id);
             if (index > -1) {
                 updatedState.splice(index, 1);
                 setActiveButtons(updatedState);
                 callBack();
             } else {
-                updatedState.push(event.currentTarget.id)
+                updatedState.push(new StatefulButton(event.currentTarget.id, ButtonState.WAITING));
                 setActiveButtons(updatedState);
                 callBack();
             }
@@ -98,23 +77,27 @@ function Ground() {
     }
 
     const handlePushBackClick = (callBack: () => void, event: React.MouseEvent) => {
-        setActiveButtons([event.currentTarget.id]);
+        setActiveButtons([new StatefulButton(event.currentTarget.id, ButtonState.ACTIVE)]);
         callBack();
     }
 
-    const applySelected = (className: string, id?: string, gameSync?: StatefulSimVar) => {
-        console.log(gameSync);
-        if(gameSync && gameSync.value === 0 && id) {
+    const applySelected = (className: string, id?: string, gameSync?) => {
 
+        console.log(gameSync + " classname " + className + " id " + id);
+        if(gameSync != undefined) {
+            if (gameSync === 1) {
+                if(!activeButtons.find(b => b.id === id)) {
+                    activeButtons.push(new StatefulButton(id, ButtonState.ACTIVE));
+                }
+                return className + ' selected';
+            } else if (gameSync === 0 && id) {
+                return className + (activeButtons.find(b => b.id === id && b.state === ButtonState.WAITING) ? ' waiting' : '');;
+            }
         }
-
-        if(gameSync && gameSync.value > 0.5) {
-            return className + ' selected';
+         if (id) {
+            return className + (activeButtons.find(b => b.id === id) ? ' selected' : '');
         }
-        else if (id) {
-            return className + (activeButtons.includes(id) ? ' selected' : '');
-        }
-        return className + (activeButtons.includes(className) ? ' selected' : '');
+        return className + (activeButtons.find(b => b.id === className) ? ' selected' : '');
      }
 
     return (
@@ -143,7 +126,7 @@ function Ground() {
                     <h1 className="text-white font-medium text-xl">Fuel</h1>
                     <div id="fuel"
                          onMouseDown={(e) => handleClick(() => toggleGroundAction(GroundServices.TOGGLE_FUEL), e)}
-                         className={applySelected('call', 'fuel')}><IconTruck/>
+                         className={applySelected('call', 'fuel', fuelingActive)}><IconTruck/>
                     </div>
                 </div>
                 <div className="baggage control-grid">
@@ -179,6 +162,22 @@ enum GroundServices {
     TOGGLE_CARGO = "K:REQUEST_LUGGAGE",
     TOGGLE_CATERING = "K:REQUEST_CATERING",
     TOGGLE_FUEL = "K:REQUEST_FUEL_KEY"
+}
+enum ButtonState {
+    ACTIVE,
+    WAITING,
+    INACTIVE
+}
+
+class StatefulButton {
+    id: string;
+    state: ButtonState;
+    className: string;
+
+    constructor(id, state) {
+        this.state = state;
+        this.id = id;
+    }
 }
 
 export default Ground;
