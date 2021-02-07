@@ -3329,7 +3329,8 @@ class FMCMainDisplay extends BaseAirliners {
                 this.currentOrigin = departureAirport;
                 this.updateDepart += _deltaTime;
                 this.getTransitionAltitude(departureAirport);
-                if (this.updateDepart*1000 >= 15) {
+                const DepartureTA = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
+                if (this.updateDepart*1000 >= 15 && DepartureTA === 0) {
                     //when 15 sec after, if there is no TA on depart, using offline db
                     return;
                 }
@@ -3342,7 +3343,8 @@ class FMCMainDisplay extends BaseAirliners {
                 this.currentDestination = departureAirport;
                 this.updateArrival += _deltaTime;
                 this.getArrivalTransitionAltitude(arrivalAirport);
-                if (this.updateArrival*1000 >= 15) {
+                const ArrivalTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+                if (this.updateArrival*1000 >= 15 && ArrivalTA === 0) {
                     //when 15 sec after, if there is no TA on depart, using offline db
                     return;
                 }
