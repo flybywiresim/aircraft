@@ -46,8 +46,12 @@ module.exports = {
                     'light': '#00C2CB',
                     'light-contrast': '#009da6',
                     'medium': '#006166',
+                    'medium-contrast': '#1f2937',
                     'dark': '#1B2434',
                     'darker': '#141E30',
+                },
+                gray: {
+                    medium: '#797979',
                 },
             },
             boxShadow: {
