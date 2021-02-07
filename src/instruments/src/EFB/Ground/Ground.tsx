@@ -23,6 +23,7 @@ import './Ground.scss'
 import fuselage from '../Assets/320neo-outline-upright.svg'
 import {setSimVar, getSimVar} from '../../util.mjs'
 import { StatefulSimVar } from '../../RMP/Framework/StatefulSimVar.mjs'
+import SimPlane from '../../../../../typings/fs-base-ui/html_ui/JS/SimPlane'
 
 
 type GroundState = {
@@ -35,10 +36,6 @@ function Ground() {
 
     const [tugActive, setTugActive] = useState(false);
     const [activeButtons, setActiveButtons] = useState(new Array<string>());
-
-    let timer;
-
-    console.log("BRUH");
 
     const jetWayActive = new StatefulSimVar({
         simVarGetter: `A:EXIT OPEN:0`,
@@ -58,68 +55,6 @@ function Ground() {
         refreshRate: 1000,
         simVarType: 'Enum'
     });
-    const jetWayActive1 = new StatefulSimVar({
-        simVarGetter: `A:EXIT OPEN:0`,
-        refreshRate: 1000,
-        simVarType: 'Enum'
-    });
-
-
-    const cargoActive1 = new StatefulSimVar({
-        simVarGetter: `A:EXIT OPEN:5`,
-        refreshRate: 1000,
-        simVarType: 'Enum'
-    });
-
-    const cateringActive1 = new StatefulSimVar({
-        simVarGetter: `A:EXIT OPEN:3`,
-        refreshRate: 1000,
-        simVarType: 'Enum'
-    });
-    const jetWayActive2 = new StatefulSimVar({
-        simVarGetter: `A:EXIT OPEN:0`,
-        refreshRate: 1000,
-        simVarType: 'Enum'
-    });
-
-
-    const cargoActive2 = new StatefulSimVar({
-        simVarGetter: `A:EXIT OPEN:5`,
-        refreshRate: 1000,
-        simVarType: 'Enum'
-    });
-
-    const cateringActive2 = new StatefulSimVar({
-        simVarGetter: `A:EXIT OPEN:3`,
-        refreshRate: 1000,
-        simVarType: 'Enum'
-    });
-
-    const jetWayActive3 = new StatefulSimVar({
-        simVarGetter: `A:EXIT OPEN:0`,
-        refreshRate: 1000,
-        simVarType: 'Enum'
-    });
-
-
-    const cargoActive3 = new StatefulSimVar({
-        simVarGetter: `A:EXIT OPEN:5`,
-        refreshRate: 1000000,
-        simVarType: 'Enum'
-    });
-
-    const cateringActive3 = new StatefulSimVar({
-        simVarGetter: `A:EXIT OPEN:3`,
-        refreshRate: 1000000,
-        simVarType: 'Enum'
-    });
-
-
-    useEffect(() => {
-        console.log("HELLP");
-        return () => clearTimeout(timer);
-    })
-
 
     const toggleGroundAction = (action: GroundServices) => {
         setSimVar(action, "1", "boolean");
@@ -132,7 +67,6 @@ function Ground() {
             const tugHeading = getTugHeading(direction);
             // KEY_TUG_HEADING is an unsigned integer, so let's convert
             setSimVar(action, (tugHeading * 11930465) & 0xffffffff, "UINT32");
-
     }
 
     const getTugHeading = (value: number): number => {
@@ -164,43 +98,23 @@ function Ground() {
     }
 
     const handlePushBackClick = (callBack: () => void, event: React.MouseEvent) => {
-        if(event.currentTarget.id === "stop") {
-            if(tugActive) {
-                timedClick(event);
-                setActiveButtons([event.currentTarget.id]);
-                callBack();
-            }
-        } else {
-            setActiveButtons([event.currentTarget.id]);
-            callBack();
-        }
-    }
-
-    const timedClick = (event: React.MouseEvent) => {
-        const buttonId = event.currentTarget.id;
-        let handler: TimerHandler = () => {
-            const timedButtonId = buttonId;
-            const index = activeButtons.indexOf(timedButtonId, 0);
-            if(index > -1) {
-                const updatedState = activeButtons;
-                updatedState.splice(index, 1);
-                setActiveButtons(updatedState);
-            }
-        }
-        timer = setTimeout(handler, 2000);
+        setActiveButtons([event.currentTarget.id]);
+        callBack();
     }
 
     const applySelected = (className: string, id?: string, gameSync?: StatefulSimVar) => {
-        if(gameSync) {
-          //  console.log("GAMESYNC "+gameSync.value);
+        console.log(gameSync);
+        if(gameSync && gameSync.value === 0 && id) {
 
-            return className + (gameSync.value > 0.5 ?  ' selected':'');
         }
-        if (id) {
+
+        if(gameSync && gameSync.value > 0.5) {
+            return className + ' selected';
+        }
+        else if (id) {
             return className + (activeButtons.includes(id) ? ' selected' : '');
         }
         return className + (activeButtons.includes(className) ? ' selected' : '');
-
      }
 
     return (
@@ -236,21 +150,21 @@ function Ground() {
                     <h1 className="text-white font-medium text-xl">Baggage</h1>
                     <div id="baggage"
                          onMouseDown={(e) => handleClick(() => toggleGroundAction(GroundServices.TOGGLE_CARGO), e)}
-                         className={applySelected('call', '',cargoActive)}><IconBriefcase/>
+                         className={applySelected('call', 'baggage', cargoActive)}><IconBriefcase/>
                     </div>
                 </div>
                 <div className="catering control-grid">
                     <h1 className="text-white font-medium text-xl">Catering</h1>
                     <div id="catering"
                          onMouseDown={(e) => handleClick(() => toggleGroundAction(GroundServices.TOGGLE_CATERING), e)}
-                         className={applySelected('call', '',cateringActive)}><IconArchive/>
+                         className={applySelected('call', 'catering', cateringActive)}><IconArchive/>
                     </div>
                 </div>
                 <div className="jetway control-grid">
                     <h1 className="text-white font-medium text-xl">Jetway</h1>
                     <div id="jetway"
                          onMouseDown={(e) => handleClick(() => toggleGroundAction(GroundServices.TOGGLE_JETWAY), e)}
-                         className={applySelected('call', '',jetWayActive)}><IconBuildingArch/>
+                         className={applySelected('call', 'jetway', jetWayActive)}><IconBuildingArch/>
                     </div>
                 </div>
             </div>
