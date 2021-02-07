@@ -21,8 +21,6 @@
 
  // TODO: Adjust v-speeds for tail/head wind
 
-import { getTailWind } from '../Calculators/CommonCalculations';
-
 export enum TakeoffFlapsConfig {
 	Conf1F,
 	Conf2,
@@ -290,11 +288,7 @@ export default class TakeoffCalculator {
 	}
 
 	private getV1(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, temperature: number, runwayLength: number, targetVr: number): { v1: number, v1Dist: number, brakeDist: number, rtoDist: number, valid: boolean } {
-
-		let stallSpeed = Math.round(vs[flaps][this.getTakeoffTableIndex(weightTons)](weightTons, true) * knotsToMS * stallSafetyMargin);
 		let vmcgVmcaMinV1 = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinV1Speeds) * knotsToMS;
-
-		let minV1Speed = Math.max(stallSpeed, vmcgVmcaMinV1);
 
 		let pressure = this.altitudeToPressure(pressureAltitude);
 		let pressurePascals = pressure * 100;
@@ -311,12 +305,11 @@ export default class TakeoffCalculator {
 
 		let mass = weightTons * 1000;
 
-		let v1 = minV1Speed;
-		let v1Dist: number = getVDist(minV1Speed, mass, b, thrust);
-		let brakeDist: number = getBrakingDistance(minV1Speed, mass, brakeForce);
+		let v1 = vmcgVmcaMinV1;
+		let v1Dist: number = getVDist(vmcgVmcaMinV1, mass, b, thrust);
+		let brakeDist: number = getBrakingDistance(vmcgVmcaMinV1, mass, brakeForce);
 
 		if (v1Dist + brakeDist > runwayLength) {
-			console.log(`v1: ${v1}, rtoDist: ${v1Dist + brakeDist}`);
 			return {
 				v1: 0,
 				v1Dist: v1Dist,
@@ -327,7 +320,7 @@ export default class TakeoffCalculator {
 		}
 
 
-		for (let candidateSpeed = minV1Speed + 0.5; candidateSpeed <= targetVr * knotsToMS; candidateSpeed += 0.5) {
+		for (let candidateSpeed = vmcgVmcaMinV1 + 0.5; candidateSpeed <= targetVr * knotsToMS; candidateSpeed += 0.5) {
 			let candidateVDist = getVDist(candidateSpeed, mass, b, thrust);
 			let candidateBrakeDist = getBrakingDistance(candidateSpeed, mass, brakeForce);
 
@@ -341,8 +334,6 @@ export default class TakeoffCalculator {
 		}
 
 		let v1Knots = v1 / knotsToMS;
-
-		console.log(`v1: ${v1}, rtoDist: ${v1Dist + brakeDist}`);
 
 		return {
 			v1: v1Knots,

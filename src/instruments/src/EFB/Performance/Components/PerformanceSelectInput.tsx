@@ -9,7 +9,8 @@ type PerformanceSelectInputProps = {
 	onChange?: (newValue: number | string) => void,
 	defaultValue?: string | number,
 	reverse?: boolean,
-	options: (number | string)[][]
+	options: (number | string)[][],
+	dropdownOnTop?: boolean
 };
 type PerformanceSelectInputState = {
 	value: string | number,
@@ -79,7 +80,8 @@ export default class PerformanceSelectInput extends React.Component<PerformanceS
 						<div className="flex bg-gray-500 p-1 items-center rounded rounded-l-none justify-center">v</div>
 					</div>
 					{this.state.showDropdown && (
-						<div className="w-full border border-white bg-gray-900 rounded z-10 absolute bottom-0 transform translate-y-full">
+						<div className={"w-full border border-white bg-gray-900 rounded z-10 absolute transform " +
+							(this.props.dropdownOnTop ? "top-0 -translate-y-full" : "bottom-0 translate-y-full")}>
 							{ this.dropdownElements() }
 						</div>
 					)}

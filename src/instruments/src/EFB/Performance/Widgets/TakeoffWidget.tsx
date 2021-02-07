@@ -202,19 +202,20 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 						<div className="text-center mb-6">
 							<div className="flex">
 								<div className="flex-1 m-2.5 column-left">
-									<PerformanceInput label="OAT" placeholder="°C" onChange={this.handleTemperatureChange}/>
+									<PerformanceInput label="OAT" placeholder="°C" onChange={this.handleTemperatureChange} />
+									<PerformanceInput label="QNH" placeholder="mb" onChange={this.handlePressureChange}/>
 									<PerformanceInput label="Rwy Heading" onChange={this.handleRunwayHeadingChange} />
 									<PerformanceInput label="Rwy Length" placeholder="m" onChange={this.handleRunwayLengthChange} />
-									<PerformanceInput label="Altitude" placeholder={"\" ASL"} onChange={this.handleAltitudeChange}/>
+
 								</div>
 								<div className="flex-1 m-2.5 column-right">
+									<PerformanceInput label="Rwy Altitude" placeholder={"\" ASL"} onChange={this.handleAltitudeChange} reverse/>
 									<PerformanceInput label="Weight" placeholder="KG" onChange={this.handleWeightChange} reverse/>
 									<PerformanceSelectInput label="Flaps" defaultValue="0" onChange={this.handleFlapsChange} reverse options={[
 										[0, "1 + F"],
 										[1, "2"],
 										[2, "3"]
 									]} />
-									<PerformanceInput label="Pressure" placeholder="mb" onChange={this.handlePressureChange} reverse/>
 								</div>
 							</div>
 							<button className="my-3 w-full font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"

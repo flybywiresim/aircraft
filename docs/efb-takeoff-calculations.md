@@ -14,15 +14,14 @@ This document details the methods that can be used to gain accurate estimates fo
 lengths and environmental conditions.
 
 # Stall speeds
-Stall speeds are used to calculate V2 and Vr, and also are used to determine if a runway is long enough for takeoff (if there is no v1 speed greater than stall speed,
-the runway is too short for safe takeoff).
-
+Stall speeds contribute to the minimum values for V2 and VR.
 We already have stall speeds calculated which are used in the CDU we will use, determined from the QRH.
 
 ![QRH Operating Speeds](images/QRH-operating-speeds.png "QRH Operating Speeds")
 
 # V2
 V2 speed can be calculated as the maximum of the following values:
+
  - Stall speed * 1.13
  - Speed obtained from FCOM VMCG/VMCA table for the selected flap configuration and pressure altitude
  - Speed obtained from FCOM VMU/VMCA table for the pressure altitude and takeoff weight
@@ -36,16 +35,17 @@ All of this data is available from the FCOM.
 
 # VR
 VR must be calculated as the greater of:
+
  - Stall speed * Safety Margin
  - Speed obtained from FCOM VMCG/VMCA table for the selected flap configuration and pressure altitude
 
-The safety margin is a % margin, determined by the airport, which the stall speed is multiplied by.
+The safety margin is a % margin which the stall speed is multiplied by.
 This can be any arbitary value for our case, but should probably be under 10%.
 For example, 1.05 = 5% safety margin.
 
 # V1
 The maths for calculating V1 is complicated. V1 must meet the following criteria:
- - Greater than Stall Speed * Safety Margin
+
  - Greater than the minimum speed obtained from the FCOM VMCG/VMCA table for the selected flap configuration and pressure altitude
  - Less than than the maximum speed at which the aircraft is able accelarate to and then stop within the runway length
 

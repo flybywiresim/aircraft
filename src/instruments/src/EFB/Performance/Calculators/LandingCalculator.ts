@@ -17,14 +17,15 @@
  */
 
  // Data and calculations obtained from Quick Reference Handbook (In Flight Procedures, Landing Performance Assessment/Landing Distance)
- // TODO: good-to-medium and medium-to-poor conditions
 
 import { getTailWind } from './CommonCalculations';
 
 export enum LandingRunwayConditions {
 	Dry,
 	Good,
+	GoodMedium,
 	Medium,
+	MediumPoor,
 	Poor,
 }
 
@@ -230,6 +231,87 @@ const goodRunwayLandingData: AutobrakeConfigLandingData = {
 	}
 }
 
+const goodMediumRunwayLandingData: AutobrakeConfigLandingData = {
+	[AutobrakeMode.Max]: {
+		[LandingFlapsConfig.Full]: {
+			refDistance: 1570,
+			weightCorrectionAbove: 40,
+			weightCorrectionBelow: -10,
+			speedCorrection: 100,
+			altitudeCorrection: 60,
+			windCorrection: 190,
+			tempCorrection: 60,
+			slopeCorrection: 70,
+			reverserCorrection: -50,
+			overweightProcedureCorrection: 800
+		},
+		[LandingFlapsConfig.Conf3]: {
+			refDistance: 1820,
+			weightCorrectionAbove: 40,
+			weightCorrectionBelow: -20,
+			speedCorrection: 100,
+			altitudeCorrection: 70,
+			windCorrection: 200,
+			tempCorrection: 70,
+			slopeCorrection: 80,
+			reverserCorrection: -80,
+			overweightProcedureCorrection: 930
+		}
+	},
+	[AutobrakeMode.Medium]: {
+		[LandingFlapsConfig.Full]: {
+			refDistance: 1620,
+			weightCorrectionAbove: 40,
+			weightCorrectionBelow: -10,
+			speedCorrection: 100,
+			altitudeCorrection: 60,
+			windCorrection: 190,
+			tempCorrection: 60,
+			slopeCorrection: 80,
+			reverserCorrection: -60,
+			overweightProcedureCorrection: 200
+		},
+		[LandingFlapsConfig.Conf3]: {
+			refDistance: 1870,
+			weightCorrectionAbove: 40,
+			weightCorrectionBelow: -20,
+			speedCorrection: 100,
+			altitudeCorrection: 70,
+			windCorrection: 200,
+			tempCorrection: 70,
+			slopeCorrection: 90,
+			reverserCorrection: -90,
+			overweightProcedureCorrection: 280
+		}
+	},
+	[AutobrakeMode.Low]: {
+		[LandingFlapsConfig.Full]: {
+			refDistance: 1880,
+			weightCorrectionAbove: 40,
+			weightCorrectionBelow: -10,
+			speedCorrection: 130,
+			altitudeCorrection: 70,
+			windCorrection: 210,
+			tempCorrection: 60,
+			slopeCorrection: 50,
+			reverserCorrection: -10,
+			overweightProcedureCorrection: 210
+		},
+		[LandingFlapsConfig.Conf3]: {
+			refDistance: 2170,
+			weightCorrectionAbove: 50,
+			weightCorrectionBelow: -20,
+			speedCorrection: 140,
+			altitudeCorrection: 80,
+			windCorrection: 220,
+			tempCorrection: 80,
+			slopeCorrection: 60,
+			reverserCorrection: -30,
+			overweightProcedureCorrection: 230
+		}
+	}
+}
+
 const mediumRunwayLandingData: AutobrakeConfigLandingData = {
 	[AutobrakeMode.Max]: {
 		[LandingFlapsConfig.Full]: {
@@ -310,6 +392,87 @@ const mediumRunwayLandingData: AutobrakeConfigLandingData = {
 		}
 	}
 };
+
+const mediumPoorRunwayLandingData: AutobrakeConfigLandingData = {
+	[AutobrakeMode.Max]: {
+		[LandingFlapsConfig.Full]: {
+			refDistance: 1930,
+			weightCorrectionAbove: 70,
+			weightCorrectionBelow: -10,
+			speedCorrection: 170,
+			altitudeCorrection: 110,
+			windCorrection: 350,
+			tempCorrection: 100,
+			slopeCorrection: 150,
+			reverserCorrection: -110,
+			overweightProcedureCorrection: 480
+		},
+		[LandingFlapsConfig.Conf3]: {
+			refDistance: 2380,
+			weightCorrectionAbove: 80,
+			weightCorrectionBelow: -20,
+			speedCorrection: 170,
+			altitudeCorrection: 140,
+			windCorrection: 410,
+			tempCorrection: 120,
+			slopeCorrection: 200,
+			reverserCorrection: -150,
+			overweightProcedureCorrection: 580
+		}
+	},
+	[AutobrakeMode.Medium]: {
+		[LandingFlapsConfig.Full]: {
+			refDistance: 1960,
+			weightCorrectionAbove: 70,
+			weightCorrectionBelow: -10,
+			speedCorrection: 160,
+			altitudeCorrection: 110,
+			windCorrection: 360,
+			tempCorrection: 90,
+			slopeCorrection: 150,
+			reverserCorrection: -110,
+			overweightProcedureCorrection: 230
+		},
+		[LandingFlapsConfig.Conf3]: {
+			refDistance: 2400,
+			weightCorrectionAbove: 80,
+			weightCorrectionBelow: -20,
+			speedCorrection: 170,
+			altitudeCorrection: 140,
+			windCorrection: 410,
+			tempCorrection: 120,
+			slopeCorrection: 200,
+			reverserCorrection: -160,
+			overweightProcedureCorrection: 310
+		}
+	},
+	[AutobrakeMode.Low]: {
+		[LandingFlapsConfig.Full]: {
+			refDistance: 2000,
+			weightCorrectionAbove: 70,
+			weightCorrectionBelow: -10,
+			speedCorrection: 160,
+			altitudeCorrection: 120,
+			windCorrection: 360,
+			tempCorrection: 90,
+			slopeCorrection: 150,
+			reverserCorrection: -40,
+			overweightProcedureCorrection: 220
+		},
+		[LandingFlapsConfig.Conf3]: {
+			refDistance: 2430,
+			weightCorrectionAbove: 80,
+			weightCorrectionBelow: -20,
+			speedCorrection: 180,
+			altitudeCorrection: 140,
+			windCorrection: 400,
+			tempCorrection: 130,
+			slopeCorrection: 210,
+			reverserCorrection: -80,
+			overweightProcedureCorrection: 290
+		}
+	}
+}
 
 const poorRunwayLandingData: AutobrakeConfigLandingData = {
 	[AutobrakeMode.Max]: {
@@ -399,9 +562,16 @@ const poorRunwayLandingData: AutobrakeConfigLandingData = {
 const runwayConditionLandingData: RunwayConditionLandingData = {
 	[LandingRunwayConditions.Dry]: dryRunwayLandingData,
 	[LandingRunwayConditions.Good]: goodRunwayLandingData,
+	[LandingRunwayConditions.GoodMedium]: goodMediumRunwayLandingData,
 	[LandingRunwayConditions.Medium]: mediumRunwayLandingData,
+	[LandingRunwayConditions.MediumPoor]: mediumPoorRunwayLandingData,
 	[LandingRunwayConditions.Poor]: poorRunwayLandingData
 }
+
+/**
+ * Safety margin multiplier, obtained from QRH In-Flight Performance section
+ */
+const safetyMargin = 1.15;
 
 /**
  * VLS speed (kts) for full flap configuration
@@ -444,12 +614,12 @@ export default class LandingCalculator {
 	 */
 	public calculateLandingDistances(weight: number, flaps: LandingFlapsConfig, runwayCondition: LandingRunwayConditions,
 		approachSpeed: number, windDirection: number, windMagnitude: number, runwayHeading: number, reverseThrust: boolean, altitude: number,
-		temperature: number, slope: number, overweightProcedure: boolean): { maxAutobrakeDist: number, mediumAutobrakeDist: number, lowAutobrakeDist: number} {
+		temperature: number, slope: number, overweightProcedure: boolean, pressure: number): { maxAutobrakeDist: number, mediumAutobrakeDist: number, lowAutobrakeDist: number} {
 
 		return {
-			maxAutobrakeDist: this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Max, approachSpeed, windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure),
-			mediumAutobrakeDist: this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Medium, approachSpeed, windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure),
-			lowAutobrakeDist: this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Low, approachSpeed, windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure)
+			maxAutobrakeDist: safetyMargin * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Max, approachSpeed, windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure),
+			mediumAutobrakeDist: safetyMargin * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Medium, approachSpeed, windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure),
+			lowAutobrakeDist: safetyMargin * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Low, approachSpeed, windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure)
 		}
 	}
 
@@ -471,7 +641,10 @@ export default class LandingCalculator {
 	 */
 	private calculateRequiredLandingDistance(weight: number, flaps: LandingFlapsConfig, runwayCondition: LandingRunwayConditions, autobrakeMode: AutobrakeMode,
 		approachSpeed: number, windDirection: number, windMagnitude: number, runwayHeading: number, reverseThrust: boolean, altitude: number,
-		temperature: number, slope: number, overweightProcedure: boolean): number {
+		temperature: number, slope: number, overweightProcedure: boolean, pressure: number): number {
+
+		let pressureAltitude = altitude + this.getPressureAltitude(pressure);
+
 		let targetApproachSpeed: number;
 		let vlsTableIndex = getVlsTableIndex(weight / 1000);
 		if (flaps == LandingFlapsConfig.Full) {
@@ -509,7 +682,7 @@ export default class LandingCalculator {
 			reverserCorrection = 0;
 		}
 
-		let altitudeCorrection = (altitude / 1000) * landingData.altitudeCorrection;
+		let altitudeCorrection = (pressureAltitude / 1000) * landingData.altitudeCorrection;
 		let slopeCorrection = slope < 0
 			? Math.abs(slope) * landingData.slopeCorrection
 			: 0;
@@ -525,5 +698,15 @@ export default class LandingCalculator {
 			+ altitudeCorrection + slopeCorrection + temperatureCorrection + overweightProcCorrection;
 
 		return Math.round(requiredLandingDistance);
+	}
+
+	/**
+	 * Converts a given pressure to equivilant pressure altitude
+	 * @param pressure Pressure in mb
+	 * @returns Pressure altitude in feet
+	 */
+	private getPressureAltitude(pressure: number): number {
+		// See https://en.wikipedia.org/wiki/Pressure_altitude
+		return 145366.45 * (1 - Math.pow(pressure / 1013.25, 0.190284));
 	}
 }

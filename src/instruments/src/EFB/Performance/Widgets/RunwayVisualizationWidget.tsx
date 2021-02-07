@@ -67,6 +67,10 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
 		)
 	}
 
+	private getBottomPercentage(label: DistanceLabel): number {
+		return (label.distance / this.maxDist()) * 100;
+	}
+
 	private runwayNumber(): JSX.Element | undefined {
 		if (this.props.runwayNumber) {
 			let paddedNumber = this.props.runwayNumber.toString().padStart(2, '0')
@@ -80,14 +84,27 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
 		let elements: JSX.Element[] = [];
 
 		for (let label of this.props.labels ?? []) {
-			let bottomPercentage = (label.distance / this.maxDist()) * 100;
+			let bottomPercentage = this.getBottomPercentage(label);
+
+			let closestLabel = (this.props.labels ?? []).reduce((a, b) => {
+				if (a.label == label.label) return b;
+				if (b.label == label.label) return a;
+
+				return Math.abs(this.getBottomPercentage(b) - bottomPercentage) < Math.abs(this.getBottomPercentage(a) - bottomPercentage) ? b : a
+			});
+
+			let showText = (Math.abs(this.getBottomPercentage(closestLabel) - bottomPercentage) > 5);
 
 			elements.push(
 				(<div className={"w-32 h-1 bg-white text-white absolute left-1/2 transform -translate-x-1/2 "
 					+ ((this.isLabelFurtherThanRunway(label)) ? "error-label" : "")}
 					style={{ bottom: `${bottomPercentage}%` }}>
-					<div className="w-full text-center absolute -top-0.5 transform -translate-y-full">{ label.label }</div>
-					<div className="w-full text-center absolute -bottom-0.5 transform translate-y-full">{ Math.round(label.distance) }m</div>
+
+					{showText && ([
+						<div className="w-full text-center absolute -top-0.5 transform -translate-y-full">{ label.label }</div>,
+						<div className="w-full text-center absolute -bottom-0.5 transform translate-y-full">{ Math.round(label.distance) }m</div>
+					])}
+
 				</div>)
 			)
 		}

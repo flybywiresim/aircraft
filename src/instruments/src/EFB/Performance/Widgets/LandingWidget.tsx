@@ -39,6 +39,7 @@ type LandingWidgetState = {
 	temperature: number,
 	slope: number,
 	overweightProcedure: boolean,
+	pressure: number,
 	runwayLength: number,
 	maxAutobrakeLandingDist: number,
 	mediumAutobrakeLandingDist: number,
@@ -65,6 +66,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 			slope: 0,
 			temperature: 0,
 			overweightProcedure: false,
+			pressure: 1013.25,
 			runwayLength: 0,
 			maxAutobrakeLandingDist: 0,
 			mediumAutobrakeLandingDist: 0,
@@ -87,7 +89,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 			this.state.altitude,
 			this.state.temperature,
 			this.state.slope,
-			this.state.overweightProcedure
+			this.state.overweightProcedure,
+			this.state.pressure
 		);
 
 		this.setState(prevState => {
@@ -98,7 +101,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 
 			newState.runwayVisualizationLabels = [
 				{
-					label: 'MAX / MANUAL',
+					label: 'MAX MANUAL',
 					distance: landingDistances.maxAutobrakeDist
 				},
 				{
@@ -283,6 +286,20 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
+	private handlePressureChange = (event: React.FormEvent<HTMLInputElement>): void => {
+		let pressure = parseFloat(event.currentTarget.value);
+
+		if (!pressure) {
+			pressure = 1013.25;
+		}
+
+		this.setState(prevState => {
+			let newState = { ...prevState };
+			newState.pressure = pressure;
+			return newState;
+		});
+	}
+
 	public render() {
 		return (
 			<div className="flex flex-grow">
@@ -292,33 +309,36 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 							<div className="flex">
 								<div className="flex-1 m-2.5 column-left">
 									<PerformanceInput label="Wind (KTS)" placeholder="DIR/MAG" onChange={this.handleWindChange} />
-									<PerformanceInput label="Weight" placeholder="KG" onChange={this.handleWeightChange} />
-									<PerformanceInput label="Rwy Heading" onChange={this.handleRunwayHeadingChange} />
-									<PerformanceInput label="Approach Speed" placeholder="KTS" onChange={this.handleApproachSpeedChange} />
-									<PerformanceInput label="Rwy Altitude" placeholder='" ASL' onChange={this.handleAltitudeChange} />
 									<PerformanceInput label="Temperature" placeholder='°C' onChange={this.handleTemperatureChange} />
+									<PerformanceInput label="QNH" placeholder="mb" onChange={this.handlePressureChange} />
+									<PerformanceInput label="Rwy Altitude" placeholder='" ASL' onChange={this.handleAltitudeChange} />
+									<PerformanceInput label="Rwy Heading" onChange={this.handleRunwayHeadingChange} />
+									<PerformanceSelectInput label="Rwy Condition" defaultValue="0" onChange={this.handleRunwayConditionChange} dropdownOnTop options={[
+										[0, "Dry"],
+										[1, "Good"],
+										[2, "Good-Medium"],
+										[3, "Medium"],
+										[4, "Medium-Poor"],
+										[5, "Poor"]
+									]} />
+									<PerformanceInput label="Rwy Slope" placeholder="%" onChange={this.handleRunwaySlopeChange} />
 								</div>
 								<div className="flex-1 m-2.5 column-right">
+									<PerformanceInput label="Rwy LDA" placeholder="m" onChange={this.handleRunwayLengthChange} reverse/>
+									<PerformanceInput label="Approach Speed" placeholder="KTS" onChange={this.handleApproachSpeedChange} reverse/>
+									<PerformanceInput label="Weight" placeholder="KG" onChange={this.handleWeightChange} reverse />
 									<PerformanceSelectInput label="Flaps" defaultValue="1" onChange={this.handleFlapsChange} reverse options={[
 										[1, "Full"],
 										[0, "CONF 3"]
 									]} />
-									<PerformanceSelectInput label="Rwy Condition" defaultValue="0" onChange={this.handleRunwayConditionChange} reverse options={[
-										[0, "Dry"],
-										[1, "Good"],
-										[2, "Medium"],
-										[3, "Poor"]
+									<PerformanceSelectInput label="Overweight Proc" defaultValue="0" onChange={this.handleOverweightProcedureChange} reverse options={[
+										[0, "No"],
+										[1, "Yes"]
 									]} />
 									<PerformanceSelectInput label="Reverse Thrust" defaultValue="0" onChange={this.handleReverseThrustChange} reverse options={[
 										[0, "No"],
 										[1, "Yes"]
 									]} />
-									<PerformanceInput label="Rwy Slope" placeholder="%" onChange={this.handleRunwaySlopeChange} reverse />
-									<PerformanceSelectInput label="Overweight Proc" defaultValue="0" onChange={this.handleOverweightProcedureChange} reverse options={[
-										[0, "No"],
-										[1, "Yes"]
-									]} />
-									<PerformanceInput label="Rwy Length" placeholder="m" onChange={this.handleRunwayLengthChange} reverse/>
 								</div>
 							</div>
 							<button onClick={this.calculateLanding}
@@ -329,7 +349,7 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 						<div className="border-t border-white pt-3">
 							<div className="flex flex-col items-center m-3">
 								<div className="flex items-end">
-									<PerformanceOutputDisplay label="MAX / MANUAL" value={this.state.maxAutobrakeLandingDist + "m"} error={this.state.maxAutobrakeLandingDist > this.state.displayedRunwayLength} />
+									<PerformanceOutputDisplay label="MAX MANUAL" value={this.state.maxAutobrakeLandingDist + "m"} error={this.state.maxAutobrakeLandingDist > this.state.displayedRunwayLength} />
 									<PerformanceOutputDisplay label="MEDIUM" value={this.state.mediumAutobrakeLandingDist + "m"} error={this.state.mediumAutobrakeLandingDist > this.state.displayedRunwayLength} />
 									<PerformanceOutputDisplay label="LOW" value={this.state.lowAutobrakeLandingDist + "m"} error={this.state.lowAutobrakeLandingDist > this.state.displayedRunwayLength} />
 								</div>
