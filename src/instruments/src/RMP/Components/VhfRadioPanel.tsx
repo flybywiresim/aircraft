@@ -18,7 +18,7 @@ interface Props {
 const useActiveVhfFrequency = (transciever: number) => {
     const variableReadName = `COM ACTIVE FREQUENCY:${transciever}`;
     const variableWriteName = `K:COM${transciever === 1 ? '' : transciever}_RADIO_SET_HZ`;
-    return useSplitSimVar(variableReadName, variableWriteName, 'Hz', 100);
+    return useSplitSimVar(variableReadName, 'Hz', variableWriteName, 'Hz', 100);
 }
 
 /**
@@ -37,7 +37,7 @@ const useStandbyVhfFrequency = (side: string, transciever: number) => {
 
     const variableReadName = `COM STANDBY FREQUENCY:${transciever}`;
     const variableWriteName = `K:COM${transciever === 1 ? '' : transciever}_STBY_RADIO_SET_HZ`;
-    return useSplitSimVar(variableReadName, variableWriteName, 'Hz', 100);
+    return useSplitSimVar(variableReadName, 'Hz', variableWriteName,  'Hz', 100);
 }
 
 /**

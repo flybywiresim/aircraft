@@ -9,6 +9,24 @@ export const render = (Slot: React.ReactElement) => {
     ReactDOM.render(<SimVarProvider>{Slot}</SimVarProvider>, renderTarget);
 }
 
+export const useUpdate = (handler: (deltaTime: number) => void) => {
+    // Logic based on https://usehooks.com/useEventListener/
+    const savedHandler = React.useRef(handler);
+    React.useEffect(() => {
+        savedHandler.current = handler;
+    }, [handler]);
+
+    React.useEffect(() => {
+        const wrappedHandler = (event: CustomEvent) => {
+            savedHandler.current(event.detail);
+        };
+        rootElement.addEventListener('update', wrappedHandler);
+        return () => {
+            rootElement.removeEventListener('update', wrappedHandler);
+        };
+    });
+}
+
 export const useInteractionEvent = (event: string, handler: (any?) => void): void => {
     // Logic based on https://usehooks.com/useEventListener/
     const savedHandler = React.useRef(handler);
@@ -31,7 +49,7 @@ export const useInteractionEvent = (event: string, handler: (any?) => void): voi
     }, [event]);
 }
 
-export const useUpdate = (handler: (deltaTime: number) => void) => {
+export const useInteractionEvents = (events: string[], handler: (any?) => void): void => {
     // Logic based on https://usehooks.com/useEventListener/
     const savedHandler = React.useRef(handler);
     React.useEffect(() => {
@@ -39,12 +57,18 @@ export const useUpdate = (handler: (deltaTime: number) => void) => {
     }, [handler]);
 
     React.useEffect(() => {
-        const wrappedHandler = (event: CustomEvent) => {
-            savedHandler.current(event.detail);
+        const wrappedHandler = (e) => {
+            savedHandler.current();
         };
-        rootElement.addEventListener('update', wrappedHandler);
+        events.forEach(event =>
+            rootElement.addEventListener(event, wrappedHandler)
+        );
         return () => {
-            rootElement.removeEventListener('update', wrappedHandler);
+            events.forEach(event =>
+                rootElement.removeEventListener(event, wrappedHandler)
+            );
         };
-    });
+    }, [
+        ...events,
+    ]);
 }
