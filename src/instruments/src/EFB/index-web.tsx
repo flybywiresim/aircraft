@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import './Assets/Efb.scss';
+
 import React from "react";
 import ReactDOM from "react-dom";
 import Efb from "./Efb";

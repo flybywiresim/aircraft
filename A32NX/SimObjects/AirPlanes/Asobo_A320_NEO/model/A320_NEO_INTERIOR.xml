@@ -42,12 +42,18 @@
                 <NODE_ID>SCREEN_EFB</NODE_ID>
             </DefaultTemplateParameters>
 
-            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                <EMISSIVE_CODE>0.8</EMISSIVE_CODE>
+            <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
+                <EMISSIVE_CODE>0.6</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
-                <LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_EFB_TURNED_ON) 0 == if{
+                        1 (&gt;L:A32NX_EFB_TURNED_ON)
+                    }
+                </LEFT_SINGLE_CODE>
+
+                <TOOLTIPID>%((L:A32NX_EFB_TURNED_ON) 0 ==)%{if}Turn on flyPad%{end}</TOOLTIPID>
             </UseTemplate>
         </Component>
 
@@ -577,6 +583,11 @@
 
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>DECAL_THROTTLE_01</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+            </UseTemplate>
+            
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>DECAL_THROTTLE_02</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
             </UseTemplate>
 
@@ -1392,26 +1403,27 @@
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_APU_MASTERSW</NODE_ID>
                     <PART_ID>ELECTRICAL_Switch_APU_Master</PART_ID>
-
                     <LEFT_SINGLE_CODE>
-                        (A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; if{
-                            (A:FUELSYSTEM VALVE SWITCH:8, Bool) if{
-                                (&gt;K:APU_OFF_SWITCH)
-                                0 (&gt;L:A32NX_APU_START_ACTIVATED)
+                        (L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) if{
+                            0 (&gt;L:A32NX_APU_MASTER_SW_ACTIVATED)
+                        } els{
+                            (A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; if{
+                                1 (&gt;L:A32NX_APU_MASTER_SW_ACTIVATED)
                             }
-                            8 (&gt;K:FUELSYSTEM_VALVE_TOGGLE)
                         }
                     </LEFT_SINGLE_CODE>
+                    <DOWN_CODE>(L:A32NX_APU_MASTER_SW_ACTIVATED, Bool)</DOWN_CODE>
 
-                    <SEQ2_CODE>(A:FUELSYSTEM VALVE SWITCH:8, Bool)</SEQ2_CODE>
+                    <SEQ1_CODE>(L:A32NX_APU_MASTER_FAULT, Bool)</SEQ1_CODE>
+                    <SEQ2_CODE>(L:A32NX_APU_MASTER_SW_ACTIVATED, Bool)</SEQ2_CODE>
 
-                    <TOOLTIPID>%((A:FUELSYSTEM VALVE SWITCH:8, Bool))%{if}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_ON%{end}</TOOLTIPID>
+                    <TOOLTIPID>%((L:A32NX_APU_MASTER_SW_ACTIVATED, Bool))%{if}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_ON%{end}</TOOLTIPID>
                 </UseTemplate>
 
                 <!-- APU START -->
                 <UseTemplate Name="FBW_Airbus_APU_Starter_Switch">
                     <NODE_ID>PUSH_OVHD_APU_START</NODE_ID>
-                    <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (A:FUELSYSTEM VALVE SWITCH:8, Bool) and</EXTRA_CONDITION>
+                    <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) and</EXTRA_CONDITION>
                 </UseTemplate>
             </Component>
 
@@ -2965,7 +2977,13 @@
             <UseTemplate Name="ASOBO_AUTOPILOT_Switch_Altitude_Increment_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_ALT</ANIM_NAME>
-
+                <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+            </UseTemplate>
+            
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
+                <EMISSIVE_CODE>0</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="FBW_Airbus_FCU_Altitude_Knob">
@@ -3049,8 +3067,10 @@
                 </UseTemplate>
             </Component>
             <Component ID="Radio_Left">
-                <UseTemplate Name="FBW_RMP_DISPLAY_Template">
+                <UseTemplate Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
                     <SIDE>L</SIDE>
+                    <!-- The left RMP is powered by the DC bus. -->
+                    <ELEC_BUS>(L:DCPowerAvailable, boolean)</ELEC_BUS>
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Left">
@@ -3156,7 +3176,7 @@
             </Component>
 
             <Component ID="Radio_Right">
-                <UseTemplate Name="FBW_RMP_DISPLAY_Template">
+                <UseTemplate Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
                     <SIDE>R</SIDE>
                 </UseTemplate>
             </Component>
@@ -3502,9 +3522,6 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_ECAM_EMERCANC</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_RADIOL_SEL</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUDIOL_RESET</NODE_ID>
