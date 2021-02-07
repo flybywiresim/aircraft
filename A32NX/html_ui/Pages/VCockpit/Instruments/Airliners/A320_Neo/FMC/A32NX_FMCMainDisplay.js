@@ -3326,7 +3326,7 @@ class FMCMainDisplay extends BaseAirliners {
             const departureAirport = this.flightPlanManager.getOrigin().ident;
             if (this.currentOrigin !== departureAirport) {  //only update when changing departure & arrival airport.
                 NXDataStore.set("PLAN_ORIGIN", departureAirport);
-                //this.getTransitionAltitude(departureAirport);
+                this.getTransitionAltitude(departureAirport);
                 this.offlineTACore.tryCheckAPI();
                 this.currentOrigin = departureAirport;
             }
@@ -3335,7 +3335,7 @@ class FMCMainDisplay extends BaseAirliners {
             const arrivalAirport = this.flightPlanManager.getDestination().ident;
             if (this.currentDestination !== arrivalAirport) {
                 NXDataStore.set("PLAN_DESTINATION", arrivalAirport);
-                //this.getArrivalTransitionAltitude(arrivalAirport);
+                this.getArrivalTransitionAltitude(arrivalAirport);
                 this.offlineTACore.tryCheckAPI();
                 this.currentDestination = arrivalAirport;
             }
