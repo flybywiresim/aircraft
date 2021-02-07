@@ -31,7 +31,7 @@ export const useInteractionEvent = (event: string, handler: (any?) => void): voi
     }, [event]);
 }
 
-export const useUpdate = (handler: (any) => void) => {
+export const useUpdate = (handler: (deltaTime: number) => void) => {
     // Logic based on https://usehooks.com/useEventListener/
     const savedHandler = React.useRef(handler);
     React.useEffect(() => {

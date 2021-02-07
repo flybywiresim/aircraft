@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from "react"
-import { useInteractionEvent } from "./ReactInstrument"
+import { useInteractionEvent, useUpdate } from "./ReactInstrument"
 
 // We assume that these two elements will be found. @todo maybe check?
 export const renderTarget = document.getElementById('A32NX_REACT_MOUNT') as HTMLElement;
@@ -79,60 +79,46 @@ const SimVarProvider: React.FC = ({ children }) => {
     const listeners = React.useRef<Record<string, number[]>>({});
     const [cache, setCache] = useState<SimVarCache>({});
 
-    useEffect(() => {
+    useUpdate((deltaTime: number) => {
+        const stateUpdates: Record<string, {
+            value?: SimVarValue,
+            lastUpdatedAgo: number,
+        }> = {};
 
-        /**
-         * At this point the instrument has determined that an update is required.
-         * Now we check all SimVars, and investigate if any need to be updated.
-         * @param event
-         */
-        const onUpdateEvent = (event: CustomEvent) => {
-            const stateUpdates: Record<string, {
-                value?: SimVarValue,
-                lastUpdatedAgo: number,
-            }> = {};
-            const deltaTime = event.detail;
-
-            for (const [key, intervals] of Object.entries(listeners.current)) {
-                // First, let's check if there are any listeners at all
-                if (!intervals.length) {
-                    continue;
-                }
-
-                // The refresh time is given by the *smallest* maximum update
-                // interval.
-                const threshold = Math.min(...intervals);
-                const lastUpdatedAgo = (cache[key].lastUpdatedAgo || 0) + deltaTime;
-
-                if (lastUpdatedAgo >= threshold) {
-                    // At this point, as we haven't updated this SimVar recently, we
-                    // need to fetch the latest value from the simulator and store
-                    // it.
-                    const [name, rawUnit] = key.split('/');
-                    const unit = normalizeUnitName(rawUnit as UnitName);
-                    stateUpdates[key] = {
-                        value: SimVar.GetSimVarValue(name, unit),
-                        lastUpdatedAgo: lastUpdatedAgo % threshold,
-                    };
-                } else {
-                    // Otherwise, just increment lastUpdatedAgo.
-                    stateUpdates[key] = { lastUpdatedAgo };
-                }
+        for (const [key, intervals] of Object.entries(listeners.current)) {
+            // First, let's check if there are any listeners at all
+            if (!intervals.length) {
+                continue;
             }
 
-            setCache((oldCache) => {
-                const newCache: SimVarCache = {};
-                for (const [key, update] of Object.entries(stateUpdates)) {
-                    newCache[key] = {...oldCache[key], ...update};
-                }
-                return {...oldCache, ...newCache};
-            });
+            // The refresh time is given by the *smallest* maximum update
+            // interval.
+            const threshold = Math.min(...intervals);
+            const lastUpdatedAgo = (cache[key].lastUpdatedAgo || 0) + deltaTime;
+
+            if (lastUpdatedAgo >= threshold) {
+                // At this point, as we haven't updated this SimVar recently, we
+                // need to fetch the latest value from the simulator and store
+                // it.
+                const [name, rawUnit] = key.split('/');
+                const unit = normalizeUnitName(rawUnit as UnitName);
+                stateUpdates[key] = {
+                    value: SimVar.GetSimVarValue(name, unit),
+                    lastUpdatedAgo: lastUpdatedAgo % threshold,
+                };
+            } else {
+                // Otherwise, just increment lastUpdatedAgo.
+                stateUpdates[key] = { lastUpdatedAgo };
+            }
         }
 
-        rootElement.addEventListener('update', onUpdateEvent);
-        return () => {
-            rootElement.removeEventListener('update', onUpdateEvent);
-        };
+        setCache((oldCache) => {
+            const newCache: SimVarCache = {};
+            for (const [key, update] of Object.entries(stateUpdates)) {
+                newCache[key] = {...oldCache[key], ...update};
+            }
+            return {...oldCache, ...newCache};
+        });
     });
 
     const getKey = (name: string, unit: UnitName) => {
