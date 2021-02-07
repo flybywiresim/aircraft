@@ -72,6 +72,7 @@ module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
                         }],
                     ],
                     babelHelpers: 'runtime',
+                    compact: false,
                     extensions,
                 }),
                 replace({

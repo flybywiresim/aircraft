@@ -1,26 +1,33 @@
+import React from 'react';
 import { useState } from 'react';
-import { useInteractionEvent } from '../../util.js';
-import { AcceleratedKnob } from '../Framework/AcceleratedKnob.mjs';
-import { SevenSegmentDisplay } from './SevenSegmentDisplay.jsx';
+import { RadioPanelDisplay } from './RadioPanelDisplay';
+import { AcceleratedKnob } from '../Common/AcceleratedKnob';
+import { useInteractionEvent } from '../../Common/ReactInstrument';
+
+declare const Utils;
 
 /**
  *
- * @param {*} value
- * @param {*} array
  */
-function findNearestInArray(value, array) {
+interface Props {
+    side: string,
+    value: any,
+    setValue: (x: any) => void,
+};
+
+/**
+ *
+ */
+const findNearestInArray = (value: number, array: number[]): number => {
     return array.reduce((previous, current) => (Math.abs(current - value) < Math.abs(previous - value) ? current : previous));
-}
+};
 
 /**
  *
- * @param {*} spacing
- * @param {*} channel
- * @param {*} offset
  */
-function offsetFrequencyChannel(spacing, channel, offset) {
+const offsetFrequencyChannel = (spacing: number, channel: number, offset: number): number => {
     // Determine endings from channel spacing.
-    let endings = undefined;
+    let endings: number[] | null = null;
 
     // 8.33 kHz Frequency Endings.
     if (spacing === 8.33) endings = [0, 5, 10, 15, 25, 30, 35, 40, 50, 55, 60, 65, 75, 80, 85, 90];
@@ -32,7 +39,7 @@ function offsetFrequencyChannel(spacing, channel, offset) {
     if (spacing === 50) endings = [0, 50];
 
     // Special cases, such as ADF, do not use the ending algorithm to find frequencies.
-    if (endings === undefined) {
+    if (endings === null) {
         return (Math.floor(channel / 100) + spacing * offset) * 100;
     }
 
@@ -62,14 +69,19 @@ function offsetFrequencyChannel(spacing, channel, offset) {
 
     // Modulo 1000 (i.e. -10 will become 990 for 8.33 spacing).
     return ((newChannel % 1000) + 1000) % 1000;
-}
+};
 
-export function StandbyFrequency(props) {
+/**
+ *
+ */
+export const StandbyFrequency = (props: Props) => {
     // Used to change integer value of freq.
     const [outerKnob] = useState(new AcceleratedKnob());
+
     // Used to change decimal value of freq.
     const [innerKnob] = useState(new AcceleratedKnob());
 
+    // Hook rotation events from simulator to custom knob class methods.
     useInteractionEvent(`A32NX_RMP_${props.side}_OUTER_KNOB_TURNED_CLOCKWISE`, () => outerKnob.increase());
     useInteractionEvent(`A32NX_RMP_${props.side}_OUTER_KNOB_TURNED_ANTICLOCKWISE`, () => outerKnob.decrease());
     useInteractionEvent(`A32NX_RMP_${props.side}_INNER_KNOB_TURNED_CLOCKWISE`, () => innerKnob.increase());
@@ -77,18 +89,18 @@ export function StandbyFrequency(props) {
 
     // Handle outer knob turned.
     outerKnob.updateValue = (offset) => {
-        const frequency = Math.round(props.variable.value / 1000);
+        const frequency = Math.round(props.value / 1000);
         const integer = Math.floor(frequency / 1000);
         const decimal = frequency % 1000;
         // @todo determine min/max depending on mode.
         const maxInteger = decimal > 975 ? 135 : 136;
         const newInteger = Utils.Clamp(integer + offset, 118, maxInteger);
-        props.variable.value = (newInteger * 1000 + decimal) * 1000;
+        props.setValue((newInteger * 1000 + decimal) * 1000);
     };
 
     // Handle inner knob turned.
     innerKnob.updateValue = (offset) => {
-        const frequency = Math.round(props.variable.value / 1000);
+        const frequency = Math.round(props.value / 1000);
         if (Math.sign(offset) === 1 && frequency === 136975) {
             return;
         }
@@ -99,8 +111,8 @@ export function StandbyFrequency(props) {
         // @todo determine min/max depending on mode.
         const maxDecimal = integer === 136 ? 975 : 1000;
         const newDecimal = Utils.Clamp(decimal, 0, maxDecimal);
-        props.variable.value = (integer * 1000 + newDecimal) * 1000;
+        props.setValue((integer * 1000 + newDecimal) * 1000);
     };
 
-    return (<SevenSegmentDisplay value={props.variable.value} lightsTest={props.lightsTest} />);
+    return (<RadioPanelDisplay value={props.value} />);
 }

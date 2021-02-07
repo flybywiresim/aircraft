@@ -21,7 +21,7 @@ import { useState, useEffect } from 'react';
 import Efb from './Efb.tsx';
 import {
     renderTarget, getSimVar, setSimVar,
-} from '../util.js';
+} from '../util.mjs';
 import logo from './Assets/fbw-logo.svg';
 
 import './Assets/Efb.scss';

@@ -5,7 +5,7 @@ import {
     useInteractionEvent,
     useUpdate,
     getSimVar,
-} from '../util.js';
+} from '../util.mjs';
 import './style.scss';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core

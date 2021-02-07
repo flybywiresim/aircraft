@@ -7,13 +7,24 @@
  * as a user turns faster as opposed to always changing the heading by 1 degree.
  */
 export class AcceleratedKnob {
+    private timeout: number;
+    private increment: number;
+    private currentSpeed: number;
+    private previousTimestamp: number;
+
+    /**
+     *
+     */
     constructor(timeout = 300, increment = 0.20) {
-        this.currentSpeed = 0;
         this.timeout = timeout;
         this.increment = increment;
+        this.currentSpeed = 0;
         this.previousTimestamp = 0;
     }
 
+    /**
+     *
+     */
     increase() {
         if (this.currentSpeed < 1 || (Date.now() - this.previousTimestamp) > this.timeout) {
             this.currentSpeed = 1;
@@ -25,6 +36,9 @@ export class AcceleratedKnob {
         this.updateValue(Math.floor(this.currentSpeed));
     }
 
+    /**
+     *
+     */
     decrease() {
         if (this.currentSpeed > -1 || (Date.now() - this.previousTimestamp) > this.timeout) {
             this.currentSpeed = -1;
@@ -36,7 +50,10 @@ export class AcceleratedKnob {
         this.updateValue(Math.ceil(this.currentSpeed));
     }
 
-    updateValue() {
+    /**
+     *
+     */
+    public updateValue(offset: number): void {
         throw new Error('You have to implement the updateValue method!');
     }
 }
