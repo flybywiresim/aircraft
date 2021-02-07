@@ -1,6 +1,9 @@
 import * as React from 'react';
-import { customElement } from '../util.js';
 import { useEffect, useState } from "react"
+
+// We assume that these two elements will be found. @todo maybe check?
+export const renderTarget = document.getElementById('A32NX_REACT_MOUNT') as HTMLElement;
+export const rootElement = renderTarget.parentElement as HTMLElement;
 
 declare const SimVar;
 
@@ -36,7 +39,7 @@ export const normalizeUnitName = (unit: UnitName): UnitName => {
 type SimVarSetter = <T extends SimVarValue>(oldValue: T) => T;
 
 type RetrieveSimVar = (name: string, unit: UnitName) => SimVarValue;
-type UpdateSimVar = (name: string, unit: UnitName, newValueOrSetter: SimVarValue | SimVarSetter) => void;
+type UpdateSimVar = (name: string, unit: UnitName, newValueOrSetter: SimVarValue | SimVarSetter, proxy?: string) => void;
 type RegisterSimVar = (name: string, unit: UnitName, maxStaleness: number) => void;
 type UnregisterSimVar = (name: string, unit: UnitName, maxStaleness: number) => void;
 
@@ -125,9 +128,9 @@ const SimVarProvider: React.FC = ({ children }) => {
             });
         }
 
-        customElement.addEventListener('update', onUpdateEvent);
+        rootElement.addEventListener('update', onUpdateEvent);
         return () => {
-            customElement.removeEventListener('update', onUpdateEvent);
+            rootElement.removeEventListener('update', onUpdateEvent);
         };
     });
 
@@ -161,12 +164,13 @@ const SimVarProvider: React.FC = ({ children }) => {
      * @param value {*|(function(*): *)} Either the new value for the
      * SimVar, or an update function that takes the old value and returns an
      * updated value.
+     * @param proxy The proxy SimVar used to indirectly set this variable.
      */
-    const update: UpdateSimVar = (name, unit, value) => {
+    const update: UpdateSimVar = (name, unit, value, proxy) => {
         const key = getKey(name, unit);
         setCache((oldCache) => {
             const newValue = typeof value === 'function' ? value(oldCache[key].value) : value;
-            SimVar.SetSimVarValue(name, unit, newValue);
+            SimVar.SetSimVarValue((proxy || name), unit, newValue);
             return {
                 ...oldCache,
                 [key]: {
@@ -250,10 +254,11 @@ export const useSimVarValue = (name: string, unit: UnitName, maxStaleness: numbe
 
 export const useSimVarSetter = (
     name: string,
-    unit: UnitName
+    unit: UnitName,
+    proxy?: string,
 ): ((newValueOrSetter: SimVarValue | SimVarSetter) => void) => {
     const contextValue = React.useContext(context);
-    return (value) => contextValue.update(name, unit, value);
+    return (value) => contextValue.update(name, unit, value, proxy);
 };
 
 /**
@@ -299,13 +304,12 @@ export const useSimVar = (
 
 export const useSplitSimVar = (
     readName: string,
-    readUnit: UnitName,
     writeName: string,
-    writeUnit: UnitName,
+    unit: UnitName,
     maxStaleness: number
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter) => void] => {
-    const value = useSimVarValue(readName, readUnit, maxStaleness);
-    const setter = useSimVarSetter(writeName, writeUnit);
+    const value = useSimVarValue(readName, unit, maxStaleness);
+    const setter = useSimVarSetter(readName, unit, writeName);
     return [value, setter];
 };
 
