@@ -245,8 +245,7 @@ class CDUInitPage {
     // Does not refresh page so that other things can be performed first as necessary
     static updateTowIfNeeded(mcdu) {
         if (isFinite(mcdu.taxiFuelWeight) && isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.blockFuel)) {
-            const tow = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
-            mcdu.trySetTakeOffWeightLandingWeight(tow.toFixed(1));
+            mcdu.takeOffWeight = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
         }
     }
     static fuelPredConditionsMet(mcdu) {
@@ -298,7 +297,7 @@ class CDUInitPage {
                     (isFinite(mcdu.zeroFuelWeight) ? (mcdu.zeroFuelWeight * mcdu._conversionWeight).toFixed(1) : "") +
                     "/" +
                     (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : ""));
-            } else if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
+            } else if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
                 CDUInitPage.updateTowIfNeeded(mcdu);
                 CDUInitPage.ShowPage2(mcdu);
                 CDUInitPage.trySetFuelPred(mcdu);
@@ -371,7 +370,7 @@ class CDUInitPage {
         mcdu.onLeftInput[0] = async (value) => {
             if (mcdu._fuelPredDone) {
                 setTimeout(async () => {
-                    if (await mcdu.trySetTaxiFuelWeight(value)) {
+                    if (mcdu.trySetTaxiFuelWeight(value)) {
                         CDUInitPage.updateTowIfNeeded(mcdu);
                         if (mcdu.page.Current === mcdu.page.InitPageB) {
                             CDUInitPage.ShowPage2(mcdu);
@@ -379,7 +378,7 @@ class CDUInitPage {
                     }
                 }, mcdu.getDelayHigh());
             } else {
-                if (await mcdu.trySetTaxiFuelWeight(value)) {
+                if (mcdu.trySetTaxiFuelWeight(value)) {
                     CDUInitPage.updateTowIfNeeded(mcdu);
                     CDUInitPage.ShowPage2(mcdu);
                 }

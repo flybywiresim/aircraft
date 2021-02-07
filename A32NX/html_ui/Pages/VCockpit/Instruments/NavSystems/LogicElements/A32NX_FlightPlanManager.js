@@ -26,6 +26,8 @@ class FlightPlanManager {
         this._isLoadedApproachTimeLastSimVarCall = 0;
         this._isActiveApproachTimeLastSimVarCall = 0;
         this._approachActivated = false;
+        this._currentFlightPlanVersion = -1;
+        this._currentFlightPlanApproachVersion = -1;
         FlightPlanManager.DEBUG_INSTANCE = this;
         this.instrument = _instrument;
         this.registerListener();
@@ -391,7 +393,22 @@ class FlightPlanManager {
             this._activeWaypointIndex = waypointIndex;
         });
     }
+
+    _incrementFlightPlanVersion() {
+        // Get most up to date version in case updateFlightPlan hasn't been called yet before the last increment.
+        const currentVersion = SimVar.GetSimVarValue("L:A32NX_FLIGHT_PLAN_VERSION", 'number');
+        SimVar.SetSimVarValue("L:A32NX_FLIGHT_PLAN_VERSION", 'number', currentVersion + 1);
+    }
+
     updateFlightPlan(callback = () => { }, log = false) {
+        const newVersion = SimVar.GetSimVarValue("L:A32NX_FLIGHT_PLAN_VERSION", 'number');
+        if (newVersion === this._currentFlightPlanVersion) {
+            if (callback) {
+                callback();
+            }
+            return;
+        }
+        this._currentFlightPlanVersion = newVersion;
         const t0 = performance.now();
         Coherent.call("GET_FLIGHTPLAN").then((flightPlanData) => {
             const t1 = performance.now();
@@ -443,6 +460,14 @@ class FlightPlanManager {
         });
     }
     updateCurrentApproach(callback = () => { }, log = false) {
+        const newVersion = SimVar.GetSimVarValue("L:A32NX_FLIGHT_PLAN_VERSION", 'number');
+        if (newVersion === this._currentFlightPlanApproachVersion) {
+            if (callback) {
+                callback();
+            }
+            return;
+        }
+        this._currentFlightPlanApproachVersion = newVersion;
         const t0 = performance.now();
         Coherent.call("GET_APPROACH_FLIGHTPLAN").then((flightPlanData) => {
             this._loadWaypoints(flightPlanData.waypoints, this._approachWaypoints, true, (wps) => {
@@ -534,6 +559,7 @@ class FlightPlanManager {
                     if (value === index) {
                         console.log("setCurrentFlightPlanIndex : Values matching, return after " + attempts + " attempts");
                         this._currentFlightPlanIndex = index;
+                        this._incrementFlightPlanVersion();
                         this.updateFlightPlan(() => {
                             callback(true);
                         });
@@ -570,6 +596,7 @@ class FlightPlanManager {
     }
     clearFlightPlan(callback = EmptyCallback.Void) {
         Coherent.call("CLEAR_CURRENT_FLIGHT_PLAN").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(() => {
                 this.updateCurrentApproach(() => {
                     this.instrument.requestCall(callback);
@@ -589,6 +616,7 @@ class FlightPlanManager {
         NXDataStore.set("PLAN_ORIGIN", icao.replace("A      ", "").trim());
 
         Coherent.call("SET_ORIGIN", icao).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -947,6 +975,7 @@ class FlightPlanManager {
         NXDataStore.set("PLAN_DESTINATION", icao.replace("A      ", "").trim());
 
         Coherent.call("SET_DESTINATION", icao).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -955,16 +984,19 @@ class FlightPlanManager {
             index = this._waypoints.length;
         }
         Coherent.call("ADD_WAYPOINT", icao, index, setActive).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     setWaypointAltitude(altitude, index, callback = () => { }) {
         Coherent.call("SET_WAYPOINT_ALTITUDE", altitude, index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     setWaypointAdditionalData(index, key, value, callback = () => { }) {
         Coherent.call("SET_WAYPOINT_ADDITIONAL_DATA", index, key, value).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -975,6 +1007,7 @@ class FlightPlanManager {
     }
     invertActiveFlightPlan(callback = () => { }) {
         Coherent.call("INVERT_ACTIVE_FLIGHT_PLAN").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1000,6 +1033,7 @@ class FlightPlanManager {
     }
     removeWaypoint(index, thenSetActive = false, callback = () => { }) {
         Coherent.call("REMOVE_WAYPOINT", index, thenSetActive).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1097,16 +1131,19 @@ class FlightPlanManager {
     }
     setDepartureProcIndex(index, callback = () => { }) {
         Coherent.call("SET_DEPARTURE_PROC_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     setDepartureRunwayIndex(index, callback = EmptyCallback.Void) {
         Coherent.call("SET_DEPARTURE_RUNWAY_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     setOriginRunwayIndex(index, callback = EmptyCallback.Void) {
         Coherent.call("SET_ORIGIN_RUNWAY_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1115,6 +1152,7 @@ class FlightPlanManager {
     }
     setDepartureEnRouteTransitionIndex(index, callback = EmptyCallback.Void) {
         Coherent.call("SET_DEPARTURE_ENROUTE_TRANSITION_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1123,11 +1161,13 @@ class FlightPlanManager {
     }
     clearDepartureDiscontinuity(callback = EmptyCallback.Void) {
         Coherent.call("CLEAR_DEPARTURE_DISCONTINUITY").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     removeDeparture(callback = () => { }) {
         Coherent.call("REMOVE_DEPARTURE_PROC").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1139,6 +1179,7 @@ class FlightPlanManager {
     }
     setArrivalProcIndex(index, callback = () => { }) {
         Coherent.call("SET_ARRIVAL_PROC_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1147,16 +1188,19 @@ class FlightPlanManager {
     }
     clearArrivalDiscontinuity(callback = EmptyCallback.Void) {
         Coherent.call("CLEAR_ARRIVAL_DISCONTINUITY").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     setArrivalEnRouteTransitionIndex(index, callback = () => { }) {
         Coherent.call("SET_ARRIVAL_ENROUTE_TRANSITION_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     setArrivalRunwayIndex(index, callback = () => { }) {
         Coherent.call("SET_ARRIVAL_RUNWAY_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1168,6 +1212,7 @@ class FlightPlanManager {
             Coherent.call("SET_APPROACH_TRANSITION_INDEX", transition).then(() => {
                 this.updateFlightPlan(() => {
                     this.updateCurrentApproach(() => {
+                        this._incrementFlightPlanVersion();
                         callback();
                     });
                 });
@@ -1304,21 +1349,25 @@ class FlightPlanManager {
     }
     setApproachTransitionIndex(index, callback = () => { }) {
         Coherent.call("SET_APPROACH_TRANSITION_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     removeArrival(callback = () => { }) {
         Coherent.call("REMOVE_ARRIVAL_PROC").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     activateDirectTo(icao, callback = EmptyCallback.Void) {
         Coherent.call("ACTIVATE_DIRECT_TO", icao).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     cancelDirectTo(callback = EmptyCallback.Void) {
         Coherent.call("CANCEL_DIRECT_TO").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }

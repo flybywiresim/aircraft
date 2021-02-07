@@ -24,7 +24,7 @@ import {
 } from '../util.mjs';
 import logo from './Assets/fbw-logo.svg';
 
-import './Assets/Boot.scss';
+import './Assets/Efb.scss';
 
 function ScreenLoading() {
     return (
@@ -61,11 +61,11 @@ function EFBLoad() {
                     setLoadingTimeout(setTimeout(() => {
                         setSimVar('L:A32NX_EFB_TURNED_ON', 2, 'number');
                         setLoadingTimeout(undefined);
-                    }, 6_000));
+                    }, 6000));
                 }
                 break;
             case 2:
-                setContent(<Efb currentFlight={getSimVar('ATC FLIGHT NUMBER', 'string')} logo={logo} />);
+                setContent(<Efb currentFlight={getSimVar('ATC FLIGHT NUMBER', 'string')} />);
                 break;
             default:
                 throw new RangeError();

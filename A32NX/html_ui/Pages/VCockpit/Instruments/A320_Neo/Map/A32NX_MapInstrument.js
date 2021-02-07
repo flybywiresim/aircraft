@@ -98,6 +98,10 @@ class MapInstrument extends ISvgMapRootElement {
         this.weatherRanges = [10, 20, 30, 40, 50, 60, 80, 100];
         this.weatherHideGPS = false;
         this.isBushTrip = false;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
+        this.flightPlanThrottler = new UpdateThrottler(250);
+        this.approachThrottler = new UpdateThrottler(250);
+        this.constraintThrottler = new UpdateThrottler(750);
     }
     get flightPlanManager() {
         return this._flightPlanManager;
@@ -464,6 +468,7 @@ class MapInstrument extends ISvgMapRootElement {
         }
     }
     onBeforeMapRedraw() {
+        const deltaTime = this.getDeltaTime();
         if (this.eBingMode !== EBingMode.HORIZON) {
             this.drawCounter++;
             this.drawCounter %= 100;
@@ -496,11 +501,11 @@ class MapInstrument extends ISvgMapRootElement {
                 }
             }
             this.flightPlanManager.updateWaypointIndex();
-            if (this.drawCounter === 25) {
+            if (this.flightPlanThrottler.canUpdate(deltaTime) !== -1) {
                 this.updateFlightPlanVisibility();
                 this.flightPlanManager.updateFlightPlan();
             }
-            if (this.drawCounter === 75) {
+            if (this.approachThrottler.canUpdate(deltaTime) !== -1) {
                 this.flightPlanManager.updateCurrentApproach();
                 if (this.debugApproachFlightPlanElement) {
                     Coherent.call("GET_APPROACH_FLIGHTPLAN").then(data => {
@@ -511,7 +516,8 @@ class MapInstrument extends ISvgMapRootElement {
             if (!this.showConstraints && this.constraints && this.constraints.length > 0) {
                 this.constraints = [];
             }
-            if (this.drawCounter === 45 || (this.showConstraints && (!this.constraints || this.constraints.length === 0))) {
+            if (this.constraintThrottler.canUpdate(deltaTime) !== -1
+                    || (this.showConstraints && (!this.constraints || this.constraints.length === 0))) {
                 if (this.showConstraints) {
                     const transitionAltitude = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
                     const wpWithConstraints = this.flightPlanManager.getWaypointsWithAltitudeConstraints();
@@ -541,7 +547,7 @@ class MapInstrument extends ISvgMapRootElement {
                             if (this.flightPlanManager) {
                                 const airlinerMcduCurrentFplnWaypoint = this.flightPlanManager.getWaypoint(airlinerMcduCurrentFplnWaypointIndex, NaN, true);
                                 if (airlinerMcduCurrentFplnWaypoint && airlinerMcduCurrentFplnWaypoint.infos.coordinates) {
-                                    this.setNavMapCenter(airlinerMcduCurrentFplnWaypoint.infos.coordinates);
+                                    this.setNavMapCenter(airlinerMcduCurrentFplnWaypoint.infos.coordinates, 1);
                                     needCenterOnPlane = false;
                                 }
                             }
