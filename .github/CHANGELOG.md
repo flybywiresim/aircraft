@@ -73,6 +73,7 @@
 1. [TEXTURE] Various cockpit decal texture fixes and updates - @ImenesFBW (Imenes)
 1. [MCDU] Rework PERF TAKE OFF page - @beheh (Benedict Etzel)
 1. [SOUND] Fixed FCU knobs sounds - @ImenesFBW (Imenes)
+1. [MCDU] Fix AOC RCVD MSGS scrolling, add arrows, and update on receipt - @tracernz (Mike)
 1. [ECAM] Adjusted brake temp algorithm for new wheel sizes - @donstim (donbikes#4084)
 
 ## 0.5.2
