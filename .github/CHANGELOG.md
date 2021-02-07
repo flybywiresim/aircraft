@@ -72,6 +72,8 @@
 1. [FLIGHTMODEL] Updated landing gear contact point values to closer match reality - @wpine215 (Iceman) and @donstim (donbikes#4084)
 1. [TEXTURE] Various cockpit decal texture fixes and updates - @ImenesFBW (Imenes)
 1. [MCDU] Rework PERF TAKE OFF page - @beheh (Benedict Etzel)
+1. [SOUND] Fixed FCU knobs sounds - @ImenesFBW (Imenes)
+1. [MCDU] Fix AOC RCVD MSGS scrolling, add arrows, and update on receipt - @tracernz (Mike)
 1. [MCDU] Added Check TO Data - @MisterChocker (Leon)
 
 ## 0.5.2
