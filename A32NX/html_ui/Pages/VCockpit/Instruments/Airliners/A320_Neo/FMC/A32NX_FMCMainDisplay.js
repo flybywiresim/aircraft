@@ -170,8 +170,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._lastRequestedFLCModeWaypointIndex = -1;
         this.currentOrigin = "";
         this.currentDestination = "";
-        this.updateDepart = 0;
-        this.updateArrival = 0;
     }
 
     Init() {
@@ -181,6 +179,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.A32NXCore.init(this._lastTime);
 
         this.dataManager = new FMCDataManager(this);
+
+        this.offlineTACore = new A32NX_TransitionAltitude();
 
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
@@ -3326,28 +3326,18 @@ class FMCMainDisplay extends BaseAirliners {
             const departureAirport = this.flightPlanManager.getOrigin().ident;
             if (this.currentOrigin !== departureAirport) {  //only update when changing departure & arrival airport.
                 NXDataStore.set("PLAN_ORIGIN", departureAirport);
+                //this.getTransitionAltitude(departureAirport);
+                this.offlineTACore.tryCheckAPI();
                 this.currentOrigin = departureAirport;
-                this.updateDepart += _deltaTime;
-                this.getTransitionAltitude(departureAirport);
-                const DepartureTA = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
-                if (this.updateDepart*1000 >= 15 && DepartureTA === 0) {
-                    //when 15 sec after, if there is no TA on depart, using offline db
-                    return;
-                }
             }
         }
         if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
             const arrivalAirport = this.flightPlanManager.getDestination().ident;
             if (this.currentDestination !== arrivalAirport) {
                 NXDataStore.set("PLAN_DESTINATION", arrivalAirport);
-                this.currentDestination = departureAirport;
-                this.updateArrival += _deltaTime;
-                this.getArrivalTransitionAltitude(arrivalAirport);
-                const ArrivalTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
-                if (this.updateArrival*1000 >= 15 && ArrivalTA === 0) {
-                    //when 15 sec after, if there is no TA on depart, using offline db
-                    return;
-                }
+                //this.getArrivalTransitionAltitude(arrivalAirport);
+                this.offlineTACore.tryCheckAPI();
+                this.currentDestination = arrivalAirport;
             }
         }
     }
