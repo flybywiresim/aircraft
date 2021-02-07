@@ -368,11 +368,6 @@ class NavSystem extends BaseInstrument {
                 }
             }
             this.updateAspectRatio();
-            if (this.currFlightPlanManager.isLoadedApproach() && !this.currFlightPlanManager.isActiveApproach() && (this.currFlightPlanManager.getActiveWaypointIndex() == -1 || (this.currFlightPlanManager.getActiveWaypointIndex() > this.currFlightPlanManager.getLastIndexBeforeApproach()))) {
-                if (SimVar.GetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number") != 1) {
-                    this.currFlightPlanManager.tryAutoActivateApproach();
-                }
-            }
             if (this.popUpElement) {
                 this.popUpElement.onUpdate(this.deltaTime);
             }
