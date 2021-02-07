@@ -3,15 +3,37 @@ class A32NX_TransitionAltitude {
         console.log('A32NX_TransitionAltitude init');
         this.currentDeparture = "";
         this.currentArrival = "";
+        this.offline = false;
+        this.checkstart = true;
+        this.checkstartsec = 0;
     }
 
     update(_deltaTime, _core) {
-        this.offlineTransAlt();
+        if (this.checkstart === true && this.offline === false) {
+            this.tryCheckAPI(_deltaTime);
+        }
+        if (this.offline === true) {
+            this.offlineTransAlt();
+        }
+    }
+
+    tryCheckAPI(_deltaTime) {
+        if (this.offline === false) {
+            this.checkstartsec += _deltaTime;
+        }
+        const departTA = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
+        const arrivalTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+        if ((this.checkstartsec >= 30*1000) && departTA === 0 && arrivalTA === 0) {
+            this.offline = true;
+            this.checkstart = false;
+        }
     }
 
     offlineTransAlt() {
-        const Departure = NXDataStore.get("PLAN_ORIGIN");
-        const Arrival = NXDataStore.get("PLAN_DESTINATION");
+        let Departure = NXDataStore.get("PLAN_ORIGIN", "");
+        let Arrival = NXDataStore.get("PLAN_DESTINATION", "");
+        this.departureLogic(Departure);
+        this.arrivalLogic(Arrival);
         if (this.currentDeparture !== Departure) {
             this.departureLogic(Departure);
             this.currentDeparture = Departure;
@@ -23,15 +45,15 @@ class A32NX_TransitionAltitude {
     }
 
     departureLogic(airport) {
-        const airport_1 = airport.substr(0,1)
-        const airport_2 = airport.substr(0,2)
-        if (airport_1 === "K" || airport_1 === "C") {
+        let airportDepart_1 = airport.substr(0,1);
+        let airportDepart_2 = airport.substr(0,2);
+        if (airportDepart_1 === "K" || airportDepart_1 === "C") {
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000); //Canada & USA fixed to 18,000ft
-        } else if (airport_1 === "Y") {
+        } else if (airportDepart_1 === "Y") {
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 10000); //SPA region only have 10,000ft & 11,000ft. But 10,000ft is more so using that
         } else {
-            const departure = airportData.find(airportData => airportData.icao === airport_2);
-            if (departure = "") {
+            let departure = airportData.find(airportData => airportData.icao === airportDepart_2);
+            if (departure.icao !== airportDepart_2) {
                 SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000); // if can't find on list, default value to 18,000ft
             } else {
                 SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", departure.transAlt);
@@ -39,15 +61,15 @@ class A32NX_TransitionAltitude {
         }
     }
     arrivalLogic(airport) {
-        const airport_1 = airport.substr(0,1)
-        const airport_2 = airport.substr(0,2)
-        if (airport_1 === "K" || airport_1 === "C") {
+        let airportArrive_1 = airport.substr(0,1);
+        let airportArrive_2 = airport.substr(0,2);
+        if (airportArrive_1 === "K" || airportArrive_1 === "C") {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000); //Canada & USA fixed to 18,000ft
-        } else if (airport_1 === "Y") {
+        } else if (airportArrive_1 === "Y") {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 10000); //SPA region only have 10,000ft & 11,000ft. But 10,000ft is more so using that
         } else {
-            const arrival = airportData.find(airportData => airportData.icao === airport_2);
-            if (arrival = "") {
+            let arrival = airportData.find(airportData => airportData.icao === airportArrive_2);
+            if (arrival.icao !== airportArrive_2) {
                 SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000); // if can't find on list, default value to 18,000ft
             } else {
                 SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", arrival.transAlt);
@@ -312,4 +334,4 @@ const airportData = [
     { icao: "ZM", transAlt: 11490},
     { icao: "ZG", transAlt: 10270},
     { icao: "ZK", transAlt: 12000}
-]
+];
