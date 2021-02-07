@@ -1,13 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import SimVarProvider, { renderTarget, rootElement } from './SimVarProvider';
-
-/**
- * Use the given React element to render the instrument using React.
- */
-export const render = (Slot: React.ReactElement) => {
-    ReactDOM.render(<SimVarProvider>{Slot}</SimVarProvider>, renderTarget);
-}
+import { rootElement } from './defaults';
 
 export const useUpdate = (handler: (deltaTime: number) => void) => {
     // Logic based on https://usehooks.com/useEventListener/

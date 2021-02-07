@@ -1,8 +1,7 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
-import { AcceleratedKnob } from '../Common/AcceleratedKnob';
-import { useInteractionEvent } from '../../Common/ReactInstrument';
+import { useInteractionEvent } from '../../Common/hooks';
+import { RateMultiplierKnob, UpdateValueCallback } from '../../Common/RateMultiplierKnob';
 
 declare const Utils;
 
@@ -75,20 +74,8 @@ const offsetFrequencyChannel = (spacing: number, channel: number, offset: number
  *
  */
 export const StandbyFrequency = (props: Props) => {
-    // Used to change integer value of freq.
-    const [outerKnob] = useState(new AcceleratedKnob());
-
-    // Used to change decimal value of freq.
-    const [innerKnob] = useState(new AcceleratedKnob());
-
-    // Hook rotation events from simulator to custom knob class methods.
-    useInteractionEvent(`A32NX_RMP_${props.side}_OUTER_KNOB_TURNED_CLOCKWISE`, () => outerKnob.increase());
-    useInteractionEvent(`A32NX_RMP_${props.side}_OUTER_KNOB_TURNED_ANTICLOCKWISE`, () => outerKnob.decrease());
-    useInteractionEvent(`A32NX_RMP_${props.side}_INNER_KNOB_TURNED_CLOCKWISE`, () => innerKnob.increase());
-    useInteractionEvent(`A32NX_RMP_${props.side}_INNER_KNOB_TURNED_ANTICLOCKWISE`, () => innerKnob.decrease());
-
     // Handle outer knob turned.
-    outerKnob.updateValue = (offset) => {
+    const outerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
         const frequency = Math.round(props.value / 1000);
         const integer = Math.floor(frequency / 1000);
         const decimal = frequency % 1000;
@@ -96,10 +83,10 @@ export const StandbyFrequency = (props: Props) => {
         const maxInteger = decimal > 975 ? 135 : 136;
         const newInteger = Utils.Clamp(integer + offset, 118, maxInteger);
         props.setValue((newInteger * 1000 + decimal) * 1000);
-    };
+    }, [props.value]);
 
     // Handle inner knob turned.
-    innerKnob.updateValue = (offset) => {
+    const innerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
         const frequency = Math.round(props.value / 1000);
         if (Math.sign(offset) === 1 && frequency === 136975) {
             return;
@@ -112,7 +99,23 @@ export const StandbyFrequency = (props: Props) => {
         const maxDecimal = integer === 136 ? 975 : 1000;
         const newDecimal = Utils.Clamp(decimal, 0, maxDecimal);
         props.setValue((integer * 1000 + newDecimal) * 1000);
-    };
+    }, [props.value]);
+
+
+
+    // Used to change integer value of freq.
+    const outerKnob = useRef(new RateMultiplierKnob());
+    outerKnob.current.updateValue = outerKnobUpdateCallback;
+
+    // Used to change decimal value of freq.
+    const innerKnob = useRef(new RateMultiplierKnob());
+    innerKnob.current.updateValue = innerKnobUpdateCallback;
+
+    // Hook rotation events from simulator to custom knob class methods.
+    useInteractionEvent(`A32NX_RMP_${props.side}_OUTER_KNOB_TURNED_CLOCKWISE`, () => outerKnob.current.increase());
+    useInteractionEvent(`A32NX_RMP_${props.side}_OUTER_KNOB_TURNED_ANTICLOCKWISE`, () => outerKnob.current.decrease());
+    useInteractionEvent(`A32NX_RMP_${props.side}_INNER_KNOB_TURNED_CLOCKWISE`, () => innerKnob.current.increase());
+    useInteractionEvent(`A32NX_RMP_${props.side}_INNER_KNOB_TURNED_ANTICLOCKWISE`, () => innerKnob.current.decrease());
 
     return (<RadioPanelDisplay value={props.value} />);
 }

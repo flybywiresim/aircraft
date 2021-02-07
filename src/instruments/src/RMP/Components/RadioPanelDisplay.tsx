@@ -1,5 +1,5 @@
 import React from "react";
-import { useSimVar } from '../../Common/SimVarProvider';
+import { useSimVar } from '../../Common/simVars';
 
 /**
  *
@@ -19,7 +19,7 @@ const formatFrequency = (frequency: number): string => {
  *
  */
 export function RadioPanelDisplay(props: Props) {
-    const [lightsTest] = useSimVar('L:XMLVAR_LTS_Test', 'Boolean', 175);
+    const [lightsTest] = useSimVar('L:XMLVAR_LTS_Test', 'Boolean', 1000);
 
     // If the passed value prop is a number, we'll use formatFrequency to get string format.
     const value = typeof props.value === 'number' ? formatFrequency(props.value): props.value;

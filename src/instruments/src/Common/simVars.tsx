@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from "react"
-import { useInteractionEvents, useUpdate } from "./ReactInstrument"
+import { useInteractionEvents, useUpdate } from "./hooks"
 
 /**
  * The useSimVar hook provides an easy way to read and write SimVars from React.
@@ -399,8 +399,6 @@ const SimVarProvider: React.FC = ({ children }) => {
     );
 }
 
-// We assume that these two elements will be found. @todo maybe check?
-export const renderTarget = document.getElementById('A32NX_REACT_MOUNT') as HTMLElement;
-export const rootElement = renderTarget.parentElement as HTMLElement;
 
-export default SimVarProvider;
+
+export { SimVarProvider };

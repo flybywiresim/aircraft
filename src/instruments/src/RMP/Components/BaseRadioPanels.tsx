@@ -1,8 +1,8 @@
 import React from 'react';
 import { VhfRadioPanel } from './VhfRadioPanel';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
-import { useSimVar } from '../../Common/SimVarProvider';
-import { useInteractionEvent } from '../../Common/ReactInstrument';
+import { useSimVar, useInteractionSimVar } from '../../Common/simVars';
+import { useInteractionEvent } from '../../Common/hooks';
 
 /**
  *
@@ -15,8 +15,9 @@ interface RadioPanelProps {
  *
  */
 export const RootRadioPanel = (props: RadioPanelProps) => {
+    const toggleSwitchName = `A32NX_RMP_${props.side}_TOGGLE_SWITCH`;
+    const [panelSwitch] = useInteractionSimVar(`L:${toggleSwitchName}`, 'Boolean', toggleSwitchName);
     const [powerAvailable] = useSimVar(`L:${props.side === 'L' ? 'D' : 'A'}CPowerAvailable`, 'Boolean', 250);
-    const [panelSwitch] = useSimVar(`L:A32NX_RMP_${props.side}_TOGGLE_SWITCH`, "Boolean", 175);
     const powered = powerAvailable && panelSwitch;
 
     if (!powered) return <UnpoweredRadioPanel />;
