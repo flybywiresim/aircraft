@@ -90,14 +90,14 @@ function Ground() {
                     activeButtons.push(new StatefulButton(id, ButtonState.ACTIVE));
                 }
                 return className + ' selected';
-            } else if (gameSync === 0 && id) {
+            } else {
                 return className + (activeButtons.find(b => b.id === id && b.state === ButtonState.WAITING) ? ' waiting' : '');;
             }
         }
-         if (id) {
-            return className + (activeButtons.find(b => b.id === id) ? ' selected' : '');
+        if (id) {
+            return className + (activeButtons.find(b => b.id === id && b.state === ButtonState.ACTIVE) ? ' selected' : '');
         }
-        return className + (activeButtons.find(b => b.id === className) ? ' selected' : '');
+        return className + (activeButtons.find(b => b.id === className && b.state === ButtonState.ACTIVE) ? ' selected' : '');
      }
 
     return (
