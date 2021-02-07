@@ -25,7 +25,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.routeIndex = 0;
         this.coRoute = "";
         this.tmpOrigin = "";
-        this.transitionAltitude = 10000;
+        this.transitionAltitude = NaN;
         this.perfTOTemp = NaN;
         this._overridenFlapApproachSpeed = NaN;
         this._overridenSlatApproachSpeed = NaN;
@@ -170,6 +170,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._lastRequestedFLCModeWaypointIndex = -1;
         this.currentOrigin = "";
         this.currentDestination = "";
+        this.updateDepart = 0;
+        this.updateArrival = 0;
     }
 
     Init() {
@@ -294,7 +296,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.updateDisplayedConstraints();
 
-        this.updateDepartArrive();
+        this.updateDepartArrive(_deltaTime);
     }
 
     //TODO: for independence introduce new simvar for current flight phase "L:A32NX_FLIGHT_PHASE_CURRENT"
@@ -3319,20 +3321,30 @@ class FMCMainDisplay extends BaseAirliners {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
     }
 
-    updateDepartArrive() { 
+    updateDepartArrive(_deltaTime) {
         if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident) {
-            if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
-                const departureAirport = this.flightPlanManager.getOrigin().ident;
-                const arrivalAirport = this.flightPlanManager.getDestination().ident;
-                if (this.currentOrigin !== departureAirport) {
-                    NXDataStore.set("PLAN_ORIGIN", departureAirport);
-                    this.currentOrigin = departureAirport;
-                    this.getTransitionAltitude(departureAirport);
+            const departureAirport = this.flightPlanManager.getOrigin().ident;
+            if (this.currentOrigin !== departureAirport) {  //only update when changing departure & arrival airport.
+                NXDataStore.set("PLAN_ORIGIN", departureAirport);
+                this.currentOrigin = departureAirport;
+                this.updateDepart += _deltaTime;
+                this.getTransitionAltitude(departureAirport);
+                if (this.updateDepart*1000 >= 15) {
+                    //when 15 sec after, if there is no TA on depart, using offline db
+                    return;
                 }
-                if (this.currentDestination !== arrivalAirport) {
-                    NXDataStore.set("PLAN_DESTINATION", arrivalAirport);
-                    this.currentDestination = departureAirport;
-                    this.getArrivalTransitionAltitude(arrivalAirport);
+            }
+        }
+        if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
+            const arrivalAirport = this.flightPlanManager.getDestination().ident;
+            if (this.currentDestination !== arrivalAirport) {
+                NXDataStore.set("PLAN_DESTINATION", arrivalAirport);
+                this.currentDestination = departureAirport;
+                this.updateArrival += _deltaTime;
+                this.getArrivalTransitionAltitude(arrivalAirport);
+                if (this.updateArrival*1000 >= 15) {
+                    //when 15 sec after, if there is no TA on depart, using offline db
+                    return;
                 }
             }
         }
