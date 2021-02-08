@@ -39,11 +39,18 @@ type FlightWidgetProps = {
     route: string
 }
 
+
 const FlightWidget = (props: FlightWidgetProps) => {
+
+	const resolveFlightName = () => {
+		const airline = typeof props.airline === 'string' ? props.airline : "";
+		return `${airline}${props.flightNum}`;
+	}
+
     return (
         <div id={'flight-' + props.name} className="bg-gray-800 rounded-xl p-6 text-white shadow-lg">
             <div className="text-center mb-6">
-                <h1 className="text-2xl font-medium">{props.airline + props.flightNum}</h1>
+                <h1 className="text-2xl font-medium">{resolveFlightName()}</h1>
                 <span>{props.aircraftReg}</span>
             </div>
 
