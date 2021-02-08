@@ -1030,7 +1030,7 @@ var A320_Neo_UpperECAM;
                                         style: "action",
                                         message: "MASTER SW",
                                         action: "OFF",
-                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool"),
+                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_APU_MASTER_SW_PB_ON", "Bool"),
                                     },
                                 ]
                             },
@@ -1044,7 +1044,7 @@ var A320_Neo_UpperECAM;
                                         style: "action",
                                         message: "MASTER SW",
                                         action: "OFF",
-                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool"),
+                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_APU_MASTER_SW_PB_ON", "Bool"),
                                     },
                                 ]
                             }

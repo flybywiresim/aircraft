@@ -223,7 +223,7 @@ var A320_Neo_LowerECAM_APU;
         // Once ELEC is implemented, this depends on the ECB being powered or not.
         // The ECB will be powered when the MASTER SW is on and unpower when MASTER SW is off, N = 0, and the flap is closed.
         const apuFlapOpen = SimVar.GetSimVarValue("L:A32NX_APU_FLAP_ECAM_OPEN", "Bool");
-        const apuMasterSwitch = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool");
+        const apuMasterSwitch = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_PB_ON", "Bool");
         return apuMasterSwitch || getN() > 0 || apuFlapOpen;
     }
 

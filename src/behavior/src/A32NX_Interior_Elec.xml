@@ -41,7 +41,7 @@
         <UseTemplate Name="FBW_Push_Toggle">
             <LEFT_SINGLE_CODE>(&gt;K:TOGGLE_ALTERNATOR#ID#)</LEFT_SINGLE_CODE>
 
-            <SEQ1_CODE>(L:A32NX_ELEC_GEN_#ID#_FAULT, Bool)</SEQ1_CODE>
+            <SEQ1_CODE>(L:A32NX_ELEC_GEN_#ID#_PB_FAULT, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(A:GENERAL ENG MASTER ALTERNATOR:#ID#, Bool) !</SEQ2_CODE>
 
             <DOWN_CODE>(A:GENERAL ENG MASTER ALTERNATOR:#ID#, Bool)</DOWN_CODE>
@@ -104,13 +104,13 @@
             <LEFT_SINGLE_CODE>
                 #BATTERY_BUS_ID# #HOT_BATTERY_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
                 #BATTERY_STATE_CODE# ! if{
-                    0 (&gt;L:A32NX_ELEC_BATTERY_#BATTERY_BUS_ID#_ACTIVATED)
+                    0 (&gt;L:A32NX_ELEC_BATTERY_#BATTERY_BUS_ID#_PB_AUTO)
                 } els{
-                    1 (&gt;L:A32NX_ELEC_BATTERY_#BATTERY_BUS_ID#_ACTIVATED)
+                    1 (&gt;L:A32NX_ELEC_BATTERY_#BATTERY_BUS_ID#_PB_AUTO)
                 }
             </LEFT_SINGLE_CODE>
 
-            <SEQ1_CODE>(L:A32NX_ELEC_BATTERY_#BATTERY_BUS_ID#_FAULT, Bool)</SEQ1_CODE>
+            <SEQ1_CODE>(L:A32NX_ELEC_BATTERY_#BATTERY_BUS_ID#_PB_FAULT, Bool)</SEQ1_CODE>
             <SEQ2_CODE>#BATTERY_STATE_CODE# !</SEQ2_CODE>
 
             <DOWN_CODE>#BATTERY_STATE_CODE#</DOWN_CODE>

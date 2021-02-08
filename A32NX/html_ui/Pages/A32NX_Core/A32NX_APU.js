@@ -41,7 +41,7 @@ class A32NX_APU {
                 : 0
         );
 
-        const apuBleedOn = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_ON", "Bool");
+        const apuBleedOn = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_PB_ON", "Bool");
         if (apuBleedOn !== this.lastAPUBleedState) {
             this.lastAPUBleedState = apuBleedOn;
             if (apuBleedOn === 1) {

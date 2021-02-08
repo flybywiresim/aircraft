@@ -357,23 +357,35 @@
     - Percent
     - The APU's rotations per minute in percentage of the maximum RPM
 
-- A32NX_APU_MASTER_SW_ACTIVATED
+- A32NX_APU_MASTER_SW_PB_FAULT
     - Bool
-    - True when the APU MASTER SW is activated
+    - Indicates if the MASTER SW push button FAULT light should be illuminated
 
-- A32NX_APU_START_ACTIVATED
+- A32NX_APU_MASTER_SW_PB_ON
     - Bool
-    - True when the APU START push button is activated
+    - True when the APU MASTER SW push button is ON
+
+- A32NX_APU_AVAILABLE
+    - Bool
+    - True when the APU is available
+
+- A32NX_APU_START_PB_AVAILABLE
+    - Bool
+    - True when the APU START push button AVAIL light should illuminate
+
+- A32NX_APU_START_PB_ON
+    - Bool
+    - True when the APU START push button is ON
 
 - A32NX_APU_GEN_VOLTAGE:
     - Volts
     - The electric potential made available by the APU generator
 
-- A32NX_APU_GEN_VOLTAGE_NORMAL:
+- A32NX_APU_GEN_VOLTAGE_NORMAL
     - Bool
     - Indicates if the APU generator potential is within the normal range
 
-- A32NX_APU_GEN_AMPERAGE:
+- A32NX_APU_GEN_AMPERAGE
     - Amperes
     - The electric current made available by the APU generator
 
@@ -393,17 +405,13 @@
     - Bool
     - Indicates if the APU bleed air valve is open
 
-- A32NX_APU_BLEED_FAULT
+- A32NX_APU_BLEED_PB_FAULT
     - Bool
-    - Indicates if the APU BLEED FAULT light should be illuminated
+    - Indicates if the APU BLEED push button FAULT light should be illuminated
 
-- A32NX_APU_BLEED_ON
+- A32NX_APU_BLEED_PB_ON
     - Bool
-    - Indicates if the APU BLEED is ON
-
-- A32NX_APU_MASTER_FAULT
-    - Bool
-    - Indicates if the MASTER SW FAULT light should be illuminated
+    - Indicates if the APU BLEED push button is ON
 
 - A32NX_APU_LOW_FUEL_PRESSURE_FAULT
     - Bool
@@ -431,7 +439,7 @@
 
 - A32NX_FIRE_BUTTON_APU
     - Bool
-    - Indicates if the APU fire button is released
+    - Indicates if the APU fire button is RELEASED
 
  - A32NX_RMP_L_TOGGLE_SWITCH
     - Boolean
@@ -485,66 +493,66 @@
     - feet
     - The engine out acceleration altitude, set in the PERF TAKE OFF page.
 
-- A32NX_ELEC_BATTERY_10_FAULT
+- A32NX_ELEC_BATTERY_10_PB_FAULT
     - Bool
-    - Indicates if the BAT 1 FAULT light should be illuminated
+    - Indicates if the BAT 1 push button FAULT light should be illuminated
 
-- A32NX_ELEC_BATTERY_10_ACTIVATED
+- A32NX_ELEC_BATTERY_10_PB_AUTO
     - Bool
-    - True when the BAT 1 push button is activated
+    - True when the BAT 1 push button is AUTO
 
-- A32NX_ELEC_BATTERY_11_FAULT
+- A32NX_ELEC_BATTERY_11_PB_FAULT
     - Bool
-    - Indicates if the BAT 2 FAULT light should be illuminated
+    - Indicates if the BAT 2 push button FAULT light should be illuminated
 
-- A32NX_ELEC_BATTERY_11_ACTIVATED
+- A32NX_ELEC_BATTERY_11_PB_AUTO
     - Bool
-    - True when the BAT 2 push button is activated
+    - True when the BAT 2 push button is AUTO
 
-- A32NX_ELEC_IDG_1_FAULT
+- A32NX_ELEC_IDG_1_PB_FAULT
     - Bool
-    - Indicates if the IDG 1 FAULT light should be illuminated
+    - Indicates if the IDG 1 push button FAULT light should be illuminated
 
-- A32NX_ELEC_IDG_1_ACTIVATED
+- A32NX_ELEC_IDG_1_PB_RELEASED
     - Bool
-    - True when the IDG 1 push button is activated
+    - True when the IDG 1 push button is RELEASED
 
-- A32NX_ELEC_IDG_2_FAULT
+- A32NX_ELEC_IDG_2_PB_FAULT
     - Bool
-    - Indicates if the IDG 2 FAULT light should be illuminated
+    - Indicates if the IDG 2 push button FAULT light should be illuminated
 
-- A32NX_ELEC_IDG_2_ACTIVATED
+- A32NX_ELEC_IDG_2_PB_RELEASED
     - Bool
-    - True when the IDG 2 push button is activated
+    - True when the IDG 2 push button is RELEASED
 
-- A32NX_ELEC_GEN_1_FAULT
+- A32NX_ELEC_GEN_1_PB_FAULT
     - Bool
-    - True when the GEN 1 FAULT light should be illuminated
+    - True when the GEN 1 push button FAULT light should be illuminated
 
-- A32NX_ELEC_GEN_2_FAULT
+- A32NX_ELEC_GEN_2_PB_FAULT
     - Bool
-    - True when the GEN 2 FAULT light should be illuminated
+    - True when the GEN 2 push button FAULT light should be illuminated
 
-- A32NX_ELEC_BUS_TIE_ACTIVATED
+- A32NX_ELEC_BUS_TIE_PB_AUTO
     - Bool
-    - True when the BUS TIE push button is activated
+    - True when the BUS TIE push button is AUTO
 
-- A32NX_ELEC_AC_ESS_FEED_FAULT
+- A32NX_ELEC_AC_ESS_FEED_PB_FAULT
     - Bool
-    - True when the AC ESS FEED FAULT light should be illuminated
+    - True when the AC ESS FEED push button FAULT light should be illuminated
 
-- A32NX_ELEC_AC_ESS_FEED_ACTIVATED
+- A32NX_ELEC_AC_ESS_FEED_PB_NORMAL
     - Bool
-    - True when the AC ESS FEED push button is activated
+    - True when the AC ESS FEED push button is NORMAL
 
-- A32NX_ELEC_GALY_CAB_ACTIVATED
+- A32NX_ELEC_GALY_CAB_PB_AUTO
     - Bool
-    - True when the GALY & CAB push button is activated
+    - True when the GALY & CAB push button is AUTO
 
-- A32NX_ELEC_GALY_CAB_FAULT
+- A32NX_ELEC_GALY_CAB_PB_FAULT
     - Bool
-    - True when the GALY & CAB FAULT light should be illuminated
+    - True when the GALY & CAB push button FAULT light should be illuminated
 
-- A32NX_ELEC_COMMERCIAL_ACTIVATED
+- A32NX_ELEC_COMMERCIAL_PB_ON
     - Bool
-    - True when the COMMERCIAL push button is activated
+    - True when the COMMERCIAL push button is ON

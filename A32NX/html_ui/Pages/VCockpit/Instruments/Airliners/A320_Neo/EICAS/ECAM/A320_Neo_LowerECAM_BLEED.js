@@ -146,7 +146,7 @@ var A320_Neo_LowerECAM_BLEED;
             const apuBleedAirValveOpen = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool");
             const currentXbleedState = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
             const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
-            const apuSwitchState = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool") || SimVar.GetSimVarValue("L:A32NX_APU_BLEED_ON", "Bool");
+            const apuSwitchState = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_PB_ON", "Bool") || SimVar.GetSimVarValue("L:A32NX_APU_BLEED_PB_ON", "Bool");
             const fadecStatus = [SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool"), SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool")];
             const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second");
             const wingAntiInceState = SimVar.GetSimVarValue("STRUCTURAL DEICE SWITCH", "bool");
