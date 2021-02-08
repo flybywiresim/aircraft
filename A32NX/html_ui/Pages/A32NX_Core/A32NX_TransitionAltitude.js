@@ -30,7 +30,7 @@ class A32NX_TransitionAltitude {
     }
 
     offlineTransAlt() {
-        const Departure = NXDataStore.get("PLAN_ORIGIN", "");n
+        const Departure = NXDataStore.get("PLAN_ORIGIN", "");
         const Arrival = NXDataStore.get("PLAN_DESTINATION", "");
         this.departureLogic(Departure);
         this.arrivalLogic(Arrival);
