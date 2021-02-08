@@ -312,7 +312,10 @@ class A32NX_FWC {
 
     altitudeWarning() {
         const indicatedAltitude = Simplane.getAltitude();
-        SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
+        const shortAlert = SimVar.GetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool");
+        if (shortAlert === 1) {
+            SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
+        }
 
         if (this.warningPressed === true) {
             this._wasBellowThreshold = false;
