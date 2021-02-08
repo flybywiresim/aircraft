@@ -1,0 +1,1 @@
+export const SET_TOD_DATA = 'SET_TOD_DATA';
