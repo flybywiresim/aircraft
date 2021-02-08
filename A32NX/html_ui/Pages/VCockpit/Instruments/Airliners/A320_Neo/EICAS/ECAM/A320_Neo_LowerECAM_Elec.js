@@ -544,10 +544,11 @@ var A320_Neo_LowerECAM_Elec;
 
             }
 
-            this.drawApuGen();
+            this.drawApuGenerator();
+            this.drawEngineGenerators();
         }
 
-        drawApuGen() {
+        drawApuGenerator() {
             const apuMasterSwitch = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_PB_ON", "Bool");
             const apuGenSwitchOn = SimVar.GetSimVarValue('APU GENERATOR SWITCH:1', 'Bool') === 1;
             this.toggle(this.e_APUGEN_OFF, apuMasterSwitch && !apuGenSwitchOn);
@@ -583,6 +584,60 @@ var A320_Neo_LowerECAM_Elec;
 
             this.toggle(this.e_APUGEN_TITLE, true);
             this.toggleValidWhite(this.e_APUGEN_TITLE, (!apuMasterSwitch || (apuGenSwitchOn && allParametersWithinAcceptableRange)));
+        }
+
+        drawEngineGenerators() {
+            this.drawEngineGenerator(1, {
+                off: this.e_GEN1_OFF,
+                box: this.e_GEN1_BOX,
+                title: this.e_GEN1_TITLE,
+                titleNumber: this.e_GEN1_TITLE_NUMBER,
+                loadValue: this.e_GEN1_LOAD_VALUE,
+                loadUnit: this.e_GEN1_LOAD_UNIT,
+                voltsValue: this.e_GEN1_VOLTS_VALUE,
+                voltsUnit: this.e_GEN1_VOLTS_UNIT,
+                frequencyValue: this.e_GEN1_FREQ_VALUE,
+                frequencyUnit: this.e_GEN1_FREQ_UNIT
+            });
+
+            this.drawEngineGenerator(2, {
+                off: this.e_GEN2_OFF,
+                box: this.e_GEN2_BOX,
+                title: this.e_GEN2_TITLE,
+                titleNumber: this.e_GEN2_TITLE_NUMBER,
+                loadValue: this.e_GEN2_LOAD_VALUE,
+                loadUnit: this.e_GEN2_LOAD_UNIT,
+                voltsValue: this.e_GEN2_VOLTS_VALUE,
+                voltsUnit: this.e_GEN2_VOLTS_UNIT,
+                frequencyValue: this.e_GEN2_FREQ_VALUE,
+                frequencyUnit: this.e_GEN2_FREQ_UNIT
+            });
+        }
+
+        drawEngineGenerator(number, elements) {
+            const engineGeneratorPbOn = SimVar.GetSimVarValue("GENERAL ENG MASTER ALTERNATOR:" + number, "Bool");
+
+            this.toggle(elements.off, !engineGeneratorPbOn);
+            this.toggle(elements.box, true);
+
+            this.toggle(elements.loadValue, engineGeneratorPbOn);
+            this.setValue(elements.loadValue, 0);
+            this.toggleValidGreen(elements.loadValue, true);
+            this.toggle(elements.loadUnit, engineGeneratorPbOn);
+
+            this.toggle(elements.voltsValue, engineGeneratorPbOn);
+            this.setValue(elements.voltsValue, 0);
+            this.toggleValidGreen(elements.voltsValue, false);
+            this.toggle(elements.voltsUnit, engineGeneratorPbOn);
+
+            this.toggle(elements.frequencyValue, engineGeneratorPbOn);
+            this.setValue(elements.frequencyValue, 0);
+            this.toggleValidGreen(elements.frequencyValue, false);
+            this.toggle(elements.frequencyUnit, engineGeneratorPbOn);
+
+            const allParametersWithinAcceptableRange = false;
+            this.toggleValidWhite(elements.title, engineGeneratorPbOn && allParametersWithinAcceptableRange);
+            this.toggleValidWhite(elements.titleNumber, engineGeneratorPbOn && allParametersWithinAcceptableRange);
         }
 
         toggle(element, condition) {
