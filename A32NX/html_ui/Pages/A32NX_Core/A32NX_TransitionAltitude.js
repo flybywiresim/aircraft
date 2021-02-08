@@ -9,16 +9,13 @@ class A32NX_TransitionAltitude {
     }
 
     update(_deltaTime, _core) {
-        if (this.checkstart === true && this.offline === false) {
-            this.tryCheckAPI(_deltaTime);
-        }
         if (this.offline === true) {
             this.offlineTransAlt();
         }
     }
 
     tryCheckAPI(_deltaTime) {
-        if (this.offline === false) {
+        if (this.offline === false && this.checkstart == true) {
             this.checkstartsec += _deltaTime;
         }
         const departTA = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
@@ -26,11 +23,14 @@ class A32NX_TransitionAltitude {
         if ((this.checkstartsec >= 30 * 1000) && departTA === 0 && arrivalTA === 0) {
             this.offline = true;
             this.checkstart = false;
+        } else {
+            this.offlne = false;
+            this.checkstart = false;
         }
     }
 
     offlineTransAlt() {
-        const Departure = NXDataStore.get("PLAN_ORIGIN", "");
+        const Departure = NXDataStore.get("PLAN_ORIGIN", "");n
         const Arrival = NXDataStore.get("PLAN_DESTINATION", "");
         this.departureLogic(Departure);
         this.arrivalLogic(Arrival);
