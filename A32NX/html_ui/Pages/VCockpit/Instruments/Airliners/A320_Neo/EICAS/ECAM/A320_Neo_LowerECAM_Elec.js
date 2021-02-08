@@ -365,126 +365,126 @@ var A320_Neo_LowerECAM_Elec;
             const apuGenOn = SimVar.GetSimVarValue('APU GENERATOR SWITCH:1', 'Bool') === 1;
 
             // Level 1 - Generators
-            if (this.systems.GEN1 === 'ON') {
-                this.setGEN1_ON();
-                this.setCONNECTION_GEN1_AC1_ON();
-                this.buses.AC1 = 'ON'; // move to after gen layer
-                if (this.systems.EXTPWR === 'OFF' && !apuGenOn && this.systems.GEN2 === 'OFF') {
-                    this.setCONNECTION_XFEED_ON();
-                    this.setCONNECTION_XFEED_AC2_ON();
-                    this.buses.AC2 = 'ON';
-                }
-            } else {
-                this.setGEN1_OFF();
-                this.setCONNECTION_GEN1_XFEED_OFF();
-                if (this.systems.GEN2 === 'OFF' && !apuGenOn && this.systems.EXTPWR === 'OFF') {
-                    this.setCONNECTION_XFEED_AC1_OFF();
-                }
-            }
+            // if (this.systems.GEN1 === 'ON') {
+            //     this.setGEN1_ON();
+            //     this.setCONNECTION_GEN1_AC1_ON();
+            //     this.buses.AC1 = 'ON'; // move to after gen layer
+            //     if (this.systems.EXTPWR === 'OFF' && !apuGenOn && this.systems.GEN2 === 'OFF') {
+            //         this.setCONNECTION_XFEED_ON();
+            //         this.setCONNECTION_XFEED_AC2_ON();
+            //         this.buses.AC2 = 'ON';
+            //     }
+            // } else {
+            //     this.setGEN1_OFF();
+            //     this.setCONNECTION_GEN1_XFEED_OFF();
+            //     if (this.systems.GEN2 === 'OFF' && !apuGenOn && this.systems.EXTPWR === 'OFF') {
+            //         this.setCONNECTION_XFEED_AC1_OFF();
+            //     }
+            // }
 
-            if (this.systems.GEN2 === 'ON') {
-                this.setGEN2_ON();
-                this.setCONNECTION_GEN2_AC2_ON();
-                this.buses.AC2 = 'ON';
-                if (this.systems.EXTPWR === 'OFF' && !apuGenOn && this.systems.GEN1 === 'OFF') {
-                    this.setCONNECTION_XFEED_ON();
-                    this.setCONNECTION_XFEED_AC1_ON();
-                    this.buses.AC1 = 'ON';
-                }
-            } else {
-                this.setGEN2_OFF();
-                this.setCONNECTION_GEN2_XFEED_OFF();
-                if (this.systems.GEN1 === 'OFF' && !apuGenOn && this.systems.EXTPWR === 'OFF') {
-                    this.setCONNECTION_XFEED_AC2_OFF();
-                }
-            }
+            // if (this.systems.GEN2 === 'ON') {
+            //     this.setGEN2_ON();
+            //     this.setCONNECTION_GEN2_AC2_ON();
+            //     this.buses.AC2 = 'ON';
+            //     if (this.systems.EXTPWR === 'OFF' && !apuGenOn && this.systems.GEN1 === 'OFF') {
+            //         this.setCONNECTION_XFEED_ON();
+            //         this.setCONNECTION_XFEED_AC1_ON();
+            //         this.buses.AC1 = 'ON';
+            //     }
+            // } else {
+            //     this.setGEN2_OFF();
+            //     this.setCONNECTION_GEN2_XFEED_OFF();
+            //     if (this.systems.GEN1 === 'OFF' && !apuGenOn && this.systems.EXTPWR === 'OFF') {
+            //         this.setCONNECTION_XFEED_AC2_OFF();
+            //     }
+            // }
 
-            if (this.systems.EXTPWR === 'ON') {
-                this.setCONNECTION_XFEED_OFF();
-                this.setEXTPWR_ON();
-                if (this.systems.GEN1 === 'OFF' || this.systems.GEN2 === 'OFF') {
-                    this.setCONNECTION_EXTPWR_XFEED_ON();
-                    if (this.systems.GEN1 === 'OFF') {
-                        this.setCONNECTION_XFEED_A_ON();
-                        this.setCONNECTION_XFEED_B_ON();
-                        this.setCONNECTION_XFEED_AC1_ON();
-                        this.buses.AC1 = 'ON';
-                    }
-                    if (this.systems.GEN2 === 'OFF') {
-                        this.setCONNECTION_XFEED_C_ON();
-                        this.setCONNECTION_XFEED_AC2_ON();
-                        this.buses.AC2 = 'ON';
-                    }
-                } else {
-                    this.setCONNECTION_EXTPWR_XFEED_OFF();
-                }
-            } else {
-                this.setEXTPWR_OFF();
-                this.setCONNECTION_EXTPWR_XFEED_OFF();
-            }
+            // if (this.systems.EXTPWR === 'ON') {
+            //     this.setCONNECTION_XFEED_OFF();
+            //     this.setEXTPWR_ON();
+            //     if (this.systems.GEN1 === 'OFF' || this.systems.GEN2 === 'OFF') {
+            //         this.setCONNECTION_EXTPWR_XFEED_ON();
+            //         if (this.systems.GEN1 === 'OFF') {
+            //             this.setCONNECTION_XFEED_A_ON();
+            //             this.setCONNECTION_XFEED_B_ON();
+            //             this.setCONNECTION_XFEED_AC1_ON();
+            //             this.buses.AC1 = 'ON';
+            //         }
+            //         if (this.systems.GEN2 === 'OFF') {
+            //             this.setCONNECTION_XFEED_C_ON();
+            //             this.setCONNECTION_XFEED_AC2_ON();
+            //             this.buses.AC2 = 'ON';
+            //         }
+            //     } else {
+            //         this.setCONNECTION_EXTPWR_XFEED_OFF();
+            //     }
+            // } else {
+            //     this.setEXTPWR_OFF();
+            //     this.setCONNECTION_EXTPWR_XFEED_OFF();
+            // }
 
-            if (apuGenOn) {
-                this.setAPUGEN_ON();
-                if (this.systems.EXTPWR === 'OFF') {
-                    this.setCONNECTION_XFEED_OFF();
-                    if (this.systems.GEN1 === 'OFF' || this.systems.GEN2 === 'OFF') {
-                        this.setCONNECTION_APUGEN_XFEED_ON();
-                        if (this.systems.GEN1 === 'OFF') {
-                            this.setCONNECTION_XFEED_A_ON();
-                            this.setCONNECTION_XFEED_AC1_ON();
-                            this.buses.AC1 = 'ON';
-                        }
-                        if (this.systems.GEN2 === 'OFF') {
-                            this.setCONNECTION_XFEED_B_ON();
-                            this.setCONNECTION_XFEED_C_ON();
-                            this.setCONNECTION_XFEED_AC2_ON();
-                            this.buses.AC2 = 'ON';
-                        }
-                    } else {
-                        this.setCONNECTION_APUGEN_XFEED_OFF();
-                    }
-                } else {
-                    this.setCONNECTION_APUGEN_XFEED_OFF();
-                }
-            } else {
-                this.setAPUGEN_OFF();
-                this.setCONNECTION_APUGEN_XFEED_OFF();
-            }
+            // if (apuGenOn) {
+            //     this.setAPUGEN_ON();
+            //     if (this.systems.EXTPWR === 'OFF') {
+            //         this.setCONNECTION_XFEED_OFF();
+            //         if (this.systems.GEN1 === 'OFF' || this.systems.GEN2 === 'OFF') {
+            //             this.setCONNECTION_APUGEN_XFEED_ON();
+            //             if (this.systems.GEN1 === 'OFF') {
+            //                 this.setCONNECTION_XFEED_A_ON();
+            //                 this.setCONNECTION_XFEED_AC1_ON();
+            //                 this.buses.AC1 = 'ON';
+            //             }
+            //             if (this.systems.GEN2 === 'OFF') {
+            //                 this.setCONNECTION_XFEED_B_ON();
+            //                 this.setCONNECTION_XFEED_C_ON();
+            //                 this.setCONNECTION_XFEED_AC2_ON();
+            //                 this.buses.AC2 = 'ON';
+            //             }
+            //         } else {
+            //             this.setCONNECTION_APUGEN_XFEED_OFF();
+            //         }
+            //     } else {
+            //         this.setCONNECTION_APUGEN_XFEED_OFF();
+            //     }
+            // } else {
+            //     this.setAPUGEN_OFF();
+            //     this.setCONNECTION_APUGEN_XFEED_OFF();
+            // }
 
-            // Level 2 - AC Buses
-            if (this.buses.AC1 === 'ON') {
-                this.setCONNECTION_AC1_TR1_ON();
-                this.systems.TR1 = 'ON';
-                if (this.switches.ACESS_FEED_AUTO === true || this.buses.AC2 === 'OFF') {
-                    this.setCONNECTION_AC1_ACESS_ON();
-                    this.setCONNECTION_AC2_ACESS_OFF();
-                    this.buses.ACESS = 'ON';
-                }
-            }
-            if (this.buses.AC2 === 'ON') {
-                this.setCONNECTION_AC2_TR2_ON();
-                this.systems.TR2 = 'ON';
-                if (this.switches.ACESS_FEED_AUTO === false || this.buses.AC1 === 'OFF') {
-                    this.setCONNECTION_AC2_ACESS_ON();
-                    this.setCONNECTION_AC1_ACESS_OFF();
-                    this.buses.ACESS = 'ON';
-                }
-            }
-            if (this.buses.GALLEY_SHED === true) {
-                this.setGALLEY_SHED_ON();
-            } else {
-                this.setGALLEY_SHED_OFF();
-            }
+            // // Level 2 - AC Buses
+            // if (this.buses.AC1 === 'ON') {
+            //     this.setCONNECTION_AC1_TR1_ON();
+            //     this.systems.TR1 = 'ON';
+            //     if (this.switches.ACESS_FEED_AUTO === true || this.buses.AC2 === 'OFF') {
+            //         this.setCONNECTION_AC1_ACESS_ON();
+            //         this.setCONNECTION_AC2_ACESS_OFF();
+            //         this.buses.ACESS = 'ON';
+            //     }
+            // }
+            // if (this.buses.AC2 === 'ON') {
+            //     this.setCONNECTION_AC2_TR2_ON();
+            //     this.systems.TR2 = 'ON';
+            //     if (this.switches.ACESS_FEED_AUTO === false || this.buses.AC1 === 'OFF') {
+            //         this.setCONNECTION_AC2_ACESS_ON();
+            //         this.setCONNECTION_AC1_ACESS_OFF();
+            //         this.buses.ACESS = 'ON';
+            //     }
+            // }
+            // if (this.buses.GALLEY_SHED === true) {
+            //     this.setGALLEY_SHED_ON();
+            // } else {
+            //     this.setGALLEY_SHED_OFF();
+            // }
 
-            // Level 3 - TR
-            if (this.systems.TR1 === 'ON') {
-                this.setCONNECTION_TR1_DC1_ON();
-                this.buses.DC1 = 'ON';
-            }
-            if (this.systems.TR2 === 'ON') {
-                this.setCONNECTION_TR2_DC2_ON();
-                this.buses.DC2 = 'ON';
-            }
+            // // Level 3 - TR
+            // if (this.systems.TR1 === 'ON') {
+            //     this.setCONNECTION_TR1_DC1_ON();
+            //     this.buses.DC1 = 'ON';
+            // }
+            // if (this.systems.TR2 === 'ON') {
+            //     this.setCONNECTION_TR2_DC2_ON();
+            //     this.buses.DC2 = 'ON';
+            // }
 
             // Level 4A - Batteries
             // if (this.systems.BAT1 === 'ON') {
@@ -547,6 +547,7 @@ var A320_Neo_LowerECAM_Elec;
             this.drawApuGenerator();
             this.drawEngineGenerators();
             this.drawExternalPower();
+            this.drawAcPowerSourcesToAcBuses();
         }
 
         drawApuGenerator() {
@@ -659,6 +660,35 @@ var A320_Neo_LowerECAM_Elec;
 
             const allParametersWithinAcceptableRange = true;
             this.toggleValidWhite(this.e_EXTPWR_TITLE, allParametersWithinAcceptableRange);
+        }
+
+        drawAcPowerSourcesToAcBuses() {
+            const generatorLineContactor1Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_GENERATOR_LINE_CONTACTOR_1_CLOSED", "Bool");
+            const busTieContactor1Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_BUS_TIE_CONTACTOR_1_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_XFEED_AC1, generatorLineContactor1Closed || busTieContactor1Closed);
+            this.toggle(this.e_ARROW_XFEED_AC1, generatorLineContactor1Closed || busTieContactor1Closed);
+            this.toggle(this.e_WIRE_GEN1_XFEED, generatorLineContactor1Closed);
+
+            const generatorLineContactor2Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_GENERATOR_LINE_CONTACTOR_2_CLOSED", "Bool");
+            const busTieContactor2Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_BUS_TIE_CONTACTOR_2_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_XFEED_AC2, generatorLineContactor2Closed || busTieContactor2Closed);
+            this.toggle(this.e_ARROW_XFEED_AC2, generatorLineContactor2Closed || busTieContactor2Closed);
+            this.toggle(this.e_WIRE_GEN2_XFEED, generatorLineContactor2Closed);
+
+            const externalPowerContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_EXTERNAL_POWER_CONTACTOR_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_EXTPWR_XFEED, externalPowerContactorClosed);
+            this.toggle(this.e_ARROW_EXTPWR_XFEED, externalPowerContactorClosed);
+
+            const apuGeneratorContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GENERATOR_CONTACTOR_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_APUGEN_XFEED, apuGeneratorContactorClosed);
+            this.toggle(this.e_ARROW_APUGEN_XFEED, apuGeneratorContactorClosed);
+
+            this.toggle(this.e_WIRE_XFEED_A, busTieContactor1Closed);
+            this.toggle(this.e_WIRE_XFEED_B,
+                (busTieContactor1Closed && externalPowerContactorClosed) ||
+                (busTieContactor2Closed && apuGeneratorContactorClosed) ||
+                (busTieContactor1Closed && busTieContactor2Closed));
+            this.toggle(this.e_WIRE_XFEED_C, busTieContactor2Closed);
         }
 
         toggle(element, condition) {
