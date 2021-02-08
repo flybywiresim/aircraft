@@ -11,11 +11,7 @@ class A32NX_TransitionAltitude {
     }
 
     update(_deltaTime, _core) {
-        console.log(this.offline);
-        console.log(this.checkStartSec);
-        console.log(this.testAirport);
         if (this.offline === true) {
-            console.log("YES OFFLINE");
             this.offlineTransAlt();
         }
         this.tryCheckAPI(_deltaTime);
@@ -24,7 +20,6 @@ class A32NX_TransitionAltitude {
     async trySendRequest() {
         await NXApi.getAirport("KLAX")
             .then((data) => {
-                console.log("data on")
                 this.testAirport = data.transAlt;
             });
     }
@@ -44,7 +39,6 @@ class A32NX_TransitionAltitude {
     }
 
     offlineTransAlt() {
-        console.log("YES TA");
         const Departure = NXDataStore.get("PLAN_ORIGIN", "");
         const Arrival = NXDataStore.get("PLAN_DESTINATION", "");
         if (Departure !== "" && Arrival !== "") {
