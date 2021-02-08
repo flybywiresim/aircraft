@@ -74,6 +74,7 @@
 1. [MCDU] Rework PERF TAKE OFF page - @beheh (Benedict Etzel)
 1. [SOUND] Fixed FCU knobs sounds - @ImenesFBW (Imenes)
 1. [MCDU] Fix AOC RCVD MSGS scrolling, add arrows, and update on receipt - @tracernz (Mike)
+1. [ECAM] Add TCAS STBY warning - @paul92ilm (Lussion)
 1. [System] Add Altitude Alert - @Kimbyeongjang (김병장#7165)
 
 ## 0.5.2
