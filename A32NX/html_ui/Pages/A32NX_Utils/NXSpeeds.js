@@ -456,7 +456,7 @@ class NXSpeeds {
      * @param m {number} mass: gross weight in t
      * @param fPos {number} flaps position
      * @param gPos {number} landing gear position
-     * @param isTo {boolean} whether is takeoff nor not
+     * @param isTo {boolean} whether in takeoff config or not
      * @param wind {number} wind speed
      */
     constructor(m, fPos, gPos, isTo, wind = 0) {
