@@ -3327,21 +3327,21 @@ class FMCMainDisplay extends BaseAirliners {
     //only update when changing departure & arrival airport.
     updateDepartArrive(_deltaTime) {
         if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident) {
-            const departureAirport = this.flightPlanManager.getOrigin().ident;
-            if (this.currentOrigin !== departureAirport) {
-                NXDataStore.set("PLAN_ORIGIN", departureAirport);
-                this.getTransitionAltitude(departureAirport);
-                this.offlineTACore.tryCheckAPI();
-                this.currentOrigin = departureAirport;
-            }
-        }
-        if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
-            const arrivalAirport = this.flightPlanManager.getDestination().ident;
-            if (this.currentDestination !== arrivalAirport) {
-                NXDataStore.set("PLAN_DESTINATION", arrivalAirport);
-                this.getArrivalTransitionAltitude(arrivalAirport);
-                this.offlineTACore.tryCheckAPI();
-                this.currentDestination = arrivalAirport;
+            if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
+                const departureAirport = this.flightPlanManager.getOrigin().ident;
+                const arrivalAirport = this.flightPlanManager.getDestination().ident;
+                if (this.currentOrigin !== departureAirport) {
+                    NXDataStore.set("PLAN_ORIGIN", departureAirport);
+                    this.getTransitionAltitude(departureAirport);
+                    this.offlineTACore.tryCheckAPI();
+                    this.currentOrigin = departureAirport;
+                }
+                if (this.currentDestination !== arrivalAirport) {
+                    NXDataStore.set("PLAN_DESTINATION", arrivalAirport);
+                    this.getArrivalTransitionAltitude(arrivalAirport);
+                    this.offlineTACore.tryCheckAPI();
+                    this.currentDestination = arrivalAirport;
+                }
             }
         }
     }
