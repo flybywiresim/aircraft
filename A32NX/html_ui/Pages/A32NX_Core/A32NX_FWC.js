@@ -76,7 +76,7 @@ class A32NX_FWC {
         this._updateTakeoffMemo(_deltaTime);
         this._updateLandingMemo(_deltaTime);
 
-        this.altitudeWarning(_deltaTime);
+        this.altitudeWarning();
     }
 
     _resetPulses() {
@@ -310,12 +310,9 @@ class A32NX_FWC {
         SimVar.SetSimVarValue("L:A32NX_FWC_LDGMEMO", "Bool", this.ldgMemo);
     }
 
-    altitudeWarning(_deltaTime) {
+    altitudeWarning() {
         const indicatedAltitude = Simplane.getAltitude();
-        const reset = SimVar.GetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool");
-        if (reset === 1) {
-            SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
-        }
+        SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
 
         if (this.warningPressed === true) {
             this._wasBellowThreshold = false;
@@ -344,6 +341,8 @@ class A32NX_FWC {
             this._wasBellowThreshold = false;
             this._wasAboveThreshold = false;
             this._wasInRange = false;
+            SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
+            SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
             return;
         }
 
