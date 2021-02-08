@@ -74,6 +74,10 @@
 1. [MCDU] Rework PERF TAKE OFF page - @beheh (Benedict Etzel)
 1. [SOUND] Fixed FCU knobs sounds - @ImenesFBW (Imenes)
 1. [MCDU] Fix AOC RCVD MSGS scrolling, add arrows, and update on receipt - @tracernz (Mike)
+1. [ECAM] Add TCAS STBY warning - @paul92ilm (Lussion)
+1. [ECAM] Adjusted brake temp algorithm for new wheel sizes - @donstim (donbikes#4084)
+1. [CORE] Fixed approach Vs being used during climb - @MisterChocker (Leon)
+1. [CORE] Fixed Take Off Vls config 3 - @MisterChocker (Leon) and @donstim (donbikes#4084)
 1. [MCDU] Added Check TO Data - @MisterChocker (Leon)
 
 ## 0.5.2
