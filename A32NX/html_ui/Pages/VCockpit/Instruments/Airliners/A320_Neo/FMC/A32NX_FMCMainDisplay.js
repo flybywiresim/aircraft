@@ -3327,9 +3327,8 @@ class FMCMainDisplay extends BaseAirliners {
 
     //only update when changing departure & arrival airport.
     updateDepartArrive(_deltaTime) {
-        if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident) {
-            if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
-                this.offlineTACore.tryCheckAPI();
+        if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident && this.offlineTACore.offline !== true) {
+            if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident && this.offlineTACore.offline !== true) {
                 const departureAirport = this.flightPlanManager.getOrigin().ident;
                 const arrivalAirport = this.flightPlanManager.getDestination().ident;
                 if (this.currentOrigin !== departureAirport) {
