@@ -3089,6 +3089,18 @@ class FMCMainDisplay extends BaseAirliners {
         return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
     }
 
+    onToDataChanged() {
+        this._v1Checked = !isFinite(this.v1Speed);
+        this._vRChecked = !isFinite(this.vRSpeed);
+        this._v2Checked = !isFinite(this.v2Speed);
+        if (this._v1Checked && this._vRChecked && this._v2Checked) {
+            return;
+        }
+        this.addNewMessage(NXSystemMessages.checkToData, (mcdu) => {
+            return mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked;
+        });
+    }
+
     /* END OF MCDU GET/SET METHODS */
     /* UNSORTED CODE BELOW */
 
@@ -3294,15 +3306,6 @@ class FMCMainDisplay extends BaseAirliners {
     //TODO: make this util or local var?
     isAltitudeManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
-    }
-
-    onToDataChanged() {
-        this._v1Checked = !isFinite(this.v1Speed);
-        this._vRChecked = !isFinite(this.vRSpeed);
-        this._v2Checked = !isFinite(this.v2Speed);
-        this.addNewMessage(NXSystemMessages.checkToData, (mcdu) => {
-            return mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked;
-        });
     }
 }
 

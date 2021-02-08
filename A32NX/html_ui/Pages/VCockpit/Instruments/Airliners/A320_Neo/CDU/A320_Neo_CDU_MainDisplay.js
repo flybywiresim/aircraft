@@ -788,6 +788,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     forceClearScratchpad() {
+        console.log("forceClearScratchpad");
         this.inOut = "";
         this.lastUserInput = "";
         this.isDisplayingErrorMessage = false;
@@ -796,11 +797,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     lastUserInputToScratchpad() {
+        console.log("lastUserInputToScratchpad");
         this.inOut = this.lastUserInput;
         this.lastUserInput = "";
     }
 
     handlePreviousInputState() {
+        console.log("handlePreviousInputState");
         if (this.inOut === FMCMainDisplay.clrValue) {
             this.inOut = "";
         }
@@ -813,6 +816,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     clearUserInput() {
+        console.log("clearUserInput");
         if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = this.inOut;
             this.inOut = "";
@@ -822,6 +826,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     tryClearOldUserInput() {
+        console.log("tryClearOldUserInput");
         if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = "";
         }
@@ -833,6 +838,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param data {string}
      */
     sendDataToScratchpad(data) {
+        console.log("sendDataToScratchpad");
         this.isDisplayingErrorMessage = false;
         this.isDisplayingTypeTwoMessage = false;
         this._inOutElement.className = "white";
@@ -851,6 +857,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     addNewMessage(msg, c = () => {}, f = () => {
         return false;
     }) {
+        console.log("NewMessage: " + msg.text);
         if (msg.isTypeTwo) {
             this._addTypeTwoMessage(msg.text, msg.isAmber, c, f);
         } else {
@@ -891,6 +898,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     tryShowMessage() {
+        console.log("tryShowMessage");
         if (!this.isDisplayingErrorMessage && (!this.inOut || this.isDisplayingTypeTwoMessage) && this.messageQueue.length > 0) {
             if (this.messageQueue[0][2](this)) {
                 this.messageQueue.splice(0, 1);
@@ -914,6 +922,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param message {string} Message to be removed
      */
     tryRemoveMessage(message = this.inOut) {
+        console.log("tryRemoveMessage: " + message);
         for (let i = 0; i < this.messageQueue.length; i++) {
             if (this.messageQueue[i][0] === message) {
                 this.messageQueue[i][3](this);
@@ -929,6 +938,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     checkForMessage(message) {
+        console.log("checkForMessage: " + message);
         if (!message) {
             return false;
         }
