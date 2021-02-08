@@ -309,7 +309,7 @@ class A32NX_FWC {
         SimVar.SetSimVarValue("L:A32NX_FWC_LDGMEMO", "Bool", this.ldgMemo);
     }
 
-    _updatealtitudeWarning() {
+    _updateAltitudeWarning() {
         const indicatedAltitude = Simplane.getAltitude();
         const shortAlert = SimVar.GetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool");
         if (shortAlert === 1) {
