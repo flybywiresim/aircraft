@@ -239,15 +239,15 @@ const vlsTo = [
     ], // Config 2
     [
         () => 101,
-        (m) => 101 + 1.4 * (m - 40),
-        (m) => 108 + 1.2 * (m - 45),
-        (m) => 114 + m - 50,
-        (m) => 119 + 1.2 * (m - 55),
-        (m) => 125 + m - 60,
-        (m) => 130 + .8 * (m - 65),
-        (m) => 134 + m - 70,
-        (m) => 139 + .6 * (m - 75),
-        () => 142
+        (m) => 101 + m - 40,
+        (m) => 106 + 1.2 * (m - 45),
+        (m) => 112 + .8 * (m - 50),
+        (m) => 116 + 1.2 * (m - 55),
+        (m) => 122 + m - 60,
+        (m) => 127 + m - 65,
+        (m) => 132 + .8 * (m - 70),
+        (m) => 136 + .8 * (m - 75),
+        () => 140
     ], // Config 3
     vls[4], // Config Full
     vls[5] // Config 1
@@ -456,7 +456,7 @@ class NXSpeeds {
      * @param m {number} mass: gross weight in t
      * @param fPos {number} flaps position
      * @param gPos {number} landing gear position
-     * @param isTo {boolean} whether is takeoff nor not
+     * @param isTo {boolean} whether in takeoff config or not
      * @param wind {number} wind speed
      */
     constructor(m, fPos, gPos, isTo, wind = 0) {
