@@ -4,43 +4,60 @@ class A32NX_TransitionAltitude {
         this.currentDeparture = "";
         this.currentArrival = "";
         this.offline = false;
-        this.checkstart = true;
-        this.checkstartsec = 0;
+        this.checkStart = true;
+        this.checkStartSec = 0;
+        this.testAirport = "";
+        this.trySendRequest();
     }
 
     update(_deltaTime, _core) {
+        console.log(this.offline);
+        console.log(this.checkStartSec);
+        console.log(this.testAirport);
         if (this.offline === true) {
+            console.log("YES OFFLINE");
             this.offlineTransAlt();
         }
+        this.tryCheckAPI(_deltaTime);
+    }
+
+    async trySendRequest() {
+        await NXApi.getAirport("KLAX")
+            .then((data) => {
+                console.log("data on")
+                this.testAirport = data.transAlt;
+            });
     }
 
     tryCheckAPI(_deltaTime) {
-        if (this.offline === false && this.checkstart == true) {
-            this.checkstartsec += _deltaTime;
+        if (this.offline === false && this.checkStart === true) {
+            this.checkStartSec += _deltaTime;
         }
-        const departTA = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
-        const arrivalTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
-        if ((this.checkstartsec >= 30 * 1000) && departTA === 0 && arrivalTA === 0) {
+        if ((this.checkStartSec >= 60 * 1000) && (this.testAirport === "")) {
             this.offline = true;
-            this.checkstart = false;
-        } else {
-            this.offlne = false;
-            this.checkstart = false;
+            this.checkStart = false;
+        } else if ((this.checkStartSec >= 60 * 1000) && (this.testAirport !== "")) {
+            this.offline = false;
+            this.checkStart = false;
+            this.checkStartSec = 0;
         }
     }
 
     offlineTransAlt() {
+        console.log("YES TA");
         const Departure = NXDataStore.get("PLAN_ORIGIN", "");
         const Arrival = NXDataStore.get("PLAN_DESTINATION", "");
-        this.departureLogic(Departure);
-        this.arrivalLogic(Arrival);
-        if (this.currentDeparture !== Departure) {
+        if (Departure !== "" && Arrival !== "") {
             this.departureLogic(Departure);
-            this.currentDeparture = Departure;
-        }
-        if (this.currentArrival !== Arrival) {
             this.arrivalLogic(Arrival);
-            this.currentArrival = Arrival;
+            if (this.currentDeparture !== Departure) {
+                this.departureLogic(Departure);
+                this.currentDeparture = Departure;
+            }
+            if (this.currentArrival !== Arrival) {
+                this.arrivalLogic(Arrival);
+                this.currentArrival = Arrival;
+            }
         }
     }
 
