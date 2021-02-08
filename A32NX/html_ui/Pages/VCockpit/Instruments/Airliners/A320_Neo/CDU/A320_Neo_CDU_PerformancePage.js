@@ -147,10 +147,10 @@ class CDUPerformancePage {
         }
 
         // transition altitude - remains editable during take off
-        let transAltCell = "";
+        let transAltCell = "{cyan}[]{end}";
         if (hasOrigin) {
             const transAltitude = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
-            if (transAltitude > 0) {
+            if (transAltitude !== 0) {
                 transAltCell = `{cyan}${transAltitude}{end}`;
                 if (!mcdu.transitionAltitudeIsPilotEntered) {
                     transAltCell += "[s-text]";
@@ -700,7 +700,7 @@ class CDUPerformancePage {
         let transAltCell = "---";
         if (hasDestination) {
             const arrivalTransAltitude = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
-            if (arrivalTransAltitude > 0) {
+            if (arrivalTransAltitude !== 0) {
                 transAltCell = `{cyan}${arrivalTransAltitude}{end}`;
                 if (!mcdu.transitionAltitudeIsPilotEntered) {
                     transAltCell += "[s-text]";
