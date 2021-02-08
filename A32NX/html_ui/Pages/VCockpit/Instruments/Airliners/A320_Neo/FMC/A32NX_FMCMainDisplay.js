@@ -1939,10 +1939,11 @@ class FMCMainDisplay extends BaseAirliners {
                 this.transitionAltitude = data.transAlt;
                 if (this.transitionAltitude === -1) {
                     console.log("NO DEPARTURE TA");
-                    return 10000;
+                    SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
+                    return;
                 } else {
                     SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", this.transitionAltitude);
-                    return this.transitionAltitude;
+                    return;
                 }
             });
     }
@@ -2591,11 +2592,11 @@ class FMCMainDisplay extends BaseAirliners {
             .then((data) => {
                 this.transitionApprAltitude = data.transAlt;
                 if (this.transitionApprAltitude === -1) {
-                    console.log("NO ARRIVAL TA");
-                    return 10000;
+                    SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
+                    return;
                 } else {
                     SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", this.transitionApprAltitude);
-                    return this.transitionApprAltitude;
+                    return;
                 }
             });
     }
@@ -3328,18 +3329,17 @@ class FMCMainDisplay extends BaseAirliners {
     updateDepartArrive(_deltaTime) {
         if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident) {
             if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
+                this.offlineTACore.tryCheckAPI();
                 const departureAirport = this.flightPlanManager.getOrigin().ident;
                 const arrivalAirport = this.flightPlanManager.getDestination().ident;
                 if (this.currentOrigin !== departureAirport) {
                     NXDataStore.set("PLAN_ORIGIN", departureAirport);
                     this.getTransitionAltitude(departureAirport);
-                    this.offlineTACore.tryCheckAPI();
                     this.currentOrigin = departureAirport;
                 }
                 if (this.currentDestination !== arrivalAirport) {
                     NXDataStore.set("PLAN_DESTINATION", arrivalAirport);
                     this.getArrivalTransitionAltitude(arrivalAirport);
-                    this.offlineTACore.tryCheckAPI();
                     this.currentDestination = arrivalAirport;
                 }
             }
