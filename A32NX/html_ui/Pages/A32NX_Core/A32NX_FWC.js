@@ -56,10 +56,14 @@ class A32NX_FWC {
 
         // ESDL 1. 0.320
         this.memoLdgInhibit_conf01 = new NXLogic_ConfirmNode(3, true); // CONF 01
+
+        // company msg
+        this.compangMsg = 0;
     }
 
     update(_deltaTime, _core) {
         this._resetPulses();
+        this._companyMsgBeep();
 
         this._updateFlightPhase(_deltaTime);
         this._updateButtons(_deltaTime);
@@ -285,5 +289,16 @@ class A32NX_FWC {
 
         this.ldgMemo = showInApproach || invalidRadioMemo || this.flightPhase === 8 || this.flightPhase === 7;
         SimVar.SetSimVarValue("L:A32NX_FWC_LDGMEMO", "Bool", this.ldgMemo);
+    }
+
+    _companyMsgBeep() {
+        const msg = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
+        if (msg > 0 && msg > this.compangMsg) {
+            Coherent.call("PLAY_INSTRUMENT_SOUND", "improved_tone_caution");
+            this.compangMsg = msg;
+        }
+        if (msg < this.compangMsg) {
+            this.compangMsg = msg;
+        }
     }
 }
