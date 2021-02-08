@@ -79,6 +79,7 @@
 1. [CORE] Fixed approach Vs being used during climb - @MisterChocker (Leon)
 1. [CORE] Fixed Take Off Vls config 3 - @MisterChocker (Leon) and @donstim (donbikes#4084)
 1. [CORE] Fixed Config 3 V2 table - @MisterChocker (Leon)
+1. [MCDU] Added Check TO Data - @MisterChocker (Leon)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
