@@ -1,14 +1,14 @@
 import React from 'react';
 
-type PerformanceOutputDisplayProps = {
+type OutputDisplayProps = {
 	label: string,
 	value: string | number,
 	error?: boolean,
 	reverse?: boolean
 };
-type PerformanceOutputDisplayState = {};
+type OutputDisplayState = {};
 
-export default class PerformanceOutputDisplay extends React.Component<PerformanceOutputDisplayProps, PerformanceOutputDisplayState> {
+export default class OutputDisplay extends React.Component<OutputDisplayProps, OutputDisplayState> {
 	render() {
 		return (
 			<div className="mx-2 flex-1">

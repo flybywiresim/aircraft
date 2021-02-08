@@ -16,14 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- // Reference Operational Data Manual for approximations of weather impact on V speed
-
 import React from 'react';
 import TakeoffCalculator, { TakeoffFlapsConfig } from '../Calculators/TakeoffCalculator';
 import RunwayVisualizationWidget, { DistanceLabel } from './RunwayVisualizationWidget';
-import PerformanceInput from '../Components/PerformanceInput';
-import PerformanceSelectInput from '../Components/PerformanceSelectInput';
-import PerformanceOutputDisplay from '../Components/PerformanceOutputDisplay';
+import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import SelectInput from '../../Components/Form/SelectInput/SelectInput';
+import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
 
 type TakeoffWidgetProps = {};
 type TakeoffWidgetState = {
@@ -99,8 +97,8 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		});
 	};
 
-	private handleWeightChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let weight = parseInt(event.currentTarget.value);
+	private handleWeightChange = (value: string): void => {
+		let weight = parseInt(value);
 
 		if (!weight) {
 			weight = 0;
@@ -113,8 +111,8 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		})
 	}
 
-	private handleTemperatureChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let temperature = parseFloat(event.currentTarget.value);
+	private handleTemperatureChange = (value: string): void => {
+		let temperature = parseFloat(value);
 
 		if (!temperature) {
 			temperature = 0;
@@ -137,8 +135,8 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		});
 	}
 
-	private handleRunwayHeadingChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let runwayHeading = parseInt(event.currentTarget.value);
+	private handleRunwayHeadingChange = (value: string): void => {
+		let runwayHeading = parseInt(value);
 
 		if (!runwayHeading) {
 			runwayHeading = 0;
@@ -151,8 +149,8 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		});
 	}
 
-	private handleRunwayLengthChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let runwayLength = parseInt(event.currentTarget.value);
+	private handleRunwayLengthChange = (value: string): void => {
+		let runwayLength = parseInt(value);
 
 		if (!runwayLength) {
 			runwayLength = 0;
@@ -165,8 +163,8 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		});
 	}
 
-	private handlePressureChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let pressure = parseFloat(event.currentTarget.value);
+	private handlePressureChange = (value: string): void => {
+		let pressure = parseFloat(value);
 
 		if (!pressure) {
 			pressure = 1013.25;
@@ -179,8 +177,8 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		});
 	}
 
-	private handleAltitudeChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let altitude = parseInt(event.currentTarget.value);
+	private handleAltitudeChange = (value: string): void => {
+		let altitude = parseInt(value);
 
 		if (!altitude) {
 			altitude = 0;
@@ -202,16 +200,16 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 						<div className="text-center mb-6">
 							<div className="flex">
 								<div className="flex-1 m-2.5 column-left">
-									<PerformanceInput label="OAT" placeholder="°C" onChange={this.handleTemperatureChange} />
-									<PerformanceInput label="QNH" placeholder="mb" onChange={this.handlePressureChange}/>
-									<PerformanceInput label="Rwy Heading" onChange={this.handleRunwayHeadingChange} />
-									<PerformanceInput label="Rwy Length" placeholder="m" onChange={this.handleRunwayLengthChange} />
+									<SimpleInput label="OAT" placeholder="°C" onChange={this.handleTemperatureChange} />
+									<SimpleInput label="QNH" placeholder="mb" onChange={this.handlePressureChange}/>
+									<SimpleInput label="Rwy Heading" onChange={this.handleRunwayHeadingChange} />
+									<SimpleInput label="Rwy Length" placeholder="m" onChange={this.handleRunwayLengthChange} />
 
 								</div>
 								<div className="flex-1 m-2.5 column-right">
-									<PerformanceInput label="Rwy Altitude" placeholder={"\" ASL"} onChange={this.handleAltitudeChange} reverse/>
-									<PerformanceInput label="Weight" placeholder="KG" onChange={this.handleWeightChange} reverse/>
-									<PerformanceSelectInput label="Flaps" defaultValue="0" onChange={this.handleFlapsChange} reverse options={[
+									<SimpleInput label="Rwy Altitude" placeholder={"\" ASL"} onChange={this.handleAltitudeChange} reverse/>
+									<SimpleInput label="Weight" placeholder="KG" onChange={this.handleWeightChange} reverse/>
+									<SelectInput label="Flaps" defaultValue="0" onChange={this.handleFlapsChange} reverse options={[
 										[0, "1 + F"],
 										[1, "2"],
 										[2, "3"]
@@ -225,9 +223,9 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 							<div className="flex flex-col items-center m-3">
 								<h1>Takeoff Speeds</h1>
 								<div className="flex">
-									<PerformanceOutputDisplay label="V1" value={this.state.v1} error={this.state.runwayTooShort} />
-									<PerformanceOutputDisplay label="VR" value={this.state.vr} error={this.state.runwayTooShort} />
-									<PerformanceOutputDisplay label="V2" value={this.state.v2} error={this.state.runwayTooShort} />
+									<OutputDisplay label="V1" value={this.state.v1} error={this.state.runwayTooShort} />
+									<OutputDisplay label="VR" value={this.state.vr} error={this.state.runwayTooShort} />
+									<OutputDisplay label="V2" value={this.state.v2} error={this.state.runwayTooShort} />
 								</div>
 							</div>
 							{this.state.runwayTooShort &&

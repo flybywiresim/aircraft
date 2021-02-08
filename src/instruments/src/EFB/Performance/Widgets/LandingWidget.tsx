@@ -21,9 +21,9 @@
 import React from 'react';
 import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { DistanceLabel } from './RunwayVisualizationWidget';
-import PerformanceInput from '../Components/PerformanceInput';
-import PerformanceSelectInput from '../Components/PerformanceSelectInput';
-import PerformanceOutputDisplay from '../Components/PerformanceOutputDisplay';
+import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import SelectInput from '../../Components/Form/SelectInput/SelectInput';
+import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
 
 type LandingWidgetProps = {};
 type LandingWidgetState = {
@@ -121,8 +121,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleWindChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let wind = event.currentTarget.value;
+	private handleWindChange = (value: string): void => {
+		let wind = value;
 		let splitWind = wind.split('/');
 		let direction = parseInt(splitWind[0]);
 		let magnitude = parseInt(splitWind[1]);
@@ -140,8 +140,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleWeightChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let weight = parseInt(event.currentTarget.value);
+	private handleWeightChange = (value: string): void => {
+		let weight = parseInt(value);
 
 		if (!weight) {
 			weight = 0;
@@ -154,8 +154,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleRunwayHeadingChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let runwayHeading = parseInt(event.currentTarget.value);
+	private handleRunwayHeadingChange = (value: string): void => {
+		let runwayHeading = parseInt(value);
 
 		if (!runwayHeading) {
 			runwayHeading = 0;
@@ -168,8 +168,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleApproachSpeedChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let speed = parseInt(event.currentTarget.value);
+	private handleApproachSpeedChange = (value: string): void => {
+		let speed = parseInt(value);
 
 		if (!speed) {
 			speed = 0;
@@ -182,8 +182,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleAltitudeChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let altitude = parseInt(event.currentTarget.value);
+	private handleAltitudeChange = (value: string): void => {
+		let altitude = parseInt(value);
 
 		if (!altitude) {
 			altitude = 0;
@@ -196,8 +196,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleTemperatureChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let temperature = parseFloat(event.currentTarget.value);
+	private handleTemperatureChange = (value: string): void => {
+		let temperature = parseFloat(value);
 
 		if (!temperature) {
 			temperature = 0;
@@ -248,8 +248,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleRunwaySlopeChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let slope = parseInt(event.currentTarget.value);
+	private handleRunwaySlopeChange = (value: string): void => {
+		let slope = parseInt(value);
 
 		if (!slope) {
 			slope = 0;
@@ -262,8 +262,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleRunwayLengthChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let runwayLength = parseInt(event.currentTarget.value);
+	private handleRunwayLengthChange = (value: string): void => {
+		let runwayLength = parseInt(value);
 
 		if (!runwayLength) {
 			runwayLength = 0;
@@ -286,8 +286,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handlePressureChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		let pressure = parseFloat(event.currentTarget.value);
+	private handlePressureChange = (value: string): void => {
+		let pressure = parseFloat(value);
 
 		if (!pressure) {
 			pressure = 1013.25;
@@ -308,12 +308,12 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 						<div className="text-center mb-6">
 							<div className="flex">
 								<div className="flex-1 m-2.5 column-left">
-									<PerformanceInput label="Wind (KTS)" placeholder="DIR/MAG" onChange={this.handleWindChange} />
-									<PerformanceInput label="Temperature" placeholder='°C' onChange={this.handleTemperatureChange} />
-									<PerformanceInput label="QNH" placeholder="mb" onChange={this.handlePressureChange} />
-									<PerformanceInput label="Rwy Altitude" placeholder='" ASL' onChange={this.handleAltitudeChange} />
-									<PerformanceInput label="Rwy Heading" onChange={this.handleRunwayHeadingChange} />
-									<PerformanceSelectInput label="Rwy Condition" defaultValue="0" onChange={this.handleRunwayConditionChange} dropdownOnTop options={[
+									<SimpleInput label="Wind (KTS)" placeholder="DIR/MAG" onChange={this.handleWindChange} />
+									<SimpleInput label="Temperature" placeholder='°C' onChange={this.handleTemperatureChange} />
+									<SimpleInput label="QNH" placeholder="mb" onChange={this.handlePressureChange} />
+									<SimpleInput label="Rwy Altitude" placeholder='" ASL' onChange={this.handleAltitudeChange} />
+									<SimpleInput label="Rwy Heading" onChange={this.handleRunwayHeadingChange} />
+									<SelectInput label="Rwy Condition" defaultValue="0" onChange={this.handleRunwayConditionChange} dropdownOnTop options={[
 										[0, "Dry"],
 										[1, "Good"],
 										[2, "Good-Medium"],
@@ -321,21 +321,21 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 										[4, "Medium-Poor"],
 										[5, "Poor"]
 									]} />
-									<PerformanceInput label="Rwy Slope" placeholder="%" onChange={this.handleRunwaySlopeChange} />
+									<SimpleInput label="Rwy Slope" placeholder="%" onChange={this.handleRunwaySlopeChange} />
 								</div>
 								<div className="flex-1 m-2.5 column-right">
-									<PerformanceInput label="Rwy LDA" placeholder="m" onChange={this.handleRunwayLengthChange} reverse/>
-									<PerformanceInput label="Approach Speed" placeholder="KTS" onChange={this.handleApproachSpeedChange} reverse/>
-									<PerformanceInput label="Weight" placeholder="KG" onChange={this.handleWeightChange} reverse />
-									<PerformanceSelectInput label="Flaps" defaultValue="1" onChange={this.handleFlapsChange} reverse options={[
+									<SimpleInput label="Rwy LDA" placeholder="m" onChange={this.handleRunwayLengthChange} reverse/>
+									<SimpleInput label="Approach Speed" placeholder="KTS" onChange={this.handleApproachSpeedChange} reverse/>
+									<SimpleInput label="Weight" placeholder="KG" onChange={this.handleWeightChange} reverse />
+									<SelectInput label="Flaps" defaultValue="1" onChange={this.handleFlapsChange} reverse options={[
 										[1, "Full"],
 										[0, "CONF 3"]
 									]} />
-									<PerformanceSelectInput label="Overweight Proc" defaultValue="0" onChange={this.handleOverweightProcedureChange} reverse options={[
+									<SelectInput label="Overweight Proc" defaultValue="0" onChange={this.handleOverweightProcedureChange} reverse options={[
 										[0, "No"],
 										[1, "Yes"]
 									]} />
-									<PerformanceSelectInput label="Reverse Thrust" defaultValue="0" onChange={this.handleReverseThrustChange} reverse options={[
+									<SelectInput label="Reverse Thrust" defaultValue="0" onChange={this.handleReverseThrustChange} reverse options={[
 										[0, "No"],
 										[1, "Yes"]
 									]} />
@@ -349,9 +349,9 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 						<div className="border-t border-white pt-3">
 							<div className="flex flex-col items-center m-3">
 								<div className="flex items-end">
-									<PerformanceOutputDisplay label="MAX MANUAL" value={this.state.maxAutobrakeLandingDist + "m"} error={this.state.maxAutobrakeLandingDist > this.state.displayedRunwayLength} />
-									<PerformanceOutputDisplay label="MEDIUM" value={this.state.mediumAutobrakeLandingDist + "m"} error={this.state.mediumAutobrakeLandingDist > this.state.displayedRunwayLength} />
-									<PerformanceOutputDisplay label="LOW" value={this.state.lowAutobrakeLandingDist + "m"} error={this.state.lowAutobrakeLandingDist > this.state.displayedRunwayLength} />
+									<OutputDisplay label="MAX MANUAL" value={this.state.maxAutobrakeLandingDist + "m"} error={this.state.maxAutobrakeLandingDist > this.state.displayedRunwayLength} />
+									<OutputDisplay label="MEDIUM" value={this.state.mediumAutobrakeLandingDist + "m"} error={this.state.mediumAutobrakeLandingDist > this.state.displayedRunwayLength} />
+									<OutputDisplay label="LOW" value={this.state.lowAutobrakeLandingDist + "m"} error={this.state.lowAutobrakeLandingDist > this.state.displayedRunwayLength} />
 								</div>
 							</div>
 						</div>

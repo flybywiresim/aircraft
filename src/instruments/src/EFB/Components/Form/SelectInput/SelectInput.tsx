@@ -1,24 +1,25 @@
 import React from 'react';
 
 /**
- * Reverse flips label and input box
- * options is array of options. Each option is an array, with the index 0 being the value and 1 being the display value
+ * Options is array of options. Each option is an array, with the index 0 being the value and 1 being the display value
+ * e.g [[0, "Value 1"], [1, "Value 2"]]
+ * Options are displayed in order of list
  */
-type PerformanceSelectInputProps = {
+type SelectInputProps = {
 	label: string,
 	onChange?: (newValue: number | string) => void,
 	defaultValue?: string | number,
-	reverse?: boolean,
+	reverse?: boolean, // Flips label/input order
 	options: (number | string)[][],
-	dropdownOnTop?: boolean
+	dropdownOnTop?: boolean // Display dropdown above input instead of below
 };
-type PerformanceSelectInputState = {
+type SelectInputState = {
 	value: string | number,
 	showDropdown: boolean
 };
 
-export default class PerformanceSelectInput extends React.Component<PerformanceSelectInputProps, PerformanceSelectInputState> {
-	constructor(props: PerformanceSelectInputProps) {
+export default class SelectInput extends React.Component<SelectInputProps, SelectInputState> {
+	constructor(props: SelectInputProps) {
 		super(props);
 
 		let defaultOption = this.props.options.find(opt => opt[0] == (this.props.defaultValue ?? 0));
