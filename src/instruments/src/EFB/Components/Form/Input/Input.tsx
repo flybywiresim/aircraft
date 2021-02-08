@@ -17,16 +17,20 @@
  */
 
 import React, {useEffect, useState} from "react";
+import classNames from 'classnames';
+import {isNil, isString} from 'lodash';
 
 import './Input.scss'
 
 type InputProps = {
-    type?: 'text',
+    type?: 'text' | 'number',
     value?: any,
     label?: string,
     leftComponent?: any,
     rightComponent?: any,
-    onChange?: (value: string) => any
+    onChange?: (value: string) => any,
+    className?: string,
+    disabled?: boolean
 };
 
 const Input = ({
@@ -35,7 +39,10 @@ const Input = ({
    label,
    leftComponent,
    rightComponent,
-   onChange: onChangeProps
+   onChange: onChangeProps,
+   className,
+   disabled,
+   ...props
 }: InputProps) => {
     const [focusActive, setFocusActive] = useState(false);
     const [value, setValue] = useState(propsValue);
@@ -52,12 +59,14 @@ const Input = ({
         onChange(propsValue);
     }, [propsValue]);
 
+    const emptyValue = isNil(value) || (isString(value) && value === '');
+
     return (
-        <div className={focusActive ? 'default-input-container focus-active' : 'default-input-container'}>
+        <div className={classNames('default-input-container', { 'focus-active': focusActive, disabled }, className)}>
                 {leftComponent}
 
                 <div className="flex-1">
-                    {label && value && <span className="text-sm text-blue-light font-light inline-block -mb-2.5 overflow-hidden">{label}</span>}
+                    {!!label && !emptyValue && <span className="text-sm text-blue-light font-light inline-block -mb-2.5 overflow-hidden">{label}</span>}
 
                     <div className="relative">
                         <input
@@ -67,9 +76,10 @@ const Input = ({
                             onChange={(event) => onChange(event.target.value)}
                             onFocus={() => setFocusActive(true)}
                             onBlur={() => setFocusActive(false)}
+                            {...props}
                         />
 
-                        {label && !value && <span className="absolute h-full top-0 flex items-center text-2xl text-gray-medium pointer-events-none">{label}</span>}
+                        {!!label && emptyValue && <span className="absolute h-full top-0 flex items-center text-2xl text-gray-medium pointer-events-none">{label}</span>}
                     </div>
                 </div>
 
