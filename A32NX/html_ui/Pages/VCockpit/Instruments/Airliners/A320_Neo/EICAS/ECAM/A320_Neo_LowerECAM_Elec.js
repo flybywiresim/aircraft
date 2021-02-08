@@ -546,24 +546,25 @@ var A320_Neo_LowerECAM_Elec;
 
             this.drawApuGenerator();
             this.drawEngineGenerators();
+            this.drawExternalPower();
         }
 
         drawApuGenerator() {
-            const apuMasterSwitch = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_PB_ON", "Bool");
-            const apuGenSwitchOn = SimVar.GetSimVarValue('APU GENERATOR SWITCH:1', 'Bool') === 1;
-            this.toggle(this.e_APUGEN_OFF, apuMasterSwitch && !apuGenSwitchOn);
-            this.toggle(this.e_APUGEN_BOX, apuMasterSwitch);
+            const apuMasterSwPbOn = !!SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_PB_ON", "Bool");
+            const apuGenSwitchOn = !!SimVar.GetSimVarValue('APU GENERATOR SWITCH:1', 'Bool');
+            this.toggle(this.e_APUGEN_OFF, apuMasterSwPbOn && !apuGenSwitchOn);
+            this.toggle(this.e_APUGEN_BOX, apuMasterSwPbOn);
 
             this.setValue(this.e_APUGEN_LOAD_VALUE, 50);
-            this.toggle(this.e_APUGEN_LOAD_VALUE, apuMasterSwitch && apuGenSwitchOn);
-            this.toggle(this.e_APUGEN_LOAD_UNIT, apuMasterSwitch && apuGenSwitchOn);
-            this.toggle(this.e_APUGEN_VOLTS_VALUE, apuMasterSwitch && apuGenSwitchOn);
-            this.toggle(this.e_APUGEN_VOLTS_UNIT, apuMasterSwitch && apuGenSwitchOn);
-            this.toggle(this.e_APUGEN_FREQ_VALUE, apuMasterSwitch && apuGenSwitchOn);
-            this.toggle(this.e_APUGEN_FREQ_UNIT, apuMasterSwitch && apuGenSwitchOn);
+            this.toggle(this.e_APUGEN_LOAD_VALUE, apuMasterSwPbOn && apuGenSwitchOn);
+            this.toggle(this.e_APUGEN_LOAD_UNIT, apuMasterSwPbOn && apuGenSwitchOn);
+            this.toggle(this.e_APUGEN_VOLTS_VALUE, apuMasterSwPbOn && apuGenSwitchOn);
+            this.toggle(this.e_APUGEN_VOLTS_UNIT, apuMasterSwPbOn && apuGenSwitchOn);
+            this.toggle(this.e_APUGEN_FREQ_VALUE, apuMasterSwPbOn && apuGenSwitchOn);
+            this.toggle(this.e_APUGEN_FREQ_UNIT, apuMasterSwPbOn && apuGenSwitchOn);
 
             let allParametersWithinAcceptableRange = false;
-            if (apuMasterSwitch && apuGenSwitchOn) {
+            if (apuMasterSwPbOn && apuGenSwitchOn) {
                 const load = Math.round(SimVar.GetSimVarValue("L:APU_LOAD_PERCENT","percent"));
                 this.setValue(this.e_APUGEN_LOAD_VALUE, load);
                 const loadWithinNormalRange = load <= 100;
@@ -583,7 +584,7 @@ var A320_Neo_LowerECAM_Elec;
             }
 
             this.toggle(this.e_APUGEN_TITLE, true);
-            this.toggleValidWhite(this.e_APUGEN_TITLE, (!apuMasterSwitch || (apuGenSwitchOn && allParametersWithinAcceptableRange)));
+            this.toggleValidWhite(this.e_APUGEN_TITLE, (!apuMasterSwPbOn || (apuGenSwitchOn && allParametersWithinAcceptableRange)));
         }
 
         drawEngineGenerators() {
@@ -615,7 +616,7 @@ var A320_Neo_LowerECAM_Elec;
         }
 
         drawEngineGenerator(number, elements) {
-            const engineGeneratorPbOn = SimVar.GetSimVarValue("GENERAL ENG MASTER ALTERNATOR:" + number, "Bool");
+            const engineGeneratorPbOn = !!SimVar.GetSimVarValue("GENERAL ENG MASTER ALTERNATOR:" + number, "Bool");
 
             this.toggle(elements.off, !engineGeneratorPbOn);
             this.toggle(elements.box, true);
@@ -638,6 +639,26 @@ var A320_Neo_LowerECAM_Elec;
             const allParametersWithinAcceptableRange = false;
             this.toggleValidWhite(elements.title, engineGeneratorPbOn && allParametersWithinAcceptableRange);
             this.toggleValidWhite(elements.titleNumber, engineGeneratorPbOn && allParametersWithinAcceptableRange);
+        }
+
+        drawExternalPower() {
+            const externalPowerAvailable = SimVar.GetSimVarValue("EXTERNAL POWER AVAILABLE:1", "Bool");
+
+            this.toggle(this.e_EXTPWR_BOX, externalPowerAvailable);
+            this.toggle(this.e_EXTPWR_TITLE, externalPowerAvailable);
+
+            this.toggle(this.e_EXTPWR_VOLTS_VALUE, externalPowerAvailable);
+            this.setValue(this.e_EXTPWR_VOLTS_VALUE, 115);
+            this.toggleValidGreen(this.e_EXTPWR_VOLTS_VALUE, true);
+            this.toggle(this.e_EXTPWR_VOLTS_UNIT, externalPowerAvailable);
+
+            this.toggle(this.e_EXTPWR_FREQ_VALUE, externalPowerAvailable);
+            this.setValue(this.e_EXTPWR_FREQ_VALUE, 400);
+            this.toggleValidGreen(this.e_EXTPWR_FREQ_VALUE, true);
+            this.toggle(this.e_EXTPWR_FREQ_UNIT, externalPowerAvailable);
+
+            const allParametersWithinAcceptableRange = true;
+            this.toggleValidWhite(this.e_EXTPWR_TITLE, allParametersWithinAcceptableRange);
         }
 
         toggle(element, condition) {
