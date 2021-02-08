@@ -556,3 +556,91 @@
 - A32NX_ELEC_COMMERCIAL_PB_ON
     - Bool
     - True when the COMMERCIAL push button is ON
+
+- A32NX_ELEC_APU_GENERATOR_CONTACTOR_CLOSED
+    - Bool
+    - True when the APU generator contactor (3XS) is closed
+
+- A32NX_ELEC_AC_BUS_TIE_CONTACTOR_1_CLOSED
+    - Bool
+    - True when bus tie contactor 1 (11XU1) is closed
+
+- A32NX_ELEC_AC_BUS_TIE_CONTACTOR_2_CLOSED
+    - Bool
+    - True when bus tie contactor 2 (11XU2) is closed
+
+- A32NX_ELEC_EXTERNAL_POWER_CONTACTOR_CLOSED
+    - Bool
+    - True when the external power contactor (3XG) is closed
+
+- A32NX_ELEC_GENERATOR_LINE_CONTACTOR_1_CLOSED
+    - Bool
+    - True when generator line contactor 1 (9XU1) is closed
+
+- A32NX_ELEC_GENERATOR_LINE_CONTACTOR_2_CLOSED
+    - Bool
+    - True when generator line contactor 2 (9XU2) is closed
+
+- A32NX_ELEC_AC_ESS_FEED_CONTACTOR_1_CLOSED
+    - Bool
+    - True when AC ESS feed contactor 1 (3XC1, coming from AC BUS 1) is closed
+
+- A32NX_ELEC_AC_ESS_FEED_CONTACTOR_2_CLOSED
+    - Bool
+    - True when AC ESS feed contactor 2 (3XC2, coming from AC BUS 2) is closed
+
+- A32NX_ELEC_BATTERY_CONTACTOR_1_CLOSED
+    - Bool
+    - True when the battery contactor 1 (6PB1) is closed
+
+- A32NX_ELEC_BATTERY_CONTACTOR_2_CLOSED
+    - Bool
+    - True when the battery contactor 2 (6PB2) is closed
+
+- A32NX_DC_BUS_TIE_CONTACTOR_1_CLOSED
+    - Bool
+    - True when the DC bus tie contactor 1 (1PC1) is closed
+
+- A32NX_DC_BUS_TIE_CONTACTOR_2_CLOSED
+    - Bool
+    - True when the DC bus tie contactor 2 (1PC2) is closed
+
+- A32NX_ELEC_TR_1_CONTACTOR_CLOSED
+    - Bool
+    - True when the TR 1 contactor (5PU1, from TR1 to DC BUS 1) is closed
+
+- A32NX_ELEC_TR_2_CONTACTOR_CLOSED
+    - Bool
+    - True when the TR 2 contactor (5PU2, from TR2 to DC BUS 2) is closed
+
+- A32NX_ELEC_TR_ESS_CONTACTOR_CLOSED
+    - Bool
+    - True when the TR ESS contactor (3PE, from TR ESS to DC ESS BUS) is closed
+
+- A32NX_ELEC_AC_BUS_1_IS_POWERED
+    - Bool
+    - True when AC BUS 1 is powered
+
+- A32NX_ELEC_AC_BUS_2_IS_POWERED
+    - Bool
+    - True when AC BUS 2 is powered
+
+- A32NX_ELEC_AC_ESS_BUS_IS_POWERED
+    - Bool
+    - True when the AC ESS BUS is powered
+
+- A32NX_ELEC_DC_BAT_BUS_IS_POWERED
+    - Bool
+    - True when the DC BAT BUS is powered
+
+- A32NX_ELEC_DC_BUS_1_IS_POWERED
+    - Bool
+    - True when DC BUS 1 is powered
+
+- A32NX_ELEC_DC_BUS_2_IS_POWERED
+    - Bool
+    - True when DC BUS 2 is powered
+
+- A32NX_ELEC_DC_ESS_BUS_IS_POWERED
+    - Bool
+    - True when the DC ESS BUS is powered

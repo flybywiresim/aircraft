@@ -259,7 +259,7 @@ var A320_Neo_LowerECAM_Elec;
 
             this.isInitialised = true;
 
-            this.updateVariables();
+            this.updateVariablesRandom();
             this.systemDraw();
         }
 
@@ -267,10 +267,11 @@ var A320_Neo_LowerECAM_Elec;
             if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
                 return;
             }
+            this.updateVariables();
             this.systemDraw();
         }
 
-        updateVariables() {
+        updateVariablesRandom() {
             this.systems.BAT1 = this.getSimVar_ONOFF('BATT1_ONLINE');
             this.systems.BAT2 = this.getSimVar_ONOFF('BATT2_ONLINE');
             this.values.BAT1_CAP = this.getSimVar_Number('BATT1_CAPACITY');
@@ -285,12 +286,6 @@ var A320_Neo_LowerECAM_Elec;
             this.values.EXTPWR_VOLTS = this.getSimVar_Number('EXT_GEN_VOLTAGE');
             this.values.EXTPWR_AMPS = this.getSimVar_Number('EXT_GEN_AMPERAGE');
             this.values.EXTPWR_FREQ = this.getSimVar_Number('EXT_GEN_FREQ');
-
-            this.systems.APUGEN = this.getSimVar_ONOFF('APU_GEN_ONLINE');
-            this.values.APUGEN_VOLTS = this.getSimVar_Number('A32NX_APU_GEN_VOLTAGE');
-            this.values.APUGEN_AMPS = this.getSimVar_Number('A32NX_APU_GEN_AMPERAGE');
-            this.values.APUGEN_FREQ = this.getSimVar_Number('A32NX_APU_GEN_FREQ');
-            this.values.APUGEN_LOAD = this.getSimVar_Number('APU_LOAD_PERCENT');
 
             this.systems.GEN1 = this.getSimVar_ONOFF('GEN1_ONLINE');
             this.systems.GEN2 = this.getSimVar_ONOFF('GEN2_ONLINE');
@@ -344,6 +339,10 @@ var A320_Neo_LowerECAM_Elec;
             this.switches.GALYCAB_ON = this.getSimVar_Bool('A32NX_ELEC_GALY_CAB_PB_AUTO');
         }
 
+        updateVariables() {
+            this.switches.ACESS_FEED_AUTO = SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_FEED_ACTIVATED', 'bool') !== 0;
+        }
+
         getSimVar_Bool(varName) {
             return Math.random() > 0.5;
         }
@@ -362,15 +361,15 @@ var A320_Neo_LowerECAM_Elec;
         }
 
         systemDraw() {
-
             this.switches.ACESS_FEED_AUTO = SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_FEED_PB_NORMAL', 'bool') !== 0;
+            const apuGenOn = SimVar.GetSimVarValue('APU GENERATOR SWITCH:1', 'Bool') === 1;
 
             // Level 1 - Generators
             if (this.systems.GEN1 === 'ON') {
                 this.setGEN1_ON();
                 this.setCONNECTION_GEN1_AC1_ON();
                 this.buses.AC1 = 'ON'; // move to after gen layer
-                if (this.systems.EXTPWR === 'OFF' && this.systems.APUGEN === 'OFF' && this.systems.GEN2 === 'OFF') {
+                if (this.systems.EXTPWR === 'OFF' && !apuGenOn && this.systems.GEN2 === 'OFF') {
                     this.setCONNECTION_XFEED_ON();
                     this.setCONNECTION_XFEED_AC2_ON();
                     this.buses.AC2 = 'ON';
@@ -378,7 +377,7 @@ var A320_Neo_LowerECAM_Elec;
             } else {
                 this.setGEN1_OFF();
                 this.setCONNECTION_GEN1_XFEED_OFF();
-                if (this.systems.GEN2 === 'OFF' && this.systems.APUGEN === 'OFF' && this.systems.EXTPWR === 'OFF') {
+                if (this.systems.GEN2 === 'OFF' && !apuGenOn && this.systems.EXTPWR === 'OFF') {
                     this.setCONNECTION_XFEED_AC1_OFF();
                 }
             }
@@ -387,7 +386,7 @@ var A320_Neo_LowerECAM_Elec;
                 this.setGEN2_ON();
                 this.setCONNECTION_GEN2_AC2_ON();
                 this.buses.AC2 = 'ON';
-                if (this.systems.EXTPWR === 'OFF' && this.systems.APUGEN === 'OFF' && this.systems.GEN1 === 'OFF') {
+                if (this.systems.EXTPWR === 'OFF' && !apuGenOn && this.systems.GEN1 === 'OFF') {
                     this.setCONNECTION_XFEED_ON();
                     this.setCONNECTION_XFEED_AC1_ON();
                     this.buses.AC1 = 'ON';
@@ -395,7 +394,7 @@ var A320_Neo_LowerECAM_Elec;
             } else {
                 this.setGEN2_OFF();
                 this.setCONNECTION_GEN2_XFEED_OFF();
-                if (this.systems.GEN1 === 'OFF' && this.systems.APUGEN === 'OFF' && this.systems.EXTPWR === 'OFF') {
+                if (this.systems.GEN1 === 'OFF' && !apuGenOn && this.systems.EXTPWR === 'OFF') {
                     this.setCONNECTION_XFEED_AC2_OFF();
                 }
             }
@@ -424,7 +423,7 @@ var A320_Neo_LowerECAM_Elec;
                 this.setCONNECTION_EXTPWR_XFEED_OFF();
             }
 
-            if (this.systems.APUGEN === 'ON') {
+            if (apuGenOn) {
                 this.setAPUGEN_ON();
                 if (this.systems.EXTPWR === 'OFF') {
                     this.setCONNECTION_XFEED_OFF();
@@ -545,6 +544,73 @@ var A320_Neo_LowerECAM_Elec;
 
             }
 
+            this.drawApuGen();
+        }
+
+        drawApuGen() {
+            const apuMasterSwitch = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_PB_ON", "Bool");
+            const apuGenSwitchOn = SimVar.GetSimVarValue('APU GENERATOR SWITCH:1', 'Bool') === 1;
+            this.toggle(this.e_APUGEN_OFF, apuMasterSwitch && !apuGenSwitchOn);
+            this.toggle(this.e_APUGEN_BOX, apuMasterSwitch);
+
+            this.setValue(this.e_APUGEN_LOAD_VALUE, 50);
+            this.toggle(this.e_APUGEN_LOAD_VALUE, apuMasterSwitch && apuGenSwitchOn);
+            this.toggle(this.e_APUGEN_LOAD_UNIT, apuMasterSwitch && apuGenSwitchOn);
+            this.toggle(this.e_APUGEN_VOLTS_VALUE, apuMasterSwitch && apuGenSwitchOn);
+            this.toggle(this.e_APUGEN_VOLTS_UNIT, apuMasterSwitch && apuGenSwitchOn);
+            this.toggle(this.e_APUGEN_FREQ_VALUE, apuMasterSwitch && apuGenSwitchOn);
+            this.toggle(this.e_APUGEN_FREQ_UNIT, apuMasterSwitch && apuGenSwitchOn);
+
+            let allParametersWithinAcceptableRange = false;
+            if (apuMasterSwitch && apuGenSwitchOn) {
+                const load = Math.round(SimVar.GetSimVarValue("L:APU_LOAD_PERCENT","percent"));
+                this.setValue(this.e_APUGEN_LOAD_VALUE, load);
+                const loadWithinNormalRange = load <= 100;
+                this.toggleValidGreen(this.e_APUGEN_LOAD_VALUE, loadWithinNormalRange);
+
+                const volts = SimVar.GetSimVarValue("L:A32NX_APU_GEN_VOLTAGE","Volts");
+                this.setValue(this.e_APUGEN_VOLTS_VALUE, volts);
+                const voltsWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_VOLTAGE_NORMAL", "Bool");
+                this.toggleValidGreen(this.e_APUGEN_VOLTS_VALUE, voltsWithinNormalRange);
+
+                const hertz = Math.round(SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ","Hertz"));
+                this.setValue(this.e_APUGEN_FREQ_VALUE, hertz);
+                const hertzWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ_NORMAL", "Bool");
+                this.toggleValidGreen(this.e_APUGEN_FREQ_VALUE, hertzWithinNormalRange);
+
+                allParametersWithinAcceptableRange = loadWithinNormalRange && voltsWithinNormalRange && hertzWithinNormalRange;
+            }
+
+            this.toggle(this.e_APUGEN_TITLE, true);
+            this.toggleValidWhite(this.e_APUGEN_TITLE, (!apuMasterSwitch || (apuGenSwitchOn && allParametersWithinAcceptableRange)));
+        }
+
+        toggle(element, condition) {
+            if (condition) {
+                this.show(element);
+            } else {
+                this.hide(element);
+            }
+        }
+
+        toggleValidWhite(element, condition) {
+            if (condition) {
+                this.white(element);
+            } else {
+                this.amber(element);
+            }
+        }
+
+        toggleValidGreen(element, condition) {
+            if (condition) {
+                this.green(element);
+            } else {
+                this.amber(element);
+            }
+        }
+
+        setValue(element, value) {
+            element.textContent = value;
         }
 
         /**
@@ -1076,6 +1142,11 @@ var A320_Neo_LowerECAM_Elec;
         amber(element) {
             element.classList.remove("green");
             element.classList.add("amber");
+        }
+
+        white(element) {
+            element.classList.remove("green");
+            element.classList.remove("amber");
         }
 
         onEvent(_event) {
