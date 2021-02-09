@@ -134,7 +134,9 @@ function combineGltf(pathA, pathB, outputPath) {
     // Add nodes
     if (gltfB.nodes) {
         for (const node of gltfB.nodes) {
-            node.mesh += meshesCount;
+            if (node.mesh) {
+                node.mesh += meshesCount;
+            }
             if (node.children) {
                 const newChildren = [];
                 for (const child of node.children) {
