@@ -24,7 +24,6 @@ function combineGltf(pathA, pathB, outputPath) {
     fs.writeFileSync(outputPath, data);
 }
 
-
 const models = JSON.parse(fs.readFileSync(path.join(__dirname, 'add-pilots.json'), 'utf8'));
 const p = (n) => path.resolve(__dirname, n);
 for (const model of models) {
