@@ -179,6 +179,9 @@ var A320_Neo_LowerECAM_Elec;
             this.e_WIRE_GEN2_AC_BUS_2 = this.querySelector("#WIRE_GEN2_AC_BUS_2");
             this.e_WIRE_GEN2_AC_BUS_1_2 = this.querySelector("#WIRE_GEN2_AC_BUS_1_2");
 
+            this.e_WIRE_AC1_ACESS = this.querySelector("#WIRE_AC1_ACESS");
+            this.e_WIRE_AC2_ACESS = this.querySelector("#WIRE_AC2_ACESS");
+
             this.e_WIRE_XFEED_C = this.querySelector("#WIRE_XFEED-C");
             this.e_WIRE_XFEED_B = this.querySelector("#WIRE_XFEED-B");
             this.e_WIRE_XFEED_A = this.querySelector("#WIRE_XFEED-A");
@@ -188,8 +191,6 @@ var A320_Neo_LowerECAM_Elec;
             this.e_WIRE_GEN1_XFEED = this.querySelector("#WIRE_GEN1_XFEED");
             this.e_WIRE_XFEED_AC2 = this.querySelector("#WIRE_XFEED_AC2");
             this.e_WIRE_GEN2_XFEED = this.querySelector("#WIRE_GEN2_XFEED");
-            this.e_WIRE_AC2_ACESS = this.querySelector("#WIRE_AC2_ACESS");
-            this.e_WIRE_AC1_ACESS = this.querySelector("#WIRE_AC1_ACESS");
             this.e_WIRE_AC1_TR1 = this.querySelector("#WIRE_AC1_TR1");
             this.e_WIRE_TR1_DC1 = this.querySelector("#WIRE_TR1_DC1");
             this.e_WIRE_ACESS_ESSTR = this.querySelector("#WIRE_ACESS_ESSTR");
@@ -562,6 +563,7 @@ var A320_Neo_LowerECAM_Elec;
             this.drawEngineGenerators();
             this.drawExternalPower();
             this.drawAcPowerSourcesToAcBuses();
+            this.drawBuses();
         }
 
         drawApuGenerator() {
@@ -701,6 +703,39 @@ var A320_Neo_LowerECAM_Elec;
             this.toggle(this.e_WIRE_APU_GEN_AC_BUS_2, apuGeneratorContactorClosed && !busTieContactor1Closed && busTieContactor2Closed);
             this.toggle(this.e_WIRE_APU_GEN_AC_BUS_1_2, apuGeneratorContactorClosed && busTieContactor1Closed && busTieContactor2Closed);
             this.toggle(this.e_ARROW_APUGEN_XFEED, apuGeneratorContactorClosed);
+
+            const acEssFeedContactor1Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_FEED_CONTACTOR_1_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_AC1_ACESS, acEssFeedContactor1Closed);
+
+            const acEssFeedContactor2Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_FEED_CONTACTOR_2_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_AC2_ACESS, acEssFeedContactor2Closed);
+        }
+
+        drawBuses() {
+            const acBus1IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_BUS_1_IS_POWERED", "Bool");
+            this.toggleValidGreen(this.e_ACBUS1_TITLE, acBus1IsPowered);
+            this.toggleValidGreen(this.e_ACBUS1_TITLE_NUMBER, acBus1IsPowered);
+
+            const acBus2IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_BUS_2_IS_POWERED", "Bool");
+            this.toggleValidGreen(this.e_ACBUS2_TITLE, acBus2IsPowered);
+            this.toggleValidGreen(this.e_ACBUS2_TITLE_NUMBER, acBus2IsPowered);
+
+            const acEssBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED", "Bool");
+            this.toggleValidGreen(this.e_ACESSBUS_TITLE, acEssBusIsPowered);
+
+            const dcBatBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_BAT_BUS_IS_POWERED", "Bool");
+            this.toggleValidGreen(this.e_DCBATBUS_TITLE, dcBatBusIsPowered);
+
+            const dcBus1IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_BUS_1_IS_POWERED", "Bool");
+            this.toggleValidGreen(this.e_DCBUS1_TITLE, dcBus1IsPowered);
+            this.toggleValidGreen(this.e_DCBUS1_TITLE_NUMBER, dcBus1IsPowered);
+
+            const dcBus2IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_BUS_2_IS_POWERED", "Bool");
+            this.toggleValidGreen(this.e_DCBUS2_TITLE, dcBus2IsPowered);
+            this.toggleValidGreen(this.e_DCBUS2_TITLE_NUMBER, dcBus2IsPowered);
+
+            const dcEssBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool");
+            this.toggleValidGreen(this.e_DCESSBUS_TITLE, dcEssBusIsPowered);
         }
 
         toggle(element, condition) {
