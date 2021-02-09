@@ -165,6 +165,20 @@ var A320_Neo_LowerECAM_Elec;
 
             this.e_STATINV_TITLE = this.querySelector("#STATINV_TITLE");
 
+            this.e_WIRE_EXT_PWR_AC_BUS_1 = this.querySelector("#WIRE_EXT_PWR_AC_BUS_1");
+            this.e_WIRE_EXT_PWR_AC_BUS_2 = this.querySelector("#WIRE_EXT_PWR_AC_BUS_2");
+            this.e_WIRE_EXT_PWR_AC_BUS_1_2 = this.querySelector("#WIRE_EXT_PWR_AC_BUS_1_2");
+
+            this.e_WIRE_APU_GEN_AC_BUS_1 = this.querySelector("#WIRE_APU_GEN_AC_BUS_1");
+            this.e_WIRE_APU_GEN_AC_BUS_2 = this.querySelector("#WIRE_APU_GEN_AC_BUS_2");
+            this.e_WIRE_APU_GEN_AC_BUS_1_2 = this.querySelector("#WIRE_APU_GEN_AC_BUS_1_2");
+
+            this.e_WIRE_GEN1_AC_BUS_1 = this.querySelector("#WIRE_GEN1_AC_BUS_1");
+            this.e_WIRE_GEN1_AC_BUS_1_2 = this.querySelector("#WIRE_GEN1_AC_BUS_1_2");
+
+            this.e_WIRE_GEN2_AC_BUS_2 = this.querySelector("#WIRE_GEN2_AC_BUS_2");
+            this.e_WIRE_GEN2_AC_BUS_1_2 = this.querySelector("#WIRE_GEN2_AC_BUS_1_2");
+
             this.e_WIRE_XFEED_C = this.querySelector("#WIRE_XFEED-C");
             this.e_WIRE_XFEED_B = this.querySelector("#WIRE_XFEED-B");
             this.e_WIRE_XFEED_A = this.querySelector("#WIRE_XFEED-A");
@@ -664,31 +678,29 @@ var A320_Neo_LowerECAM_Elec;
 
         drawAcPowerSourcesToAcBuses() {
             const generatorLineContactor1Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_GENERATOR_LINE_CONTACTOR_1_CLOSED", "Bool");
-            const busTieContactor1Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_BUS_TIE_CONTACTOR_1_CLOSED", "Bool");
-            this.toggle(this.e_WIRE_XFEED_AC1, generatorLineContactor1Closed || busTieContactor1Closed);
-            this.toggle(this.e_ARROW_XFEED_AC1, generatorLineContactor1Closed || busTieContactor1Closed);
-            this.toggle(this.e_WIRE_GEN1_XFEED, generatorLineContactor1Closed);
-
             const generatorLineContactor2Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_GENERATOR_LINE_CONTACTOR_2_CLOSED", "Bool");
+            const busTieContactor1Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_BUS_TIE_CONTACTOR_1_CLOSED", "Bool");
             const busTieContactor2Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_BUS_TIE_CONTACTOR_2_CLOSED", "Bool");
-            this.toggle(this.e_WIRE_XFEED_AC2, generatorLineContactor2Closed || busTieContactor2Closed);
+
+            this.toggle(this.e_ARROW_XFEED_AC1, generatorLineContactor1Closed || busTieContactor1Closed);
+            this.toggle(this.e_WIRE_GEN1_AC_BUS_1, generatorLineContactor1Closed && !busTieContactor1Closed);
+            this.toggle(this.e_WIRE_GEN1_AC_BUS_1_2, generatorLineContactor1Closed && busTieContactor1Closed && busTieContactor2Closed);
+
             this.toggle(this.e_ARROW_XFEED_AC2, generatorLineContactor2Closed || busTieContactor2Closed);
-            this.toggle(this.e_WIRE_GEN2_XFEED, generatorLineContactor2Closed);
+            this.toggle(this.e_WIRE_GEN2_AC_BUS_2, generatorLineContactor2Closed && !busTieContactor2Closed);
+            this.toggle(this.e_WIRE_GEN2_AC_BUS_1_2, generatorLineContactor2Closed && busTieContactor1Closed && busTieContactor2Closed);
 
             const externalPowerContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_EXTERNAL_POWER_CONTACTOR_CLOSED", "Bool");
-            this.toggle(this.e_WIRE_EXTPWR_XFEED, externalPowerContactorClosed);
-            this.toggle(this.e_ARROW_EXTPWR_XFEED, externalPowerContactorClosed);
+            this.toggle(this.e_WIRE_EXT_PWR_AC_BUS_1, externalPowerContactorClosed && busTieContactor1Closed && !busTieContactor2Closed);
+            this.toggle(this.e_WIRE_EXT_PWR_AC_BUS_2, externalPowerContactorClosed && !busTieContactor1Closed && busTieContactor2Closed);
+            this.toggle(this.e_WIRE_EXT_PWR_AC_BUS_1_2, externalPowerContactorClosed && busTieContactor1Closed && busTieContactor2Closed);
+            this.toggle(this.e_ARROW_EXTPWR_XFEED, externalPowerContactorClosed && (busTieContactor1Closed || busTieContactor2Closed));
 
             const apuGeneratorContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GENERATOR_CONTACTOR_CLOSED", "Bool");
-            this.toggle(this.e_WIRE_APUGEN_XFEED, apuGeneratorContactorClosed);
+            this.toggle(this.e_WIRE_APU_GEN_AC_BUS_1, apuGeneratorContactorClosed && busTieContactor1Closed && !busTieContactor2Closed);
+            this.toggle(this.e_WIRE_APU_GEN_AC_BUS_2, apuGeneratorContactorClosed && !busTieContactor1Closed && busTieContactor2Closed);
+            this.toggle(this.e_WIRE_APU_GEN_AC_BUS_1_2, apuGeneratorContactorClosed && busTieContactor1Closed && busTieContactor2Closed);
             this.toggle(this.e_ARROW_APUGEN_XFEED, apuGeneratorContactorClosed);
-
-            this.toggle(this.e_WIRE_XFEED_A, busTieContactor1Closed);
-            this.toggle(this.e_WIRE_XFEED_B,
-                (busTieContactor1Closed && externalPowerContactorClosed) ||
-                (busTieContactor2Closed && apuGeneratorContactorClosed) ||
-                (busTieContactor1Closed && busTieContactor2Closed));
-            this.toggle(this.e_WIRE_XFEED_C, busTieContactor2Closed);
         }
 
         toggle(element, condition) {
