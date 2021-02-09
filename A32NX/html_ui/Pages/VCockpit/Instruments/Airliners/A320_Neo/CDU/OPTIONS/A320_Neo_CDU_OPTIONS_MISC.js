@@ -6,14 +6,14 @@ class CDU_OPTIONS_MISC {
         const storedCoPilotVis = parseInt(NXDataStore.get("CONFIG_COPILOT_VISIBILITY", "0"));
 
         const displayCurrentPilotOption = storedPilotVis ? `{cyan}*{end}{green}SHOW{end}{cyan}/{small}HIDE{end}` : `{cyan}*{small}SHOW{end}{cyan}/{green}HIDE{end}`;
-        const displayCurrentCoPilotOption = storedCoPilotVis ? `{cyan}*{end}{green}SHOW{end}{cyan}/{small}HIDE{end}` : `{cyan}*{small}SHOW{end}{cyan}/{green}HIDE{end}`;
+        const displayCurrentCoPilotOption = storedCoPilotVis ? `{green}SHOW{end}{cyan}/{small}HIDE{end}{cyan}*{end}` : `{cyan}{small}SHOW{end}{cyan}/{green}HIDE{end}{cyan}*{end}`;
 
         mcdu.setTemplate([
             ["A32NX OPTIONS MISC"],
-            ["\xa0PILOT"],
-            [`${displayCurrentPilotOption}`],
-            ["\xa0COPILOT"],
-            [`${displayCurrentCoPilotOption}`],
+            ["\xa0PILOT", "COPILOT\xa0"],
+            [`${displayCurrentPilotOption}`, `${displayCurrentCoPilotOption}`],
+            [""],
+            [""],
             [""],
             [""],
             [""],
@@ -38,7 +38,7 @@ class CDU_OPTIONS_MISC {
             return mcdu.getDelaySwitchPage();
         };
 
-        mcdu.onLeftInput[1] = (value) => {
+        mcdu.onRightInput[0] = (value) => {
             if (value !== "") {
                 mcdu.addNewMessage(NXSystemMessages.notAllowed);
             } else {
@@ -48,7 +48,7 @@ class CDU_OPTIONS_MISC {
             }
             CDU_OPTIONS_MISC.ShowPage(mcdu);
         };
-        mcdu.leftInputDelay[1] = () => {
+        mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
 
