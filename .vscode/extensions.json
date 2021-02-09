@@ -1,3 +1,8 @@
 {
-  "recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "matklad.rust-analyzer", "vadimcn.vscode-lldb"]
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "matklad.rust-analyzer",
+    "vadimcn.vscode-lldb"
+  ]
 }
