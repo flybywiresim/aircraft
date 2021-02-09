@@ -10,9 +10,9 @@ class CDU_OPTIONS_MISC {
 
         mcdu.setTemplate([
             ["A32NX OPTIONS MISC"],
-            ["\xa0PILOT VISIBILITY"],
+            ["\xa0PILOT"],
             [`${displayCurrentPilotOption}`],
-            ["\xa0COPILOT VISIBILITY"],
+            ["\xa0COPILOT"],
             [`${displayCurrentCoPilotOption}`],
             [""],
             [""],
