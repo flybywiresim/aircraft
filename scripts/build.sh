@@ -23,10 +23,6 @@ build_model() {
     node "${DIR}/../src/model/build.js"
 }
 
-add_pilots() {
-    node "${DIR}/../src/model/add-pilots.js"
-}
-
 build_manifests() {
     node "${DIR}/build.js"
 }
@@ -65,7 +61,6 @@ if [ -z "$1" ]; then
     build_instruments
     build_behavior
     build_model
-    add_pilots
     build_systems
 else
     name="build_${1}"

@@ -1,0 +1,32 @@
+{
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.4.40",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": { "MajorVersion": 4, "MinorVersion": 2 }
+        }
+    },
+    "extensionsUsed": ["ASOBO_asset_optimized"],
+    "nodes": [
+        {
+            "translation": [
+                0.5676975250244141,
+                1.2626953125,
+                10.825200080871582
+            ],
+            "rotation": [0.00495407497510314, 0.0, 0.0, 0.9999877214431764],
+            "name": "PILOT_0"
+        },
+        {
+            "translation": [
+                -0.5676975250244141,
+                1.2626953125,
+                10.825200080871582
+            ],
+            "rotation": [0.00495407497510314, 0.0, 0.0, 0.9999877214431764],
+            "name": "PILOT_1"
+        }
+    ],
+    "scene": 0,
+    "scenes": [{ "nodes": [0, 1], "name": "Scene" }]
+}

@@ -33,27 +33,37 @@
     "additions": [
       {
         "gltf": "./onbat/onbat.gltf",
-        "bin": "./onbat/onbat.bin"
+        "bin": "./onbat/onbat.bin",
+        "lods": [0, 1, 2, 3, 4]
       },
       {
         "gltf": "./efb/flypad.gltf",
-        "bin": "./efb/flypad.bin"
+        "bin": "./efb/flypad.bin",
+        "lods": [0, 1, 2, 3, 4]
       },
       {
         "gltf": "./printer/printer.gltf",
-        "bin": "./printer/printer.bin"
+        "bin": "./printer/printer.bin",
+        "lods": [0, 1, 2, 3, 4]
       },
       {
         "gltf": "./printer/print-static.gltf",
-        "bin": "./printer/print-static.bin"
+        "bin": "./printer/print-static.bin",
+        "lods": [0, 1, 2, 3, 4]
       },
       {
         "gltf": "./printer/print-torn.gltf",
-        "bin": "./printer/print-torn.bin"
+        "bin": "./printer/print-torn.bin",
+        "lods": [0, 1, 2, 3, 4]
       },
       {
         "gltf": "./glass/glass.gltf",
-        "bin": "./glass/glass.bin"
+        "bin": "./glass/glass.bin",
+        "lods": [0, 1, 2, 3, 4]
+      },
+      {
+        "gltf": "./pilots/pilots.gltf",
+        "lods": [0]
       }
     ],
     "modifications": [
@@ -305,7 +315,8 @@
     "additions": [
       {
         "gltf": "./sound_nodes/sound_nodes.gltf",
-        "bin": "./sound_nodes/sound_nodes.bin"
+        "bin": "./sound_nodes/sound_nodes.bin",
+        "lods": [0, 1, 2, 3, 4, 5, 6]
       }
     ]
   }
