@@ -371,10 +371,6 @@ class A32NX_FWC {
                 }
             } else if (750 < delta && this._wasInRange) {
                 SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", true);
-            } else if (this._wasInRange) {
-                if (SimVar.GetSimVarValue("L:XMLVAR_Autopilot_1_Status", "Bool") === 0 && SimVar.GetSimVarValue("L:XMLVAR_Autopilot_2_Status", "Bool") === 0) {
-                    SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", true);
-                }
             }
         }
     }
