@@ -182,6 +182,13 @@ var A320_Neo_LowerECAM_Elec;
             this.e_WIRE_AC1_ACESS = this.querySelector("#WIRE_AC1_ACESS");
             this.e_WIRE_AC2_ACESS = this.querySelector("#WIRE_AC2_ACESS");
 
+            this.e_WIRE_DC1_DCBAT = this.querySelector("#WIRE_DC1_DCBAT");
+            this.e_WIRE_DC1_DCBAT_DCESS = this.querySelector("#WIRE_DC1_DCBAT_DCESS");
+
+            this.e_WIRE_DCBAT_DCESS = this.querySelector("#WIRE_DCBAT_DCESS");
+
+            this.e_WIRE_DC2_DCBAT = this.querySelector("#WIRE_DC2_DCBAT");
+
             this.e_WIRE_XFEED_C = this.querySelector("#WIRE_XFEED-C");
             this.e_WIRE_XFEED_B = this.querySelector("#WIRE_XFEED-B");
             this.e_WIRE_XFEED_A = this.querySelector("#WIRE_XFEED-A");
@@ -751,6 +758,24 @@ var A320_Neo_LowerECAM_Elec;
 
             const tr2ContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_TR_2_CONTACTOR_CLOSED", "Bool");
             this.toggle(this.e_WIRE_TR2_DC2, tr2ContactorClosed);
+
+            const dcBus1ToBatBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_DC_BUS_TIE_CONTACTOR_1_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_DC1_DCBAT, dcBus1ToBatBusContactorClosed);
+            this.toggle(this.e_WIRE_DC1_DCBAT_DCESS, dcBus1ToBatBusContactorClosed && false); // TODO: Expose contactor 2XB and 4PC.
+
+            this.toggle(this.e_WIRE_DCBAT_DCESS, false); // TODO: Expose contactor 2XB and 4PC.
+
+            const dcBus2ToBatBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_DC_BUS_TIE_CONTACTOR_2_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_DC2_DCBAT, dcBus2ToBatBusContactorClosed);
+
+            // this.toggle(this.e_WIRE_DC1_DCBAT, dcBus1ToBatBusContactorClosed && );
+
+            // this.e_WIRE_DC1_DCBAT = this.querySelector("#WIRE_DC1_DCBAT");
+            // this.e_WIRE_DC1_DCBAT_DCESS = this.querySelector("#WIRE_DC1_DCBAT_DCESS");
+
+            // this.e_WIRE_DCBAT_DCESS = this.querySelector("#WIRE_DCBAT_DCESS");
+
+            // this.e_WIRE_DC2_DCBAT = this.querySelector("#WIRE_DC2_DCBAT");
         }
 
         toggle(element, condition) {
