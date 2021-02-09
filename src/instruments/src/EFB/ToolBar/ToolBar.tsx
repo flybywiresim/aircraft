@@ -64,7 +64,7 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
                     <div className="ml-auto flex items-center text-white">
                         <div>
                             <a onClick={() => this.handleClick(6)}>
-                                <IconSettings className="hover:text-blue-light" size={25} stroke={1.5} strokeLinejoin="miter"/>
+                                <IconSettings className="hover:text-blue-light" size={30} stroke={1.5} strokeLinejoin="miter"/>
                             </a>
                         </div>
                     </div>
