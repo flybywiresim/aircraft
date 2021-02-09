@@ -172,7 +172,6 @@ class CDU_SingleValueField extends CDU_Field {
         if (value === FMCMainDisplay.clrValue) {
             this.clearValue();
         } else {
-            console.error(`${value} !== ${this.mcdu.clrValue}`);
             this.setValue(value);
         }
         super.onSelect();
