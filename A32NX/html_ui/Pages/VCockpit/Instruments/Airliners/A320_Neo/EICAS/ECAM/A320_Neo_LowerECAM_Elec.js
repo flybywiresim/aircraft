@@ -562,7 +562,8 @@ var A320_Neo_LowerECAM_Elec;
             this.drawApuGenerator();
             this.drawEngineGenerators();
             this.drawExternalPower();
-            this.drawAcPowerSourcesToAcBuses();
+            this.drawAcPowerSourcesToAcReceivers();
+            this.drawPowerSourcesToDcReceivers();
             this.drawBuses();
         }
 
@@ -678,7 +679,7 @@ var A320_Neo_LowerECAM_Elec;
             this.toggleValidWhite(this.e_EXTPWR_TITLE, allParametersWithinAcceptableRange);
         }
 
-        drawAcPowerSourcesToAcBuses() {
+        drawAcPowerSourcesToAcReceivers() {
             const generatorLineContactor1Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_GENERATOR_LINE_CONTACTOR_1_CLOSED", "Bool");
             const generatorLineContactor2Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_GENERATOR_LINE_CONTACTOR_2_CLOSED", "Bool");
             const busTieContactor1Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_BUS_TIE_CONTACTOR_1_CLOSED", "Bool");
@@ -709,6 +710,12 @@ var A320_Neo_LowerECAM_Elec;
 
             const acEssFeedContactor2Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_FEED_CONTACTOR_2_CLOSED", "Bool");
             this.toggle(this.e_WIRE_AC2_ACESS, acEssFeedContactor2Closed);
+
+            const acBus1IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_BUS_1_IS_POWERED", "Bool");
+            this.toggle(this.e_WIRE_AC1_TR1, acBus1IsPowered);
+
+            const acBus2IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_BUS_2_IS_POWERED", "Bool");
+            this.toggle(this.e_WIRE_AC2_TR2, acBus2IsPowered);
         }
 
         drawBuses() {
@@ -736,6 +743,14 @@ var A320_Neo_LowerECAM_Elec;
 
             const dcEssBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool");
             this.toggleValidGreen(this.e_DCESSBUS_TITLE, dcEssBusIsPowered);
+        }
+
+        drawPowerSourcesToDcReceivers() {
+            const tr1ContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_TR_1_CONTACTOR_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_TR1_DC1, tr1ContactorClosed);
+
+            const tr2ContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_TR_2_CONTACTOR_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_TR2_DC2, tr2ContactorClosed);
         }
 
         toggle(element, condition) {
