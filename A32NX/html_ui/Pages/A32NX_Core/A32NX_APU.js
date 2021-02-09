@@ -27,19 +27,10 @@ class A32NX_APU {
         }
 
         const apuGenActive = SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool");
-        const externalPowerOff = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0;
 
         // This logic is consistently faulty in the JavaScript code: of course it should also take into
         // account if engine generators are supplying electricity. We'll fix this when we create the electrical system.
         SimVar.SetSimVarValue("L:APU_GEN_ONLINE", "Bool", available && apuGenActive ? 1 : 0);
-        SimVar.SetSimVarValue(
-            "L:APU_LOAD_PERCENT",
-            "percent",
-            available && apuGenActive && externalPowerOff
-                ? Math.max(SimVar.GetSimVarValue("L:A32NX_APU_GEN_AMPERAGE", "Amperes")
-                        / SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS", "Amperes"), 0)
-                : 0
-        );
 
         const apuBleedOn = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_PB_ON", "Bool");
         if (apuBleedOn !== this.lastAPUBleedState) {

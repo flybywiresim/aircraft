@@ -58,25 +58,22 @@ var A320_Neo_LowerECAM_APU;
             const showApuData = shouldShowApuData();
             let allParametersWithinAcceptableRange = false;
             if (showApuData) {
-                const load = Math.round(SimVar.GetSimVarValue("L:APU_LOAD_PERCENT","percent"));
-                this.APUGenLoad.textContent = load;
-                const loadWithinNormalRange = load <= 100;
+                this.APUGenLoad.textContent = Math.round(SimVar.GetSimVarValue("L:A32NX_APU_GEN_LOAD", "Percent"));
+                const loadWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_APU_GEN_LOAD_NORMAL", "Bool");
                 this.APUGenLoad.classList.toggle("APUGenParamValue", loadWithinNormalRange);
                 this.APUGenLoad.classList.toggle("APUGenParamValueWarn", !loadWithinNormalRange);
 
-                const volts = SimVar.GetSimVarValue("L:A32NX_APU_GEN_VOLTAGE","Volts");
-                this.APUVolts.textContent = volts;
-                const voltsWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_VOLTAGE_NORMAL", "Bool");
-                this.APUVolts.classList.toggle("APUGenParamValue", voltsWithinNormalRange);
-                this.APUVolts.classList.toggle("APUGenParamValueWarn", !voltsWithinNormalRange);
+                this.APUVolts.textContent = Math.round(SimVar.GetSimVarValue("L:A32NX_APU_GEN_POTENTIAL", "Volts"));
+                const potentialWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_POTENTIAL_NORMAL", "Bool");
+                this.APUVolts.classList.toggle("APUGenParamValue", potentialWithinNormalRange);
+                this.APUVolts.classList.toggle("APUGenParamValueWarn", !potentialWithinNormalRange);
 
-                const hertz = SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ","Hertz");
-                this.APUFrequency.textContent = Math.round(hertz);
-                const hertzWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ_NORMAL", "Bool");
-                this.APUFrequency.classList.toggle("APUGenParamValue", hertzWithinNormalRange);
-                this.APUFrequency.classList.toggle("APUGenParamValueWarn", !hertzWithinNormalRange);
+                this.APUFrequency.textContent = Math.round(SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ", "Hertz"));
+                const frequencyWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ_NORMAL", "Bool");
+                this.APUFrequency.classList.toggle("APUGenParamValue", frequencyWithinNormalRange);
+                this.APUFrequency.classList.toggle("APUGenParamValueWarn", !frequencyWithinNormalRange);
 
-                allParametersWithinAcceptableRange = loadWithinNormalRange && voltsWithinNormalRange && hertzWithinNormalRange;
+                allParametersWithinAcceptableRange = loadWithinNormalRange && potentialWithinNormalRange && frequencyWithinNormalRange;
             }
 
             this.APUGenTitle.classList.toggle("APUGenTitle", showApuData && allParametersWithinAcceptableRange);

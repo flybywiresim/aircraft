@@ -82,9 +82,9 @@ impl A320SimulatorReadWriter {
             apu_gen_frequency: NamedVariable::from("A32NX_APU_GEN_FREQ"),
             apu_gen_frequency_within_normal_range: NamedVariable::from("A32NX_APU_GEN_FREQ_NORMAL"),
             apu_gen_sw_on: AircraftVariable::from("APU GENERATOR SWITCH", "Bool", 0)?,
-            apu_gen_voltage: NamedVariable::from("A32NX_APU_GEN_VOLTAGE"),
+            apu_gen_voltage: NamedVariable::from("A32NX_APU_GEN_POTENTIAL"),
             apu_gen_voltage_within_normal_range: NamedVariable::from(
-                "A32NX_APU_GEN_VOLTAGE_NORMAL",
+                "A32NX_APU_GEN_POTENTIAL_NORMAL",
             ),
             apu_inoperable: NamedVariable::from("A32NX_ECAM_INOP_SYS_APU"),
             apu_is_auto_shutdown: NamedVariable::from("A32NX_APU_IS_AUTO_SHUTDOWN"),

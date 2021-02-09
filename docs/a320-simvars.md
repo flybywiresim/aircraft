@@ -377,17 +377,13 @@
     - Bool
     - True when the APU START push button is ON
 
-- A32NX_APU_GEN_VOLTAGE:
+- A32NX_APU_GEN_POTENTIAL:
     - Volts
     - The electric potential made available by the APU generator
 
-- A32NX_APU_GEN_VOLTAGE_NORMAL
+- A32NX_APU_GEN_POTENTIAL_NORMAL
     - Bool
     - Indicates if the APU generator potential is within the normal range
-
-- A32NX_APU_GEN_AMPERAGE
-    - Amperes
-    - The electric current made available by the APU generator
 
 - A32NX_APU_GEN_FREQ
     - Hertz
@@ -396,6 +392,14 @@
 - A32NX_APU_GEN_FREQ_NORMAL
     - Bool
     - Indicates if the APU generator output frequency is within the normal range
+
+- A32NX_APU_GEN_LOAD
+    - Percent
+    - The percent of load the APU generator is providing compared to its maximum
+
+- A32NX_APU_GEN_LOAD_NORMAL
+    - Bool
+    - Indicates if the APU generator output load is within the normal range
 
 - A32NX_APU_START_CONTACTOR_ENERGIZED
     - Bool
@@ -644,3 +648,179 @@
 - A32NX_ELEC_DC_ESS_BUS_IS_POWERED
     - Bool
     - True when the DC ESS BUS is powered
+
+- A32NX_ELEC_GEN_1_POTENTIAL
+    - Volts
+    - The electric potential made available by the engine 1 generator
+
+- A32NX_ELEC_GEN_1_NORMAL
+    - Bool
+    - Indicates if generator 1 potential is within the normal range
+
+- A32NX_ELEC_GEN_1_FREQ
+    - Hertz
+    - The alternating current frequency of the electric current made available by engine generator 1
+
+- A32NX_ELEC_GEN_1_FREQ_NORMAL
+    - Bool
+    - Indicates if the engine generator 1 output frequency is within the normal range
+
+- A32NX_ELEC_GEN_1_LOAD
+    - Percent
+    - The percent of load engine generator 1 is providing compared to its maximum
+
+- A32NX_ELEC_GEN_1_LOAD_NORMAL
+    - Bool
+    - Indicates if engine generator 1 output load is within the normal range
+
+- A32NX_ELEC_GEN_2_POTENTIAL
+    - Volts
+    - The electric potential made available by the engine 2 generator
+
+- A32NX_ELEC_GEN_2_NORMAL
+    - Bool
+    - Indicates if generator 2 potential is within the normal range
+
+- A32NX_ELEC_GEN_2_FREQ
+    - Hertz
+    - The alternating current frequency of the electric current made available by engine generator 2
+
+- A32NX_ELEC_GEN_2_FREQ_NORMAL
+    - Bool
+    - Indicates if the engine generator 2 output frequency is within the normal range
+
+- A32NX_ELEC_GEN_2_LOAD
+    - Percent
+    - The percent of load engine generator 2 is providing compared to its maximum
+
+- A32NX_ELEC_GEN_2_LOAD_NORMAL
+    - Bool
+    - Indicates if engine generator 2 output load is within the normal range
+
+- A32NX_ELEC_EXTERNAL_POWER_POTENTIAL
+    - Volts
+    - The electric potential made available by the external power source
+
+- A32NX_ELEC_EXTERNAL_POWER_POTENTIAL_NORMAL
+    - Bool
+    - Indicates if the external power source potential is within the normal range
+
+- A32NX_ELEC_EXTERNAL_POWER_FREQ
+    - Hertz
+    - The alternating current frequency of the electric current made available by the external power source
+
+- A32NX_ELEC_EXTERNAL_POWER_FREQ_NORMAL
+    - Bool
+    - Indicates if the external power source output frequency is within the normal range
+
+- A32NX_ELEC_STATIC_INVERTER_POTENTIAL
+    - Volts
+    - The electric potential made available by the static inverter
+
+- A32NX_ELEC_STATIC_INVERTER_POTENTIAL_NORMAL
+    - Bool
+    - Indicates if the static inverter potential is within the normal range
+
+- A32NX_ELEC_STATIC_INVERTER_FREQ
+    - Hertz
+    - The alternating current frequency of the electric current made available by the static inverter
+
+- A32NX_ELEC_STATIC_INVERTER_FREQ_NORMAL
+    - Bool
+    - Indicates if the static inverter output frequency is within the normal range
+
+- A32NX_ELEC_EMERGENCY_GENERATOR_POTENTIAL
+    - Volts
+    - The electric potential made available by the emergency generator
+
+- A32NX_ELEC_EMERGENCY_GENERATOR_POTENTIAL_NORMAL
+    - Bool
+    - Indicates if the emergency generator potential is within the normal range
+
+- A32NX_ELEC_EMERGENCY_GENERATOR_FREQ
+    - Hertz
+    - The alternating current frequency of the electric current made available by the emergency generator
+
+- A32NX_ELEC_EMERGENCY_GENERATOR_FREQ_NORMAL
+    - Bool
+    - Indicates if the emergency generator output frequency is within the normal range
+
+- A32NX_ELEC_TRANSFORMER_RECTIFIER_1_CURRENT
+    - Ampere
+    - The electric current made available by transformer rectifier 1
+
+- A32NX_ELEC_TRANSFORMER_RECTIFIER_1_CURRENT_NORMAL
+    - Bool
+    - Indicates if the transformer rectifier 1 current is within the normal range
+
+- A32NX_ELEC_TRANSFORMER_RECTIFIER_1_POTENTIAL
+    - Volts
+    - The electric potential made available by transformer rectifier 1
+
+- A32NX_ELEC_TRANSFORMER_RECTIFIER_1_POTENTIAL_NORMAL
+    - Bool
+    - Indicates if the transformer rectifier 1 potential is within the normal range
+
+- A32NX_ELEC_TRANSFORMER_RECTIFIER_2_CURRENT
+    - Ampere
+    - The electric current made available by transformer rectifier 2
+
+- A32NX_ELEC_TRANSFORMER_RECTIFIER_2_CURRENT_NORMAL
+    - Bool
+    - Indicates if the transformer rectifier 2 current is within the normal range
+
+- A32NX_ELEC_TRANSFORMER_RECTIFIER_2_POTENTIAL
+    - Volts
+    - The electric potential made available by transformer rectifier 2
+
+- A32NX_ELEC_TRANSFORMER_RECTIFIER_2_POTENTIAL_NORMAL
+    - Bool
+    - Indicates if the transformer rectifier 2 potential is within the normal range
+
+- A32NX_ELEC_ESS_TRANSFORMER_RECTIFIER_CURRENT
+    - Ampere
+    - The electric current made available by the ESS transformer rectifier
+
+- A32NX_ELEC_ESS_TRANSFORMER_RECTIFIER_CURRENT_NORMAL
+    - Bool
+    - Indicates if the ESS transformer rectifier current is within the normal range
+
+- A32NX_ELEC_ESS_TRANSFORMER_RECTIFIER_POTENTIAL
+    - Volts
+    - The electric potential made available by the ESS transformer rectifier
+
+- A32NX_ELEC_ESS_TRANSFORMER_RECTIFIER_POTENTIAL_NORMAL
+    - Bool
+    - Indicates if the ESS transformer rectifier potential is within the normal range
+
+- A32NX_ELEC_BATTERY_1_CURRENT
+    - Ampere
+    - The electric current made available by battery 1
+
+- A32NX_ELEC_BATTERY_1_CURRENT_NORMAL
+    - Bool
+    - Indicates if battery 1 current is within the normal range
+
+- A32NX_ELEC_BATTERY_1_POTENTIAL
+    - Volts
+    - The electric potential made available by battery 1
+
+- A32NX_ELEC_BATTERY_1_POTENTIAL_NORMAL
+    - Bool
+    - Indicates if the battery 1 potential is within the normal range
+
+- A32NX_ELEC_BATTERY_2_CURRENT
+    - Ampere
+    - The electric current made available by battery 2
+
+- A32NX_ELEC_BATTERY_2_CURRENT_NORMAL
+    - Bool
+    - Indicates if battery 2 current is within the normal range
+
+- A32NX_ELEC_BATTERY_2_POTENTIAL
+    - Volts
+    - The electric potential made available by battery 2
+
+- A32NX_ELEC_BATTERY_2_POTENTIAL_NORMAL
+    - Bool
+    - Indicates if the battery 2 potential is within the normal range

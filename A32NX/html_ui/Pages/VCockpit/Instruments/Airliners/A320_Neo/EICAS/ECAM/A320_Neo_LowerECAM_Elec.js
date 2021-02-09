@@ -590,22 +590,19 @@ var A320_Neo_LowerECAM_Elec;
 
             let allParametersWithinAcceptableRange = false;
             if (apuMasterSwPbOn && apuGenSwitchOn) {
-                const load = Math.round(SimVar.GetSimVarValue("L:APU_LOAD_PERCENT","percent"));
-                this.setValue(this.e_APUGEN_LOAD_VALUE, load);
-                const loadWithinNormalRange = load <= 100;
+                this.setValue(this.e_APUGEN_LOAD_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_APU_GEN_LOAD", "Percent")));
+                const loadWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_APU_GEN_LOAD_NORMAL", "Bool");
                 this.toggleValidGreen(this.e_APUGEN_LOAD_VALUE, loadWithinNormalRange);
 
-                const volts = SimVar.GetSimVarValue("L:A32NX_APU_GEN_VOLTAGE","Volts");
-                this.setValue(this.e_APUGEN_VOLTS_VALUE, volts);
-                const voltsWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_VOLTAGE_NORMAL", "Bool");
-                this.toggleValidGreen(this.e_APUGEN_VOLTS_VALUE, voltsWithinNormalRange);
+                this.setValue(this.e_APUGEN_VOLTS_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_APU_GEN_POTENTIAL", "Volts")));
+                const potentialWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_POTENTIAL_NORMAL", "Bool");
+                this.toggleValidGreen(this.e_APUGEN_VOLTS_VALUE, potentialWithinNormalRange);
 
-                const hertz = Math.round(SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ","Hertz"));
-                this.setValue(this.e_APUGEN_FREQ_VALUE, hertz);
-                const hertzWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ_NORMAL", "Bool");
-                this.toggleValidGreen(this.e_APUGEN_FREQ_VALUE, hertzWithinNormalRange);
+                this.setValue(this.e_APUGEN_FREQ_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ", "Hertz")));
+                const frequencyWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ_NORMAL", "Bool");
+                this.toggleValidGreen(this.e_APUGEN_FREQ_VALUE, frequencyWithinNormalRange);
 
-                allParametersWithinAcceptableRange = loadWithinNormalRange && voltsWithinNormalRange && hertzWithinNormalRange;
+                allParametersWithinAcceptableRange = loadWithinNormalRange && potentialWithinNormalRange && frequencyWithinNormalRange;
             }
 
             this.toggle(this.e_APUGEN_TITLE, true);
@@ -647,21 +644,24 @@ var A320_Neo_LowerECAM_Elec;
             this.toggle(elements.box, true);
 
             this.toggle(elements.loadValue, engineGeneratorPbOn);
-            this.setValue(elements.loadValue, 0);
-            this.toggleValidGreen(elements.loadValue, true);
+            this.setValue(elements.loadValue, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_GEN_" + number + "_LOAD", "Percent")));
+            const loadWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_GEN_" + number + "_LOAD_NORMAL", "Bool");
+            this.toggleValidGreen(elements.loadValue, loadWithinNormalRange);
             this.toggle(elements.loadUnit, engineGeneratorPbOn);
 
             this.toggle(elements.voltsValue, engineGeneratorPbOn);
-            this.setValue(elements.voltsValue, 0);
-            this.toggleValidGreen(elements.voltsValue, false);
+            this.setValue(elements.voltsValue, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_GEN_" + number + "_POTENTIAL", "Volts")));
+            const potentialWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_GEN_" + number + "_POTENTIAL_NORMAL", "Bool");
+            this.toggleValidGreen(elements.voltsValue, potentialWithinNormalRange);
             this.toggle(elements.voltsUnit, engineGeneratorPbOn);
 
             this.toggle(elements.frequencyValue, engineGeneratorPbOn);
-            this.setValue(elements.frequencyValue, 0);
-            this.toggleValidGreen(elements.frequencyValue, false);
+            this.setValue(elements.frequencyValue, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_GEN_" + number + "_FREQ", "Hertz")));
+            const frequencyWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_GEN_" + number + "_FREQ_NORMAL", "Bool");
+            this.toggleValidGreen(elements.frequencyValue, frequencyWithinNormalRange);
             this.toggle(elements.frequencyUnit, engineGeneratorPbOn);
 
-            const allParametersWithinAcceptableRange = false;
+            const allParametersWithinAcceptableRange = loadWithinNormalRange && potentialWithinNormalRange && frequencyWithinNormalRange;
             this.toggleValidWhite(elements.title, engineGeneratorPbOn && allParametersWithinAcceptableRange);
             this.toggleValidWhite(elements.titleNumber, engineGeneratorPbOn && allParametersWithinAcceptableRange);
         }
@@ -673,16 +673,18 @@ var A320_Neo_LowerECAM_Elec;
             this.toggle(this.e_EXTPWR_TITLE, externalPowerAvailable);
 
             this.toggle(this.e_EXTPWR_VOLTS_VALUE, externalPowerAvailable);
-            this.setValue(this.e_EXTPWR_VOLTS_VALUE, 115);
-            this.toggleValidGreen(this.e_EXTPWR_VOLTS_VALUE, true);
+            this.setValue(this.e_EXTPWR_VOLTS_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_EXTERNAL_POWER_POTENTIAL", "Volts")));
+            const potentialWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_EXTERNAL_POWER_POTENTIAL_NORMAL", "Bool");
+            this.toggleValidGreen(this.e_EXTPWR_VOLTS_VALUE, potentialWithinNormalRange);
             this.toggle(this.e_EXTPWR_VOLTS_UNIT, externalPowerAvailable);
 
             this.toggle(this.e_EXTPWR_FREQ_VALUE, externalPowerAvailable);
-            this.setValue(this.e_EXTPWR_FREQ_VALUE, 400);
-            this.toggleValidGreen(this.e_EXTPWR_FREQ_VALUE, true);
+            this.setValue(this.e_EXTPWR_FREQ_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_EXTERNAL_POWER_FREQ", "Hertz")));
+            const frequencyWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_EXTERNAL_POWER_FREQ_NORMAL", "Bool");
+            this.toggleValidGreen(this.e_EXTPWR_FREQ_VALUE, frequencyWithinNormalRange);
             this.toggle(this.e_EXTPWR_FREQ_UNIT, externalPowerAvailable);
 
-            const allParametersWithinAcceptableRange = true;
+            const allParametersWithinAcceptableRange = potentialWithinNormalRange && frequencyWithinNormalRange;
             this.toggleValidWhite(this.e_EXTPWR_TITLE, allParametersWithinAcceptableRange);
         }
 
