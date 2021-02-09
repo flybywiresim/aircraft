@@ -1,13 +1,13 @@
 class CDUAocRequestsWeather {
-    static ShowPage(mcdu, store = {"reqID": 0, "depIcao": "", "arrIcao": "", "arpt1": "", "arpt2": "", "arpt3": "", "arpt4": "", "sendStatus": ""}) {
+    static ShowPage(mcdu, setArpts = true, store = {"reqID": 0, "depIcao": "", "arrIcao": "", "arpt1": "", "arpt2": "", "arpt3": "", "arpt4": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
         let labelTimeout;
 
-        let fplanArptColor = "[color]cyan";
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getDestination()) {
-            store.arpt1 = mcdu.flightPlanManager.getOrigin().ident;
-            store.arpt2 = mcdu.flightPlanManager.getDestination().ident;
-            fplanArptColor = "[color]green";
+            if (setArpts) {
+                store.arpt1 = mcdu.flightPlanManager.getOrigin().ident;
+                store.arpt2 = mcdu.flightPlanManager.getDestination().ident;
+            }
         }
 
         const reqTypes = [
@@ -19,9 +19,9 @@ class CDUAocRequestsWeather {
             mcdu.setTemplate([
                 ["AOC WEATHER REQUEST"],
                 [`WX TYPE`, "AIRPORTS"],
-                [`↓${reqTypes[store.reqID]}[color]cyan`, `${store.arpt1 != "" ? store.arpt1 : "[ ]"}${fplanArptColor}`],
+                [`↓${reqTypes[store.reqID]}[color]cyan`, `${store.arpt1 != "" ? store.arpt1 : "[ ]"}[color]cyan`],
                 [""],
-                ["", `${store["arpt2"] != "" ? store["arpt2"] : "[ ]"}${fplanArptColor}`],
+                ["", `${store["arpt2"] != "" ? store["arpt2"] : "[ ]"}[color]cyan`],
                 [""],
                 ["", `${store["arpt3"] != "" ? store["arpt3"] : "[ ]"}[color]cyan`],
                 [""],
@@ -44,7 +44,7 @@ class CDUAocRequestsWeather {
             } else {
                 store["arpt1"] = value;
             }
-            CDUAocRequestsWeather.ShowPage(mcdu, store);
+            CDUAocRequestsWeather.ShowPage(mcdu, false, store);
         };
 
         mcdu.rightInputDelay[1] = () => {
@@ -57,7 +57,7 @@ class CDUAocRequestsWeather {
             } else {
                 store["arpt2"] = value;
             }
-            CDUAocRequestsWeather.ShowPage(mcdu, store);
+            CDUAocRequestsWeather.ShowPage(mcdu, false, store);
         };
 
         mcdu.rightInputDelay[2] = () => {
@@ -70,7 +70,7 @@ class CDUAocRequestsWeather {
             } else {
                 store["arpt3"] = value;
             }
-            CDUAocRequestsWeather.ShowPage(mcdu, store);
+            CDUAocRequestsWeather.ShowPage(mcdu, false, store);
         };
 
         mcdu.rightInputDelay[3] = () => {
@@ -83,7 +83,7 @@ class CDUAocRequestsWeather {
             } else {
                 store["arpt4"] = value;
             }
-            CDUAocRequestsWeather.ShowPage(mcdu, store);
+            CDUAocRequestsWeather.ShowPage(mcdu, false, store);
         };
 
         mcdu.rightInputDelay[5] = () => {
@@ -128,7 +128,7 @@ class CDUAocRequestsWeather {
         };
         mcdu.onLeftInput[0] = () => {
             store["reqID"] = (store.reqID + 1) % 2;
-            CDUAocRequestsWeather.ShowPage(mcdu, store);
+            CDUAocRequestsWeather.ShowPage(mcdu, false, store);
         };
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();

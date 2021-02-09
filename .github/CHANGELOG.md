@@ -115,6 +115,7 @@
 1. [FMGC] Added reset of fmgc variables - @MisterChocker (Leon) 
 1. [ATHR] Fixed permanent A/THR disconnect (15s press) not being able to activate with 3D button on thrust levers - @aguther (Andreas Guther)
 1. [ND] TCAS symbols correctly display in 10, 20, 40nm ARC/ROSE views + bug fixes - @2hwk (2Cas#1022)
+1. [MCDU] Fixed airports on Weather Request page not editable - @SergeySoprykin (SergeyS) @MisterChocker (Leon)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
@@ -372,7 +373,6 @@
 1. [ECAM/CORE] Improved flap auto-retraction detection - @MisterChocker (Leon)
 1. [CDU] Error messages now print for invalid trip wind delims - @Lucky38i (Lucky38i)
 1. [TEXTURE] Fixed the overlapping text on the chronometer - @DarkOfNova (DarkOfNova)
-1. [SOUND] Made the altitude callouts louder - @hotshotp (Boris)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
@@ -545,7 +545,6 @@
 1. [Sound] Replaced sounds for various switches, levers, and buttons - @hotshotp (Boris)
 1. [CDU] Added Soft GA Logic - @MisterChocker (Leon)
 1. [ECAM] Improved Thrust Rating update condition - @MisterChocker (Leon)
-1. [CDU] Fix SIDs scrolling on departures page - @SergeySoprykin (SergeyS)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
