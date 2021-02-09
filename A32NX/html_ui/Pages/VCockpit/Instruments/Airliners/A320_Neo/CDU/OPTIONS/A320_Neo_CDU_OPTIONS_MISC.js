@@ -30,7 +30,7 @@ class CDU_OPTIONS_MISC {
             } else {
                 const newPVOption = storedPilotVis ? "0" : "1";
                 NXDataStore.set("CONFIG_PILOT_VISIBILITY", newPVOption);
-		SimVar.SetSimVarValue("L:A32NX_VIS_PILOT_0", "Number", parseInt(newPVOption));
+        SimVar.SetSimVarValue("L:A32NX_VIS_PILOT_0", "Number", parseInt(newPVOption));
             }
             CDU_OPTIONS_MISC.ShowPage(mcdu);
         };
@@ -44,7 +44,7 @@ class CDU_OPTIONS_MISC {
             } else {
                 const newCPVOption = storedCoPilotVis ? "0" : "1";
                 NXDataStore.set("CONFIG_COPILOT_VISIBILITY", newCPVOption);
-		SimVar.SetSimVarValue("L:A32NX_VIS_PILOT_1", "Number", parseInt(newCPVOption));
+        SimVar.SetSimVarValue("L:A32NX_VIS_PILOT_1", "Number", parseInt(newCPVOption));
             }
             CDU_OPTIONS_MISC.ShowPage(mcdu);
         };
