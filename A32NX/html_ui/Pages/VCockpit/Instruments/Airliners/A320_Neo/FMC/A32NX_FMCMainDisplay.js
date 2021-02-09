@@ -3089,6 +3089,12 @@ class FMCMainDisplay extends BaseAirliners {
         return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
     }
 
+    tryCheckToData() {
+        if (isFinite(this.v1Speed) || isFinite(this._vRChecked) || isFinite(this._v2Checked)) {
+            this.addNewMessage(NXSystemMessages.checkToData);
+        }
+    }
+
     onToDataChanged() {
         this._v1Checked = !isFinite(this.v1Speed);
         this._vRChecked = !isFinite(this.vRSpeed);

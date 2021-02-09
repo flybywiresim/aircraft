@@ -288,7 +288,7 @@ class CDUPerformancePage {
             flapsThs = `${flaps}/${ths}[color]cyan`;
             mcdu.onRightInput[2] = (value) => {
                 if (mcdu.trySetFlapsTHS(value)) {
-                    mcdu.onToDataChanged();
+                    mcdu.tryCheckToData();
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 }
             };
@@ -306,7 +306,7 @@ class CDUPerformancePage {
             }
             mcdu.onRightInput[3] = (value) => {
                 if (mcdu.setPerfTOFlexTemp(value)) {
-                    mcdu.onToDataChanged();
+                    mcdu.tryCheckToData();
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 }
             };
