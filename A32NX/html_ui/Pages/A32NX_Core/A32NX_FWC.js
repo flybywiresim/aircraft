@@ -338,7 +338,6 @@ class A32NX_FWC {
         const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
         const currentIndicatedAltitude = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
         const targetAltitude = currentAltitudeConstraint && !this.hasAltitudeConstraint() ? currentAltitudeConstraint : currentIndicatedAltitude;
-        console.log(targetAltitude);
 
         // Exit when selected altitude is being changed
         if (this.previousTargetAltitude !== targetAltitude) {
