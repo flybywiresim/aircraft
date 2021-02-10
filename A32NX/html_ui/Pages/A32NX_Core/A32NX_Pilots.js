@@ -1,5 +1,6 @@
 class A32NX_Pilots {
     init() {
+    console.log('A32NX_Pilots init');
         const storedPilotVis = parseInt(NXDataStore.get("CONFIG_PILOT_VISIBILITY", "0"));
         const storedCoPilotVis = parseInt(NXDataStore.get("CONFIG_COPILOT_VISIBILITY", "0"));
 
