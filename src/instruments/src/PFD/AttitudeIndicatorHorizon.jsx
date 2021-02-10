@@ -15,7 +15,10 @@ const TickFunction = (heading, offset) => (
 );
 
 const HeadingBug = (offset) => (
-    <path id="HorizonHeadingBug" transform={`translate(${offset} 0)`} className="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
+    <>
+        <path id="HorizonHeadingBug" transform={`translate(${offset} 0)`} className="ThickOutline" d="m68.906 80.823v-9.0213" />
+        <path id="HorizonHeadingBug" transform={`translate(${offset} 0)`} className="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
+    </>
 );
 
 export const Horizon = ({

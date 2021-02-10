@@ -560,21 +560,33 @@ const D1D2Cell = () => {
 const D3Cell = () => {
     const MDA = getSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
     let text = null;
+    let fontSize = 'FontSmallest';
     if (MDA !== 0) {
         const MDAText = Math.round(MDA).toString().padStart(6, ' ');
-        text = [<tspan>MDA</tspan>, <tspan className="Cyan" xmlSpace="preserve">{MDAText}</tspan>];
+        text = (
+            <>
+                <tspan>MDA</tspan>
+                <tspan className="Cyan" xmlSpace="preserve">{MDAText}</tspan>
+            </>
+        );
     } else {
         const DH = getSimVar('L:AIRLINER_DECISION_HEIGHT', 'feet');
         if (DH !== -1 && DH !== -2) {
             const DHText = Math.round(DH).toString().padStart(7, ' ');
-            text = [<tspan>DH</tspan>, <tspan className="Cyan" xmlSpace="preserve">{DHText}</tspan>];
+            text = (
+                <>
+                    <tspan>DH</tspan>
+                    <tspan className="Cyan" xmlSpace="preserve">{DHText}</tspan>
+                </>
+            );
         } else if (DH === -2) {
             text = 'NO DH';
+            fontSize = 'FontMedium';
         }
     }
 
     return (
-        <text className="FontSmallest MiddleAlign White" x="118.1583" y="21.188744">{text}</text>
+        <text className={`${fontSize} MiddleAlign White`} x="118.1583" y="21.188744">{text}</text>
     );
 };
 
