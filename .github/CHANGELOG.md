@@ -78,6 +78,10 @@
 1. [ECAM] Adjusted brake temp algorithm for new wheel sizes - @donstim (donbikes#4084)
 1. [CORE] Fixed approach Vs being used during climb - @MisterChocker (Leon)
 1. [CORE] Fixed Take Off Vls config 3 - @MisterChocker (Leon) and @donstim (donbikes#4084)
+1. [CORE] Fixed Config 3 V2 table - @MisterChocker (Leon)
+1. [MCDU] Added Check TO Data - @MisterChocker (Leon)
+1. [ND] Removed label from smallest circle in arc mode - @tyler58546 (tyler58546)
+1. [MISC] Added glass reflections and dust - @MoreRightRudder (Mike), @tyler58546 (tyler58546)
 1. [FWC] Add aural Altitude Alert (C Chord) - @Kimbyeongjang (김병장#7165)
 
 ## 0.5.2
