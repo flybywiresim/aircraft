@@ -66,6 +66,7 @@ class A32NX_FWC {
         this._wasBellowThreshold = false;
         this._wasAboveThreshold = false;
         this._wasInRange = false;
+        this._wasReach250ft = false;
     }
 
     update(_deltaTime, _core) {
@@ -337,6 +338,7 @@ class A32NX_FWC {
         const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
         const currentIndicatedAltitude = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
         const targetAltitude = currentAltitudeConstraint && !this.hasAltitudeConstraint() ? currentAltitudeConstraint : currentIndicatedAltitude;
+        console.log(targetAltitude);
 
         // Exit when selected altitude is being changed
         if (this.previousTargetAltitude !== targetAltitude) {
@@ -344,6 +346,7 @@ class A32NX_FWC {
             this._wasBellowThreshold = false;
             this._wasAboveThreshold = false;
             this._wasInRange = false;
+            this._wasReach250ft = false;
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
             return;
@@ -354,6 +357,7 @@ class A32NX_FWC {
         if (delta < 250) {
             this._wasBellowThreshold = true;
             this._wasAboveThreshold = false;
+            this._wasReach250ft = true;
         }
         if (750 < delta) {
             this._wasAboveThreshold = true;
@@ -370,7 +374,7 @@ class A32NX_FWC {
                 if (SimVar.GetSimVarValue("L:XMLVAR_Autopilot_1_Status", "Bool") === 0 && SimVar.GetSimVarValue("L:XMLVAR_Autopilot_2_Status", "Bool") === 0) {
                     SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", true);
                 }
-            } else if (750 < delta && this._wasInRange) {
+            } else if (750 < delta && this._wasInRange && !this._wasReach250ft) {
                 SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", true);
             }
         }
