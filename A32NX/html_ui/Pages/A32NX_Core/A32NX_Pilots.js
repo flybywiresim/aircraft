@@ -7,4 +7,6 @@ class A32NX_Pilots {
         SimVar.SetSimVarValue("L:A32NX_VIS_PILOT_0", "Number", storedPilotVis);
         SimVar.SetSimVarValue("L:A32NX_VIS_PILOT_1", "Number", storedCoPilotVis);
     }
+    update(_deltaTime, _core) {
+    }
 }
