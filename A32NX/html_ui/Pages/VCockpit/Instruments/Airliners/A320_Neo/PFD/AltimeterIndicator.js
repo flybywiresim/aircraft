@@ -485,7 +485,10 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             return;
         }
 
-        const targetAltitude = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
+        // Use the constraint altitude if provided otherwise use selected altitude lock value
+        const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
+        const currentIndicatedAltitude = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
+        const targetAltitude = currentAltitudeConstraint && !this.hasAltitudeConstraint() ? currentAltitudeConstraint : currentIndicatedAltitude;
 
         // Exit when selected altitude is being changed
         if (this.previousTargetAltitude !== targetAltitude) {
