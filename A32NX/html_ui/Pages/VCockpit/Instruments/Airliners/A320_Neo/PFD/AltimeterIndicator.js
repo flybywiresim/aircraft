@@ -485,9 +485,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             return;
         }
 
-        const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
-        // Use the constraint altitude if provided otherwise use selected altitude lock value
-        const targetAltitude = currentAltitudeConstraint && !this.getAutopilotMode() ? currentAltitudeConstraint : Simplane.getAutoPilotSelectedAltitudeLockValue();
+        const targetAltitude = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
 
         // Exit when selected altitude is being changed
         if (this.previousTargetAltitude !== targetAltitude) {
