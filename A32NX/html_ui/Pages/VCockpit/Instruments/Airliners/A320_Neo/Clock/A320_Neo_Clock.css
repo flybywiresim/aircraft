@@ -68,6 +68,20 @@ a320-neo-clock-element {
         font-family: Alarm-Clock;
         font-size: 81px;
         text-align: center;
+        width: 27%;
+        color: rgba(155, 148, 148, 0.911); }
+      a320-neo-clock-element #Mainframe #TopSelector #TopSelectorSeparator {
+        font-family: Alarm-Clock;
+        font-size: 81px;
+        margin-left: 1%;
+        text-align: center;
+        width: 16%;
+        color: rgba(155, 148, 148, 0.911); }
+      a320-neo-clock-element #Mainframe #TopSelector #TopSelectorValue2 {
+        font-family: Alarm-Clock;
+        font-size: 81px;
+        text-align: center;
+        width: 27%;
         color: rgba(155, 148, 148, 0.911); }
     a320-neo-clock-element #Mainframe #MiddleSelector {
       margin-top: 0%;
