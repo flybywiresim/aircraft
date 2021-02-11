@@ -993,7 +993,7 @@
                     <SEQ1_CODE>(L:A32NX_BRAKES_HOT, Bool)</SEQ1_CODE>
                     <SEQ2_CODE>(L:A32NX_BRAKE_FAN, Bool)</SEQ2_CODE>
                     <TOGGLE_SIMVAR>L:A32NX_BRAKE_FAN_BTN_PRESSED</TOGGLE_SIMVAR>
-                    <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Release the brake fan button%{else}Engage the brake fan button%{end}</TOOLTIPID>
+                    <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Turn ON brake fan%{else}Turn OFF brake fan%{end}</TOOLTIPID>
                 </UseTemplate>
             </Component>
 
