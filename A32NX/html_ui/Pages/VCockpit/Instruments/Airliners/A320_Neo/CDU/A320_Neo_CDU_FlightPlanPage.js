@@ -18,6 +18,8 @@
 
 class CDUFlightPlanPage {
     static ShowPage(mcdu, offset = 0) {
+        mcdu.flightPlanManager.updateWaypointDistances(false /* approach */);
+        mcdu.flightPlanManager.updateWaypointDistances(true /* approach */);
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.FlightPlanPage;
         mcdu.activeSystem = 'FMGC';
