@@ -42,7 +42,7 @@ class CDU_OPTIONS_MISC {
             if (value !== "") {
                 mcdu.addNewMessage(NXSystemMessages.notAllowed);
             } else {
-                const newCPVOption = storedCoPilotVis ? "0" : "1";
+                const newCPVOption = storedCoPilotVis.toString();
                 NXDataStore.set("CONFIG_COPILOT_VISIBILITY", newCPVOption);
                 SimVar.SetSimVarValue("L:A32NX_VIS_PILOT_1", "Number", parseInt(newCPVOption));
             }
