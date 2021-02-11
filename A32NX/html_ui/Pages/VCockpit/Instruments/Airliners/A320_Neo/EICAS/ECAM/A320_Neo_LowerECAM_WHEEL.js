@@ -118,15 +118,6 @@ var A320_Neo_LowerECAM_WHEEL;
                         },
                     }
                 },
-                // Brake temperature indicators
-                testbrakes: {
-                    temps: [
-                        this.querySelector("#wheel-testbrake-temp-1"),
-                        this.querySelector("#wheel-testbrake-temp-2"),
-                        this.querySelector("#wheel-testbrake-temp-3"),
-                        this.querySelector("#wheel-testbrake-temp-4"),
-                    ]
-                },
                 brakes: {
                     // Arches
                     indicators: [
@@ -200,13 +191,6 @@ var A320_Neo_LowerECAM_WHEEL;
                 SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_2", "celsius"),
                 SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_3", "celsius"),
                 SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_4", "celsius")
-            ];
-
-            this.currentDisplayedTestBrakeTemps = [
-                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_1", "celsius"),
-                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_2", "celsius"),
-                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius"),
-                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius")
             ];
 
             this.brakeTemperatureDidChange = [true, true, true, true];
@@ -315,20 +299,6 @@ var A320_Neo_LowerECAM_WHEEL;
         }
 
         updateBrakeTemp(_deltaTime) {
-            for (let i = 0; i < this.currentDisplayedTestBrakeTemps.length; i++) {
-                const newValue = SimVar.GetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i + 1}`, "celsius");
-
-                if (this.currentDisplayedTestBrakeTemps[i] !== newValue) {
-                    this.currentDisplayedTestBrakeTemps[i] = newValue;
-                    this.brakeTemperatureDidChange[i] = true;
-
-                    // Round to nearest 5 and clamp above 0
-                    //this.view.testbrakes.temps[i].textContent = Math.max(0, Math.round(this.currentDisplayedTestBrakeTemps[i] / 5) * 5);
-                    this.view.testbrakes.temps[i].textContent = Math.round(this.currentDisplayedTestBrakeTemps[i]);
-                } else {
-                    this.brakeTemperatureDidChange[i] = false;
-                }
-            }
             for (let i = 0; i < this.currentDisplayedBrakeTemps.length; i++) {
                 const newValue = SimVar.GetSimVarValue(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_${i + 1}`, "celsius");
 
@@ -337,8 +307,7 @@ var A320_Neo_LowerECAM_WHEEL;
                     this.brakeTemperatureDidChange[i] = true;
 
                     // Round to nearest 5 and clamp above 0
-                    //this.view.brakes.temps[i].textContent = Math.max(0, Math.round(this.currentDisplayedBrakeTemps[i] / 5) * 5);
-                    this.view.brakes.temps[i].textContent = Math.round(this.currentDisplayedBrakeTemps[i]);
+                    this.view.brakes.temps[i].textContent = Math.max(0, Math.round(this.currentDisplayedBrakeTemps[i] / 5) * 5);
                 } else {
                     this.brakeTemperatureDidChange[i] = false;
                 }
