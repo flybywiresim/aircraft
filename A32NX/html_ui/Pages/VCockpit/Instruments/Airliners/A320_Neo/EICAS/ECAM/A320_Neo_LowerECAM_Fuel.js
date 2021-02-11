@@ -154,7 +154,7 @@ var A320_Neo_LowerECAM_Fuel;
                 this.middlePump2_On.setAttribute("visibility", "hidden");
             }
 
-            this.setAPUState(SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_PB_ON", "Bool"), SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_PB_ON", "Bool"));
+            this.setAPUState(SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool"), SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool"));
         }
         onEvent(_event) {
             switch (_event) {

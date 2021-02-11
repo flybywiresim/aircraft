@@ -7,7 +7,7 @@ class A32NX_APU {
         this.lastAPUBleedState = -1;
     }
     update(_deltaTime) {
-        const available = SimVar.GetSimVarValue("L:A32NX_APU_AVAILABLE", "Bool");
+        const available = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool");
         const apuSwitchIsOn = !!SimVar.GetSimVarValue("A:APU SWITCH", "Bool");
 
         // Until everything that depends on the APU is moved into WASM,
@@ -32,7 +32,7 @@ class A32NX_APU {
         // account if engine generators are supplying electricity. We'll fix this when we create the electrical system.
         SimVar.SetSimVarValue("L:APU_GEN_ONLINE", "Bool", available && apuGenActive ? 1 : 0);
 
-        const apuBleedOn = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_PB_ON", "Bool");
+        const apuBleedOn = SimVar.GetSimVarValue("L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON", "Bool");
         if (apuBleedOn !== this.lastAPUBleedState) {
             this.lastAPUBleedState = apuBleedOn;
             if (apuBleedOn === 1) {

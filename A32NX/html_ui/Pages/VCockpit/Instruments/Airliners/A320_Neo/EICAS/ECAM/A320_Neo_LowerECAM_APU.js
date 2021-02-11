@@ -58,18 +58,18 @@ var A320_Neo_LowerECAM_APU;
             const showApuData = shouldShowApuData();
             let allParametersWithinAcceptableRange = false;
             if (showApuData) {
-                this.APUGenLoad.textContent = Math.round(SimVar.GetSimVarValue("L:A32NX_APU_GEN_LOAD", "Percent"));
-                const loadWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_APU_GEN_LOAD_NORMAL", "Bool");
+                this.APUGenLoad.textContent = Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_LOAD", "Percent"));
+                const loadWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_LOAD_NORMAL", "Bool");
                 this.APUGenLoad.classList.toggle("APUGenParamValue", loadWithinNormalRange);
                 this.APUGenLoad.classList.toggle("APUGenParamValueWarn", !loadWithinNormalRange);
 
-                this.APUVolts.textContent = Math.round(SimVar.GetSimVarValue("L:A32NX_APU_GEN_POTENTIAL", "Volts"));
-                const potentialWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_POTENTIAL_NORMAL", "Bool");
+                this.APUVolts.textContent = Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_POTENTIAL", "Volts"));
+                const potentialWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_POTENTIAL_NORMAL", "Bool");
                 this.APUVolts.classList.toggle("APUGenParamValue", potentialWithinNormalRange);
                 this.APUVolts.classList.toggle("APUGenParamValueWarn", !potentialWithinNormalRange);
 
-                this.APUFrequency.textContent = Math.round(SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ", "Hertz"));
-                const frequencyWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ_NORMAL", "Bool");
+                this.APUFrequency.textContent = Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_FREQUENCY", "Hertz"));
+                const frequencyWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_FREQUENCY_NORMAL", "Bool");
                 this.APUFrequency.classList.toggle("APUGenParamValue", frequencyWithinNormalRange);
                 this.APUFrequency.classList.toggle("APUGenParamValueWarn", !frequencyWithinNormalRange);
 
@@ -82,7 +82,7 @@ var A320_Neo_LowerECAM_APU;
 
             toggleVisibility(this.APUGenInfo, showApuData);
 
-            const available = SimVar.GetSimVarValue("L:A32NX_APU_AVAILABLE", "Bool");
+            const available = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool");
             toggleVisibility(this.APUAvail, available);
 
             const apuGenOnline = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "Bool") === 1;
@@ -220,7 +220,7 @@ var A320_Neo_LowerECAM_APU;
         // Once ELEC is implemented, this depends on the ECB being powered or not.
         // The ECB will be powered when the MASTER SW is on and unpower when MASTER SW is off, N = 0, and the flap is closed.
         const apuFlapOpen = SimVar.GetSimVarValue("L:A32NX_APU_FLAP_ECAM_OPEN", "Bool");
-        const apuMasterSwitch = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_PB_ON", "Bool");
+        const apuMasterSwitch = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
         return apuMasterSwitch || getN() > 0 || apuFlapOpen;
     }
 

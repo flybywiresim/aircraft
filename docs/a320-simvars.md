@@ -357,50 +357,6 @@
     - Percent
     - The APU's rotations per minute in percentage of the maximum RPM
 
-- A32NX_APU_MASTER_SW_PB_FAULT
-    - Bool
-    - Indicates if the MASTER SW push button FAULT light should be illuminated
-
-- A32NX_APU_MASTER_SW_PB_ON
-    - Bool
-    - True when the APU MASTER SW push button is ON
-
-- A32NX_APU_AVAILABLE
-    - Bool
-    - True when the APU is available
-
-- A32NX_APU_START_PB_AVAILABLE
-    - Bool
-    - True when the APU START push button AVAIL light should illuminate
-
-- A32NX_APU_START_PB_ON
-    - Bool
-    - True when the APU START push button is ON
-
-- A32NX_APU_GEN_POTENTIAL:
-    - Volts
-    - The electric potential made available by the APU generator
-
-- A32NX_APU_GEN_POTENTIAL_NORMAL
-    - Bool
-    - Indicates if the APU generator potential is within the normal range
-
-- A32NX_APU_GEN_FREQ
-    - Hertz
-    - The alternating current frequency of the electric current made available by the APU generator
-
-- A32NX_APU_GEN_FREQ_NORMAL
-    - Bool
-    - Indicates if the APU generator output frequency is within the normal range
-
-- A32NX_APU_GEN_LOAD
-    - Percent
-    - The percent of load the APU generator is providing compared to its maximum
-
-- A32NX_APU_GEN_LOAD_NORMAL
-    - Bool
-    - Indicates if the APU generator output load is within the normal range
-
 - A32NX_APU_START_CONTACTOR_ENERGIZED
     - Bool
     - Indicates if the APU START contactor is energized
@@ -408,14 +364,6 @@
 - A32NX_APU_BLEED_AIR_VALVE_OPEN
     - Bool
     - Indicates if the APU bleed air valve is open
-
-- A32NX_APU_BLEED_PB_FAULT
-    - Bool
-    - Indicates if the APU BLEED push button FAULT light should be illuminated
-
-- A32NX_APU_BLEED_PB_ON
-    - Bool
-    - Indicates if the APU BLEED push button is ON
 
 - A32NX_APU_LOW_FUEL_PRESSURE_FAULT
     - Bool
@@ -497,330 +445,188 @@
     - feet
     - The engine out acceleration altitude, set in the PERF TAKE OFF page.
 
-- A32NX_ELEC_BATTERY_10_PB_FAULT
+- A32NX_OVHD_{name}_PB_IS_AVAILABLE
     - Bool
-    - Indicates if the BAT 1 push button FAULT light should be illuminated
+    - True when the push button's AVAIL light should illuminate
+    - {name}
+        - APU_START
 
-- A32NX_ELEC_BATTERY_10_PB_AUTO
+- A32NX_OVHD_{name}_PB_HAS_FAULT
     - Bool
-    - True when the BAT 1 push button is AUTO
+    - Indicates if the push button's FAULT light should illuminate
+    - {name}
+        - APU_MASTER_SW
+        - ELEC_BAT_10
+        - ELEC_BAT_11
+        - ELEC_IDG_1
+        - ELEC_IDG_2
+        - ELEC_ENG_GEN_1
+        - ELEC_ENG_GEN_2
+        - ELEC_AC_ESS_FEED
+        - ELEC_GALY_AND_CAB
+        - PNEU_APU_BLEED
 
-- A32NX_ELEC_BATTERY_11_PB_FAULT
+- A32NX_OVHD_{name}_PB_IS_AUTO
     - Bool
-    - Indicates if the BAT 2 push button FAULT light should be illuminated
+    - True when the push button is AUTO
+    - {name}
+        - ELEC_BAT_10
+        - ELEC_BAT_11
+        - ELEC_BUS_TIE_PB
+        - ELEC_GALY_AND_CAB
 
-- A32NX_ELEC_BATTERY_11_PB_AUTO
+- A32NX_OVHD_{name}_PB_IS_RELEASED
     - Bool
-    - True when the BAT 2 push button is AUTO
+    - True when the push button is RELEASED
+    - {name}
+        - ELEC_IDG_1
+        - ELEC_IDG_2
 
-- A32NX_ELEC_IDG_1_PB_FAULT
-    - Bool
-    - Indicates if the IDG 1 push button FAULT light should be illuminated
-
-- A32NX_ELEC_IDG_1_PB_RELEASED
-    - Bool
-    - True when the IDG 1 push button is RELEASED
-
-- A32NX_ELEC_IDG_2_PB_FAULT
-    - Bool
-    - Indicates if the IDG 2 push button FAULT light should be illuminated
-
-- A32NX_ELEC_IDG_2_PB_RELEASED
-    - Bool
-    - True when the IDG 2 push button is RELEASED
-
-- A32NX_ELEC_GEN_1_PB_FAULT
-    - Bool
-    - True when the GEN 1 push button FAULT light should be illuminated
-
-- A32NX_ELEC_GEN_2_PB_FAULT
-    - Bool
-    - True when the GEN 2 push button FAULT light should be illuminated
-
-- A32NX_ELEC_BUS_TIE_PB_AUTO
-    - Bool
-    - True when the BUS TIE push button is AUTO
-
-- A32NX_ELEC_AC_ESS_FEED_PB_FAULT
-    - Bool
-    - True when the AC ESS FEED push button FAULT light should be illuminated
-
-- A32NX_ELEC_AC_ESS_FEED_PB_NORMAL
+- A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL
     - Bool
     - True when the AC ESS FEED push button is NORMAL
 
-- A32NX_ELEC_GALY_CAB_PB_AUTO
+- A32NX_OVHD_{name}_PB_IS_ON
     - Bool
-    - True when the GALY & CAB push button is AUTO
+    - True when the push button is ON
+    - {name}
+        - APU_START
+        - APU_MASTER_SW
+        - ELEC_COMMERCIAL
+        - PNEU_APU_BLEED
 
-- A32NX_ELEC_GALY_CAB_PB_FAULT
+- A32NX_ELEC_CONTACTOR_{name}_IS_CLOSED
     - Bool
-    - True when the GALY & CAB push button FAULT light should be illuminated
+    - True when the contactor is CLOSED
+    - {name}
+        - 1PC1: DC BAT bus feed contactor between DC BUS 1 and DC BAT BUS
+        - 1PC2: DC BAT bus feed contactor between DC BUS 2 and DC BAT BUS
+        - 2XB1: Contactor between battery 1 and the static inverter
+        - 2XB2: Contactor between battery 2 and the DC ESS BUS
+        - 3XC1: AC ESS feed contactor between AC BUS 1 and AC ESS BUS
+        - 3XC2: AC ESS feed contactor between AC BUS 2 and AC ESS BUS
+        - 3PE: Transformer rectifier ESS contactor between TR ESS and DC ESS BUS
+        - 2XE: Emergency generator contactor
+        - 3XG: External power contactor
+        - 3XS: APU generator contactor
+        - 4PC: Contactor between DC BAT BUS and DC ESS BUS
+        - 5PU1: Transformer rectifier 1 contactor between TR1 and DC BUS 1
+        - 5PU2: Transformer rectifier 2 contactor between TR2 and DC BUS 2
+        - 6PB1: Battery 1 contactor
+        - 6PB2: Battery 2 contactor
+        - 8PH: DC ESS SHED contactor
+        - 8XH: AC ESS SHED contactor
+        - 9XU1: Engine generator line contactor 1
+        - 9XU2: Engine generator line contactor 2
+        - 11XU1: Bus tie 1 contactor
+        - 11XU2: Bus tie 2 contactor
+        - 15XE1: Contactor between AC ESS BUS and TR ESS
+        - 15XE2: Contactor between the static inverter and AC ESS BUS
 
-- A32NX_ELEC_COMMERCIAL_PB_ON
+- A32NX_ELEC_{name}_BUS_IS_POWERED
     - Bool
-    - True when the COMMERCIAL push button is ON
+    - True when the given bus is powered
+    - {name}
+        - AC_1
+        - AC_2
+        - AC_ESS
+        - AC_ESS_SHED
+        - AC_STAT_INV
+        - DC_1
+        - DC_2
+        - DC_ESS
+        - DC_ESS_SHED
+        - DC_BAT
+        - DC_HOT_1
+        - DC_HOT_2
 
-- A32NX_ELEC_APU_GENERATOR_CONTACTOR_CLOSED
-    - Bool
-    - True when the APU generator contactor (3XS) is closed
 
-- A32NX_ELEC_AC_BUS_TIE_CONTACTOR_1_CLOSED
-    - Bool
-    - True when bus tie contactor 1 (11XU1) is closed
-
-- A32NX_ELEC_AC_BUS_TIE_CONTACTOR_2_CLOSED
-    - Bool
-    - True when bus tie contactor 2 (11XU2) is closed
-
-- A32NX_ELEC_EXTERNAL_POWER_CONTACTOR_CLOSED
-    - Bool
-    - True when the external power contactor (3XG) is closed
-
-- A32NX_ELEC_GENERATOR_LINE_CONTACTOR_1_CLOSED
-    - Bool
-    - True when generator line contactor 1 (9XU1) is closed
-
-- A32NX_ELEC_GENERATOR_LINE_CONTACTOR_2_CLOSED
-    - Bool
-    - True when generator line contactor 2 (9XU2) is closed
-
-- A32NX_ELEC_AC_ESS_FEED_CONTACTOR_1_CLOSED
-    - Bool
-    - True when AC ESS feed contactor 1 (3XC1, coming from AC BUS 1) is closed
-
-- A32NX_ELEC_AC_ESS_FEED_CONTACTOR_2_CLOSED
-    - Bool
-    - True when AC ESS feed contactor 2 (3XC2, coming from AC BUS 2) is closed
-
-- A32NX_ELEC_BATTERY_CONTACTOR_1_CLOSED
-    - Bool
-    - True when the battery contactor 1 (6PB1) is closed
-
-- A32NX_ELEC_BATTERY_CONTACTOR_2_CLOSED
-    - Bool
-    - True when the battery contactor 2 (6PB2) is closed
-
-- A32NX_DC_BUS_TIE_CONTACTOR_1_CLOSED
-    - Bool
-    - True when the DC bus tie contactor 1 (1PC1) is closed
-
-- A32NX_DC_BUS_TIE_CONTACTOR_2_CLOSED
-    - Bool
-    - True when the DC bus tie contactor 2 (1PC2) is closed
-
-- A32NX_ELEC_TR_1_CONTACTOR_CLOSED
-    - Bool
-    - True when the TR 1 contactor (5PU1, from TR1 to DC BUS 1) is closed
-
-- A32NX_ELEC_TR_2_CONTACTOR_CLOSED
-    - Bool
-    - True when the TR 2 contactor (5PU2, from TR2 to DC BUS 2) is closed
-
-- A32NX_ELEC_TR_ESS_CONTACTOR_CLOSED
-    - Bool
-    - True when the TR ESS contactor (3PE, from TR ESS to DC ESS BUS) is closed
-
-- A32NX_ELEC_AC_BUS_1_IS_POWERED
-    - Bool
-    - True when AC BUS 1 is powered
-
-- A32NX_ELEC_AC_BUS_2_IS_POWERED
-    - Bool
-    - True when AC BUS 2 is powered
-
-- A32NX_ELEC_AC_ESS_BUS_IS_POWERED
-    - Bool
-    - True when the AC ESS BUS is powered
-
-- A32NX_ELEC_DC_BAT_BUS_IS_POWERED
-    - Bool
-    - True when the DC BAT BUS is powered
-
-- A32NX_ELEC_DC_BUS_1_IS_POWERED
-    - Bool
-    - True when DC BUS 1 is powered
-
-- A32NX_ELEC_DC_BUS_2_IS_POWERED
-    - Bool
-    - True when DC BUS 2 is powered
-
-- A32NX_ELEC_DC_ESS_BUS_IS_POWERED
-    - Bool
-    - True when the DC ESS BUS is powered
-
-- A32NX_ELEC_GEN_1_POTENTIAL
+- A32NX_ELEC_{name}_POTENTIAL
     - Volts
-    - The electric potential made available by the engine 1 generator
+    - The electric potential of the given element
+    - {name}
+        - APU_GEN_1
+        - ENG_GEN_1
+        - ENG_GEN_2
+        - EXT_PWR
+        - STAT_INV
+        - EMER_GEN
+        - TR_1
+        - TR_2
+        - TR_3: TR ESS
+        - BAT_10: Battery 1
+        - BAT_11: Battery 2
 
-- A32NX_ELEC_GEN_1_NORMAL
+- A32NX_ELEC_{name}_POTENTIAL_NORMAL
     - Bool
-    - Indicates if generator 1 potential is within the normal range
+    - Indicates if the potential is within the normal range
+    - {name}
+        - APU_GEN_1
+        - ENG_GEN_1
+        - ENG_GEN_2
+        - EXT_PWR
+        - STAT_INV
+        - EMER_GEN
+        - TR_1
+        - TR_2
+        - TR_3: TR ESS
+        - BAT_10: Battery 1
+        - BAT_11: Battery 2
 
-- A32NX_ELEC_GEN_1_FREQ
+- A32NX_ELEC_{name}_FREQUENCY:
     - Hertz
-    - The alternating current frequency of the electric current made available by engine generator 1
+    - The frequency of the alternating current of the given element
+    - {name}
+        - APU_GEN_1
+        - ENG_GEN_1
+        - ENG_GEN_2
+        - EXT_PWR
+        - STAT_INV
+        - EMER_GEN
 
-- A32NX_ELEC_GEN_1_FREQ_NORMAL
-    - Bool
-    - Indicates if the engine generator 1 output frequency is within the normal range
+- A32NX_ELEC_{name}_FREQUENCY_NORMAL
+    - Hertz
+    - Indicates if the frequency is within the normal range
+    - {name}
+        - APU_GEN_1
+        - ENG_GEN_1
+        - ENG_GEN_2
+        - EXT_PWR
+        - STAT_INV
+        - EMER_GEN
 
-- A32NX_ELEC_GEN_1_LOAD
+- A32NX_ELEC_{name}_LOAD
     - Percent
-    - The percent of load engine generator 1 is providing compared to its maximum
+    - The load the generator is providing compared to its maximum
+    - {name}
+        - APU_GEN_1
+        - ENG_GEN_1
+        - ENG_GEN_2
 
-- A32NX_ELEC_GEN_1_LOAD_NORMAL
-    - Bool
-    - Indicates if engine generator 1 output load is within the normal range
-
-- A32NX_ELEC_GEN_2_POTENTIAL
-    - Volts
-    - The electric potential made available by the engine 2 generator
-
-- A32NX_ELEC_GEN_2_NORMAL
-    - Bool
-    - Indicates if generator 2 potential is within the normal range
-
-- A32NX_ELEC_GEN_2_FREQ
-    - Hertz
-    - The alternating current frequency of the electric current made available by engine generator 2
-
-- A32NX_ELEC_GEN_2_FREQ_NORMAL
-    - Bool
-    - Indicates if the engine generator 2 output frequency is within the normal range
-
-- A32NX_ELEC_GEN_2_LOAD
+- A32NX_ELEC_{name}_LOAD_NORMAL
     - Percent
-    - The percent of load engine generator 2 is providing compared to its maximum
+    - Indicates if the load is within the normal range
+    - {name}
+        - APU_GEN_1
+        - ENG_GEN_1
+        - ENG_GEN_2
 
-- A32NX_ELEC_GEN_2_LOAD_NORMAL
-    - Bool
-    - Indicates if engine generator 2 output load is within the normal range
-
-- A32NX_ELEC_EXTERNAL_POWER_POTENTIAL
-    - Volts
-    - The electric potential made available by the external power source
-
-- A32NX_ELEC_EXTERNAL_POWER_POTENTIAL_NORMAL
-    - Bool
-    - Indicates if the external power source potential is within the normal range
-
-- A32NX_ELEC_EXTERNAL_POWER_FREQ
-    - Hertz
-    - The alternating current frequency of the electric current made available by the external power source
-
-- A32NX_ELEC_EXTERNAL_POWER_FREQ_NORMAL
-    - Bool
-    - Indicates if the external power source output frequency is within the normal range
-
-- A32NX_ELEC_STATIC_INVERTER_POTENTIAL
-    - Volts
-    - The electric potential made available by the static inverter
-
-- A32NX_ELEC_STATIC_INVERTER_POTENTIAL_NORMAL
-    - Bool
-    - Indicates if the static inverter potential is within the normal range
-
-- A32NX_ELEC_STATIC_INVERTER_FREQ
-    - Hertz
-    - The alternating current frequency of the electric current made available by the static inverter
-
-- A32NX_ELEC_STATIC_INVERTER_FREQ_NORMAL
-    - Bool
-    - Indicates if the static inverter output frequency is within the normal range
-
-- A32NX_ELEC_EMERGENCY_GENERATOR_POTENTIAL
-    - Volts
-    - The electric potential made available by the emergency generator
-
-- A32NX_ELEC_EMERGENCY_GENERATOR_POTENTIAL_NORMAL
-    - Bool
-    - Indicates if the emergency generator potential is within the normal range
-
-- A32NX_ELEC_EMERGENCY_GENERATOR_FREQ
-    - Hertz
-    - The alternating current frequency of the electric current made available by the emergency generator
-
-- A32NX_ELEC_EMERGENCY_GENERATOR_FREQ_NORMAL
-    - Bool
-    - Indicates if the emergency generator output frequency is within the normal range
-
-- A32NX_ELEC_TRANSFORMER_RECTIFIER_1_CURRENT
+- A32NX_ELEC_{name}_CURRENT
     - Ampere
-    - The electric current made available by transformer rectifier 1
+    - The electric current flowing through the given element
+    - {name}
+        - TR_1
+        - TR_2
+        - TR_3: TR ESS
+        - BAT_10: Battery 1
+        - BAT_11: Battery 2
 
-- A32NX_ELEC_TRANSFORMER_RECTIFIER_1_CURRENT_NORMAL
-    - Bool
-    - Indicates if the transformer rectifier 1 current is within the normal range
-
-- A32NX_ELEC_TRANSFORMER_RECTIFIER_1_POTENTIAL
-    - Volts
-    - The electric potential made available by transformer rectifier 1
-
-- A32NX_ELEC_TRANSFORMER_RECTIFIER_1_POTENTIAL_NORMAL
-    - Bool
-    - Indicates if the transformer rectifier 1 potential is within the normal range
-
-- A32NX_ELEC_TRANSFORMER_RECTIFIER_2_CURRENT
+- A32NX_ELEC_{name}_CURRENT_NORMAL
     - Ampere
-    - The electric current made available by transformer rectifier 2
-
-- A32NX_ELEC_TRANSFORMER_RECTIFIER_2_CURRENT_NORMAL
-    - Bool
-    - Indicates if the transformer rectifier 2 current is within the normal range
-
-- A32NX_ELEC_TRANSFORMER_RECTIFIER_2_POTENTIAL
-    - Volts
-    - The electric potential made available by transformer rectifier 2
-
-- A32NX_ELEC_TRANSFORMER_RECTIFIER_2_POTENTIAL_NORMAL
-    - Bool
-    - Indicates if the transformer rectifier 2 potential is within the normal range
-
-- A32NX_ELEC_ESS_TRANSFORMER_RECTIFIER_CURRENT
-    - Ampere
-    - The electric current made available by the ESS transformer rectifier
-
-- A32NX_ELEC_ESS_TRANSFORMER_RECTIFIER_CURRENT_NORMAL
-    - Bool
-    - Indicates if the ESS transformer rectifier current is within the normal range
-
-- A32NX_ELEC_ESS_TRANSFORMER_RECTIFIER_POTENTIAL
-    - Volts
-    - The electric potential made available by the ESS transformer rectifier
-
-- A32NX_ELEC_ESS_TRANSFORMER_RECTIFIER_POTENTIAL_NORMAL
-    - Bool
-    - Indicates if the ESS transformer rectifier potential is within the normal range
-
-- A32NX_ELEC_BATTERY_1_CURRENT
-    - Ampere
-    - The electric current made available by battery 1
-
-- A32NX_ELEC_BATTERY_1_CURRENT_NORMAL
-    - Bool
-    - Indicates if battery 1 current is within the normal range
-
-- A32NX_ELEC_BATTERY_1_POTENTIAL
-    - Volts
-    - The electric potential made available by battery 1
-
-- A32NX_ELEC_BATTERY_1_POTENTIAL_NORMAL
-    - Bool
-    - Indicates if the battery 1 potential is within the normal range
-
-- A32NX_ELEC_BATTERY_2_CURRENT
-    - Ampere
-    - The electric current made available by battery 2
-
-- A32NX_ELEC_BATTERY_2_CURRENT_NORMAL
-    - Bool
-    - Indicates if battery 2 current is within the normal range
-
-- A32NX_ELEC_BATTERY_2_POTENTIAL
-    - Volts
-    - The electric potential made available by battery 2
-
-- A32NX_ELEC_BATTERY_2_POTENTIAL_NORMAL
-    - Bool
-    - Indicates if the battery 2 potential is within the normal range
+    - Indicates if the current is within the normal range
+    - {name}
+        - TR_1
+        - TR_2
+        - TR_3: TR ESS
+        - BAT_10: Battery 1
+        - BAT_11: Battery 2

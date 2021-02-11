@@ -213,7 +213,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.ACPowerLastState = isACPowerAvailable;
 
         // modification start here
-        const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_PB_ON", "Bool");
+        const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
 
         //Determine displayed page when no button is selected
         const prevPage = this.pageNameWhenUnselected;
@@ -225,7 +225,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
         const ToPowerSet = (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
-        const apuAvailable = SimVar.GetSimVarValue("L:A32NX_APU_AVAILABLE", "Bool");
+        const apuAvailable = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool");
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
         const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number") != 0 || SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "percent") != 0;
 
