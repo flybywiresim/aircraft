@@ -43,7 +43,7 @@
             </DefaultTemplateParameters>
 
             <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
-                <EMISSIVE_CODE>0.7</EMISSIVE_CODE>
+                <EMISSIVE_CODE>0.6</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
@@ -583,6 +583,11 @@
 
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>DECAL_THROTTLE_01</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+            </UseTemplate>
+            
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>DECAL_THROTTLE_02</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
             </UseTemplate>
 
@@ -2972,7 +2977,13 @@
             <UseTemplate Name="ASOBO_AUTOPILOT_Switch_Altitude_Increment_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_ALT</ANIM_NAME>
-
+                <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+            </UseTemplate>
+            
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
+                <EMISSIVE_CODE>0</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="FBW_Airbus_FCU_Altitude_Knob">

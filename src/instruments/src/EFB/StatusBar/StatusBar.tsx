@@ -70,7 +70,7 @@ export default class StatusBar extends React.Component<TimeProps, any> {
         return (
             <div className="flex items-center justify-between px-6 py-1 text-white font-medium leading-none">
                 <div>flyPad</div>
-                <div>{formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getMinutes()])) + 'z'}</div>
+                <div>{formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getUTCMinutes()])) + 'z'}</div>
                 <div className="flex items-center">
                     <IconWifi className="mr-2" size={22} stroke={1.5} strokeLinejoin="miter" />
                     100%

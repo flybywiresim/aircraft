@@ -33,5 +33,5 @@
   },
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
-  "files.trimFinalNewlines": true,
+  "files.trimFinalNewlines": true
 }
