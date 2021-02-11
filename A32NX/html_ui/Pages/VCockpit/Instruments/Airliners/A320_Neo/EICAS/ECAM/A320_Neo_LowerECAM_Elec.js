@@ -572,6 +572,8 @@ var A320_Neo_LowerECAM_Elec;
             this.drawAcPowerSourcesToAcReceivers();
             this.drawPowerSourcesToDcReceivers();
             this.drawBuses();
+            this.drawTransformerRectifiers();
+            this.drawBatteries();
         }
 
         drawApuGenerator() {
@@ -592,21 +594,21 @@ var A320_Neo_LowerECAM_Elec;
             if (apuMasterSwPbOn && apuGenSwitchOn) {
                 this.setValue(this.e_APUGEN_LOAD_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_LOAD", "Percent")));
                 const loadWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_LOAD_NORMAL", "Bool");
-                this.toggleValidGreen(this.e_APUGEN_LOAD_VALUE, loadWithinNormalRange);
+                this.greenWhen(this.e_APUGEN_LOAD_VALUE, loadWithinNormalRange);
 
                 this.setValue(this.e_APUGEN_VOLTS_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_POTENTIAL", "Volts")));
                 const potentialWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_POTENTIAL_NORMAL", "Bool");
-                this.toggleValidGreen(this.e_APUGEN_VOLTS_VALUE, potentialWithinNormalRange);
+                this.greenWhen(this.e_APUGEN_VOLTS_VALUE, potentialWithinNormalRange);
 
                 this.setValue(this.e_APUGEN_FREQ_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_FREQUENCY", "Hertz")));
                 const frequencyWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_FREQUENCY_NORMAL", "Bool");
-                this.toggleValidGreen(this.e_APUGEN_FREQ_VALUE, frequencyWithinNormalRange);
+                this.greenWhen(this.e_APUGEN_FREQ_VALUE, frequencyWithinNormalRange);
 
                 allParametersWithinAcceptableRange = loadWithinNormalRange && potentialWithinNormalRange && frequencyWithinNormalRange;
             }
 
             this.toggle(this.e_APUGEN_TITLE, true);
-            this.toggleValidWhite(this.e_APUGEN_TITLE, (!apuMasterSwPbOn || (apuGenSwitchOn && allParametersWithinAcceptableRange)));
+            this.whiteWhen(this.e_APUGEN_TITLE, (!apuMasterSwPbOn || (apuGenSwitchOn && allParametersWithinAcceptableRange)));
         }
 
         drawEngineGenerators() {
@@ -646,24 +648,24 @@ var A320_Neo_LowerECAM_Elec;
             this.toggle(elements.loadValue, engineGeneratorPbOn);
             this.setValue(elements.loadValue, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_ENG_GEN_" + number + "_LOAD", "Percent")));
             const loadWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_ENG_GEN_" + number + "_LOAD_NORMAL", "Bool");
-            this.toggleValidGreen(elements.loadValue, loadWithinNormalRange);
+            this.greenWhen(elements.loadValue, loadWithinNormalRange);
             this.toggle(elements.loadUnit, engineGeneratorPbOn);
 
             this.toggle(elements.voltsValue, engineGeneratorPbOn);
             this.setValue(elements.voltsValue, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_ENG_GEN_" + number + "_POTENTIAL", "Volts")));
             const potentialWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_ENG_GEN_" + number + "_POTENTIAL_NORMAL", "Bool");
-            this.toggleValidGreen(elements.voltsValue, potentialWithinNormalRange);
+            this.greenWhen(elements.voltsValue, potentialWithinNormalRange);
             this.toggle(elements.voltsUnit, engineGeneratorPbOn);
 
             this.toggle(elements.frequencyValue, engineGeneratorPbOn);
             this.setValue(elements.frequencyValue, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_ENG_GEN_" + number + "_FREQUENCY", "Hertz")));
             const frequencyWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_ENG_GEN_" + number + "_FREQUENCY_NORMAL", "Bool");
-            this.toggleValidGreen(elements.frequencyValue, frequencyWithinNormalRange);
+            this.greenWhen(elements.frequencyValue, frequencyWithinNormalRange);
             this.toggle(elements.frequencyUnit, engineGeneratorPbOn);
 
             const allParametersWithinAcceptableRange = loadWithinNormalRange && potentialWithinNormalRange && frequencyWithinNormalRange;
-            this.toggleValidWhite(elements.title, engineGeneratorPbOn && allParametersWithinAcceptableRange);
-            this.toggleValidWhite(elements.titleNumber, engineGeneratorPbOn && allParametersWithinAcceptableRange);
+            this.whiteWhen(elements.title, engineGeneratorPbOn && allParametersWithinAcceptableRange);
+            this.whiteWhen(elements.titleNumber, engineGeneratorPbOn && allParametersWithinAcceptableRange);
         }
 
         drawExternalPower() {
@@ -675,17 +677,17 @@ var A320_Neo_LowerECAM_Elec;
             this.toggle(this.e_EXTPWR_VOLTS_VALUE, externalPowerAvailable);
             this.setValue(this.e_EXTPWR_VOLTS_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_EXT_PWR_POTENTIAL", "Volts")));
             const potentialWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_EXT_PWR_POTENTIAL_NORMAL", "Bool");
-            this.toggleValidGreen(this.e_EXTPWR_VOLTS_VALUE, potentialWithinNormalRange);
+            this.greenWhen(this.e_EXTPWR_VOLTS_VALUE, potentialWithinNormalRange);
             this.toggle(this.e_EXTPWR_VOLTS_UNIT, externalPowerAvailable);
 
             this.toggle(this.e_EXTPWR_FREQ_VALUE, externalPowerAvailable);
             this.setValue(this.e_EXTPWR_FREQ_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_EXT_PWR_FREQUENCY", "Hertz")));
             const frequencyWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_EXT_PWR_FREQUENCY_NORMAL", "Bool");
-            this.toggleValidGreen(this.e_EXTPWR_FREQ_VALUE, frequencyWithinNormalRange);
+            this.greenWhen(this.e_EXTPWR_FREQ_VALUE, frequencyWithinNormalRange);
             this.toggle(this.e_EXTPWR_FREQ_UNIT, externalPowerAvailable);
 
             const allParametersWithinAcceptableRange = potentialWithinNormalRange && frequencyWithinNormalRange;
-            this.toggleValidWhite(this.e_EXTPWR_TITLE, allParametersWithinAcceptableRange);
+            this.whiteWhen(this.e_EXTPWR_TITLE, allParametersWithinAcceptableRange);
         }
 
         drawAcPowerSourcesToAcReceivers() {
@@ -720,38 +722,44 @@ var A320_Neo_LowerECAM_Elec;
             const acEssFeedContactor2Closed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_3XC2_IS_CLOSED", "Bool");
             this.toggle(this.e_WIRE_AC2_ACESS, acEssFeedContactor2Closed);
 
+            // This particular wire is always visible. It becomes amber when AC BUS 1 is (partially) unpowered.
             const acBus1IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_1_BUS_IS_POWERED", "Bool");
-            this.toggle(this.e_WIRE_AC1_TR1, acBus1IsPowered);
+            this.toggle(this.e_WIRE_AC1_TR1, true);
+            this.greenWhen(this.e_WIRE_AC1_TR1, acBus1IsPowered);
 
+            // This particular wire is always visible. It becomes amber when AC BUS 2 is (partially) unpowered.
             const acBus2IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "Bool");
-            this.toggle(this.e_WIRE_AC2_TR2, acBus2IsPowered);
+            this.toggle(this.e_WIRE_AC2_TR2, true);
+            this.greenWhen(this.e_WIRE_AC2_TR2, acBus2IsPowered);
         }
 
         drawBuses() {
             const acBus1IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_1_BUS_IS_POWERED", "Bool");
-            this.toggleValidGreen(this.e_ACBUS1_TITLE, acBus1IsPowered);
-            this.toggleValidGreen(this.e_ACBUS1_TITLE_NUMBER, acBus1IsPowered);
+            this.greenWhen(this.e_ACBUS1_TITLE, acBus1IsPowered);
+            this.greenWhen(this.e_ACBUS1_TITLE_NUMBER, acBus1IsPowered);
 
             const acBus2IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "Bool");
-            this.toggleValidGreen(this.e_ACBUS2_TITLE, acBus2IsPowered);
-            this.toggleValidGreen(this.e_ACBUS2_TITLE_NUMBER, acBus2IsPowered);
+            this.greenWhen(this.e_ACBUS2_TITLE, acBus2IsPowered);
+            this.greenWhen(this.e_ACBUS2_TITLE_NUMBER, acBus2IsPowered);
 
             const acEssBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED", "Bool");
-            this.toggleValidGreen(this.e_ACESSBUS_TITLE, acEssBusIsPowered);
+            this.greenWhen(this.e_ACESSBUS_TITLE, acEssBusIsPowered);
+            this.toggle(this.e_ACESSBUS_SHED, !acEssBusIsPowered);
 
             const dcBatBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_BAT_BUS_IS_POWERED", "Bool");
-            this.toggleValidGreen(this.e_DCBATBUS_TITLE, dcBatBusIsPowered);
+            this.greenWhen(this.e_DCBATBUS_TITLE, dcBatBusIsPowered);
 
             const dcBus1IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_1_BUS_IS_POWERED", "Bool");
-            this.toggleValidGreen(this.e_DCBUS1_TITLE, dcBus1IsPowered);
-            this.toggleValidGreen(this.e_DCBUS1_TITLE_NUMBER, dcBus1IsPowered);
+            this.greenWhen(this.e_DCBUS1_TITLE, dcBus1IsPowered);
+            this.greenWhen(this.e_DCBUS1_TITLE_NUMBER, dcBus1IsPowered);
 
             const dcBus2IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_2_BUS_IS_POWERED", "Bool");
-            this.toggleValidGreen(this.e_DCBUS2_TITLE, dcBus2IsPowered);
-            this.toggleValidGreen(this.e_DCBUS2_TITLE_NUMBER, dcBus2IsPowered);
+            this.greenWhen(this.e_DCBUS2_TITLE, dcBus2IsPowered);
+            this.greenWhen(this.e_DCBUS2_TITLE_NUMBER, dcBus2IsPowered);
 
             const dcEssBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool");
-            this.toggleValidGreen(this.e_DCESSBUS_TITLE, dcEssBusIsPowered);
+            this.greenWhen(this.e_DCESSBUS_TITLE, dcEssBusIsPowered);
+            this.toggle(this.e_DCESSBUS_SHED, !dcEssBusIsPowered);
         }
 
         drawPowerSourcesToDcReceivers() {
@@ -761,23 +769,108 @@ var A320_Neo_LowerECAM_Elec;
             const tr2ContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_5PU2_IS_CLOSED", "Bool");
             this.toggle(this.e_WIRE_TR2_DC2, tr2ContactorClosed);
 
-            const dcBus1ToBatBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_DC_BUS_TIE_CONTACTOR_1_CLOSED", "Bool");
-            this.toggle(this.e_WIRE_DC1_DCBAT, dcBus1ToBatBusContactorClosed);
-            this.toggle(this.e_WIRE_DC1_DCBAT_DCESS, dcBus1ToBatBusContactorClosed && false); // TODO: Expose contactor 2XB and 4PC.
+            const dcBus1ToBatBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_1PC1_IS_CLOSED", "Bool");
+            const dcBatBusToDcEssBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_4PC_IS_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_DC1_DCBAT, dcBus1ToBatBusContactorClosed && !dcBatBusToDcEssBusContactorClosed);
+            this.toggle(this.e_WIRE_DC1_DCBAT_DCESS, dcBus1ToBatBusContactorClosed && dcBatBusToDcEssBusContactorClosed); // TODO: Expose contactor 2XB and 4PC.
 
-            this.toggle(this.e_WIRE_DCBAT_DCESS, false); // TODO: Expose contactor 2XB and 4PC.
-
-            const dcBus2ToBatBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_DC_BUS_TIE_CONTACTOR_2_CLOSED", "Bool");
+            const dcBus2ToBatBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_1PC2_IS_CLOSED", "Bool");
             this.toggle(this.e_WIRE_DC2_DCBAT, dcBus2ToBatBusContactorClosed);
+        }
 
-            // this.toggle(this.e_WIRE_DC1_DCBAT, dcBus1ToBatBusContactorClosed && );
+        drawTransformerRectifiers() {
+            this.drawTransformerRectifier(1, {
+                title: this.e_TR1_TITLE,
+                titleNumber: this.e_TR1_TITLE_NUMBER,
+                voltsValue: this.e_TR1_VOLTS_VALUE,
+                ampsValue: this.e_TR1_AMPS_VALUE
+            });
+            this.drawTransformerRectifier(2, {
+                title: this.e_TR2_TITLE,
+                titleNumber: this.e_TR2_TITLE_NUMBER,
+                voltsValue: this.e_TR2_VOLTS_VALUE,
+                ampsValue: this.e_TR2_AMPS_VALUE
+            });
 
-            // this.e_WIRE_DC1_DCBAT = this.querySelector("#WIRE_DC1_DCBAT");
-            // this.e_WIRE_DC1_DCBAT_DCESS = this.querySelector("#WIRE_DC1_DCBAT_DCESS");
+            const acEssBusToEssTrContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_15XE1_IS_CLOSED", "Bool");
+            const emergencyGenContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_2XE_IS_CLOSED", "Bool");
+            const shouldShowTrEss = acEssBusToEssTrContactorClosed && !emergencyGenContactorClosed;
+            this.toggle(this.e_ESSTR_BOX, shouldShowTrEss);
+            this.toggle(this.e_ESSTR_VOLTS_VALUE, shouldShowTrEss);
+            this.toggle(this.e_ESSTR_VOLTS_UNIT, shouldShowTrEss);
+            this.toggle(this.e_ESSTR_AMPS_VALUE, shouldShowTrEss);
+            this.toggle(this.e_ESSTR_AMPS_UNIT, shouldShowTrEss);
 
-            // this.e_WIRE_DCBAT_DCESS = this.querySelector("#WIRE_DCBAT_DCESS");
+            this.toggle(this.e_WIRE_ACESS_ESSTR, shouldShowTrEss);
 
-            // this.e_WIRE_DC2_DCBAT = this.querySelector("#WIRE_DC2_DCBAT");
+            const tr3ContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_3PE_IS_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_ESSTR_DCESS, tr3ContactorClosed);
+            this.greenOrWhiteOtherwise(this.e_ARROW_ESSTR_DCESS, tr3ContactorClosed);
+
+            this.drawTransformerRectifier(3, {
+                title: this.e_ESSTR_TITLE,
+                voltsValue: this.e_ESSTR_VOLTS_VALUE,
+                ampsValue: this.e_ESSTR_AMPS_VALUE
+            }, !shouldShowTrEss);
+        }
+
+        drawTransformerRectifier(number, elements, titleMustRemainWhite) {
+            const potentialWithinNormalRange = !!SimVar.GetSimVarValue(`L:A32NX_ELEC_TR_${number}_POTENTIAL_NORMAL`, "Bool");
+            this.setValue(elements.voltsValue, Math.round(SimVar.GetSimVarValue(`L:A32NX_ELEC_TR_${number}_POTENTIAL`, "Volts")));
+            this.greenWhen(elements.voltsValue, potentialWithinNormalRange);
+
+            const currentWithinNormalRange = !!SimVar.GetSimVarValue(`L:A32NX_ELEC_TR_${number}_CURRENT_NORMAL`, "Bool");
+            this.setValue(elements.ampsValue, Math.round(SimVar.GetSimVarValue(`L:A32NX_ELEC_TR_${number}_CURRENT`, "Ampere")));
+            this.greenWhen(elements.ampsValue, currentWithinNormalRange);
+
+            const allParametersWithinAcceptableRange = potentialWithinNormalRange && currentWithinNormalRange;
+            this.whiteWhen(elements.title, titleMustRemainWhite || allParametersWithinAcceptableRange);
+            if (elements.titleNumber) {
+                this.whiteWhen(elements.titleNumber, allParametersWithinAcceptableRange);
+            }
+        }
+
+        drawBatteries() {
+            this.drawBattery(10, {
+                off: this.e_BAT1_OFF,
+                title: this.e_BAT1_TITLE,
+                titleNumber: this.e_BAT1_TITLE_NUMBER,
+                voltsValue: this.e_BAT1_VOLTS_VALUE,
+                voltsUnit: this.e_BAT1_VOLTS_UNIT,
+                ampsValue: this.e_BAT1_AMPS_VALUE,
+                ampsUnit: this.e_BAT1_AMPS_UNIT,
+            });
+            this.drawBattery(11, {
+                off: this.e_BAT2_OFF,
+                title: this.e_BAT2_TITLE,
+                titleNumber: this.e_BAT2_TITLE_NUMBER,
+                voltsValue: this.e_BAT2_VOLTS_VALUE,
+                voltsUnit: this.e_BAT2_VOLTS_UNIT,
+                ampsValue: this.e_BAT2_AMPS_VALUE,
+                ampsUnit: this.e_BAT2_AMPS_UNIT,
+            });
+        }
+
+        drawBattery(number, elements) {
+            const batPushButtonIsAuto = !!SimVar.GetSimVarValue(`L:A32NX_OVHD_ELEC_BAT_${number}_PB_IS_AUTO`, "Bool");
+
+            this.toggle(elements.off, !batPushButtonIsAuto);
+
+            this.toggle(elements.voltsValue, batPushButtonIsAuto);
+            this.setValue(elements.voltsValue, Math.round(SimVar.GetSimVarValue(`L:A32NX_ELEC_BAT_${number}_POTENTIAL`, "Volts")));
+            const potentialWithinNormalRange = !!SimVar.GetSimVarValue(`L:A32NX_ELEC_BAT_${number}_POTENTIAL_NORMAL`, "Bool");
+            this.greenWhen(elements.voltsValue, potentialWithinNormalRange);
+            this.toggle(elements.voltsUnit, batPushButtonIsAuto);
+
+            this.toggle(elements.ampsValue, batPushButtonIsAuto);
+            this.setValue(elements.ampsValue, Math.round(SimVar.GetSimVarValue(`L:A32NX_ELEC_BAT_${number}_CURRENT`, "Ampere")));
+            const currentWithinNormalRange = !!SimVar.GetSimVarValue(`L:A32NX_ELEC_BAT_${number}_CURRENT_NORMAL`, "Bool");
+            this.greenWhen(elements.ampsValue, currentWithinNormalRange);
+            this.toggle(elements.ampsUnit, batPushButtonIsAuto);
+
+            const allParametersWithinAcceptableRange = potentialWithinNormalRange && currentWithinNormalRange;
+            this.whiteWhen(elements.title, !batPushButtonIsAuto || allParametersWithinAcceptableRange);
+            this.whiteWhen(elements.titleNumber, !batPushButtonIsAuto || allParametersWithinAcceptableRange);
         }
 
         toggle(element, condition) {
@@ -788,7 +881,7 @@ var A320_Neo_LowerECAM_Elec;
             }
         }
 
-        toggleValidWhite(element, condition) {
+        whiteWhen(element, condition) {
             if (condition) {
                 this.white(element);
             } else {
@@ -796,11 +889,19 @@ var A320_Neo_LowerECAM_Elec;
             }
         }
 
-        toggleValidGreen(element, condition) {
+        greenWhen(element, condition) {
             if (condition) {
                 this.green(element);
             } else {
                 this.amber(element);
+            }
+        }
+
+        greenOrWhiteOtherwise(element, condition) {
+            if (condition) {
+                this.green(element);
+            } else {
+                this.white(element);
             }
         }
 

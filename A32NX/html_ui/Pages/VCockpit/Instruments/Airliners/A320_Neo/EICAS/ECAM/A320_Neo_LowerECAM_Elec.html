@@ -35,6 +35,9 @@
     path.green {
         stroke: var(--displayGreen);
     }
+    path.amber {
+        stroke: var(--displayAmber);
+    }
     rect.bus {
         fill: #636363;
     }
@@ -90,8 +93,8 @@
     <svg id="main-elec" version="1.1" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
         <rect id="BAT2_BOX" class="box" x="108" y="4" width="23" height="19" />
         <text id="BAT2_OFF" class="middle" dominant-baseline="middle" x="119.5" y="15">OFF</text>
-        <text id="BAT2_TITLE" class="right" x="121" y="9.5">BAT</text>
-        <text id="BAT2_TITLE_NUMBER" class="left large" x="122" y="9.5">2</text>
+        <text id="BAT2_TITLE" class="right" x="122.5" y="9.5">BAT</text>
+        <text id="BAT2_TITLE_NUMBER" class="left" x="122.5" y="9.5">2</text>
         <text id="BAT2_VOLTS_VALUE" class="green right" x="121" y="15.5">31</text>
         <text id="BAT2_VOLTS_UNIT" class="cyan left" x="122" y="15.5">V</text>
         <text id="BAT2_AMPS_VALUE" class="green right" x="121" y="21.5">2</text>
@@ -103,7 +106,7 @@
         <rect id="BAT1_BOX" class="box" x="29" y="4" width="23" height="19" />
         <text id="BAT1_OFF" class="middle" dominant-baseline="middle" x="40.5" y="15">OFF</text>
         <text id="BAT1_TITLE" class="right" x="43" y="9.5">BAT</text>
-        <text id="BAT1_TITLE_NUMBER" class="left large" x="44" y="9.5">1</text>
+        <text id="BAT1_TITLE_NUMBER" class="left" x="44" y="9.5">1</text>
         <text id="BAT1_VOLTS_VALUE" class="green right" x="43" y="15.5">25.5</text>
         <text id="BAT1_VOLTS_UNIT" class="cyan left" x="44" y="15.5">V</text>
         <text id="BAT1_AMPS_VALUE" class="green right" x="43" y="21.5">5.2</text>
@@ -115,7 +118,7 @@
 
         <rect id="DCESSBUS_BOX" class="bus" x="62" y="31" width="36" height="7" />
         <text id="DCESSBUS_TITLE" class="bus green middle" dominant-baseline="middle" x="80" y="34">DC ESS</text>
-        <text id="DCESSBUS_SHED" class="middle small" dominant-baseline="middle" x="80" y="40.5">SHED</text>
+        <text id="DCESSBUS_SHED" class="middle small amber" dominant-baseline="middle" x="80" y="40">SHED</text>
 
         <rect id="DCBUS1_BOX" class="bus" x="1" y="24" width="23" height="7" />
         <text id="DCBUS1_TITLE" class="bus green right" x="13.5" y="29.25">DC</text>
@@ -158,7 +161,7 @@
 
         <rect id="ACESSBUS_BOX" class="bus" x="62" y="71" width="36" height="7" />
         <text id="ACESSBUS_TITLE" class="bus green middle" dominant-baseline="middle" x="80" y="74">AC ESS</text>
-        <text id="ACESSBUS_SHED" class="middle small" dominant-baseline="middle" x="80" y="80.5">SHED</text>
+        <text id="ACESSBUS_SHED" class="middle small amber" dominant-baseline="middle" x="80" y="80.2">SHED</text>
 
         <rect id="ACBUS1_BOX" class="bus" x="1" y="71" width="36" height="7" />
         <text id="ACBUS1_TITLE" class="bus green right" x="18.5" y="76.5">AC</text>
@@ -249,11 +252,14 @@
         <path id="WIRE_TR2_DC2" class="green" d="m 143.9 31.2 v 11.6 v -11.6" />
 
         <path id="WIRE_DC1_DCBAT" class="green" d="m 69 27.17 h -44.983 h 44.983 v -10.006" />
-        <path id="WIRE_DC1_DCBAT_DCESS" class="green" d="m 69 27.17 h -44.983 h 44.983 v -10.506" />
-
-        <path id="WIRE_DCBAT_DCESS" class="green" d="m 143.9 31.2 v 11.6 v -11.6" />
+        <path id="WIRE_DC1_DCBAT_DCESS" class="green" d="m 69 27.17 h -44.983 h 44.983 v -10.206 v 13.706" />
 
         <path id="WIRE_DC2_DCBAT" class="green" d="m 89.1 27.17 h 44.983 h -44.983 v -10.006" />
+
+        <path id="WIRE_ACESS_ESSTR" class="green" d="m 68.588 63.373 v 7.6054 v -7.6054" />
+
+        <path id="WIRE_ESSTR_DCESS" class="green" d="m 68.921 38.3 v 1.8951 v -1.8951" />
+
 
         <path id="WIRE_XFEED-C" class="green" d="m96.187 85.5h47.7" />
         <path id="WIRE_XFEED-B" class="green" d="m57.123 85.5h39.381" />
@@ -264,7 +270,6 @@
         <path id="WIRE_GEN1_XFEED" class="green" d="m15.018 86.05v5.8" />
         <path id="WIRE_XFEED_AC2" class="green" d="m143.93 80.753v5.0" />
         <path id="WIRE_GEN2_XFEED" class="green" d="m143.93 86.05v5.8" />
-        <path id="WIRE_ACESS_ESSTR" class="green" d="m68.588 62.869v8.1098" />
         <path id="WIRE_DC1_DCBAT-A" class="green" d="m69 27.17h-44.983" />
         <path id="WIRE_DC1_DCBAT-B" class="green" d="m68.934 16.928v10.506" />
         <path id="WIRE_DCESS_DCBAT" class="green" d="m68.934 27.2v3.8" />
@@ -276,7 +281,6 @@
         <path id="WIRE_DCBAT_BAT1" class="green" d="m62.1 13.539h-6.2735" />
         <path id="WIRE_EMERGEN_ESSTR" class="green" d="m85.072 55.441h-5.4449" />
         <path id="WIRE_EMERGEN_ACESS" class="green" d="m91.612 62.866v4.3012" />
-        <path id="WIRE_ESSTR_DCESS" class="green" d="m68.921 38v1.8951" />
 
         <path id="ARROW_ESSTR_DCESS" class="arrow" d="m67.1 42.02h3.6633l-1.8316-2.3982z" />
         <path id="ARROW_XFEED_AC1" class="arrow green" d="m13.191 81.005h3.6633l-1.8316-2.3982z" />

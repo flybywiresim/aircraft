@@ -499,8 +499,8 @@
     - Bool
     - True when the contactor is CLOSED
     - {name}
-        - 1PC1: DC BAT bus feed contactor between DC BUS 1 and DC BAT BUS
-        - 1PC2: DC BAT bus feed contactor between DC BUS 2 and DC BAT BUS
+        - 1PC1: DC BAT BUS feed contactor between DC BUS 1 and DC BAT BUS
+        - 1PC2: DC BAT BUS feed contactor between DC BUS 2 and DC BAT BUS
         - 2XB1: Contactor between battery 1 and the static inverter
         - 2XB2: Contactor between battery 2 and the DC ESS BUS
         - 3XC1: AC ESS feed contactor between AC BUS 1 and AC ESS BUS
@@ -518,8 +518,8 @@
         - 8XH: AC ESS SHED contactor
         - 9XU1: Engine generator line contactor 1
         - 9XU2: Engine generator line contactor 2
-        - 11XU1: Bus tie 1 contactor
-        - 11XU2: Bus tie 2 contactor
+        - 11XU1: AC BUS tie 1 contactor
+        - 11XU2: AC BUS tie 2 contactor
         - 15XE1: Contactor between AC ESS BUS and TR ESS
         - 15XE2: Contactor between the static inverter and AC ESS BUS
 
