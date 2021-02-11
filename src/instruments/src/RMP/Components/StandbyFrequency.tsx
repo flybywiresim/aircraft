@@ -3,28 +3,53 @@ import { RadioPanelDisplay } from './RadioPanelDisplay';
 import { useInteractionEvent } from '../../Common/hooks';
 import { RateMultiplierKnob, UpdateValueCallback } from '../../Common/RateMultiplierKnob';
 
-declare const Utils;
+declare const Utils; // this can also be replaced once /typings are available
 
-/**
- *
- */
 interface Props {
+    /**
+     * The RMP side (e.g. 'L' or 'R').
+     */
     side: string,
-    value: any,
+
+    /**
+     * The current standby frequency value in Hz.
+     */
+    value: number,
+
+    /**
+     * A callback to set the current standby frequency value in Hz.
+     */
     setValue: (x: any) => void,
 };
 
 /**
- *
+ * Find the nearest item in array to a given value.
+ * @param value The value for which we want to find the nearest item.
+ * @param array The array to find the nearest item from.
+ * @returns The item of the array that is nearest to the given value.
  */
 const findNearestInArray = (value: number, array: number[]): number => {
     return array.reduce((previous, current) => (Math.abs(current - value) < Math.abs(previous - value) ? current : previous));
 };
 
 /**
- *
+ * The currently support channel spacings, in kHz.
+ * Normal VHF communications use 8.33 kHz spacing.
+ * High Frequency communications use 10 kHz spacing.
+ * Vatsim VHF communications use 25 kHz spacing.
+ * VOR / ILS frequencies use 50 kHz spacing.
  */
-const offsetFrequencyChannel = (spacing: number, channel: number, offset: number): number => {
+type ChannelSpacing = 8.33 | 10 | 25 | 50;
+
+/**
+ * Calculate the offset of a given frequency channel given a variable spacing.
+ * For example, the offset of +2 in 8.33 spacing for the xxx.810 channel is xxx.825
+ * @param spacing The spacing to be used to calculate the channels (e.g. 8.33).
+ * @param channel The current channel e.g. for 122.305 MHz, the channel would be 305 kHz.
+ * @param offset The integer offset to apply to this channel, e.g. +1, -1, +2, -2, etc.
+ * @returns The new channel, e.g. 825 for initial channel of 810, offset of +2 and 8.33 spacing.
+ */
+const offsetFrequencyChannel = (spacing: ChannelSpacing, channel: number, offset: number): number => {
     // Determine endings from channel spacing.
     let endings: number[] | null = null;
 
@@ -71,7 +96,9 @@ const offsetFrequencyChannel = (spacing: number, channel: number, offset: number
 };
 
 /**
- *
+ * Standby frequency radio management panel React component.
+ * Hooks to outer and inner rotary encoder knobs.
+ * Renders standby frequency RadioPanelDisplay sub-component.
  */
 export const StandbyFrequency = (props: Props) => {
     // Handle outer knob turned.
@@ -100,8 +127,6 @@ export const StandbyFrequency = (props: Props) => {
         const newDecimal = Utils.Clamp(decimal, 0, maxDecimal);
         props.setValue((integer * 1000 + newDecimal) * 1000);
     }, [props.value]);
-
-
 
     // Used to change integer value of freq.
     const outerKnob = useRef(new RateMultiplierKnob());

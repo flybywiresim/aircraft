@@ -15,6 +15,10 @@ export class RateMultiplierKnob {
     private previousTimestamp: number;
     public updateValue: UpdateValueCallback;
 
+    /**
+     * @param timeout How long the user has to rotate before the rate is zeroed.
+     * @param increment How long to increment the rate at each click.
+     */
     constructor(timeout = 300, increment = 0.20) {
         this.timeout = timeout;
         this.increment = increment;

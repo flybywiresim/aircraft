@@ -4,17 +4,19 @@ import { RadioPanelDisplay } from './RadioPanelDisplay';
 import { useSimVar, useInteractionSimVar } from '../../Common/simVars';
 import { useInteractionEvent } from '../../Common/hooks';
 
-/**
- *
- */
-interface RadioPanelProps {
-    side: string
+interface Props {
+    /**
+     * The RMP side (e.g. 'L' or 'R').
+     */
+    side: string,
 }
 
 /**
- *
+ * Root radio management panel React component.
+ * Hooks into toggleSwitch and powerAvailable SimVars.
+ * Renders a Powered or Unpowered sub-component.
  */
-export const RootRadioPanel = (props: RadioPanelProps) => {
+export const RootRadioPanel = (props: Props) => {
     const toggleSwitchName = `A32NX_RMP_${props.side}_TOGGLE_SWITCH`;
     const [panelSwitch] = useInteractionSimVar(`L:${toggleSwitchName}`, 'Boolean', toggleSwitchName);
     const [powerAvailable] = useSimVar(`L:${props.side === 'L' ? 'D' : 'A'}CPowerAvailable`, 'Boolean', 250);
@@ -38,9 +40,11 @@ const UnpoweredRadioPanel = () => {
 };
 
 /**
- *
+ * Powered radio management panel React component.
+ * Hooks into panelMode SimVar and wires RMP mode buttons.
+ * Renders appropriate mode sub-component (e.g. VhfRadioPanel).
  */
-const PoweredRadioPanel = (props: RadioPanelProps) => {
+const PoweredRadioPanel = (props: Props) => {
     const [panelMode, setPanelMode] = useSimVar(`L:A32NX_RMP_${props.side}_SELECTED_MODE`, "Number", 250);
 
     // Hook radio management panel mode buttons to set panelMode SimVar.
@@ -50,7 +54,7 @@ const PoweredRadioPanel = (props: RadioPanelProps) => {
 
     // This means we're in a VHF communications mode.
     if (panelMode === 1 || panelMode === 2 || panelMode === 3)
-        return (<VhfRadioPanel side={props.side} transciever={panelMode} />);
+        return (<VhfRadioPanel side={props.side} transceiver={panelMode} />);
 
     // If we reach this block, something's gone wrong. We'll just render a broken panel.
     return (
