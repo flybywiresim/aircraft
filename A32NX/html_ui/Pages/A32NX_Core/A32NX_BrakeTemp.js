@@ -32,7 +32,7 @@ class A32NX_BrakeTemp {
      * @param wheelRpm {number}
      */
     calculateHeatUp(brakePosition, wheelRpm) {
-        return HEAT_UP_SCALE * (brakePosition / 32767) * (wheelRpm ** 2);
+        return HEAT_UP_SCALE * (brakePosition / 32767) * ((wheelRpm / 2) ** 2);
     }
 
     calculateDeltaCoolDown(deltaTemp, speed, gearExtended, deltaTempFactor, fanMultiplier) {
@@ -82,28 +82,31 @@ class A32NX_BrakeTemp {
                 SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_4", "celsius")
             ];
         }
-        const breakFanIsOn = SimVar.GetSimVarValue("L:A32NX_BRAKE_FAN", "Bool");
+        const GearLeftPosition = SimVar.GetSimVarValue("GEAR LEFT POSITION", "Percent Over 100");
+        const GearLeftExtended = GearLeftPosition >= 0.25;
+        const GearRightExtended = SimVar.GetSimVarValue("GEAR RIGHT POSITION", "Percent Over 100") >= 0.25;
+        const currentBrakeFanState = SimVar.GetSimVarValue("L:A32NX_BRAKE_FAN", "Bool");
+        const brakeFanButtonIsPressed = SimVar.GetSimVarValue("L:A32NX_BRAKE_FAN_BTN_PRESSED", "Bool");
+        // if the fan button is pressed down and the left main gear is down and locked, the fan is on
+        const brakeFanIsOn = brakeFanButtonIsPressed && (GearLeftPosition == 1);
         let fanMultiplier = 1;
         let fanDifferentialFactor = 1;
-        if (breakFanIsOn) {
+        if (brakeFanIsOn) {
+            if (!currentBrakeFanState) {
+                SimVar.SetSimVarValue("L:A32NX_BRAKE_FAN", "Bool", true);
+            }
             fanMultiplier = 4.35;
             fanDifferentialFactor = 0.28;
+        } else {
+            if (currentBrakeFanState) {
+                SimVar.SetSimVarValue("L:A32NX_BRAKE_FAN", "Bool", false);
+            }
         }
         const currentBrakeLeft = SimVar.GetSimVarValue("BRAKE LEFT POSITION", "position 32k");
         const currentBrakeRight = SimVar.GetSimVarValue("BRAKE RIGHT POSITION", "position 32k");
 
         const ambientTemperature = Simplane.getAmbientTemperature();
         const airspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Meters per second");
-        const GearLeftPosition = SimVar.GetSimVarValue("GEAR LEFT POSITION", "Percent Over 100");
-        const GearRightPosition = SimVar.GetSimVarValue("GEAR RIGHT POSITION", "Percent Over 100");
-        const GearLeftFullyExtended = GearLeftPosition == 1;
-        const GearRightFullyExtended = GearRightPosition == 1;
-        const GearLeftExtended = GearLeftPosition >= 0.25;
-        const GearRightExtended = GearRightPosition >= 0.25;
-        //if the fan is on and the gear is up, we turn the fan off
-        if (breakFanIsOn && (!GearLeftFullyExtended || !GearRightFullyExtended)) {
-            SimVar.SetSimVarValue("L:A32NX_BRAKE_FAN", "Bool", false);
-        }
 
         const wheelSet1Rpm = SimVar.GetSimVarValue("WHEEL RPM:1", "number");
         const wheelSet2Rpm = SimVar.GetSimVarValue("WHEEL RPM:2", "number");
@@ -168,7 +171,7 @@ class A32NX_BrakeTemp {
             currentBrakeTemps[3] -= brakeCoolDown3;
             currentReportedBrakeTemps[3] -= brakeCoolDown3;
         }
-        if (breakFanIsOn) {
+        if (brakeFanIsOn) {
             const brakeProbeFinalTemps = [
                 ambientTemperature + deltaTemp0 / 2,
                 ambientTemperature + deltaTemp1 / 2,
