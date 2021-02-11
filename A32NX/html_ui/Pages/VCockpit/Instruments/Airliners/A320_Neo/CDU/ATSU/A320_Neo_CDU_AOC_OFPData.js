@@ -501,23 +501,17 @@ async function loadFuel(mcdu, updateView) {
     let fuelRMain = SimVar.GetSimVarValue(`FUEL TANK RIGHT MAIN QUANTITY`, "Gallons");
     //Center values
     let fuelCenter = SimVar.GetSimVarValue(`FUEL TANK CENTER QUANTITY`, "Gallons");
-
-    
-
+ 
     let currentBlockFuelInGallons = +currentBlockFuel / +fuelWeightPerGallon;
     let fuelcount = 0;
-    if(fuelWeightPerGallon != currentBlockFuelInGallons)
-    {
+    if (fuelWeightPerGallon != currentBlockFuelInGallons){
         
-        let startFuel = setInterval(function()
-        { 
+        const startFuel = setInterval(function(){ 
             // real-life fuel flow is 330 gal/min which equates to 11 galons per second. Therefore time is 1800 to be used to add 20gal
             const outerTankFill = Math.min(outerTankCapacity, currentBlockFuelInGallons / 2);
             
-            if(fuelRAux < outerTankFill && fuelcount == 0)
-            {
-                let fueling = setInterval(function()
-                {
+            if(fuelRAux < outerTankFill && fuelcount == 0){
+                const fueling = setInterval(function(){
                     if(fuelRAux >= outerTankFill){
                     clearInterval(fueling);
                     }else{
@@ -525,71 +519,55 @@ async function loadFuel(mcdu, updateView) {
                     }
                 }, 1800);
 
-            }else if(fuelRAux >= outerTankFill || fuelRAux >= outerTankCapacity)
-            {
+            }else if(fuelRAux >= outerTankFill || fuelRAux >= outerTankCapacity){
                 fuelcount = 1; 
-                console.log(fuelcount);
             }
-            if(fuelLAux < outerTankFill && fuelcount == 1 )
-            {
-                let fueling = setInterval(function()
-                {
+            if(fuelLAux < outerTankFill && fuelcount == 1 ){
+                const fueling = setInterval(function(){
                     if(fuelLAux >= outerTankFill){
                     clearInterval(fueling);
                     }else{
                     SimVar.SetSimVarValue(`FUEL TANK LEFT AUX QUANTITY`, "Gallons", fuelLAux++); 
                     }
                 }, 1800);
-            }else 
-            {
-                fuelcount = 2;
-                console.log(fuelcount);
+            }else{
+                fuelcount = 2;                
                 currentBlockFuelInGallons -= fuelLAux + fuelRAux;
             }
             
             const innerTankFill = Math.min(innerTankCapacity, currentBlockFuelInGallons / 2);
 
-            if(fuelRMain < innerTankFill  && fuelcount == 2)
-            {
-                let fueling = setInterval(function()
-                {
+            if (fuelRMain < innerTankFill  && fuelcount == 2){
+                const fueling = setInterval(function(){
                     if(fuelRMain >= innerTankFill){
                     clearInterval(fueling);
-                    }else {
+                    }else{
                         SimVar.SetSimVarValue(`FUEL TANK RIGHT MAIN QUANTITY`, "Gallons", fuelRMain++); 
                     }
                    
                     
                 }, 1800);
-            }else 
-            {
-                fuelcount = 3;
-                console.log(fuelcount);
+            }else{
+                fuelcount = 3;                
             }
             
-            if(fuelLMain < outerTankFill  && fuelcount == 3)
-            {
-                let fueling = setInterval(function()
-                {
+            if(fuelLMain < outerTankFill  && fuelcount == 3){
+                const fueling = setInterval(function(){
                     if(fuelLMain >= innerTankFill){
                         clearInterval(fueling);
                     }else{
                         SimVar.SetSimVarValue(`FUEL TANK LEFT MAIN QUANTITY`, "Gallons", fuelLMain++); 
                     }
                 }, 1800);
-            }else 
-            {
-                fuelcount = 4;
-                console.log(fuelcount);
+            }else{
+                fuelcount = 4;                
                 currentBlockFuelInGallons -= fuelLMain + fuelRMain;
             }
             
             const centerTankFill = Math.min(centerTankCapacity, currentBlockFuelInGallons);
             
-            if(fuelCenter < centerTankFill  && fuelcount == 4)
-            {
-                let fueling = setInterval(function()
-                {
+            if(fuelCenter < centerTankFill  && fuelcount == 4){
+                const fueling = setInterval(function(){
                     
                     if(fuelCenter >= centerTankFill){
                         clearInterval(fueling);
@@ -600,8 +578,6 @@ async function loadFuel(mcdu, updateView) {
             }else 
             {
                 fuelcount = 5;
-                console.log(fuelcount);
-            
             }
             if(fuelcount == 5)
                 clearInterval(startFuel);
