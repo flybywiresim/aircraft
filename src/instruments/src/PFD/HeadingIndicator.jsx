@@ -102,10 +102,10 @@ const SelectedHeading = ({ selectedHeading, heading }) => {
 const GroundTrackBug = ({ heading, groundTrack }) => {
     const offset = getSmallestAngle(groundTrack, heading) * DistanceSpacing / ValueSpacing;
     return (
-        <>
-            <path className="ThickOutline CornerRound" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
-            <path id="ActualTrackIndicator" className="ThickStroke Green CornerRound" transform={`translate(${offset} 0)`} d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
-        </>
+        <g id="ActualTrackIndicator" transform={`translate(${offset} 0)`}>
+            <path className="ThickOutline CornerRound" d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
+            <path className="ThickStroke Green CornerRound" d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
+        </g>
     );
 };
 
@@ -135,9 +135,9 @@ const QFUIndicator = ({ ILSCourse, heading }) => {
 
     const offset = getSmallestAngle(ILSCourse, heading) * DistanceSpacing / ValueSpacing;
     return (
-        <>
-            <path id="ILSCoursePointer" className="ThickOutline" transform={`translate(${offset} 0)`} d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />
-            <path id="ILSCoursePointer" className="ThickStroke Magenta" transform={`translate(${offset} 0)`} d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />
-        </>
+        <g id="ILSCoursePointer" transform={`translate(${offset} 0)`}>
+            <path className="ThickOutline" d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />
+            <path className="ThickStroke Magenta" d="m66.992 152.82h3.8279m-1.914-6.5471v9.4518" />
+        </g>
     );
 };

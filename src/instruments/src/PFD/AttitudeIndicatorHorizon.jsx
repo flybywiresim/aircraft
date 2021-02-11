@@ -15,10 +15,10 @@ const TickFunction = (heading, offset) => (
 );
 
 const HeadingBug = (offset) => (
-    <>
-        <path id="HorizonHeadingBug" transform={`translate(${offset} 0)`} className="ThickOutline" d="m68.906 80.823v-9.0213" />
-        <path id="HorizonHeadingBug" transform={`translate(${offset} 0)`} className="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
-    </>
+    <g id="HorizonHeadingBug" transform={`translate(${offset} 0)`}>
+        <path className="ThickOutline" d="m68.906 80.823v-9.0213" />
+        <path className="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
+    </g>
 );
 
 export const Horizon = ({
@@ -278,9 +278,9 @@ const RisingGround = ({ radioAlt, pitch }) => {
     const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch - targetPitch) - 31.563, 0), -63.093);
 
     return (
-        <>
-            <path d="m113.95 157.74h-90.08v-45.357h90.08z" transform={`translate(0 ${targetOffset})`} className="NormalOutline EarthFill" />
-            <path id="HorizonGroundRectangle" d="m113.95 157.74h-90.08v-45.357h90.08z" transform={`translate(0 ${targetOffset})`} className="NormalStroke White" />
-        </>
+        <g id="HorizonGroundRectangle" transform={`translate(0 ${targetOffset})`}>
+            <path d="m113.95 157.74h-90.08v-45.357h90.08z" className="NormalOutline EarthFill" />
+            <path d="m113.95 157.74h-90.08v-45.357h90.08z" className="NormalStroke White" />
+        </g>
     );
 };
