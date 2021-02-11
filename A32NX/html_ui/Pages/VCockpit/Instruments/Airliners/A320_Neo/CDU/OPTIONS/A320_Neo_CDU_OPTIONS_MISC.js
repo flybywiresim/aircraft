@@ -28,7 +28,7 @@ class CDU_OPTIONS_MISC {
             if (value !== "") {
                 mcdu.addNewMessage(NXSystemMessages.notAllowed);
             } else {
-                const newPVOption = storedPilotVis ? "0" : "1";
+                const newPVOption = storedPilotVis.toString();
                 NXDataStore.set("CONFIG_PILOT_VISIBILITY", newPVOption);
                 SimVar.SetSimVarValue("L:A32NX_VIS_PILOT_0", "Number", parseInt(newPVOption));
             }
