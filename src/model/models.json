@@ -33,23 +33,37 @@
     "additions": [
       {
         "gltf": "./onbat/onbat.gltf",
-        "bin": "./onbat/onbat.bin"
+        "bin": "./onbat/onbat.bin",
+        "lods": [0, 1, 2, 3, 4]
       },
       {
         "gltf": "./efb/flypad.gltf",
-        "bin": "./efb/flypad.bin"
+        "bin": "./efb/flypad.bin",
+        "lods": [0, 1, 2, 3, 4]
       },
       {
         "gltf": "./printer/printer.gltf",
-        "bin": "./printer/printer.bin"
+        "bin": "./printer/printer.bin",
+        "lods": [0, 1, 2, 3, 4]
       },
       {
         "gltf": "./printer/print-static.gltf",
-        "bin": "./printer/print-static.bin"
+        "bin": "./printer/print-static.bin",
+        "lods": [0, 1, 2, 3, 4]
       },
       {
         "gltf": "./printer/print-torn.gltf",
-        "bin": "./printer/print-torn.bin"
+        "bin": "./printer/print-torn.bin",
+        "lods": [0, 1, 2, 3, 4]
+      },
+      {
+        "gltf": "./glass/glass.gltf",
+        "bin": "./glass/glass.bin",
+        "lods": [0, 1, 2, 3, 4]
+      },
+      {
+        "gltf": "./pilots/pilots.gltf",
+        "lods": [0]
       }
     ],
     "modifications": [
@@ -154,9 +168,9 @@
           [0.033111572265625, 1.0],
           [0.966796875, 0.00017976760864257812],
           [0.96728515625, 1.0],
-          [0.032867431640625, 6.216764450073242e-05],
+          [0.032867431640625, 6.216764450073242e-5],
           [0.00014400482177734375, 0.9892578125],
-          [8.624792098999023e-05, 0.01033782958984375],
+          [8.624792098999023e-5, 0.01033782958984375],
           [1.0, 0.0103759765625],
           [1.0, 0.9892578125],
           [1.0, 0.0],
@@ -240,8 +254,8 @@
           [0.0, 0.5000000298023224],
           [1.0, 0.7500000298023224],
           [1.0, 0.7500000298023224],
-          [2.9802322387695312e-08, 1.0],
-          [2.9802322387695312e-08, 0.7500000298023224],
+          [2.9802322387695312e-8, 1.0],
+          [2.9802322387695312e-8, 0.7500000298023224],
           [1.0, 1.0]
         ]
       },
@@ -301,7 +315,8 @@
     "additions": [
       {
         "gltf": "./sound_nodes/sound_nodes.gltf",
-        "bin": "./sound_nodes/sound_nodes.bin"
+        "bin": "./sound_nodes/sound_nodes.bin",
+        "lods": [0, 1, 2, 3, 4, 5, 6]
       }
     ]
   }
