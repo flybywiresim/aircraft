@@ -163,7 +163,14 @@ var A320_Neo_LowerECAM_Elec;
             this.e_TITLE_HEADING = this.querySelector("#TITLE_HEADING");
             this.e_TITLE_UNDERLINE = this.querySelector("#TITLE_UNDERLINE");
 
+            this.e_STATINV_BAT_TITLE = this.querySelector("#STATINV_BAT_TITLE");
+
+            this.e_STATINV_BOX = this.querySelector("#STATINV_BOX");
             this.e_STATINV_TITLE = this.querySelector("#STATINV_TITLE");
+            this.e_STATINV_VOLTS_VALUE = this.querySelector("#STATINV_VOLTS_VALUE");
+            this.e_STATINV_VOLTS_UNIT = this.querySelector("#STATINV_VOLTS_UNIT");
+            this.e_STATINV_FREQ_VALUE = this.querySelector("#STATINV_FREQ_VALUE");
+            this.e_STATINV_FREQ_UNIT = this.querySelector("#STATINV_FREQ_UNIT");
 
             this.e_WIRE_EXT_PWR_AC_BUS_1 = this.querySelector("#WIRE_EXT_PWR_AC_BUS_1");
             this.e_WIRE_EXT_PWR_AC_BUS_2 = this.querySelector("#WIRE_EXT_PWR_AC_BUS_2");
@@ -577,6 +584,7 @@ var A320_Neo_LowerECAM_Elec;
             this.drawTransformerRectifiers();
             this.drawBatteries();
             this.drawEmergencyGenerator();
+            this.drawStaticInverter();
         }
 
         drawApuGenerator() {
@@ -672,7 +680,7 @@ var A320_Neo_LowerECAM_Elec;
         }
 
         drawExternalPower() {
-            const externalPowerAvailable = SimVar.GetSimVarValue("EXTERNAL POWER AVAILABLE:1", "Bool");
+            const externalPowerAvailable = !!SimVar.GetSimVarValue("EXTERNAL POWER AVAILABLE:1", "Bool");
 
             this.toggle(this.e_EXTPWR_BOX, externalPowerAvailable);
             this.toggle(this.e_EXTPWR_TITLE, externalPowerAvailable);
@@ -909,6 +917,31 @@ var A320_Neo_LowerECAM_Elec;
             const acEssBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_15XE1_IS_CLOSED", "Bool");
             this.toggle(this.e_ARROW_EMERGEN_ACESS, acEssBusContactorClosed && emergencyGenContactorClosed);
             this.toggle(this.e_WIRE_EMERGEN_ACESS, acEssBusContactorClosed && emergencyGenContactorClosed);
+        }
+
+        drawStaticInverter() {
+            const bat1StaticInverterContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_2XB1_IS_CLOSED", "Bool");
+            this.toggle(this.e_ARROW_BAT1_STATINV, bat1StaticInverterContactorClosed);
+            this.toggle(this.e_STATINV_BAT_TITLE, bat1StaticInverterContactorClosed);
+
+            const staticInverterToAcEssContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_15XE2_IS_CLOSED", "Bool");
+            this.toggle(this.e_STATINV_BOX, staticInverterToAcEssContactorClosed);
+            this.toggle(this.e_STATINV_TITLE, staticInverterToAcEssContactorClosed);
+
+            this.toggle(this.e_STATINV_VOLTS_VALUE, staticInverterToAcEssContactorClosed);
+            this.setValue(this.e_STATINV_VOLTS_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_STAT_INV_POTENTIAL", "Volts")));
+            const potentialWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_STAT_INV_POTENTIAL_NORMAL", "Bool");
+            this.greenWhen(this.e_STATINV_VOLTS_VALUE, potentialWithinNormalRange);
+            this.toggle(this.e_STATINV_VOLTS_UNIT, staticInverterToAcEssContactorClosed);
+
+            this.toggle(this.e_STATINV_FREQ_VALUE, staticInverterToAcEssContactorClosed);
+            this.setValue(this.e_STATINV_FREQ_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_STAT_INV_FREQUENCY", "Ampere")));
+            const frequencyWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_STAT_INV_FREQUENCY_NORMAL", "Bool");
+            this.greenWhen(this.e_STATINV_FREQ_VALUE, frequencyWithinNormalRange);
+            this.toggle(this.e_STATINV_FREQ_UNIT, staticInverterToAcEssContactorClosed);
+
+            const allParametersWithinAcceptableRange = potentialWithinNormalRange && frequencyWithinNormalRange;
+            this.whiteWhen(this.e_STATINV_TITLE, allParametersWithinAcceptableRange);
         }
 
         toggle(element, condition) {
@@ -1192,11 +1225,11 @@ var A320_Neo_LowerECAM_Elec;
         }
 
         setSTATINV_ON() {
-            this.show(this.e_STATINV_TITLE);
+            this.show(this.e_STATINV_BAT_TITLE);
             this.show(this.e_ARROW_BAT1_STATINV);
         }
         setSTATINV_OFF() {
-            this.hide(this.e_STATINV_TITLE);
+            this.hide(this.e_STATINV_BAT_TITLE);
             this.hide(this.e_ARROW_BAT1_STATINV);
         }
 
