@@ -920,11 +920,10 @@ var A320_Neo_LowerECAM_Elec;
         }
 
         drawStaticInverter() {
-            const bat1StaticInverterContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_2XB1_IS_CLOSED", "Bool");
-            this.toggle(this.e_ARROW_BAT1_STATINV, bat1StaticInverterContactorClosed);
-            this.toggle(this.e_STATINV_BAT_TITLE, bat1StaticInverterContactorClosed);
-
             const staticInverterToAcEssContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_15XE2_IS_CLOSED", "Bool");
+            this.toggle(this.e_ARROW_BAT1_STATINV, staticInverterToAcEssContactorClosed);
+            this.toggle(this.e_STATINV_BAT_TITLE, staticInverterToAcEssContactorClosed);
+
             this.toggle(this.e_STATINV_BOX, staticInverterToAcEssContactorClosed);
             this.toggle(this.e_STATINV_TITLE, staticInverterToAcEssContactorClosed);
 
