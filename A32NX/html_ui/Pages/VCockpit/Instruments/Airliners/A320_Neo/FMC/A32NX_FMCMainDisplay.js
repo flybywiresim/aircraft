@@ -3352,7 +3352,7 @@ class FMCMainDisplay extends BaseAirliners {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
     }
 
-    //only update when changing departure & arrival airport.
+    // Only update when changing departure & arrival airport
     updateDepartArrive(_deltaTime) {
         if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident && this.offlineTACore.offline !== true) {
             if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident && this.offlineTACore.offline !== true) {
