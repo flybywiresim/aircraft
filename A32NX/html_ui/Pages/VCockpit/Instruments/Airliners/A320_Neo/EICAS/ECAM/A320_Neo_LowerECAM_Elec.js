@@ -210,6 +210,8 @@ var A320_Neo_LowerECAM_Elec;
             this.e_WIRE_DC2_DCBAT_B = this.querySelector("#WIRE_DC2_DCBAT-B");
             this.e_WIRE_BAT1_DCBAT = this.querySelector("#WIRE_BAT1_DCBAT");
             this.e_WIRE_DCBAT_BAT1 = this.querySelector("#WIRE_DCBAT_BAT1");
+            this.e_WIRE_BAT1_DCBAT_FULL = this.querySelector("#WIRE_BAT1_DCBAT_FULL");
+            this.e_WIRE_BAT2_DCBAT_FULL = this.querySelector("#WIRE_BAT2_DCBAT_FULL");
             this.e_WIRE_AC2_TR2 = this.querySelector("#WIRE_AC2_TR2");
             this.e_WIRE_TR2_DC2 = this.querySelector("#WIRE_TR2_DC2");
             this.e_WIRE_EMERGEN_ESSTR = this.querySelector("#WIRE_EMERGEN_ESSTR");
@@ -747,7 +749,10 @@ var A320_Neo_LowerECAM_Elec;
             this.toggle(this.e_ACESSBUS_SHED, !acEssBusIsPowered);
 
             const dcBatBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_BAT_BUS_IS_POWERED", "Bool");
+            // TODO: When battery voltage is implemented. The title should also be amber when BAT BUS voltage < 25 V.
+            // However, with < 25 V it should keep displaying DC BAT. Unless the bus is fully unpowered.
             this.greenWhen(this.e_DCBATBUS_TITLE, dcBatBusIsPowered);
+            this.setValue(this.e_DCBATBUS_TITLE, dcBatBusIsPowered ? "DC BAT" : "XX");
 
             const dcBus1IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_1_BUS_IS_POWERED", "Bool");
             this.greenWhen(this.e_DCBUS1_TITLE, dcBus1IsPowered);
@@ -776,6 +781,12 @@ var A320_Neo_LowerECAM_Elec;
 
             const dcBus2ToBatBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_1PC2_IS_CLOSED", "Bool");
             this.toggle(this.e_WIRE_DC2_DCBAT, dcBus2ToBatBusContactorClosed);
+
+            const battery1ContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_6PB1_IS_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_BAT1_DCBAT_FULL, battery1ContactorClosed);
+
+            const battery2ContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_6PB2_IS_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_BAT2_DCBAT_FULL, battery2ContactorClosed);
         }
 
         drawTransformerRectifiers() {
