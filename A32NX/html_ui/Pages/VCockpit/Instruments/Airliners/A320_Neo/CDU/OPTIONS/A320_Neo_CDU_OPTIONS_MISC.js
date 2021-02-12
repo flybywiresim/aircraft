@@ -4,7 +4,6 @@ class CDU_OPTIONS_MISC {
 
         const storedPilotVis = parseInt(NXDataStore.get("CONFIG_PILOT_VISIBILITY", "0"));
         const storedCoPilotVis = parseInt(NXDataStore.get("CONFIG_COPILOT_VISIBILITY", "0"));
-
         const displayCurrentPilotOption = storedPilotVis ? `SHOW` : `HIDE`;
         const displayCurrentCoPilotOption = storedCoPilotVis ? `SHOW` : `HIDE`;
 
