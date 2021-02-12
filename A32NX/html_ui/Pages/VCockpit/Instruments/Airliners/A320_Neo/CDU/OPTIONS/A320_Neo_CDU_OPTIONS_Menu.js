@@ -14,7 +14,7 @@ class CDU_OPTIONS_MainMenu {
             [""],
             [""],
             [""],
-            ["", "MISC>"],
+            [""],
             [""],
             ["<RETURN"]
         ]);
@@ -45,14 +45,6 @@ class CDU_OPTIONS_MainMenu {
         };
 
         mcdu.rightInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-
-        mcdu.onRightInput[4] = () => {
-            CDU_OPTIONS_MISC.ShowPage(mcdu);
-        };
-
-        mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
 

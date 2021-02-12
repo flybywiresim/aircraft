@@ -585,7 +585,7 @@
                 <NODE_ID>DECAL_THROTTLE_01</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
             </UseTemplate>
-
+            
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>DECAL_THROTTLE_02</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
@@ -2980,7 +2980,7 @@
                 <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                 <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
             </UseTemplate>
-
+            
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
                 <EMISSIVE_CODE>0</EMISSIVE_CODE>
@@ -3467,29 +3467,6 @@
             </UseTemplate>
 
             <CameraTitle>ECAM</CameraTitle>
-        </Component>
-
-        <Component ID="Cockpit_Pilots">
-            <Component ID="PILOT_0" Node="PILOT_0">
-                <UseTemplate Name="ASOBO_GT_Visibility_Code">
-                    <VISIBILITY_CODE>(L:A32NX_VIS_PILOT_0) (A:CAMERA STATE, Enum) 2 != or</VISIBILITY_CODE>
-                </UseTemplate>
-            </Component>
-            <Component ID="PILOT_1" Node="PILOT_1">
-                <UseTemplate Name="ASOBO_GT_Visibility_Code">
-                    <VISIBILITY_CODE>(L:A32NX_VIS_PILOT_1) (A:CAMERA STATE, Enum) 2 != or</VISIBILITY_CODE>
-                </UseTemplate>
-            </Component>
-            <Component ID="Seatbelt_L" Node="Seatbelt_L">
-                <UseTemplate Name="ASOBO_GT_Visibility_Code">
-                    <VISIBILITY_CODE>(L:A32NX_VIS_PILOT_0) !</VISIBILITY_CODE>
-                </UseTemplate>
-            </Component>
-            <Component ID="Seatbelt_R" Node="Seatbelt_R">
-                <UseTemplate Name="ASOBO_GT_Visibility_Code">
-                    <VISIBILITY_CODE>(L:A32NX_VIS_PILOT_1) !</VISIBILITY_CODE>
-                </UseTemplate>
-            </Component>
         </Component>
 
         <Component ID="INOP">
