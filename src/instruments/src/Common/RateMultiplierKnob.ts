@@ -1,7 +1,7 @@
 export type UpdateValueCallback = (x: number) => void;
 
 /**
- * A generic rotary encoder knob which rate multiplying.
+ * A generic rotary encoder knob with built-in rate multiplying.
  * If the knob is turned quickly the speed given to the callback increases.
  * When the knob is not used for longer than the timeout, the speed goes back to 1.
  *
