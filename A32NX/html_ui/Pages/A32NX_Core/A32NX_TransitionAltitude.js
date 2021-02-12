@@ -75,9 +75,9 @@ class A32NX_TransitionAltitude {
         const airportArrive_1 = airport.substr(0,1);
         const airportArrive_2 = airport.substr(0,2);
         if (airportArrive_1 === "K" || airportArrive_1 === "C") {
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000); //Canada & USA fixed to 18,000ft
+            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000); // Canada & USA fixed to 18,000ft
         } else if (airportArrive_1 === "Y") {
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 10000); //SPA region only have 10,000ft & 11,000ft. But 10,000ft is more so using that
+            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 10000); // SPA region only have 10,000ft & 11,000ft. But 10,000ft is more so using that
         } else {
             let arrival = airportData.find(airportData => airportData.icao === airportArrive_2);
             if (arrival.icao !== airportArrive_2) {
