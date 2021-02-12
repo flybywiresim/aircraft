@@ -78,8 +78,10 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     }
                     const vec = new Vec2(1, 0.6);
                     vec.SetNorm(rad - 25);
-                    this.addMapRange(this.arcRangeGroup, 50 + vec.x, 50 - vec.y, "#00FFFF", "18", false, rads[r], true);
-                    this.addMapRange(this.arcRangeGroup, 50 - vec.x, 50 - vec.y, "#00FFFF", "18", false, rads[r], true);
+                    if (r > 0) {
+                        this.addMapRange(this.arcRangeGroup, 50 + vec.x, 50 - vec.y, "#00FFFF", "18", false, rads[r], true);
+                        this.addMapRange(this.arcRangeGroup, 50 - vec.x, 50 - vec.y, "#00FFFF", "18", false, rads[r], true);
+                    }
                 }
                 const vec = new Vec2(1, 0.6);
                 vec.SetNorm(circleRadius - 25);
