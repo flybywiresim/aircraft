@@ -755,7 +755,8 @@ var A320_Neo_LowerECAM_Elec;
 
             const acEssBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED", "Bool");
             this.greenWhen(this.e_ACESSBUS_TITLE, acEssBusIsPowered);
-            this.toggle(this.e_ACESSBUS_SHED, !acEssBusIsPowered);
+            const acEssShedBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Bool");
+            this.toggle(this.e_ACESSBUS_SHED, !acEssShedBusIsPowered);
 
             const dcBatBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_BAT_BUS_IS_POWERED", "Bool");
             // TODO: When battery voltage is implemented. The title should also be amber when BAT BUS voltage < 25 V.
@@ -773,7 +774,8 @@ var A320_Neo_LowerECAM_Elec;
 
             const dcEssBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool");
             this.greenWhen(this.e_DCESSBUS_TITLE, dcEssBusIsPowered);
-            this.toggle(this.e_DCESSBUS_SHED, !dcEssBusIsPowered);
+            const dcEssShedBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED", "Bool");
+            this.toggle(this.e_DCESSBUS_SHED, !dcEssShedBusIsPowered);
         }
 
         drawPowerSourcesToDcReceivers() {
