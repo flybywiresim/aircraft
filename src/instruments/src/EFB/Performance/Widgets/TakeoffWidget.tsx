@@ -30,7 +30,7 @@ type TakeoffWidgetState = {
 	temperature: number,
 	runwayHeading: number,
 	pressure: number,
-	runwayLength: number,
+	asda: number,
 	altitude: number,
 	runwayTooShort: boolean,
 	v1: number,
@@ -52,7 +52,7 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			temperature: 0,
 			runwayHeading: 0,
 			pressure: 1013.25,
-			runwayLength: 0,
+			asda: 0,
 			altitude: 0,
 			runwayTooShort: false,
 			v1: 0,
@@ -68,7 +68,7 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			this.state.flaps,
 			this.state.temperature,
 			this.state.pressure,
-			this.state.runwayLength,
+			this.state.asda,
 			this.state.altitude);
 
 		this.setState(prevState => {
@@ -81,8 +81,8 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 
 			newState.runwayVisualisationLabels = [
 				{
-					label: 'RTO',
-					distance: takeoffPerformance.rtoDist
+					label: 'ASD',
+					distance: takeoffPerformance.stopDist
 				},
 				{
 					label: 'V1',
@@ -91,7 +91,7 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			]
 
 			newState.runwayNumber = Math.round(this.state.runwayHeading / 10);
-			newState.displayedRunwayLength = this.state.runwayLength;
+			newState.displayedRunwayLength = this.state.asda;
 
 			return newState;
 		});
@@ -149,16 +149,16 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 		});
 	}
 
-	private handleRunwayLengthChange = (value: string): void => {
-		let runwayLength = parseInt(value);
+	private handleAsdaChange = (value: string): void => {
+		let asda = parseInt(value);
 
-		if (!runwayLength) {
-			runwayLength = 0;
+		if (!asda) {
+			asda = 0;
 		}
 
 		this.setState(prevState => {
 			let newState = { ...prevState };
-			newState.runwayLength = runwayLength;
+			newState.asda = asda;
 			return newState;
 		});
 	}
@@ -203,7 +203,7 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 									<SimpleInput label="OAT" placeholder="°C" onChange={this.handleTemperatureChange} />
 									<SimpleInput label="QNH" placeholder="mb" onChange={this.handlePressureChange}/>
 									<SimpleInput label="Rwy Heading" onChange={this.handleRunwayHeadingChange} />
-									<SimpleInput label="Rwy Length" placeholder="m" onChange={this.handleRunwayLengthChange} />
+									<SimpleInput label="ASDA" placeholder="m" onChange={this.handleAsdaChange} />
 
 								</div>
 								<div className="flex-1 m-2.5 column-right">

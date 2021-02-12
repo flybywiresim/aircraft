@@ -219,7 +219,7 @@ export default class TakeoffCalculator {
 	 * @param runwayLength Runway length in meters
 	 */
 	public calculateTakeoffPerformance(weight: number, flaps: TakeoffFlapsConfig, temperature: number, pressure: number, runwayLength: number, altitude: number):
-		{ v1: number, vr: number, v2: number, runwayTooShort: boolean, v1Dist: number, rtoDist: number } {
+		{ v1: number, vr: number, v2: number, runwayTooShort: boolean, v1Dist: number, stopDist: number } {
 
 		let weightTons = weight / 1000;
 
@@ -244,7 +244,7 @@ export default class TakeoffCalculator {
 			vr,
 			v2,
 			v1Dist: v1Data.v1Dist,
-			rtoDist: v1Data.rtoDist,
+			stopDist: v1Data.acellStopDist,
 			runwayTooShort: !v1Data.valid
 		};
 	};
@@ -287,7 +287,7 @@ export default class TakeoffCalculator {
 		return Math.max(stallSpeed * stallSafetyMargin, vmcgVmcaMinVr, targetVr);
 	}
 
-	private getV1(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, temperature: number, runwayLength: number, targetVr: number): { v1: number, v1Dist: number, brakeDist: number, rtoDist: number, valid: boolean } {
+	private getV1(weightTons: number, flaps: TakeoffFlapsConfig, pressureAltitude: number, temperature: number, runwayLength: number, targetVr: number): { v1: number, v1Dist: number, brakeDist: number, acellStopDist: number, valid: boolean } {
 		let vmcgVmcaMinV1 = this.getMinSpeedFromPressureAltitudeTable(pressureAltitude, flaps, vmcgVmcaMinV1Speeds) * knotsToMS;
 
 		let pressure = this.altitudeToPressure(pressureAltitude);
@@ -314,7 +314,7 @@ export default class TakeoffCalculator {
 				v1: 0,
 				v1Dist: v1Dist,
 				brakeDist: brakeDist,
-				rtoDist: v1Dist + brakeDist,
+				acellStopDist: v1Dist + brakeDist,
 				valid: false
 			}
 		}
@@ -339,7 +339,7 @@ export default class TakeoffCalculator {
 			v1: v1Knots,
 			v1Dist,
 			brakeDist,
-			rtoDist: v1Dist + brakeDist,
+			acellStopDist: v1Dist + brakeDist,
 			valid: true
 		}
 	}
