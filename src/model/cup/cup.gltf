@@ -1,0 +1,233 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 393,
+            "min": [
+                -0.04081349819898605,
+                -0.045096009969711304,
+                -0.07059099525213242
+            ],
+            "max": [
+                0.04937799647450447,
+                0.04509599134325981,
+                0.07059100270271301
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_COFFEE_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 393,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_COFFEE_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 393,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_COFFEE_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 393,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_COFFEE_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 393,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_COFFEE_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 393,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_COFFEE_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5123,
+            "count": 1074,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_COFFEE_indices#0"
+        }
+    ],
+    "asset": {
+        "generator": "Extended Khronos glTF Blender I/O v1.0.0",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.04937799647450447,
+                    0.04509599134325981,
+                    0.07059100270271301
+                ],
+                "BoundingBoxMin": [
+                    -0.04081349819898605,
+                    -0.045096009969711304,
+                    -0.07059099525213242
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 2
+            },
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 14148,
+            "byteStride": 36,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 2148,
+            "byteOffset": 14148,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_normal_map_convention",
+        "MSFT_texture_dds",
+        "ASOBO_asset_optimized"
+    ],
+    "extensionsRequired": [
+        "MSFT_texture_dds"
+    ],
+    "materials": [
+        {
+            "name": "CUP",
+            "normalTexture": {
+                "index": 0
+            },
+            "occlusionTexture": {
+                "index": 1
+            },
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 2
+                },
+                "metallicRoughnessTexture": {
+                    "index": 1
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 5,
+                        "NORMAL": 2,
+                        "POSITION": 0,
+                        "TANGENT": 1,
+                        "TEXCOORD_0": 3,
+                        "TEXCOORD_1": 4
+                    },
+                    "indices": 6,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 358,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_COFFEE"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                1.1771899461746216,
+                1.7170499563217163,
+                11.131600379943848
+            ],
+            "rotation": [
+                0.2914457321166992,
+                -0.6442509889602661,
+                0.6442511081695557,
+                0.29144567251205444
+            ],
+            "mesh": 0,
+            "name": "COCKPIT_COFFEE"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [
+                0
+            ],
+            "name": "Scene"
+        }
+    ],
+    "textures": [
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 0
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 1
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 2
+                }
+            }
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 16296,
+            "uri": "cup.bin"
+        }
+    ],
+    "images": [
+        {
+            "uri": "CUP_LOW2_NORMAL.PNG.DDS",
+            "name": "cup_low2_normal",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "CUP_LOW2_METAL.PNG.DDS",
+            "name": "cup_low2_metal",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "CUP_LOW2_ALBEDO.PNG.DDS",
+            "name": "cup_low2_albedo",
+            "extras": "ASOBO_image_converted_meta"
+        }
+    ]
+}

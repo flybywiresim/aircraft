@@ -64,6 +64,11 @@
       {
         "gltf": "./pilots/pilots.gltf",
         "lods": [0]
+      },
+      {
+        "gltf": "./cup/cup.gltf",
+        "bin": "./cup/cup.bin",
+        "lods": [0, 1, 2, 3, 4]
       }
     ],
     "modifications": [
