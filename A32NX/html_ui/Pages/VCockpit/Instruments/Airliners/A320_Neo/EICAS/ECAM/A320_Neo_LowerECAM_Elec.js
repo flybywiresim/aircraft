@@ -576,6 +576,7 @@ var A320_Neo_LowerECAM_Elec;
             this.drawBuses();
             this.drawTransformerRectifiers();
             this.drawBatteries();
+            this.drawEmergencyGenerator();
         }
 
         drawApuGenerator() {
@@ -777,7 +778,7 @@ var A320_Neo_LowerECAM_Elec;
             const dcBus1ToBatBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_1PC1_IS_CLOSED", "Bool");
             const dcBatBusToDcEssBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_4PC_IS_CLOSED", "Bool");
             this.toggle(this.e_WIRE_DC1_DCBAT, dcBus1ToBatBusContactorClosed && !dcBatBusToDcEssBusContactorClosed);
-            this.toggle(this.e_WIRE_DC1_DCBAT_DCESS, dcBus1ToBatBusContactorClosed && dcBatBusToDcEssBusContactorClosed); // TODO: Expose contactor 2XB and 4PC.
+            this.toggle(this.e_WIRE_DC1_DCBAT_DCESS, dcBus1ToBatBusContactorClosed && dcBatBusToDcEssBusContactorClosed);
 
             const dcBus2ToBatBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_1PC2_IS_CLOSED", "Bool");
             this.toggle(this.e_WIRE_DC2_DCBAT, dcBus2ToBatBusContactorClosed);
@@ -879,6 +880,35 @@ var A320_Neo_LowerECAM_Elec;
             const allParametersWithinAcceptableRange = potentialWithinNormalRange && currentWithinNormalRange;
             this.whiteWhen(elements.title, !batPushButtonIsAuto || allParametersWithinAcceptableRange);
             this.whiteWhen(elements.titleNumber, !batPushButtonIsAuto || allParametersWithinAcceptableRange);
+        }
+
+        drawEmergencyGenerator() {
+            const emergencyGenContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_2XE_IS_CLOSED", "Bool");
+            this.toggle(this.e_EMERGEN_OFFLINE, !emergencyGenContactorClosed);
+            this.toggle(this.e_EMERGEN_BOX, emergencyGenContactorClosed);
+            this.toggle(this.e_EMERGEN_TITLE, emergencyGenContactorClosed);
+
+            this.toggle(this.e_EMERGEN_VOLTS_VALUE, emergencyGenContactorClosed);
+            this.setValue(this.e_EMERGEN_VOLTS_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_EMER_GEN_POTENTIAL", "Volts")));
+            const potentialWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_EMER_GEN_POTENTIAL_NORMAL", "Bool");
+            this.greenWhen(this.e_EMERGEN_VOLTS_VALUE, potentialWithinNormalRange);
+            this.toggle(this.e_EMERGEN_VOLTS_UNIT, emergencyGenContactorClosed);
+
+            this.toggle(this.e_EMERGEN_FREQ_VALUE, emergencyGenContactorClosed);
+            this.setValue(this.e_EMERGEN_FREQ_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_EMER_GEN_CURRENT", "Ampere")));
+            const currentWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_EMER_GEN_CURRENT_NORMAL", "Bool");
+            this.greenWhen(this.e_EMERGEN_FREQ_VALUE, currentWithinNormalRange);
+            this.toggle(this.e_EMERGEN_FREQ_UNIT, emergencyGenContactorClosed);
+
+            const allParametersWithinAcceptableRange = potentialWithinNormalRange && currentWithinNormalRange;
+            this.whiteWhen(this.e_EMERGEN_TITLE, allParametersWithinAcceptableRange);
+
+            this.greenOrWhiteOtherwise(this.e_ARROW_EMERGEN_ESSTR, emergencyGenContactorClosed);
+            this.toggle(this.e_WIRE_EMERGEN_ESSTR, emergencyGenContactorClosed);
+
+            const acEssBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_15XE1_IS_CLOSED", "Bool");
+            this.toggle(this.e_ARROW_EMERGEN_ACESS, acEssBusContactorClosed && emergencyGenContactorClosed);
+            this.toggle(this.e_WIRE_EMERGEN_ACESS, acEssBusContactorClosed && emergencyGenContactorClosed);
         }
 
         toggle(element, condition) {

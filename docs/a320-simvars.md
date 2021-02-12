@@ -520,7 +520,7 @@
         - 9XU2: Engine generator line contactor 2
         - 11XU1: AC BUS tie 1 contactor
         - 11XU2: AC BUS tie 2 contactor
-        - 15XE1: Contactor between AC ESS BUS and TR ESS
+        - 15XE1: Contactor between AC ESS BUS and TR ESS + EMER GEN
         - 15XE2: Contactor between the static inverter and AC ESS BUS
 
 - A32NX_ELEC_{name}_BUS_IS_POWERED
