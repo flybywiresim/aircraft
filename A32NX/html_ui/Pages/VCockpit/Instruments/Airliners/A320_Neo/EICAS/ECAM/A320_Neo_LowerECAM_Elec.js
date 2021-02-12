@@ -792,26 +792,23 @@ var A320_Neo_LowerECAM_Elec;
                 ampsValue: this.e_TR2_AMPS_VALUE
             });
 
-            const acEssBusToEssTrContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_15XE1_IS_CLOSED", "Bool");
-            const emergencyGenContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_2XE_IS_CLOSED", "Bool");
-            const shouldShowTrEss = acEssBusToEssTrContactorClosed && !emergencyGenContactorClosed;
-            this.toggle(this.e_ESSTR_BOX, shouldShowTrEss);
-            this.toggle(this.e_ESSTR_VOLTS_VALUE, shouldShowTrEss);
-            this.toggle(this.e_ESSTR_VOLTS_UNIT, shouldShowTrEss);
-            this.toggle(this.e_ESSTR_AMPS_VALUE, shouldShowTrEss);
-            this.toggle(this.e_ESSTR_AMPS_UNIT, shouldShowTrEss);
+            const trEssContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_3PE_IS_CLOSED", "Bool");
+            this.toggle(this.e_ESSTR_BOX, trEssContactorClosed);
+            this.toggle(this.e_ESSTR_VOLTS_VALUE, trEssContactorClosed);
+            this.toggle(this.e_ESSTR_VOLTS_UNIT, trEssContactorClosed);
+            this.toggle(this.e_ESSTR_AMPS_VALUE, trEssContactorClosed);
+            this.toggle(this.e_ESSTR_AMPS_UNIT, trEssContactorClosed);
 
-            this.toggle(this.e_WIRE_ACESS_ESSTR, shouldShowTrEss);
+            this.toggle(this.e_WIRE_ACESS_ESSTR, trEssContactorClosed);
 
-            const tr3ContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_3PE_IS_CLOSED", "Bool");
-            this.toggle(this.e_WIRE_ESSTR_DCESS, tr3ContactorClosed);
-            this.greenOrWhiteOtherwise(this.e_ARROW_ESSTR_DCESS, tr3ContactorClosed);
+            this.toggle(this.e_WIRE_ESSTR_DCESS, trEssContactorClosed);
+            this.greenOrWhiteOtherwise(this.e_ARROW_ESSTR_DCESS, trEssContactorClosed);
 
             this.drawTransformerRectifier(3, {
                 title: this.e_ESSTR_TITLE,
                 voltsValue: this.e_ESSTR_VOLTS_VALUE,
                 ampsValue: this.e_ESSTR_AMPS_VALUE
-            }, !shouldShowTrEss);
+            }, !trEssContactorClosed);
         }
 
         drawTransformerRectifier(number, elements, titleMustRemainWhite) {
