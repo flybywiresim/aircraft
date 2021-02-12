@@ -89,7 +89,7 @@ class A32NX_TransitionAltitude {
     }
 }
 
-//this list build manually so there can error in that list. you can fix that!
+// This list is built manually, and might contain errors
 const airportData = [
     { icao: "AG", transAlt: 11000 },
     { icao: "AK", transAlt: 18000 },
