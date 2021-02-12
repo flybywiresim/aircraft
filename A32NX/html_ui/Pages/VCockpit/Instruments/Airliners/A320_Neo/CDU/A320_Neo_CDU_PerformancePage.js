@@ -302,13 +302,19 @@ class CDUPerformancePage {
         let flexTakeOffTempCell = "[\xa0\xa0]°[color]cyan";
         if (mcdu.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF) {
             if (isFinite(mcdu.perfTOTemp)) {
-                flexTakeOffTempCell = `${mcdu.perfTOTemp.toFixed(0)}°[color]cyan`;
+                if (mcdu._toFlexChecked) {
+                    flexTakeOffTempCell = `${mcdu.perfTOTemp.toFixed(0)}°[color]cyan`;
+                } else {
+                    flexTakeOffTempCell = `{small}${mcdu.perfTOTemp.toFixed(0)}°{end}${flexTakeOffTempCell}[color]cyan`;
+                }
             }
             mcdu.onRightInput[3] = (value) => {
-                if (mcdu.setPerfTOFlexTemp(value)) {
+                if (value === "") {
+                    mcdu._toFlexChecked = true;
+                } else if (mcdu.setPerfTOFlexTemp(value)) {
                     mcdu.tryCheckToData();
-                    CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 }
+                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             };
         } else {
             if (isFinite(mcdu.perfTOTemp)) {
@@ -357,6 +363,7 @@ class CDUPerformancePage {
                 mcdu._v1Checked = true;
                 mcdu._vRChecked = true;
                 mcdu._v2Checked = true;
+                mcdu._toFlexChecked = true;
                 mcdu.vSpeedDisagreeCheck();
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             };

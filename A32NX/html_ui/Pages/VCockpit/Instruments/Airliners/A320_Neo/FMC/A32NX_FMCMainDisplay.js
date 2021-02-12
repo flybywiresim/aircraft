@@ -45,6 +45,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._v1Checked = true;
         this._vRChecked = true;
         this._v2Checked = true;
+        this._toFlexChecked = true;
+        this.toRunway = "";
         this.vApp = NaN;
         this.perfApprMDA = NaN;
         this.perfApprDH = NaN;
@@ -3096,21 +3098,39 @@ class FMCMainDisplay extends BaseAirliners {
         return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
     }
 
+    /**
+     * Called after TOPerf, Flaps or THS change
+     */
     tryCheckToData() {
-        if (isFinite(this.v1Speed) || isFinite(this._vRChecked) || isFinite(this._v2Checked)) {
+        if (isFinite(this.v1Speed) || isFinite(this.vRSpeed) || isFinite(this.v2Speed)) {
             this.addNewMessage(NXSystemMessages.checkToData);
         }
     }
 
+    /**
+     * Called after runway change
+     */
     onToDataChanged() {
+        const selectedRunway = this.flightPlanManager.getDepartureRunway();
+        if (!!selectedRunway) {
+            const toRunway = Avionics.Utils.formatRunway(selectedRunway.designation);
+            if (!this.toRunway) {
+                this.toRunway = toRunway;
+                return;
+            }
+            if (toRunway !== this.toRunway) {
+                this.toRunway = toRunway;
+            }
+        }
         this._v1Checked = !isFinite(this.v1Speed);
         this._vRChecked = !isFinite(this.vRSpeed);
         this._v2Checked = !isFinite(this.v2Speed);
-        if (this._v1Checked && this._vRChecked && this._v2Checked) {
+        this._toFlexChecked = !isFinite(this.perfTOTemp);
+        if (this._v1Checked && this._vRChecked && this._v2Checked && this._toFlexChecked) {
             return;
         }
         this.addNewMessage(NXSystemMessages.checkToData, (mcdu) => {
-            return mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked;
+            return mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked && mcdu._toFlexChecked;
         });
     }
 
