@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import './Assets/Boot.scss';
+import './Assets/Efb.scss';
 
 import React from "react";
 import ReactDOM from "react-dom";
