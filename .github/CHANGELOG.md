@@ -85,6 +85,7 @@
 1. [Sound] Reworked exterior engine sounds - @hotshotp (Boris)
 1. [Sound] Improved interior engine sounds - @hotshotp (Boris)
 1. [Sound] Enchanced APU and gear extension/retraction sounds - @hotshotp (Boris)
+1. [ND] Improved waypoint icon size - @MisterChocker (Leon)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
