@@ -166,12 +166,9 @@
             <Range LowerBound="1.0" LowerBound="55.0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="apuflapopenext" FadeOutType="2" FadeOutTime="1" Continuous="true" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT">
-            <Range UpperBound="0" />
-            <Requires LocalVar="APU_FLAP_OPEN" Units="BOOLEAN" Index="0">
-                <Range LowerBound="1" UpperBound="99" />
-            </Requires>
-        </Sound>
+        <Sound WwiseData="true" WwiseEvent="apuflapopenext" FadeOutType="2" FadeOutTime="1" Continuous="true" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="APU_FLAP_OPEN" Units="BOOLEAN" Index="0">
+            <Range LowerBound="1" UpperBound="99" />
+         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="apuflapopenfullext" Continuous="false" ViewPoint="Outside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="APU_FLAP_OPEN" Units="BOOLEAN" Index="0">
             <Range LowerBound="100" />
