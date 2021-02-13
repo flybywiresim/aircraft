@@ -1,6 +1,6 @@
 {
   "name": "a32nx",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "scripts": {
     "lint": "eslint --cache **/*.{js,mjs,jsx}",
     "lint-fix": "npm run lint -- --fix",
