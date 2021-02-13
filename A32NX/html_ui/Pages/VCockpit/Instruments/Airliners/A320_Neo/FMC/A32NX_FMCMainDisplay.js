@@ -1925,7 +1925,7 @@ class FMCMainDisplay extends BaseAirliners {
     trySetTakeOffTransAltitude(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.transitionAltitude = NaN;
-            this.transitionAltitudeIsPilotEntered = true;
+            this.transitionAltitudeIsPilotEntered = false;
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
             return true;
         }
