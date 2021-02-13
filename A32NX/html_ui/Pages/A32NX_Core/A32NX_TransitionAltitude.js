@@ -61,7 +61,7 @@ class A32NX_TransitionAltitude {
         } else if (airportDepart_1 === "Y") {
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 10000); // SPA region only have 10,000ft & 11,000ft. But 10,000ft is more so using that
         } else {
-            let departure = airportData.find(airportData => airportData.icao === airportDepart_2);
+            const departure = airportData.find(airportData => airportData.icao === airportDepart_2);
             if (departure.icao !== airportDepart_2) {
                 SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000); // if can't find on list, default value to 18,000ft
             } else {
@@ -77,7 +77,7 @@ class A32NX_TransitionAltitude {
         } else if (airportArrive_1 === "Y") {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 10000); // SPA region only have 10,000ft & 11,000ft. But 10,000ft is more so using that
         } else {
-            let arrival = airportData.find(airportData => airportData.icao === airportArrive_2);
+            const arrival = airportData.find(airportData => airportData.icao === airportArrive_2);
             if (arrival.icao !== airportArrive_2) {
                 SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000); // if can't find on list, default value to 18,000ft
             } else {
