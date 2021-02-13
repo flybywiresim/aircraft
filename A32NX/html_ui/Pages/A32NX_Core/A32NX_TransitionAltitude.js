@@ -42,8 +42,6 @@ class A32NX_TransitionAltitude {
         const Departure = NXDataStore.get("PLAN_ORIGIN", "");
         const Arrival = NXDataStore.get("PLAN_DESTINATION", "");
         if (Departure !== "" && Arrival !== "") {
-            this.departureLogic(Departure);
-            this.arrivalLogic(Arrival);
             if (this.currentDeparture !== Departure) {
                 this.departureLogic(Departure);
                 this.currentDeparture = Departure;
