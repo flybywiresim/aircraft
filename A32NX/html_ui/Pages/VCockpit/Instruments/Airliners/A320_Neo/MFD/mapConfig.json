@@ -1,6 +1,6 @@
 {
   "waypointLabelFontSize": 16,
-  "waypointLabelFontFamily": "Consolas",
+  "waypointLabelFontFamily": "ECAMFontRegular",
   "waypointLabelColor": "black",
   "waypointLabelStrokeColor": "#black",
   "waypointLabelStrokeWidth": 10,
@@ -21,7 +21,7 @@
   "preventLabelOverlap": false,
 
   "cityLabelFontSize": 24,
-  "cityLabelFontFamily": "Consolas",
+  "cityLabelFontFamily": "ECAMFontRegular",
   "cityLabelColor": "#black",
   "cityLabelStrokeColor": "#3f3f3f",
   "cityLabelStrokeWidth": 0,
@@ -47,7 +47,7 @@
 
   "latLonStrokeColor": "gray",
   "latLonStrokeWidth": 1,
-  "latLonLabelFontFamily": "Consolas",
+  "latLonLabelFontFamily": "ECAMFontRegular",
   "latLonLabelFontSize": 14,
   "latLonLabelColor": "white",
   "latLonLabelStrokeColor": "none",
