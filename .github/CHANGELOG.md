@@ -85,6 +85,7 @@
 1. [Sound] Reworked exterior engine sounds - @hotshotp (Boris)
 1. [Sound] Improved interior engine sounds - @hotshotp (Boris)
 1. [Sound] Enchanced APU and gear extension/retraction sounds - @hotshotp (Boris)
+1. [MISC] Added coffee cup to cockpit - @tyler58546 (tyler58546), @Pleasure0102 (Pleasure)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
