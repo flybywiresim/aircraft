@@ -2579,7 +2579,7 @@ class FMCMainDisplay extends BaseAirliners {
     trySetPerfApprTransAlt(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.transitionArrivalAltitude = NaN;
-            this.transitionArrivalAltitudeIsPilotEntered = true;
+            this.transitionArrivalAltitudeIsPilotEntered = false;
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 0);
             return true;
         }
