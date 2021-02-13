@@ -1086,13 +1086,13 @@
         </Sound>
 
         <Sound WwiseEvent="gdown" WwiseData="true" Continuous="false" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="1" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
-            <Range LowerBound="0.05" UpperBound="0.95" />
+            <Range LowerBound="0.1" UpperBound="0.9" />
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED" />
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED" />
         </Sound>
         
         <Sound WwiseEvent="gup" WwiseData="true" Continuous="false" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="1" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
-            <Range LowerBound="0.05" UpperBound="0.95" />
+            <Range LowerBound="0.1" UpperBound="0.9" />
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED" />
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED" />
         </Sound>
@@ -1100,6 +1100,11 @@
         <Sound WwiseEvent="gmain" WwiseData="true" Continuous="false" NodeName="BASE_L" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
             <Range LowerBound="0.05" UpperBound="0.95" />
         </Sound>
+        
+        <Sound WwiseEvent="gmain" WwiseData="true" Continuous="false" NodeName="PEDALS_LEFT" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
+            <Range LowerBound="0.05" UpperBound="0.95" />
+        </Sound>
+
 
 
         <!-- INSTRUMENTS FOLEYS  =========================================================================  -->
