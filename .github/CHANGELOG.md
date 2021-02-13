@@ -82,6 +82,9 @@
 1. [MCDU] Added Check TO Data - @MisterChocker (Leon)
 1. [ND] Removed label from smallest circle in arc mode - @tyler58546 (tyler58546)
 1. [MISC] Added glass reflections and dust - @MoreRightRudder (Mike), @tyler58546 (tyler58546)
+1. [Sound] Reworked exterior engine sounds - @hotshotp (Boris)
+1. [Sound] Improved interior engine sounds - @hotshotp (Boris)
+1. [Sound] Enchanced APU and gear extension/retraction sounds - @hotshotp (Boris)
 1. [MISC] Added coffee cup to cockpit - @tyler58546 (tyler58546), @Pleasure0102 (Pleasure)
 
 ## 0.5.2
