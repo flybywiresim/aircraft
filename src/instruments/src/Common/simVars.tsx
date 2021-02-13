@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import { useInteractionEvents, useUpdate } from "./hooks"
 
 /**
@@ -57,7 +57,7 @@ const context = React.createContext<{
     register: errorCallback,
     unregister: errorCallback,
 });
-const {Provider: InternalProvider}  = context;
+const { Provider: InternalProvider }  = context;
 
 type UnitName = string | any; // once typings is next to tsconfig.json, use those units
 type SimVarValue = number | any;
@@ -77,7 +77,7 @@ declare const SimVar; // this can also be replaced once /typings are available
  * "update" custom event is emitted through an instrument.
  */
 const SimVarProvider: React.FC = ({ children }) => {
-    const listeners = React.useRef<Record<string, number[]>>({});
+    const listeners = useRef<Record<string, number[]>>({});
     const [cache, setCache] = useState<SimVarCache>({});
 
     useUpdate((deltaTime: number) => {
@@ -300,9 +300,9 @@ export const useGlobalVar = (
     unit: UnitName,
     maxStaleness: number = 0,
 ): SimVarValue => {
-    const contextValue = React.useContext(context);
+    const contextValue = useContext(context);
 
-    React.useEffect(() => {
+    useEffect(() => {
         // This part of useEffect will be called whenever either:
         // - the component has just mounted, or
         // - one the parameters below (name, unit, maxStaleness) has changed.
@@ -320,7 +320,7 @@ export const useGlobalVar = (
         };
     }, [name, unit, maxStaleness]);
 
-    return contextValue.retrieve(name, unit, false,true);
+    return contextValue.retrieve(name, unit, false, true);
 }
 
 /**
@@ -361,7 +361,7 @@ export const useInteractionSimVar = (
     interactionEvents: string | string[],
     maxStaleness: number = 500,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter) => void] => {
-    const contextValue = React.useContext(context);
+    const contextValue = useContext(context);
     const value = useSimVarValue(name, unit, maxStaleness);
 
     useInteractionEvents(
@@ -415,9 +415,9 @@ export const useSplitSimVar = (
  * what you're doing and writing your own hook.
  */
 export const useSimVarValue = (name: string, unit: UnitName, maxStaleness: number): SimVarValue => {
-    const contextValue = React.useContext(context);
+    const contextValue = useContext(context);
 
-    React.useEffect(() => {
+    useEffect(() => {
         // This part of useEffect will be called whenever either:
         // - the component has just mounted, or
         // - one the parameters below (name, unit, maxStaleness) has changed.
@@ -448,7 +448,7 @@ export const useSimVarSetter = (
     unit: UnitName,
     proxy?: string,
 ): ((newValueOrSetter: SimVarValue | SimVarSetter) => void) => {
-    const contextValue = React.useContext(context);
+    const contextValue = useContext(context);
     return (value) => contextValue.update(name, unit, value, proxy);
 };
 
