@@ -769,6 +769,11 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                 }
             }
+            if (this.flightPlanManager.isLoadedApproach() && !this.flightPlanManager.isActiveApproach() && (this.flightPlanManager.getActiveWaypointIndex() === -1 || (this.flightPlanManager.getActiveWaypointIndex() > this.flightPlanManager.getLastIndexBeforeApproach()))) {
+                if (SimVar.GetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number") !== 1) {
+                    this.flightPlanManager.tryAutoActivateApproach();
+                }
+            }
             if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue("L:A320_NEO_FCU_STATE", "number") !== 1) {
                 const currentWaypointIndex = this.flightPlanManager.getActiveWaypointIndex();
                 if (currentWaypointIndex !== this._lastRequestedFLCModeWaypointIndex) {
