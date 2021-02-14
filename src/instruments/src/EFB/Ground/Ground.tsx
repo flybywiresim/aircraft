@@ -22,8 +22,8 @@ import './Ground.scss'
 import fuselage from '../Assets/320neo-outline-upright.svg'
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 
-function Ground() {
 
+export const Ground = () => {
     const [tugActive, setTugActive] = useState(false);
     const [activeButtons, setActiveButtons] = useState(new Array<string>());
     const [jetWayActive, setJetWayActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_JETWAY', 'bool', 500);
@@ -37,7 +37,7 @@ function Ground() {
         return (tugHeading  + value) % 360;
     }
 
-     const computeAndSetTugHeading = (direction: number) => {
+    const computeAndSetTugHeading = (direction: number) => {
         if (!tugActive) {
             togglePushback(true);
         }
@@ -65,6 +65,10 @@ function Ground() {
         }
     }
 
+    /**
+     * Pushback actions disable all other services
+     * So all highlighting should be removed as well
+     */
     const handlePushBackClick = (callBack: () => void, event: React.MouseEvent) => {
         setActiveButtons([event.currentTarget.id]);
         callBack();
@@ -72,28 +76,33 @@ function Ground() {
 
     const applySelected = (className: string, id?: string, gameSync?) => {
 
-        if(gameSync != undefined && id) {
-            if (gameSync === 1) {
-                if (!activeButtons.includes(id)) {
-                    activeButtons.push(id);
-                }
-                return className + ' selected';
-            } else {
-                if (activeButtons.includes(id)) {
-                    const updatedActiveButtons = activeButtons;
-                    updatedActiveButtons.splice(activeButtons.indexOf(id));
-                    setActiveButtons(updatedActiveButtons);
-                }
-                return className;
-            }
-        }
         if (id) {
             return className + (activeButtons.includes(id) ? ' selected' : '');
         }
         return className + (activeButtons.includes(className) ? ' selected' : '');
-     }
+    }
 
-    return (
+    /**
+     * Applies highlighting of an activated service based on SimVars
+     * This ensures the displayed state is in sync with the active services
+     */
+    const applySelectedWithSync = (className: string, id: string, gameSync) => {
+
+        if (gameSync === 1) {
+            if (!activeButtons.includes(id)) {
+                activeButtons.push(id);
+            }
+            return className + ' selected';
+        } else if (activeButtons.includes(id)) {
+                const updatedActiveButtons = activeButtons;
+                updatedActiveButtons.splice(activeButtons.indexOf(id));
+                setActiveButtons(updatedActiveButtons);
+        }
+            return className;
+    }
+
+
+    return(
         <div className="wrapper flex-grow flex flex-col">
             <img className="airplane w-full" src={fuselage} />
             <div className="pushback control-grid">
@@ -119,32 +128,32 @@ function Ground() {
                     <h1 className="text-white font-medium text-xl">Fuel</h1>
                     <div id="fuel"
                          onMouseDown={(e) => handleClick(() => setFuelingActive(1), e)}
-                         className={applySelected('call', 'fuel', fuelingActive)}><IconTruck/>
+                         className={applySelectedWithSync('call', 'fuel', fuelingActive)}><IconTruck/>
                     </div>
                 </div>
                 <div className="baggage control-grid">
                     <h1 className="text-white font-medium text-xl">Baggage</h1>
                     <div id="baggage"
                          onMouseDown={(e) => handleClick(() => setCargoActive(1), e)}
-                         className={applySelected('call', 'baggage', cargoActive)}><IconBriefcase/>
+                         className={applySelectedWithSync('call', 'baggage', cargoActive)}><IconBriefcase/>
                     </div>
                 </div>
                 <div className="catering control-grid">
                     <h1 className="text-white font-medium text-xl">Catering</h1>
                     <div id="catering"
                          onMouseDown={(e) => handleClick(() => setCateringActive(1), e)}
-                         className={applySelected('call', 'catering', cateringActive)}><IconArchive/>
+                         className={applySelectedWithSync('call', 'catering', cateringActive)}><IconArchive/>
                     </div>
                 </div>
                 <div className="jetway control-grid">
                     <h1 className="text-white font-medium text-xl">Jetway</h1>
                     <div id="jetway"
                          onMouseDown={(e) => handleClick(() => setJetWayActive(1), e)}
-                         className={applySelected('call', 'jetway', jetWayActive)}><IconBuildingArch/>
+                         className={applySelectedWithSync('call', 'jetway', jetWayActive)}><IconBuildingArch/>
                     </div>
                 </div>
             </div>
         );
-    };
+}
 
 export default Ground;
