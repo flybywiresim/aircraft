@@ -48,7 +48,7 @@ function Ground() {
 
     const togglePushback = (targetState: boolean) => {
         if (tugActive != targetState) {
-            setPushBack(true);
+            setPushBack(targetState);
             setTugActive(targetState);
         }
     }
@@ -60,28 +60,32 @@ function Ground() {
             if (index > -1) {
                 updatedState.splice(index, 1);
                 setActiveButtons(updatedState);
-                callBack();
-            }  else {
-                callBack();
             }
+            callBack();
         }
     }
 
     const handlePushBackClick = (callBack: () => void, event: React.MouseEvent) => {
         setActiveButtons([event.currentTarget.id]);
+        console.log('ADDED '+ event.currentTarget.id);
+        console.log(activeButtons[0]);
         callBack();
     }
 
     const applySelected = (className: string, id?: string, gameSync?) => {
 
         if(gameSync != undefined && id) {
-            const buttonIndex = activeButtons.indexOf(id);
-            if (gameSync === 1 && buttonIndex === -1) {
-                activeButtons.push(id);
+            if (gameSync === 1) {
+                if (!activeButtons.includes(id)) {
+                    activeButtons.push(id);
+                }
                 return className + ' selected';
-            }
-            else {
-                activeButtons.splice(buttonIndex, 1);
+            } else {
+                if (activeButtons.includes(id)) {
+                    const updatedActiveButtons = activeButtons;
+                    updatedActiveButtons.splice(activeButtons.indexOf(id));
+                    setActiveButtons(updatedActiveButtons);
+                }
                 return className;
             }
         }
