@@ -16,48 +16,163 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from 'react';
-import {
-    IconArchive,
-    IconArrowDown,
-    IconBriefcase,
-    IconBuildingArch,
-    IconCornerDownLeft,
-    IconCornerDownRight,
-    IconHandStop,
-    IconTruck,
-} from '@tabler/icons';
+import React, { useEffect, useState } from 'react';
+import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive } from '@tabler/icons'
 
-import './Ground.scss';
-import fuselage from '../Assets/320neo-outline-upright.svg';
+import './Ground.scss'
+import fuselage from '../Assets/320neo-outline-upright.svg'
+import { useSimVar, useSplitSimVar } from '../../Common/simVars';
+import { setSimVar, getSimVar } from '../../util.mjs'
 
-const Ground: React.FC = () => (
-    <div className="wrapper flex-grow flex flex-col">
-        <div className="pushback control-grid">
-            <h1 className="text-white font-medium text-xl">Pushback</h1>
-            <div className="stop"><IconHandStop /></div>
-            <div className="down-left"><IconCornerDownLeft /></div>
-            <div className="down selected"><IconArrowDown /></div>
-            <div className="down-right"><IconCornerDownRight /></div>
-        </div>
-        <div className="fuel control-grid">
-            <h1 className="text-white font-medium text-xl">Fuel</h1>
-            <div className="call"><IconTruck /></div>
-        </div>
-        <div className="baggage control-grid">
-            <h1 className="text-white font-medium text-xl">Baggage</h1>
-            <div className="call"><IconBriefcase /></div>
-        </div>
-        <div className="catering control-grid">
-            <h1 className="text-white font-medium text-xl">Catering</h1>
-            <div className="call"><IconArchive /></div>
-        </div>
-        <div className="jetway control-grid">
-            <h1 className="text-white font-medium text-xl">Jetway</h1>
-            <div className="call"><IconBuildingArch /></div>
-        </div>
-        <img className="airplane w-full" src={fuselage} />
-    </div>
-);
+function Ground() {
+
+    const [tugActive, setTugActive] = useState(false);
+    const [activeButtons, setActiveButtons] = useState(new Array<StatefulButton>());
+    const [jetWayActive, setJetWayActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_JETWAY', 'bool', 500);
+    const [cargoActive, setCargoActive] = useSplitSimVar('A:EXIT OPEN:5', 'Enum', 'K:REQUEST_LUGGAGE', 'bool', 500);
+    const [cateringActive, setCateringActive] = useSplitSimVar('A:EXIT OPEN:3', 'Enum', 'K:REQUEST_CATERING', 'bool', 500);
+    const [fuelingActive, setFuelingActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:9', 'percent', 'K:REQUEST_FUEL_KEY', 'bool', 500);
+
+
+    const getTugHeading = (value: number): number => {
+        const currentHeading = getSimVar("PLANE HEADING DEGREES TRUE", "degrees");
+        return (currentHeading  + value) % 360;
+    }
+
+    const setTugHeading = (action, direction: number) => {
+        if (!tugActive) {
+            togglePushback(true);
+        }
+        const tugHeading = getTugHeading(direction);
+        // KEY_TUG_HEADING is an unsigned integer, so let's convert
+        setSimVar(action, (tugHeading * 11930465) & 0xffffffff, "UINT32");
+    }
+
+    const togglePushback = (targetState: boolean) => {
+        if (tugActive != targetState) {
+            setSimVar(GroundServices.TOGGLE_PUSHBACK, 1, "bool");
+            setTugActive(targetState);
+        }
+    }
+
+    const handleClick = (callBack: () => void, event: React.MouseEvent) => {
+        let updatedState = activeButtons;
+        if (!tugActive) {
+            const index = activeButtons.findIndex( b => b.id === event.currentTarget.id);
+            if (index > -1) {
+                updatedState.splice(index, 1);
+                setActiveButtons(updatedState);
+                callBack();
+            } else {
+                updatedState.push(new StatefulButton(event.currentTarget.id, ButtonState.WAITING));
+                setActiveButtons(updatedState);
+                callBack();
+            }
+        }
+    }
+
+    const handlePushBackClick = (callBack: () => void, event: React.MouseEvent) => {
+        setActiveButtons([new StatefulButton(event.currentTarget.id, ButtonState.ACTIVE)]);
+        callBack();
+    }
+
+    const applySelected = (className: string, id?: string, gameSync?) => {
+
+        if(gameSync != undefined) {
+            if (gameSync === 1) {
+                if (!activeButtons.find(b => b.id === id)) {
+                    activeButtons.push(new StatefulButton(id, ButtonState.ACTIVE));
+                }
+                return className + ' selected';
+            } else {
+              //  return className + (activeButtons.find(b => b.id === id && b.state === ButtonState.WAITING) ? ' waiting' : '');;
+            }
+        }
+        if (id) {
+            return className + (activeButtons.find(b => b.id === id && b.state === ButtonState.ACTIVE) ? ' selected' : '');
+        }
+        return className + (activeButtons.find(b => b.id === className && b.state === ButtonState.ACTIVE) ? ' selected' : '');
+     }
+
+    return (
+        <div className="wrapper flex-grow flex flex-col">
+            <img className="airplane w-full" src={fuselage} />
+            <div className="pushback control-grid">
+                <h1 className="text-white font-medium text-xl">Pushback</h1>
+                <div id="stop"
+                    onMouseDown={(e) => handlePushBackClick(() => togglePushback(false), e)}
+                    className={applySelected('stop')}><IconHandStop/>
+                </div>
+                <div id="down-left"
+                    onMouseDown={(e) => handlePushBackClick(() => setTugHeading(GroundServices.PUSHBACK_TURN, 90), e)}
+                    className={applySelected('down-left')}><IconCornerDownLeft/>
+                </div>
+                <div id="down"
+                    onMouseDown={(e) => handlePushBackClick(() => setTugHeading(GroundServices.PUSHBACK_TURN, 0), e)}
+                    className={applySelected('down')}><IconArrowDown />
+                </div>
+                <div id="down-right"
+                    onMouseDown={(e) => handlePushBackClick(() => setTugHeading(GroundServices.PUSHBACK_TURN, 270), e)}
+                    className={applySelected('down-right')}><IconCornerDownRight/>
+                </div>
+                </div>
+                <div className="fuel control-grid">
+                    <h1 className="text-white font-medium text-xl">Fuel</h1>
+                    <div id="fuel"
+                         onMouseDown={(e) => handleClick(() => setFuelingActive(1), e)}
+                         className={applySelected('call', 'fuel', fuelingActive)}><IconTruck/>
+                    </div>
+                </div>
+                <div className="baggage control-grid">
+                    <h1 className="text-white font-medium text-xl">Baggage</h1>
+                    <div id="baggage"
+                         onMouseDown={(e) => handleClick(() => setCargoActive(1), e)}
+                         className={applySelected('call', 'baggage', cargoActive)}><IconBriefcase/>
+                    </div>
+                </div>
+                <div className="catering control-grid">
+                    <h1 className="text-white font-medium text-xl">Catering</h1>
+                    <div id="catering"
+                         onMouseDown={(e) => handleClick(() => setCateringActive(1), e)}
+                         className={applySelected('call', 'catering', cateringActive)}><IconArchive/>
+                    </div>
+                </div>
+                <div className="jetway control-grid">
+                    <h1 className="text-white font-medium text-xl">Jetway</h1>
+                    <div id="jetway"
+                         onMouseDown={(e) => handleClick(() => setJetWayActive(1), e)}
+                         className={applySelected('call', 'jetway', jetWayActive)}><IconBuildingArch/>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+enum GroundServices {
+    TOGGLE_PUSHBACK = "K:TOGGLE_PUSHBACK",
+    PUSHBACK_TURN = "K:KEY_TUG_HEADING",
+    TOGGLE_JETWAY = "K:TOGGLE_JETWAY",
+    TOGGLE_STAIRS = "K:TOGGLE_RAMPTRUCK",
+    TOGGLE_CARGO = "K:REQUEST_LUGGAGE",
+    TOGGLE_CATERING = "K:REQUEST_CATERING",
+    TOGGLE_FUEL = "K:REQUEST_FUEL_KEY"
+}
+
+enum ButtonState {
+    ACTIVE,
+    WAITING,
+    INACTIVE
+}
+
+class StatefulButton {
+    id: string;
+    state: ButtonState;
+    className: string;
+
+    constructor(id, state) {
+        this.state = state;
+        this.id = id;
+    }
+}
 
 export default Ground;
