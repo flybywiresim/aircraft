@@ -268,7 +268,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 this.setTextElementActive(this.textHDG, true);
                 this.setTextElementActive(this.textTRK, true);
                 this.setTextElementActive(this.textLAT, true);
-                this.textValueContent = "888";
+                this.textValueContent = ".8.8.8";
                 this.setElementVisibility(this.illuminator, true);
                 return;
             }
