@@ -647,7 +647,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             this.setTextElementActive(this.textVS, !this.isFPAMode);
             this.setTextElementActive(this.textFPA, this.isFPAMode);
             if (this.isActive && this.currentState != A320_Neo_FCU_VSpeed_State.Idle) {
-                const sign = (this.currentValue < 0) ? "-" : "+";
+                const sign = (this.currentValue < 0) ? "~" : "+";
                 if (this.isFPAMode) {
                     let value = Math.abs(this.currentValue);
                     value = Math.round(value * 10).toString().padStart(2, "0");
@@ -663,7 +663,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
                     }
                 }
             } else {
-                this.textValueContent = "-----";
+                this.textValueContent = "~----";
             }
         }
     }
