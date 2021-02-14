@@ -45,6 +45,8 @@ class CDUAocOfpData {
             }
         }
 
+        const maxAllowableFuel = 19046; // in kilograms
+
         let blockFuel = "_____[color]amber";
         let taxiFuel = "____[color]amber";
         let tripFuel = "_____[color]amber";
@@ -99,14 +101,13 @@ class CDUAocOfpData {
         };
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                mcdu.aocWeight.blockFuel = "";
+                mcdu.aocWeight.blockFuel = undefined;
                 updateView();
                 return true;
             }
-            const maxAllowableFuel = 21273;
-            const enteredFuel = Math.round(+value);
+            const enteredFuel = Math.round(+value) / mcdu._conversionWeight;
             if (enteredFuel >= 0 && enteredFuel <= maxAllowableFuel) {
-                mcdu.aocWeight.blockFuel = enteredFuel.toString();
+                mcdu.aocWeight.blockFuel = enteredFuel;
                 updateView();
                 return true;
             }
@@ -119,14 +120,13 @@ class CDUAocOfpData {
         };
         mcdu.onLeftInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                mcdu.aocWeight.taxiFuel = "";
+                mcdu.aocWeight.taxiFuel = undefined;
                 updateView();
                 return true;
             }
-            const maxAllowableFuel = 21273;
-            const enteredFuel = Math.round(+value);
+            const enteredFuel = Math.round(+value) / mcdu._conversionWeight;
             if (enteredFuel >= 0 && enteredFuel <= maxAllowableFuel) {
-                mcdu.aocWeight.taxiFuel = enteredFuel.toString();
+                mcdu.aocWeight.taxiFuel = enteredFuel;
                 updateView();
                 return true;
             }
@@ -134,19 +134,18 @@ class CDUAocOfpData {
             return false;
         };
 
-        mcdu.rightInputDelay[1] = () => {
+        mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelayBasic();
         };
-        mcdu.onRightInput[1] = (value) => {
+        mcdu.onLeftInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                mcdu.aocWeight.tripFuel = "";
+                mcdu.aocWeight.tripFuel = undefined;
                 updateView();
                 return true;
             }
-            const maxAllowableFuel = 21273;
-            const enteredFuel = Math.round(+value);
+            const enteredFuel = Math.round(+value) / mcdu._conversionWeight;
             if (enteredFuel >= 0 && enteredFuel <= maxAllowableFuel) {
-                mcdu.aocWeight.tripFuel = enteredFuel.toString();
+                mcdu.aocWeight.tripFuel = enteredFuel;
                 updateView();
                 return true;
             }
@@ -188,6 +187,8 @@ class CDUAocOfpData {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCOfpData2;
         mcdu.activeSystem = 'ATSU';
+
+        const maxAllowablePayload = 34327; // in kilograms
 
         setEstimatedBaggagePayload(mcdu);
 
@@ -278,10 +279,9 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            const maxAllowablePayload = 34327;
-            const enteredPayload = Math.round(+value);
+            const enteredPayload = Math.round(+value) / mcdu._conversionWeight;
             if (enteredPayload >= 0 && enteredPayload <= maxAllowablePayload) {
-                mcdu.aocWeight.payload = enteredPayload.toString();
+                mcdu.aocWeight.payload = enteredPayload;
                 mcdu.aocWeight.fwdBag = undefined;
                 mcdu.aocWeight.rearBag = undefined;
                 updateView();
@@ -300,15 +300,14 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            const maxAllowablePayload = 34327;
             const currentRearBag = !isNaN(getCurrentRearBag(mcdu)) ? getCurrentRearBag(mcdu) : 0;
 
-            const enteredFwdBag = Math.round(+value);
+            const enteredFwdBag = Math.round(+value) / mcdu._conversionWeight;
             const actualPayload = enteredFwdBag + (+currentRearBag);
 
-            if (actualPayload >= 0 && actualPayload <= maxAllowablePayload) {
-                mcdu.aocWeight.fwdBag = enteredFwdBag.toString();
-                mcdu.aocWeight.rearBag = currentRearBag.toString();
+            if (enteredFwdBag >= 0 && actualPayload >= 0 && actualPayload <= maxAllowablePayload) {
+                mcdu.aocWeight.fwdBag = enteredFwdBag;
+                mcdu.aocWeight.rearBag = currentRearBag;
                 mcdu.aocWeight.zfwcg = undefined;
                 updatePayloadValue();
                 updateView();
@@ -324,7 +323,7 @@ class CDUAocOfpData {
 
             const actualPayload = (+currentFwdBag) + (+currentRearBag);
 
-            mcdu.aocWeight.payload = actualPayload.toString();
+            mcdu.aocWeight.payload = actualPayload;
 
             updateView();
         }
@@ -339,15 +338,14 @@ class CDUAocOfpData {
                 updateView();
                 return true;
             }
-            const maxAllowablePayload = 34327;
             const currentFwdBag = !isNaN(getCurrentFwdBag(mcdu)) ? getCurrentFwdBag(mcdu) : 0;
 
-            const enteredRearBag = Math.round(+value);
+            const enteredRearBag = Math.round(+value) / mcdu._conversionWeight;
             const actualPayload = enteredRearBag + (+currentFwdBag);
 
-            if (actualPayload >= 0 && actualPayload <= maxAllowablePayload) {
-                mcdu.aocWeight.rearBag = enteredRearBag.toString();
-                mcdu.aocWeight.fwdBag = currentFwdBag.toString();
+            if (enteredRearBag >= 0 && actualPayload >= 0 && actualPayload <= maxAllowablePayload) {
+                mcdu.aocWeight.rearBag = enteredRearBag;
+                mcdu.aocWeight.fwdBag = currentFwdBag;
                 mcdu.aocWeight.zfwcg = undefined;
                 updatePayloadValue();
                 updateView();
