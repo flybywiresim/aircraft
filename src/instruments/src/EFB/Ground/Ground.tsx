@@ -75,12 +75,13 @@ function Ground() {
     const applySelected = (className: string, id?: string, gameSync?) => {
 
         if(gameSync != undefined && id) {
-            if (gameSync === 1 && !activeButtons.includes(id)) {
+            const buttonIndex = activeButtons.indexOf(id);
+            if (gameSync === 1 && buttonIndex === -1) {
                 activeButtons.push(id);
                 return className + ' selected';
             }
             else {
-                activeButtons.splice(activeButtons.indexOf(id), 1);
+                activeButtons.splice(buttonIndex, 1);
                 return className;
             }
         }
