@@ -100,7 +100,7 @@
 
 :root line {
   stroke: var(--main-display-colour);
-  stroke-width: 3;
+  stroke-width: 5;
 }
 
 :root circle {
