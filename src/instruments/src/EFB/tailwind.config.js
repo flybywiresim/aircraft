@@ -61,8 +61,8 @@ module.exports = {
                 '2xl-light': '0 0 50px -20px rgba(255, 255, 255, 0.15)',
             },
             borderWidth: {
-               '6': '6px',
-              }
+               	'6': '6px',
+            },
         },
     },
     variants: {
