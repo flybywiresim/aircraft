@@ -31,7 +31,7 @@ export function RadioPanelDisplay(props: Props) {
     return (
         <svg>
             <text x="100%" y="60%">
-                {lightsTest ? 888.888 : value}
+                {lightsTest ? '8.8.8.8.8.8' : value}
             </text>
         </svg>
     );
