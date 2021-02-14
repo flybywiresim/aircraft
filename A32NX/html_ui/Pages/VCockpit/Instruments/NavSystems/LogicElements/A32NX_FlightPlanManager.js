@@ -1421,7 +1421,7 @@ class FlightPlanManager {
                         if (runway) {
                             return runway;
                         } else {
-                            let approachRunwayC = approachRunway + 'C';
+                            const approachRunwayC = approachRunway + 'C';
                             runway = runways.find(rw => {
                                 return rw.designation.replace(" ", "") === approachRunwayC;
                             });
