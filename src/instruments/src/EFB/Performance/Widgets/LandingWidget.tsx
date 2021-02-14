@@ -24,6 +24,7 @@ import RunwayVisualizationWidget, { DistanceLabel } from './RunwayVisualizationW
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import SelectInput from '../../Components/Form/SelectInput/SelectInput';
 import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
+import Help from '../../Components/Help';
 
 type LandingWidgetProps = {};
 type LandingWidgetState = {
@@ -324,7 +325,12 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 									<SimpleInput label="Rwy Slope" placeholder="%" onChange={this.handleRunwaySlopeChange} />
 								</div>
 								<div className="flex-1 m-2.5 column-right">
-									<SimpleInput label="Rwy LDA" placeholder="m" onChange={this.handleRunwayLengthChange} reverse/>
+									<div className="flex justify-start items-center">
+										<SimpleInput label="Rwy LDA" placeholder="m" onChange={this.handleRunwayLengthChange} reverse />
+										<Help title="Landing Distance Available (LDA)">
+											The distance available on the runway which is suitable for the ground run of the landing.
+										</Help>
+									</div>
 									<SimpleInput label="Approach Speed" placeholder="KTS" onChange={this.handleApproachSpeedChange} reverse/>
 									<SimpleInput label="Weight" placeholder="KG" onChange={this.handleWeightChange} reverse />
 									<SelectInput label="Flaps" defaultValue="1" onChange={this.handleFlapsChange} reverse options={[

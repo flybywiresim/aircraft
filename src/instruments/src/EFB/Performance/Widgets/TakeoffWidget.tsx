@@ -22,6 +22,7 @@ import RunwayVisualizationWidget, { DistanceLabel } from './RunwayVisualizationW
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import SelectInput from '../../Components/Form/SelectInput/SelectInput';
 import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
+import Help from '../../Components/Help';
 
 type TakeoffWidgetProps = {};
 type TakeoffWidgetState = {
@@ -203,10 +204,16 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 						<div className="text-center mb-6">
 							<div className="flex">
 								<div className="flex-1 m-2.5 column-left">
+
 									<SimpleInput label="OAT" placeholder="°C" onChange={this.handleTemperatureChange} />
 									<SimpleInput label="QNH" placeholder="mb" onChange={this.handlePressureChange}/>
 									<SimpleInput label="Rwy Heading" onChange={this.handleRunwayHeadingChange} />
-									<SimpleInput label="ASDA" placeholder="m" onChange={this.handleAsdaChange} />
+									<div className="flex justify-end items-center">
+										<Help title="Accelerate-Stop Distance Available (ASDA)">
+											ASDA is the maximum distance available on the runway to accelerate from brake release and then come to a complete stop at any point up to V1 (for example in the event of engine failure). If a runway has a stopway this length is included in ASDA.
+										</Help>
+										<SimpleInput label="ASDA" placeholder="m" onChange={this.handleAsdaChange} />
+									</div>
 
 								</div>
 								<div className="flex-1 m-2.5 column-right">
