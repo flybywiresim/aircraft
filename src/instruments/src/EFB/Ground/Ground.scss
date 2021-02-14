@@ -87,6 +87,12 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
+.power {
+  left: calc(50% + 11rem);
+  top: 4rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .catering {
   left: calc(50% + 4rem);
   bottom: 9rem;
@@ -96,12 +102,11 @@
 .jetway {
   right: calc(50% + 4rem);
   top: 4rem;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .call {
   @apply bg-green-500;
-  grid-column: 1 / 1;
 }
 
 .selected {
@@ -122,6 +127,7 @@
 
 .pushback > div:active,
 .call:active {
+  @apply transform;
   @apply translate-y-0.5;
 }
 

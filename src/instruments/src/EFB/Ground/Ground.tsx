@@ -17,7 +17,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive } from '@tabler/icons'
+import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconStairsUp, IconPower } from '@tabler/icons'
 import './Ground.scss'
 import fuselage from '../Assets/320neo-outline-upright.svg'
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
@@ -27,11 +27,13 @@ export const Ground = () => {
     const [tugActive, setTugActive] = useState(false);
     const [activeButtons, setActiveButtons] = useState(new Array<string>());
     const [jetWayActive, setJetWayActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_JETWAY', 'bool', 500);
+    const [rampActive, setRampActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_RAMPTRUCK', 'bool', 500);
     const [cargoActive, setCargoActive] = useSplitSimVar('A:EXIT OPEN:5', 'Enum', 'K:REQUEST_LUGGAGE', 'bool', 500);
     const [cateringActive, setCateringActive] = useSplitSimVar('A:EXIT OPEN:3', 'Enum', 'K:REQUEST_CATERING', 'bool', 500);
     const [fuelingActive, setFuelingActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:9', 'percent', 'K:REQUEST_FUEL_KEY', 'bool');
     const [tugHeading, setTugHeading] = useSplitSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 'K:KEY_TUG_HEADING', 'UINT32');
     const [pushBack, setPushBack] = useSimVar('K:TOGGLE_PUSHBACK', 'bool');
+    const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'percent', 'K:REQUEST_POWER_SUPPLY', 'bool');
 
     const getTugHeading = (value: number): number => {
         return (tugHeading  + value) % 360;
@@ -88,7 +90,7 @@ export const Ground = () => {
      */
     const applySelectedWithSync = (className: string, id: string, gameSync) => {
 
-        if (gameSync === 1) {
+        if (gameSync > 0) {
             if (!activeButtons.includes(id)) {
                 activeButtons.push(id);
             }
@@ -137,6 +139,13 @@ export const Ground = () => {
                          className={applySelectedWithSync('call', 'baggage', cargoActive)}><IconBriefcase/>
                     </div>
                 </div>
+                <div className="power control-grid">
+                    <h1 className="text-white font-medium text-xl">GPU</h1>
+                    <div id="baggage"
+                         onMouseDown={(e) => handleClick(() => setPowerActive(1), e)}
+                         className={applySelectedWithSync('call', 'power', powerActive)}><IconPower/>
+                    </div>
+                </div>
                 <div className="catering control-grid">
                     <h1 className="text-white font-medium text-xl">Catering</h1>
                     <div id="catering"
@@ -145,10 +154,14 @@ export const Ground = () => {
                     </div>
                 </div>
                 <div className="jetway control-grid">
-                    <h1 className="text-white font-medium text-xl">Jetway</h1>
+                    <h1 className="text-white font-medium text-xl">Jetway / Stairs</h1>
                     <div id="jetway"
                          onMouseDown={(e) => handleClick(() => setJetWayActive(1), e)}
                          className={applySelectedWithSync('call', 'jetway', jetWayActive)}><IconBuildingArch/>
+                    </div>
+                    <div id="ramp"
+                         onMouseDown={(e) => handleClick(() => setRampActive(1), e)}
+                         className={applySelectedWithSync('call', 'jetway', jetWayActive)}><IconStairsUp/>
                     </div>
                 </div>
             </div>
