@@ -94,11 +94,11 @@ export const Ground = () => {
             }
             return className + ' selected';
         } else if (activeButtons.includes(id)) {
-                const updatedActiveButtons = activeButtons;
-                updatedActiveButtons.splice(activeButtons.indexOf(id));
-                setActiveButtons(updatedActiveButtons);
+            const updatedActiveButtons = activeButtons;
+            updatedActiveButtons.splice(activeButtons.indexOf(id));
+            setActiveButtons(updatedActiveButtons);
         }
-            return className;
+        return className;
     }
 
 
