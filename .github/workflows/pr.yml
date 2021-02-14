@@ -46,5 +46,5 @@ jobs:
           mv tmp_flybywire-aircraft-a32nx flybywire-aircraft-a32nx
       - uses: actions/upload-artifact@v2
         with:
-          name: A32NX
+          name: flybywire-aircraft-a32nx
           path: flybywire-aircraft-a32nx
