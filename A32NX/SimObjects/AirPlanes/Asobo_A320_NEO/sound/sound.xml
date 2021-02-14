@@ -1243,6 +1243,24 @@
                 <Range UpperBound="1" />
             </Requires>
         </Sound>
+        
+         <Sound WwiseData="true" WwiseEvent="ptucockpit" NodeName="PEDALS_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
+            <Requires SimVar="TURB ENG N1" Units="PERCENT" Index="1">
+                <Range UpperBound="1" />
+            </Requires>
+            <Requires LocalVar="A32NX_SOUND_PTU_AUDIBLE_COCKPIT" Units="BOOL">
+                <Range LowerBound="1" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="ptucockpit" NodeName="PEDALS_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
+            <Requires SimVar="TURB ENG N1" Units="PERCENT" Index="2">
+                <Range UpperBound="1" />
+            </Requires>
+            <Requires LocalVar="A32NX_SOUND_PTU_AUDIBLE_COCKPIT" Units="BOOL">
+                <Range LowerBound="1" />
+            </Requires>
+        </Sound>
 
         <!-- Play sound whenever the seat belts switch position changes -->
         <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" Units="BOOLEAN" Index="1" ViewPoint="Inside" Continuous="false">
