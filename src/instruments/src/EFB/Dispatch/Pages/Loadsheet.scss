@@ -25,15 +25,16 @@
 
 .show-scrollbar::-webkit-scrollbar {
   @apply w-4;
+  @apply bg-gray-800;
 }
 
 .show-scrollbar::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+  @apply bg-gray-100;
   @apply rounded-xl;
+  @apply border-solid border-6 border-gray-800
 }
 
 .show-scrollbar::-webkit-scrollbar-thumb {
+	@apply rounded-xl;
   @apply bg-blue-light;
-  @apply rounded-xl;
 }
