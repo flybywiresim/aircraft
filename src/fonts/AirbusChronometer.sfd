@@ -16,16 +16,18 @@ LayerCount: 2
 Layer: 0 0 "Back" 1
 Layer: 1 0 "Fore" 0
 XUID: [1021 809 -1304484988 28886]
+StyleMap: 0x0000
+FSType: 0
 OS2Version: 0
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 1
 CreationTime: 1613270511
-ModificationTime: 1613273574
+ModificationTime: 1613327954
 OS2TypoAscent: 0
 OS2TypoAOffset: 1
 OS2TypoDescent: 0
 OS2TypoDOffset: 1
-OS2TypoLinegap: 0
+OS2TypoLinegap: 90
 OS2WinAscent: 0
 OS2WinAOffset: 1
 OS2WinDescent: 0
@@ -34,7 +36,6 @@ HheadAscent: 0
 HheadAOffset: 1
 HheadDescent: 0
 HheadDOffset: 1
-OS2Vendor: 'PfEd'
 MarkAttachClasses: 1
 DEI: 91125
 Encoding: ISO8859-1
@@ -43,10 +44,10 @@ NameList: AGL For New Fonts
 DisplaySize: -48
 AntiAlias: 1
 FitToEm: 0
-WinInfo: 28 14 6
+WinInfo: 14 14 6
 BeginPrivate: 0
 EndPrivate
-BeginChars: 256 11
+BeginChars: 256 12
 
 StartChar: eight
 Encoding: 56 56 0
@@ -440,7 +441,7 @@ EndChar
 StartChar: colon
 Encoding: 58 58 10
 Width: 175
-Flags: HWO
+Flags: HW
 LayerCount: 2
 Fore
 SplineSet
@@ -455,6 +456,13 @@ SplineSet
  34.6279296875 291.127929688 68.349609375 289.692382812 88.4404296875 269.602539062 c 24
  109.96484375 248.077148438 112.834960938 214.35546875 92.02734375 192.830078125 c 24
 EndSplineSet
+EndChar
+
+StartChar: space
+Encoding: 32 32 11
+Width: 175
+Flags: WO
+LayerCount: 2
 EndChar
 EndChars
 EndSplineFont
