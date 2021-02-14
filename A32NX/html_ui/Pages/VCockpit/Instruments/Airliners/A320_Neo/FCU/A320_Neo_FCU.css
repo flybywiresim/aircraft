@@ -54,8 +54,8 @@
 }
 
 @font-face {
-  font-family: "Poppins-Medium";
-  src: url("/Fonts/Poppins-Medium.ttf") format("truetype");
+  font-family: "Poppins-SemiBold";
+  src: url("/Fonts/Poppins-SemiBold.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -79,13 +79,13 @@
 }
 
 :root text.Active {
-  font-family: "Poppins-Medium";
+  font-family: "Poppins-SemiBold";
   font-size: 28px;
   fill: var(--main-display-colour);
 }
 
 :root text.Inactive {
-  font-family: "Poppins-Medium";
+  font-family: "Poppins-SemiBold";
   font-size: 28px;
   fill: var(--main-display-colour-inactive);
 }
@@ -111,7 +111,7 @@ a320-neo-fcu-element {
   width: 100%;
   height: 100%;
   background-color: var(--main-display-colour-background);
-  font-family: "Poppins-Medium";
+  font-family: "Poppins-SemiBold";
   position: relative;
   overflow: hidden;
 }
