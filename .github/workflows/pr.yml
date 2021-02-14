@@ -41,10 +41,10 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/setup.sh
           ./scripts/dev-env/run.sh ./scripts/build.sh
 
-          mkdir tmp_A32NX
-          mv A32NX tmp_A32NX/
-          mv tmp_A32NX A32NX
+          mkdir tmp_flybywire-aircraft-a32nx
+          mv flybywire-aircraft-a32nx tmp_flybywire-aircraft-a32nx/
+          mv tmp_flybywire-aircraft-a32nx flybywire-aircraft-a32nx
       - uses: actions/upload-artifact@v2
         with:
           name: A32NX
-          path: A32NX
+          path: flybywire-aircraft-a32nx
