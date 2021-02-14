@@ -61,25 +61,25 @@ This version is the same as the regular master/development version, but with the
 
 ### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
 
-Open the zip that you downloaded from one of the links above, and drag the A32NX folder inside the zip into your Community folder.
+Open the zip that you downloaded from one of the links above, and drag the flybywire-aircraft-a32nx folder inside the zip into your Community folder.
 
 See below for the location of your Community folder:
 
 For the Microsoft Store edition AND/OR Gamepass edition:
-- Copy the "A32NX" folder into your community package folder. It is located in:
+- Copy the "flybywire-aircraft-a32nx" folder into your community package folder. It is located in:
 `C:\Users\[YOUR USERNAME]\AppData\Local\Packages\Microsoft.FlightSimulator_<RANDOMLETTERS>\LocalCache\Packages\Community`.
 
 For the Steam edition:
-- Copy the "A32NX" folder into your community package folder. It is located in:
+- Copy the "flybywire-aircraft-a32nx" folder into your community package folder. It is located in:
 `C:\Users\[YOUR USERNAME]\AppData\Roaming\Microsoft Flight Simulator\Packages\Community`.
 
 For the Boxed edition:
-- Copy the "A32NX" folder into your community package folder. It is located in:
+- Copy the "flybywire-aircraft-a32nx" folder into your community package folder. It is located in:
 `C:\Users\[YOUR USERNAME]\AppData\Local\MSFSPackages\Community`.
 
 If the above methods do not work:
 - You can find your community folder by going into FS2020 general options and enabling developer mode. You will see a menu appear on top. Go to tools and virtual file system. Click on watch bases and your community folder will be listed in one of the folders.
-- Please make sure you're copying the "A32NX" folder into your community package folder, NOT the "flybywiresim-a32nx" folder.
+- Please make sure you're copying the "flybywire-aircraft-a32nx" folder into your community package folder, NOT the "a32nx" folder.
 
 ## Contributing
 
@@ -90,10 +90,10 @@ See [Contributing.md](.github/Contributing.md)
 - Captain's PFD may occasionally turn off during flight
 - No Smoking switch doesn't use a full range of motion.
 - Automatic ECAM page switching has minor bugs.
-- AP not following the flight plan (leaking input values affect, but don't disconnect the AP) [Workaround: Set dead-zones for your input device higher] 
+- AP not following the flight plan (leaking input values affect, but don't disconnect the AP) [Workaround: Set dead-zones for your input device higher]
 - Autopilot goes direct to RWY on APP (same with the default A320) [Workaround: Use DIR to a waypoint or selected heading]
 - Upper ECAM displays wrong THR levers position / N1 rating.
-- Newly added ASOBO A320 liveries are incompatible with the A32NX mod. 
+- Newly added ASOBO A320 liveries are incompatible with the A32NX mod.
 - Ruder keybindings not working (you have to set your keybinding to rudder axis right and left)
 - Wing dips on landing (due to bad transition to direct law in flare, same with the default A320)  [Workaround use minimal aileron input on landing]
 - Black screens / unable to start (conflict with another mod/livery or incorrect installation of the A32NX mod, use the [installer](https://api.flybywiresim.com/installer))
@@ -114,7 +114,7 @@ A: Yes, see [Downloads](#Downloads).
 
 **Q: Where is the plane in-sim?**
 
-A: The mod is added on top of the default A320neo from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
+A: The mod is added on top of the default A320neo from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the flybywire-aircraft-a32nx folder in your community folder.
 
 **Q: What are the liveries available?**
 
