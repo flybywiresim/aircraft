@@ -3956,5 +3956,14 @@
                 <NODE_ID>PUSH_OVHD_ELT_ON</NODE_ID>
             </UseTemplate>
         </Component>
+
+        <Component ID="COFFEE">
+            <UseTemplate Name="FBW_Coffee_Cup">
+                <NODE_ID>COCKPIT_COFFEE_L</NODE_ID>
+            </UseTemplate>
+            <UseTemplate Name="FBW_Coffee_Cup">
+                <NODE_ID>COCKPIT_COFFEE_R</NODE_ID>
+            </UseTemplate>
+        </Component>
     </Behaviors>
 </ModelInfo>
