@@ -141,9 +141,6 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     init() {
         this.textSPD = this.getTextElement("SPD");
         this.textMACH = this.getTextElement("MACH");
-        this.decimalPoint1 = this.getElement("circle", "DEC_PNT1");
-        this.decimalPoint2 = this.getElement("circle", "DEC_PNT2");
-        this.decimalPoint3 = this.getElement("circle", "DEC_PNT3");
         this.illuminator = this.getElement("circle", "Illuminator");
         this.refresh(false, false, false, false, 0, 0, true);
     }
@@ -164,31 +161,26 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.lightsTest = _lightsTest;
             if (this.lightsTest) {
                 this.setElementVisibility(this.illuminator, true);
-                this.setElementVisibility(this.decimalPoint1, true);
-                this.setElementVisibility(this.decimalPoint2, true);
-                this.setElementVisibility(this.decimalPoint3, true);
-                this.textValueContent = "888";
+                this.textValueContent = ".8.8.8";
                 this.setTextElementActive(this.textSPD, true);
                 this.setTextElementActive(this.textMACH, true);
                 return;
             }
+            let value = Math.round(Math.max(this.currentValue, 0)).toString().padStart(3, "0");
             if (!this.isManaged) {
-                var value = Math.round(Math.max(this.currentValue, 0));
-                this.textValueContent = value.toString().padStart(3, "0");
+                if (_machActive) {
+                    value = `${value.substring(0,1)}.${value.substring(1)}`;
+                }
+                this.textValueContent = value;
                 this.setElementVisibility(this.illuminator, false);
-                this.setElementVisibility(this.decimalPoint2, _machActive);
             } else if (this.isManaged) {
                 if (this.showSelectedSpeed) {
-                    var value = Math.round(Math.max(this.currentValue, 0));
-                    this.textValueContent = value.toString().padStart(3, "0");
+                    this.textValueContent = value;
                 } else {
                     this.textValueContent = "---";
                 }
             }
             this.setElementVisibility(this.illuminator, this.isManaged);
-            this.setElementVisibility(this.decimalPoint1, false);
-            this.setElementVisibility(this.decimalPoint2, _machActive);
-            this.setElementVisibility(this.decimalPoint3, false);
         }
     }
 }
@@ -487,7 +479,6 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
     init() {
         this.textVS = this.getTextElement("VS");
         this.textFPA = this.getTextElement("FPA");
-        this.decimalPoint = this.getElement("circle", "DEC_PNT");
         this.isActive = false;
         this.isFPAMode = false;
         this._enterIdleState();
@@ -650,8 +641,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             if (this.lightsTest) {
                 this.setTextElementActive(this.textVS, true);
                 this.setTextElementActive(this.textFPA, true);
-                this.textValueContent = "+8888";
-                this.setElementVisibility(this.decimalPoint, true);
+                this.textValueContent = "+8.888";
                 return;
             }
             this.setTextElementActive(this.textVS, !this.isFPAMode);
@@ -661,6 +651,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
                 if (this.isFPAMode) {
                     let value = Math.abs(this.currentValue);
                     value = Math.round(value * 10).toString().padStart(2, "0");
+                    value = `${value.substring(0, 1)}.${value.substring(1)}`;
                     this.textValueContent = sign + value;
                 } else {
                     if (this.currentState === A320_Neo_FCU_VSpeed_State.Zeroing) {
@@ -671,10 +662,8 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
                         this.textValueContent = sign + (Math.floor(value * 0.01).toString().padStart(2, "0")) + "oo";
                     }
                 }
-                this.setElementVisibility(this.decimalPoint, this.isFPAMode);
             } else {
                 this.textValueContent = "-----";
-                this.setElementVisibility(this.decimalPoint, false);
             }
         }
     }
@@ -801,7 +790,6 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
         this.standardElem = this.getDivElement("Standard");
         this.textQFE = this.getTextElement("QFE");
         this.textQNH = this.getTextElement("QNH");
-        this.decimalPoint = this.getElement("circle", "DEC_PNT");
         this.refresh("QFE", true, 0, 0, true);
     }
     update(_deltaTime) {
@@ -821,8 +809,7 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
                 this.selectedElem.style.display = "block";
                 this.setTextElementActive(this.textQFE, true);
                 this.setTextElementActive(this.textQNH, true);
-                this.textValueContent = "8888";
-                this.setElementVisibility(this.decimalPoint, true);
+                this.textValueContent = "88.88";
                 return;
             }
             if (this.currentMode == "STD") {
@@ -836,10 +823,13 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
                 const isQFE = (this.currentMode == "QFE") ? true : false;
                 this.setTextElementActive(this.textQFE, isQFE);
                 this.setTextElementActive(this.textQNH, !isQFE);
-                this.setElementVisibility(this.decimalPoint, this.isHGUnit);
-                const value = Math.round(Math.max(this.isHGUnit ? (this.currentValue * 100) : this.currentValue, 0));
+                let value = Math.round(Math.max(this.isHGUnit ? (this.currentValue * 100) : this.currentValue, 0));
                 if (!wasStd) {
-                    this.textValueContent = value.toString().padStart(4, "0");
+                    value = value.toString().padStart(4, "0");
+                    if (this.isHGUnit) {
+                        value = `${value.substring(0, 2)}.${value.substring(2)}`;
+                    }
+                    this.textValueContent = value;
                 }
             }
         }

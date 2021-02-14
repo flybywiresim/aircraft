@@ -3,13 +3,15 @@
 }
 
 @keyframes TemporaryShow {
-  0%, 100% {
+  0%,
+  100% {
     visibility: visible;
   }
 }
 
 @keyframes TemporaryHide {
-  0%, 100% {
+  0%,
+  100% {
     visibility: hidden;
   }
 }
@@ -26,7 +28,7 @@
   height: 100%;
 }
 
-#Electricity[state=off] {
+#Electricity[state="off"] {
   display: none;
 }
 
@@ -53,7 +55,7 @@
 
 @font-face {
   font-family: "Digital";
-  src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf") format("truetype");
+  src: url("/Fonts/AirbusFCU.ttf") format("truetype");
   font-weight: 900;
   font-style: normal;
 }
@@ -83,10 +85,10 @@
 
 :root text.Value {
   font-family: Digital;
-  font-size: 66px;
+  font-size: 50px;
   text-anchor: start;
   fill: var(--main-display-colour);
-  letter-spacing: 8px;
+  letter-spacing: 0px;
 }
 
 :root line {
@@ -173,9 +175,9 @@ a320-neo-fcu-element #Mainframe #SmallScreen {
   background-color: var(--main-display-colour-background);
 }
 
-a320-neo-fcu-element #Mainframe #SmallScreen #Selected, a320-neo-fcu-element #Mainframe #SmallScreen #Standar {
+a320-neo-fcu-element #Mainframe #SmallScreen #Selected,
+a320-neo-fcu-element #Mainframe #SmallScreen #Standar {
   width: 100%;
   height: 100%;
   top: 0%;
 }
-
