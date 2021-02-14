@@ -1,4 +1,4 @@
-/*
+/*!
  * A32NX
  * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
  *
@@ -16,25 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from 'react';
-import './Loadsheet.scss'
+ .loadsheet-container{
+   height: 700px;
+}
 
+.show-scrollbar::-webkit-scrollbar {
+    width: 1em;
+}
 
-type LoadsheetPageProps = {
-    loadsheet: string
-};
-
-const LoadSheetWidget = (props: LoadsheetPageProps) => {
-    return (
-        <div className="px-6">
-            <div className="w-full">
-				<div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4"> 
-					<div className="loadsheet-container show-scrollbar overflow-y-scroll" dangerouslySetInnerHTML={{__html: props.loadsheet}}>
-				</div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-export default LoadSheetWidget;
+.show-scrollbar::-webkit-scrollbar-track {
+	box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+}
+ 
+.show-scrollbar::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
+}
