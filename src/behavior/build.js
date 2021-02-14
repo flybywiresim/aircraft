@@ -7,6 +7,7 @@ const path = require('path');
 const { pathToFileURL } = require('url');
 
 const SRC = path.resolve(__dirname, 'src');
+// eslint-disable-next-line
 const OUT = path.resolve(__dirname, '..', '..', 'flybywire-aircraft-a32nx/ModelBehaviorDefs/flybywire-aircraft-a32nx/generated');
 
 fs.mkdirSync(OUT, { recursive: true });
