@@ -29,7 +29,7 @@ build_manifests() {
 
 build_systems() {
     cargo build --target wasm32-wasi --release
-    cp target/wasm32-wasi/release/systems.wasm A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/panel/
+    cp target/wasm32-wasi/release/systems.wasm flybywire-aircraft-a32nx/SimObjects/AirPlanes/Asobo_A320_NEO/panel/
 }
 
 build_metadata() {
@@ -53,7 +53,7 @@ build_metadata() {
         --arg actor "${GITHUB_ACTOR}" \
         --arg event_name "${GITHUB_EVENT_NAME}" \
         '{ built: $built, ref: $ref, sha: $sha, actor: $actor, event_name: $event_name }' \
-        > "${DIR}/../A32NX/build_info.json"
+        > "${DIR}/../flybywire-aircraft-a32nx/build_info.json"
 }
 
 if [ -z "$1" ]; then

@@ -91,7 +91,7 @@ module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
                     getCssBundle() {
                         return fs.readFileSync(`${TMPDIR}/${name}-gen.css`).toString();
                     },
-                    outputDir: `${__dirname}/../../A32NX/html_ui/Pages/VCockpit/Instruments/generated`,
+                    outputDir: `${__dirname}/../../flybywire-aircraft-a32nx/html_ui/Pages/VCockpit/Instruments/generated`,
                 }),
             ],
         };

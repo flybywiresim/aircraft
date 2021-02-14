@@ -35,4 +35,4 @@ The build script will have already been run with the latest changes, so no need 
 
 1. Make sure you are signed in to GitHub
 1. Click on the **Checks** tab on the PR
-1. On the right side, click on the **Artifacts** drop down and click the **A32NX** link
+1. On the right side, click on the **Artifacts** drop down and click the **flybywire-aircraft-a32nx** link
