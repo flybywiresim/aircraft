@@ -122,7 +122,7 @@
 
 .pushback > div:active,
 .call:active {
-  transform: translateY(2px);
+  @apply translate-y-0.5;
 }
 
 .down-left {

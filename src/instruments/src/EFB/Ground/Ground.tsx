@@ -74,7 +74,7 @@ export const Ground = () => {
         callBack();
     }
 
-    const applySelected = (className: string, id?: string, gameSync?) => {
+    const applySelected = (className: string, id?: string) => {
 
         if (id) {
             return className + (activeButtons.includes(id) ? ' selected' : '');
@@ -100,7 +100,6 @@ export const Ground = () => {
         }
         return className;
     }
-
 
     return(
         <div className="wrapper flex-grow flex flex-col">
