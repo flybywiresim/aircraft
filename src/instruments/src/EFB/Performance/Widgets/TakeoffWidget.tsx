@@ -38,7 +38,8 @@ type TakeoffWidgetState = {
 	v2: number,
 	runwayVisualisationLabels: DistanceLabel[],
 	runwayNumber?: number,
-	displayedRunwayLength: number
+	displayedRunwayLength: number,
+	stopMargin: number
 };
 
 export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, TakeoffWidgetState> {
@@ -59,7 +60,8 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 			vr: 0,
 			v2: 0,
 			runwayVisualisationLabels: [],
-			displayedRunwayLength: 0
+			displayedRunwayLength: 0,
+			stopMargin: 0
 		}
 	}
 
@@ -92,6 +94,7 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 
 			newState.runwayNumber = Math.round(this.state.runwayHeading / 10);
 			newState.displayedRunwayLength = this.state.asda;
+			newState.stopMargin = this.state.asda - takeoffPerformance.stopDist;
 
 			return newState;
 		});
@@ -235,7 +238,10 @@ export default class TakeoffWidget extends React.Component<TakeoffWidgetProps, T
 					</div>
 				</div>
 				<div className="bg-gray-800 rounded-xl px-2 py-8 text-white shadow-lg flex items-center">
-					<RunwayVisualizationWidget runwayLength={this.state.displayedRunwayLength} labels={this.state.runwayVisualisationLabels} runwayNumber={this.state.runwayNumber} />
+					<RunwayVisualizationWidget runwayLength={this.state.displayedRunwayLength}
+						labels={this.state.runwayVisualisationLabels}
+						runwayNumber={this.state.runwayNumber}
+						stopMargin={this.state.stopMargin}/>
 				</div>
 			</div>
 		);
