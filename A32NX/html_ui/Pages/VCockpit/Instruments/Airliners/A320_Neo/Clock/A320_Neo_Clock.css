@@ -40,7 +40,7 @@ a320-neo-clock-element {
     background-color: rgba(5, 40, 80, 0.623);
     color: rgba(155, 148, 148, 0.911);}
     a320-neo-clock-element #Mainframe #TopSelector {
-      margin-top: 0%;
+      margin-top: 1%;
       width: 100%;
       height: 35%;
       display: flex;
@@ -80,7 +80,7 @@ a320-neo-clock-element {
           color: rgba(155, 148, 148, 0.911); }
 
     a320-neo-clock-element #Mainframe #BottomSelector {
-      margin-top: 1%;
+      margin-top: 0;
       width: 100%;
       height: 35%;
       display: flex;
