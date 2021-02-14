@@ -99,17 +99,9 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-.call:hover {
-  @apply text-white;
-}
-
 .call {
   @apply bg-green-500;
   grid-column: 1 / 1;
-}
-
-.waiting {
-  @apply bg-gray-500;
 }
 
 .selected {
@@ -123,7 +115,8 @@
   grid-column: 2 / 3;
 }
 
-.pushback > div:hover {
+.pushback > div:hover,
+.call:hover {
   @apply text-white;
 }
 
