@@ -87,6 +87,7 @@
 1. [Sound] Enchanced APU and gear extension/retraction sounds - @hotshotp (Boris)
 1. [MISC] Added coffee cup to cockpit - @tyler58546 (tyler58546), @Pleasure0102 (Pleasure)
 1. [ND] Waypoints on the ND now use the correct font - @tyler58546 (tyler58546)
+1. [MCDU] Fixed center runway id displaying on the flightplan page - @SergeySoprykin (SergeyS)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)

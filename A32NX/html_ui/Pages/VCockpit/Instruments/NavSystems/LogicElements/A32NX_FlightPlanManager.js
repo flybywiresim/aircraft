@@ -1410,10 +1410,27 @@ class FlightPlanManager {
             if (infos instanceof AirportInfo) {
                 const approach = infos.approaches[this._approachIndex];
                 if (approach) {
-                    const runway = infos.oneWayRunways.find(r => {
-                        return r.designation.indexOf(approach.runway.replace(" ", "")) !== -1;
+                    const approachRunway = approach.runway.replace(" ", "");
+                    const runways = infos.oneWayRunways.filter(r => {
+                        return r.designation.indexOf(approachRunway) !== -1;
                     });
-                    return runway;
+                    if (runways.length > 1 && approachRunway.match(/\d$/)) {
+                        let runway = runways.find(rw => {
+                            return rw.designation.replace(" ", "") === approachRunway;
+                        });
+                        if (runway) {
+                            return runway;
+                        } else {
+                            let approachRunwayC = approachRunway + 'C';
+                            runway = runways.find(rw => {
+                                return rw.designation.replace(" ", "") === approachRunwayC;
+                            });
+                            if (runway) {
+                                return runway;
+                            }
+                        }
+                    }
+                    return runways[0];
                 }
             }
         }
