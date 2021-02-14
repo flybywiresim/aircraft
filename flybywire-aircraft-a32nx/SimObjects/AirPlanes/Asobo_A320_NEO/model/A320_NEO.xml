@@ -48,7 +48,7 @@
 	</NodeAnimation>
 	<Behaviors>
 		<Include ModelBehaviorFile="Asobo\Exterior.xml"/>
-		<Include Path="A32NX\A32NX_Exterior.xml"/>
+		<Include Path="flybywire-aircraft-a32nx\A32NX_Exterior.xml"/>
 		<Component ID="LIGHTING">
 			<UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
 				<LIGHT_TYPE>LANDING</LIGHT_TYPE>

@@ -30,8 +30,8 @@
     </LODS>
 
     <Behaviors>
-        <Include ModelBehaviorFile="A32NX\Interior\A32NX_Interior_Includes.xml"/>
-        <Include ModelBehaviorFile="A32NX\A32NX_Interior_Generics.xml"/>
+        <Include ModelBehaviorFile="flybywire-aircraft-a32nx\Interior\A32NX_Interior_Includes.xml"/>
+        <Include ModelBehaviorFile="flybywire-aircraft-a32nx\A32NX_Interior_Generics.xml"/>
         <Include ModelBehaviorFile="Asobo\Common.xml"/>
         <Include ModelBehaviorFile="Asobo\Airliner\GlassCockpit.xml"/>
 
@@ -585,7 +585,7 @@
                 <NODE_ID>DECAL_THROTTLE_01</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
             </UseTemplate>
-            
+
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>DECAL_THROTTLE_02</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
@@ -2980,7 +2980,7 @@
                 <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                 <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
             </UseTemplate>
-            
+
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
                 <EMISSIVE_CODE>0</EMISSIVE_CODE>
