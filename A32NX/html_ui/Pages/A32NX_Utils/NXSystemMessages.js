@@ -5,6 +5,7 @@ const NXSystemMessages = {
     aocActFplnUplink:       {text: "AOC ACT F-PLN UPLINK", isAmber: false, isTypeTwo: true},
     awyWptMismatch:         {text: "AWY/WPT MISMATCH", isAmber: false, isTypeTwo: false},
     checkMinDestFob:        {text: "CHECK MIN DEST FOB", isAmber: false, isTypeTwo: true},
+    checkToData:            {text: "CHECK TAKE OFF DATA", isAmber: true, isTypeTwo: true},
     destEfobBelowMin:       {text: "DEST EFOB BELOW MIN", isAmber: true, isTypeTwo: true},
     enterDestData:          {text: "ENTER DEST DATA", isAmber: true, isTypeTwo: true},
     entryOutOfRange:        {text: "ENTRY OUT OF RANGE", isAmber: false, isTypeTwo: false},
