@@ -67,8 +67,6 @@ function Ground() {
 
     const handlePushBackClick = (callBack: () => void, event: React.MouseEvent) => {
         setActiveButtons([event.currentTarget.id]);
-        console.log('ADDED '+ event.currentTarget.id);
-        console.log(activeButtons[0]);
         callBack();
     }
 
