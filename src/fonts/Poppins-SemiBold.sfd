@@ -22,7 +22,7 @@ OS2Version: 4
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 1
 CreationTime: 1551825221
-ModificationTime: 1613345482
+ModificationTime: 1613347520
 PfmFamily: 81
 TTFWeight: 600
 TTFWidth: 5
@@ -109,6 +109,7 @@ Lookup: 1 0 0 "Single Substitution lookup 48" { "Single Substitution lookup 48 s
 Lookup: 1 0 0 "Single Substitution lookup 49" { "Single Substitution lookup 49 subtable"  } []
 Lookup: 1 0 0 "Single Substitution lookup 50" { "Single Substitution lookup 50 subtable"  } []
 Lookup: 1 0 0 "Single Substitution lookup 51" { "Single Substitution lookup 51 subtable"  } []
+Lookup: 258 0 0 "kern-v-slash" { "kern-v-slash-1" [150,15,0] } []
 Lookup: 260 0 0 "'abvm' Above Base Mark lookup 0" { "'abvm' Above Base Mark lookup 0 subtable"  } ['abvm' ('DFLT' <'dflt' > 'dev2' <'dflt' > 'deva' <'dflt' > ) ]
 Lookup: 260 0 0 "'abvm' Above Base Mark lookup 1" { "'abvm' Above Base Mark lookup 1 subtable"  } ['abvm' ('DFLT' <'dflt' > 'dev2' <'dflt' > 'deva' <'dflt' > ) ]
 Lookup: 260 0 0 "'blwm' Below Base Mark lookup 2" { "'blwm' Below Base Mark lookup 2 subtable"  } ['blwm' ('DFLT' <'dflt' > 'dev2' <'dflt' > 'deva' <'dflt' > ) ]
@@ -37195,7 +37196,7 @@ EndChar
 StartChar: slash
 Encoding: 47 47 674
 Width: 738
-Flags: WO
+Flags: W
 LayerCount: 2
 Fore
 SplineSet
@@ -38296,8 +38297,8 @@ EndChar
 
 StartChar: V
 Encoding: 86 86 713
-Width: 711
-Flags: W
+Width: 573
+Flags: WO
 LayerCount: 2
 Fore
 SplineSet
@@ -38310,6 +38311,7 @@ SplineSet
  547 698 l 1,6,-1
  696 698 l 1,0,-1
 EndSplineSet
+Kerns2: 674 -120 "kern-v-slash-1"
 EndChar
 
 StartChar: W
@@ -39189,6 +39191,7 @@ SplineSet
  160 554 l 1,6,-1
  300 129 l 1,0,-1
 EndSplineSet
+Kerns2: 674 -135 "kern-v-slash-1"
 EndChar
 
 StartChar: w
