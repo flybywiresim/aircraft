@@ -59,50 +59,57 @@
 
 .control-grid > div {
   @apply rounded-lg;
-  height: 3rem;
-  width: 3rem;
+  height: 4rem;
+  width: 8rem;
   margin: auto;
 }
 
 .control-grid > div > svg {
   height: 100%;
-  width: 100%;
+  width: 50%;
+  margin: auto;
 }
 
 .pushback {
-  right: 3rem;
-  bottom: 3rem;
+  right: 1rem;
+  bottom: 1rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .fuel {
-  right: calc(55% + 18rem);
-  top: 21rem;
+  right: calc(50% + 15rem);
+  top: 15rem;
   grid-template-columns: minmax(0, 1fr);
 }
 
 .baggage {
-  left: calc(50% + 4rem);
+  left: calc(50% + 5rem);
   top: 4rem;
   grid-template-columns: minmax(0, 1fr);
 }
 
 .power {
-  left: calc(50% + 11rem);
+  left: calc(50% + 15rem);
   top: 4rem;
   grid-template-columns: minmax(0, 1fr);
 }
 
 .catering {
-  left: calc(50% + 4rem);
+  right: calc(50% + 5rem);
   bottom: 9rem;
   grid-template-columns: minmax(0, 1fr);
 }
 
 .jetway {
-  right: calc(50% + 4rem);
+  right: calc(50% + 5rem);
   top: 4rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ramp {
+  right: calc(50% + 15rem);
+  top: 4rem;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .call {
@@ -128,7 +135,7 @@
 .pushback > div:active,
 .call:active {
   @apply transform;
-  @apply translate-y-0.5;
+  @apply translate-y-1;
 }
 
 .down-left {

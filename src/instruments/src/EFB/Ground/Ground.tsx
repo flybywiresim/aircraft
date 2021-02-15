@@ -140,7 +140,7 @@ export const Ground = () => {
                     </div>
                 </div>
                 <div className="power control-grid">
-                    <h1 className="text-white font-medium text-xl">GPU</h1>
+                    <h1 className="text-white font-medium text-xl">Ground Power</h1>
                     <div id="baggage"
                          onMouseDown={(e) => handleClick(() => setPowerActive(1), e)}
                          className={applySelectedWithSync('call', 'power', powerActive)}><IconPower/>
@@ -154,11 +154,14 @@ export const Ground = () => {
                     </div>
                 </div>
                 <div className="jetway control-grid">
-                    <h1 className="text-white font-medium text-xl">Jetway / Stairs</h1>
+                    <h1 className="text-white font-medium text-xl">Jetway</h1>
                     <div id="jetway"
                          onMouseDown={(e) => handleClick(() => setJetWayActive(1), e)}
                          className={applySelectedWithSync('call', 'jetway', jetWayActive)}><IconBuildingArch/>
                     </div>
+                </div>
+                <div className="ramp control-grid">
+                <h1 className="text-white font-medium text-xl">Stairs</h1>
                     <div id="ramp"
                          onMouseDown={(e) => handleClick(() => setRampActive(1), e)}
                          className={applySelectedWithSync('call', 'jetway', jetWayActive)}><IconStairsUp/>
