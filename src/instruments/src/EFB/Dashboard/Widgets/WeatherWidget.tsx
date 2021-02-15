@@ -219,25 +219,53 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                             <div className="flex justify-center">
                                 <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                             </div>
-                            {metar.barometer.mb.toFixed(0)} mb
+							{metar.barometer ? <>{metar.barometer.mb.toFixed(0)} mb</> : 'N/A'}
                         </div>
                         <div className="text-center text-lg">
                             <div className="flex justify-center">
                                 <IconWind className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                             </div>
-                            {metar.wind.degrees.toFixed(0)} <IconPoint className="inline-block -mx-1 -mt-3" size={20} stroke={2} strokeLinejoin="miter" /> / {metar.wind.speed_kts.toFixed(0)} kts
+							{metar.wind ?
+							<>
+								{metar.wind.degrees.toFixed(0)}{' '}
+									<IconPoint
+										className="inline-block -mx-1 -mt-3"
+										size={20}
+										stroke={2}
+										strokeLinejoin="miter"
+									/>{' '}
+									/ {metar.wind.speed_kts.toFixed(0)} kts
+								</> : 'N/A'}
                         </div>
                         <div className="text-center text-lg mt-3">
                             <div className="flex justify-center">
                                 <IconTemperature className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                             </div>
-                            {metar.temperature.celsius.toFixed(0)} <IconPoint className="inline-block -mx-1 -mt-3" size={20} stroke={2} strokeLinejoin="miter" /> C
+							{metar.temperature ?
+							<>
+								{metar.temperature.celsius.toFixed(0)}{' '}
+									<IconPoint
+										className="inline-block -mx-1 -mt-3"
+										size={20}
+										stroke={2}
+										strokeLinejoin="miter"
+									/>{' '} C
+							</> : 'N/A'}
                         </div>
                         <div className="text-center text-lg mt-3">
                             <div className="flex justify-center">
                                 <IconDroplet className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
                             </div>
-                            {metar.dewpoint.celsius.toFixed(0)} <IconPoint className="inline-block -mx-1 -mt-3" size={20} stroke={2} strokeLinejoin="miter" /> C
+							{metar.dewpoint ?
+							<>
+								{metar.dewpoint.celsius.toFixed(0)}{' '}
+									<IconPoint
+										className="inline-block -mx-1 -mt-3"
+										size={20}
+										stroke={2}
+										strokeLinejoin="miter"
+									/>{' '} C
+							</> : 'N/A'}
                         </div>
                     </div>
                 </div>

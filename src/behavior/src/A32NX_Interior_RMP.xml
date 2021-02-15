@@ -21,13 +21,10 @@
                 <WWISE_EVENT_2>radio_switch_off</WWISE_EVENT_2>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RADIO_SELECT_TURN_RMP_ON</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RADIO_SELECT_TURN_RMP_OFF</ANIMTIP_1>
-                <ANIM_CODE type="rnp" return="number">
-                    alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, number);
-                    toggleSwitch * 100
-                </ANIM_CODE>
-                <LEFT_SINGLE_CODE type="rnp">
-                    alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
-                    toggleSwitch = !toggleSwitch;
+                <ANIM_CODE>(L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, number) 100 *</ANIM_CODE>
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool) ! (>L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool)
+                    (>H:A32NX_RMP_#SIDE#_TOGGLE_SWITCH)
                 </LEFT_SINGLE_CODE>
             </UseTemplate>
         </Component>

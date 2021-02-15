@@ -68,7 +68,7 @@ class A320_Neo_Clock extends BaseAirliners {
         }
         if (this.middleSelectorElem) {
             if (lightsTest) {
-                this.middleSelectorElem.textContent = "88:88";
+                this.middleSelectorElem.textContent = "88:88:";
                 this.middleSelectorElem2.textContent = "88";
             } else {
                 let currentDisplayTime = "";
@@ -83,7 +83,7 @@ class A320_Neo_Clock extends BaseAirliners {
                 }
                 if (currentDisplayTime !== this.lastDisplayTime || lightsTestChanged) {
                     this.lastDisplayTime = currentDisplayTime;
-                    this.middleSelectorElem.textContent = currentDisplayTime;
+                    this.middleSelectorElem.textContent = `${currentDisplayTime}:`;
                 }
                 if (currentDisplayTime2 !== this.lastDisplayTime2 || lightsTestChanged) {
                     this.lastDisplayTime2 = currentDisplayTime2;
