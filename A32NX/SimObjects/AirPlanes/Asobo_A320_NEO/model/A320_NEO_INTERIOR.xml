@@ -2980,11 +2980,12 @@
                 <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                 <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
             </UseTemplate>
-            
-            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+
+            <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
-                <EMISSIVE_CODE>0</EMISSIVE_CODE>
-            </UseTemplate>
+                <POTENTIOMETER>84</POTENTIOMETER>
+                <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
+            </UseTemplate>   
 
             <UseTemplate Name="FBW_Airbus_FCU_Altitude_Knob">
                 <NODE_ID>KNOB_AUTOPILOT_KNOB_ALT</NODE_ID>
@@ -3954,6 +3955,15 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_ELT_ON</NODE_ID>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="COFFEE">
+            <UseTemplate Name="FBW_Coffee_Cup">
+                <NODE_ID>COCKPIT_COFFEE_L</NODE_ID>
+            </UseTemplate>
+            <UseTemplate Name="FBW_Coffee_Cup">
+                <NODE_ID>COCKPIT_COFFEE_R</NODE_ID>
             </UseTemplate>
         </Component>
     </Behaviors>
