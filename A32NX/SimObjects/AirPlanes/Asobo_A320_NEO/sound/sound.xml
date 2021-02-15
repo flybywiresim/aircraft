@@ -387,13 +387,13 @@
         <Sound WwiseEvent="LWhale" WwiseData="true" NodeName="SOUND_ENGINE_LEFT" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
         </Sound>
 
         <Sound WwiseEvent="RWhale" WwiseData="true" NodeName="SOUND_ENGINE_RIGHT" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
         </Sound>
 
         <Sound WwiseEvent="RumbleL" NodeName="SOUND_ENGINE_LEFT" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
@@ -442,13 +442,13 @@
         <Sound WwiseEvent="LWhine" WwiseData="true" NodeName="SOUND_ENGINE_LEFT" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
         </Sound>
 
         <Sound WwiseEvent="RWhine" WwiseData="true" NodeName="SOUND_ENGINE_RIGHT" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
         </Sound>
 
         <Sound WwiseEvent="BuzzL" NodeName="SOUND_ENGINE_LEFT" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true">
@@ -975,6 +975,19 @@
             </Requires>
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
+        
+        <Sound WwiseData="true" WwiseEvent="ptu_sound" NodeName="SOUND_ENGINE_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
+		<Requires SimVar="TURB ENG N1" Units="PERCENT" Index="1">
+			<Range UpperBound="1" />
+		</Requires>
+	    </Sound>
+	
+	    <Sound WwiseData="true" WwiseEvent="ptu_sound" NodeName="SOUND_ENGINE_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
+		<Requires SimVar="TURB ENG N1" Units="PERCENT" Index="2">
+			<Range UpperBound="1" />
+		</Requires>
+	    </Sound>
+
 
         <Sound WwiseEvent="smoothtouch" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="PEDALS_LEFT" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
@@ -1231,18 +1244,6 @@
         </Sound>
 
         <!-- Miscellaneous ==========================================================================================  -->
-
-        <Sound WwiseData="true" WwiseEvent="ptutest" NodeName="SOUND_ENGINE_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
-            <Requires SimVar="TURB ENG N1" Units="PERCENT" Index="1">
-                <Range UpperBound="1" />
-            </Requires>
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="ptutest" NodeName="SOUND_ENGINE_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
-            <Requires SimVar="TURB ENG N1" Units="PERCENT" Index="2">
-                <Range UpperBound="1" />
-            </Requires>
-        </Sound>
 
         <!-- Play sound whenever the seat belts switch position changes -->
         <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" Units="BOOLEAN" Index="1" ViewPoint="Inside" Continuous="false">
