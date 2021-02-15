@@ -37,7 +37,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.sentMessages = [];
         this.activeSystem = 'FMGC';
         this.messageQueue = [];
-
+        this.costIndexSet = false;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -514,7 +514,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._labelElements[row][col].textContent = label;
     }
 
+    /**
+     * @param {string|CDU_Field} content
+     * @param {number} row
+     * @param {number} col
+     */
     setLine(content, row, col = -1) {
+
+        if (content instanceof CDU_Field) {
+            const field = content;
+            ((col === 0 || col === -1) ? this.onLeftInput : this.onRightInput)[row] = (value) => {
+                field.onSelect(value);
+            };
+            content = content.getValue();
+        }
+
         if (col >= this._lineElements[row].length) {
             return;
         }
