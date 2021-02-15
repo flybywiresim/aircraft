@@ -769,6 +769,11 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                 }
             }
+            if (this.flightPlanManager.isLoadedApproach() && !this.flightPlanManager.isActiveApproach() && (this.flightPlanManager.getActiveWaypointIndex() === -1 || (this.flightPlanManager.getActiveWaypointIndex() > this.flightPlanManager.getLastIndexBeforeApproach()))) {
+                if (SimVar.GetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number") !== 1) {
+                    this.flightPlanManager.tryAutoActivateApproach();
+                }
+            }
             if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue("L:A320_NEO_FCU_STATE", "number") !== 1) {
                 const currentWaypointIndex = this.flightPlanManager.getActiveWaypointIndex();
                 if (currentWaypointIndex !== this._lastRequestedFLCModeWaypointIndex) {
@@ -1737,7 +1742,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (referenceWaypoint) {
             const infos = referenceWaypoint.infos;
             if (infos instanceof WayPointInfo) {
-                await referenceWaypoint.infos.UpdateAirways(); // Sometimes the waypoint is initialized without waiting to the airways array to be filled
+                await referenceWaypoint.infos.UpdateAirway(airwayName); // Sometimes the waypoint is initialized without waiting to the airways array to be filled
                 const airway = infos.airways.find(a => {
                     return a.name === airwayName;
                 });

@@ -534,7 +534,7 @@ class MapInstrument extends ISvgMapRootElement {
             let needCenterOnPlane = false;
             if (lat && long && isFinite(lat) && isFinite(long)) {
                 planeLla = new LatLongAlt(lat, long);
-                const unsmoothedMove = this.navMap.setPlaneCoordinates(lat, long, 0.95);
+                const unsmoothedMove = this.navMap.setPlaneCoordinates(lat, long, 0 /* smoothness */);
                 if (unsmoothedMove) {
                     console.warn("Plane appears to have been teleported. FlightPlan active Waypoint index recalculated.");
                     this.flightPlanManager.recomputeActiveWaypointIndex();
