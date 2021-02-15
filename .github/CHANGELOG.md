@@ -89,6 +89,7 @@
 1. [MISC] Added coffee cup to cockpit - @tyler58546 (tyler58546), @Pleasure0102 (Pleasure)
 1. [ND] Waypoints on the ND now use the correct font - @tyler58546 (tyler58546)
 1. [MISC] Added custom chronometer font - @tyler58546 (tyler58546)
+1. [RMP] Added custom RMP font - @tyler58546 (tyler58546)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
