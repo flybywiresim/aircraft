@@ -88,6 +88,7 @@ class A320_Neo_FCU_Component {
     set textValueContent(_textContent) {
         if (this.textValue != null) {
             this.textValue.textContent = _textContent;
+            this.textValue.innerHTML = this.textValue.innerHTML.replace("{sp}", "&nbsp;");
         }
     }
     getElement(_type, _name) {
@@ -655,7 +656,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
                     this.textValueContent = sign + value;
                 } else {
                     if (this.currentState === A320_Neo_FCU_VSpeed_State.Zeroing) {
-                        this.textValueContent = (" 00oo");
+                        this.textValueContent = ("{sp}00oo");
                     } else {
                         var value = Math.floor(this.currentValue);
                         value = Math.abs(value);
