@@ -3109,23 +3109,26 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Called after runway change
+     * - Sets confirmation prompt state for every entry whether it is defined or not
+     * - Adds message when at least one entry needs to be confirmed
+     * Additional:
+     *   Only prompt the confirmation of FLEX TEMP when the TO runway was changed, not on initial insertion of the runway
      */
     onToDataChanged() {
         const selectedRunway = this.flightPlanManager.getDepartureRunway();
         if (!!selectedRunway) {
             const toRunway = Avionics.Utils.formatRunway(selectedRunway.designation);
-            if (!this.toRunway) {
-                this.toRunway = toRunway;
+            if (toRunway === this.toRunway) {
                 return;
             }
-            if (toRunway !== this.toRunway) {
-                this.toRunway = toRunway;
+            if (this.toRunway) {
+                this._toFlexChecked = !isFinite(this.perfTOTemp);
             }
+            this.toRunway = toRunway;
         }
         this._v1Checked = !isFinite(this.v1Speed);
         this._vRChecked = !isFinite(this.vRSpeed);
         this._v2Checked = !isFinite(this.v2Speed);
-        this._toFlexChecked = !isFinite(this.perfTOTemp);
         if (this._v1Checked && this._vRChecked && this._v2Checked && this._toFlexChecked) {
             return;
         }
