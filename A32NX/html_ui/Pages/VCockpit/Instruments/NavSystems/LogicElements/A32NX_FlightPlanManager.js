@@ -27,6 +27,7 @@ class FlightPlanManager {
         this._isActiveApproachTimeLastSimVarCall = 0;
         this._approachActivated = false;
         this._currentFlightPlanVersion = -1;
+        this._newFlightPlanVersion = -1;
         this._currentFlightPlanApproachVersion = -1;
         FlightPlanManager.DEBUG_INSTANCE = this;
         this.instrument = _instrument;
@@ -471,22 +472,33 @@ class FlightPlanManager {
         });
     }
 
+    _syncFlightPlanVersion() {
+        // Each FPM instance tracks its own local version to guarantee an
+        // increment call will trigger an update, but other instances can also
+        // change the version, so check both the SimVar and the member and take
+        // the newest version
+        const simVarVersion = SimVar.GetSimVarValue("L:A32NX_FLIGHT_PLAN_VERSION", 'number');
+        if (this._newFlightPlanVersion < simVarVersion) {
+            this._newFlightPlanVersion = simVarVersion;
+        }
+    }
+
     _incrementFlightPlanVersion() {
-        // Get most up to date version in case updateFlightPlan hasn't been called yet before the last increment.
-        const currentVersion = SimVar.GetSimVarValue("L:A32NX_FLIGHT_PLAN_VERSION", 'number');
-        SimVar.SetSimVarValue("L:A32NX_FLIGHT_PLAN_VERSION", 'number', currentVersion + 1);
+        this._syncFlightPlanVersion();
+        this._newFlightPlanVersion++;
+        SimVar.SetSimVarValue("L:A32NX_FLIGHT_PLAN_VERSION", 'number', this._newFlightPlanVersion);
     }
 
     updateFlightPlan(callback = () => { }, log = false) {
-        const newVersion = SimVar.GetSimVarValue("L:A32NX_FLIGHT_PLAN_VERSION", 'number');
-        if (newVersion === this._currentFlightPlanVersion) {
+        this._syncFlightPlanVersion();
+        if (this._newFlightPlanVersion === this._currentFlightPlanVersion) {
             if (callback) {
                 callback();
             }
             return;
         }
         const first = this._currentFlightPlanVersion === -1;
-        this._currentFlightPlanVersion = newVersion;
+        this._currentFlightPlanVersion = this._newFlightPlanVersion;
         const t0 = performance.now();
         Coherent.call("GET_FLIGHTPLAN").then((flightPlanData) => {
             const t1 = performance.now();
@@ -543,15 +555,14 @@ class FlightPlanManager {
         });
     }
     updateCurrentApproach(callback = () => { }, log = false, force = false) {
-        const newVersion = SimVar.GetSimVarValue("L:A32NX_FLIGHT_PLAN_VERSION", 'number');
-        if (!force && newVersion === this._currentFlightPlanApproachVersion) {
+        this._syncFlightPlanVersion();
+        if (!force && this._newFlightPlanVersion === this._currentFlightPlanApproachVersion) {
             if (callback) {
                 callback();
             }
             return;
         }
-
-        this._currentFlightPlanApproachVersion = newVersion;
+        this._currentFlightPlanApproachVersion = this._newFlightPlanVersion;
         const t0 = performance.now();
         Coherent.call("GET_APPROACH_FLIGHTPLAN").then((flightPlanData) => {
             this._loadWaypoints(flightPlanData.waypoints, this._approachWaypoints, true, (wps) => {
