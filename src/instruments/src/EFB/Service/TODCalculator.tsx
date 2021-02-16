@@ -37,11 +37,26 @@ export default class TODCalculator {
         return (this.to - this.from) / time;
     }
 
-    public calculateDistance(vs: number): number {
+    public calculateDegree(distance: number): number {
         const verticalDistance = Math.abs(this.from - this.to);
-        const verticalDistanceTime = verticalDistance / Math.abs(vs);
 
-        return (this.avgGroundSpeed / 60) * verticalDistanceTime;
+        return Math.atan(verticalDistance / (distance * 6076.12)) * 180 / Math.PI;
+    }
+
+    public calculateDistance(input: number, unit: 'FTM' | 'DEGREE'): number|null {
+        const verticalDistance = Math.abs(this.from - this.to);
+
+        if(unit === 'FTM') {
+            const verticalDistanceTime = verticalDistance / Math.abs(input);
+
+            return (this.avgGroundSpeed / 60) * verticalDistanceTime;
+        }
+
+        if(unit === 'DEGREE') {
+            return (verticalDistance / Math.tan(input * Math.PI / 180)) * 0.000164579;
+        }
+
+        return null;
     }
 
     private findAverageGroundSpeed(groundSpeedsRanges: groundSpeedRange[]) {
@@ -66,7 +81,9 @@ export default class TODCalculator {
             const rangeStart = get(groundSpeeds, [i, 'from']);
             const rangeEnd = get(groundSpeeds, [i + 1, 'from'], 1000000); // Unrealistic default value to avoid many IFs later
 
-            ranges.push({groundSpeed, range: [rangeStart, rangeEnd]});
+            if(groundSpeed !== '' && groundSpeed != 0 && rangeStart !== '') {
+                ranges.push({groundSpeed, range: [rangeStart, rangeEnd]});
+            }
         }
 
         return ranges;

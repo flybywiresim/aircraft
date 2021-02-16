@@ -21,46 +21,78 @@ import { connect } from 'react-redux';
 import {TOD_CALCULATOR_REDUCER} from "../../Store";
 import {setTodData} from "../../Store/action-creator/tod-calculator";
 import TODCalculator from "../../Service/TODCalculator";
-import {round, isNil, toNumber} from 'lodash';
+import {round, isNil, toNumber, last} from 'lodash';
 import Card from "../../Components/Card/Card";
 import {TOD_CALCULATION_TYPE} from '../../Enum/TODCalculationType.enum';
 
 const Result = ({currentAltitude, targetAltitude, calculation, groundSpeed, ...props}) => {
     const todCalculator = new TODCalculator(toNumber(currentAltitude), toNumber(targetAltitude), groundSpeed);
+    const currentGroundSpeed = last(groundSpeed)['groundSpeed'];
 
     if(isNil(calculation.type)) {
         return null;
     }
 
-    const {headerText, footerText, calculate, unit} = ({
-        [TOD_CALCULATION_TYPE.DISTANCE]: {
-            headerText: 'Desired vertical speed',
-            footerText: '',
-            unit: 'ft/min',
-            calculate: () => todCalculator.calculateVS(calculation.input)
-        },
-        [TOD_CALCULATION_TYPE.VERTICAL_SPEED]: {
-            headerText: `Start your ${targetAltitude > currentAltitude ? 'ascend' : 'descent'} about`,
-            footerText: 'before target',
-            unit: 'NM',
-            calculate: () => todCalculator.calculateDistance(Math.abs(calculation.input))
-        },
+    const results = ({
+        [TOD_CALCULATION_TYPE.DISTANCE]: [
+            {
+                headerText: 'Desired vertical speed',
+                footerText: '',
+                unit: 'ft/min',
+                calculate: () => -round(todCalculator.calculateVS(calculation.input))
+            },
+            {
+                headerText: 'Desired descend angle',
+                footerText: '',
+                unit: 'degrees',
+                calculate: () => -round(todCalculator.calculateDegree(calculation.input), 1)
+            }
+        ],
+        [TOD_CALCULATION_TYPE.VERTICAL_SPEED]: [
+            {
+                headerText: `Start your descent about`,
+                footerText: 'before target',
+                unit: 'NM',
+                calculate: () => round(todCalculator.calculateDistance(Math.abs(calculation.input), 'FTM'))
+            }
+        ],
+        [TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE]: [
+            {
+                headerText: `Start your descent about`,
+                footerText: 'before target',
+                unit: 'NM',
+                calculate: () => round(todCalculator.calculateDistance(Math.abs(calculation.input), 'DEGREE'))
+            }
+        ],
     }[calculation.type]);
 
-    const output = round(calculate());
+    const inputDataValid = targetAltitude !== '' && currentAltitude !== '' && (targetAltitude < currentAltitude) && calculation.input !== '' && currentGroundSpeed > 0;
 
-    if(!isNaN(output) && isFinite(output)) {
+    const calculationValid = (value) => !isNaN(value) && isFinite(value);
+
+    const calculations = results.map(({calculate}) => calculate());
+    const validCalculations = calculations.filter(value => calculationValid(value));
+
+    if(inputDataValid && validCalculations.length > 0) {
         return (
-            <Card {...props} title={'Result'}>
-                <div className={'flex flex-col items-center justify-center'}>
-                    <h1 className="text-white font-medium mb-4 text-2xl">{headerText}</h1>
+            <Card title={'Result'} childrenContainerClassName={'flex-1 flex flex-col justify-center'} {...props}>
+                {results.map(({headerText, footerText, calculate, unit}) => {
+                    const calculation = calculate();
 
-                    <span className={'text-white text-7xl'}>
-                        {output} {unit}
-                    </span>
+                    if(calculationValid(calculation)) {
+                        return (
+                            <div className={'flex flex-col items-center justify-center mb-10 last:mb-0'}>
+                                <h1 className="text-white font-medium mb-4 text-2xl">{headerText}</h1>
 
-                    {!!footerText && <span className="text-white font-medium mt-4 text-2xl">{footerText}</span>}
-                </div>
+                                <span className={'text-white text-6xl whitespace-nowrap'}>
+                                    {calculation} {unit}
+                                </span>
+
+                                {!!footerText && <span className="text-white font-medium mt-4 text-2xl">{footerText}</span>}
+                            </div>
+                        );
+                    }
+                })}
             </Card>
         );
     }

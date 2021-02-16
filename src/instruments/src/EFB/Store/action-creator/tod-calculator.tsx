@@ -16,7 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {ADD_TOD_GROUND_SPEED, REMOVE_TOD_GROUND_SPEED, SET_TOD_DATA, SET_TOD_GROUND_SPEED} from "../actions";
+import {
+    ADD_TOD_GROUND_SPEED, CLEAR_TOD_GROUND_SPEED,
+    REMOVE_TOD_GROUND_SPEED,
+    SET_TOD_DATA,
+    SET_TOD_GROUND_SPEED,
+    SET_TOD_GROUND_SPEED_MODE
+} from "../actions";
+import {TOD_GROUND_SPEED_MODE} from "../../Enum/TODGroundSpeedMode.enum";
 
 export const setTodData = (data) => ({
     type: SET_TOD_DATA,
@@ -37,4 +44,19 @@ export const setTodGroundSpeed = (elementIndex, groundSpeed) => ({
     type: SET_TOD_GROUND_SPEED,
     elementIndex,
     groundSpeed
+});
+
+export const setTodGroundSpeedMode = (groundSpeedMode: TOD_GROUND_SPEED_MODE) => dispatch => {
+    if(groundSpeedMode === TOD_GROUND_SPEED_MODE.AUTO) {
+        dispatch(clearTodGroundSpeed());
+    }
+
+    dispatch({
+        type: SET_TOD_GROUND_SPEED_MODE,
+        groundSpeedMode
+    });
+};
+
+export const clearTodGroundSpeed = () => ({
+    type: CLEAR_TOD_GROUND_SPEED
 });

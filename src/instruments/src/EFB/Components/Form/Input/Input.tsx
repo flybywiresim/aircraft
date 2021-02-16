@@ -18,7 +18,7 @@
 
 import React, {useEffect, useState} from "react";
 import classNames from 'classnames';
-import {isNil, isString} from 'lodash';
+import {isNumber, toNumber} from 'lodash';
 
 import './Input.scss'
 
@@ -48,6 +48,10 @@ const Input = ({
     const [value, setValue] = useState(propsValue);
 
     const onChange = (value) => {
+        if(type === 'number' && value !== '') {
+            value = toNumber(value);
+        }
+
         if(onChangeProps) {
             onChangeProps(value);
         }
@@ -59,7 +63,7 @@ const Input = ({
         onChange(propsValue);
     }, [propsValue]);
 
-    const emptyValue = isNil(value) || (isString(value) && value === '');
+    const emptyValue = value === '' || (isNumber(value) && isNaN(value));
 
     return (
         <div className={classNames('default-input-container', { 'focus-active': focusActive, disabled }, className)}>

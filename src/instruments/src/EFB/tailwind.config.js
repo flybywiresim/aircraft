@@ -63,7 +63,10 @@ module.exports = {
         },
     },
     variants: {
-        extend: {},
+        extend: {
+            display: ['last'],
+            margin: ['last'],
+        },
     },
     plugins: [],
 };
