@@ -7,9 +7,8 @@ $colour-main: hsl(31, 69%, 35%);
 }
 
 @font-face {
-  src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf")
-    format("truetype");
-  font-family: "Digital";
+  src: url("/Fonts/AirbusRMP.ttf") format("truetype");
+  font-family: "AirbusRMP";
   font-style: normal;
   font-weight: 900;
 }
@@ -28,10 +27,10 @@ $colour-main: hsl(31, 69%, 35%);
 
 text {
   alignment-baseline: central;
-  font-family: Digital;
+  font-family: AirbusRMP;
   letter-spacing: 0px;
   fill: $colour-main;
   text-anchor: end;
-  font-size: 52px;
+  font-size: 123px;
   height: 100%;
 }

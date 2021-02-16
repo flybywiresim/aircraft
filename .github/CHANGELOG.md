@@ -82,9 +82,15 @@
 1. [MCDU] Added Check TO Data - @MisterChocker (Leon)
 1. [ND] Removed label from smallest circle in arc mode - @tyler58546 (tyler58546)
 1. [MISC] Added glass reflections and dust - @MoreRightRudder (Mike), @tyler58546 (tyler58546)
+1. [CDU] Support coordinate waypoints from SimBrief, various other route import fixes - @pareil6 (pareil6)
 1. [Sound] Reworked exterior engine sounds - @hotshotp (Boris)
 1. [Sound] Improved interior engine sounds - @hotshotp (Boris)
 1. [Sound] Enchanced APU and gear extension/retraction sounds - @hotshotp (Boris)
+1. [MISC] Added coffee cup to cockpit - @tyler58546 (tyler58546), @Pleasure0102 (Pleasure)
+1. [ND] Waypoints on the ND now use the correct font - @tyler58546 (tyler58546)
+1. [MISC] Added custom chronometer font - @tyler58546 (tyler58546)
+1. [RMP] Added custom RMP font - @tyler58546 (tyler58546)
+1. [FCU] Added custom FCU font - @tyler58546 (tyler58546)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)

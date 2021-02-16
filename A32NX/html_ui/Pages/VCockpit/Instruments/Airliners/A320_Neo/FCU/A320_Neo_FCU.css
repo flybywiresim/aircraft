@@ -3,13 +3,15 @@
 }
 
 @keyframes TemporaryShow {
-  0%, 100% {
+  0%,
+  100% {
     visibility: visible;
   }
 }
 
 @keyframes TemporaryHide {
-  0%, 100% {
+  0%,
+  100% {
     visibility: hidden;
   }
 }
@@ -26,7 +28,7 @@
   height: 100%;
 }
 
-#Electricity[state=off] {
+#Electricity[state="off"] {
   display: none;
 }
 
@@ -52,8 +54,15 @@
 }
 
 @font-face {
+  font-family: "Poppins-SemiBold";
+  src: url("/Fonts/Poppins-SemiBold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
   font-family: "Digital";
-  src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf") format("truetype");
+  src: url("/Fonts/AirbusFCU.ttf") format("truetype");
   font-weight: 900;
   font-style: normal;
 }
@@ -70,28 +79,28 @@
 }
 
 :root text.Active {
-  font-family: Roboto-Regular;
-  font-size: 25px;
+  font-family: "Poppins-SemiBold";
+  font-size: 28px;
   fill: var(--main-display-colour);
 }
 
 :root text.Inactive {
-  font-family: Roboto-Regular;
-  font-size: 25px;
+  font-family: "Poppins-SemiBold";
+  font-size: 28px;
   fill: var(--main-display-colour-inactive);
 }
 
 :root text.Value {
   font-family: Digital;
-  font-size: 66px;
+  font-size: 55px;
   text-anchor: start;
   fill: var(--main-display-colour);
-  letter-spacing: 8px;
+  letter-spacing: 0px;
 }
 
 :root line {
   stroke: var(--main-display-colour);
-  stroke-width: 3;
+  stroke-width: 5;
 }
 
 :root circle {
@@ -102,7 +111,7 @@ a320-neo-fcu-element {
   width: 100%;
   height: 100%;
   background-color: var(--main-display-colour-background);
-  font-family: Roboto-Bold;
+  font-family: "Poppins-SemiBold";
   position: relative;
   overflow: hidden;
 }
@@ -173,9 +182,9 @@ a320-neo-fcu-element #Mainframe #SmallScreen {
   background-color: var(--main-display-colour-background);
 }
 
-a320-neo-fcu-element #Mainframe #SmallScreen #Selected, a320-neo-fcu-element #Mainframe #SmallScreen #Standar {
+a320-neo-fcu-element #Mainframe #SmallScreen #Selected,
+a320-neo-fcu-element #Mainframe #SmallScreen #Standar {
   width: 100%;
   height: 100%;
   top: 0%;
 }
-
