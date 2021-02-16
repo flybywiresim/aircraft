@@ -586,6 +586,7 @@ var A320_Neo_LowerECAM_Elec;
             this.drawEmergencyGenerator();
             this.drawStaticInverter();
             this.drawIntegratedDriveGenerators();
+            this.drawGalleyShed();
         }
 
         drawApuGenerator() {
@@ -966,6 +967,12 @@ var A320_Neo_LowerECAM_Elec;
             const connected = !!SimVar.GetSimVarValue(`L:A32NX_ELEC_ENG_GEN_${number}_IDG_IS_CONNECTED`, "Bool");
             this.whiteWhen(elements.title, connected);
             this.toggle(elements.disc, !connected);
+        }
+
+        drawGalleyShed() {
+            const galleyIsShed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_GALLEY_IS_SHED", "Bool");
+            this.toggle(this.e_GALLEY_SHED_TOP, galleyIsShed);
+            this.toggle(this.e_GALLEY_SHED_BOTTOM, galleyIsShed);
         }
 
         toggle(element, condition) {
