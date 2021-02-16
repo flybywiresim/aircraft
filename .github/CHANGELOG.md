@@ -91,6 +91,9 @@
 1. [MISC] Added custom chronometer font - @tyler58546 (tyler58546)
 1. [RMP] Added custom RMP font - @tyler58546 (tyler58546)
 1. [FCU] Added custom FCU font - @tyler58546 (tyler58546)
+1. [TEXTURE] Updated main landing gear textures - @Inexorable92 (Inexorable)
+1. [MISC] Added brake fan button (with on and hot label) - @Inexorable92 (Inexorable)
+1. [MISC] Better brake cooling simulation (with and without brake fan) - @Inexorable92 (Inexorable)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)

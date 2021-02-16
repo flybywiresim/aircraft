@@ -585,7 +585,7 @@
                 <NODE_ID>DECAL_THROTTLE_01</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
             </UseTemplate>
-            
+
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>DECAL_THROTTLE_02</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
@@ -985,13 +985,11 @@
             </Component>
 
             <Component ID="Brake_Fan_Imported">
-                <UseTemplate Name="FBW_Push_Toggle">
+                <UseTemplate Name="FBW_Push_BrkFan_Toggle">
                     <NODE_ID>PUSH_BKRFAN_IMPORTED</NODE_ID>
                     <ANIM_NAME>PUSH_BKRFAN_IMPORTED</ANIM_NAME>
-                    <SEQ1_NODE_ID>PUSH_BKRFAN_IMPORTED_SEQ1</SEQ1_NODE_ID>
-                    <SEQ2_NODE_ID>PUSH_BKRFAN_IMPORTED_SEQ2</SEQ2_NODE_ID>
-                    <SEQ1_CODE>(L:A32NX_BRAKES_HOT, Bool)</SEQ1_CODE>
-                    <SEQ2_CODE>(L:A32NX_BRAKE_FAN, Bool)</SEQ2_CODE>
+                    <NODE_ID_ON>PUSH_BKRFAN_IMPORTED_SEQ2</NODE_ID_ON>
+                    <NODE_ID_HOT>PUSH_BKRFAN_IMPORTED_SEQ1</NODE_ID_HOT>
                     <TOGGLE_SIMVAR>L:A32NX_BRAKE_FAN_BTN_PRESSED</TOGGLE_SIMVAR>
                     <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Turn OFF brake fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
                 </UseTemplate>
@@ -2985,7 +2983,7 @@
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
                 <POTENTIOMETER>84</POTENTIOMETER>
                 <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
-            </UseTemplate>   
+            </UseTemplate>
 
             <UseTemplate Name="FBW_Airbus_FCU_Altitude_Knob">
                 <NODE_ID>KNOB_AUTOPILOT_KNOB_ALT</NODE_ID>

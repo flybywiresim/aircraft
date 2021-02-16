@@ -25,14 +25,14 @@
             "min": [-0.005100869107991457, -0.003409419907256961, -0.0017630686052143574],
             "max": [0.0052731591276824478, 0.001297126291319728, -0.000057215685956180099],
             "type": "VEC3",
-            "name": "x0_PUSH_BKRFAN_SEQ1_vertices#0_POSITION"
+            "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_vertices#0_POSITION"
         },
-        { "bufferView": 2, "byteOffset": 2820, "componentType": 5120, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_SEQ1_vertices#0_TANGENT" },
-        { "bufferView": 2, "byteOffset": 2824, "componentType": 5120, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_SEQ1_vertices#0_NORMAL" },
-        { "bufferView": 2, "byteOffset": 2828, "componentType": 5122, "count": 6, "type": "VEC2", "name": "x0_PUSH_BKRFAN_SEQ1_vertices#0_TEXCOORD_0" },
-        { "bufferView": 2, "byteOffset": 2832, "componentType": 5122, "count": 6, "type": "VEC2", "name": "x0_PUSH_BKRFAN_SEQ1_vertices#0_TEXCOORD_1" },
-        { "bufferView": 2, "byteOffset": 2836, "componentType": 5123, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_SEQ1_vertices#0_COLOR_0" },
-        { "bufferView": 3, "byteOffset": 444, "componentType": 5123, "count": 6, "type": "SCALAR", "name": "x0_PUSH_BKRFAN_SEQ1_indices#0" },
+        { "bufferView": 2, "byteOffset": 2820, "componentType": 5120, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_vertices#0_TANGENT" },
+        { "bufferView": 2, "byteOffset": 2824, "componentType": 5120, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_vertices#0_NORMAL" },
+        { "bufferView": 2, "byteOffset": 2828, "componentType": 5122, "count": 6, "type": "VEC2", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_vertices#0_TEXCOORD_0" },
+        { "bufferView": 2, "byteOffset": 2832, "componentType": 5122, "count": 6, "type": "VEC2", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_vertices#0_TEXCOORD_1" },
+        { "bufferView": 2, "byteOffset": 2836, "componentType": 5123, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_vertices#0_COLOR_0" },
+        { "bufferView": 3, "byteOffset": 444, "componentType": 5123, "count": 6, "type": "SCALAR", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_indices#0" },
         {
             "bufferView": 2,
             "byteOffset": 3024,
@@ -41,14 +41,14 @@
             "min": [-0.008067578077316285, -0.003059297800064087, -0.0009349584579467773],
             "max": [0.008067578077316285, 0.003059208393096924, 0.000935673713684082],
             "type": "VEC3",
-            "name": "x0_PUSH_BKRFAN_SEQ2_vertices#0_POSITION"
+            "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_vertices#0_POSITION"
         },
-        { "bufferView": 2, "byteOffset": 3036, "componentType": 5120, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_SEQ2_vertices#0_TANGENT" },
-        { "bufferView": 2, "byteOffset": 3040, "componentType": 5120, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_SEQ2_vertices#0_NORMAL" },
-        { "bufferView": 2, "byteOffset": 3044, "componentType": 5122, "count": 6, "type": "VEC2", "name": "x0_PUSH_BKRFAN_SEQ2_vertices#0_TEXCOORD_0" },
-        { "bufferView": 2, "byteOffset": 3048, "componentType": 5122, "count": 6, "type": "VEC2", "name": "x0_PUSH_BKRFAN_SEQ2_vertices#0_TEXCOORD_1" },
-        { "bufferView": 2, "byteOffset": 3052, "componentType": 5123, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_SEQ2_vertices#0_COLOR_0" },
-        { "bufferView": 3, "byteOffset": 456, "componentType": 5123, "count": 6, "type": "SCALAR", "name": "x0_PUSH_BKRFAN_SEQ2_indices#0" }
+        { "bufferView": 2, "byteOffset": 3036, "componentType": 5120, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_vertices#0_TANGENT" },
+        { "bufferView": 2, "byteOffset": 3040, "componentType": 5120, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_vertices#0_NORMAL" },
+        { "bufferView": 2, "byteOffset": 3044, "componentType": 5122, "count": 6, "type": "VEC2", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_vertices#0_TEXCOORD_0" },
+        { "bufferView": 2, "byteOffset": 3048, "componentType": 5122, "count": 6, "type": "VEC2", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_vertices#0_TEXCOORD_1" },
+        { "bufferView": 2, "byteOffset": 3052, "componentType": 5123, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_vertices#0_COLOR_0" },
+        { "bufferView": 3, "byteOffset": 456, "componentType": 5123, "count": 6, "type": "SCALAR", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_indices#0" }
     ],
     "animations": [{ "name": "PUSH_BKRFAN_IMPORTED", "channels": [{ "sampler": 0, "target": { "node": 2, "path": "translation" } }], "samplers": [{ "input": 0, "output": 1, "interpolation": "LINEAR" }] }],
     "asset": {
@@ -90,7 +90,7 @@
                     "extras": { "ASOBO_primitive": { "PrimitiveCount": 2, "VertexType": "VTX", "VertexVersion": 2 } }
                 }
             ],
-            "name": "x0_PUSH_BKRFAN_SEQ1"
+            "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1"
         },
         {
             "primitives": [
@@ -102,7 +102,7 @@
                     "extras": { "ASOBO_primitive": { "PrimitiveCount": 2, "VertexType": "VTX", "VertexVersion": 2 } }
                 }
             ],
-            "name": "x0_PUSH_BKRFAN_SEQ2"
+            "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2"
         },
         {
             "primitives": [
