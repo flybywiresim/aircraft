@@ -581,4 +581,20 @@
             </UseTemplate>
         </Component>
     </Template>
+
+    <Template Name="FBW_Coffee_Cup">
+        <DefaultTemplateParameters>
+            <CLICKZONE_NODE_ID>#NODE_ID#_CLICKZONE</CLICKZONE_NODE_ID>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:XMLVAR_#NODE_ID#_HIDDEN) !</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+        <Component ID="#CLICKZONE_NODE_ID#" Node="#CLICKZONE_NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>(L:XMLVAR_#NODE_ID#_HIDDEN) ! (&gt;L:XMLVAR_#NODE_ID#_HIDDEN)</LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
 </ModelBehaviors>

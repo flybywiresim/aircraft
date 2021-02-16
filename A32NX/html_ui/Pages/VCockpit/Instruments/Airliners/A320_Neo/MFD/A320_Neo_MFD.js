@@ -636,11 +636,9 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
                 forceUpdate = true;
             }
         }
-        if (!forceUpdate) {
-            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-            if (_deltaTime === -1) {
-                return;
-            }
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (!forceUpdate && _deltaTime === -1) {
+            return;
         }
         super.onUpdate(_deltaTime);
     }
