@@ -1,11 +1,9 @@
 class AS530 extends BaseGPS {
-    get templateID() {
-        return "AS530";
-    }
+    get templateID() { return "AS530"; }
     connectedCallback() {
         super.connectedCallback();
         this.menuMaxElems = 11;
-        const defaultNav = new GPS_DefaultNavPage(5, [3, 4, 9, 7, 10]);
+        var defaultNav = new GPS_DefaultNavPage(5, [3, 4, 9, 7, 10]);
         defaultNav.element.addElement(new MapInstrumentElement());
         this.pageGroups = [
             new NavSystemPageGroup("NAV", this, [
@@ -53,7 +51,7 @@ class AS530_VorInfos extends NavSystemElement {
     onEvent(_event) {
     }
     onUpdate(_deltaTime) {
-        const ident = SimVar.GetSimVarValue("NAV SIGNAL:1", "number") > 0 ? SimVar.GetSimVarValue("NAV IDENT:1", "string") : "";
+        let ident = SimVar.GetSimVarValue("NAV SIGNAL:1", "number") > 0 ? SimVar.GetSimVarValue("NAV IDENT:1", "string") : "";
         Avionics.Utils.diffAndSet(this.vor, ident != "" ? ident : "___");
         Avionics.Utils.diffAndSet(this.rad, (SimVar.GetSimVarValue("NAV HAS NAV:1", "bool") ? Math.round(SimVar.GetSimVarValue("NAV RELATIVE BEARING TO STATION:1", "degrees")).toFixed(0) : "___") + "°");
         Avionics.Utils.diffAndSet(this.dis, (SimVar.GetSimVarValue("NAV HAS DME:1", "bool") ? Math.round(SimVar.GetSimVarValue("NAV DME:1", "Nautical Miles")).toFixed(1) : "__._"));

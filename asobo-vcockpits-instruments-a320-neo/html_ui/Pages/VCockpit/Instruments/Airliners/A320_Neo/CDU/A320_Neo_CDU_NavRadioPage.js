@@ -4,7 +4,7 @@ class CDUNavRadioPage {
         mcdu.refreshPageCallback = () => {
             CDUNavRadioPage.ShowPage(mcdu);
         };
-        const radioOn = mcdu.isRadioNavActive();
+        let radioOn = mcdu.isRadioNavActive();
         let vor1FrequencyCell = "";
         let vor1CourseCell = "";
         let ilsFrequencyCell = "";
@@ -16,8 +16,8 @@ class CDUNavRadioPage {
                 vor1FrequencyCell = "[]/" + mcdu.vor1Frequency.toFixed(2);
             }
             mcdu.onLeftInput[0] = () => {
-                const value = mcdu.inOut;
-                const numValue = parseFloat(value);
+                let value = mcdu.inOut;
+                let numValue = parseFloat(value);
                 mcdu.clearUserInput();
                 if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
                     mcdu.vor1Frequency = numValue;
@@ -25,7 +25,8 @@ class CDUNavRadioPage {
                         mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
-                    } else {
+                    }
+                    else {
                         mcdu.radioNav.setVORStandbyFrequency(1, numValue).then(() => {
                             mcdu.radioNav.swapVORFrequencies(1);
                             mcdu.requestCall(() => {
@@ -33,10 +34,12 @@ class CDUNavRadioPage {
                             });
                         });
                     }
-                } else if (value === FMCMainDisplay.clrValue) {
+                }
+                else if (value === FMCMainDisplay.clrValue) {
                     mcdu.vor1Frequency = 0;
                     CDUNavRadioPage.ShowPage(mcdu);
-                } else {
+                }
+                else {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
@@ -45,8 +48,8 @@ class CDUNavRadioPage {
                 vor1CourseCell = mcdu.vor1Course.toFixed(0) + "°";
             }
             mcdu.onLeftInput[1] = () => {
-                const value = mcdu.inOut;
-                const numValue = parseFloat(value);
+                let value = mcdu.inOut;
+                let numValue = parseFloat(value);
                 mcdu.clearUserInput();
                 if (isFinite(numValue) && numValue >= 0 && numValue < 360) {
                     SimVar.SetSimVarValue("K:VOR1_SET", "number", numValue).then(() => {
@@ -55,28 +58,30 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else {
+                }
+                else {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
             ilsFrequencyCell = "[]/ ";
             ilsCourseCell = "[]";
-            const approach = mcdu.flightPlanManager.getApproach();
+            let approach = mcdu.flightPlanManager.getApproach();
             if (approach && approach.name && approach.name.indexOf("ILS") !== -1) {
                 ilsFrequencyCell = Avionics.Utils.formatRunway(approach.name) + "/ ";
-                const runway = mcdu.flightPlanManager.getApproachRunway();
+                let runway = mcdu.flightPlanManager.getApproachRunway();
                 if (runway) {
-                    const magvar = SimVar.GetSimVarValue("MAGVAR", "degrees");
+                    let magvar = SimVar.GetSimVarValue("MAGVAR", "degrees");
                     ilsCourseCell = (runway.direction - magvar).toFixed(0) + "°";
                 }
             }
             if (isFinite(mcdu.ilsFrequency) && mcdu.ilsFrequency > 0) {
                 ilsFrequencyCell += mcdu.ilsFrequency.toFixed(2);
-            } else {
+            }
+            else {
                 ilsFrequencyCell += "[ ]";
             }
             mcdu.onLeftInput[2] = () => {
-                const value = mcdu.inOut;
+                let value = mcdu.inOut;
                 mcdu.clearUserInput();
                 if (mcdu.setIlsFrequency(value)) {
                     CDUNavRadioPage.ShowPage(mcdu);
@@ -87,8 +92,8 @@ class CDUNavRadioPage {
                 adf1FrequencyCell = "[]/" + mcdu.adf1Frequency.toFixed(2);
             }
             mcdu.onLeftInput[4] = () => {
-                const value = mcdu.inOut;
-                const numValue = parseFloat(value);
+                let value = mcdu.inOut;
+                let numValue = parseFloat(value);
                 mcdu.clearUserInput();
                 if (isFinite(numValue) && numValue >= 100 && numValue <= 1699.9) {
                     SimVar.SetSimVarValue("K:ADF_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(numValue * 1000)).then(() => {
@@ -97,7 +102,8 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else {
+                }
+                else {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
@@ -111,8 +117,8 @@ class CDUNavRadioPage {
                 vor2FrequencyCell = "[]/" + mcdu.vor2Frequency.toFixed(2);
             }
             mcdu.onRightInput[0] = () => {
-                const value = mcdu.inOut;
-                const numValue = parseFloat(value);
+                let value = mcdu.inOut;
+                let numValue = parseFloat(value);
                 mcdu.clearUserInput();
                 if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
                     mcdu.vor2Frequency = numValue;
@@ -120,7 +126,8 @@ class CDUNavRadioPage {
                         mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
-                    } else {
+                    }
+                    else {
                         mcdu.radioNav.setVORStandbyFrequency(2, numValue).then(() => {
                             mcdu.radioNav.swapVORFrequencies(2);
                             mcdu.requestCall(() => {
@@ -128,10 +135,12 @@ class CDUNavRadioPage {
                             });
                         });
                     }
-                } else if (value === FMCMainDisplay.clrValue) {
+                }
+                else if (value === FMCMainDisplay.clrValue) {
                     mcdu.vor2Frequency = 0;
                     CDUNavRadioPage.ShowPage(mcdu);
-                } else {
+                }
+                else {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
@@ -140,8 +149,8 @@ class CDUNavRadioPage {
                 vor2CourseCell = mcdu.vor2Course.toFixed(0) + "°";
             }
             mcdu.onRightInput[1] = () => {
-                const value = mcdu.inOut;
-                const numValue = parseFloat(value);
+                let value = mcdu.inOut;
+                let numValue = parseFloat(value);
                 mcdu.clearUserInput();
                 if (isFinite(numValue) && numValue >= 0 && numValue < 360) {
                     SimVar.SetSimVarValue("K:VOR2_SET", "number", numValue).then(() => {
@@ -150,7 +159,8 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else {
+                }
+                else {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
@@ -159,8 +169,8 @@ class CDUNavRadioPage {
                 adf2FrequencyCell = mcdu.adf2Frequency.toFixed(2) + "/[]";
             }
             mcdu.onRightInput[4] = () => {
-                const value = mcdu.inOut;
-                const numValue = parseFloat(value);
+                let value = mcdu.inOut;
+                let numValue = parseFloat(value);
                 mcdu.clearUserInput();
                 if (isFinite(numValue) && numValue >= 100 && numValue <= 1699.9) {
                     SimVar.SetSimVarValue("K:ADF2_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(numValue * 1000)).then(() => {
@@ -169,7 +179,8 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else {
+                }
+                else {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };

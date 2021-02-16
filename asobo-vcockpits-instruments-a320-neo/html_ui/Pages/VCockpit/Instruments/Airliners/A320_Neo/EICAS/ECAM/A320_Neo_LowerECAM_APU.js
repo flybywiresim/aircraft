@@ -8,9 +8,7 @@ var A320_Neo_LowerECAM_APU;
             super();
             this.isInitialised = false;
         }
-        get templateID() {
-            return "LowerECAMAPUTemplate";
-        }
+        get templateID() { return "LowerECAMAPUTemplate"; }
         connectedCallback() {
             super.connectedCallback();
         }

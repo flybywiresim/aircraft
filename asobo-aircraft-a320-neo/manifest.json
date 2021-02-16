@@ -9,13 +9,13 @@
   "title": "A320neo",
   "manufacturer": "Airbus",
   "creator": "Asobo Studio",
-  "package_version": "0.1.72",
-  "minimum_game_version": "1.12.12",
+  "package_version": "0.1.74",
+  "minimum_game_version": "1.13.9",
   "release_notes": {
     "neutral": {
       "LastUpdate": "",
       "OlderHistory": ""
     }
   },
-  "total_package_size": "00000000000641234476"
+  "total_package_size": "00000000000641236202"
 }

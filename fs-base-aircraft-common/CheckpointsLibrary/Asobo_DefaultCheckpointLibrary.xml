@@ -4146,6 +4146,37 @@
         </Test>
       </Sequence>
     </Checkpoint>
+    <Checkpoint Id="RPM_7700-8000RPM_Throttle_full">
+      <Clue name="TT:CLUE.POWER_LEVER_FULL"/>
+      <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_RPM" ExpectationTT="TT:GAME.CHECKLIST_7700-8000RPM_Throttle_Max"/>
+      <Sequence SeqType="Unordered">
+        <Test>
+          <TestValue>
+            <Operator OpType="BETWEEN">
+              <Val SimVarName="GENERAL ENG RPM:1" Units="rpm"/>
+              <Val Value="7500"/>
+              <Val Value="8050"/>
+            </Operator>
+          </TestValue>
+          <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE1_SET" EventParam="16383"/>
+        </Test>
+        <Test>
+          <TestValue>
+            <Operator OpType="EQUAL" Tolerance="2">
+              <Val SimVarName="GENERAL ENG THROTTLE LEVER POSITION:1" Units="percent"/>
+              <Val Value="100"/>
+            </Operator>
+          </TestValue>
+          <Instrument Id="ENGINE_Lever_Throttle"/>
+          <Instrument Id="ENGINE_Lever_Throttle_Copilot"/>
+          <Instrument Id="ENGINE_Lever_Throttle1"/>
+          <Instrument Id="ENGINE_Lever_Throttle2"/>
+          <Instrument Id="HTML:G1000_MFD:Piston_RPMGauge"/>
+          <Instrument Id="HTML:AS1000_MFD:Piston_RPMGauge"/>
+          <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE1_SET" EventParam="16383"/>
+        </Test>
+      </Sequence>
+    </Checkpoint>
     <Checkpoint Id="Engine_Idle_Check_600-700_RPM">
       <Clue name="TT:CLUE.ENGINE_IDLE_CHECK_600-650_RPM"/>
       <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_ENGINE_IDLE" ExpectationTT="TT:GAME.CHECKLIST_CHECK_500_700RPM"/>
@@ -4168,6 +4199,32 @@
         <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE1_SET" EventParam="0"/>
       </Test>
     </Checkpoint>
+    <Checkpoint Id="Engine_Idle_Check_1500-2200_RPM">
+      <Clue name="TT:CLUE.ENGINE_IDLE_CHECK_AROUND_2000_RPM"/>
+      <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_ENGINE_IDLE" ExpectationTT="TT:GAME.CHECKLIST_CHECK"/>
+      <Test>
+        <TestValue>
+          <Operator OpType="BETWEEN">
+            <Val SimVarName="GENERAL ENG RPM:1" Units="rpm"/>
+            <Val Value="1500"/>
+            <Val Value="2200"/>
+          </Operator>
+        </TestValue>
+        <Duration Value="1.5" Cumulative="False"/>
+        <Instrument Id="ENGINE_Lever_Throttle"/>
+        <Instrument Id="ENGINE_Lever_Throttle_Copilot"/>
+        <Instrument Id="ENGINE_Lever_Throttle1"/>
+        <Instrument Id="ENGINE_Lever_Throttle2"/>
+        <Instrument Id="HTML:AS1000_MFD:Piston_RPMGauge"/>
+        <Instrument Id="HTML:AS1000_PFD:Piston_RPMGauge"/>
+        <Instrument Id="HTML:G1000_MFD:Piston_RPMGauge"/>
+        <Instrument Id="INSTRUMENT_Digits_Tachometer"/>
+        <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE1_SET" EventParam="0"/>
+        <Action Copilot="True" Condition="TestValueFalse" SpecialAction="WaitForDuration" Value="3"/>
+      </Test>
+      
+    </Checkpoint>
+    
     <Checkpoint Id="Engine_Idle_Below_1000RPM">
       <Clue name="TT:CLUE.ENGINE_IDLE_BELOW_1000_RPM"/>
       <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_ENGINE_IDLE" ExpectationTT="TT:GAME.CHECKLIST_BELOW_1000RPM"/>
@@ -7253,7 +7310,7 @@
           <Instrument Id="HTML:AS1000_MFD:Piston_RPMGauge"/>
           <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="MAGNETO_BOTH"/>
           <Action Condition="TestValueTrue" Once="false" StoreVar="Magneto_RPM_BOTH">
-            <Val SimVarName="GENERAL ENG RPM:1" Units="rpm"/>
+          <Val SimVarName="GENERAL ENG RPM:1" Units="rpm"/>
           </Action>
         </Test>
         <Sequence SeqType="Unordered">
@@ -9524,6 +9581,17 @@
       <Clue name="TT:CLUE.RUDDER_MAINTAIN_AXIS"/>
       <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_RUDDER" ExpectationTT="TT:GAME.CHECKLIST_MAINTAIN_AXIS"/>
       <Instrument Id="HANDLING_RudderPedals"/>
+      <Test>
+        <Duration Value="2.5" Cumulative="False"/>
+        <TestValue>
+          <Operator OpType="BETWEEN">
+            <Val SimVarName="DELTA HEADING RATE" Units="radians per second"/>
+            <Val Value="-0.02"/>
+            <Val Value="0.02"/>
+          </Operator>
+        </TestValue>
+        <Action Copilot="True" Condition="TestValueFalse" Once="true" SpecialAction="WaitForUserToDoIt"/>
+      </Test>
     </Checkpoint>
     <Checkpoint Id="ELEVATOR_CHECK">
       <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_ELEVATOR" ExpectationTT="TT:GAME.CHECKLIST_CHECK"/>
@@ -9559,14 +9627,19 @@
       <Clue name="TT:CLUE.CONTROL_STICK_FULL_AFT"/>
       <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_CONTROL_STICK" ExpectationTT="TT:GAME.CHECKLIST_FULL_AFT"/>
         <Test>
+          <Once>True</Once>
           <TestValue>
             <Operator OpType="EQUAL" Tolerance="10">
               <Val SimVarName="YOKE Y POSITION" Units="percent"/>
               <Val Value="100"/>
             </Operator>
           </TestValue>
-          <Action Copilot="True" Condition="TestValueFalse" EventID="ELEVATOR_SET" EventParam="16383"/>
-          <Action Copilot="True" Condition="TestValueTrue" SpecialAction="WaitForDuration" Value="1.0"/>
+          <Action Copilot="True" Condition="TestValueFalse" EventID="ELEVATOR_SET" EventParam="-16383"/>
+          <Instrument Id="HANDLING_Yoke_L"/>
+          <Instrument Id="HANDLING_Yoke_R"/>
+          <Instrument Id="HANDLING_Yoke1"/>
+          <Instrument Id="HANDLING_Yoke2"/>
+          <Instrument Id="HANDLING_Yoke"/>
         </Test>
     </Checkpoint>
     
@@ -9791,6 +9864,7 @@
         <Instrument Id="HTML:AS3000_PFD:Horizon"/>
         <Instrument Id="HTML:AS1000_PFD:Horizon"/>
         <Instrument Id="HTML:G3000_PFD:Horizon"/>
+        <Action Copilot="True" Condition="TestValueFalse" Once="true" SpecialAction="WaitUntilTestValueValidated"/>
       </Test>
     </Checkpoint>
     <Checkpoint Id="ROTATION_59_KIAS">
@@ -9957,13 +10031,42 @@
     </Checkpoint>
     <Checkpoint Id="AIRSPEED_REDUCE_BELOW_108_KIAS">
       <Clue name="TT:CLUE.AIRSPEED_BELOW_108KIAS_DESCENT"/>
-      <Feedback name="FEEDBACK.DESCENT_SPEED_REQUIRED"/>
+      <Feedback name="TT:FEEDBACK.DESCENT_SPEED_REQUIRED"/>
       <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_AIRSPEED" ExpectationTT="TT:GAME.CHECKLIST_REDUCE_BELOW_108_KIAS"/>
       <Test>
         <TestValue>
           <Operator OpType="LESS">
             <Val SimVarName="AIRSPEED INDICATED" Units="knots"/>
             <Val Value="108"/>
+          </Operator>
+        </TestValue>
+        <Instrument Id="INSTRUMENT_Needle_Airspeed_Highlight"/>
+        <Action Copilot="True" Condition="TestValueFalse" SpecialAction="WaitUntilTestValueValidated"/>
+      </Test>
+    </Checkpoint>
+    <Checkpoint Id="AIRSPEED_REDUCE_BELOW_26_KIAS">
+      <Clue name="TT:CLUE.AIRSPEED_BELOW_26KIAS_DESCENT"/>
+      <Feedback name="TT:FEEDBACK.DESCENT_SPEED_REQUIRED"/>
+      <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_AIRSPEED" ExpectationTT="TT:GAME.CHECKLIST_REDUCE_BELOW_26_KIAS"/>
+      <Test>
+        <TestValue>
+          <Operator OpType="LESS" Tolerance="2">
+            <Val SimVarName="AIRSPEED INDICATED" Units="knots"/>
+            <Val Value="26"/>
+          </Operator>
+        </TestValue>
+        <Instrument Id="INSTRUMENT_Needle_Airspeed_Highlight"/>
+        <Action Copilot="True" Condition="TestValueFalse" SpecialAction="WaitUntilTestValueValidated"/>
+      </Test>
+    </Checkpoint>
+    <Checkpoint Id="GROUNDSPEED_REDUCE_BELOW_30KMH_TO_TAXI">
+      <Clue name="TT:CLUE.SPEED_REDUCE_TO_TAXI"/>
+      <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_GROUND_SPEED" ExpectationTT="TT:GAME.CHECKLIST_REDUCE_BELOW_30_KMH"/>
+      <Test>
+        <TestValue>
+          <Operator OpType="LESS">
+            <Val SimVarName="GPS GROUND SPEED" Units="kilometer per hour"/>
+            <Val Value="30"/>
           </Operator>
         </TestValue>
         <Instrument Id="INSTRUMENT_Needle_Airspeed_Highlight"/>
@@ -10050,6 +10153,31 @@
           <Operator OpType="GREATER">
             <Val SimVarName="AIRSPEED INDICATED" Units="knots"/>
             <Val Value="55"/>
+          </Operator>
+        </TestValue>
+        <Instrument Id="HTML:G1000_PFD:Airspeed"/>
+        <Instrument Id="HTML:AS1000_PFD:Airspeed"/>
+        <Instrument Id="INSTRUMENT_Needle_Airspeed_Highlight"/>
+        <Action Copilot="True" Condition="TestValueFalse" SpecialAction="WaitUntilTestValueValidated"/>
+      </Test>
+      <Test>
+        <TestValue>
+          <Operator OpType="GREATER">
+            <Val SimVarName="VERTICAL SPEED" Units="Feet per second"/>
+            <Val Value="1"/>
+          </Operator>
+        </TestValue>
+        <Action Copilot="True" Condition="TestValueFalse" SpecialAction="WaitUntilTestValueValidated"/>
+      </Test>
+    </Checkpoint>
+    <Checkpoint Id="Airspeed_26_KIAS">
+      <Clue name="TT:CLUE.AIRSPEED_55_KIAS"/>
+      <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_AIR_SPEED" ExpectationTT="TT:GAME.CHECKLIST_55_KIAS"/>
+      <Test>
+        <TestValue>
+          <Operator OpType="GREATER">
+            <Val SimVarName="AIRSPEED INDICATED" Units="knots"/>
+            <Val Value="26"/>
           </Operator>
         </TestValue>
         <Instrument Id="HTML:G1000_PFD:Airspeed"/>
@@ -10169,6 +10297,26 @@
         <Action Copilot="True" Condition="TestValueFalse" SpecialAction="WaitUntilTestValueValidated"/>
       </Test>
     </Checkpoint>
+    <Checkpoint Id="AIRSPEED_BEST_RATE_OF_CLIMB_26_KIAS">
+      <Clue name="TT:CLUE.AIRSPEED_BEST_RATE_OF_CLIMB_26_KIAS"/>
+      <Feedback name="TT:FEEDBACK.INITIAL_CLIMB_SPEED_REQUIRED"/>
+      <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_AIRSPEED_BEST_RATE_OF_CLIMB" ExpectationTT="TT:GAME.CHECKLIST_26_KIAS"/>
+      <Test>
+        <TestValue>
+          <Operator OpType="EQUAL" Tolerance="5">
+            <Val SimVarName="AIRSPEED INDICATED" Units="knots"/>
+            <Val Value="26"/>
+          </Operator>
+        </TestValue>
+        <Instrument Id="HTML:G1000_PFD:AirSpeedIndicator"/>
+        <Instrument Id="HTML:AS1000_PFD:AirSpeedIndicator"/>
+        <Instrument Id="INSTRUMENT_Needle_Airspeed_Highlight"/>
+        <Instrument Id="INSTRUMENT_Needle_Airspeed"/>
+        <Instrument Id="HTML:AS1000_PFD:Airspeed"/>
+        <Instrument Id="HTML:G1000_PFD:Airspeed"/>
+        <Action Copilot="True" Condition="TestValueFalse" SpecialAction="WaitUntilTestValueValidated"/>
+      </Test>
+    </Checkpoint>
     <Checkpoint Id="AIRSPEED_AS_REQUIRED_FOR_ENROUTE_CLIMB_93_KIAS">
       <Clue name="TT:CLUE.AIR_SPEED_AS_REQUIRED_FOR_ENROUTE_CLIMB_93_KIAS"/>
       <Feedback name="TT:FEEDBACK.ENROUTE_CLIMB_SPEED_REQUIRED"/>
@@ -10236,6 +10384,21 @@
             <Val SimVarName="AIRSPEED INDICATED" Units="knots"/>
             <Val Value="80"/>
             <Val Value="85"/>
+          </Operator>
+        </TestValue>
+        <Instrument Id="INSTRUMENT_Needle_Airspeed_Highlight"/>
+        <Action Copilot="True" Condition="TestValueFalse" SpecialAction="WaitUntilTestValueValidated"/>
+      </Test>
+    </Checkpoint>
+    <Checkpoint Id="Airspeed_43_KIAS">
+      <Clue name="TT:CLUE.AIRSPEED_43_KIAS"/>
+      <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_AIRSPEED" ExpectationTT="TT:GAME.CHECKLIST_43_KIAS"/>
+      <Test>
+        <TestValue>
+          <Operator OpType="BETWEEN">
+            <Val SimVarName="AIRSPEED INDICATED" Units="knots"/>
+            <Val Value="42"/>
+            <Val Value="45"/>
           </Operator>
         </TestValue>
         <Instrument Id="INSTRUMENT_Needle_Airspeed_Highlight"/>

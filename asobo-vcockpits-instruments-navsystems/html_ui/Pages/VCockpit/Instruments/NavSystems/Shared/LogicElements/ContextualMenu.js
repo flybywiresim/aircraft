@@ -5,15 +5,17 @@ class ContextualMenu {
     }
     Update(_gps, _maxElems = 6) {
         _gps.contextualMenuTitle.innerHTML = this.title;
-        let elementsHTML = "";
+        var elementsHTML = "";
         _gps.UpdateSlider(_gps.menuSlider, _gps.menuSliderCursor, _gps.contextualMenuDisplayBeginIndex, _gps.currentContextualMenu.elements.length, _maxElems);
-        for (let i = _gps.contextualMenuDisplayBeginIndex; i < Math.min(this.elements.length, _gps.contextualMenuDisplayBeginIndex + _maxElems); i++) {
+        for (var i = _gps.contextualMenuDisplayBeginIndex; i < Math.min(this.elements.length, _gps.contextualMenuDisplayBeginIndex + _maxElems); i++) {
             if (this.elements[i].isInactive()) {
                 elementsHTML += '<div class="ContextualMenuElement" state="Inactive">' + this.elements[i].name + '</div>';
-            } else {
+            }
+            else {
                 if (i == _gps.cursorIndex) {
                     elementsHTML += '<div class="ContextualMenuElement" state="Selected">' + this.elements[i].name + '</div>';
-                } else {
+                }
+                else {
                     elementsHTML += '<div class="ContextualMenuElement" state="Unselected">' + this.elements[i].name + '</div>';
                 }
             }
@@ -28,7 +30,7 @@ class ContextualMenuConfirmation extends ContextualMenu {
     }
     Update(_gps) {
         _gps.contextualMenuTitle.innerHTML = this.title;
-        let ElementsHTML = "";
+        var ElementsHTML = "";
         _gps.menuSlider.setAttribute("state", "Inactive");
         ElementsHTML += '<div class="ContextualMenuElement" state="Unselected">' + this.message + '</div>';
         ElementsHTML += '<div id="ContextualMenuSeparator"></div>';
@@ -50,7 +52,8 @@ class ContextualMenuElement {
     isInactive() {
         if (this.inactiveCallback instanceof Function) {
             return this.inactiveCallback();
-        } else {
+        }
+        else {
             return this.inactiveCallback;
         }
     }

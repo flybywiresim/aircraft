@@ -38,9 +38,7 @@ var A320_Neo_BRK;
         constructor() {
             super();
         }
-        get templateID() {
-            return "A320_Neo_BRK";
-        }
+        get templateID() { return "A320_Neo_BRK"; }
         connectedCallback() {
             super.connectedCallback();
             this.topGauge = new A320_Neo_BRK_Gauge(this.querySelector("#topGauge"), 0, 4);
@@ -93,11 +91,11 @@ var A320_Neo_BRK;
                 this.markersGroup.setAttribute("class", "markers");
                 this.markersGroup.setAttribute("transform", A320_Neo_BRK_Definitions.Common.DEFAULT_TRANSLATE_STRING);
                 _svgGroup.appendChild(this.markersGroup);
-                const dialFrameGroup = document.createElementNS(Avionics.SVG.NS, "g");
+                var dialFrameGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 dialFrameGroup.setAttribute("class", "dialFrame");
                 dialFrameGroup.setAttribute("transform", A320_Neo_BRK_Definitions.Common.DEFAULT_TRANSLATE_STRING);
                 {
-                    const dialFrameShape = document.createElementNS(Avionics.SVG.NS, "path");
+                    var dialFrameShape = document.createElementNS(Avionics.SVG.NS, "path");
                     var d = [
                         "M", A320_Neo_BRK_Definitions.DialFrame.START.x, A320_Neo_BRK_Definitions.DialFrame.START.y,
                         "L", A320_Neo_BRK_Definitions.DialFrame.OUTER_RADIUS, A320_Neo_BRK_Definitions.DialFrame.START.y,
@@ -112,7 +110,7 @@ var A320_Neo_BRK;
                 this.indicatorGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.indicatorGroup.setAttribute("class", "indicator");
                 {
-                    const indicatorArrow = document.createElementNS(Avionics.SVG.NS, "path");
+                    var indicatorArrow = document.createElementNS(Avionics.SVG.NS, "path");
                     indicatorArrow.setAttribute("class", "indicatorArrow");
                     var d = [
                         "M 0", -A320_Neo_BRK_Definitions.Indicator.ARROW_HALF_HEIGHT,
@@ -125,7 +123,7 @@ var A320_Neo_BRK;
                     this.indicatorGroup.appendChild(indicatorArrow);
                 }
                 {
-                    const indicatorCircle = document.createElementNS(Avionics.SVG.NS, "circle");
+                    var indicatorCircle = document.createElementNS(Avionics.SVG.NS, "circle");
                     indicatorCircle.setAttribute("class", "indicatorCircle");
                     indicatorCircle.setAttribute("r", A320_Neo_BRK_Definitions.Indicator.CIRCLE_RADIUS.toString());
                     indicatorCircle.setAttribute("cx", "0");
@@ -138,19 +136,20 @@ var A320_Neo_BRK;
         }
         addMarker(_value, _isShort) {
             if (this.markersGroup != null) {
-                const dir = this.valueToDir(_value);
-                const start = new Vec2(0, 0);
+                var dir = this.valueToDir(_value);
+                var start = new Vec2(0, 0);
                 start.x += dir.x * A320_Neo_BRK_Definitions.Marker.START_RADIUS;
                 start.y += dir.y * A320_Neo_BRK_Definitions.Marker.START_RADIUS;
-                const end = new Vec2(start.x, start.y);
+                var end = new Vec2(start.x, start.y);
                 if (_isShort) {
                     end.x += dir.x * A320_Neo_BRK_Definitions.Marker.LENGTH_SHORT;
                     end.y += dir.y * A320_Neo_BRK_Definitions.Marker.LENGTH_SHORT;
-                } else {
+                }
+                else {
                     end.x += dir.x * A320_Neo_BRK_Definitions.Marker.LENGTH_LONG;
                     end.y += dir.y * A320_Neo_BRK_Definitions.Marker.LENGTH_LONG;
                 }
-                const line = document.createElementNS(Avionics.SVG.NS, "line");
+                var line = document.createElementNS(Avionics.SVG.NS, "line");
                 line.setAttribute("class", "marker");
                 line.setAttribute("x1", start.x.toString());
                 line.setAttribute("y1", start.y.toString());
@@ -164,16 +163,16 @@ var A320_Neo_BRK;
                 _startValue = Utils.Clamp(_startValue, this.minValue, this.maxValue);
                 _endValue = Utils.Clamp(_endValue, this.minValue, this.maxValue);
                 if (_startValue != _endValue) {
-                    const arc = document.createElementNS(Avionics.SVG.NS, "path");
+                    var arc = document.createElementNS(Avionics.SVG.NS, "path");
                     arc.setAttribute("class", "outerArc");
-                    let d = "";
-                    const startAngle = this.valueToAngle(_startValue, true);
-                    const startX = (Math.cos(startAngle) * A320_Neo_BRK_Definitions.OuterArc.RADIUS);
-                    const startY = (Math.sin(startAngle) * A320_Neo_BRK_Definitions.OuterArc.RADIUS);
-                    const endAngle = this.valueToAngle(_endValue, true);
-                    const endX = (Math.cos(endAngle) * A320_Neo_BRK_Definitions.OuterArc.RADIUS);
-                    const endY = (Math.sin(endAngle) * A320_Neo_BRK_Definitions.OuterArc.RADIUS);
-                    const largeArcFlag = ((endAngle - startAngle) <= Math.PI) ? "0 0 0" : "0 1 0";
+                    var d = "";
+                    var startAngle = this.valueToAngle(_startValue, true);
+                    var startX = (Math.cos(startAngle) * A320_Neo_BRK_Definitions.OuterArc.RADIUS);
+                    var startY = (Math.sin(startAngle) * A320_Neo_BRK_Definitions.OuterArc.RADIUS);
+                    var endAngle = this.valueToAngle(_endValue, true);
+                    var endX = (Math.cos(endAngle) * A320_Neo_BRK_Definitions.OuterArc.RADIUS);
+                    var endY = (Math.sin(endAngle) * A320_Neo_BRK_Definitions.OuterArc.RADIUS);
+                    var largeArcFlag = ((endAngle - startAngle) <= Math.PI) ? "0 0 0" : "0 1 0";
                     d = [
                         "M", endX, endY,
                         "A", A320_Neo_BRK_Definitions.OuterArc.RADIUS, A320_Neo_BRK_Definitions.OuterArc.RADIUS, largeArcFlag, startX, startY
@@ -184,15 +183,15 @@ var A320_Neo_BRK;
             }
         }
         valueToAngle(_value, _radians) {
-            const percentage = (_value - this.minValue) / (this.maxValue - this.minValue);
-            let angle = (A320_Neo_BRK_Definitions.Indicator.ANGLE_MIN + ((A320_Neo_BRK_Definitions.Indicator.ANGLE_MAX - A320_Neo_BRK_Definitions.Indicator.ANGLE_MIN) * percentage));
+            var percentage = (_value - this.minValue) / (this.maxValue - this.minValue);
+            var angle = (A320_Neo_BRK_Definitions.Indicator.ANGLE_MIN + ((A320_Neo_BRK_Definitions.Indicator.ANGLE_MAX - A320_Neo_BRK_Definitions.Indicator.ANGLE_MIN) * percentage));
             if (_radians) {
                 angle *= (Math.PI / 180.0);
             }
             return angle;
         }
         valueToDir(_value) {
-            const angle = this.valueToAngle(_value, true);
+            var angle = this.valueToAngle(_value, true);
             return (new Vec2(Math.cos(angle), Math.sin(angle)));
         }
         setValue(_value, _force = false) {

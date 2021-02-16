@@ -5,17 +5,17 @@
       "package_version": "0.1.13"
     }
   ],
-  "content_type": "CORE",
-  "title": "",
+  "content_type": "INSTRUMENTS",
+  "title": "Airbus A320Neo vcockpit",
   "manufacturer": "",
   "creator": "Asobo Studio",
-  "package_version": "0.1.81",
-  "minimum_game_version": "1.12.13",
+  "package_version": "0.1.93",
+  "minimum_game_version": "1.13.13",
   "release_notes": {
     "neutral": {
       "LastUpdate": "",
       "OlderHistory": ""
     }
   },
-  "total_package_size": "00000000000000524161"
+  "total_package_size": "00000000000000523489"
 }

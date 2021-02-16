@@ -8,7 +8,8 @@ class SelectableElement {
     SendEvent(_event = null, _index = -1) {
         if (_index == -1) {
             return this.callBack(_event);
-        } else {
+        }
+        else {
             return this.callBack(_event, _index);
         }
     }
@@ -21,9 +22,11 @@ class SelectableElement {
     updateSelection(_selected) {
         if (!this.isActive) {
             this.element.setAttribute("state", "Greyed");
-        } else if (_selected) {
+        }
+        else if (_selected) {
             this.element.setAttribute("state", "Selected");
-        } else {
+        }
+        else {
             this.element.setAttribute("state", "Unselected");
         }
     }
@@ -34,9 +37,10 @@ class SelectableElement {
         this.isActive = _active;
         if (_active) {
             this.element.setAttribute("state", "Unselected");
-        } else {
+        }
+        else {
             if (this.gps.currentSelectableArray && this.gps.currentSelectableArray[this.gps.cursorIndex] == this) {
-                const begin = this.gps.cursorIndex;
+                let begin = this.gps.cursorIndex;
                 this.gps.cursorIndex = (this.gps.cursorIndex + 1) % this.gps.currentSelectableArray.length;
                 while (!this.gps.currentSelectableArray[this.gps.cursorIndex].isActive) {
                     this.gps.cursorIndex = (this.gps.cursorIndex + 1) % this.gps.currentSelectableArray.length;
@@ -61,7 +65,8 @@ class DynamicSelectableElement extends SelectableElement {
     updateSelection(_selected) {
         if (_selected) {
             this.GetElement().setAttribute("state", "Selected");
-        } else {
+        }
+        else {
             this.GetElement().setAttribute("state", "Unselected");
         }
     }
@@ -74,11 +79,12 @@ class SelectableElementGroup extends SelectableElement {
         this.index = 0;
     }
     onEvent(_event, _index = -1) {
-        let result;
+        var result;
         if (this.callbacks[this.index]) {
             if (_index == -1) {
                 result = this.callbacks[this.index](_event);
-            } else {
+            }
+            else {
                 result = this.callbacks[this.index](_event, _index);
             }
         }
@@ -88,7 +94,8 @@ class SelectableElementGroup extends SelectableElement {
                     if (this.index < this.callbacks.length - 1) {
                         this.index++;
                         result = this.skipInexistantElements(true);
-                    } else {
+                    }
+                    else {
                         result = false;
                     }
                     break;
@@ -96,7 +103,8 @@ class SelectableElementGroup extends SelectableElement {
                     if (this.index > 0) {
                         this.index--;
                         result = this.skipInexistantElements(false);
-                    } else {
+                    }
+                    else {
                         result = false;
                     }
                     break;
@@ -108,7 +116,8 @@ class SelectableElementGroup extends SelectableElement {
         if (_event == "NavigationLargeInc") {
             this.index = 0;
             return this.skipInexistantElements(true);
-        } else if (_event == "NavigationLargeDec") {
+        }
+        else if (_event == "NavigationLargeDec") {
             this.index = this.callbacks.length - 1;
             return this.skipInexistantElements(false);
         }
@@ -129,11 +138,12 @@ class SelectableElementGroup extends SelectableElement {
     }
     updateSelection(_selected) {
         for (let i = 0; i < this.callbacks.length; i++) {
-            const element = this.element.getElementsByClassName("Select" + i)[0];
+            var element = this.element.getElementsByClassName("Select" + i)[0];
             if (element) {
                 if (_selected && i == this.index) {
                     element.setAttribute("state", "Selected");
-                } else {
+                }
+                else {
                     element.setAttribute("state", "Unselected");
                 }
             }
@@ -163,7 +173,7 @@ class SelectableElementSliderGroup extends SelectableElement {
         this.emptyLine = _emptyLine;
     }
     onEvent(_event) {
-        let result;
+        var result;
         if (this.stringElements.length > 0) {
             result = this.elements[this.index].SendEvent(_event, this.offset + this.index);
             if (!result) {
@@ -175,10 +185,12 @@ class SelectableElementSliderGroup extends SelectableElement {
                                     this.offset += this.step;
                                     this.index -= (this.step - 1);
                                     result = true;
-                                } else {
+                                }
+                                else {
                                     result = false;
                                 }
-                            } else {
+                            }
+                            else {
                                 if (this.index < Math.min(this.elements.length, this.stringElements.length) - 1) {
                                     this.index++;
                                     result = true;
@@ -193,10 +205,12 @@ class SelectableElementSliderGroup extends SelectableElement {
                                     this.offset -= this.step;
                                     this.index += (this.step - 1);
                                     result = true;
-                                } else {
+                                }
+                                else {
                                     result = false;
                                 }
-                            } else {
+                            }
+                            else {
                                 this.index--;
                                 result = true;
                             }
@@ -224,7 +238,8 @@ class SelectableElementSliderGroup extends SelectableElement {
         for (let i = 0; i < this.elements.length; i++) {
             if (_selected && i == this.index) {
                 this.elements[i].updateSelection(true);
-            } else {
+            }
+            else {
                 this.elements[i].updateSelection(false);
             }
         }
@@ -252,27 +267,32 @@ class SelectableElementSliderGroup extends SelectableElement {
                         this.offset += this.step;
                         this.index -= (this.step - 1);
                         result = true;
-                    } else {
+                    }
+                    else {
                         result = false;
                     }
-                } else {
+                }
+                else {
                     if (this.index < Math.min(this.elements.length, this.stringElements.length) - 1) {
                         this.index++;
                         result = true;
                     }
                 }
             } while (result && !this.elements[this.index].onSelection("NavigationLargeInc"));
-        } else {
+        }
+        else {
             do {
                 if (this.index == 0) {
                     if (this.offset > 0) {
                         this.offset -= this.step;
                         this.index += (this.step - 1);
                         result = true;
-                    } else {
+                    }
+                    else {
                         result = false;
                     }
-                } else {
+                }
+                else {
                     this.index--;
                     result = true;
                 }
@@ -286,7 +306,8 @@ class SelectableElementSliderGroup extends SelectableElement {
         if (_event == "NavigationLargeInc") {
             this.offset = 0;
             this.index = 0;
-        } else if (_event == "NavigationLargeDec") {
+        }
+        else if (_event == "NavigationLargeDec") {
             this.offset = Math.max(0, this.stringElements.length - this.elements.length);
             this.index = Math.min(this.stringElements.length, this.elements.length) - 1;
         }
@@ -300,13 +321,14 @@ class SelectableElementSliderGroup extends SelectableElement {
         if (this.isDisplayLocked) {
             return;
         }
-        const nbElements = this.stringElements.length;
-        const maxDisplayedElements = this.elements.length;
+        var nbElements = this.stringElements.length;
+        var maxDisplayedElements = this.elements.length;
         if (nbElements > maxDisplayedElements) {
             this.slider.setAttribute("state", "Active");
             this.sliderCursor.setAttribute("style", "height:" + (maxDisplayedElements * 100 / nbElements) +
                 "%;top:" + (this.offset * 100 / nbElements) + "%");
-        } else {
+        }
+        else {
             this.slider.setAttribute("state", "Inactive");
         }
         for (let i = 0; i < Math.min(this.elements.length, this.stringElements.length); i++) {

@@ -25,10 +25,12 @@ class SvgNearestNDBElement extends SvgWaypointElement {
         let fName = "";
         if (this.source && this.source.imageFileName) {
             fName = this.source.imageFileName();
-        } else {
+        }
+        else {
             if (this.ndbType === 1) {
                 fName = "ICON_MAP_NDB_WAYPOINT.svg";
-            } else {
+            }
+            else {
                 fName = "ICON_MAP_NDB_WAYPOINT.svg";
             }
         }

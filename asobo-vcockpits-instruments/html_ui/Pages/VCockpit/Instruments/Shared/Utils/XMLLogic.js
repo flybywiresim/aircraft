@@ -38,18 +38,20 @@ class LogicXMLElement {
         this.element = _element;
     }
     getValueAsNumber(_context) {
-        const value = this.getValue(_context);
+        let value = this.getValue(_context);
         if (typeof value == 'number') {
             return value;
-        } else {
+        }
+        else {
             return 0;
         }
     }
     getValueAsString(_context) {
-        const value = this.getValue(_context);
+        let value = this.getValue(_context);
         if (typeof value == 'number') {
             return value.toString();
-        } else {
+        }
+        else {
             return value;
         }
     }
@@ -203,7 +205,8 @@ class NotLogicXMLElement extends CompositeLogicXMLElement {
         if (this.childrens.length == 1) {
             if (this.childrens[0].getValue(_context) == 0) {
                 return 1;
-            } else {
+            }
+            else {
                 return 0;
             }
         }
@@ -215,22 +218,22 @@ class MultiplyLogicXMLElement extends CompositeLogicXMLElement {
         if (this.childrens.length > 0) {
             let result = 1;
             for (let i = 0; i < this.childrens.length; i++) {
-                const childValue = this.childrens[i].getValue(_context);
+                let childValue = this.childrens[i].getValue(_context);
                 if (typeof childValue == 'number') {
                     result *= childValue;
                 }
             }
             return result;
-        } else {
-            return undefined;
         }
+        else
+            return undefined;
     }
 }
 class DivideLogicXMLElement extends CompositeLogicXMLElement {
     getValue(_context) {
         if (this.childrens.length == 2) {
-            const c1 = this.childrens[0].getValue(_context);
-            const c2 = this.childrens[1].getValue(_context);
+            let c1 = this.childrens[0].getValue(_context);
+            let c2 = this.childrens[1].getValue(_context);
             if (typeof c1 == 'number' && typeof c2 == 'number') {
                 return c1 / c2;
             }
@@ -245,20 +248,24 @@ class AddLogicXMLElement extends CompositeLogicXMLElement {
             let stringResult = "";
             let isString = false;
             for (let i = 0; i < this.childrens.length; i++) {
-                const childValue = this.childrens[i].getValue(_context);
+                let childValue = this.childrens[i].getValue(_context);
                 if (typeof childValue == 'number') {
                     if (isString) {
                         stringResult += childValue.toString();
-                    } else {
+                    }
+                    else {
                         result += childValue;
                     }
-                } else {
+                }
+                else {
                     if (isString) {
                         stringResult += childValue;
-                    } else {
+                    }
+                    else {
                         if (i == 0) {
                             stringResult = childValue;
-                        } else {
+                        }
+                        else {
                             stringResult = result.toString() + childValue;
                         }
                     }
@@ -266,16 +273,16 @@ class AddLogicXMLElement extends CompositeLogicXMLElement {
                 }
             }
             return isString ? stringResult : result;
-        } else {
-            return undefined;
         }
+        else
+            return undefined;
     }
 }
 class SubstractLogicXMLElement extends CompositeLogicXMLElement {
     getValue(_context) {
         if (this.childrens.length == 2) {
-            const c1 = this.childrens[0].getValue(_context);
-            const c2 = this.childrens[1].getValue(_context);
+            let c1 = this.childrens[0].getValue(_context);
+            let c2 = this.childrens[1].getValue(_context);
             if (typeof c1 == 'number' && typeof c2 == 'number') {
                 return c1 - c2;
             }
@@ -287,7 +294,7 @@ class MaxLogicXMLElement extends CompositeLogicXMLElement {
     getValue(_context) {
         let max = this.childrens.length > 0 ? this.childrens[0].getValueAsNumber(_context) : undefined;
         for (let i = 1; i < this.childrens.length; i++) {
-            const val = this.childrens[i].getValueAsNumber(_context);
+            let val = this.childrens[i].getValueAsNumber(_context);
             if (val > max) {
                 max = val;
             }
@@ -299,7 +306,7 @@ class MinLogicXMLElement extends CompositeLogicXMLElement {
     getValue(_context) {
         let min = this.childrens.length > 0 ? this.childrens[0].getValueAsNumber(_context) : undefined;
         for (let i = 1; i < this.childrens.length; i++) {
-            const val = this.childrens[i].getValueAsNumber(_context);
+            let val = this.childrens[i].getValueAsNumber(_context);
             if (val < min) {
                 min = val;
             }
@@ -343,7 +350,7 @@ class EqualLogicXMLElement extends CompositeLogicXMLElement {
     constructor(_gps, _element) {
         super(_gps, _element);
         this.tolerance = 0;
-        const tolerance = _element.getAttribute("tolerance");
+        let tolerance = _element.getAttribute("tolerance");
         if (tolerance) {
             this.tolerance = parseFloat(tolerance);
         }
@@ -351,13 +358,14 @@ class EqualLogicXMLElement extends CompositeLogicXMLElement {
     getValue(_context) {
         for (let i = 0; i < this.childrens.length + 1; i++) {
             for (let j = i + 1; j < this.childrens.length; j++) {
-                const c1 = this.childrens[i].getValue(_context);
-                const c2 = this.childrens[j].getValue(_context);
+                let c1 = this.childrens[i].getValue(_context);
+                let c2 = this.childrens[j].getValue(_context);
                 if (typeof c1 == 'number' && typeof c2 == 'number') {
                     if (Math.abs(c1 - c2) > this.tolerance) {
                         return 0;
                     }
-                } else {
+                }
+                else {
                     if (c1 != c2) {
                         return 0;
                     }
@@ -371,7 +379,7 @@ class DifferentLogicXMLElement extends CompositeLogicXMLElement {
     constructor(_gps, _element) {
         super(_gps, _element);
         this.tolerance = 0;
-        const tolerance = _element.getAttribute("tolerance");
+        let tolerance = _element.getAttribute("tolerance");
         if (tolerance) {
             this.tolerance = parseFloat(tolerance);
         }
@@ -379,13 +387,14 @@ class DifferentLogicXMLElement extends CompositeLogicXMLElement {
     getValue(_context) {
         for (let i = 0; i < this.childrens.length + 1; i++) {
             for (let j = i + 1; j < this.childrens.length; j++) {
-                const c1 = this.childrens[i].getValue(_context);
-                const c2 = this.childrens[j].getValue(_context);
+                let c1 = this.childrens[i].getValue(_context);
+                let c2 = this.childrens[j].getValue(_context);
                 if (typeof c1 == 'number' && typeof c2 == 'number') {
                     if (Math.abs(c1 - c2) > this.tolerance) {
                         return 1;
                     }
-                } else {
+                }
+                else {
                     if (c1 != c2) {
                         return 1;
                     }
@@ -409,7 +418,8 @@ class TimerLogicXMLElement extends CompositeLogicXMLElement {
                     this.wasTrue = true;
                     this.timerBegin = Date.now();
                 }
-            } else {
+            }
+            else {
                 this.wasTrue = false;
             }
             return (this.wasTrue && Date.now() - this.timerBegin >= this.time ? 1 : 0);
@@ -445,10 +455,11 @@ class GamevarLogicXMLElement extends LogicXMLElement {
 class ConstantLogicXMLElement extends LogicXMLElement {
     constructor(_gps, _element) {
         super(_gps, _element);
-        const floatValue = parseFloat(_element.textContent);
+        let floatValue = parseFloat(_element.textContent);
         if (!isNaN(floatValue)) {
             this.value = floatValue;
-        } else {
+        }
+        else {
             this.value = _element.textContent;
         }
     }
@@ -469,31 +480,31 @@ class InstrumentWasOffLogicXMLElement extends LogicXMLElement {
 class LinearMultiPointLogicXMLElement extends LogicXMLElement {
     constructor(_gps, _element) {
         super(_gps, _element);
-        const referencePoints = _element.getElementsByTagName("ReferencePoints");
+        let referencePoints = _element.getElementsByTagName("ReferencePoints");
         if (referencePoints.length > 0) {
-            const points = referencePoints[0].textContent.split(",");
+            let points = referencePoints[0].textContent.split(",");
             this.referencePoints = [];
             for (let i = 0; i < points.length; i++) {
                 this.referencePoints.push(parseFloat(points[i]));
             }
         }
-        const minimums = _element.getElementsByTagName("Minimums");
+        let minimums = _element.getElementsByTagName("Minimums");
         if (minimums.length > 0) {
-            const points = minimums[0].textContent.split(",");
+            let points = minimums[0].textContent.split(",");
             this.minimums = [];
             for (let i = 0; i < points.length; i++) {
                 this.minimums.push(parseFloat(points[i]));
             }
         }
-        const maximums = _element.getElementsByTagName("Maximums");
+        let maximums = _element.getElementsByTagName("Maximums");
         if (maximums.length > 0) {
-            const points = maximums[0].textContent.split(",");
+            let points = maximums[0].textContent.split(",");
             this.maximums = [];
             for (let i = 0; i < points.length; i++) {
                 this.maximums.push(parseFloat(points[i]));
             }
         }
-        const params = _element.getElementsByTagName("Param");
+        let params = _element.getElementsByTagName("Param");
         if (params.length > 1) {
             this.param1 = new CompositeLogicXMLElement(this.gps, params[0]);
             this.param2 = new CompositeLogicXMLElement(this.gps, params[1]);
@@ -501,13 +512,14 @@ class LinearMultiPointLogicXMLElement extends LogicXMLElement {
     }
     getValue() {
         let lastLowerIndex = -1;
-        const valueX = this.param1.getValue();
-        const valueY = this.param2.getValue();
+        let valueX = this.param1.getValue();
+        let valueY = this.param2.getValue();
         if (typeof valueX == 'number' && typeof valueY == 'number') {
             for (let i = 0; i < this.referencePoints.length; i++) {
                 if (valueX > this.referencePoints[i]) {
                     lastLowerIndex = i;
-                } else {
+                }
+                else {
                     break;
                 }
             }
@@ -518,15 +530,17 @@ class LinearMultiPointLogicXMLElement extends LogicXMLElement {
                 if (this.maximums && valueY > this.maximums[lastLowerIndex]) {
                     return 0;
                 }
-            } else if (lastLowerIndex == -1) {
+            }
+            else if (lastLowerIndex == -1) {
                 if (this.minimums && valueY < this.minimums[0]) {
                     return 0;
                 }
                 if (this.maximums && valueY > this.maximums[0]) {
                     return 0;
                 }
-            } else {
-                const factorLower = 1 - ((valueX - this.referencePoints[lastLowerIndex]) / this.referencePoints[lastLowerIndex + 1] - this.referencePoints[lastLowerIndex]);
+            }
+            else {
+                let factorLower = 1 - ((valueX - this.referencePoints[lastLowerIndex]) / this.referencePoints[lastLowerIndex + 1] - this.referencePoints[lastLowerIndex]);
                 if (this.minimums && valueY < (this.minimums[lastLowerIndex] * factorLower + this.minimums[lastLowerIndex + 1] * (1 - factorLower))) {
                     return 0;
                 }
@@ -540,12 +554,10 @@ class LinearMultiPointLogicXMLElement extends LogicXMLElement {
     }
     reset() {
         super.reset();
-        if (this.param1) {
+        if (this.param1)
             this.param1.reset();
-        }
-        if (this.param2) {
+        if (this.param2)
             this.param2.reset();
-        }
     }
 }
 class StateTransitionLogicXML {
@@ -555,16 +567,16 @@ class StateLogicXML {
 class StateMachineLogicXMLElement extends LogicXMLElement {
     constructor(_gps, _element) {
         super(_gps, _element);
-        const stateElements = _element.getElementsByTagName("State");
+        let stateElements = _element.getElementsByTagName("State");
         this.states = [];
         for (let i = 0; i < stateElements.length; i++) {
-            const state = new StateLogicXML();
+            let state = new StateLogicXML();
             state.id = new Name_Z(stateElements[i].getAttribute("id"));
             state.value = parseFloat(stateElements[i].getAttribute("value"));
-            const transitionElements = stateElements[i].getElementsByTagName("Transition");
+            let transitionElements = stateElements[i].getElementsByTagName("Transition");
             state.transitions = [];
             for (let i = 0; i < transitionElements.length; i++) {
-                const transition = new StateTransitionLogicXML();
+                let transition = new StateTransitionLogicXML();
                 transition.toId = new Name_Z(transitionElements[i].getAttribute("to"));
                 transition.conditions = new CompositeLogicXMLElement(_gps, transitionElements[i]);
                 state.transitions.push(transition);
@@ -601,10 +613,11 @@ class ToFixedLogicXMLElement extends CompositeLogicXMLElement {
     }
     getValue(_context) {
         if (this.childrens.length > 0) {
-            const childValue = this.childrens[0].getValue(_context);
+            let childValue = this.childrens[0].getValue(_context);
             if (typeof childValue == 'number') {
                 return childValue.toFixed(this.precision);
-            } else {
+            }
+            else {
                 return childValue;
             }
         }
@@ -632,28 +645,26 @@ class IfLogicXMLElement extends LogicXMLElement {
         if (this.condition.getValue() != 0) {
             if (this.then) {
                 return this.then.getValue();
-            } else {
-                return 0;
             }
-        } else {
+            else
+                return 0;
+        }
+        else {
             if (this.else) {
                 return this.else.getValue();
-            } else {
-                return 0;
             }
+            else
+                return 0;
         }
     }
     reset() {
         super.reset();
-        if (this.condition) {
+        if (this.condition)
             this.condition.reset();
-        }
-        if (this.then) {
+        if (this.then)
             this.then.reset();
-        }
-        if (this.else) {
+        if (this.else)
             this.else.reset();
-        }
     }
 }
 class FunctionXMLElement extends LogicXMLElement {
@@ -665,7 +676,8 @@ class FunctionXMLElement extends LogicXMLElement {
     getValue(_context) {
         if (!_context) {
             return 0;
-        } else {
+        }
+        else {
             return _context.executeFunction(this.functionName, this.uniqueCall);
         }
     }
@@ -676,7 +688,7 @@ class MaxSinceStartXMLElement extends CompositeLogicXMLElement {
         this.maxValue = undefined;
     }
     getValue(_context) {
-        const value = this.childrens[0].getValueAsNumber(_context);
+        let value = this.childrens[0].getValueAsNumber(_context);
         if (this.maxValue == undefined || value > this.maxValue) {
             this.maxValue = value;
         }
@@ -689,7 +701,7 @@ class MinSinceStartXMLElement extends CompositeLogicXMLElement {
         this.minValue = undefined;
     }
     getValue(_context) {
-        const value = this.childrens[0].getValueAsNumber(_context);
+        let value = this.childrens[0].getValueAsNumber(_context);
         if (this.minValue == undefined || value < this.minValue) {
             this.minValue = value;
         }
@@ -706,24 +718,26 @@ class DistanceFromOriginXMLElement extends LogicXMLElement {
         if (this.gps.flightPlanManager) {
             origin = this.gps.flightPlanManager.getOrigin();
         }
-        const position = new LatLong();
+        let position = new LatLong();
         position.lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees");
         position.long = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees");
-        const onGround = SimVar.GetSimVarValue("SIM ON GROUND", "boolean");
+        let onGround = SimVar.GetSimVarValue("SIM ON GROUND", "boolean");
         if (this.originPosition == null && !origin && onGround) {
             this.originPosition = position;
         }
         if (origin) {
             if (!this.originPosition) {
                 this.originPosition = new LatLong(origin.infos.lat, origin.infos.long);
-            } else {
+            }
+            else {
                 this.originPosition.lat = origin.infos.lat;
                 this.originPosition.long = origin.infos.long;
             }
         }
         if (this.originPosition != null) {
             return Avionics.Utils.computeGreatCircleDistance(this.originPosition, position);
-        } else {
+        }
+        else {
             return Infinity;
         }
     }
@@ -738,7 +752,7 @@ class DistanceToDestinationXMLElement extends LogicXMLElement {
         if (this.gps.flightPlanManager) {
             destination = this.gps.flightPlanManager.getDestination();
         }
-        const position = new LatLong();
+        let position = new LatLong();
         this.destinationPosition.lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees");
         this.destinationPosition.long = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees");
         if (this.destinationPosition == null && !destination) {
@@ -747,7 +761,8 @@ class DistanceToDestinationXMLElement extends LogicXMLElement {
         if (destination) {
             if (!this.destinationPosition) {
                 this.destinationPosition = new LatLong(destination.infos.lat, destination.infos.long);
-            } else {
+            }
+            else {
                 this.destinationPosition.lat = destination.infos.lat;
                 this.destinationPosition.long = destination.infos.long;
             }
@@ -763,10 +778,11 @@ class HeadingChangeFromDepartureXMLElement extends LogicXMLElement {
         this.maxHeadingChange = 0;
     }
     getValue(_context) {
-        const onGround = SimVar.GetSimVarValue("SIM ON GROUND", "boolean");
+        let onGround = SimVar.GetSimVarValue("SIM ON GROUND", "boolean");
         if (this.wasOnGround && !onGround) {
             this.headingAtTakeOff = SimVar.GetSimVarValue("PLANE HEADING DEGREES TRUE", "degrees");
-        } else if (onGround) {
+        }
+        else if (onGround) {
             this.headingAtTakeOff = undefined;
             this.maxHeadingChange = 0;
         }

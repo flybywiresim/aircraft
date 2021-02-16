@@ -32,11 +32,36 @@
 			</UseTemplate>
 		</Component>
 		<Component ID="#Pl463#_Interactions">
+			<OverrideTemplateParameters>
+				<RESET_SHUTDOWN_TIMER>
+					(E:SIMULATION TIME, seconds) 120 + (&gt;I:XMLVAR_Pl463_ShutdownTime)
+				</RESET_SHUTDOWN_TIMER>
+			</OverrideTemplateParameters>
 			<Component ID="#Pl463#Push_OnOff" Node="#Pl463#Push_OnOff#SUFFIX_ID#">
 				<DefaultTemplateParameters>
 					<MIN_TIME_ONOFF>1</MIN_TIME_ONOFF>
 					<TOGGLE_CIRCUIT_STATE>#CIRCUIT_ID# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)</TOGGLE_CIRCUIT_STATE>
 				</DefaultTemplateParameters>
+				<UseTemplate Name="ASOBO_GT_Update">
+					<UPDATE_CODE>
+						(A:GENERAL ENG COMBUSTION:1, Bool) if{
+							(A:CIRCUIT ON:#CIRCUIT_ID#, Bool) !
+							(I:XMLVAR_Pl463_ShutdownLastFrame) and if{
+								#TOGGLE_CIRCUIT_STATE#
+							} 
+							0 (&gt;I:XMLVAR_Pl463_ShutdownLastFrame)
+							#RESET_SHUTDOWN_TIMER#
+						} els{
+							1 (&gt;I:XMLVAR_Pl463_ShutdownLastFrame)
+							(A:CIRCUIT ON:#CIRCUIT_ID#, Bool) if{
+								(I:XMLVAR_Pl463_ShutdownTime) (E:SIMULATION TIME, seconds) &lt; if{
+									#TOGGLE_CIRCUIT_STATE#
+								}
+							}
+						}
+					</UPDATE_CODE>
+					<FREQUENCY>1</FREQUENCY>
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_GT_Push_Button">
 					<ANIM_NAME>#Pl463#Push_OnOff#SUFFIX_ID#</ANIM_NAME>
 					<OVERRIDE_ANIM_CODE>
@@ -50,6 +75,7 @@
 					</OVERRIDE_ANIM_CODE>
 					<LEFT_SINGLE_CODE>
 						1 (&gt;O:_Pressed)
+						#RESET_SHUTDOWN_TIMER#
 						(A:CIRCUIT ON:#CIRCUIT_ID#, Bool) (&gt;O:_bCircuitWasOn)
 						(E:ABSOLUTE TIME, second) #MIN_TIME_ONOFF# + (&gt;O:_PushTimeout)
 					</LEFT_SINGLE_CODE>
@@ -70,6 +96,7 @@
 					<ANIM_NAME>#Pl463#Push_Menu#SUFFIX_ID#</ANIM_NAME>
 					<LEFT_SINGLE_CODE>
 						1 (&gt;O:_Pressed)
+						#RESET_SHUTDOWN_TIMER#
 						(E:ABSOLUTE TIME, second) #MIN_TIME_MENU# + (&gt;O:_PushTimeout)
 					</LEFT_SINGLE_CODE>
 					<LEFT_LEAVE_CODE>
@@ -85,13 +112,19 @@
 			<Component ID="#Pl463#Push_Start" Node="#Pl463#Push_Start#SUFFIX_ID#">
 				<UseTemplate Name="ASOBO_GT_Push_Button">
 					<ANIM_NAME>#Pl463#Push_Start#SUFFIX_ID#</ANIM_NAME>
-					<LEFT_SINGLE_CODE>(&gt;H:#KEY_PREFIX#_Push_Start)</LEFT_SINGLE_CODE>
+					<LEFT_SINGLE_CODE>
+						#RESET_SHUTDOWN_TIMER#
+						(&gt;H:#KEY_PREFIX#_Push_Start)
+					</LEFT_SINGLE_CODE>
 				</UseTemplate>
 			</Component>
 			<Component ID="#Pl463#Push_Stop" Node="#Pl463#Push_Stop#SUFFIX_ID#">
 				<UseTemplate Name="ASOBO_GT_Push_Button">
 					<ANIM_NAME>#Pl463#Push_Stop#SUFFIX_ID#</ANIM_NAME>
-					<LEFT_SINGLE_CODE>(&gt;H:#KEY_PREFIX#_Push_Stop)</LEFT_SINGLE_CODE>
+					<LEFT_SINGLE_CODE>
+						#RESET_SHUTDOWN_TIMER#
+						(&gt;H:#KEY_PREFIX#_Push_Stop)
+					</LEFT_SINGLE_CODE>
 				</UseTemplate>
 			</Component>
 		</Component>

@@ -12,14 +12,16 @@ class RoadNetworkLink {
         if (this.type > other.type) {
             return 1;
         }
-        const sCompare = this.start.compare(other.start);
+        let sCompare = this.start.compare(other.start);
         if (sCompare < 0) {
             return -1;
-        } else if (sCompare === 0) {
-            const eCompare = this.end.compare(other.end);
+        }
+        else if (sCompare === 0) {
+            let eCompare = this.end.compare(other.end);
             if (eCompare < 0) {
                 return -1;
-            } else if (eCompare === 0) {
+            }
+            else if (eCompare === 0) {
                 return 0;
             }
             return 1;
@@ -48,10 +50,12 @@ class RoadNetworkNode {
         }
         if (this.long < other.long) {
             return -1;
-        } else if (this.long === other.long) {
+        }
+        else if (this.long === other.long) {
             if (this.lat < other.lat) {
                 return -1;
-            } else if (this.lat === other.lat) {
+            }
+            else if (this.lat === other.lat) {
                 return 0;
             }
             return 1;
@@ -62,7 +66,7 @@ class RoadNetworkNode {
         return new RoadNetworkNode(this.lat, this.long, this.epsilon);
     }
     lerp(other) {
-        const d = 1 / (this.valuesCount + 1);
+        let d = 1 / (this.valuesCount + 1);
         this.lat = this.lat * d + other.lat * (1 - d);
         this.long = this.long * d + other.long * (1 - d);
     }
@@ -93,23 +97,24 @@ class RoadNetworkLODedData {
         }
     }
     addRoad(road, type = 0) {
-        const t0 = performance.now();
+        let t0 = performance.now();
         for (let i = 0; i < road.length - 1; i++) {
             this._tmpNode1.lat = road[i].lat;
             this._tmpNode1.long = road[i].long;
             this._tmpNode1.epsilon = this.epsilon;
-            const start = this.nodes.add(this._tmpNode1);
+            let start = this.nodes.add(this._tmpNode1);
             this._tmpNode2.lat = road[i + 1].lat;
             this._tmpNode2.long = road[i + 1].long;
             this._tmpNode2.epsilon = this.epsilon;
-            const end = this.nodes.add(this._tmpNode2);
-            const compare = start.compare(end);
+            let end = this.nodes.add(this._tmpNode2);
+            let compare = start.compare(end);
             if (compare < 0) {
                 this._tmpLink.start = start;
                 this._tmpLink.end = end;
                 this._tmpLink.type = type;
                 this.links.add(this._tmpLink);
-            } else if (compare > 0) {
+            }
+            else if (compare > 0) {
                 this._tmpLink.start = end;
                 this._tmpLink.end = start;
                 this._tmpLink.type = type;
@@ -117,8 +122,8 @@ class RoadNetworkLODedData {
             }
         }
         if (this._log) {
-            const t1 = performance.now();
-            const dt = t1 - t0;
+            let t1 = performance.now();
+            let dt = t1 - t0;
             if (dt > this.maxAddRoadTime) {
                 this.maxAddRoadTime = dt;
                 this.maxAddRoadTimeRoadLength = road.length;
@@ -136,9 +141,8 @@ class RoadNetworkLODedData {
 class RoadCanvas {
     constructor(_canvas) {
         this.canvas = _canvas;
-        if (this.canvas) {
+        if (this.canvas)
             this.context2D = this.canvas.getContext("2d");
-        }
     }
 }
 class SvgRoadNetworkElement extends SvgMapElement {
@@ -193,15 +197,17 @@ class SvgRoadNetworkElement extends SvgMapElement {
             this._hasNewRoads = true;
             if (lod === 8) {
                 this.datas[0].addRoad(road, type);
-            } else if (lod === 12) {
+            }
+            else if (lod === 12) {
                 this.datas[1].addRoad(road, type);
-            } else if (lod === 14) {
+            }
+            else if (lod === 14) {
                 this.datas[2].addRoad(road, type);
             }
         }
     }
     createDraw(map) {
-        const container = document.createElementNS(Avionics.SVG.NS, "svg");
+        let container = document.createElementNS(Avionics.SVG.NS, "svg");
         container.id = this.id(map);
         container.setAttribute("overflow", "visible");
         return container;
@@ -210,26 +216,24 @@ class SvgRoadNetworkElement extends SvgMapElement {
         if (this.visible != _visible) {
             this.visible = _visible;
             if (this._visibleCanvas) {
-                if (this.visible) {
+                if (this.visible)
                     this._visibleCanvas.canvas.style.display = "block";
-                } else {
+                else
                     this._visibleCanvas.canvas.style.display = "none";
-                }
             }
         }
     }
     updateDraw(map) {
         if (!this._visibleCanvas) {
-            const canvasImage = map.htmlRoot.querySelector("#road-network-canvas");
+            let canvasImage = map.htmlRoot.querySelector("#road-network-canvas");
             if (!(canvasImage instanceof HTMLCanvasElement)) {
                 return;
             }
             this._visibleCanvas = new RoadCanvas(canvasImage);
-            if (this.visible) {
+            if (this.visible)
                 this._visibleCanvas.canvas.style.display = "block";
-            } else {
+            else
                 this._visibleCanvas.canvas.style.display = "none";
-            }
         }
         this.parentWidth = map.htmlRoot.getWidth();
         this.parentHeight = map.htmlRoot.getHeight();
@@ -239,8 +243,8 @@ class SvgRoadNetworkElement extends SvgMapElement {
         this.displayedSize = Math.max(this.parentWidth, this.parentHeight);
         this.canvasSize = Math.min(SvgRoadNetworkElement.ROADS_CANVAS_OVERFLOW_FACTOR * this.displayedSize, SvgRoadNetworkElement.MAX_SIZE_ROADS_CANVAS);
         this.canvasOffset = (this.canvasSize - this.displayedSize) * 0.5;
-        const thresholdLat = 0.25 * map.angularHeight;
-        const thresholdLong = 0.25 * map.angularWidth;
+        let thresholdLat = 0.25 * map.angularHeight;
+        let thresholdLong = 0.25 * map.angularWidth;
         let resized = false;
         if (this._visibleCanvas.canvas.style.width !== fastToFixed(this.canvasSize, 0) + "px") {
             console.log("Resize RoadNetworkElement " + fastToFixed(this.canvasSize, 0) + "px");
@@ -284,14 +288,14 @@ class SvgRoadNetworkElement extends SvgMapElement {
         let invisibleContext = this._invisibleCanvases[this._activeInvisibleCanvasIndex].context2D;
         invisibleContext.strokeStyle = "gray";
         invisibleContext.lineWidth = 3;
-        const links = this.links(map);
-        const l = links.length;
+        let links = this.links(map);
+        let l = links.length;
         if (l === 0) {
             return;
         }
         this.onLatLongChanged(map, this._lastCoords);
-        const diffLastLat = Math.abs(this._lastCoords.lat - map.centerCoordinates.lat);
-        const diffLastLong = Math.abs(this._lastCoords.long - map.centerCoordinates.long);
+        let diffLastLat = Math.abs(this._lastCoords.lat - map.centerCoordinates.lat);
+        let diffLastLong = Math.abs(this._lastCoords.long - map.centerCoordinates.long);
         if (this._lastRange !== map.NMWidth || resized) {
             this._iterator = 0;
             this._lastRange = map.NMWidth;
@@ -309,7 +313,7 @@ class SvgRoadNetworkElement extends SvgMapElement {
         }
         if (this._iterator >= l) {
             if (this._iterator !== Infinity) {
-                const visibleContext = this._visibleCanvas.context2D;
+                let visibleContext = this._visibleCanvas.context2D;
                 visibleContext.clearRect(0, 0, this.canvasSize, this.canvasSize);
                 visibleContext.drawImage(this._invisibleCanvases[this._activeInvisibleCanvasIndex].canvas, 0, 0, this.canvasSize, this.canvasSize);
                 this._lastCoords.lat = this._forcedCoords.lat;
@@ -327,16 +331,17 @@ class SvgRoadNetworkElement extends SvgMapElement {
                 this._deprecatePoints = true;
                 this._hasNewRoads = false;
                 this._deprecatePointsIterator = 0;
-            } else {
+            }
+            else {
                 this._iterator = Infinity;
                 this.onLatLongChanged(map, this._lastCoords);
             }
             return;
         }
         if (this._deprecatePoints) {
-            const nodes = this.nodes(map);
-            const l = nodes.length;
-            const t0 = performance.now();
+            let nodes = this.nodes(map);
+            let l = nodes.length;
+            let t0 = performance.now();
             while ((performance.now() - t0) < SvgRoadNetworkElement.MAX_STALL_NODE_DEPRECATION && this._deprecatePointsIterator < l) {
                 nodes.get(this._deprecatePointsIterator).isPointUpToDate = false;
                 this._deprecatePointsIterator++;
@@ -347,14 +352,14 @@ class SvgRoadNetworkElement extends SvgMapElement {
             this.onLatLongChanged(map, this._lastCoords);
             return;
         }
-        const t0 = performance.now();
+        let t0 = performance.now();
         let lastLinkType = NaN;
-        const s1 = new Vec2();
-        const s2 = new Vec2();
+        let s1 = new Vec2();
+        let s2 = new Vec2();
         let prevWasClipped = false;
         invisibleContext.beginPath();
         while ((performance.now() - t0) < SvgRoadNetworkElement.MAX_STALL_DRAW_ROADS && this._iterator < l) {
-            const link = links.get(this._iterator++);
+            let link = links.get(this._iterator++);
             if (link) {
                 if (lastLinkType !== link.type || prevWasClipped) {
                     if (link.type === 0) {
@@ -363,64 +368,74 @@ class SvgRoadNetworkElement extends SvgMapElement {
                         invisibleContext.beginPath();
                         invisibleContext.lineWidth = map.config.roadMotorWayWidth;
                         lastLinkType = link.type;
-                    } else if (link.type === 2) {
+                    }
+                    else if (link.type === 2) {
                         invisibleContext.stroke();
                         invisibleContext.strokeStyle = "gray";
                         invisibleContext.beginPath();
                         invisibleContext.lineWidth = map.config.roadTrunkWidth;
                         lastLinkType = link.type;
-                    } else if (link.type === 4) {
+                    }
+                    else if (link.type === 4) {
                         invisibleContext.stroke();
                         invisibleContext.strokeStyle = "gray";
                         invisibleContext.beginPath();
                         invisibleContext.lineWidth = map.config.roadPrimaryWidth;
                         lastLinkType = link.type;
-                    } else if (link.type >= 100) {
-                        const t = link.type - 100;
+                    }
+                    else if (link.type >= 100) {
+                        let t = link.type - 100;
                         if (t === 1) {
                             invisibleContext.stroke();
                             invisibleContext.strokeStyle = "red";
                             invisibleContext.beginPath();
                             invisibleContext.lineWidth = 1;
                             lastLinkType = link.type;
-                        } else if (t === 3) {
+                        }
+                        else if (t === 3) {
                             invisibleContext.lineWidth = 1;
                             invisibleContext.stroke();
                             invisibleContext.strokeStyle = "#0b80fa";
                             invisibleContext.beginPath();
                             lastLinkType = link.type;
-                        } else if (t === 4) {
+                        }
+                        else if (t === 4) {
                             invisibleContext.lineWidth = 1;
                             invisibleContext.stroke();
                             invisibleContext.strokeStyle = "#bb09c5";
                             invisibleContext.beginPath();
                             lastLinkType = link.type;
-                        } else if (t === 5) {
+                        }
+                        else if (t === 5) {
                             invisibleContext.lineWidth = 1;
                             invisibleContext.stroke();
                             invisibleContext.strokeStyle = "#a0bcee";
                             invisibleContext.beginPath();
                             lastLinkType = link.type;
-                        } else if (t === 15) {
+                        }
+                        else if (t === 15) {
                             invisibleContext.lineWidth = 2;
                             invisibleContext.stroke();
                             invisibleContext.strokeStyle = "#0b80fa";
                             invisibleContext.beginPath();
                             lastLinkType = link.type;
-                        } else if (t === 16) {
+                        }
+                        else if (t === 16) {
                             invisibleContext.lineWidth = 2;
                             invisibleContext.stroke();
                             invisibleContext.strokeStyle = "#580982";
                             invisibleContext.beginPath();
                             lastLinkType = link.type;
-                        } else {
+                        }
+                        else {
                             invisibleContext.lineWidth = 2;
                             invisibleContext.stroke();
                             invisibleContext.strokeStyle = "#f99509";
                             invisibleContext.beginPath();
                             lastLinkType = link.type;
                         }
-                    } else {
+                    }
+                    else {
                         invisibleContext.stroke();
                         invisibleContext.strokeStyle = "magenta";
                         invisibleContext.beginPath();
@@ -428,8 +443,8 @@ class SvgRoadNetworkElement extends SvgMapElement {
                         lastLinkType = link.type;
                     }
                 }
-                const n1 = link.start;
-                const n2 = link.end;
+                let n1 = link.start;
+                let n2 = link.end;
                 if (n1 && n2) {
                     if (!n1.isPointUpToDate) {
                         map.latLongToXYToRefForceCenter(n1.lat, n1.long, n1, this._forcedCoords);
@@ -452,7 +467,8 @@ class SvgRoadNetworkElement extends SvgMapElement {
                         invisibleContext.moveTo(Math.round(s1.x), Math.round(s1.y));
                         invisibleContext.lineTo(Math.round(s2.x), Math.round(s2.y));
                         prevWasClipped = (s2.Equals(n2)) ? false : true;
-                    } else {
+                    }
+                    else {
                         prevWasClipped = true;
                     }
                 }
@@ -462,7 +478,7 @@ class SvgRoadNetworkElement extends SvgMapElement {
         this.onLatLongChanged(map, this._lastCoords);
     }
     onLatLongChanged(_map, _coords) {
-        const p = _map.coordinatesToXY(_coords);
+        let p = _map.coordinatesToXY(_coords);
         p.x -= this.svgMapSize * 0.5;
         p.y -= this.svgMapSize * 0.5;
         p.x *= this.displayedSize / this.svgMapSize;

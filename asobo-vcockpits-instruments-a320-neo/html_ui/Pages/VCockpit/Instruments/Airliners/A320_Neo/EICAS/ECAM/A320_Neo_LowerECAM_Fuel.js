@@ -40,9 +40,7 @@ var A320_Neo_LowerECAM_Fuel;
             this.isInitialised = false;
             this.allToggleElements = new Array();
         }
-        get templateID() {
-            return "LowerECAMFuelTemplate";
-        }
+        get templateID() { return "LowerECAMFuelTemplate"; }
         connectedCallback() {
             super.connectedCallback();
         }
@@ -81,11 +79,10 @@ var A320_Neo_LowerECAM_Fuel;
             if (!this.isInitialised) {
                 return;
             }
-            const isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
+            let isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
             let factor = this.gallonToPounds;
-            if (isInMetric) {
+            if (isInMetric)
                 factor = this.gallonToKg;
-            }
             this.updateQuantity(this.FOBValue, "FUEL TOTAL QUANTITY", factor);
             this.updateQuantity(this.centerTankValue, "FUEL TANK CENTER QUANTITY", factor);
             this.updateQuantity(this.leftInnerTankValue, "FUEL TANK LEFT MAIN QUANTITY", factor);
@@ -94,7 +91,7 @@ var A320_Neo_LowerECAM_Fuel;
             this.updateQuantity(this.rightOuterTankValue, "FUEL TANK RIGHT AUX QUANTITY", factor);
             this.updateFuelFlow(factor);
             this.updateFuelConsumption(factor);
-            for (let i = 0; i < this.allToggleElements.length; ++i) {
+            for (var i = 0; i < this.allToggleElements.length; ++i) {
                 if (this.allToggleElements[i] != null) {
                     this.allToggleElements[i].refresh();
                 }
@@ -103,7 +100,8 @@ var A320_Neo_LowerECAM_Fuel;
                 this.FOBUnit.textContent = "KG";
                 this.fuelFlowUnit.textContent = "KG/MIN";
                 this.middleFuelUnit.textContent = "KG";
-            } else {
+            }
+            else {
                 this.FOBUnit.textContent = "LBS";
                 this.fuelFlowUnit.textContent = "LBS/MIN";
                 this.middleFuelUnit.textContent = "LBS";
@@ -115,23 +113,24 @@ var A320_Neo_LowerECAM_Fuel;
             }
         }
         updateFuelFlow(_unitFactor) {
-            const totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "gallons per hour") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "gallons per hour")) * (_unitFactor / 60);
+            var totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "gallons per hour") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "gallons per hour")) * (_unitFactor / 60);
             this.fuelFlowValue.textContent = fastToFixed(totalFuelFlow, 0);
         }
         updateFuelConsumption(_unitFactor) {
             if (this.fuelLevels) {
-                const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "gallon") * _unitFactor * 0.001;
-                const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "gallon") * _unitFactor * 0.001;
-                const totalConsumption = leftConsumption + rightConsumption;
+                var leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "gallon") * _unitFactor * 0.001;
+                var rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "gallon") * _unitFactor * 0.001;
+                var totalConsumption = leftConsumption + rightConsumption;
                 this.leftValveValue.textContent = fastToFixed(leftConsumption, 0);
                 this.rightValveValue.textContent = fastToFixed(rightConsumption, 0);
                 this.middleFuelValue.textContent = fastToFixed(totalConsumption, 0);
-            } else {
+            }
+            else {
                 this.fuelLevels = SimVar.GetGameVarValue("AIRCRAFT INITIAL FUEL LEVELS", "FuelLevels");
             }
         }
         updateQuantity(_elem, _simvar, _unitFactor) {
-            let quantity = SimVar.GetSimVarValue(_simvar, "gallons");
+            var quantity = SimVar.GetSimVarValue(_simvar, "gallons");
             quantity *= _unitFactor;
             _elem.textContent = fastToFixed(quantity, 0);
         }

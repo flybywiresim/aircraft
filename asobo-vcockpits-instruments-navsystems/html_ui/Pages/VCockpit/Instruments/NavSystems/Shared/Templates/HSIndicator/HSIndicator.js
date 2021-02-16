@@ -57,7 +57,7 @@ class HSIndicator extends HTMLElement {
         ];
     }
     connectedCallback() {
-        const fmsAlias = this.getAttribute("fmsAlias");
+        let fmsAlias = this.getAttribute("fmsAlias");
         if (fmsAlias && fmsAlias != "") {
             this.fmsAlias = fmsAlias;
         }
@@ -66,10 +66,11 @@ class HSIndicator extends HTMLElement {
     createSVG() {
         Utils.RemoveAllChildren(this);
         if (this.hasAttribute("displaystyle")) {
-            const style = this.getAttribute("displaystyle").toLowerCase();
+            var style = this.getAttribute("displaystyle").toLowerCase();
             if (style == "hud") {
                 this.displayStyle = HSIndicatorDisplayType.HUD;
-            } else if (style == "hud_simplified") {
+            }
+            else if (style == "hud_simplified") {
                 this.displayStyle = HSIndicatorDisplayType.HUD_Simplified;
             }
         }
@@ -79,9 +80,9 @@ class HSIndicator extends HTMLElement {
         this.root.setAttribute("viewBox", "-28 -15 156 116");
         this.appendChild(this.root);
         {
-            const lines = [-135, -90, -45, 45, 90, 135];
+            let lines = [-135, -90, -45, 45, 90, 135];
             for (let i = 0; i < lines.length; i++) {
-                const line = document.createElementNS(Avionics.SVG.NS, "rect");
+                let line = document.createElementNS(Avionics.SVG.NS, "rect");
                 line.setAttribute("x", "49.5");
                 line.setAttribute("y", "-7");
                 line.setAttribute("width", "1");
@@ -93,26 +94,26 @@ class HSIndicator extends HTMLElement {
         }
         {
             {
-                const arcSize = 45;
-                const arcRadius = 53;
-                const arcWidth = 5;
-                const beginPointHalfUnitSize = (arcSize / 2) / arcRadius;
-                const beginPointTopX = 50 - Math.sin(beginPointHalfUnitSize) * (arcRadius + arcWidth / 2);
-                const beginPointBotX = 50 - Math.sin(beginPointHalfUnitSize) * (arcRadius - arcWidth / 2);
-                const endPointTopX = 50 + Math.sin(beginPointHalfUnitSize) * (arcRadius + arcWidth / 2);
-                const endPointBotX = 50 + Math.sin(beginPointHalfUnitSize) * (arcRadius - arcWidth / 2);
-                const pointTopY = 50 - Math.cos(beginPointHalfUnitSize) * (arcRadius + arcWidth / 2);
-                const pointBotY = 50 - Math.cos(beginPointHalfUnitSize) * (arcRadius - arcWidth / 2);
-                const turnRateBackground = document.createElementNS(Avionics.SVG.NS, "path");
+                let arcSize = 45;
+                let arcRadius = 53;
+                let arcWidth = 5;
+                let beginPointHalfUnitSize = (arcSize / 2) / arcRadius;
+                let beginPointTopX = 50 - Math.sin(beginPointHalfUnitSize) * (arcRadius + arcWidth / 2);
+                let beginPointBotX = 50 - Math.sin(beginPointHalfUnitSize) * (arcRadius - arcWidth / 2);
+                let endPointTopX = 50 + Math.sin(beginPointHalfUnitSize) * (arcRadius + arcWidth / 2);
+                let endPointBotX = 50 + Math.sin(beginPointHalfUnitSize) * (arcRadius - arcWidth / 2);
+                let pointTopY = 50 - Math.cos(beginPointHalfUnitSize) * (arcRadius + arcWidth / 2);
+                let pointBotY = 50 - Math.cos(beginPointHalfUnitSize) * (arcRadius - arcWidth / 2);
+                let turnRateBackground = document.createElementNS(Avionics.SVG.NS, "path");
                 let path = "M" + beginPointBotX + " " + pointBotY + "A " + (arcRadius - arcWidth / 2) + " " + (arcRadius - arcWidth / 2) + " 0 0 1 " + endPointBotX + " " + pointBotY;
                 path += "L" + endPointTopX + " " + pointTopY + "A " + (arcRadius + arcWidth / 2) + " " + (arcRadius + arcWidth / 2) + " 0 0 0 " + beginPointTopX + " " + pointTopY;
                 turnRateBackground.setAttribute("d", path);
                 turnRateBackground.setAttribute("fill", "#1a1d21");
                 turnRateBackground.setAttribute("fill-opacity", "0.25");
                 this.root.appendChild(turnRateBackground);
-                const lines = [-18, -9, 9, 18];
+                let lines = [-18, -9, 9, 18];
                 for (let i = 0; i < lines.length; i++) {
-                    const line = document.createElementNS(Avionics.SVG.NS, "rect");
+                    let line = document.createElementNS(Avionics.SVG.NS, "rect");
                     line.setAttribute("x", "49.5");
                     line.setAttribute("y", (-arcWidth).toString());
                     line.setAttribute("width", "1");
@@ -123,7 +124,7 @@ class HSIndicator extends HTMLElement {
                 }
             }
             {
-                const turnRateArc = document.createElementNS(Avionics.SVG.NS, "path");
+                let turnRateArc = document.createElementNS(Avionics.SVG.NS, "path");
                 this.turnRateArc = turnRateArc;
                 turnRateArc.setAttribute("fill", "#d12bc7");
                 this.root.appendChild(turnRateArc);
@@ -133,7 +134,7 @@ class HSIndicator extends HTMLElement {
             this.backgroundCircle = document.createElementNS(Avionics.SVG.NS, "g");
             this.root.appendChild(this.backgroundCircle);
             {
-                const circle = document.createElementNS(Avionics.SVG.NS, "circle");
+                let circle = document.createElementNS(Avionics.SVG.NS, "circle");
                 circle.setAttribute("cx", "50");
                 circle.setAttribute("cy", "50");
                 circle.setAttribute("r", "50");
@@ -144,8 +145,8 @@ class HSIndicator extends HTMLElement {
             {
                 let angle = 0;
                 for (let i = 0; i < 72; i++) {
-                    const line = document.createElementNS(Avionics.SVG.NS, "rect");
-                    const length = i % 2 == 0 ? 4 : 2;
+                    let line = document.createElementNS(Avionics.SVG.NS, "rect");
+                    let length = i % 2 == 0 ? 4 : 2;
                     line.setAttribute("x", "49.5");
                     line.setAttribute("y", (100 - length).toString());
                     line.setAttribute("width", "1");
@@ -157,10 +158,10 @@ class HSIndicator extends HTMLElement {
                 }
             }
             {
-                const texts = ["N", "3", "6", "E", "12", "15", "S", "21", "24", "W", "30", "33"];
+                let texts = ["N", "3", "6", "E", "12", "15", "S", "21", "24", "W", "30", "33"];
                 let angle = 0;
                 for (let i = 0; i < texts.length; i++) {
-                    const text = document.createElementNS(Avionics.SVG.NS, "text");
+                    let text = document.createElementNS(Avionics.SVG.NS, "text");
                     text.textContent = texts[i];
                     text.setAttribute("x", "50");
                     text.setAttribute("y", (i % 3) == 0 ? "12" : "9");
@@ -202,7 +203,7 @@ class HSIndicator extends HTMLElement {
                     this.bearing1 = document.createElementNS(Avionics.SVG.NS, "g");
                     this.bearing1.setAttribute("display", "none");
                     this.backgroundCircle.appendChild(this.bearing1);
-                    const arrow = document.createElementNS(Avionics.SVG.NS, "path");
+                    let arrow = document.createElementNS(Avionics.SVG.NS, "path");
                     arrow.setAttribute("d", "M50 96 L50 80 M50 4 L50 20 M50 8 L57 15 M50 8 L43 15");
                     arrow.setAttribute("stroke", "#36c8d2");
                     arrow.setAttribute("stroke-width", "1");
@@ -213,7 +214,7 @@ class HSIndicator extends HTMLElement {
                     this.bearing2 = document.createElementNS(Avionics.SVG.NS, "g");
                     this.bearing2.setAttribute("display", "none");
                     this.backgroundCircle.appendChild(this.bearing2);
-                    const arrow = document.createElementNS(Avionics.SVG.NS, "path");
+                    let arrow = document.createElementNS(Avionics.SVG.NS, "path");
                     arrow.setAttribute("d", "M50 96 L50 92 M47 80 L47 90 Q50 96 53 90 L53 80 M50 4 L50 8 L57 15 M50 8 L43 15 M47 11 L47 20 M53 11 L53 20");
                     arrow.setAttribute("stroke", "#36c8d2");
                     arrow.setAttribute("stroke-width", "1");
@@ -255,9 +256,9 @@ class HSIndicator extends HTMLElement {
                         this.toIndicator.setAttribute("display", "none");
                         this.course.appendChild(this.toIndicator);
                     }
-                    const circlePosition = [-20, -10, 10, 20];
+                    let circlePosition = [-20, -10, 10, 20];
                     for (let i = 0; i < circlePosition.length; i++) {
-                        const CDICircle = document.createElementNS(Avionics.SVG.NS, "circle");
+                        let CDICircle = document.createElementNS(Avionics.SVG.NS, "circle");
                         CDICircle.setAttribute("cx", (50 + circlePosition[i]).toString());
                         CDICircle.setAttribute("cy", "50");
                         CDICircle.setAttribute("r", "2");
@@ -270,30 +271,29 @@ class HSIndicator extends HTMLElement {
             }
         }
         {
-            const topTriangle = document.createElementNS(Avionics.SVG.NS, "polygon");
+            let topTriangle = document.createElementNS(Avionics.SVG.NS, "polygon");
             topTriangle.setAttribute("points", "46,-3 54,-3 50,3");
             topTriangle.setAttribute("fill", "white");
             topTriangle.setAttribute("stroke", "black");
             this.root.appendChild(topTriangle);
         }
         {
-            const plane = document.createElementNS(Avionics.SVG.NS, "path");
+            let plane = document.createElementNS(Avionics.SVG.NS, "path");
             plane.setAttribute("d", "M44 50 L49 50 L49 53 L48 54 L48 55 L52 55 L52 54 L51 53 L51 50 L56 50 L56 49 L51 48 L51 46 Q50 44 49 46 L49 48 L44 49 Z");
             plane.setAttribute("fill", "white");
             this.root.appendChild(plane);
         }
         {
-            const bearingRectangle = document.createElementNS(Avionics.SVG.NS, "rect");
+            let bearingRectangle = document.createElementNS(Avionics.SVG.NS, "rect");
             bearingRectangle.setAttribute("x", "35");
             bearingRectangle.setAttribute("y", "-15");
             bearingRectangle.setAttribute("height", "12");
             bearingRectangle.setAttribute("width", "30");
             bearingRectangle.setAttribute("fill", "#1a1d21");
             this.root.appendChild(bearingRectangle);
-            if (this.displayStyle == HSIndicatorDisplayType.HUD) {
+            if (this.displayStyle == HSIndicatorDisplayType.HUD)
                 this.applyHUDStyle(bearingRectangle);
-            }
-            const bearingText = document.createElementNS(Avionics.SVG.NS, "text");
+            let bearingText = document.createElementNS(Avionics.SVG.NS, "text");
             bearingText.setAttribute("fill", "white");
             bearingText.setAttribute("text-anchor", "middle");
             bearingText.setAttribute("x", "50");
@@ -303,11 +303,10 @@ class HSIndicator extends HTMLElement {
             this.bearingText = bearingText;
             this.root.appendChild(bearingText);
         }
-        if (this.displayStyle == HSIndicatorDisplayType.HUD_Simplified) {
+        if (this.displayStyle == HSIndicatorDisplayType.HUD_Simplified)
             return;
-        }
         {
-            const headingRectangle = document.createElementNS(Avionics.SVG.NS, "rect");
+            let headingRectangle = document.createElementNS(Avionics.SVG.NS, "rect");
             headingRectangle.setAttribute("x", "-13");
             headingRectangle.setAttribute("y", "-7");
             headingRectangle.setAttribute("height", "8");
@@ -315,10 +314,9 @@ class HSIndicator extends HTMLElement {
             headingRectangle.setAttribute("fill", "#1a1d21");
             headingRectangle.setAttribute("fill-opacity", "1");
             this.root.appendChild(headingRectangle);
-            if (this.displayStyle == HSIndicatorDisplayType.HUD) {
+            if (this.displayStyle == HSIndicatorDisplayType.HUD)
                 this.applyHUDStyle(headingRectangle);
-            }
-            const headingLeftText = document.createElementNS(Avionics.SVG.NS, "text");
+            let headingLeftText = document.createElementNS(Avionics.SVG.NS, "text");
             headingLeftText.textContent = "HDG";
             headingLeftText.setAttribute("fill", "white");
             headingLeftText.setAttribute("x", "-11");
@@ -326,7 +324,7 @@ class HSIndicator extends HTMLElement {
             headingLeftText.setAttribute("font-size", "7");
             headingLeftText.setAttribute("font-family", "Roboto");
             this.root.appendChild(headingLeftText);
-            const headingValue = document.createElementNS(Avionics.SVG.NS, "text");
+            let headingValue = document.createElementNS(Avionics.SVG.NS, "text");
             headingValue.setAttribute("fill", "#36c8d2");
             headingValue.setAttribute("x", "5");
             headingValue.setAttribute("y", "-0.6");
@@ -336,17 +334,16 @@ class HSIndicator extends HTMLElement {
             this.root.appendChild(headingValue);
         }
         {
-            const courseRectangle = document.createElementNS(Avionics.SVG.NS, "rect");
+            let courseRectangle = document.createElementNS(Avionics.SVG.NS, "rect");
             courseRectangle.setAttribute("x", "77");
             courseRectangle.setAttribute("y", "-7");
             courseRectangle.setAttribute("height", "8");
             courseRectangle.setAttribute("width", "36");
             courseRectangle.setAttribute("fill", "#1a1d21");
             this.root.appendChild(courseRectangle);
-            if (this.displayStyle == HSIndicatorDisplayType.HUD) {
+            if (this.displayStyle == HSIndicatorDisplayType.HUD)
                 this.applyHUDStyle(courseRectangle);
-            }
-            const courseLeftText = document.createElementNS(Avionics.SVG.NS, "text");
+            let courseLeftText = document.createElementNS(Avionics.SVG.NS, "text");
             courseLeftText.textContent = "CRS";
             courseLeftText.setAttribute("fill", "white");
             courseLeftText.setAttribute("x", "79");
@@ -354,7 +351,7 @@ class HSIndicator extends HTMLElement {
             courseLeftText.setAttribute("font-size", "7");
             courseLeftText.setAttribute("font-family", "Roboto");
             this.root.appendChild(courseLeftText);
-            const courseValue = document.createElementNS(Avionics.SVG.NS, "text");
+            let courseValue = document.createElementNS(Avionics.SVG.NS, "text");
             courseValue.setAttribute("fill", "#d12bc7");
             courseValue.setAttribute("x", "95");
             courseValue.setAttribute("y", "-0.6");
@@ -389,7 +386,7 @@ class HSIndicator extends HTMLElement {
             this.flightPhaseBg.setAttribute("height", "7");
             this.flightPhaseBg.setAttribute("width", "16");
             this.root.appendChild(this.flightPhaseBg);
-            const flightPhase = document.createElementNS(Avionics.SVG.NS, "text");
+            let flightPhase = document.createElementNS(Avionics.SVG.NS, "text");
             flightPhase.textContent = "TERM";
             flightPhase.setAttribute("fill", "#d12bc7");
             flightPhase.setAttribute("x", "65");
@@ -407,7 +404,7 @@ class HSIndicator extends HTMLElement {
             this.crossTrackErrorBg.setAttribute("height", "7");
             this.crossTrackErrorBg.setAttribute("width", "38");
             this.root.appendChild(this.crossTrackErrorBg);
-            const crossTrackError = document.createElementNS(Avionics.SVG.NS, "text");
+            let crossTrackError = document.createElementNS(Avionics.SVG.NS, "text");
             crossTrackError.textContent = "XTK 3.15NM";
             crossTrackError.setAttribute("fill", "#d12bc7");
             crossTrackError.setAttribute("x", "50");
@@ -423,11 +420,11 @@ class HSIndicator extends HTMLElement {
                 this.dme = document.createElementNS(Avionics.SVG.NS, "g");
                 this.dme.setAttribute("display", "none");
                 this.root.appendChild(this.dme);
-                const topLeftZone = document.createElementNS(Avionics.SVG.NS, "path");
+                let topLeftZone = document.createElementNS(Avionics.SVG.NS, "path");
                 topLeftZone.setAttribute("d", this.getExternalTextZonePath(57, 0, -0.58, -28));
                 topLeftZone.setAttribute("fill", "#1a1d21");
                 this.dme.appendChild(topLeftZone);
-                const dme1 = document.createElementNS(Avionics.SVG.NS, "text");
+                let dme1 = document.createElementNS(Avionics.SVG.NS, "text");
                 dme1.textContent = "DME";
                 dme1.setAttribute("fill", "white");
                 dme1.setAttribute("x", "-27");
@@ -468,7 +465,7 @@ class HSIndicator extends HTMLElement {
                 this.bearing1FixedGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.bearing1FixedGroup.setAttribute("display", "none");
                 this.root.appendChild(this.bearing1FixedGroup);
-                const botLeftZone = document.createElementNS(Avionics.SVG.NS, "path");
+                let botLeftZone = document.createElementNS(Avionics.SVG.NS, "path");
                 botLeftZone.setAttribute("d", this.getExternalTextZonePath(57, -0.6, -1.1, -28));
                 botLeftZone.setAttribute("fill", "#1a1d21");
                 this.bearing1FixedGroup.appendChild(botLeftZone);
@@ -500,14 +497,14 @@ class HSIndicator extends HTMLElement {
                 this.bearing1Source.setAttribute("text-anchor", "left");
                 this.bearing1FixedGroup.appendChild(this.bearing1Source);
                 {
-                    const pointer1Main = document.createElementNS(Avionics.SVG.NS, "rect");
+                    let pointer1Main = document.createElementNS(Avionics.SVG.NS, "rect");
                     pointer1Main.setAttribute("x", "-5");
                     pointer1Main.setAttribute("y", "96.875");
                     pointer1Main.setAttribute("width", "15");
                     pointer1Main.setAttribute("height", "0.25");
                     pointer1Main.setAttribute("fill", "#36c8d2");
                     this.bearing1FixedGroup.appendChild(pointer1Main);
-                    const pointer1Top = document.createElementNS(Avionics.SVG.NS, "rect");
+                    let pointer1Top = document.createElementNS(Avionics.SVG.NS, "rect");
                     pointer1Top.setAttribute("x", "-3");
                     pointer1Top.setAttribute("y", "96.875");
                     pointer1Top.setAttribute("width", "4");
@@ -515,7 +512,7 @@ class HSIndicator extends HTMLElement {
                     pointer1Top.setAttribute("transform", "rotate(-45 -3 97)");
                     pointer1Top.setAttribute("fill", "#36c8d2");
                     this.bearing1FixedGroup.appendChild(pointer1Top);
-                    const pointer1Bot = document.createElementNS(Avionics.SVG.NS, "rect");
+                    let pointer1Bot = document.createElementNS(Avionics.SVG.NS, "rect");
                     pointer1Bot.setAttribute("x", "-3");
                     pointer1Bot.setAttribute("y", "96.875");
                     pointer1Bot.setAttribute("width", "4");
@@ -529,7 +526,7 @@ class HSIndicator extends HTMLElement {
                 this.bearing2FixedGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.bearing2FixedGroup.setAttribute("display", "none");
                 this.root.appendChild(this.bearing2FixedGroup);
-                const botRightZone = document.createElementNS(Avionics.SVG.NS, "path");
+                let botRightZone = document.createElementNS(Avionics.SVG.NS, "path");
                 botRightZone.setAttribute("d", this.getExternalTextZonePath(57, Math.PI + 0.6, Math.PI + 1.1, 128, true));
                 botRightZone.setAttribute("fill", "#1a1d21");
                 this.bearing2FixedGroup.appendChild(botRightZone);
@@ -560,7 +557,7 @@ class HSIndicator extends HTMLElement {
                 this.bearing2Source.setAttribute("font-family", "Roboto-Bold");
                 this.bearing2Source.setAttribute("text-anchor", "end");
                 this.bearing2FixedGroup.appendChild(this.bearing2Source);
-                const pointer2 = document.createElementNS(Avionics.SVG.NS, "path");
+                let pointer2 = document.createElementNS(Avionics.SVG.NS, "path");
                 pointer2.setAttribute("d", "M90 97 L92 97 M105 97 L103 97 L100 100 M103 97 L100 94 M101.5 98.5 L93 98.5 Q90 97 93 95.5 L101.5 95.5");
                 pointer2.setAttribute("stroke", "#36c8d2");
                 pointer2.setAttribute("stroke-width", "0.5");
@@ -576,7 +573,8 @@ class HSIndicator extends HTMLElement {
                 if (this.dme) {
                     if (this.isDmeDisplayed) {
                         this.dme.setAttribute("display", "inherit");
-                    } else {
+                    }
+                    else {
                         this.dme.setAttribute("display", "none");
                     }
                 }
@@ -586,13 +584,15 @@ class HSIndicator extends HTMLElement {
                 if (this.bearing1) {
                     if (this.isBearing1Displayed || this.isBearing2Displayed) {
                         this.innerCircle.setAttribute("display", "inherit");
-                    } else {
+                    }
+                    else {
                         this.innerCircle.setAttribute("display", "none");
                     }
                     if (this.isBearing1Displayed) {
                         this.bearing1.setAttribute("display", "inherit");
                         this.bearing1FixedGroup.setAttribute("display", "inherit");
-                    } else {
+                    }
+                    else {
                         this.bearing1.setAttribute("display", "none");
                         this.bearing1FixedGroup.setAttribute("display", "none");
                     }
@@ -603,22 +603,23 @@ class HSIndicator extends HTMLElement {
                 if (this.bearing2) {
                     if (this.isBearing1Displayed || this.isBearing2Displayed) {
                         this.innerCircle.setAttribute("display", "inherit");
-                    } else {
+                    }
+                    else {
                         this.innerCircle.setAttribute("display", "none");
                     }
                     if (this.isBearing2Displayed) {
                         this.bearing2.setAttribute("display", "inherit");
                         this.bearing2FixedGroup.setAttribute("display", "inherit");
-                    } else {
+                    }
+                    else {
                         this.bearing2.setAttribute("display", "none");
                         this.bearing2FixedGroup.setAttribute("display", "none");
                     }
                 }
                 break;
         }
-        if (oldValue == newValue) {
+        if (oldValue == newValue)
             return;
-        }
         switch (name) {
             case "rotation":
                 this.backgroundCircle.setAttribute("transform", "rotate(" + (-newValue) + " 50 50)");
@@ -635,7 +636,7 @@ class HSIndicator extends HTMLElement {
                     if (headingValue == 0) {
                         headingValue = 360;
                     }
-                    const hdg = fastToFixed(headingValue, 0);
+                    let hdg = fastToFixed(headingValue, 0);
                     this.headingText.textContent = "000".slice(hdg.length) + hdg + "°";
                 }
                 break;
@@ -643,28 +644,30 @@ class HSIndicator extends HTMLElement {
                 if (this.course) {
                     this.course.setAttribute("transform", "rotate(" + (newValue) + ", 50, 50)");
                     if (this.courseText) {
-                        const crs = fastToFixed(parseFloat(newValue), 0);
+                        let crs = fastToFixed(parseFloat(newValue), 0);
                         this.courseText.textContent = "000".slice(crs.length) + crs + "°";
                     }
                 }
                 break;
             case "course_deviation":
                 if (this.CDI) {
-                    const deviation = parseFloat(newValue);
+                    let deviation = parseFloat(newValue);
                     if (this.sourceIsGps) {
                         this.crossTrackGoal = (Math.min(Math.max(deviation, -this.crosstrackFullError), this.crosstrackFullError) * (20 / this.crosstrackFullError));
                         if (Math.abs(deviation) < this.crosstrackFullError) {
                             this.crossTrackError.setAttribute("visibility", "hidden");
                             this.crossTrackErrorBg.setAttribute("visibility", "hidden");
-                        } else {
+                        }
+                        else {
                             this.crossTrackError.setAttribute("visibility", "visible");
                             this.crossTrackErrorBg.setAttribute("visibility", "visible");
                             this.crossTrackError.textContent = "XTK " + fastToFixed(deviation, 2) + "NM";
-                            const courseDevRect = this.crossTrackError.getBBox();
+                            let courseDevRect = this.crossTrackError.getBBox();
                             this.crossTrackErrorBg.setAttribute("width", (courseDevRect.width + 2).toString());
                             this.crossTrackErrorBg.setAttribute("x", (courseDevRect.x - 1).toString());
                         }
-                    } else {
+                    }
+                    else {
                         this.crossTrackGoal = (Math.min(Math.max(deviation, -1), 1) * 20);
                     }
                 }
@@ -672,38 +675,40 @@ class HSIndicator extends HTMLElement {
             case "display_deviation":
                 if (newValue == "True") {
                     this.CDI.setAttribute("display", "");
-                } else {
+                }
+                else {
                     this.CDI.setAttribute("display", "none");
                 }
                 break;
             case "turn_rate":
                 {
                     if (this.turnRateArc) {
-                        const value = Math.max(Math.min(parseFloat(newValue), 4), -4);
-                        const arcAngle = 6 * value * Math.PI / 180;
-                        const arcRadius = 53;
-                        const arcWidth = 2;
-                        const arrowWidth = 6;
-                        const beginPointTopX = 50;
-                        const beginPointBotX = 50;
-                        const beginPointTopY = 50 - arcRadius - (arcWidth / 2);
-                        const beginPointBotY = 50 - arcRadius + (arcWidth / 2);
-                        const endPointTopX = 50 + Math.sin(arcAngle) * (arcRadius + arcWidth / 2);
-                        const endPointBotX = 50 + Math.sin(arcAngle) * (arcRadius - arcWidth / 2);
-                        const endPointTopY = 50 - Math.cos(arcAngle) * (arcRadius + arcWidth / 2);
-                        const endPointBotY = 50 - Math.cos(arcAngle) * (arcRadius - arcWidth / 2);
+                        let value = Math.max(Math.min(parseFloat(newValue), 4), -4);
+                        let arcAngle = 6 * value * Math.PI / 180;
+                        let arcRadius = 53;
+                        let arcWidth = 2;
+                        let arrowWidth = 6;
+                        let beginPointTopX = 50;
+                        let beginPointBotX = 50;
+                        let beginPointTopY = 50 - arcRadius - (arcWidth / 2);
+                        let beginPointBotY = 50 - arcRadius + (arcWidth / 2);
+                        let endPointTopX = 50 + Math.sin(arcAngle) * (arcRadius + arcWidth / 2);
+                        let endPointBotX = 50 + Math.sin(arcAngle) * (arcRadius - arcWidth / 2);
+                        let endPointTopY = 50 - Math.cos(arcAngle) * (arcRadius + arcWidth / 2);
+                        let endPointBotY = 50 - Math.cos(arcAngle) * (arcRadius - arcWidth / 2);
                         let path;
                         if (value == 4 || value == -4) {
-                            const endPointArrowTopX = 50 + Math.sin(arcAngle) * (arcRadius + arrowWidth / 2);
-                            const endPointArrowBotX = 50 + Math.sin(arcAngle) * (arcRadius - arrowWidth / 2);
-                            const endPointArrowTopY = 50 - Math.cos(arcAngle) * (arcRadius + arrowWidth / 2);
-                            const endPointArrowBotY = 50 - Math.cos(arcAngle) * (arcRadius - arrowWidth / 2);
-                            const endPointArrowEndX = 50 + Math.sin(arcAngle + (value > 0 ? 0.1 : -0.1)) * (arcRadius);
-                            const endPointArrowEndY = 50 - Math.cos(arcAngle + (value > 0 ? 0.1 : -0.1)) * (arcRadius);
+                            let endPointArrowTopX = 50 + Math.sin(arcAngle) * (arcRadius + arrowWidth / 2);
+                            let endPointArrowBotX = 50 + Math.sin(arcAngle) * (arcRadius - arrowWidth / 2);
+                            let endPointArrowTopY = 50 - Math.cos(arcAngle) * (arcRadius + arrowWidth / 2);
+                            let endPointArrowBotY = 50 - Math.cos(arcAngle) * (arcRadius - arrowWidth / 2);
+                            let endPointArrowEndX = 50 + Math.sin(arcAngle + (value > 0 ? 0.1 : -0.1)) * (arcRadius);
+                            let endPointArrowEndY = 50 - Math.cos(arcAngle + (value > 0 ? 0.1 : -0.1)) * (arcRadius);
                             path = "M" + beginPointBotX + " " + beginPointBotY + "A " + (arcRadius - arcWidth / 2) + " " + (arcRadius - arcWidth / 2) + " 0 0 " + (arcAngle > 0 ? "1" : "0") + " " + endPointBotX + " " + endPointBotY;
                             path += "L" + endPointArrowBotX + " " + endPointArrowBotY + " L" + endPointArrowEndX + " " + endPointArrowEndY + " L" + endPointArrowTopX + " " + endPointArrowTopY;
                             path += "L" + endPointTopX + " " + endPointTopY + "A " + (arcRadius + arcWidth / 2) + " " + (arcRadius + arcWidth / 2) + " 0 0 " + (arcAngle > 0 ? "0" : "1") + " " + beginPointTopX + " " + beginPointTopY;
-                        } else {
+                        }
+                        else {
                             path = "M" + beginPointBotX + " " + beginPointBotY + "A " + (arcRadius - arcWidth / 2) + " " + (arcRadius - arcWidth / 2) + " 0 0 " + (arcAngle > 0 ? "1" : "0") + " " + endPointBotX + " " + endPointBotY;
                             path += "L" + endPointTopX + " " + endPointTopY + "A " + (arcRadius + arcWidth / 2) + " " + (arcRadius + arcWidth / 2) + " 0 0 " + (arcAngle > 0 ? "0" : "1") + " " + beginPointTopX + " " + beginPointTopY;
                         }
@@ -714,7 +719,7 @@ class HSIndicator extends HTMLElement {
             case "nav_source":
                 if (this.navSource) {
                     this.navSource.textContent = newValue == "FMS" ? this.fmsAlias : newValue;
-                    const rect = this.navSource.getBBox();
+                    let rect = this.navSource.getBBox();
                     this.navSourceBg.setAttribute("width", (rect.width + 2).toString());
                     this.navSourceBg.setAttribute("x", (rect.x - 1).toString());
                     switch (newValue) {
@@ -778,7 +783,7 @@ class HSIndicator extends HTMLElement {
             case "flight_phase":
                 if (this.flightPhase) {
                     this.flightPhase.textContent = newValue;
-                    const flightPhaseRect = this.flightPhase.getBBox();
+                    let flightPhaseRect = this.flightPhase.getBBox();
                     this.flightPhaseBg.setAttribute("width", (flightPhaseRect.width + 2).toString());
                     this.flightPhaseBg.setAttribute("x", (flightPhaseRect.x - 1).toString());
                 }
@@ -791,7 +796,8 @@ class HSIndicator extends HTMLElement {
                 if (this.dme) {
                     if (this.isDmeDisplayed) {
                         this.dme.setAttribute("display", "inherit");
-                    } else {
+                    }
+                    else {
                         this.dme.setAttribute("display", "none");
                     }
                 }
@@ -801,13 +807,15 @@ class HSIndicator extends HTMLElement {
                 if (this.bearing1) {
                     if (this.isBearing1Displayed || this.isBearing2Displayed) {
                         this.innerCircle.setAttribute("display", "inherit");
-                    } else {
+                    }
+                    else {
                         this.innerCircle.setAttribute("display", "none");
                     }
                     if (this.isBearing1Displayed) {
                         this.bearing1.setAttribute("display", "inherit");
                         this.bearing1FixedGroup.setAttribute("display", "inherit");
-                    } else {
+                    }
+                    else {
                         this.bearing1.setAttribute("display", "none");
                         this.bearing1FixedGroup.setAttribute("display", "none");
                     }
@@ -818,82 +826,77 @@ class HSIndicator extends HTMLElement {
                 if (this.bearing2) {
                     if (this.isBearing1Displayed || this.isBearing2Displayed) {
                         this.innerCircle.setAttribute("display", "inherit");
-                    } else {
+                    }
+                    else {
                         this.innerCircle.setAttribute("display", "none");
                     }
                     if (this.isBearing2Displayed) {
                         this.bearing2.setAttribute("display", "inherit");
                         this.bearing2FixedGroup.setAttribute("display", "inherit");
-                    } else {
+                    }
+                    else {
                         this.bearing2.setAttribute("display", "none");
                         this.bearing2FixedGroup.setAttribute("display", "none");
                     }
                 }
                 break;
             case "bearing1_source":
-                if (this.bearing1Source) {
+                if (this.bearing1Source)
                     this.bearing1Source.textContent = newValue;
-                }
                 break;
             case "bearing1_ident":
-                if (this.bearing1Ident) {
+                if (this.bearing1Ident)
                     this.bearing1Ident.textContent = newValue;
-                }
                 break;
             case "bearing1_distance":
-                if (this.bearing1Distance) {
+                if (this.bearing1Distance)
                     this.bearing1Distance.textContent = (newValue == "" ? "" : fastToFixed(parseFloat(newValue), 1) + " NM");
-                }
                 break;
             case "bearing1_bearing":
                 if (this.bearing1) {
                     if (newValue != "") {
                         this.bearing1.setAttribute("transform", "rotate(" + newValue + ", 50, 50)");
                         this.bearing1.setAttribute("visibility", "visible");
-                    } else {
+                    }
+                    else {
                         this.bearing1.setAttribute("visibility", "hidden");
                     }
                 }
                 break;
             case "bearing2_source":
-                if (this.bearing2Source) {
+                if (this.bearing2Source)
                     this.bearing2Source.textContent = newValue;
-                }
                 break;
             case "bearing2_ident":
-                if (this.bearing2Ident) {
+                if (this.bearing2Ident)
                     this.bearing2Ident.textContent = newValue;
-                }
                 break;
             case "bearing2_distance":
-                if (this.bearing2Distance) {
+                if (this.bearing2Distance)
                     this.bearing2Distance.textContent = (newValue == "" ? "" : fastToFixed(parseFloat(newValue), 1) + " NM");
-                }
                 break;
             case "bearing2_bearing":
                 if (this.bearing2) {
                     if (newValue != "") {
                         this.bearing2.setAttribute("transform", "rotate(" + newValue + ", 50, 50)");
                         this.bearing2.setAttribute("visibility", "visible");
-                    } else {
+                    }
+                    else {
                         this.bearing2.setAttribute("visibility", "hidden");
                     }
                 }
                 break;
             case "dme_source":
-                if (this.dmeSource) {
+                if (this.dmeSource)
                     this.dmeSource.textContent = newValue;
-                }
                 break;
             case "dme_ident":
-                if (this.dmeIdent) {
+                if (this.dmeIdent)
                     this.dmeIdent.textContent = newValue;
-                }
                 break;
             case "dme_distance":
-                if (this.dmeDistance) {
+                if (this.dmeDistance)
                     this.dmeDistance.textContent = (newValue == "" ? "" : fastToFixed(parseFloat(newValue), 1) + " NM");
-                }
                 break;
             case "to_from":
                 if (this.toIndicator && this.fromIndicator) {
@@ -914,9 +917,8 @@ class HSIndicator extends HTMLElement {
                 }
                 break;
             case "current_track":
-                if (this.currentTrackIndicator) {
+                if (this.currentTrackIndicator)
                     this.currentTrackIndicator.setAttribute("transform", "rotate(" + (newValue) + ", 50, 50)");
-                }
                 break;
             case "displaystyle":
                 this.createSVG();
@@ -924,10 +926,10 @@ class HSIndicator extends HTMLElement {
         }
     }
     getExternalTextZonePath(radius, beginAngle, endAngle, xEnd, reverse = false) {
-        const beginX = 50 - (radius * Math.cos(beginAngle));
-        const beginY = 50 - (radius * Math.sin(beginAngle));
-        const endX = 50 - (radius * Math.cos(endAngle));
-        const endY = 50 - (radius * Math.sin(endAngle));
+        let beginX = 50 - (radius * Math.cos(beginAngle));
+        let beginY = 50 - (radius * Math.sin(beginAngle));
+        let endX = 50 - (radius * Math.cos(endAngle));
+        let endY = 50 - (radius * Math.sin(endAngle));
         let path = "M" + beginX + " " + beginY + "L" + xEnd + " " + beginY + "L" + xEnd + " " + endY + "L" + endX + " " + endY;
         path += "A " + radius + " " + radius + " 0 0 " + (reverse ? 0 : 1) + " " + beginX + " " + beginY;
         return path;
@@ -942,14 +944,14 @@ class HSIndicator extends HTMLElement {
     init() {
     }
     update(_deltaTime) {
-        const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-        const roundedCompass = fastToFixed(compass, 3);
+        var compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+        var roundedCompass = fastToFixed(compass, 3);
         this.setAttribute("rotation", roundedCompass);
-        const turnRate = SimVar.GetSimVarValue("TURN INDICATOR RATE", "degree per second");
-        const roundedTurnRate = fastToFixed(turnRate, 3);
+        var turnRate = SimVar.GetSimVarValue("TURN INDICATOR RATE", "degree per second");
+        var roundedTurnRate = fastToFixed(turnRate, 3);
         this.setAttribute("turn_rate", roundedTurnRate);
-        const heading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
-        const roundedHeading = fastToFixed(heading, 3);
+        var heading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
+        var roundedHeading = fastToFixed(heading, 3);
         this.setAttribute("heading_bug_rotation", roundedHeading);
         this.setAttribute("current_track", SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degrees"));
         this.logic_cdiSource = SimVar.GetSimVarValue("GPS DRIVES NAV1", "Bool") ? 3 : SimVar.GetSimVarValue("AUTOPILOT NAV SELECTED", "Number");
@@ -959,7 +961,8 @@ class HSIndicator extends HTMLElement {
                 if (SimVar.GetSimVarValue("NAV HAS LOCALIZER:1", "Bool")) {
                     this.setAttribute("nav_source", "LOC1");
                     this.setAttribute("course", SimVar.GetSimVarValue("NAV LOCALIZER:1", "degree").toString());
-                } else {
+                }
+                else {
                     this.setAttribute("nav_source", "VOR1");
                     this.setAttribute("course", SimVar.GetSimVarValue("NAV OBS:1", "degree").toString());
                 }
@@ -971,7 +974,8 @@ class HSIndicator extends HTMLElement {
                 if (SimVar.GetSimVarValue("NAV HAS LOCALIZER:2", "Bool")) {
                     this.setAttribute("nav_source", "LOC2");
                     this.setAttribute("course", SimVar.GetSimVarValue("NAV LOCALIZER:2", "degree").toString());
-                } else {
+                }
+                else {
                     this.setAttribute("nav_source", "VOR2");
                     this.setAttribute("course", SimVar.GetSimVarValue("NAV OBS:2", "degree").toString());
                 }
@@ -984,7 +988,7 @@ class HSIndicator extends HTMLElement {
                 this.setAttribute("course", SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree"));
                 this.setAttribute("course_deviation", SimVar.GetSimVarValue("GPS WP CROSS TRK", "nautical mile"));
                 this.setAttribute("to_from", "1");
-                const curPhase = SimVar.GetSimVarValue("L:GPS_Current_Phase", "number");
+                let curPhase = SimVar.GetSimVarValue("L:GPS_Current_Phase", "number");
                 switch (curPhase) {
                     case 1:
                         this.setAttribute("flight_phase", "DPRT");
@@ -1013,7 +1017,8 @@ class HSIndicator extends HTMLElement {
                     this.setAttribute("bearing1_ident", SimVar.GetSimVarValue("NAV IDENT:1", "string"));
                     this.setAttribute("bearing1_distance", SimVar.GetSimVarValue("NAV HAS DME:1", "Bool") ? SimVar.GetSimVarValue("NAV DME:1", "nautical miles") : "");
                     this.setAttribute("bearing1_bearing", ((180 + SimVar.GetSimVarValue("NAV RADIAL:1", "degree")) % 360).toString());
-                } else {
+                }
+                else {
                     this.setAttribute("bearing1_ident", "NO DATA");
                     this.setAttribute("bearing1_distance", "");
                     this.setAttribute("bearing1_bearing", "");
@@ -1025,7 +1030,8 @@ class HSIndicator extends HTMLElement {
                     this.setAttribute("bearing1_ident", SimVar.GetSimVarValue("NAV IDENT:2", "string"));
                     this.setAttribute("bearing1_distance", SimVar.GetSimVarValue("NAV HAS DME:2", "Bool") ? SimVar.GetSimVarValue("NAV DME:2", "nautical miles") : "");
                     this.setAttribute("bearing1_bearing", ((180 + SimVar.GetSimVarValue("NAV RADIAL:2", "degree")) % 360).toString());
-                } else {
+                }
+                else {
                     this.setAttribute("bearing1_ident", "NO DATA");
                     this.setAttribute("bearing1_distance", "");
                     this.setAttribute("bearing1_bearing", "");
@@ -1043,7 +1049,8 @@ class HSIndicator extends HTMLElement {
                 if (SimVar.GetSimVarValue("ADF SIGNAL:1", "number")) {
                     this.setAttribute("bearing1_ident", fastToFixed(SimVar.GetSimVarValue("ADF ACTIVE FREQUENCY:1", "KHz"), 1));
                     this.setAttribute("bearing1_bearing", ((SimVar.GetSimVarValue("ADF RADIAL:1", "degree") + compass) % 360).toString());
-                } else {
+                }
+                else {
                     this.setAttribute("bearing1_ident", "NO DATA");
                     this.setAttribute("bearing1_bearing", "");
                 }
@@ -1057,7 +1064,8 @@ class HSIndicator extends HTMLElement {
                     this.setAttribute("bearing2_ident", SimVar.GetSimVarValue("NAV IDENT:1", "string"));
                     this.setAttribute("bearing2_distance", SimVar.GetSimVarValue("NAV HAS DME:1", "Bool") ? SimVar.GetSimVarValue("NAV DME:1", "nautical miles") : "");
                     this.setAttribute("bearing2_bearing", ((180 + SimVar.GetSimVarValue("NAV RADIAL:1", "degree")) % 360).toString());
-                } else {
+                }
+                else {
                     this.setAttribute("bearing2_ident", "NO DATA");
                     this.setAttribute("bearing2_distance", "");
                     this.setAttribute("bearing2_bearing", "");
@@ -1069,7 +1077,8 @@ class HSIndicator extends HTMLElement {
                     this.setAttribute("bearing2_ident", SimVar.GetSimVarValue("NAV IDENT:2", "string"));
                     this.setAttribute("bearing2_distance", SimVar.GetSimVarValue("NAV HAS DME:2", "Bool") ? SimVar.GetSimVarValue("NAV DME:2", "nautical miles") : "");
                     this.setAttribute("bearing2_bearing", ((180 + SimVar.GetSimVarValue("NAV RADIAL:2", "degree")) % 360).toString());
-                } else {
+                }
+                else {
                     this.setAttribute("bearing2_ident", "NO DATA");
                     this.setAttribute("bearing2_distance", "");
                     this.setAttribute("bearing2_bearing", "");
@@ -1087,7 +1096,8 @@ class HSIndicator extends HTMLElement {
                 if (SimVar.GetSimVarValue("ADF SIGNAL:1", "number")) {
                     this.setAttribute("bearing2_ident", fastToFixed(SimVar.GetSimVarValue("ADF ACTIVE FREQUENCY:1", "KHz"), 1));
                     this.setAttribute("bearing2_bearing", ((SimVar.GetSimVarValue("ADF RADIAL:1", "degree") + compass) % 360).toString());
-                } else {
+                }
+                else {
                     this.setAttribute("bearing2_ident", "NO DATA");
                     this.setAttribute("bearing2_bearing", "");
                 }
@@ -1102,7 +1112,8 @@ class HSIndicator extends HTMLElement {
                 if (SimVar.GetSimVarValue("NAV HAS DME:1", "Bool")) {
                     this.setAttribute("dme_ident", fastToFixed(SimVar.GetSimVarValue("NAV ACTIVE FREQUENCY:1", "MHz"), 2));
                     this.setAttribute("dme_distance", SimVar.GetSimVarValue("NAV DME:1", "nautical miles"));
-                } else {
+                }
+                else {
                     this.setAttribute("dme_ident", "");
                     this.setAttribute("dme_distance", "");
                 }
@@ -1112,20 +1123,22 @@ class HSIndicator extends HTMLElement {
                 if (SimVar.GetSimVarValue("NAV HAS DME:2", "Bool")) {
                     this.setAttribute("dme_ident", fastToFixed(SimVar.GetSimVarValue("NAV ACTIVE FREQUENCY:2", "MHz"), 2));
                     this.setAttribute("dme_distance", SimVar.GetSimVarValue("NAV DME:2", "nautical miles"));
-                } else {
+                }
+                else {
                     this.setAttribute("dme_ident", "");
                     this.setAttribute("dme_distance", "");
                 }
                 break;
         }
-        const diff = this.crossTrackGoal - this.crossTrackCurrent;
+        let diff = this.crossTrackGoal - this.crossTrackCurrent;
         let toAdd = (_deltaTime / 1000) * diff * 7.5;
         if (Math.abs(toAdd) < 0.75) {
             toAdd = toAdd > 0 ? 0.75 : -0.75;
         }
         if (Math.abs(diff) < 0.1 || Math.abs(toAdd) > Math.abs(diff)) {
             this.crossTrackCurrent = this.crossTrackGoal;
-        } else {
+        }
+        else {
             this.crossTrackCurrent += toAdd;
         }
         Avionics.Utils.diffAndSetAttribute(this.CDI, "transform", "translate(" + this.crossTrackCurrent + " 0)");
@@ -1137,21 +1150,24 @@ class HSIndicator extends HTMLElement {
             case "CRS_INC":
                 if (this.logic_cdiSource == 1) {
                     SimVar.SetSimVarValue("K:VOR1_OBI_INC", "number", 0);
-                } else if (this.logic_cdiSource == 2) {
+                }
+                else if (this.logic_cdiSource == 2) {
                     SimVar.SetSimVarValue("K:VOR2_OBI_INC", "number", 0);
                 }
                 break;
             case "CRS_DEC":
                 if (this.logic_cdiSource == 1) {
                     SimVar.SetSimVarValue("K:VOR1_OBI_DEC", "number", 0);
-                } else if (this.logic_cdiSource == 2) {
+                }
+                else if (this.logic_cdiSource == 2) {
                     SimVar.SetSimVarValue("K:VOR2_OBI_DEC", "number", 0);
                 }
                 break;
             case "CRS_PUSH":
                 if (this.logic_cdiSource == 1) {
                     SimVar.SetSimVarValue("K:VOR1_SET", "number", ((180 + SimVar.GetSimVarValue("NAV RADIAL:1", "degree")) % 360));
-                } else if (this.logic_cdiSource == 2) {
+                }
+                else if (this.logic_cdiSource == 2) {
                     SimVar.SetSimVarValue("K:VOR2_SET", "number", ((180 + SimVar.GetSimVarValue("NAV RADIAL:2", "degree")) % 360));
                 }
                 break;
@@ -1160,7 +1176,8 @@ class HSIndicator extends HTMLElement {
                 SimVar.SetSimVarValue("L:PFD_DME_Displayed", "number", this.logic_dmeDisplayed ? 1 : 0);
                 if (this.logic_dmeDisplayed) {
                     this.setAttribute("show_dme", "true");
-                } else {
+                }
+                else {
                     this.setAttribute("show_dme", "false");
                 }
                 break;
@@ -1170,7 +1187,8 @@ class HSIndicator extends HTMLElement {
                 SimVar.SetSimVarValue("L:PFD_BRG1_Source", "number", this.logic_brg1Source);
                 if (this.logic_brg1Source == 0) {
                     this.setAttribute("show_bearing1", "false");
-                } else {
+                }
+                else {
                     this.setAttribute("show_bearing1", "true");
                 }
                 break;
@@ -1180,14 +1198,15 @@ class HSIndicator extends HTMLElement {
                 SimVar.SetSimVarValue("L:PFD_BRG2_Source", "number", this.logic_brg2Source);
                 if (this.logic_brg2Source == 0) {
                     this.setAttribute("show_bearing2", "false");
-                } else {
+                }
+                else {
                     this.setAttribute("show_bearing2", "true");
                 }
                 break;
             case "SoftKey_CDI":
             case "NavSourceSwitch":
                 this.logic_cdiSource = (this.logic_cdiSource % 3) + 1;
-                const isGPSDrived = SimVar.GetSimVarValue("GPS DRIVES NAV1", "Bool");
+                let isGPSDrived = SimVar.GetSimVarValue("GPS DRIVES NAV1", "Bool");
                 if (this.logic_cdiSource == 2 && !SimVar.GetSimVarValue("NAV AVAILABLE:2", "Bool")) {
                     this.logic_cdiSource = 3;
                 }

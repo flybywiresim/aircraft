@@ -133,13 +133,16 @@ class WayPoint {
             this.infos = new AirportInfo(this.instrument);
             this.infos.SetFromIFacilityAirport(data);
             return callback();
-        } else if (this.type === "W") {
+        }
+        else if (this.type === "W") {
             this.infos = new IntersectionInfo(this.instrument);
             this.infos.SetFromIFacilityIntersection(data, callback);
-        } else if (this.type === "V") {
+        }
+        else if (this.type === "V") {
             this.infos = new VORInfo(this.instrument);
             this.infos.SetFromIFacilityVOR(data, callback);
-        } else if (this.type === "N") {
+        }
+        else if (this.type === "N") {
             this.infos = new NDBInfo(this.instrument);
             this.infos.SetFromIFacilityNDB(data, callback);
         }
@@ -180,21 +183,13 @@ class WayPointInfo {
         this.instrument = _instrument;
         this.loaded = true;
     }
-    get lat() {
-        return this.coordinates.lat;
-    }
+    get lat() { return this.coordinates.lat; }
     ;
-    set lat(l) {
-        this.coordinates.lat = l;
-    }
+    set lat(l) { this.coordinates.lat = l; }
     ;
-    get long() {
-        return this.coordinates.long;
-    }
+    get long() { return this.coordinates.long; }
     ;
-    set long(l) {
-        this.coordinates.long = l;
-    }
+    set long(l) { this.coordinates.long = l; }
     ;
     id() {
         return "waypoint-" + this.icao;
@@ -238,7 +233,7 @@ class WayPointInfo {
         this.ident = this.icao.substring(7, 12).replace(new RegExp(" ", "g"), "");
         this.name = Utils.Translate(data.name);
         this.region = Utils.Translate(data.region);
-        const separatedCity = data.city.split(", ");
+        let separatedCity = data.city.split(", ");
         this.city = separatedCity.length > 1 ? Utils.Translate(separatedCity[0]) + ", " + Utils.Translate(separatedCity[1]) : Utils.Translate(data.city);
         this.lat = data.lat;
         this.long = data.lon;
@@ -285,10 +280,11 @@ class AirportInfo extends WayPointInfo {
         });
     }
     GetSymbolFileName() {
-        let logo = "";
+        var logo = "";
         if (this.airportClass == 2 || this.airportClass == 3) {
             logo = "GPS/Airport_Soft.png";
-        } else if (this.airportClass == 1) {
+        }
+        else if (this.airportClass == 1) {
             switch (Math.round((this.longestRunwayDirection % 180) / 45.0)) {
                 case 0:
                 case 4:
@@ -304,46 +300,58 @@ class AirportInfo extends WayPointInfo {
                     logo = "GPS/Airport_Hard_NW_SE.png";
                     break;
             }
-        } else if (this.airportClass == 4) {
+        }
+        else if (this.airportClass == 4) {
             logo = "GPS/Helipad.png";
-        } else if (this.airportClass == 5) {
+        }
+        else if (this.airportClass == 5) {
             logo = "GPS/Private_Airfield.png";
         }
         return logo;
     }
     imageFileName() {
-        let fName = "";
+        var fName = "";
         if (this.airportClass === 0) {
             fName = "ICON_MAP_AIRPORT_UNKNOWN_PINK.svg";
-        } else if (this.airportClass === 1) {
+        }
+        else if (this.airportClass === 1) {
             if (this.towered) {
                 if (this.fuel !== "") {
                     fName = "ICON_MAP_AIRPORT_TOWERED_SERVICED_BLUE.svg";
-                } else {
+                }
+                else {
                     fName = "ICON_MAP_AIRPORT_TOWERED_NON_SERVICED_BLUE.svg";
                 }
-            } else {
+            }
+            else {
                 if (this.fuel !== "") {
                     fName = "ICON_MAP_AIRPORT_NON_TOWERED_SERVICED_PINK.svg";
-                } else {
+                }
+                else {
                     fName = "ICON_MAP_AIRPORT_NON_TOWERED_NON_SERVICED_PINK.svg";
                 }
             }
-        } else if (this.airportClass === 2) {
+        }
+        else if (this.airportClass === 2) {
             if (this.fuel !== "") {
                 fName = "ICON_MAP_AIRPORT7.svg";
-            } else {
+            }
+            else {
                 fName = "ICON_MAP_AIRPORT8.svg";
             }
-        } else if (this.airportClass === 3) {
+        }
+        else if (this.airportClass === 3) {
             if (this.towered) {
                 fName = "ICON_MAP_AIRPORT_TOWERED_SEAPLANE_CIV_BLUE.svg";
-            } else {
+            }
+            else {
                 fName = "ICON_MAP_AIRPORT_NON_TOWERED_SEAPLANE_CIV_PINK.svg";
             }
-        } else if (this.airportClass === 4) {
+        }
+        else if (this.airportClass === 4) {
             fName = "ICON_MAP_AIRPORT_HELIPORT_PINK.svg";
-        } else if (this.airportClass === 5) {
+        }
+        else if (this.airportClass === 5) {
             fName = "ICON_MAP_AIRPORT_PRIVATE_PINK.svg";
         }
         if (fName === "") {
@@ -354,20 +362,20 @@ class AirportInfo extends WayPointInfo {
         return fName.replace(".svg", ".png");
     }
     GetSize() {
-        let minX = 0;
-        let minY = 0;
-        let maxX = 0;
-        let maxY = 0;
-        const latCos = Math.cos((this.lat / 180) * Math.PI);
-        for (let i = 0; i < this.runways.length; i++) {
-            const centerY = (this.lat - this.runways[i].latitude) * 60;
-            const centerX = (this.runways[i].longitude - this.long) * latCos * 60;
-            const forwardY = -this.runways[i].cosDirection;
-            const forwardX = this.runways[i].sinDirection;
-            const beginX = centerX - (forwardX * ((this.runways[i].length / 2) * 0.000164579));
-            const beginY = centerY - (forwardY * ((this.runways[i].length / 2) * 0.000164579));
-            const endX = centerX + (forwardX * ((this.runways[i].length / 2) * 0.000164579));
-            const endY = centerY + (forwardY * ((this.runways[i].length / 2) * 0.000164579));
+        var minX = 0;
+        var minY = 0;
+        var maxX = 0;
+        var maxY = 0;
+        var latCos = Math.cos((this.lat / 180) * Math.PI);
+        for (var i = 0; i < this.runways.length; i++) {
+            var centerY = (this.lat - this.runways[i].latitude) * 60;
+            var centerX = (this.runways[i].longitude - this.long) * latCos * 60;
+            var forwardY = -this.runways[i].cosDirection;
+            var forwardX = this.runways[i].sinDirection;
+            var beginX = centerX - (forwardX * ((this.runways[i].length / 2) * 0.000164579));
+            var beginY = centerY - (forwardY * ((this.runways[i].length / 2) * 0.000164579));
+            var endX = centerX + (forwardX * ((this.runways[i].length / 2) * 0.000164579));
+            var endY = centerY + (forwardY * ((this.runways[i].length / 2) * 0.000164579));
             if (beginX < minX) {
                 minX = beginX;
             }
@@ -423,7 +431,7 @@ class AirportInfo extends WayPointInfo {
         this.airportClass = data.airportClass;
         this.towered = data.towered;
         this.name = Utils.Translate(data.name);
-        const separatedCity = data.city.split(", ");
+        let separatedCity = data.city.split(", ");
         this.city = separatedCity.length > 1 ? Utils.Translate(separatedCity[0]) + ", " + Utils.Translate(separatedCity[1]) : Utils.Translate(data.city);
         this.region = Utils.Translate(data.region);
         this.frequencies = [];
@@ -435,7 +443,7 @@ class AirportInfo extends WayPointInfo {
         this.runways = [];
         if (data.runways) {
             for (let i = 0; i < data.runways.length; i++) {
-                const runway = new Runway();
+                let runway = new Runway();
                 runway.latitude = data.runways[i].latitude;
                 runway.longitude = data.runways[i].longitude;
                 runway.elevation = data.runways[i].elevation;
@@ -458,17 +466,21 @@ class AirportInfo extends WayPointInfo {
                     let v1 = 0;
                     if (r1.designation.indexOf("L") != -1) {
                         v1 = 1;
-                    } else if (r1.designation.indexOf("C") != -1) {
+                    }
+                    else if (r1.designation.indexOf("C") != -1) {
                         v1 = 2;
-                    } else if (r1.designation.indexOf("R") != -1) {
+                    }
+                    else if (r1.designation.indexOf("R") != -1) {
                         v1 = 3;
                     }
                     let v2 = 0;
                     if (r2.designation.indexOf("L") != -1) {
                         v2 = 1;
-                    } else if (r2.designation.indexOf("C") != -1) {
+                    }
+                    else if (r2.designation.indexOf("C") != -1) {
                         v2 = 2;
-                    } else if (r2.designation.indexOf("R") != -1) {
+                    }
+                    else if (r2.designation.indexOf("R") != -1) {
                         v2 = 3;
                     }
                     return v1 - v2;
@@ -479,18 +491,18 @@ class AirportInfo extends WayPointInfo {
         this.approaches = [];
         if (data.approaches) {
             for (let i = 0; i < data.approaches.length; i++) {
-                const approachData = data.approaches[i];
-                const approach = new Approach();
+                let approachData = data.approaches[i];
+                let approach = new Approach();
                 approach.name = approachData.name;
                 approach.runway = approachData.runway;
                 if (loadApproachesData) {
                     approach.transitions = [];
                     for (let i = 0; i < approachData.transitions.length; i++) {
-                        const transition = new Transition();
+                        let transition = new Transition();
                         transition.name = approachData.transitions[i].name;
                         transition.waypoints = [];
                         for (let j = 0; j < approachData.transitions[i].legs.length; j++) {
-                            const wp = new WayPoint(this.instrument);
+                            let wp = new WayPoint(this.instrument);
                             wp.bearingInFP = approachData.transitions[i].legs[j].course;
                             wp.distanceInFP = approachData.transitions[i].legs[j].distance;
                             transition.waypoints.push(wp);
@@ -506,7 +518,7 @@ class AirportInfo extends WayPointInfo {
                     }
                     approach.wayPoints = [];
                     for (let i = 0; i < approachData.finalLegs.length; i++) {
-                        const waypoint = new ApproachWayPoint(this.instrument);
+                        let waypoint = new ApproachWayPoint(this.instrument);
                         waypoint.icao = approachData.finalLegs[i].fixIcao;
                         waypoint.ident = waypoint.icao.substr(7, 5);
                         waypoint.bearingInFP = approachData.finalLegs[i].course;
@@ -526,10 +538,10 @@ class AirportInfo extends WayPointInfo {
         if (this.departures[0]) {
             if (this.departures[0].runwayTransitions[0]) {
                 if (this.departures[0].runwayTransitions[0].legs) {
-                    const l = this.departures[0].runwayTransitions[0].legs.length;
-                    const lastWp = this.departures[0].runwayTransitions[0].legs[l - 1];
+                    let l = this.departures[0].runwayTransitions[0].legs.length;
+                    let lastWp = this.departures[0].runwayTransitions[0].legs[l - 1];
                     if (lastWp) {
-                        const transAlt = Math.round(lastWp.altitude1 * 3.28084 / 100) * 100;
+                        let transAlt = Math.round(lastWp.altitude1 * 3.28084 / 100) * 100;
                         if (transAlt > 1000) {
                             this.transitionAltitude = transAlt;
                         }
@@ -553,7 +565,7 @@ class AirportInfo extends WayPointInfo {
                 }
             }
             for (let j = 0; j < this.departures[i].enRouteTransitions.length; j++) {
-                const legsCount = this.departures[i].enRouteTransitions[j].legs.length;
+                let legsCount = this.departures[i].enRouteTransitions[j].legs.length;
                 this.departures[i].enRouteTransitions[j].name = this.departures[i].enRouteTransitions[j].legs[legsCount - 1].fixIcao.substr(7, 5);
             }
         }
@@ -596,7 +608,7 @@ class VORInfo extends WayPointInfo {
         return this.loaded;
     }
     GetSymbol() {
-        let image = "";
+        var image = "";
         switch (this.type) {
             case 1:
                 image = "GPS/Vor.png";
@@ -709,7 +721,8 @@ class NDBInfo extends WayPointInfo {
         let fName = "";
         if (this.type === 1) {
             fName = "ICON_MAP_NDB_WAYPOINT.svg";
-        } else {
+        }
+        else {
             fName = "ICON_MAP_NDB_WAYPOINT.svg";
         }
         if (BaseInstrument.useSvgImages) {
@@ -817,10 +830,11 @@ class IntersectionInfo extends WayPointInfo {
     GetRouteToIdent(ident) {
         ident = ident.trim();
         for (let i = 0; i < this.routes.length; i++) {
-            const route = this.routes[i];
+            let route = this.routes[i];
             if (route.nextIcao.indexOf(ident) !== -1) {
                 return route;
-            } else if (route.prevIcao.indexOf(ident) !== -1) {
+            }
+            else if (route.prevIcao.indexOf(ident) !== -1) {
                 return route;
             }
         }
@@ -828,10 +842,11 @@ class IntersectionInfo extends WayPointInfo {
     GetIcaoViaRouteByIdent(ident) {
         ident = ident.trim();
         for (let i = 0; i < this.routes.length; i++) {
-            const route = this.routes[i];
+            let route = this.routes[i];
             if (route.nextIcao.indexOf(ident) !== -1) {
                 return route.nextIcao;
-            } else if (route.prevIcao.indexOf(ident) !== -1) {
+            }
+            else if (route.prevIcao.indexOf(ident) !== -1) {
                 return route.prevIcao;
             }
         }
@@ -839,24 +854,25 @@ class IntersectionInfo extends WayPointInfo {
     GetRouteToIcao(icao) {
         icao = icao.trim();
         for (let i = 0; i < this.routes.length; i++) {
-            const route = this.routes[i];
+            let route = this.routes[i];
             if (route.nextIcao.trim() === icao) {
                 return route;
-            } else if (route.prevIcao.trim() === icao) {
+            }
+            else if (route.prevIcao.trim() === icao) {
                 return route;
             }
         }
     }
     GetNextIcaoVia(routeName) {
         for (let i = 0; i < this.routes.length; i++) {
-            const route = this.routes[i];
+            let route = this.routes[i];
             if (route.name.indexOf(routeName) !== -1) {
                 return route.nextIcao;
             }
         }
     }
     async GetNextWayPointVia(routeName) {
-        const nextIcao = this.GetNextIcaoVia(routeName);
+        let nextIcao = this.GetNextIcaoVia(routeName);
         if (nextIcao) {
             return this.instrument.facilityLoader.getFacility(nextIcao);
         }
@@ -885,8 +901,8 @@ class IntersectionInfo extends WayPointInfo {
             if (wp1.infos instanceof IntersectionInfo) {
                 if (wp1.infos.airways && wp1.infos.airways.length > 0) {
                     for (let i = 0; i < wp1.infos.airways.length; i++) {
-                        const wp1Airway = wp1.infos.airways[i];
-                        const wp2Index = wp1Airway.icaos.indexOf(wp2.icao);
+                        let wp1Airway = wp1.infos.airways[i];
+                        let wp2Index = wp1Airway.icaos.indexOf(wp2.icao);
                         if (wp2Index !== -1) {
                             return wp1Airway;
                         }
@@ -896,8 +912,8 @@ class IntersectionInfo extends WayPointInfo {
             if (wp2.infos instanceof IntersectionInfo) {
                 if (wp2.infos.airways && wp2.infos.airways.length > 0) {
                     for (let i = 0; i < wp2.infos.airways.length; i++) {
-                        const wp2Airway = wp2.infos.airways[i];
-                        const wp1Index = wp2Airway.icaos.indexOf(wp1.icao);
+                        let wp2Airway = wp2.infos.airways[i];
+                        let wp1Index = wp2Airway.icaos.indexOf(wp1.icao);
                         if (wp1Index !== -1) {
                             return wp2Airway;
                         }

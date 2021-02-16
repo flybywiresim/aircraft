@@ -1,7 +1,5 @@
 class BaseAS1000 extends NavSystem {
-    get IsGlassCockpit() {
-        return true;
-    }
+    get IsGlassCockpit() { return true; }
     connectedCallback() {
         super.connectedCallback();
         this.preserveAspectRatio("Mainframe");
@@ -76,9 +74,9 @@ var AS1000;
         }
         onUpdate(_deltaTime) {
             if (this.nav1ActiveElement) {
-                const nav1Active = SimVar.GetSimVarValue("NAV ACTIVE FREQUENCY:1", "MHz");
+                var nav1Active = SimVar.GetSimVarValue("NAV ACTIVE FREQUENCY:1", "MHz");
                 if (nav1Active) {
-                    const nav1ActiveValue = nav1Active.toFixed(2);
+                    var nav1ActiveValue = nav1Active.toFixed(2);
                     if (nav1ActiveValue != this.nav1ActiveValue) {
                         this.nav1ActiveElement.textContent = nav1ActiveValue;
                         this.nav1IdentElement.textContent =
@@ -86,26 +84,26 @@ var AS1000;
                     }
                 }
                 Avionics.Utils.diffAndSet(this.nav1IdentElement, SimVar.GetSimVarValue("NAV SIGNAL:1", "number") > 0 ? SimVar.GetSimVarValue("NAV IDENT:1", "string") : "");
-                const nav2Active = SimVar.GetSimVarValue("NAV ACTIVE FREQUENCY:2", "MHz");
+                var nav2Active = SimVar.GetSimVarValue("NAV ACTIVE FREQUENCY:2", "MHz");
                 if (nav2Active) {
-                    const nav2ActiveValue = nav2Active.toFixed(2);
+                    var nav2ActiveValue = nav2Active.toFixed(2);
                     if (nav2ActiveValue != this.nav2ActiveValue) {
                         this.nav2ActiveElement.textContent = nav2ActiveValue;
                         this.nav2ActiveValue = nav2ActiveValue;
                     }
                 }
                 Avionics.Utils.diffAndSet(this.nav2IdentElement, SimVar.GetSimVarValue("NAV SIGNAL:2", "number") > 0 ? SimVar.GetSimVarValue("NAV IDENT:2", "string") : "");
-                const nav1Sby = SimVar.GetSimVarValue("NAV STANDBY FREQUENCY:1", "MHz");
+                var nav1Sby = SimVar.GetSimVarValue("NAV STANDBY FREQUENCY:1", "MHz");
                 if (nav1Sby) {
-                    const nav1SbyValue = nav1Sby.toFixed(2);
+                    var nav1SbyValue = nav1Sby.toFixed(2);
                     if (nav1SbyValue != this.nav1SbyValue) {
                         this.nav1SbyElement.textContent = nav1SbyValue;
                         this.nav1SbyValue = nav1SbyValue;
                     }
                 }
-                const nav2Sby = SimVar.GetSimVarValue("NAV STANDBY FREQUENCY:2", "MHz");
+                var nav2Sby = SimVar.GetSimVarValue("NAV STANDBY FREQUENCY:2", "MHz");
                 if (nav2Sby) {
-                    const nav2SbyValue = nav2Sby.toFixed(2);
+                    var nav2SbyValue = nav2Sby.toFixed(2);
                     if (nav2SbyValue != this.nav2SbyValue) {
                         this.nav2SbyElement.textContent = nav2SbyValue;
                         this.nav2SbyValue = nav2SbyValue;
@@ -117,7 +115,8 @@ var AS1000;
                         this.nav2ArrowElement.setAttribute("style", "visibility:hidden");
                         this.nav1SbyElement.setAttribute("state", "selected");
                         this.nav2SbyElement.setAttribute("state", "unselected");
-                    } else {
+                    }
+                    else {
                         this.nav1ArrowElement.setAttribute("style", "visibility:hidden");
                         this.nav2ArrowElement.setAttribute("style", "visibility:visible");
                         this.nav1SbyElement.setAttribute("state", "unselected");
@@ -132,12 +131,14 @@ var AS1000;
         setGreenFrequencyIndex(_index) {
             if (_index == 1) {
                 this.nav1ActiveElement.setAttribute("state", "green");
-            } else {
+            }
+            else {
                 this.nav1ActiveElement.setAttribute("state", "none");
             }
             if (_index == 2) {
                 this.nav2ActiveElement.setAttribute("state", "green");
-            } else {
+            }
+            else {
                 this.nav2ActiveElement.setAttribute("state", "none");
             }
         }
@@ -154,7 +155,7 @@ var AS1000;
             this.com2SbyValue = "";
         }
         make_bcd16(arg) {
-            const iarg = (arg / 10000.0 - 10000);
+            var iarg = (arg / 10000.0 - 10000);
             arg = (iarg % 10) + ((iarg / 10 % 10) << 4) + ((iarg / 100 % 10) << 8) + ((iarg / 1000 % 10) << 12);
             return arg;
         }
@@ -205,33 +206,33 @@ var AS1000;
         }
         onUpdate(_deltaTime) {
             if (this.com1ActiveElement) {
-                const com1Active = SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:1", "MHz");
+                var com1Active = SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:1", "MHz");
                 if (com1Active) {
-                    const com1ActiveValue = com1Active.toFixed(3);
+                    var com1ActiveValue = com1Active.toFixed(3);
                     if (com1ActiveValue != this.com1ActiveValue) {
                         this.com1ActiveElement.textContent = com1ActiveValue;
                         this.com1ActiveValue = com1ActiveValue;
                     }
                 }
-                const com2Active = SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:2", "MHz");
+                var com2Active = SimVar.GetSimVarValue("COM ACTIVE FREQUENCY:2", "MHz");
                 if (com2Active) {
-                    const com2ActiveValue = com2Active.toFixed(3);
+                    var com2ActiveValue = com2Active.toFixed(3);
                     if (com2ActiveValue != this.com2ActiveValue) {
                         this.com2ActiveElement.textContent = com2ActiveValue;
                         this.com2ActiveValue = com2ActiveValue;
                     }
                 }
-                const com1Sby = SimVar.GetSimVarValue("COM STANDBY FREQUENCY:1", "MHz");
+                var com1Sby = SimVar.GetSimVarValue("COM STANDBY FREQUENCY:1", "MHz");
                 if (com1Sby) {
-                    const com1SbyValue = com1Sby.toFixed(3);
+                    var com1SbyValue = com1Sby.toFixed(3);
                     if (com1SbyValue != this.com1SbyValue) {
                         this.com1SbyElement.textContent = com1SbyValue;
                         this.com1SbyValue = com1SbyValue;
                     }
                 }
-                const com2Sby = SimVar.GetSimVarValue("COM STANDBY FREQUENCY:2", "MHz");
+                var com2Sby = SimVar.GetSimVarValue("COM STANDBY FREQUENCY:2", "MHz");
                 if (com2Sby) {
-                    const com2SbyValue = com2Sby.toFixed(3);
+                    var com2SbyValue = com2Sby.toFixed(3);
                     if (com2SbyValue != this.com2SbyValue) {
                         this.com2SbyElement.textContent = com2SbyValue;
                         this.com2SbyValue = com2SbyValue;
@@ -243,7 +244,8 @@ var AS1000;
                         this.com2ArrowElement.setAttribute("style", "visibility:hidden");
                         this.com1SbyElement.setAttribute("state", "selected");
                         this.com2SbyElement.setAttribute("state", "unselected");
-                    } else {
+                    }
+                    else {
                         this.com1ArrowElement.setAttribute("style", "visibility:hidden");
                         this.com2ArrowElement.setAttribute("style", "visibility:visible");
                         this.com1SbyElement.setAttribute("state", "unselected");
@@ -276,7 +278,7 @@ class Engine extends NavSystemElementContainer {
         }
         let fromConfig = false;
         if (this.gps.xmlConfig) {
-            const engineRoot = this.gps.xmlConfig.getElementsByTagName("EngineDisplay");
+            let engineRoot = this.gps.xmlConfig.getElementsByTagName("EngineDisplay");
             if (engineRoot.length > 0) {
                 fromConfig = true;
                 this.root.setAttribute("state", "XML");
@@ -287,7 +289,7 @@ class Engine extends NavSystemElementContainer {
         if (!fromConfig) {
             this.engineType = Simplane.getEngineType();
             this.engineCount = Simplane.getEngineCount();
-            const ed = this.root.querySelector("engine-display");
+            var ed = this.root.querySelector("engine-display");
             if (!ed) {
                 console.error("Engine Display component expected!");
                 return;
@@ -299,107 +301,109 @@ class Engine extends NavSystemElementContainer {
         this.initSettings();
         switch (this.engineType) {
             case EngineType.ENGINE_TYPE_PISTON:
-            {
-                this.root.setAttribute("state", "piston");
-                this.addGauge().Set(this.gps.getChildById("Piston_VacGauge"), this.settings.Vacuum, this.getVAC.bind(this), "VAC", "inHg");
-                this.addGauge().Set(this.gps.getChildById("Piston_FuelGauge"), this.settings.FuelQuantity, this.getFuelR.bind(this), "FUEL QTY", "GAL", 0, this.getFuelL.bind(this));
-                this.addText().Set(this.gps.getChildById("Piston_EngineHours"), this.getEngineHours.bind(this));
-                this.addText().Set(this.gps.getChildById("Piston_Bus_M"), this.getVoltsBus.bind(this));
-                this.addText().Set(this.gps.getChildById("Piston_Bus_E"), this.getVoltsBattery.bind(this));
-                this.addText().Set(this.gps.getChildById("Piston_Batt_M"), this.getAmpsBattery.bind(this));
-                this.addText().Set(this.gps.getChildById("Piston_Batt_S"), this.getAmpsGenAlt.bind(this));
-                var engineRoot = this.root.querySelector("#PistonEnginesPanel");
-                if (engineRoot) {
-                    for (var i = 0; i < this.engineCount; i++) {
-                        const engine = new PistonEngine();
-                        TemplateElement.call(engine, this.onEngineReady.bind(this, engine, i));
-                        engineRoot.appendChild(engine);
+                {
+                    this.root.setAttribute("state", "piston");
+                    this.addGauge().Set(this.gps.getChildById("Piston_VacGauge"), this.settings.Vacuum, this.getVAC.bind(this), "VAC", "inHg");
+                    this.addGauge().Set(this.gps.getChildById("Piston_FuelGauge"), this.settings.FuelQuantity, this.getFuelR.bind(this), "FUEL QTY", "GAL", 0, this.getFuelL.bind(this));
+                    this.addText().Set(this.gps.getChildById("Piston_EngineHours"), this.getEngineHours.bind(this));
+                    this.addText().Set(this.gps.getChildById("Piston_Bus_M"), this.getVoltsBus.bind(this));
+                    this.addText().Set(this.gps.getChildById("Piston_Bus_E"), this.getVoltsBattery.bind(this));
+                    this.addText().Set(this.gps.getChildById("Piston_Batt_M"), this.getAmpsBattery.bind(this));
+                    this.addText().Set(this.gps.getChildById("Piston_Batt_S"), this.getAmpsGenAlt.bind(this));
+                    var engineRoot = this.root.querySelector("#PistonEnginesPanel");
+                    if (engineRoot) {
+                        for (var i = 0; i < this.engineCount; i++) {
+                            let engine = new PistonEngine();
+                            TemplateElement.call(engine, this.onEngineReady.bind(this, engine, i));
+                            engineRoot.appendChild(engine);
+                        }
                     }
-                } else {
-                    console.error("Unable to find engine root");
-                    return;
+                    else {
+                        console.error("Unable to find engine root");
+                        return;
+                    }
+                    break;
                 }
-                break;
-            }
             case EngineType.ENGINE_TYPE_TURBOPROP:
             case EngineType.ENGINE_TYPE_JET:
-            {
-                this.root.setAttribute("state", "turbo");
-                this.addGauge().Set(this.gps.getChildById("Turbo_AmpGauge1"), this.settings.BatteryBusAmps, this.getAmpsBattery.bind(this), "", "AMPS B");
-                this.addGauge().Set(this.gps.getChildById("Turbo_AmpGauge2"), this.settings.GenAltBusAmps, this.getAmpsGenAlt.bind(this), "", "AMPS G");
-                this.addGauge().Set(this.gps.getChildById("Turbo_VoltsGauge1"), this.settings.MainBusVoltage, this.getVoltsBus.bind(this), "", "VOLTS B");
-                this.addGauge().Set(this.gps.getChildById("Turbo_VoltsGauge2"), this.settings.HotBatteryBusVoltage, this.getVoltsBattery.bind(this), "", "VOLTS E");
-                this.addGauge().Set(this.gps.getChildById("Turbo_FuelGaugeLeft"), this.settings.FuelQuantity, this.getFuelL.bind(this), "", "");
-                this.addGauge().Set(this.gps.getChildById("Turbo_FuelGaugeRight"), this.settings.FuelQuantity, this.getFuelR.bind(this), "", "");
-                this.addGauge().Set(this.gps.getChildById("Turbo_DiffPsiGauge"), this.settings.CabinPressureDiff, this.getPressureDiff.bind(this), "", "DIFF PSI");
-                this.addGauge().Set(this.gps.getChildById("Turbo_AltGauge"), this.settings.CabinAltitude, this.getCabinAlt.bind(this), "", "");
-                this.addGauge().Set(this.gps.getChildById("Turbo_RateGauge"), this.settings.CabinAltitudeChangeRate, this.getCabinAltRate.bind(this), "", "");
-                this.addText().Set(this.gps.getChildById("OxyPsiValue"), this.getOxyPressure.bind(this));
-                const trimElevParam = new ColorRangeDisplay();
-                trimElevParam.min = -100;
-                trimElevParam.max = 100;
-                trimElevParam.greenStart = (Simplane.getTrimNeutral() * 100) - 15;
-                trimElevParam.greenEnd = (Simplane.getTrimNeutral() * 100) + 15;
-                this.addGauge().Set(this.gps.getChildById("Turbo_ElevTrim"), trimElevParam, this.getTrimElev.bind(this), "", "");
-                const trimRudderParam = new ColorRangeDisplay4();
-                trimRudderParam.min = -100;
-                trimRudderParam.max = 100;
-                trimRudderParam.greenStart = 20;
-                trimRudderParam.greenEnd = 60;
-                trimRudderParam.whiteStart = -25.5;
-                trimRudderParam.whiteEnd = -6;
-                this.addGauge().Set(this.gps.getChildById("Turbo_RudderTrim"), trimRudderParam, this.getTrimRudder.bind(this), "", "");
-                const trimAilParam = new ColorRangeDisplay4();
-                trimAilParam.min = -100;
-                trimAilParam.max = 100;
-                trimAilParam.whiteStart = -10;
-                trimAilParam.whiteEnd = 10;
-                this.addGauge().Set(this.gps.getChildById("Turbo_AilTrim"), trimAilParam, this.getTrimAil.bind(this), "", "");
-                const flapsParam = new FlapsRangeDisplay();
-                flapsParam.min = 0;
-                flapsParam.max = 34;
-                flapsParam.takeOffValue = 10;
-                this.addGauge().Set(this.gps.getChildById("Turbo_Flaps"), flapsParam, this.getFlapsAngle.bind(this), "", "");
-                var engineRoot = this.root.querySelector("#TurboEngine");
-                if (engineRoot) {
-                    for (var i = this.engineCount - 1; i >= 0; i--) {
-                        const engine = new TurboEngine();
-                        TemplateElement.call(engine, this.onEngineReady.bind(this, engine, i));
-                        engineRoot.insertBefore(engine, engineRoot.firstChild);
+                {
+                    this.root.setAttribute("state", "turbo");
+                    this.addGauge().Set(this.gps.getChildById("Turbo_AmpGauge1"), this.settings.BatteryBusAmps, this.getAmpsBattery.bind(this), "", "AMPS B");
+                    this.addGauge().Set(this.gps.getChildById("Turbo_AmpGauge2"), this.settings.GenAltBusAmps, this.getAmpsGenAlt.bind(this), "", "AMPS G");
+                    this.addGauge().Set(this.gps.getChildById("Turbo_VoltsGauge1"), this.settings.MainBusVoltage, this.getVoltsBus.bind(this), "", "VOLTS B");
+                    this.addGauge().Set(this.gps.getChildById("Turbo_VoltsGauge2"), this.settings.HotBatteryBusVoltage, this.getVoltsBattery.bind(this), "", "VOLTS E");
+                    this.addGauge().Set(this.gps.getChildById("Turbo_FuelGaugeLeft"), this.settings.FuelQuantity, this.getFuelL.bind(this), "", "");
+                    this.addGauge().Set(this.gps.getChildById("Turbo_FuelGaugeRight"), this.settings.FuelQuantity, this.getFuelR.bind(this), "", "");
+                    this.addGauge().Set(this.gps.getChildById("Turbo_DiffPsiGauge"), this.settings.CabinPressureDiff, this.getPressureDiff.bind(this), "", "DIFF PSI");
+                    this.addGauge().Set(this.gps.getChildById("Turbo_AltGauge"), this.settings.CabinAltitude, this.getCabinAlt.bind(this), "", "");
+                    this.addGauge().Set(this.gps.getChildById("Turbo_RateGauge"), this.settings.CabinAltitudeChangeRate, this.getCabinAltRate.bind(this), "", "");
+                    this.addText().Set(this.gps.getChildById("OxyPsiValue"), this.getOxyPressure.bind(this));
+                    let trimElevParam = new ColorRangeDisplay();
+                    trimElevParam.min = -100;
+                    trimElevParam.max = 100;
+                    trimElevParam.greenStart = (Simplane.getTrimNeutral() * 100) - 15;
+                    trimElevParam.greenEnd = (Simplane.getTrimNeutral() * 100) + 15;
+                    this.addGauge().Set(this.gps.getChildById("Turbo_ElevTrim"), trimElevParam, this.getTrimElev.bind(this), "", "");
+                    let trimRudderParam = new ColorRangeDisplay4();
+                    trimRudderParam.min = -100;
+                    trimRudderParam.max = 100;
+                    trimRudderParam.greenStart = 20;
+                    trimRudderParam.greenEnd = 60;
+                    trimRudderParam.whiteStart = -25.5;
+                    trimRudderParam.whiteEnd = -6;
+                    this.addGauge().Set(this.gps.getChildById("Turbo_RudderTrim"), trimRudderParam, this.getTrimRudder.bind(this), "", "");
+                    let trimAilParam = new ColorRangeDisplay4();
+                    trimAilParam.min = -100;
+                    trimAilParam.max = 100;
+                    trimAilParam.whiteStart = -10;
+                    trimAilParam.whiteEnd = 10;
+                    this.addGauge().Set(this.gps.getChildById("Turbo_AilTrim"), trimAilParam, this.getTrimAil.bind(this), "", "");
+                    let flapsParam = new FlapsRangeDisplay();
+                    flapsParam.min = 0;
+                    flapsParam.max = 34;
+                    flapsParam.takeOffValue = 10;
+                    this.addGauge().Set(this.gps.getChildById("Turbo_Flaps"), flapsParam, this.getFlapsAngle.bind(this), "", "");
+                    var engineRoot = this.root.querySelector("#TurboEngine");
+                    if (engineRoot) {
+                        for (var i = this.engineCount - 1; i >= 0; i--) {
+                            let engine = new TurboEngine();
+                            TemplateElement.call(engine, this.onEngineReady.bind(this, engine, i));
+                            engineRoot.insertBefore(engine, engineRoot.firstChild);
+                        }
                     }
-                } else {
-                    console.error("Unable to find engine root");
-                    return;
+                    else {
+                        console.error("Unable to find engine root");
+                        return;
+                    }
+                    break;
                 }
-                break;
-            }
         }
     }
     onEngineReady(_engine, _index) {
         this.nbEngineReady++;
         switch (this.engineType) {
             case EngineType.ENGINE_TYPE_PISTON:
-            {
-                this.addGauge().Set(_engine.querySelector(".Piston_RPMGauge"), this.settings.RPM, this.getRPM.bind(this, _index), "", "RPM");
-                this.addGauge().Set(_engine.querySelector(".Piston_FFlowGauge"), this.settings.FuelFlow, this.getFuelFlow.bind(this, _index), "FFLOW", "GPH");
-                this.addGauge().Set(_engine.querySelector(".Piston_OilPressGauge"), this.settings.OilPressure, this.getOilPress.bind(this, _index), "OIL PRESS", "");
-                this.addGauge().Set(_engine.querySelector(".Piston_OilTempGauge"), this.settings.OilTemperature, this.getOilTempFarenheit.bind(this, _index), "OIL TEMP", "");
-                this.addGauge().Set(_engine.querySelector(".Piston_EgtGauge"), this.settings.EGTTemperature, this.getEGTFarenheit.bind(this, _index), "EGT", "");
-                break;
-            }
+                {
+                    this.addGauge().Set(_engine.querySelector(".Piston_RPMGauge"), this.settings.RPM, this.getRPM.bind(this, _index), "", "RPM");
+                    this.addGauge().Set(_engine.querySelector(".Piston_FFlowGauge"), this.settings.FuelFlow, this.getFuelFlow.bind(this, _index), "FFLOW", "GPH");
+                    this.addGauge().Set(_engine.querySelector(".Piston_OilPressGauge"), this.settings.OilPressure, this.getOilPress.bind(this, _index), "OIL PRESS", "");
+                    this.addGauge().Set(_engine.querySelector(".Piston_OilTempGauge"), this.settings.OilTemperature, this.getOilTempFarenheit.bind(this, _index), "OIL TEMP", "");
+                    this.addGauge().Set(_engine.querySelector(".Piston_EgtGauge"), this.settings.EGTTemperature, this.getEGTFarenheit.bind(this, _index), "EGT", "");
+                    break;
+                }
             case EngineType.ENGINE_TYPE_TURBOPROP:
             case EngineType.ENGINE_TYPE_JET:
-            {
-                this.addGauge().Set(_engine.querySelector(".Turbo_TorqueGauge"), this.settings.Torque, this.getTorque.bind(this, _index), "TRQ", "%");
-                this.addGauge().Set(_engine.querySelector(".Turbo_RPMGauge"), this.settings.RPM, this.getRPM.bind(this, _index), "PROP", "RPM");
-                this.addGauge().Set(_engine.querySelector(".Turbo_NgGauge"), this.settings.TurbineNg, this.getNg.bind(this, _index), "NG", "%", 1);
-                this.addGauge().Set(_engine.querySelector(".Turbo_IttGauge"), this.settings.ITTEngineOff, this.getItt.bind(this, _index), "ITT", "°C");
-                this.addGauge().Set(_engine.querySelector(".Turbo_OilPressGauge"), this.settings.OilPressure, this.getOilPress.bind(this, _index), "OIL PRESS", "");
-                this.addGauge().Set(_engine.querySelector(".Turbo_OilTempGauge"), this.settings.OilTemperature, this.getOilTempCelsius.bind(this, _index), "OIL TEMP", "");
-                this.engineAnnunciations = new Engine_Annunciations();
-                this.allElements.push(this.engineAnnunciations);
-                break;
-            }
+                {
+                    this.addGauge().Set(_engine.querySelector(".Turbo_TorqueGauge"), this.settings.Torque, this.getTorque.bind(this, _index), "TRQ", "%");
+                    this.addGauge().Set(_engine.querySelector(".Turbo_RPMGauge"), this.settings.RPM, this.getRPM.bind(this, _index), "PROP", "RPM");
+                    this.addGauge().Set(_engine.querySelector(".Turbo_NgGauge"), this.settings.TurbineNg, this.getNg.bind(this, _index), "NG", "%", 1);
+                    this.addGauge().Set(_engine.querySelector(".Turbo_IttGauge"), this.settings.ITTEngineOff, this.getItt.bind(this, _index), "ITT", "°C");
+                    this.addGauge().Set(_engine.querySelector(".Turbo_OilPressGauge"), this.settings.OilPressure, this.getOilPress.bind(this, _index), "OIL PRESS", "");
+                    this.addGauge().Set(_engine.querySelector(".Turbo_OilTempGauge"), this.settings.OilTemperature, this.getOilTempCelsius.bind(this, _index), "OIL TEMP", "");
+                    this.engineAnnunciations = new Engine_Annunciations();
+                    this.allElements.push(this.engineAnnunciations);
+                    break;
+                }
         }
         if (this.nbEngineReady == this.engineCount) {
             this.allEnginesReady = true;
@@ -407,9 +411,8 @@ class Engine extends NavSystemElementContainer {
         }
     }
     reset() {
-        if (this.engineAnnunciations) {
+        if (this.engineAnnunciations)
             this.engineAnnunciations.reset();
-        }
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
@@ -419,35 +422,32 @@ class Engine extends NavSystemElementContainer {
         this.updateWidth();
     }
     updateWidth() {
-        if (!this.root || !this.allEnginesReady || this.widthSet) {
+        if (!this.root || !this.allEnginesReady || this.widthSet)
             return;
-        }
-        const vpRect = this.gps.getBoundingClientRect();
-        const vpWidth = vpRect.width;
-        const vpHeight = vpRect.height;
-        if (vpWidth <= 0 || vpHeight <= 0) {
+        var vpRect = this.gps.getBoundingClientRect();
+        var vpWidth = vpRect.width;
+        var vpHeight = vpRect.height;
+        if (vpWidth <= 0 || vpHeight <= 0)
             return;
-        }
-        const width = this.root.offsetWidth;
-        if (width <= 0) {
+        var width = this.root.offsetWidth;
+        if (width <= 0)
             return;
-        }
-        const newWidth = width * this.engineCount;
+        var newWidth = width * this.engineCount;
         if (width != newWidth) {
             this.root.style.width = width * this.engineCount + "px";
-            for (let i = 0; i < this.allElements.length; i++) {
+            for (var i = 0; i < this.allElements.length; i++) {
                 this.allElements[i].redraw();
             }
         }
         this.widthSet = true;
     }
     addGauge() {
-        const newElem = new GaugeElement();
+        var newElem = new GaugeElement();
         this.allElements.push(newElem);
         return newElem;
     }
     addText() {
-        const newElem = new TextElement();
+        var newElem = new TextElement();
         this.allElements.push(newElem);
         return newElem;
     }
@@ -459,132 +459,132 @@ class Engine extends NavSystemElementContainer {
         this.settings = new GlassCockpitSettings();
         switch (this.engineType) {
             case EngineType.ENGINE_TYPE_PISTON:
-            {
-                this.settings.Vacuum.min = 3.5;
-                this.settings.Vacuum.greenStart = 4.5;
-                this.settings.Vacuum.greenEnd = 5.5;
-                this.settings.Vacuum.max = 7;
-                this.settings.FuelQuantity.min = 0;
-                this.settings.FuelQuantity.greenStart = 5;
-                this.settings.FuelQuantity.greenEnd = 24;
-                this.settings.FuelQuantity.yellowStart = 1.5;
-                this.settings.FuelQuantity.yellowEnd = 5;
-                this.settings.FuelQuantity.redStart = 0;
-                this.settings.FuelQuantity.redEnd = 3;
-                this.settings.FuelQuantity.max = 24;
-                this.settings.RPM.min = 0;
-                this.settings.RPM.greenStart = 2100;
-                this.settings.RPM.greenEnd = 2600;
-                this.settings.RPM.redStart = 2700;
-                this.settings.RPM.redEnd = 3000;
-                this.settings.RPM.max = 3000;
-                this.settings.FuelFlow.min = 0;
-                this.settings.FuelFlow.greenStart = 0;
-                this.settings.FuelFlow.greenEnd = 12;
-                this.settings.FuelFlow.max = 20;
-                this.settings.OilPressure.min = 0;
-                this.settings.OilPressure.lowLimit = 20;
-                this.settings.OilPressure.lowRedStart = 0;
-                this.settings.OilPressure.lowRedEnd = 20;
-                this.settings.OilPressure.greenStart = 50;
-                this.settings.OilPressure.greenEnd = 90;
-                this.settings.OilPressure.redStart = 115;
-                this.settings.OilPressure.redEnd = 120;
-                this.settings.OilPressure.highLimit = 115;
-                this.settings.OilPressure.max = 120;
-                this.settings.OilTemperature.min = 100;
-                this.settings.OilTemperature.lowLimit = 100;
-                this.settings.OilTemperature.greenStart = 100;
-                this.settings.OilTemperature.greenEnd = 245;
-                this.settings.OilTemperature.highLimit = 245;
-                this.settings.OilTemperature.max = 250;
-                this.settings.EGTTemperature.min = 1250;
-                this.settings.EGTTemperature.max = 1650;
-                break;
-            }
+                {
+                    this.settings.Vacuum.min = 3.5;
+                    this.settings.Vacuum.greenStart = 4.5;
+                    this.settings.Vacuum.greenEnd = 5.5;
+                    this.settings.Vacuum.max = 7;
+                    this.settings.FuelQuantity.min = 0;
+                    this.settings.FuelQuantity.greenStart = 5;
+                    this.settings.FuelQuantity.greenEnd = 24;
+                    this.settings.FuelQuantity.yellowStart = 1.5;
+                    this.settings.FuelQuantity.yellowEnd = 5;
+                    this.settings.FuelQuantity.redStart = 0;
+                    this.settings.FuelQuantity.redEnd = 3;
+                    this.settings.FuelQuantity.max = 24;
+                    this.settings.RPM.min = 0;
+                    this.settings.RPM.greenStart = 2100;
+                    this.settings.RPM.greenEnd = 2600;
+                    this.settings.RPM.redStart = 2700;
+                    this.settings.RPM.redEnd = 3000;
+                    this.settings.RPM.max = 3000;
+                    this.settings.FuelFlow.min = 0;
+                    this.settings.FuelFlow.greenStart = 0;
+                    this.settings.FuelFlow.greenEnd = 12;
+                    this.settings.FuelFlow.max = 20;
+                    this.settings.OilPressure.min = 0;
+                    this.settings.OilPressure.lowLimit = 20;
+                    this.settings.OilPressure.lowRedStart = 0;
+                    this.settings.OilPressure.lowRedEnd = 20;
+                    this.settings.OilPressure.greenStart = 50;
+                    this.settings.OilPressure.greenEnd = 90;
+                    this.settings.OilPressure.redStart = 115;
+                    this.settings.OilPressure.redEnd = 120;
+                    this.settings.OilPressure.highLimit = 115;
+                    this.settings.OilPressure.max = 120;
+                    this.settings.OilTemperature.min = 100;
+                    this.settings.OilTemperature.lowLimit = 100;
+                    this.settings.OilTemperature.greenStart = 100;
+                    this.settings.OilTemperature.greenEnd = 245;
+                    this.settings.OilTemperature.highLimit = 245;
+                    this.settings.OilTemperature.max = 250;
+                    this.settings.EGTTemperature.min = 1250;
+                    this.settings.EGTTemperature.max = 1650;
+                    break;
+                }
             case EngineType.ENGINE_TYPE_TURBOPROP:
             case EngineType.ENGINE_TYPE_JET:
-            {
-                this.settings.BatteryBusAmps.min = -50;
-                this.settings.BatteryBusAmps.greenStart = -50;
-                this.settings.BatteryBusAmps.greenEnd = 50;
-                this.settings.BatteryBusAmps.yellowStart = 50;
-                this.settings.BatteryBusAmps.yellowEnd = 100;
-                this.settings.BatteryBusAmps.max = 100;
-                this.settings.GenAltBusAmps.min = 0;
-                this.settings.GenAltBusAmps.greenStart = 0;
-                this.settings.GenAltBusAmps.greenEnd = 300;
-                this.settings.GenAltBusAmps.max = 300;
-                this.settings.MainBusVoltage.min = -50;
-                this.settings.MainBusVoltage.lowLimit = 20;
-                this.settings.MainBusVoltage.lowYellowStart = 20;
-                this.settings.MainBusVoltage.lowYellowEnd = 28;
-                this.settings.MainBusVoltage.greenStart = 28;
-                this.settings.MainBusVoltage.greenEnd = 30;
-                this.settings.MainBusVoltage.highLimit = 28;
-                this.settings.MainBusVoltage.max = 50;
-                this.settings.HotBatteryBusVoltage.min = -50;
-                this.settings.HotBatteryBusVoltage.lowLimit = 20;
-                this.settings.HotBatteryBusVoltage.greenStart = 28;
-                this.settings.HotBatteryBusVoltage.greenEnd = 30;
-                this.settings.HotBatteryBusVoltage.yellowStart = 20;
-                this.settings.HotBatteryBusVoltage.yellowEnd = 28;
-                this.settings.HotBatteryBusVoltage.highLimit = 28;
-                this.settings.HotBatteryBusVoltage.max = 50;
-                this.settings.FuelQuantity.min = 0;
-                this.settings.FuelQuantity.greenStart = 9;
-                this.settings.FuelQuantity.greenEnd = 150;
-                this.settings.FuelQuantity.yellowStart = 1;
-                this.settings.FuelQuantity.yellowEnd = 9;
-                this.settings.FuelQuantity.redStart = 0;
-                this.settings.FuelQuantity.redEnd = 1;
-                this.settings.FuelQuantity.max = 150;
-                this.settings.Torque.min = 0;
-                this.settings.Torque.greenStart = 0;
-                this.settings.Torque.greenEnd = 100;
-                this.settings.Torque.yellowStart = 100;
-                this.settings.Torque.yellowEnd = 101;
-                this.settings.Torque.redStart = 101;
-                this.settings.Torque.redEnd = 102;
-                this.settings.Torque.max = 110;
-                this.settings.RPM.min = 0;
-                this.settings.RPM.greenStart = 1950;
-                this.settings.RPM.greenEnd = 2050;
-                this.settings.RPM.yellowStart = 450;
-                this.settings.RPM.yellowEnd = 1000;
-                this.settings.RPM.redStart = 2050;
-                this.settings.RPM.redEnd = 2051;
-                this.settings.RPM.max = 2200;
-                this.settings.TurbineNg.min = 0;
-                this.settings.TurbineNg.greenStart = 51;
-                this.settings.TurbineNg.greenEnd = 104;
-                this.settings.TurbineNg.redStart = 104;
-                this.settings.TurbineNg.redEnd = 105;
-                this.settings.TurbineNg.max = 110;
-                this.settings.ITTEngineOff.min = 0;
-                this.settings.ITTEngineOff.greenStart = 752;
-                this.settings.ITTEngineOff.greenEnd = 1544;
-                this.settings.ITTEngineOff.redStart = 1545;
-                this.settings.ITTEngineOff.redEnd = 1652;
-                this.settings.ITTEngineOff.max = 1995;
-                this.settings.OilPressure.min = 0;
-                this.settings.OilPressure.lowLimit = 60;
-                this.settings.OilPressure.greenStart = 105;
-                this.settings.OilPressure.greenEnd = 135;
-                this.settings.OilPressure.yellowStart = 60;
-                this.settings.OilPressure.yellowEnd = 105;
-                this.settings.OilPressure.redStart = 135;
-                this.settings.OilPressure.redEnd = 136;
-                this.settings.OilPressure.highLimit = 135;
-                this.settings.OilPressure.max = 170;
-                this.settings.OilTemperature.min = -50;
-                this.settings.OilTemperature.lowLimit = -40;
-                this.settings.OilTemperature.greenStart = 32;
-                this.settings.OilTemperature.greenEnd = 219;
-                this.settings.OilTemperature.highLimit = 238;
-                this.settings.OilTemperature.max = 248;
-                break;
-            }
+                {
+                    this.settings.BatteryBusAmps.min = -50;
+                    this.settings.BatteryBusAmps.greenStart = -50;
+                    this.settings.BatteryBusAmps.greenEnd = 50;
+                    this.settings.BatteryBusAmps.yellowStart = 50;
+                    this.settings.BatteryBusAmps.yellowEnd = 100;
+                    this.settings.BatteryBusAmps.max = 100;
+                    this.settings.GenAltBusAmps.min = 0;
+                    this.settings.GenAltBusAmps.greenStart = 0;
+                    this.settings.GenAltBusAmps.greenEnd = 300;
+                    this.settings.GenAltBusAmps.max = 300;
+                    this.settings.MainBusVoltage.min = -50;
+                    this.settings.MainBusVoltage.lowLimit = 20;
+                    this.settings.MainBusVoltage.lowYellowStart = 20;
+                    this.settings.MainBusVoltage.lowYellowEnd = 28;
+                    this.settings.MainBusVoltage.greenStart = 28;
+                    this.settings.MainBusVoltage.greenEnd = 30;
+                    this.settings.MainBusVoltage.highLimit = 28;
+                    this.settings.MainBusVoltage.max = 50;
+                    this.settings.HotBatteryBusVoltage.min = -50;
+                    this.settings.HotBatteryBusVoltage.lowLimit = 20;
+                    this.settings.HotBatteryBusVoltage.greenStart = 28;
+                    this.settings.HotBatteryBusVoltage.greenEnd = 30;
+                    this.settings.HotBatteryBusVoltage.yellowStart = 20;
+                    this.settings.HotBatteryBusVoltage.yellowEnd = 28;
+                    this.settings.HotBatteryBusVoltage.highLimit = 28;
+                    this.settings.HotBatteryBusVoltage.max = 50;
+                    this.settings.FuelQuantity.min = 0;
+                    this.settings.FuelQuantity.greenStart = 9;
+                    this.settings.FuelQuantity.greenEnd = 150;
+                    this.settings.FuelQuantity.yellowStart = 1;
+                    this.settings.FuelQuantity.yellowEnd = 9;
+                    this.settings.FuelQuantity.redStart = 0;
+                    this.settings.FuelQuantity.redEnd = 1;
+                    this.settings.FuelQuantity.max = 150;
+                    this.settings.Torque.min = 0;
+                    this.settings.Torque.greenStart = 0;
+                    this.settings.Torque.greenEnd = 100;
+                    this.settings.Torque.yellowStart = 100;
+                    this.settings.Torque.yellowEnd = 101;
+                    this.settings.Torque.redStart = 101;
+                    this.settings.Torque.redEnd = 102;
+                    this.settings.Torque.max = 110;
+                    this.settings.RPM.min = 0;
+                    this.settings.RPM.greenStart = 1950;
+                    this.settings.RPM.greenEnd = 2050;
+                    this.settings.RPM.yellowStart = 450;
+                    this.settings.RPM.yellowEnd = 1000;
+                    this.settings.RPM.redStart = 2050;
+                    this.settings.RPM.redEnd = 2051;
+                    this.settings.RPM.max = 2200;
+                    this.settings.TurbineNg.min = 0;
+                    this.settings.TurbineNg.greenStart = 51;
+                    this.settings.TurbineNg.greenEnd = 104;
+                    this.settings.TurbineNg.redStart = 104;
+                    this.settings.TurbineNg.redEnd = 105;
+                    this.settings.TurbineNg.max = 110;
+                    this.settings.ITTEngineOff.min = 0;
+                    this.settings.ITTEngineOff.greenStart = 752;
+                    this.settings.ITTEngineOff.greenEnd = 1544;
+                    this.settings.ITTEngineOff.redStart = 1545;
+                    this.settings.ITTEngineOff.redEnd = 1652;
+                    this.settings.ITTEngineOff.max = 1995;
+                    this.settings.OilPressure.min = 0;
+                    this.settings.OilPressure.lowLimit = 60;
+                    this.settings.OilPressure.greenStart = 105;
+                    this.settings.OilPressure.greenEnd = 135;
+                    this.settings.OilPressure.yellowStart = 60;
+                    this.settings.OilPressure.yellowEnd = 105;
+                    this.settings.OilPressure.redStart = 135;
+                    this.settings.OilPressure.redEnd = 136;
+                    this.settings.OilPressure.highLimit = 135;
+                    this.settings.OilPressure.max = 170;
+                    this.settings.OilTemperature.min = -50;
+                    this.settings.OilTemperature.lowLimit = -40;
+                    this.settings.OilTemperature.greenStart = 32;
+                    this.settings.OilTemperature.greenEnd = 219;
+                    this.settings.OilTemperature.highLimit = 238;
+                    this.settings.OilTemperature.max = 248;
+                    break;
+                }
         }
     }
     getRPM(_index) {
@@ -594,7 +594,7 @@ class Engine extends NavSystemElementContainer {
         return Simplane.getEnginePower(_index);
     }
     getNg(_index) {
-        const engineId = _index + 1;
+        var engineId = _index + 1;
         return SimVar.GetSimVarValue("TURB ENG N1:" + engineId, "percent");
     }
     getItt(_index) {
@@ -606,27 +606,27 @@ class Engine extends NavSystemElementContainer {
         return SimVar.GetSimVarValue("TURB ENG1 ITT", "celsius");
     }
     getFuelFlow(_index) {
-        const engineId = _index + 1;
+        var engineId = _index + 1;
         return SimVar.GetSimVarValue("ENG FUEL FLOW GPH:" + engineId, "gallons per hour");
     }
     getOilPress(_index) {
-        const engineId = _index + 1;
+        var engineId = _index + 1;
         return SimVar.GetSimVarValue("GENERAL ENG OIL PRESSURE:" + engineId, "psi");
     }
     getOilTempFarenheit(_index) {
-        const engineId = _index + 1;
+        var engineId = _index + 1;
         return SimVar.GetSimVarValue("GENERAL ENG OIL TEMPERATURE:" + engineId, "farenheit");
     }
     getOilTempCelsius(_index) {
-        const engineId = _index + 1;
+        var engineId = _index + 1;
         return SimVar.GetSimVarValue("GENERAL ENG OIL TEMPERATURE:" + engineId, "celsius");
     }
     getEGTFarenheit(_index) {
-        const engineId = _index + 1;
+        var engineId = _index + 1;
         return SimVar.GetSimVarValue("GENERAL ENG EXHAUST GAS TEMPERATURE:" + engineId, "farenheit");
     }
     getEGTCelsius(_index) {
-        const engineId = _index + 1;
+        var engineId = _index + 1;
         return SimVar.GetSimVarValue("GENERAL ENG EXHAUST GAS TEMPERATURE:" + engineId, "farenheit");
     }
     getVAC() {
@@ -660,9 +660,9 @@ class Engine extends NavSystemElementContainer {
         return SimVar.GetSimVarValue("PRESSURIZATION PRESSURE DIFFERENTIAL", "psi");
     }
     getEngineHours() {
-        const totalSeconds = SimVar.GetSimVarValue("GENERAL ENG ELAPSED TIME:1", "seconds");
-        let hours = Math.floor(totalSeconds / 3600);
-        const remainingSeconds = totalSeconds - (hours * 3600);
+        var totalSeconds = SimVar.GetSimVarValue("GENERAL ENG ELAPSED TIME:1", "seconds");
+        var hours = Math.floor(totalSeconds / 3600);
+        var remainingSeconds = totalSeconds - (hours * 3600);
         hours += Math.floor((remainingSeconds / 3600) * 10) / 10;
         return hours;
     }
@@ -713,12 +713,12 @@ class AS1000_PFD_NearestAirports extends NavSystemElement {
         if (this.isActive) {
             this.rootElement.setAttribute("state", "Active");
             this.nearestAirportList.Update(25, 200);
-            const airportListStrings = [];
-            for (let i = 0; i < this.nearestAirportList.airports.length; i++) {
-                const airport = this.nearestAirportList.airports[i];
-                let firstLine = "";
-                let secondLine = "";
-                const logo = airport.imageFileName();
+            var airportListStrings = [];
+            for (var i = 0; i < this.nearestAirportList.airports.length; i++) {
+                let airport = this.nearestAirportList.airports[i];
+                var firstLine = "";
+                var secondLine = "";
+                let logo = airport.imageFileName();
                 firstLine += '<td><span class="Blinking">' + airport.ident + '</span><img src="/Pages/VCockpit/Instruments/Shared/Map/Images/' + logo + '" class="imgSizeS" /></td>';
                 firstLine += '<td>' + fastToFixed(airport.bearing, 0) + '° </td>';
                 firstLine += '<td>' + fastToFixed(airport.distance, 1) + 'NM </td>';
@@ -731,7 +731,8 @@ class AS1000_PFD_NearestAirports extends NavSystemElement {
                 airportListStrings.push(secondLine);
             }
             this.airportsSliderGroup.setStringElements(airportListStrings);
-        } else {
+        }
+        else {
             this.rootElement.setAttribute("state", "Inactive");
         }
     }
@@ -760,13 +761,14 @@ class AS1000_PFD_NearestAirports extends NavSystemElement {
         this.gps.ActiveSelection(this.defaultSelectables);
     }
     airportFrequency_SelectionCallback(_event, _index) {
-        const comFreq = this.gps.getElementOfType(AS1000.ComFrequencies);
-        const navFreq = this.gps.getElementOfType(AS1000.NavFrequencies);
+        var comFreq = this.gps.getElementOfType(AS1000.ComFrequencies);
+        var navFreq = this.gps.getElementOfType(AS1000.NavFrequencies);
         switch (_event) {
             case "ENT_Push":
                 if (this.nearestAirportList.airports[Math.floor(_index / 2)].frequencyMHz >= 118) {
                     SimVar.SetSimVarValue("K:COM" + (comFreq.getActiveIndex() == 1 ? "" : "2") + "_STBY_RADIO_SET", "Frequency BCD16", this.nearestAirportList.airports[Math.floor(_index / 2)].frequencyBCD16);
-                } else if (this.nearestAirportList.airports[Math.floor(_index / 2)].frequencyMHz != 0) {
+                }
+                else if (this.nearestAirportList.airports[Math.floor(_index / 2)].frequencyMHz != 0) {
                     SimVar.SetSimVarValue("K:NAV" + navFreq.getActiveIndex() + "_STBY_SET", "Frequency BCD16", this.nearestAirportList.airports[Math.floor(_index / 2)].frequencyBCD16);
                 }
                 break;
@@ -804,13 +806,14 @@ class AS1000_PFD_AirportInfos extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         if (this.isActive) {
-            const infos = this.wayPoint.GetInfos();
+            var infos = this.wayPoint.GetInfos();
             if (infos instanceof AirportInfo) {
                 this.ident.textContent = infos.ident;
-                const symbol = infos.GetSymbolFileName();
+                var symbol = infos.GetSymbolFileName();
                 if (symbol) {
                     this.symbol.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + infos.GetSymbolFileName() + '"/>';
-                } else {
+                }
+                else {
                     this.symbol.innerHTML = "";
                 }
                 this.city.textContent = infos.city;
@@ -830,7 +833,7 @@ class AS1000_PFD_AirportInfos extends NavSystemElement {
                         break;
                 }
                 this.timeZone.textContent = "";
-                let maxLength = 0;
+                var maxLength = 0;
                 for (let i = 0; i < infos.runways.length; i++) {
                     if (infos.runways[i].length > maxLength) {
                         maxLength = infos.runways[i].length;
@@ -840,7 +843,8 @@ class AS1000_PFD_AirportInfos extends NavSystemElement {
                 this.region.textContent = infos.region;
                 this.latitude.textContent = this.gps.latitudeFormat(infos.coordinates.lat);
                 this.longitude.textContent = this.gps.longitudeFormat(infos.coordinates.long);
-            } else {
+            }
+            else {
                 this.ident.textContent = "";
                 this.symbol.innerHTML = "";
                 this.city.textContent = "";
@@ -897,7 +901,7 @@ class AS1000_PFD_TMRREF extends NavSystemElement {
         this.airspeedIndicator = this.gps.getChildById("Airspeed");
         this.minimumsSourceElement = this.gps.getChildById("minimumType");
         this.minimumsValueElement = this.gps.getChildById("minimumValue");
-        const designSpeeds = Simplane.getDesignSpeeds();
+        let designSpeeds = Simplane.getDesignSpeeds();
         this.references.push(new AS1000_PFD_AirspeedReference(this.gps.getChildById("glideValue"), this.gps.getChildById("glideActivate"), designSpeeds.BestGlide, "G"));
         this.references.push(new AS1000_PFD_AirspeedReference(this.gps.getChildById("VrValue"), this.gps.getChildById("VrActivate"), designSpeeds.Vr, "R"));
         this.references.push(new AS1000_PFD_AirspeedReference(this.gps.getChildById("VxValue"), this.gps.getChildById("VxActivate"), designSpeeds.Vx, "X"));
@@ -914,7 +918,7 @@ class AS1000_PFD_TMRREF extends NavSystemElement {
         }
         this.defaultSelectables.push(new SelectableElement(this.gps, this.minimumsSourceElement, this.minimumsSourceCallback.bind(this)));
         this.defaultSelectables.push(new SelectableElement(this.gps, this.minimumsValueElement, this.minimumsValuesCallback.bind(this)));
-        const raElem = this.gps.instrumentXmlConfig.getElementsByTagName("RadarAltitude");
+        let raElem = this.gps.instrumentXmlConfig.getElementsByTagName("RadarAltitude");
         if (raElem.length > 0) {
             this.haveRadarAltitude = raElem[0].textContent == "True";
         }
@@ -925,7 +929,8 @@ class AS1000_PFD_TMRREF extends NavSystemElement {
     onUpdate(_deltaTime) {
         if (this.searchField.isActive) {
             this.searchField.Update();
-        } else {
+        }
+        else {
             Avionics.Utils.diffAndSet(this.time, this.backgroundTimer.formatTimeFromMS(this.backgroundTimer.getCurrentDisplay()));
         }
         Avionics.Utils.diffAndSet(this.direction, this.backgroundTimer.getIsCountingDown() ? "DN" : "UP");
@@ -942,7 +947,7 @@ class AS1000_PFD_TMRREF extends NavSystemElement {
             }
         }
         Avionics.Utils.diffAndSetAttribute(this.airspeedIndicator, "reference-bugs", displayedBugs);
-        const source = SimVar.GetSimVarValue("L:AS3000_MinimalsMode", "number");
+        let source = SimVar.GetSimVarValue("L:AS3000_MinimalsMode", "number");
         switch (source) {
             case 0:
                 Avionics.Utils.diffAndSet(this.minimumsSourceElement, "OFF");
@@ -1052,7 +1057,7 @@ class AS1000_PFD_BackgroundTimer extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        const currTime = SimVar.GetSimVarValue("E:ABSOLUTE TIME", "seconds") * 1000;
+        let currTime = SimVar.GetSimVarValue("E:ABSOLUTE TIME", "seconds") * 1000;
         if (this.isCountingDown && this.isCounting && this.baseTime + this.beginTime - currTime <= 0) {
             this.setCountingDown(false);
             this.baseTime = 0;
@@ -1068,7 +1073,7 @@ class AS1000_PFD_BackgroundTimer extends NavSystemElement {
     onEvent(_event) {
     }
     setCountingDown(_state) {
-        const currTime = SimVar.GetSimVarValue("E:ABSOLUTE TIME", "seconds") * 1000;
+        let currTime = SimVar.GetSimVarValue("E:ABSOLUTE TIME", "seconds") * 1000;
         if (this.isCounting) {
             this.baseTime = this.isCountingDown ? this.baseTime + this.beginTime - currTime : this.baseTime - this.beginTime + currTime;
             this.beginTime = currTime;
@@ -1079,22 +1084,24 @@ class AS1000_PFD_BackgroundTimer extends NavSystemElement {
     switchCounting() {
         if (this.willReset) {
             this.reinitialize();
-        } else {
-            const currTime = SimVar.GetSimVarValue("E:ABSOLUTE TIME", "seconds") * 1000;
+        }
+        else {
+            let currTime = SimVar.GetSimVarValue("E:ABSOLUTE TIME", "seconds") * 1000;
             this.isCounting = !this.isCounting;
             if (this.isCounting) {
                 this.beginTime = currTime;
                 this.willReset = false;
-            } else {
+            }
+            else {
                 this.baseTime = this.isCountingDown ? this.baseTime + this.beginTime - currTime : this.baseTime - this.beginTime + currTime;
                 this.willReset = true;
             }
         }
     }
     formatTimeFromMS(_time) {
-        const seconds = fastToFixed(Math.floor(_time / 1000) % 60, 0);
-        const minutes = fastToFixed(Math.floor(_time / 60000) % 60, 0);
-        const hours = fastToFixed(Math.floor(_time / 3600000) % 24, 0);
+        let seconds = fastToFixed(Math.floor(_time / 1000) % 60, 0);
+        let minutes = fastToFixed(Math.floor(_time / 60000) % 60, 0);
+        let hours = fastToFixed(Math.floor(_time / 3600000) % 24, 0);
         return "00".slice(0, 2 - hours.length) + hours + ":" + "00".slice(0, 2 - minutes.length) + minutes + ":" + "00".slice(0, 2 - seconds.length) + seconds;
     }
     reinitialize() {
@@ -1105,14 +1112,14 @@ class AS1000_PFD_BackgroundTimer extends NavSystemElement {
         this.baseTime = (this.isCountingDown ? this.initialValue : 0);
     }
     setStartTime(_value) {
-        const currTime = SimVar.GetSimVarValue("E:ABSOLUTE TIME", "seconds") * 1000;
+        let currTime = SimVar.GetSimVarValue("E:ABSOLUTE TIME", "seconds") * 1000;
         this.baseTime = _value;
         this.beginTime = currTime;
         this.initialValue = _value;
         this.willReset = false;
     }
     getCurrentDisplay() {
-        const currTime = SimVar.GetSimVarValue("E:ABSOLUTE TIME", "seconds") * 1000;
+        let currTime = SimVar.GetSimVarValue("E:ABSOLUTE TIME", "seconds") * 1000;
         if (this.isCountingDown && this.isCounting && this.baseTime + this.beginTime - currTime <= 0) {
             this.setCountingDown(false);
             this.baseTime = 0;

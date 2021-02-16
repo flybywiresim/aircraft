@@ -16,34 +16,17 @@ class BaseInstrument extends TemplateElement {
         this._pendingCalls = [];
         this.dataMetaManager = new DataReadMetaManager();
     }
-    get initialized() {
-        return this._isInitialized;
-    }
-    get instrumentIdentifier() {
-        return this._instrumentId;
-    }
-    get instrumentIndex() {
-        return (this.urlConfig.index != null) ? this.urlConfig.index : 1;
-    }
-    get isInteractive() {
-        return false;
-    }
-    get IsGlassCockpit() {
-        return false;
-    }
-    get isPrimary() {
-        return (this.urlConfig.index == null || this.urlConfig.index == 1);
-    }
-    get deltaTime() {
-        return this._deltaTime;
-    }
-    get flightPlanManager() {
-        return null;
-    }
+    get initialized() { return this._isInitialized; }
+    get instrumentIdentifier() { return this._instrumentId; }
+    get instrumentIndex() { return (this.urlConfig.index != null) ? this.urlConfig.index : 1; }
+    get isInteractive() { return false; }
+    get IsGlassCockpit() { return false; }
+    get isPrimary() { return (this.urlConfig.index == null || this.urlConfig.index == 1); }
+    get deltaTime() { return this._deltaTime; }
+    get flightPlanManager() { return null; }
     get facilityLoader() {
-        if (!this._facilityLoader) {
+        if (!this._facilityLoader)
             this._facilityLoader = new FacilityLoader(this);
-        }
         return this._facilityLoader;
     }
     connectedCallback() {
@@ -70,7 +53,7 @@ class BaseInstrument extends TemplateElement {
     setInstrumentIdentifier(_identifier) {
         if (_identifier && _identifier != "" && _identifier != this.instrumentIdentifier) {
             this._instrumentId = _identifier;
-            const guid = this.getAttribute("Guid");
+            var guid = this.getAttribute("Guid");
             if (guid != undefined) {
                 LaunchFlowEvent("ON_VCOCKPIT_INSTRUMENT_INITIALIZED", guid, this.instrumentIdentifier, this.isInteractive, this.IsGlassCockpit);
             }
@@ -80,39 +63,35 @@ class BaseInstrument extends TemplateElement {
         this._xmlConfigPath = _path;
     }
     getChildById(_selector) {
-        if (_selector == "") {
+        if (_selector == "")
             return null;
-        }
-        if (!_selector.startsWith("#") && !_selector.startsWith(".")) {
+        if (!_selector.startsWith("#") && !_selector.startsWith("."))
             _selector = "#" + _selector;
-        }
-        const child = this.querySelector(_selector.toString());
+        var child = this.querySelector(_selector.toString());
         return child;
     }
     getChildrenById(_selector) {
-        if (_selector == "") {
+        if (_selector == "")
             return null;
-        }
-        if (!_selector.startsWith("#") && !_selector.startsWith(".")) {
+        if (!_selector.startsWith("#") && !_selector.startsWith("."))
             _selector = "#" + _selector;
-        }
-        const children = this.querySelectorAll(_selector.toString());
+        var children = this.querySelectorAll(_selector.toString());
         return children;
     }
     getChildrenByClassName(_selector) {
         return this.getElementsByClassName(_selector);
     }
     startHighlight(_id) {
-        const elem = this.getChildById(_id);
+        let elem = this.getChildById(_id);
         if (elem) {
-            const highlight = new HighlightedElement();
+            let highlight = new HighlightedElement();
             highlight.elem = elem;
             highlight.style = elem.style.cssText;
             this.highlightList.push(highlight);
         }
-        const elems = this.getChildrenByClassName(_id);
+        let elems = this.getChildrenByClassName(_id);
         for (let i = 0; i < elems.length; i++) {
-            const highlight = new HighlightedElement();
+            let highlight = new HighlightedElement();
             highlight.elem = elems[i];
             highlight.style = elems[i].style.cssText;
             this.highlightList.push(highlight);
@@ -120,7 +99,7 @@ class BaseInstrument extends TemplateElement {
         this.updateHighlightElements();
     }
     stopHighlight(_id) {
-        const elem = this.getChildById(_id);
+        let elem = this.getChildById(_id);
         if (elem) {
             for (let i = 0; i < this.highlightList.length; i++) {
                 if (this.highlightList[i].elem == elem) {
@@ -129,7 +108,7 @@ class BaseInstrument extends TemplateElement {
                 }
             }
         }
-        const elems = this.getChildrenByClassName(_id);
+        let elems = this.getChildrenByClassName(_id);
         for (let i = 0; i < elems.length; i++) {
             for (let j = 0; j < this.highlightList.length; j++) {
                 if (this.highlightList[j].elem == elems[i]) {
@@ -153,9 +132,9 @@ class BaseInstrument extends TemplateElement {
             this.highlightSvg.setAttribute("active", "true");
             let elems = "";
             for (let i = 0; i < this.highlightList.length; i++) {
-                const rect = this.highlightList[i].elem.getBoundingClientRect();
+                let rect = this.highlightList[i].elem.getBoundingClientRect();
                 if (this.highlightList[i] instanceof HTMLElement) {
-                    const bg = document.createElement("div");
+                    let bg = document.createElement("div");
                     bg.style.backgroundColor = "rgba(0,0,0,0.9)";
                     bg.style.zIndex = "-1";
                     bg.style.left = this.highlightList[i].elem.offsetLeft.toString() + "px";
@@ -175,7 +154,8 @@ class BaseInstrument extends TemplateElement {
                 elems += rect.bottom;
             }
             this.highlightSvg.setAttribute("elements", elems);
-        } else {
+        }
+        else {
             this.highlightSvg.setAttribute("active", "false");
         }
     }
@@ -213,34 +193,34 @@ class BaseInstrument extends TemplateElement {
             this.createMainLoop();
             if (_oldState == GameState.loading && (_newState == GameState.ingame || _newState == GameState.briefing)) {
                 this.reboot();
-            } else if (_oldState == GameState.briefing && _newState == GameState.ingame) {
+            }
+            else if (_oldState == GameState.briefing && _newState == GameState.ingame) {
                 this.onFlightStart();
             }
-        } else {
+        }
+        else {
             this.killMainLoop();
         }
         this._gameState = _newState;
     }
     loadDocumentAttributes() {
-        let attr = undefined;
-        if (document.body.hasAttribute("quality")) {
+        var attr = undefined;
+        if (document.body.hasAttribute("quality"))
             attr = document.body.getAttribute("quality");
-        } else if (window.parent && window.parent.document.body.hasAttribute("quality")) {
+        else if (window.parent && window.parent.document.body.hasAttribute("quality"))
             attr = window.parent.document.body.getAttribute("quality");
-        }
         if (attr != undefined) {
-            const quality = Quality[attr];
+            var quality = Quality[attr];
             if (quality != undefined && this._quality != quality) {
                 this.onQualityChanged(quality);
             }
         }
-        if (document.body.hasAttribute("gamestate")) {
+        if (document.body.hasAttribute("gamestate"))
             attr = document.body.getAttribute("gamestate");
-        } else if (window.parent && window.parent.document.body.hasAttribute("gamestate")) {
+        else if (window.parent && window.parent.document.body.hasAttribute("gamestate"))
             attr = window.parent.document.body.getAttribute("gamestate");
-        }
         if (attr != undefined) {
-            const state = GameState[attr];
+            var state = GameState[attr];
             if (state != undefined && this._gameState != state) {
                 this.onGameStateChanged(this._gameState, state);
             }
@@ -248,11 +228,11 @@ class BaseInstrument extends TemplateElement {
     }
     parseXMLConfig() {
         if (this.instrumentXmlConfig) {
-            const electric = this.instrumentXmlConfig.getElementsByTagName("Electric");
+            let electric = this.instrumentXmlConfig.getElementsByTagName("Electric");
             if (electric.length > 0) {
                 this.electricalLogic = new CompositeLogicXMLElement(this, electric[0]);
             }
-            const alwaysUpdate = this.instrumentXmlConfig.getElementsByTagName("AlwaysUpdate");
+            let alwaysUpdate = this.instrumentXmlConfig.getElementsByTagName("AlwaysUpdate");
             if (alwaysUpdate.length > 0) {
                 if (alwaysUpdate[0].textContent.toLowerCase() == "true") {
                     this._alwaysUpdate = true;
@@ -261,17 +241,15 @@ class BaseInstrument extends TemplateElement {
         }
     }
     parseURLAttributes() {
-        let instrumentID = this.templateID;
-        if (this.urlConfig.index) {
+        var instrumentID = this.templateID;
+        if (this.urlConfig.index)
             instrumentID += "_" + this.urlConfig.index;
-        }
         this.setInstrumentIdentifier(instrumentID);
-        if (this.urlConfig.style) {
+        if (this.urlConfig.style)
             this.setAttribute("instrumentstyle", this.urlConfig.style);
-        }
     }
     beforeUpdate() {
-        const curTime = Date.now();
+        var curTime = Date.now();
         this._deltaTime = curTime - this._lastTime;
         this._lastTime = curTime;
         this.updatePendingCalls();
@@ -285,9 +263,8 @@ class BaseInstrument extends TemplateElement {
     }
     afterUpdate() {
         this.frameCount++;
-        if (this.frameCount >= Number.MAX_SAFE_INTEGER) {
+        if (this.frameCount >= Number.MAX_SAFE_INTEGER)
             this.frameCount = 0;
-        }
     }
     doUpdate() {
         this.beforeUpdate();
@@ -295,38 +272,42 @@ class BaseInstrument extends TemplateElement {
         this.afterUpdate();
     }
     CanUpdate() {
-        const quality = this.getQuality();
+        var quality = this.getQuality();
         if (quality == Quality.ultra) {
             return true;
-        } else if (quality == Quality.high) {
+        }
+        else if (quality == Quality.high) {
             if ((this.frameCount % 2) != 0) {
                 return false;
             }
-        } else if (quality == Quality.medium) {
+        }
+        else if (quality == Quality.medium) {
             if ((this.frameCount % 4) != 0) {
                 return false;
             }
-        } else if (quality == Quality.low) {
+        }
+        else if (quality == Quality.low) {
             if ((this.frameCount % 32) != 0) {
                 return false;
             }
-        } else if (quality == Quality.hidden) {
+        }
+        else if (quality == Quality.hidden) {
             if ((this.frameCount % 128) != 0) {
                 return false;
             }
-        } else if (quality == Quality.disabled) {
+        }
+        else if (quality == Quality.disabled) {
             return false;
         }
         return true;
     }
     updateElectricity() {
-        const powerOn = this.isElectricityAvailable();
+        let powerOn = this.isElectricityAvailable();
         if (this.electricity) {
-            if (powerOn) {
+            if (powerOn)
                 this.electricity.setAttribute("state", "on");
-            } else {
+            else
                 this.electricity.setAttribute("state", "off");
-            }
         }
         return powerOn;
     }
@@ -344,25 +325,24 @@ class BaseInstrument extends TemplateElement {
         return false;
     }
     createMainLoop() {
-        if (this._isConnected) {
+        if (this._isConnected)
             return;
-        }
         this._lastTime = Date.now();
-        const updateLoop = () => {
+        let updateLoop = () => {
             if (!this._isConnected) {
                 console.log("Exiting MainLoop...");
                 return;
             }
             try {
                 if (BaseInstrument.allInstrumentsLoaded && !this.xmlConfigLoading && SimVar.IsReady()) {
-                    if (!this._isInitialized) {
+                    if (!this._isInitialized)
                         this.Init();
-                    }
                     this.beforeUpdate();
                     this.Update();
                     this.afterUpdate();
                 }
-            } catch (Error) {
+            }
+            catch (Error) {
                 console.error(this.instrumentIdentifier + " : " + Error, Error.stack);
             }
             requestAnimationFrame(updateLoop);
@@ -375,15 +355,16 @@ class BaseInstrument extends TemplateElement {
         this._isConnected = false;
     }
     loadXMLConfig() {
-        let xmlPath;
+        var xmlPath;
         if (this.urlConfig.config) {
             xmlPath = "/Pages/VCockpit/Instruments/Shared/Configs/" + this.urlConfig.config + ".xml";
-        } else if (this._xmlConfigPath) {
+        }
+        else if (this._xmlConfigPath) {
             xmlPath = "/VFS/" + this._xmlConfigPath.replace(/\\/g, "/");
         }
         if (xmlPath) {
             this.xmlConfigLoading = true;
-            const xmlRequest = new XMLHttpRequest();
+            var xmlRequest = new XMLHttpRequest();
             xmlRequest.onreadystatechange = function (_instrument) {
                 if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                     _instrument.onXMLConfigLoaded(this);
@@ -396,24 +377,25 @@ class BaseInstrument extends TemplateElement {
     onXMLConfigLoaded(_xml) {
         this.xmlConfig = _xml.responseXML;
         if (this.xmlConfig) {
-            const instruments = this.xmlConfig.getElementsByTagName("Instrument");
+            let instruments = this.xmlConfig.getElementsByTagName("Instrument");
             for (let i = 0; i < instruments.length; i++) {
-                const name = instruments[i].getElementsByTagName("Name")[0].textContent;
+                let name = instruments[i].getElementsByTagName("Name")[0].textContent;
                 if (name == this.instrumentIdentifier) {
                     this.instrumentXmlConfig = instruments[i];
                 }
             }
             this.parseXMLConfig();
-        } else {
+        }
+        else {
             console.error("XML Config file is not well-formatted");
         }
         this.xmlConfigLoading = false;
     }
     loadURLAttributes() {
-        const parsedUrl = new URL(this.getAttribute("Url").toLowerCase());
+        var parsedUrl = new URL(this.getAttribute("Url").toLowerCase());
         this.urlConfig.style = parsedUrl.searchParams.get("style");
         this.urlConfig.config = parsedUrl.searchParams.get("config");
-        const index = parsedUrl.searchParams.get("index");
+        let index = parsedUrl.searchParams.get("index");
         this.urlConfig.index = index == null ? null : parseInt(index);
         this.urlConfig.wasmModule = parsedUrl.searchParams.get("wasm_module");
         this.urlConfig.wasmGauge = parsedUrl.searchParams.get("wasm_gauge");
@@ -423,42 +405,34 @@ class BaseInstrument extends TemplateElement {
         return Date.now() - this.startTime;
     }
     getAspectRatio() {
-        const vpRect = this.getBoundingClientRect();
+        var vpRect = this.getBoundingClientRect();
         if (vpRect) {
-            const vpWidth = vpRect.width;
-            const vpHeight = vpRect.height;
-            const aspectRatio = vpWidth / vpHeight;
+            var vpWidth = vpRect.width;
+            var vpHeight = vpRect.height;
+            var aspectRatio = vpWidth / vpHeight;
             return aspectRatio;
         }
         return 1.0;
     }
-    isComputingAspectRatio() {
-        return false;
-    }
-    isAspectRatioForced() {
-        return false;
-    }
-    getForcedScreenRatio() {
-        return 1.0;
-    }
-    getForcedAspectRatio() {
-        return 1.0;
-    }
+    isComputingAspectRatio() { return false; }
+    isAspectRatioForced() { return false; }
+    getForcedScreenRatio() { return 1.0; }
+    getForcedAspectRatio() { return 1.0; }
     updateHighlight() {
     }
     highlightGetState(_valueMin, _valueMax, _period) {
-        const time = new Date().getTime();
-        const size = _valueMax - _valueMin;
-        const middle = _valueMin + size / 2;
+        let time = new Date().getTime();
+        let size = _valueMax - _valueMin;
+        let middle = _valueMin + size / 2;
         return middle + (Math.sin((time % _period / _period * Math.PI * 2)) * (size / 2));
     }
     wasTurnedOff() {
         return false;
     }
     initTransponder() {
-        const transponderCode = ("0000" + SimVar.GetSimVarValue("TRANSPONDER CODE:1", "number")).slice(-4);
+        let transponderCode = ("0000" + SimVar.GetSimVarValue("TRANSPONDER CODE:1", "number")).slice(-4);
         if (transponderCode) {
-            const currentCode = parseInt(transponderCode);
+            let currentCode = parseInt(transponderCode);
             if (currentCode == 0) {
                 Simplane.setTransponderToRegion();
             }
@@ -468,7 +442,7 @@ class BaseInstrument extends TemplateElement {
         this._pendingCalls.push(_func);
     }
     updatePendingCalls() {
-        const length = this._pendingCalls.length;
+        let length = this._pendingCalls.length;
         for (let i = 0; i < length; i++) {
             this._pendingCalls[i]();
         }
