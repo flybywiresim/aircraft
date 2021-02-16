@@ -141,8 +141,8 @@ class CDUAvailableDeparturesPage {
             let maxPage = 0;
             if (sidSelection) {
                 if (selectedRunway) {
-                    for (let departure of airportInfo.departures) {
-                        for (let transition of departure.runwayTransitions) {
+                    for (const departure of airportInfo.departures) {
+                        for (const transition of departure.runwayTransitions) {
                             if (transition.name.indexOf(selectedRunway.designation) !== -1) {
                                 maxPage++;
                                 break;
