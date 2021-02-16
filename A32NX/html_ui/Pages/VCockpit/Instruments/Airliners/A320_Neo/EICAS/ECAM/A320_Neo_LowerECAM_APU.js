@@ -85,11 +85,10 @@ var A320_Neo_LowerECAM_APU;
             const available = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool");
             toggleVisibility(this.APUAvail, available);
 
-            const apuGenOnline = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "Bool") === 1;
-            const externalPowerOff = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0;
-            // This logic is consistently faulty in the JavaScript code: of course it should also take into
-            // account if engine generators are supplying electricity. We'll fix this when we create the electrical system.
-            toggleVisibility(this.APUGenAvailArrow, available && apuGenOnline && externalPowerOff);
+            const apuGeneratorContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_3XS_IS_CLOSED", "Bool");
+            const atLeastOneBusTieContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_11XU1_IS_CLOSED", "Bool") ||
+                !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_11XU2_IS_CLOSED", "Bool");
+            toggleVisibility(this.APUGenAvailArrow, apuGeneratorContactorClosed && atLeastOneBusTieContactorClosed);
 
             // ADIRS1 on NAV is the normal operation situation.
             // Komp: If you switch the displays to DMC 3, then ADIRU 3 is the one providing the data.
