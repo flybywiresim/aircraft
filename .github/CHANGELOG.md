@@ -90,6 +90,7 @@
 1. [ND] Waypoints on the ND now use the correct font - @tyler58546 (tyler58546)
 1. [MISC] Added custom chronometer font - @tyler58546 (tyler58546)
 1. [RMP] Added custom RMP font - @tyler58546 (tyler58546)
+1. [FCU] Added custom FCU font - @tyler58546 (tyler58546)
 1. [MISC] Fixed chrono watch colon appearance - @SergeySoprykin (SergeyS)
 
 ## 0.5.2
