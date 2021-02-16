@@ -138,9 +138,26 @@ class CDUAvailableDeparturesPage {
                 rows[7],
                 insertRow
             ]);
+            let maxPage = 0;
+            if (sidSelection) {
+                if (selectedRunway) {
+                    for (let departure of airportInfo.departures) {
+                        for (let transition of departure.runwayTransitions) {
+                            if (transition.name.indexOf(selectedRunway.designation) !== -1) {
+                                maxPage++;
+                                break;
+                            }
+                        }
+                    }
+                    maxPage -= 3;
+                } else {
+                    maxPage = airportInfo.departures.length - 3;
+                }
+            } else {
+                maxPage = airportInfo.oneWayRunways.length - 4;
+            }
             let up = false;
             let down = false;
-            const maxPage = sidSelection ? (airportInfo.departures.length - 3) : (pageCurrent, airportInfo.oneWayRunways.length - 4);
             if (pageCurrent < maxPage) {
                 mcdu.onUp = () => {
                     pageCurrent++;
