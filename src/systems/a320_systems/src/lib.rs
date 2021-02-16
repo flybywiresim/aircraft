@@ -11,7 +11,7 @@ use systems::{
         Aps3200ApuGenerator, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
-    electrical::{ExternalPowerSource},
+    electrical::ExternalPowerSource,
     engine::Engine,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };

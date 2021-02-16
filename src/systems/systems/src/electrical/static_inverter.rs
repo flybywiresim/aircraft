@@ -1,6 +1,6 @@
 use super::{
-    ElectricalStateWriter, Potential, PotentialSource, PotentialTarget,
-    ProvideFrequency, ProvidePotential,
+    ElectricalStateWriter, Potential, PotentialSource, PotentialTarget, ProvideFrequency,
+    ProvidePotential,
 };
 use crate::simulation::{SimulationElement, SimulatorWriter};
 use uom::si::{electric_potential::volt, f64::*, frequency::hertz};

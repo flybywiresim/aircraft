@@ -13,8 +13,7 @@ use systems::electrical::Potential;
 use systems::{
     apu::{ApuGenerator, AuxiliaryPowerUnit},
     electrical::{
-        ElectricalBus, ExternalPowerSource, PotentialSource,
-        StaticInverter, TransformerRectifier,
+        ElectricalBus, ExternalPowerSource, PotentialSource, StaticInverter, TransformerRectifier,
     },
     engine::Engine,
     overhead::{

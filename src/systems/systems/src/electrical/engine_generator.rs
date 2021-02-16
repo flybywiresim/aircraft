@@ -1,6 +1,6 @@
 use super::{
-    ElectricalStateWriter, Potential, PotentialSource, ProvideFrequency,
-    ProvideLoad, ProvidePotential,
+    ElectricalStateWriter, Potential, PotentialSource, ProvideFrequency, ProvideLoad,
+    ProvidePotential,
 };
 use crate::{
     engine::Engine,

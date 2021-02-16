@@ -1,6 +1,6 @@
 use super::{
-    ElectricalStateWriter, Potential, PotentialSource, PotentialTarget,
-    ProvideCurrent, ProvidePotential,
+    ElectricalStateWriter, Potential, PotentialSource, PotentialTarget, ProvideCurrent,
+    ProvidePotential,
 };
 use crate::simulation::{SimulationElement, SimulatorWriter};
 use uom::si::{

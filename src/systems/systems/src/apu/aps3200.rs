@@ -1,8 +1,8 @@
 use super::{ApuGenerator, Turbine, TurbineController, TurbineState};
 use crate::{
     electrical::{
-        ElectricalStateWriter, Potential, PotentialSource, ProvideFrequency,
-        ProvideLoad, ProvidePotential,
+        ElectricalStateWriter, Potential, PotentialSource, ProvideFrequency, ProvideLoad,
+        ProvidePotential,
     },
     shared::{calculate_towards_target_temperature, random_number, TimedRandom},
     simulation::{SimulationElement, SimulatorWriter, UpdateContext},
