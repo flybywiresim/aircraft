@@ -29,12 +29,28 @@
 }
 
 .show-scrollbar::-webkit-scrollbar-track {
-  @apply bg-gray-100;
+  background-color: rgba(255, 255, 255, 0.5);
   @apply rounded-xl;
-  @apply border-solid border-6 border-gray-800
+  @apply border-solid ;
+  @apply border-6;
+  @apply border-gray-800;
 }
 
 .show-scrollbar::-webkit-scrollbar-thumb {
-	@apply rounded-xl;
+  @apply rounded-xl;
   @apply bg-blue-light;
+}
+
+
+.font-size-button {
+	width: 50px;
+	height: 50px;
+	@apply text-xl;
+	@apply ml-2;
+	@apply mb-2;
+	@apply text-white;
+	@apply font-medium;
+	@apply bg-blue-light;
+	@apply p-2;
+	@apply rounded-lg;
 }
