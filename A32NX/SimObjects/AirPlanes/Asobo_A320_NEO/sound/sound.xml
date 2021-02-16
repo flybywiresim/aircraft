@@ -1086,13 +1086,13 @@
         </Sound>
 
         <Sound WwiseEvent="gdown" WwiseData="true" Continuous="false" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="1" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
-            <Range LowerBound="0.05" UpperBound="0.95" />
+            <Range LowerBound="0.1" UpperBound="0.9" />
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED" />
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED" />
         </Sound>
         
         <Sound WwiseEvent="gup" WwiseData="true" Continuous="false" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="1" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
-            <Range LowerBound="0.05" UpperBound="0.95" />
+            <Range LowerBound="0.1" UpperBound="0.9" />
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED" />
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED" />
         </Sound>
@@ -1100,6 +1100,11 @@
         <Sound WwiseEvent="gmain" WwiseData="true" Continuous="false" NodeName="BASE_L" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
             <Range LowerBound="0.05" UpperBound="0.95" />
         </Sound>
+        
+        <Sound WwiseEvent="gmain" WwiseData="true" Continuous="false" NodeName="PEDALS_LEFT" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
+            <Range LowerBound="0.05" UpperBound="0.95" />
+        </Sound>
+
 
 
         <!-- INSTRUMENTS FOLEYS  =========================================================================  -->
@@ -1236,6 +1241,24 @@
         <Sound WwiseData="true" WwiseEvent="ptutest" NodeName="SOUND_ENGINE_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
             <Requires SimVar="TURB ENG N1" Units="PERCENT" Index="2">
                 <Range UpperBound="1" />
+            </Requires>
+        </Sound>
+        
+         <Sound WwiseData="true" WwiseEvent="ptucockpit" NodeName="PEDALS_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
+            <Requires SimVar="TURB ENG N1" Units="PERCENT" Index="1">
+                <Range UpperBound="1" />
+            </Requires>
+            <Requires LocalVar="A32NX_SOUND_PTU_AUDIBLE_COCKPIT" Units="BOOL">
+                <Range LowerBound="1" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="ptucockpit" NodeName="PEDALS_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
+            <Requires SimVar="TURB ENG N1" Units="PERCENT" Index="2">
+                <Range UpperBound="1" />
+            </Requires>
+            <Requires LocalVar="A32NX_SOUND_PTU_AUDIBLE_COCKPIT" Units="BOOL">
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
