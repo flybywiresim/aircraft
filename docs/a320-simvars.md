@@ -630,3 +630,17 @@
         - TR_3: TR ESS
         - BAT_10: Battery 1
         - BAT_11: Battery 2
+
+- A32NX_ELEC_ENG_GEN_{number}_IDG_OIL_OUTLET_TEMPERATURE
+    - Celsius
+    - The integrated drive generator's oil outlet temperature
+    - {number}
+        - 1
+        - 2
+
+- A32NX_ELEC_ENG_GEN_{number}_IDG_IS_CONNECTED
+    - Bool
+    - Indicates if the given integrated drive generator is connected
+    - {number}
+        - 1
+        - 2

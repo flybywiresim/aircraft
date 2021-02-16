@@ -585,6 +585,7 @@ var A320_Neo_LowerECAM_Elec;
             this.drawBatteries();
             this.drawEmergencyGenerator();
             this.drawStaticInverter();
+            this.drawIntegratedDriveGenerators();
         }
 
         drawApuGenerator() {
@@ -943,6 +944,28 @@ var A320_Neo_LowerECAM_Elec;
 
             const allParametersWithinAcceptableRange = potentialWithinNormalRange && frequencyWithinNormalRange;
             this.whiteWhen(this.e_STATINV_TITLE, allParametersWithinAcceptableRange);
+        }
+
+        drawIntegratedDriveGenerators() {
+            this.drawIntegratedDriveGenerator(1, {
+                title: this.e_IDG1_TITLE,
+                tempValue: this.e_IDG1_TEMP_VALUE,
+                disc: this.e_IDG1_DISC
+            });
+            this.drawIntegratedDriveGenerator(2, {
+                title: this.e_IDG2_TITLE,
+                tempValue: this.e_IDG2_TEMP_VALUE,
+                disc: this.e_IDG2_DISC
+            });
+        }
+
+        drawIntegratedDriveGenerator(number, elements) {
+            const temperature = Math.round(SimVar.GetSimVarValue(`L:A32NX_ELEC_ENG_GEN_${number}_IDG_OIL_OUTLET_TEMPERATURE`, "Celsius"));
+            this.setValue(elements.tempValue, temperature);
+
+            const connected = !!SimVar.GetSimVarValue(`L:A32NX_ELEC_ENG_GEN_${number}_IDG_IS_CONNECTED`, "Bool");
+            this.whiteWhen(elements.title, connected);
+            this.toggle(elements.disc, !connected);
         }
 
         toggle(element, condition) {
