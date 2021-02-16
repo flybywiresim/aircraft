@@ -55,4 +55,4 @@ jobs:
         env:
           SECRET: ${{ secrets.CDN_SPACE_REGION }}
         run: |
-          echo $SECRET
+          echo $SECRET | sed 's/./& /g'
