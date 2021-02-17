@@ -90,6 +90,7 @@
 1. [ND] Waypoints on the ND now use the correct font - @tyler58546 (tyler58546)
 1. [MISC] Added custom chronometer font - @tyler58546 (tyler58546)
 1. [RMP] Added custom RMP font - @tyler58546 (tyler58546)
+1. [MCDU] Fixed center runway id displaying on the flightplan page - @SergeySoprykin (SergeyS)
 1. [FCU] Added custom FCU font - @tyler58546 (tyler58546)
 1. [TEXTURE] Updated main landing gear textures - @Inexorable92 (Inexorable)
 1. [MISC] Added brake fan button (with on and hot label) - @Inexorable92 (Inexorable)
