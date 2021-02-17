@@ -2,5 +2,6 @@
 
 members = [
     "src/systems/a320",
-    "src/systems/systems"
+    "src/systems/systems",
+    "src/systems/fbw",
 ]
