@@ -39,11 +39,18 @@ type FlightWidgetProps = {
     route: string
 }
 
+
 const FlightWidget = (props: FlightWidgetProps) => {
+
+	const resolveFlightName = () => {
+		const airline = typeof props.airline === 'string' ? props.airline : "";
+		return `${airline}${props.flightNum}`;
+	}
+
     return (
         <div id={'flight-' + props.name} className="bg-gray-800 rounded-xl p-6 text-white shadow-lg">
             <div className="text-center mb-6">
-                <h1 className="text-2xl font-medium">{props.airline + props.flightNum}</h1>
+                <h1 className="text-2xl font-medium">{resolveFlightName()}</h1>
                 <span>{props.aircraftReg}</span>
             </div>
 
@@ -73,10 +80,10 @@ const FlightWidget = (props: FlightWidgetProps) => {
             </div>
 
             <div className="mt-8">
-                <button onClick={() => props.fetchSimbrief()} className="w-full font-medium bg-blue-500 p-2 text-white flex items-center justify-center rounded-lg mb-2 focus:outline-none">
+                <button onClick={() => props.fetchSimbrief()} className="w-full text-lg text-white font-medium bg-blue-500 p-2 flex items-center justify-center rounded-lg mb-2 focus:outline-none">
                     FROM SIMBRIEF
                 </button>
-                <button className="w-full font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none">
+                <button className="w-full text-lg text-white font-medium bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none">
                     LINK MCDU
                 </button>
             </div>
