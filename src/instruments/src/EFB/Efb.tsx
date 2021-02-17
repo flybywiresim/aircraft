@@ -24,6 +24,7 @@ import ToolBar from "./ToolBar/ToolBar";
 import Dashboard from "./Dashboard/Dashboard";
 import Dispatch from "./Dispatch/Dispatch";
 import Ground from './Ground/Ground';
+import Performance from './Performance/Performance';
 import Company from "./Company/Company";
 import Settings from "./Settings/Settings";
 
@@ -248,11 +249,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
                     </div>
                 );
             case 3:
-                return (
-                    <div className="w-full h-full">
-                        <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
-                    </div>
-                );
+                return <Performance />
             case 4:
                 return <Company simbriefUsername={this.state.simbriefUsername} changeSimbriefUsername={this.changeSimbriefUsername} />;
             case 5:
