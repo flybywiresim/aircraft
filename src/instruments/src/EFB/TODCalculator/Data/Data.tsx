@@ -26,6 +26,7 @@ import {setTodData} from "../../Store/action-creator/tod-calculator";
 import {TOD_CALCULATION_TYPE} from "../../Enum/TODCalculationType.enum";
 import Button, {BUTTON_TYPE} from "../../Components/Button/Button";
 import {round} from 'lodash';
+import {useSimVar} from "../../../Common/simVars";
 
 const Data = ({
     currentAltitude,
@@ -35,29 +36,15 @@ const Data = ({
     ...props
 }) => {
     const [currentAltitudeSyncEnabled, setCurrentAltitudeSyncEnabled] = useState(false);
+    const [altitude] = useSimVar("INDICATED ALTITUDE", "feet", 1_000);
 
     useEffect(() => {
         if(!currentAltitudeSyncEnabled) {
             return;
         }
 
-        const i = setInterval(() => {
-            let altitude;
-
-            try {
-                altitude = Simplane.getAltitude();
-            } catch (e) {
-                altitude = 28026.232132133212;
-                console.log('Using mock data for current altitude, watch out');
-            }
-
-            setTodData({ currentAltitude: round(altitude, -1) });
-        }, 1000);
-
-        return () => {
-            clearInterval(i);
-        };
-    }, [currentAltitudeSyncEnabled]);
+        setTodData({ currentAltitude: round(altitude, -1) });
+    }, [currentAltitudeSyncEnabled, altitude]);
 
     const calculationTypes = [
         {label: 'Distance', rightLabel: 'NM', type: TOD_CALCULATION_TYPE.DISTANCE},

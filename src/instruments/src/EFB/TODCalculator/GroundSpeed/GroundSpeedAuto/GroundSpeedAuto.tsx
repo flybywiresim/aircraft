@@ -17,7 +17,7 @@
  */
 
 import {connect} from 'react-redux';
-import React, {useEffect, useState} from "react";
+import React, {useEffect} from "react";
 import {TOD_CALCULATOR_REDUCER} from "../../../Store";
 import {round, isNaN, last} from 'lodash';
 import {
@@ -26,44 +26,30 @@ import {
     setTodGroundSpeed,
     setTodGroundSpeedMode
 } from "../../../Store/action-creator/tod-calculator";
-import {getSimVar} from '../../../../util.mjs';
 import './GroundSpeedAuto.scss'
 import Button, {BUTTON_TYPE} from "../../../Components/Button/Button";
 import {TOD_GROUND_SPEED_MODE} from "../../../Enum/TODGroundSpeedMode.enum";
+import {useSimVar} from "../../../../Common/simVars";
 
 const GroundSpeedAuto = ({groundSpeedData, currentAltitude, setTodData, setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode, ...props}) => {
+    let [simGroundSpeed] = useSimVar("GPS GROUND SPEED", "knots", 1_000);
+    simGroundSpeed = round(simGroundSpeed);
+
     const setCurrentGroundSpeed = () => {
-        let groundSpeed;
-
-        try {
-            groundSpeed = round(getSimVar('GPS GROUND SPEED', 'knots'));
-        } catch (e) {
-            groundSpeed = 420;
-            console.log('Using mock data for current GS, watch out');
-        }
-
         if(currentAltitude > 10000 && groundSpeed >= 250) {
             setTodGroundSpeed(0, {from: 0, groundSpeed: 250});
-            setTodGroundSpeed(1, {from: 10000, groundSpeed});
+            setTodGroundSpeed(1, {from: 10000, groundSpeed: simGroundSpeed});
         } else{
-            setTodGroundSpeed(0, {from: 0, groundSpeed});
+            setTodGroundSpeed(0, {from: 0, groundSpeed: simGroundSpeed});
             removeTodGroundSpeed(1);
         }
     };
 
     useEffect(() => {
         setCurrentGroundSpeed();
+    }, [currentAltitude, simGroundSpeed]);
 
-        const i = setInterval(() => {
-            setCurrentGroundSpeed();
-        }, 1000);
-
-        return () => {
-            clearInterval(i);
-        }
-    }, [currentAltitude]);
-
-    const groundSpeed = round(last(groundSpeedData)['groundSpeed']);
+    const groundSpeed = last(groundSpeedData)['groundSpeed'];
 
     if(isNaN(groundSpeed)) {
         return null;
