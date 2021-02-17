@@ -91,6 +91,7 @@
 1. [MISC] Added custom chronometer font - @tyler58546 (tyler58546)
 1. [RMP] Added custom RMP font - @tyler58546 (tyler58546)
 1. [MCDU] Fixed center runway id displaying on the flightplan page - @SergeySoprykin (SergeyS)
+1. [FCU] Added custom FCU font - @tyler58546 (tyler58546)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)

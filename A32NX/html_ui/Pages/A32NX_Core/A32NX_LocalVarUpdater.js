@@ -11,7 +11,6 @@ class A32NX_LocalVarUpdater {
         this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
         this.lastUpdatePackOne = NaN;
         this.updatePackCooldown = 0;
-        this.updatePackDelay = 0;
         this.isPacksOneSupplying = false;
         // track which compartment has gotten temperature initialization
         this.initializedCabinTemp = {
@@ -179,26 +178,15 @@ class A32NX_LocalVarUpdater {
         const isEngineTwoDelivering = isEngineTwoRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool");
 
         const isXBleedOpen = xBleedPos === 2 || (xBleedPos === 1 && (isApuDelivering || engineModeSelector !== 1));
-        const packOneHasAir = this._isPackOpen(engineModeSelector, isEngineOneRunning || isEngineTwoRunning) &&
-            (isApuDelivering || isEngineOneDelivering || (isEngineTwoDelivering && isXBleedOpen));
+
+        /**
+         * Whether engine mode selector is set to norm or both engines are running -> return packOneHasSupply state; otherwise return false
+         */
+        const packOneHasAir = engineModeSelector === 1 || (isEngineOneRunning && isEngineTwoRunning) ? isApuDelivering || isEngineOneDelivering || (isEngineTwoDelivering && isXBleedOpen) : false;
 
         this.isPacksOneSupplying = packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool");
 
         return this.isPacksOneSupplying;
-    }
-
-    _isPackOpen(_engineModeSelector, _isAnEngineOn) {
-        if (_engineModeSelector === 1 || !_isAnEngineOn) {
-            this.updatePackDelay = 0;
-            return true;
-        }
-
-        if (this.updatePackDelay > 30) {
-            return true;
-        }
-
-        this.updatePackDelay += 1;
-        return false;
     }
 
     // New selectors go here...
