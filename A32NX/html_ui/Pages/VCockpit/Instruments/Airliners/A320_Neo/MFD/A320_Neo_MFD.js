@@ -643,7 +643,6 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         const heading = Simplane.getHeadingMagnetic();
         if (Math.abs(heading - this.lastHeading) > this.headingDiffForceUpdateThreshold) {
             forceUpdate = true;
-
         }
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
         if (!forceUpdate && _deltaTime === -1) {
