@@ -39,7 +39,11 @@ export default class Performance extends React.Component<PerformanceProps, Perfo
 	private getPage(): JSX.Element | undefined {
 		switch (this.state.currentTabIndex) {
 			case 0:
-				return <div>Inop</div>
+				return (
+					<div className="w-full h-full">
+						<p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
+					</div>
+				)
 			case 1:
 				return <LandingWidget />
 		}
