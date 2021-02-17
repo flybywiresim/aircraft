@@ -325,4 +325,10 @@
 		</Component>
 	</Template>
 
+    <Template Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
+        <UseTemplate Name="FBW_Push_Held">
+            <HOLD_SIMVAR>K:A32NX.ATHR_INSTINCTIVE_DISCONNECT</HOLD_SIMVAR>
+        </UseTemplate>
+    </Template>
+
 </ModelBehaviors>

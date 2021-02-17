@@ -1,0 +1,11 @@
+[package]
+name = "autothrottle"
+version = "0.1.0"
+authors = ["Gus Caplan <me@gus.host>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+msfs = { git = "https://github.com/devsnek/msfs-rs.git", branch = "main" }
