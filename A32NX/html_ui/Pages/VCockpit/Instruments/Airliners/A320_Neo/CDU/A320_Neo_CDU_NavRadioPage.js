@@ -255,10 +255,10 @@ class CDUNavRadioPage {
             adf2FrequencyCell = "[\xa0\xa0\xa0.]/[\xa0]";
             const adf2Ident = SimVar.GetSimVarValue(`ADF IDENT:2`, "string");
             if (mcdu.adf2Frequency > 0 && mcdu.adf2FreqIsPilotEntered && !mcdu.adf2IdIsPilotEntered) {
-                adf2FrequencyCell = mcdu.adf2Frequency + "/" + "{small}" + adf2Ident.padEnd(3, "\xa0") + "{end}";
+                adf2FrequencyCell = mcdu.adf2Frequency.toFixed(1) + "/" + "{small}" + adf2Ident.padEnd(3, "\xa0") + "{end}";
                 adf2BfoOption = "ADF2 BFO>";
             } else if (mcdu.adf2Frequency > 0 && !mcdu.adf2FreqIsPilotEntered && mcdu.adf2IdIsPilotEntered) {
-                adf2FrequencyCell = "{small}" + mcdu.adf2Frequency + "{end}" + "/" + mcdu.adf2IdPilotValue.padEnd(3, "\xa0");
+                adf2FrequencyCell = "{small}" + mcdu.adf2Frequency.toFixed(1) + "{end}" + "/" + mcdu.adf2IdPilotValue.padEnd(3, "\xa0");
                 adf2BfoOption = "ADF2 BFO>";
             }
             mcdu.onRightInput[4] = (value) => {
