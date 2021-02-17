@@ -50,9 +50,6 @@ class CDUNavRadioPage {
             } else if (mcdu.vor1Frequency != 0 && mcdu.vor1IdIsPilotEntered && !mcdu.vor1FreqIsPilotEntered) {
                 vor1FrequencyCell = vor1Ident.ident + "/" + "{small}" + mcdu.vor1Frequency.toFixed(2) + "{end}";
             }
-            //if (vor1Ident.ident == "" && mcdu.vor1Frequency > 0) {
-            //    vor1FrequencyCell = "[\xa0\xa0]/" + mcdu.vor1Frequency.toFixed(2);
-            //}
             mcdu.onLeftInput[0] = (value) => {
                 const numValue = parseFloat(value);
                 if (value === FMCMainDisplay.clrValue) {
