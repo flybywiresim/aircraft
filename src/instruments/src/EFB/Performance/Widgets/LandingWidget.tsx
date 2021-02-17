@@ -314,9 +314,9 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 								<div className="flex-1 m-2.5 column-left">
 									<SimpleInput label="Wind (KTS)" placeholder="DIR/MAG" onChange={this.handleWindChange} />
 									<SimpleInput label="Temperature" placeholder='°C' onChange={this.handleTemperatureChange} />
-									<SimpleInput label="QNH" placeholder="mb" onChange={this.handlePressureChange} />
-									<SimpleInput label="Rwy Altitude" placeholder='" ASL' onChange={this.handleAltitudeChange} />
-									<SimpleInput label="Rwy Heading" onChange={this.handleRunwayHeadingChange} />
+									<SimpleInput label="QNH" placeholder="mb" min={800} max={1200} onChange={this.handlePressureChange} />
+									<SimpleInput label="Rwy Altitude" placeholder='" ASL' max={20000} onChange={this.handleAltitudeChange} />
+									<SimpleInput label="Rwy Heading" min={0} max={360} onChange={this.handleRunwayHeadingChange} />
 									<SelectInput label="Rwy Condition" defaultValue="0" onChange={this.handleRunwayConditionChange} dropdownOnTop options={[
 										[0, "Dry"],
 										[1, "Good"],
@@ -329,13 +329,13 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 								</div>
 								<div className="flex-1 m-2.5 column-right">
 									<div className="flex justify-start items-center">
-										<SimpleInput label="Rwy LDA" placeholder="m" onChange={this.handleRunwayLengthChange} reverse />
+										<SimpleInput label="Rwy LDA" placeholder="m" min={0} onChange={this.handleRunwayLengthChange} reverse />
 										<Help title="Landing Distance Available (LDA)">
 											The distance available on the runway which is suitable for the ground run of the landing.
 										</Help>
 									</div>
-									<SimpleInput label="Approach Speed" placeholder="KTS" onChange={this.handleApproachSpeedChange} reverse/>
-									<SimpleInput label="Weight" placeholder="KG" onChange={this.handleWeightChange} reverse />
+									<SimpleInput label="Approach Speed" placeholder="KTS" min={0} max={300} onChange={this.handleApproachSpeedChange} reverse/>
+									<SimpleInput label="Weight" placeholder="KG" min={1000} max={100000} onChange={this.handleWeightChange} reverse />
 									<SelectInput label="Flaps" defaultValue="1" onChange={this.handleFlapsChange} reverse options={[
 										[1, "Full"],
 										[0, "CONF 3"]
