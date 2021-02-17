@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class FlightPlanManager {
     constructor(_instrument) {
         this._waypoints = [[], []];
@@ -1275,10 +1293,27 @@ class FlightPlanManager {
             if (infos instanceof AirportInfo) {
                 const approach = infos.approaches[this._approachIndex];
                 if (approach) {
-                    const runway = infos.oneWayRunways.find(r => {
-                        return r.designation.indexOf(approach.runway.replace(" ", "")) !== -1;
+                    const approachRunway = approach.runway.replace(" ", "");
+                    const runways = infos.oneWayRunways.filter(r => {
+                        return r.designation.indexOf(approachRunway) !== -1;
                     });
-                    return runway;
+                    if (runways.length > 1 && approachRunway.match(/\d$/)) {
+                        let runway = runways.find(rw => {
+                            return rw.designation.replace(" ", "") === approachRunway;
+                        });
+                        if (runway) {
+                            return runway;
+                        } else {
+                            const approachRunwayC = approachRunway + 'C';
+                            runway = runways.find(rw => {
+                                return rw.designation.replace(" ", "") === approachRunwayC;
+                            });
+                            if (runway) {
+                                return runway;
+                            }
+                        }
+                    }
+                    return runways[0];
                 }
             }
         }

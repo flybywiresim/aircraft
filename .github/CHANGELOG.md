@@ -91,12 +91,12 @@
 1. [MISC] Added custom chronometer font - @tyler58546 (tyler58546)
 1. [RMP] Added custom RMP font - @tyler58546 (tyler58546)
 1. [FCU] Added custom FCU font - @tyler58546 (tyler58546)
-1. [FLIGHTMODEL] Quick fix to flap lift for MSFS update 1.13.16.0 - @donstim (donbikes#4084)
 
 ## 0.5.3
 1. [DISPLAYS] Optimize performance by throttling instrument updates - @XSJoJo (Jorim Jaggi)
 1. [MCDU] Fixed center runway id displaying on the flightplan page - @SergeySoprykin (SergeyS)
 1. [ND] Waypoints on the ND now use the correct font - @tyler58546 (tyler58546)
+1. [FLIGHTMODEL] Quick fix to flap lift for MSFS update 1.13.16.0 - @donstim (donbikes#4084)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
