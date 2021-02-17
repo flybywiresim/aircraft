@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- // Data and calculations obtained from Quick Reference Handbook (In Flight Procedures, Landing Performance Assessment/Landing Distance)
-
 import React from 'react';
 import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { DistanceLabel, LabelType } from './RunwayVisualizationWidget';
