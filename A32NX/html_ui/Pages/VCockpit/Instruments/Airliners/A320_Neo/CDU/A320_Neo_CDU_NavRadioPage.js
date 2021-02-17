@@ -18,7 +18,6 @@
 
 class CDUNavRadioPage {
     static ShowPage(mcdu) {
-        <script type="text/javascript" src="/JS/debug.js"></script>
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.NavRadioPage;
         mcdu.activeSystem = 'FMGC';
