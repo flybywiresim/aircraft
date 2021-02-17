@@ -976,18 +976,35 @@
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="ptu_sound" NodeName="SOUND_ENGINE_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="ptu_sound" NodeName="SOUND_PACK_OUTFLOW_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
             <Requires SimVar="TURB ENG N1" Units="PERCENT" Index="1">
                 <Range UpperBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="ptu_sound" NodeName="SOUND_ENGINE_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="ptu_sound" NodeName="SOUND_PACK_OUTFLOW_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
             <Requires SimVar="TURB ENG N1" Units="PERCENT" Index="2">
                 <Range UpperBound="1" />
             </Requires>
         </Sound>
 
+        <Sound WwiseData="true" WwiseEvent="ptucockpit" NodeName="PEDALS_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
+            <Requires SimVar="TURB ENG N1" Units="PERCENT" Index="1">
+                <Range UpperBound="1" />
+            </Requires>
+            <Requires LocalVar="A32NX_SOUND_PTU_AUDIBLE_COCKPIT" Units="BOOL">
+                <Range LowerBound="1" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="ptucockpit" NodeName="PEDALS_LEFT" LocalVar="XMLVAR_PTU_ON" Continuous="false">
+            <Requires SimVar="TURB ENG N1" Units="PERCENT" Index="2">
+                <Range UpperBound="1" />
+            </Requires>
+            <Requires LocalVar="A32NX_SOUND_PTU_AUDIBLE_COCKPIT" Units="BOOL">
+                <Range LowerBound="1" />
+            </Requires>
+        </Sound>
 
         <Sound WwiseEvent="smoothtouch" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="PEDALS_LEFT" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
