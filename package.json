@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@flybywiresim/api-client": "~0.7.0",
-    "@flybywiresim/map": "~0.4.2",
+    "@flybywiresim/map": "~0.5.2",
     "@tabler/icons": "^1.38.0",
     "@tailwindcss/postcss7-compat": "^2.0.2",
     "aewx-metar-parser": "~0.10.1",

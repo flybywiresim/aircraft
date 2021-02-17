@@ -90,6 +90,7 @@
 1. [ND] Waypoints on the ND now use the correct font - @tyler58546 (tyler58546)
 1. [MISC] Added custom chronometer font - @tyler58546 (tyler58546)
 1. [RMP] Added custom RMP font - @tyler58546 (tyler58546)
+1. [MCDU] Fixed center runway id displaying on the flightplan page - @SergeySoprykin (SergeyS)
 1. [FCU] Added custom FCU font - @tyler58546 (tyler58546)
 1. [ELEC] Basic integrated drive generator implementation - @davidwalschots (David Walschots)
 1. [ELEC] A fully functional ELEC page on the lower ECAM - @davidwalschots (David Walschots)
