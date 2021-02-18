@@ -1,0 +1,133 @@
+{
+    "accessors": [
+        { "bufferView": 0, "componentType": 5126, "count": 2, "min": [0.041666666666666667], "max": [0.08333333333333333], "type": "SCALAR" },
+        { "bufferView": 1, "componentType": 5126, "count": 2, "type": "VEC3" },
+        {
+            "bufferView": 2,
+            "componentType": 5126,
+            "count": 78,
+            "min": [-0.00970933586359024, -0.003514316864311695, -0.009779900312423706],
+            "max": [0.009709328413009644, 0.003514312207698822, 0.009779900312423706],
+            "type": "VEC3",
+            "name": "x0_PUSH_BKRFAN_IMPORTED_vertices#0_POSITION"
+        },
+        { "bufferView": 2, "byteOffset": 12, "componentType": 5120, "count": 78, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_vertices#0_TANGENT" },
+        { "bufferView": 2, "byteOffset": 16, "componentType": 5120, "count": 78, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_vertices#0_NORMAL" },
+        { "bufferView": 2, "byteOffset": 20, "componentType": 5122, "count": 78, "type": "VEC2", "name": "x0_PUSH_BKRFAN_IMPORTED_vertices#0_TEXCOORD_0" },
+        { "bufferView": 2, "byteOffset": 24, "componentType": 5122, "count": 78, "type": "VEC2", "name": "x0_PUSH_BKRFAN_IMPORTED_vertices#0_TEXCOORD_1" },
+        { "bufferView": 2, "byteOffset": 28, "componentType": 5123, "count": 78, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_vertices#0_COLOR_0" },
+        { "bufferView": 3, "componentType": 5123, "count": 222, "type": "SCALAR", "name": "x0_PUSH_BKRFAN_IMPORTED_indices#0" },
+        {
+            "bufferView": 2,
+            "byteOffset": 2808,
+            "componentType": 5126,
+            "count": 6,
+            "min": [-0.005100869107991457, -0.003409419907256961, -0.0017630686052143574],
+            "max": [0.0052731591276824478, 0.001297126291319728, -0.000057215685956180099],
+            "type": "VEC3",
+            "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_vertices#0_POSITION"
+        },
+        { "bufferView": 2, "byteOffset": 2820, "componentType": 5120, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_vertices#0_TANGENT" },
+        { "bufferView": 2, "byteOffset": 2824, "componentType": 5120, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_vertices#0_NORMAL" },
+        { "bufferView": 2, "byteOffset": 2828, "componentType": 5122, "count": 6, "type": "VEC2", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_vertices#0_TEXCOORD_0" },
+        { "bufferView": 2, "byteOffset": 2832, "componentType": 5122, "count": 6, "type": "VEC2", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_vertices#0_TEXCOORD_1" },
+        { "bufferView": 2, "byteOffset": 2836, "componentType": 5123, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_vertices#0_COLOR_0" },
+        { "bufferView": 3, "byteOffset": 444, "componentType": 5123, "count": 6, "type": "SCALAR", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1_indices#0" },
+        {
+            "bufferView": 2,
+            "byteOffset": 3024,
+            "componentType": 5126,
+            "count": 6,
+            "min": [-0.008067578077316285, -0.003059297800064087, -0.0009349584579467773],
+            "max": [0.008067578077316285, 0.003059208393096924, 0.000935673713684082],
+            "type": "VEC3",
+            "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_vertices#0_POSITION"
+        },
+        { "bufferView": 2, "byteOffset": 3036, "componentType": 5120, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_vertices#0_TANGENT" },
+        { "bufferView": 2, "byteOffset": 3040, "componentType": 5120, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_vertices#0_NORMAL" },
+        { "bufferView": 2, "byteOffset": 3044, "componentType": 5122, "count": 6, "type": "VEC2", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_vertices#0_TEXCOORD_0" },
+        { "bufferView": 2, "byteOffset": 3048, "componentType": 5122, "count": 6, "type": "VEC2", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_vertices#0_TEXCOORD_1" },
+        { "bufferView": 2, "byteOffset": 3052, "componentType": 5123, "count": 6, "type": "VEC4", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_vertices#0_COLOR_0" },
+        { "bufferView": 3, "byteOffset": 456, "componentType": 5123, "count": 6, "type": "SCALAR", "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2_indices#0" }
+    ],
+    "animations": [{ "name": "PUSH_BKRFAN_IMPORTED", "channels": [{ "sampler": 0, "target": { "node": 2, "path": "translation" } }], "samplers": [{ "input": 0, "output": 1, "interpolation": "LINEAR" }] }],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.6.3",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [0.009709328413009644, 0.003514312207698822, 0.009779900312423706],
+                "BoundingBoxMin": [-0.00970933586359024, -0.003514316864311695, -0.009779900312423706],
+                "MajorVersion": 4,
+                "MinorVersion": 2
+            }
+        }
+    },
+    "bufferViews": [
+        { "buffer": 0, "byteLength": 8 },
+        { "buffer": 0, "byteLength": 24, "byteOffset": 8 },
+        { "buffer": 0, "byteLength": 3240, "byteStride": 36, "byteOffset": 32, "target": 34962, "name": "BufferViewVertexND" },
+        { "buffer": 0, "byteLength": 468, "byteOffset": 3272, "target": 34963, "name": "BufferViewIndex" }
+    ],
+    "extensionsUsed": ["ASOBO_asset_optimized"],
+    "materials": [
+        {
+            "name": "TEXT",
+            "alphaMode": "BLEND",
+            "emissiveFactor": [4.953845977783203, 4.953845977783203, 4.953845977783203],
+            "pbrMetallicRoughness": { "baseColorFactor": [0.800000011920929, 0.800000011920929, 0.800000011920929, 1.0], "metallicFactor": 0.0, "roughnessFactor": 0.5 }
+        },
+        { "name": "INPUTS01" }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": { "COLOR_0": 14, "NORMAL": 11, "POSITION": 9, "TANGENT": 10, "TEXCOORD_0": 12, "TEXCOORD_1": 13 },
+                    "indices": 15,
+                    "material": "TEXT",
+                    "mode": 4,
+                    "extras": { "ASOBO_primitive": { "PrimitiveCount": 2, "VertexType": "VTX", "VertexVersion": 2 } }
+                }
+            ],
+            "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ1"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": { "COLOR_0": 21, "NORMAL": 18, "POSITION": 16, "TANGENT": 17, "TEXCOORD_0": 19, "TEXCOORD_1": 20 },
+                    "indices": 22,
+                    "material": "TEXT",
+                    "mode": 4,
+                    "extras": { "ASOBO_primitive": { "PrimitiveCount": 2, "VertexType": "VTX", "VertexVersion": 2 } }
+                }
+            ],
+            "name": "x0_PUSH_BKRFAN_IMPORTED_SEQ2"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": { "COLOR_0": 7, "NORMAL": 4, "POSITION": 2, "TANGENT": 3, "TEXCOORD_0": 5, "TEXCOORD_1": 6 },
+                    "indices": 8,
+                    "material": "INPUTS01",
+                    "mode": 4,
+                    "extras": { "ASOBO_primitive": { "PrimitiveCount": 74, "VertexType": "VTX", "VertexVersion": 2 } }
+                }
+            ],
+            "name": "x0_PUSH_BKRFAN_IMPORTED"
+        }
+    ],
+    "nodes": [
+        { "translation": [-0.0003698766231536865, 0.002895546844229102, 0.004749097395688295], "rotation": [0.5772161483764648, 0.0, 0.0, 0.8165915012359619], "mesh": 0, "name": "PUSH_BKRFAN_IMPORTED_SEQ1" },
+        { "translation": [-0.00015145540237426758, 0.0034608840942382814, -0.0052852630615234379], "rotation": [0.5948228240013123, 0.0, 0.0, 0.8038568496704102], "mesh": 1, "name": "PUSH_BKRFAN_IMPORTED_SEQ2" },
+        { "translation": [-0.24783599376678468, 1.7166500091552735, 11.903200149536133], "rotation": [-0.5948228240013123, 0.0, 0.0, 0.8038569092750549], "mesh": 2, "name": "PUSH_BKRFAN_IMPORTED", "children": [0, 1] }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [2],
+            "name": "Scene"
+        }
+    ],
+    "buffers": [{ "byteLength": 3740, "uri": "brkfan.bin" }]
+}

@@ -118,7 +118,6 @@ var A320_Neo_LowerECAM_WHEEL;
                         },
                     }
                 },
-                // Brake temperature indicators
                 brakes: {
                     // Arches
                     indicators: [
@@ -188,10 +187,10 @@ var A320_Neo_LowerECAM_WHEEL;
              * Currently displayed brake temperature. Initialized to SimVar value.
              */
             this.currentDisplayedBrakeTemps = [
-                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_1", "celsius"),
-                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_2", "celsius"),
-                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius"),
-                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius")
+                SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_1", "celsius"),
+                SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_2", "celsius"),
+                SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_3", "celsius"),
+                SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_4", "celsius")
             ];
 
             this.brakeTemperatureDidChange = [true, true, true, true];
@@ -301,7 +300,7 @@ var A320_Neo_LowerECAM_WHEEL;
 
         updateBrakeTemp(_deltaTime) {
             for (let i = 0; i < this.currentDisplayedBrakeTemps.length; i++) {
-                const newValue = SimVar.GetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i + 1}`, "celsius");
+                const newValue = SimVar.GetSimVarValue(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_${i + 1}`, "celsius");
 
                 if (this.currentDisplayedBrakeTemps[i] !== newValue) {
                     this.currentDisplayedBrakeTemps[i] = newValue;
