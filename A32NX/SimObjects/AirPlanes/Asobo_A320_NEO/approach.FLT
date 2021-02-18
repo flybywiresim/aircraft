@@ -234,6 +234,7 @@ WingLights=True
 CabinLights=True
 GlareshieldLights=False
 PedestalLights=False
+Potentiometer.7=0
 Potentiometer.86=0.5
 Potentiometer.88=0.5
 Potentiometer.89=0.5
