@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useContext, useEffect, useRef, useState } from "react"
 import { useInteractionEvents, useUpdate } from "./hooks"
+import { random } from 'lodash';
 
 /**
  * If the same SimVar or GlobalVar is requested in multiple places with
@@ -31,10 +32,25 @@ const normalizeUnitName = (unit: UnitName): UnitName => {
         case "Knots":
         case "knots":
             return "knots";
+        case "String":
+        case "string":
+            return "string";
         default:
             return unit;
     }
 }
+
+const generateMockValue = (unit: UnitName) => {
+    return ({
+        'bool': !!random(0, 1),
+        'number': random(0, 100),
+        'degree': random(0, 360),
+        'percent': `${random(0, 100)}%`,
+        'feet': random(0, 50000),
+        'knots': random(0, 1000),
+        'string': 'random string'
+    })[unit] || random(0, 100);
+};
 
 type SimVarSetter = <T extends SimVarValue>(oldValue: T) => T;
 
@@ -51,6 +67,7 @@ const context = React.createContext<{
     update: UpdateSimVar,
     register: RegisterSimVar,
     unregister: UnregisterSimVar,
+    dev?: boolean
 }>({
     retrieve: errorCallback,
     update: errorCallback,
@@ -76,7 +93,7 @@ declare const SimVar; // this can also be replaced once /typings are available
  * For improved performance, this component will only trigger renders when the
  * "update" custom event is emitted through an instrument.
  */
-const SimVarProvider: React.FC = ({ children }) => {
+const SimVarProvider: React.FC<{dev?, children}> = ({ dev, children }) => {
     const listeners = useRef<Record<string, number[]>>({});
     const [cache, setCache] = useState<SimVarCache>({});
 
@@ -97,7 +114,7 @@ const SimVarProvider: React.FC = ({ children }) => {
             const threshold = Math.min(...intervals);
             const lastUpdatedAgo = (cache[key] ? cache[key].lastUpdatedAgo || 0 : 0) + deltaTime;
 
-            if (lastUpdatedAgo >= threshold) {
+            if (lastUpdatedAgo >= threshold && !dev) {
                 // At this point, as we haven't updated this SimVar recently, we
                 // need to fetch the latest value from the simulator and store
                 // it.
@@ -143,7 +160,14 @@ const SimVarProvider: React.FC = ({ children }) => {
             return cache[key].value;
         }
 
-        const value = global ? SimVar.GetGlobalVarValue(name, unit) : SimVar.GetSimVarValue(name, unit);
+        let value;
+
+        if(dev) {
+            value = generateMockValue(unit);
+        } else {
+            value = global ? SimVar.GetGlobalVarValue(name, unit) : SimVar.GetSimVarValue(name, unit);
+        }
+
         setCache((oldCache) => ({
             ...oldCache,
             [key]: {
@@ -171,7 +195,11 @@ const SimVarProvider: React.FC = ({ children }) => {
         const key = getKey(name, unit, false);
         setCache((oldCache) => {
             const newValue = typeof value === 'function' ? value(oldCache[key].value) : value;
-            SimVar.SetSimVarValue((proxy || name), unit, newValue);
+
+            if(!dev) {
+                SimVar.SetSimVarValue((proxy || name), unit, newValue);
+            }
+
             return {
                 ...oldCache,
                 [key]: {
