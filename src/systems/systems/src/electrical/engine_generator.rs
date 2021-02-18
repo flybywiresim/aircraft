@@ -153,13 +153,13 @@ impl IntegratedDriveGenerator {
         }
 
         let mut new_time = self.time_above_threshold_in_milliseconds;
-        if engine.n2
+        if engine.corrected_n2()
             >= Ratio::new::<percent>(IntegratedDriveGenerator::ENGINE_N2_POWER_UP_OUTPUT_THRESHOLD)
             && self.time_above_threshold_in_milliseconds
                 < IntegratedDriveGenerator::STABILIZATION_TIME_IN_MILLISECONDS
         {
             new_time = self.time_above_threshold_in_milliseconds + context.delta.as_millis() as u64;
-        } else if engine.n2
+        } else if engine.corrected_n2()
             <= Ratio::new::<percent>(
                 IntegratedDriveGenerator::ENGINE_N2_POWER_DOWN_OUTPUT_THRESHOLD,
             )
@@ -204,7 +204,7 @@ impl IntegratedDriveGenerator {
             return context.ambient_temperature;
         }
 
-        let mut target_idg = engine.n2.get::<percent>() * 1.8;
+        let mut target_idg = engine.corrected_n2().get::<percent>() * 1.8;
         let ambient_temperature = context.ambient_temperature.get::<degree_celsius>();
         target_idg += ambient_temperature;
 
@@ -238,7 +238,10 @@ fn clamp<T: PartialOrd>(value: T, min: T, max: T) -> T {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::engine::Engine;
+    use crate::{
+        engine::Engine,
+        simulation::{test::TestReaderWriter, SimulatorReader, SimulatorReaderWriter},
+    };
 
     fn engine_above_threshold() -> Engine {
         engine(Ratio::new::<percent>(
@@ -254,7 +257,10 @@ mod tests {
 
     fn engine(n2: Ratio) -> Engine {
         let mut engine = Engine::new(1);
-        engine.n2 = n2;
+        let mut test_reader_writer = TestReaderWriter::new();
+        test_reader_writer.write("TURB ENG CORRECTED N2:1", n2.get::<percent>());
+        engine.read(&mut SimulatorReader::new(&mut test_reader_writer));
+        engine.set_corrected_n2(n2);
 
         engine
     }

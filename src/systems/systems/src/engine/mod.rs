@@ -3,21 +3,29 @@ use uom::si::{f64::*, ratio::percent};
 use crate::simulation::{SimulationElement, SimulatorReader, UpdateContext};
 
 pub struct Engine {
-    n2_id: String,
-    pub n2: Ratio,
+    corrected_n2_id: String,
+    corrected_n2: Ratio,
 }
 impl Engine {
     pub fn new(number: usize) -> Engine {
         Engine {
-            n2_id: format!("ENG N2 RPM:{}", number),
-            n2: Ratio::new::<percent>(0.),
+            corrected_n2_id: format!("TURB ENG CORRECTED N2:{}", number),
+            corrected_n2: Ratio::new::<percent>(0.),
         }
     }
 
+    pub fn corrected_n2(&self) -> Ratio {
+        self.corrected_n2
+    }
+
     pub fn update(&mut self, _: &UpdateContext) {}
+
+    pub fn set_corrected_n2(&mut self, corrected_n2: Ratio) {
+        self.corrected_n2 = corrected_n2;
+    }
 }
 impl SimulationElement for Engine {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.n2 = Ratio::new::<percent>(reader.read_f64(&self.n2_id));
+        self.corrected_n2 = Ratio::new::<percent>(reader.read_f64(&self.corrected_n2_id));
     }
 }

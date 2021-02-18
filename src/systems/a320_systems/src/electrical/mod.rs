@@ -355,7 +355,9 @@ mod a320_electrical_circuit_tests {
         apu::{Aps3200ApuGenerator, AuxiliaryPowerUnitFactory},
         electrical::{ExternalPowerSource, Potential},
         engine::Engine,
-        simulation::context_with,
+        simulation::{
+            context_with, test::TestReaderWriter, SimulatorReader, SimulatorReaderWriter,
+        },
     };
     use uom::si::{length::foot, velocity::knot};
 
@@ -1905,16 +1907,22 @@ mod a320_electrical_circuit_tests {
 
         fn new_running_engine() -> Engine {
             let mut engine = Engine::new(1);
-            engine.n2 = Ratio::new::<percent>(80.);
+            ElectricalCircuitTester::set_corrected_n2(&mut engine, Ratio::new::<percent>(80.));
 
             engine
         }
 
         fn new_stopped_engine() -> Engine {
             let mut engine = Engine::new(1);
-            engine.n2 = Ratio::new::<percent>(0.);
+            ElectricalCircuitTester::set_corrected_n2(&mut engine, Ratio::new::<percent>(0.));
 
             engine
+        }
+
+        fn set_corrected_n2(engine: &mut Engine, corrected_n2: Ratio) {
+            let mut test_reader_writer = TestReaderWriter::new();
+            test_reader_writer.write("TURB ENG CORRECTED N2:1", corrected_n2.get::<percent>());
+            engine.read(&mut SimulatorReader::new(&mut test_reader_writer));
         }
 
         fn new_disconnected_external_power() -> ExternalPowerSource {
