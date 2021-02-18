@@ -178,6 +178,8 @@
 1. [FLIGHTMODEL] Revert flaps hotfix due to MSFS hotfix in MSFS update 1.13.17.0 - @donstim (donbikes#4084)
 1. [MISC] Fixed chrono watch colon appearance - @SergeySoprykin (SergeyS)
 1. [MCDU] Fixed options page text overlap - @MisterChocker (Leon)
+1. [EFB] Added functionality to ground services page - @Saschl (saschl#9432)
+
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
