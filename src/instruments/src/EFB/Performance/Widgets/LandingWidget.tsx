@@ -123,20 +123,29 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 		});
 	}
 
-	private handleWindChange = (value: string): void => {
-		let wind = value;
-		let splitWind = wind.split('/');
-		let direction = parseInt(splitWind[0]);
-		let magnitude = parseInt(splitWind[1]);
+	private handleWindDirectionChange = (value: string): void => {
+		let direction = parseInt(value);
 
-		if (Number.isNaN(direction) || Number.isNaN(magnitude)) {
+		if (!direction) {
 			direction = 0;
-			magnitude = 0;
 		}
 
 		this.setState(prevState => {
 			let newState = { ...prevState };
 			newState.windDirection = direction;
+			return newState;
+		});
+	}
+
+	private handleWindMagnitudeChange = (value: string): void => {
+		let magnitude = parseInt(value);
+
+		if (!magnitude) {
+			magnitude = 0;
+		}
+
+		this.setState(prevState => {
+			let newState = { ...prevState };
 			newState.windMagnitude = magnitude;
 			return newState;
 		});
@@ -310,7 +319,8 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 						<div className="text-center mb-6">
 							<div className="flex">
 								<div className="flex-1 m-2.5 column-left">
-									<SimpleInput label="Wind (KTS)" placeholder="DIR/MAG" onChange={this.handleWindChange} />
+									<SimpleInput label="Wind Direction" min={0} max={360} onChange={this.handleWindDirectionChange} />
+									<SimpleInput label="Wind Magnitude" placeholder="KTS" min={0} onChange={this.handleWindMagnitudeChange} />
 									<SimpleInput label="Temperature" placeholder='°C' onChange={this.handleTemperatureChange} />
 									<SimpleInput label="QNH" placeholder="mb" min={800} max={1200} onChange={this.handlePressureChange} />
 									<SimpleInput label="Rwy Altitude" placeholder='" ASL' max={20000} onChange={this.handleAltitudeChange} />
@@ -323,9 +333,9 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 										[4, "Medium-Poor"],
 										[5, "Poor"]
 									]} />
-									<SimpleInput label="Rwy Slope" placeholder="%" onChange={this.handleRunwaySlopeChange} />
 								</div>
 								<div className="flex-1 m-2.5 column-right">
+									<SimpleInput label="Rwy Slope" placeholder="%" onChange={this.handleRunwaySlopeChange} reverse />
 									<div className="flex justify-start items-center">
 										<SimpleInput label="Rwy LDA" placeholder="m" min={0} onChange={this.handleRunwayLengthChange} reverse />
 										<Help title="Landing Distance Available (LDA)">
