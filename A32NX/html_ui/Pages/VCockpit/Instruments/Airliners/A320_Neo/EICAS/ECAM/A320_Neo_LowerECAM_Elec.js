@@ -133,14 +133,12 @@ var A320_Neo_LowerECAM_Elec;
             this.e_IDG2_TEMP_VALUE = this.querySelector("#IDG2_TEMP_VALUE");
             this.e_IDG2_TEMP_UNIT = this.querySelector("#IDG2_TEMP_UNIT");
             this.e_IDG2_DISC = this.querySelector("#IDG2_DISC");
-            this.e_IDG2_LOPR = this.querySelector("#IDG2_LOPR");
 
             this.e_IDG1_TITLE = this.querySelector("#IDG1_TITLE");
             this.e_IDG1_TITLE_NUMBER = this.querySelector("#IDG1_TITLE_NUMBER");
             this.e_IDG1_TEMP_VALUE = this.querySelector("#IDG1_TEMP_VALUE");
             this.e_IDG1_TEMP_UNIT = this.querySelector("#IDG1_TEMP_UNIT");
             this.e_IDG1_DISC = this.querySelector("#IDG1_DISC");
-            this.e_IDG1_LOPR = this.querySelector("#IDG1_LOPR");
 
             this.e_GALLEY_SHED_TOP = this.querySelector("#GALLEY_SHED_TOP");
             this.e_GALLEY_SHED_BOTTOM = this.querySelector("#GALLEY_SHED_BOTTOM");
