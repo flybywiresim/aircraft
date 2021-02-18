@@ -16,28 +16,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconStairsUp, IconPower } from '@tabler/icons'
 import './Ground.scss'
 import fuselage from '../Assets/320neo-outline-upright.svg'
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 
-
 export const Ground = () => {
-    const [tugActive, setTugActive] = useState(false);
     const [activeButtons, setActiveButtons] = useState(new Array<string>());
-    const [jetWayActive, setJetWayActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_JETWAY', 'bool', 500);
-    const [rampActive, setRampActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_RAMPTRUCK', 'bool', 500);
-    const [cargoActive, setCargoActive] = useSplitSimVar('A:EXIT OPEN:5', 'Enum', 'K:REQUEST_LUGGAGE', 'bool', 500);
-    const [cateringActive, setCateringActive] = useSplitSimVar('A:EXIT OPEN:3', 'Enum', 'K:REQUEST_CATERING', 'bool', 500);
-    const [fuelingActive, setFuelingActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:9', 'percent', 'K:REQUEST_FUEL_KEY', 'bool');
-    const [tugHeading, setTugHeading] = useSplitSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 'K:KEY_TUG_HEADING', 'UINT32');
-    const [pushBack, setPushBack] = useSimVar('K:TOGGLE_PUSHBACK', 'bool');
-    const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'percent', 'K:REQUEST_POWER_SUPPLY', 'bool');
+    const [jetWayActive, setJetWayActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_JETWAY', 'bool', 1000);
+    const [rampActive, setRampActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
+    const [cargoActive, setCargoActive] = useSplitSimVar('A:EXIT OPEN:5', 'Enum', 'K:REQUEST_LUGGAGE', 'bool', 1000);
+    const [cateringActive, setCateringActive] = useSplitSimVar('A:EXIT OPEN:3', 'Enum', 'K:REQUEST_CATERING', 'bool', 1000);
+    const [fuelingActive, setFuelingActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:9', 'percent', 'K:REQUEST_FUEL_KEY', 'bool', 1000);
+    const [tugHeading, setTugHeading] = useSplitSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 'K:KEY_TUG_HEADING', 'UINT32', 1000);
+    const [pushBack, setPushBack] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 1000);
+    const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'percent', 'K:REQUEST_POWER_SUPPLY', 'bool', 1000);
+    const [tugDirection, setTugDirection] = useState(0);
+    const [tugActive, setTugActive] = useState(false);
 
-    const getTugHeading = (value: number): number => {
-        return (tugHeading  + value) % 360;
-    }
+    /**
+     * allows a direction to be selected directly
+     * rather than fist selected and after that the direction
+     */
+    useEffect(() => {
+        if (pushBack === 0 && tugDirection != 0) {
+            computeAndSetTugHeading(tugDirection);
+            setTugDirection(0);
+        }
+    });
+
+    const getTugHeading = (value: number): number => (tugHeading  + value) % 360;
 
     const computeAndSetTugHeading = (direction: number) => {
         if (!tugActive) {
@@ -46,6 +55,7 @@ export const Ground = () => {
         const tugHeading = getTugHeading(direction);
         // KEY_TUG_HEADING is an unsigned integer, so let's convert
         setTugHeading((tugHeading * 11930465) & 0xffffffff);
+        setTugDirection(direction);
     }
 
     const togglePushback = (targetState: boolean) => {
@@ -77,7 +87,6 @@ export const Ground = () => {
     }
 
     const applySelected = (className: string, id?: string) => {
-
         if (id) {
             return className + (activeButtons.includes(id) ? ' selected' : '');
         }
@@ -89,7 +98,6 @@ export const Ground = () => {
      * This ensures the displayed state is in sync with the active services
      */
     const applySelectedWithSync = (className: string, id: string, gameSync) => {
-
         if (gameSync > 0) {
             if (!activeButtons.includes(id)) {
                 activeButtons.push(id);
@@ -103,7 +111,7 @@ export const Ground = () => {
         return className;
     }
 
-    return(
+    return (
         <div className="wrapper flex-grow flex flex-col">
             <img className="airplane w-full" src={fuselage} />
             <div className="pushback control-grid">

@@ -17,10 +17,9 @@
  */
 
 import './Assets/Efb.scss';
-import { render } from '../Common';
-
 
 import React from "react";
 import ReactDOM from "react-dom";
 import Efb from "./Efb";
-render(<Efb currentFlight="UAK049" />);
+
+ReactDOM.render(<Efb currentFlight="UAK049" />, document.getElementById('A32NX_REACT_MOUNT'));
