@@ -92,6 +92,7 @@
 1. [RMP] Added custom RMP font - @tyler58546 (tyler58546)
 1. [MCDU] Fixed center runway id displaying on the flightplan page - @SergeySoprykin (SergeyS)
 1. [FCU] Added custom FCU font - @tyler58546 (tyler58546)
+1. [FLIGHTMODEL] Quick fix to flap lift for MSFS update 1.13.16.0 - @donstim (donbikes#4084)
 1. [ELEC] Basic integrated drive generator implementation - @davidwalschots (David Walschots)
 1. [ELEC] A fully functional ELEC page on the lower ECAM - @davidwalschots (David Walschots)
 1. [ELEC] Contactor logic is fully modelled - @davidwalschots (David Walschots)
