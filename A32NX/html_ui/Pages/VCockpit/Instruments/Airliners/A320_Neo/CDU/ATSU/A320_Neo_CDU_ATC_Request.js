@@ -48,7 +48,7 @@ class CDUAtcRequest {
             CDUAtcRequest.ShowPage(mcdu, store);
         };
 
-        mcdu.onRightInput[1] = (value) => {
+        mcdu.onRightInput[1] = (value) =>  {
             if (value != "") {
                 store["spdMach"] = "[" + value + "][color]cyan";
             }
