@@ -154,7 +154,7 @@ class CDUNavRadioPage {
                 adf1FrequencyCell = "{small}" + adf1Ident.padStart(3, "\xa0") + "{end}" + "/" + mcdu.adf1Frequency.toFixed(1);
                 adf1BfoOption = "<ADF1 BFO";
             } else if (mcdu.adf1Frequency != 0 && mcdu.adf1IdIsPilotEntered && !mcdu.adf1FreqIsPilotEntered) {
-                adf1FrequencyCell = mcdu.adf1IdPilotValue.padStart(3, "\xa0")+ "/" + "{small}" +  + mcdu.adf1Frequency.toFixed(1) + "{end}";
+                adf1FrequencyCell = mcdu.adf1IdPilotValue.padStart(3, "\xa0") + "/" + "{small}" + mcdu.adf1Frequency.toFixed(1) + "{end}";
                 adf1BfoOption = "<ADF1 BFO";
             }
             mcdu.onLeftInput[4] = (value) => {
