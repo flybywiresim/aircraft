@@ -831,13 +831,65 @@ var A320_Neo_UpperECAM;
                                 isActive: () => SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool"),
                                 actions: [
                                     {
+                                        style: "remark",
+                                        message: "IF PERF PERMITS",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
                                         style: "action",
                                         message: "PARK BRK",
-                                        action: "PREFER CHOCKS"
+                                        action: "PREFER CHOCKS",
+                                        isCompleted: () => {
+                                            return !this.isInFlightPhase(1, 10);
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "MAX SPEED",
+                                        action: "250/.60",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "BRK FAN",
+                                        action: "ON",
+                                        isCompleted: () => {
+                                            return !(this.isInFlightPhase(1, 2) && !SimVar.GetSimVarValue("L:A32NX_BRAKE_FAN", "Bool"));
+                                        },
                                     },
                                     {
                                         style: "cyan",
-                                        message: "&nbsp;-DELAY T.O FOR COOL"
+                                        message: "&nbsp;-DELAY T.O FOR COOL",
+                                        isCompleted: () => {
+                                            return !Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "L/G",
+                                        action: "DN FOR COOL",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
+                                        style: "remark",
+                                        message: "FOR L/G RETRACTION",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "MAX SPEED",
+                                        action: "220/.54",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
                                     }
                                 ]
                             },
