@@ -44,9 +44,10 @@ class CDUNavRadioPage {
         };
         if (!radioOn) {
             vor1FrequencyCell = "[\xa0]/[\xa0\xa0.\xa0]";
-            const vor1Ident = mcdu.radioNav.getVORBeacon(1);
+            const vor1Beacon = mcdu.radioNav.getVORBeacon(1);
+            const vor1Ident = vor1Beacon && vor1Beacon.ident.length === 3 ? vor1Beacon.ident : "";
             if (mcdu.vor1Frequency != 0 && !mcdu.vor1IdIsPilotEntered && mcdu.vor1FreqIsPilotEntered) {
-                vor1FrequencyCell = "{small}" + vor1Ident.ident.padStart(3, "\xa0") + "{end}" + "/" + mcdu.vor1Frequency.toFixed(2);
+                vor1FrequencyCell = "{small}" + vor1Ident.padStart(3, "\xa0") + "{end}" + "/" + mcdu.vor1Frequency.toFixed(2);
             } else if (mcdu.vor1Frequency != 0 && mcdu.vor1IdIsPilotEntered && !mcdu.vor1FreqIsPilotEntered) {
                 vor1FrequencyCell = mcdu.vor1IdPilotValue.padStart(3, "\xa0") + "/" + "{small}" + mcdu.vor1Frequency.toFixed(2) + "{end}";
             }
@@ -64,14 +65,24 @@ class CDUNavRadioPage {
                     mcdu.vor1FreqIsPilotEntered = false;
                     mcdu.vor1IdPilotValue = value;
                     mcdu.getOrSelectVORsByIdent(value, (navaids) => {
-                        mcdu.vor1Frequency = navaids.infos.frequencyMHz;
-                        mcdu.radioNav.setVORActiveFrequency(1, mcdu.vor1Frequency);
-                        mcdu.vor1Course = 0;
+                        if (navaids) {
+                            mcdu.vor1Frequency = navaids.infos.frequencyMHz;
+                            mcdu.radioNav.setVORActiveFrequency(1, mcdu.vor1Frequency);
+                            mcdu.vor1Course = 0;
+                        }
                         mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
+                } else if (isFinite(numValue)) {
+                    if (!/^\d{3}(\.\d{1,2})?$/.test(value) || !RadioNav.isHz50Compliant(numValue)) {
+                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        return false;
+                    }
+                    if (numValue < 108 || numValue > 117.95) {
+                        mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                        return false;
+                    }
                     mcdu.vor1IdIsPilotEntered = false;
                     mcdu.vor1FreqIsPilotEntered = true;
                     if (numValue != mcdu.vor1Frequency) {
@@ -159,7 +170,15 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else if (isFinite(numValue) && numValue >= 100 && numValue <= 1699.9) {
+                } else if (isFinite(numValue)) {
+                    if (!/^\d{3,4}(\.\d{1})?$/.test(value)) {
+                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        return false;
+                    }
+                    if (numValue < 190 || numValue > 1750) {
+                        mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                        return false;
+                    }
                     SimVar.SetSimVarValue("K:ADF_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(numValue * 1000)).then(() => {
                         mcdu.adf1FreqIsPilotEntered = true;
                         mcdu.adf1IdIsPilotEntered = false;
@@ -182,9 +201,10 @@ class CDUNavRadioPage {
 
         if (!radioOn) {
             vor2FrequencyCell = "[\xa0\xa0.\xa0]/[\xa0]";
-            const vor2Ident = mcdu.radioNav.getVORBeacon(2);
+            const vor2Beacon = mcdu.radioNav.getVORBeacon(2);
+            const vor2Ident = vor2Beacon && vor2Beacon.ident.length === 3 ? vor2Beacon.ident : "";
             if (mcdu.vor2Frequency != 0 && mcdu.vor2FreqIsPilotEntered && !mcdu.vor2IdIsPilotEntered) {
-                vor2FrequencyCell = mcdu.vor2Frequency.toFixed(2) + "/" + "{small}" + vor2Ident.ident.padEnd(3, "\xa0") + "{end}";
+                vor2FrequencyCell = mcdu.vor2Frequency.toFixed(2) + "/" + "{small}" + vor2Ident.padEnd(3, "\xa0") + "{end}";
             } else if (mcdu.vor2Frequency != 0 && !mcdu.vor2FreqIsPilotEntered && mcdu.vor2IdIsPilotEntered) {
                 vor2FrequencyCell = "{small}" + mcdu.vor2Frequency.toFixed(2) + "{end}" + "/" + mcdu.vor2IdPilotValue.padEnd(3, "\xa0");
             }
@@ -209,10 +229,18 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
+                } else if (isFinite(numValue)) {
+                    if (!/^\d{3}(\.\d{1,2})?$/.test(value) || !RadioNav.isHz50Compliant(numValue)) {
+                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        return false;
+                    }
+                    if (numValue < 108 || numValue > 117.95) {
+                        mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                        return false;
+                    }
+                    mcdu.vor2FreqIsPilotEntered = true;
+                    mcdu.vor2IdIsPilotEntered = false;
                     if (numValue != mcdu.vor2Frequency) {
-                        mcdu.vor2FreqIsPilotEntered = true;
-                        mcdu.vor2IdIsPilotEntered = false;
                         mcdu.vor2Course = 0;
                     }
                     mcdu.vor2Frequency = numValue;
@@ -274,7 +302,15 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
-                } else if (isFinite(numValue) && numValue >= 100 && numValue <= 1699.9) {
+                } else if (isFinite(numValue)) {
+                    if (!/^\d{3,4}(\.\d{1})?$/.test(value)) {
+                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        return false;
+                    }
+                    if (numValue < 190 || numValue > 1750) {
+                        mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                        return false;
+                    }
                     SimVar.SetSimVarValue("K:ADF2_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(numValue * 1000)).then(() => {
                         mcdu.adf2FreqIsPilotEntered = true;
                         mcdu.adf2IdIsPilotEntered = false;
