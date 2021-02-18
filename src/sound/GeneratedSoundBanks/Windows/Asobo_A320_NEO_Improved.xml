@@ -175,7 +175,7 @@
 				</Event>
 				<Event Id="2008669436" Name="Play_Asobo_A320_NEO_BuzzR" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\LEAP1A\Play_Asobo_A320_NEO_BuzzR" GUID="{A1EF333D-82AA-4EC9-ACED-3DD652342608}" MaxAttenuation="50.000000" DurationType="Infinite">
 					<IncludedMemoryFiles>
-						<File Id="966705955" Language="SFX">
+						<File Id="623770933" Language="SFX">
 							<ShortName>BuzzR.wav</ShortName>
 							<Path>SFX\BuzzR_6B596F16.wem</Path>
 						</File>
@@ -1358,6 +1358,7 @@
 				<GameParameter Id="3779073172" Name="ENV_DOPPLERCENTS" ObjectPath="\Game Parameters\environment\common\ENV_DOPPLERCENTS" GUID="{05BB02CD-EBB3-47D1-9A4B-320AA5FE6C21}"/>
 				<GameParameter Id="3852284635" Name="SIMVAR_AIRSPEED_INDICATED" ObjectPath="\Game Parameters\simvar\physic\SIMVAR_AIRSPEED_INDICATED" GUID="{55CFC0B1-B68E-46B8-8121-18B4F1AA6E4F}"/>
 				<GameParameter Id="3898595254" Name="SIMVAR_TURB_ENG_N1_DERIVED" ObjectPath="\Game Parameters\simvar\engine\turbine\SIMVAR_TURB_ENG_N1_DERIVED" GUID="{79A066BA-57E2-4045-8509-C0AC2DFF5235}"/>
+				<GameParameter Id="4136779252" Name="SIMVAR_AILERON_POSITION_DERIVED" ObjectPath="\Game Parameters\simvar\flight_control_surfaces\derived\SIMVAR_AILERON_POSITION_DERIVED" GUID="{023F1420-21EF-4B55-BCF7-7BE9CC7A7B91}"/>
 			</GameParameters>
 		</SoundBank>
 	</SoundBanks>
