@@ -74,3 +74,4 @@ SpotInner=0
 SpotOuter=35
 Volumetric=0
 ScatDir=0.0
+
