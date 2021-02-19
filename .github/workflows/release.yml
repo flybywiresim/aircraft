@@ -16,8 +16,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Build A32NX
         run: |
-          ./scripts/dev-env/run.sh ./scripts/setup.sh
-          ./scripts/dev-env/run.sh ./scripts/build.sh
+          ./scripts/dev-env/run.sh npm install
+          ./scripts/dev-env/run.sh npx igniter
       - name: Build ZIP file
         run: |
           mkdir ./${{ env.BUILD_DIR_NAME }}
