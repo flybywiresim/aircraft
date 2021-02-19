@@ -142,7 +142,69 @@
             </CALLBACKCODE>
         </UseTemplate>
     </Template>
+    <Template Name="FBW_Push_BrkFan_Toggle">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+                <NODE_ID>#NODE_ID#</NODE_ID>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                <WWISE_EVENT_1>pb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>pb1off</WWISE_EVENT_2>
 
+                <Condition Check="DOWN_CODE">
+                    <True>
+                        <STATUS>True</STATUS>
+                    </True>
+                    <False>
+                        <STATUS>False</STATUS>
+                    </False>
+                </Condition>
+
+                <Condition Check="LEFT_SINGLE_CODE">
+                    <True>
+                        <LEFT_SINGLE_CODE>
+                            #LEFT_SINGLE_CODE#
+
+                            (L:XMLVAR_Momentary_#NODE_ID#_Pressed) ! (&gt;L:XMLVAR_Momentary_#NODE_ID#_Pressed)
+                        </LEFT_SINGLE_CODE>
+                        <Condition Check="DOWN_CODE">
+                            <True>
+                                <DOWN_STATE_CODE>#DOWN_CODE#</DOWN_STATE_CODE>
+                            </True>
+                            <False>
+                                <DOWN_STATE_CODE>(L:XMLVAR_Momentary_#NODE_ID#_Pressed)</DOWN_STATE_CODE>
+                            </False>
+                        </Condition>
+                    </True>
+                    <False>
+                        <LEFT_SINGLE_CODE>(#TOGGLE_SIMVAR#, Bool) ! (&gt;#TOGGLE_SIMVAR#)</LEFT_SINGLE_CODE>
+                        <Condition Check="DOWN_CODE">
+                            <True>
+                                <DOWN_STATE_CODE>#DOWN_CODE#</DOWN_STATE_CODE>
+                            </True>
+                            <False>
+                                <DOWN_STATE_CODE>(#TOGGLE_SIMVAR#)</DOWN_STATE_CODE>
+                            </False>
+                        </Condition>
+                    </False>
+                </Condition>
+            </UseTemplate>
+        </Component>
+        <Component ID="#NODE_ID_HOT#" Node="#NODE_ID_HOT#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE>(L:A32NX_BRAKES_HOT, Bool) 1 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+            </UseTemplate>
+        </Component>
+        <Component ID="#NODE_ID_ON#" Node="#NODE_ID_ON#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE>
+                (L:A32NX_BRAKE_FAN, Bool) 1 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
 
     <!--
     Template for rigging uncovered push buttons
