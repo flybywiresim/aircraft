@@ -93,6 +93,7 @@
 1. [MCDU] Fixed center runway id displaying on the flightplan page - @SergeySoprykin (SergeyS)
 1. [FCU] Added custom FCU font - @tyler58546 (tyler58546)
 1. [FLIGHTMODEL] Quick fix to flap lift for MSFS update 1.13.16.0 - @donstim (donbikes#4084)
+1. [MISC] Added custom BAT font - @tyler58546 (tyler58546)
 1. [LIGHTS] Fixed runway spawn position for dome light - @Awemeter (Awemeter#7919)
 1. [ENGINE] Ignition Switch should be on "MODE NORM" on the final phase - @Snapmatics (Harry [Z+2]#9872)
 1. [TEXTURE] Updated main landing gear textures - @Inexorable92 (Inexorable)
