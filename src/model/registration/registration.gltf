@@ -1,0 +1,175 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 4,
+            "min": [
+                -0.05823727697134018,
+                -0.004831334110349417,
+                -0.012082233093678951
+            ],
+            "max": [
+                0.06833389401435852,
+                0.004814663901925087,
+                0.012040370143949986
+            ],
+            "type": "VEC3",
+            "name": "x0_COCKPIT_DECAL_SELCAL _vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 4,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_DECAL_SELCAL _vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 4,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_DECAL_SELCAL _vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 4,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_DECAL_SELCAL _vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 4,
+            "type": "VEC2",
+            "name": "x0_COCKPIT_DECAL_SELCAL _vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 4,
+            "type": "VEC4",
+            "name": "x0_COCKPIT_DECAL_SELCAL _vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5123,
+            "count": 6,
+            "type": "SCALAR",
+            "name": "x0_COCKPIT_DECAL_SELCAL _indices#0"
+        }
+    ],
+    "asset": {
+        "generator": "Extended Khronos glTF Blender I/O v1.0.0",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.06833389401435852,
+                    0.004814663901925087,
+                    0.012040370143949986
+                ],
+                "BoundingBoxMin": [
+                    -0.05823727697134018,
+                    -0.004831334110349417,
+                    -0.012082233093678951
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 2
+            },
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 144,
+            "byteStride": 36,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 12,
+            "byteOffset": 144,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_normal_map_convention",
+        "ASOBO_asset_optimized"
+    ],
+    "materials": [
+        {
+            "name": "glTFValidator_Added_Default_Material"
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 5,
+                        "NORMAL": 2,
+                        "POSITION": 0,
+                        "TANGENT": 1,
+                        "TEXCOORD_0": 3,
+                        "TEXCOORD_1": 4
+                    },
+                    "indices": 6,
+                    "material": "DECALSALPHA",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 2,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_COCKPIT_DECAL_SELCAL "
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                0.1915937215089798,
+                1.7352170944213867,
+                11.905414581298828
+            ],
+            "rotation": [
+                0,
+                0.7363879680633545,
+                0.6765594482421875,
+                6.734744317782315e-9
+            ],
+            "mesh": 0,
+            "name": "SELCAL_CODE"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [
+                0
+            ],
+            "name": "Scene"
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 156,
+            "uri": "registration.bin"
+        }
+    ]
+}
