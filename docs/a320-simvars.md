@@ -29,11 +29,20 @@
 - A32NX_BRAKE_TEMPERATURE_{1,2,3,4}
     - celsius
     - represents the brake temperature of the rear wheels
-
+- A32NX_REPORTED_BRAKE_TEMPERATURE_{1,2,3,4}
+    - celsius
+    - represents the reported brake temperature of the rear wheels by the sensor.
+    - It can be different from the brake temperature when the brake fan has been used, because the brake fan will cool the sensor more than the brakes 
+	- (which have much more energy to dissipate) therefore giving potentially erroneous readings that the pilots must take into account
+- A32NX_BRAKE_FAN
+	- boolean
+	- whether or not the brake fan is running (brake fan button pressed AND left main landing gear down and locked)
+- A32NX_BRAKE_FAN_BTN_PRESSED
+	- boolean
+	- whether or not the brake fan button is pressed
 - A32NX_BRAKES_HOT
     - boolean
-    - whether one of the brakes are hot
-
+    - whether one of the brakes are hot (>300°C)
 - XMLVAR_Auto
     - Used in the `.flt` files to set a default value for the ATC 3 way switch on the TCAS panel
     - Maps to the `I:XMLVAR_Auto` variable which is the actual backing var for the switch
@@ -496,7 +505,7 @@
 - A32NX_TO_CONFIG_THS
     - Degrees
     - The pilot-entered THS value in the PERF TAKE OFF page. 0 is a valid entry.
-  
+
 - A32NX_ENG_OUT_ACC_ALT
     - feet
     - The engine out acceleration altitude, set in the PERF TAKE OFF page.
