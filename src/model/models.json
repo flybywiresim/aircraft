@@ -58,6 +58,14 @@
       {
         "gltf": "./cup/cup.gltf",
         "bin": "./cup/cup.bin"
+      },
+      {
+        "gltf": "./brkfan/brkfan.gltf",
+        "bin": "./brkfan/brkfan.bin"
+      },
+      {
+        "gltf": "./registration/registration.gltf",
+        "bin": "./registration/registration.bin"
       }
     ],
     "modifications": [
