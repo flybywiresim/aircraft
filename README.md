@@ -85,10 +85,6 @@ If the above methods do not work:
 
 See [Contributing.md](.github/Contributing.md)
 
-## Copyright notice
-
-Microsoft Flight Simulator © Microsoft Corporation. The FlyByWire Simulations A32NX was created under Microsoft's "Game Content Usage Rules" using assets from Microsoft Flight Simulator, and it is not endorsed by or affiliated with Microsoft.  
-
 ## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the master branch)
 
 - Captain's PFD may occasionally turn off during flight
@@ -104,11 +100,13 @@ Microsoft Flight Simulator © Microsoft Corporation. The FlyByWire Simulations A
 
 ## License
 
-The contents of this repository are DUAL LICENSED.
+The original contents of this repository are DUAL LICENSED.
 
-Textual-form source code in this repository is licensed under the GNU General Public License version 3. Artistic assets (including but not limited to images, sound banks, 3D models, and textures) are licensed under [Creative Commons CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+Original textual-form source code in this repository is licensed under the GNU General Public License version 3. Artistic assets (including but not limited to images, sound banks, 3D models, and textures) are licensed under [Creative Commons CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
-Any other works found to be not explicitly covered by the above definitions are all rights reserved to avoid ambiguities at the moment, but we are very permissive about their use if you contact us.
+Any other original works found to be not explicitly covered by the above definitions are all rights reserved to avoid ambiguities at the moment, but we are very permissive about their use if you contact us.
+
+**Microsoft Flight Simulator © Microsoft Corporation. The FlyByWire Simulations A32NX was created under Microsoft's "Game Content Usage Rules" using assets from Microsoft Flight Simulator, and it is not endorsed by or affiliated with Microsoft.**
 
 ## FAQ
 
