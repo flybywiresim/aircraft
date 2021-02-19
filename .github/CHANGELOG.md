@@ -47,7 +47,6 @@
 1. [SWITCHES] Change light switch sound - @Benjozork (Benjamin Dupont)
 1. [MISC] Added printer - @tyler58546 (tyler58546), @DarkOfNova (DarkOfNova)
 1. [ECAM] Added CONF/FLAPS 3 memos when GPWS LDG FLAPS 3 enabled - @tracernz (Mike)
-1. [LIGHTS] Improved Exterior Lights - @Snapmatics (Harry)
 1. [MISC] Disabled left tiller deflection emissive - @ImenesFBW (Imenes)
 1. [CDU] Add landing config selection (CONF3 or FULL) on Perf Appr page - @tracernz (Mike)
 1. [TEXTURE] Added inHg/hPa above the QNH knob - @ImenesFBW (Imenes)
@@ -101,6 +100,7 @@
 1. [MISC] Added brake fan button (with on and hot label) - @Inexorable92 (Inexorable)
 1. [MISC] Better brake cooling simulation (with and without brake fan) - @Inexorable92 (Inexorable)
 1. [MISC] Added registration decal - @tyler58546(tyler58546), @DarkOfNova (DarkOfNova)
+1. [LIGHTS] Improved Exterior Lights - @Snapmatics (Harry)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
