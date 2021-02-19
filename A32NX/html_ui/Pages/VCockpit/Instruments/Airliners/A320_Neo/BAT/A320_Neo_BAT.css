@@ -45,7 +45,7 @@
 
 @font-face {
   font-family: "Digital";
-  src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf") format("truetype");
+  src: url("/Fonts/AirbusBAT.ttf") format("truetype");
   font-weight: 900;
   font-style: normal; }
 
@@ -62,7 +62,7 @@ a320-neo-bat {
     font-family: Digital;
     fill: #db7200; }
   a320-neo-bat text.value {
-    font-size: 60px;
+    font-size: 52px;
     text-anchor: end; }
   a320-neo-bat text.unit {
     font-size: 25px;

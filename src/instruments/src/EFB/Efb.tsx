@@ -27,8 +27,6 @@ import Ground from './Ground/Ground';
 import Company from "./Company/Company";
 import Settings from "./Settings/Settings";
 
-import './Assets/Efb.scss';
-
 type EfbProps = {
     currentFlight: string
 };
@@ -244,9 +242,17 @@ class Efb extends React.Component<EfbProps, EfbState> {
                     taxiOutTime={this.state.taxiOutTime}
                 />;
             case 2:
-                return <h1>Page 2</h1>;
+                return (
+                    <div className="w-full h-full">
+                        <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
+                    </div>
+                );
             case 3:
-                return <h1>Page 3</h1>;
+                return (
+                    <div className="w-full h-full">
+                        <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
+                    </div>
+                );
             case 4:
                 return <Company simbriefUsername={this.state.simbriefUsername} changeSimbriefUsername={this.changeSimbriefUsername} />;
             case 5:
@@ -276,10 +282,10 @@ class Efb extends React.Component<EfbProps, EfbState> {
 
     render() {
         return (
-            <div className="container">
+            <div className="w-full h-screen bg-blue-darker flex flex-col">
                 <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart} />
                 <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} />
-                <div className="content">
+                <div className="w-full flex-1 flex flex-col">
                     {this.currentPage()}
                 </div>
             </div>

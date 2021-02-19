@@ -48,7 +48,7 @@ class CDUFuelPredPage {
                     (isFinite(mcdu.zeroFuelWeight) ? (mcdu.zeroFuelWeight * mcdu._conversionWeight).toFixed(1) : "") +
                     "/" +
                     (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : ""));
-            } else if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
+            } else if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
                 CDUFuelPredPage.ShowPage(mcdu);
             }
         };

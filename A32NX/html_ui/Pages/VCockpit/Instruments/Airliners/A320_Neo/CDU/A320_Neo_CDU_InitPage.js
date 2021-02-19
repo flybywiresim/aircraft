@@ -24,7 +24,24 @@ class CDUInitPage {
 
         let fromTo = "____|____[color]amber";
         let coRoute = "__________[color]amber";
-        let flightNo = "________[color]amber";
+        const flightNo = new CDU_SingleValueField(mcdu,
+            "string",
+            SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC"),
+            {
+                emptyValue: "________[color]amber",
+                suffix: "[color]cyan",
+                maxLength: 7
+            },
+            (value) => {
+                mcdu.updateFlightNo(value, (result) => {
+                    if (result) {
+                        CDUInitPage.ShowPage1(mcdu);
+                    }
+                });
+            }
+        );
+
+        //;
         let altDest = "----|----------";
         let costIndex = "---";
         let cruiseFlTemp = "-----|---°";
@@ -46,11 +63,6 @@ class CDUInitPage {
                     coRoute = "";
                 }
 
-                //Need code to set the SimVarValue if user inputs FlNo
-                if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
-                    flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]cyan";
-                }
-
                 // If an active SimBrief OFP matches the FP, hide the request option
                 // This allows loading a new OFP via INIT/REVIEW loading a different orig/dest to the current one
                 if (mcdu.simbrief.sendStatus != "DONE" ||
@@ -60,21 +72,28 @@ class CDUInitPage {
                     requestButton = "";
                 }
 
-                if (resetFlightNo) {
-                    flightNo = "________[color]amber";
-                }
-
-                costIndex = "___[color]amber";
-                if (mcdu.costIndex) {
-                    costIndex = mcdu.costIndex + "[color]cyan";
-                }
-
                 // Cost index
-                mcdu.onLeftInput[4] = (value) => {
-                    if (mcdu.tryUpdateCostIndex(value)) {
+                costIndex = new CDU_SingleValueField(mcdu,
+                    "int",
+                    mcdu.costIndexSet ? mcdu.costIndex : null,
+                    {
+                        clearable: true,
+                        emptyValue: "___[color]amber",
+                        minValue: 0,
+                        maxValue: 999,
+                        suffix: "[color]cyan"
+                    },
+                    (value) => {
+                        if (value != null) {
+                            mcdu.costIndex = value;
+                            mcdu.costIndexSet = true;
+                        } else {
+                            mcdu.costIndexSet = false;
+                            mcdu.costIndex = 0;
+                        }
                         CDUInitPage.ShowPage1(mcdu);
                     }
-                };
+                );
 
                 cruiseFlTemp = "_____|____[color]amber";
                 //This is done so pilot enters a FL first, rather than using the computed one
@@ -158,6 +177,7 @@ class CDUInitPage {
                 mcdu.tryUpdateFromTo(value, (result) => {
                     if (result) {
                         CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
+                        CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
                         CDUPerformancePage.UpdateThrRedAccFromDestination(mcdu);
                         CDUAvailableFlightPlanPage.ShowPage(mcdu);
                     }
@@ -188,13 +208,6 @@ class CDUInitPage {
                 CDUIRSInit.ShowPage(mcdu);
             }
         };
-        mcdu.onLeftInput[2] = (value) => {
-            mcdu.updateFlightNo(value, (result) => {
-                if (result) {
-                    CDUInitPage.ShowPage1(mcdu);
-                }
-            });
-        };
 
         mcdu.setTemplate([
             ["INIT"],
@@ -203,9 +216,9 @@ class CDUInitPage {
             ["ALTN/CO RTE", requestButtonLabel],
             [altDest, requestButton],
             ["FLT NBR"],
-            [flightNo + "[color]cyan", alignOption],
-            ["PAX NBR"],
-            ["___[color]inop", "WIND/TEMP>"],
+            [flightNo, alignOption],
+            [""],
+            ["", "WIND/TEMP>"],
             ["COST INDEX", "TROPO"],
             [costIndex, tropo],
             ["CRZ FL/TEMP", "GND TEMP"],
@@ -244,8 +257,8 @@ class CDUInitPage {
     // Does not refresh page so that other things can be performed first as necessary
     static updateTowIfNeeded(mcdu) {
         if (isFinite(mcdu.taxiFuelWeight) && isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.blockFuel)) {
-            const tow = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
-            mcdu.trySetTakeOffWeightLandingWeight(tow.toFixed(1));
+            mcdu.onToDataChanged();
+            mcdu.takeOffWeight = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
         }
     }
     static fuelPredConditionsMet(mcdu) {
@@ -297,7 +310,7 @@ class CDUInitPage {
                     (isFinite(mcdu.zeroFuelWeight) ? (mcdu.zeroFuelWeight * mcdu._conversionWeight).toFixed(1) : "") +
                     "/" +
                     (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : ""));
-            } else if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
+            } else if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
                 CDUInitPage.updateTowIfNeeded(mcdu);
                 CDUInitPage.ShowPage2(mcdu);
                 CDUInitPage.trySetFuelPred(mcdu);
@@ -370,7 +383,7 @@ class CDUInitPage {
         mcdu.onLeftInput[0] = async (value) => {
             if (mcdu._fuelPredDone) {
                 setTimeout(async () => {
-                    if (await mcdu.trySetTaxiFuelWeight(value)) {
+                    if (mcdu.trySetTaxiFuelWeight(value)) {
                         CDUInitPage.updateTowIfNeeded(mcdu);
                         if (mcdu.page.Current === mcdu.page.InitPageB) {
                             CDUInitPage.ShowPage2(mcdu);
@@ -378,7 +391,7 @@ class CDUInitPage {
                     }
                 }, mcdu.getDelayHigh());
             } else {
-                if (await mcdu.trySetTaxiFuelWeight(value)) {
+                if (mcdu.trySetTaxiFuelWeight(value)) {
                     CDUInitPage.updateTowIfNeeded(mcdu);
                     CDUInitPage.ShowPage2(mcdu);
                 }

@@ -613,7 +613,36 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
     constructor() {
         super(...arguments);
         this.zoomRanges = [10, 20, 40, 80, 160, 320];
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        const screenIndex = parseInt(url.substring(url.length - 1));
+        this.potIndex = screenIndex == 1 ? 89 : 91;
+        this.updateThrottler = new UpdateThrottler(screenIndex === 1 ? 200 : 400);
+        this.mdcuWaypointCheckThrottler = new UpdateThrottler(50);
+        this.lastMcduCurrentFplnWaypointIndex = -1;
     }
+
+    onUpdate(_deltaTime) {
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
+
+        // If scrolling through flight plan from MCDU, force update immediately.
+        var forceUpdate = false;
+        if (this.mdcuWaypointCheckThrottler.canUpdate(_deltaTime) !== -1) {
+            const mcduCurrentFplnWaypointIndex = SimVar.GetSimVarValue("L:AIRLINER_MCDU_CURRENT_FPLN_WAYPOINT", "number");
+            if (mcduCurrentFplnWaypointIndex !== this.lastMcduCurrentFplnWaypointIndex) {
+                this.lastMcduCurrentFplnWaypointIndex = mcduCurrentFplnWaypointIndex;
+                forceUpdate = true;
+            }
+        }
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        if (!forceUpdate && _deltaTime === -1) {
+            return;
+        }
+        super.onUpdate(_deltaTime);
+    }
+
     updateTopOfDescent() {
         const showTopOfDescent = SimVar.GetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number") === 1;
         if (showTopOfDescent) {

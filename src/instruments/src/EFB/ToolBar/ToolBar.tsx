@@ -19,6 +19,7 @@
 import React from 'react';
 import { IconSettings } from '@tabler/icons';
 import logo from '../Assets/fbw-logo.svg';
+import { Navbar } from "../Components/Navbar";
 
 type ToolbarProps = {
     setPageIndex: (number) => void;
@@ -35,60 +36,35 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
     }
 
     tabs = [
-        { id: 0, name: 'Dashboard', link: 'dashboard'},
-        { id: 1, name: 'Dispatch', link: 'dispatch'},
-        { id: 2, name: 'Flight', link: 'flight' },
-        { id: 3, name: 'Performance', link: 'performance'},
-        { id: 4, name: 'Company', link: 'company'},
-        { id: 5, name: 'Ground', link: 'ground'},
+      'Dashboard',
+      'Dispatch',
+      'Flight',
+      'Performance',
+      'Company',
+      'Ground',
     ];
 
     state: ToolbarState = {
-        activeIndex: this.indexInit(),
+        activeIndex: 0,
     };
 
-    indexInit(): number {
-        const url = window.location.pathname;
-        let index = 0;
-        this.tabs.map((tab) => {
-            if (("/" + tab.link) === url) {
-                index = tab.id;
-            } else if (url === "/") {
-                index = 0;
-            }
-        });
-        return index;
-    }
-
     handleClick(index: number) {
-        return (() => {
-            this.setState({activeIndex: index });
-            this.props.setPageIndex(index);
-        });
+        this.setState({activeIndex: index });
+        this.props.setPageIndex(index);
     }
 
     render() {
         return (
             <nav className="bg-gray-800">
-                <div className="flex justify-between py-3 px-6">
-                    <div className="flex-1 flex items-center justify-start">
-                        <div className="flex-shrink-0 flex items-center">
-                            <img className="h-20 mr-6" src={logo} />
-                        </div>
-                        <div className="flex space-x-4 text-xl">
-                            {
-                                this.tabs.map((tab) =>
-                                    <a className={tab.id === this.state.activeIndex ? 'border-b-2 border-t-0 border-r-0 border-l-0 text-white px-3 py-2 font-medium' : 'text-white px-3 py-2 font-medium'} key={tab.id} onClick={this.handleClick(tab.id)}>
-                                        {tab.name}
-                                    </a>
-                                )
-                            }
-                        </div>
+                <div className="flex justify-start py-3 px-6">
+                    <div className="flex-shrink-0 flex items-center">
+                        <img className="h-20" src={logo} />
                     </div>
-                    <div className="flex items-center text-white">
+                    <Navbar tabs={this.tabs} onSelected={index => this.handleClick(index)} />
+                    <div className="ml-auto flex items-center text-white">
                         <div>
-                            <a onClick={this.handleClick(6)}>
-                                <IconSettings size={25} stroke={1.5} strokeLinejoin="miter" />
+                            <a onClick={() => this.handleClick(6)}>
+                                <IconSettings className="hover:text-blue-light" size={30} stroke={1.5} strokeLinejoin="miter"/>
                             </a>
                         </div>
                     </div>
