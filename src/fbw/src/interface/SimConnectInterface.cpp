@@ -448,7 +448,8 @@ bool SimConnectInterface::requestData() {
   }
 
   // request data
-  HRESULT result = SimConnect_RequestDataOnSimObjectType(hSimConnect, 0, 0, 0, SIMCONNECT_SIMOBJECT_TYPE_USER);
+  HRESULT result =
+      SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
 
   // check result of data request
   if (result != S_OK) {
@@ -606,9 +607,9 @@ void SimConnectInterface::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pDat
       simConnectProcessEvent(static_cast<SIMCONNECT_RECV_EVENT*>(pData));
       break;
 
-    case SIMCONNECT_RECV_ID_SIMOBJECT_DATA_BYTYPE:
+    case SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
       // process data
-      simConnectProcessSimObjectDataByType(static_cast<SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE*>(pData));
+      simConnectProcessSimObjectData(static_cast<SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData));
       break;
 
     case SIMCONNECT_RECV_ID_CLIENT_DATA:
@@ -1088,7 +1089,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
   }
 }
 
-void SimConnectInterface::simConnectProcessSimObjectDataByType(const SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE* data) {
+void SimConnectInterface::simConnectProcessSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data) {
   // process depending on request id
   switch (data->dwRequestID) {
     case 0:
