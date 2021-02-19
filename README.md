@@ -85,6 +85,10 @@ If the above methods do not work:
 
 See [Contributing.md](.github/Contributing.md)
 
+## Copyright notice
+
+Microsoft Flight Simulator © Microsoft Corporation. The FlyByWire Simulations A32NX was created under Microsoft's "Game Content Usage Rules" using assets from Microsoft Flight Simulator, and it is not endorsed by or affiliated with Microsoft.  
+
 ## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the master branch)
 
 - Captain's PFD may occasionally turn off during flight
