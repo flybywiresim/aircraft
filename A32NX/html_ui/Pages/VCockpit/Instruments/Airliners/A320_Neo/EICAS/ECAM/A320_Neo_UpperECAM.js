@@ -1347,6 +1347,12 @@ var A320_Neo_UpperECAM;
                         ),
                     },
                     {
+                        message: "BRK FAN",
+                        isActive: () => {
+                            return this.getCachedSimVar("L:A32NX_BRAKE_FAN", "Bool");
+                        }
+                    },
+                    {
                         message: "SWITCHG PNL",
                         isActive: () => {
                             return (
