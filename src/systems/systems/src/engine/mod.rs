@@ -19,10 +19,6 @@ impl Engine {
     }
 
     pub fn update(&mut self, _: &UpdateContext) {}
-
-    pub fn set_corrected_n2(&mut self, corrected_n2: Ratio) {
-        self.corrected_n2 = corrected_n2;
-    }
 }
 impl SimulationElement for Engine {
     fn read(&mut self, reader: &mut SimulatorReader) {

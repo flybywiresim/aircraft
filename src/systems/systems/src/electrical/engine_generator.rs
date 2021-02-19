@@ -260,7 +260,6 @@ mod tests {
         let mut test_reader_writer = TestReaderWriter::new();
         test_reader_writer.write("TURB ENG CORRECTED N2:1", n2.get::<percent>());
         engine.read(&mut SimulatorReader::new(&mut test_reader_writer));
-        engine.set_corrected_n2(n2);
 
         engine
     }
