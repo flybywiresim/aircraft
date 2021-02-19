@@ -1,4 +1,3 @@
-import * as RadNav from './RadioNav.jsx';
 import { getSimVar } from '../util.mjs';
 import { LagFilter } from './PFDUtils.jsx';
 
@@ -6,25 +5,19 @@ const filterLocalizerIndicator = new LagFilter(1.5);
 const filterGlideslopeIndicator = new LagFilter(1.5);
 
 export function LandingSystem({ LSButtonPressed, deltaTime }) {
-    let localizer = null;
     let showVDev = false;
 
-    if (LSButtonPressed) {
-        const radNav = new RadNav.RadioNav();
-        radNav.init(RadNav.NavMode.FOUR_SLOTS);
-
-        localizer = radNav.getBestILSBeacon();
-    } else {
+    if (!LSButtonPressed) {
         showVDev = Simplane.getAutoPilotApproachLoaded() && Simplane.getAutoPilotApproachType() === 10;
     }
 
     return (
         <g id="LSAndDeviationGroup">
-            <LandingSystemInfo displayed={LSButtonPressed} localizer={localizer} />
+            <LandingSystemInfo displayed={LSButtonPressed} />
             {LSButtonPressed && (
                 <g id="LSGroup">
-                    <LocalizerIndicator localizer={localizer} deltaTime={deltaTime} />
-                    <GlideslopeIndicator localizer={localizer} deltaTime={deltaTime} />
+                    <LocalizerIndicator deltaTime={deltaTime} />
+                    <GlideslopeIndicator deltaTime={deltaTime} />
                     <MarkerBeaconIndicator />
                 </g>
             )}
@@ -38,24 +31,24 @@ export function LandingSystem({ LSButtonPressed, deltaTime }) {
     );
 }
 
-const LandingSystemInfo = ({ displayed, localizer }) => {
-    if (!displayed || !localizer || localizer.freq === 0) {
+const LandingSystemInfo = ({ displayed }) => {
+    if (!displayed || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {
         return null;
     }
 
     // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
-    const identText = localizer.ident;
+    const identText = getSimVar('NAV IDENT:3', 'string');
 
-    const freqTextSplit = (Math.round(localizer.freq * 1000) / 1000).toString().split('.');
+    const freqTextSplit = (Math.round(getSimVar('NAV FREQUENCY:3', 'MHz') * 1000) / 1000).toString().split('.');
     const freqTextLeading = freqTextSplit[0];
     const freqTextTrailing = freqTextSplit[1].padEnd(2, '0');
 
-    const hasDME = getSimVar(`NAV HAS DME:${localizer.id}`, 'Bool');
+    const hasDME = getSimVar('NAV HAS DME:3', 'Bool');
 
     let distLeading = '';
     let distTrailing = '';
     if (hasDME) {
-        const dist = Math.round(getSimVar(`NAV DME:${localizer.id}`, 'nautical miles') * 10) / 10;
+        const dist = Math.round(getSimVar('NAV DME:3', 'nautical miles') * 10) / 10;
 
         if (dist < 20) {
             const distSplit = dist.toString().split('.');
@@ -86,13 +79,13 @@ const LandingSystemInfo = ({ displayed, localizer }) => {
     );
 };
 
-const LocalizerIndicator = ({ localizer, deltaTime }) => {
-    const hasLoc = getSimVar(`NAV HAS LOCALIZER:${localizer.id}`, 'Bool');
+const LocalizerIndicator = ({ deltaTime }) => {
+    const hasLoc = getSimVar('NAV HAS LOCALIZER:3', 'Bool');
 
     let diamond = null;
 
     if (hasLoc) {
-        const deviation = filterLocalizerIndicator.step(getSimVar(`NAV RADIAL ERROR:${localizer.id}`, 'degrees'), deltaTime / 1000);
+        const deviation = filterLocalizerIndicator.step(getSimVar('NAV RADIAL ERROR:3', 'degrees'), deltaTime / 1000);
         const dots = deviation / 0.8;
 
         if (dots > 2) {
@@ -118,13 +111,13 @@ const LocalizerIndicator = ({ localizer, deltaTime }) => {
     );
 };
 
-const GlideslopeIndicator = ({ localizer, deltaTime }) => {
-    const hasGlideslope = getSimVar(`NAV HAS GLIDE SLOPE:${localizer.id}`, 'Bool');
+const GlideslopeIndicator = ({ deltaTime }) => {
+    const hasGlideslope = getSimVar('NAV HAS GLIDE SLOPE:3', 'Bool');
 
     let diamond = null;
 
     if (hasGlideslope) {
-        const deviation = filterGlideslopeIndicator.step(getSimVar(`NAV GLIDE SLOPE ERROR:${localizer.id}`, 'degrees'), deltaTime / 1000);
+        const deviation = filterGlideslopeIndicator.step(getSimVar('NAV GLIDE SLOPE ERROR:3', 'degrees'), deltaTime / 1000);
         const dots = deviation / 0.4;
 
         if (dots > 2) {

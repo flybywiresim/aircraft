@@ -110,7 +110,7 @@ const GroundTrackBug = ({ heading, groundTrack }) => {
 };
 
 const QFUIndicator = ({ ILSCourse, heading }) => {
-    if (Number.isNaN(ILSCourse)) {
+    if (Number.isNaN(ILSCourse) || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {
         return null;
     }
 
