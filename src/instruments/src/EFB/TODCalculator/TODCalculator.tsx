@@ -1,4 +1,4 @@
-/*!
+/*
  * A32NX
  * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
  *
@@ -16,33 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.default-input-container {
-  @apply h-16 px-4 py-3 border-2 border-blue-dark bg-blue-medium-contrast rounded-lg;
-  @apply flex flex-row items-center;
+import React from "react";
+import GroundSpeed from "./GroundSpeed/GroundSpeed";
+import Data from "./Data/Data";
+import Result from "./Result/Result";
 
-  &.dark-option {
-    @apply bg-blue-darker border-blue-darker;
-  }
+const TODCalculator = () => {
+    return (
+        <div className="flex p-6 w-full">
+            <div className={'w-4/12 mr-4'}>
+                <GroundSpeed className={'h-full flex flex-col'} />
+            </div>
 
-  &.disabled {
-    pointer-events: none;
-  }
+            <div className={'w-4/12 mr-4'}>
+                <Data className={'h-full flex flex-col'} />
+            </div>
 
-  &.focus-active {
-    @apply border-blue-light;
-  }
+            <div className={'w-4/12'}>
+                <Result className={'h-full flex flex-col'} />
+            </div>
+        </div>
+    );
+};
 
-  > * {
-    @apply mr-4;
-  }
-
-  :last-child {
-    @apply mr-0;
-  }
-
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-}
+export default TODCalculator;
