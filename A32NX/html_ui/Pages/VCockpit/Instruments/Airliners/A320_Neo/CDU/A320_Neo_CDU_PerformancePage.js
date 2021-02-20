@@ -305,7 +305,7 @@ class CDUPerformancePage {
                 if (mcdu._toFlexChecked) {
                     flexTakeOffTempCell = `${mcdu.perfTOTemp.toFixed(0)}°[color]cyan`;
                 } else {
-                    flexTakeOffTempCell = `{small}${mcdu.perfTOTemp.toFixed(0)}°{end}${flexTakeOffTempCell}[color]cyan`;
+                    flexTakeOffTempCell = `{small}${mcdu.perfTOTemp.toFixed(0)}{end}${flexTakeOffTempCell}[color]cyan`;
                 }
             }
             mcdu.onRightInput[3] = (value) => {
