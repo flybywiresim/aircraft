@@ -1,4 +1,4 @@
-/*!
+/*
  * A32NX
  * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
  *
@@ -16,33 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.default-input-container {
-  @apply h-16 px-4 py-3 border-2 border-blue-dark bg-blue-medium-contrast rounded-lg;
-  @apply flex flex-row items-center;
+import React from "react";
+import classNames from 'classnames';
 
-  &.dark-option {
-    @apply bg-blue-darker border-blue-darker;
-  }
+type props = {
+    title?: string,
+    childrenContainerClassName?: string
+};
 
-  &.disabled {
-    pointer-events: none;
-  }
+const Card = ({title, childrenContainerClassName = '', children, ...props}) => {
+    return (
+        <div {...props}>
+            {!!title && <h1 className="text-white font-medium mb-4 text-2xl">{title}</h1>}
 
-  &.focus-active {
-    @apply border-blue-light;
-  }
+            <div className={classNames(['bg-gray-800 rounded-xl p-6 text-white shadow-lg', childrenContainerClassName])}>
+                {children}
+            </div>
+        </div>
+    );
+};
 
-  > * {
-    @apply mr-4;
-  }
-
-  :last-child {
-    @apply mr-0;
-  }
-
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-}
+export default Card;
