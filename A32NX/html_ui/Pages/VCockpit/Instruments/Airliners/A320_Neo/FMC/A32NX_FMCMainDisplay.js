@@ -21,6 +21,7 @@ class FMCMainDisplay extends BaseAirliners {
         super(...arguments);
         this.currentFlightPlanWaypointIndex = -1;
         this.costIndex = 0;
+        this.costIndexSet = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
         this.coRoute = "";
@@ -1250,6 +1251,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (value >= 0) {
                 if (value < 1000) {
                     this.costIndex = value;
+                    this.costIndexSet = true;
                     return true;
                 } else {
                     this.addNewMessage(NXSystemMessages.entryOutOfRange);
