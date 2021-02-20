@@ -24,7 +24,7 @@
     @apply bg-blue-darker border-blue-darker;
   }
 
-  &.disabled {
+  .disabled {
     pointer-events: none;
   }
 
