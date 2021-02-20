@@ -134,8 +134,11 @@ Game Parameter	ID	Name			Wwise Object Path	Notes
 	147346455	SIMVAR_ROTATION_VELOCITY_BODY_Y			\simvar\physic\SIMVAR_ROTATION_VELOCITY_BODY_Y	Rotation relative to aircraft axis - yaw speed movements  Unit : degrees per second
 	895650072	SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT			\simvar\engine\turbine\SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT	Percent thrust reverser nozzles deployed  Unit : Percent
 	953288096	SIMVAR_APU_PCT_RPM_DERIVED			\simvar\apu\SIMVAR_APU_PCT_RPM_DERIVED	
+	1394518213	LOCALVAR_A32NX_INTERIOR_WIND_VOLUME			\simvar\miscelleneous\LOCALVAR_A32NX_INTERIOR_WIND_VOLUME	
 	1649214721	SIMVAR_GROUND_VELOCITY			\simvar\physic\SIMVAR_GROUND_VELOCITY	Speed relative to the earths surface  Unit : Knots
 	1922142312	SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED			\simvar\flight_control_surfaces\derived\SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED	Derived value of  total gear extended  Unit : Percentage
+	2508093411	LOCALVAR_A32NX_INTERIOR_ENG_VOLUME			\simvar\miscelleneous\LOCALVAR_A32NX_INTERIOR_ENG_VOLUME	
+	2518329374	LOCALVAR_A32NX_EXTERIOR_VOLUME			\simvar\miscelleneous\LOCALVAR_A32NX_EXTERIOR_VOLUME	
 	2750389324	SIMVAR_TURB_ENG_N1			\simvar\engine\turbine\SIMVAR_TURB_ENG_N1	Turbine engine N1  Unit : Percent
 	2750389327	SIMVAR_TURB_ENG_N2			\simvar\engine\turbine\SIMVAR_TURB_ENG_N2	Turbine engine N2  Unit : Percent
 	2848996843	SIMVAR_AMBIENT_TEMPERATURE			\simvar\ambient\SIMVAR_AMBIENT_TEMPERATURE	
@@ -144,7 +147,6 @@ Game Parameter	ID	Name			Wwise Object Path	Notes
 	3779073172	ENV_DOPPLERCENTS			\environment\common\ENV_DOPPLERCENTS	Absolute cents shift caused by Doppler Effect 
 	3852284635	SIMVAR_AIRSPEED_INDICATED			\simvar\physic\SIMVAR_AIRSPEED_INDICATED	Indicated airspeed  Unit : Knots
 	3898595254	SIMVAR_TURB_ENG_N1_DERIVED			\simvar\engine\turbine\SIMVAR_TURB_ENG_N1_DERIVED	
-	4136779252	SIMVAR_AILERON_POSITION_DERIVED			\simvar\flight_control_surfaces\derived\SIMVAR_AILERON_POSITION_DERIVED	Derived value of aileron input left/right   Unit Position (-16K to 0) -16K = full left
 
 In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
 	13390194	spoilers100	H:\sound\.cache\Windows\SFX\spoilers100_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\spoilers100		15340
@@ -160,7 +162,7 @@ In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
 	104740205	ptusound	H:\sound\.cache\Windows\SFX\ptusound_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\ptusound		74492
 	105888033	RevWindR	H:\sound\.cache\Windows\SFX\RevWindR_7A7B1C39.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\LEAP1A\RevWindR		119681
 	111997701	SpoilersARM	H:\sound\.cache\Windows\SFX\SpoilersARM_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\SpoilersARM\SpoilersARM		21976
-	112882764	mechhorn - Copy_01	H:\sound\.cache\Windows\SFX\mechhorn - Copy_64E3A209.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\mechhorn - Copy_01		100338
+	112882764	mechhorn - Copy	H:\sound\.cache\Windows\SFX\mechhorn - Copy_64E3A209.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\mechhorn - Copy		100338
 	115656843	venttestext	H:\sound\.cache\Windows\SFX\venttestext_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\venttestext		709513
 	117304532	fanoverride	H:\sound\.cache\Windows\SFX\fanoverride_E7CFE20A.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\fanoverride		333579
 	135516863	clds3	H:\sound\.cache\Windows\SFX\clds3_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\clds\clds3		6511

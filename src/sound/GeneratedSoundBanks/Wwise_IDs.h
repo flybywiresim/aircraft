@@ -772,6 +772,9 @@ namespace AK
         static const AkUniqueID HEADPHONE_FILTER = 2920878614U;
         static const AkUniqueID HEADPHONE_IN_COCKPIT = 806364695U;
         static const AkUniqueID HEADPHONE_SWITCH = 4173551700U;
+        static const AkUniqueID LOCALVAR_A32NX_EXTERIOR_VOLUME = 2518329374U;
+        static const AkUniqueID LOCALVAR_A32NX_INTERIOR_ENG_VOLUME = 2508093411U;
+        static const AkUniqueID LOCALVAR_A32NX_INTERIOR_WIND_VOLUME = 1394518213U;
         static const AkUniqueID MIXER_AIRCRAFT_AI_VOLUME = 1324482047U;
         static const AkUniqueID MIXER_COCKPIT_VOLUME = 3192538439U;
         static const AkUniqueID MIXER_ENGINE_VOLUME = 1012293574U;
