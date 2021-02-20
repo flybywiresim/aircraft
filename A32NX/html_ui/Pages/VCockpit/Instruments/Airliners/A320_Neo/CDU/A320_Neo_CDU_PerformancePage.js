@@ -770,6 +770,9 @@ class CDUPerformancePage {
         let transAltCell = "[\xa0][color]cyan";
         if (isFinite(mcdu.perfApprTransAlt)) {
             transAltCell = mcdu.perfApprTransAlt.toFixed(0);
+            if (!mcdu.perfApprTransAltPilotEntered) {
+                transAltCell += "[s-text]";
+            }
         }
         mcdu.onLeftInput[3] = (value) => {
             if (mcdu.setPerfApprTransAlt(value)) {

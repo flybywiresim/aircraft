@@ -43,6 +43,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprWindHeading = NaN;
         this.perfApprWindSpeed = NaN;
         this.perfApprTransAlt = NaN;
+        this.perfApprTransAltPilotEntered = false;
         this._v1Checked = true;
         this._vRChecked = true;
         this._v2Checked = true;
@@ -2479,7 +2480,7 @@ class FMCMainDisplay extends BaseAirliners {
         const value = parseFloat(s);
         const HPA_REGEX = /^[0-9]{3,4}$/;
         const INHG_REGEX = /^[0-9]{2}\.[0-9]{1,2}$/;
-        const hpa = SimVar.GetSimVarValue("KOHLSMAN SETTING STD", "Bool") === 0;
+        const hpa = Simplane.getPressureSelectedUnits() === "millibar";
 
         if (hpa && HPA_REGEX.test(value)) {
             if (value >= 745 && value <= 1050) {
@@ -2528,6 +2529,13 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfApprTransAlt(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.perfApprTransAlt = NaN;
+            this.perfApprTransAltPilotEntered = false;
+            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 0);
+            return true;
+        }
+
         if (!/^\d{4,5}$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
@@ -2535,6 +2543,7 @@ class FMCMainDisplay extends BaseAirliners {
         const v = parseInt(s);
         if (isFinite(v) && v > 0) {
             this.perfApprTransAlt = v;
+            this.perfApprTransAltPilotEntered = true;
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", v);
             return true;
         }
