@@ -82,6 +82,25 @@
 1. [MCDU] Added Check TO Data - @MisterChocker (Leon)
 1. [ND] Removed label from smallest circle in arc mode - @tyler58546 (tyler58546)
 1. [MISC] Added glass reflections and dust - @MoreRightRudder (Mike), @tyler58546 (tyler58546)
+1. [CDU] Support coordinate waypoints from SimBrief, various other route import fixes - @pareil6 (pareil6)
+1. [Sound] Reworked exterior engine sounds - @hotshotp (Boris)
+1. [Sound] Improved interior engine sounds - @hotshotp (Boris)
+1. [Sound] Enchanced APU and gear extension/retraction sounds - @hotshotp (Boris)
+1. [MISC] Added coffee cup to cockpit - @tyler58546 (tyler58546), @Pleasure0102 (Pleasure)
+1. [ND] Waypoints on the ND now use the correct font - @tyler58546 (tyler58546)
+1. [MISC] Added custom chronometer font - @tyler58546 (tyler58546)
+1. [RMP] Added custom RMP font - @tyler58546 (tyler58546)
+1. [MCDU] Fixed center runway id displaying on the flightplan page - @SergeySoprykin (SergeyS)
+1. [FCU] Added custom FCU font - @tyler58546 (tyler58546)
+1. [FLIGHTMODEL] Quick fix to flap lift for MSFS update 1.13.16.0 - @donstim (donbikes#4084)
+1. [LIGHTS] Fixed runway spawn postition for cruise/approach/final - @Snapmatics (Harry [Z+2]#9872)
+1. [MISC] Added custom BAT font - @tyler58546 (tyler58546)
+1. [LIGHTS] Fixed runway spawn position for dome light - @Awemeter (Awemeter#7919)
+1. [ENGINE] Ignition Switch should be on "MODE NORM" on the final phase - @Snapmatics (Harry [Z+2]#9872)
+1. [TEXTURE] Updated main landing gear textures - @Inexorable92 (Inexorable)
+1. [MISC] Added brake fan button (with on and hot label) - @Inexorable92 (Inexorable)
+1. [MISC] Better brake cooling simulation (with and without brake fan) - @Inexorable92 (Inexorable)
+1. [MISC] Added registration decal - @tyler58546(tyler58546), @DarkOfNova (DarkOfNova)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
@@ -273,6 +292,7 @@
 1. [Sound] Replaced sounds for various switches, levers, and buttons - @hotshotp (Boris)
 1. [CDU] Added Soft GA Logic - @MisterChocker (Leon)
 1. [ECAM] Improved Thrust Rating update condition - @MisterChocker (Leon)
+1. [CDU] Fix SIDs scrolling on departures page - @SergeySoprykin (SergeyS)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

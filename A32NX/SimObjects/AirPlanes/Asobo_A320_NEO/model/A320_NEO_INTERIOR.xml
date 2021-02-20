@@ -984,16 +984,14 @@
                 </UseTemplate>
             </Component>
 
-            <Component ID="Brake_Fan">
-                <UseTemplate Name="FBW_Push_Toggle">
-                    <NODE_ID>PUSH_BKRFAN</NODE_ID>
-                    <LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
-                    <SEQ1_CODE>0</SEQ1_CODE>
-                    <SEQ1_NODE_ID>PUSH_AUTOBKR_SEQ1</SEQ1_NODE_ID>
-                    <TOOLTIPID>(Inop.)</TOOLTIPID>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.APU_SWITCH_SET_OFF</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.APU_SWITCH_SET_ON</ANIMTIP_1>
-                    <CURSOR/>
+            <Component ID="Brake_Fan_Imported">
+                <UseTemplate Name="FBW_Push_BrkFan_Toggle">
+                    <NODE_ID>PUSH_BKRFAN_IMPORTED</NODE_ID>
+                    <ANIM_NAME>PUSH_BKRFAN_IMPORTED</ANIM_NAME>
+                    <NODE_ID_ON>PUSH_BKRFAN_IMPORTED_SEQ2</NODE_ID_ON>
+                    <NODE_ID_HOT>PUSH_BKRFAN_IMPORTED_SEQ1</NODE_ID_HOT>
+                    <TOGGLE_SIMVAR>L:A32NX_BRAKE_FAN_BTN_PRESSED</TOGGLE_SIMVAR>
+                    <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Turn OFF brake fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
                 </UseTemplate>
             </Component>
 
@@ -2981,9 +2979,10 @@
                 <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+            <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
-                <EMISSIVE_CODE>0</EMISSIVE_CODE>
+                <POTENTIOMETER>84</POTENTIOMETER>
+                <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
             </UseTemplate>
 
             <UseTemplate Name="FBW_Airbus_FCU_Altitude_Knob">
@@ -3467,29 +3466,6 @@
             </UseTemplate>
 
             <CameraTitle>ECAM</CameraTitle>
-        </Component>
-
-        <Component ID="Cockpit_Pilots">
-            <Component ID="PILOT_0" Node="PILOT_0">
-                <UseTemplate Name="ASOBO_GT_Visibility_Code">
-                    <VISIBILITY_CODE>(L:A32NX_VIS_PILOT_0) (A:CAMERA STATE, Enum) 2 != or</VISIBILITY_CODE>
-                </UseTemplate>
-            </Component>
-            <Component ID="PILOT_1" Node="PILOT_1">
-                <UseTemplate Name="ASOBO_GT_Visibility_Code">
-                    <VISIBILITY_CODE>(L:A32NX_VIS_PILOT_1) (A:CAMERA STATE, Enum) 2 != or</VISIBILITY_CODE>
-                </UseTemplate>
-            </Component>
-            <Component ID="Seatbelt_L" Node="Seatbelt_L">
-                <UseTemplate Name="ASOBO_GT_Visibility_Code">
-                    <VISIBILITY_CODE>(L:A32NX_VIS_PILOT_0) !</VISIBILITY_CODE>
-                </UseTemplate>
-            </Component>
-            <Component ID="Seatbelt_R" Node="Seatbelt_R">
-                <UseTemplate Name="ASOBO_GT_Visibility_Code">
-                    <VISIBILITY_CODE>(L:A32NX_VIS_PILOT_1) !</VISIBILITY_CODE>
-                </UseTemplate>
-            </Component>
         </Component>
 
         <Component ID="INOP">
@@ -3977,6 +3953,15 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_ELT_ON</NODE_ID>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="COFFEE">
+            <UseTemplate Name="FBW_Coffee_Cup">
+                <NODE_ID>COCKPIT_COFFEE_L</NODE_ID>
+            </UseTemplate>
+            <UseTemplate Name="FBW_Coffee_Cup">
+                <NODE_ID>COCKPIT_COFFEE_R</NODE_ID>
             </UseTemplate>
         </Component>
     </Behaviors>

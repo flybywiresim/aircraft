@@ -1,112 +1,112 @@
 :root {
-  --bodyHeightScale: 1; }
+  --bodyHeightScale: 1;
+}
 
 @keyframes TemporaryShow {
-  0%, 100% {
-    visibility: visible; } }
+  0%,
+  100% {
+    visibility: visible;
+  }
+}
 
 @keyframes TemporaryHide {
-  0%, 100% {
-    visibility: hidden; } }
+  0%,
+  100% {
+    visibility: hidden;
+  }
+}
 
 #highlight {
   position: absolute;
   height: 100%;
   width: 100%;
-  z-index: 10; }
+  z-index: 10;
+}
 
 #Electricity {
   width: 100%;
-  height: 100%; }
-  #Electricity[state=off] {
-    display: none; }
+  height: 100%;
+}
+#Electricity[state="off"] {
+  display: none;
+}
 
 @font-face {
-  font-family: "Roboto";
-  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-family: "AirbusChronometer";
+  src: url("/Fonts/AirbusChronometer.ttf") format("truetype");
   font-weight: normal;
-  font-style: normal; }
-
-@font-face {
-  font-family: "Roboto-Light";
-  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
-
-@font-face {
-  font-family: "Roboto-Bold";
-  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
-
-@font-face {
-  font-family: "Alarm-Clock";
-  src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
+  font-style: normal;
+}
 
 a320-neo-clock-element {
   width: 100%;
   height: 100%;
-  overflow: hidden; }
-  a320-neo-clock-element #Mainframe {
-    position: absolute;
-    top: -4%;
-    bottom: 0;
-    left: 2%;
-    right: 0; 
-    background-color: rgba(5, 40, 80, 0.623);
-    color: rgba(155, 148, 148, 0.911);}
-    a320-neo-clock-element #Mainframe #TopSelector {
-      margin-top: 0%;
-      width: 100%;
-      height: 35%;
-      display: flex;
-      align-items: center;
-      justify-content: center; }
-      a320-neo-clock-element #Mainframe #TopSelector #TopSelectorValue {
-        font-family: Alarm-Clock;
-        font-size: 81px;
-        text-align: center;
-        color: rgba(155, 148, 148, 0.911); }
-    a320-neo-clock-element #Mainframe #MiddleSelector {
-      margin-top: 0%;
-      margin-left: 0%;
-      width: 80%;
-      height: 35%;
-      display: flex; 
-      align-items: center;
-      justify-content: center; 
-      }
-      a320-neo-clock-element #Mainframe #MiddleSelector #MiddleSelectorValue {
-        font-family: Alarm-Clock;
-        font-size: 81px;
-        margin-left: 2%;
-        margin-right: 5%;
-        width: 95%;
-        text-align: right;
-        /* font-kerning: none; Note: this one is in stdby for a new font */
-        color: rgba(155, 148, 148, 0.911); }
-      a320-neo-clock-element #Mainframe #MiddleSelector #MiddleSelectorValue2 {
-          font-family: Alarm-Clock;
-          font-size: 65px;
-          margin-left: 0%;
-          margin-right: 0%;
-          width: 5%;
-          text-align: right;
-          vertical-align: middle;
-          color: rgba(155, 148, 148, 0.911); }
+  overflow: hidden;
+}
+a320-neo-clock-element #Mainframe {
+  position: absolute;
+  top: -4%;
+  bottom: 0;
+  left: 2%;
+  right: 0;
+  background-color: rgba(5, 40, 80, 0.623);
+  color: rgba(155, 148, 148, 0.911);
+}
+a320-neo-clock-element #Mainframe #TopSelector {
+  margin-top: 1%;
+  width: 100%;
+  height: 35%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+a320-neo-clock-element #Mainframe #TopSelector #TopSelectorValue {
+  font-family: "AirbusChronometer";
+  font-size: 65px;
+  text-align: center;
+  color: rgba(155, 148, 148, 0.911);
+}
+a320-neo-clock-element #Mainframe #MiddleSelector {
+  margin-top: 0%;
+  margin-left: 0%;
+  width: 80%;
+  height: 35%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+a320-neo-clock-element #Mainframe #MiddleSelector #MiddleSelectorValue {
+  font-family: "AirbusChronometer";
+  font-size: 65px;
+  margin-left: 2%;
+  margin-right: 5%;
+  width: 95%;
+  text-align: right;
+  /* font-kerning: none; Note: this one is in stdby for a new font */
+  color: rgba(155, 148, 148, 0.911);
+}
+a320-neo-clock-element #Mainframe #MiddleSelector #MiddleSelectorValue2 {
+  font-family: "AirbusChronometer";
+  font-size: 48px;
+  margin-left: -5%;
+  margin-right: 0%;
+  width: 5%;
+  text-align: right;
+  vertical-align: middle;
+  color: rgba(155, 148, 148, 0.911);
+}
 
-    a320-neo-clock-element #Mainframe #BottomSelector {
-      margin-top: 1%;
-      width: 100%;
-      height: 35%;
-      display: flex;
-      align-items: center;
-      justify-content: center; }
-      a320-neo-clock-element #Mainframe #BottomSelector #BottomSelectorValue {
-        font-family: Alarm-Clock;
-        font-size: 81px;
-        text-align: center;
-        color: rgba(155, 148, 148, 0.911); }
-
+a320-neo-clock-element #Mainframe #BottomSelector {
+  margin-top: 0;
+  width: 100%;
+  height: 35%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+a320-neo-clock-element #Mainframe #BottomSelector #BottomSelectorValue {
+  font-family: "AirbusChronometer";
+  font-size: 65px;
+  text-align: center;
+  color: rgba(155, 148, 148, 0.911);
+}
