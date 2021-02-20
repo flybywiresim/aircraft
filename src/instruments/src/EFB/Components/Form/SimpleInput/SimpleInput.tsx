@@ -6,6 +6,7 @@ type SimpleInputProps = {
 	onChange?: (value: string) => void,
 	min?: number,
 	max?: number,
+	number?: boolean,
 	reverse?: boolean // Flip label/input order
 };
 
@@ -23,6 +24,11 @@ export default class SimpleInput extends React.Component<SimpleInputProps, Simpl
 
 	private onChange(event: React.ChangeEvent<HTMLInputElement>): void {
 		let originalValue = event.currentTarget.value;
+
+		if (this.props.number) {
+			originalValue = originalValue.replace(/[^\d.-]/g,''); // Replace all non-numeric characters
+		}
+
 		let constrainedValue = this.getConstrainedValue(originalValue);
 
 		this.props.onChange?.(constrainedValue);

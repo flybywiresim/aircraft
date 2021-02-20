@@ -319,12 +319,12 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 						<div className="text-center mb-6">
 							<div className="flex">
 								<div className="flex-1 m-2.5 column-left">
-									<SimpleInput label="Wind Direction" min={0} max={360} onChange={this.handleWindDirectionChange} />
-									<SimpleInput label="Wind Magnitude" placeholder="KTS" min={0} onChange={this.handleWindMagnitudeChange} />
-									<SimpleInput label="Temperature" placeholder='°C' onChange={this.handleTemperatureChange} />
-									<SimpleInput label="QNH" placeholder="mb" min={800} max={1200} onChange={this.handlePressureChange} />
-									<SimpleInput label="Rwy Altitude" placeholder='" ASL' max={20000} onChange={this.handleAltitudeChange} />
-									<SimpleInput label="Rwy Heading" min={0} max={360} onChange={this.handleRunwayHeadingChange} />
+									<SimpleInput label="Wind Direction" min={0} max={360} onChange={this.handleWindDirectionChange} number />
+									<SimpleInput label="Wind Magnitude" placeholder="KTS" min={0} onChange={this.handleWindMagnitudeChange} number />
+									<SimpleInput label="Temperature" placeholder='°C' min={-50} max={55} onChange={this.handleTemperatureChange} number />
+									<SimpleInput label="QNH" placeholder="mb" min={800} max={1200} onChange={this.handlePressureChange} number />
+									<SimpleInput label="Rwy Altitude" placeholder='" ASL' min={-2000} max={20000} onChange={this.handleAltitudeChange} number />
+									<SimpleInput label="Rwy Heading" min={0} max={360} onChange={this.handleRunwayHeadingChange} number />
 									<SelectInput label="Rwy Condition" defaultValue="0" onChange={this.handleRunwayConditionChange} dropdownOnTop options={[
 										[0, "Dry"],
 										[1, "Good"],
@@ -335,15 +335,15 @@ export default class LandingWidget extends React.Component<LandingWidgetProps, L
 									]} />
 								</div>
 								<div className="flex-1 m-2.5 column-right">
-									<SimpleInput label="Rwy Slope" placeholder="%" onChange={this.handleRunwaySlopeChange} reverse />
+									<SimpleInput label="Rwy Slope" placeholder="%" min={-2} max={2} onChange={this.handleRunwaySlopeChange} number reverse />
 									<div className="flex justify-start items-center">
-										<SimpleInput label="Rwy LDA" placeholder="m" min={0} onChange={this.handleRunwayLengthChange} reverse />
+										<SimpleInput label="Rwy LDA" placeholder="m" min={0} max={6000} onChange={this.handleRunwayLengthChange} number reverse />
 										<Help title="Landing Distance Available (LDA)">
 											The distance available on the runway which is suitable for the ground run of the landing.
 										</Help>
 									</div>
-									<SimpleInput label="Approach Speed" placeholder="KTS" min={0} max={300} onChange={this.handleApproachSpeedChange} reverse/>
-									<SimpleInput label="Weight" placeholder="KG" min={1000} max={100000} onChange={this.handleWeightChange} reverse />
+									<SimpleInput label="Approach Speed" placeholder="KTS" min={90} max={350} onChange={this.handleApproachSpeedChange} number reverse/>
+									<SimpleInput label="Weight" placeholder="KG" min={41000} max={100000} onChange={this.handleWeightChange} number reverse />
 									<SelectInput label="Flaps" defaultValue="1" onChange={this.handleFlapsChange} reverse options={[
 										[1, "Full"],
 										[0, "CONF 3"]
