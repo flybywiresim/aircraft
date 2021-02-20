@@ -1,0 +1,19 @@
+[package]
+name = "fbw"
+version = "0.1.0"
+authors = ["FlyByWire Team"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.5"
+paste = "1.0"
+msfs = { git = "https://github.com/flybywiresim/msfs-rs", branch = "main" }
+
+[build-dependencies]
+msfs_sdk = "*"
+bindgen = "0.57"
+cc = "1.0"
