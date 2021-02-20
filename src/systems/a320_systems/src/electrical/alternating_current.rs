@@ -243,6 +243,14 @@ impl A320AlternatingCurrentElectrical {
     pub fn attempt_emergency_gen_start(&mut self) {
         self.emergency_gen.attempt_start();
     }
+
+    pub fn gen_1_contactor_open(&self) -> bool {
+        self.main_power_sources.gen_1_contactor_open()
+    }
+
+    pub fn gen_2_contactor_open(&self) -> bool {
+        self.main_power_sources.gen_2_contactor_open()
+    }
 }
 impl AlternatingCurrentState for A320AlternatingCurrentElectrical {
     fn ac_bus_1_and_2_unpowered(&self) -> bool {
@@ -405,6 +413,14 @@ impl A320MainPowerSources {
             &self.engine_2_gen_contactor,
             &self.bus_tie_2_contactor,
         ])
+    }
+
+    pub fn gen_1_contactor_open(&self) -> bool {
+        self.engine_1_gen_contactor.is_open()
+    }
+
+    pub fn gen_2_contactor_open(&self) -> bool {
+        self.engine_2_gen_contactor.is_open()
     }
 }
 impl SimulationElement for A320MainPowerSources {
