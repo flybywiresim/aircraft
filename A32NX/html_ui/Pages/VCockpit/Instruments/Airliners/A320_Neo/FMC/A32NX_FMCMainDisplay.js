@@ -51,7 +51,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprMDA = NaN;
         this.perfApprDH = NaN;
         this.perfApprFlaps3 = false;
-        this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
         this._lockConnectIls = false;
         this._apNavIndex = 1;
         this._apLocalizerOn = false;
@@ -162,6 +161,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.approachSpeeds = undefined; // based on selected config, not current config
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
+        this.flightPhase = FMGC_FLIGHT_PHASES.PREFLIGHT;
+        // TODO: remove this.currentFlightPhase
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
         this.constraintAlt = 0;
         this.constraintAltCached = 0;
@@ -183,6 +184,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.A32NXCore.init(this._lastTime);
 
         this.dataManager = new FMCDataManager(this);
+
+        this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
 
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
@@ -278,7 +281,9 @@ class FMCMainDisplay extends BaseAirliners {
             this._debug = 0;
         }
         if (this.flightPhaseUpdateThrottler.canUpdate(_deltaTime) !== -1) {
-            this.checkUpdateFlightPhase();
+            this.flightPhaseManager.checkFlightPhase();
+            // TODO: remove this.checkUpdateFlightPhase();
+            // this.checkUpdateFlightPhase();
         }
         this._checkFlightPlan--;
         if (this._checkFlightPlan <= 0) {
@@ -305,6 +310,8 @@ class FMCMainDisplay extends BaseAirliners {
 
     //TODO: for independence introduce new simvar for current flight phase "L:A32NX_FLIGHT_PHASE_CURRENT"
     checkUpdateFlightPhase() {
+
+        // TODO: remove below code
         const airSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "knots");
         const flapsHandlePercent = Simplane.getFlapsHandlePercent();
         const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
