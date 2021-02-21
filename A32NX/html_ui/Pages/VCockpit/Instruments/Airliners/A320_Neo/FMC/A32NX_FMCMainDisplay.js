@@ -45,6 +45,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._v1Checked = true;
         this._vRChecked = true;
         this._v2Checked = true;
+        this._toFlexChecked = true;
+        this.toRunway = "";
         this.vApp = NaN;
         this.perfApprMDA = NaN;
         this.perfApprDH = NaN;
@@ -1742,7 +1744,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (referenceWaypoint) {
             const infos = referenceWaypoint.infos;
             if (infos instanceof WayPointInfo) {
-                await referenceWaypoint.infos.UpdateAirways(); // Sometimes the waypoint is initialized without waiting to the airways array to be filled
+                await referenceWaypoint.infos.UpdateAirway(airwayName); // Sometimes the waypoint is initialized without waiting to the airways array to be filled
                 const airway = infos.airways.find(a => {
                     return a.name === airwayName;
                 });
@@ -3096,15 +3098,42 @@ class FMCMainDisplay extends BaseAirliners {
         return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
     }
 
+    /**
+     * Called after TOPerf, Flaps or THS change
+     */
+    tryCheckToData() {
+        if (isFinite(this.v1Speed) || isFinite(this.vRSpeed) || isFinite(this.v2Speed)) {
+            this.addNewMessage(NXSystemMessages.checkToData);
+        }
+    }
+
+    /**
+     * Called after runway change
+     * - Sets confirmation prompt state for every entry whether it is defined or not
+     * - Adds message when at least one entry needs to be confirmed
+     * Additional:
+     *   Only prompt the confirmation of FLEX TEMP when the TO runway was changed, not on initial insertion of the runway
+     */
     onToDataChanged() {
+        const selectedRunway = this.flightPlanManager.getDepartureRunway();
+        if (!!selectedRunway) {
+            const toRunway = Avionics.Utils.formatRunway(selectedRunway.designation);
+            if (toRunway === this.toRunway) {
+                return;
+            }
+            if (this.toRunway) {
+                this._toFlexChecked = !isFinite(this.perfTOTemp);
+            }
+            this.toRunway = toRunway;
+        }
         this._v1Checked = !isFinite(this.v1Speed);
         this._vRChecked = !isFinite(this.vRSpeed);
         this._v2Checked = !isFinite(this.v2Speed);
-        if (this._v1Checked && this._vRChecked && this._v2Checked) {
+        if (this._v1Checked && this._vRChecked && this._v2Checked && this._toFlexChecked) {
             return;
         }
         this.addNewMessage(NXSystemMessages.checkToData, (mcdu) => {
-            return mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked;
+            return mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked && mcdu._toFlexChecked;
         });
     }
 
