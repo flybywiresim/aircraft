@@ -2,34 +2,42 @@ var A320_Neo_BRK_Definitions;
 (function (A320_Neo_BRK_Definitions) {
     class Common {
     }
+
     Common.PIVOT_POSITION = new Vec2(60, 60);
     Common.DEFAULT_TRANSLATE_STRING = "translate(60, 60)";
     A320_Neo_BRK_Definitions.Common = Common;
+
     class DialFrame {
     }
+
     DialFrame.START = new Vec2(48, -32);
     DialFrame.END = new Vec2(-32, 48);
     DialFrame.INNER_RADIUS = 58;
-    DialFrame.OUTER_RADIUS = 195;//MODFIED 200
+    DialFrame.OUTER_RADIUS = 195;
     A320_Neo_BRK_Definitions.DialFrame = DialFrame;
+
     class Marker {
     }
+
     Marker.START_RADIUS = A320_Neo_BRK_Definitions.DialFrame.OUTER_RADIUS + 4;
-    Marker.LENGTH_SHORT = 16;
-    Marker.LENGTH_LONG = 36;
+    Marker.LENGTH_SHORT = 35;
+    Marker.LENGTH_LONG = 40;
     A320_Neo_BRK_Definitions.Marker = Marker;
+
     class Indicator {
     }
+
     Indicator.ANGLE_MIN = 0;
     Indicator.ANGLE_MAX = 90;
-    Indicator.ARROW_MAIN_LENGTH = 130;// MODFIED 160
-    Indicator.ARROW_HEAD_LENGTH = 68;// MODFIED 28
+    Indicator.ARROW_MAIN_LENGTH = 130;
+    Indicator.ARROW_HEAD_LENGTH = 68;
     Indicator.ARROW_HALF_HEIGHT = 20;
-    Indicator.CIRCLE_RADIUS = 70;// MODFIED
-    // Indicator.CIRCLE_RADIUS = 48;//
+    Indicator.CIRCLE_RADIUS = 70;
     A320_Neo_BRK_Definitions.Indicator = Indicator;
+
     class OuterArc {
     }
+
     OuterArc.RADIUS = A320_Neo_BRK_Definitions.DialFrame.OUTER_RADIUS + 20;
     A320_Neo_BRK_Definitions.OuterArc = OuterArc;
 })(A320_Neo_BRK_Definitions || (A320_Neo_BRK_Definitions = {}));
@@ -39,28 +47,33 @@ var A320_Neo_BRK;
         constructor() {
             super();
         }
+
         get templateID() {
             return "A320_Neo_BRK";
         }
+
         connectedCallback() {
             super.connectedCallback();
             this.topGauge = new A320_Neo_BRK_Gauge(this.querySelector("#topGauge"), 0, 4);
-            this.topGauge.addOuterArc(2.9, 3.3);// this.topGauge.addOuterArc(2.75, 3.5);
-            this.topGauge.addMarker(0, false);// long ticks
+            this.topGauge.addOuterArc(0, 4, true);
+            this.topGauge.addOuterArc(2.9, 3.3);
+            this.topGauge.addMarker(0, false);
             this.topGauge.addMarker(4, false);
             this.leftGauge = new A320_Neo_BRK_Gauge(this.querySelector("#leftGauge"), 0, 3);
+            this.leftGauge.addOuterArc(0, 3, true);
             this.leftGauge.addOuterArc(0, 1);
             this.leftGauge.addMarker(0, false);
-            this.leftGauge.addMarker(0.5, false);
+            this.leftGauge.addMarker(0.5, true);
             this.leftGauge.addMarker(1, false);
             this.leftGauge.addMarker(1.5, true);
             this.leftGauge.addMarker(2, false);
             this.leftGauge.addMarker(2.5, true);
             this.leftGauge.addMarker(3, false);
             this.rightGauge = new A320_Neo_BRK_Gauge(this.querySelector("#rightGauge"), 0, 3);
+            this.rightGauge.addOuterArc(0, 3, true);
             this.rightGauge.addOuterArc(0, 1);
             this.rightGauge.addMarker(0, false);
-            this.rightGauge.addMarker(0.5, false);
+            this.rightGauge.addMarker(0.5, true);
             this.rightGauge.addMarker(1, false);
             this.rightGauge.addMarker(1.5, true);
             this.rightGauge.addMarker(2, false);
@@ -69,13 +82,14 @@ var A320_Neo_BRK;
             this.electricity = this.querySelector("#Electricity");
             this.updateThrottler = new UpdateThrottler(100);
         }
+
         onUpdate(_deltaTime) {
             super.onUpdate(_deltaTime);
             if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
                 return;
             }
             const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
-            const powerAvailable = SimVar.GetSimVarValue("L:DCPowerAvailable","Bool");
+            const powerAvailable = SimVar.GetSimVarValue("L:DCPowerAvailable", "Bool");
             if (this.topGauge != null) {
                 if (powerAvailable) {
                     this.topGauge.setValue(3);
@@ -89,7 +103,7 @@ var A320_Neo_BRK;
                     if (currentPKGBrakeState != 0) {
                         this.leftGauge.setValue(2);
                     } else {
-                        this.leftGauge.setValue(2 * (SimVar.GetSimVarValue("BRAKE LEFT POSITION","SINT32") / 32000));
+                        this.leftGauge.setValue(2 * (SimVar.GetSimVarValue("BRAKE LEFT POSITION", "SINT32") / 32000));
                     }
                 } else {
                     this.leftGauge.setValue(0);
@@ -100,7 +114,7 @@ var A320_Neo_BRK;
                     if (currentPKGBrakeState != 0) {
                         this.rightGauge.setValue(2);
                     } else {
-                        this.rightGauge.setValue(2 * (SimVar.GetSimVarValue("BRAKE RIGHT POSITION","SINT32") / 32000));
+                        this.rightGauge.setValue(2 * (SimVar.GetSimVarValue("BRAKE RIGHT POSITION", "SINT32") / 32000));
                     }
                 } else {
                     this.rightGauge.setValue(0);
@@ -108,6 +122,7 @@ var A320_Neo_BRK;
             }
             this.updateElectricityState(powerAvailable);
         }
+
         updateElectricityState(powerAvailable) {
             if (powerAvailable) {
                 this.electricity.style.display = "block";
@@ -116,7 +131,9 @@ var A320_Neo_BRK;
             }
         }
     }
+
     A320_Neo_BRK.Display = Display;
+
     class A320_Neo_BRK_Gauge {
         constructor(_svgGroup, _min, _max) {
             this.minValue = _min;
@@ -173,6 +190,7 @@ var A320_Neo_BRK;
             }
             this.setValue(this.minValue, true);
         }
+
         addMarker(_value, _isShort) {
             if (this.markersGroup != null) {
                 const dir = this.valueToDir(_value);
@@ -188,7 +206,7 @@ var A320_Neo_BRK;
                     end.y += dir.y * A320_Neo_BRK_Definitions.Marker.LENGTH_LONG;
                 }
                 const line = document.createElementNS(Avionics.SVG.NS, "line");
-                line.setAttribute("class", "marker");
+                line.setAttribute("class", _isShort ? "shortMarker" : "marker");
                 line.setAttribute("x1", start.x.toString());
                 line.setAttribute("y1", start.y.toString());
                 line.setAttribute("x2", end.x.toString());
@@ -196,30 +214,36 @@ var A320_Neo_BRK;
                 this.markersGroup.appendChild(line);
             }
         }
-        addOuterArc(_startValue, _endValue) {
+
+        addOuterArc(_startValue, _endValue, _white = false) {
             if (this.outerArcsGroup != null) {
                 _startValue = Utils.Clamp(_startValue, this.minValue, this.maxValue);
                 _endValue = Utils.Clamp(_endValue, this.minValue, this.maxValue);
                 if (_startValue != _endValue) {
                     const arc = document.createElementNS(Avionics.SVG.NS, "path");
-                    arc.setAttribute("class", "outerArc");
+                    arc.setAttribute("class", _white ? "whiteArc" : "outerArc");
+                    let radius = A320_Neo_BRK_Definitions.OuterArc.RADIUS;
+                    if (_white) {
+                        radius -= 8.5;
+                    }
                     let d = "";
                     const startAngle = this.valueToAngle(_startValue, true);
-                    const startX = (Math.cos(startAngle) * A320_Neo_BRK_Definitions.OuterArc.RADIUS);
-                    const startY = (Math.sin(startAngle) * A320_Neo_BRK_Definitions.OuterArc.RADIUS);
+                    const startX = (Math.cos(startAngle) * radius);
+                    const startY = (Math.sin(startAngle) * radius);
                     const endAngle = this.valueToAngle(_endValue, true);
-                    const endX = (Math.cos(endAngle) * A320_Neo_BRK_Definitions.OuterArc.RADIUS);
-                    const endY = (Math.sin(endAngle) * A320_Neo_BRK_Definitions.OuterArc.RADIUS);
+                    const endX = (Math.cos(endAngle) * radius);
+                    const endY = (Math.sin(endAngle) * radius);
                     const largeArcFlag = ((endAngle - startAngle) <= Math.PI) ? "0 0 0" : "0 1 0";
                     d = [
                         "M", endX, endY,
-                        "A", A320_Neo_BRK_Definitions.OuterArc.RADIUS, A320_Neo_BRK_Definitions.OuterArc.RADIUS, largeArcFlag, startX, startY
+                        "A", radius, radius, largeArcFlag, startX, startY
                     ].join(" ");
                     arc.setAttribute("d", d);
                     this.outerArcsGroup.appendChild(arc);
                 }
             }
         }
+
         valueToAngle(_value, _radians) {
             const percentage = (_value - this.minValue) / (this.maxValue - this.minValue);
             let angle = (A320_Neo_BRK_Definitions.Indicator.ANGLE_MIN + ((A320_Neo_BRK_Definitions.Indicator.ANGLE_MAX - A320_Neo_BRK_Definitions.Indicator.ANGLE_MIN) * percentage));
@@ -228,10 +252,12 @@ var A320_Neo_BRK;
             }
             return angle;
         }
+
         valueToDir(_value) {
             const angle = this.valueToAngle(_value, true);
             return (new Vec2(Math.cos(angle), Math.sin(angle)));
         }
+
         setValue(_value, _force = false) {
             if ((_value != this.currentValue) || _force) {
                 this.currentValue = Utils.Clamp(_value, this.minValue, this.maxValue);
