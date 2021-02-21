@@ -718,6 +718,21 @@ class FMCMainDisplay extends BaseAirliners {
             }
             this.updateAutopilotCooldown = this._apCooldown;
         }
+        if (this.currentFlightPhase === FMGC_FLIGHT_PHASES.APPROACH) {
+            if (Simplane.getAltitudeAboveGround() < 1.5) {
+                if (this.landingAutoBrakeTimer == null) {
+                    this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
+                }
+                this.landingAutoBrakeTimer -= dt / 1000;
+                if (this.landingAutoBrakeTimer <= 0) {
+                    this.landingAutoBrakeTimer = null;
+                    SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 1);
+                }
+            } else {
+                //Reset timer to 30 when airborne in case of go around
+                this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
+            }
+        }
     }
 
     /**
