@@ -44,7 +44,6 @@ class A32NX_FlightPhaseManager {
 
 class A32NX_FlightPhase_PreFlight {
     constructor(_fmc) {
-        console.log("A32NX_FlightPhase_PreFlight constructed");
         this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.TAKEOFF;
     }
 
@@ -53,13 +52,13 @@ class A32NX_FlightPhase_PreFlight {
     }
 
     check(_fmc) {
-        return Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT || Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT;
+        // Simplane.getAltitudeAboveGround() > 1500; is used to skip flight phase in case ac reloaded midair
+        return Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT || Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT || Simplane.getAltitudeAboveGround() > 1500;
     }
 }
 
 class A32NX_FlightPhase_TakeOff {
     constructor(_fmc) {
-        console.log("A32NX_FlightPhase_TakeOff constructed");
         this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.CLIMB;
     }
 
@@ -89,7 +88,6 @@ class A32NX_FlightPhase_TakeOff {
 
 class A32NX_FlightPhase_Climb {
     constructor(_fmc) {
-        console.log("A32NX_FlightPhase_Climb constructed");
         this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.CRUISE;
     }
 
@@ -103,7 +101,6 @@ class A32NX_FlightPhase_Climb {
 
 class A32NX_FlightPhase_Cruise {
     constructor(_fmc) {
-        console.log("A32NX_FlightPhase_Cruise constructed");
         this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.DESCENT;
     }
 
@@ -118,7 +115,6 @@ class A32NX_FlightPhase_Cruise {
 
 class A32NX_FlightPhase_Descent {
     constructor(_fmc) {
-        console.log("A32NX_FlightPhase_Descent constructed");
     }
 
     init(_fmc) {
@@ -152,7 +148,6 @@ class A32NX_FlightPhase_Descent {
 
 class A32NX_FlightPhase_Approach {
     constructor(_fmc) {
-        console.log("A32NX_FlightPhase_Approach constructed");
     }
 
     init(_fmc) {
@@ -189,7 +184,6 @@ class A32NX_FlightPhase_Approach {
 
 class A32NX_FlightPhase_GoAround {
     constructor(_fmc) {
-        console.log("A32NX_FlightPhase_GoAround constructed");
         this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.DONE;
     }
 
@@ -203,13 +197,12 @@ class A32NX_FlightPhase_GoAround {
 
 class A32NX_FlightPhase_Done {
     constructor(_fmc) {
-        console.log("A32NX_FlightPhase_Done constructed");
         this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.PREFLIGHT;
     }
 
     init(_fmc) {
         SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
-        CDUIdentPage.ShowPage(this);
+        CDUIdentPage.ShowPage(_fmc);
     }
 
     check(_fmc) {

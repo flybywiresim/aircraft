@@ -315,6 +315,9 @@ class FMCMainDisplay extends BaseAirliners {
                 CDUPerformancePage.ShowTAKEOFFPage(this);
             }
         } else if (this.currentFlightPhase === FMGC_FLIGHT_PHASES.CLIMB) {
+            SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", -1);
+            SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", -1);
+            SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", -1);
             this._destDataChecked = false;
             if (this.page.Current === this.page.PerformancePageTakeoff) {
                 CDUPerformancePage.ShowCLBPage(this);
