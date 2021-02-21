@@ -7,10 +7,10 @@ class A32NX_ConstraintManager {
      * @returns {number} valid constraint altitude
      */
     static getDisplayedConstraintAltitude(flightPhase, fcuSelAlt, constraintAlt) {
-        if (!constraintAlt || flightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+        if (!constraintAlt || flightPhase === FMGC_FLIGHT_PHASES.CRUISE) {
             return 0;
         }
-        if (flightPhase === FlightPhase.FLIGHT_PHASE_DESCENT || flightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+        if (flightPhase === FMGC_FLIGHT_PHASES.DESCENT || flightPhase === FMGC_FLIGHT_PHASES.APPROACH) {
             return fcuSelAlt > constraintAlt ? 0 : constraintAlt;
         }
         return fcuSelAlt < constraintAlt ? 0 : constraintAlt;
@@ -25,10 +25,10 @@ class A32NX_ConstraintManager {
      * @returns {number} new cached altitude constraint
      */
     static getConstraintAltitude(flightPhase, fpm, curConstraintAlt, crzAlt) {
-        if (fpm.getIsDirectTo() || flightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+        if (fpm.getIsDirectTo() || flightPhase === FMGC_FLIGHT_PHASES.CRUISE) {
             return 0;
         }
-        if (flightPhase === FlightPhase.FLIGHT_PHASE_DESCENT || flightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+        if (flightPhase === FMGC_FLIGHT_PHASES.DESCENT || flightPhase === FMGC_FLIGHT_PHASES.APPROACH) {
             return Math.round(this._getAltitudeConstraintDescent(fpm, curConstraintAlt));
         }
         return Math.round(this._getAltitudeConstraintAscent(fpm, crzAlt));

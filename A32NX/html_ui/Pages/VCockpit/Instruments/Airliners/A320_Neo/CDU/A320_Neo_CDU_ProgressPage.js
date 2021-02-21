@@ -27,15 +27,14 @@ class CDUProgressPage {
         const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
         let flCrz = "-----";
         switch (Simplane.getCurrentFlightPhase()) {
-            case FlightPhase.FLIGHT_PHASE_PREFLIGHT:
-            case FlightPhase.FLIGHT_PHASE_TAXI:
-            case FlightPhase.FLIGHT_PHASE_TAKEOFF: {
+            case FMGC_FLIGHT_PHASES.PREFLIGHT:
+            case FMGC_FLIGHT_PHASES.TAKEOFF: {
                 if (mcdu._cruiseEntered) {
                     flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 }
                 break;
             }
-            case FlightPhase.FLIGHT_PHASE_CLIMB: {
+            case FMGC_FLIGHT_PHASES.CLIMB: {
                 const alt = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
                 const altCtn = Math.round(mcdu.constraintAlt / 100);
                 if (!mcdu._cruiseEntered) {
@@ -51,7 +50,7 @@ class CDUProgressPage {
                 }
                 break;
             }
-            case FlightPhase.FLIGHT_PHASE_CRUISE: {
+            case FMGC_FLIGHT_PHASES.CRUISE: {
                 const fl = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
                 if (fl > mcdu.cruiseFlightLevel) {
                     mcdu.cruiseFlightLevel = fl;

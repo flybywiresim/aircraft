@@ -29,7 +29,7 @@ class A32NX_Speeds {
          * On disagree cache gets updated and Vspeeds recalculated, then shared.
          */
         setInterval(() => {
-            const fp = Simplane.getCurrentFlightPhase();
+            const fp = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
             let fhi = Simplane.getFlapsHandleIndex();
             /** Using true fhi for comparison */
             const isTo = fhi === SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number");

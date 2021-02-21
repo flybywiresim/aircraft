@@ -61,7 +61,7 @@ class A32NX_GPWS {
 
         const mda = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet");
         const dh = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet");
-        const phase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum");
+        const phase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
 
         if (radioAlt >= 10 && radioAlt <= 2450 && !SimVar.GetSimVarValue("L:A32NX_GPWS_SYS_OFF", "Bool")) { //Activate between 10 - 2450 radio alt unless SYS is off
             const FlapPushButton = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAPS3", "Bool");
