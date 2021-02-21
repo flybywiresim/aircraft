@@ -21,42 +21,42 @@ import {
     REMOVE_TOD_GROUND_SPEED,
     SET_TOD_DATA,
     SET_TOD_GROUND_SPEED,
-    SET_TOD_GROUND_SPEED_MODE
-} from "../actions";
-import {TOD_GROUND_SPEED_MODE} from "../../Enum/TODGroundSpeedMode.enum";
+    SET_TOD_GROUND_SPEED_MODE,
+} from '../actions';
+import { TOD_GROUND_SPEED_MODE } from '../../Enum/TODGroundSpeedMode.enum';
 
 export const setTodData = (data) => ({
     type: SET_TOD_DATA,
-    data
+    data,
 });
 
 export const addTodGroundSpeed = (groundSpeed) => ({
     type: ADD_TOD_GROUND_SPEED,
-    groundSpeed
+    groundSpeed,
 });
 
 export const removeTodGroundSpeed = (elementIndex) => ({
     type: REMOVE_TOD_GROUND_SPEED,
-    elementIndex
+    elementIndex,
 });
 
 export const setTodGroundSpeed = (elementIndex, groundSpeed) => ({
     type: SET_TOD_GROUND_SPEED,
     elementIndex,
-    groundSpeed
+    groundSpeed,
 });
 
-export const setTodGroundSpeedMode = (groundSpeedMode: TOD_GROUND_SPEED_MODE) => dispatch => {
-    if(groundSpeedMode === TOD_GROUND_SPEED_MODE.AUTO) {
+export const setTodGroundSpeedMode = (groundSpeedMode: TOD_GROUND_SPEED_MODE) => (dispatch) => {
+    if (groundSpeedMode === TOD_GROUND_SPEED_MODE.AUTO) {
         dispatch(clearTodGroundSpeed());
     }
 
     dispatch({
         type: SET_TOD_GROUND_SPEED_MODE,
-        groundSpeedMode
+        groundSpeedMode,
     });
 };
 
 export const clearTodGroundSpeed = () => ({
-    type: CLEAR_TOD_GROUND_SPEED
+    type: CLEAR_TOD_GROUND_SPEED,
 });
