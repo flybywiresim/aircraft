@@ -149,10 +149,10 @@ var Airbus_FMA;
             this.autoPilotTRKFPAModeActive = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
             this.altitude = Simplane.getAltitude();
             this.flapsHandlePercent = Simplane.getFlapsHandlePercent();
-            this.flightPhase = Simplane.getCurrentFlightPhase(true);
+            this.flightPhase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number");
             const approachType = ApproachType.APPROACH_TYPE_ILS;
-            this.isILSApproachActive = ((this.flightPhase == FlightPhase.FLIGHT_PHASE_APPROACH) && (approachType == ApproachType.APPROACH_TYPE_ILS));
-            this.isNonILSApproachActive = ((this.flightPhase == FlightPhase.FLIGHT_PHASE_APPROACH) && (approachType != ApproachType.APPROACH_TYPE_ILS));
+            this.isILSApproachActive = ((this.flightPhase == FMGC_FLIGHT_PHASES.APPROACH) && (approachType == ApproachType.APPROACH_TYPE_ILS));
+            this.isNonILSApproachActive = ((this.flightPhase == FMGC_FLIGHT_PHASES.APPROACH) && (approachType != ApproachType.APPROACH_TYPE_ILS));
             this.leftThrottleDetent = Simplane.getEngineThrottleMode(0);
             this.rightThrottleDetent = Simplane.getEngineThrottleMode(1);
             this.bothEnginesActive = Simplane.getEngineActive(0) && Simplane.getEngineActive(1);
@@ -734,7 +734,7 @@ var Airbus_FMA;
 
         IsActive_MANFLX() {
             if (!Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleArmed && (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.FLEX_MCT)) {
-                if ((Airbus_FMA.CurrentPlaneState.flightPhase <= FlightPhase.FLIGHT_PHASE_TAKEOFF) && (Airbus_FMA.CurrentPlaneState.flexTemperature !== 0)) {
+                if ((Airbus_FMA.CurrentPlaneState.flightPhase <= FMGC_FLIGHT_PHASES.TAKEOFF) && (Airbus_FMA.CurrentPlaneState.flexTemperature !== 0)) {
                     return true;
                 }
             }
@@ -746,7 +746,7 @@ var Airbus_FMA;
                 && !Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive
                 && Airbus_FMA.CurrentPlaneState.autoPilotThrottleArmed
                 && Airbus_FMA.CurrentPlaneState.highestThrottleDetent === ThrottleMode.FLEX_MCT
-                && Airbus_FMA.CurrentPlaneState.flightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND;
+                && Airbus_FMA.CurrentPlaneState.flightPhase === FMGC_FLIGHT_PHASES.GOAROUND;
         }
 
         IsActive_SGA() {
@@ -754,12 +754,12 @@ var Airbus_FMA;
                 && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive
                 && Airbus_FMA.CurrentPlaneState.autoPilotThrottleArmed
                 && Airbus_FMA.CurrentPlaneState.highestThrottleDetent === ThrottleMode.FLEX_MCT
-                && Airbus_FMA.CurrentPlaneState.flightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND;
+                && Airbus_FMA.CurrentPlaneState.flightPhase === FMGC_FLIGHT_PHASES.GOAROUND;
         }
 
         IsActive_MANMCT() {
             if (!Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleArmed && (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.FLEX_MCT)) {
-                if ((Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF) || (Airbus_FMA.CurrentPlaneState.flexTemperature == 0)) {
+                if ((Airbus_FMA.CurrentPlaneState.flightPhase > FMGC_FLIGHT_PHASES.TAKEOFF) || (Airbus_FMA.CurrentPlaneState.flexTemperature == 0)) {
                     return true;
                 }
             }
@@ -877,9 +877,9 @@ var Airbus_FMA;
         IsActive_LVRCLB() {
             const thrustReductionAltitude = Simplane.getThrustReductionAltitude();
             const thrustReductionAltitudeGoaround = SimVar.GetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "number");
-            const inTakeoff = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF);
-            const inClimb = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_CLIMB);
-            const inGoAround = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) || SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1;
+            const inTakeoff = (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.TAKEOFF);
+            const inClimb = (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.CLIMB);
+            const inGoAround = (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.GOAROUND) || SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1;
 
             // If the thrust reduction altitude is not set, we never show this meessage
             if (!thrustReductionAltitude) {
@@ -907,8 +907,8 @@ var Airbus_FMA;
             // Disabling the LVR MCT FMA until it can be properly implemented
             // It requires the pre flight phase to be implemented, which it is not yet
             return false;
-            const inTakeoff = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF);
-            const inGoAround = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND);
+            const inTakeoff = (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.TAKEOFF);
+            const inGoAround = (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.GOAROUND);
 
             const oneEngineOff = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool") == 0 || SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool") == 0;
 
@@ -930,38 +930,38 @@ var Airbus_FMA;
             return Airbus_FMA.CurrentPlaneState.autoBreakActivated
                 && Airbus_FMA.CurrentPlaneState.autoBreakDecel
                 && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 1
-                && (Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF
-                    || Airbus_FMA.CurrentPlaneState.flightPhase === FlightPhase.FLIGHT_PHASE_PREFLIGHT);
+                && (Airbus_FMA.CurrentPlaneState.flightPhase > FMGC_FLIGHT_PHASES.TAKEOFF
+                    || Airbus_FMA.CurrentPlaneState.flightPhase === FMGC_FLIGHT_PHASES.PREFLIGHT);
         }
         IsActive_BRKLOARMED() {
             return !(Airbus_FMA.CurrentPlaneState.autoBreakDecel && Airbus_FMA.CurrentPlaneState.autoBreakActivated)
                 && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 1
-                && Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF;
+                && Airbus_FMA.CurrentPlaneState.flightPhase > FMGC_FLIGHT_PHASES.TAKEOFF;
         }
 
         IsActive_BRKMED() {
             return Airbus_FMA.CurrentPlaneState.autoBreakActivated
                 && Airbus_FMA.CurrentPlaneState.autoBreakDecel
                 && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 2
-                && (Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF
-                    || Airbus_FMA.CurrentPlaneState.flightPhase === FlightPhase.FLIGHT_PHASE_PREFLIGHT);
+                && (Airbus_FMA.CurrentPlaneState.flightPhase > FMGC_FLIGHT_PHASES.TAKEOFF
+                    || Airbus_FMA.CurrentPlaneState.flightPhase === FMGC_FLIGHT_PHASES.PREFLIGHT);
         }
         IsActive_BRKMEDARMED() {
             return !(Airbus_FMA.CurrentPlaneState.autoBreakDecel && Airbus_FMA.CurrentPlaneState.autoBreakActivated)
                 && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 2
-                && Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF;
+                && Airbus_FMA.CurrentPlaneState.flightPhase > FMGC_FLIGHT_PHASES.TAKEOFF;
         }
 
         IsActive_BRKMAX() {
             return Airbus_FMA.CurrentPlaneState.autoBreakDecel &&
                 Airbus_FMA.CurrentPlaneState.isOnGround && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 3
-                && Airbus_FMA.CurrentPlaneState.flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB;
+                && Airbus_FMA.CurrentPlaneState.flightPhase < FMGC_FLIGHT_PHASES.CLIMB;
         }
         IsActive_BRKMAXARMED() {
             return (!Airbus_FMA.CurrentPlaneState.autoBreakDecel)
                 && Airbus_FMA.CurrentPlaneState.isOnGround
                 && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 3
-                && Airbus_FMA.CurrentPlaneState.flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB;
+                && Airbus_FMA.CurrentPlaneState.flightPhase < FMGC_FLIGHT_PHASES.CLIMB;
         }
 
     }
@@ -1192,7 +1192,7 @@ var Airbus_FMA;
             }
             const altModeState = Column2.GetModeState_ALT();
             if (altModeState == Airbus_FMA.MODE_STATE.ENGAGED) {
-                if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_CRUISE) {
+                if (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.CRUISE) {
                     return Column2.ROW_1_STATE.ALT_CRZ;
                 } else {
                     return this.currentConstrained ? Column2.ROW_1_STATE.ALT_CST_ENGAGED : Column2.ROW_1_STATE.ALT_ENGAGED;
@@ -1239,13 +1239,13 @@ var Airbus_FMA;
         }
 
         GetModeState_SRS() {
-            if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
+            if (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.TAKEOFF && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
                 if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) {
                     SRSEnabled = true;
                 } else if ((Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.FLEX_MCT) && (Airbus_FMA.CurrentPlaneState.flexTemperature !== 0)) {
                     SRSEnabled = true;
                 }
-            } else if (Airbus_FMA.CurrentPlaneState.flightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
+            } else if (Airbus_FMA.CurrentPlaneState.flightPhase === FMGC_FLIGHT_PHASES.GOAROUND) {
                 if ((Airbus_FMA.CurrentPlaneState.highestThrottleDetent === ThrottleMode.TOGA
                     || (Airbus_FMA.CurrentPlaneState.highestThrottleDetent === ThrottleMode.FLEX_MCT && Airbus_FMA.CurrentPlaneState.bothEnginesActive))
                     && Airbus_FMA.CurrentPlaneState.flapsHandlePercent !== 0) {
@@ -1253,7 +1253,7 @@ var Airbus_FMA;
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 }
             }
-            if (Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+            if (Airbus_FMA.CurrentPlaneState.flightPhase != FMGC_FLIGHT_PHASES.TAKEOFF) {
                 SRSEnabled = false;
             }
             if (SRSEnabled) {
@@ -1308,7 +1308,7 @@ var Airbus_FMA;
 
         static GetModeState_GS() {
             SimVar.SetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool", 0);
-            if (Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
+            if (Airbus_FMA.CurrentPlaneState.flightPhase != FMGC_FLIGHT_PHASES.GOAROUND) {
                 if (CurrentPlaneState.bothAutoPilotsInactive && Simplane.getAutoPilotApproachType() == 4 && Simplane.getAutoPilotAPPRActive() && SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool") != 1) {
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 }
@@ -1336,7 +1336,7 @@ var Airbus_FMA;
         }
 
         static IsArmed_OPCLB_MA() {
-            if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
+            if (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.GOAROUND) {
                 return true;
             }
         }
@@ -1379,7 +1379,7 @@ var Airbus_FMA;
                     return Airbus_FMA.MODE_STATE.NONE;
                 }
 
-                if (Airbus_FMA.CurrentPlaneState.flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB) {
+                if (Airbus_FMA.CurrentPlaneState.flightPhase < FMGC_FLIGHT_PHASES.CLIMB) {
                     return Airbus_FMA.MODE_STATE.ARMED;
                 } else if (Airbus_FMA.CurrentPlaneState.radioAltitude <= 1.5) {
                     return Airbus_FMA.MODE_STATE.NONE;
@@ -1412,7 +1412,7 @@ var Airbus_FMA;
 
         static IsActive_DES() {
             if (Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && (Airbus_FMA.CurrentPlaneState.altitude > Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue) && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
-                if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_DESCENT && Simplane.getVerticalSpeed() < -10) {
+                if (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.DESCENT && Simplane.getVerticalSpeed() < -10) {
                     return true;
                 }
             }
@@ -1617,7 +1617,7 @@ var Airbus_FMA;
         }
 
         IsActive_RWY() {
-            if (Airbus_FMA.CurrentPlaneState.flightPhase <= FlightPhase.FLIGHT_PHASE_CLIMB && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
+            if (Airbus_FMA.CurrentPlaneState.flightPhase <= FMGC_FLIGHT_PHASES.CLIMB && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
                 if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent >= ThrottleMode.FLEX_MCT) {
                     if (Airbus_FMA.CurrentPlaneState.radioAltitude < 30) {
                         return true;
@@ -1629,7 +1629,7 @@ var Airbus_FMA;
 
         IsArmed_HDG() {
             //until we have a valid missed approach path to follow, during goaround HDG will be the armed and later activated mode
-            if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && Airbus_FMA.CurrentPlaneState.flapsHandlePercent != 0) {
+            if (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.GOAROUND && Airbus_FMA.CurrentPlaneState.flapsHandlePercent != 0) {
 
                 if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1) {
                     return false;
@@ -1647,15 +1647,15 @@ var Airbus_FMA;
         IsActive_HDG() {
             // when GOAROUND flightphase is available in future, replace logic instead of checking SRS State
             // when on GOAROUND show GA TRK until HDG SELECTED (HDG) is pressed and returned TRUE here
-            // Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND || Column2.GetModeState_SRS() == false
+            // Airbus_FMA.CurrentPlaneState.flightPhase != FMGC_FLIGHT_PHASES.GOAROUND || Column2.GetModeState_SRS() == false
             if (Airbus_FMA.CurrentPlaneState.autoPilotHeadingSelectedMode && !Airbus_FMA.CurrentPlaneState.autoPilotTRKFPAModeActive && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive && Airbus_FMA.CurrentPlaneState.radioAltitude >= 1.5) {
                 let retVal = false;
 
-                if (!Simplane.getAutoPilotAPPRActive() && Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
+                if (!Simplane.getAutoPilotAPPRActive() && Airbus_FMA.CurrentPlaneState.flightPhase != FMGC_FLIGHT_PHASES.GOAROUND) {
                     retVal = true;
                 }
 
-                if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 && Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
+                if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 && Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.GOAROUND) {
                     retVal = true;
                 }
                 return retVal;
@@ -1675,10 +1675,10 @@ var Airbus_FMA;
 
         GetModeState_LOC() {
             if (Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive && Simplane.getAutoPilotApproachType() != 10) {
-                if (Simplane.getAutoPilotAPPRActive() && SimVar.GetSimVarValue("L:A32NX_OFF_LOC", "bool") == 1 && Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
+                if (Simplane.getAutoPilotAPPRActive() && SimVar.GetSimVarValue("L:A32NX_OFF_LOC", "bool") == 1 && Airbus_FMA.CurrentPlaneState.flightPhase != FMGC_FLIGHT_PHASES.GOAROUND) {
                     return Airbus_FMA.MODE_STATE.CAPTURED;
                 }
-                if (Simplane.getAutoPilotAPPRActive() && Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
+                if (Simplane.getAutoPilotAPPRActive() && Airbus_FMA.CurrentPlaneState.flightPhase != FMGC_FLIGHT_PHASES.GOAROUND) {
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 } else if (Simplane.getAutoPilotAPPRArm()) {
                     return Airbus_FMA.MODE_STATE.ARMED;
@@ -1689,8 +1689,8 @@ var Airbus_FMA;
 
         GetModeState_NAV() {
             if (
-                (Airbus_FMA.CurrentPlaneState.flightPhase !== FlightPhase.FLIGHT_PHASE_GOAROUND
-                || (Airbus_FMA.CurrentPlaneState.flightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND && Airbus_FMA.CurrentPlaneState.highestThrottleDetent === ThrottleMode.FLEX_MCT))
+                (Airbus_FMA.CurrentPlaneState.flightPhase !== FMGC_FLIGHT_PHASES.GOAROUND
+                || (Airbus_FMA.CurrentPlaneState.flightPhase === FMGC_FLIGHT_PHASES.GOAROUND && Airbus_FMA.CurrentPlaneState.highestThrottleDetent === ThrottleMode.FLEX_MCT))
                 && Airbus_FMA.CurrentPlaneState.autoPilotHeadingManagedMode && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive
             ) {
                 if (Airbus_FMA.CurrentPlaneState.radioAltitude >= 30) {
@@ -1702,7 +1702,7 @@ var Airbus_FMA;
 
             // Future: NAV should not arm/engage during GA when there is no missed approach / secondary fp to follow
             // NAV will engage automatically when there is a missed approach flightplan to follow, or waypoint or whatever
-            if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1 && SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 0) {
+            if (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.GOAROUND && SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1 && SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 0) {
                 if (Airbus_FMA.CurrentPlaneState.radioAltitude >= 30) {
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 } else {
@@ -1715,7 +1715,7 @@ var Airbus_FMA;
 
         IsActive_RWYTRK() {
             if (!this.rwytrkDisabled) {
-                if (Airbus_FMA.CurrentPlaneState.flightPhase <= FlightPhase.FLIGHT_PHASE_CLIMB && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
+                if (Airbus_FMA.CurrentPlaneState.flightPhase <= FMGC_FLIGHT_PHASES.CLIMB && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
                     if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent >= ThrottleMode.FLEX_MCT) {
                         if (!Airbus_FMA.CurrentPlaneState.autoPilotHeadingManagedMode) {
                             if (Airbus_FMA.CurrentPlaneState.radioAltitude >= 30) {
@@ -1730,8 +1730,8 @@ var Airbus_FMA;
 
         IsActive_GATRK() {
             //GATRK only shows up when HDG was preset, not on NAV mode
-            //if (Simplane.getAutoPilotAPPRActive() && !Simplane.getAutoPilotThrottleActive() && Simplane.getCurrentFlightPhase() == 6 && Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) {
-            if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && Airbus_FMA.CurrentPlaneState.flapsHandlePercent != 0) {
+            //if (Simplane.getAutoPilotAPPRActive() && !Simplane.getAutoPilotThrottleActive() && SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number") == 6 && Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) {
+            if (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.GOAROUND && Airbus_FMA.CurrentPlaneState.flapsHandlePercent != 0) {
 
                 if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1) {
                     return false;
@@ -1871,7 +1871,7 @@ var Airbus_FMA;
 
         updateRow3(_deltaTime) {
             let targetState = Column4.ROW_3_STATE.NONE;
-            if ((Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_DESCENT) || (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_APPROACH)) {
+            if ((Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.DESCENT) || (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.APPROACH)) {
                 if (Airbus_FMA.CurrentPlaneState.minimumDescentAltitude > 0) {
                     targetState = Column4.ROW_3_STATE.MDA;
                 } else if (Airbus_FMA.CurrentPlaneState.decisionHeight >= 0) {
@@ -2233,7 +2233,7 @@ var Airbus_FMA;
         }
 
         getCurrentRequiredMessage() {
-            if (!Column1.IsActive_SpeedCommon() && (Airbus_FMA.CurrentPlaneState.managedAirspeed > 0) && ((Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF) || (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_CLIMB))) {
+            if (!Column1.IsActive_SpeedCommon() && (Airbus_FMA.CurrentPlaneState.managedAirspeed > 0) && ((Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.TAKEOFF) || (Airbus_FMA.CurrentPlaneState.flightPhase == FMGC_FLIGHT_PHASES.CLIMB))) {
                 if (Airbus_FMA.CurrentPlaneState.autoPilotMachModeActive) {
                     return Airbus_FMA.SPECIAL_MESSAGE.MACH_SEL;
                 } else {

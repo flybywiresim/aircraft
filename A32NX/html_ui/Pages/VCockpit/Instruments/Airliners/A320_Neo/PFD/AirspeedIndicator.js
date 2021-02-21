@@ -687,12 +687,12 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         const vs = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VS", "number");
         const vls = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VLS", "number");
         const autobrakes = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum");
-        const flightPhase = Simplane.getCurrentFlightPhase();
+        const flightPhase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number");
         const decel = planeOnGround
             && autobrakes !== 0
             && (autobrakes === 3 ? -6 : -2) > SimVar.GetSimVarValue("A:ACCELERATION BODY Z", "feet per second squared")
-            && ((flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB && autobrakes === 3)
-                || ((flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF || flightPhase === FlightPhase.FLIGHT_PHASE_PREFLIGHT)
+            && ((flightPhase < FMGC_FLIGHT_PHASES.CLIMB && autobrakes === 3)
+                || ((flightPhase > FMGC_FLIGHT_PHASES.TAKEOFF || flightPhase === FMGC_FLIGHT_PHASES.PREFLIGHT)
                     && autobrakes !== 3 && SimVar.GetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool") === 1)
             );
         this.smoothSpeeds(indicatedSpeed, dTime, vMax, vls, vs * 1.1, vs * 1.03, vs);
@@ -904,7 +904,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             let hideV1BlueTextLower = true;
             let v1Speed = 0;
             if (Simplane.getIsGrounded()) {
-                if (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) {
+                if (SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number") < FMGC_FLIGHT_PHASES.CLIMB) {
                     v1Speed = SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots");
                     if (v1Speed > 0) {
                         if (this.valueToSvg(currentAirspeed, v1Speed) <= 0) {
@@ -990,9 +990,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 const isManaged = Simplane.getAutoPilotAirspeedManaged();
                 if (isManaged) {
                     if (Simplane.getAutoPilotMachModeActive()) {
-                        redAirspeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH ? SimVar.GetSimVarValue("L:A32NX_AP_APPVLS", "knots") : SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotMachHoldValue());
+                        redAirspeed = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number") === FMGC_FLIGHT_PHASES.APPROACH ? SimVar.GetSimVarValue("L:A32NX_AP_APPVLS", "knots") : SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotMachHoldValue());
                     } else {
-                        redAirspeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH ? SimVar.GetSimVarValue("L:A32NX_AP_APPVLS", "knots") : Simplane.getAutoPilotAirspeedHoldValue();
+                        redAirspeed = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number") === FMGC_FLIGHT_PHASES.APPROACH ? SimVar.GetSimVarValue("L:A32NX_AP_APPVLS", "knots") : Simplane.getAutoPilotAirspeedHoldValue();
                     }
                 }
             }
@@ -1098,7 +1098,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateVR(currentAirspeed, _vR, _onGround) {
         if (this.vRSVG) {
             let hidePointer = true;
-            if (_vR > this.graduationMinValue && _onGround && Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+            if (_vR > this.graduationMinValue && _onGround && SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number") === FMGC_FLIGHT_PHASES.TAKEOFF) {
                 const vRPosY = this.valueToSvg(currentAirspeed, _vR);
                 const vRHeight = 20;
                 if (vRPosY > 0) {
@@ -1278,11 +1278,11 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     }
     updateMarkerFlap(_marker, currentAirspeed) {
         let hideMarker = true;
-        const phase = Simplane.getCurrentFlightPhase();
+        const phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number");
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
         const markerHandleIndex = _marker.params[0];
         if (markerHandleIndex == flapsHandleIndex || markerHandleIndex == (flapsHandleIndex - 1)) {
-            if (phase >= FlightPhase.FLIGHT_PHASE_TAKEOFF && ((phase != FlightPhase.FLIGHT_PHASE_CLIMB && phase != FlightPhase.FLIGHT_PHASE_CRUISE) || !this.altOver20k)) {
+            if (phase >= FMGC_FLIGHT_PHASES.TAKEOFF && ((phase != FMGC_FLIGHT_PHASES.CLIMB && phase != FMGC_FLIGHT_PHASES.CRUISE) || !this.altOver20k)) {
                 hideMarker = false;
             }
         }

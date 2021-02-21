@@ -2318,8 +2318,8 @@ var A320_Neo_UpperECAM;
                     }
                 } else {
                     const throttleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
-
-                    if (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) {
+                    const flightPhase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number");
+                    if (flightPhase < FMGC_FLIGHT_PHASES.CLIMB) {
                         if ((throttleMode !== ThrottleMode.TOGA) && (throttleMode !== ThrottleMode.REVERSE)) {
                             const flexTemp = Simplane.getFlexTemperature();
                             this.setFlexTemperature(flexTemp !== 0, flexTemp);
@@ -2330,7 +2330,7 @@ var A320_Neo_UpperECAM;
                         this.setFlexTemperature(false);
                     }
 
-                    this.setThrottle(true, throttlePosition, throttleMode, onGround, Simplane.getCurrentFlightPhase());
+                    this.setThrottle(true, throttlePosition, throttleMode, onGround, flightPhase);
                 }
             } else {
                 this.setThrottle(false);
@@ -2348,7 +2348,7 @@ var A320_Neo_UpperECAM;
          * @returns string
          */
         getThrustRatingMode(_grounded, _min = "CLB", _med = "FLX", _max = "TOGA") {
-            if (_grounded || (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB)) {
+            if (_grounded || (this.currentPhase < FMGC_FLIGHT_PHASES.CLIMB)) {
                 return Simplane.getFlexTemperature() > 0 ? _med : _max;
             }
             return _min;
@@ -2381,7 +2381,7 @@ var A320_Neo_UpperECAM;
                             }
                             case ThrottleMode.FLEX_MCT:
                             {
-                                this.throttleState.textContent = this.currentPhase === FlightPhase.FLIGHT_PHASE_GOAROUND
+                                this.throttleState.textContent = this.currentPhase === FMGC_FLIGHT_PHASES.GOAROUND
                                 && Simplane.getEngineActive(0)
                                 && Simplane.getEngineActive(1) ? "GA\xa0SOFT" : this.getThrustRatingMode(this.currentGrounded, "MCT");
                                 break;

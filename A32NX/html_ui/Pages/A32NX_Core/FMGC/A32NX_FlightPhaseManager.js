@@ -23,7 +23,7 @@ class A32NX_FlightPhaseManager {
 
     checkFlightPhase() {
         if (this.activeFlightPhase.check(this.fmc)) {
-            console.log("FMGC Flight Phase: " + this.fmc.flightPhase + " => " + this.activeFlightPhase.nextFmgcFlightPhase);
+            console.log("FMGC Flight Phase: " + this.fmc.currentFlightPhase + " => " + this.activeFlightPhase.nextFmgcFlightPhase);
             this.fmc.currentFlightPhase = this.activeFlightPhase.nextFmgcFlightPhase;
             SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", this.activeFlightPhase.nextFmgcFlightPhase);
 
@@ -38,7 +38,7 @@ class A32NX_FlightPhaseManager {
     }
 
     overrideFlightPhase(_fmgcFlightPhase) {
-        console.log("FMGC Flight Phase: " + this.fmc.flightPhase + " => " + _fmgcFlightPhase);
+        console.log("FMGC Flight Phase: " + this.fmc.currentFlightPhase + " => " + _fmgcFlightPhase);
         this.fmc.currentFlightPhase = _fmgcFlightPhase;
         SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", _fmgcFlightPhase);
 
