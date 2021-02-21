@@ -29,7 +29,7 @@ class A32NX_Speeds {
          * On disagree cache gets updated and Vspeeds recalculated, then shared.
          */
         setInterval(() => {
-            const fp = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
+            const fp = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
             let fhi = Simplane.getFlapsHandleIndex();
             /** Using true fhi for comparison */
             const isTo = fhi === SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number");
@@ -47,7 +47,7 @@ class A32NX_Speeds {
 
             /** During Take Off allow to change this.isTo
             * Otherwise if we are in take off config and change the fhi, we no longer are in take off config */
-            if (fp === FlightPhase.FLIGHT_PHASE_TAKEOFF && Simplane.getAltitudeAboveGround() < 1.5) {
+            if (fp === FMGC_FLIGHT_PHASES.TAKEOFF && Simplane.getAltitudeAboveGround() < 1.5) {
                 this.isTo = isTo;
             } else if (this.isTo && this.lastFhi !== fhi) {
                 this.isTo = false;
