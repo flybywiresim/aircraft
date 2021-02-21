@@ -31,6 +31,8 @@ class A32NX_FlightPhaseManager {
         console.log("FMGC Flight Phase: " + this.fmc.currentFlightPhase + " => " + _fmgcFlightPhase);
         this.fmc.currentFlightPhase = _fmgcFlightPhase;
         SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", _fmgcFlightPhase);
+        // Updating old SimVar to ensure downwards compatibility
+        SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", (_fmgcFlightPhase < FMGC_FLIGHT_PHASES.TAKEOFF ? FMGC_FLIGHT_PHASES.PREFLIGHT : _fmgcFlightPhase + 1));
 
         this.activeFlightPhase = this.flightPhases[_fmgcFlightPhase];
 

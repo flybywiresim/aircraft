@@ -509,3 +509,8 @@
 - A32NX_ENG_OUT_ACC_ALT
     - feet
     - The engine out acceleration altitude, set in the PERF TAKE OFF page.
+
+- A32NX_FMGC_FLIGHT_PHASE
+    - Enum
+    - Holds the FMGCs current flight phase
+    - Use FMGC_FLIGHT_PHASES to check for phases (import NXFMGCFlightPhases from A32NX_Utils)

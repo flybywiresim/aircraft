@@ -1559,7 +1559,7 @@ var A320_Neo_UpperECAM;
             this.isTogaFlexMct1 = this.getCachedSimVar("GENERAL ENG THROTTLE MANAGED MODE:1", "number") > 4;
             this.isTogaFlexMct2 = this.getCachedSimVar("GENERAL ENG THROTTLE MANAGED MODE:2", "number") > 4;
             this.isGrounded = this.getCachedSimVar("SIM ON GROUND", "bool");
-            this.flightPhaseBeforeClb = (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB);
+            this.flightPhaseBeforeClb = this.getCachedSimVar("L:A32NX_FMGC_FLIGHT_PHASE", "number") < FMGC_FLIGHT_PHASES.CLIMB;
 
             if (this.isGrounded || this.flightPhaseBeforeClb || (this.isTogaFlexMct1 && this.isTogaFlexMct2)) {
                 const ignStateActive = this.getCachedSimVar("L:XMLVAR_ENG_MODE_SEL", "Enum") == 2;
