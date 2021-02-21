@@ -24,7 +24,7 @@ import TODCalculator from '../TODCalculator/TODCalculator';
 import LandingWidget from './Widgets/LandingWidget';
 
 const tabs = [
-	{ name: 'Takeoff', renderComponent: () => <div className="text-white">Inop.</div>},
+    { name: 'Takeoff', renderComponent: () => <div className="text-white">Inop.</div> },
     { name: 'TOD', renderComponent: () => <TODCalculator /> },
     { name: 'Landing', renderComponent: () => <LandingWidget /> },
 ];

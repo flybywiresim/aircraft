@@ -28,7 +28,7 @@ import Dashboard from './Dashboard/Dashboard';
 import Dispatch from './Dispatch/Dispatch';
 import Ground from './Ground/Ground';
 import Performance from './Performance/Performance';
-import Company from "./Company/Company";
+import Company from './Company/Company';
 import Settings from './Settings/Settings';
 
 type EfbProps = {
