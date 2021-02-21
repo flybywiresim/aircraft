@@ -2,7 +2,7 @@
   "name": "a32nx",
   "version": "0.6.0",
   "scripts": {
-    "lint": "eslint --cache **/*.{js,mjs,jsx}",
+    "lint": "eslint --cache **/*.{js,mjs,jsx,ts,tsx}",
     "lint-fix": "npm run lint -- --fix",
     "prettier": "prettier --write **/*.json **/*.yml src/instruments/**/*.css",
     "build:instruments": "rollup -c src/instruments/rollup.config.js",
@@ -38,6 +38,8 @@
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jsx-a11y": "^6.3.1",
     "eslint-plugin-react": "^7.21.5",
+    "@typescript-eslint/parser": "~4.14.2",
+    "@typescript-eslint/eslint-plugin": "~4.14.2",
     "file-loader": "^6.2.0",
     "husky": "^5.0.4",
     "jsdom": "^16.4.0",
