@@ -3365,6 +3365,8 @@
                 <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERAWARN_L_SEQ1</NODE_ID_SEQ1>
                 <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERAWARN_L_SEQ2</NODE_ID_SEQ2>
                 <ANIM_NAME>PUSH_AUTOPILOT_MASTERAWARN_L</ANIM_NAME>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <AIRBUS_TYPE/>
                 <NO_SEQ2/>
             </UseTemplate>
@@ -3379,6 +3381,8 @@
                 <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERCAUT_L_SEQ1</NODE_ID_SEQ1>
                 <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERCAUT_L_SEQ2</NODE_ID_SEQ2>
                 <ANIM_NAME>PUSH_AUTOPILOT_MASTERCAUT_L</ANIM_NAME>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <AIRBUS_TYPE/>
                 <NO_SEQ2/>
             </UseTemplate>
@@ -3392,6 +3396,8 @@
                 <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERAWARN_R_SEQ1</NODE_ID_SEQ1>
                 <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERAWARN_R_SEQ2</NODE_ID_SEQ2>
                 <ANIM_NAME>PUSH_AUTOPILOT_MASTERAWARN_R</ANIM_NAME>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <AIRBUS_TYPE/>
                 <NO_SEQ2/>
             </UseTemplate>
@@ -3406,6 +3412,8 @@
                 <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERCAUT_R_SEQ1</NODE_ID_SEQ1>
                 <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERCAUT_R_SEQ2</NODE_ID_SEQ2>
                 <ANIM_NAME>PUSH_AUTOPILOT_MASTERCAUT_R</ANIM_NAME>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <AIRBUS_TYPE/>
                 <NO_SEQ2/>
             </UseTemplate>
