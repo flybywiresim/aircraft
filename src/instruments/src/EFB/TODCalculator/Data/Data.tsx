@@ -121,9 +121,7 @@ const Data = ({
 
             <Divider className="mb-6" />
 
-            {calculationTypes.map(({
-                label, rightLabel, type, syncValue, negativeValue,
-            }) => (!calculationInput || calculationType === type) && (
+            {calculationTypes.map(({ label, rightLabel, type, syncValue, negativeValue }) => (!calculationInput || calculationType === type) && (
                 <>
                     <Input
                         label={label}
@@ -169,11 +167,7 @@ const Data = ({
 };
 
 export default connect(
-    ({
-        [TOD_CALCULATOR_REDUCER]: {
-            currentAltitudeMode, calculationInputMode, currentAltitude, targetAltitude, calculation,
-        },
-    }) => ({
+    ({ [TOD_CALCULATOR_REDUCER]: { currentAltitudeMode, calculationInputMode, currentAltitude, targetAltitude, calculation } }) => ({
         currentAltitudeSyncEnabled: currentAltitudeMode === TOD_INPUT_MODE.AUTO,
         calculationInputSyncEnabled: calculationInputMode === TOD_INPUT_MODE.AUTO,
         currentAltitude,

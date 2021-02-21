@@ -57,6 +57,4 @@ export const setTodCurrentAltitudeSync = (enabled: boolean) => (dispatch) => {
     dispatch(setTodData({ currentAltitudeMode: enabled ? TOD_INPUT_MODE.AUTO : TOD_INPUT_MODE.MANUAL }));
 };
 
-export const clearTodGroundSpeed = () => ({
-    type: CLEAR_TOD_GROUND_SPEED,
-});
+export const clearTodGroundSpeed = () => ({ type: CLEAR_TOD_GROUND_SPEED });

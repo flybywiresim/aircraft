@@ -30,9 +30,7 @@ import Button, { BUTTON_TYPE } from '../../../Components/Button/Button';
 import { TOD_INPUT_MODE } from '../../../Enum/TODInputMode.enum';
 import { useSimVar } from '../../../../Common/simVars';
 
-const GroundSpeedAuto = ({
-    groundSpeedData, currentAltitude, setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode, ...props
-}) => {
+const GroundSpeedAuto = ({ groundSpeedData, currentAltitude, setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode, ...props }) => {
     let [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 1_000);
     simGroundSpeed = round(simGroundSpeed);
 
@@ -75,7 +73,5 @@ const GroundSpeedAuto = ({
 
 export default connect(
     ({ [TOD_CALCULATOR_REDUCER]: { groundSpeed, currentAltitude } }) => ({ groundSpeedData: groundSpeed, currentAltitude }),
-    {
-        setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode,
-    },
+    { setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode },
 )(GroundSpeedAuto);

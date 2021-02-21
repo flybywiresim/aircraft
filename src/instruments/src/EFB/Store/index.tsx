@@ -31,9 +31,7 @@ export default createStore(
             state = undefined;
         }
 
-        return combineReducers({
-            [TOD_CALCULATOR_REDUCER]: todCalculatorReducer,
-        })(state, action);
+        return combineReducers({ [TOD_CALCULATOR_REDUCER]: todCalculatorReducer })(state, action);
     },
     composeWithDevTools(applyMiddleware(thunk)),
 );
