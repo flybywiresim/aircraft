@@ -11,6 +11,11 @@ const getDigitsFromCode = (code: number): number[] => {
         digits.push(codeCopy % 10);
         codeCopy = Math.floor(codeCopy / 10);
     }
+    if (digits.length < 4) {
+        for (let i = 0; i <= 4 - digits.length; i++) {
+            digits.push(0);
+        }
+    }
     digits.reverse();
     return digits;
 };
