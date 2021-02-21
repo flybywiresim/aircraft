@@ -1,4 +1,6 @@
-declare type MetarParserType = {
+/* eslint-disable camelcase */
+// Disable eslint camelcase as these are types for external library
+export type MetarParserType = {
     raw_text: string,
     raw_parts: [string],
     icao: string,
@@ -15,7 +17,7 @@ declare type MetarParserType = {
     flight_category: string,
 }
 
-type Wind = {
+export type Wind = {
     degrees: number,
     speed_kts: number,
     speed_mps: number,
@@ -23,40 +25,40 @@ type Wind = {
     gust_mps: number,
 };
 
-type Visibility = {
+export type Visibility = {
     miles: string,
     miles_float: number,
     meters: string,
     meters_float: number,
 };
 
-type ConditionCode = {
+export type ConditionCode = {
     code: string,
 };
 
-type Cloud = {
+export type Cloud = {
     code: string,
     base_feet_agl: number,
     base_meters_agl: number,
 };
 
-type Ceiling = {
+export type Ceiling = {
     code: string,
     feet_agl: number,
     meters_agl: number,
 };
 
-type Temperature = {
+export type Temperature = {
     celsius: number,
     fahrenheit: number,
 };
 
-type Dewpoint = {
+export type Dewpoint = {
     celsius: number,
     fahrenheit: number,
 };
 
-type Barometer = {
+export type Barometer = {
     hg: number,
     kpa: number,
     mb: number,

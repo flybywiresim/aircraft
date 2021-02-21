@@ -21,51 +21,51 @@
 import { getTailWind } from './CommonCalculations';
 
 export enum LandingRunwayConditions {
-	Dry,
-	Good,
-	GoodMedium,
-	Medium,
-	MediumPoor,
-	Poor,
+    Dry,
+    Good,
+    GoodMedium,
+    Medium,
+    MediumPoor,
+    Poor,
 }
 
 export enum LandingFlapsConfig {
-	Conf3,
-	Full
+    Conf3,
+    Full
 }
 
 export enum AutobrakeMode {
-	Low,
-	Medium,
-	Max // Manual brake is the same as max auto
+    Low,
+    Medium,
+    Max // Manual brake is the same as max auto
 }
 
 /**
  * Landing data for a specific aircraft configuration with a specific runway condition
  */
 type LandingData = {
-	refDistance: number,
-	weightCorrectionAbove: number, // per 1T above 68T
-	weightCorrectionBelow: number, // per 1T below 68T
-	speedCorrection: number, // Per 5kt
-	altitudeCorrection: number, // Per 1000ft ASL
-	windCorrection: number, // Per 5KT tail wind
-	tempCorrection: number, // Per 10 deg C above ISA
-	slopeCorrection: number, // Per 1% down slope
-	reverserCorrection: number, // Per thrust reverser operative
-	overweightProcedureCorrection: number // If overweight procedure applied
+    refDistance: number,
+    weightCorrectionAbove: number, // per 1T above 68T
+    weightCorrectionBelow: number, // per 1T below 68T
+    speedCorrection: number, // Per 5kt
+    altitudeCorrection: number, // Per 1000ft ASL
+    windCorrection: number, // Per 5KT tail wind
+    tempCorrection: number, // Per 10 deg C above ISA
+    slopeCorrection: number, // Per 1% down slope
+    reverserCorrection: number, // Per thrust reverser operative
+    overweightProcedureCorrection: number // If overweight procedure applied
 };
 
 type FlapsConfigLandingData = {
-	[flapsConfig in LandingFlapsConfig]: LandingData
+    [flapsConfig in LandingFlapsConfig]: LandingData
 };
 
 type AutobrakeConfigLandingData = {
-	[autobrakeConfig in AutobrakeMode]: FlapsConfigLandingData
+    [autobrakeConfig in AutobrakeMode]: FlapsConfigLandingData
 }
 
 type RunwayConditionLandingData = {
-	[runwayCondition in LandingRunwayConditions]: AutobrakeConfigLandingData;
+    [runwayCondition in LandingRunwayConditions]: AutobrakeConfigLandingData;
 }
 
 const dryRunwayLandingData: AutobrakeConfigLandingData = {
@@ -597,46 +597,52 @@ function getVlsTableIndex(mass: number): number {
 
 export default class LandingCalculator {
     /**
-	 * Calculates the landing distances for each autobrake mode for the given conditions
-	 * @param weight Aircraft weight in KGs
-	 * @param flaps Flap Configuration
-	 * @param runwayCondition
-	 * @param approachSpeed Actual approach speed in kts
-	 * @param windDirection Heading wind is coming from, relative to north
-	 * @param windMagnitude Magnitude of wind in Knots
-	 * @param runwayHeading Heading of runway relative to north
-	 * @param reverseThrust Indicates if reverse thrust is active
-	 * @param altitude Runway altitude in feet ASL
-	 * @param temperature OAT of runway
-	 * @param slope Runway slope in %. Negative is downward slope
-	 * @param overweightProcedure Overweight procedure is being used if true
-	 */
+     * Calculates the landing distances for each autobrake mode for the given conditions
+     * @param weight Aircraft weight in KGs
+     * @param flaps Flap Configuration
+     * @param runwayCondition
+     * @param approachSpeed Actual approach speed in kts
+     * @param windDirection Heading wind is coming from, relative to north
+     * @param windMagnitude Magnitude of wind in Knots
+     * @param runwayHeading Heading of runway relative to north
+     * @param reverseThrust Indicates if reverse thrust is active
+     * @param altitude Runway altitude in feet ASL
+     * @param temperature OAT of runway
+     * @param slope Runway slope in %. Negative is downward slope
+     * @param overweightProcedure Overweight procedure is being used if true
+     */
     public calculateLandingDistances(weight: number, flaps: LandingFlapsConfig, runwayCondition: LandingRunwayConditions,
         approachSpeed: number, windDirection: number, windMagnitude: number, runwayHeading: number, reverseThrust: boolean, altitude: number,
         temperature: number, slope: number, overweightProcedure: boolean, pressure: number): { maxAutobrakeDist: number, mediumAutobrakeDist: number, lowAutobrakeDist: number} {
         return {
-            maxAutobrakeDist: safetyMargin * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Max, approachSpeed, windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure),
-            mediumAutobrakeDist: safetyMargin * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Medium, approachSpeed, windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure),
-            lowAutobrakeDist: safetyMargin * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Low, approachSpeed, windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure),
+            maxAutobrakeDist: safetyMargin
+                * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Max, approachSpeed,
+                    windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure),
+            mediumAutobrakeDist: safetyMargin
+                * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Medium, approachSpeed,
+                    windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure),
+            lowAutobrakeDist: safetyMargin
+                * this.calculateRequiredLandingDistance(weight, flaps, runwayCondition, AutobrakeMode.Low, approachSpeed,
+                    windDirection, windMagnitude, runwayHeading, reverseThrust, altitude, temperature, slope, overweightProcedure, pressure),
         };
     }
 
     /**
-	 * Calculates the required landing distance for the given conditions
-	 * @param weight Aircraft weight in KGs
-	 * @param flaps Flap Configuration
-	 * @param runwayCondition
-	 * @param autobrakeMode
-	 * @param approachSpeed Actual approach speed in kts
-	 * @param windDirection Heading wind is coming from, relative to north
-	 * @param windMagnitude Magnitude of wind in Knots
-	 * @param runwayHeading Heading of runway relative to north
-	 * @param reverseThrust Indicates if reverse thrust is active
-	 * @param altitude Runway altitude in feet ASL
-	 * @param temperature OAT of runway
-	 * @param slope Runway slope in %. Negative is downward slope
-	 * @param overweightProcedure Overweight procedure is being used if true
-	 */
+     * Calculates the required landing distance for the given conditions
+     * @param weight Aircraft weight in KGs
+     * @param flaps Flap Configuration
+     * @param runwayCondition
+     * @param autobrakeMode
+     * @param approachSpeed Actual approach speed in kts
+     * @param windDirection Heading wind is coming from, relative to north
+     * @param windMagnitude Magnitude of wind in Knots
+     * @param runwayHeading Heading of runway relative to north
+     * @param reverseThrust Indicates if reverse thrust is active
+     * @param altitude Runway altitude in feet ASL
+     * @param temperature OAT of runway
+     * @param slope Runway slope in %. Negative is downward slope
+     * @param overweightProcedure Overweight procedure is being used if true
+     */
     private calculateRequiredLandingDistance(weight: number, flaps: LandingFlapsConfig, runwayCondition: LandingRunwayConditions, autobrakeMode: AutobrakeMode,
         approachSpeed: number, windDirection: number, windMagnitude: number, runwayHeading: number, reverseThrust: boolean, altitude: number,
         temperature: number, slope: number, overweightProcedure: boolean, pressure: number): number {
@@ -644,7 +650,7 @@ export default class LandingCalculator {
 
         let targetApproachSpeed: number;
         const vlsTableIndex = getVlsTableIndex(weight / 1000);
-        if (flaps == LandingFlapsConfig.Full) {
+        if (flaps === LandingFlapsConfig.Full) {
             targetApproachSpeed = confFullVls[vlsTableIndex];
         } else {
             targetApproachSpeed = conf3Vls[vlsTableIndex];
@@ -690,19 +696,19 @@ export default class LandingCalculator {
             ? landingData.overweightProcedureCorrection
             : 0;
 
-        const requiredLandingDistance =			landingData.refDistance + weightCorrection + speedCorrection + windCorrection + reverserCorrection
-			+ altitudeCorrection + slopeCorrection + temperatureCorrection + overweightProcCorrection;
+        const requiredLandingDistance = landingData.refDistance + weightCorrection + speedCorrection + windCorrection + reverserCorrection
+            + altitudeCorrection + slopeCorrection + temperatureCorrection + overweightProcCorrection;
 
         return Math.round(requiredLandingDistance);
     }
 
     /**
-	 * Converts a given pressure to equivilant pressure altitude
-	 * @param pressure Pressure in mb
-	 * @returns Pressure altitude in feet
-	 */
+     * Converts a given pressure to equivilant pressure altitude
+     * @param pressure Pressure in mb
+     * @returns Pressure altitude in feet
+     */
     private getPressureAltitude(pressure: number): number {
         // See https://en.wikipedia.org/wiki/Pressure_altitude
-        return 145366.45 * (1 - Math.pow(pressure / 1013.25, 0.190284));
+        return 145366.45 * (1 - ((pressure / 1013.25) ** 0.190284));
     }
 }

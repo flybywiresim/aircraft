@@ -1,19 +1,19 @@
 import React from 'react';
 
 type SimpleInputProps = {
-	label: string,
-	placeholder?: string,
-	value?: any,
-	onChange?: (value: string) => void,
-	min?: number,
-	max?: number,
-	number?: boolean,
-	reverse?: boolean // Flip label/input order,
-	className?: string
+    label: string,
+    placeholder?: string,
+    value?: any,
+    onChange?: (value: string) => void,
+    min?: number,
+    max?: number,
+    number?: boolean,
+    reverse?: boolean // Flip label/input order,
+    className?: string
 };
 
 type SimpleInputState = {
-	value: string
+    value: string
 };
 
 export default class SimpleInput extends React.Component<SimpleInputProps, SimpleInputState> {
@@ -26,8 +26,9 @@ export default class SimpleInput extends React.Component<SimpleInputProps, Simpl
     }
 
     public componentDidUpdate(prevProps: SimpleInputProps): void {
-        if (this.props.value !== undefined && prevProps.value != this.props.value) {
-            this.setState({
+        if (this.props.value !== undefined && prevProps.value !== this.props.value) {
+            // setState is safe as wrapped in condition
+            this.setState({ // eslint-disable-line react/no-did-update-set-state
                 value: this.props.value,
             });
         }
@@ -60,7 +61,7 @@ export default class SimpleInput extends React.Component<SimpleInputProps, Simpl
         let constrainedValue = value;
         let numericValue = parseFloat(value);
 
-        if (!isNaN(numericValue)) {
+        if (!Number.isNaN(numericValue)) {
             if (this.props.min !== undefined && numericValue < this.props.min) {
                 numericValue = this.props.min;
             } else if (this.props.max !== undefined && numericValue > this.props.max) {

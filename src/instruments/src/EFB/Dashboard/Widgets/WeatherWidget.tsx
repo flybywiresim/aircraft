@@ -24,6 +24,7 @@ import { Metar } from '@flybywiresim/api-client';
 import {
     IconWind, IconGauge, IconDroplet, IconTemperature, IconAccessPoint, IconRouter, IconPoint,
 } from '@tabler/icons';
+import { MetarParserType, Wind } from '../../../Common/metarTypes';
 
 const MetarParserTypeWindState: Wind = {
     degrees: 0,
@@ -114,7 +115,6 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
         return Metar.get(icao, source)
             .then((result) => {
                 const metarParse = metarParser(result.metar);
-                console.info(metarParse);
                 setMetar(metarParse);
             })
             .catch(() => {

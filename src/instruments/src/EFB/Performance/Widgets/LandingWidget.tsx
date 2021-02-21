@@ -27,7 +27,7 @@ import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
 import Help from '../../Components/Help';
 import Card from '../../Components/Card/Card';
 import { useSimVar } from '../../../Common/simVars';
-import Input from '../../Components/Form/Input/Input';
+import { MetarParserType } from '../../../Common/metarTypes';
 
 const poundsToKgs = 0.453592;
 
@@ -97,7 +97,7 @@ export const LandingWidget = () => {
             },
         ]);
 
-        setRunwayNumber(Math.round(runwayHeading ?? 0 / 10));
+        setRunwayNumber(Math.round((runwayHeading ?? 0) / 10));
         setDisplayedRunwayLength(runwayLength ?? 0);
     };
 
@@ -117,7 +117,7 @@ export const LandingWidget = () => {
     const handleWindDirectionChange = (value: string): void => {
         let direction: number | undefined = parseInt(value);
 
-        if (isNaN(direction)) {
+        if (Number.isNaN(direction)) {
             direction = undefined;
         }
 
@@ -127,7 +127,7 @@ export const LandingWidget = () => {
     const handleWindMagnitudeChange = (value: string): void => {
         let magnitude: number | undefined = parseInt(value);
 
-        if (isNaN(magnitude)) {
+        if (Number.isNaN(magnitude)) {
             magnitude = undefined;
         }
 
@@ -137,7 +137,7 @@ export const LandingWidget = () => {
     const handleWeightChange = (value: string): void => {
         let weight: number | undefined = parseInt(value);
 
-        if (isNaN(weight)) {
+        if (Number.isNaN(weight)) {
             weight = undefined;
         }
 
@@ -147,7 +147,7 @@ export const LandingWidget = () => {
     const handleRunwayHeadingChange = (value: string): void => {
         let runwayHeading: number | undefined = parseInt(value);
 
-        if (isNaN(runwayHeading)) {
+        if (Number.isNaN(runwayHeading)) {
             runwayHeading = undefined;
         }
 
@@ -157,7 +157,7 @@ export const LandingWidget = () => {
     const handleApproachSpeedChange = (value: string): void => {
         let speed: number | undefined = parseInt(value);
 
-        if (isNaN(speed)) {
+        if (Number.isNaN(speed)) {
             speed = undefined;
         }
 
@@ -167,7 +167,7 @@ export const LandingWidget = () => {
     const handleAltitudeChange = (value: string): void => {
         let altitude: number | undefined = parseInt(value);
 
-        if (isNaN(altitude)) {
+        if (Number.isNaN(altitude)) {
             altitude = undefined;
         }
 
@@ -177,7 +177,7 @@ export const LandingWidget = () => {
     const handleTemperatureChange = (value: string): void => {
         let temperature: number | undefined = parseFloat(value);
 
-        if (isNaN(temperature)) {
+        if (Number.isNaN(temperature)) {
             temperature = undefined;
         }
 
@@ -205,7 +205,7 @@ export const LandingWidget = () => {
     };
 
     const handleReverseThrustChange = (newValue: number | string): void => {
-        const reverseThrust: boolean = parseInt(newValue.toString()) == 1;
+        const reverseThrust: boolean = parseInt(newValue.toString()) === 1;
 
         setReverseThrust(reverseThrust);
     };
@@ -213,7 +213,7 @@ export const LandingWidget = () => {
     const handleRunwaySlopeChange = (value: string): void => {
         let slope: number | undefined = parseInt(value);
 
-        if (isNaN(slope)) {
+        if (Number.isNaN(slope)) {
             slope = undefined;
         }
 
@@ -223,7 +223,7 @@ export const LandingWidget = () => {
     const handleRunwayLengthChange = (value: string): void => {
         let runwayLength: number | undefined = parseInt(value);
 
-        if (isNaN(runwayLength)) {
+        if (Number.isNaN(runwayLength)) {
             runwayLength = undefined;
         }
 
@@ -231,7 +231,7 @@ export const LandingWidget = () => {
     };
 
     const handleOverweightProcedureChange = (newValue: number | string): void => {
-        const overweightProcedure: boolean = parseInt(newValue.toString()) == 1;
+        const overweightProcedure: boolean = parseInt(newValue.toString()) === 1;
 
         setOverweightProcedure(overweightProcedure);
     };
@@ -239,7 +239,7 @@ export const LandingWidget = () => {
     const handlePressureChange = (value: string): void => {
         let pressure: number | undefined = parseFloat(value);
 
-        if (isNaN(pressure)) {
+        if (Number.isNaN(pressure)) {
             pressure = undefined;
         }
 
@@ -256,6 +256,7 @@ export const LandingWidget = () => {
                             <button
                                 onClick={syncValues}
                                 className="mx-2 font-medium bg-blue-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
+                                type="button"
                             >
                                 Auto-fill
                             </button>
@@ -270,17 +271,17 @@ export const LandingWidget = () => {
                                 <SimpleInput label="Rwy Heading" value={runwayHeading} min={0} max={360} onChange={handleRunwayHeadingChange} className="py-2" number />
                                 <SelectInput
                                     label="Rwy Condition"
-                                    defaultValue="0"
+                                    defaultValue={0}
                                     onChange={handleRunwayConditionChange}
                                     dropdownOnTop
                                     className="py-2"
                                     options={[
-                                        [0, 'Dry'],
-                                        [1, 'Good'],
-                                        [2, 'Good-Medium'],
-                                        [3, 'Medium'],
-                                        [4, 'Medium-Poor'],
-                                        [5, 'Poor'],
+                                        { value: 0, displayValue: 'Dry' },
+                                        { value: 1, displayValue: 'Good' },
+                                        { value: 2, displayValue: 'Good-Medium' },
+                                        { value: 3, displayValue: 'Medium' },
+                                        { value: 4, displayValue: 'Medium-Poor' },
+                                        { value: 5, displayValue: 'Poor' },
                                     ]}
                                 />
                             </div>
@@ -292,39 +293,49 @@ export const LandingWidget = () => {
                                         The distance available on the runway which is suitable for the ground run of the landing.
                                     </Help>
                                 </div>
-                                <SimpleInput label="Approach Speed" value={approachSpeed} placeholder="KTS" min={90} max={350} onChange={handleApproachSpeedChange} className="py-2" number reverse />
+                                <SimpleInput
+                                    label="Approach Speed"
+                                    value={approachSpeed}
+                                    placeholder="KTS"
+                                    min={90}
+                                    max={350}
+                                    onChange={handleApproachSpeedChange}
+                                    className="py-2"
+                                    number
+                                    reverse
+                                />
                                 <SimpleInput label="Weight" value={weight} placeholder="KG" min={41000} max={100000} onChange={handleWeightChange} className="py-2" number reverse />
                                 <SelectInput
                                     label="Flaps"
-                                    defaultValue="1"
+                                    defaultValue={1}
                                     onChange={handleFlapsChange}
                                     reverse
                                     className="py-2"
                                     options={[
-                                        [1, 'Full'],
-                                        [0, 'CONF 3'],
+                                        { value: 1, displayValue: 'Full' },
+                                        { value: 0, displayValue: 'CONF 3' },
                                     ]}
                                 />
                                 <SelectInput
                                     label="Overweight Proc"
-                                    defaultValue="0"
+                                    defaultValue={0}
                                     onChange={handleOverweightProcedureChange}
                                     reverse
                                     className="py-2"
                                     options={[
-                                        [0, 'No'],
-                                        [1, 'Yes'],
+                                        { value: 0, displayValue: 'No' },
+                                        { value: 1, displayValue: 'Yes' },
                                     ]}
                                 />
                                 <SelectInput
                                     label="Reverse Thrust"
-                                    defaultValue="0"
+                                    defaultValue={0}
                                     onChange={handleReverseThrustChange}
                                     reverse
                                     className="py-2"
                                     options={[
-                                        [0, 'No'],
-                                        [1, 'Yes'],
+                                        { value: 0, displayValue: 'No' },
+                                        { value: 1, displayValue: 'Yes' },
                                     ]}
                                 />
                             </div>
@@ -332,6 +343,7 @@ export const LandingWidget = () => {
                         <button
                             onClick={calculateLanding}
                             className="my-3 mx-2 w-full font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
+                            type="button"
                         >
                             Calculate
                         </button>

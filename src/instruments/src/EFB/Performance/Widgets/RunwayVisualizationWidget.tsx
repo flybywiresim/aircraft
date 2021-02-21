@@ -21,37 +21,43 @@ import React from 'react';
 import '../../Assets/Performance.scss';
 
 export type DistanceLabel = {
-	distance: number,
-	label: string,
-	type: LabelType
+    distance: number,
+    label: string,
+    type: LabelType
 }
 
 export enum LabelType {
-	Main,
-	Asda,
-	Toda
+    Main,
+    Asda,
+    Toda
 }
 
 type RunwayVisualizationProps = {
-	mainLength?: number,
-	asda?: number,
-	toda?: number,
-	labels?: DistanceLabel[],
-	runwayNumber?: number,
-	stopMargin?: number
+    mainLength?: number,
+    asda?: number,
+    toda?: number,
+    labels?: DistanceLabel[],
+    runwayNumber?: number,
+    stopMargin?: number
 };
 type RunwayVisualizationState = {};
 
 export default class RunwayVisualizationWidget extends React.Component<RunwayVisualizationProps, RunwayVisualizationState> {
-    constructor(props: RunwayVisualizationProps) {
-        super(props);
+    private getStopMarginLabelHeightPercentage(): number {
+        if (!this.props.stopMargin) return 0;
+
+        return (Math.abs(this.props.stopMargin) / this.maxDist()) * 100;
+    }
+
+    private getLabelBottomPercentage(label: DistanceLabel): number {
+        return (label.distance / this.maxDist()) * 100;
     }
 
     private mainHeightPercentage(): number {
         const mainLength = this.props.mainLength ?? 0;
         const maxDist = this.maxDist();
 
-        if (mainLength == 0 || maxDist == 0) {
+        if (mainLength === 0 || maxDist === 0) {
             return 100;
         }
         const percentage = (mainLength / this.maxDist()) * 100;
@@ -85,8 +91,9 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
             return label.distance > (this.props.asda ?? 0);
         case LabelType.Toda:
             return label.distance > (this.props.toda ?? 0);
+        default:
+            return label.distance > (this.props.mainLength ?? 0);
         }
-        return label.distance > (this.props.mainLength ?? 0);
     }
 
     private runwayLengthLabel(): JSX.Element {
@@ -120,16 +127,7 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
                 </div>
             );
         }
-    }
-
-    private getStopMarginLabelHeightPercentage(): number {
-        if (!this.props.stopMargin) return 0;
-
-        return (Math.abs(this.props.stopMargin) / this.maxDist()) * 100;
-    }
-
-    private getLabelBottomPercentage(label: DistanceLabel): number {
-        return (label.distance / this.maxDist()) * 100;
+        return undefined;
     }
 
     private runwayNumber(): JSX.Element | undefined {
@@ -139,6 +137,7 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
                 <div className="runway-id text-white text-4xl absolute left-1/2 bottom-20 transform -translate-x-1/2 opacity-40">{paddedNumber}</div>
             );
         }
+        return undefined;
     }
 
     private labels(): JSX.Element[] {
@@ -148,8 +147,8 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
             const bottomPercentage = this.getLabelBottomPercentage(label);
 
             const closestLabel = (this.props.labels ?? []).reduce((a, b) => {
-                if (a.label == label.label) return b;
-                if (b.label == label.label) return a;
+                if (a.label === label.label) return b;
+                if (b.label === label.label) return a;
 
                 return Math.abs(this.getLabelBottomPercentage(b) - bottomPercentage) < Math.abs(this.getLabelBottomPercentage(a) - bottomPercentage) ? b : a;
             });
@@ -157,22 +156,23 @@ export default class RunwayVisualizationWidget extends React.Component<RunwayVis
             const showText = (Math.abs(this.getLabelBottomPercentage(closestLabel) - bottomPercentage) > 5);
 
             elements.push(
-                (<div
-                    className={`w-32 h-1 bg-white text-white absolute left-1/2 transform -translate-x-1/2 ${
-					 (this.isLabelOverDistance(label)) ? 'error-label' : ''}`}
-                    style={{ bottom: `${bottomPercentage}%` }}
-                >
+                (
+                    <div
+                        className={`w-32 h-1 bg-white text-white absolute left-1/2 transform -translate-x-1/2 ${
+                            (this.isLabelOverDistance(label)) ? 'error-label' : ''}`}
+                        style={{ bottom: `${bottomPercentage}%` }}
+                    >
 
-                    {showText && (
-                        <div className="w-full text-center absolute -top-0.5 transform -translate-y-full">
-                            {label.label}
-                            {' '}
-                            { Math.round(label.distance) }
-                            m
-                        </div>
-                    )}
+                        {showText && (
+                            <div className="w-full text-center absolute -top-0.5 transform -translate-y-full">
+                                {label.label}
+                                {' '}
+                                { Math.round(label.distance) }
+                                m
+                            </div>
+                        )}
 
-                </div>),
+                    </div>),
             );
         }
 
