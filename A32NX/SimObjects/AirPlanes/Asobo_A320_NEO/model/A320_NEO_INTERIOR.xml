@@ -978,12 +978,6 @@
         </Component>
 
         <Component ID="Front_Middle">
-            <Component ID="Speed_Placard" Node="SPEED_LIMIT">
-                <UseTemplate Name="ASOBO_GT_Visibility_Code">
-                    <VISIBILITY_CODE>0</VISIBILITY_CODE>
-                </UseTemplate>
-            </Component>
-
             <Component ID="Brake_Fan_Imported">
                 <UseTemplate Name="FBW_Push_BrkFan_Toggle">
                     <NODE_ID>PUSH_BKRFAN_IMPORTED</NODE_ID>
