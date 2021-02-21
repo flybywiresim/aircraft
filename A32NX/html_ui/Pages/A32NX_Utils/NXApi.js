@@ -22,7 +22,7 @@ class NXApi {
         return fetch(`${NXApi.url}/api/v1/airport/${icao}`)
             .then((response) => {
                 if (!response.ok) {
-                    throw (response);
+                    throw new Error("Request failed with status code " + response.status);
                 }
 
                 return response.json();
