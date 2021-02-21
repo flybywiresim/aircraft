@@ -20,14 +20,15 @@ import React from 'react';
 import classNames from 'classnames';
 
 type CardProps = {
-    title?: string,
-    childrenContainerClassName?: string
+	title?: string,
+	childrenContainerClassName?: string,
+	className?: string,
 };
 
 const Card: React.FC<CardProps> = ({
-    title, childrenContainerClassName = '', children, ...props
+    title, childrenContainerClassName = '', children, className, ...props
 }) => (
-    <div {...props}>
+    <div className={className}>
         {!!title && <h1 className="text-white font-medium mb-4 text-2xl">{title}</h1>}
 
         <div className={classNames(['bg-gray-800 rounded-xl p-6 text-white shadow-lg', childrenContainerClassName])}>

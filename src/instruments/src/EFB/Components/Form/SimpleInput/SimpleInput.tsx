@@ -3,11 +3,13 @@ import React from 'react';
 type SimpleInputProps = {
 	label: string,
 	placeholder?: string,
+	value?: any,
 	onChange?: (value: string) => void,
 	min?: number,
 	max?: number,
 	number?: boolean,
-	reverse?: boolean // Flip label/input order
+	reverse?: boolean // Flip label/input order,
+	className?: string
 };
 
 type SimpleInputState = {
@@ -17,8 +19,17 @@ type SimpleInputState = {
 export default class SimpleInput extends React.Component<SimpleInputProps, SimpleInputState> {
 	constructor(props: SimpleInputProps) {
 		super(props);
+
 		this.state = {
-			value: ''
+			value: this.props.value ? this.props.value : ''
+		}
+	}
+
+	public componentDidUpdate(prevProps: SimpleInputProps): void {
+		if (this.props.value !== undefined && prevProps.value != this.props.value) {
+			this.setState({
+				value: this.props.value
+			});
 		}
 	}
 
@@ -29,9 +40,7 @@ export default class SimpleInput extends React.Component<SimpleInputProps, Simpl
 			originalValue = originalValue.replace(/[^\d.-]/g,''); // Replace all non-numeric characters
 		}
 
-		let constrainedValue = this.getConstrainedValue(originalValue);
-
-		this.props.onChange?.(constrainedValue);
+		this.props.onChange?.(originalValue);
 		this.setState({
 			value: originalValue
 		});
@@ -65,7 +74,7 @@ export default class SimpleInput extends React.Component<SimpleInputProps, Simpl
 
 	render() {
 		return (
-			<div className={"flex py-2 " + (this.props.reverse ? "flex-row-reverse" : "flex-row")}>
+			<div className={"flex " + this.props.className + (this.props.reverse ? " flex-row-reverse" : " flex-row")}>
 				<div className={"flex flex-grow m-2.5 items-center " + (this.props.reverse ? "justify-start" : "justify-end")}>{this.props.label}</div>
 				<div className="flex items-center">
 					<input className="w-28 text-lg bg-gray-900 px-3 py-1.5 rounded"

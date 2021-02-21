@@ -11,7 +11,8 @@ type SelectInputProps = {
 	defaultValue?: string | number,
 	reverse?: boolean, // Flips label/input order
 	options: (number | string)[][],
-	dropdownOnTop?: boolean // Display dropdown above input instead of below
+	dropdownOnTop?: boolean, // Display dropdown above input instead of below
+	className?: string
 };
 type SelectInputState = {
 	value: string | number,
@@ -73,7 +74,7 @@ export default class SelectInput extends React.Component<SelectInputProps, Selec
 
 	render() {
 		return (
-			<div className={"flex py-2 " + (this.props.reverse ? "flex-row-reverse" : "flex-row")}>
+			<div className={"flex " + this.props.className + (this.props.reverse ? " flex-row-reverse" : " flex-row")}>
 				<div className={"flex flex-grow m-2.5 items-center " + (this.props.reverse ? "justify-start" : "justify-end")}>{this.props.label}</div>
 				<div className="flex items-center cursor-pointer relative" onClick={this.onClicked}>
 					<div className="w-28 text-lg bg-gray-900 flex rounded">

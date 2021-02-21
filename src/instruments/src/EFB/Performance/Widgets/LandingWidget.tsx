@@ -16,368 +16,310 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import LandingCalculator, { LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { DistanceLabel, LabelType } from './RunwayVisualizationWidget';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import SelectInput from '../../Components/Form/SelectInput/SelectInput';
 import OutputDisplay from '../../Components/Form/OutputDisplay/OutputDisplay';
 import Help from '../../Components/Help';
+import Card from '../../Components/Card/Card';
+import { useSimVar } from '../../../Common/simVars';
+import { Metar } from '@flybywiresim/api-client';
+import metarParser from 'aewx-metar-parser';
+import Input from '../../Components/Form/Input/Input';
 
-type LandingWidgetProps = {};
-type LandingWidgetState = {
-	windDirection: number,
-	windMagnitude: number,
-	weight: number,
-	runwayHeading: number,
-	approachSpeed: number,
-	flaps: LandingFlapsConfig,
-	runwayCondition: LandingRunwayConditions,
-	reverseThrust: boolean,
-	altitude: number,
-	temperature: number,
-	slope: number,
-	overweightProcedure: boolean,
-	pressure: number,
-	runwayLength: number,
-	maxAutobrakeLandingDist: number,
-	mediumAutobrakeLandingDist: number,
-	lowAutobrakeLandingDist: number,
-	runwayVisualizationLabels: DistanceLabel[],
-	runwayNumber?: number,
-	displayedRunwayLength: number
-};
+const poundsToKgs = 0.453592;
 
-export default class LandingWidget extends React.Component<LandingWidgetProps, LandingWidgetState> {
-	private calculator: LandingCalculator = new LandingCalculator();
-	constructor(props: LandingWidget) {
-		super(props);
-		this.state = {
-			windDirection: 0,
-			windMagnitude: 0,
-			weight: 0,
-			runwayHeading: 0,
-			approachSpeed: 0,
-			flaps: LandingFlapsConfig.Full,
-			runwayCondition: LandingRunwayConditions.Dry,
-			reverseThrust: false,
-			altitude: 0,
-			slope: 0,
-			temperature: 0,
-			overweightProcedure: false,
-			pressure: 1013.25,
-			runwayLength: 0,
-			maxAutobrakeLandingDist: 0,
-			mediumAutobrakeLandingDist: 0,
-			lowAutobrakeLandingDist: 0,
-			runwayVisualizationLabels: [],
-			displayedRunwayLength: 0
-		};
-	}
+export const LandingWidget = () => {
+	const calculator: LandingCalculator = new LandingCalculator();
 
-	private calculateLanding = (): void => {
-		let landingDistances = this.calculator.calculateLandingDistances(
-			this.state.weight,
-			this.state.flaps,
-			this.state.runwayCondition,
-			this.state.approachSpeed,
-			this.state.windDirection,
-			this.state.windMagnitude,
-			this.state.runwayHeading,
-			this.state.reverseThrust,
-			this.state.altitude,
-			this.state.temperature,
-			this.state.slope,
-			this.state.overweightProcedure,
-			this.state.pressure
+	const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
+
+	const [icao, setIcao] = useState<string>('');
+	const [windDirection, setWindDirection] = useState<number>();
+	const [windMagnitude, setWindMagnitude] = useState<number>();
+	const [weight, setWeight] = useState<number>();
+	const [runwayHeading, setRunwayHeading] = useState<number>();
+	const [approachSpeed, setApproachSpeed] = useState<number>();
+	const [flaps, setFlaps] = useState<LandingFlapsConfig>();
+	const [runwayCondition, setRunwayCondition] = useState(LandingRunwayConditions.Dry);
+	const [reverseThrust, setReverseThrust] = useState(false);
+	const [altitude, setAltitude] = useState<number>();
+	const [slope, setSlope] = useState<number>();
+	const [temperature, setTemperature] = useState<number>();
+	const [overweightProcedure, setOverweightProcedure] = useState(false);
+	const [pressure, setPressure] = useState<number>();
+	const [runwayLength, setRunwayLength] = useState<number>();
+	const [maxAutobrakeLandingDist, setMaxAutobrakeLandingDist] = useState<number>(0);
+	const [mediumAutobrakeLandingDist, setMediumAutobrakeLandingDist] = useState<number>(0);
+	const [lowAutobrakeLandingDist, setLowAutobrakeLandingDist] = useState<number>(0);
+	const [runwayVisualizationLabels, setRunwayVisualizationLabels] = useState<DistanceLabel[]>([]);
+	const [runwayNumber, setRunwayNumber] = useState<number>();
+	const [displayedRunwayLength, setDisplayedRunwayLength] = useState<number>(0);
+
+	const calculateLanding = (): void => {
+		let landingDistances = calculator.calculateLandingDistances(
+			weight ?? 0,
+			flaps ?? LandingFlapsConfig.Full,
+			runwayCondition,
+			approachSpeed ?? 0,
+			windDirection ?? 0,
+			windMagnitude ?? 0,
+			runwayHeading ?? 0,
+			reverseThrust,
+			altitude ?? 0,
+			temperature ?? 0,
+			slope ?? 0,
+			overweightProcedure,
+			pressure ?? 0
 		);
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.maxAutobrakeLandingDist = Math.round(landingDistances.maxAutobrakeDist);
-			newState.mediumAutobrakeLandingDist = Math.round(landingDistances.mediumAutobrakeDist);
-			newState.lowAutobrakeLandingDist = Math.round(landingDistances.lowAutobrakeDist);
+		setMaxAutobrakeLandingDist(Math.round(landingDistances.maxAutobrakeDist))
+		setMediumAutobrakeLandingDist(Math.round(landingDistances.mediumAutobrakeDist))
+		setLowAutobrakeLandingDist(Math.round(landingDistances.lowAutobrakeDist))
 
-			newState.runwayVisualizationLabels = [
-				{
-					label: 'MAX MANUAL',
-					distance: landingDistances.maxAutobrakeDist,
-					type: LabelType.Main
-				},
-				{
-					label: 'MEDIUM',
-					distance: landingDistances.mediumAutobrakeDist,
-					type: LabelType.Main
-				},
-				{
-					label: 'LOW',
-					distance: landingDistances.lowAutobrakeDist,
-					type: LabelType.Main
-				}
-			]
+		setRunwayVisualizationLabels([
+			{
+				label: 'MAX MANUAL',
+				distance: landingDistances.maxAutobrakeDist,
+				type: LabelType.Main
+			},
+			{
+				label: 'MEDIUM',
+				distance: landingDistances.mediumAutobrakeDist,
+				type: LabelType.Main
+			},
+			{
+				label: 'LOW',
+				distance: landingDistances.lowAutobrakeDist,
+				type: LabelType.Main
+			}
+		]);
 
-			newState.runwayNumber = Math.round(this.state.runwayHeading / 10);
-			newState.displayedRunwayLength = this.state.runwayLength;
-
-			return newState;
-		});
+		setRunwayNumber(Math.round(runwayHeading ?? 0 / 10));
+		setDisplayedRunwayLength(runwayLength ?? 0);
 	}
 
-	private handleWindDirectionChange = (value: string): void => {
-		let direction = parseInt(value);
+	const syncValues = async (): Promise<void> => {
+		var metarResult = await Metar.get(icao);
+		var parsedMetar: MetarParserType = metarParser(metarResult.metar);
 
-		if (!direction) {
-			direction = 0;
+		var weightKgs = Math.round(totalWeight * poundsToKgs);
+
+		setWeight(weightKgs);
+		setWindDirection(parsedMetar.wind.degrees);
+		setWindMagnitude(parsedMetar.wind.speed_kts);
+		setTemperature(parsedMetar.temperature.celsius);
+		setPressure(parsedMetar.barometer.mb);
+	}
+
+	const handleWindDirectionChange = (value: string): void => {
+		let direction: number | undefined = parseInt(value);
+
+		if (isNaN(direction)) {
+			direction = undefined;
 		}
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.windDirection = direction;
-			return newState;
-		});
+		setWindDirection(direction);
 	}
 
-	private handleWindMagnitudeChange = (value: string): void => {
-		let magnitude = parseInt(value);
+	const handleWindMagnitudeChange = (value: string): void => {
+		let magnitude: number | undefined = parseInt(value);
 
-		if (!magnitude) {
-			magnitude = 0;
+		if (isNaN(magnitude)) {
+			magnitude = undefined;
 		}
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.windMagnitude = magnitude;
-			return newState;
-		});
+		setWindMagnitude(magnitude);
 	}
 
-	private handleWeightChange = (value: string): void => {
-		let weight = parseInt(value);
+	const handleWeightChange = (value: string): void => {
+		let weight: number | undefined = parseInt(value);
 
-		if (!weight) {
-			weight = 0;
+		if (isNaN(weight)) {
+			weight = undefined;
 		}
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.weight = weight;
-			return newState;
-		});
+		setWeight(weight);
 	}
 
-	private handleRunwayHeadingChange = (value: string): void => {
-		let runwayHeading = parseInt(value);
+	const handleRunwayHeadingChange = (value: string): void => {
+		let runwayHeading: number | undefined = parseInt(value);
 
-		if (!runwayHeading) {
-			runwayHeading = 0;
+		if (isNaN(runwayHeading)) {
+			runwayHeading = undefined;
 		}
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.runwayHeading = runwayHeading;
-			return newState;
-		});
+		setRunwayHeading(runwayHeading);
 	}
 
-	private handleApproachSpeedChange = (value: string): void => {
-		let speed = parseInt(value);
+	const handleApproachSpeedChange = (value: string): void => {
+		let speed: number | undefined = parseInt(value);
 
-		if (!speed) {
-			speed = 0;
+		if (isNaN(speed)) {
+			speed = undefined;
 		}
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.approachSpeed = speed;
-			return newState;
-		});
+		setApproachSpeed(speed);
 	}
 
-	private handleAltitudeChange = (value: string): void => {
-		let altitude = parseInt(value);
+	const handleAltitudeChange = (value: string): void => {
+		let altitude: number | undefined = parseInt(value);
 
-		if (!altitude) {
-			altitude = 0;
+		if (isNaN(altitude)) {
+			altitude = undefined;
 		}
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.altitude = altitude;
-			return newState;
-		});
+		setAltitude(altitude);
 	}
 
-	private handleTemperatureChange = (value: string): void => {
-		let temperature = parseFloat(value);
+	const handleTemperatureChange = (value: string): void => {
+		let temperature: number | undefined = parseFloat(value);
 
-		if (!temperature) {
-			temperature = 0;
+		if (isNaN(temperature)) {
+			temperature = undefined;
 		}
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.temperature = temperature;
-			return newState;
-		});
+		setTemperature(temperature);
 	}
 
-	private handleFlapsChange = (newValue: number | string): void => {
+	const handleFlapsChange = (newValue: number | string): void => {
 		let flaps: LandingFlapsConfig = parseInt(newValue.toString());
 
 		if (flaps !== LandingFlapsConfig.Full && flaps !== LandingFlapsConfig.Conf3) {
 			flaps = LandingFlapsConfig.Full;
 		}
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.flaps = flaps;
-			return newState;
-		});
+		setFlaps(flaps);
 	}
 
-	private handleRunwayConditionChange = (newValue: number | string): void => {
+	const handleRunwayConditionChange = (newValue: number | string): void => {
 		let runwayCondition: LandingRunwayConditions = parseInt(newValue.toString());
 
 		if (!runwayCondition) {
 			runwayCondition = LandingRunwayConditions.Dry;
 		}
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.runwayCondition = runwayCondition
-			return newState;
-		});
+		setRunwayCondition(runwayCondition);
 	}
 
-	private handleReverseThrustChange = (newValue: number | string): void => {
+	const handleReverseThrustChange = (newValue: number | string): void => {
 		let reverseThrust: boolean = parseInt(newValue.toString()) == 1;
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.reverseThrust = reverseThrust;
-			return newState;
-		});
+		setReverseThrust(reverseThrust);
 	}
 
-	private handleRunwaySlopeChange = (value: string): void => {
-		let slope = parseInt(value);
+	const handleRunwaySlopeChange = (value: string): void => {
+		let slope: number | undefined = parseInt(value);
 
-		if (!slope) {
-			slope = 0;
+		if (isNaN(slope)) {
+			slope = undefined;
 		}
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.slope = slope;
-			return newState;
-		});
+		setSlope(slope);
 	}
 
-	private handleRunwayLengthChange = (value: string): void => {
-		let runwayLength = parseInt(value);
+	const handleRunwayLengthChange = (value: string): void => {
+		let runwayLength: number | undefined = parseInt(value);
 
-		if (!runwayLength) {
-			runwayLength = 0;
+		if (isNaN(runwayLength)) {
+			runwayLength = undefined;
 		}
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.runwayLength = runwayLength;
-			return newState;
-		});
+		setRunwayLength(runwayLength);
 	}
 
-	private handleOverweightProcedureChange = (newValue: number | string): void => {
+	const handleOverweightProcedureChange = (newValue: number | string): void => {
 		let overweightProcedure: boolean = parseInt(newValue.toString()) == 1;
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.overweightProcedure = overweightProcedure;
-			return newState;
-		});
+		setOverweightProcedure(overweightProcedure);
 	}
 
-	private handlePressureChange = (value: string): void => {
-		let pressure = parseFloat(value);
+	const handlePressureChange = (value: string): void => {
+		let pressure: number | undefined = parseFloat(value);
 
-		if (!pressure) {
-			pressure = 1013.25;
+		if (isNaN(pressure)) {
+			pressure = undefined;
 		}
 
-		this.setState(prevState => {
-			let newState = { ...prevState };
-			newState.pressure = pressure;
-			return newState;
-		});
+		setPressure(pressure);
 	}
 
-	public render() {
-		return (
-			<div className="flex flex-grow">
-				<div className="w-1/2 mr-5 bg-gray-800 rounded-xl p-6 text-white shadow-lg flex items-center">
-					<div className="w-full">
-						<div className="text-center mb-6">
-							<div className="flex">
-								<div className="flex-1 m-2.5 column-left">
-									<SimpleInput label="Wind Direction" min={0} max={360} onChange={this.handleWindDirectionChange} number />
-									<SimpleInput label="Wind Magnitude" placeholder="KTS" min={0} onChange={this.handleWindMagnitudeChange} number />
-									<SimpleInput label="Temperature" placeholder='°C' min={-50} max={55} onChange={this.handleTemperatureChange} number />
-									<SimpleInput label="QNH" placeholder="mb" min={800} max={1200} onChange={this.handlePressureChange} number />
-									<SimpleInput label="Rwy Altitude" placeholder='" ASL' min={-2000} max={20000} onChange={this.handleAltitudeChange} number />
-									<SimpleInput label="Rwy Heading" min={0} max={360} onChange={this.handleRunwayHeadingChange} number />
-									<SelectInput label="Rwy Condition" defaultValue="0" onChange={this.handleRunwayConditionChange} dropdownOnTop options={[
-										[0, "Dry"],
-										[1, "Good"],
-										[2, "Good-Medium"],
-										[3, "Medium"],
-										[4, "Medium-Poor"],
-										[5, "Poor"]
-									]} />
-								</div>
-								<div className="flex-1 m-2.5 column-right">
-									<SimpleInput label="Rwy Slope" placeholder="%" min={-2} max={2} onChange={this.handleRunwaySlopeChange} number reverse />
-									<div className="flex justify-start items-center">
-										<SimpleInput label="Rwy LDA" placeholder="m" min={0} max={6000} onChange={this.handleRunwayLengthChange} number reverse />
-										<Help title="Landing Distance Available (LDA)">
-											The distance available on the runway which is suitable for the ground run of the landing.
-										</Help>
-									</div>
-									<SimpleInput label="Approach Speed" placeholder="KTS" min={90} max={350} onChange={this.handleApproachSpeedChange} number reverse/>
-									<SimpleInput label="Weight" placeholder="KG" min={41000} max={100000} onChange={this.handleWeightChange} number reverse />
-									<SelectInput label="Flaps" defaultValue="1" onChange={this.handleFlapsChange} reverse options={[
-										[1, "Full"],
-										[0, "CONF 3"]
-									]} />
-									<SelectInput label="Overweight Proc" defaultValue="0" onChange={this.handleOverweightProcedureChange} reverse options={[
-										[0, "No"],
-										[1, "Yes"]
-									]} />
-									<SelectInput label="Reverse Thrust" defaultValue="0" onChange={this.handleReverseThrustChange} reverse options={[
-										[0, "No"],
-										[1, "Yes"]
-									]} />
-								</div>
-							</div>
-							<button onClick={this.calculateLanding}
-								className="my-3 w-full font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none">
-								Calculate
+	return (
+		<div className="flex flex-grow">
+			<Card className="w-1/2 mr-4">
+				<div className="w-full">
+					<div className="text-center mb-6">
+						<div className="flex mx-2 flex-1 justify-center">
+							<SimpleInput label="ICAO" onChange={(value) => setIcao(value)}></SimpleInput>
+							<button onClick={syncValues}
+								className="mx-2 font-medium bg-blue-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none">
+								Auto-fill
 							</button>
 						</div>
-						<div className="border-t border-white pt-3">
-							<div className="flex flex-col items-center m-3">
-								<div className="flex items-end">
-									<OutputDisplay label="MAX MANUAL" value={this.state.maxAutobrakeLandingDist + "m"} error={this.state.maxAutobrakeLandingDist > this.state.displayedRunwayLength} />
-									<OutputDisplay label="MEDIUM" value={this.state.mediumAutobrakeLandingDist + "m"} error={this.state.mediumAutobrakeLandingDist > this.state.displayedRunwayLength} />
-									<OutputDisplay label="LOW" value={this.state.lowAutobrakeLandingDist + "m"} error={this.state.lowAutobrakeLandingDist > this.state.displayedRunwayLength} />
+						<div className="flex">
+							<div className="flex-1 m-2.5 column-left">
+								<SimpleInput label="Wind Direction" value={windDirection} min={0} max={360} onChange={handleWindDirectionChange} className="py-2" number />
+								<SimpleInput label="Wind Magnitude" value={windMagnitude} placeholder="KTS" min={0} onChange={handleWindMagnitudeChange} className="py-2" number />
+								<SimpleInput label="Temperature" value={temperature} placeholder='°C' min={-50} max={55} onChange={handleTemperatureChange} className="py-2" number />
+								<SimpleInput label="QNH" value={pressure} placeholder="mb" min={800} max={1200} onChange={handlePressureChange} className="py-2" number />
+								<SimpleInput label="Rwy Altitude" value={altitude} placeholder='" ASL' min={-2000} max={20000} onChange={handleAltitudeChange} className="py-2" number />
+								<SimpleInput label="Rwy Heading" value={runwayHeading} min={0} max={360} onChange={handleRunwayHeadingChange} className="py-2" number />
+								<SelectInput label="Rwy Condition" defaultValue="0" onChange={handleRunwayConditionChange} dropdownOnTop className="py-2" options={[
+									[0, "Dry"],
+									[1, "Good"],
+									[2, "Good-Medium"],
+									[3, "Medium"],
+									[4, "Medium-Poor"],
+									[5, "Poor"]
+								]} />
+							</div>
+							<div className="flex-1 m-2.5 column-right">
+								<SimpleInput label="Rwy Slope" value={slope} placeholder="%" min={-2} max={2} onChange={handleRunwaySlopeChange} className="py-2" number reverse />
+								<div className="flex justify-start items-center">
+									<SimpleInput label="Rwy LDA" value={runwayLength} placeholder="m" min={0} max={6000} onChange={handleRunwayLengthChange} className="py-2" number reverse />
+									<Help title="Landing Distance Available (LDA)">
+										The distance available on the runway which is suitable for the ground run of the landing.
+									</Help>
 								</div>
+								<SimpleInput label="Approach Speed" value={approachSpeed} placeholder="KTS" min={90} max={350} onChange={handleApproachSpeedChange} className="py-2" number reverse/>
+								<SimpleInput label="Weight" value={weight} placeholder="KG" min={41000} max={100000} onChange={handleWeightChange} className="py-2" number reverse />
+								<SelectInput label="Flaps" defaultValue="1" onChange={handleFlapsChange} reverse className="py-2" options={[
+									[1, "Full"],
+									[0, "CONF 3"]
+								]} />
+								<SelectInput label="Overweight Proc" defaultValue="0" onChange={handleOverweightProcedureChange} reverse className="py-2" options={[
+									[0, "No"],
+									[1, "Yes"]
+								]} />
+								<SelectInput label="Reverse Thrust" defaultValue="0" onChange={handleReverseThrustChange} reverse className="py-2" options={[
+									[0, "No"],
+									[1, "Yes"]
+								]} />
+							</div>
+						</div>
+						<button onClick={calculateLanding}
+							className="my-3 mx-2 w-full font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none">
+							Calculate
+						</button>
+					</div>
+					<div className="border-t border-white pt-3">
+						<div className="flex flex-col items-center m-3">
+							<div className="flex items-end">
+								<OutputDisplay label="MAX MANUAL" value={maxAutobrakeLandingDist + "m"} error={maxAutobrakeLandingDist > displayedRunwayLength} />
+								<OutputDisplay label="MEDIUM" value={mediumAutobrakeLandingDist + "m"} error={mediumAutobrakeLandingDist > displayedRunwayLength} />
+								<OutputDisplay label="LOW" value={lowAutobrakeLandingDist + "m"} error={lowAutobrakeLandingDist > displayedRunwayLength} />
 							</div>
 						</div>
 					</div>
 				</div>
-				<div className="bg-gray-800 rounded-xl px-2 py-8 text-white shadow-lg flex items-center">
-					<RunwayVisualizationWidget mainLength={this.state.displayedRunwayLength} labels={this.state.runwayVisualizationLabels} runwayNumber={this.state.runwayNumber} />
-				</div>
-			</div>
-			);
-	}
+			</Card>
+			<Card childrenContainerClassName="h-full">
+				<RunwayVisualizationWidget mainLength={displayedRunwayLength} labels={runwayVisualizationLabels} runwayNumber={runwayNumber} />
+			</Card>
+		</div>
+		);
 }
+
+export default LandingWidget;

@@ -35,7 +35,7 @@ const Performance = () => {
     return (
         <div className="w-full">
             <Navbar tabs={map(tabs, 'name')} onSelected={(activeIndex) => setActiveIndex(activeIndex)} />
-            <div>
+            <div className="px-6 pt-2">
                 {tabs[activeIndex].renderComponent()}
             </div>
         </div>
