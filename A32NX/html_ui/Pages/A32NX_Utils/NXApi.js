@@ -16,7 +16,7 @@ class NXApi {
 
     static getAirport(icao) {
         if (!icao) {
-            throw ("No ICAO provided");
+            throw new Error("No ICAO provided");
         }
 
         return fetch(`${NXApi.url}/api/v1/airport/${icao}`)
