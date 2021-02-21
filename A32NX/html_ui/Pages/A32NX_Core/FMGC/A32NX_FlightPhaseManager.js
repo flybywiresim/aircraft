@@ -23,21 +23,11 @@ class A32NX_FlightPhaseManager {
 
     checkFlightPhase() {
         if (this.activeFlightPhase.check(this.fmc)) {
-            console.log("FMGC Flight Phase: " + this.fmc.currentFlightPhase + " => " + this.activeFlightPhase.nextFmgcFlightPhase);
-            this.fmc.currentFlightPhase = this.activeFlightPhase.nextFmgcFlightPhase;
-            SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", this.activeFlightPhase.nextFmgcFlightPhase);
-
-            this.activeFlightPhase = this.flightPhases[this.activeFlightPhase.nextFmgcFlightPhase];
-
-            this.activeFlightPhase.init(this.fmc);
-
-            this.fmc.onFlightPhaseChanged();
-
-            this.checkFlightPhase();
+            this.changeFlightPhase(this.activeFlightPhase.nextFmgcFlightPhase);
         }
     }
 
-    overrideFlightPhase(_fmgcFlightPhase) {
+    changeFlightPhase(_fmgcFlightPhase) {
         console.log("FMGC Flight Phase: " + this.fmc.currentFlightPhase + " => " + _fmgcFlightPhase);
         this.fmc.currentFlightPhase = _fmgcFlightPhase;
         SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", _fmgcFlightPhase);
@@ -129,10 +119,10 @@ class A32NX_FlightPhase_Cruise {
 class A32NX_FlightPhase_Descent {
     constructor(_fmc) {
         console.log("A32NX_FlightPhase_Descent constructed");
-        this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.APPROACH;
     }
 
     init(_fmc) {
+        this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.APPROACH;
     }
 
     check(_fmc) {
@@ -141,9 +131,19 @@ class A32NX_FlightPhase_Descent {
             return true;
         }
 
-        if (decelCheck(_fmc)) {
-            this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.APPROACH;
-            return true;
+        if (_fmc.flightPlanManager.decelWaypoint) {
+            const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
+            const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
+            const planeLla = new LatLongAlt(lat, long);
+            const dist = Avionics.Utils.computeGreatCircleDistance(_fmc.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
+            if (dist < 3) {
+                _fmc.flightPlanManager._decelReached = true;
+                _fmc._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+                if (Simplane.getAltitudeAboveGround() < 9500) {
+                    this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.APPROACH;
+                    return true;
+                }
+            }
         }
 
         return false;
@@ -215,22 +215,4 @@ class A32NX_FlightPhase_Done {
     check(_fmc) {
         return true;
     }
-}
-
-function decelCheck(_fmc) {
-    if (_fmc.flightPlanManager.decelWaypoint) {
-        const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
-        const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
-        const planeLla = new LatLongAlt(lat, long);
-        const dist = Avionics.Utils.computeGreatCircleDistance(_fmc.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
-        if (dist < 3) {
-            _fmc.flightPlanManager._decelReached = true;
-            _fmc._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-            if (Simplane.getAltitudeAboveGround() < 9500) {
-                return true;
-            }
-        }
-    }
-
-    return false;
 }

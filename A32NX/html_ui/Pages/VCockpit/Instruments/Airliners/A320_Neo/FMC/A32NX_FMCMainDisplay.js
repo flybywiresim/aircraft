@@ -161,7 +161,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.approachSpeeds = undefined; // based on selected config, not current config
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
-        // TODO: remove this.currentFlightPhase
         this.currentFlightPhase = FMGC_FLIGHT_PHASES.PREFLIGHT;
         this.constraintAlt = 0;
         this.constraintAltCached = 0;
@@ -2530,25 +2529,25 @@ class FMCMainDisplay extends BaseAirliners {
 
     tryGoInApproachPhase() {
         if (this.currentFlightPhase === FMGC_FLIGHT_PHASES.CLIMB) {
-            this.flightPhaseManager.overrideFlightPhase(FMGC_FLIGHT_PHASES.APPROACH);
+            this.flightPhaseManager.changeFlightPhase(FMGC_FLIGHT_PHASES.APPROACH);
             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
             return true;
         }
         if (this.currentFlightPhase === FMGC_FLIGHT_PHASES.CRUISE) {
-            this.flightPhaseManager.overrideFlightPhase(FMGC_FLIGHT_PHASES.APPROACH);
+            this.flightPhaseManager.changeFlightPhase(FMGC_FLIGHT_PHASES.APPROACH);
             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
             return true;
         }
         if (this.currentFlightPhase === FMGC_FLIGHT_PHASES.DESCENT) {
-            this.flightPhaseManager.overrideFlightPhase(FMGC_FLIGHT_PHASES.APPROACH);
+            this.flightPhaseManager.changeFlightPhase(FMGC_FLIGHT_PHASES.APPROACH);
             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
             return true;
         }
         if (this.currentFlightPhase === FMGC_FLIGHT_PHASES.GOAROUND) {
-            this.flightPhaseManager.overrideFlightPhase(FMGC_FLIGHT_PHASES.APPROACH);
+            this.flightPhaseManager.changeFlightPhase(FMGC_FLIGHT_PHASES.APPROACH);
             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
             return true;

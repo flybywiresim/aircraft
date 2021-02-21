@@ -233,7 +233,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         // support spawning in with a custom flight phases from the .flt files
         const initialFlightPhase = SimVar.GetSimVarValue("L:A32NX_INITIAL_FLIGHT_PHASE", "number");
         if (initialFlightPhase) {
-            this.flightPhaseManager.overrideFlightPhase(initialFlightPhase === FlightPhase.FLIGHT_PHASE_TAXI ? FMGC_FLIGHT_PHASES.PREFLIGHT : initialFlightPhase);
+            this.flightPhaseManager.changeFlightPhase(initialFlightPhase === FlightPhase.FLIGHT_PHASE_TAXI ? FMGC_FLIGHT_PHASES.PREFLIGHT : initialFlightPhase);
         }
 
         this.electricity = this.querySelector("#Electricity");
