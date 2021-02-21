@@ -378,11 +378,11 @@ class CDUPerformancePage {
 
         mcdu.setTemplate([
             ["TAKE OFF RWY " + runway.padStart(3, "\xa0") + "[color]" + titleColor],
-            ["\xa0V1\xa0\xa0\xa0\xa0FLP RETR", ""],
+            ["\xa0V1\xa0\xa0\xa0FLP RETR", ""],
             [v1 + v1Check + "\xa0F=" + flpRetrCell, ""],
-            ["\xa0VR\xa0\xa0\xa0\xa0SLT RETR", "TO SHIFT\xa0"],
+            ["\xa0VR\xa0\xa0\xa0SLT RETR", "TO SHIFT\xa0"],
             [vR + vRCheck + "\xa0S=" + sltRetrCell, toShiftCell],
-            ["\xa0V2\xa0\xa0\xa0\xa0\xa0\xa0\xa0CLEAN", "FLAPS/THS"],
+            ["\xa0V2\xa0\xa0\xa0\xa0\xa0\xa0CLEAN", "FLAPS/THS"],
             [v2 + v2Check + "\xa0O=" + cleanCell, flapsThs],
             ["TRANS ALT", "FLEX TO TEMP"],
             [transAltCell, flexTakeOffTempCell],
@@ -853,11 +853,11 @@ class CDUPerformancePage {
 
         mcdu.setTemplate([
             ["APPR[color]" + titleColor],
-            ["QNH", "FINAL", "FLP RETR"],
+            ["QNH", "FINAL", "FLP RETR{sp}"],
             [qnhCell + "[color]cyan", finalCell + "[color]green", "F=" + flpRetrCell + "[color]green"],
-            ["TEMP", "MDA", "SLT RETR"],
+            ["TEMP", "MDA", "SLT RETR{sp}"],
             [tempCell + "°[color]cyan", mdaCell + "[color]cyan", "S=" + sltRetrCell + "[color]green"],
-            ["MAG WIND", "DH", "CLEAN"],
+            ["MAG WIND", "DH", "{sp}{sp}CLEAN"],
             [magWindHeadingCell + "°/" + magWindSpeedCell + "[color]cyan", dhCell + "[color]cyan", "0=" + cleanCell + "[color]green"],
             ["TRANS ALT", "LDG CONF"],
             [transAltCell + "[color]cyan", mcdu.perfApprFlaps3 ? "CONF3[color]cyan" : "[s-text]CONF3*[color]cyan"],
@@ -980,11 +980,11 @@ class CDUPerformancePage {
         }
         mcdu.setTemplate([
             ["GO AROUND[color]" + titleColor],
-            ["", "", "FLP RETR"],
+            ["", "", "FLP RETR{sp}"],
             ["", "", "F=" + flpRetrCell + "[color]green"],
-            ["", "", "SLT RETR"],
+            ["", "", "SLT RETR{sp}"],
             ["", "", "S=" + sltRetrCell + "[color]green"],
-            ["", "", "CLEAN"],
+            ["", "", "{sp}{sp}CLEAN"],
             ["", "", "0=" + cleanCell + "[color]green"],
             [""],
             [""],
