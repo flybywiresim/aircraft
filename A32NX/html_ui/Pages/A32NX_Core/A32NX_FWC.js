@@ -66,7 +66,7 @@ class A32NX_FWC {
         this._wasBellowThreshold = false;
         this._wasAboveThreshold = false;
         this._wasInRange = false;
-        this._wasReach250ft = false;
+        this._wasReach200ft = false;
     }
 
     update(_deltaTime, _core) {
@@ -348,7 +348,7 @@ class A32NX_FWC {
             this._wasBellowThreshold = false;
             this._wasAboveThreshold = false;
             this._wasInRange = false;
-            this._wasReach250ft = false;
+            this._wasReach200ft = false;
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
             return;
@@ -356,27 +356,31 @@ class A32NX_FWC {
 
         const delta = Math.abs(indicatedAltitude - targetAltitude);
 
-        if (delta < 250) {
+        if (delta < 200) {
             this._wasBellowThreshold = true;
             this._wasAboveThreshold = false;
-            this._wasReach250ft = true;
+            this._wasReach200ft = true;
         }
         if (750 < delta) {
             this._wasAboveThreshold = true;
             this._wasBellowThreshold = false;
         }
-        if (250 <= delta && delta <= 750) {
+        if (200 <= delta && delta <= 750) {
             this._wasInRange = true;
         }
 
-        if (250 <= delta) {
+        if (200 <= delta) {
             if (this._wasBellowThreshold) {
                 SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", true);
-            } else if (this._wasAboveThreshold && delta <= 750 && !this._wasReach250ft) {
+            } else if (this._wasAboveThreshold && delta <= 750 && !this._wasReach200ft) {
                 if (SimVar.GetSimVarValue("L:XMLVAR_Autopilot_1_Status", "Bool") === 0 && SimVar.GetSimVarValue("L:XMLVAR_Autopilot_2_Status", "Bool") === 0) {
+                    SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
                     SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", true);
                 }
-            } else if (750 < delta && this._wasInRange && !this._wasReach250ft) {
+                if ((SimVar.GetSimVarValue("L:XMLVAR_Autopilot_1_Status", "Bool") === 1 || SimVar.GetSimVarValue("L:XMLVAR_Autopilot_2_Status", "Bool") === 1) && SimVar.GetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool") === true) {
+                    SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
+                }
+            } else if (750 < delta && this._wasInRange && !this._wasReach200ft) {
                 SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", true);
             }
         }
