@@ -324,7 +324,7 @@ class A32NX_FWC {
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
             return;
         }
-        
+
         if (Simplane.getIsGrounded()) {
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
         }
