@@ -500,7 +500,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
 
         const delta = Math.abs(indicatedAltitude - targetAltitude);
 
-        if (delta < 250) {
+        if (delta < 200) {
             this._wasBellowThreshold = true;
             this._wasAboveThreshold = false;
         }
@@ -510,11 +510,11 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this._wasBellowThreshold = false;
         }
 
-        if (250 <= delta && delta <= 750) {
+        if (200 <= delta && delta <= 750) {
             this._wasInRange = true;
         }
 
-        if (250 <= delta) {
+        if (200 <= delta) {
             if (this._wasBellowThreshold) {
                 this._flashAmber();
             } else if (this._wasAboveThreshold && delta <= 750) {
