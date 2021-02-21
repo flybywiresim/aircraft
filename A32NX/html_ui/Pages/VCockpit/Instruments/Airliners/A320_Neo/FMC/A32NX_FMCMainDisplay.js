@@ -257,7 +257,8 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.updateFuelVars();
 
-        this.thrustReductionAltitude = 1500;
+        CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
+        CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
 
         // Start the check routine for system health and status
