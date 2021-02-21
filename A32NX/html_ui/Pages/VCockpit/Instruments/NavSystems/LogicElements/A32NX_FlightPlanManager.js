@@ -1311,9 +1311,9 @@ class FlightPlanManager {
     setApproachIndex(index, callback = () => { }, transition = 0) {
         Coherent.call("SET_APPROACH_INDEX", index).then(() => {
             Coherent.call("SET_APPROACH_TRANSITION_INDEX", transition).then(() => {
+                this._incrementFlightPlanVersion();
                 this.updateFlightPlan(() => {
                     this.updateCurrentApproach(() => {
-                        this._incrementFlightPlanVersion();
                         callback();
                     });
                 });

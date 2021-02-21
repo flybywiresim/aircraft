@@ -257,7 +257,6 @@ class CDUInitPage {
     // Does not refresh page so that other things can be performed first as necessary
     static updateTowIfNeeded(mcdu) {
         if (isFinite(mcdu.taxiFuelWeight) && isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.blockFuel)) {
-            mcdu.onToDataChanged();
             mcdu.takeOffWeight = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
         }
     }
