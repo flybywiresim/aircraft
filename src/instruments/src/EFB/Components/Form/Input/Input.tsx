@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
-import {isNumber, toNumber} from 'lodash';
+import { isNumber, toNumber } from 'lodash';
 
-import './Input.scss'
+import './Input.scss';
 
 type InputProps = {
     type?: 'text' | 'number',
@@ -36,27 +36,27 @@ type InputProps = {
 };
 
 const Input = ({
-                   type,
-                   value: propsValue,
-                   label,
-                   leftComponent,
-                   leftInnerComponent,
-                   rightComponent,
-                   rightInnerComponent,
-                   onChange: onChangeProps,
-                   className,
-                   disabled,
-                   ...props
-               }: InputProps) => {
+    type,
+    value: propsValue,
+    label,
+    leftComponent,
+    leftInnerComponent,
+    rightComponent,
+    rightInnerComponent,
+    onChange: onChangeProps,
+    className,
+    disabled,
+    ...props
+}: InputProps) => {
     const [focusActive, setFocusActive] = useState(false);
     const [value, setValue] = useState(propsValue);
 
     const onChange = (value) => {
-        if(type === 'number' && value !== '') {
+        if (type === 'number' && value !== '') {
             value = toNumber(value);
         }
 
-        if(onChangeProps) {
+        if (onChangeProps) {
             onChangeProps(value);
         }
 
@@ -67,7 +67,7 @@ const Input = ({
         onChange(propsValue);
     }, [propsValue]);
 
-    const emptyValue = value === '' || (isNumber(value) && isNaN(value));
+    const emptyValue = value === '' || (isNumber(value) && Number.isNaN(value));
 
     return (
         <div className={classNames('default-input-container', { 'focus-active': focusActive }, className)}>
@@ -76,10 +76,10 @@ const Input = ({
             <div className="flex-1">
                 {!!label && !emptyValue && <span className="text-sm text-blue-light font-light inline-block -mb-2.5 overflow-hidden">{label}</span>}
 
-                <div className={classNames('inner-container', {disabled})}>
+                <div className={classNames('inner-container', { disabled })}>
                     {leftInnerComponent}
 
-                    <div className={'relative flex flex-row'}>
+                    <div className="relative flex flex-row">
                         <input
                             className="w-full h-full bg-transparent text-white text-2xl flex items-center justify-center focus:outline-none"
                             type={type}

@@ -21,19 +21,19 @@ import thunk from 'redux-thunk';
 import { composeWithDevTools } from 'redux-devtools-extension';
 
 import { todCalculatorReducer } from './reducer/tod-calculator.reducer';
-import { EFB_CLEAR_STATE } from "./actions";
+import { EFB_CLEAR_STATE } from './actions';
 
 export const TOD_CALCULATOR_REDUCER = 'todCalculatorReducer';
 
 export default createStore(
     (state: any, action) => {
         if (action.type === EFB_CLEAR_STATE) {
-            state = undefined
+            state = undefined;
         }
 
         return combineReducers({
-            [TOD_CALCULATOR_REDUCER]: todCalculatorReducer
+            [TOD_CALCULATOR_REDUCER]: todCalculatorReducer,
         })(state, action);
     },
-    composeWithDevTools(applyMiddleware(thunk))
+    composeWithDevTools(applyMiddleware(thunk)),
 );

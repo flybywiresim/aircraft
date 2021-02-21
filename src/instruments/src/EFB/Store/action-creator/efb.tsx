@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {  EFB_CLEAR_STATE } from "../actions";
+import { EFB_CLEAR_STATE } from '../actions';
 
 export const efbClearState = () => ({
-    type: EFB_CLEAR_STATE
+    type: EFB_CLEAR_STATE,
 });
