@@ -20,7 +20,7 @@ import React from 'react';
 
 import OverviewPage from './Pages/OverviewPage';
 import LoadsheetPage from './Pages/LoadsheetPage';
-import { Navbar } from "../Components/Navbar";
+import { Navbar } from '../Components/Navbar';
 
 type DispatchProps = {
     loadsheet: string,
@@ -69,76 +69,75 @@ type DispatchState = {
 };
 
 class Dispatch extends React.Component<DispatchProps, DispatchState> {
+    tabs = [
+        'Overview',
+        'Loadsheet',
+        'Fuel',
+        'Payload',
+    ];
+
     constructor(props: DispatchProps) {
         super(props);
         this.handleClick = this.handleClick.bind(this);
+        this.state = {
+            activeIndex: 0,
+        };
+    }
+
+    handleClick(index: number) {
+        this.setState({ activeIndex: index });
     }
 
     currentPage() {
         switch (this.state.activeIndex) {
-            case 1:
-                return (
-                    <LoadsheetPage loadsheet={this.props.loadsheet} />
-                );
-            case 2:
-                return (
-                    <div className="w-full h-full">
-                        <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
-                    </div>
-                );
-            case 3:
-                return (
-                    <div className="w-full h-full">
-                        <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
-                    </div>
-                );
-            case 4:
-                return (
-                    <div className="w-full h-full">
-                        <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
-                    </div>
-                );
-            default:
-                return (
-                    <OverviewPage
-                        weights={this.props.weights}
-                        fuels={this.props.fuels}
-                        units={this.props.units}
-                        arrivingAirport={this.props.arrivingAirport}
-                        arrivingIata={this.props.arrivingIata}
-                        departingAirport={this.props.departingAirport}
-                        departingIata={this.props.departingIata}
-                        altBurn={this.props.altBurn}
-                        altIcao={this.props.altIcao}
-                        altIata={this.props.altIata}
-                        tripTime={this.props.tripTime}
-                        contFuelTime={this.props.contFuelTime}
-                        resFuelTime={this.props.resFuelTime}
-                        taxiOutTime={this.props.taxiOutTime}
-                    />
-                );
+        case 1:
+            return (
+                <LoadsheetPage loadsheet={this.props.loadsheet} />
+            );
+        case 2:
+            return (
+                <div className="w-full h-full">
+                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
+                </div>
+            );
+        case 3:
+            return (
+                <div className="w-full h-full">
+                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
+                </div>
+            );
+        case 4:
+            return (
+                <div className="w-full h-full">
+                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
+                </div>
+            );
+        default:
+            return (
+                <OverviewPage
+                    weights={this.props.weights}
+                    fuels={this.props.fuels}
+                    units={this.props.units}
+                    arrivingAirport={this.props.arrivingAirport}
+                    arrivingIata={this.props.arrivingIata}
+                    departingAirport={this.props.departingAirport}
+                    departingIata={this.props.departingIata}
+                    altBurn={this.props.altBurn}
+                    altIcao={this.props.altIcao}
+                    altIata={this.props.altIata}
+                    tripTime={this.props.tripTime}
+                    contFuelTime={this.props.contFuelTime}
+                    resFuelTime={this.props.resFuelTime}
+                    taxiOutTime={this.props.taxiOutTime}
+                />
+            );
         }
-    }
-
-    tabs = [
-       'Overview',
-       'Loadsheet',
-       'Fuel',
-       'Payload',
-    ];
-
-    state: DispatchState = {
-        activeIndex: 0,
-    };
-
-    handleClick(index: number) {
-        this.setState({activeIndex: index});
     }
 
     render() {
         return (
             <div className="w-full">
-                <Navbar tabs={this.tabs} onSelected={index => this.handleClick(index)} />
+                <Navbar tabs={this.tabs} onSelected={(index) => this.handleClick(index)} />
                 <div>
                     {this.currentPage()}
                 </div>

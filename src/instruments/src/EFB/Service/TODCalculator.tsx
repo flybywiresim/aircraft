@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {get, orderBy, min, max, inRange, set, last, head} from 'lodash';
+import {
+    get, orderBy, min, max, inRange, set, last, head,
+} from 'lodash';
 
 type groundSpeed = {from: number, groundSpeed: number};
 type groundSpeedRange= {groundSpeed: number, range: [number, number]};
@@ -40,20 +42,20 @@ export default class TODCalculator {
     public calculateDegree(distance: number): number {
         const verticalDistance = Math.abs(this.from - this.to);
 
-        return Math.atan(verticalDistance / (distance * 6076.12)) * 180 / Math.PI;
+        return (Math.atan(verticalDistance / (distance * 6076.12)) * 180) / Math.PI;
     }
 
     public calculateDistance(input: number, unit: 'FTM' | 'DEGREE'): number|null {
         const verticalDistance = Math.abs(this.from - this.to);
 
-        if(unit === 'FTM') {
+        if (unit === 'FTM') {
             const verticalDistanceTime = verticalDistance / Math.abs(input);
 
             return (this.avgGroundSpeed / 60) * verticalDistanceTime;
         }
 
-        if(unit === 'DEGREE') {
-            return (verticalDistance / Math.tan(input * Math.PI / 180)) * 0.000164579;
+        if (unit === 'DEGREE') {
+            return (verticalDistance / Math.tan((input * Math.PI) / 180)) * 0.000164579;
         }
 
         return null;
@@ -62,7 +64,7 @@ export default class TODCalculator {
     private findAverageGroundSpeed(groundSpeedsRanges: groundSpeedRange[]) {
         let sum = 0;
 
-        groundSpeedsRanges.forEach(({groundSpeed, range: [bottom, top]}) => {
+        groundSpeedsRanges.forEach(({ groundSpeed, range: [bottom, top] }) => {
             sum += groundSpeed * (top - bottom);
         });
 
@@ -81,8 +83,8 @@ export default class TODCalculator {
             const rangeStart = get(groundSpeeds, [i, 'from']);
             const rangeEnd = get(groundSpeeds, [i + 1, 'from'], 1000000); // Unrealistic default value to avoid many IFs later
 
-            if(groundSpeed !== '' && groundSpeed != 0 && rangeStart !== '') {
-                ranges.push({groundSpeed, range: [rangeStart, rangeEnd]});
+            if (groundSpeed !== '' && groundSpeed !== 0 && rangeStart !== '') {
+                ranges.push({ groundSpeed, range: [rangeStart, rangeEnd] });
             }
         }
 
@@ -111,14 +113,14 @@ export default class TODCalculator {
             }
         }
 
-        const rangeStartElement = set({...groundSpeeds[rangeStartElementIndex]}, ['range', 0], bottom);
+        const rangeStartElement = set({ ...groundSpeeds[rangeStartElementIndex] }, ['range', 0], bottom);
 
         if (rangeStartElementIndex !== rangeEndElementIndex) {
-            const rangeEndElement = set({...groundSpeeds[rangeEndElementIndex]}, ['range', 1], top);
+            const rangeEndElement = set({ ...groundSpeeds[rangeEndElementIndex] }, ['range', 1], top);
 
             return [rangeStartElement, ...groundSpeeds.slice(rangeStartElementIndex + 1, rangeEndElementIndex), rangeEndElement];
         }
 
-        return [set({...rangeStartElement}, ['range', 1], top)];
+        return [set({ ...rangeStartElement }, ['range', 1], top)];
     }
 }

@@ -26,7 +26,7 @@ export const TOD_CALCULATOR_REDUCER = 'todCalculatorReducer';
 
 export default createStore(
     combineReducers({
-        [TOD_CALCULATOR_REDUCER]: todCalculatorReducer
+        [TOD_CALCULATOR_REDUCER]: todCalculatorReducer,
     }),
-    composeWithDevTools(applyMiddleware(thunk))
+    composeWithDevTools(applyMiddleware(thunk)),
 );
