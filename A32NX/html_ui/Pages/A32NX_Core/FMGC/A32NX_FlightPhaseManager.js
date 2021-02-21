@@ -124,8 +124,14 @@ class A32NX_FlightPhase_Descent {
     }
 
     check(_fmc) {
-        if (Math.round(Simplane.getAltitude() / 100) === _fmc.cruiseFlightLevel) {
+        const fl = Math.round(Simplane.getAltitude() / 100);
+        if (fl === _fmc.cruiseFlightLevel) {
             this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.CRUISE;
+            return true;
+        }
+
+        if (fl < _fmc.cruiseFlightLevel && _fmc.fcuSelAlt / 100 > fl) {
+            this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.CLIMB;
             return true;
         }
 
@@ -161,6 +167,18 @@ class A32NX_FlightPhase_Approach {
     check(_fmc) {
         if (Simplane.getEngineThrottleMode(0) === ThrottleMode.TOGA || Simplane.getEngineThrottleMode(1) === ThrottleMode.TOGA) {
             this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.GOAROUND;
+            return true;
+        }
+
+        const fl = Math.round(Simplane.getAltitude() / 100);
+
+        if (fl === _fmc.cruiseFlightLevel) {
+            this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.CRUISE;
+            return true;
+        }
+
+        if (fl < _fmc.cruiseFlightLevel && _fmc.fcuSelAlt / 100 > fl) {
+            this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.CLIMB;
             return true;
         }
 
