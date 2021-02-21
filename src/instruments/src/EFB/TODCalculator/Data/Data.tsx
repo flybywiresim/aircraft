@@ -46,6 +46,7 @@ const Data = ({
     let [distance] = useSimVar("GPS WP DISTANCE", "nautical miles", 1_000);
     let [verticalSpeed] = useSimVar("VERTICAL SPEED", "feet per minute", 1_000);
     let [pitchAngle] = useSimVar("L:A32NX_AUTOPILOT_FPA_SELECTED", "degree", 1_000);
+    let [trkModeActive] = useSimVar("L:A32NX_TRK_FPA_MODE_ACTIVE", "bool", 1_000);
 
     altitude = round(altitude, -1);
     distance = round(distance, 1);
@@ -60,8 +61,8 @@ const Data = ({
 
     const inputValid = (type: TOD_CALCULATION_TYPE, input) => ({
         [TOD_CALCULATION_TYPE.DISTANCE]: input > 0,
-        [TOD_CALCULATION_TYPE.VERTICAL_SPEED]: input < 0,
-        [TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE]: input < 0,
+        [TOD_CALCULATION_TYPE.VERTICAL_SPEED]: input < -50,
+        [TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE]: trkModeActive && input < 0,
     })[type];
 
     useEffect(() => {
@@ -129,7 +130,7 @@ const Data = ({
                         label={label}
                         type={'number'}
                         className={'dark-option mb-2 pr-1'}
-                        leftComponent={negativeValue ? <span className={'text-2xl mr-2'}>-</span> : null}
+                        leftInnerComponent={negativeValue ? <span className={'text-2xl'}>-</span> : null}
                         rightComponent={(
                             <div className={'flex items-center justify-center'}>
                                 <span className={'text-2xl pr-3'}>{rightLabel}</span>

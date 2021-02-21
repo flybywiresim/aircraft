@@ -16,15 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from 'react';
-import { IconBatteryCharging, IconWifi } from '@tabler/icons';
+import React from "react";
+import { IconBatteryCharging } from '@tabler/icons';
+import { IconWifi } from '@tabler/icons';
+import { connect } from 'react-redux';
+import { efbClearState } from "../Store/action-creator/efb";
 
 declare const SimVar;
 
-type TimeProps = {
+type Props = {
     initTime: Date,
     updateTimeSinceStart: Function,
     updateCurrentTime: Function,
+    efbClearState: () => {}
 }
 
 type TimeState = {
@@ -32,16 +36,13 @@ type TimeState = {
     timeSinceStart: string
 }
 
-export default class StatusBar extends React.Component<TimeProps, TimeState> {
-    interval: any;
-
-    constructor(props: TimeProps) {
-        super(props);
-        this.state = {
-            currentTime: this.props.initTime,
-            timeSinceStart: '',
-        };
+class StatusBar extends React.Component<Props, any> {
+    state: TimeState = {
+        currentTime: this.props.initTime,
+        timeSinceStart: "",
     }
+
+    interval: any;
 
     componentDidMount() {
         this.interval = setInterval(() => {
@@ -49,7 +50,10 @@ export default class StatusBar extends React.Component<TimeProps, TimeState> {
             const timeSinceStart = this.timeSinceStart(date);
             this.props.updateCurrentTime(date);
             this.props.updateTimeSinceStart(timeSinceStart);
-            this.setState({ currentTime: date });
+            this.setState({
+                currentTime: date,
+                timeSinceStart: timeSinceStart,
+            });
         }, 1000);
     }
 
@@ -67,17 +71,21 @@ export default class StatusBar extends React.Component<TimeProps, TimeState> {
     }
 
     render() {
+        const { efbClearState } = this.props;
+
         return (
             <div className="flex items-center justify-between px-6 py-1 text-white font-medium leading-none">
                 <div>flyPad</div>
-                <div>{`${formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getUTCMinutes()]))}z`}</div>
+                <div>{formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getUTCMinutes()])) + 'z'}</div>
                 <div className="flex items-center">
                     <IconWifi className="mr-2" size={22} stroke={1.5} strokeLinejoin="miter" />
                     100%
-
                     {/* TODO find a way to use `setSimVar` here */}
                     <IconBatteryCharging
-                        onClick={() => SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0)}
+                        onClick={() => {
+                            efbClearState();
+                            SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0);
+                        }}
                         className="ml-2"
                         color="yellow"
                         size={25}
@@ -90,28 +98,34 @@ export default class StatusBar extends React.Component<TimeProps, TimeState> {
     }
 }
 
+export default connect(
+    () => {},
+    { efbClearState }
+)(StatusBar);;
+
 export function formatTime(numbers: number[]) {
     if (numbers.length === 2) {
-        return `${(numbers[0] <= 9 ? '0' : '') + numbers[0]}:${numbers[1] <= 9 ? '0' : ''}${numbers[1]}`;
-    } if (numbers.length === 3) {
-        return `${(numbers[0] <= 9 ? '0' : '') + numbers[0]}:${numbers[1] <= 9 ? '0' : ''}${numbers[1]}:${numbers[2] <= 9 ? '0' : ''}${numbers[2]}`;
+        return (numbers[0] <= 9 ? "0" : "") + numbers[0] + ":" + (numbers[1] <= 9 ? "0" : "") + numbers[1];
+    } else if (numbers.length === 3) {
+        return (numbers[0] <= 9 ? "0" : "") + numbers[0] + ":" + (numbers[1] <= 9 ? "0" : "") + numbers[1] + ":" + (numbers[2] <= 9 ? "0" : "") + numbers[2];
+    } else {
+        return "N/A";
     }
-    return 'N/A';
 }
 
 export function dateFormat(date: number): string {
-    let numberWithSuffix = '0';
+    let numberWithSuffix = "0";
     const dateRemOf10 = date % 10;
     const dateRemOf100 = date % 100;
 
     if ((dateRemOf10 === 1) && (dateRemOf100 !== 11)) {
-        numberWithSuffix = `${date}st`;
+        numberWithSuffix = date + "st";
     } else if ((dateRemOf10 === 2) && (dateRemOf100 !== 12)) {
-        numberWithSuffix = `${date}nd`;
+        numberWithSuffix = date + "nd";
     } else if ((dateRemOf10 === 3) && (dateRemOf100 !== 13)) {
-        numberWithSuffix = `${date}rd`;
+        numberWithSuffix = date + "rd";
     } else {
-        numberWithSuffix = `${date}th`;
+        numberWithSuffix = date + "th";
     }
 
     return numberWithSuffix;

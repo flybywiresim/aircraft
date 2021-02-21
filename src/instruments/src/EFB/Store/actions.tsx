@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+export const EFB_CLEAR_STATE = 'EFB_CLEAR_STATE';
+
 export const SET_TOD_DATA = 'SET_TOD_DATA';
 export const ADD_TOD_GROUND_SPEED = 'ADD_TOD_GROUND_SPEED';
 export const REMOVE_TOD_GROUND_SPEED = 'REMOVE_TOD_GROUND_SPEED';

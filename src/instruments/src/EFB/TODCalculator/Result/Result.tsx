@@ -75,7 +75,7 @@ const Result = ({currentAltitude, targetAltitude, calculation, groundSpeed, ...p
 
     if(inputDataValid && validCalculations.length > 0) {
         return (
-            <Card title={'Result'} childrenContainerClassName={'flex-1 flex flex-col justify-center'} {...props}>
+            <Card title={'Result'} childrenContainerClassName={'flex-1 flex flex-col justify-center px-0'} {...props}>
                 {results.map(({headerText, footerText, calculate, unit}) => {
                     const calculation = calculate();
 

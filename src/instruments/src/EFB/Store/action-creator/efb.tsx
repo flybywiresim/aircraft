@@ -1,4 +1,4 @@
-/*!
+/*
  * A32NX
  * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
  *
@@ -16,45 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.default-input-container {
-  @apply h-16 px-4 py-3 border-2 border-blue-dark bg-blue-medium-contrast rounded-lg;
-  @apply flex flex-row items-center;
+import {  EFB_CLEAR_STATE } from "../actions";
 
-  &.dark-option {
-    @apply bg-blue-darker border-blue-darker;
-  }
-
-  .disabled {
-    pointer-events: none;
-  }
-
-  &.focus-active {
-    @apply border-blue-light;
-  }
-
-  > * {
-    @apply mr-4;
-  }
-
-  :last-child {
-    @apply mr-0;
-  }
-
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  .inner-container {
-    @apply relative flex flex-row;
-
-    > * {
-      @apply mr-2;
-    }
-
-    :last-child {
-      @apply mr-0;
-    }
-  }
-}
+export const efbClearState = () => ({
+    type: EFB_CLEAR_STATE
+});
