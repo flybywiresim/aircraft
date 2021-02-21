@@ -16,50 +16,51 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ISimbriefData } from "./simbriefInterface";
+import { ISimbriefData } from './simbriefInterface';
 
-const simbriefApiUrl: URL = new URL("https://www.simbrief.com/api/xml.fetcher.php");
+const simbriefApiUrl: URL = new URL('https://www.simbrief.com/api/xml.fetcher.php');
 const simbriefApiParams = simbriefApiUrl.searchParams;
 
+// eslint-disable-next-line no-undef
 const getRequestData: RequestInit = {
     headers: {
-        'Accept': 'application/json'
+        Accept: 'application/json',
     },
-    method: "GET"
+    method: 'GET',
 };
 
 export function getSimbriefData(simbriefUsername: string): Promise<ISimbriefData> {
-    simbriefApiParams.append("username", simbriefUsername);
-    simbriefApiParams.append("json", "1");
+    simbriefApiParams.append('username', simbriefUsername);
+    simbriefApiParams.append('json', '1');
     simbriefApiUrl.search = simbriefApiParams.toString();
 
     const simbriefData = fetch(simbriefApiUrl.toString(), getRequestData)
-        .then(res => res.json())
+        .then((res) => res.json())
         .then(
             (result: any) => {
                 console.info(result);
                 return simbriefDataParser(result);
             },
-            (error) => {
-                console.log("err");
-            }
+            () => {
+                console.log('err');
+            },
         );
-    //@ts-ignore
+    // @ts-ignore
     return simbriefData;
 }
 
 function simbriefDataParser(simbriefJson: any): ISimbriefData {
-    const general = simbriefJson.general;
-    const origin = simbriefJson.origin;
-    const aircraft = simbriefJson.aircraft;
-    const destination = simbriefJson.destination;
-    const times = simbriefJson.times;
-    const weights = simbriefJson.weights;
-    const fuel = simbriefJson.fuel;
-    const params = simbriefJson.params;
-    const alternate = simbriefJson.alternate;
-    const files = simbriefJson.files;
-    const text = simbriefJson.text;
+    const { general } = simbriefJson;
+    const { origin } = simbriefJson;
+    const { aircraft } = simbriefJson;
+    const { destination } = simbriefJson;
+    const { times } = simbriefJson;
+    const { weights } = simbriefJson;
+    const { fuel } = simbriefJson;
+    const { params } = simbriefJson;
+    const { alternate } = simbriefJson;
+    const { files } = simbriefJson;
+    const { text } = simbriefJson;
     return {
         airline: general.icao_airline,
         flightNumber: general.flight_number,
@@ -67,20 +68,20 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
         cruiseAltitude: general.initial_altitude,
         costIndex: general.costindex,
         route: general.route,
-        files : {
-            loadsheet: files.pdf.link ? files.directory + files.pdf.link : undefined
+        files: {
+            loadsheet: files.pdf.link ? files.directory + files.pdf.link : undefined,
         },
         origin: {
             iata: origin.iata_code,
-            icao: origin.icao_code
+            icao: origin.icao_code,
         },
         destination: {
             iata: destination.iata_code,
-            icao: destination.icao_code
+            icao: destination.icao_code,
         },
-        distance: general.air_distance + "nm",
+        distance: `${general.air_distance}nm`,
         flightETAInSeconds: times.est_time_enroute,
-        weights : {
+        weights: {
             cargo: weights.cargo,
             estLandingWeight: weights.est_ldw,
             estTakeOffWeight: weights.est_tow,
@@ -90,9 +91,9 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
             maxZeroFuelWeight: weights.max_zfw,
             passengerCount: weights.pax_count,
             passengerWeight: weights.pax_weight,
-            payload: weights.payload
+            payload: weights.payload,
         },
-        fuel : {
+        fuel: {
             avgFuelFlow: fuel.avg_fuel_flow,
             contingency: fuel.contingency,
             enrouteBurn: fuel.enroute_burn,
@@ -104,13 +105,13 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
             planRamp: fuel.plan_ramp,
             planTakeOff: fuel.plan_takeoff,
             reserve: fuel.reserve,
-            taxi: fuel.taxi
+            taxi: fuel.taxi,
         },
         units: params.units,
         alternate: {
             icao: alternate.icao_code,
             iata: alternate.iata_code,
-            burn: alternate.burn
+            burn: alternate.burn,
         },
         times: {
             contfuel_time: times.contfuel_time,
@@ -133,8 +134,8 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
             sched_out: times.sched_out,
             sched_time_enroute: times.sched_time_enroute,
             taxi_in: times.taxi_in,
-            taxi_out: times.taxi_out
+            taxi_out: times.taxi_out,
         },
         text: text.plan_html,
     };
-};
+}
