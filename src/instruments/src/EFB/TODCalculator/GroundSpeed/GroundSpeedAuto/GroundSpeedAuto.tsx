@@ -41,7 +41,7 @@ const GroundSpeedAuto = ({
             setTodGroundSpeed(0, { from: 0, groundSpeed: 250 });
             setTodGroundSpeed(1, { from: 10000, groundSpeed: simGroundSpeed });
         } else {
-            setTodGroundSpeed(0, { from: 0, groundSpeed: simGroundSpeed });
+            setTodGroundSpeed(0, { from: 0, groundSpeed: simGroundSpeed > 0 ? simGroundSpeed : '' });
             removeTodGroundSpeed(1);
         }
     };
@@ -62,7 +62,7 @@ const GroundSpeedAuto = ({
                 <span className="font-medium mb-4 text-xl">Fetching from sim</span>
 
                 <span className="font-medium mb-4 text-5xl">
-                    {groundSpeed}
+                    {groundSpeed || 0}
                     {' '}
                     kt
                 </span>

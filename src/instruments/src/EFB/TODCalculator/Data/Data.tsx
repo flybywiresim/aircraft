@@ -59,7 +59,7 @@ const Data = ({
     const inputValid = (type: TOD_CALCULATION_TYPE, input) => ({
         [TOD_CALCULATION_TYPE.DISTANCE]: input > 0,
         [TOD_CALCULATION_TYPE.VERTICAL_SPEED]: input < -50,
-        [TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE]: trkModeActive && input < 0,
+        [TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE]: !!trkModeActive && input < 0,
     })[type];
 
     useEffect(() => {

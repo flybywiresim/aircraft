@@ -70,7 +70,7 @@ const Result = ({
         ],
     }[calculation.type]);
 
-    const inputDataValid = targetAltitude !== '' && currentAltitude !== '' && (targetAltitude < currentAltitude) && calculation.input !== '' && currentGroundSpeed > 0;
+    const inputDataValid = targetAltitude !== '' && currentAltitude !== '' && (targetAltitude < currentAltitude) && targetAltitude >= 0 && calculation.input !== '' && currentGroundSpeed > 0;
 
     const calculationValid = (value) => !Number.isNaN(value) && Number.isFinite(value);
 
