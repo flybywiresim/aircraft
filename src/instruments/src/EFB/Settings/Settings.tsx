@@ -24,40 +24,44 @@ type SettingsState = {
 }
 
 class Settings extends React.Component<SettingsProps, SettingsState> {
-    state: SettingsState = {
-        darkMode: this.darkModeInit(),
-    };
-
-    darkModeInit() {
-        const darkMode = window.localStorage.getItem("darkMode");
-        if (darkMode === null) {
-            // @ts-ignore
-            return document.body.classList.contains("darkMode");
-        } else if (darkMode === "true") {
-            this.handleDark(true);
-            return true;
-        } else {
-            this.handleDark(false);
-            return false;
-        }
+    constructor(props: SettingsProps) {
+        super(props);
+        this.state = {
+            darkMode: this.darkModeInit(),
+        };
     }
 
     handleDark(darkMode: boolean) {
-        const element = document.createElement("div");
+        const element = document.createElement('div');
         if (darkMode) {
-            element.classList.add("darkMode");
+            element.classList.add('darkMode');
         } else {
-            element.classList.remove("darkMode");
+            element.classList.remove('darkMode');
         }
-        this.setState({ darkMode: darkMode });
+        this.setState({ darkMode });
     }
 
     handleDarkToggle() {
         const darkMode = !this.state.darkMode;
         const element = document.body;
-        element.classList.toggle("darkMode");
-        this.setState({ darkMode: darkMode });
-        window.localStorage.setItem("darkMode", String(darkMode));
+        element.classList.toggle('darkMode');
+        this.setState((state) => ({
+            darkMode: !state.darkMode,
+        }));
+        window.localStorage.setItem('darkMode', String(darkMode));
+    }
+
+    darkModeInit() {
+        const darkMode = window.localStorage.getItem('darkMode');
+        if (darkMode === null) {
+            // @ts-ignore
+            return document.body.classList.contains('darkMode');
+        } if (darkMode === 'true') {
+            this.handleDark(true);
+            return true;
+        }
+        this.handleDark(false);
+        return false;
     }
 
     render() {
@@ -66,7 +70,7 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                 <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
             </div>
         );
-    };
+    }
 }
 
 export default Settings;

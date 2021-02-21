@@ -1,4 +1,3 @@
-
 /*
  * A32NX
  * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
@@ -17,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-declare module "util.mjs" {
+declare module 'util.mjs' {
     function setSimVar(name: string, value: any, unit: string)
 }
 
-declare module "*.svg" {
+declare module '*.svg' {
   const content: any;
   export default content;
 }

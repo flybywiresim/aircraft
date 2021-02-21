@@ -9,6 +9,6 @@ tab_width = 4
 
 # YAML is usually 2 spaces
 # Asobo indents json and css with 2 spaces
-[*.{yml,json,css,scss}]
+[*.{yml,json,css,scss,eslintrc}]
 indent_size = 2
 tab_width = 2

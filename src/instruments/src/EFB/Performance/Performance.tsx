@@ -16,51 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
+import { map } from 'lodash';
 
-import '../Assets/Performance.scss';
-import LandingWidget from './Widgets/LandingWidget';
 import { Navbar } from '../Components/Navbar';
+import TODCalculator from '../TODCalculator/TODCalculator';
+import LandingWidget from './Widgets/LandingWidget';
 
-type PerformanceProps = {};
-type PerformanceState = {
-	currentTabIndex: number
+const tabs = [
+	{ name: 'Takeoff', renderComponent: () => <div className="text-white">Inop.</div>},
+    { name: 'TOD', renderComponent: () => <TODCalculator /> },
+    { name: 'Landing', renderComponent: () => <LandingWidget /> },
+];
+
+const Performance = () => {
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    return (
+        <div className="w-full">
+            <Navbar tabs={map(tabs, 'name')} onSelected={(activeIndex) => setActiveIndex(activeIndex)} />
+            <div>
+                {tabs[activeIndex].renderComponent()}
+            </div>
+        </div>
+    );
 };
 
-export default class Performance extends React.Component<PerformanceProps, PerformanceState> {
-	constructor(props: PerformanceProps) {
-		super(props);
-
-		this.state = {
-			currentTabIndex: 0
-		}
-	}
-
-	private getPage(): JSX.Element | undefined {
-		switch (this.state.currentTabIndex) {
-			case 0:
-				return (
-					<div className="w-full h-full">
-						<p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
-					</div>
-				)
-			case 1:
-				return <LandingWidget />
-		}
-	}
-
-	private switchPage(page: number): void {
-		this.setState({
-			currentTabIndex: page
-		})
-	}
-
-	public render() {
-		return (
-			<div className="px-6 pt-2 pb-6 w-full h-full mr-4 flex flex-col">
-				<Navbar tabs={["Takeoff", "Landing"]} onSelected={(index) => this.switchPage(index)}></Navbar>
-				{this.getPage()}
-            </div>
-		)
-	}
-}
+export default Performance;

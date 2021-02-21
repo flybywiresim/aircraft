@@ -17,7 +17,7 @@
 !CODEOWNERS
 !package.json
 !.editorconfig
-!.eslintrc.json
+!.eslintrc
 !jsconfig.json
 !.gitattributes
 !.prettierrc.json
