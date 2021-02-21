@@ -998,26 +998,19 @@ class CDUPerformancePage {
         const origin = mcdu.flightPlanManager.getOrigin();
         const elevation = origin ? origin.altitudeinFP : 0;
 
-        if (updateThrRedAlt) {
+        if (updateThrRedAlt && !(mcdu.thrustReductionAltitudeIsPilotEntered && autoRefresh)) {
             const thrRedOffset = +NXDataStore.get("CONFIG_THR_RED_ALT", "1500");
             const thrRedAltitude = Math.round((elevation + thrRedOffset) / 10) * 10;
-
-            if (mcdu.thrustReductionAltitudeIsPilotEntered && autoRefresh) {
-                return;
-            }
 
             mcdu.thrustReductionAltitude = thrRedAltitude;
             mcdu.thrustReductionAltitudeIsPilotEntered = false;
             SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", thrRedAltitude);
         }
 
-        if (updateAccAlt) {
+        if (updateAccAlt && !(mcdu.accelerationAltitudeIsPilotEntered && autoRefresh)) {
+
             const accOffset = +NXDataStore.get("CONFIG_ACCEL_ALT", "1500");
             const accAlt = Math.round((elevation + accOffset) / 10) * 10;
-
-            if (mcdu.accelerationAltitudeIsPilotEntered && autoRefresh) {
-                return;
-            }
 
             mcdu.accelerationAltitude = accAlt;
             mcdu.accelerationAltitudeIsPilotEntered = false;
@@ -1025,15 +1018,14 @@ class CDUPerformancePage {
         }
     }
     static UpdateEngOutAccFromOrigin(mcdu, autoRefresh = false) {
+        if (mcdu.engineOutAccelerationAltitudeIsPilotEntered && autoRefresh) {
+            return;
+        }
         const origin = mcdu.flightPlanManager.getOrigin();
         const elevation = origin ? origin.altitudeinFP : 0;
 
         const offset = +NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500");
         const alt = Math.round((elevation + offset) / 10) * 10;
-
-        if (mcdu.engineOutAccelerationAltitudeIsPilotEntered && autoRefresh) {
-            return;
-        }
 
         mcdu.engineOutAccelerationAltitude = alt;
         mcdu.engineOutAccelerationAltitudeIsPilotEntered = false;
