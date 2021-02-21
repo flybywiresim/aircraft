@@ -193,7 +193,7 @@ class A32NX_FlightPhase_Approach {
             const deltaQuotient = deltaTime / 1000;
             this.lastPhaseUpdateTime = Date.now();
             this.landingResetTimer -= deltaQuotient;
-            if (this.landingResetTimer <= 0 && !_fmc.isAllEngineOn()) {
+            if (this.landingResetTimer <= 0 || !_fmc.isAnEngineOn()) {
                 return true;
             }
         }
@@ -204,14 +204,13 @@ class A32NX_FlightPhase_Approach {
 
 class A32NX_FlightPhase_GoAround {
     constructor(_fmc) {
-        this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.DONE;
     }
 
     init(_fmc) {
     }
 
     check(_fmc) {
-        return Simplane.getAltitude() > _fmc.accelerationAltitudeGoaround;
+        return false;
     }
 }
 
