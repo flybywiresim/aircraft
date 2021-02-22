@@ -673,7 +673,7 @@
 												<Flags>5</Flags>
 											</Point>
 											<Point>
-												<XPos>40.3141361256544</XPos>
+												<XPos>98.16754</XPos>
 												<YPos>-200</YPos>
 												<Flags>0</Flags>
 											</Point>
@@ -1674,6 +1674,16 @@
 							</PropertyList>
 							<Language>SFX</Language>
 							<AudioFile>flaps2.wav</AudioFile>
+						</AudioFileSource>
+						<AudioFileSource Name="gup" ID="{108874B9-3D82-42BC-A1E2-223951D71069}">
+							<PropertyList>
+								<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+							</PropertyList>
+							<Language>SFX</Language>
+							<AudioFile>gup.wav</AudioFile>
 						</AudioFileSource>
 					</ChildrenList>
 					<PositioningInfo>
@@ -3728,6 +3738,35 @@
 								<Value>23</Value>
 							</ValueList>
 							<RTPCList>
+								<RTPC Name="" ID="{BDC11735-B81E-4E3F-A2D9-B89C5AD5721A}" ShortID="845307308">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="LOCALVAR_A32NX_INTERIOR_WIND_VOLUME" ID="{99886ED2-70F1-4384-8C1E-79B2AACFDF28}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{830E7777-9F84-4CC2-B17B-15D54D0037A6}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>-50</XPos>
+												<YPos>-6</YPos>
+												<Flags>5</Flags>
+											</Point>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>0</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>50</XPos>
+												<YPos>6</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
 								<RTPC Name="" ID="{33A34FAC-DC7B-4627-8D5D-1957AE5A6BAA}" ShortID="380233293">
 									<ReferenceList>
 										<Reference Name="ControlInput">
@@ -11913,6 +11952,37 @@
 							<ValueList>
 								<Value>-5</Value>
 							</ValueList>
+							<RTPCList>
+								<RTPC Name="" ID="{B251E0BC-AE85-4764-A3D9-1E52CA838F56}" ShortID="829340226">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{A22F90AE-C239-4927-A96C-3AFD498AD369}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>-50</XPos>
+												<YPos>-6</YPos>
+												<Flags>5</Flags>
+											</Point>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>0</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>50</XPos>
+												<YPos>6</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
 						</Property>
 					</PropertyList>
 					<ReferenceList>
@@ -12120,6 +12190,37 @@
 							<ValueList>
 								<Value>-8</Value>
 							</ValueList>
+							<RTPCList>
+								<RTPC Name="" ID="{77F81DF1-A8B9-425D-8514-F1C75A18AC24}" ShortID="719992993">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{9137391A-0279-4734-AAEA-C733AC2547F0}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>-50</XPos>
+												<YPos>-6</YPos>
+												<Flags>5</Flags>
+											</Point>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>0</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>50</XPos>
+												<YPos>6</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
 						</Property>
 					</PropertyList>
 					<ReferenceList>
@@ -12531,6 +12632,35 @@
 										<Value>-3</Value>
 									</ValueList>
 									<RTPCList>
+										<RTPC Name="" ID="{E62F206A-F401-4351-B7F2-148C7E3E815D}" ShortID="165250671">
+											<ReferenceList>
+												<Reference Name="ControlInput">
+													<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+												</Reference>
+											</ReferenceList>
+											<Curve Name="" ID="{85F64E72-3283-4A85-B088-457A68868D83}">
+												<PropertyList>
+													<Property Name="Flags" Type="int32" Value="3"/>
+												</PropertyList>
+												<PointList>
+													<Point>
+														<XPos>-50</XPos>
+														<YPos>-6</YPos>
+														<Flags>5</Flags>
+													</Point>
+													<Point>
+														<XPos>0</XPos>
+														<YPos>0</YPos>
+														<Flags>0</Flags>
+													</Point>
+													<Point>
+														<XPos>50</XPos>
+														<YPos>6</YPos>
+														<Flags>37</Flags>
+													</Point>
+												</PointList>
+											</Curve>
+										</RTPC>
 										<RTPC Name="" ID="{8AC636FD-5152-491F-A49A-CFA93435D086}" ShortID="568136104">
 											<ReferenceList>
 												<Reference Name="ControlInput">
@@ -12884,6 +13014,35 @@
 												</PointList>
 											</Curve>
 										</RTPC>
+										<RTPC Name="" ID="{6E9D3B18-D9D1-420C-94E2-5CBDE2AA43A0}" ShortID="278299156">
+											<ReferenceList>
+												<Reference Name="ControlInput">
+													<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+												</Reference>
+											</ReferenceList>
+											<Curve Name="" ID="{C2ADAF21-E136-4C9D-ADB0-A71FBC544F70}">
+												<PropertyList>
+													<Property Name="Flags" Type="int32" Value="3"/>
+												</PropertyList>
+												<PointList>
+													<Point>
+														<XPos>-50</XPos>
+														<YPos>-6</YPos>
+														<Flags>5</Flags>
+													</Point>
+													<Point>
+														<XPos>0</XPos>
+														<YPos>0</YPos>
+														<Flags>0</Flags>
+													</Point>
+													<Point>
+														<XPos>50</XPos>
+														<YPos>6</YPos>
+														<Flags>37</Flags>
+													</Point>
+												</PointList>
+											</Curve>
+										</RTPC>
 										<RTPC Name="" ID="{3FF34CDC-181B-4E13-AEE7-37F7F541645C}" ShortID="869293679">
 											<ReferenceList>
 												<Reference Name="ControlInput">
@@ -13145,6 +13304,35 @@
 										<Value>-10</Value>
 									</ValueList>
 									<RTPCList>
+										<RTPC Name="" ID="{12986D12-ECB6-4470-906E-2574160D40DD}" ShortID="210073920">
+											<ReferenceList>
+												<Reference Name="ControlInput">
+													<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+												</Reference>
+											</ReferenceList>
+											<Curve Name="" ID="{79B5F806-968C-4AFF-9344-7CC7677C44A0}">
+												<PropertyList>
+													<Property Name="Flags" Type="int32" Value="3"/>
+												</PropertyList>
+												<PointList>
+													<Point>
+														<XPos>-50</XPos>
+														<YPos>-6</YPos>
+														<Flags>5</Flags>
+													</Point>
+													<Point>
+														<XPos>0</XPos>
+														<YPos>0</YPos>
+														<Flags>0</Flags>
+													</Point>
+													<Point>
+														<XPos>50</XPos>
+														<YPos>6</YPos>
+														<Flags>37</Flags>
+													</Point>
+												</PointList>
+											</Curve>
+										</RTPC>
 										<RTPC Name="" ID="{81142549-099E-42DF-80AB-9D0FC74F572B}" ShortID="911511890">
 											<ReferenceList>
 												<Reference Name="ControlInput">
@@ -13566,6 +13754,35 @@
 												</PointList>
 											</Curve>
 										</RTPC>
+										<RTPC Name="" ID="{0932D5A0-3E04-48AA-9C3F-B954E79C0D20}" ShortID="90964092">
+											<ReferenceList>
+												<Reference Name="ControlInput">
+													<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+												</Reference>
+											</ReferenceList>
+											<Curve Name="" ID="{603787D1-EB21-4B4C-92D8-677AC3B232E3}">
+												<PropertyList>
+													<Property Name="Flags" Type="int32" Value="3"/>
+												</PropertyList>
+												<PointList>
+													<Point>
+														<XPos>-50</XPos>
+														<YPos>-6</YPos>
+														<Flags>5</Flags>
+													</Point>
+													<Point>
+														<XPos>0</XPos>
+														<YPos>0</YPos>
+														<Flags>0</Flags>
+													</Point>
+													<Point>
+														<XPos>50</XPos>
+														<YPos>6</YPos>
+														<Flags>37</Flags>
+													</Point>
+												</PointList>
+											</Curve>
+										</RTPC>
 										<RTPC Name="" ID="{627B4AB1-D0FA-4DE2-B1C5-CC6F84995359}" ShortID="412216429">
 											<ReferenceList>
 												<Reference Name="ControlInput">
@@ -13833,6 +14050,35 @@
 										<Value>-15</Value>
 									</ValueList>
 									<RTPCList>
+										<RTPC Name="" ID="{C7DDBE19-3FB1-4B43-89B1-19A20E39BD67}" ShortID="151494300">
+											<ReferenceList>
+												<Reference Name="ControlInput">
+													<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+												</Reference>
+											</ReferenceList>
+											<Curve Name="" ID="{99C542DA-ADBA-4268-A166-C8FB5B2B52B6}">
+												<PropertyList>
+													<Property Name="Flags" Type="int32" Value="3"/>
+												</PropertyList>
+												<PointList>
+													<Point>
+														<XPos>-50</XPos>
+														<YPos>-6</YPos>
+														<Flags>5</Flags>
+													</Point>
+													<Point>
+														<XPos>0</XPos>
+														<YPos>0</YPos>
+														<Flags>0</Flags>
+													</Point>
+													<Point>
+														<XPos>50</XPos>
+														<YPos>6</YPos>
+														<Flags>37</Flags>
+													</Point>
+												</PointList>
+											</Curve>
+										</RTPC>
 										<RTPC Name="" ID="{5A4AEBD1-241F-4CB0-929C-4EA10E0AE0E6}" ShortID="785603260">
 											<ReferenceList>
 												<Reference Name="ControlInput">
@@ -14142,6 +14388,35 @@
 												</PointList>
 											</Curve>
 										</RTPC>
+										<RTPC Name="" ID="{91207452-ECBB-4748-8AFF-373DE0925A7E}" ShortID="243911217">
+											<ReferenceList>
+												<Reference Name="ControlInput">
+													<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+												</Reference>
+											</ReferenceList>
+											<Curve Name="" ID="{9CC6CC8C-1DFA-4D87-8FD4-BD9C559ED462}">
+												<PropertyList>
+													<Property Name="Flags" Type="int32" Value="3"/>
+												</PropertyList>
+												<PointList>
+													<Point>
+														<XPos>-50</XPos>
+														<YPos>-6</YPos>
+														<Flags>5</Flags>
+													</Point>
+													<Point>
+														<XPos>0</XPos>
+														<YPos>0</YPos>
+														<Flags>0</Flags>
+													</Point>
+													<Point>
+														<XPos>50</XPos>
+														<YPos>6</YPos>
+														<Flags>37</Flags>
+													</Point>
+												</PointList>
+											</Curve>
+										</RTPC>
 										<RTPC Name="" ID="{AFF7F99C-6569-4CFC-A5E7-2C9C5FF76AA6}" ShortID="1068185650">
 											<ReferenceList>
 												<Reference Name="ControlInput">
@@ -14251,6 +14526,35 @@
 											<Point>
 												<XPos>100</XPos>
 												<YPos>0.107899999999972</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+								<RTPC Name="" ID="{3813E297-FE55-4E92-B530-7BE3DED22CB4}" ShortID="253433771">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{F59EE11A-9DDE-469E-A2C6-2DF883429215}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>-50</XPos>
+												<YPos>-6</YPos>
+												<Flags>5</Flags>
+											</Point>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>0</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>50</XPos>
+												<YPos>6</YPos>
 												<Flags>37</Flags>
 											</Point>
 										</PointList>
@@ -14494,6 +14798,37 @@
 							<ValueList>
 								<Value>-15</Value>
 							</ValueList>
+							<RTPCList>
+								<RTPC Name="" ID="{A853C4CC-D4C8-43A9-9A70-E3B58B2FF218}" ShortID="147992506">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{09FB14FF-86C5-4A6B-B4C5-D5DD2D11C6A5}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>-50</XPos>
+												<YPos>-6</YPos>
+												<Flags>5</Flags>
+											</Point>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>0</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>50</XPos>
+												<YPos>6</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
 						</Property>
 					</PropertyList>
 					<ReferenceList>
@@ -14737,6 +15072,35 @@
 								<Value>3</Value>
 							</ValueList>
 							<RTPCList>
+								<RTPC Name="" ID="{A03A913B-1DA0-47BA-937B-8160027E69E4}" ShortID="115305555">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{E25BC7D4-EF7B-4BCD-B17A-522DA636E1FC}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>-50</XPos>
+												<YPos>-6</YPos>
+												<Flags>5</Flags>
+											</Point>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>0</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>50</XPos>
+												<YPos>6</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
 								<RTPC Name="" ID="{2FBDF592-8C9B-4DFA-96C9-C9465DF7428A}" ShortID="28708364">
 									<ReferenceList>
 										<Reference Name="ControlInput">
@@ -15053,6 +15417,35 @@
 								<Value>3</Value>
 							</ValueList>
 							<RTPCList>
+								<RTPC Name="" ID="{0EAA0540-5948-467D-9837-A5908BD0E95B}" ShortID="356648338">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{A14FE3AD-7B6F-4986-B13A-1840F51FA7D8}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>-50</XPos>
+												<YPos>-6</YPos>
+												<Flags>5</Flags>
+											</Point>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>0</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>50</XPos>
+												<YPos>6</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
 								<RTPC Name="" ID="{1DA63980-D020-408D-9FFA-7BDDEC7B418F}" ShortID="508125280">
 									<ReferenceList>
 										<Reference Name="ControlInput">
@@ -18446,6 +18839,35 @@
 								<Value>15</Value>
 							</ValueList>
 							<RTPCList>
+								<RTPC Name="" ID="{4E7228C6-4A0D-4D9C-AAF8-0F95F7F0A7D1}" ShortID="107036657">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{88385BB2-BE87-42D1-90DE-BFEA74BC6CD5}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>-50</XPos>
+												<YPos>-6</YPos>
+												<Flags>5</Flags>
+											</Point>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>0</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>50</XPos>
+												<YPos>6</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
 								<RTPC Name="" ID="{3267CFF1-BB82-455A-8A62-5AA94ECC4D32}" ShortID="826469219">
 									<ReferenceList>
 										<Reference Name="ControlInput">
@@ -18465,7 +18887,7 @@
 											</Point>
 											<Point>
 												<XPos>18.84817</XPos>
-												<YPos>-22</YPos>
+												<YPos>-19</YPos>
 												<Flags>0</Flags>
 												<SegmentShape>Log3</SegmentShape>
 											</Point>
@@ -18733,6 +19155,35 @@
 								<Value>15</Value>
 							</ValueList>
 							<RTPCList>
+								<RTPC Name="" ID="{66B5AF36-7F1F-4820-AF83-EB98F3D0E388}" ShortID="297323757">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="LOCALVAR_A32NX_EXTERIOR_VOLUME" ID="{732BABC7-5C5E-4B53-AC97-31CEAF3CCADE}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{CC573BBE-ABEC-451C-A5C6-E877F62F27B7}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>-50</XPos>
+												<YPos>-6</YPos>
+												<Flags>5</Flags>
+											</Point>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>0</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>50</XPos>
+												<YPos>6</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
 								<RTPC Name="" ID="{821F93DF-DD5E-4760-BF10-F13866196BF7}" ShortID="290743988">
 									<ReferenceList>
 										<Reference Name="ControlInput">
@@ -18752,7 +19203,7 @@
 											</Point>
 											<Point>
 												<XPos>18.84817</XPos>
-												<YPos>-22</YPos>
+												<YPos>-19</YPos>
 												<Flags>0</Flags>
 												<SegmentShape>Log3</SegmentShape>
 											</Point>
@@ -19735,8 +20186,12 @@
 				<Sound Name="ptusound" ID="{DAB7DB97-4ADB-4A2A-B19A-DD331C11AC54}" ShortID="34095983">
 					<PropertyList>
 						<Property Name="3DSpatialization" Type="int16" Value="2"/>
-						<Property Name="SpeakerPanning" Type="int16" Value="1"/>
 						<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="0"/>
+						<Property Name="Volume" Type="Real64">
+							<ValueList>
+								<Value>-5</Value>
+							</ValueList>
+						</Property>
 					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Attenuation">
@@ -19753,12 +20208,7 @@
 												<Value>30</Value>
 											</ValueList>
 										</Property>
-										<Property Name="ConeUse" Type="bool">
-											<ValueList>
-												<Value>True</Value>
-											</ValueList>
-										</Property>
-										<Property Name="RadiusMax" Type="Real64" Value="4"/>
+										<Property Name="RadiusMax" Type="Real64" Value="12"/>
 									</PropertyList>
 									<CurveUsageInfoList>
 										<VolumeDryUsage>
@@ -19772,22 +20222,10 @@
 															<XPos>0</XPos>
 															<YPos>0</YPos>
 															<Flags>5</Flags>
-															<SegmentShape>Log3</SegmentShape>
-														</Point>
-														<Point>
-															<XPos>3.18871</XPos>
-															<YPos>0</YPos>
-															<Flags>0</Flags>
 															<SegmentShape>Exp3</SegmentShape>
 														</Point>
 														<Point>
-															<XPos>3.35423</XPos>
-															<YPos>-200</YPos>
-															<Flags>0</Flags>
-															<SegmentShape>Log3</SegmentShape>
-														</Point>
-														<Point>
-															<XPos>4</XPos>
+															<XPos>12</XPos>
 															<YPos>-200</YPos>
 															<Flags>37</Flags>
 														</Point>
@@ -19796,10 +20234,10 @@
 											</CurveUsageInfo>
 										</VolumeDryUsage>
 										<VolumeWetGameUsage>
-											<CurveUsageInfo Platform="Linked" CurveToUse="UseVolumeDry"/>
+											<CurveUsageInfo Platform="Linked" CurveToUse="None"/>
 										</VolumeWetGameUsage>
 										<VolumeWetUserUsage>
-											<CurveUsageInfo Platform="Linked" CurveToUse="UseVolumeDry">
+											<CurveUsageInfo Platform="Linked" CurveToUse="None">
 												<Curve Name="VolumeWetUser" ID="{8B41C3F7-027E-40BA-B2F2-464696445C85}">
 													<PropertyList>
 														<Property Name="Flags" Type="int32" Value="3"/>
@@ -19812,19 +20250,19 @@
 															<SegmentShape>Exp3</SegmentShape>
 														</Point>
 														<Point>
-															<XPos>0.16508</XPos>
+															<XPos>0.49524</XPos>
 															<YPos>-0.00061</YPos>
 															<Flags>0</Flags>
 															<SegmentShape>Log3</SegmentShape>
 														</Point>
 														<Point>
-															<XPos>1.76364</XPos>
+															<XPos>5.29092</XPos>
 															<YPos>0</YPos>
 															<Flags>0</Flags>
 															<SegmentShape>Exp3</SegmentShape>
 														</Point>
 														<Point>
-															<XPos>4</XPos>
+															<XPos>12</XPos>
 															<YPos>-200</YPos>
 															<Flags>37</Flags>
 														</Point>
@@ -19833,7 +20271,7 @@
 											</CurveUsageInfo>
 										</VolumeWetUserUsage>
 										<LowPassFilterUsage>
-											<CurveUsageInfo Platform="Linked" CurveToUse="Custom">
+											<CurveUsageInfo Platform="Linked" CurveToUse="None">
 												<Curve Name="LowPassFilter" ID="{6A28A653-219F-476C-82D8-4895069947D3}">
 													<PropertyList>
 														<Property Name="Flags" Type="int32" Value="65537"/>
@@ -19845,7 +20283,7 @@
 															<Flags>5</Flags>
 														</Point>
 														<Point>
-															<XPos>4</XPos>
+															<XPos>12</XPos>
 															<YPos>4</YPos>
 															<Flags>37</Flags>
 														</Point>
@@ -19869,7 +20307,7 @@
 															<Flags>5</Flags>
 														</Point>
 														<Point>
-															<XPos>4</XPos>
+															<XPos>12</XPos>
 															<YPos>0</YPos>
 															<Flags>37</Flags>
 														</Point>
@@ -19890,7 +20328,7 @@
 															<Flags>5</Flags>
 														</Point>
 														<Point>
-															<XPos>4</XPos>
+															<XPos>12</XPos>
 															<YPos>0</YPos>
 															<Flags>37</Flags>
 														</Point>
@@ -19906,7 +20344,7 @@
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
 						</Reference>
 						<Reference Name="OutputBus">
-							<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+							<ObjectRef Name="miscellaneous_inside" ID="{A94A7A7F-2F28-46C7-9158-EA25E9E42914}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
