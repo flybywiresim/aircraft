@@ -102,6 +102,7 @@
 1. [MISC] Better brake cooling simulation (with and without brake fan) - @Inexorable92 (Inexorable)
 1. [MISC] Added registration decal - @tyler58546(tyler58546), @DarkOfNova (DarkOfNova)
 1. [CDU] Fix ILS frequencies not autofilling - @pareil6 (pareil6)
+1. [SOUND] Added custom sounds to multiple buttons and Throttle Lever Reverse Locks - @ImenesFBW (Imenes)
 1. [MCDU] Import cost index when importing flight plan from SimBrief - @aviadnissel (Aviad)
 
 ## 0.5.2
