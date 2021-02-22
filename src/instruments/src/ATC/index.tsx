@@ -63,7 +63,7 @@ const PoweredXpdrDisplay = () => {
             if (newDigits === null || newDigits.length > 0) {
                 if (doubleClrTimer === -1) {
                     setNewDigits(codeInDisplay.splice(0, codeInDisplay.length - 1));
-                    setDoubleClrTimer(0.2);
+                    setDoubleClrTimer(0.3);
                 } else {
                     setNewDigits([]);
                     setDoubleClrTimer(-1);
