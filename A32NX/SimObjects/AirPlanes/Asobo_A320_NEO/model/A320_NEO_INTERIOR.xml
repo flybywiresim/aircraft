@@ -772,7 +772,7 @@
                 <EMISSIVE_CODE>0</EMISSIVE_CODE>
             </UseTemplate>
             <!-- Controls tiller deflection plate emissive -->
-            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>YOKE_DECAL</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
             </UseTemplate>
