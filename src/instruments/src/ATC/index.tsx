@@ -4,12 +4,12 @@ import { render } from '../Common';
 import { useSimVar, useSplitSimVar } from '../Common/simVars';
 import { useInteractionEvent, useUpdate } from '../Common/hooks';
 
-const getDigitsFromCode = (code: number): number[] => {
+const getDigitsFromBco16 = (code: number): number[] => {
     let codeCopy = code;
     const digits: number[] = [];
     while (codeCopy > 0) {
-        digits.push(codeCopy % 10);
-        codeCopy = Math.floor(codeCopy / 10);
+        digits.push(codeCopy % 16);
+        codeCopy = Math.floor(codeCopy / 16);
     }
     if (digits.length < 4) {
         for (let i = 0; i <= 4 - digits.length; i++) {
@@ -27,8 +27,8 @@ const PoweredXpdrDisplay = () => {
     const [displayResetTimer, setDisplayResetTimer] = useState(-1);
     const [ltsTest] = useSimVar('L:XMLVAR_LTS_Test', 'Bool', 250);
 
-    const [transponderCode, setTransponderCode] = useSplitSimVar('TRANSPONDER CODE:1', 'number', 'K:XPNDR_SET', 'Bco16');
-    const codeInDisplay = newDigits !== null ? newDigits : getDigitsFromCode(transponderCode);
+    const [transponderCode, setTransponderCode] = useSplitSimVar('TRANSPONDER CODE:1', 'Bco16', 'K:XPNDR_SET', 'Bco16', 500);
+    const codeInDisplay = newDigits !== null ? newDigits : getDigitsFromBco16(transponderCode);
 
     useUpdate((deltaTime) => {
         if (doubleClrTimer > 0) {
