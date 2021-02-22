@@ -399,10 +399,12 @@ var A320_Neo_LowerECAM_Elec;
             this.toggle(this.e_ACESSBUS_SHED, !acEssShedBusIsPowered);
 
             const dcBatBusIsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_BAT_BUS_IS_POWERED", "Bool");
+            const atLeastOneBatteryIsAuto = !!SimVar.GetSimVarValue("L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO", "Bool")
+                || !!SimVar.GetSimVarValue("L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO", "Bool");
+
             // TODO: When battery voltage is implemented. The title should also be amber when BAT BUS voltage < 25 V.
-            // However, with < 25 V it should keep displaying DC BAT. Unless the bus is fully unpowered.
-            this.greenWhen(this.e_DCBATBUS_TITLE, dcBatBusIsPowered);
-            this.setValue(this.e_DCBATBUS_TITLE, dcBatBusIsPowered ? "DC BAT" : "XX");
+            this.greenWhen(this.e_DCBATBUS_TITLE, dcBatBusIsPowered && atLeastOneBatteryIsAuto);
+            this.setValue(this.e_DCBATBUS_TITLE, dcBatBusIsPowered && atLeastOneBatteryIsAuto ? "DC BAT" : "XX");
 
             const dcBus1IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_1_BUS_IS_POWERED", "Bool");
             this.greenWhen(this.e_DCBUS1_TITLE, dcBus1IsPowered);
