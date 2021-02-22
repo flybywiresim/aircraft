@@ -22,77 +22,59 @@ const getDigitsFromCode = (code: number): number[] => {
 const getBco16FromDigits = (digits: number[]): number => (digits[0] * 4096) + (digits[1] * 256) + (digits[2] * 16) + digits[3];
 
 const PoweredXpdrDisplay = () => {
-    const [currentDigits, setCurrentDigits] = useState([0, 0, 0, 0]);
-    const [currentEnteredDigits, setEnteredDigits] = useState(4);
+    const [newDigits, setNewDigits] = useState<null | number[]>(null);
     const [doubleClrTimer, setDoubleClrTimer] = useState(-1);
     const [displayResetTimer, setDisplayResetTimer] = useState(-1);
     const [ltsTest] = useSimVar('L:XMLVAR_LTS_Test', 'Bool', 250);
 
-    const [transponderCode, setTransponderCode] = useSplitSimVar('TRANSPONDER CODE:1', 'number', 'K:XPNDR_SET', 'Bco16', 250);
+    const [transponderCode, setTransponderCode] = useSplitSimVar('TRANSPONDER CODE:1', 'number', 'K:XPNDR_SET', 'Bco16');
+    const codeInDisplay = newDigits !== null ? newDigits : getDigitsFromCode(transponderCode);
 
-    // Check if the transponder code simvar has changed. If it has, and we are not currently editing the code,
-    // set the display to the new code.
-    useEffect(() => {
-        if (currentEnteredDigits === 4) {
-            const newDigits = getDigitsFromCode(transponderCode);
-            if (newDigits.length === 4) {
-                setCurrentDigits(newDigits);
-            }
-        }
-    }, [transponderCode]);
-
-    // Count down the timers, if they are in use
     useUpdate((deltaTime) => {
         if (doubleClrTimer > 0) {
-            setDoubleClrTimer(doubleClrTimer - deltaTime / 1000);
+            setDoubleClrTimer(Math.max(doubleClrTimer - deltaTime / 1000, 0));
         }
         if (displayResetTimer > 0) {
-            setDisplayResetTimer(displayResetTimer - deltaTime / 1000);
+            setDisplayResetTimer(Math.max(displayResetTimer - deltaTime / 1000, 0));
         }
     });
 
-    // Reset the double press timer, if the CLR button was not pressed a second time.
-    if (doubleClrTimer < 0 && doubleClrTimer !== -1) {
-        setDoubleClrTimer(-1);
-    }
-
-    // Check if less than 4 digits are currently entered, and start the reset timer.
-    if (displayResetTimer === -1 && currentEnteredDigits < 4) {
-        setDisplayResetTimer(5);
-    }
-    // Check if the reset timer has run up. If it has, reset the display to the previously entered transponder
-    // code, and reset the timer.
-    if (displayResetTimer < 0 && displayResetTimer !== -1) {
-        setDisplayResetTimer(-1);
-        const newDigits = getDigitsFromCode(transponderCode);
-        if (newDigits.length === 4) {
-            setCurrentDigits(newDigits);
+    useEffect(() => {
+        if (doubleClrTimer === 0) {
+            setDoubleClrTimer(-1);
         }
-        setEnteredDigits(4);
-    }
+    }, [doubleClrTimer]);
+
+    useEffect(() => {
+        if (displayResetTimer === -1) {
+            if (newDigits !== null) {
+                setDisplayResetTimer(5);
+            }
+        } else if (displayResetTimer === 0) {
+            setNewDigits(null);
+            setDisplayResetTimer(-1);
+        } else if (newDigits === null) {
+            setDisplayResetTimer(-1);
+        }
+    }, [newDigits, displayResetTimer]);
 
     const buttonPressHandler = (buttonId) => {
-        // Check if the pressed button is the reset button, and if ther is a digit displayed.
-        if (buttonId === 8 && currentEnteredDigits > 0) {
-            // If the clear button has not been pressed previously, just delete the rightmost digit.
-            if (doubleClrTimer === -1) {
-                setEnteredDigits(currentEnteredDigits - 1);
-                setDoubleClrTimer(0.2);
-                // If it has been pressed previously, clear the whole display.
-            } else {
-                setEnteredDigits(0);
-                setDoubleClrTimer(-1);
+        if (buttonId === 8) {
+            if (newDigits === null || newDigits.length > 0) {
+                if (doubleClrTimer === -1) {
+                    setNewDigits(codeInDisplay.splice(0, codeInDisplay.length - 1));
+                    setDoubleClrTimer(0.2);
+                } else {
+                    setNewDigits([]);
+                    setDoubleClrTimer(-1);
+                }
             }
-            // If the pressed button is not the CLR button, and if not all digits have been entered yet,
-            // write to the next free digit.
-        } else if (buttonId !== 8 && currentEnteredDigits < 4) {
-            const digitsToSet = currentDigits;
-            digitsToSet[currentEnteredDigits] = buttonId;
-            setEnteredDigits(currentEnteredDigits + 1);
-            // If 3 digits are currently entered (i.e. if this digit will fill the display), write to the simvar.
-            if (currentEnteredDigits === 3) {
-                setTransponderCode(getBco16FromDigits(currentDigits));
-                setDisplayResetTimer(-1);
+        } else if (buttonId !== 8 && newDigits !== null) {
+            if (newDigits.length < 3) {
+                setNewDigits([...newDigits, buttonId]);
+            } else {
+                setNewDigits(null);
+                setTransponderCode(getBco16FromDigits([...newDigits, buttonId]));
             }
         }
     };
@@ -107,18 +89,9 @@ const PoweredXpdrDisplay = () => {
     useInteractionEvent('A320_Neo_ATC_BTN_7', () => buttonPressHandler(7));
     useInteractionEvent('A320_Neo_ATC_BTN_CLR', () => buttonPressHandler(8));
 
-    let text = '';
-    if (ltsTest) {
-        text = '8888';
-    } else {
-        for (let i = 0; i < currentEnteredDigits; i++) {
-            text += currentDigits[i].toString();
-        }
-    }
-
     return (
         <svg>
-            <text x="8%" y="45%">{text}</text>
+            <text x="8%" y="45%">{ltsTest ? '8888' : codeInDisplay.join('')}</text>
         </svg>
     );
 };
