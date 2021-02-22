@@ -27,7 +27,7 @@ const commonjs = require('@rollup/plugin-commonjs');
 const replace = require('@rollup/plugin-replace');
 const postcss = require('rollup-plugin-postcss');
 const tailwindcss = require('tailwindcss');
-const template = require('./template/rollup.js');
+const template = require('@flybywiresim/rollup-plugin-msfs');
 
 const TMPDIR = `${os.tmpdir()}/a32nx-instruments-gen`;
 
