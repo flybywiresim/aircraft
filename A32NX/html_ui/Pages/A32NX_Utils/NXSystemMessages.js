@@ -7,9 +7,10 @@ class McduMessage {
         this.isSAfterC = _subAfter;
     }
 
-    set text(_t) {
-        console.error("it's not allowed to edit the text component of a message!");
-    }
+    /**
+     * `set text(_t) {}` is not allowed to ensure thread safety, editing the original definition should never be allowed
+     * Both NXSystemMessages and NXFictionalMessages messages shall always be readable ONLY
+     */
 
     get text() {
         return this.isSAfterC ? this.cText + this.sText : this.sText + this.cText;
