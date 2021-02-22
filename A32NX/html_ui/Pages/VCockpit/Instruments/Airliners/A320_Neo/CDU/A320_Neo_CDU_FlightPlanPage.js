@@ -152,8 +152,8 @@ class CDUFlightPlanPage {
             rowsCount = 0;
             originIdentCell = "";
             rows = [
-                ["", "SPD/ALT", "TIME"],
-                ["PPOS[color]green", "---/ -----", "----"],
+                ["", "SPD/ALT", "TIME{sp}{sp}"],
+                ["PPOS[color]green", "---/ -----", "----{sp}{sp}"],
                 [""],
                 ["---F-PLN DISCONTINUITY---"],
                 [""],
@@ -162,8 +162,8 @@ class CDUFlightPlanPage {
                 ["-----NO ALTN F-PLN-------"],
                 [""],
                 [""],
-                ["\xa0DEST", "DIST EFOB", "TIME"],
-                ["------", "---- ----", "----"]
+                ["\xa0DEST", "DIST EFOB", "TIME{sp}{sp}"],
+                ["------", "---- ----", "----{sp}{sp}"]
             ];
         } else {
             if (offset === 0) {
