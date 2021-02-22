@@ -8,7 +8,7 @@ class McduMessage {
     }
 
     set text(_t) {
-        console.log("it's not allowed to edit the text component of a message!");
+        console.error("it's not allowed to edit the text component of a message!");
     }
 
     get text() {
