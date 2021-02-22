@@ -156,7 +156,7 @@ fmc-main-display::before {
   display: block;
   text-align: right;
   position: absolute;
-  top: 5%;
+  top: 7.5%;
   right: 5%;
 }
 
@@ -164,7 +164,7 @@ fmc-main-display::before {
   display: block;
   text-align: right;
   position: absolute;
-  top: 5%;
+  top: 7.5%;
   left: 5%;
 }
 
