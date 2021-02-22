@@ -197,7 +197,7 @@ const airportData = [
     { icao: "NS", transAlt: 13000 },
     { icao: "NV", transAlt: 11000 },
     { icao: "NW", transAlt: 11000 },
-    { icao: "NZ", transAlt: 18000 },
+    { icao: "NZ", transAlt: 13000 },
     { icao: "OA", transAlt: 14000 },
     { icao: "OB", transAlt: 13000 },
     { icao: "OE", transAlt: 13000 },
