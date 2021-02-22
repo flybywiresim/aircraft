@@ -89,10 +89,10 @@ class CDUProgressPage {
             ["\xa0POSITION UPDATE AT"],
             ["{small}*{end}[\xa0\xa0\xa0\xa0][color]cyan"],
             ["\xa0\xa0BRG / DIST"],
-            ["{small}\xa0---°/----.-{end}", "[][color]cyan", "{small}TO{end}"],
+            ["{small}\xa0---°/----.-{end}", "{small}TO{end} {cyan}[{sp}{sp}{sp}{sp}{sp}]{end}"],
             ["\xa0PREDICTIVE"],
             ["<GPS", "GPS PRIMARY[color]green"],
-            ["REQUIRED", "ESTIMATED", "ACCUR"],
+            ["REQUIRED", "ESTIMATED", "ACCUR{sp}"],
             ["{small}3.4NM{end}[color]cyan", "{small}0.07NM{end}[color]green", "HIGH[color]green"]
         ]);
         mcdu.page.SelfPtr = setTimeout(() => {
