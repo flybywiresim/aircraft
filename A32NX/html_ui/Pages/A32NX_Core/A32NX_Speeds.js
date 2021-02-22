@@ -47,7 +47,7 @@ class A32NX_Speeds {
 
             /** During Take Off allow to change this.isTo
             * Otherwise if we are in take off config and change the fhi, we no longer are in take off config */
-            if (fp === FMGC_FLIGHT_PHASES.TAKEOFF && Simplane.getAltitudeAboveGround() < 1.5) {
+            if (fp === FmgcFlightPhases.TAKEOFF && Simplane.getAltitudeAboveGround() < 1.5) {
                 this.isTo = isTo;
             } else if (this.isTo && this.lastFhi !== fhi) {
                 this.isTo = false;

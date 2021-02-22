@@ -4,21 +4,21 @@ class A32NX_FlightPhaseManager {
         this.fmc = _fmc;
 
         this.flightPhases = {
-            [FMGC_FLIGHT_PHASES.PREFLIGHT]: new A32NX_FlightPhase_PreFlight(_fmc),
-            [FMGC_FLIGHT_PHASES.TAKEOFF]: new A32NX_FlightPhase_TakeOff(_fmc),
-            [FMGC_FLIGHT_PHASES.CLIMB]: new A32NX_FlightPhase_Climb(_fmc),
-            [FMGC_FLIGHT_PHASES.CRUISE]: new A32NX_FlightPhase_Cruise(_fmc),
-            [FMGC_FLIGHT_PHASES.DESCENT]: new A32NX_FlightPhase_Descent(_fmc),
-            [FMGC_FLIGHT_PHASES.APPROACH]: new A32NX_FlightPhase_Approach(_fmc),
-            [FMGC_FLIGHT_PHASES.GOAROUND]: new A32NX_FlightPhase_GoAround(_fmc),
-            [FMGC_FLIGHT_PHASES.DONE]: new A32NX_FlightPhase_Done(_fmc)
+            [FmgcFlightPhases.PREFLIGHT]: new A32NX_FlightPhase_PreFlight(_fmc),
+            [FmgcFlightPhases.TAKEOFF]: new A32NX_FlightPhase_TakeOff(_fmc),
+            [FmgcFlightPhases.CLIMB]: new A32NX_FlightPhase_Climb(_fmc),
+            [FmgcFlightPhases.CRUISE]: new A32NX_FlightPhase_Cruise(_fmc),
+            [FmgcFlightPhases.DESCENT]: new A32NX_FlightPhase_Descent(_fmc),
+            [FmgcFlightPhases.APPROACH]: new A32NX_FlightPhase_Approach(_fmc),
+            [FmgcFlightPhases.GOAROUND]: new A32NX_FlightPhase_GoAround(_fmc),
+            [FmgcFlightPhases.DONE]: new A32NX_FlightPhase_Done(_fmc)
         };
 
-        this.activeFlightPhase = this.flightPhases[FMGC_FLIGHT_PHASES.PREFLIGHT];
+        this.activeFlightPhase = this.flightPhases[FmgcFlightPhases.PREFLIGHT];
+
+        SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", FmgcFlightPhases.PREFLIGHT);
 
         this.activeFlightPhase.init(_fmc);
-
-        SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", FMGC_FLIGHT_PHASES.PREFLIGHT);
     }
 
     checkFlightPhase() {
@@ -27,12 +27,41 @@ class A32NX_FlightPhaseManager {
         }
     }
 
+    handleFcuInput() {
+        if (this.fmc.currentFlightPhase < FmgcFlightPhases.CLIMB ||
+            this.fmc.currentFlightPhase > FmgcFlightPhases.APPROACH) {
+            return;
+        }
+
+        const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
+        const fl = Math.round(Simplane.getAltitude() / 100);
+
+        // Try initiate des
+        if (
+            this.fmc.currentFlightPhase !== FmgcFlightPhases.DESCENT &&
+            (this.fmc.flightPlanManager.getDestination()).liveDistanceTo < 200 &&
+            fcuSelFl < fl
+        ) {
+            this.changeFlightPhase(FmgcFlightPhases.DESCENT);
+            return;
+        }
+
+        // Try Initiate Climb
+        if (
+            this.fmc.currentFlightPhase !== FmgcFlightPhases.CLIMB &&
+            fcuSelFl > fl
+        ) {
+            this.changeFlightPhase(FmgcFlightPhases.CLIMB);
+            return true;
+        }
+    }
+
     changeFlightPhase(_fmgcFlightPhase) {
         console.log("FMGC Flight Phase: " + this.fmc.currentFlightPhase + " => " + _fmgcFlightPhase);
         this.fmc.currentFlightPhase = _fmgcFlightPhase;
         SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", _fmgcFlightPhase);
         // Updating old SimVar to ensure downwards compatibility
-        SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", (_fmgcFlightPhase < FMGC_FLIGHT_PHASES.TAKEOFF ? FMGC_FLIGHT_PHASES.PREFLIGHT : _fmgcFlightPhase + 1));
+        SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", (_fmgcFlightPhase < FmgcFlightPhases.TAKEOFF ? FmgcFlightPhases.PREFLIGHT : _fmgcFlightPhase + 1));
 
         this.activeFlightPhase = this.flightPhases[_fmgcFlightPhase];
 
@@ -46,7 +75,7 @@ class A32NX_FlightPhaseManager {
 
 class A32NX_FlightPhase_PreFlight {
     constructor(_fmc) {
-        this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.TAKEOFF;
+        this.nextFmgcFlightPhase = FmgcFlightPhases.TAKEOFF;
     }
 
     init(_fmc) {
@@ -61,7 +90,7 @@ class A32NX_FlightPhase_PreFlight {
 
 class A32NX_FlightPhase_TakeOff {
     constructor(_fmc) {
-        this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.CLIMB;
+        this.nextFmgcFlightPhase = FmgcFlightPhases.CLIMB;
     }
 
     init(_fmc) {
@@ -75,7 +104,7 @@ class A32NX_FlightPhase_TakeOff {
                 }
 
                 if (!_fmc.climbTransitionGroundAltitude) {
-                    _fmc.climbTransitionGroundAltitude = (parseInt(SimVar.GetSimVarValue("GROUND ALTITUDE", "feet")) || 0); //TODO: figure out what this does
+                    _fmc.climbTransitionGroundAltitude = (parseInt(SimVar.GetSimVarValue("GROUND ALTITUDE", "feet")) || 0);
                 }
             }
 
@@ -90,7 +119,7 @@ class A32NX_FlightPhase_TakeOff {
 
 class A32NX_FlightPhase_Climb {
     constructor(_fmc) {
-        this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.CRUISE;
+        this.nextFmgcFlightPhase = FmgcFlightPhases.CRUISE;
     }
 
     init(_fmc) {
@@ -103,15 +132,13 @@ class A32NX_FlightPhase_Climb {
 
 class A32NX_FlightPhase_Cruise {
     constructor(_fmc) {
-        this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.DESCENT;
     }
 
     init(_fmc) {
     }
 
     check(_fmc) {
-        return Math.round(Simplane.getAltitude() / 100) < _fmc.cruiseFlightLevel && _fmc.fcuSelAlt / 100 < _fmc.cruiseFlightLevel &&
-            (_fmc.flightPlanManager.getDestination()).liveDistanceTo < 200;
+        return false;
     }
 }
 
@@ -120,18 +147,14 @@ class A32NX_FlightPhase_Descent {
     }
 
     init(_fmc) {
-        this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.APPROACH;
+        this.nextFmgcFlightPhase = FmgcFlightPhases.APPROACH;
     }
 
     check(_fmc) {
         const fl = Math.round(Simplane.getAltitude() / 100);
-        if (fl === _fmc.cruiseFlightLevel) {
-            this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.CRUISE;
-            return true;
-        }
-
-        if (fl < _fmc.cruiseFlightLevel && _fmc.fcuSelAlt / 100 > fl) {
-            this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.CLIMB;
+        const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
+        if (fl === _fmc.cruiseFlightLevel && fcuSelFl === fl) {
+            this.nextFmgcFlightPhase = FmgcFlightPhases.CRUISE;
             return true;
         }
 
@@ -144,7 +167,7 @@ class A32NX_FlightPhase_Descent {
                 _fmc.flightPlanManager._decelReached = true;
                 _fmc._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
                 if (Simplane.getAltitudeAboveGround() < 9500) {
-                    this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.APPROACH;
+                    this.nextFmgcFlightPhase = FmgcFlightPhases.APPROACH;
                     return true;
                 }
             }
@@ -159,26 +182,26 @@ class A32NX_FlightPhase_Approach {
     }
 
     init(_fmc) {
-        this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.DONE;
+        this.nextFmgcFlightPhase = FmgcFlightPhases.DONE;
         this.landingResetTimer = null;
         this.lastPhaseUpdateTime = null;
     }
 
     check(_fmc) {
         if (Simplane.getEngineThrottleMode(0) === ThrottleMode.TOGA || Simplane.getEngineThrottleMode(1) === ThrottleMode.TOGA) {
-            this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.GOAROUND;
+            this.nextFmgcFlightPhase = FmgcFlightPhases.GOAROUND;
             return true;
         }
 
         const fl = Math.round(Simplane.getAltitude() / 100);
 
         if (fl === _fmc.cruiseFlightLevel) {
-            this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.CRUISE;
+            this.nextFmgcFlightPhase = FmgcFlightPhases.CRUISE;
             return true;
         }
 
-        if (fl < _fmc.cruiseFlightLevel && _fmc.fcuSelAlt / 100 > fl) {
-            this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.CLIMB;
+        if (fl < _fmc.cruiseFlightLevel && Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100 > fl) {
+            this.nextFmgcFlightPhase = FmgcFlightPhases.CLIMB;
             return true;
         }
 
@@ -216,7 +239,7 @@ class A32NX_FlightPhase_GoAround {
 
 class A32NX_FlightPhase_Done {
     constructor(_fmc) {
-        this.nextFmgcFlightPhase = FMGC_FLIGHT_PHASES.PREFLIGHT;
+        this.nextFmgcFlightPhase = FmgcFlightPhases.PREFLIGHT;
     }
 
     init(_fmc) {

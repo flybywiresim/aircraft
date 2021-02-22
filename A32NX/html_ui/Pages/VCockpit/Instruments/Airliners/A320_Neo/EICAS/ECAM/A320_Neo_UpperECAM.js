@@ -1559,7 +1559,7 @@ var A320_Neo_UpperECAM;
             this.isTogaFlexMct1 = this.getCachedSimVar("GENERAL ENG THROTTLE MANAGED MODE:1", "number") > 4;
             this.isTogaFlexMct2 = this.getCachedSimVar("GENERAL ENG THROTTLE MANAGED MODE:2", "number") > 4;
             this.isGrounded = this.getCachedSimVar("SIM ON GROUND", "bool");
-            this.flightPhaseBeforeClb = this.getCachedSimVar("L:A32NX_FMGC_FLIGHT_PHASE", "number") < FMGC_FLIGHT_PHASES.CLIMB;
+            this.flightPhaseBeforeClb = this.getCachedSimVar("L:A32NX_FMGC_FLIGHT_PHASE", "number") < FmgcFlightPhases.CLIMB;
 
             if (this.isGrounded || this.flightPhaseBeforeClb || (this.isTogaFlexMct1 && this.isTogaFlexMct2)) {
                 const ignStateActive = this.getCachedSimVar("L:XMLVAR_ENG_MODE_SEL", "Enum") == 2;
@@ -2319,7 +2319,7 @@ var A320_Neo_UpperECAM;
                 } else {
                     const throttleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
                     const flightPhase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number");
-                    if (flightPhase < FMGC_FLIGHT_PHASES.CLIMB) {
+                    if (flightPhase < FmgcFlightPhases.CLIMB) {
                         if ((throttleMode !== ThrottleMode.TOGA) && (throttleMode !== ThrottleMode.REVERSE)) {
                             const flexTemp = Simplane.getFlexTemperature();
                             this.setFlexTemperature(flexTemp !== 0, flexTemp);
@@ -2348,7 +2348,7 @@ var A320_Neo_UpperECAM;
          * @returns string
          */
         getThrustRatingMode(_grounded, _min = "CLB", _med = "FLX", _max = "TOGA") {
-            if (_grounded || (this.currentPhase < FMGC_FLIGHT_PHASES.CLIMB)) {
+            if (_grounded || (this.currentPhase < FmgcFlightPhases.CLIMB)) {
                 return Simplane.getFlexTemperature() > 0 ? _med : _max;
             }
             return _min;
@@ -2381,7 +2381,7 @@ var A320_Neo_UpperECAM;
                             }
                             case ThrottleMode.FLEX_MCT:
                             {
-                                this.throttleState.textContent = this.currentPhase === FMGC_FLIGHT_PHASES.GOAROUND
+                                this.throttleState.textContent = this.currentPhase === FmgcFlightPhases.GOAROUND
                                 && Simplane.getEngineActive(0)
                                 && Simplane.getEngineActive(1) ? "GA\xa0SOFT" : this.getThrustRatingMode(this.currentGrounded, "MCT");
                                 break;

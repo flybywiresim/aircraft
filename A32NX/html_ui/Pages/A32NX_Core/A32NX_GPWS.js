@@ -95,7 +95,7 @@ class A32NX_GPWS {
 
         this.GPWSComputeLightsAndCallouts();
 
-        if ((mda !== 0 || dh !== -1) && phase === FMGC_FLIGHT_PHASES.APPROACH) {
+        if ((mda !== 0 || dh !== -1) && phase === FmgcFlightPhases.APPROACH) {
             let minimumsDA; //MDA or DH
             let minimumsIA; //radio or baro altitude
             const baroAlt = SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet");
@@ -130,7 +130,7 @@ class A32NX_GPWS {
 
     update_maxRA(radioAlt, onGround, phase) {
         // on ground check is to get around the fact that radio alt is set to around 300 while loading
-        if (onGround || phase === FMGC_FLIGHT_PHASES.GOAROUND) {
+        if (onGround || phase === FmgcFlightPhases.GOAROUND) {
             this.Mode4MaxRAAlt = NaN;
         } else if (this.Mode4MaxRAAlt < radioAlt || isNaN(this.Mode4MaxRAAlt)) {
             this.Mode4MaxRAAlt = radioAlt;
@@ -319,7 +319,7 @@ class A32NX_GPWS {
      * @constructor
      */
     GPWSMode3(radioAlt, phase, FlapsInLandingConfig) {
-        if (!(phase === FMGC_FLIGHT_PHASES.TAKEOFF || phase === FMGC_FLIGHT_PHASES.GOAROUND) || radioAlt > 1500 || radioAlt < 10) {
+        if (!(phase === FmgcFlightPhases.TAKEOFF || phase === FmgcFlightPhases.GOAROUND) || radioAlt > 1500 || radioAlt < 10) {
             this.Mode3MaxBaroAlt = NaN;
             this.Mode3Code = 0;
             return;
@@ -356,14 +356,14 @@ class A32NX_GPWS {
         const FlapModeOff = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAP_OFF", "Bool");
 
         // Mode 4 A and B logic
-        if (!gearExtended && phase === FMGC_FLIGHT_PHASES.APPROACH) {
+        if (!gearExtended && phase === FmgcFlightPhases.APPROACH) {
             if (speed < 190 && radioAlt < 500) {
                 this.Mode4Code = 1;
             } else if (speed >= 190) {
                 const maxWarnAlt = 8.333 * speed - 1083.333;
                 this.Mode4Code = radioAlt < maxWarnAlt ? 3 : 0;
             }
-        } else if (!FlapsInLandingConfig && !FlapModeOff && phase === FMGC_FLIGHT_PHASES.APPROACH) {
+        } else if (!FlapsInLandingConfig && !FlapModeOff && phase === FmgcFlightPhases.APPROACH) {
             if (speed < 159 && radioAlt < 245) {
                 this.Mode4Code = 2;
             } else if (speed >= 159) {
@@ -581,7 +581,7 @@ class A32NX_GPWS {
                 if (SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "Percent over 100") <= 0.05 || SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:2", "Percent over 100") <= 0.05) {
                     this.RetardState.action("land");
                     this.core.soundManager.removePeriodicSound(soundList.retard);
-                } else if (SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum") === FMGC_FLIGHT_PHASES.GOAROUND || radioAlt > 20) {
+                } else if (SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum") === FmgcFlightPhases.GOAROUND || radioAlt > 20) {
                     this.RetardState.action("go_around");
                     this.core.soundManager.removePeriodicSound(soundList.retard);
                 }

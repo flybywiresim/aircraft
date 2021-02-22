@@ -1,4 +1,4 @@
-const FMGC_FLIGHT_PHASES = {
+const FmgcFlightPhases = {
     PREFLIGHT: 0,
     TAKEOFF: 1,
     CLIMB: 2,

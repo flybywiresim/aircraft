@@ -19,17 +19,17 @@
 class CDUPerformancePage {
     static ShowPage(mcdu) {
         mcdu.activeSystem = 'FMGC';
-        if (mcdu.currentFlightPhase <= FMGC_FLIGHT_PHASES.TAKEOFF) {
+        if (mcdu.currentFlightPhase <= FmgcFlightPhases.TAKEOFF) {
             CDUPerformancePage.ShowTAKEOFFPage(mcdu);
-        } else if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.CLIMB) {
+        } else if (mcdu.currentFlightPhase === FmgcFlightPhases.CLIMB) {
             CDUPerformancePage.ShowCLBPage(mcdu);
-        } else if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.CRUISE) {
+        } else if (mcdu.currentFlightPhase === FmgcFlightPhases.CRUISE) {
             CDUPerformancePage.ShowCRZPage(mcdu);
-        } else if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.DESCENT) {
+        } else if (mcdu.currentFlightPhase === FmgcFlightPhases.DESCENT) {
             CDUPerformancePage.ShowDESPage(mcdu);
-        } else if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.APPROACH) {
+        } else if (mcdu.currentFlightPhase === FmgcFlightPhases.APPROACH) {
             CDUPerformancePage.ShowAPPRPage(mcdu);
-        } else if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.GOAROUND) {
+        } else if (mcdu.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
             CDUPerformancePage.ShowGOAROUNDPage(mcdu);
         }
     }
@@ -50,7 +50,7 @@ class CDUPerformancePage {
         };
 
         let titleColor = "white";
-        if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.TAKEOFF) {
+        if (mcdu.currentFlightPhase === FmgcFlightPhases.TAKEOFF) {
             titleColor = "green";
         }
 
@@ -75,7 +75,7 @@ class CDUPerformancePage {
         let v1Check = "{small}\xa0\xa0\xa0\xa0{end}";
         let vRCheck = "{small}\xa0\xa0\xa0\xa0{end}";
         let v2Check = "{small}\xa0\xa0\xa0\xa0{end}";
-        if (mcdu.currentFlightPhase < FMGC_FLIGHT_PHASES.TAKEOFF) {
+        if (mcdu.currentFlightPhase < FmgcFlightPhases.TAKEOFF) {
             v1 = "{amber}___{end}";
             if (mcdu.v1Speed) {
                 if (mcdu._v1Checked) {
@@ -201,7 +201,7 @@ class CDUPerformancePage {
         // thrust reduction / acceleration altitude
         let thrRedAcc = "-----/-----";
         if (hasOrigin) {
-            if (mcdu.currentFlightPhase < FMGC_FLIGHT_PHASES.TAKEOFF) {
+            if (mcdu.currentFlightPhase < FmgcFlightPhases.TAKEOFF) {
                 let thrRed = "[\xa0]";
                 if (isFinite(mcdu.thrustReductionAltitude)) {
                     thrRed = ("" + mcdu.thrustReductionAltitude.toFixed(0)).padStart(5, "\xa0");
@@ -241,7 +241,7 @@ class CDUPerformancePage {
                 }
                 thrRedAcc = `${thrRed}${acc}[color]green`;
             }
-        } else if (mcdu.currentFlightPhase >= FMGC_FLIGHT_PHASES.TAKEOFF) {
+        } else if (mcdu.currentFlightPhase >= FmgcFlightPhases.TAKEOFF) {
             thrRedAcc = "";
         }
 
@@ -282,7 +282,7 @@ class CDUPerformancePage {
         const formattedThs = !isNaN(mcdu.ths)
             ? (mcdu.ths >= 0 && !Object.is(mcdu.ths, -0) ? `UP${Math.abs(mcdu.ths).toFixed(1)}` : `DN${Math.abs(mcdu.ths).toFixed(1)}`)
             : '';
-        if (mcdu.currentFlightPhase < FMGC_FLIGHT_PHASES.TAKEOFF) {
+        if (mcdu.currentFlightPhase < FmgcFlightPhases.TAKEOFF) {
             const flaps = !isNaN(mcdu.flaps) ? mcdu.flaps : "[]";
             const ths = formattedThs ? formattedThs : "[\xa0\xa0\xa0]";
             flapsThs = `${flaps}/${ths}[color]cyan`;
@@ -300,7 +300,7 @@ class CDUPerformancePage {
 
         // flex takeoff temperature
         let flexTakeOffTempCell = "[\xa0\xa0]°[color]cyan";
-        if (mcdu.currentFlightPhase < FMGC_FLIGHT_PHASES.TAKEOFF) {
+        if (mcdu.currentFlightPhase < FmgcFlightPhases.TAKEOFF) {
             if (isFinite(mcdu.perfTOTemp)) {
                 if (mcdu._toFlexChecked) {
                     flexTakeOffTempCell = `${mcdu.perfTOTemp.toFixed(0)}°[color]cyan`;
@@ -327,7 +327,7 @@ class CDUPerformancePage {
         // eng out acceleration altitude
         let engOutAcc = "-----";
         if (hasOrigin) {
-            if (mcdu.currentFlightPhase < FMGC_FLIGHT_PHASES.TAKEOFF) {
+            if (mcdu.currentFlightPhase < FmgcFlightPhases.TAKEOFF) {
                 if (isFinite(mcdu.engineOutAccelerationAltitude)) {
                     engOutAcc = mcdu.engineOutAccelerationAltitude.toFixed(0);
                     if (mcdu.engineOutAccelerationAltitudeIsPilotEntered) {
@@ -350,13 +350,13 @@ class CDUPerformancePage {
                     engOutAcc = `${mcdu.engineOutAccelerationAltitude}[s-text][color]green`;
                 }
             }
-        } else if (mcdu.currentFlightPhase >= FMGC_FLIGHT_PHASES.TAKEOFF) {
+        } else if (mcdu.currentFlightPhase >= FmgcFlightPhases.TAKEOFF) {
             engOutAcc = "";
         }
 
         let next = "NEXT\xa0";
         let nextPhase = "PHASE>";
-        if ((!mcdu._v1Checked || !mcdu._vRChecked || !mcdu._v2Checked) && mcdu.currentFlightPhase < FMGC_FLIGHT_PHASES.TAKEOFF) {
+        if ((!mcdu._v1Checked || !mcdu._vRChecked || !mcdu._v2Checked) && mcdu.currentFlightPhase < FmgcFlightPhases.TAKEOFF) {
             next = "CONFIRM\xa0";
             nextPhase = "TO DATA*";
             mcdu.onRightInput[5] = (value) => {
@@ -408,7 +408,7 @@ class CDUPerformancePage {
             }
         };
         let titleColor = "white";
-        if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.CLIMB) {
+        if (mcdu.currentFlightPhase === FmgcFlightPhases.CLIMB) {
             titleColor = "green";
         }
         const isFlying = mcdu.getIsFlying();
@@ -455,7 +455,7 @@ class CDUPerformancePage {
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.CLIMB) {
+        if (mcdu.currentFlightPhase === FmgcFlightPhases.CLIMB) {
             if (confirmAppr) {
                 bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
                 bottomRowCells[0] = "*APPR PHASE[color]amber";
@@ -514,7 +514,7 @@ class CDUPerformancePage {
             }
         };
         let titleColor = "white";
-        if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.CRUISE) {
+        if (mcdu.currentFlightPhase === FmgcFlightPhases.CRUISE) {
             titleColor = "green";
         }
         const isFlying = false;
@@ -556,7 +556,7 @@ class CDUPerformancePage {
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.CRUISE) {
+        if (mcdu.currentFlightPhase === FmgcFlightPhases.CRUISE) {
             if (confirmAppr) {
                 bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
                 bottomRowCells[0] = "*APPR PHASE[color]amber";
@@ -615,7 +615,7 @@ class CDUPerformancePage {
             }
         };
         let titleColor = "white";
-        if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.DESCENT) {
+        if (mcdu.currentFlightPhase === FmgcFlightPhases.DESCENT) {
             titleColor = "green";
         }
         const isFlying = false;
@@ -652,7 +652,7 @@ class CDUPerformancePage {
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.DESCENT) {
+        if (mcdu.currentFlightPhase === FmgcFlightPhases.DESCENT) {
             if (confirmAppr) {
                 bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
                 bottomRowCells[0] = "*APPR PHASE[color]amber";
@@ -714,7 +714,7 @@ class CDUPerformancePage {
             }
         };
         let titleColor = "white";
-        if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.APPROACH) {
+        if (mcdu.currentFlightPhase === FmgcFlightPhases.APPROACH) {
             titleColor = "green";
         }
         let qnhCell = "[ ]";
@@ -819,11 +819,11 @@ class CDUPerformancePage {
 
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
-        if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.APPROACH) {
+        if (mcdu.currentFlightPhase === FmgcFlightPhases.APPROACH) {
             bottomRowLabels[0] = "";
             bottomRowCells[0] = "";
         } else {
-            if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.GOAROUND) {
+            if (mcdu.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
                 mcdu.leftInputDelay[5] = () => {
                     return mcdu.getDelaySwitchPage();
                 };
@@ -839,7 +839,7 @@ class CDUPerformancePage {
                 };
             }
         }
-        if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.GOAROUND) {
+        if (mcdu.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
             bottomRowLabels[1] = "";
             bottomRowCells[1] = "";
         } else {
@@ -884,7 +884,7 @@ class CDUPerformancePage {
         };
 
         let titleColor = "white";
-        if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.GOAROUND) {
+        if (mcdu.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
             titleColor = "green";
         }
         let thrRedAcc = "---";
@@ -938,7 +938,7 @@ class CDUPerformancePage {
 
         const bottomRowLabels = ["", ""];
         const bottomRowCells = ["", ""];
-        if (mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.GOAROUND) {
+        if (mcdu.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
             if (confirmAppr) {
                 bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
                 bottomRowCells[0] = "*APPR PHASE[color]amber";

@@ -233,7 +233,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         // support spawning in with a custom flight phases from the .flt files
         const initialFlightPhase = SimVar.GetSimVarValue("L:A32NX_INITIAL_FLIGHT_PHASE", "number");
         if (initialFlightPhase) {
-            this.flightPhaseManager.changeFlightPhase(initialFlightPhase === FlightPhase.FLIGHT_PHASE_TAXI ? FMGC_FLIGHT_PHASES.PREFLIGHT : initialFlightPhase);
+            this.flightPhaseManager.changeFlightPhase(initialFlightPhase);
         }
 
         this.electricity = this.querySelector("#Electricity");
@@ -349,7 +349,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     checkAocTimes() {
         if (!this.aocTimes.off) {
             const isAirborne = !Simplane.getIsGrounded(); //TODO replace with proper flight mode in future
-            if (this.currentFlightPhase === FMGC_FLIGHT_PHASES.TAKEOFF && isAirborne) {
+            if (this.currentFlightPhase === FmgcFlightPhases.TAKEOFF && isAirborne) {
                 // Wheels off
                 // Off: remains blank until Take off time
                 this.aocTimes.off = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
@@ -358,7 +358,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         if (!this.aocTimes.out) {
             const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
-            if (this.currentFlightPhase === FMGC_FLIGHT_PHASES.PREFLIGHT && !currentPKGBrakeState) {
+            if (this.currentFlightPhase === FmgcFlightPhases.PREFLIGHT && !currentPKGBrakeState) {
                 // Out: is when you set the brakes to off
                 this.aocTimes.out = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
             }
@@ -381,7 +381,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
 
-        if (this.currentFlightPhase === FMGC_FLIGHT_PHASES.PREFLIGHT) {
+        if (this.currentFlightPhase === FmgcFlightPhases.PREFLIGHT) {
             const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
             if (!this.aocTimes.doors && cabinDoorPctOpen < 20) {
                 this.aocTimes.doors = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));

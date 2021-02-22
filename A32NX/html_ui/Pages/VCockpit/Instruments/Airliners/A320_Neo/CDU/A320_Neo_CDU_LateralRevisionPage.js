@@ -69,7 +69,7 @@ class CDULateralRevisionPage {
 
         let nextWptLabel = "";
         let nextWpt = "";
-        const isPreflight = mcdu.currentFlightPhase === FMGC_FLIGHT_PHASES.PREFLIGHT;
+        const isPreflight = mcdu.currentFlightPhase === FmgcFlightPhases.PREFLIGHT;
         if ((isDeparture && isPreflight) || isWaypoint || isDestination) {
             if (isDestination) {
                 // TODO remove this once we support waypoints after the destination (otherwise sim crash)
