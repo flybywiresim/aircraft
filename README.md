@@ -7,7 +7,7 @@
 [![Github All Releases download count](https://img.shields.io/github/downloads/flybywiresim/a32nx/total.svg?style=flat)](https://github.com/flybywiresim/a32nx/releases/latest)
 [![GitHub contributors](https://img.shields.io/github/contributors/flybywiresim/a32nx.svg?style=flat)](https://github.com/flybywiresim/a32nx/graphs/contributors)
 
-## About
+## Introduction
 
 The A32NX Project is a community-driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
 
@@ -22,8 +22,8 @@ The following aircraft configuration is currently simulated:
 
 Please note that this configuration may change in the future as the A32NX project evolves and changes.
 
-### SimBrief Airframe with the correct weights
-✈[SimBrief Airframe with the correct weights](https://www.simbrief.com/system/dispatch.php?sharefleet=eyJ0cyI6IjE2MDU4MjAwNzg5NDYiLCJiYXNldHlwZSI6IkEzMjAiLCJjb21tZW50cyI6IkZMWSBCWSBXSVJFIiwiaWNhbyI6IkEyME4iLCJuYW1lIjoiQTMyME5FTyBGQlciLCJlbmdpbmVzIjoiTEVBUC0xQTI2IiwicmVnIjoiQTIwTiIsImZpbiI6IiIsInNlbGNhbCI6IiIsImhleGNvZGUiOiIiLCJjYXQiOiJNIiwicGVyIjoiQyIsImVxdWlwIjoiU0RFM0ZHSElSV1kiLCJ0cmFuc3BvbmRlciI6IkxCMSIsInBibiI6IkExQjFDMUQxTzFTMSIsImV4dHJhcm1rIjoiIiwibWF4cGF4IjoiMTgwIiwid2d0dW5pdHMiOiJLR1MiLCJvZXciOiI0MTAwMCIsIm16ZnciOiI2MjUwMCIsIm10b3ciOiI3OTAwMCIsIm1sdyI6IjY2MDAwIiwibWF4ZnVlbCI6IjIxMjczIiwicGF4d2d0IjoiMTA0IiwiZGVmYXVsdGNpIjoiIiwiZnVlbGZhY3RvciI6IlAwMCIsImNydWlzZW9mZnNldCI6IlAwMDAwIn0-) Credits: [@viniciusfont](https://github.com/viniciusfont)
+### SimBrief Airframe (Correct Weights)
+✈ [Add SimBrief Airframe](https://www.simbrief.com/system/dispatch.php?sharefleet=eyJ0cyI6IjE2MDU4MjAwNzg5NDYiLCJiYXNldHlwZSI6IkEzMjAiLCJjb21tZW50cyI6IkZMWSBCWSBXSVJFIiwiaWNhbyI6IkEyME4iLCJuYW1lIjoiQTMyME5FTyBGQlciLCJlbmdpbmVzIjoiTEVBUC0xQTI2IiwicmVnIjoiQTIwTiIsImZpbiI6IiIsInNlbGNhbCI6IiIsImhleGNvZGUiOiIiLCJjYXQiOiJNIiwicGVyIjoiQyIsImVxdWlwIjoiU0RFM0ZHSElSV1kiLCJ0cmFuc3BvbmRlciI6IkxCMSIsInBibiI6IkExQjFDMUQxTzFTMSIsImV4dHJhcm1rIjoiIiwibWF4cGF4IjoiMTgwIiwid2d0dW5pdHMiOiJLR1MiLCJvZXciOiI0MTAwMCIsIm16ZnciOiI2MjUwMCIsIm10b3ciOiI3OTAwMCIsIm1sdyI6IjY2MDAwIiwibWF4ZnVlbCI6IjIxMjczIiwicGF4d2d0IjoiMTA0IiwiZGVmYXVsdGNpIjoiIiwiZnVlbGZhY3RvciI6IlAwMCIsImNydWlzZW9mZnNldCI6IlAwMDAwIn0-) **(Credits: [@viniciusfont](https://github.com/viniciusfont))**
 
 ## Downloads
 
@@ -36,35 +36,35 @@ Download the new A32NX installer where you can select either the Stable or Devel
 #### Latest Stable Release
 
 - This is the recommended stable release, as it has been thoroughly tested.
-  - [Download the stable release here.](https://github.com/flybywiresim/a32nx/releases/latest/download/flybywiresim-a32nx.zip)
+  - [Download Stable Version](https://github.com/flybywiresim/a32nx/releases/latest/download/flybywiresim-a32nx.zip)
 
 You can see the changelog on the releases page: [View Here.](https://github.com/flybywiresim/a32nx/releases)
 
 #### Unstable Master Branch Build
 
 - This has the latest features, but is much more unstable, use at your own risk.
-  - [Download developer build here.](https://github.com/flybywiresim/a32nx/releases/download/vmaster/A32NX-master.zip)
-  - [View info about the latest build here.](https://github.com/flybywiresim/a32nx/releases/tag/vmaster)
+  - [Download Developement Version](https://github.com/flybywiresim/a32nx/releases/download/vmaster/A32NX-master.zip)
+  - [Read Information](https://github.com/flybywiresim/a32nx/releases/tag/vmaster)
 
 #### Unstable Master Branch Build **(Custom FBW)**
 
 - This version is the same as the regular master/development version, but with the WIP custom fly-by-wire system. Expect issues with flight directors/autopilot if you intend to use this version. No support will be provided via Discord.
-  - [Download custom FBW development build here.](https://flybywiresim-packages.nyc3.cdn.digitaloceanspaces.com/vmaster-cfbw/A32NX-master-cfbw.zip)
-  - [**IMPORTANT:** view warnings and info for the custom FBW build here.](https://github.com/flybywiresim/a32nx/tree/fbw/docs)
+  - [Download Custom FBW + Development Version](https://flybywiresim-packages.nyc3.cdn.digitaloceanspaces.com/vmaster-cfbw/A32NX-master-cfbw.zip)
+  - [**IMPORTANT:** Read Known Issues & Information](https://github.com/flybywiresim/a32nx/tree/fbw/docs)
 
 #### Unstable Master Branch Build **(Custom FBW + Custom AP)**
 
 - This version is the same as the regular master/development version, but with the WIP custom auto-pilot and custom fly-by-wire system. Expect issues with flight directors/autopilot/missing FMAs and more if you intend to use this version. No support will be provided via Discord.
-  - [Download custom AP+FBW development build here.](https://flybywiresim-packages.nyc3.cdn.digitaloceanspaces.com/vmaster-cfbw-cap/A32NX-master-cfbw-cap.zip)
-  - [**IMPORTANT:** view warnings and info for the custom AP+FBW build here.]( https://github.com/flybywiresim/a32nx/tree/autopilot/docs)
+  - [Download Custom AP+FBW Development Version](https://flybywiresim-packages.nyc3.cdn.digitaloceanspaces.com/vmaster-cfbw-cap/A32NX-master-cfbw-cap.zip)
+  - [**IMPORTANT:** Read Known Issues & Information]( https://github.com/flybywiresim/a32nx/tree/autopilot/docs)
 
 ## Installation
 
 ### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
 
-Open the zip that you downloaded from one of the links above, and drag the A32NX folder inside the zip into your Community folder.
+_Open the zip that you downloaded from one of the links above, and drag the A32NX folder inside the zip into your Community folder._
 
-See below for the location of your Community folder:
+**See below for the location of your Community folder:**
 
 For the Microsoft Store edition AND/OR Gamepass edition:
 - Copy the "A32NX" folder into your community package folder. It is located in:
@@ -95,7 +95,7 @@ See [Contributing.md](.github/Contributing.md)
 - Autopilot goes direct to RWY on APP (same with the default A320) [Workaround: Use DIR to a waypoint or selected heading]
 - Upper ECAM displays wrong THR levers position / N1 rating.
 - Newly added ASOBO A320 liveries are incompatible with the A32NX mod. 
-- Ruder keybindings not working (you have to set your keybinding to rudder axis right and left)
+- Rudder keybindings not working (you have to set your keybinding to rudder axis right and left)
 - Wing dips on landing (due to bad transition to direct law in flare, same with the default A320)  [Workaround use minimal aileron input on landing]
 - Black screens / unable to start (conflict with another mod/livery or incorrect installation of the A32NX mod, use the [installer](https://api.flybywiresim.com/installer))
 
@@ -113,36 +113,36 @@ Any other original works found to be not explicitly covered by the above definit
 
 **Q: Can I download the aircraft in the current state?**
 
-A: Yes, see [Downloads](#Downloads).
+> A: Yes, see [Downloads](#Downloads).
 
 **Q: Where is the plane in-sim?**
 
-A: The mod is added on top of the default A320neo from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
+> A: The mod is added on top of the default A320neo from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
 
 **Q: What are the liveries available?**
 
-A: All liveries for the default A320 are compatible with the A32NX Mod. You can download some of your favourite liveries at [Flightsim.to](https://flightsim.to).
+> A: All liveries for the default A320 are compatible with the A32NX Mod. You can download some of your favourite liveries at [Flightsim.to](https://flightsim.to).
 
 **Q: When will it be released?**
 
-A: The project is an ongoing rolling release. See [Downloads](#Downloads).
+> A: The project is an ongoing rolling release. See [Downloads](#Downloads).
 
 **Q: When is the next update?**
 
-A: We don't know, since it depends on many factors. We will announce each Stable build update via [discord](https://discord.gg/flybywire) and our social media: [Facebook](https://www.facebook.com/FlyByWireSimulations), [Twitter](https://twitter.com/FlybywireSim).
+> A: We don't know, since it depends on many factors. We will announce each Stable build update via [discord](https://discord.gg/flybywire) and our social media: [Facebook](https://www.facebook.com/FlyByWireSimulations), [Twitter](https://twitter.com/FlybywireSim).
 
 **Q: How do I join the team?**
 
-A: Head over to [Contributing.md](.github/Contributing.md) and join our Discord to get started.
+> A: Head over to [Contributing.md](.github/Contributing.md) and join our Discord to get started.
 
 **Q: Is it payware?**
 
-A: No, it is a completely free aircraft, open-source.
+> A: No, it is a completely free aircraft, open-source.
 
 **Q: How do we report bugs?**
 
-A: Report bugs to us in the [Discord server](https://discord.gg/flybywire), under the #help channel, or by creating a GitHub issue. Just make sure to search for existing issues first before creating a new one.
+> A: Report bugs to us in the [Discord server](https://discord.gg/flybywire), under the #help channel, or by creating a GitHub issue. Just make sure to search for existing issues first before creating a new one.
 
 **Q: Why is my version not the same as what I see others using?**
 
-A: We have two versions, the Stable and Developer (Master). The Stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The Developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time. If you find this to be the case, you can report these issues in #help in discord or via GitHub Issues (Check there is not an existing issue of the same nature as yours).
+> A: We have two versions, the Stable and Developer (Master). The Stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The Developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time. If you find this to be the case, you can report these issues in #help in discord or via GitHub Issues (Check there is not an existing issue of the same nature as yours).
