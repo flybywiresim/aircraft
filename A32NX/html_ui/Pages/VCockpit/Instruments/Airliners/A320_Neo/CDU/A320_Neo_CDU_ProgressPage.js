@@ -43,9 +43,7 @@ class CDUProgressPage {
                 } else if (mcdu.cruiseFlightLevel < alt) {
                     mcdu.cruiseFlightLevel = alt;
                     flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
-                    const msg = NXSystemMessages.newCrzAlt;
-                    msg.text = msg.text + mcdu.cruiseFlightLevel * 100;
-                    mcdu.addNewMessage(msg);
+                    mcdu.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(mcdu.cruiseFlightLevel * 100));
                 } else {
                     flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 }
@@ -55,9 +53,7 @@ class CDUProgressPage {
                 const fl = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
                 if (fl > mcdu.cruiseFlightLevel) {
                     mcdu.cruiseFlightLevel = fl;
-                    const msg = NXSystemMessages.newCrzAlt;
-                    msg.text = msg.text + mcdu.cruiseFlightLevel * 100;
-                    mcdu.addNewMessage(msg);
+                    mcdu.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(mcdu.cruiseFlightLevel * 100));
                 }
                 flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 break;
