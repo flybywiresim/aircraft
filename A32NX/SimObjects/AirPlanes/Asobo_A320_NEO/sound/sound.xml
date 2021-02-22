@@ -1527,6 +1527,7 @@
         <Sound WwiseData="true" WwiseEvent="engine_mode_switch" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="throttle_lever_lock_on" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="throttle_lever_lock_off" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="detent" ViewPoint="Inside"/>
 
         <!-- FUEL ==========================================================================================  -->
         <Sound WwiseData="true" WwiseEvent="fuel_pump_push_button_on" ViewPoint="Inside"/>
