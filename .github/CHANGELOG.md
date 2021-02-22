@@ -103,6 +103,7 @@
 1. [MISC] Added registration decal - @tyler58546(tyler58546), @DarkOfNova (DarkOfNova)
 1. [CDU] Fix ILS frequencies not autofilling - @pareil6 (pareil6)
 1. [EFB] Landing performance calculations page - @matt-winfield (TheMightyMat#0585)
+1. [SOUND] Added custom sounds to multiple buttons and Throttle Lever Reverse Locks - @ImenesFBW (Imenes)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
