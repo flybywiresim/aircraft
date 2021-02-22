@@ -1,8 +1,6 @@
 ﻿@import url("/CSS/A32NX_Display_Common.css");
 
-/** This mixin makes a single line element fit exactly on the Roboto font for easier integration. */
 :root {
-  --bodyHeightScale: 1;
   font-family: "HoneywellMCDU" !important;
 }
 
@@ -94,18 +92,6 @@ a320-neo-cdu-main-display text {
   font-family: "HoneywellMCDU" !important;
 }
 
-/*
-a320-neo-cdu-main-display::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: repeating-linear-gradient(rgba(255, 255, 255, 0), rgba(0, 0, 0, 0.3) 1px, rgba(255, 255, 255, 0) 3px);
-  z-index: inherit;
-}
-*/
 .white {
   color: var(--mcduWhite);
 }
@@ -160,8 +146,8 @@ fmc-main-display::before {
 
 #header {
   height: 8.1%;
-  margin-top: 4%;
-  margin-bottom: 0%;
+  margin-top: 7.5%;
+  margin-bottom: -3%;
   display: block;
   text-align: center;
 }
@@ -186,20 +172,9 @@ fmc-main-display::before {
   letter-spacing: normal;
 }
 
-.s-text {
+.s-text, text .s-text, div .s-text, span .s-text {
   font-family: HoneywellMCDUSmall, HoneywellMCDU !important;
-}
-
-text .s-text {
-  font-family: HoneywellMCDUSmall, HoneywellMCDU !important;
-}
-
-div .s-text {
-  font-family: HoneywellMCDUSmall, HoneywellMCDU !important;
-}
-
-span .s-text {
-  font-family: HoneywellMCDUSmall, HoneywellMCDU !important;
+  line-height: 1.25;
 }
 
 .b-text {
@@ -220,7 +195,7 @@ span .s-text {
 }
 
 .label {
-  height: 5%;
+  height: 6.55%;
   margin: 0;
   white-space: pre;
 }
@@ -241,13 +216,13 @@ span .s-text {
 
 .label-center {
   position: absolute;
-  left: 0px;
+  left: 0;
   width: 100%;
   text-align: center;
 }
 
 .line {
-  height: 8.1%;
+  height: 6.55%;
   margin: 0;
   white-space: pre;
 }
@@ -268,7 +243,7 @@ span .s-text {
 
 .line-center {
   position: absolute;
-  left: 0px;
+  left: 0;
   width: 100%;
   text-align: center;
 }
