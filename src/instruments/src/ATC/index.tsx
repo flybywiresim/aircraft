@@ -90,7 +90,7 @@ const PoweredXpdrDisplay = () => {
     useInteractionEvent('A320_Neo_ATC_BTN_CLR', () => buttonPressHandler(8));
 
     return (
-        <svg>
+        <svg className="atc-svg">
             <text x="8%" y="45%">{ltsTest ? '8888' : codeInDisplay.join('')}</text>
         </svg>
     );
@@ -104,7 +104,5 @@ const XpdrRootDisplay = () => {
 };
 
 render(
-    <div className="atc-wrapper">
-        <XpdrRootDisplay />
-    </div>,
+    <XpdrRootDisplay />,
 );
