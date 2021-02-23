@@ -45,6 +45,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
+name = "autothrottle"
+version = "0.1.0"
+dependencies = [
+ "msfs 0.0.1-alpha.2 (git+https://github.com/devsnek/msfs-rs.git?branch=main)",
+]
+
+[[package]]
 name = "bindgen"
 version = "0.55.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -182,7 +189,7 @@ version = "0.1.0"
 dependencies = [
  "bindgen 0.57.0",
  "cc",
- "msfs",
+ "msfs 0.0.1-alpha.2 (git+https://github.com/flybywiresim/msfs-rs?branch=main)",
  "msfs_sdk 0.0.0",
  "paste",
  "serde",
@@ -371,14 +378,37 @@ checksum = "0ee1c47aaa256ecabcaea351eae4a9b01ef39ed810004e298d2511ed284b1525"
 [[package]]
 name = "msfs"
 version = "0.0.1-alpha.2"
+source = "git+https://github.com/devsnek/msfs-rs.git?branch=main#04eb7ac9ac0445fa36f32e7e93024e22eea6f934"
+dependencies = [
+ "bindgen 0.55.1",
+ "cc",
+ "futures",
+ "msfs_derive 0.0.1-alpha.2 (git+https://github.com/devsnek/msfs-rs.git?branch=main)",
+ "msfs_sdk 0.0.1-alpha.2 (git+https://github.com/devsnek/msfs-rs.git?branch=main)",
+ "wasi",
+]
+
+[[package]]
+name = "msfs"
+version = "0.0.1-alpha.2"
 source = "git+https://github.com/flybywiresim/msfs-rs?branch=main#04eb7ac9ac0445fa36f32e7e93024e22eea6f934"
 dependencies = [
  "bindgen 0.55.1",
  "cc",
  "futures",
- "msfs_derive",
- "msfs_sdk 0.0.1-alpha.2",
+ "msfs_derive 0.0.1-alpha.2 (git+https://github.com/flybywiresim/msfs-rs?branch=main)",
+ "msfs_sdk 0.0.1-alpha.2 (git+https://github.com/flybywiresim/msfs-rs?branch=main)",
  "wasi",
+]
+
+[[package]]
+name = "msfs_derive"
+version = "0.0.1-alpha.2"
+source = "git+https://github.com/devsnek/msfs-rs.git?branch=main#04eb7ac9ac0445fa36f32e7e93024e22eea6f934"
+dependencies = [
+ "msfs_sdk 0.0.1-alpha.2 (git+https://github.com/devsnek/msfs-rs.git?branch=main)",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -386,7 +416,7 @@ name = "msfs_derive"
 version = "0.0.1-alpha.2"
 source = "git+https://github.com/flybywiresim/msfs-rs?branch=main#04eb7ac9ac0445fa36f32e7e93024e22eea6f934"
 dependencies = [
- "msfs_sdk 0.0.1-alpha.2",
+ "msfs_sdk 0.0.1-alpha.2 (git+https://github.com/flybywiresim/msfs-rs?branch=main)",
  "quote",
  "syn",
 ]
@@ -396,6 +426,11 @@ name = "msfs_sdk"
 version = "0.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e85dbdf7953c2de50ff102fa0a44f0e44da39d5837e8c293d9ed9618f5addf7f"
+
+[[package]]
+name = "msfs_sdk"
+version = "0.0.1-alpha.2"
+source = "git+https://github.com/devsnek/msfs-rs.git?branch=main#04eb7ac9ac0445fa36f32e7e93024e22eea6f934"
 
 [[package]]
 name = "msfs_sdk"
@@ -661,7 +696,7 @@ name = "systems"
 version = "0.1.0"
 dependencies = [
  "airbus-systems",
- "msfs",
+ "msfs 0.0.1-alpha.2 (git+https://github.com/flybywiresim/msfs-rs?branch=main)",
  "uom",
 ]
 

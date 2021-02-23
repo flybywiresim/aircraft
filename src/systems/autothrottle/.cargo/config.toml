@@ -1,0 +1,9 @@
+[target.wasm32-wasi]
+rustflags = [
+    "-Clink-arg=--export-table",
+    "-Clink-arg=--export=free",
+    "-Clink-arg=--export=malloc",
+]
+
+[build]
+target = "wasm32-wasi"
