@@ -17,9 +17,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import {
-    IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconStairsUp, IconPower,
-} from '@tabler/icons';
+import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconStairsUp, IconPower } from '@tabler/icons';
 import './Ground.scss';
 import fuselage from '../Assets/320neo-outline-upright.svg';
 import { useSplitSimVar } from '../../Common/simVars';
