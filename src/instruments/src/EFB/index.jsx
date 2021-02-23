@@ -24,6 +24,7 @@ import logo from './Assets/fbw-logo.svg';
 import './Assets/Reset.scss';
 import './Assets/Efb.scss';
 import { render } from '../Common/index.tsx';
+import { readSettingsFromPersistentStorage } from './Settings/sync.ts';
 
 function ScreenLoading() {
     return (
@@ -76,5 +77,7 @@ function EFBLoad() {
 
     return content;
 }
+
+readSettingsFromPersistentStorage();
 
 render(<EFBLoad />);

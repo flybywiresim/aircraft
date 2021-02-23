@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useEffect, useRef } from "react"
+import React, { useRef } from 'react';
 
 import './Slider.scss';
 
@@ -29,11 +29,11 @@ export const Slider = (props: SliderProps) => {
         const newValue = Number(sliderRef?.current?.value ?? 0);
 
         if (props.onInput) {
-            props.onInput(newValue)
+            props.onInput(newValue);
         }
-    }
+    };
 
     return (
         <input value={props.value} ref={sliderRef} onChange={handleInput} type="range" min="1" max="100" className={`slider slider w-60 h-1 pb-1.5 pt-0.5 rounded-full ${props.className}`} />
     );
-}
+};
