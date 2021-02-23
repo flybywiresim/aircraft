@@ -18,18 +18,14 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import {
-    round, isNil, toNumber, last,
-} from 'lodash';
+import { round, isNil, toNumber, last } from 'lodash';
 import { TOD_CALCULATOR_REDUCER } from '../../Store';
 import { setTodData } from '../../Store/action-creator/tod-calculator';
 import TODCalculator from '../../Service/TODCalculator';
 import Card from '../../Components/Card/Card';
 import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType.enum';
 
-const Result = ({
-    currentAltitude, targetAltitude, calculation, groundSpeed, ...props
-}) => {
+const Result = ({ currentAltitude, targetAltitude, calculation, groundSpeed, ...props }) => {
     const todCalculator = new TODCalculator(toNumber(currentAltitude), toNumber(targetAltitude), groundSpeed);
     const currentGroundSpeed = last(groundSpeed).groundSpeed;
 
@@ -43,7 +39,7 @@ const Result = ({
                 headerText: 'Desired vertical speed',
                 footerText: '',
                 unit: 'ft/min',
-                calculate: () => -round(todCalculator.calculateVS(calculation.input)),
+                calculate: () => round(todCalculator.calculateVS(calculation.input)),
             },
             {
                 headerText: 'Desired descend angle',
@@ -70,7 +66,7 @@ const Result = ({
         ],
     }[calculation.type]);
 
-    const inputDataValid = targetAltitude !== '' && currentAltitude !== '' && (targetAltitude < currentAltitude) && calculation.input !== '' && currentGroundSpeed > 0;
+    const inputDataValid = targetAltitude !== '' && currentAltitude !== '' && (targetAltitude < currentAltitude) && targetAltitude >= 0 && calculation.input !== '' && currentGroundSpeed > 0;
 
     const calculationValid = (value) => !Number.isNaN(value) && Number.isFinite(value);
 
@@ -79,10 +75,8 @@ const Result = ({
 
     if (inputDataValid && validCalculations.length > 0) {
         return (
-            <Card title="Result" childrenContainerClassName="flex-1 flex flex-col justify-center" {...props}>
-                {results.map(({
-                    headerText, footerText, calculate, unit,
-                }) => {
+            <Card title="Result" childrenContainerClassName="flex-1 flex flex-col justify-center px-0" {...props}>
+                {results.map(({ headerText, footerText, calculate, unit }) => {
                     const calculation = calculate();
 
                     if (calculationValid(calculation)) {
@@ -111,12 +105,6 @@ const Result = ({
 };
 
 export default connect(
-    ({
-        [TOD_CALCULATOR_REDUCER]: {
-            currentAltitude, targetAltitude, calculation, groundSpeed,
-        },
-    }) => ({
-        currentAltitude, targetAltitude, calculation, groundSpeed,
-    }),
+    ({ [TOD_CALCULATOR_REDUCER]: { currentAltitude, targetAltitude, calculation, groundSpeed } }) => ({ currentAltitude, targetAltitude, calculation, groundSpeed }),
     { setTodData },
 )(Result);
