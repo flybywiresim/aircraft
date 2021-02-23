@@ -1,17 +1,71 @@
+/**
+ * The A32NX_FlightPhaseManager handles the FMGCs flight phases.
+ * It does so by creating a unique flight phase object for every FMGC flight phase.
+ *
+ * A32NX_FlightPhaseManager Class:
+ *
+ * Variables:
+ *  fmc:                holds the fmc object to modify the current flight phase variable as well as accessing
+ *                      the FlightPlanManager and other sources needed evaluate the current situations.
+ *
+ *  flightPhases:       Contains all 8 FMGC flight phases and constructs for each a unique flight phase object.
+ *
+ *  activeFlightPhase:  Contains the active FMGC flight phase object which is used to initialize the flight phase,
+ *                      check the flight phases status (for transitioning to another flight phase) and reading the
+ *                      next flight phase to be come active.
+ *
+ * Methods:
+ *  checkFlightPhase:   this method is called to initiate the check on the current FMGC flight phase which will evaluate
+ *                      which is the correct FMGC flight phase to be in.
+ *                      If the current FMGC flight phase is evaluated no longer correct, the new FMGC flight phase gets
+ *                      passed to changeFlightPhase Method which will perform the flight phase transition.
+ *
+ *  handleFcuInput:     This method is called when the alt knob is pulled or pushed.
+ *                      This method handles special FMGC flight phase transitions which are initiated pushing/pulling
+ *                      the fcu alt knob.
+ *                      Inputs are being ignored when not in these flight phases: CLIMB, CRUISE or DESCENT.
+ *
+ *  changeFlightPhase:  Performs the FMGCs flight phase change to the passed flight phase and initiates transitions actions.
+ *                      After the flight phase change and the transition actions are performed the checkFlightPhase Method
+ *                      gets called to directly verify the current flight phase is still valid.
+ *
+ *
+ * A32NX_FlightPhase Object:
+ *
+ * Variables:
+ *  nextFmgcFlightPhase: This variable defines the next flight phase the FMGC can automatically transition into.
+ *                       If not defined, the FMGC won't be able to transition onto another flight phase automatically
+ *                       without pilot input, if that's the case the check method will always return false.
+ *                       This variable can be found in the constructor or init of the flight phase object.
+ *                       Whether it's defined in the constructor or init depends on whether the variable can be changed
+ *                       and hence the default transition flight phase be manipulated, if that's the case the variable
+ *                       will be defined in init method to ensure the variable is always in it's intended state.
+ *
+ * Methods:
+ *  init:               This method is called once every time the FMGC transitions into this flight phase to initialize
+ *                      the current flight phase variables if needed.
+ *                      (This method gets passed the fmc object to have access to the fmc variables and methods)
+ *
+ *  check:              This method returns as boolean.
+ *                      True: Transition into next flight phase will be initiated
+ *                      (The next flight phase is defined as nextFmgcFlightPhase)
+ *                      False: The current FMGC flight phase maintains is maintained.
+ *                      (This method gets passed the fmc object to have access to the fmc variables and methods)
+ */
 class A32NX_FlightPhaseManager {
     constructor(_fmc) {
         console.log('A32NX_FlightPhaseManager constructed');
         this.fmc = _fmc;
 
         this.flightPhases = {
-            [FmgcFlightPhases.PREFLIGHT]: new A32NX_FlightPhase_PreFlight(_fmc),
-            [FmgcFlightPhases.TAKEOFF]: new A32NX_FlightPhase_TakeOff(_fmc),
-            [FmgcFlightPhases.CLIMB]: new A32NX_FlightPhase_Climb(_fmc),
-            [FmgcFlightPhases.CRUISE]: new A32NX_FlightPhase_Cruise(_fmc),
-            [FmgcFlightPhases.DESCENT]: new A32NX_FlightPhase_Descent(_fmc),
-            [FmgcFlightPhases.APPROACH]: new A32NX_FlightPhase_Approach(_fmc),
-            [FmgcFlightPhases.GOAROUND]: new A32NX_FlightPhase_GoAround(_fmc),
-            [FmgcFlightPhases.DONE]: new A32NX_FlightPhase_Done(_fmc)
+            [FmgcFlightPhases.PREFLIGHT]: new A32NX_FlightPhase_PreFlight(),
+            [FmgcFlightPhases.TAKEOFF]: new A32NX_FlightPhase_TakeOff(),
+            [FmgcFlightPhases.CLIMB]: new A32NX_FlightPhase_Climb(),
+            [FmgcFlightPhases.CRUISE]: new A32NX_FlightPhase_Cruise(),
+            [FmgcFlightPhases.DESCENT]: new A32NX_FlightPhase_Descent(),
+            [FmgcFlightPhases.APPROACH]: new A32NX_FlightPhase_Approach(),
+            [FmgcFlightPhases.GOAROUND]: new A32NX_FlightPhase_GoAround(),
+            [FmgcFlightPhases.DONE]: new A32NX_FlightPhase_Done()
         };
 
         this.activeFlightPhase = this.flightPhases[FmgcFlightPhases.PREFLIGHT];
@@ -74,7 +128,7 @@ class A32NX_FlightPhaseManager {
 }
 
 class A32NX_FlightPhase_PreFlight {
-    constructor(_fmc) {
+    constructor() {
         this.nextFmgcFlightPhase = FmgcFlightPhases.TAKEOFF;
     }
 
@@ -89,7 +143,7 @@ class A32NX_FlightPhase_PreFlight {
 }
 
 class A32NX_FlightPhase_TakeOff {
-    constructor(_fmc) {
+    constructor() {
         this.nextFmgcFlightPhase = FmgcFlightPhases.CLIMB;
     }
 
@@ -118,7 +172,7 @@ class A32NX_FlightPhase_TakeOff {
 }
 
 class A32NX_FlightPhase_Climb {
-    constructor(_fmc) {
+    constructor() {
         this.nextFmgcFlightPhase = FmgcFlightPhases.CRUISE;
     }
 
@@ -131,7 +185,7 @@ class A32NX_FlightPhase_Climb {
 }
 
 class A32NX_FlightPhase_Cruise {
-    constructor(_fmc) {
+    constructor() {
     }
 
     init(_fmc) {
@@ -143,7 +197,7 @@ class A32NX_FlightPhase_Cruise {
 }
 
 class A32NX_FlightPhase_Descent {
-    constructor(_fmc) {
+    constructor() {
     }
 
     init(_fmc) {
@@ -178,7 +232,7 @@ class A32NX_FlightPhase_Descent {
 }
 
 class A32NX_FlightPhase_Approach {
-    constructor(_fmc) {
+    constructor() {
     }
 
     init(_fmc) {
@@ -226,7 +280,7 @@ class A32NX_FlightPhase_Approach {
 }
 
 class A32NX_FlightPhase_GoAround {
-    constructor(_fmc) {
+    constructor() {
     }
 
     init(_fmc) {
@@ -238,7 +292,7 @@ class A32NX_FlightPhase_GoAround {
 }
 
 class A32NX_FlightPhase_Done {
-    constructor(_fmc) {
+    constructor() {
         this.nextFmgcFlightPhase = FmgcFlightPhases.PREFLIGHT;
     }
 
