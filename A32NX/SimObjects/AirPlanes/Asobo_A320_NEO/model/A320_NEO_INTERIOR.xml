@@ -3813,22 +3813,24 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_CHRONO_R</ANIM_NAME>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
+            <UseTemplate Name="FBW_Push_Toggle">
                 <NODE_ID>PUSH_CHRONO_RST</NODE_ID>
                 <TOOLTIPID>Reset Chronometer</TOOLTIPID>
-                <ANIM_NAME>PUSH_CHRONO_RST</ANIM_NAME>
+                <MOMENTARY />
+                <LEFT_SINGLE_CODE>(&gt;H:A32NX_CHRONO_RST)</LEFT_SINGLE_CODE>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
+            <UseTemplate Name="FBW_Push_Toggle">
                 <NODE_ID>PUSH_CHRONO_CHR</NODE_ID>
-                <TOOLTIPID>%((L:PUSH_CHRONO_CHR, Bool) !)%{if}Start%{else}Stop%{end} Chronometer</TOOLTIPID>
-                <ANIM_NAME>PUSH_CHRONO_CHR</ANIM_NAME>
+                <TOOLTIPID>Start/Stop Chronometer</TOOLTIPID>
+                <MOMENTARY/>
+                <LEFT_SINGLE_CODE>(&gt;H:A32NX_CHRONO_TOGGLE)</LEFT_SINGLE_CODE>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_AIRBUS_Chronometer_Button">
+            <UseTemplate Name="FBW_Push_Held">
                 <NODE_ID>PUSH_CHRONO_SET</NODE_ID>
-                <TOOLTIPID>Set chronometer to %((L:PUSH_CHRONO_SET, Bool) !)%{if}date%{else}time%{end}</TOOLTIPID>
-                <ANIM_NAME>PUSH_CHRONO_SET</ANIM_NAME>
+                <TOOLTIPID>Toggle clock date/time</TOOLTIPID>
+                <LEFT_SINGLE_CODE>(&gt;H:A32NX_CHRONO_DATE)</LEFT_SINGLE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
