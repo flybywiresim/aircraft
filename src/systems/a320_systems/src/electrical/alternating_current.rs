@@ -347,10 +347,8 @@ impl A320MainPowerSources {
 
         let gen_1_provides_power = overhead.generator_1_is_on() && self.engine_1_gen.is_powered();
         let gen_2_provides_power = overhead.generator_2_is_on() && self.engine_2_gen.is_powered();
-        let no_engine_gen_provides_power = !gen_1_provides_power && !gen_2_provides_power;
         let only_one_engine_gen_is_powered = gen_1_provides_power ^ gen_2_provides_power;
-        let both_engine_gens_provide_power =
-            !(no_engine_gen_provides_power || only_one_engine_gen_is_powered);
+        let both_engine_gens_provide_power = gen_1_provides_power && gen_2_provides_power;
         let ext_pwr_provides_power = overhead.external_power_is_on()
             && ext_pwr.is_powered()
             && !both_engine_gens_provide_power;
