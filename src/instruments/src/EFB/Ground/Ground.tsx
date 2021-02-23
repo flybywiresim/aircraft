@@ -24,7 +24,7 @@ import './Ground.scss';
 import fuselage from '../Assets/320neo-outline-upright.svg';
 import { useSplitSimVar } from '../../Common/simVars';
 
-export const Ground = () => {
+export const Ground: React.FC = () => {
     const [activeButtons, setActiveButtons] = useState <string[]>([]);
     const [jetWayActive, setJetWayActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_JETWAY', 'bool', 1000);
     const [_rampActive, setRampActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
