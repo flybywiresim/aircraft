@@ -42,12 +42,9 @@ a320-neo-lower-ecam-apu text.Title {
   stroke-width: 2;
   fill: rgba(4, 4, 5, 1);
 }
-:root .APUGenTitleInactive {
-  fill: var(--displayWhite);
-  font-size: 18px;
-}
+:root .APUGenTitleInactive,
 :root .APUGenTitle {
-  fill: var(--displayGreen);
+  fill: var(--displayWhite);
   font-size: 18px;
 }
 :root .APUGenTitleWarn {
