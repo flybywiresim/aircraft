@@ -17,7 +17,7 @@ jobs:
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh npm install
-          ./scripts/dev-env/run.sh npx igniter
+          ./scripts/dev-env/run.sh npx igniter --no-tty
       - name: Build ZIP file
         run: |
           mkdir ./${{ env.BUILD_DIR_NAME }}
