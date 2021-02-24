@@ -16,15 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ReactDOM from 'react-dom';
 import { useState, useEffect } from 'react';
 import Efb from './Efb.tsx';
-import {
-    renderTarget, getSimVar, setSimVar,
-} from '../util.mjs';
+import { getSimVar, setSimVar } from '../util.mjs';
 import logo from './Assets/fbw-logo.svg';
 
-import './Assets/Boot.scss';
+import './Assets/Efb.scss';
+import { render } from '../Common/index.tsx';
 
 function ScreenLoading() {
     return (
@@ -61,11 +59,11 @@ function EFBLoad() {
                     setLoadingTimeout(setTimeout(() => {
                         setSimVar('L:A32NX_EFB_TURNED_ON', 2, 'number');
                         setLoadingTimeout(undefined);
-                    }, 6_000));
+                    }, 6000));
                 }
                 break;
             case 2:
-                setContent(<Efb currentFlight={getSimVar('ATC FLIGHT NUMBER', 'string')} logo={logo} />);
+                setContent(<Efb currentFlight={getSimVar('ATC FLIGHT NUMBER', 'string')} />);
                 break;
             default:
                 throw new RangeError();
@@ -78,4 +76,4 @@ function EFBLoad() {
     return content;
 }
 
-ReactDOM.render(<EFBLoad />, renderTarget);
+render(<EFBLoad />);

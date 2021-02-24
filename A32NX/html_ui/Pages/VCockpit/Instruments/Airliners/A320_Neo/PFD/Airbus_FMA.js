@@ -117,7 +117,6 @@ var Airbus_FMA;
 
     class CurrentPlaneState {
         static init() {
-            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
         }
 
         static refresh() {

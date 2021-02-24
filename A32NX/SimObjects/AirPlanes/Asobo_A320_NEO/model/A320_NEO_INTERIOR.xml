@@ -43,7 +43,7 @@
             </DefaultTemplateParameters>
 
             <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
-                <EMISSIVE_CODE>0.7</EMISSIVE_CODE>
+                <EMISSIVE_CODE>0.6</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
@@ -509,7 +509,7 @@
 
         <Component ID="Pedestal_Fwd">
             <!-- TODO - Test this with new anim -->
-            <UseTemplate Name="ASOBO_ENGINE_Lever_Throttle_Template">
+            <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
                 <ID>1</ID>
                 <NODE_ID>LEVER_THROTTLE_1</NODE_ID>
                 <ANIM_NAME>throttle_lever_0</ANIM_NAME>
@@ -520,7 +520,7 @@
                 <POSITION_VAR>XMLVAR_Throttle1Position</POSITION_VAR>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.ENG1_THROTTLE_CONTROL</TOOLTIPID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_ENGINE_Lever_Throttle_Template">
+            <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
                 <ID>2</ID>
                 <NODE_ID>LEVER_THROTTLE_2</NODE_ID>
                 <ANIM_NAME>throttle_lever_1</ANIM_NAME>
@@ -583,6 +583,11 @@
 
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>DECAL_THROTTLE_01</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                <NODE_ID>DECAL_THROTTLE_02</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
             </UseTemplate>
 
@@ -973,22 +978,14 @@
         </Component>
 
         <Component ID="Front_Middle">
-            <Component ID="Speed_Placard" Node="SPEED_LIMIT">
-                <UseTemplate Name="ASOBO_GT_Visibility_Code">
-                    <VISIBILITY_CODE>0</VISIBILITY_CODE>
-                </UseTemplate>
-            </Component>
-
-            <Component ID="Brake_Fan">
-                <UseTemplate Name="FBW_Push_Toggle">
-                    <NODE_ID>PUSH_BKRFAN</NODE_ID>
-                    <LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
-                    <SEQ1_CODE>0</SEQ1_CODE>
-                    <SEQ1_NODE_ID>PUSH_AUTOBKR_SEQ1</SEQ1_NODE_ID>
-                    <TOOLTIPID>(Inop.)</TOOLTIPID>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.APU_SWITCH_SET_OFF</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.APU_SWITCH_SET_ON</ANIMTIP_1>
-                    <CURSOR/>
+            <Component ID="Brake_Fan_Imported">
+                <UseTemplate Name="FBW_Push_BrkFan_Toggle">
+                    <NODE_ID>PUSH_BKRFAN_IMPORTED</NODE_ID>
+                    <ANIM_NAME>PUSH_BKRFAN_IMPORTED</ANIM_NAME>
+                    <NODE_ID_ON>PUSH_BKRFAN_IMPORTED_SEQ2</NODE_ID_ON>
+                    <NODE_ID_HOT>PUSH_BKRFAN_IMPORTED_SEQ1</NODE_ID_HOT>
+                    <TOGGLE_SIMVAR>L:A32NX_BRAKE_FAN_BTN_PRESSED</TOGGLE_SIMVAR>
+                    <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Turn OFF brake fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
                 </UseTemplate>
             </Component>
 
@@ -1411,7 +1408,7 @@
 
                     <SEQ1_CODE>(L:A32NX_APU_MASTER_FAULT, Bool)</SEQ1_CODE>
                     <SEQ2_CODE>(L:A32NX_APU_MASTER_SW_ACTIVATED, Bool)</SEQ2_CODE>
-                    
+
                     <TOOLTIPID>%((L:A32NX_APU_MASTER_SW_ACTIVATED, Bool))%{if}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_ON%{end}</TOOLTIPID>
                 </UseTemplate>
 
@@ -2972,7 +2969,14 @@
             <UseTemplate Name="ASOBO_AUTOPILOT_Switch_Altitude_Increment_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_ALT</ANIM_NAME>
+                <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
+            </UseTemplate>
 
+            <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
+                <NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
+                <POTENTIOMETER>84</POTENTIOMETER>
+                <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
             </UseTemplate>
 
             <UseTemplate Name="FBW_Airbus_FCU_Altitude_Knob">
@@ -3361,6 +3365,8 @@
                 <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERAWARN_L_SEQ1</NODE_ID_SEQ1>
                 <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERAWARN_L_SEQ2</NODE_ID_SEQ2>
                 <ANIM_NAME>PUSH_AUTOPILOT_MASTERAWARN_L</ANIM_NAME>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <AIRBUS_TYPE/>
                 <NO_SEQ2/>
             </UseTemplate>
@@ -3375,6 +3381,8 @@
                 <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERCAUT_L_SEQ1</NODE_ID_SEQ1>
                 <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERCAUT_L_SEQ2</NODE_ID_SEQ2>
                 <ANIM_NAME>PUSH_AUTOPILOT_MASTERCAUT_L</ANIM_NAME>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <AIRBUS_TYPE/>
                 <NO_SEQ2/>
             </UseTemplate>
@@ -3388,6 +3396,8 @@
                 <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERAWARN_R_SEQ1</NODE_ID_SEQ1>
                 <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERAWARN_R_SEQ2</NODE_ID_SEQ2>
                 <ANIM_NAME>PUSH_AUTOPILOT_MASTERAWARN_R</ANIM_NAME>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <AIRBUS_TYPE/>
                 <NO_SEQ2/>
             </UseTemplate>
@@ -3402,6 +3412,8 @@
                 <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERCAUT_R_SEQ1</NODE_ID_SEQ1>
                 <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERCAUT_R_SEQ2</NODE_ID_SEQ2>
                 <ANIM_NAME>PUSH_AUTOPILOT_MASTERCAUT_R</ANIM_NAME>
+                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
                 <AIRBUS_TYPE/>
                 <NO_SEQ2/>
             </UseTemplate>
@@ -3413,12 +3425,12 @@
                 <HOLD_SIMVAR>L:PUSH_AUTOPILOT_MASTERAWARN_L</HOLD_SIMVAR>
             </UseTemplate>
             <UseTemplate Name="FBW_Push_Held">
-                <NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_L</NODE_ID>
-                <HOLD_SIMVAR>L:PUSH_AUTOPILOT_MASTERCAUT_L</HOLD_SIMVAR>
-            </UseTemplate>
-            <UseTemplate Name="FBW_Push_Held">
                 <NODE_ID>PUSH_AUTOPILOT_MASTERAWARN_R</NODE_ID>
                 <HOLD_SIMVAR>L:PUSH_AUTOPILOT_MASTERAWARN_R</HOLD_SIMVAR>
+            </UseTemplate>
+            <UseTemplate Name="FBW_Push_Held">
+                <NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_L</NODE_ID>
+                <HOLD_SIMVAR>L:PUSH_AUTOPILOT_MASTERCAUT_L</HOLD_SIMVAR>
             </UseTemplate>
             <UseTemplate Name="FBW_Push_Held">
                 <NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_R</NODE_ID>
@@ -3962,6 +3974,15 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_ELT_ON</NODE_ID>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="COFFEE">
+            <UseTemplate Name="FBW_Coffee_Cup">
+                <NODE_ID>COCKPIT_COFFEE_L</NODE_ID>
+            </UseTemplate>
+            <UseTemplate Name="FBW_Coffee_Cup">
+                <NODE_ID>COCKPIT_COFFEE_R</NODE_ID>
             </UseTemplate>
         </Component>
     </Behaviors>

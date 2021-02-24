@@ -833,20 +833,6 @@
 						</Action>
 					</ChildrenList>
 				</Event>
-				<Event Name="Play_Asobo_A320_NEO_ptutest" ID="{CFF7B9D4-116E-407F-8EE9-6C390944309C}">
-					<ChildrenList>
-						<Action Name="" ID="{94180E38-9775-4CB2-AA6F-DEA34D05E5CF}" ShortID="938142921">
-							<PropertyList>
-								<Property Name="ActionType" Type="int16" Value="1"/>
-							</PropertyList>
-							<ReferenceList>
-								<Reference Name="Target">
-									<ObjectRef Name="ptutest" ID="{8D1E0A9B-6E48-4153-AFAB-CEF7D1F3BD1F}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
-								</Reference>
-							</ReferenceList>
-						</Action>
-					</ChildrenList>
-				</Event>
 				<Event Name="Play_Asobo_A320_NEO_mechhorn2" ID="{BEF49E68-C55E-48B7-9D6D-6C0139F6038E}">
 					<ChildrenList>
 						<Action Name="" ID="{29B5A78A-2593-4CE9-9372-6ECFD7DB20D5}" ShortID="249188630">
@@ -1178,6 +1164,132 @@
 							<ReferenceList>
 								<Reference Name="Target">
 									<ObjectRef Name="packscabinshut" ID="{B603F772-4A52-4CE0-9BEA-33F8C9EBEF40}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_brakefan" ID="{18B5CCBA-6926-4B1D-8841-23D70F7472AF}">
+					<ChildrenList>
+						<Action Name="" ID="{6BAAC061-01EA-4054-BDEE-259E946DDD9B}" ShortID="717940079">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="brakefanext" ID="{5B32359B-FF67-4A4B-93A3-34303161CF60}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_brakefan2" ID="{6D7D4D0D-1610-4D5F-9468-95FB809C79E9}">
+					<ChildrenList>
+						<Action Name="" ID="{C53E1F57-2ADE-4E86-B9B1-3EB934C3205F}" ShortID="816790763">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="brakefanext2" ID="{171B56F8-2A59-4FCE-BD24-21F7B3831E79}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_rearcabfans" ID="{89A22B44-65EC-4FB2-A264-2DFE13A65D92}">
+					<ChildrenList>
+						<Action Name="" ID="{7E85F09D-8F8A-4716-AF6D-421A24965223}" ShortID="717937477">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="reargalleyfan" ID="{739A3C97-9D73-461E-94E2-9B39B83FD8DC}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_gup" ID="{FC0AF1F3-FCF3-42B3-990E-CD6FFAFD5292}">
+					<ChildrenList>
+						<Action Name="" ID="{BA5BCB96-6027-41E3-BAFC-1C4945F20021}" ShortID="458476592">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="gup" ID="{439ED44C-8008-4A48-B957-34222150FD0D}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_gmain" ID="{A7951E4A-3D44-45F8-865A-CBDF82DFBBBA}">
+					<ChildrenList>
+						<Action Name="" ID="{D3C98379-060B-4D6D-956D-0A6997EDFF01}" ShortID="117700654">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="gmain" ID="{CF23A02A-6EAA-4CE4-A651-2655B4463C5A}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_llightdragL" ID="{796A8D59-6266-4E7C-87B1-4189E085A07A}">
+					<ChildrenList>
+						<Action Name="" ID="{3170CDE3-219E-4482-B5FB-2D7450E5D7C4}" ShortID="413942441">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="landinglightdrag1" ID="{2898A1C5-CDB0-42BF-9C47-C10FD51E3C95}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_llightdragR" ID="{8621BAFA-8137-4E00-B72A-D92D15C95808}">
+					<ChildrenList>
+						<Action Name="" ID="{28FF5900-9FAF-45E0-927F-C178A01E348E}" ShortID="640666731">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="landinglightdrag2" ID="{6ED98061-F6A8-4B84-B6A8-154CCFF2934B}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_ptu_sound" ID="{2C002AB5-A38C-4564-818B-CEE3D45ECAB9}">
+					<ChildrenList>
+						<Action Name="" ID="{7FDD6A3F-10BD-433E-AF0A-697F9225DFA6}" ShortID="478850062">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="ptusound" ID="{DAB7DB97-4ADB-4A2A-B19A-DD331C11AC54}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_ptucockpit" ID="{A12B5028-8A68-42FC-B014-FE74CF7A7F7E}">
+					<ChildrenList>
+						<Action Name="" ID="{81F0E814-C9AB-4552-89AC-758AA70C99D2}" ShortID="707399866">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="ptusound" ID="{DAB7DB97-4ADB-4A2A-B19A-DD331C11AC54}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>

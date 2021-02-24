@@ -35,9 +35,7 @@ module.exports = {
                     '50%': { transform: 'rotate(2.5deg)' },
                 },
             },
-            animation: {
-                wiggle: 'wiggle 15s ease-in-out infinite',
-            },
+            animation: { wiggle: 'wiggle 15s ease-in-out infinite' },
             backgroundColor: ['active'],
             textColor: ['active'],
             colors: {
@@ -46,9 +44,11 @@ module.exports = {
                     'light': '#00C2CB',
                     'light-contrast': '#009da6',
                     'medium': '#006166',
+                    'medium-contrast': '#1f2937',
                     'dark': '#1B2434',
                     'darker': '#141E30',
                 },
+                gray: { medium: '#797979' },
             },
             boxShadow: {
                 'md-dark': '1px 1px 7px 1px rgba(0, 0, 0, 0.2)',
@@ -59,7 +59,10 @@ module.exports = {
         },
     },
     variants: {
-        extend: {},
+        extend: {
+            display: ['last'],
+            margin: ['last'],
+        },
     },
     plugins: [],
 };

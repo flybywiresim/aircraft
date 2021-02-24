@@ -831,13 +831,65 @@ var A320_Neo_UpperECAM;
                                 isActive: () => SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool"),
                                 actions: [
                                     {
+                                        style: "remark",
+                                        message: "IF PERF PERMITS",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
                                         style: "action",
                                         message: "PARK BRK",
-                                        action: "PREFER CHOCKS"
+                                        action: "PREFER CHOCKS",
+                                        isCompleted: () => {
+                                            return !this.isInFlightPhase(1, 10);
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "MAX SPEED",
+                                        action: "250/.60",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "BRK FAN",
+                                        action: "ON",
+                                        isCompleted: () => {
+                                            return !(this.isInFlightPhase(1, 2) && !SimVar.GetSimVarValue("L:A32NX_BRAKE_FAN", "Bool"));
+                                        },
                                     },
                                     {
                                         style: "cyan",
-                                        message: "&nbsp;-DELAY T.O FOR COOL"
+                                        message: "&nbsp;-DELAY T.O FOR COOL",
+                                        isCompleted: () => {
+                                            return !Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "L/G",
+                                        action: "DN FOR COOL",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
+                                        style: "remark",
+                                        message: "FOR L/G RETRACTION",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "MAX SPEED",
+                                        action: "220/.54",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
                                     }
                                 ]
                             },
@@ -945,6 +997,16 @@ var A320_Neo_UpperECAM;
                                 ],
                                 flightPhasesInhib: [3, 4, 5, 7, 8],
                                 isActive: () => !this.isInFlightPhase(1, 10) && this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") !== 2,
+                            },
+                            {
+                                message: "TCAS STBY",
+                                level: 2,
+                                flightPhasesInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+                                isActive: () => (
+                                    this.fwcFlightPhase === 6 &&
+                                    this.getCachedSimVar("L:A32NX_SWITCH_TCAS_Position", "Enum") === 0 &&
+                                    this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") === 2
+                                ),
                             }
                         ]
                     },
@@ -1250,10 +1312,10 @@ var A320_Neo_UpperECAM;
                     },
                     {
                         message: "TCAS STBY",
-                        style: "InfoIndication",
-                        isActive: () => {
-                            return (SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Position", "Enum") == 0 || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") < 2));
-                        }
+                        style: () => (
+                            this.isInFlightPhase(6)
+                        ) ? "InfoCaution" : "InfoIndication",
+                        isActive: () => SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Position", "Enum") === 0,
                     },
                     {
                         message: "COMPANY MSG",
@@ -1299,6 +1361,12 @@ var A320_Neo_UpperECAM;
                             !SimVar.GetSimVarValue("L:LANDING_1_Retracted", "Bool") ||
                             !SimVar.GetSimVarValue("L:LANDING_2_Retracted", "Bool")
                         ),
+                    },
+                    {
+                        message: "BRK FAN",
+                        isActive: () => {
+                            return this.getCachedSimVar("L:A32NX_BRAKE_FAN", "Bool");
+                        }
                     },
                     {
                         message: "SWITCHG PNL",
