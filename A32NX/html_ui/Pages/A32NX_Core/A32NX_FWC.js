@@ -373,19 +373,22 @@ class A32NX_FWC {
             this._wasInRange = true;
         }
 
-        if (200 <= delta) {
-            if (this._wasBellowThreshold) {
+        if (this._wasBellowThreshold && this._wasReach200ft) {
+            if (delta >= 200) {
                 SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", true);
-            } else if (this._wasAboveThreshold && delta <= 750 && !this._wasReach200ft) {
-                if (SimVar.GetSimVarValue("L:XMLVAR_Autopilot_1_Status", "Bool") === 0 && SimVar.GetSimVarValue("L:XMLVAR_Autopilot_2_Status", "Bool") === 0) {
-                    SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
-                    SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", true);
-                }
-                if ((SimVar.GetSimVarValue("L:XMLVAR_Autopilot_1_Status", "Bool") === 1 || SimVar.GetSimVarValue("L:XMLVAR_Autopilot_2_Status", "Bool") === 1) && SimVar.GetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool") === true) {
-                    SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
-                }
-            } else if (750 < delta && this._wasInRange && !this._wasReach200ft) {
+            } else if (delta < 200) {
+                SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
+            }
+        } else if (this._wasAboveThreshold && delta <= 750 && !this._wasReach200ft) {
+            if (!SimVar.GetSimVarValue("L:XMLVAR_Autopilot_1_Status", "Bool") && !SimVar.GetSimVarValue("L:XMLVAR_Autopilot_2_Status", "Bool")) {
+                SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
+                SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", true);
+            }
+        } else if (750 < delta && this._wasInRange && !this._wasReach200ft) {
+            if (750 < delta) {
                 SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", true);
+            } else if (delta >= 750) {
+                SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
             }
         }
     }
