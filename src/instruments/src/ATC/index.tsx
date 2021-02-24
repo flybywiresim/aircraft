@@ -64,6 +64,9 @@ const PoweredXpdrDisplay = () => {
                 }
             }
         } else if (buttonId !== 8 && newDigits !== null) {
+            if (clrPressed) {
+                setClrPressed(false);
+            }
             if (newDigits.length < 3) {
                 setNewDigits([...newDigits, buttonId]);
             } else {
