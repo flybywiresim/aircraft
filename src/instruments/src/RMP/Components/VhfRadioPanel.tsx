@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import React from 'react';
 import { StandbyFrequency } from './StandbyFrequency';
 import { useSplitSimVar } from '../../Common/simVars';
@@ -24,7 +42,7 @@ const useActiveVhfFrequency = (transceiver: number) => {
     const variableReadName = `COM ACTIVE FREQUENCY:${transceiver}`;
     const variableWriteName = `K:COM${transceiver === 1 ? '' : transceiver}_RADIO_SET_HZ`;
     return useSplitSimVar(variableReadName, 'Hz', variableWriteName, 'Hz', 100);
-}
+};
 
 /**
  * React hook for the standby VHF frequency SimVar, set via a K SimVar.
@@ -40,15 +58,15 @@ const useStandbyVhfFrequency = (side: string, transceiver: number) => {
     // Allows true-to-life independent standby frequencies per RMP.
     // Be sure to update this if if we ever add a third "C"-side RMP.
     if (
-        (side === 'L' && transceiver !== 1) ||
-        (side === 'R' && transceiver !== 2)
+        (side === 'L' && transceiver !== 1)
+        || (side === 'R' && transceiver !== 2)
     ) {
         variableReadName = `L:A32NX_RMP_${side}_VHF${transceiver}_STANDBY_FREQUENCY`;
         variableWriteName = variableReadName;
     }
 
-    return useSplitSimVar(variableReadName, 'Hz', variableWriteName,  'Hz', 100);
-}
+    return useSplitSimVar(variableReadName, 'Hz', variableWriteName, 'Hz', 100);
+};
 
 /**
  * VHF radio management panel React component.
@@ -71,4 +89,4 @@ export const VhfRadioPanel = (props: Props) => {
             <StandbyFrequency side={props.side} value={standby} setValue={setStandby} />
         </span>
     );
-}
+};

@@ -25,13 +25,13 @@ var A320_Neo_BAT;
 
             if (lightsTest) {
                 for (let i = 0; i < 2; ++i) {
-                    this.batTexts[i].textContent = "88.8";
+                    this.batTexts[i].textContent = "88.8V";
                 }
             } else {
                 for (let i = 0; i < 2; ++i) {
                     const batValue = SimVar.GetSimVarValue("ELECTRICAL BATTERY BUS VOLTAGE", "Volts");
                     this.batValues[i] = batValue;
-                    this.batTexts[i].textContent = this.batValues[i].toFixed(1);
+                    this.batTexts[i].textContent = this.batValues[i].toFixed(1) + "V";
                 }
             }
         }

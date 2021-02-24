@@ -17,47 +17,47 @@
  */
 
 import React from 'react';
-import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive } from '@tabler/icons'
+import {
+    IconArchive,
+    IconArrowDown,
+    IconBriefcase,
+    IconBuildingArch,
+    IconCornerDownLeft,
+    IconCornerDownRight,
+    IconHandStop,
+    IconTruck,
+} from '@tabler/icons';
 
-import './Ground.scss'
-import fuselage from '../Assets/320neo-outline-upright.svg'
+import './Ground.scss';
+import fuselage from '../Assets/320neo-outline-upright.svg';
 
-type GroundProps = {}
-
-type GroundState = {}
-
-class Ground extends React.Component<GroundProps, GroundState> {
-
-    render() {
-        return (
-            <div className="wrapper flex-grow flex flex-col">
-                <div className="pushback control-grid">
-                    <h1 className="text-white font-medium text-xl">Pushback</h1>
-                    <div className="stop"><IconHandStop/></div>
-                    <div className="down-left"><IconCornerDownLeft/></div>
-                    <div className="down selected"><IconArrowDown /></div>
-                    <div className="down-right"><IconCornerDownRight/></div>
-                </div>
-                <div className="fuel control-grid">
-                    <h1 className="text-white font-medium text-xl">Fuel</h1>
-                    <div className="call"><IconTruck/></div>
-                </div>
-                <div className="baggage control-grid">
-                    <h1 className="text-white font-medium text-xl">Baggage</h1>
-                    <div className="call"><IconBriefcase/></div>
-                </div>
-                <div className="catering control-grid">
-                    <h1 className="text-white font-medium text-xl">Catering</h1>
-                    <div className="call"><IconArchive/></div>
-                </div>
-                <div className="jetway control-grid">
-                    <h1 className="text-white font-medium text-xl">Jetway</h1>
-                    <div className="call"><IconBuildingArch/></div>
-                </div>
-                <img className="airplane w-full" src={fuselage} />
-            </div>
-        );
-    }
-}
+const Ground: React.FC = () => (
+    <div className="wrapper flex-grow flex flex-col">
+        <div className="pushback control-grid">
+            <h1 className="text-white font-medium text-xl">Pushback</h1>
+            <div className="stop"><IconHandStop /></div>
+            <div className="down-left"><IconCornerDownLeft /></div>
+            <div className="down selected"><IconArrowDown /></div>
+            <div className="down-right"><IconCornerDownRight /></div>
+        </div>
+        <div className="fuel control-grid">
+            <h1 className="text-white font-medium text-xl">Fuel</h1>
+            <div className="call"><IconTruck /></div>
+        </div>
+        <div className="baggage control-grid">
+            <h1 className="text-white font-medium text-xl">Baggage</h1>
+            <div className="call"><IconBriefcase /></div>
+        </div>
+        <div className="catering control-grid">
+            <h1 className="text-white font-medium text-xl">Catering</h1>
+            <div className="call"><IconArchive /></div>
+        </div>
+        <div className="jetway control-grid">
+            <h1 className="text-white font-medium text-xl">Jetway</h1>
+            <div className="call"><IconBuildingArch /></div>
+        </div>
+        <img className="airplane w-full" src={fuselage} />
+    </div>
+);
 
 export default Ground;
