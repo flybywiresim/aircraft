@@ -30,11 +30,9 @@ import {
 import './GroundSpeedManual.scss';
 import Button, { BUTTON_TYPE } from '../../../Components/Button/Button';
 import Divider from '../../../Components/Divider/Divider';
-import { TOD_GROUND_SPEED_MODE } from '../../../Enum/TODGroundSpeedMode.enum';
+import { TOD_INPUT_MODE } from '../../../Enum/TODInputMode.enum';
 
-const GroundSpeedManual = ({
-    groundSpeed, addTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeed, setTodGroundSpeedMode, ...props
-}) => (
+const GroundSpeedManual = ({ groundSpeed, addTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeed, setTodGroundSpeedMode, ...props }) => (
     <div {...props}>
         <div className="ground-speed-container mb-4">
             {groundSpeed.map(({ from, groundSpeed }, key) => (
@@ -74,14 +72,12 @@ const GroundSpeedManual = ({
         <Divider className="mb-4" />
 
         <div className="flex flex-row justify-center">
-            <Button text="SYNC" type={BUTTON_TYPE.BLUE_OUTLINE} onClick={() => setTodGroundSpeedMode(TOD_GROUND_SPEED_MODE.AUTO)} />
+            <Button text="SYNC" type={BUTTON_TYPE.BLUE_OUTLINE} onClick={() => setTodGroundSpeedMode(TOD_INPUT_MODE.AUTO)} />
         </div>
     </div>
 );
 
 export default connect(
     ({ [TOD_CALCULATOR_REDUCER]: { groundSpeed, groundSpeedMode } }) => ({ groundSpeed, groundSpeedMode }),
-    {
-        addTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeed, setTodGroundSpeedMode,
-    },
+    { addTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeed, setTodGroundSpeedMode },
 )(GroundSpeedManual);

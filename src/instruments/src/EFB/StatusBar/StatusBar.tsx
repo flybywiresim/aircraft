@@ -18,13 +18,16 @@
 
 import React from 'react';
 import { IconBatteryCharging, IconWifi } from '@tabler/icons';
+import { connect } from 'react-redux';
+import { efbClearState } from '../Store/action-creator/efb';
 
 declare const SimVar;
 
-type TimeProps = {
+type Props = {
     initTime: Date,
     updateTimeSinceStart: Function,
     updateCurrentTime: Function,
+    efbClearState: () => {}
 }
 
 type TimeState = {
@@ -32,10 +35,10 @@ type TimeState = {
     timeSinceStart: string
 }
 
-export default class StatusBar extends React.Component<TimeProps, TimeState> {
+class StatusBar extends React.Component<Props, TimeState> {
     interval: any;
 
-    constructor(props: TimeProps) {
+    constructor(props: Props) {
         super(props);
         this.state = {
             currentTime: this.props.initTime,
@@ -67,6 +70,8 @@ export default class StatusBar extends React.Component<TimeProps, TimeState> {
     }
 
     render() {
+        const { efbClearState } = this.props;
+
         return (
             <div className="flex items-center justify-between px-6 py-1 text-white font-medium leading-none">
                 <div>flyPad</div>
@@ -77,7 +82,10 @@ export default class StatusBar extends React.Component<TimeProps, TimeState> {
 
                     {/* TODO find a way to use `setSimVar` here */}
                     <IconBatteryCharging
-                        onClick={() => SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0)}
+                        onClick={() => {
+                            efbClearState();
+                            SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0);
+                        }}
                         className="ml-2"
                         color="yellow"
                         size={25}
@@ -89,6 +97,11 @@ export default class StatusBar extends React.Component<TimeProps, TimeState> {
         );
     }
 }
+
+export default connect(
+    () => {},
+    { efbClearState },
+)(StatusBar);
 
 export function formatTime(numbers: number[]) {
     if (numbers.length === 2) {
