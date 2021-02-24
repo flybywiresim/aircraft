@@ -184,6 +184,7 @@
 1. [MISC] Fixed button labels not showing when unlit - @ImenesFBW (Imenes)
 1. [EFB] Added functionality to ground services page - @Saschl (saschl#9432)
 1. [MISC] Add cockpit.cfg and fixes flaps full angle in external view - @donstim (donbikes#4084)
+1. [MCDU] Rework PERF APPR page to Honeywell Rev. 2 standard - @tracernz (Mike)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
