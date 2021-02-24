@@ -23,6 +23,7 @@
     <Include RelativeFile="../generated/A32NX_Interior_ADIRS.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Autopilot.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Elec.xml"/>
+    <Include RelativeFile="../generated/A32NX_Interior_Engine.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_FCU.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Fire.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Misc.xml"/>
