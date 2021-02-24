@@ -362,6 +362,7 @@ class A32NX_FWC {
                 this.apdeltaTime = 0;
             }
         }
+    }
 
     _updateAltitudeWarning() {
         const indicatedAltitude = Simplane.getAltitude();
