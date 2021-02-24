@@ -16,9 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from 'react';
-import classNames from 'classnames';
+import { EFB_CLEAR_STATE } from '../actions';
 
-const Divider = ({ className, ...props }) => <div className={classNames(['bg-white h-0.5', className])} {...props} />;
-
-export default Divider;
+export const efbClearState = () => ({ type: EFB_CLEAR_STATE });

@@ -68,6 +68,7 @@
 1. [APU] Emergency shutdown causes the APU to be permanently shown as unavailable on SYS - @davidwalschots (David Walschots)
 1. [APU] BLEED PSI is shown when ADIRS1 on NAV, waiting for alignment is no longer necessary - @davidwalschots (David Walschots)
 1. [APU] BLEED PSI is shown as 0 when the APU bleed air valve is not open, as the pressure transducer is downstream of the valve. - @davidwalschots (David Walschots)
+1. [GPWS] Fixed "too low terrain" warning on 2nd departure - @vkrizan (Viliam)
 1. [RMP] Separate radio management panels for each side and complete rewrite - @theomessin (Theodore Messinezis)
 1. [FLIGHTMODEL] Updated landing gear contact point values to closer match reality - @wpine215 (Iceman) and @donstim (donbikes#4084)
 1. [TEXTURE] Various cockpit decal texture fixes and updates - @ImenesFBW (Imenes)
@@ -102,7 +103,10 @@
 1. [MISC] Better brake cooling simulation (with and without brake fan) - @Inexorable92 (Inexorable)
 1. [MISC] Added registration decal - @tyler58546(tyler58546), @DarkOfNova (DarkOfNova)
 1. [CDU] Fix ILS frequencies not autofilling - @pareil6 (pareil6)
-1. [CAMERA] Added new external views - Snapmatics (Harry)
+1. [SOUND] Added custom sounds to multiple buttons and Throttle Lever Reverse Locks - @ImenesFBW (Imenes)
+1. [MCDU] Added custom MCDU font - @tyler58546 (tyler58546)
+1. [FWC] Add aural Altitude Alert (C Chord) - @Kimbyeongjang (김병장#7165)
+1. [CAMERA] Added new interior views - @Snapmatics (Harry)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)

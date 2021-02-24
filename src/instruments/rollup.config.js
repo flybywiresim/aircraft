@@ -27,7 +27,7 @@ const commonjs = require('@rollup/plugin-commonjs');
 const replace = require('@rollup/plugin-replace');
 const postcss = require('rollup-plugin-postcss');
 const tailwindcss = require('tailwindcss');
-const template = require('./template/rollup.js');
+const template = require('@flybywiresim/rollup-plugin-msfs');
 
 const TMPDIR = `${os.tmpdir()}/a32nx-instruments-gen`;
 
@@ -55,33 +55,21 @@ module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
                 commonjs({ include: /node_modules/ }),
                 babel({
                     presets: [
-                        ['@babel/preset-env', {
-                            targets: {
-                                safari: '11',
-                            },
-                        }],
-                        ['@babel/preset-react', {
-                            runtime: 'automatic',
-                        }],
+                        ['@babel/preset-env', { targets: { safari: '11' } }],
+                        ['@babel/preset-react', { runtime: 'automatic' }],
                         ['@babel/preset-typescript'],
                     ],
                     plugins: [
                         '@babel/plugin-proposal-class-properties',
-                        ['@babel/plugin-transform-runtime', {
-                            regenerator: true,
-                        }],
+                        ['@babel/plugin-transform-runtime', { regenerator: true }],
                     ],
                     babelHelpers: 'runtime',
                     compact: false,
                     extensions,
                 }),
-                replace({
-                    'process.env.NODE_ENV': '"production"',
-                }),
+                replace({ 'process.env.NODE_ENV': '"production"' }),
                 postcss({
-                    use: {
-                        sass: {},
-                    },
+                    use: { sass: {} },
                     plugins: makePostcssPluginList(name),
                     extract: `${TMPDIR}/${name}-gen.css`,
                 }),
