@@ -21,9 +21,8 @@ import {
     REMOVE_TOD_GROUND_SPEED,
     SET_TOD_DATA,
     SET_TOD_GROUND_SPEED,
-    SET_TOD_GROUND_SPEED_MODE,
 } from '../actions';
-import { TOD_GROUND_SPEED_MODE } from '../../Enum/TODGroundSpeedMode.enum';
+import { TOD_INPUT_MODE } from '../../Enum/TODInputMode.enum';
 
 export const setTodData = (data) => ({
     type: SET_TOD_DATA,
@@ -46,17 +45,16 @@ export const setTodGroundSpeed = (elementIndex, groundSpeed) => ({
     groundSpeed,
 });
 
-export const setTodGroundSpeedMode = (groundSpeedMode: TOD_GROUND_SPEED_MODE) => (dispatch) => {
-    if (groundSpeedMode === TOD_GROUND_SPEED_MODE.AUTO) {
+export const setTodGroundSpeedMode = (groundSpeedMode: TOD_INPUT_MODE) => (dispatch) => {
+    if (groundSpeedMode === TOD_INPUT_MODE.AUTO) {
         dispatch(clearTodGroundSpeed());
     }
 
-    dispatch({
-        type: SET_TOD_GROUND_SPEED_MODE,
-        groundSpeedMode,
-    });
+    dispatch(setTodData({ groundSpeedMode }));
 };
 
-export const clearTodGroundSpeed = () => ({
-    type: CLEAR_TOD_GROUND_SPEED,
-});
+export const setTodCurrentAltitudeSync = (enabled: boolean) => (dispatch) => {
+    dispatch(setTodData({ currentAltitudeMode: enabled ? TOD_INPUT_MODE.AUTO : TOD_INPUT_MODE.MANUAL }));
+};
+
+export const clearTodGroundSpeed = () => ({ type: CLEAR_TOD_GROUND_SPEED });
