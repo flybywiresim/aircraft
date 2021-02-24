@@ -616,9 +616,11 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         const screenIndex = parseInt(url.substring(url.length - 1));
         this.potIndex = screenIndex == 1 ? 89 : 91;
-        this.updateThrottler = new UpdateThrottler(screenIndex === 1 ? 200 : 400);
-        this.mdcuWaypointCheckThrottler = new UpdateThrottler(50);
+        this.updateThrottler = new UpdateThrottler(screenIndex === 1 ? 300 : 600);
+        this.mcduWaypointCheckThrottler = new UpdateThrottler(50);
         this.lastMcduCurrentFplnWaypointIndex = -1;
+        this.lastHeading = 0;
+        this.headingDiffForceUpdateThreshold = screenIndex === 1 ? 0.3 : 0.6;
     }
 
     onUpdate(_deltaTime) {
@@ -629,16 +631,26 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
 
         // If scrolling through flight plan from MCDU, force update immediately.
         var forceUpdate = false;
-        if (this.mdcuWaypointCheckThrottler.canUpdate(_deltaTime) !== -1) {
+        if (this.mcduWaypointCheckThrottler.canUpdate(_deltaTime) !== -1) {
             const mcduCurrentFplnWaypointIndex = SimVar.GetSimVarValue("L:AIRLINER_MCDU_CURRENT_FPLN_WAYPOINT", "number");
             if (mcduCurrentFplnWaypointIndex !== this.lastMcduCurrentFplnWaypointIndex) {
                 this.lastMcduCurrentFplnWaypointIndex = mcduCurrentFplnWaypointIndex;
                 forceUpdate = true;
             }
         }
+
+        // When the plane is turning, update map faster.
+        const heading = Simplane.getHeadingMagnetic();
+        if (Math.abs(heading - this.lastHeading) > this.headingDiffForceUpdateThreshold) {
+            forceUpdate = true;
+        }
         _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
         if (!forceUpdate && _deltaTime === -1) {
             return;
+        }
+        this.lastHeading = heading;
+        if (forceUpdate) {
+            this.updateThrottler.notifyForceUpdated();
         }
         super.onUpdate(_deltaTime);
     }

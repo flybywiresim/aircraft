@@ -33,6 +33,7 @@ class NavSystem extends BaseInstrument {
         this.initAcknowledged = true;
         this.reversionaryMode = false;
         this.alwaysUpdateList = new Array();
+        this.accumulatedDeltaTime = 0;
     }
     get flightPlanManager() {
         return this.currFlightPlanManager;
@@ -321,6 +322,7 @@ class NavSystem extends BaseInstrument {
     }
     Update() {
         super.Update();
+        this.accumulatedDeltaTime += this.deltaTime;
         if (this.CanUpdate()) {
             if (NavSystem._iterations < 10000) {
                 NavSystem._iterations += 1;
@@ -369,7 +371,7 @@ class NavSystem extends BaseInstrument {
             }
             this.updateAspectRatio();
             if (this.popUpElement) {
-                this.popUpElement.onUpdate(this.deltaTime);
+                this.popUpElement.onUpdate(this.accumulatedDeltaTime);
             }
             if (this.pagesContainer) {
                 this.pagesContainer.setAttribute("state", this.getCurrentPage().htmlElemId);
@@ -398,13 +400,14 @@ class NavSystem extends BaseInstrument {
                     this.currentContextualMenu.Update(this, this.menuMaxElems);
                     break;
             }
-            this.onUpdate(this.deltaTime);
+            this.onUpdate(this.accumulatedDeltaTime);
             const t = performance.now() - t0;
             NavSystem.maxTimeUpdateAllTime = Math.max(t, NavSystem.maxTimeUpdateAllTime);
             NavSystem.maxTimeUpdate = Math.max(t, NavSystem.maxTimeUpdate);
             const factor = 1 / NavSystem._iterations;
             NavSystem.mediumTimeUpdate *= (1 - factor);
             NavSystem.mediumTimeUpdate += factor * t;
+            this.accumulatedDeltaTime = 0;
         } else {
             for (var i = 0; i < this.alwaysUpdateList.length; i++) {
                 this.alwaysUpdateList[i].onUpdate(this.deltaTime);
@@ -413,22 +416,22 @@ class NavSystem extends BaseInstrument {
     }
     updateGroups() {
         for (let i = 0; i < this.IndependentsElements.length; i++) {
-            this.IndependentsElements[i].onUpdate(this.deltaTime);
+            this.IndependentsElements[i].onUpdate(this.accumulatedDeltaTime);
         }
         if (!this.overridePage) {
             const currentGroup = this.getCurrentPageGroup();
             if (currentGroup) {
-                currentGroup.onUpdate(this.deltaTime);
+                currentGroup.onUpdate(this.accumulatedDeltaTime);
             }
         } else {
-            this.overridePage.onUpdate(this.deltaTime);
+            this.overridePage.onUpdate(this.accumulatedDeltaTime);
         }
     }
     updateGroupsWithBudget() {
         const target = this.budgetedItemId + this.maxUpdateBudget;
         while (this.budgetedItemId < target) {
             if (this.budgetedItemId < this.IndependentsElements.length) {
-                this.IndependentsElements[this.budgetedItemId].onUpdate(this.deltaTime);
+                this.IndependentsElements[this.budgetedItemId].onUpdate(this.accumulatedDeltaTime);
                 this.budgetedItemId++;
                 continue;
             }
@@ -436,13 +439,13 @@ class NavSystem extends BaseInstrument {
                 const currentGroup = this.getCurrentPageGroup();
                 if (currentGroup) {
                     const itemId = this.budgetedItemId - this.IndependentsElements.length;
-                    if (currentGroup.onUpdateSpecificItem(this.deltaTime, itemId)) {
+                    if (currentGroup.onUpdateSpecificItem(this.accumulatedDeltaTime, itemId)) {
                         this.budgetedItemId++;
                         continue;
                     }
                 }
             } else {
-                this.overridePage.onUpdate(this.deltaTime);
+                this.overridePage.onUpdate(this.accumulatedDeltaTime);
             }
             this.budgetedItemId = 0;
             break;
