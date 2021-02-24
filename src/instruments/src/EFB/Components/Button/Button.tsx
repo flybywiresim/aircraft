@@ -28,9 +28,7 @@ type props = {
     className?: any
 };
 
-const Button = ({
-    text, type = BUTTON_TYPE.BLUE, onClick, className, ...props
-}: props) => (
+const Button = ({ text, type = BUTTON_TYPE.BLUE, onClick, className, ...props }: props) => (
     <button
         type="button"
         onClick={onClick}
