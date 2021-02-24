@@ -2,6 +2,10 @@ MIT License
 
 Copyright (c) 2021 FlyByWire Simulations
 
+Microsoft Flight Simulator © Microsoft Corporation. The FlyByWire Simulations A32NX was created under Microsoft's "Game Content Usage Rules" using assets from Microsoft Flight Simulator, and it is not endorsed by or affiliated with Microsoft.
+
+This MIT license applies to the entire repository EXCEPT for the top-level "src" directory, which has its own, compatible license.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
