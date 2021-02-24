@@ -485,9 +485,9 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             return;
         }
 
-        const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
         // Use the constraint altitude if provided otherwise use selected altitude lock value
-        const targetAltitude = currentAltitudeConstraint && !this.getAutopilotMode() ? currentAltitudeConstraint : Simplane.getAutoPilotSelectedAltitudeLockValue();
+        const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
+        const targetAltitude = currentAltitudeConstraint && !this.hasAltitudeConstraint() ? currentAltitudeConstraint : this.hudAPAltitude;
 
         // Exit when selected altitude is being changed
         if (this.previousTargetAltitude !== targetAltitude) {
@@ -500,7 +500,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
 
         const delta = Math.abs(indicatedAltitude - targetAltitude);
 
-        if (delta < 250) {
+        if (delta < 200) {
             this._wasBellowThreshold = true;
             this._wasAboveThreshold = false;
         }
@@ -510,11 +510,11 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this._wasBellowThreshold = false;
         }
 
-        if (250 <= delta && delta <= 750) {
+        if (200 <= delta && delta <= 750) {
             this._wasInRange = true;
         }
 
-        if (250 <= delta) {
+        if (200 <= delta) {
             if (this._wasBellowThreshold) {
                 this._flashAmber();
             } else if (this._wasAboveThreshold && delta <= 750) {
