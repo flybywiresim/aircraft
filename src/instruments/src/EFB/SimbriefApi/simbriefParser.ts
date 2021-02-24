@@ -23,9 +23,7 @@ const simbriefApiParams = simbriefApiUrl.searchParams;
 
 // eslint-disable-next-line no-undef
 const getRequestData: RequestInit = {
-    headers: {
-        Accept: 'application/json',
-    },
+    headers: { Accept: 'application/json' },
     method: 'GET',
 };
 
@@ -68,9 +66,7 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
         cruiseAltitude: general.initial_altitude,
         costIndex: general.costindex,
         route: general.route,
-        files: {
-            loadsheet: files.pdf.link ? files.directory + files.pdf.link : undefined,
-        },
+        files: { loadsheet: files.pdf.link ? files.directory + files.pdf.link : undefined },
         origin: {
             iata: origin.iata_code,
             icao: origin.icao_code,
