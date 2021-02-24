@@ -26,9 +26,7 @@ type SettingsState = {
 class Settings extends React.Component<SettingsProps, SettingsState> {
     constructor(props: SettingsProps) {
         super(props);
-        this.state = {
-            darkMode: this.darkModeInit(),
-        };
+        this.state = { darkMode: this.darkModeInit() };
     }
 
     handleDark(darkMode: boolean) {
@@ -45,9 +43,7 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
         const darkMode = !this.state.darkMode;
         const element = document.body;
         element.classList.toggle('darkMode');
-        this.setState((state) => ({
-            darkMode: !state.darkMode,
-        }));
+        this.setState((state) => ({ darkMode: !state.darkMode }));
         window.localStorage.setItem('darkMode', String(darkMode));
     }
 
