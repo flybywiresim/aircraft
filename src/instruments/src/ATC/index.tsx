@@ -23,7 +23,7 @@ const getBco16FromDigits = (digits: number[]): number => (digits[0] * 4096) + (d
 
 const PoweredXpdrDisplay = () => {
     const [newDigits, setNewDigits] = useState<null | number[]>(null);
-    const [doubleClrTimer, setDoubleClrTimer] = useState(-1);
+    const [clrPressed, setClrPressed] = useState(false);
     const [displayResetTimer, setDisplayResetTimer] = useState(-1);
     const [ltsTest] = useSimVar('L:XMLVAR_LTS_Test', 'Bool', 250);
 
@@ -31,24 +31,15 @@ const PoweredXpdrDisplay = () => {
     const codeInDisplay = newDigits !== null ? newDigits : getDigitsFromBco16(transponderCode);
 
     useUpdate((deltaTime) => {
-        if (doubleClrTimer > 0) {
-            setDoubleClrTimer(Math.max(doubleClrTimer - deltaTime / 1000, 0));
-        }
         if (displayResetTimer > 0) {
             setDisplayResetTimer(Math.max(displayResetTimer - deltaTime / 1000, 0));
         }
     });
 
     useEffect(() => {
-        if (doubleClrTimer === 0) {
-            setDoubleClrTimer(-1);
-        }
-    }, [doubleClrTimer]);
-
-    useEffect(() => {
         if (displayResetTimer === -1) {
             if (newDigits !== null) {
-                setDisplayResetTimer(5);
+                setDisplayResetTimer(7);
             }
         } else if (displayResetTimer === 0) {
             setNewDigits(null);
@@ -59,14 +50,17 @@ const PoweredXpdrDisplay = () => {
     }, [newDigits, displayResetTimer]);
 
     const buttonPressHandler = (buttonId) => {
+        if (displayResetTimer > 0) {
+            setDisplayResetTimer(-1);
+        }
         if (buttonId === 8) {
             if (newDigits === null || newDigits.length > 0) {
-                if (doubleClrTimer === -1) {
+                if (!clrPressed) {
                     setNewDigits(codeInDisplay.splice(0, codeInDisplay.length - 1));
-                    setDoubleClrTimer(0.3);
+                    setClrPressed(true);
                 } else {
                     setNewDigits([]);
-                    setDoubleClrTimer(-1);
+                    setClrPressed(false);
                 }
             }
         } else if (buttonId !== 8 && newDigits !== null) {
