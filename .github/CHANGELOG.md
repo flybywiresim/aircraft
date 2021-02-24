@@ -106,7 +106,7 @@
 1. [SOUND] Added custom sounds to multiple buttons and Throttle Lever Reverse Locks - @ImenesFBW (Imenes)
 1. [MCDU] Added custom MCDU font - @tyler58546 (tyler58546)
 1. [FWC] Add aural Altitude Alert (C Chord) - @Kimbyeongjang (김병장#7165)
-1. [CAMERA] Added new interior views - Snapmatics (Harry)
+1. [CAMERA] Added new interior views - @Snapmatics (Harry)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
