@@ -70,6 +70,7 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_PREP_WIPERS">
+         <ForceCamera name="OverheadLower" />
          <CheckpointDesc SubjectTT="TT:Wipers" ExpectationTT="TT:OFF" />
          <Instrument Id="HANDLING_Switch_Wipers" />
       </Checkpoint>
