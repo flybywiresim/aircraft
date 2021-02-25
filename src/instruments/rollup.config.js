@@ -114,9 +114,7 @@ module.exports = getInstrumentsToCompile()
                     plugins: makePostcssPluginList(path),
                     extract: `${TMPDIR}/${name}-gen.css`,
                 }),
-                getTemplatePlugin({
-                    name, path, config, isInstrument,
-                }),
+                getTemplatePlugin({ name, path, config, isInstrument }),
             ],
         };
     });

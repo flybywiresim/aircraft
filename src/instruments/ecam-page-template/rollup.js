@@ -29,9 +29,7 @@ function replaceButSad(s, search, replace) {
 const TEMPLATE_HTML = fs.readFileSync(`${__dirname}/template.html`, 'utf8');
 const TEMPLATE_JS = fs.readFileSync(`${__dirname}/template.js`, 'utf8');
 
-module.exports = ({
-    name, outputDir, getCssBundle,
-}) => ({
+module.exports = ({ name, outputDir, getCssBundle }) => ({
     name: 'template',
     writeBundle(_config, bundle) {
         const { code: jsCode } = bundle[`${name}-gen.js`];

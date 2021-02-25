@@ -43,12 +43,9 @@ export const DoorPage = () => {
             cargo: getSimVar('INTERACTIVE POINT OPEN:5', 'percent'),
             cargoWarn: cabinDoors.cargo > 20,
         });
-        setSlides(() => {
-            if ((cabinDoors.cabin < 5 && cabinDoors.catering < 5 && cabinDoors.cargoWarn < 5 && getSimVar('LIGHT BEACON ON', 'bool')) || !getSimVar('SIM ON GROUND', 'bool') || getSimVar('ON ANY RUNWAY', 'bool')) {
-                return true;
-            }
-            return false;
-        });
+        setSlides(() => (cabinDoors.cabin < 5 && cabinDoors.catering < 5 && cabinDoors.cargoWarn < 5 && getSimVar('LIGHT BEACON ON', 'bool'))
+            || !getSimVar('SIM ON GROUND', 'bool')
+            || getSimVar('ON ANY RUNWAY', 'bool'));
         setOxygen(() => !getSimVar('L:PUSH_OVHD_OXYGEN_CREW', 'bool'));
     });
 
