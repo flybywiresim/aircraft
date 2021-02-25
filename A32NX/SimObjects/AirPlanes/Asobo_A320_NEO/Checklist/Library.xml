@@ -145,6 +145,7 @@
       </Checkpoint>
       <Checkpoint Id="A320_PREP_XBLEED">
          <CheckpointDesc SubjectTT="TT:X-Bleed" ExpectationTT="TT:AUTO" />
+         <Instrument Id="KNOB_OVHD_AIRCOND_XBLEED" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_WEATHER_RADAR">
          <CheckpointDesc SubjectTT="TT:Weather Radar" ExpectationTT="TT:OFF" />
