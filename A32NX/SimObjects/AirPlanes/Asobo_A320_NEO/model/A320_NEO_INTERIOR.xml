@@ -1308,6 +1308,7 @@
                 <!-- EXT PWR -->
                 <UseTemplate Name="FBW_Airbus_External_Power_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_EXTPWR</NODE_ID>
+                    <PART_ID>ELECTRICAL_Switch_ExternalPower</PART_ID>
                     <ID>1</ID>
                     <FAILURE_CIRCUIT>76</FAILURE_CIRCUIT>
                 </UseTemplate>
@@ -1419,6 +1420,8 @@
                     <NODE_ID>PUSH_OVHD_APU_START</NODE_ID>
                     <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) and</EXTRA_CONDITION>
                 </UseTemplate>
+
+                <CameraTitle>OverheadLower</CameraTitle>
             </Component>
 
             <Component ID="Overhead_Cond">

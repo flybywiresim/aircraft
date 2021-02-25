@@ -2251,7 +2251,6 @@
          </Sequence>
       </Checkpoint>
       <Checkpoint Id="A320_Battery_Switches_On_2">
-         <ForceCamera name="OverheadLower" />
          <Clue name="TT:CLUE.BATTERY_SWITCHES_ON_2" />
          <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_BATTERY_SWITCHES" ExpectationTT="TT:GAME.CHECKLIST_ON" />
          <Sequence SeqType="Parallel">
