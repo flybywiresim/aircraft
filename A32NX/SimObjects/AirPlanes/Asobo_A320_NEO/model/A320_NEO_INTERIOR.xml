@@ -1424,8 +1424,6 @@
                     <PART_ID>ELECTRICAL_Switch_APU_Starter</PART_ID>
                     <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) and</EXTRA_CONDITION>
                 </UseTemplate>
-
-                <CameraTitle>OverheadLower</CameraTitle>
             </Component>
 
             <Component ID="Overhead_Cond">
@@ -2469,7 +2467,6 @@
                             <NODE_ID>PUSH_OVHD_CARGOSMOKE_1</NODE_ID>
                         </UseTemplate>
                     </Component>
-                    <CameraTitle>OverheadLower</CameraTitle>
                 </Component>
 
                 <Component ID="Overhead_Misc">
@@ -2571,8 +2568,6 @@
                             <SEQ2_CODE>0</SEQ2_CODE>
                         </UseTemplate>
                     </Component>
-
-                    <CameraTitle>Overhead</CameraTitle>
                 </Component>
 
                 <Component ID="Overhead_Reading_Lights">
@@ -2715,9 +2710,9 @@
                         <SEQ2_CODE>(L:A32NX_DITCHING)</SEQ2_CODE>
                     </UseTemplate>
                 </Component>
-
-                <CameraTitle>Overhead</CameraTitle>
             </Component>
+
+            <CameraTitle>OverheadLower</CameraTitle>
         </Component>
 
         <Component ID="AUTOPILOT">
