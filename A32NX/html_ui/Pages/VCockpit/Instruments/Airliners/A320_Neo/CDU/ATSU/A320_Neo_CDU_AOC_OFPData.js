@@ -497,8 +497,8 @@ async function loadFuel(mcdu, updateView) {
     mcdu.aocWeight.loading = true;
     updateView();
 
-    const outerTankCapacity = 228 + 1; // Left and Right // Value from flight_model.cfg (plus the unusable fuel capacity (GALLONS))
-    const innerTankCapacity = 1816 + 7; // Left and Right // Value from flight_model.cfg (plus the unusable fuel capacity (GALLONS))
+    const outerTankCapacity = 228 + (1 * 2); // Left and Right // Value from flight_model.cfg (plus the unusable fuel capacity (GALLONS))
+    const innerTankCapacity = 1816 + (7 * 2); // Left and Right // Value from flight_model.cfg (plus the unusable fuel capacity (GALLONS))
     const centerTankCapacity = 2179 + 6; // Center // Value from flight_model.cfg (plus the unusable fuel capacity (GALLONS))
 
     const fuelWeightPerGallon = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms");
@@ -525,8 +525,7 @@ async function loadFuel(mcdu, updateView) {
 }
 
 /**
- * Calculate %MAC ZWFCG based on Empty and Baggage weight only*
- * TODO: Add passengers stations weight into account
+ * Calculate %MAC ZWFCG of all stations
  */
 function getZfwcg(mcdu) {
     const currentPaxWeight = mcdu.aocWeight.paxWeight || mcdu.simbrief.paxWeight || PAX_WEIGHT;
