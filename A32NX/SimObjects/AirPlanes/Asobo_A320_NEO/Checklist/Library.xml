@@ -2251,6 +2251,7 @@
          </Sequence>
       </Checkpoint>
       <Checkpoint Id="A320_Battery_Switches_On_2">
+         <ForceCamera name="OverheadLower" />
          <Clue name="TT:CLUE.BATTERY_SWITCHES_ON_2" />
          <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_BATTERY_SWITCHES" ExpectationTT="TT:GAME.CHECKLIST_ON" />
          <Sequence SeqType="Parallel">
@@ -2259,16 +2260,14 @@
                   <Val Code="6 (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:10, Bool)" />
                </TestValue>
                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="6 10 (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)" />
-               <Instrument Id="ELECTRICAL_Switch_Battery_Master" />
-               <Instrument Id="knob_electric_master" />
+               <Instrument Id="BATTERY_MASTER_SWITCH_1" />
             </Test>
             <Test>
                <TestValue>
                   <Val Code="6 (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:11, Bool)" />
                </TestValue>
                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="6 11 (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)" />
-               <Instrument Id="ELECTRICAL_Switch_Battery_Master" />
-               <Instrument Id="knob_electric_master" />
+               <Instrument Id="BATTERY_MASTER_SWITCH_2" />
             </Test>
          </Sequence>
       </Checkpoint>
