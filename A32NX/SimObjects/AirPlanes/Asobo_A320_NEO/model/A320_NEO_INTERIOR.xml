@@ -1418,6 +1418,7 @@
                 <!-- APU START -->
                 <UseTemplate Name="FBW_Airbus_APU_Starter_Switch">
                     <NODE_ID>PUSH_OVHD_APU_START</NODE_ID>
+                    <PART_ID>ELECTRICAL_Switch_APU_Starter</PART_ID>
                     <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) and</EXTRA_CONDITION>
                 </UseTemplate>
 
@@ -2413,6 +2414,7 @@
 
                         <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
                             <NODE_ID>PUSH_FIRE_APU_TEST</NODE_ID>
+                            <PART_ID>APU_FIRE_TEST_BUTTON</PART_ID>
                             <HOLD_SIMVAR>L:FIRE_TEST_APU</HOLD_SIMVAR>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
@@ -2464,7 +2466,7 @@
                             <NODE_ID>PUSH_OVHD_CARGOSMOKE_1</NODE_ID>
                         </UseTemplate>
                     </Component>
-                    <CameraTitle>Overhead</CameraTitle>
+                    <CameraTitle>OverheadLower</CameraTitle>
                 </Component>
 
                 <Component ID="Overhead_Misc">

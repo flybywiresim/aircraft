@@ -76,6 +76,7 @@
       </Checkpoint>
       <Checkpoint Id="A320_PREP_APU_FIRE_TEST">
          <CheckpointDesc SubjectTT="TT:APU Fire Test" ExpectationTT="TT:PERFORM" />
+         <Instrument Id="APU_FIRE_TEST_BUTTON" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_COCKPIT_LIGHTS">
          <CheckpointDesc SubjectTT="TT:Cockpit Lights" ExpectationTT="TT:AS REQUIRED" />
