@@ -38,14 +38,14 @@ class CDUNavRadioPage {
         CDUNavRadioPage._timer = 0;
         mcdu.pageUpdate = () => {
             CDUNavRadioPage._timer++;
-            if (CDUNavRadioPage._timer >= 15) {
+            if (CDUNavRadioPage._timer >= 5) {
                 CDUNavRadioPage.ShowPage(mcdu);
             }
         };
         if (!radioOn) {
             vor1FrequencyCell = "[\xa0]/[\xa0\xa0.\xa0]";
             const vor1Beacon = mcdu.radioNav.getVORBeacon(1);
-            const vor1Ident = vor1Beacon && vor1Beacon.ident.length === 3 ? vor1Beacon.ident : "";
+            const vor1Ident = vor1Beacon && vor1Beacon.ident.length >= 2 && vor1Beacon.ident.length <= 3 ? vor1Beacon.ident : "";
             if (mcdu.vor1Frequency != 0 && !mcdu.vor1IdIsPilotEntered && mcdu.vor1FreqIsPilotEntered) {
                 vor1FrequencyCell = "{small}" + vor1Ident.padStart(3, "\xa0") + "{end}" + "/" + mcdu.vor1Frequency.toFixed(2);
             } else if (mcdu.vor1Frequency != 0 && mcdu.vor1IdIsPilotEntered && !mcdu.vor1FreqIsPilotEntered) {
@@ -60,19 +60,19 @@ class CDUNavRadioPage {
                     mcdu.vor1Course = 0;
                     mcdu.radioNav.setVORActiveFrequency(1, 0);
                     CDUNavRadioPage.ShowPage(mcdu);
-                } else if (!isFinite(numValue) && value.length == 3) {
-                    mcdu.vor1IdIsPilotEntered = true;
-                    mcdu.vor1FreqIsPilotEntered = false;
-                    mcdu.vor1IdPilotValue = value;
+                } else if (!isFinite(numValue) && value.length >= 2 && value.length <= 3) {
                     mcdu.getOrSelectVORsByIdent(value, (navaids) => {
                         if (navaids) {
+                            mcdu.vor1IdIsPilotEntered = true;
+                            mcdu.vor1FreqIsPilotEntered = false;
+                            mcdu.vor1IdPilotValue = value;
                             mcdu.vor1Frequency = navaids.infos.frequencyMHz;
                             mcdu.radioNav.setVORActiveFrequency(1, mcdu.vor1Frequency);
                             mcdu.vor1Course = 0;
+                            mcdu.requestCall(() => {
+                                CDUNavRadioPage.ShowPage(mcdu);
+                            });
                         }
-                        mcdu.requestCall(() => {
-                            CDUNavRadioPage.ShowPage(mcdu);
-                        });
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3}(\.\d{1,2})?$/.test(value) || !RadioNav.isHz50Compliant(numValue)) {
@@ -202,7 +202,7 @@ class CDUNavRadioPage {
         if (!radioOn) {
             vor2FrequencyCell = "[\xa0\xa0.\xa0]/[\xa0]";
             const vor2Beacon = mcdu.radioNav.getVORBeacon(2);
-            const vor2Ident = vor2Beacon && vor2Beacon.ident.length === 3 ? vor2Beacon.ident : "";
+            const vor2Ident = vor2Beacon && vor2Beacon.ident.length >= 2 && vor2Beacon.ident.length <= 3 ? vor2Beacon.ident : "";
             if (mcdu.vor2Frequency != 0 && mcdu.vor2FreqIsPilotEntered && !mcdu.vor2IdIsPilotEntered) {
                 vor2FrequencyCell = mcdu.vor2Frequency.toFixed(2) + "/" + "{small}" + vor2Ident.padEnd(3, "\xa0") + "{end}";
             } else if (mcdu.vor2Frequency != 0 && !mcdu.vor2FreqIsPilotEntered && mcdu.vor2IdIsPilotEntered) {
@@ -217,17 +217,19 @@ class CDUNavRadioPage {
                     mcdu.vor2Course = 0;
                     mcdu.radioNav.setVORActiveFrequency(2, 0);
                     CDUNavRadioPage.ShowPage(mcdu);
-                } else if (!isFinite(numValue) && value.length == 3) {
+                } else if (!isFinite(numValue)  && value.length >= 2 && value.length <= 3) {
                     mcdu.getOrSelectVORsByIdent(value, (navaids) => {
-                        mcdu.vor2FreqIsPilotEntered = false;
-                        mcdu.vor2IdIsPilotEntered = true;
-                        mcdu.vor2IdPilotValue = value;
-                        mcdu.vor2Frequency = navaids.infos.frequencyMHz;
-                        mcdu.radioNav.setVORActiveFrequency(2, mcdu.vor2Frequency);
-                        mcdu.vor2Course = 0;
-                        mcdu.requestCall(() => {
-                            CDUNavRadioPage.ShowPage(mcdu);
-                        });
+                        if (navaids) {
+                            mcdu.vor2IdIsPilotEntered = true;
+                            mcdu.vor2FreqIsPilotEntered = false;
+                            mcdu.vor2IdPilotValue = value;
+                            mcdu.vor2Frequency = navaids.infos.frequencyMHz;
+                            mcdu.radioNav.setVORActiveFrequency(2, mcdu.vor2Frequency);
+                            mcdu.vor2Course = 0;
+                            mcdu.requestCall(() => {
+                                CDUNavRadioPage.ShowPage(mcdu);
+                            });
+                        }
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3}(\.\d{1,2})?$/.test(value) || !RadioNav.isHz50Compliant(numValue)) {
