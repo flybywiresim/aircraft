@@ -1,6 +1,24 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import * as React from 'react';
-import { useContext, useEffect, useRef, useState } from "react"
-import { useInteractionEvents, useUpdate } from "./hooks"
+import { useContext, useEffect, useRef, useState } from 'react';
+import { useInteractionEvents, useUpdate } from './hooks';
 
 /**
  * If the same SimVar or GlobalVar is requested in multiple places with
@@ -8,33 +26,33 @@ import { useInteractionEvents, useUpdate } from "./hooks"
  * entries in the cache.
  */
 const normalizeUnitName = (unit: UnitName): UnitName => {
-    switch(unit) {
-        case "bool":
-        case "Bool":
-        case "boolean":
-        case "Boolean":
-            return "bool";
-        case "number":
-        case "Number":
-            return "number";
-        case "Degrees":
-        case "degree":
-            return "degree";
-        case "Percent":
-        case "percent":
-            return "percent";
-        case "Feet":
-        case "feet":
-        case "feets":
-        case "Feets":
-            return "feet";
-        case "Knots":
-        case "knots":
-            return "knots";
-        default:
-            return unit;
+    switch (unit) {
+    case 'bool':
+    case 'Bool':
+    case 'boolean':
+    case 'Boolean':
+        return 'bool';
+    case 'number':
+    case 'Number':
+        return 'number';
+    case 'Degrees':
+    case 'degree':
+        return 'degree';
+    case 'Percent':
+    case 'percent':
+        return 'percent';
+    case 'Feet':
+    case 'feet':
+    case 'feets':
+    case 'Feets':
+        return 'feet';
+    case 'Knots':
+    case 'knots':
+        return 'knots';
+    default:
+        return unit;
     }
-}
+};
 
 type SimVarSetter = <T extends SimVarValue>(oldValue: T) => T;
 
@@ -57,7 +75,7 @@ const context = React.createContext<{
     register: errorCallback,
     unregister: errorCallback,
 });
-const { Provider: InternalProvider }  = context;
+const { Provider: InternalProvider } = context;
 
 type UnitName = string | any; // once typings is next to tsconfig.json, use those units
 type SimVarValue = number | any;
@@ -118,15 +136,13 @@ const SimVarProvider: React.FC = ({ children }) => {
         setCache((oldCache) => {
             const newCache: SimVarCache = {};
             for (const [key, update] of Object.entries(stateUpdates)) {
-                newCache[key] = {...oldCache[key], ...update};
+                newCache[key] = { ...oldCache[key], ...update };
             }
-            return {...oldCache, ...newCache};
+            return { ...oldCache, ...newCache };
         });
     });
 
-    const getKey = (name: string, unit: UnitName, global: boolean) => {
-        return `${global ? '_GLOBAL_' : ''}${name}/${normalizeUnitName(unit)}`;
-    }
+    const getKey = (name: string, unit: UnitName, global: boolean) => `${global ? '_GLOBAL_' : ''}${name}/${normalizeUnitName(unit)}`;
 
     /**
      * This function will be called by the SimVar hooks through the context and
@@ -152,7 +168,7 @@ const SimVarProvider: React.FC = ({ children }) => {
             },
         }));
         return value;
-    }
+    };
 
     /**
      * This function will be called by the SimVar hooks through the context and
@@ -193,7 +209,7 @@ const SimVarProvider: React.FC = ({ children }) => {
             listeners.current[key] = [];
         }
         listeners.current[key].push(maxStaleness || 0);
-    }
+    };
 
     /**
      * This function will be called by the useSimVar hook through the context
@@ -214,7 +230,7 @@ const SimVarProvider: React.FC = ({ children }) => {
             const index = listeners.current[key].indexOf(maxStaleness || 0);
             listeners.current[key] = listeners.current[key].splice(index, 1);
         }
-    }
+    };
 
     return (
         <InternalProvider value={{
@@ -227,7 +243,7 @@ const SimVarProvider: React.FC = ({ children }) => {
             { children }
         </InternalProvider>
     );
-}
+};
 
 /**
  * The useSimVar hook provides an easy way to read and write SimVars from React.
@@ -268,11 +284,12 @@ export const useSimVar = (
     name: string,
     unit: UnitName,
     maxStaleness: number = 0,
-): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter) => void] => {
+): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
+) => void] => {
     const value = useSimVarValue(name, unit, maxStaleness);
     const setter = useSimVarSetter(name, unit);
     return [value, setter];
-}
+};
 
 /**
  * The useGlobalVar hook provides an easy way to read and write GlobalVars from
@@ -321,7 +338,7 @@ export const useGlobalVar = (
     }, [name, unit, maxStaleness]);
 
     return contextValue.retrieve(name, unit, false, true);
-}
+};
 
 /**
  * The useInteractionSimVar hook is an optimized version of the useSimVar hook
@@ -360,18 +377,19 @@ export const useInteractionSimVar = (
     unit: UnitName,
     interactionEvents: string | string[],
     maxStaleness: number = 500,
-): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter) => void] => {
+): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
+) => void] => {
     const contextValue = useContext(context);
     const value = useSimVarValue(name, unit, maxStaleness);
 
     useInteractionEvents(
         Array.isArray(interactionEvents) ? interactionEvents : [interactionEvents],
-        () => contextValue.retrieve(name, unit, true) // force an update
+        () => contextValue.retrieve(name, unit, true), // force an update
     );
 
     const setter = useSimVarSetter(name, unit);
     return [value, setter];
-}
+};
 
 /**
  * The useSplitSimVar hook is a special version of the userSimVar hook that is
@@ -402,8 +420,9 @@ export const useSplitSimVar = (
     readUnit: UnitName,
     writeName: string,
     writeUnit?: UnitName,
-    maxStaleness: number = 0
-): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter) => void] => {
+    maxStaleness: number = 0,
+): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
+) => void] => {
     const value = useSimVarValue(readName, readUnit, maxStaleness);
     const setter = useSimVarSetter(readName, writeUnit || readUnit, writeName);
     return [value, setter];
@@ -447,7 +466,8 @@ export const useSimVarSetter = (
     name: string,
     unit: UnitName,
     proxy?: string,
-): ((newValueOrSetter: SimVarValue | SimVarSetter) => void) => {
+): ((newValueOrSetter: SimVarValue | SimVarSetter) => void
+) => {
     const contextValue = useContext(context);
     return (value) => contextValue.update(name, unit, value, proxy);
 };
