@@ -402,6 +402,7 @@
             <!-- Front Glareshields -->
             <UseTemplate Name="ASOBO_LIGHTING_Knob_Glareshield_Template">
                 <ID>1</ID>
+                <PART_ID>Lighting_Knob_Glareshield_Pilot_0</PART_ID>
                 <SIMVAR_INDEX>1</SIMVAR_INDEX>
                 <POTENTIOMETER>10</POTENTIOMETER>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_DECREASE</ANIMTIP_0>
@@ -417,6 +418,7 @@
             <UseTemplate Name="ASOBO_LIGHTING_Knob_Glareshield_Template">
                 <NODE_ID>LIGHTING_Knob_Glareshield_4</NODE_ID>
                 <ANIM_NAME>LIGHTING_Knob_Glareshield_4</ANIM_NAME>
+                <PART_ID>Lighting_Knob_Glareshield_Copilot_0</PART_ID>
                 <ID>2</ID>
                 <SIMVAR_INDEX>2</SIMVAR_INDEX>
                 <POTENTIOMETER>11</POTENTIOMETER>
@@ -434,6 +436,7 @@
             <UseTemplate Name="ASOBO_LIGHTING_Knob_Glareshield_Template">
                 <NODE_ID>LIGHTING_Knob_Glareshield</NODE_ID>
                 <ANIM_NAME>LIGHTING_Knob_Glareshield</ANIM_NAME>
+                <PART_ID>Lighting_Knob_Glareshield_1</PART_ID>
                 <ID>3</ID>
                 <SIMVAR_INDEX>3</SIMVAR_INDEX>
                 <POTENTIOMETER>83</POTENTIOMETER>

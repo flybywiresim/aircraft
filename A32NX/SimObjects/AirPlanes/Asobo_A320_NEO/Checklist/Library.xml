@@ -79,8 +79,12 @@
          <Instrument Id="APU_FIRE_TEST_BUTTON" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_COCKPIT_LIGHTS">
+         <ForceCamera name="Pilot" />
          <CheckpointDesc SubjectTT="TT:Cockpit Lights" ExpectationTT="TT:AS REQUIRED" />
-         <Instrument ID="LIGHTING_Glareshield_Light" />
+         <Instrument ID="Lighting_Knob_Glareshield_Pilot_0" />
+         <Instrument ID="Lighting_Knob_Glareshield_1" />
+         <Instrument ID="Lighting_Knob_Glareshield_2" />
+         <Instrument ID="Lighting_Knob_Glareshield_3" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_PARKING_BRAKE">
          <CheckpointDesc SubjectTT="TT:Parking Brake" ExpectationTT="TT:ON" />
