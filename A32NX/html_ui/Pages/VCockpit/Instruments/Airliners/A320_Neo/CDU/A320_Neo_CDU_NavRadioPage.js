@@ -217,7 +217,7 @@ class CDUNavRadioPage {
                     mcdu.vor2Course = 0;
                     mcdu.radioNav.setVORActiveFrequency(2, 0);
                     CDUNavRadioPage.ShowPage(mcdu);
-                } else if (!isFinite(numValue)  && value.length >= 2 && value.length <= 3) {
+                } else if (!isFinite(numValue) && value.length >= 2 && value.length <= 3) {
                     mcdu.getOrSelectVORsByIdent(value, (navaids) => {
                         if (navaids) {
                             mcdu.vor2IdIsPilotEntered = true;
