@@ -133,7 +133,7 @@ const lbsToKg = (value) => {
  * @param {FMCMainDisplay} mcdu FMCMainDisplay
  * @param {() => void} updateView
  */
-const getSimBriefOfp = (mcdu, updateView) => {
+const getSimBriefOfp = (mcdu, updateView, callback) => {
     const simBriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "");
     const simBriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
 
@@ -143,7 +143,6 @@ const getSimBriefOfp = (mcdu, updateView) => {
     }
 
     mcdu.simbrief["sendStatus"] = "REQUESTING";
-    updateView();
 
     return SimBriefApi.getSimBriefOfp(simBriefUsername, simBriefUserId)
         .then(data => {
@@ -174,7 +173,7 @@ const getSimBriefOfp = (mcdu, updateView) => {
             mcdu.simbrief["tripFuel"] = mcdu.simbrief["units"] === 'kgs' ? data.fuel.enroute_burn : lbsToKg(data.fuel.enroute_burn);
             mcdu.simbrief["sendStatus"] = "DONE";
 
-            updateView();
+            callback();
 
             return mcdu.simbrief;
         })
