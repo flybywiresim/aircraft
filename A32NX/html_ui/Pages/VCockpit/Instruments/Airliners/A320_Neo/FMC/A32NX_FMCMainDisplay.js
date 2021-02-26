@@ -279,8 +279,9 @@ class FMCMainDisplay extends BaseAirliners {
         if (this._debug++ > 180) {
             this._debug = 0;
         }
-        if (this.flightPhaseUpdateThrottler.canUpdate(_deltaTime) !== -1) {
-            this.flightPhaseManager.checkFlightPhase();
+        const flightPhaseManagerDelta = this.flightPhaseUpdateThrottler.canUpdate(_deltaTime);
+        if (flightPhaseManagerDelta !== -1) {
+            this.flightPhaseManager.checkFlightPhase(flightPhaseManagerDelta);
         }
         this._checkFlightPlan--;
         if (this._checkFlightPlan <= 0) {

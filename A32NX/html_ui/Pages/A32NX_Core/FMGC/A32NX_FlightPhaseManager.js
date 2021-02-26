@@ -75,8 +75,8 @@ class A32NX_FlightPhaseManager {
         this.activeFlightPhase.init(_fmc);
     }
 
-    checkFlightPhase() {
-        if (this.activeFlightPhase.check(this.fmc)) {
+    checkFlightPhase(_deltaTime) {
+        if (this.activeFlightPhase.check(_deltaTime, this.fmc)) {
             this.changeFlightPhase(this.activeFlightPhase.nextFmgcFlightPhase);
         }
     }
@@ -131,15 +131,26 @@ class A32NX_FlightPhaseManager {
 class A32NX_FlightPhase_PreFlight {
     constructor() {
         this.nextFmgcFlightPhase = FmgcFlightPhases.TAKEOFF;
+        this.takeoffConfirmation = new NXLogic_ConfirmNode(.2);
     }
 
     init(_fmc) {
         _fmc.climbTransitionGroundAltitude = null;
     }
 
-    check(_fmc) {
+    check(_deltaTime, _fmc) {
         // Simplane.getAltitudeAboveGround() > 1500; is used to skip flight phase in case ac reloaded midair
-        return Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT || Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT || Simplane.getAltitudeAboveGround() > 1500;
+        return this.takeoffConfirmation.write((
+            (
+                Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT ||
+                Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT
+            ) && (
+                SimVar.GetSimVarValue("ENG N1 RPM:1", "percent") > .75 ||
+                SimVar.GetSimVarValue("ENG N1 RPM:2", "percent") > .75
+            ))
+        || Simplane.getAltitudeAboveGround() > 1500,
+        _deltaTime
+        );
     }
 }
 
@@ -167,7 +178,7 @@ class A32NX_FlightPhase_TakeOff {
         }
     }
 
-    check(_fmc) {
+    check(_deltaTime, _fmc) {
         if (Simplane.getEngineThrottleMode(0) < ThrottleMode.FLEX_MCT && Simplane.getEngineThrottleMode(1) < ThrottleMode.FLEX_MCT && Simplane.getAltitudeAboveGround() < 1.5) {
             this.nextFmgcFlightPhase = FmgcFlightPhases.PREFLIGHT;
             return true;
@@ -184,7 +195,7 @@ class A32NX_FlightPhase_Climb {
     init(_fmc) {
     }
 
-    check(_fmc) {
+    check(_deltaTime, _fmc) {
         return Math.round(Simplane.getAltitude() / 100) >= _fmc.cruiseFlightLevel;
     }
 }
@@ -196,7 +207,7 @@ class A32NX_FlightPhase_Cruise {
     init(_fmc) {
     }
 
-    check(_fmc) {
+    check(_deltaTime, _fmc) {
         return false;
     }
 }
@@ -209,7 +220,7 @@ class A32NX_FlightPhase_Descent {
         this.nextFmgcFlightPhase = FmgcFlightPhases.APPROACH;
     }
 
-    check(_fmc) {
+    check(_deltaTime, _fmc) {
         const fl = Math.round(Simplane.getAltitude() / 100);
         const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
         if (fl === _fmc.cruiseFlightLevel && fcuSelFl === fl) {
@@ -239,15 +250,14 @@ class A32NX_FlightPhase_Descent {
 
 class A32NX_FlightPhase_Approach {
     constructor() {
+        this.landingConfirmation = new NXLogic_ConfirmNode(30);
     }
 
     init(_fmc) {
         this.nextFmgcFlightPhase = FmgcFlightPhases.DONE;
-        this.landingResetTimer = null;
-        this.lastPhaseUpdateTime = null;
     }
 
-    check(_fmc) {
+    check(_deltaTime, _fmc) {
         if (Simplane.getEngineThrottleMode(0) === ThrottleMode.TOGA || Simplane.getEngineThrottleMode(1) === ThrottleMode.TOGA) {
             this.nextFmgcFlightPhase = FmgcFlightPhases.GOAROUND;
             return true;
@@ -265,23 +275,7 @@ class A32NX_FlightPhase_Approach {
             return true;
         }
 
-        if (Simplane.getAltitudeAboveGround() < 1.5) {
-            if (this.landingResetTimer == null) {
-                this.landingResetTimer = 30;
-            }
-            if (this.lastPhaseUpdateTime == null) {
-                this.lastPhaseUpdateTime = Date.now();
-            }
-            const deltaTime = Date.now() - this.lastPhaseUpdateTime;
-            const deltaQuotient = deltaTime / 1000;
-            this.lastPhaseUpdateTime = Date.now();
-            this.landingResetTimer -= deltaQuotient;
-            if (this.landingResetTimer <= 0 || !_fmc.isAnEngineOn()) {
-                return true;
-            }
-        }
-
-        return false;
+        return this.landingConfirmation.write(Simplane.getAltitudeAboveGround() < 1.5 || !_fmc.isAnEngineOn(), _deltaTime);
     }
 }
 
@@ -292,7 +286,7 @@ class A32NX_FlightPhase_GoAround {
     init(_fmc) {
     }
 
-    check(_fmc) {
+    check(_deltaTime, _fmc) {
         return false;
     }
 }
@@ -300,6 +294,7 @@ class A32NX_FlightPhase_GoAround {
 class A32NX_FlightPhase_Done {
     constructor() {
         this.nextFmgcFlightPhase = FmgcFlightPhases.PREFLIGHT;
+        this.cleanupConfirmation = new NXLogic_ConfirmNode(10);
     }
 
     init(_fmc) {
@@ -307,7 +302,7 @@ class A32NX_FlightPhase_Done {
         CDUIdentPage.ShowPage(_fmc);
     }
 
-    check(_fmc) {
-        return true;
+    check(_deltaTime, _fmc) {
+        return this.cleanupConfirmation.write(true, _deltaTime);
     }
 }
