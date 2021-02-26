@@ -1,7 +1,7 @@
 @import "../../../Common/definitions.scss";
 
 #fuselage {
-    
+
     .MainShape {
         fill: transparent;
         stroke: $display-light-grey;
@@ -23,7 +23,7 @@
     .DoorShape {
         fill: transparent;
         stroke: $display-green;
-        stroke-width: 2; 
+        stroke-width: 2;
     }
 }
 
@@ -40,7 +40,7 @@
     .DoorShape {
         fill: transparent;
         stroke: $display-green;
-        stroke-width: 2; 
+        stroke-width: 2;
     }
 
 }
@@ -65,37 +65,37 @@
     }
 
     .Title {
-        font-size: 24px;
+        font-size: $font-size-title;
         fill: $display-white;
     }
 
     .Slide {
-        font-size: 15px;
+        font-size: $font-size-medium;
         fill: $display-white;
     }
 
     .Warning {
-        font-size: 18px;
+        font-size: $font-size-larger;
         fill: $display-amber;
     }
 
     .OxyWarn {
-        font-size: 20px;
+        font-size: $font-size-xlarge;
         fill: $display-amber;
     }
 
     .Oxygen {
-        font-size: 20px;
+        font-size: $font-size-xlarge;
         fill: $display-white;
     }
 
     .Unit {
-        font-size: 18px;
+        font-size: $font-size-larger;
         fill: $display-cyan;
     }
-    
+
     .Value {
-        font-size: 20px;
+        font-size: $font-size-xlarge;
         fill: $display-green;
     }
 
