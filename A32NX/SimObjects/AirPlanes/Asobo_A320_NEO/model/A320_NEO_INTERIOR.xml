@@ -2821,7 +2821,7 @@
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_2</TOGGLE_SIMVAR>
                     </UseTemplate>
 
-                    <!-- APU AUTO EXITING TEST-->
+                    <!-- APU AUTO EXTING TEST-->
 
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_APU_AUTOEXITING_TEST</NODE_ID>
