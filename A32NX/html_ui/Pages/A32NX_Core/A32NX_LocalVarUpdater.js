@@ -2,10 +2,8 @@
 // To create and sync a new local simvar, you need to add a selector and an updater.
 // The selector calculates the new value based on other simvars and some logic.
 // The updater compares the new value from the selector with the current value from the local simvar,
-
-const { formatDiagnosticsWithColorAndContext } = require("typescript");
-
 // and then updates the local simvar if it changed.
+
 const FLAPS_IN_MOTION_MIN_DELTA = 0.1;
 
 class A32NX_LocalVarUpdater {
