@@ -21,12 +21,17 @@ import thunk from 'redux-thunk';
 import { composeWithDevTools } from 'redux-devtools-extension';
 
 import { todCalculatorReducer } from './reducer/tod-calculator.reducer';
+import { EFB_CLEAR_STATE } from './actions';
 
 export const TOD_CALCULATOR_REDUCER = 'todCalculatorReducer';
 
 export default createStore(
-    combineReducers({
-        [TOD_CALCULATOR_REDUCER]: todCalculatorReducer,
-    }),
+    (state: any, action) => {
+        if (action.type === EFB_CLEAR_STATE) {
+            state = undefined;
+        }
+
+        return combineReducers({ [TOD_CALCULATOR_REDUCER]: todCalculatorReducer })(state, action);
+    },
     composeWithDevTools(applyMiddleware(thunk)),
 );

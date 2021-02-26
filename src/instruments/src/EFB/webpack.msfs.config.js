@@ -24,15 +24,9 @@ module.exports = {
     entry: path.join(__dirname, 'index.tsx'),
     mode: 'development',
     devtool: 'source-map',
-    devServer: {
-        watchContentBase: true,
-    },
-    resolve: {
-        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
-    },
-    output: {
-        filename: 'index_bundle.js',
-    },
+    devServer: { watchContentBase: true },
+    resolve: { extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'] },
+    output: { filename: 'index_bundle.js' },
     module: {
         rules: [
             {

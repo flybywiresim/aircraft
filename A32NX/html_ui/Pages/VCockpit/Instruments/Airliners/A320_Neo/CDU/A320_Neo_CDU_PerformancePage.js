@@ -72,16 +72,16 @@ class CDUPerformancePage {
         let v1 = "---";
         let vR = "---";
         let v2 = "---";
-        let v1Check = "{small}\xa0\xa0\xa0\xa0{end}";
-        let vRCheck = "{small}\xa0\xa0\xa0\xa0{end}";
-        let v2Check = "{small}\xa0\xa0\xa0\xa0{end}";
+        let v1Check = "{small}\xa0\xa0\xa0{end}";
+        let vRCheck = "{small}\xa0\xa0\xa0{end}";
+        let v2Check = "{small}\xa0\xa0\xa0{end}";
         if (mcdu.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF) {
             v1 = "{amber}___{end}";
             if (mcdu.v1Speed) {
                 if (mcdu._v1Checked) {
                     v1 = `{cyan}${("" + mcdu.v1Speed).padEnd(3)}{end}`;
                 } else {
-                    v1Check = `{small}{cyan}\xa0${("" + mcdu.v1Speed).padEnd(3)}{end}{end}`;
+                    v1Check = `{small}{cyan}${("" + mcdu.v1Speed).padEnd(3)}{end}{end}`;
                 }
             }
             mcdu.onLeftInput[0] = (value) => {
@@ -106,7 +106,7 @@ class CDUPerformancePage {
                 if (mcdu._vRChecked) {
                     vR = `{cyan}${("" + mcdu.vRSpeed).padEnd(3)}{end}`;
                 } else {
-                    vRCheck = `{small}{cyan}\xa0${("" + mcdu.vRSpeed).padEnd(3)}{end}{end}`;
+                    vRCheck = `{small}{cyan}${("" + mcdu.vRSpeed).padEnd(3)}{end}{end}`;
                 }
             }
             mcdu.onLeftInput[1] = (value) => {
@@ -130,7 +130,7 @@ class CDUPerformancePage {
                 if (mcdu._v2Checked) {
                     v2 = `{cyan}${("" + mcdu.v2Speed).padEnd(3)}{end}`;
                 } else {
-                    v2Check = `{small}{cyan}\xa0${("" + mcdu.v2Speed).padEnd(3)}{end}{end}`;
+                    v2Check = `{small}{cyan}${("" + mcdu.v2Speed).padEnd(3)}{end}{end}`;
                 }
             }
             mcdu.onLeftInput[2] = (value) => {
@@ -378,11 +378,11 @@ class CDUPerformancePage {
 
         mcdu.setTemplate([
             ["TAKE OFF RWY " + runway.padStart(3, "\xa0") + "[color]" + titleColor],
-            ["\xa0V1\xa0\xa0\xa0\xa0FLP RETR", ""],
+            ["\xa0V1\xa0\xa0FLP RETR", ""],
             [v1 + v1Check + "\xa0F=" + flpRetrCell, ""],
-            ["\xa0VR\xa0\xa0\xa0\xa0SLT RETR", "TO SHIFT\xa0"],
+            ["\xa0VR\xa0\xa0SLT RETR", "TO SHIFT\xa0"],
             [vR + vRCheck + "\xa0S=" + sltRetrCell, toShiftCell],
-            ["\xa0V2\xa0\xa0\xa0\xa0\xa0\xa0\xa0CLEAN", "FLAPS/THS"],
+            ["\xa0V2\xa0\xa0\xa0\xa0\xa0CLEAN", "FLAPS/THS"],
             [v2 + v2Check + "\xa0O=" + cleanCell, flapsThs],
             ["TRANS ALT", "FLEX TO TEMP"],
             [transAltCell, flexTakeOffTempCell],
@@ -853,12 +853,12 @@ class CDUPerformancePage {
 
         mcdu.setTemplate([
             ["APPR[color]" + titleColor],
-            ["QNH", "FINAL", "FLP RETR"],
+            ["QNH", "FINAL", "FLP RETR{sp}"],
             [qnhCell + "[color]cyan", finalCell + "[color]green", "F=" + flpRetrCell + "[color]green"],
-            ["TEMP", "MDA", "SLT RETR"],
+            ["TEMP", "MDA", "SLT RETR{sp}"],
             [tempCell + "°[color]cyan", mdaCell + "[color]cyan", "S=" + sltRetrCell + "[color]green"],
-            ["MAG WIND", "DH", "CLEAN"],
-            [magWindHeadingCell + "°/" + magWindSpeedCell + "[color]cyan", dhCell + "[color]cyan", "0=" + cleanCell + "[color]green"],
+            ["MAG WIND", "DH", "{sp}{sp}CLEAN"],
+            [magWindHeadingCell + "°/" + magWindSpeedCell + "[color]cyan", dhCell + "[color]cyan", "O=" + cleanCell + "[color]green"],
             ["TRANS ALT", "LDG CONF"],
             [transAltCell + "[color]cyan", mcdu.perfApprFlaps3 ? "CONF3[color]cyan" : "[s-text]CONF3*[color]cyan"],
             ["VAPP", "", "VLS"],
@@ -980,12 +980,12 @@ class CDUPerformancePage {
         }
         mcdu.setTemplate([
             ["GO AROUND[color]" + titleColor],
-            ["", "", "FLP RETR"],
+            ["", "", "FLP RETR{sp}"],
             ["", "", "F=" + flpRetrCell + "[color]green"],
-            ["", "", "SLT RETR"],
+            ["", "", "SLT RETR{sp}"],
             ["", "", "S=" + sltRetrCell + "[color]green"],
-            ["", "", "CLEAN"],
-            ["", "", "0=" + cleanCell + "[color]green"],
+            ["", "", "{sp}{sp}CLEAN"],
+            ["", "", "O=" + cleanCell + "[color]green"],
             [""],
             [""],
             ["THR RED/ACC", "ENG OUT ACC"],

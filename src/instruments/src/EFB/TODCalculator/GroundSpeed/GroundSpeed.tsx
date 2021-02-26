@@ -20,17 +20,17 @@ import { connect } from 'react-redux';
 import React from 'react';
 import Card from '../../Components/Card/Card';
 import { TOD_CALCULATOR_REDUCER } from '../../Store';
-import { TOD_GROUND_SPEED_MODE } from '../../Enum/TODGroundSpeedMode.enum';
+import { TOD_INPUT_MODE } from '../../Enum/TODInputMode.enum';
 import GroundSpeedAuto from './GroundSpeedAuto/GroundSpeedAuto';
 import GroundSpeedManual from './GroundSpeedManual/GroundSpeedManual';
 
 const GroundSpeed = ({ groundSpeedMode, ...props }) => {
     const groundSpeedComponent = ({
-        [TOD_GROUND_SPEED_MODE.AUTO]: {
+        [TOD_INPUT_MODE.AUTO]: {
             render: () => <GroundSpeedAuto />,
             childrenContainerClassName: 'flex-1 flex flex-col justify-center',
         },
-        [TOD_GROUND_SPEED_MODE.MANUAL]: {
+        [TOD_INPUT_MODE.MANUAL]: {
             render: () => <GroundSpeedManual />,
             childrenContainerClassName: 'flex-1 flex flex-col justify-start',
         },

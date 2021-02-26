@@ -1,6 +1,6 @@
 /*
  * A32NX
- * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,4 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export enum TOD_GROUND_SPEED_MODE {MANUAL, AUTO}
+export const EngPage = () => (
+    <text x={5} y={27} fill="white" fontSize={24}>ENGINE</text>
+);

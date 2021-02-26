@@ -1,0 +1,102 @@
+@import "../../../Common/definitions.scss";
+
+#fuselage {
+    
+    .MainShape {
+        fill: transparent;
+        stroke: $display-light-grey;
+        stroke-width: 2;
+    }
+}
+
+
+#hatches {
+
+    .Hide {
+        display:none;
+    }
+
+    fill: $display-amber;
+    stroke: $display-amber;
+    stroke-width: 2;
+
+    .DoorShape {
+        fill: transparent;
+        stroke: $display-green;
+        stroke-width: 2; 
+    }
+}
+
+#slides {
+
+    .Hide {
+        display:none;
+    }
+
+    fill: $display-amber;
+    stroke: $display-amber;
+    stroke-width: 2;
+
+    .DoorShape {
+        fill: transparent;
+        stroke: $display-green;
+        stroke-width: 2; 
+    }
+
+}
+
+#dashes {
+
+    .Hide {
+        display:none;
+    }
+
+    .WarningShape {
+        fill: $display-amber;
+        stroke: $display-amber;
+        stroke-width: 2;
+    }
+}
+
+#texts {
+
+    .Hide {
+        display:none;
+    }
+
+    .Title {
+        font-size: 24px;
+        fill: $display-white;
+    }
+
+    .Slide {
+        font-size: 15px;
+        fill: $display-white;
+    }
+
+    .Warning {
+        font-size: 18px;
+        fill: $display-amber;
+    }
+
+    .OxyWarn {
+        font-size: 20px;
+        fill: $display-amber;
+    }
+
+    .Oxygen {
+        font-size: 20px;
+        fill: $display-white;
+    }
+
+    .Unit {
+        font-size: 18px;
+        fill: $display-cyan;
+    }
+    
+    .Value {
+        font-size: 20px;
+        fill: $display-green;
+    }
+
+}
