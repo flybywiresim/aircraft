@@ -22,18 +22,15 @@ import { round, isNaN, last } from 'lodash';
 import { TOD_CALCULATOR_REDUCER } from '../../../Store';
 import {
     removeTodGroundSpeed,
-    setTodData,
     setTodGroundSpeed,
     setTodGroundSpeedMode,
 } from '../../../Store/action-creator/tod-calculator';
 import './GroundSpeedAuto.scss';
 import Button, { BUTTON_TYPE } from '../../../Components/Button/Button';
-import { TOD_GROUND_SPEED_MODE } from '../../../Enum/TODGroundSpeedMode.enum';
+import { TOD_INPUT_MODE } from '../../../Enum/TODInputMode.enum';
 import { useSimVar } from '../../../../Common/simVars';
 
-const GroundSpeedAuto = ({
-    groundSpeedData, currentAltitude, setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode, ...props
-}) => {
+const GroundSpeedAuto = ({ groundSpeedData, currentAltitude, setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode, ...props }) => {
     let [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 1_000);
     simGroundSpeed = round(simGroundSpeed);
 
@@ -42,7 +39,7 @@ const GroundSpeedAuto = ({
             setTodGroundSpeed(0, { from: 0, groundSpeed: 250 });
             setTodGroundSpeed(1, { from: 10000, groundSpeed: simGroundSpeed });
         } else {
-            setTodGroundSpeed(0, { from: 0, groundSpeed: simGroundSpeed });
+            setTodGroundSpeed(0, { from: 0, groundSpeed: simGroundSpeed > 0 ? simGroundSpeed : '' });
             removeTodGroundSpeed(1);
         }
     };
@@ -63,12 +60,12 @@ const GroundSpeedAuto = ({
                 <span className="font-medium mb-4 text-xl">Fetching from sim</span>
 
                 <span className="font-medium mb-4 text-5xl">
-                    {groundSpeed}
+                    {groundSpeed || 0}
                     {' '}
                     kt
                 </span>
 
-                <Button text="Manual input" onClick={() => setTodGroundSpeedMode(TOD_GROUND_SPEED_MODE.MANUAL)} type={BUTTON_TYPE.BLUE} />
+                <Button text="Manual input" onClick={() => setTodGroundSpeedMode(TOD_INPUT_MODE.MANUAL)} type={BUTTON_TYPE.BLUE} />
             </div>
         </div>
     );
@@ -76,7 +73,5 @@ const GroundSpeedAuto = ({
 
 export default connect(
     ({ [TOD_CALCULATOR_REDUCER]: { groundSpeed, currentAltitude } }) => ({ groundSpeedData: groundSpeed, currentAltitude }),
-    {
-        setTodData, setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode,
-    },
+    { setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode },
 )(GroundSpeedAuto);

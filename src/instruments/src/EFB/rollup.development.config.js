@@ -35,34 +35,24 @@ module.exports = {
     input: `${__dirname}/index-web.tsx`,
     plugins: [
         image(),
-        nodeResolve({
-            extensions,
-        }),
+        nodeResolve({ extensions }),
         commonjs({ include: /node_modules/ }),
         babel({
             presets: [
                 ['@babel/preset-env'],
-                ['@babel/preset-react', {
-                    runtime: 'automatic',
-                }],
+                ['@babel/preset-react', { runtime: 'automatic' }],
                 ['@babel/preset-typescript'],
             ],
             plugins: [
                 '@babel/plugin-proposal-class-properties',
-                ['@babel/plugin-transform-runtime', {
-                    regenerator: true,
-                }],
+                ['@babel/plugin-transform-runtime', { regenerator: true }],
             ],
             babelHelpers: 'runtime',
             extensions,
         }),
-        replace({
-            'process.env.NODE_ENV': JSON.stringify('production'),
-        }),
+        replace({ 'process.env.NODE_ENV': JSON.stringify('production') }),
         postcss({
-            use: {
-                sass: {},
-            },
+            use: { sass: {} },
             plugins: [tailwindcss(`${__dirname}/tailwind.config.js`)],
             extract: `${__dirname}/web/bundle.css`,
         }),
