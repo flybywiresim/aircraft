@@ -70,6 +70,11 @@ class A32NX_LocalVarUpdater {
                 varName: "L:32NX_PACKS_1_IS_SUPPLYING",
                 type: "Bool",
                 selector: this._isPacksOneSupplying.bind(this)
+            },
+            {
+                varName: "L:A32NX_SLIDES_ARMED",
+                type: "Bool",
+                selector: this._areSlidesArmed.bind(this)
             }
             // New updaters go here...
         ];
@@ -187,6 +192,21 @@ class A32NX_LocalVarUpdater {
         this.isPacksOneSupplying = packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool");
 
         return this.isPacksOneSupplying;
+    }
+
+    _areSlidesArmed() {
+        const cabin = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent');
+        const catering = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent');
+        const cargo = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent');
+        const beacon = SimVar.GetSimVarValue('LIGHT BEACON ON', 'bool');
+        const onground = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
+        const onrw = SimVar.GetSimVarValue('ON ANY RUNWAY', 'bool');
+
+        if ((cabin < 5 && catering < 5 && cargo < 5 && beacon) || !onground || onrw) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // New selectors go here...
