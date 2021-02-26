@@ -3048,11 +3048,17 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         if (newFlaps !== null) {
+            if (!isNaN(this.flaps)) {
+                this.tryCheckToData();
+            }
             this.flaps = newFlaps;
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number", newFlaps);
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", true);
         }
         if (newThs !== null) {
+            if (!isNaN(this.ths)) {
+                this.tryCheckToData();
+            }
             this.ths = newThs;
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS", "degree", newThs);
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS_ENTERED", "bool", true);
