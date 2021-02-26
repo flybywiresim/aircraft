@@ -109,6 +109,9 @@
 1. [FWC] Add aural Altitude Alert (C Chord) - @Kimbyeongjang (김병장#7165)
 1. [CAMERA] Added new interior views - @Snapmatics (Harry)
 1. [TEXTURE] Improved cockpit decal fonts and emissives, and remade various labels in the cockpit. @FoxinTale (Aubrey)
+1. [CDU] RADNAV - A manual VOR/ADF ident input is now permament - @St54Kevin
+1. [CDU] RADNAV - ID/Frequency fields now format to correct font size depending on pilot input - @St54Kevin
+1. [CDU] RADNAV - All fields now have correct format display and input restricitons - @St54Kevin
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
