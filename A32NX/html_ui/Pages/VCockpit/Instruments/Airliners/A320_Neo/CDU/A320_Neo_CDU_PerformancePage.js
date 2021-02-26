@@ -994,11 +994,11 @@ class CDUPerformancePage {
             bottomRowCells,
         ]);
     }
-    static UpdateThrRedAccFromOrigin(mcdu, updateThrRedAlt = true, updateAccAlt = true, autoRefresh = false) {
+    static UpdateThrRedAccFromOrigin(mcdu, updateThrRedAlt = true, updateAccAlt = true) {
         const origin = mcdu.flightPlanManager.getOrigin();
         const elevation = origin ? origin.altitudeinFP : 0;
 
-        if (updateThrRedAlt && !(mcdu.thrustReductionAltitudeIsPilotEntered && autoRefresh)) {
+        if (updateThrRedAlt && !(mcdu.thrustReductionAltitudeIsPilotEntered)) {
             const thrRedOffset = +NXDataStore.get("CONFIG_THR_RED_ALT", "1500");
             const thrRedAltitude = Math.round((elevation + thrRedOffset) / 10) * 10;
 
@@ -1007,8 +1007,7 @@ class CDUPerformancePage {
             SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", thrRedAltitude);
         }
 
-        if (updateAccAlt && !(mcdu.accelerationAltitudeIsPilotEntered && autoRefresh)) {
-
+        if (updateAccAlt && !(mcdu.accelerationAltitudeIsPilotEntered)) {
             const accOffset = +NXDataStore.get("CONFIG_ACCEL_ALT", "1500");
             const accAlt = Math.round((elevation + accOffset) / 10) * 10;
 
@@ -1017,8 +1016,8 @@ class CDUPerformancePage {
             SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", accAlt);
         }
     }
-    static UpdateEngOutAccFromOrigin(mcdu, autoRefresh = false) {
-        if (mcdu.engineOutAccelerationAltitudeIsPilotEntered && autoRefresh) {
+    static UpdateEngOutAccFromOrigin(mcdu) {
+        if (mcdu.engineOutAccelerationAltitudeIsPilotEntered) {
             return;
         }
         const origin = mcdu.flightPlanManager.getOrigin();

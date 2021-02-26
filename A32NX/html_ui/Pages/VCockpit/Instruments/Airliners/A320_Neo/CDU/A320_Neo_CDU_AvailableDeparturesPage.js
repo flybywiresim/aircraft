@@ -64,8 +64,8 @@ class CDUAvailableDeparturesPage {
                     mcdu.insertTemporaryFlightPlan(() => {
                         mcdu.updateConstraints();
                         mcdu.onToDataChanged();
-                        CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu, true, true, true);
-                        CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu, true);
+                        CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu, true, true);
+                        CDUPerformancePage.UpdateEngOutAccFromOrigin(mcdu);
                         CDUFlightPlanPage.ShowPage(mcdu, 0);
                     });
                 };
