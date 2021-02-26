@@ -91,9 +91,10 @@ class A32NX_FlightPhaseManager {
         const fl = Math.round(Simplane.getAltitude() / 100);
 
         // Try initiate des
+        const dest = this.fmc.flightPlanManager.getDestination();
         if (
             this.fmc.currentFlightPhase !== FmgcFlightPhases.DESCENT &&
-            (this.fmc.flightPlanManager.getDestination()).liveDistanceTo < 200 &&
+            !!dest && dest.liveDistanceTo < 200 &&
             fcuSelFl < fl
         ) {
             this.changeFlightPhase(FmgcFlightPhases.DESCENT);
@@ -212,6 +213,7 @@ class A32NX_FlightPhase_Descent {
             return true;
         }
 
+        // TODO: move this somewhere else (inside fmgc) and call flightPhaseManager.changeFlightPhase(FmgcFlightPhases.APPROACH)
         if (_fmc.flightPlanManager.decelWaypoint) {
             const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
             const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
