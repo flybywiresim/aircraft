@@ -998,7 +998,7 @@ class CDUPerformancePage {
         const origin = mcdu.flightPlanManager.getOrigin();
         const elevation = origin ? origin.altitudeinFP : 0;
 
-        if (updateThrRedAlt && !(mcdu.thrustReductionAltitudeIsPilotEntered)) {
+        if (updateThrRedAlt && !mcdu.thrustReductionAltitudeIsPilotEntered) {
             const thrRedOffset = +NXDataStore.get("CONFIG_THR_RED_ALT", "1500");
             const thrRedAltitude = Math.round((elevation + thrRedOffset) / 10) * 10;
 
@@ -1007,7 +1007,7 @@ class CDUPerformancePage {
             SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", thrRedAltitude);
         }
 
-        if (updateAccAlt && !(mcdu.accelerationAltitudeIsPilotEntered)) {
+        if (updateAccAlt && !mcdu.accelerationAltitudeIsPilotEntered) {
             const accOffset = +NXDataStore.get("CONFIG_ACCEL_ALT", "1500");
             const accAlt = Math.round((elevation + accOffset) / 10) * 10;
 
