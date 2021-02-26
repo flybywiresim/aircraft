@@ -105,7 +105,12 @@
 1. [CDU] Fix ILS frequencies not autofilling - @pareil6 (pareil6)
 1. [SOUND] Added custom sounds to multiple buttons and Throttle Lever Reverse Locks - @ImenesFBW (Imenes)
 1. [MCDU] Added custom MCDU font - @tyler58546 (tyler58546)
+1. [TEXTURE] Improved cockpit decal fonts and emissives, and remade various labels in the cockpit. @FoxinTale (Aubrey)
 1. [FWC] Add aural Altitude Alert (C Chord) - @Kimbyeongjang (김병장#7165)
+1. [TEXTURE] Improved cockpit decal fonts and emissives, and remade various labels in the cockpit. @FoxinTale (Aubrey)
+1. [CDU] RADNAV - A manual VOR/ADF ident input is now permament - @St54Kevin
+1. [CDU] RADNAV - ID/Frequency fields now format to correct font size depending on pilot input - @St54Kevin
+1. [CDU] RADNAV - All fields now have correct format display and input restricitons - @St54Kevin
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
