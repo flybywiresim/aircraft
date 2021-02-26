@@ -88,7 +88,7 @@ const PoweredXpdrDisplay = () => {
 
     return (
         <svg className="atc-svg">
-            <text x="8%" y="45%">{ltsTest ? '8888' : codeInDisplay.join('')}</text>
+            <text x="15%" y="45%">{ltsTest ? '8888' : codeInDisplay.join('')}</text>
         </svg>
     );
 };
