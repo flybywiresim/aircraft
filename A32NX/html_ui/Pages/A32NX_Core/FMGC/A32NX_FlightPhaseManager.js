@@ -145,10 +145,10 @@ class A32NX_FlightPhase_PreFlight {
 
 class A32NX_FlightPhase_TakeOff {
     constructor() {
-        this.nextFmgcFlightPhase = FmgcFlightPhases.CLIMB;
     }
 
     init(_fmc) {
+        this.nextFmgcFlightPhase = FmgcFlightPhases.CLIMB;
         this.accelerationAltitudeMsl = (_fmc.accelerationAltitude || _fmc.thrustReductionAltitude);
 
         if (!this.accelerationAltitudeMsl) {
@@ -168,6 +168,10 @@ class A32NX_FlightPhase_TakeOff {
     }
 
     check(_fmc) {
+        if (Simplane.getEngineThrottleMode(0) < ThrottleMode.FLEX_MCT && Simplane.getEngineThrottleMode(1) < ThrottleMode.FLEX_MCT && Simplane.getAltitudeAboveGround() < 1.5) {
+            this.nextFmgcFlightPhase = FmgcFlightPhases.PREFLIGHT;
+            return true;
+        }
         return Simplane.getAltitude() > this.accelerationAltitudeMsl;
     }
 }
