@@ -26,7 +26,7 @@ export const DoorPage = () => {
     const [cabin] = useSimVar('INTERACTIVE POINT OPEN:0', 'percent', 1000);
     const [catering] = useSimVar('INTERACTIVE POINT OPEN:3', 'percent', 1000);
     const [cargo] = useSimVar('INTERACTIVE POINT OPEN:5', 'percent', 1000);
-    const [oxygen] = useSimVar('L:PUSH_OVHD_OXYGEN_CREW', 'bool');
+    const [oxygen] = useSimVar('L:PUSH_OVHD_OXYGEN_CREW', 'bool', 1000);
     const [slides] = useSimVar('L:A32NX_SLIDES_ARMED', 'bool', 1000);
 
     return (

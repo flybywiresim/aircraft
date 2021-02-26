@@ -2,6 +2,9 @@
 // To create and sync a new local simvar, you need to add a selector and an updater.
 // The selector calculates the new value based on other simvars and some logic.
 // The updater compares the new value from the selector with the current value from the local simvar,
+
+const { formatDiagnosticsWithColorAndContext } = require("typescript");
+
 // and then updates the local simvar if it changed.
 const FLAPS_IN_MOTION_MIN_DELTA = 0.1;
 
@@ -195,17 +198,21 @@ class A32NX_LocalVarUpdater {
     }
 
     _areSlidesArmed() {
-        const cabin = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent');
-        const catering = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent');
-        const cargo = SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent');
-        const beacon = SimVar.GetSimVarValue('LIGHT BEACON ON', 'bool');
-        const onground = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
-        const onrw = SimVar.GetSimVarValue('ON ANY RUNWAY', 'bool');
 
-        if ((cabin < 5 && catering < 5 && cargo < 5 && beacon) || !onground || onrw) {
+        if (SimVar.GetSimVarValue('ON ANY RUNWAY', 'bool')) {
             return true;
-        } else {
+        } else if (SimVar.GetSimVarValue('SIM ON GROUND', 'bool') === false) {
+            return true;
+        } else if (SimVar.GetSimVarValue('LIGHT BEACON ON', 'bool') === false) {
             return false;
+        } else if (SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') > 4) {
+            return false;
+        } else if (SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') > 4) {
+            return false;
+        } else if (SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') > 4) {
+            return false;
+        } else {
+            return true;
         }
     }
 
