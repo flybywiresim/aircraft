@@ -3043,10 +3043,6 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
 
-        if (!isNaN(this.flaps) || !isNaN(this.ths)) {
-            this.tryCheckToData();
-        }
-
         if (newFlaps !== null) {
             if (!isNaN(this.flaps)) {
                 this.tryCheckToData();
