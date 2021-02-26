@@ -3112,7 +3112,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Called after Flaps or THS change
      */
     tryCheckToData() {
-        if (isFinite(this.v1Speed) || isFinite(this.vRSpeed) || isFinite(this.v2Speed) || isFinite(this.perfTOTemp)) {
+        if (isFinite(this.v1Speed) || isFinite(this.vRSpeed) || isFinite(this.v2Speed)) {
             this.addNewMessage(NXSystemMessages.checkToData);
         }
     }
