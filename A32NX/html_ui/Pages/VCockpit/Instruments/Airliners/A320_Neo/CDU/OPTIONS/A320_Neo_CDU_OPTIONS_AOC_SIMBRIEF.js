@@ -22,7 +22,7 @@ class CDU_OPTIONS_SIMBRIEF {
 
         const simbriefUser = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
 
-        const simbriefUserString = simbriefUser ? `{green}[${simbriefUser}]{end}` : "{cyan}*[\xa0\xa0\xa0\xa0\xa0]{end}";
+        const simbriefUserString = simbriefUser ? `{cyan}\xa0${simbriefUser}{end}` : "{amber}*[\xa0\xa0\xa0\xa0\xa0]{end}";
 
         mcdu.setTemplate([
             ["A32NX OPTIONS AOC"],
