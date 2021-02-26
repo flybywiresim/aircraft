@@ -1864,6 +1864,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
+        this.tryRemoveMessage(NXSystemMessages.checkToData.text);
         this._v1Checked = true;
         this.v1Speed = v;
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed).then(() => {
@@ -1887,6 +1888,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
+        this.tryRemoveMessage(NXSystemMessages.checkToData.text);
         this._vRChecked = true;
         this.vRSpeed = v;
         SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed).then(() => {
@@ -1910,6 +1912,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
+        this.tryRemoveMessage(NXSystemMessages.checkToData.text);
         this._v2Checked = true;
         this.v2Speed = v;
         SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed).then(() => {
@@ -2984,6 +2987,7 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool", false);
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS", "degree", 0);
             SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_THS_ENTERED", "bool", false);
+            this.tryCheckToData();
             return true;
         }
 
@@ -3037,6 +3041,10 @@ class FMCMainDisplay extends BaseAirliners {
                 }
                 newThs = ths;
             }
+        }
+
+        if (!isNaN(this.flaps) || !isNaN(this.ths)) {
+            this.tryCheckToData();
         }
 
         if (newFlaps !== null) {
@@ -3102,7 +3110,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Called after TOPerf, Flaps or THS change
      */
     tryCheckToData() {
-        if (isFinite(this.v1Speed) || isFinite(this.vRSpeed) || isFinite(this.v2Speed)) {
+        if (isFinite(this.v1Speed) || isFinite(this.vRSpeed) || isFinite(this.v2Speed) || isFinite(this.perfTOTemp)) {
             this.addNewMessage(NXSystemMessages.checkToData);
         }
     }
@@ -3114,27 +3122,29 @@ class FMCMainDisplay extends BaseAirliners {
      * Additional:
      *   Only prompt the confirmation of FLEX TEMP when the TO runway was changed, not on initial insertion of the runway
      */
-    onToDataChanged() {
+    onToRwyChanged() {
         const selectedRunway = this.flightPlanManager.getDepartureRunway();
         if (!!selectedRunway) {
             const toRunway = Avionics.Utils.formatRunway(selectedRunway.designation);
             if (toRunway === this.toRunway) {
                 return;
             }
-            if (this.toRunway) {
+            if (!!this.toRunway) {
+                this.toRunway = toRunway;
                 this._toFlexChecked = !isFinite(this.perfTOTemp);
+                this._v1Checked = !isFinite(this.v1Speed);
+                this._vRChecked = !isFinite(this.vRSpeed);
+                this._v2Checked = !isFinite(this.v2Speed);
+
+                if (this._v1Checked && this._vRChecked && this._v2Checked && this._toFlexChecked) {
+                    return;
+                }
+                this.addNewMessage(NXSystemMessages.checkToData, (mcdu) => {
+                    return mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked && mcdu._toFlexChecked;
+                });
             }
             this.toRunway = toRunway;
         }
-        this._v1Checked = !isFinite(this.v1Speed);
-        this._vRChecked = !isFinite(this.vRSpeed);
-        this._v2Checked = !isFinite(this.v2Speed);
-        if (this._v1Checked && this._vRChecked && this._v2Checked && this._toFlexChecked) {
-            return;
-        }
-        this.addNewMessage(NXSystemMessages.checkToData, (mcdu) => {
-            return mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked && mcdu._toFlexChecked;
-        });
     }
 
     /* END OF MCDU GET/SET METHODS */
