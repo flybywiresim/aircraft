@@ -63,7 +63,7 @@ class CDUPerformancePage {
         if (hasOrigin) {
             const runwayObj = mcdu.flightPlanManager.getDepartureRunway();
             if (runwayObj) {
-                runway = `{green}${Avionics.Utils.formatRunway(runwayObj.designation)}{end}`;
+                runway = Avionics.Utils.formatRunway(runwayObj.designation);
                 hasRunway = true;
             }
         }
@@ -377,7 +377,7 @@ class CDUPerformancePage {
         }
 
         mcdu.setTemplate([
-            ["TAKE OFF RWY " + runway.padStart(3, "\xa0") + "[color]" + titleColor],
+            ["TAKE OFF RWY\xa0{green}" + runway.padStart(3, "\xa0") + "{end}[color]" + titleColor],
             ["\xa0V1\xa0\xa0FLP RETR", ""],
             [v1 + v1Check + "\xa0F=" + flpRetrCell, ""],
             ["\xa0VR\xa0\xa0SLT RETR", "TO SHIFT\xa0"],
