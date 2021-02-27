@@ -109,10 +109,13 @@ class A32NX_FWC {
         const inhibOverride = this.memoFlightPhaseInhibOvrd_memo.write(recall, this.flightPhaseEndedPulse);
         SimVar.SetSimVarValue("L:A32NX_FWC_INHIBOVRD", "Bool", inhibOverride);
 
+        const overspeed = Simplane.getIndicatedSpeed() > (SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") + 4);
         if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_R", "Bool")) {
             this.warningPressed = true;
-            SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", false);
-            SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
+            if (!overspeed) {
+                SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", false);
+                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
+            }
         } else {
             this.warningPressed = false;
         }
