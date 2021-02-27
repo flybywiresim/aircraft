@@ -20,6 +20,7 @@ import React from 'react';
 
 import OverviewPage from './Pages/OverviewPage';
 import LoadsheetPage from './Pages/LoadsheetPage';
+import PayloadPage from './Pages/PayloadPage';
 import { Navbar } from '../Components/Navbar';
 
 type DispatchProps = {
@@ -88,29 +89,7 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
 
     currentPage() {
         switch (this.state.activeIndex) {
-        case 1:
-            return (
-                <LoadsheetPage loadsheet={this.props.loadsheet} />
-            );
-        case 2:
-            return (
-                <div className="w-full h-full">
-                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
-                </div>
-            );
-        case 3:
-            return (
-                <div className="w-full h-full">
-                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
-                </div>
-            );
-        case 4:
-            return (
-                <div className="w-full h-full">
-                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
-                </div>
-            );
-        default:
+        case 0:
             return (
                 <OverviewPage
                     weights={this.props.weights}
@@ -129,6 +108,24 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
                     taxiOutTime={this.props.taxiOutTime}
                 />
             );
+        case 1:
+            return (
+                <LoadsheetPage loadsheet={this.props.loadsheet} />
+            );
+        case 2:
+            return (
+                <div className="w-full h-full">
+                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
+                </div>
+            );
+        case 3:
+            return (
+                <div className="w-full h-full">
+                    <PayloadPage />
+                </div>
+            );
+        default:
+            return null;
         }
     }
 
