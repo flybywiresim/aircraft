@@ -66,17 +66,18 @@ type PayloadState = {[index: string]: Station};
 
 const initialState: PayloadState = paxStations;
 
-const PAYLOAD_SET_ROW16 = 'PAYLOAD_SET_ROW16';
+const PAYLOAD_SET_STATION_PAX = 'PAYLOAD_SET_STATION_PAX';
 
 export default typeToReducer(
     {
-        [PAYLOAD_SET_ROW16]: (state, { payload }) => {
-            const rows1_6 = { ...state.rows1_6 };
-            rows1_6.pax = payload.value;
+        [PAYLOAD_SET_STATION_PAX]: (state, { payload }) => {
+            const { value, stationKey } = payload;
+            const station = { ...state[stationKey] };
+            station.pax = value;
 
             return {
                 ...state,
-                rows1_6,
+                [stationKey]: station,
             };
         },
     },

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /*
  * A32NX
  * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
@@ -27,90 +28,32 @@ const MAX_SEAT_AVAILABLE = 162;
 const PAX_WEIGHT = 84;
 const BAG_WEIGHT = 20;
 
-interface Station {
-    name: string;
-    seats: number;
-    weight: number;
-    pax: number;
-    stationIndex: number,
-    position: number,
-}
-
-const paxStations: {[index: string]: Station} = {
-    rows1_6: {
-        name: 'ECONOMY ROWS 1-6',
-        seats: 36,
-        weight: 3024,
-        pax: 0,
-        stationIndex: 2 + 1,
-        position: 21.98,
-    },
-    rows7_13: {
-        name: 'ECONOMY ROWS 7-13',
-        seats: 42,
-        weight: 3530,
-        pax: 0,
-        stationIndex: 3 + 1,
-        position: 2.86,
-    },
-    rows14_20: {
-        name: 'ECONOMY ROWS 14-20',
-        seats: 42,
-        weight: 3530,
-        pax: 0,
-        stationIndex: 4 + 1,
-        position: -15.34,
-    },
-    rows21_27: {
-        name: 'ECONOMY ROWS 21-27',
-        seats: 42,
-        weight: 3530,
-        pax: 0,
-        stationIndex: 5 + 1,
-        position: -32.81,
-    },
-};
-const payloadStations = {
-    fwdBag: {
-        name: 'FWD BAGGAGE/CONTAINER',
-        seats: 0,
-        weight: 3402,
-        currentWeight: 0,
-        stationIndex: 6 + 1,
-        position: 18.28,
-    },
-    aftCont: {
-        name: 'AFT CONTAINER',
-        seats: 0,
-        weight: 2426,
-        currentWeight: 0,
-        stationIndex: 7 + 1,
-        position: -15.96,
-    },
-    aftBag: {
-        name: 'AFT BAGGAGE',
-        seats: 0,
-        weight: 2110,
-        currentWeight: 0,
-        stationIndex: 8 + 1,
-        position: -27.10,
-    },
-    aftBulk: {
-        name: 'COMP 5 - AFT BULK/LOOSE',
-        seats: 0,
-        weight: 1497,
-        currentWeight: 0,
-        stationIndex: 9 + 1,
-        position: -37.35,
-    },
-};
-
 const PayloadPage = () => {
     const dispatch = useDispatch();
 
     const payload = useSelector((state: RootState) => state.payload);
 
-    const { rows1_6: rows16 } = payload;
+    const zfwcg = getZfwcg().toFixed(2);
+    const totalPax = Object.values(payload).map((station) => station.pax).reduce((acc, cur) => acc + cur);
+
+    function setPax(numberOfPax) {
+        let paxRemaining = parseInt(numberOfPax);
+
+        function fillStation(stationKey, paxToFill) {
+            const pax = Math.min(paxToFill, payload[stationKey].seats);
+            changeStationPax(pax, stationKey);
+            paxRemaining -= pax;
+        }
+
+        fillStation('rows21_27', paxRemaining);
+        fillStation('rows14_20', paxRemaining);
+
+        const remainingByTwo = Math.trunc(paxRemaining / 2);
+        fillStation('rows7_13', remainingByTwo);
+        fillStation('rows1_6', paxRemaining);
+
+        // setPayload(numberOfPax);
+    }
 
     /**
      * Calculate %MAC ZWFCG of all stations
@@ -141,23 +84,42 @@ const PayloadPage = () => {
         return cgPercentMac;
     }
 
-    // const [rows16, setRows16] = useState(0);
-    const [rows713, setRows713] = useState(0);
-
-    const handleChange16 = useCallback((event) => {
-        const { value } = event.target;
-        // setRows16(value);
+    const changeStationPax = useCallback((value: number, stationKey: string) => {
         dispatch({
-            type: 'PAYLOAD_SET_ROW16',
-            payload: { value },
+            type: 'PAYLOAD_SET_STATION_PAX',
+            payload: { value, stationKey },
         });
     }, [dispatch]);
 
-    function handleChange713(event) {
-        setRows713(event.target.value);
+    function renderStations() {
+        return Object.entries(payload).map(([stationKey, station], index) => (
+            <>
+                <h3 className={`text-xl font-medium flex items-center ${index !== 0 && 'mt-6'}`}>
+                    <IconBoxPadding className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                    {' '}
+                    {station.name}
+                </h3>
+                <p className="mt-2 text-lg">
+                    {station.pax}
+                    {' '}
+                    /
+                    {' '}
+                    {station.seats}
+                </p>
+                <span className="mt-2 text-lg">
+                    <input
+                        type="range"
+                        min="0"
+                        max={station.seats}
+                        value={station.pax}
+                        className="slider"
+                        id={`${stationKey}-slider`}
+                        onChange={(event) => changeStationPax(parseInt(event.target.value), stationKey)}
+                    />
+                </span>
+            </>
+        ));
     }
-
-    const zfwcg = getZfwcg();
 
     return (
         <div className="px-6">
@@ -168,94 +130,68 @@ const PayloadPage = () => {
                     <img className="flip-vertical mt-6 h-24 -ml-24" src={nose} />
                     <div className="flex mt-8">
                         <div className="w-1/2">
-                            <h3 className="text-xl font-medium flex items-center">
-                                <IconBoxPadding className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                {rows16.name}
-                            </h3>
-                            <p className="mt-2 text-lg">
-                                {rows16.pax}
-                                {' '}
-                                / 36
-                            </p>
-                            <span className="mt-2 text-lg">
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max={paxStations.rows1_6.seats}
-                                    value={rows16.pax}
-                                    className="slider"
-                                    id="slider-rows1-6"
-                                    onChange={handleChange16}
-                                />
-                            </span>
-
-                            <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconBoxPadding className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                {paxStations.rows7_13.name}
-                            </h3>
-                            <p className="mt-2 text-lg">
-                                {rows713}
-                                {' '}
-                                / 36
-                            </p>
-                            <span className="mt-2 text-lg">
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max={paxStations.rows7_13.seats}
-                                    value={rows713}
-                                    className="slider"
-                                    id="slider-rows7-13"
-                                    onChange={handleChange713}
-                                />
-                            </span>
-
-                            <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconBoxPadding className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                Rows [1-7]
-                            </h3>
-                            <p className="mt-2 text-lg">
-                                {rows16.pax}
-                                {' '}
-                                / 36
-                            </p>
-                            <span className="mt-2 text-lg">
-                                <input type="range" min="1" max="36" value={rows16.pax} className="slider" id="myRange" onChange={handleChange16} />
-                            </span>
-
-                            <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconBoxPadding className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                Rows [1-7]
-                            </h3>
-                            <p className="mt-2 text-lg">
-                                {rows16.pax}
-                                {' '}
-                                / 36
-                            </p>
-                            <span className="mt-2 text-lg">
-                                <input type="range" min="1" max="36" value={rows16.pax} className="slider" id="myRange" onChange={handleChange16} />
-                            </span>
-
-                            <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconBoxPadding className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                Rows [1-7]
-                            </h3>
-                            <p className="mt-2 text-lg">
-                                {rows16.pax}
-                                {' '}
-                                / 36
-                            </p>
-                            <span className="mt-2 text-lg">
-                                <input type="range" min="1" max="36" value={rows16.pax} className="slider" id="myRange" onChange={handleChange16} />
-                            </span>
+                            {renderStations()}
                         </div>
                         <div className="w-1/2">
                             <h3 className="text-xl font-medium flex items-center">
+                                <IconBoxPadding className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                                {' '}
+                                PAX NO
+                            </h3>
+                            <p className="mt-2 text-lg">
+                                {totalPax}
+                                {' '}
+                                /
+                                {' '}
+                                {MAX_SEAT_AVAILABLE}
+                            </p>
+                            <span className="mt-2 text-lg">
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max={MAX_SEAT_AVAILABLE}
+                                    value={totalPax}
+                                    className="slider"
+                                    id="pax-no-slider"
+                                    onChange={(event) => {
+                                        setPax(parseInt(event.target.value));
+                                    }}
+                                />
+                            </span>
+
+                            <h3 className="text-xl font-medium flex items-center mt-6">
+                                <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                                {' '}
+                                PAX Weight
+                            </h3>
+                            <p className="mt-2 text-lg">
+                                {PAX_WEIGHT}
+                                {' '}
+                            </p>
+                            <span className="mt-2 text-lg">
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max={150}
+                                    value={PAX_WEIGHT}
+                                    className="slider"
+                                    id="pax-weight-slider"
+                                    onChange={() => {}}
+                                />
+                            </span>
+
+                            <h3 className="text-xl font-medium flex items-center mt-6">
+                                <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                                {' '}
+                                Baggage Weight
+                            </h3>
+                            <span className="mt-2 text-lg">
+                                {BAG_WEIGHT}
+                                {' '}
+                                [kg]
+                            </span>
+
+                            <h3 className="text-xl font-medium flex items-center mt-6">
                                 <IconBolt className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                                 {' '}
                                 ZFWCG %MAC
@@ -265,35 +201,14 @@ const PayloadPage = () => {
                             <h3 className="text-xl font-medium flex items-center mt-6">
                                 <IconAlignRight className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                                 {' '}
-                                Mmo
+                                ZFW
                             </h3>
-                            <span className="mt-2 text-lg">0.82</span>
-
-                            <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                MTOW
-                            </h3>
-                            <span className="mt-2 text-lg">79,000 [kg]</span>
-
-                            <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                Max Fuel Capacity
-                            </h3>
-                            <span className="mt-2 text-lg">23,721 [l]</span>
-
-                            <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                Max Cargo
-                            </h3>
-                            <span className="mt-2 text-lg">9,435 [kg]</span>
+                            <span className="mt-2 text-lg">40900 [kg]</span>
                         </div>
                     </div>
                 </div>
-                <div className="w-1/2 text-white overflow-hidden">
-                    <img className="-ml-6 transform rotate-45" src={fuselage} />
+                <div className="w-1/2 text-white overflow-hidden padding" style={{ padding: '20px' }}>
+                    <img className="-ml-6 transform rotate-90" src={fuselage} />
                 </div>
             </div>
         </div>
