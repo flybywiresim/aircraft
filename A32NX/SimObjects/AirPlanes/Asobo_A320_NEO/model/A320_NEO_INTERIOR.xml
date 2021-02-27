@@ -2285,31 +2285,17 @@
 
                     <!-- ENG N1 MODE -->
                     <Component ID="Eng_N1_Mode">
-                        <!-- 1 SHOULD NOT BE USED; IS NOT IN REAL AIRCRAFT
-                        <UseTemplate Name="FBW_Covered_Push_Toggle">
+                        <!-- 1 SHOULD NOT BE USED; IS NOT IN REAL AIRCRAFT-->
+                        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_ENGN1MODE_1</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_ENGN1MODE_1</LOCK_NODE_ID>
+                        </UseTemplate>
 
-                            <TOGGLE_SIMVAR>L:A32NX_ENG1N1_ON</TOGGLE_SIMVAR>
-
-                            <DISABLE_SEQ1 />
-                            <SEQ2_CODE>(L:A32NX_ENG1N1_ON, Bool)</SEQ2_CODE>
-
-                            <TOOLTIPID>%((L:A32NX_ENG1N1_ON, Bool))%{if}Turn OFF engine 1 N1 mode%{else}Turn ON engine 1 N1 mode%{end}</TOOLTIPID>
-                        </UseTemplate>-->
-
-                        <!-- 2 SHOULD NOT BE USED; IS NOT IN REAL AIRCRAFT
-                        <UseTemplate Name="FBW_Covered_Push_Toggle">
+                        <!-- 2 SHOULD NOT BE USED; IS NOT IN REAL AIRCRAFT-->
+                        <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_ENGN1MODE_2</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_ENGN1MODE_2</LOCK_NODE_ID>
-
-                            <TOGGLE_SIMVAR>L:A32NX_ENG2N1_ON</TOGGLE_SIMVAR>
-
-                            <DISABLE_SEQ1 />
-                            <SEQ2_CODE>(L:A32NX_ENG2N1_ON, Bool)</SEQ2_CODE>
-
-                            <TOOLTIPID>%((L:A32NX_ENG2N1_ON, Bool))%{if}Turn OFF engine 2 N1 mode%{else}Turn ON engine 2 N1 mode%{end}</TOOLTIPID>
-                        </UseTemplate>-->
+                        </UseTemplate>
                     </Component>
 
                     <Component ID="Overhead_Audio_Panel">
