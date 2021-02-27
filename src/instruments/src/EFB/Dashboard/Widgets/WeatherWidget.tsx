@@ -21,9 +21,7 @@
 import React, { useEffect, useState } from 'react';
 import metarParser from 'aewx-metar-parser';
 import { Metar } from '@flybywiresim/api-client';
-import {
-    IconWind, IconGauge, IconDroplet, IconTemperature, IconAccessPoint, IconRouter, IconPoint,
-} from '@tabler/icons';
+import { IconWind, IconGauge, IconDroplet, IconTemperature, IconAccessPoint, IconRouter, IconPoint } from '@tabler/icons';
 import { MetarParserType, Wind } from '../../../Common/metarTypes';
 
 const MetarParserTypeWindState: Wind = {
@@ -41,9 +39,7 @@ const VisibilityType = {
     meters_float: 0.0,
 };
 
-const conditionCode = {
-    code: '',
-};
+const conditionCode = { code: '' };
 
 const cloud = {
     code: '',

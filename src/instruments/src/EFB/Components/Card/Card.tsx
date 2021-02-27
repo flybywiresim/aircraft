@@ -25,9 +25,7 @@ type CardProps = {
     className?: string,
 };
 
-const Card: React.FC<CardProps> = ({
-    title, childrenContainerClassName = '', children, className,
-}) => (
+const Card: React.FC<CardProps> = ({ title, childrenContainerClassName = '', children, className }) => (
     <div className={className}>
         {!!title && <h1 className="text-white font-medium mb-4 text-2xl">{title}</h1>}
 

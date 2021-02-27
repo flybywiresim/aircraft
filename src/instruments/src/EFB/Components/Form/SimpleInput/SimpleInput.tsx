@@ -20,9 +20,7 @@ export default class SimpleInput extends React.Component<SimpleInputProps, Simpl
     constructor(props: SimpleInputProps) {
         super(props);
 
-        this.state = {
-            value: this.props.value ? this.props.value : '',
-        };
+        this.state = { value: this.props.value ? this.props.value : '' };
     }
 
     public componentDidUpdate(prevProps: SimpleInputProps): void {
@@ -42,9 +40,7 @@ export default class SimpleInput extends React.Component<SimpleInputProps, Simpl
         }
 
         this.props.onChange?.(originalValue);
-        this.setState({
-            value: originalValue,
-        });
+        this.setState({ value: originalValue });
     }
 
     private onFocusOut(event: React.FocusEvent<HTMLInputElement>): void {
@@ -52,9 +48,7 @@ export default class SimpleInput extends React.Component<SimpleInputProps, Simpl
         const constrainedValue = this.getConstrainedValue(value);
 
         this.props.onChange?.(constrainedValue);
-        this.setState({
-            value: constrainedValue,
-        });
+        this.setState({ value: constrainedValue });
     }
 
     private getConstrainedValue(value: string): string {

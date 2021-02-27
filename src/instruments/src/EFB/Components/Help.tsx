@@ -12,9 +12,7 @@ type HelpState = {
 export default class Help extends React.Component<HelpProps, HelpState> {
     constructor(props: HelpProps) {
         super(props);
-        this.state = {
-            modalVisible: false,
-        };
+        this.state = { modalVisible: false };
     }
 
     private displayModal = () => {
