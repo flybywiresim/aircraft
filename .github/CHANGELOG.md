@@ -68,6 +68,7 @@
 1. [APU] Emergency shutdown causes the APU to be permanently shown as unavailable on SYS - @davidwalschots (David Walschots)
 1. [APU] BLEED PSI is shown when ADIRS1 on NAV, waiting for alignment is no longer necessary - @davidwalschots (David Walschots)
 1. [APU] BLEED PSI is shown as 0 when the APU bleed air valve is not open, as the pressure transducer is downstream of the valve. - @davidwalschots (David Walschots)
+1. [GPWS] Fixed "too low terrain" warning on 2nd departure - @vkrizan (Viliam)
 1. [RMP] Separate radio management panels for each side and complete rewrite - @theomessin (Theodore Messinezis)
 1. [FLIGHTMODEL] Updated landing gear contact point values to closer match reality - @wpine215 (Iceman) and @donstim (donbikes#4084)
 1. [TEXTURE] Various cockpit decal texture fixes and updates - @ImenesFBW (Imenes)
@@ -93,12 +94,24 @@
 1. [MCDU] Fixed center runway id displaying on the flightplan page - @SergeySoprykin (SergeyS)
 1. [FCU] Added custom FCU font - @tyler58546 (tyler58546)
 1. [FLIGHTMODEL] Quick fix to flap lift for MSFS update 1.13.16.0 - @donstim (donbikes#4084)
+1. [LIGHTS] Fixed runway spawn postition for cruise/approach/final - @Snapmatics (Harry [Z+2]#9872)
+1. [MISC] Added custom BAT font - @tyler58546 (tyler58546)
 1. [LIGHTS] Fixed runway spawn position for dome light - @Awemeter (Awemeter#7919)
 1. [ENGINE] Ignition Switch should be on "MODE NORM" on the final phase - @Snapmatics (Harry [Z+2]#9872)
 1. [TEXTURE] Updated main landing gear textures - @Inexorable92 (Inexorable)
 1. [MISC] Added brake fan button (with on and hot label) - @Inexorable92 (Inexorable)
 1. [MISC] Better brake cooling simulation (with and without brake fan) - @Inexorable92 (Inexorable)
 1. [MISC] Added registration decal - @tyler58546(tyler58546), @DarkOfNova (DarkOfNova)
+1. [CDU] Fix ILS frequencies not autofilling - @pareil6 (pareil6)
+1. [SOUND] Added custom sounds to multiple buttons and Throttle Lever Reverse Locks - @ImenesFBW (Imenes)
+1. [MCDU] Added custom MCDU font - @tyler58546 (tyler58546)
+1. [TEXTURE] Improved cockpit decal fonts and emissives, and remade various labels in the cockpit. @FoxinTale (Aubrey)
+1. [FWC] Add aural Altitude Alert (C Chord) - @Kimbyeongjang (김병장#7165)
+1. [CAMERA] Added new interior views - @Snapmatics (Harry)
+1. [TEXTURE] Improved cockpit decal fonts and emissives, and remade various labels in the cockpit. @FoxinTale (Aubrey)
+1. [CDU] RADNAV - A manual VOR/ADF ident input is now permament - @St54Kevin
+1. [CDU] RADNAV - ID/Frequency fields now format to correct font size depending on pilot input - @St54Kevin
+1. [CDU] RADNAV - All fields now have correct format display and input restricitons - @St54Kevin
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
@@ -290,6 +303,7 @@
 1. [Sound] Replaced sounds for various switches, levers, and buttons - @hotshotp (Boris)
 1. [CDU] Added Soft GA Logic - @MisterChocker (Leon)
 1. [ECAM] Improved Thrust Rating update condition - @MisterChocker (Leon)
+1. [CDU] Fix SIDs scrolling on departures page - @SergeySoprykin (SergeyS)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
