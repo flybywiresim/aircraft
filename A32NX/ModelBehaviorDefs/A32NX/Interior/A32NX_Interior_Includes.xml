@@ -21,6 +21,7 @@
     <Include RelativeFile="../AirlinerCommon.xml"/>
     <Include RelativeFile="../FMC.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_ADIRS.xml"/>
+    <Include RelativeFile="../generated/A32NX_Interior_ATC.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Autopilot.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Elec.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Engine.xml"/>
