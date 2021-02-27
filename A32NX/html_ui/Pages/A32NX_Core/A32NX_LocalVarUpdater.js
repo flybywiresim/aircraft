@@ -199,15 +199,18 @@ class A32NX_LocalVarUpdater {
 
         if (SimVar.GetSimVarValue('ON ANY RUNWAY', 'bool')) {
             return true;
-        } else if (SimVar.GetSimVarValue('SIM ON GROUND', 'bool') === false) {
+        } else if (!SimVar.GetSimVarValue('SIM ON GROUND', 'bool')) {
             return true;
-        } else if (SimVar.GetSimVarValue('LIGHT BEACON ON', 'bool') === false) {
+        } else if (!SimVar.GetSimVarValue('LIGHT BEACON ON', 'bool')) {
             return false;
-        } else if (SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') > 4) {
+        } else if (SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') > 0.1) {
+            // Pilot side front door for ramp/stairs
             return false;
-        } else if (SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') > 4) {
+        } else if (SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') > 0.1) {
+            // Rear door, FO side for catering
             return false;
-        } else if (SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') > 4) {
+        } else if (SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') > 0.1) {
+            // Cargo door FO side
             return false;
         } else {
             return true;
