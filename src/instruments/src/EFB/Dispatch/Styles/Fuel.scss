@@ -1,0 +1,227 @@
+/*!
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@import "../../Assets/Efb.scss";
+
+.wrapper {
+  flex-grow: 1;
+  // this lets us use position:absolute in widgets
+  position: relative;
+  padding: 1rem;
+}
+
+.fuel-tank-info {
+  position: absolute;
+  width: 27.5%;
+}
+
+.outter {
+  top: 23.5em;
+}
+.vent {
+  z-index: 1000;
+  top: 32.7em;
+}
+.right-tanks-info {
+  right: 0.6rem;
+}
+.center-tanks-info {
+  left: 36.25%;
+  top: 25em;
+}
+.refuel-info {
+  width: 30%;
+  left: 34.8%;
+  top: 14.25em;
+}
+.center-tank {
+  position: absolute;
+  left: 38.7rem;
+  bottom: 3rem;
+  width: 145px;
+  top: 25.2rem;
+  height: 92px;
+}
+
+.inner-left-tank {
+  position: absolute;
+  left: 19rem;
+  bottom: 3rem;
+  width: 314px;
+  top: 19.4rem;
+  height: 195px;
+}
+
+.inner-right-tank {
+  position: absolute;
+  left: 47.85rem;
+  bottom: 3rem;
+  width: 314px;
+  top: 7.3rem;
+  height: 195px;
+}
+.outer-left-tank {
+  position: absolute;
+  left: 10.8rem;
+  bottom: 3rem;
+  width: 132px;
+  top: 4.2rem;
+  height: 93px;
+}
+
+.outer-right-tank {
+  position: absolute;
+  left: 67.4rem;
+  bottom: 3rem;
+  width: 132px;
+  top: -1.5rem;
+  height: 93px;
+}
+.mt-n5 {
+  margin-top: -0.5rem;
+}
+.actual-fuel {
+  background: -webkit-linear-gradient(top, #3b82f6 50%, #ffffff00 0%);
+  background: -moz-linear-gradient(top, #3b82f6 50%, #ffffff00 0%);
+  background: -ms-linear-gradient(top, #3b82f6 50%, #ffffff00 0%);
+  background: -o-linear-gradient(top, #3b82f6 50%, #ffffff00 0%);
+  background: linear-gradient(to top, #3b82f6 50%, #ffffff00 0%);
+}
+.fuel-bar {
+  position: absolute;
+  margin-top: -3px;
+  width: 5px;
+  height: 31px;
+  background-color: #5e72e4;
+}
+.fuel-progress {
+  margin-top: 7px;
+  margin-right: 15px;
+}
+.fuel-label {
+  float: right;
+}
+.unit-label {
+  position: absolute;
+  left: 21rem;
+  top: 3.5rem;
+  color: #9ca3af;
+}
+.max-capacity-label {
+  display: block;
+}
+.airplane-fuel {
+  height: 43%;
+  max-width: 95%;
+  // position the image in the center of the screen while still being able to position elements on top of it
+  // basically this should be a background but I couldn't figure that out with rotation and sizing
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  top: 34rem;
+}
+
+.control-grid {
+  @apply p-2;
+  @apply grid;
+  @apply bg-gray-800;
+  @apply rounded-lg;
+  position: absolute;
+  color: #232b3d;
+  grid-gap: 0.5rem;
+}
+
+.control-grid h1 {
+  text-align: center;
+  grid-column: 1/-1;
+  padding: 0.2rem;
+}
+
+.control-grid > * {
+  display: block;
+}
+
+.control-grid > div {
+  @apply rounded-lg;
+  height: 3rem;
+  width: 3rem;
+  margin: auto;
+}
+
+.pushback {
+  right: 3rem;
+  bottom: 3rem;
+  top: 21rem;
+}
+
+.fuel-truck {
+  right: calc(27.5% + 18rem);
+  top: 14rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.baggage {
+  left: calc(50% + 4rem);
+  top: 4rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.catering {
+  left: calc(50% + 4rem);
+  bottom: 9rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.jetway {
+  right: calc(50% + 4rem);
+  top: 4rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.call {
+  @apply bg-green-500;
+  grid-column: 1 / 1;
+}
+
+.selected {
+  @apply text-white;
+  border-color: #ccc;
+  border-width: 2px;
+}
+
+.pushback .stop {
+  @apply bg-red-500;
+  grid-column: 2 / 3;
+}
+
+.down-left {
+  @apply bg-green-500;
+  grid-column: 1/1;
+}
+
+.down {
+  @apply bg-green-500;
+  grid-column: 2/2;
+}
+
+.down-right {
+  @apply bg-green-500;
+  grid-column: 3/3;
+}
