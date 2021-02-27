@@ -79,9 +79,7 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
     constructor(props: DispatchProps) {
         super(props);
         this.handleClick = this.handleClick.bind(this);
-        this.state = {
-            activeIndex: 0,
-        };
+        this.state = { activeIndex: 0 };
     }
 
     handleClick(index: number) {

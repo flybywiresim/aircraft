@@ -20,9 +20,7 @@
 
 module.exports = {
     root: true,
-    env: {
-        browser: true,
-    },
+    env: { browser: true },
     extends: 'airbnb',
     plugins: ['@typescript-eslint'],
     parser: '@typescript-eslint/parser',
@@ -31,13 +29,7 @@ module.exports = {
         sourceType: 'script',
         requireConfigFile: false,
     },
-    settings: {
-        'import/resolver': {
-            node: {
-                extensions: ['.js', '.jsx', '.ts', '.tsx'],
-            },
-        },
-    },
+    settings: { 'import/resolver': { node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] } } },
     overrides: [
         {
             files: ['*.jsx', '*.tsx'],
@@ -48,9 +40,7 @@ module.exports = {
         },
         {
             files: ['*.mjs', '*.ts', '*.d.ts'],
-            parserOptions: {
-                sourceType: 'module',
-            },
+            parserOptions: { sourceType: 'module' },
         },
     ],
     // overrides airbnb, use sparingly
@@ -60,9 +50,7 @@ module.exports = {
         'class-methods-use-this': 'off',
         'curly': ['error', 'multi-line'],
         'import/prefer-default-export': 'off',
-        'import/no-extraneous-dependencies': ['error', {
-            devDependencies: true,
-        }],
+        'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
         'indent': ['error', 4],
         'react/jsx-filename-extension': [2, { extensions: ['.jsx', '.tsx'] }],
         'react/jsx-indent': ['error', 4],
@@ -117,6 +105,7 @@ module.exports = {
         'jsx-a11y/no-static-element-interactions': 'off',
         'jsx-a11y/click-events-have-key-events': 'off',
         'jsx-a11y/anchor-is-valid': 'off',
+        'object-curly-newline': ['error', { multiline: true }],
     },
     globals: {
         Simplane: 'readonly',

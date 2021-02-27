@@ -16,9 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-    get, orderBy, min, max, inRange, set, last, head,
-} from 'lodash';
+import { get, orderBy, min, max, inRange, set, last, head } from 'lodash';
 
 type groundSpeed = {from: number, groundSpeed: number};
 type groundSpeedRange= {groundSpeed: number, range: [number, number]};
