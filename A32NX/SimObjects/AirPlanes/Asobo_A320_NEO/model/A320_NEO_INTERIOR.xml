@@ -3277,7 +3277,7 @@
         </Component>
 
         <Component ID="Airbus_ATC">
-            <UseTemplate Name="ASOBO_AIRLINER_ATC_Template">
+            <UseTemplate Name="FBW_Airbus_ATC_Template">
                 <TYPE>AIRBUS</TYPE>
                 <PUSH_BTN_PREFIX>PUSH_ATC_</PUSH_BTN_PREFIX>
                 <POTENTIOMETER>85</POTENTIOMETER>

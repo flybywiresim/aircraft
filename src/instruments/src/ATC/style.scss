@@ -1,0 +1,21 @@
+@font-face {
+  src: url("/Fonts/AirbusRMP.ttf") format("truetype");
+  font-family: "Digital";
+  font-style: normal;
+  font-weight: 900;
+}
+
+.atc-svg {
+  background-color: rgba(39, 10, 43, 0.55);
+  height: 100%;
+  width: 100%;
+  left: 0;
+}
+
+text {
+  alignment-baseline: central;
+  font-family: Digital;
+  fill: #5f482e;
+  font-size: 100px;
+  text-anchor: start;
+}
