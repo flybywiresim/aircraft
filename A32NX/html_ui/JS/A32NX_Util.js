@@ -86,12 +86,4 @@ class UpdateThrottler {
             return -1;
         }
     }
-
-    /**
-     * Notifies the throttler that we just force updated the instrument and that it can wait for a
-     * full interval to update again.
-     */
-    notifyForceUpdated() {
-        this.currentTime = (this.refreshNumber - 1) * this.intervalMs - this.refreshOffset;
-    }
 }
