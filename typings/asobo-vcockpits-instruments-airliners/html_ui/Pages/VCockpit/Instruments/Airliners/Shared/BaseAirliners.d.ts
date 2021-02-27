@@ -7,6 +7,7 @@ declare global {
 
         class EICASTemplateElement extends TemplateElement {
             init(): void
+            update(_deltaTime: number): void
         }
     }
 }
