@@ -286,6 +286,7 @@ impl Turbine for Running {
 
 struct Stopping {
     since: Duration,
+    base_temperature: ThermodynamicTemperature,
     n: Ratio,
     egt: ThermodynamicTemperature,
 }
@@ -293,15 +294,79 @@ impl Stopping {
     fn new(egt: ThermodynamicTemperature, n: Ratio) -> Stopping {
         Stopping {
             since: Duration::from_secs(0),
+            base_temperature: egt,
             n,
             egt,
         }
     }
 
-    fn calculate_n(&self, context: &UpdateContext) -> Ratio {
-        const SPOOL_DOWN_COEFFICIENT: f64 = 2.;
-        let mut n = self.n.get::<percent>();
-        n = (n - (context.delta.as_secs_f64() * SPOOL_DOWN_COEFFICIENT)).max(0.);
+    fn calculate_egt_delta(&self) -> TemperatureInterval {
+        // Refer to APS3200.md for details on the values below and source data.
+        const APU_N_TEMP_DELTA_CONST: f64 = -125.73137672208446;
+        const APU_N_TEMP_DELTA_X: f64 = 2.7141683591219037;
+        const APU_N_TEMP_DELTA_X2: f64 = -0.8102923071483102;
+        const APU_N_TEMP_DELTA_X3: f64 = 0.08890509495240731;
+        const APU_N_TEMP_DELTA_X4: f64 = -0.003509532681984154;
+        const APU_N_TEMP_DELTA_X5: f64 = -0.00002709133732344767;
+        const APU_N_TEMP_DELTA_X6: f64 = 0.00000749250123766767;
+        const APU_N_TEMP_DELTA_X7: f64 = -0.00000030306978045244;
+        const APU_N_TEMP_DELTA_X8: f64 = 0.00000000641099706269;
+        const APU_N_TEMP_DELTA_X9: f64 = -0.00000000008068326110;
+        const APU_N_TEMP_DELTA_X10: f64 = 0.00000000000060754088;
+        const APU_N_TEMP_DELTA_X11: f64 = -0.00000000000000253354;
+        const APU_N_TEMP_DELTA_X12: f64 = 0.00000000000000000451;
+
+        let n = self.n.get::<percent>();
+        TemperatureInterval::new::<temperature_interval::degree_celsius>(
+            APU_N_TEMP_DELTA_CONST
+                + (APU_N_TEMP_DELTA_X * n)
+                + (APU_N_TEMP_DELTA_X2 * n.powi(2))
+                + (APU_N_TEMP_DELTA_X3 * n.powi(3))
+                + (APU_N_TEMP_DELTA_X4 * n.powi(4))
+                + (APU_N_TEMP_DELTA_X5 * n.powi(5))
+                + (APU_N_TEMP_DELTA_X6 * n.powi(6))
+                + (APU_N_TEMP_DELTA_X7 * n.powi(7))
+                + (APU_N_TEMP_DELTA_X8 * n.powi(8))
+                + (APU_N_TEMP_DELTA_X9 * n.powi(9))
+                + (APU_N_TEMP_DELTA_X10 * n.powi(10))
+                + (APU_N_TEMP_DELTA_X11 * n.powi(11))
+                + (APU_N_TEMP_DELTA_X12 * n.powi(12)),
+        )
+    }
+
+    fn calculate_n(&self) -> Ratio {
+        // Refer to APS3200.md for details on the values below and source data.
+        const APU_N_CONST: f64 = 100.22975364965701;
+        const APU_N_X: f64 = -24.692008355859773;
+        const APU_N_X2: f64 = 2.6116524551318787;
+        const APU_N_X3: f64 = 0.006812541903222142;
+        const APU_N_X4: f64 = -0.03134644787752123;
+        const APU_N_X5: f64 = 0.0036345606954833213;
+        const APU_N_X6: f64 = -0.00021794252200618456;
+        const APU_N_X7: f64 = 0.00000798097055109138;
+        const APU_N_X8: f64 = -0.00000018481154462604;
+        const APU_N_X9: f64 = 0.00000000264691628669;
+        const APU_N_X10: f64 = -0.00000000002143677577;
+        const APU_N_X11: f64 = 0.00000000000007515448;
+
+        // Protect against the formula returning increasing results after this value.
+        const TIME_LIMIT: f64 = 49.411;
+        let since = self.since.as_secs_f64().min(TIME_LIMIT);
+
+        let n = (APU_N_CONST
+            + (APU_N_X * since)
+            + (APU_N_X2 * since.powi(2))
+            + (APU_N_X3 * since.powi(3))
+            + (APU_N_X4 * since.powi(4))
+            + (APU_N_X5 * since.powi(5))
+            + (APU_N_X6 * since.powi(6))
+            + (APU_N_X7 * since.powi(7))
+            + (APU_N_X8 * since.powi(8))
+            + (APU_N_X9 * since.powi(9))
+            + (APU_N_X10 * since.powi(10))
+            + (APU_N_X11 * since.powi(11)))
+        .min(100.)
+        .max(0.);
 
         Ratio::new::<percent>(n)
     }
@@ -315,8 +380,8 @@ impl Turbine for Stopping {
         _: &dyn TurbineController,
     ) -> Box<dyn Turbine> {
         self.since += context.delta;
-        self.n = self.calculate_n(context);
-        self.egt = calculate_towards_ambient_egt(self.egt, context);
+        self.n = self.calculate_n();
+        self.egt = self.base_temperature + self.calculate_egt_delta();
 
         if self.n.get::<percent>() == 0. {
             Box::new(ShutdownAps3200Turbine::new_with_egt(self.egt))
@@ -342,7 +407,7 @@ fn calculate_towards_ambient_egt(
     current_egt: ThermodynamicTemperature,
     context: &UpdateContext,
 ) -> ThermodynamicTemperature {
-    const APU_AMBIENT_COEFFICIENT: f64 = 2.;
+    const APU_AMBIENT_COEFFICIENT: f64 = 1.;
     calculate_towards_target_egt(
         current_egt,
         context.ambient_temperature,
