@@ -95,8 +95,8 @@ class CDUFlightPlanPage {
             if (!CDUInitPage.fuelPredConditionsMet(mcdu)) {
                 destEFOBCell = "---";
             }
-            rows[10] = ["\xa0DEST", "DIST EFOB", isFlying ? "\xa0UTC" : "TIME" ];//set last row
-            rows[11] = [destCell, destDistCell + " " + destEFOBCell, destTimeCell];
+            rows[10] = ["\xa0DEST", "DIST EFOB", isFlying ? "UTC{sp}" : "TIME{sp}{sp}" ];//set last row
+            rows[11] = [destCell, destDistCell + " " + destEFOBCell, destTimeCell + "{sp}{sp}"];
             mcdu.leftInputDelay[5] = () => {
                 return mcdu.getDelaySwitchPage();
             };
@@ -152,8 +152,8 @@ class CDUFlightPlanPage {
             rowsCount = 0;
             originIdentCell = "";
             rows = [
-                ["", "SPD/ALT", "TIME"],
-                ["PPOS[color]green", "---/ -----", "----"],
+                ["", "SPD/ALT", "TIME{sp}{sp}"],
+                ["PPOS[color]green", "---/ -----", "----{sp}{sp}"],
                 [""],
                 ["---F-PLN DISCONTINUITY---"],
                 [""],
@@ -162,14 +162,14 @@ class CDUFlightPlanPage {
                 ["-----NO ALTN F-PLN-------"],
                 [""],
                 [""],
-                ["\xa0DEST", "DIST EFOB", "TIME"],
-                ["------", "---- ----", "----"]
+                ["\xa0DEST", "DIST EFOB", "TIME{sp}{sp}"],
+                ["------", "---- ----", "----{sp}{sp}"]
             ];
         } else {
             if (offset === 0) {
                 showFrom = true;
             }
-            rows[0] = ["", "SPD/ALT\xa0\xa0\xa0", isFlying ? "\xa0UTC" : "TIME"];
+            rows[0] = ["", "SPD/ALT\xa0\xa0\xa0", isFlying ? "UTC{sp}" : "TIME{sp}{sp}"];
         }
         let iWaypoint = offset;
         let lastAltitudeConstraint = "";
@@ -196,7 +196,7 @@ class CDUFlightPlanPage {
             }
             depAlt = depAlt.padStart(6,"\xa0");
             if (index === 0 && first === 0) {
-                rows[2 * i + 1] = [originIdentCell + "[color]" + color, "{white}---{end}{" + depAltColor + "}/" + depAlt + "{end}" + "[s-text]", originTimeCell + "[color]" + color + "[s-text]"];
+                rows[2 * i + 1] = [originIdentCell + "[color]" + color, "{white}---{end}{" + depAltColor + "}/" + depAlt + "{end}" + "[s-text]", originTimeCell + "{sp}{sp}[color]" + color + "[s-text]"];
                 mcdu.leftInputDelay[i] = () => {
                     return mcdu.getDelaySwitchPage();
                 };
@@ -236,7 +236,7 @@ class CDUFlightPlanPage {
                         }
                     };
                 }
-                rows[2 * i + 1] = [destCell + "[color]" + color, "{white}---{end}{" + apprColor + "}/" + apprElev + "{end}" + "[s-text]", destTimeCell + "[color]" + color + "[s-text]"];
+                rows[2 * i + 1] = [destCell + "[color]" + color, "{white}---{end}{" + apprColor + "}/" + apprElev + "{end}" + "[s-text]", destTimeCell + "{sp}{sp}[color]" + color + "[s-text]"];
             } else if (index === waypointsWithDiscontinuities.length) {
                 rows[2 * i + 1] = ["------END OF F-PLN-------"]; // if last point then print the FPLN end
             } else if (index < waypointsWithDiscontinuities.length - 1) {
@@ -309,7 +309,7 @@ class CDUFlightPlanPage {
                         if (index === 0 && offset == 0) {
                             showFrom = true;
                         }
-                        rows[2 * i] = [airwayName, ((index >= activeIndex || waypoint.ident === "(DECEL)") && i != 0 ? dstnc : i === 0 ? "SPD/ALT\xa0\xa0\xa0" : ""), i === 0 ? (isFlying ? "\xa0UTC" : "TIME") : ""];
+                        rows[2 * i] = [airwayName, ((index >= activeIndex || waypoint.ident === "(DECEL)") && i != 0 ? dstnc : i === 0 ? "SPD/ALT\xa0\xa0\xa0" : ""), i === 0 ? (isFlying ? "\xa0UTC{sp}" : "TIME{sp}{sp}") : ""];
                         let speedConstraint = "---";
                         if (waypoint.speedConstraint > 10) {
                             speedConstraint = "{magenta}*{end}" + waypoint.speedConstraint.toFixed(0);
@@ -389,11 +389,11 @@ class CDUFlightPlanPage {
 
                         if (mcdu.activeHold && mcdu.activeHold.has(waypoint.ident)) {
                             const holdRows = [
-                                [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color],
+                                [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "{sp}{sp}[color]" + color],
                                 ["" , "IMM[color]cyan" , "HOLD"],
                                 ["HOLD " + mcdu.activeHold.get(waypoint.ident).turn + "[color]" + color, "EXIT*[color]cyan", "SPD " + mcdu.activeHold.get(waypoint.ident).speed],
                                 ["C" + mcdu.activeHold.get(waypoint.ident).course.toFixed(0) + "°"],
-                                [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color]
+                                [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "{sp}{sp}[color]" + color]
                             ];
 
                             mcdu.rightInputDelay[i + 1] = () => {
@@ -425,7 +425,7 @@ class CDUFlightPlanPage {
                             }
                             rows[2 * i + 1] = [waypoint.ident + "[color]" + color,
                                 "{" + spdColor + "}" + speedConstraint + "{end}" + "{" + altColor + "}/" + altPrefix + altitudeConstraint + "{end}[s-text]",
-                                timeCell + "[color]" + color];
+                                timeCell + "{sp}{sp}[color]" + color];
                         }
                     } else {
                         let destTimeCell = "----";

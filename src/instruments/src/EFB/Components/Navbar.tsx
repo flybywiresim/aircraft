@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 export type NavbarProps = {
     tabs: string[],
@@ -24,8 +24,8 @@ export type NavbarProps = {
 };
 
 const c = {
-    active: "border-b-2 text-white px-3 pb-2 font-medium",
-    inactive: "text-white hover:text-blue-light px-3 pb-2 font-medium transition duration-300"
+    active: 'border-b-2 text-white px-3 pb-2 font-medium',
+    inactive: 'text-white hover:text-blue-light px-3 pb-2 font-medium transition duration-300',
 };
 
 export const Navbar = (props: NavbarProps) => {
@@ -34,7 +34,7 @@ export const Navbar = (props: NavbarProps) => {
     const handleClick = (index: number) => {
         setActiveIndex(index);
         props.onSelected(index);
-    }
+    };
 
     return (
         <nav className="bg-none">
@@ -42,11 +42,11 @@ export const Navbar = (props: NavbarProps) => {
                 <div className="flex-1 flex items-center justify-start">
                     <div className="flex space-x-4 text-xl">
                         {
-                            props.tabs.map((tab, index) =>
+                            props.tabs.map((tab, index) => (
                                 <a className={index === activeIndex ? c.active : c.inactive} key={tab} onClick={() => handleClick(index)}>
                                     {tab}
                                 </a>
-                            )
+                            ))
                         }
                     </div>
                 </div>

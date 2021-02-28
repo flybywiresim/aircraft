@@ -88,6 +88,9 @@ class A32NX_GPWS {
             this.Mode5Code = 0;
 
             this.Mode3MaxBaroAlt = NaN;
+            if (onGround || radioAlt < 10) {
+                this.Mode4MaxRAAlt = NaN;
+            }
 
             SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 0);
             SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 0);
