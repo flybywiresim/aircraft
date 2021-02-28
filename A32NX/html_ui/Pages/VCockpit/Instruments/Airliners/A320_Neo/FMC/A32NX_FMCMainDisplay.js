@@ -2471,7 +2471,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         const wind = parseInt(digits);
         this._windDir = matchedIndex <= 2 ? this._windDirections.TAILWIND : this._windDirections.HEADWIND;
-        if (!this.isAvgWindInRange(wind)) {
+        if (wind > 250) {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
@@ -3314,11 +3314,6 @@ class FMCMainDisplay extends BaseAirliners {
     //TODO: Can this be util?
     getCG() {
         return SimVar.GetSimVarValue("CG PERCENT", "Percent over 100") * 100;
-    }
-
-    //TODO: Can this be util?
-    isAvgWindInRange(wind) {
-        return 0 <= wind && wind <= 250;
     }
 
     //TODO: make this util or local var?
