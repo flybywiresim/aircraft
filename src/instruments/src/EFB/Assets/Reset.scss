@@ -1,4 +1,4 @@
-/*
+/*!
  * A32NX
  * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
  *
@@ -16,7 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-declare module '*.svg' {
-  const content: any;
-  export default content;
+input[type="range"] {
+  -webkit-appearance: unset;
+  width: revert;
+  margin: revert;
+
+  &:focus {
+    outline: unset;
+  }
+
+  &::-webkit-slider-runnable-track {
+    background: unset !important;
+  }
+
+  &::-webkit-slider-thumb {
+    border: unset !important;
+  }
 }
