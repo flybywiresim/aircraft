@@ -32,7 +32,7 @@ export const DoorPage = () => {
     return (
         <>
             {/* This is already in an svg so we should remove the containing one - TODO remove style once we are not in the Asobo ECAM */}
-            <svg viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
+            <svg id="door-page" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
                 <g id="fuselage">
                     <path className="MainShape" d="M 267 473 l -5 -13 l 0 -340 C 260,102 276,52 300,40" />
                     <path className="MainShape" d="M 333 473 l 5 -13 l 0 -340 C 340,102 324,52 300,40" />
