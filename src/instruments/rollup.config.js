@@ -58,11 +58,12 @@ function getInstrumentsToCompile() {
     ];
 }
 
-function getTemplatePlugin({ name, config, isInstrument }) {
+function getTemplatePlugin({ name, config, imports = [], isInstrument }) {
     if (isInstrument) {
         return instrumentTemplate({
             name,
             config,
+            imports,
             getCssBundle() {
                 return fs.readFileSync(`${TMPDIR}/${name}-gen.css`).toString();
             },
@@ -114,7 +115,7 @@ module.exports = getInstrumentsToCompile()
                     plugins: makePostcssPluginList(path),
                     extract: `${TMPDIR}/${name}-gen.css`,
                 }),
-                getTemplatePlugin({ name, path, config, isInstrument }),
+                getTemplatePlugin({ name, path, imports: ['/JS/dataStorage.js'], config, isInstrument }),
             ],
         };
     });

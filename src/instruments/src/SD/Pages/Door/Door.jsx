@@ -19,7 +19,7 @@
 import './Door.scss';
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
-import { getSimVar, renderTarget, useUpdate } from '../../../util.mjs';
+import { getSimVar, renderTarget, useUpdate } from '../../../util.js';
 
 export const DoorPage = () => {
     const [cabinDoors, setCabinDoors] = useState({
