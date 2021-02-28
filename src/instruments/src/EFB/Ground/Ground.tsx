@@ -37,7 +37,7 @@ export const Ground: React.FC = () => {
 
     /**
      * allows a direction to be selected directly
-     * rather than fist selected and after that the direction
+     * rather than first backwards and after that the direction
      */
     useEffect(() => {
         if (pushBack === 0 && tugDirection !== 0) {
