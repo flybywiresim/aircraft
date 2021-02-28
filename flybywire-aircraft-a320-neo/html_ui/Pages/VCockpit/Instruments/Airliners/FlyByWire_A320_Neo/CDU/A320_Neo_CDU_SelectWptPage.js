@@ -60,7 +60,7 @@ class A320_Neo_CDU_SelectWptPage {
             }
         }
         mcdu.setTemplate([
-            ["DUPLICATE NAMES", (page + 1).toFixed(0), (orderedWaypoints.length / 5).toFixed(0)],
+            ["DUPLICATE NAMES", (page + 1).toFixed(0), Math.ceil(orderedWaypoints.length / 5).toFixed(0)],
             ...rows,
             [""]
         ]);
