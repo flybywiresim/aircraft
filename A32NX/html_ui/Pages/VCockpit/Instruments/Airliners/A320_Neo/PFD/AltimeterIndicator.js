@@ -527,6 +527,15 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         }
     }
 
+    hasAltitudeConstraint() {
+        if (this.aircraft == Aircraft.A320_NEO) {
+            if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     _blinkQNH() {
         this.pressureSVGLegend.classList.add("blink");
         this.pressureSVG.classList.add("blink");
