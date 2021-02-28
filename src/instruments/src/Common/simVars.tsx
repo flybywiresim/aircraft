@@ -187,7 +187,6 @@ const SimVarProvider: React.FC = ({ children }) => {
         const key = getKey(name, unit, false);
         setCache((oldCache) => {
             const newValue = typeof value === 'function' ? value(oldCache[key].value) : value;
-            console.error(`SETTING ${name} (${unit}) to ${newValue}`);
             SimVar.SetSimVarValue((proxy || name), unit, newValue);
             return {
                 ...oldCache,

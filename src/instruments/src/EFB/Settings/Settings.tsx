@@ -136,15 +136,24 @@ const SoundSettings: React.FC = () => {
                 </div>
                 <div className="mb-4 pt-3 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Exterior Master Volume</span>
-                    <Slider value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} className="w-60" />
+                    <div className="flex flex-row items-center">
+                        <span className="text-base pr-3">{exteriorVolume}</span>
+                        <Slider value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} className="w-60" />
+                    </div>
                 </div>
                 <div className="mb-4 pt-3 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Engine Interior Volume</span>
-                    <Slider value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} className="w-60" />
+                    <div className="flex flex-row items-center">
+                        <span className="text-base pr-3">{engineVolume}</span>
+                        <Slider value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} className="w-60" />
+                    </div>
                 </div>
                 <div className="pt-3 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Wind Interior Volume</span>
-                    <Slider value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} className="w-60" />
+                    <div className="flex flex-row items-center">
+                        <span className="text-base pr-3">{windVolume}</span>
+                        <Slider value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} className="w-60" />
+                    </div>
                 </div>
             </div>
         </div>
