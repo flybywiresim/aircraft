@@ -487,7 +487,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
 
         // Use the constraint altitude if provided otherwise use selected altitude lock value
         const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
-        const targetAltitude = currentAltitudeConstraint && !this.hasAltitudeConstraint() ? currentAltitudeConstraint : this.hudAPAltitude;
+        const targetAltitude = currentAltitudeConstraint && !this.getAutopilotMode() ? currentAltitudeConstraint : this.hudAPAltitude;
 
         // Exit when selected altitude is being changed
         if (this.previousTargetAltitude !== targetAltitude) {
@@ -525,15 +525,6 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 this._pulseYellow();
             }
         }
-    }
-
-    hasAltitudeConstraint() {
-        if (this.aircraft == Aircraft.A320_NEO) {
-            if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") != 0) {
-                return false;
-            }
-        }
-        return true;
     }
 
     _blinkQNH() {
