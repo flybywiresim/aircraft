@@ -485,7 +485,6 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             return;
         }
 
-        // Use the constraint altitude if provided otherwise use selected altitude lock value
         const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
         const targetAltitude = currentAltitudeConstraint && !this.getAutopilotMode() ? currentAltitudeConstraint : this.hudAPAltitude;
 
