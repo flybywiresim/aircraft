@@ -1,6 +1,6 @@
 /*
  * A32NX
- * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  */
 
 import { useState } from 'react/cjs/react.production.min.js';
-import { getSimVar, useInteractionEvent } from '../util.mjs';
+import { getSimVar, useInteractionEvent } from '../util.js';
 import { EngPage } from './Pages/Eng.jsx';
 import { BleedPage } from './Pages/Bleed.jsx';
 import { PressPage } from './Pages/Press.jsx';

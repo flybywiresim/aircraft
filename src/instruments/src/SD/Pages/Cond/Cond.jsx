@@ -18,7 +18,7 @@
 
 import './Cond.scss';
 import { useState } from 'react';
-import { getSimVar, useUpdate } from '../../../util.mjs';
+import { getSimVar, useUpdate } from '../../../util.js';
 
 export const CondPage = () => {
     const [ckptTemp, setCkptTemp] = useState({
