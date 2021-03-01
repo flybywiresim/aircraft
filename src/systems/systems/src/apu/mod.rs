@@ -1,26 +1,67 @@
-//! This module models the APS3200 APU.
-//!
-//! > Not all characteristics have been verified as of yet. Meaning things such as
-//! > EGT increases, EGT warning level, etc. are there but might not reflect the
-//! > real APU fully. This involves further tweaking as we get more information.
+use std::time::Duration;
 
-use self::{air_intake_flap::AirIntakeFlap, electronic_control_box::ElectronicControlBox};
+use self::{
+    air_intake_flap::AirIntakeFlap, aps3200::ShutdownAps3200Turbine,
+    electronic_control_box::ElectronicControlBox,
+};
 use crate::{
-    electrical::{Current, PowerConductor, PowerSource},
-    overhead::{FirePushButton, OnOffPushButton},
+    electrical::{Potential, PotentialSource, ProvideFrequency, ProvidePotential},
+    overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
     pneumatic::{BleedAirValve, BleedAirValveState, Valve},
-    simulator::{
-        SimulatorReadState, SimulatorReadWritable, SimulatorVisitable, SimulatorVisitor,
-        SimulatorWriteState, UpdateContext,
+    simulation::{
+        context_with, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
     },
 };
-use uom::si::{electric_current::ampere, electric_potential::volt, f64::*};
+use uom::si::{f64::*, ratio::percent, thermodynamic_temperature::degree_celsius};
 
 mod air_intake_flap;
 mod aps3200;
+pub use aps3200::Aps3200ApuGenerator;
 mod electronic_control_box;
 
-pub use aps3200::{Aps3200ApuGenerator, ShutdownAps3200Turbine};
+pub struct AuxiliaryPowerUnitFactory {}
+impl AuxiliaryPowerUnitFactory {
+    pub fn new_shutdown_aps3200(number: usize) -> AuxiliaryPowerUnit<Aps3200ApuGenerator> {
+        AuxiliaryPowerUnit::new(
+            Box::new(ShutdownAps3200Turbine::new()),
+            Aps3200ApuGenerator::new(number),
+        )
+    }
+
+    pub fn new_running_aps3200(number: usize) -> AuxiliaryPowerUnit<Aps3200ApuGenerator> {
+        let mut apu = AuxiliaryPowerUnit::new(
+            Box::new(ShutdownAps3200Turbine::new()),
+            Aps3200ApuGenerator::new(number),
+        );
+
+        AuxiliaryPowerUnitFactory::start_running(&mut apu);
+
+        apu
+    }
+
+    fn start_running<T: ApuGenerator>(apu: &mut AuxiliaryPowerUnit<T>) {
+        loop {
+            AuxiliaryPowerUnitFactory::run(apu);
+            if apu.is_available() {
+                break;
+            }
+        }
+    }
+
+    fn run<T: ApuGenerator>(apu: &mut AuxiliaryPowerUnit<T>) {
+        let mut overhead = AuxiliaryPowerUnitOverheadPanel::new();
+        overhead.master.set_on(true);
+        overhead.start.set_on(true);
+        apu.update(
+            &context_with().delta(Duration::from_secs(100)).build(),
+            &overhead,
+            &AuxiliaryPowerUnitFireOverheadPanel::new(),
+            true,
+            true,
+            true,
+        );
+    }
+}
 
 /// The APU start contactor is closed when the APU should start. This type exists because we
 /// don't have a full electrical implementation yet. Once we do, we will probably move this
@@ -37,16 +78,12 @@ impl ApuStartContactor {
         self.closed = controller.should_close_start_contactor();
     }
 }
-impl PowerConductor for ApuStartContactor {
-    fn output(&self) -> Current {
+impl PotentialSource for ApuStartContactor {
+    fn output_potential(&self) -> Potential {
         if self.closed {
-            Current::Direct(
-                PowerSource::Battery(1),
-                ElectricPotential::new::<volt>(28.5),
-                ElectricCurrent::new::<ampere>(35.),
-            )
+            Potential::Battery(10)
         } else {
-            Current::None
+            Potential::None
         }
     }
 }
@@ -91,24 +128,17 @@ pub trait TurbineController {
     fn should_stop(&self) -> bool;
 }
 
-pub struct AuxiliaryPowerUnit {
+pub struct AuxiliaryPowerUnit<T: ApuGenerator> {
     turbine: Option<Box<dyn Turbine>>,
-    generator: Box<dyn ApuGenerator>,
+    generator: T,
     ecb: ElectronicControlBox,
     start_contactor: ApuStartContactor,
     air_intake_flap: AirIntakeFlap,
     bleed_air_valve: BleedAirValve,
     fuel_pressure_switch: FuelPressureSwitch,
 }
-impl AuxiliaryPowerUnit {
-    pub fn new_aps3200() -> Self {
-        AuxiliaryPowerUnit::new(
-            Box::new(ShutdownAps3200Turbine::new()),
-            Box::new(Aps3200ApuGenerator::new()),
-        )
-    }
-
-    fn new(turbine: Box<dyn Turbine>, generator: Box<dyn ApuGenerator>) -> Self {
+impl<T: ApuGenerator> AuxiliaryPowerUnit<T> {
+    pub fn new(turbine: Box<dyn Turbine>, generator: T) -> Self {
         AuxiliaryPowerUnit {
             turbine: Some(turbine),
             generator,
@@ -156,11 +186,11 @@ impl AuxiliaryPowerUnit {
         }
 
         self.generator
-            .update(context, self.get_n(), self.is_emergency_shutdown());
+            .update(context, self.n(), self.is_emergency_shutdown());
     }
 
-    pub fn get_n(&self) -> Ratio {
-        self.ecb.get_n()
+    pub fn n(&self) -> Ratio {
+        self.ecb.n()
     }
 
     pub fn is_available(&self) -> bool {
@@ -171,12 +201,12 @@ impl AuxiliaryPowerUnit {
         self.air_intake_flap.is_apu_ecam_open()
     }
 
-    fn get_air_intake_flap_open_amount(&self) -> Ratio {
-        self.air_intake_flap.get_open_amount()
+    fn air_intake_flap_open_amount(&self) -> Ratio {
+        self.air_intake_flap.open_amount()
     }
 
-    fn get_egt(&self) -> ThermodynamicTemperature {
-        self.ecb.get_egt()
+    fn egt(&self) -> ThermodynamicTemperature {
+        self.ecb.egt()
     }
 
     fn start_contactor_energized(&self) -> bool {
@@ -187,12 +217,12 @@ impl AuxiliaryPowerUnit {
         self.ecb.has_fault()
     }
 
-    fn get_egt_caution_temperature(&self) -> ThermodynamicTemperature {
-        self.ecb.get_egt_caution_temperature()
+    fn egt_caution_temperature(&self) -> ThermodynamicTemperature {
+        self.ecb.egt_caution_temperature()
     }
 
-    fn get_egt_warning_temperature(&self) -> ThermodynamicTemperature {
-        self.ecb.get_egt_warning_temperature()
+    fn egt_warning_temperature(&self) -> ThermodynamicTemperature {
+        self.ecb.egt_warning_temperature()
     }
 
     fn has_fuel_low_pressure_fault(&self) -> bool {
@@ -216,43 +246,70 @@ impl AuxiliaryPowerUnit {
     }
 
     #[cfg(test)]
-    fn frequency_within_normal_range(&self) -> bool {
-        self.generator.frequency_within_normal_range()
+    fn potential(&self) -> ElectricPotential {
+        self.generator.potential()
     }
 
     #[cfg(test)]
-    fn potential_within_normal_range(&self) -> bool {
-        self.generator.potential_within_normal_range()
+    fn potential_normal(&self) -> bool {
+        self.generator.potential_normal()
+    }
+
+    #[cfg(test)]
+    fn frequency(&self) -> Frequency {
+        self.generator.frequency()
+    }
+
+    #[cfg(test)]
+    fn frequency_normal(&self) -> bool {
+        self.generator.frequency_normal()
     }
 }
-impl PowerConductor for AuxiliaryPowerUnit {
-    fn output(&self) -> Current {
-        self.generator.output()
+impl<T: ApuGenerator> PotentialSource for AuxiliaryPowerUnit<T> {
+    fn output_potential(&self) -> Potential {
+        self.generator.output_potential()
     }
 }
-impl SimulatorVisitable for AuxiliaryPowerUnit {
-    fn accept(&mut self, visitor: &mut Box<&mut dyn SimulatorVisitor>) {
+impl<T: ApuGenerator> SimulationElement for AuxiliaryPowerUnit<T> {
+    fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
         self.generator.accept(visitor);
-        visitor.visit(&mut Box::new(self));
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool(
+            "APU_FLAP_ECAM_OPEN",
+            self.air_intake_flap_is_apu_ecam_open(),
+        );
+        writer.write_f64(
+            "APU_FLAP_OPEN_PERCENTAGE",
+            self.air_intake_flap_open_amount().get::<percent>(),
+        );
+        writer.write_bool("APU_BLEED_AIR_VALVE_OPEN", self.bleed_air_valve_is_open());
+        writer.write_f64(
+            "APU_EGT_CAUTION",
+            self.egt_caution_temperature().get::<degree_celsius>(),
+        );
+        writer.write_f64("APU_EGT", self.egt().get::<degree_celsius>());
+        writer.write_bool("ECAM_INOP_SYS_APU", self.is_inoperable());
+        writer.write_bool("APU_IS_AUTO_SHUTDOWN", self.is_auto_shutdown());
+        writer.write_bool("APU_IS_EMERGENCY_SHUTDOWN", self.is_emergency_shutdown());
+        writer.write_bool(
+            "APU_LOW_FUEL_PRESSURE_FAULT",
+            self.has_fuel_low_pressure_fault(),
+        );
+        writer.write_f64("APU_N", self.n().get::<percent>());
+        writer.write_bool(
+            "APU_START_CONTACTOR_ENERGIZED",
+            self.start_contactor_energized(),
+        );
+        writer.write_f64(
+            "APU_EGT_WARNING",
+            self.egt_warning_temperature().get::<degree_celsius>(),
+        );
     }
 }
-impl SimulatorReadWritable for AuxiliaryPowerUnit {
-    fn write(&self, state: &mut SimulatorWriteState) {
-        state.apu_air_intake_flap_is_ecam_open = self.air_intake_flap_is_apu_ecam_open();
-        state.apu_air_intake_flap_opened_for = self.get_air_intake_flap_open_amount();
-        state.apu_bleed_air_valve_open = self.bleed_air_valve_is_open();
-        state.apu_caution_egt = self.get_egt_caution_temperature();
-        state.apu_egt = self.get_egt();
-        state.apu_inoperable = self.is_inoperable();
-        state.apu_is_auto_shutdown = self.is_auto_shutdown();
-        state.apu_is_emergency_shutdown = self.is_emergency_shutdown();
-        state.apu_low_fuel_pressure_fault = self.has_fuel_low_pressure_fault();
-        state.apu_n = self.get_n();
-        state.apu_start_contactor_energized = self.start_contactor_energized();
-        state.apu_warning_egt = self.get_egt_warning_temperature();
-    }
-}
-impl BleedAirValveState for AuxiliaryPowerUnit {
+impl<T: ApuGenerator> BleedAirValveState for AuxiliaryPowerUnit<T> {
     fn bleed_air_valve_is_open(&self) -> bool {
         self.bleed_air_valve.is_open()
     }
@@ -266,9 +323,9 @@ pub trait Turbine {
         apu_gen_is_used: bool,
         controller: &dyn TurbineController,
     ) -> Box<dyn Turbine>;
-    fn get_n(&self) -> Ratio;
-    fn get_egt(&self) -> ThermodynamicTemperature;
-    fn get_state(&self) -> TurbineState;
+    fn n(&self) -> Ratio;
+    fn egt(&self) -> ThermodynamicTemperature;
+    fn state(&self) -> TurbineState;
 }
 
 #[derive(PartialEq)]
@@ -279,10 +336,10 @@ pub enum TurbineState {
     Stopping,
 }
 
-pub trait ApuGenerator: PowerConductor + SimulatorVisitable + SimulatorReadWritable {
+pub trait ApuGenerator:
+    PotentialSource + SimulationElement + ProvidePotential + ProvideFrequency
+{
     fn update(&mut self, context: &UpdateContext, n: Ratio, is_emergency_shutdown: bool);
-    fn frequency_within_normal_range(&self) -> bool;
-    fn potential_within_normal_range(&self) -> bool;
 }
 
 pub struct AuxiliaryPowerUnitFireOverheadPanel {
@@ -291,7 +348,7 @@ pub struct AuxiliaryPowerUnitFireOverheadPanel {
 impl AuxiliaryPowerUnitFireOverheadPanel {
     pub fn new() -> Self {
         AuxiliaryPowerUnitFireOverheadPanel {
-            apu_fire_button: FirePushButton::new(),
+            apu_fire_button: FirePushButton::new("APU"),
         }
     }
 
@@ -299,30 +356,32 @@ impl AuxiliaryPowerUnitFireOverheadPanel {
         self.apu_fire_button.is_released()
     }
 }
-impl SimulatorVisitable for AuxiliaryPowerUnitFireOverheadPanel {
-    fn accept(&mut self, visitor: &mut Box<&mut dyn SimulatorVisitor>) {
-        visitor.visit(&mut Box::new(self));
+impl SimulationElement for AuxiliaryPowerUnitFireOverheadPanel {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.apu_fire_button.accept(visitor);
+
+        visitor.visit(self);
     }
 }
-impl SimulatorReadWritable for AuxiliaryPowerUnitFireOverheadPanel {
-    fn read(&mut self, state: &SimulatorReadState) {
-        self.apu_fire_button.set(state.apu_fire_button_released);
+impl Default for AuxiliaryPowerUnitFireOverheadPanel {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
 pub struct AuxiliaryPowerUnitOverheadPanel {
-    pub master: OnOffPushButton,
-    pub start: OnOffPushButton,
+    pub master: OnOffFaultPushButton,
+    pub start: OnOffAvailablePushButton,
 }
 impl AuxiliaryPowerUnitOverheadPanel {
     pub fn new() -> AuxiliaryPowerUnitOverheadPanel {
         AuxiliaryPowerUnitOverheadPanel {
-            master: OnOffPushButton::new_off(),
-            start: OnOffPushButton::new_off(),
+            master: OnOffFaultPushButton::new_off("APU_MASTER_SW"),
+            start: OnOffAvailablePushButton::new_off("APU_START"),
         }
     }
 
-    pub fn update_after_apu(&mut self, apu: &AuxiliaryPowerUnit) {
+    pub fn update_after_apu<T: ApuGenerator>(&mut self, apu: &AuxiliaryPowerUnit<T>) {
         self.start.set_available(apu.is_available());
         if self.start_is_on()
             && (apu.is_available()
@@ -335,6 +394,7 @@ impl AuxiliaryPowerUnitOverheadPanel {
         self.master.set_fault(apu.has_fault());
     }
 
+    #[cfg(test)]
     fn master_has_fault(&self) -> bool {
         self.master.has_fault()
     }
@@ -347,34 +407,40 @@ impl AuxiliaryPowerUnitOverheadPanel {
         self.start.is_on()
     }
 
-    fn start_shows_available(&self) -> bool {
-        self.start.shows_available()
+    #[cfg(test)]
+    fn start_is_available(&self) -> bool {
+        self.start.is_available()
     }
 }
-impl SimulatorVisitable for AuxiliaryPowerUnitOverheadPanel {
-    fn accept(&mut self, visitor: &mut Box<&mut dyn SimulatorVisitor>) {
-        visitor.visit(&mut Box::new(self));
-    }
-}
-impl SimulatorReadWritable for AuxiliaryPowerUnitOverheadPanel {
-    fn read(&mut self, state: &SimulatorReadState) {
-        self.master.set(state.apu_master_sw_on);
-        self.start.set(state.apu_start_sw_on);
-    }
+impl SimulationElement for AuxiliaryPowerUnitOverheadPanel {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.master.accept(visitor);
+        self.start.accept(visitor);
 
-    fn write(&self, state: &mut SimulatorWriteState) {
-        state.apu_master_sw_fault = self.master_has_fault();
-        state.apu_start_sw_on = self.start_is_on();
-        state.apu_start_sw_available = self.start_shows_available();
+        visitor.visit(self);
+    }
+}
+impl Default for AuxiliaryPowerUnitOverheadPanel {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
 #[cfg(test)]
 pub mod tests {
+    use crate::simulation::context_with;
+
     use super::*;
-    use crate::simulator::test_helpers::context_with;
     use std::time::Duration;
     use uom::si::{length::foot, ratio::percent, thermodynamic_temperature::degree_celsius};
+
+    pub fn running_apu() -> AuxiliaryPowerUnit<Aps3200ApuGenerator> {
+        tester_with().running_apu().apu()
+    }
+
+    pub fn stopped_apu() -> AuxiliaryPowerUnit<Aps3200ApuGenerator> {
+        tester().apu()
+    }
 
     pub fn tester_with() -> AuxiliaryPowerUnitTester {
         AuxiliaryPowerUnitTester::new()
@@ -403,24 +469,24 @@ pub mod tests {
             self
         }
 
-        fn get_n(&self) -> Ratio {
+        fn n(&self) -> Ratio {
             self.n
         }
 
-        fn get_egt(&self) -> ThermodynamicTemperature {
+        fn egt(&self) -> ThermodynamicTemperature {
             ThermodynamicTemperature::new::<degree_celsius>(100.)
         }
 
-        fn get_state(&self) -> TurbineState {
+        fn state(&self) -> TurbineState {
             TurbineState::Starting
         }
     }
 
     pub struct AuxiliaryPowerUnitTester {
-        apu: AuxiliaryPowerUnit,
+        apu: AuxiliaryPowerUnit<Aps3200ApuGenerator>,
         apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
         apu_overhead: AuxiliaryPowerUnitOverheadPanel,
-        apu_bleed: OnOffPushButton,
+        apu_bleed: OnOffFaultPushButton,
         ambient_temperature: ThermodynamicTemperature,
         indicated_altitude: Length,
         apu_gen_is_used: bool,
@@ -429,10 +495,10 @@ pub mod tests {
     impl AuxiliaryPowerUnitTester {
         fn new() -> Self {
             AuxiliaryPowerUnitTester {
-                apu: AuxiliaryPowerUnit::new_aps3200(),
+                apu: AuxiliaryPowerUnitFactory::new_shutdown_aps3200(1),
                 apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(),
                 apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(),
-                apu_bleed: OnOffPushButton::new_on(),
+                apu_bleed: OnOffFaultPushButton::new_on("TEST"),
                 ambient_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
                 indicated_altitude: Length::new::<foot>(5000.),
                 apu_gen_is_used: true,
@@ -446,12 +512,12 @@ pub mod tests {
         }
 
         fn master_on(mut self) -> Self {
-            self.apu_overhead.master.turn_on();
+            self.apu_overhead.master.push_on();
             self
         }
 
         fn master_off(mut self) -> Self {
-            self.apu_overhead.master.turn_off();
+            self.apu_overhead.master.push_off();
             self
         }
 
@@ -466,7 +532,7 @@ pub mod tests {
         }
 
         fn bleed_air_off(mut self) -> Self {
-            self.apu_bleed.turn_off();
+            self.apu_bleed.push_off();
             self
         }
 
@@ -521,7 +587,7 @@ pub mod tests {
             loop {
                 self = self.run(Duration::from_secs(1));
 
-                if self.get_n().get::<percent>() == 0. {
+                if self.n().get::<percent>() == 0. {
                     break;
                 }
             }
@@ -535,7 +601,7 @@ pub mod tests {
             loop {
                 self = self.run(Duration::from_secs(1));
 
-                if (self.apu.get_air_intake_flap_open_amount().get::<percent>() - 100.).abs()
+                if (self.apu.air_intake_flap_open_amount().get::<percent>() - 100.).abs()
                     < f64::EPSILON
                 {
                     break;
@@ -546,12 +612,12 @@ pub mod tests {
         }
 
         fn running_apu_with_bleed_air(mut self) -> Self {
-            self.apu_bleed.turn_on();
+            self.apu_bleed.push_on();
             self.running_apu()
         }
 
         fn running_apu_without_bleed_air(mut self) -> Self {
-            self.apu_bleed.turn_off();
+            self.apu_bleed.push_off();
             self.running_apu()
         }
 
@@ -598,7 +664,7 @@ pub mod tests {
             loop {
                 self = self.run(delta_per_run);
 
-                let n = self.get_n().get::<percent>();
+                let n = self.n().get::<percent>();
                 if n < previous_n {
                     break;
                 }
@@ -610,32 +676,31 @@ pub mod tests {
         }
 
         fn is_air_intake_flap_fully_open(&self) -> bool {
-            (self.apu.get_air_intake_flap_open_amount().get::<percent>() - 100.).abs()
-                < f64::EPSILON
+            (self.apu.air_intake_flap_open_amount().get::<percent>() - 100.).abs() < f64::EPSILON
         }
 
         fn is_air_intake_flap_fully_closed(&self) -> bool {
-            (self.apu.get_air_intake_flap_open_amount().get::<percent>() - 0.).abs() < f64::EPSILON
+            (self.apu.air_intake_flap_open_amount().get::<percent>() - 0.).abs() < f64::EPSILON
         }
 
         fn air_intake_flap_is_apu_ecam_open(&self) -> bool {
             self.apu.air_intake_flap_is_apu_ecam_open()
         }
 
-        pub fn get_n(&self) -> Ratio {
-            self.apu.get_n()
+        pub fn n(&self) -> Ratio {
+            self.apu.n()
         }
 
-        fn get_egt(&self) -> ThermodynamicTemperature {
-            self.apu.get_egt()
+        fn egt(&self) -> ThermodynamicTemperature {
+            self.apu.egt()
         }
 
-        fn get_egt_warning_temperature(&self) -> ThermodynamicTemperature {
-            self.apu.get_egt_warning_temperature()
+        fn egt_warning_temperature(&self) -> ThermodynamicTemperature {
+            self.apu.egt_warning_temperature()
         }
 
-        fn get_egt_caution_temperature(&self) -> ThermodynamicTemperature {
-            self.apu.get_egt_caution_temperature()
+        fn egt_caution_temperature(&self) -> ThermodynamicTemperature {
+            self.apu.egt_caution_temperature()
         }
 
         fn apu_is_available(&self) -> bool {
@@ -647,15 +712,27 @@ pub mod tests {
         }
 
         fn start_shows_available(&self) -> bool {
-            self.apu_overhead.start_shows_available()
+            self.apu_overhead.start_is_available()
         }
 
         fn master_has_fault(&self) -> bool {
             self.apu_overhead.master_has_fault()
         }
 
-        pub fn get_generator_output(&self) -> Current {
-            self.apu.output()
+        fn apu(self) -> AuxiliaryPowerUnit<Aps3200ApuGenerator> {
+            self.apu
+        }
+
+        pub fn generator_output_potential(&self) -> Potential {
+            self.apu.output_potential()
+        }
+
+        pub fn potential(&self) -> ElectricPotential {
+            self.apu.potential()
+        }
+
+        pub fn frequency(&self) -> Frequency {
+            self.apu.frequency()
         }
 
         fn start_contactor_energized(&self) -> bool {
@@ -663,11 +740,11 @@ pub mod tests {
         }
 
         pub fn generator_frequency_within_normal_range(&self) -> bool {
-            self.apu.frequency_within_normal_range()
+            self.apu.frequency_normal()
         }
 
         pub fn generator_potential_within_normal_range(&self) -> bool {
-            self.apu.potential_within_normal_range()
+            self.apu.potential_normal()
         }
 
         fn has_fuel_low_pressure_fault(&self) -> bool {
@@ -693,9 +770,10 @@ pub mod tests {
 
     #[cfg(test)]
     mod apu_tests {
-        use ntest::{assert_about_eq, timeout};
+        use crate::simulation::test::TestReaderWriter;
 
         use super::*;
+        use ntest::{assert_about_eq, timeout};
 
         const APPROXIMATE_STARTUP_TIME: u64 = 49;
 
@@ -716,7 +794,7 @@ pub mod tests {
                 .start_on()
                 .run(Duration::from_secs(15));
 
-            assert_about_eq!(tester.get_n().get::<percent>(), 0.);
+            assert_about_eq!(tester.n().get::<percent>(), 0.);
         }
 
         #[test]
@@ -726,7 +804,7 @@ pub mod tests {
 
             loop {
                 tester = tester.run(Duration::from_millis(50));
-                n = tester.get_n().get::<percent>();
+                n = tester.n().get::<percent>();
                 if n > 1. {
                     break;
                 }
@@ -743,7 +821,7 @@ pub mod tests {
                 .starting_apu()
                 .run(Duration::from_secs(APPROXIMATE_STARTUP_TIME));
 
-            assert_about_eq!(tester.get_n().get::<percent>(), 100.);
+            assert_about_eq!(tester.n().get::<percent>(), 100.);
         }
 
         #[test]
@@ -752,13 +830,13 @@ pub mod tests {
                 .starting_apu()
                 .run(Duration::from_millis(1500));
 
-            assert!((tester.get_n().get::<percent>() - 0.).abs() < f64::EPSILON);
+            assert!((tester.n().get::<percent>() - 0.).abs() < f64::EPSILON);
 
             // The first 35ms ignition started but N hasn't increased beyond 0 yet.
             let tester = tester.then_continue_with().run(Duration::from_millis(36));
 
             assert!(
-                tester.get_n().get::<percent>() > 0.,
+                tester.n().get::<percent>() > 0.,
                 "Ignition started too late."
             );
         }
@@ -776,10 +854,7 @@ pub mod tests {
                 .starting_apu()
                 .run(Duration::from_secs(1));
 
-            assert_about_eq!(
-                tester.get_egt().get::<degree_celsius>(),
-                AMBIENT_TEMPERATURE
-            );
+            assert_about_eq!(tester.egt().get::<degree_celsius>(), AMBIENT_TEMPERATURE);
         }
 
         #[test]
@@ -790,7 +865,7 @@ pub mod tests {
             loop {
                 tester = tester.run(Duration::from_secs(1));
 
-                let egt = tester.get_egt().get::<degree_celsius>();
+                let egt = tester.egt().get::<degree_celsius>();
                 if egt < max_egt {
                     break;
                 }
@@ -809,14 +884,14 @@ pub mod tests {
                 tester = tester.run(Duration::from_secs(1));
 
                 assert_about_eq!(
-                    tester.get_egt_warning_temperature().get::<degree_celsius>(),
-                    tester.get_egt_caution_temperature().get::<degree_celsius>() + 33.
+                    tester.egt_warning_temperature().get::<degree_celsius>(),
+                    tester.egt_caution_temperature().get::<degree_celsius>() + 33.
                 );
             }
         }
 
         #[test]
-        fn start_sw_on_light_turns_off_when_apu_available() {
+        fn start_sw_on_light_turns_off_and_avail_light_turns_on_when_apu_available() {
             let mut tester = tester_with().starting_apu();
 
             loop {
@@ -874,7 +949,7 @@ pub mod tests {
             // APU N reduces below 95%.
             tester = tester.run(Duration::from_secs(5));
             assert!(
-                tester.get_n().get::<percent>() < 95.,
+                tester.n().get::<percent>() < 95.,
                 "Didn't expect the N to still be at or above 95. The test assumes N < 95."
             );
 
@@ -893,7 +968,7 @@ pub mod tests {
             assert!(tester.apu_is_available());
             while 0. < n {
                 tester = tester.run(Duration::from_millis(50));
-                n = tester.get_n().get::<percent>();
+                n = tester.n().get::<percent>();
                 assert_eq!(tester.apu_is_available(), 95. <= n);
             }
         }
@@ -925,7 +1000,7 @@ pub mod tests {
             // APU N reduces below 95%.
             tester = tester.run(Duration::from_secs(5));
             assert!(
-                tester.get_n().get::<percent>() < 95.,
+                tester.n().get::<percent>() < 95.,
                 "Didn't expect the N to still be at or above 95. The test assumes N < 95."
             );
 
@@ -943,7 +1018,7 @@ pub mod tests {
             // APU N reduces below 95%.
             tester = tester.run(Duration::from_secs(5));
             assert!(
-                tester.get_n().get::<percent>() < 95.,
+                tester.n().get::<percent>() < 95.,
                 "Didn't expect the N to still be at or above 95. The test assumes N < 95."
             );
 
@@ -976,7 +1051,7 @@ pub mod tests {
                 .starting_apu()
                 .run(Duration::from_secs(APPROXIMATE_STARTUP_TIME / 2));
 
-            assert!(tester.get_n().get::<percent>() > 0.);
+            assert!(tester.n().get::<percent>() > 0.);
 
             tester = tester
                 .then_continue_with()
@@ -985,12 +1060,12 @@ pub mod tests {
                 .start_off()
                 .run(Duration::from_secs(APPROXIMATE_STARTUP_TIME / 2));
 
-            assert!(tester.get_n().get::<percent>() > 90.);
+            assert!(tester.n().get::<percent>() > 90.);
 
             loop {
                 tester = tester.then_continue_with().run(Duration::from_secs(1));
 
-                if tester.get_n().get::<percent>() == 0. {
+                if tester.n().get::<percent>() == 0. {
                     break;
                 }
             }
@@ -1003,7 +1078,7 @@ pub mod tests {
             loop {
                 tester = tester.run(Duration::from_millis(50));
 
-                if tester.get_n().get::<percent>() < 7. {
+                if tester.n().get::<percent>() < 7. {
                     break;
                 }
             }
@@ -1025,7 +1100,7 @@ pub mod tests {
                 .and()
                 .master_off();
 
-            while tester.get_egt() != ambient {
+            while tester.egt() != ambient {
                 tester = tester.run(Duration::from_secs(1));
             }
         }
@@ -1044,7 +1119,7 @@ pub mod tests {
                 .ambient_temperature(target_temperature)
                 .run(Duration::from_secs(1_000));
 
-            assert_eq!(tester.get_egt(), target_temperature);
+            assert_eq!(tester.egt(), target_temperature);
         }
 
         #[test]
@@ -1057,7 +1132,7 @@ pub mod tests {
                 .apu_gen_not_used()
                 .run(Duration::from_secs(1_000));
 
-            let egt = tester.get_egt().get::<degree_celsius>();
+            let egt = tester.egt().get::<degree_celsius>();
             assert!((340.0..=350.0).contains(&egt));
         }
 
@@ -1069,7 +1144,7 @@ pub mod tests {
                 .running_apu_without_bleed_air()
                 .run(Duration::from_secs(1_000));
 
-            let egt = tester.get_egt().get::<degree_celsius>();
+            let egt = tester.egt().get::<degree_celsius>();
             assert!((350.0..=365.0).contains(&egt));
         }
 
@@ -1083,7 +1158,7 @@ pub mod tests {
                 .apu_gen_not_used()
                 .run(Duration::from_secs(1_000));
 
-            let egt = tester.get_egt().get::<degree_celsius>();
+            let egt = tester.egt().get::<degree_celsius>();
             assert!((370.0..=390.0).contains(&egt));
         }
 
@@ -1095,7 +1170,7 @@ pub mod tests {
                 .running_apu_with_bleed_air()
                 .run(Duration::from_secs(1_000));
 
-            let egt = tester.get_egt().get::<degree_celsius>();
+            let egt = tester.egt().get::<degree_celsius>();
             assert!((380.0..=405.0).contains(&egt));
         }
 
@@ -1108,7 +1183,7 @@ pub mod tests {
                 .run(Duration::from_secs(1));
 
             assert_about_eq!(
-                tester.get_egt_warning_temperature().get::<degree_celsius>(),
+                tester.egt_warning_temperature().get::<degree_celsius>(),
                 900.
             );
         }
@@ -1122,7 +1197,7 @@ pub mod tests {
                 .run(Duration::from_secs(1));
 
             assert_about_eq!(
-                tester.get_egt_warning_temperature().get::<degree_celsius>(),
+                tester.egt_warning_temperature().get::<degree_celsius>(),
                 982.
             );
         }
@@ -1134,7 +1209,7 @@ pub mod tests {
             loop {
                 tester = tester.run(Duration::from_millis(10));
 
-                assert!(tester.get_n().get::<percent>() >= 0.);
+                assert!(tester.n().get::<percent>() >= 0.);
 
                 if tester.apu_is_available() {
                     break;
@@ -1147,14 +1222,14 @@ pub mod tests {
         ) {
             let mut tester = tester_with().cooling_down_apu();
 
-            assert!(tester.get_egt().get::<degree_celsius>() > 100.);
+            assert!(tester.egt().get::<degree_celsius>() > 100.);
 
             tester = tester
                 .then_continue_with()
                 .starting_apu()
                 .run(Duration::from_secs(5));
 
-            assert!(tester.get_egt().get::<degree_celsius>() > 100.);
+            assert!(tester.egt().get::<degree_celsius>() > 100.);
         }
 
         #[test]
@@ -1162,14 +1237,14 @@ pub mod tests {
         ) {
             let mut tester = tester_with().cooling_down_apu();
 
-            let initial_egt = tester.get_egt();
+            let initial_egt = tester.egt();
 
             tester = tester
                 .then_continue_with()
                 .starting_apu()
                 .run(Duration::from_secs(5));
 
-            assert!(tester.get_egt() < initial_egt);
+            assert!(tester.egt() < initial_egt);
         }
 
         #[test]
@@ -1179,7 +1254,7 @@ pub mod tests {
             assert!(tester.start_contactor_energized());
             loop {
                 tester = tester.run(Duration::from_millis(50));
-                let n = tester.get_n().get::<percent>();
+                let n = tester.n().get::<percent>();
 
                 if n < 55. {
                     assert!(tester.start_contactor_energized());
@@ -1203,7 +1278,7 @@ pub mod tests {
 
             loop {
                 tester = tester.run(Duration::from_millis(50));
-                let n = tester.get_n().get::<percent>();
+                let n = tester.n().get::<percent>();
 
                 if n > 0. {
                     tester = tester.master_off();
@@ -1242,7 +1317,7 @@ pub mod tests {
                 tester = tester.run(Duration::from_millis(50));
                 assert_eq!(tester.start_contactor_energized(), false);
 
-                if tester.get_n().get::<percent>() == 0. {
+                if tester.n().get::<percent>() == 0. {
                     break;
                 }
             }
@@ -1276,7 +1351,7 @@ pub mod tests {
                 assert_eq!(tester.start_contactor_energized(), false);
 
                 tester = tester.run(Duration::from_secs(1));
-                n = tester.get_n().get::<percent>();
+                n = tester.n().get::<percent>();
             }
         }
 
@@ -1286,7 +1361,7 @@ pub mod tests {
 
             loop {
                 tester = tester.run(Duration::from_millis(50));
-                let n = tester.get_n().get::<percent>();
+                let n = tester.n().get::<percent>();
                 assert!((n > 99.5 && tester.apu_is_available()) || !tester.apu_is_available());
 
                 if (n - 100.).abs() < f64::EPSILON {
@@ -1317,7 +1392,7 @@ pub mod tests {
                 tester = tester.run(Duration::from_millis(50));
                 assert!(!tester.master_has_fault());
 
-                if (tester.get_n().get::<percent>() - 100.).abs() < f64::EPSILON {
+                if (tester.n().get::<percent>() - 100.).abs() < f64::EPSILON {
                     break;
                 }
             }
@@ -1328,7 +1403,7 @@ pub mod tests {
                 tester = tester.run(Duration::from_millis(50));
                 assert!(!tester.master_has_fault());
 
-                if tester.get_n().get::<percent>() == 0. {
+                if tester.n().get::<percent>() == 0. {
                     break;
                 }
             }
@@ -1463,7 +1538,7 @@ pub mod tests {
                 .then_continue_with()
                 .run(Duration::from_secs(60));
 
-            assert!((tester.get_n().get::<percent>() - 0.).abs() < f64::EPSILON);
+            assert!((tester.n().get::<percent>() - 0.).abs() < f64::EPSILON);
         }
 
         #[test]
@@ -1552,6 +1627,29 @@ pub mod tests {
             );
 
             assert!(!tester.air_intake_flap_is_apu_ecam_open());
+        }
+
+        #[test]
+        fn writes_its_state() {
+            let apu = tester().apu();
+            let mut test_writer = TestReaderWriter::new();
+            let mut writer = SimulatorWriter::new(&mut test_writer);
+
+            apu.write(&mut writer);
+
+            assert!(test_writer.len_is(12));
+            assert!(test_writer.contains_bool("APU_FLAP_ECAM_OPEN", false));
+            assert!(test_writer.contains_f64("APU_FLAP_OPEN_PERCENTAGE", 0.));
+            assert!(test_writer.contains_bool("APU_BLEED_AIR_VALVE_OPEN", false));
+            assert!(test_writer.contains_f64("APU_EGT_CAUTION", 649.));
+            assert!(test_writer.contains_f64("APU_EGT", 0.));
+            assert!(test_writer.contains_bool("ECAM_INOP_SYS_APU", false));
+            assert!(test_writer.contains_bool("APU_IS_AUTO_SHUTDOWN", false));
+            assert!(test_writer.contains_bool("APU_IS_EMERGENCY_SHUTDOWN", false));
+            assert!(test_writer.contains_bool("APU_LOW_FUEL_PRESSURE_FAULT", false));
+            assert!(test_writer.contains_f64("APU_N", 0.));
+            assert!(test_writer.contains_bool("APU_START_CONTACTOR_ENERGIZED", false));
+            assert!(test_writer.contains_f64("APU_EGT_WARNING", 682.));
         }
     }
 }
