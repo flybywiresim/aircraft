@@ -25,7 +25,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.routeIndex = 0;
         this.coRoute = "";
         this.tmpOrigin = "";
-        this.transitionAltitude = 10000;
+        this.transitionAltitude = NaN;
         this.perfTOTemp = NaN;
         this._overridenFlapApproachSpeed = NaN;
         this._overridenSlatApproachSpeed = NaN;
@@ -174,6 +174,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
         this.flightPhaseUpdateThrottler = new UpdateThrottler(800);
+        this.currentOrigin = "";
+        this.currentDestination = "";
     }
 
     Init() {
@@ -183,6 +185,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.A32NXCore.init(this._lastTime);
 
         this.dataManager = new FMCDataManager(this);
+
+        this.offlineTACore = new A32NX_TransitionAltitude();
 
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
@@ -301,6 +305,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.updateGPSMessage();
 
         this.updateDisplayedConstraints();
+
+        this.updateDepartArrive(_deltaTime);
     }
 
     //TODO: for independence introduce new simvar for current flight phase "L:A32NX_FLIGHT_PHASE_CURRENT"
@@ -1944,13 +1950,19 @@ class FMCMainDisplay extends BaseAirliners {
         return true;
     }
 
-    getTransitionAltitude() {
-        if (isFinite(this.transitionAltitude)) {
-            return this.transitionAltitude;
-        }
-
-        // TODO fetch this from the nav database once we have it in future
-        return 10000;
+    async getTransitionAltitude(departICAO) {
+        await NXApi.getAirport(departICAO)
+            .then((data) => {
+                this.transitionAltitude = data.transAlt;
+                if (this.transitionAltitude === -1) {
+                    console.log("NO DEPARTURE TA");
+                    SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
+                    return;
+                } else {
+                    SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", this.transitionAltitude);
+                    return;
+                }
+            });
     }
 
     //Needs PR Merge #3082
@@ -2566,19 +2578,42 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    setPerfApprTransAlt(s) {
-        if (!/^\d{4,5}$/.test(s)) {
+    trySetPerfApprTransAlt(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.transitionArrivalAltitude = NaN;
+            this.transitionArrivalAltitudeIsPilotEntered = false;
+            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 0);
+            return true;
+        }
+
+        let value = parseInt(s);
+        if (!isFinite(value) || !/^\d{4,5}$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
-        const v = parseInt(s);
-        if (isFinite(v) && v > 0) {
-            this.perfApprTransAlt = v;
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", v);
-            return true;
+        value = Math.round(value / 10) * 10;
+        if (value < 1000 || value > 45000) {
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
+        this.transitionArrivalAltitude = value;
+        this.transitionArrivalAltitudeIsPilotEntered = true;
+        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", value);
+        return true;
+    }
+
+    async getArrivalTransitionAltitude(arrivalICAO) {
+        await NXApi.getAirport(arrivalICAO)
+            .then((data) => {
+                this.transitionApprAltitude = data.transAlt;
+                if (this.transitionApprAltitude === -1) {
+                    SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
+                    return;
+                } else {
+                    SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", this.transitionApprAltitude);
+                    return;
+                }
+            });
     }
 
     /**
@@ -3342,6 +3377,26 @@ class FMCMainDisplay extends BaseAirliners {
     //TODO: make this util or local var?
     isAltitudeManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
+    }
+
+    // Only update when changing departure & arrival airport
+    updateDepartArrive(_deltaTime) {
+        if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident && this.offlineTACore.offline !== true) {
+            if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident && this.offlineTACore.offline !== true) {
+                const departureAirport = this.flightPlanManager.getOrigin().ident;
+                const arrivalAirport = this.flightPlanManager.getDestination().ident;
+                if (this.currentOrigin !== departureAirport) {
+                    NXDataStore.set("PLAN_ORIGIN", departureAirport);
+                    this.getTransitionAltitude(departureAirport);
+                    this.currentOrigin = departureAirport;
+                }
+                if (this.currentDestination !== arrivalAirport) {
+                    NXDataStore.set("PLAN_DESTINATION", arrivalAirport);
+                    this.getArrivalTransitionAltitude(arrivalAirport);
+                    this.currentDestination = arrivalAirport;
+                }
+            }
+        }
     }
 }
 
