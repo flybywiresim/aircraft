@@ -1955,7 +1955,6 @@ class FMCMainDisplay extends BaseAirliners {
             .then((data) => {
                 this.transitionAltitude = data.transAlt;
                 if (this.transitionAltitude === -1) {
-                    console.log("NO DEPARTURE TA");
                     SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
                     return;
                 } else {

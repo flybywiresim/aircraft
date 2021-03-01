@@ -7,81 +7,56 @@ class A32NX_TransitionAltitude {
         this.checkStart = true;
         this.checkStartSec = 0;
         this.testAirport = "";
-        this.trySendRequest();
+        this.tryCheckAPI();
     }
 
     update(_deltaTime, _core) {
         if (this.offline) {
             this.offlineTransAlt();
         }
-        this.tryCheckAPI(_deltaTime);
     }
 
-    async trySendRequest() {
-        await NXApi.getAirport("KLAX")
-            .then((data) => {
-                this.testAirport = data.transAlt;
-            });
-    }
-
-    tryCheckAPI(_deltaTime) {
-        if (this.offline === false && this.checkStart === true) {
-            this.checkStartSec += _deltaTime;
-        }
-        if ((this.checkStartSec >= 60 * 1000) && (this.testAirport === "")) {
+    tryCheckAPI() {
+        if (!NXApi.hasTelexConnection()) {
             this.offline = true;
-            this.checkStart = false;
-        } else if ((this.checkStartSec >= 60 * 1000) && (this.testAirport !== "")) {
-            this.offline = false;
-            this.checkStart = false;
-            this.checkStartSec = 0;
         }
     }
 
     offlineTransAlt() {
-        const Departure = NXDataStore.get("PLAN_ORIGIN", "");
-        const Arrival = NXDataStore.get("PLAN_DESTINATION", "");
-        if (Departure !== "" && Arrival !== "") {
-            if (this.currentDeparture !== Departure) {
-                this.departureLogic(Departure);
-                this.currentDeparture = Departure;
+        const Origin = NXDataStore.get("PLAN_ORIGIN", "");
+        const Destination = NXDataStore.get("PLAN_DESTINATION", "");
+        if (Origin !== "" && Destination !== "") {
+            if (this.currentDeparture !== Origin) {
+                this.transitionAltitude(Origin);
+                this.currentDeparture = Origin;
             }
-            if (this.currentArrival !== Arrival) {
-                this.arrivalLogic(Arrival);
-                this.currentArrival = Arrival;
+            if (this.currentArrival !== Destination) {
+                this.transitionAltitude(Destination);
+                this.currentArrival = Destination;
             }
         }
     }
 
-    departureLogic(airport) {
-        const airportDepart_1 = airport.substr(0,1);
-        const airportDepart_2 = airport.substr(0,2);
-        if (airportDepart_1 === "K" || airportDepart_1 === "C") {
-            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000); // Canada & USA fixed to 18,000ft
-        } else if (airportDepart_1 === "Y") {
-            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 10000); // SPA region only have 10,000ft & 11,000ft. But 10,000ft is more so using that
-        } else {
-            const departure = airportData.find(airportData => airportData.icao === airportDepart_2);
-            if (departure.icao !== airportDepart_2) {
-                SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000); // if can't find on list, default value to 18,000ft
-            } else {
-                SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", departure.transAlt);
-            }
+    transitionAltitude(airport, phase) {
+        let phaseTransAlt = "";
+        if (phase === "takeoff") {
+            phaseTransAlt = "L:AIRLINER_TRANS_ALT";
         }
-    }
-    arrivalLogic(airport) {
-        const airportArrive_1 = airport.substr(0,1);
-        const airportArrive_2 = airport.substr(0,2);
-        if (airportArrive_1 === "K" || airportArrive_1 === "C") {
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000); // Canada & USA fixed to 18,000ft
-        } else if (airportArrive_1 === "Y") {
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 10000); // SPA region only have 10,000ft & 11,000ft. But 10,000ft is more so using that
+        if (phase === "approach") {
+            phaseTransAlt = "L:AIRLINER_APPR_TRANS_ALT";
+        }
+        const airportFirstLetter = airport.substr(0,1);
+        if (airportFirstLetter === "K" || airportFirstLetter === "C") {
+            SimVar.SetSimVarValue(phaseTransAlt, "Number", 18000); // Canada & USA fixed to 18,000ft
+        } else if (airportFirstLetter === "Y") {
+            SimVar.SetSimVarValue(phaseTransAlt, "Number", 10000); // Belgium region only have 10,000ft & 11,000ft. But 10,000ft is more so using that
         } else {
-            const arrival = airportData.find(airportData => airportData.icao === airportArrive_2);
-            if (arrival.icao !== airportArrive_2) {
-                SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000); // if can't find on list, default value to 18,000ft
+            const airportICAO = airport.substr(0,2);
+            const airportInfo = airportData.find(airportData => airportData.icao === airportICAO);
+            if (airportInfo.icao !== airportICAO) {
+                SimVar.SetSimVarValue(phaseTransAlt, "Number", 18000); // if can't find on list, default value to 18,000ft
             } else {
-                SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", arrival.transAlt);
+                SimVar.SetSimVarValue(phaseTransAlt, "Number", airportInfo.transAlt);
             }
         }
     }
