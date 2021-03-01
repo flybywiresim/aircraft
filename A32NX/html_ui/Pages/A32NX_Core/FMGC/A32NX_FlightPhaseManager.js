@@ -271,11 +271,6 @@ class A32NX_FlightPhase_Approach {
             return true;
         }
 
-        if (fl < _fmc.cruiseFlightLevel && Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100 > fl) {
-            this.nextFmgcFlightPhase = FmgcFlightPhases.CLIMB;
-            return true;
-        }
-
         return this.landingConfirmation.write(Simplane.getAltitudeAboveGround() < 1.5 || !_fmc.isAnEngineOn(), _deltaTime);
     }
 }
