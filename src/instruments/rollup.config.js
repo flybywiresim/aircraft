@@ -40,6 +40,10 @@ const extraInstruments = [
         name: 'door-page',
         path: 'SD/Pages/Door',
     },
+    {
+        name: 'fctl-page',
+        path: 'SD/Pages/Fctl',
+    },
 ];
 
 function makePostcssPluginList(instrumentPath) {
