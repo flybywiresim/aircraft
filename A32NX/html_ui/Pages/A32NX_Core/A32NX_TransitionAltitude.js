@@ -46,7 +46,7 @@ class A32NX_TransitionAltitude {
         if (airportFirstLetter === "K" || airportFirstLetter === "C") {
             SimVar.SetSimVarValue(phaseTransAlt, "Number", 18000); // Canada & USA fixed to 18,000ft
         } else if (airportFirstLetter === "Y") {
-            SimVar.SetSimVarValue(phaseTransAlt, "Number", 10000); // Belgium region only have 10,000ft & 11,000ft. But 10,000ft is more so using that
+            SimVar.SetSimVarValue(phaseTransAlt, "Number", 10000); // Belgium region only have 10,000ft & 11,000ft. But 10,000ft is more so using that.
         } else {
             const airportICAO = airport.substr(0,2);
             const airportInfo = airportData.find(airportData => airportData.icao === airportICAO);
