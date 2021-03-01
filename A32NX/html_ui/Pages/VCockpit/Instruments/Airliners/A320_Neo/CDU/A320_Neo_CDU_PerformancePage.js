@@ -675,7 +675,7 @@ class CDUPerformancePage {
         }
         mcdu.onLeftInput[1] = (value) => {
             if (mcdu.tryUpdateCostIndex(value)) {
-                CDUPerformancePage.ShowCLBPage(mcdu);
+                CDUPerformancePage.ShowDESPage(mcdu);
             }
         };
         mcdu.rightInputDelay[5] = () => {
