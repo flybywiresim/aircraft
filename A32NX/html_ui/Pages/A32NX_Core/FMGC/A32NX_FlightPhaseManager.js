@@ -107,7 +107,6 @@ class A32NX_FlightPhaseManager {
             fcuSelFl > fl
         ) {
             this.changeFlightPhase(FmgcFlightPhases.CLIMB);
-            return true;
         }
     }
 
@@ -220,6 +219,7 @@ class A32NX_FlightPhase_Descent {
 
     init(_fmc) {
         this.nextFmgcFlightPhase = FmgcFlightPhases.APPROACH;
+        _fmc.cruiseFlightLevel = undefined;
     }
 
     check(_deltaTime, _fmc) {

@@ -73,10 +73,13 @@ class FMCMainDisplay extends BaseAirliners {
         this._debug = 0;
         this._checkFlightPlan = 0;
         this.thrustReductionAltitude = NaN;
+        this.thrustReductionAltitudeGoaround = NaN;
         this.thrustReductionAltitudeIsPilotEntered = false;
         this.accelerationAltitude = NaN;
+        this.accelerationAltitudeGoaround = NaN;
         this.accelerationAltitudeIsPilotEntered = false;
         this.engineOutAccelerationAltitude = NaN;
+        this.engineOutAccelerationAltitudeGoaround = NaN;
         this.engineOutAccelerationAltitudeIsPilotEntered = false;
 
         this._windDirections = {
@@ -737,26 +740,22 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
             if (this.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
-                const eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool");
-                const eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool");
-
-                let maxSpeed;
-                let speed;
-                const gaInitSpeed = SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number");
-                const gaAppSpeed = SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number");
-
-                if (eng1Running && eng2Running) {
-                    maxSpeed = this.computedVls + 25;
-                } else {
-                    maxSpeed = this.computedVls + 15;
-                }
-
-                speed = Math.max(gaInitSpeed, gaAppSpeed);
-                speed = Math.min(speed, maxSpeed);
-                SimVar.SetSimVarValue("L:A32NX_TOGA_SPEED", "number", speed);
-
                 if (this.isAirspeedManaged()) {
-                    this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
+                    if (Simplane.getAltitude() > this.accelerationAltitudeGoaround) {
+                        this.setAPManagedSpeed(this.computedVgd, Aircraft.A320_NEO);
+                    } else {
+                        const speed = Math.min(
+                            this.computedVls + (this.isAllEngineOn() ? 25 : 15),
+                            Math.max(
+                                SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number"),
+                                SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number")
+                            )
+                        );
+
+                        SimVar.SetSimVarValue("L:A32NX_TOGA_SPEED", "number", speed);
+
+                        this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
+                    }
                 }
 
                 if (apLogicOn) {
@@ -1983,11 +1982,11 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    trySetEngineOutAccelerationGoaround(s) {
+    trySetengineOutAccelerationAltitudeGoaround(s) {
         const engOutAcc = parseInt(s);
         if (isFinite(engOutAcc)) {
-            this.engineOutAccelerationGoaround = engOutAcc;
-            SimVar.SetSimVarValue("L:AIRLINER_ENG_OUT_ACC_ALT_GOAROUND", "Number", this.engineOutAccelerationGoaround);
+            this.engineOutAccelerationAltitudeGoaround = engOutAcc;
+            SimVar.SetSimVarValue("L:AIRLINER_ENG_OUT_ACC_ALT_GOAROUND", "Number", this.engineOutAccelerationAltitudeGoaround);
             return true;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
