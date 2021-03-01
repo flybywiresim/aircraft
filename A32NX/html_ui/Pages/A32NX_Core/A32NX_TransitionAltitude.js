@@ -4,9 +4,6 @@ class A32NX_TransitionAltitude {
         this.currentDeparture = "";
         this.currentArrival = "";
         this.offline = false;
-        this.checkStart = true;
-        this.checkStartSec = 0;
-        this.testAirport = "";
         this.tryCheckAPI();
     }
 
@@ -27,11 +24,11 @@ class A32NX_TransitionAltitude {
         const Destination = NXDataStore.get("PLAN_DESTINATION", "");
         if (Origin !== "" && Destination !== "") {
             if (this.currentDeparture !== Origin) {
-                this.transitionAltitude(Origin);
+                this.transitionAltitude(Origin, "takeoff");
                 this.currentDeparture = Origin;
             }
             if (this.currentArrival !== Destination) {
-                this.transitionAltitude(Destination);
+                this.transitionAltitude(Destination, "arrival");
                 this.currentArrival = Destination;
             }
         }
@@ -42,7 +39,7 @@ class A32NX_TransitionAltitude {
         if (phase === "takeoff") {
             phaseTransAlt = "L:AIRLINER_TRANS_ALT";
         }
-        if (phase === "approach") {
+        if (phase === "arrival") {
             phaseTransAlt = "L:AIRLINER_APPR_TRANS_ALT";
         }
         const airportFirstLetter = airport.substr(0,1);
