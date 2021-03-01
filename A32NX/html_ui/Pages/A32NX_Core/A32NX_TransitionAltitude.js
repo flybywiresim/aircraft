@@ -11,7 +11,7 @@ class A32NX_TransitionAltitude {
     }
 
     update(_deltaTime, _core) {
-        if (this.offline === true) {
+        if (this.offline) {
             this.offlineTransAlt();
         }
         this.tryCheckAPI(_deltaTime);
