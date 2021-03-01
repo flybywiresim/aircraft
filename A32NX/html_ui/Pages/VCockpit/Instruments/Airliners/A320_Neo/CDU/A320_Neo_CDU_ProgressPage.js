@@ -26,7 +26,7 @@ class CDUProgressPage {
         const flMax = mcdu.getMaxFlCorrected();
         const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
         let flCrz = "-----";
-        switch (Simplane.getCurrentFlightPhase()) {
+        switch (mcdu.currentFlightPhase) {
             case FmgcFlightPhases.PREFLIGHT:
             case FmgcFlightPhases.TAKEOFF: {
                 if (mcdu._cruiseEntered) {

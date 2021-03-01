@@ -2291,7 +2291,7 @@ var A320_Neo_UpperECAM;
                 this.divMain.appendChild(fuelOnBoardDiv);
             }
 
-            this.setThrottle(false, 0, ThrottleMode.UNKNOWN, true, Simplane.getCurrentFlightPhase());
+            this.setThrottle(false, 0, ThrottleMode.UNKNOWN, true, SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number"));
             this.setFlexTemperature(false, 0, true);
             this.setFuelOnBoard(0, true);
         }
@@ -2361,7 +2361,7 @@ var A320_Neo_UpperECAM;
          * @param _grounded {boolean}
          * @param _phase {FlightPhase}
          */
-        setThrottle(_active, _value = 0, _mode = ThrottleMode.UNKNOWN, _grounded = true, _phase = Simplane.getCurrentFlightPhase()) {
+        setThrottle(_active, _value = 0, _mode = ThrottleMode.UNKNOWN, _grounded = true, _phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number")) {
             if (_active !== this.currentThrottleIsActive || _value !== this.currentThrottleValue || _mode !== this.currentThrottleMode || _grounded !== this.currentGrounded || this.currentStart || _phase != this.currentPhase) {
                 this.currentThrottleIsActive = _active;
                 this.currentThrottleValue = _value;
