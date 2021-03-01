@@ -122,7 +122,7 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
 
     tabs = [
        'Overview',
-       'Loadsheet',
+       'OFP',
        'Fuel',
        'Payload',
     ];
