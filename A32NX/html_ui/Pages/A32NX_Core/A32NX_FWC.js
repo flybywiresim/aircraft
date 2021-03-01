@@ -329,16 +329,6 @@ class A32NX_FWC {
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
         }
 
-        // Exit when:
-        // - Landing gear down
-        // - Glide slope captured
-        const landingGearIsDown = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
-        const glideSlopeCaptured = SimVar.GetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool") === 1;
-        if (landingGearIsDown || glideSlopeCaptured) {
-            return;
-        }
-
-        // Use the constraint altitude if provided otherwise use selected altitude lock value
         const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
         const currentFCUAltitude = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
         const targetAltitude = currentAltitudeConstraint && !this.hasAltitudeConstraint() ? currentAltitudeConstraint : currentFCUAltitude;
@@ -355,6 +345,15 @@ class A32NX_FWC {
             this._wasReach200ft = false;
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
+            return;
+        }
+
+        // Exit when:
+        // - Landing gear down
+        // - Glide slope captured
+        const landingGearIsDown = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
+        const glideSlopeCaptured = SimVar.GetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool") === 1;
+        if (landingGearIsDown || glideSlopeCaptured) {
             return;
         }
 
