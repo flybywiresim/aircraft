@@ -1,6 +1,6 @@
 /*
  * A32NX
- * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  */
 
 import { useState } from 'react/cjs/react.production.min.js';
-import { getSimVar, useInteractionEvent } from '../util.mjs';
+import { getSimVar, useInteractionEvent } from '../util.js';
 import { EngPage } from './Pages/Eng.jsx';
 import { BleedPage } from './Pages/Bleed.jsx';
 import { PressPage } from './Pages/Press.jsx';
@@ -26,7 +26,7 @@ import { HydPage } from './Pages/Hyd.jsx';
 import { FuelPage } from './Pages/Fuel.jsx';
 import { ApuPage } from './Pages/Apu.jsx';
 import { CondPage } from './Pages/Cond/Cond.jsx';
-import { DoorPage } from './Pages/Door/Door.jsx';
+import { DoorPage } from './Pages/Door/Door.tsx';
 import { WheelPage } from './Pages/Wheel.jsx';
 import { FctlPage } from './Pages/Fctl.jsx';
 

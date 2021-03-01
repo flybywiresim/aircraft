@@ -1,6 +1,6 @@
 /*
  * A32NX
- * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import {
     useInteractionEvent,
     useUpdate,
     getSimVar,
-} from '../util.mjs';
+} from '../util.js';
 import './style.scss';
 import { PagesContainer } from './PagesContainer.jsx';
 import { StatusArea } from './StatusArea/StatusArea.jsx';

@@ -1,6 +1,6 @@
 /*
  * A32NX
- * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 import './StatusArea.scss';
 import { Text } from '../Text/Text.jsx';
-import { useGlobalVar, getSimVar } from '../../util.mjs';
+import { useGlobalVar, getSimVar } from '../../util.js';
 
 export const StatusArea = () => {
     const gw = getSimVar('TOTAL WEIGHT', 'kg');
