@@ -33,7 +33,6 @@ export const CondPage = () => {
     const [cockpitRotateTemp, setCockpitRotateTemp] = useState(0);
     useEffect(() => {
         const rotate : number = gaugeOffset + cockpitSelectedTemp;
-        console.log(`Rotate is now ${rotate}`);
         setCockpitRotateTemp(rotate);
     }, [cockpitSelectedTemp]);
 
