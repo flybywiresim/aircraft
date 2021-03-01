@@ -113,7 +113,6 @@
 1. [CDU] RADNAV - A manual VOR/ADF ident input is now permament - @St54Kevin
 1. [CDU] RADNAV - ID/Frequency fields now format to correct font size depending on pilot input - @St54Kevin
 1. [CDU] RADNAV - All fields now have correct format display and input restricitons - @St54Kevin
-1. [MISC] Add custom loading tips - @Armankir (Arman#5297)
 1. [ECAM] Refactor COND/OXY page to use new useSimVars - @RichardPilbery (tricky_dicky[Z+0]#3571)
 1. [LIGHTS] Added ambient light to the cockpit - @ImenesFBW (Imenes)
 1. [MCDU] INIT-B page - Fixed Trip Wind value handling - @SergeySoprykin (SergeyS)
