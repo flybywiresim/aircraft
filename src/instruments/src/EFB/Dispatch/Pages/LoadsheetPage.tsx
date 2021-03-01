@@ -28,7 +28,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     const ref = useRef(null);
 
 	const [fontSize, setFontSize] = useState(14);
-	const [imageSize, setImageSize] = useState(1);
+	const [imageSize, setImageSize] = useState(60);
 
 
     const mouseDownHandler = (event) => {
@@ -51,26 +51,44 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
 
 	const fontIncreaseHandler = function () {
 		let cFontSize =  fontSize;
-		if(cFontSize<22){
+		let cImageSize =  imageSize;
+
+		if(cFontSize<26){
 			cFontSize+=2;
+			cImageSize+=5;
 			handleScaling(cFontSize);
+			setImageSize(cImageSize)
 		}
 	};
 
 	const fontDecreaseHandler = function () {
 		let cFontSize =  fontSize;
+		let cImageSize =  imageSize;
+
 		if(cFontSize>14){
 			cFontSize-=2;
+			cImageSize-=5;
 			handleScaling(cFontSize);
+			setImageSize(cImageSize)
 		}
 	};
 
 	const handleScaling = (cFontSize) => {
 		const pLoadsheet = ref.current.firstChild;
+		const pImages = ref.current.getElementsByTagName("img");
+
+		
+
 		if(pLoadsheet){
 			pLoadsheet.style.fontSize = `${cFontSize}px`;
 			pLoadsheet.style.lineHeight = `${cFontSize}px`;
 			setFontSize(cFontSize);
+			if(pImages) {
+				for(let image of pImages) {
+					console.log(image);
+					image.style.width = `${imageSize}%`	
+				}
+			}
 		}
 	}
 
@@ -91,7 +109,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
 					</div>
 					<div
 						ref={ref}
-						className="loadsheet-container show-scrollbar overflow-y-scroll"
+						className="loadsheet-container grabbable show-scrollbar overflow-y-scroll"
 						onMouseDown={mouseDownHandler}
 						dangerouslySetInnerHTML={{__html: props.loadsheet}} />
 				</>
