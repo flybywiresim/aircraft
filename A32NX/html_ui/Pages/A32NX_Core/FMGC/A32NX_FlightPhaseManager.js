@@ -111,18 +111,19 @@ class A32NX_FlightPhaseManager {
         }
     }
 
-    changeFlightPhase(_fmgcFlightPhase) {
-        console.log("FMGC Flight Phase: " + this.fmc.currentFlightPhase + " => " + _fmgcFlightPhase);
-        this.fmc.currentFlightPhase = _fmgcFlightPhase;
-        SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", _fmgcFlightPhase);
+    changeFlightPhase(_fmgcNewFlightPhase) {
+        const _fmgcCurFlightPhase = this.fmc.currentFlightPhase;
+        console.log("FMGC Flight Phase: " + _fmgcCurFlightPhase + " => " + _fmgcNewFlightPhase);
+        this.fmc.currentFlightPhase = _fmgcNewFlightPhase;
+        SimVar.SetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number", _fmgcNewFlightPhase);
         // Updating old SimVar to ensure downwards compatibility
-        SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", (_fmgcFlightPhase < FmgcFlightPhases.TAKEOFF ? FmgcFlightPhases.PREFLIGHT : _fmgcFlightPhase + 1));
+        SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", (_fmgcNewFlightPhase < FmgcFlightPhases.TAKEOFF ? FmgcFlightPhases.PREFLIGHT : _fmgcNewFlightPhase + 1));
 
-        this.activeFlightPhase = this.flightPhases[_fmgcFlightPhase];
+        this.activeFlightPhase = this.flightPhases[_fmgcNewFlightPhase];
 
         this.activeFlightPhase.init(this.fmc);
 
-        this.fmc.onFlightPhaseChanged();
+        this.fmc.onFlightPhaseChanged(_fmgcCurFlightPhase, _fmgcNewFlightPhase);
 
         this.checkFlightPhase();
     }

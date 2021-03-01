@@ -306,86 +306,136 @@ class FMCMainDisplay extends BaseAirliners {
         this.updateDisplayedConstraints();
     }
 
-    onFlightPhaseChanged() {
+    /**
+     * This method is called by the FlightPhaseManager after a flight phase change
+     * This method initializes AP States, initiates CDUPerformancePage changes and other set other required states
+     * @param _lastFlightPhase {FmgcFlightPhases} Previous FmgcFlightPhase
+     * @param _curFlightPhase {FmgcFlightPhases} New FmgcFlightPhase
+     */
+    onFlightPhaseChanged(_lastFlightPhase, _curFlightPhase) {
         this.updateConstraints();
+
         SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
-        if (this.currentFlightPhase === FmgcFlightPhases.TAKEOFF) {
-            this._destDataChecked = false;
-            if (this.page.Current === this.page.PerformancePageTakeoff) {
-                CDUPerformancePage.ShowTAKEOFFPage(this);
-            }
-        } else if (this.currentFlightPhase === FmgcFlightPhases.CLIMB) {
-            SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", -1);
-            SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", -1);
-            SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", -1);
-            this._destDataChecked = false;
-            if (this.page.Current === this.page.PerformancePageTakeoff) {
-                CDUPerformancePage.ShowCLBPage(this);
-            }
-            let preSelectedClbSpeed = this.preSelectedClbSpeed;
-            if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
-                preSelectedClbSpeed = this.computedVgd;
-            }
-            if (isFinite(preSelectedClbSpeed)) {
-                this.setAPSelectedSpeed(preSelectedClbSpeed, Aircraft.A320_NEO);
-                SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
-            }
-            SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 0);
-        } else if (this.currentFlightPhase === FmgcFlightPhases.CRUISE) {
-            if (this.page.Current === this.page.PerformancePageClb) {
-                CDUPerformancePage.ShowCRZPage(this);
-            }
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
-            if (isFinite(this.preSelectedCrzSpeed)) {
-                this.setAPSelectedSpeed(this.preSelectedCrzSpeed, Aircraft.A320_NEO);
-                SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
-            }
-        } else if (this.currentFlightPhase === FmgcFlightPhases.DESCENT) {
-            if (this.page.Current === this.page.PerformancePageCrz) {
-                CDUPerformancePage.ShowDESPage(this);
-            }
-            this.checkDestData();
-            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
-            if (isFinite(this.preSelectedDesSpeed)) {
-                this.setAPSelectedSpeed(this.preSelectedDesSpeed, Aircraft.A320_NEO);
-                SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
-            }
-        } else if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
-            if (this.page.Current === this.page.PerformancePageDes || this.page.Current === this.page.PerformancePageGoAround) {
-                CDUPerformancePage.ShowAPPRPage(this);
-            }
-            this.connectIls();
-            this.flightPlanManager.activateApproach();
-            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-            this.checkDestData();
-        } else if (this.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_GATRK_MODE", "bool", 0);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
-            //delete override logic when we have valid nav data -aka goaround path- after goaround!
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool", 0);
 
-            if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 1) {
-                SimVar.SetSimVarValue("K:AP_LOC_HOLD_ON", "number", 1); // Turns AP localizer hold !!ON/ARMED!! and glide-slope hold mode !!OFF!!
-                SimVar.SetSimVarValue("K:AP_LOC_HOLD_OFF", "number", 1); // Turns !!OFF!! localizer hold mode
-                SimVar.SetSimVarValue("K:AUTOPILOT_OFF", "number", 1);
-                SimVar.SetSimVarValue("K:AUTOPILOT_ON", "number", 1);
-                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_APPR_MODE", "bool", 0);
-                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool", 0);
-            } else if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 0 && SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "boolean") === 1) {
-                SimVar.SetSimVarValue("AP_APR_HOLD_OFF", "number", 1);
-                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_APPR_MODE", "bool", 0);
-                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool", 0);
+        switch (_curFlightPhase) {
+            case FmgcFlightPhases.TAKEOFF: {
+                this._destDataChecked = false;
+
+                if (this.page.Current === this.page.PerformancePageTakeoff) {
+                    CDUPerformancePage.ShowTAKEOFFPage(this);
+                }
+
+                break;
             }
 
-            const currentHeading = Simplane.getHeadingMagnetic();
-            Coherent.call("HEADING_BUG_SET", 1, currentHeading);
+            case FmgcFlightPhases.CLIMB: {
+                //TODO: when react PFD move vspeed reset to done flight phase (currently needed to keep the PFD working)
+                SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", -1);
+                SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", -1);
+                SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", -1);
 
-            CDUPerformancePage.ShowGOAROUNDPage(this);
+                this._destDataChecked = false;
+
+                if (this.canShowNextPerfPage(_lastFlightPhase)) {
+                    CDUPerformancePage.ShowCLBPage(this);
+                }
+
+                let preSelectedClbSpeed = this.preSelectedClbSpeed;
+
+                if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
+                    preSelectedClbSpeed = this.computedVgd;
+                }
+
+                if (isFinite(preSelectedClbSpeed)) {
+                    this.setAPSelectedSpeed(preSelectedClbSpeed, Aircraft.A320_NEO);
+                    SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
+                }
+
+                SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 0);
+
+                break;
+            }
+
+            case FmgcFlightPhases.CRUISE: {
+                if (this.canShowNextPerfPage(_lastFlightPhase)) {
+                    CDUPerformancePage.ShowCRZPage(this);
+                }
+
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
+                Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+
+                if (isFinite(this.preSelectedCrzSpeed)) {
+                    this.setAPSelectedSpeed(this.preSelectedCrzSpeed, Aircraft.A320_NEO);
+                    SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
+                }
+
+                break;
+            }
+
+            case FmgcFlightPhases.DESCENT: {
+                if (this.canShowNextPerfPage(_lastFlightPhase)) {
+                    CDUPerformancePage.ShowDESPage(this);
+                }
+
+                this.checkDestData();
+
+                Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+
+                if (isFinite(this.preSelectedDesSpeed)) {
+                    this.setAPSelectedSpeed(this.preSelectedDesSpeed, Aircraft.A320_NEO);
+                    SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
+                }
+
+                break;
+            }
+
+            case FmgcFlightPhases.APPROACH: {
+                if (this.canShowNextPerfPage(_lastFlightPhase)) {
+                    CDUPerformancePage.ShowAPPRPage(this);
+                }
+
+                this.connectIls();
+                this.flightPlanManager.activateApproach();
+
+                Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
+
+                this.checkDestData();
+
+                break;
+            }
+
+            case FmgcFlightPhases.GOAROUND: {
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_GATRK_MODE", "bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
+                //delete override logic when we have valid nav data -aka goaround path- after goaround!
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool", 0);
+
+                if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 1) {
+                    SimVar.SetSimVarValue("K:AP_LOC_HOLD_ON", "number", 1); // Turns AP localizer hold !!ON/ARMED!! and glide-slope hold mode !!OFF!!
+                    SimVar.SetSimVarValue("K:AP_LOC_HOLD_OFF", "number", 1); // Turns !!OFF!! localizer hold mode
+                    SimVar.SetSimVarValue("K:AUTOPILOT_OFF", "number", 1);
+                    SimVar.SetSimVarValue("K:AUTOPILOT_ON", "number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_APPR_MODE", "bool", 0);
+                    SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool", 0);
+                } else if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 0 && SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "boolean") === 1) {
+                    SimVar.SetSimVarValue("AP_APR_HOLD_OFF", "number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_APPR_MODE", "bool", 0);
+                    SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool", 0);
+                }
+
+                const currentHeading = Simplane.getHeadingMagnetic();
+                Coherent.call("HEADING_BUG_SET", 1, currentHeading);
+
+                if (this.canShowNextPerfPage(_lastFlightPhase)) {
+                    CDUPerformancePage.ShowGOAROUNDPage(this);
+                }
+
+                break;
+            }
         }
     }
 
@@ -2987,6 +3037,25 @@ class FMCMainDisplay extends BaseAirliners {
         this.addNewMessage(NXSystemMessages.checkToData, (mcdu) => {
             return mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked && mcdu._toFlexChecked;
         });
+    }
+
+    /**
+     * Evaluates whether or not the shown performance page can be updated with the one corresponding to the new flight phase
+     * This function is in place to ensure only switching the performance page when the one currently showing is the one linked to the previous flight phase
+     * @param _lastFlightPhase {FmgcFlightPhases}
+     * @returns {boolean}
+     */
+    canShowNextPerfPage(_lastFlightPhase) {
+        switch (_lastFlightPhase) {
+            case FmgcFlightPhases.TAKEOFF: return this.page.Current === this.page.PerformancePageTakeoff;
+            case FmgcFlightPhases.CLIMB: return this.page.Current === this.page.PerformancePageClb;
+            case FmgcFlightPhases.CRUISE: return this.page.Current === this.page.PerformancePageCrz;
+            case FmgcFlightPhases.DESCENT: return this.page.Current === this.page.PerformancePageDes;
+            case FmgcFlightPhases.APPROACH: return this.page.Current === this.page.PerformancePageAppr;
+            case FmgcFlightPhases.GOAROUND: return this.page.Current === this.page.PerformancePageGoAround;
+
+            default: return false;
+        }
     }
 
     /* END OF MCDU GET/SET METHODS */
