@@ -1149,8 +1149,7 @@ pub mod tests {
         }
 
         #[test]
-        /// Komp: Bleed adds even more. Not sure how much, 30-40 degrees as a rough guess.
-        fn running_apu_supplying_bleed_air_increases_egt_by_30_to_40_degrees_to_between_370_to_390_degrees(
+        fn running_apu_supplying_bleed_air_increases_egt_by_85_to_95_degrees_to_between_425_to_445_degrees(
         ) {
             let tester = tester_with()
                 .running_apu_with_bleed_air()
@@ -1159,19 +1158,18 @@ pub mod tests {
                 .run(Duration::from_secs(1_000));
 
             let egt = tester.egt().get::<degree_celsius>();
-            assert!((370.0..=390.0).contains(&egt));
+            assert!((425.0..=445.0).contains(&egt));
         }
 
         #[test]
-        /// Komp: Bleed adds even more. Not sure how much, 30-40 degrees as a rough guess.
-        fn running_apu_supplying_bleed_air_and_electrical_increases_egt_to_between_380_to_405_degrees(
+        fn running_apu_supplying_bleed_air_and_electrical_increases_egt_to_between_435_to_460_degrees(
         ) {
             let tester = tester_with()
                 .running_apu_with_bleed_air()
                 .run(Duration::from_secs(1_000));
 
             let egt = tester.egt().get::<degree_celsius>();
-            assert!((380.0..=405.0).contains(&egt));
+            assert!((435.0..=460.0).contains(&egt));
         }
 
         #[test]
