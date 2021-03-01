@@ -58,25 +58,22 @@ var A320_Neo_LowerECAM_APU;
             const showApuData = shouldShowApuData();
             let allParametersWithinAcceptableRange = false;
             if (showApuData) {
-                const load = Math.round(SimVar.GetSimVarValue("L:APU_LOAD_PERCENT","percent"));
-                this.APUGenLoad.textContent = load;
-                const loadWithinNormalRange = load <= 100;
+                this.APUGenLoad.textContent = Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_LOAD", "Percent"));
+                const loadWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_LOAD_NORMAL", "Bool");
                 this.APUGenLoad.classList.toggle("APUGenParamValue", loadWithinNormalRange);
                 this.APUGenLoad.classList.toggle("APUGenParamValueWarn", !loadWithinNormalRange);
 
-                const volts = SimVar.GetSimVarValue("L:A32NX_APU_GEN_VOLTAGE","Volts");
-                this.APUVolts.textContent = volts;
-                const voltsWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_VOLTAGE_NORMAL", "Bool");
-                this.APUVolts.classList.toggle("APUGenParamValue", voltsWithinNormalRange);
-                this.APUVolts.classList.toggle("APUGenParamValueWarn", !voltsWithinNormalRange);
+                this.APUVolts.textContent = Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_POTENTIAL", "Volts"));
+                const potentialWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_POTENTIAL_NORMAL", "Bool");
+                this.APUVolts.classList.toggle("APUGenParamValue", potentialWithinNormalRange);
+                this.APUVolts.classList.toggle("APUGenParamValueWarn", !potentialWithinNormalRange);
 
-                const hertz = SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ","Hertz");
-                this.APUFrequency.textContent = Math.round(hertz);
-                const hertzWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_APU_GEN_FREQ_NORMAL", "Bool");
-                this.APUFrequency.classList.toggle("APUGenParamValue", hertzWithinNormalRange);
-                this.APUFrequency.classList.toggle("APUGenParamValueWarn", !hertzWithinNormalRange);
+                this.APUFrequency.textContent = Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_FREQUENCY", "Hertz"));
+                const frequencyWithinNormalRange = SimVar.GetSimVarValue("L:A32NX_ELEC_APU_GEN_1_FREQUENCY_NORMAL", "Bool");
+                this.APUFrequency.classList.toggle("APUGenParamValue", frequencyWithinNormalRange);
+                this.APUFrequency.classList.toggle("APUGenParamValueWarn", !frequencyWithinNormalRange);
 
-                allParametersWithinAcceptableRange = loadWithinNormalRange && voltsWithinNormalRange && hertzWithinNormalRange;
+                allParametersWithinAcceptableRange = loadWithinNormalRange && potentialWithinNormalRange && frequencyWithinNormalRange;
             }
 
             this.APUGenTitle.classList.toggle("APUGenTitle", showApuData && allParametersWithinAcceptableRange);
@@ -85,14 +82,13 @@ var A320_Neo_LowerECAM_APU;
 
             toggleVisibility(this.APUGenInfo, showApuData);
 
-            const available = SimVar.GetSimVarValue("L:A32NX_APU_AVAILABLE", "Bool");
+            const available = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool");
             toggleVisibility(this.APUAvail, available);
 
-            const apuGenOnline = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "Bool") === 1;
-            const externalPowerOff = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0;
-            // This logic is consistently faulty in the JavaScript code: of course it should also take into
-            // account if engine generators are supplying electricity. We'll fix this when we create the electrical system.
-            toggleVisibility(this.APUGenAvailArrow, available && apuGenOnline && externalPowerOff);
+            const apuGeneratorContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_3XS_IS_CLOSED", "Bool");
+            const atLeastOneBusTieContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_11XU1_IS_CLOSED", "Bool") ||
+                !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_11XU2_IS_CLOSED", "Bool");
+            toggleVisibility(this.APUGenAvailArrow, apuGeneratorContactorClosed && atLeastOneBusTieContactorClosed);
 
             // ADIRS1 on NAV is the normal operation situation.
             // Komp: If you switch the displays to DMC 3, then ADIRU 3 is the one providing the data.
@@ -223,7 +219,7 @@ var A320_Neo_LowerECAM_APU;
         // Once ELEC is implemented, this depends on the ECB being powered or not.
         // The ECB will be powered when the MASTER SW is on and unpower when MASTER SW is off, N = 0, and the flap is closed.
         const apuFlapOpen = SimVar.GetSimVarValue("L:A32NX_APU_FLAP_ECAM_OPEN", "Bool");
-        const apuMasterSwitch = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool");
+        const apuMasterSwitch = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
         return apuMasterSwitch || getN() > 0 || apuFlapOpen;
     }
 
