@@ -103,6 +103,7 @@
 1. [MISC] Better brake cooling simulation (with and without brake fan) - @Inexorable92 (Inexorable)
 1. [MISC] Added registration decal - @tyler58546(tyler58546), @DarkOfNova (DarkOfNova)
 1. [CDU] Fix ILS frequencies not autofilling - @pareil6 (pareil6)
+1. [LIGHTS] Improved Exterior Lights - @Snapmatics (Harry)
 1. [SOUND] Added custom sounds to multiple buttons and Throttle Lever Reverse Locks - @ImenesFBW (Imenes)
 1. [MCDU] Added custom MCDU font - @tyler58546 (tyler58546)
 1. [TEXTURE] Improved cockpit decal fonts and emissives, and remade various labels in the cockpit. @FoxinTale (Aubrey)
@@ -112,6 +113,9 @@
 1. [CDU] RADNAV - A manual VOR/ADF ident input is now permament - @St54Kevin
 1. [CDU] RADNAV - ID/Frequency fields now format to correct font size depending on pilot input - @St54Kevin
 1. [CDU] RADNAV - All fields now have correct format display and input restricitons - @St54Kevin
+1. [ECAM] Refactor COND/OXY page to use new useSimVars - @RichardPilbery (tricky_dicky[Z+0]#3571)
+1. [LIGHTS] Added ambient light to the cockpit - @ImenesFBW (Imenes)
+1. [MCDU] INIT-B page - Fixed Trip Wind value handling - @SergeySoprykin (SergeyS)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)

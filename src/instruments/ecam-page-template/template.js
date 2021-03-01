@@ -41,6 +41,19 @@
 
 // eslint-disable-next-line camelcase
 class A32NX_PAGE_NAME_Logic extends Airliners.EICASTemplateElement {
+    constructor() {
+        super();
+        // eslint-disable-next-line no-underscore-dangle
+        let lastTime = this._lastTime;
+        this.getDeltaTime = () => {
+            const nowTime = Date.now();
+            const deltaTime = nowTime - lastTime;
+            lastTime = nowTime;
+
+            return deltaTime;
+        };
+    }
+
     get templateID() {
         return 'A32NX_PAGE_NAME_TEMPLATE';
     }
@@ -64,7 +77,7 @@ class A32NX_PAGE_NAME_Logic extends Airliners.EICASTemplateElement {
     }
 
     update(_deltaTime) {
-        this.dispatchEvent(new CustomEvent('update', { detail: this.deltaTime }));
+        this.dispatchEvent(new CustomEvent('update', { detail: this.getDeltaTime() }));
     }
 }
 
