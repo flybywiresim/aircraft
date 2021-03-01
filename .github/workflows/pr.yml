@@ -33,13 +33,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    env:
+      CDN_DIR: /flybywiresim/addons/a32nx/vmaster/
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
-      - name: Generate layout.json and update manifest.json
+      - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
           ./scripts/dev-env/run.sh ./scripts/build.sh
+      - name: Generate zip files
+        run: |
+          ./scripts/dev-env/run.sh node ./scripts/fragment.js
 
           mkdir tmp_A32NX
           mv A32NX tmp_A32NX/
@@ -48,3 +53,13 @@ jobs:
         with:
           name: A32NX
           path: A32NX
+      - name: Upload to Bunny CDN
+        uses: SamKirkland/FTP-Deploy-Action@2.0.0
+        with:
+          FTP_SERVER: ${{ secrets.BUNNY_BUCKET_HOST }}
+          PORT: ${{ secrets.BUNNY_BUCKET_PORT }}
+          FTP_USERNAME: ${{ secrets.BUNNY_BUCKET_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
+          LOCAL_DIR: ./build-modules/
+          REMOTE_DIR: ${{ env.CDN_DIR }}
+          ARGS: --delete
