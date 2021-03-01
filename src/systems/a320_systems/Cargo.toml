@@ -1,0 +1,9 @@
+[package]
+name = "a320_systems"
+version = "0.1.0"
+authors = ["FlyByWire Simulations"]
+edition = "2018"
+
+[dependencies]
+uom = "0.30.0"
+systems = { path = "../systems" }
