@@ -30,3 +30,8 @@ impl Valve for BleedAirValve {
         self.open
     }
 }
+impl Default for BleedAirValve {
+    fn default() -> Self {
+        Self::new()
+    }
+}
