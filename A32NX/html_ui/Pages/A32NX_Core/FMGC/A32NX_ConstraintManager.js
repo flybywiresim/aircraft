@@ -95,16 +95,16 @@ class A32NX_ConstraintManager {
                 });
             }
         }
-        const activeIdent = fpm.getActiveWaypointIdent();
-        const activeIndex = waypointsWithDiscontinuities.findIndex(w => {
-            return w.wp && w.wp.ident === activeIdent;
-        });
         if (waypointsWithDiscontinuities.length === 0) {
             return 0;
         }
+        const activeIdent = fpm.getActiveWaypointIdent();
+        const minIndex = Math.max(0, waypointsWithDiscontinuities.findIndex(w => {
+            return w.wp && w.wp.ident === activeIdent;
+        }));
         const max = curConstraintAlt ? curConstraintAlt : Simplane.getAltitude() + 50;
         let last = 0;
-        for (let i = waypointsWithDiscontinuities.length - 1; i >= activeIndex; i--) {
+        for (let i = waypointsWithDiscontinuities.length - 1; i >= minIndex; i--) {
             const wpt = waypointsWithDiscontinuities[i].wp;
             if (typeof wpt === "undefined" || !isFinite(wpt.legAltitude1) || wpt.legAltitudeDescription === 0 || wpt.legAltitudeDescription === 3) {
                 continue;
