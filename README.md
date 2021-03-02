@@ -54,6 +54,8 @@ You can see the changelog on the releases page: [View Here.](https://github.com/
 
 #### Unstable Master Branch Build **(Custom FBW + Custom AP)**
 
+[Download custom FBW development build here.](https://api.flybywiresim.com/api/v1/download?url=https://flybywiresim-packages.b-cdn.net/vmaster-cfbw/A32NX-master-cfbw.zip)
+
 - This version is the same as the regular master/development version, but with the WIP custom auto-pilot and custom fly-by-wire system. Expect issues with flight directors/autopilot/missing FMAs and more if you intend to use this version. No support will be provided via Discord.
   - [Download Custom AP+FBW Development Version](https://api.flybywiresim.com/api/v1/download?url=https://vmaster-cfbw-cap/A32NX-master-cfbw-cap.zip)
   - [**IMPORTANT:** Read Known Issues & Information]( https://github.com/flybywiresim/a32nx/tree/autopilot/docs)

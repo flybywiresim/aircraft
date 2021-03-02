@@ -771,10 +771,10 @@
                 <!--<POTENTIOMETER>85</POTENTIOMETER>-->
                 <EMISSIVE_CODE>0</EMISSIVE_CODE>
             </UseTemplate>
-            <!-- This disables tiller deflection emissive -->
-            <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+            <!-- Controls tiller deflection plate emissive -->
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>YOKE_DECAL</NODE_ID>
-                <EMISSIVE_CODE>0</EMISSIVE_CODE>
+                <POTENTIOMETER>85</POTENTIOMETER>
             </UseTemplate>
 
             <!-- NYI
@@ -1328,24 +1328,23 @@
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_COMMERCIAL</NODE_ID>
 
-                    <TOGGLE_SIMVAR>L:A32NX_ELEC_COMMERCIAL_TOGGLE</TOGGLE_SIMVAR>
+                    <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_COMMERCIAL_PB_IS_ON</TOGGLE_SIMVAR>
 
-                    <SEQ1_CODE>(L:A32NX_ELEC_COMMERCIAL_FAULT, Bool)</SEQ1_CODE>
-                    <SEQ2_CODE>(L:A32NX_ELEC_COMMERCIAL_TOGGLE, Bool) !</SEQ2_CODE>
+                    <SEQ2_CODE>(L:A32NX_OVHD_ELEC_COMMERCIAL_PB_IS_ON, Bool) !</SEQ2_CODE>
 
-                    <TOOLTIPID>%((L:A32NX_ELEC_COMMERCIAL_TOGGLE, Bool))%{if}Turn OFF commercial%{else}Turn ON commercial%{end}</TOOLTIPID>
+                    <TOOLTIPID>%((L:A32NX_OVHD_ELEC_COMMERCIAL_PB_IS_ON, Bool))%{if}Turn OFF commercial%{else}Turn ON commercial%{end}</TOOLTIPID>
                 </UseTemplate>
 
                 <!-- ELEC GALY & CAB AUTO -->
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_GALYCAB</NODE_ID>
 
-                    <TOGGLE_SIMVAR>L:A32NX_ELEC_GALYCAB_TOGGLE</TOGGLE_SIMVAR>
+                    <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO</TOGGLE_SIMVAR>
 
-                    <SEQ1_CODE>(L:A32NX_ELEC_GALYCAB_FAULT, Bool)</SEQ1_CODE>
-                    <SEQ2_CODE>(L:A32NX_ELEC_GALYCAB_TOGGLE, Bool) !</SEQ2_CODE>
+                    <SEQ1_CODE>(L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+                    <SEQ2_CODE>(L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO, Bool) !</SEQ2_CODE>
 
-                    <TOOLTIPID>%((L:A32NX_ELEC_GALYCAB_TOGGLE, Bool))%{if}Turn OFF galy &amp; cab%{else}Turn ON galy &amp; cab%{end}</TOOLTIPID>
+                    <TOOLTIPID>%((L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO, Bool))%{if}Turn OFF galy &amp; cab%{else}Turn ON galy &amp; cab%{end}</TOOLTIPID>
                 </UseTemplate>
 
                 <!-- IDG 1 -->
@@ -1353,9 +1352,9 @@
                     <NODE_ID>PUSH_OVHD_ELEC_IDG1</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ELEC_IDG1</LOCK_NODE_ID>
 
-                    <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_ELEC_IDG1_FAULT)</LEFT_SINGLE_CODE>
+                    <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_ELEC_IDG_1_PB_IS_RELEASED)</LEFT_SINGLE_CODE>
 
-                    <SEQ1_CODE>(L:A32NX_ELEC_IDG1_FAULT)</SEQ1_CODE>
+                    <SEQ1_CODE>(L:A32NX_OVHD_ELEC_IDG_1_PB_HAS_FAULT)</SEQ1_CODE>
 
                     <MOMENTARY/>
                 </UseTemplate>
@@ -1365,9 +1364,9 @@
                     <NODE_ID>PUSH_OVHD_ELEC_IDG2</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ELEC_IDG2</LOCK_NODE_ID>
 
-                    <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_ELEC_IDG2_FAULT)</LEFT_SINGLE_CODE>
+                    <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_ELEC_IDG_2_PB_IS_RELEASED)</LEFT_SINGLE_CODE>
 
-                    <SEQ1_CODE>(L:A32NX_ELEC_IDG2_FAULT)</SEQ1_CODE>
+                    <SEQ1_CODE>(L:A32NX_OVHD_ELEC_IDG_2_PB_HAS_FAULT)</SEQ1_CODE>
 
                     <MOMENTARY/>
                 </UseTemplate>
@@ -1376,19 +1375,19 @@
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_BUSTIE</NODE_ID>
 
-                    <TOGGLE_SIMVAR>L:A32NX_ELEC_BUSTIE_TOGGLE</TOGGLE_SIMVAR>
+                    <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO</TOGGLE_SIMVAR>
 
-                    <SEQ2_CODE>(L:A32NX_ELEC_BUSTIE_TOGGLE, Bool) !</SEQ2_CODE>
+                    <SEQ2_CODE>(L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO, Bool) !</SEQ2_CODE>
                 </UseTemplate>
 
                 <!-- AC ESS FEED -->
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_ACESSFEED</NODE_ID>
 
-                    <TOGGLE_SIMVAR>L:A32NX_ELEC_ACESSFEED_TOGGLE</TOGGLE_SIMVAR>
+                    <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL</TOGGLE_SIMVAR>
 
-                    <SEQ1_CODE>(L:A32NX_ELEC_ACESSFEED_FAULT, Bool)</SEQ1_CODE>
-                    <SEQ2_CODE>(L:A32NX_ELEC_ACESSFEED_TOGGLE, Bool) !</SEQ2_CODE>
+                    <SEQ1_CODE>(L:A32NX_OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+                    <SEQ2_CODE>(L:A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL, Bool) !</SEQ2_CODE>
                 </UseTemplate>
 
                 <!-- APU MASTER SW -->
@@ -1396,26 +1395,26 @@
                     <NODE_ID>PUSH_OVHD_APU_MASTERSW</NODE_ID>
                     <PART_ID>ELECTRICAL_Switch_APU_Master</PART_ID>
                     <LEFT_SINGLE_CODE>
-                        (L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) if{
-                            0 (&gt;L:A32NX_APU_MASTER_SW_ACTIVATED)
+                        (L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool) if{
+                            0 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)
                         } els{
                             (A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; if{
-                                1 (&gt;L:A32NX_APU_MASTER_SW_ACTIVATED)
+                                1 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)
                             }
                         }
                     </LEFT_SINGLE_CODE>
-                    <DOWN_CODE>(L:A32NX_APU_MASTER_SW_ACTIVATED, Bool)</DOWN_CODE>
+                    <DOWN_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)</DOWN_CODE>
 
-                    <SEQ1_CODE>(L:A32NX_APU_MASTER_FAULT, Bool)</SEQ1_CODE>
-                    <SEQ2_CODE>(L:A32NX_APU_MASTER_SW_ACTIVATED, Bool)</SEQ2_CODE>
+                    <SEQ1_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+                    <SEQ2_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)</SEQ2_CODE>
 
-                    <TOOLTIPID>%((L:A32NX_APU_MASTER_SW_ACTIVATED, Bool))%{if}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_ON%{end}</TOOLTIPID>
+                    <TOOLTIPID>%((L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool))%{if}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_ON%{end}</TOOLTIPID>
                 </UseTemplate>
 
                 <!-- APU START -->
                 <UseTemplate Name="FBW_Airbus_APU_Starter_Switch">
                     <NODE_ID>PUSH_OVHD_APU_START</NODE_ID>
-                    <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (L:A32NX_APU_MASTER_SW_ACTIVATED, Bool) and</EXTRA_CONDITION>
+                    <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool) and</EXTRA_CONDITION>
                 </UseTemplate>
             </Component>
 
@@ -3277,7 +3276,7 @@
         </Component>
 
         <Component ID="Airbus_ATC">
-            <UseTemplate Name="ASOBO_AIRLINER_ATC_Template">
+            <UseTemplate Name="FBW_Airbus_ATC_Template">
                 <TYPE>AIRBUS</TYPE>
                 <PUSH_BTN_PREFIX>PUSH_ATC_</PUSH_BTN_PREFIX>
                 <POTENTIOMETER>85</POTENTIOMETER>
