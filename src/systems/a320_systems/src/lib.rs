@@ -1,35 +1,48 @@
-use self::{fuel::A320Fuel, pneumatic::A320PneumaticOverheadPanel};
-use crate::{
-    apu::{
-        AuxiliaryPowerUnit, AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
-    },
-    simulator::{Aircraft, SimulatorVisitable, SimulatorVisitor, UpdateContext},
-};
-
 mod electrical;
-pub use electrical::*;
-
 mod fuel;
-
+mod hydraulic;
 mod pneumatic;
 
+use self::{fuel::A320Fuel, pneumatic::A320PneumaticOverheadPanel};
+use electrical::{A320Electrical, A320ElectricalOverheadPanel};
+use hydraulic::A320Hydraulic;
+use systems::{
+    apu::{
+        Aps3200ApuGenerator, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
+        AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
+    },
+    electrical::ExternalPowerSource,
+    engine::Engine,
+    simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
+};
+
 pub struct A320 {
-    apu: AuxiliaryPowerUnit,
+    apu: AuxiliaryPowerUnit<Aps3200ApuGenerator>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
     pneumatic_overhead: A320PneumaticOverheadPanel,
     electrical_overhead: A320ElectricalOverheadPanel,
     fuel: A320Fuel,
+    engine_1: Engine,
+    engine_2: Engine,
+    electrical: A320Electrical,
+    ext_pwr: ExternalPowerSource,
+    hydraulic: A320Hydraulic,
 }
 impl A320 {
     pub fn new() -> A320 {
         A320 {
-            apu: AuxiliaryPowerUnit::new_aps3200(),
+            apu: AuxiliaryPowerUnitFactory::new_shutdown_aps3200(1),
             apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(),
             apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(),
             pneumatic_overhead: A320PneumaticOverheadPanel::new(),
             electrical_overhead: A320ElectricalOverheadPanel::new(),
             fuel: A320Fuel::new(),
+            engine_1: Engine::new(1),
+            engine_2: Engine::new(2),
+            electrical: A320Electrical::new(),
+            ext_pwr: ExternalPowerSource::new(),
+            hydraulic: A320Hydraulic::new(),
         }
     }
 }
@@ -40,7 +53,6 @@ impl Default for A320 {
 }
 impl Aircraft for A320 {
     fn update(&mut self, context: &UpdateContext) {
-        self.electrical_overhead.update(context);
         self.fuel.update();
 
         self.apu.update(
@@ -57,16 +69,31 @@ impl Aircraft for A320 {
             self.fuel.left_inner_tank_has_fuel_remaining(),
         );
         self.apu_overhead.update_after_apu(&self.apu);
-        self.pneumatic_overhead.update_after_apu(&self.apu);
+
+        self.electrical.update(
+            context,
+            &self.engine_1,
+            &self.engine_2,
+            &self.apu,
+            &self.ext_pwr,
+            &self.hydraulic,
+            &self.electrical_overhead,
+        );
+        self.electrical_overhead.update_after_elec(&self.electrical);
     }
 }
-impl SimulatorVisitable for A320 {
-    fn accept(&mut self, visitor: &mut Box<&mut dyn SimulatorVisitor>) {
+impl SimulationElement for A320 {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.apu.accept(visitor);
         self.apu_fire_overhead.accept(visitor);
         self.apu_overhead.accept(visitor);
         self.electrical_overhead.accept(visitor);
         self.fuel.accept(visitor);
         self.pneumatic_overhead.accept(visitor);
+        self.engine_1.accept(visitor);
+        self.engine_2.accept(visitor);
+        self.electrical.accept(visitor);
+        self.ext_pwr.accept(visitor);
+        visitor.visit(self);
     }
 }
