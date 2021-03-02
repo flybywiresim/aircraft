@@ -197,10 +197,6 @@ impl<T: ApuGenerator> AuxiliaryPowerUnit<T> {
         self.ecb.is_available()
     }
 
-    fn air_intake_flap_is_apu_ecam_open(&self) -> bool {
-        self.air_intake_flap.is_apu_ecam_open()
-    }
-
     fn air_intake_flap_open_amount(&self) -> Ratio {
         self.air_intake_flap.open_amount()
     }
@@ -277,10 +273,6 @@ impl<T: ApuGenerator> SimulationElement for AuxiliaryPowerUnit<T> {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(
-            "APU_FLAP_ECAM_OPEN",
-            self.air_intake_flap_is_apu_ecam_open(),
-        );
         writer.write_f64(
             "APU_FLAP_OPEN_PERCENTAGE",
             self.air_intake_flap_open_amount().get::<percent>(),
@@ -681,10 +673,6 @@ pub mod tests {
 
         fn is_air_intake_flap_fully_closed(&self) -> bool {
             (self.apu.air_intake_flap_open_amount().get::<percent>() - 0.).abs() < f64::EPSILON
-        }
-
-        fn air_intake_flap_is_apu_ecam_open(&self) -> bool {
-            self.apu.air_intake_flap_is_apu_ecam_open()
         }
 
         pub fn n(&self) -> Ratio {
@@ -1149,8 +1137,7 @@ pub mod tests {
         }
 
         #[test]
-        /// Komp: Bleed adds even more. Not sure how much, 30-40 degrees as a rough guess.
-        fn running_apu_supplying_bleed_air_increases_egt_by_30_to_40_degrees_to_between_370_to_390_degrees(
+        fn running_apu_supplying_bleed_air_increases_egt_by_85_to_95_degrees_to_between_425_to_445_degrees(
         ) {
             let tester = tester_with()
                 .running_apu_with_bleed_air()
@@ -1159,19 +1146,18 @@ pub mod tests {
                 .run(Duration::from_secs(1_000));
 
             let egt = tester.egt().get::<degree_celsius>();
-            assert!((370.0..=390.0).contains(&egt));
+            assert!((425.0..=445.0).contains(&egt));
         }
 
         #[test]
-        /// Komp: Bleed adds even more. Not sure how much, 30-40 degrees as a rough guess.
-        fn running_apu_supplying_bleed_air_and_electrical_increases_egt_to_between_380_to_405_degrees(
+        fn running_apu_supplying_bleed_air_and_electrical_increases_egt_to_between_435_to_460_degrees(
         ) {
             let tester = tester_with()
                 .running_apu_with_bleed_air()
                 .run(Duration::from_secs(1_000));
 
             let egt = tester.egt().get::<degree_celsius>();
-            assert!((380.0..=405.0).contains(&egt));
+            assert!((435.0..=460.0).contains(&egt));
         }
 
         #[test]
@@ -1542,94 +1528,6 @@ pub mod tests {
         }
 
         #[test]
-        fn air_intake_flap_is_apu_ecam_open_returns_false_when_air_intake_flap_fully_closed() {
-            let tester = tester_with().master_off().run(Duration::from_secs(1_000));
-
-            assert!(!tester.air_intake_flap_is_apu_ecam_open());
-        }
-
-        #[test]
-        fn air_intake_flap_is_apu_ecam_open_returns_false_when_air_intake_flap_opening_from_a_previously_fully_closed_position(
-        ) {
-            let tester = tester_with().master_on().run(Duration::from_secs(2));
-
-            assert!(
-                !tester.is_air_intake_flap_fully_closed()
-                    && !tester.is_air_intake_flap_fully_open(),
-                "The test's precondition is that the air intake flap is not fully open nor closed."
-            );
-
-            assert!(!tester.air_intake_flap_is_apu_ecam_open());
-        }
-
-        #[test]
-        fn air_intake_flap_is_apu_ecam_open_returns_true_when_air_intake_flap_opening_from_a_previously_fully_open_position(
-        ) {
-            let tester = tester_with()
-                .apu_ready_to_start()
-                .and()
-                .master_off()
-                .run(Duration::from_secs(2))
-                .then_continue_with()
-                .master_on()
-                .run(Duration::from_secs(1));
-
-            assert!(
-                !tester.is_air_intake_flap_fully_closed()
-                    && !tester.is_air_intake_flap_fully_open(),
-                "The test's precondition is that the air intake flap is not fully open nor closed."
-            );
-
-            assert!(tester.air_intake_flap_is_apu_ecam_open());
-        }
-
-        #[test]
-        fn air_intake_flap_is_apu_ecam_open_returns_true_when_air_intake_flap_fully_open() {
-            let tester = tester_with()
-                .apu_ready_to_start()
-                .run(Duration::from_secs(1_000));
-
-            assert!(tester.air_intake_flap_is_apu_ecam_open());
-        }
-
-        #[test]
-        fn air_intake_flap_is_apu_ecam_open_returns_true_when_air_intake_flap_closing_from_a_previously_fully_open_position(
-        ) {
-            let tester = tester_with()
-                .apu_ready_to_start()
-                .and()
-                .master_off()
-                .run(Duration::from_secs(2));
-
-            assert!(
-                !tester.is_air_intake_flap_fully_closed()
-                    && !tester.is_air_intake_flap_fully_open(),
-                "The test's precondition is that the air intake flap is not fully open nor closed."
-            );
-
-            assert!(tester.air_intake_flap_is_apu_ecam_open());
-        }
-
-        #[test]
-        fn air_intake_flap_is_apu_ecam_open_returns_false_when_air_intake_flap_closing_from_a_previously_fully_closed_position(
-        ) {
-            let tester = tester_with()
-                .master_on()
-                .run(Duration::from_secs(2))
-                .then_continue_with()
-                .master_off()
-                .run(Duration::from_secs(1));
-
-            assert!(
-                !tester.is_air_intake_flap_fully_closed()
-                    && !tester.is_air_intake_flap_fully_open(),
-                "The test's precondition is that the air intake flap is not fully open nor closed."
-            );
-
-            assert!(!tester.air_intake_flap_is_apu_ecam_open());
-        }
-
-        #[test]
         fn writes_its_state() {
             let apu = tester().apu();
             let mut test_writer = TestReaderWriter::new();
@@ -1637,8 +1535,7 @@ pub mod tests {
 
             apu.write(&mut writer);
 
-            assert!(test_writer.len_is(12));
-            assert!(test_writer.contains_bool("APU_FLAP_ECAM_OPEN", false));
+            assert!(test_writer.len_is(11));
             assert!(test_writer.contains_f64("APU_FLAP_OPEN_PERCENTAGE", 0.));
             assert!(test_writer.contains_bool("APU_BLEED_AIR_VALVE_OPEN", false));
             assert!(test_writer.contains_f64("APU_EGT_CAUTION", 649.));
