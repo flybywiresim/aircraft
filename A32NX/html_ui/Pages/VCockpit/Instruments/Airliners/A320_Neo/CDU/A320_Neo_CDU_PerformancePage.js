@@ -63,7 +63,7 @@ class CDUPerformancePage {
         if (hasOrigin) {
             const runwayObj = mcdu.flightPlanManager.getDepartureRunway();
             if (runwayObj) {
-                runway = `{green}${Avionics.Utils.formatRunway(runwayObj.designation)}{end}`;
+                runway = Avionics.Utils.formatRunway(runwayObj.designation);
                 hasRunway = true;
             }
         }
@@ -288,7 +288,6 @@ class CDUPerformancePage {
             flapsThs = `${flaps}/${ths}[color]cyan`;
             mcdu.onRightInput[2] = (value) => {
                 if (mcdu.trySetFlapsTHS(value)) {
-                    mcdu.tryCheckToData();
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 }
             };
@@ -309,12 +308,16 @@ class CDUPerformancePage {
                 }
             }
             mcdu.onRightInput[3] = (value) => {
-                if (value === "") {
-                    mcdu._toFlexChecked = true;
-                } else if (mcdu.setPerfTOFlexTemp(value)) {
-                    mcdu.tryCheckToData();
+                if (mcdu._toFlexChecked) {
+                    if (mcdu.setPerfTOFlexTemp(value)) {
+                        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                    }
+                } else {
+                    if (value === "" || mcdu.setPerfTOFlexTemp(value)) {
+                        mcdu._toFlexChecked = true;
+                        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                    }
                 }
-                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             };
         } else {
             if (isFinite(mcdu.perfTOTemp)) {
@@ -356,7 +359,7 @@ class CDUPerformancePage {
 
         let next = "NEXT\xa0";
         let nextPhase = "PHASE>";
-        if ((!mcdu._v1Checked || !mcdu._vRChecked || !mcdu._v2Checked) && mcdu.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+        if (!(mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked && mcdu._toFlexChecked) && mcdu.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF) {
             next = "CONFIRM\xa0";
             nextPhase = "TO DATA*";
             mcdu.onRightInput[5] = (value) => {
@@ -377,7 +380,7 @@ class CDUPerformancePage {
         }
 
         mcdu.setTemplate([
-            ["TAKE OFF RWY " + runway.padStart(3, "\xa0") + "[color]" + titleColor],
+            ["TAKE OFF RWY\xa0{green}" + runway.padStart(3, "\xa0") + "{end}[color]" + titleColor],
             ["\xa0V1\xa0\xa0FLP RETR", ""],
             [v1 + v1Check + "\xa0F=" + flpRetrCell, ""],
             ["\xa0VR\xa0\xa0SLT RETR", "TO SHIFT\xa0"],
