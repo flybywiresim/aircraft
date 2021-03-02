@@ -32,7 +32,7 @@
 - A32NX_REPORTED_BRAKE_TEMPERATURE_{1,2,3,4}
     - celsius
     - represents the reported brake temperature of the rear wheels by the sensor.
-    - It can be different from the brake temperature when the brake fan has been used, because the brake fan will cool the sensor more than the brakes 
+    - It can be different from the brake temperature when the brake fan has been used, because the brake fan will cool the sensor more than the brakes
 	- (which have much more energy to dissipate) therefore giving potentially erroneous readings that the pilots must take into account
 - A32NX_BRAKE_FAN
 	- boolean
@@ -393,10 +393,6 @@
 - A32NX_APU_FLAP_OPEN_PERCENTAGE
     - Percent
     - Indicates the percentage the APU air intake flap is open
-
-- A32NX_APU_FLAP_ECAM_OPEN
-    - Bool
-    - Indicates if the APU air intake flap should be indicated as open on the APU ECAM
 
 - A32NX_FIRE_BUTTON_APU
     - Bool
