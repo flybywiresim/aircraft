@@ -75,58 +75,53 @@ impl Starting {
 
     fn calculate_egt(&mut self, context: &UpdateContext) -> ThermodynamicTemperature {
         // Refer to APS3200.md for details on the values below and source data.
-        const APU_N_TEMP_CONST: f64 = 0.8260770092912485;
-        const APU_N_TEMP_X: f64 = -10.521171805148322;
-        const APU_N_TEMP_X2: f64 = 9.991789425954353;
-        const APU_N_TEMP_X3: f64 = -3.082752847935092;
-        const APU_N_TEMP_X4: f64 = 0.4261454295059484;
-        const APU_N_TEMP_X5: f64 = -0.03117154621503877;
-        const APU_N_TEMP_X6: f64 = 0.0013843186755010547;
-        const APU_N_TEMP_X7: f64 = -0.00004016856934546301;
-        const APU_N_TEMP_X8: f64 = 0.00000078892955962222;
-        const APU_N_TEMP_X9: f64 = -0.00000001058955825891;
-        const APU_N_TEMP_X10: f64 = 0.00000000009582985112;
-        const APU_N_TEMP_X11: f64 = -0.00000000000055952490;
-        const APU_N_TEMP_X12: f64 = 0.00000000000000190415;
-        const APU_N_TEMP_X13: f64 = -0.00000000000000000287;
+        const APU_N_TEMP_CONST: f64 = -92.3417137705543;
+        const APU_N_TEMP_X: f64 = -14.36417426895237;
+        const APU_N_TEMP_X2: f64 = 12.210567963472547;
+        const APU_N_TEMP_X3: f64 = -3.005504263233662;
+        const APU_N_TEMP_X4: f64 = 0.3808066398934025;
+        const APU_N_TEMP_X5: f64 = -0.02679731462093699;
+        const APU_N_TEMP_X6: f64 = 0.001163901295794232;
+        const APU_N_TEMP_X7: f64 = -0.0000332668380497951;
+        const APU_N_TEMP_X8: f64 = 0.00000064601180727581;
+        const APU_N_TEMP_X9: f64 = -0.00000000859285727074;
+        const APU_N_TEMP_X10: f64 = 0.00000000007717119413;
+        const APU_N_TEMP_X11: f64 = -0.00000000000044761099;
+        const APU_N_TEMP_X12: f64 = 0.00000000000000151429;
+        const APU_N_TEMP_X13: f64 = -0.00000000000000000227;
 
         let n = self.n.get::<percent>();
 
-        // Results below this value momentarily go above 0, while not intended.
-        if n < 5.5 {
-            calculate_towards_ambient_egt(self.egt, context)
+        let temperature = ThermodynamicTemperature::new::<degree_celsius>(
+            APU_N_TEMP_CONST
+                + (APU_N_TEMP_X * n)
+                + (APU_N_TEMP_X2 * n.powi(2))
+                + (APU_N_TEMP_X3 * n.powi(3))
+                + (APU_N_TEMP_X4 * n.powi(4))
+                + (APU_N_TEMP_X5 * n.powi(5))
+                + (APU_N_TEMP_X6 * n.powi(6))
+                + (APU_N_TEMP_X7 * n.powi(7))
+                + (APU_N_TEMP_X8 * n.powi(8))
+                + (APU_N_TEMP_X9 * n.powi(9))
+                + (APU_N_TEMP_X10 * n.powi(10))
+                + (APU_N_TEMP_X11 * n.powi(11))
+                + (APU_N_TEMP_X12 * n.powi(12))
+                + (APU_N_TEMP_X13 * n.powi(13)),
+        );
+
+        // The above calculated EGT can be lower than the ambient temperature,
+        // or the current APU EGT (when cooling down). To prevent sudden changes
+        // in temperature, we ignore the calculated EGT until it exceeds the current
+        // EGT.
+        let towards_ambient_egt = calculate_towards_ambient_egt(self.egt, context);
+        if temperature > towards_ambient_egt {
+            self.ignore_calculated_egt = false;
+        }
+
+        if self.ignore_calculated_egt {
+            towards_ambient_egt
         } else {
-            let temperature = ThermodynamicTemperature::new::<degree_celsius>(
-                APU_N_TEMP_CONST
-                    + (APU_N_TEMP_X * n)
-                    + (APU_N_TEMP_X2 * n.powi(2))
-                    + (APU_N_TEMP_X3 * n.powi(3))
-                    + (APU_N_TEMP_X4 * n.powi(4))
-                    + (APU_N_TEMP_X5 * n.powi(5))
-                    + (APU_N_TEMP_X6 * n.powi(6))
-                    + (APU_N_TEMP_X7 * n.powi(7))
-                    + (APU_N_TEMP_X8 * n.powi(8))
-                    + (APU_N_TEMP_X9 * n.powi(9))
-                    + (APU_N_TEMP_X10 * n.powi(10))
-                    + (APU_N_TEMP_X11 * n.powi(11))
-                    + (APU_N_TEMP_X12 * n.powi(12))
-                    + (APU_N_TEMP_X13 * n.powi(13)),
-            );
-
-            // The above calculated EGT can be lower than the ambient temperature,
-            // or the current APU EGT (when cooling down). To prevent sudden changes
-            // in temperature, we ignore the calculated EGT until it exceeds the current
-            // EGT.
-            let towards_ambient_egt = calculate_towards_ambient_egt(self.egt, context);
-            if temperature > towards_ambient_egt {
-                self.ignore_calculated_egt = false;
-            }
-
-            if self.ignore_calculated_egt {
-                towards_ambient_egt
-            } else {
-                temperature
-            }
+            temperature
         }
     }
 
@@ -210,44 +205,156 @@ impl Turbine for Starting {
     }
 }
 
-struct Running {
-    egt: ThermodynamicTemperature,
-    base_temperature: ThermodynamicTemperature,
-    bleed_air_in_use_delta_temperature: TemperatureInterval,
-    apu_gen_in_use_delta_temperature: TemperatureInterval,
+struct BleedAirUsageEgtDelta {
+    current: f64,
+    target: f64,
+    max: f64,
+    min: f64,
 }
-impl Running {
-    fn new(egt: ThermodynamicTemperature) -> Running {
-        let base_temperature = 340. + ((random_number() % 11) as f64);
-        let bleed_air_in_use_delta_temperature = 30. + ((random_number() % 11) as f64);
-        let apu_gen_in_use_delta_temperature = 10. + ((random_number() % 6) as f64);
-        Running {
-            egt,
-            base_temperature: ThermodynamicTemperature::new::<degree_celsius>(base_temperature),
-            bleed_air_in_use_delta_temperature: TemperatureInterval::new::<
-                temperature_interval::degree_celsius,
-            >(bleed_air_in_use_delta_temperature),
-            apu_gen_in_use_delta_temperature: TemperatureInterval::new::<
-                temperature_interval::degree_celsius,
-            >(apu_gen_in_use_delta_temperature),
+impl BleedAirUsageEgtDelta {
+    fn new() -> Self {
+        let randomisation = 0.95 + ((random_number() % 101) as f64 / 1000.);
+
+        Self {
+            current: 0.,
+            target: 0.,
+            max: 90. * randomisation,
+            min: 0.,
         }
     }
 
-    fn calculate_slow_cooldown_to_running_temperature(
-        &self,
+    fn update(&mut self, context: &UpdateContext, apu_bleed_is_used: bool) {
+        self.target = if apu_bleed_is_used {
+            self.max
+        } else {
+            self.min
+        };
+
+        if (self.current - self.target).abs() > f64::EPSILON {
+            if self.current > self.target {
+                self.current -= self.delta_per_second() * context.delta.as_secs_f64();
+            } else {
+                self.current += self.delta_per_second() * context.delta.as_secs_f64();
+            }
+        }
+
+        self.current = self.current.max(self.min).min(self.max);
+    }
+
+    fn egt_delta(&self) -> TemperatureInterval {
+        TemperatureInterval::new::<temperature_interval::degree_celsius>(self.current)
+    }
+
+    fn delta_per_second(&self) -> f64 {
+        // Loosely based on bleed on data provided in a video by Komp.
+        // The very much relates to pneumatics and thus could be improved further
+        // once we built that.
+        const BLEED_AIR_DELTA_TEMP_CONST: f64 = 0.46763348242588143;
+        const BLEED_AIR_DELTA_TEMP_X: f64 = 0.43114440400626697;
+        const BLEED_AIR_DELTA_TEMP_X2: f64 = -0.11064487957454393;
+        const BLEED_AIR_DELTA_TEMP_X3: f64 = 0.010414691679270397;
+        const BLEED_AIR_DELTA_TEMP_X4: f64 = -0.00045307219981909655;
+        const BLEED_AIR_DELTA_TEMP_X5: f64 = 0.00001063664878607912;
+        const BLEED_AIR_DELTA_TEMP_X6: f64 = -0.00000013763963889674;
+        const BLEED_AIR_DELTA_TEMP_X7: f64 = 0.00000000091837058563;
+        const BLEED_AIR_DELTA_TEMP_X8: f64 = -0.00000000000246054885;
+
+        let difference = if self.current > self.target {
+            self.current - self.target
+        } else {
+            self.target - self.current
+        };
+
+        BLEED_AIR_DELTA_TEMP_CONST
+            + (BLEED_AIR_DELTA_TEMP_X * difference)
+            + (BLEED_AIR_DELTA_TEMP_X2 * difference.powi(2))
+            + (BLEED_AIR_DELTA_TEMP_X3 * difference.powi(3))
+            + (BLEED_AIR_DELTA_TEMP_X4 * difference.powi(4))
+            + (BLEED_AIR_DELTA_TEMP_X5 * difference.powi(5))
+            + (BLEED_AIR_DELTA_TEMP_X6 * difference.powi(6))
+            + (BLEED_AIR_DELTA_TEMP_X7 * difference.powi(7))
+            + (BLEED_AIR_DELTA_TEMP_X8 * difference.powi(8))
+    }
+}
+
+struct ApuGenUsageEgtDelta {
+    time: Duration,
+    base_egt_delta_per_second: f64,
+}
+impl ApuGenUsageEgtDelta {
+    // We just assume it takes 10 seconds to get to our target.
+    const SECONDS_TO_REACH_TARGET: u64 = 10;
+    fn new() -> Self {
+        Self {
+            time: Duration::from_secs(0),
+            base_egt_delta_per_second: (10. + ((random_number() % 6) as f64))
+                / ApuGenUsageEgtDelta::SECONDS_TO_REACH_TARGET as f64,
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, apu_gen_is_used: bool) {
+        self.time = if apu_gen_is_used {
+            (self.time + context.delta).min(Duration::from_secs(
+                ApuGenUsageEgtDelta::SECONDS_TO_REACH_TARGET,
+            ))
+        } else {
+            Duration::from_secs_f64((self.time.as_secs_f64() - context.delta.as_secs_f64()).max(0.))
+        };
+    }
+
+    fn egt_delta(&self) -> TemperatureInterval {
+        TemperatureInterval::new::<temperature_interval::degree_celsius>(
+            self.time.as_secs_f64() * self.base_egt_delta_per_second,
+        )
+    }
+}
+
+struct Running {
+    egt: ThermodynamicTemperature,
+    base_egt: ThermodynamicTemperature,
+    base_egt_deviation: TemperatureInterval,
+    bleed_air_usage: BleedAirUsageEgtDelta,
+    apu_gen_usage: ApuGenUsageEgtDelta,
+}
+impl Running {
+    fn new(egt: ThermodynamicTemperature) -> Running {
+        let base_egt = 340. + ((random_number() % 11) as f64);
+        Running {
+            egt,
+            base_egt: ThermodynamicTemperature::new::<degree_celsius>(base_egt),
+            // This contains the deviation from the base EGT at the moment of entering the running state.
+            // This code assumes the base EGT is lower than the EGT at this point in time, which is always the case.
+            // Should this change in the future, then changes have to be made here.
+            base_egt_deviation: TemperatureInterval::new::<temperature_interval::degree_celsius>(
+                egt.get::<degree_celsius>() - base_egt,
+            ),
+            bleed_air_usage: BleedAirUsageEgtDelta::new(),
+            apu_gen_usage: ApuGenUsageEgtDelta::new(),
+        }
+    }
+
+    fn calculate_egt(
+        &mut self,
         context: &UpdateContext,
         apu_gen_is_used: bool,
         apu_bleed_is_used: bool,
     ) -> ThermodynamicTemperature {
-        let mut target_temperature = self.base_temperature;
-        if apu_bleed_is_used {
-            target_temperature += self.bleed_air_in_use_delta_temperature;
-        }
-        if apu_gen_is_used {
-            target_temperature += self.apu_gen_in_use_delta_temperature;
-        }
+        // Reduce the deviation by 1 per second to slowly creep back to normal temperatures
+        self.base_egt_deviation -= TemperatureInterval::new::<temperature_interval::degree_celsius>(
+            (context.delta.as_secs_f64() * 1.).min(
+                self.base_egt_deviation
+                    .get::<temperature_interval::degree_celsius>(),
+            ),
+        );
 
-        calculate_towards_target_temperature(self.egt, target_temperature, 0.4, context.delta)
+        let mut target = self.base_egt + self.base_egt_deviation;
+        self.apu_gen_usage.update(context, apu_gen_is_used);
+        target += self.apu_gen_usage.egt_delta();
+
+        self.bleed_air_usage.update(context, apu_bleed_is_used);
+        target += self.bleed_air_usage.egt_delta();
+
+        target
     }
 }
 impl Turbine for Running {
@@ -258,11 +365,7 @@ impl Turbine for Running {
         apu_gen_is_used: bool,
         controller: &dyn TurbineController,
     ) -> Box<dyn Turbine> {
-        self.egt = self.calculate_slow_cooldown_to_running_temperature(
-            context,
-            apu_gen_is_used,
-            apu_bleed_is_used,
-        );
+        self.egt = self.calculate_egt(context, apu_gen_is_used, apu_bleed_is_used);
 
         if controller.should_stop() {
             Box::new(Stopping::new(self.egt, Ratio::new::<percent>(100.)))
