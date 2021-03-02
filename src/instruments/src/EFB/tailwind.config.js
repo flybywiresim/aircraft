@@ -19,7 +19,7 @@
 'use strict';
 
 module.exports = {
-    purge: ['./**/*.{js,jsx,ts,tsx}', 'a.html'],
+    purge: ['./**/*.{js,jsx,ts,tsx}'],
     darkMode: false, // or 'media' or 'class'
     theme: {
         extend: {
@@ -45,8 +45,10 @@ module.exports = {
                     'light-contrast': '#009da6',
                     'medium': '#006166',
                     'medium-contrast': '#1f2937',
-                    'dark': '#1B2434',
-                    'darker': '#141E30',
+                    'darkish': '#1a2742',
+                    'dark': '#1b2434',
+                    'darker': '#182130',
+                    'darkest': '#0b101a',
                 },
                 gray: { medium: '#797979' },
             },
@@ -61,7 +63,8 @@ module.exports = {
     variants: {
         extend: {
             display: ['last'],
-            margin: ['last'],
+            margin: ['first', 'last'],
+            padding: ['first', 'last'],
         },
     },
     plugins: [],
