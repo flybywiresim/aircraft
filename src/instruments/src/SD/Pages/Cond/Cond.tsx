@@ -18,7 +18,7 @@
 
 import './Cond.scss';
 import ReactDOM from 'react-dom';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { renderTarget } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 
@@ -30,31 +30,13 @@ export const CondPage = () => {
     const [cockpitTrimTemp] = useSimVar('L:A32NX_CKPT_TRIM_TEMP', 'celsius', 1000);
     const [cockpitCabinTemp] = useSimVar('L:A32NX_CKPT_TEMP', 'celsius', 1000);
 
-    const [cockpitRotateTemp, setCockpitRotateTemp] = useState(0);
-    useEffect(() => {
-        const rotate : number = gaugeOffset + cockpitSelectedTemp;
-        setCockpitRotateTemp(rotate);
-    }, [cockpitSelectedTemp]);
-
     const [fwdSelectedTemp] = useSimVar('L:A320_Neo_AIRCOND_LVL_2', 'number', 1000);
     const [fwdTrimTemp] = useSimVar('L:A32NX_FWD_TRIM_TEMP', 'celsius', 1000);
     const [fwdCabinTemp] = useSimVar('L:A32NX_FWD_TEMP', 'celsius', 1000);
 
-    const [fwdRotateTemp, setFwdRotateTemp] = useState(0);
-    useEffect(() => {
-        const rotate : number = gaugeOffset + fwdSelectedTemp;
-        setFwdRotateTemp(rotate);
-    }, [fwdSelectedTemp]);
-
     const [aftSelectedTemp] = useSimVar('L:A320_Neo_AIRCOND_LVL_3', 'number', 1000);
     const [aftTrimTemp] = useSimVar('L:A32NX_AFT_TRIM_TEMP', 'celsius', 1000);
     const [aftCabinTemp] = useSimVar('L:A32NX_AFT_TEMP', 'celsius', 1000);
-
-    const [aftRotateTemp, setAftRotateTemp] = useState(0);
-    useEffect(() => {
-        const rotate : number = gaugeOffset + aftSelectedTemp;
-        setAftRotateTemp(rotate);
-    }, [aftSelectedTemp]);
 
     const [hotAir] = useSimVar('L:A32NX_AIRCOND_HOTAIR_TOGGLE', 'bool', 1000);
 
@@ -79,13 +61,13 @@ export const CondPage = () => {
                 <path id="PlaneSymbol" className="CondPlane" d="m213.8428,68.36133l0,83.97584l55.55171,0m31.00094,0l51.73732,0l0,-50.70766m0,50.70766l55.55173,0m34.81534,0l22.46143,0.14881l14.27533,-10.61944m-265.3938,10.47063l-43.25439,0.17314m-31.10621,0.0111c-48.43094,0.21796 -46.00225,-7.78263 -67.15623,-15.92789m407.68806,-58.64412l-15.47207,-9.94078c-116.67487,0.0387 -207.24004,-0.30086 -323.91504,-0.12489c-20.94778,1.56194 -28.42552,8.14482 -31.50305,11.74302l-9.3201,10.8969l-27.55615,9.99176" />
 
                 {/* Cockpit */}
-                <CondUnit title="CKPT" cabinTemp={cockpitCabinTemp} trimTemp={cockpitTrimTemp} x="153" rotateTemp={cockpitRotateTemp} />
+                <CondUnit title="CKPT" selectedTemp={cockpitSelectedTemp} cabinTemp={cockpitCabinTemp} trimTemp={cockpitTrimTemp} x="153" offset={gaugeOffset} />
 
                 {/* Fwd */}
-                <CondUnit title="FWD" cabinTemp={fwdCabinTemp} trimTemp={fwdTrimTemp} x="283" rotateTemp={fwdRotateTemp} />
+                <CondUnit title="FWD" selectedTemp={fwdSelectedTemp} cabinTemp={fwdCabinTemp} trimTemp={fwdTrimTemp} x="283" offset={gaugeOffset} />
 
                 {/*  Aft */}
-                <CondUnit title="AFT" cabinTemp={aftCabinTemp} trimTemp={aftTrimTemp} x="423" rotateTemp={aftRotateTemp} />
+                <CondUnit title="AFT" selectedTemp={aftSelectedTemp} cabinTemp={aftCabinTemp} trimTemp={aftTrimTemp} x="423" offset={gaugeOffset} />
 
                 {/* Valve and tubes */}
                 <g id="ValveAndTubes">
@@ -108,13 +90,15 @@ export const CondPage = () => {
 
 type CondUnitProps = {
     title: string,
+    selectedTemp: number,
     cabinTemp: number,
     trimTemp: number,
     x: number,
-    rotateTemp: number
+    offset: number
 }
 
-const CondUnit = ({ title, cabinTemp, trimTemp, x, rotateTemp } : CondUnitProps) => {
+const CondUnit = ({ title, selectedTemp, cabinTemp, trimTemp, x, offset } : CondUnitProps) => {
+    const rotateTemp = offset + selectedTemp;
     const polyPoints = `${Number(x) + 4},206 ${x},199 ${x - 4},206`;
     const gaugeD = `m ${x - 26} 208 Q ${x} 186 ${Number(x) + 26} 208`;
     const ductC = `${Number(x) - 40}`;
