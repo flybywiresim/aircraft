@@ -77,16 +77,13 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
 		const pLoadsheet = ref.current.firstChild;
 		const pImages = ref.current.getElementsByTagName("img");
 
-		
-
 		if(pLoadsheet){
 			pLoadsheet.style.fontSize = `${cFontSize}px`;
 			pLoadsheet.style.lineHeight = `${cFontSize}px`;
 			setFontSize(cFontSize);
 			if(pImages) {
 				for(let image of pImages) {
-					console.log(image);
-					image.style.width = `${imageSize}%`	
+					image.style.width = `${imageSize}%`
 				}
 			}
 		}
