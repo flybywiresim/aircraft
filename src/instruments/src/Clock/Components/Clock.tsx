@@ -31,7 +31,7 @@ export const Clock = () => {
         text1 = `${displayTime[0].toString().padStart(2, '0')}:${displayTime[1].toString().padStart(2, '0')}`;
         text2 = displayTime[2].toString().padStart(2, '0');
     } else {
-        text1 = `${monthOfYear.toString().padStart(2, '0').toString().padStart(2, '0')}:${dayOfMonth}`;
+        text1 = `${monthOfYear.toString().padStart(2, '0')}:${dayOfMonth.toString().padStart(2, '0')}`;
         text2 = year.toString().substr(2, 4);
     }
 
