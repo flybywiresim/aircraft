@@ -172,6 +172,7 @@
 1. [ELEC] SHED appears below the AC ESS BUS when AC ESS SHED BUS is unpowered - @davidwalschots (David Walschots)
 1. [ELEC] SHED appears below the DC ESS BUS when DC ESS SHED BUS is unpowered - @davidwalschots (David Walschots)
 1. [TEXTURE] Improved overhead panel decals - @ImenesFBW (Imenes)
+1. [MCDU] Import cost index when importing flight plan from SimBrief - @aviadnissel (Aviad)
 1. [CDU] Reworked Flight Phase system - @MisterChocker (Leon)
 
 ## 0.5.2

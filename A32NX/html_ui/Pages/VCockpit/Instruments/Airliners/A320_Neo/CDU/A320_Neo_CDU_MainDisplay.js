@@ -37,7 +37,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.sentMessages = [];
         this.activeSystem = 'FMGC';
         this.messageQueue = [];
-        this.costIndexSet = false;
     }
     get templateID() {
         return "A320_Neo_CDU";
