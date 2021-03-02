@@ -34,4 +34,5 @@ Every new commit to this PR will cause a new A32NX artifact to be created, built
 
 1. Make sure you are signed in to GitHub
 1. Click on the **Checks** tab on the PR
-1. On the right side, click on the **Artifacts** drop down and click the **A32NX** link
+1. On the left side, click on the bottom **PR** tab
+1. Click on the **A32NX** download link at the bottom of the page
