@@ -1,18 +1,11 @@
 use super::AirIntakeFlapController;
-use crate::{shared::random_number, simulator::UpdateContext};
+use crate::{shared::random_number, simulation::UpdateContext};
 use std::time::Duration;
 use uom::si::{f64::*, ratio::percent};
 
-#[derive(PartialEq)]
-enum AirIntakeFlapState {
-    Closed,
-    Open,
-}
-
 pub struct AirIntakeFlap {
-    amount_open: Ratio,
+    open_amount: Ratio,
     delay: Duration,
-    last_state: AirIntakeFlapState,
 }
 impl AirIntakeFlap {
     const MINIMUM_TRAVEL_TIME_SECS: u8 = 6;
@@ -27,35 +20,26 @@ impl AirIntakeFlap {
         );
 
         AirIntakeFlap {
-            amount_open: Ratio::new::<percent>(0.),
+            open_amount: Ratio::new::<percent>(0.),
             delay,
-            last_state: AirIntakeFlapState::Closed,
         }
     }
 
     pub fn update<T: AirIntakeFlapController>(&mut self, context: &UpdateContext, controller: &T) {
         if controller.should_open_air_intake_flap()
-            && self.amount_open < Ratio::new::<percent>(100.)
+            && self.open_amount < Ratio::new::<percent>(100.)
         {
-            self.amount_open += Ratio::new::<percent>(
+            self.open_amount += Ratio::new::<percent>(
                 self.get_flap_change_for_delta(context)
-                    .min(100. - self.amount_open.get::<percent>()),
+                    .min(100. - self.open_amount.get::<percent>()),
             );
-
-            if (self.amount_open.get::<percent>() - 100.).abs() < f64::EPSILON {
-                self.last_state = AirIntakeFlapState::Open;
-            }
         } else if !controller.should_open_air_intake_flap()
-            && self.amount_open > Ratio::new::<percent>(0.)
+            && self.open_amount > Ratio::new::<percent>(0.)
         {
-            self.amount_open -= Ratio::new::<percent>(
+            self.open_amount -= Ratio::new::<percent>(
                 self.get_flap_change_for_delta(context)
-                    .min(self.amount_open.get::<percent>()),
+                    .min(self.open_amount.get::<percent>()),
             );
-
-            if (self.amount_open.get::<percent>() - 0.).abs() < f64::EPSILON {
-                self.last_state = AirIntakeFlapState::Closed;
-            }
         }
     }
 
@@ -64,22 +48,11 @@ impl AirIntakeFlap {
     }
 
     pub fn is_fully_open(&self) -> bool {
-        self.amount_open == Ratio::new::<percent>(100.)
+        self.open_amount == Ratio::new::<percent>(100.)
     }
 
-    pub fn get_open_amount(&self) -> Ratio {
-        self.amount_open
-    }
-
-    /// Determines if the the flap is open, as per the definition that is used
-    /// for displaying the "FLAP OPEN" message on the APU ECAM.
-    /// Returns true when:
-    /// 1. The flap is fully open
-    /// 2. The flap was fully open and is closing, but not fully closed.
-    /// 3. The flap was fully open, started closing, but started opening again before fully closing.
-    /// Returns false otherwise.
-    pub fn is_apu_ecam_open(&self) -> bool {
-        self.last_state == AirIntakeFlapState::Open
+    pub fn open_amount(&self) -> Ratio {
+        self.open_amount
     }
 
     #[cfg(test)]
@@ -90,10 +63,10 @@ impl AirIntakeFlap {
 
 #[cfg(test)]
 mod air_intake_flap_tests {
-    use ntest::assert_about_eq;
+    use crate::simulation::context_with;
 
     use super::*;
-    use crate::simulator::test_helpers::context_with;
+    use ntest::assert_about_eq;
 
     struct TestFlapController {
         should_open: bool,
@@ -128,7 +101,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert!(flap.amount_open.get::<percent>() > 0.);
+        assert!(flap.open_amount.get::<percent>() > 0.);
     }
 
     #[test]
@@ -146,7 +119,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert!(flap.amount_open.get::<percent>() < 100.);
+        assert!(flap.open_amount.get::<percent>() < 100.);
     }
 
     #[test]
@@ -159,7 +132,7 @@ mod air_intake_flap_tests {
             &context_with().delta(Duration::from_secs(5)).build(),
             &controller,
         );
-        let open_percentage = flap.amount_open.get::<percent>();
+        let open_percentage = flap.open_amount.get::<percent>();
 
         controller.close();
         flap.update(
@@ -167,7 +140,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert!(flap.amount_open.get::<percent>() < open_percentage);
+        assert!(flap.open_amount.get::<percent>() < open_percentage);
     }
 
     #[test]
@@ -195,7 +168,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert!(flap.amount_open.get::<percent>() > 0.);
+        assert!(flap.open_amount.get::<percent>() > 0.);
     }
 
     #[test]
@@ -209,7 +182,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert_about_eq!(flap.amount_open.get::<percent>(), 0.);
+        assert_about_eq!(flap.open_amount.get::<percent>(), 0.);
     }
 
     #[test]
@@ -223,7 +196,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert_about_eq!(flap.amount_open.get::<percent>(), 100.);
+        assert_about_eq!(flap.open_amount.get::<percent>(), 100.);
     }
 
     #[test]

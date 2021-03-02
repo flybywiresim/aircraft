@@ -21,6 +21,7 @@ class FMCMainDisplay extends BaseAirliners {
         super(...arguments);
         this.currentFlightPlanWaypointIndex = -1;
         this.costIndex = 0;
+        this.costIndexSet = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
         this.coRoute = "";
@@ -1252,6 +1253,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (value >= 0) {
                 if (value < 1000) {
                     this.costIndex = value;
+                    this.costIndexSet = true;
                     return true;
                 } else {
                     this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -2464,30 +2466,22 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async trySetAverageWind(s) {
-        const validDelims = ["HD", "H", "-", "TL", "T", "+", ""]; // Based on arrays being iterated, it will check values like "23" last
-        const matchedIndex = validDelims.findIndex(element => s.includes(element));
-
-        if (matchedIndex >= 0) {
-            const wind = parseFloat(s.split(validDelims[matchedIndex])[1]);
-
-            this._windDir = matchedIndex <= 2 ? this._windDirections.HEADWIND : this._windDirections.TAILWIND;
-
-            if (isFinite(wind)) {
-                if (this.isAvgWindInRange(wind)) {
-                    this.averageWind = wind;
-                    return true;
-                } else {
-                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    return false;
-                }
-            } else {
-                this.addNewMessage(NXSystemMessages.formatError);
-                return false;
-            }
-        } else {
+        const validDelims = ["TL", "T", "+", "HD", "H", "-"];
+        const matchedIndex = validDelims.findIndex(element => s.startsWith(element));
+        const digits = matchedIndex >= 0 ? s.replace(validDelims[matchedIndex], "") : s;
+        const isNum = /^\d+$/.test(digits);
+        if (!isNum) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
+        const wind = parseInt(digits);
+        this._windDir = matchedIndex <= 2 ? this._windDirections.TAILWIND : this._windDirections.HEADWIND;
+        if (wind > 250) {
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+        this.averageWind = wind;
+        return true;
     }
 
     //TODO: fix this functionality
@@ -3334,11 +3328,6 @@ class FMCMainDisplay extends BaseAirliners {
     //TODO: Can this be util?
     getCG() {
         return SimVar.GetSimVarValue("CG PERCENT", "Percent over 100") * 100;
-    }
-
-    //TODO: Can this be util?
-    isAvgWindInRange(wind) {
-        return 0 <= wind && wind <= 250;
     }
 
     //TODO: make this util or local var?
