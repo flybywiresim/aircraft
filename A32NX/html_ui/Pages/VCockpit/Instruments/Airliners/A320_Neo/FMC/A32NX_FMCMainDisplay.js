@@ -2569,16 +2569,16 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    trySetPerfApprTransAlt(s) {
-        if (s === FMCMainDisplay.clrValue) {
+    trySetPerfApprTransAlt(input) {
+        if (input === FMCMainDisplay.clrValue) {
             this.transitionArrivalAltitude = NaN;
             this.transitionArrivalAltitudeIsPilotEntered = false;
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 0);
             return true;
         }
 
-        let value = parseInt(s);
-        if (!isFinite(value) || !/^\d{4,5}$/.test(s)) {
+        let value = parseInt(input);
+        if (!isFinite(value) || !/^\d{4,5}$/.test(input)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
