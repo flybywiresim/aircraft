@@ -18,12 +18,15 @@
 
 import React from 'react';
 import { IconPlayerPlay, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive } from '@tabler/icons'
-import Slider from 'react-input-slider';
+import { Slider } from '../../Components/Form/Slider';
+import { Select, SelectGroup, SelectItem } from '../../Components/Form/Select';
 import ProgressBar from "@ramonak/react-progress-bar";
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput'
 import '../Styles/Fuel.scss'
+import { round } from 'lodash';
 import fuselage from '../../Assets/320neo-outline-fuel-tanks-transparency.png'
 import { useState } from 'react';
+import { useSplitSimVar, useSimVar } from '../../../Common/simVars';
 
 type FuelPageProps = {
     fuels: {}
@@ -38,6 +41,8 @@ const FuelWidget = (props: FuelPageProps) => {
     const innerCell = 5499
     const centerTank = 6598
     const currentUnit = "Kg"
+    const [flightPhase] = [1] //useSimVar("L:A32NX_FWC_FLIGHT_PHASE", "Number", 1000);
+    const [simGroundSpeed] = [1] //useSimVar('GPS GROUND SPEED', 'knots', 1_000);
     const [sliderValue, setSliderValue] = useState<number>();
     const [totalTarget, setTotalTarget] = useState<number>();
     const [centerTarget, setCenterTarget] = useState<number>();
@@ -53,7 +58,33 @@ const FuelWidget = (props: FuelPageProps) => {
     const [ROutCurrent, setROutCurrent] = useState<number>();
     const formatFuelBar = (curr:number, max: number) => {
         let percent = (curr/max)*100
-        return 1.5 + 0.125 * percent
+        return 6 + 0.51 * percent
+    }
+    const airplaneCanRefuel = () => {
+        let gs = round(simGroundSpeed);
+        if((flightPhase < 2 || flightPhase > 9) && gs<1 ){
+            return true;
+        }
+        return false;
+    }
+    const formatRefuelStatusLabel = () => {
+        if(airplaneCanRefuel()){
+            if(totalTarget == totalCurrent) {
+                return "Available";
+            }
+            return "Refueling";
+        }
+        return " Unavail.";
+    }
+    const formatRefuelStatusClass = () => {
+        let newClass = 'fuel-truck-avail';
+        if(airplaneCanRefuel()){
+            if(totalTarget == totalCurrent) {
+                return newClass + ' completed-text'
+            }
+            return newClass + ' in-progress-text'
+        }
+        return newClass + ' disabled-text'
     }
     const formatFuelFilling = (curr: number, max: number) => {
         let percent = (curr/max)*100;
@@ -92,12 +123,13 @@ const FuelWidget = (props: FuelPageProps) => {
         setSliderValue((fuel/totalFuel)*100);
         setDesiredFuel(fuel)
 
-        setTotalCurrent(6232)
+        setTotalCurrent(16232)
         setCenterCurrent(0)
         setLInnCurrent(2425)
         setRInnCurrent(2425)
         setLOutCurrent(691)
         setROutCurrent(691)
+        //setFuelingActive(1);
 	}
     const updateSlider = (value: number) => {
         setSliderValue(value);
@@ -115,7 +147,7 @@ const FuelWidget = (props: FuelPageProps) => {
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info">
             <h2 className="text-2xl font-medium">Left inner tank</h2>
                 <div className="flex mt-4">
-                    <div className="fuel-bar" style={{left:''+formatFuelBar(LInnTarget||0,innerCell)+'em'}}></div>
+                    <div className="fuel-bar" style={{left:''+formatFuelBar(LInnTarget||0,innerCell)+'%'}}></div>
                     <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={((LInnCurrent||0)/innerCell)*100} /></div>
                     <div className="fuel-label"><label>{LInnCurrent||0}/{innerCell} {currentUnit}</label></div>
                 </div>
@@ -123,7 +155,7 @@ const FuelWidget = (props: FuelPageProps) => {
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info outter">
             <h2 className="text-2xl font-medium">Left outer tank</h2>
                 <div className="flex mt-4">
-                    <div className="fuel-bar" style={{left:''+formatFuelBar(LOutTarget||0,outerCell)+'em'}}></div>
+                    <div className="fuel-bar" style={{left:''+formatFuelBar(LOutTarget||0,outerCell)+'%'}}></div>
                     <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={((LOutCurrent||0)/outerCell)*100} /></div>
                     <div className="fuel-label"><label>{LOutCurrent||0}/{outerCell} {currentUnit}</label></div>
                 </div>
@@ -131,7 +163,7 @@ const FuelWidget = (props: FuelPageProps) => {
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info center-tanks-info">
             <h2 className="text-2xl font-medium">Center tank</h2>
                 <div className="flex mt-4">
-                    <div className="fuel-bar" style={{left:''+formatFuelBar(centerTarget||0,centerTank)+'em'}}></div>
+                    <div className="fuel-bar" style={{left:''+formatFuelBar(centerTarget||0,centerTank)+'%'}}></div>
                     <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={((centerCurrent||0)/centerTank)*100} /></div>
                     <div className="fuel-label"><label>{centerCurrent||0}/{centerTank} {currentUnit}</label></div>
                 </div>
@@ -139,9 +171,15 @@ const FuelWidget = (props: FuelPageProps) => {
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info refuel-info">
             <h2 className="text-2xl font-medium">Refuel</h2>
                     <div className="flex mt-n5">
-                        <div className="fuel-progress"><Slider axis="x" x={sliderValue} onChange={({ x }) => updateSlider(x)} /></div>
-                        <div className="fuel-label"><SimpleInput placeholder={totalFuel.toString()} number={true} min={0} max={totalFuel} value={totalTarget} onChange={(x) => updateDesiredFuel(x)} /></div>
-                        <div className="unit-label">{currentUnit}</div>
+                        <div className="fuel-progress"><Slider value={sliderValue} onInput={(value) => updateSlider(value)} className="w-48" /></div>
+                        <div className="fuel-label"><SimpleInput noLeftMargin={true} placeholder={totalFuel.toString()} number={true} min={0} max={totalFuel} value={totalTarget} onChange={(x) => updateDesiredFuel(x)} /></div>
+                        <div className="unit-label">{currentUnit + ' / ' + flightPhase + ' / '+ simGroundSpeed}</div>
+                        <div className="separation-line-refuel"></div>
+                        <div className="manage-fuel-truck">
+                            <div className='call-inop fuel-truck disabled'><IconTruck /></div>
+                            <label className="inop-label-fuel-page">Inop.</label>
+                            <label className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</label>
+                        </div>
                     </div>
                     <span>Current fuel :</span>
                     <div className="flex mt-n5">
@@ -152,7 +190,7 @@ const FuelWidget = (props: FuelPageProps) => {
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info right-tanks-info">
             <h2 className="text-2xl font-medium">Right inner tank</h2>
                 <div className="flex mt-4">
-                    <div className="fuel-bar" style={{left:''+formatFuelBar(RInnTarget||0,innerCell)+'em'}}></div>
+                    <div className="fuel-bar" style={{left:''+formatFuelBar(RInnTarget||0,innerCell)+'%'}}></div>
                     <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={((RInnCurrent||0)/innerCell)*100} /></div>
                     <div className="fuel-label"><label>{RInnCurrent||0}/{innerCell} {currentUnit}</label></div>
                 </div>
@@ -160,7 +198,7 @@ const FuelWidget = (props: FuelPageProps) => {
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info right-tanks-info outter">
             <h2 className="text-2xl font-medium">Right outer tank</h2>
                 <div className="flex mt-4">
-                    <div className="fuel-bar" style={{left:''+formatFuelBar(ROutTarget||0,outerCell)+'em'}}></div>
+                    <div className="fuel-bar" style={{left:''+formatFuelBar(ROutTarget||0,outerCell)+'%'}}></div>
                     <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={((ROutCurrent||0)/outerCell)*100} /></div>
                     <div className="fuel-label"><label>{ROutCurrent||0}/{outerCell} {currentUnit}</label></div>
                 </div>
@@ -176,6 +214,16 @@ const FuelWidget = (props: FuelPageProps) => {
             <div className='wrapper outer-right-tank' style={{background:formatFuelFilling(ROutCurrent||0,outerCell)}}>
             </div>
             <img className="airplane-fuel w-full" src={fuselage} />
+            <div className="bg-gray-800 rounded-xl text-white shadow-lg mr-4 overflow-x-hidden refuel-speed">
+                <div className="mb-3.5 flex flex-row justify-between items-center">
+                    <span className="text-lg text-gray-300">Refuel Time</span>
+                    <SelectGroup>
+                        <SelectItem>Instant</SelectItem>
+                        <SelectItem>Fast</SelectItem>
+                        <SelectItem selected>Real</SelectItem>
+                    </SelectGroup>
+                </div>
+            </div>
         </div>
     );
 };

@@ -31,7 +31,7 @@
 }
 
 .outter {
-  top: 23.5em;
+  top: 37%;
 }
 .vent {
   z-index: 1000;
@@ -42,11 +42,11 @@
 }
 .center-tanks-info {
   left: 36.25%;
-  top: 25em;
+  top: 40%;
 }
 .refuel-info {
-  width: 30%;
-  left: 34.8%;
+  width: 35%;
+  left: 32.5%;
   top: 14.25em;
 }
 .center-tank {
@@ -103,11 +103,12 @@
   background: linear-gradient(to top, #3b82f6 50%, #ffffff00 0%);
 }
 .fuel-bar {
+  @apply bg-blue-light-contrast;
   position: absolute;
   margin-top: -3px;
   width: 5px;
   height: 31px;
-  background-color: #5e72e4;
+  // background-color: #5e72e4;
 }
 .fuel-progress {
   margin-top: 7px;
@@ -118,9 +119,22 @@
 }
 .unit-label {
   position: absolute;
-  left: 21rem;
+  left: 21.75rem;
   top: 3.5rem;
-  color: #9ca3af;
+  //color: #9ca3af;
+}
+.manage-fuel-truck {
+  position: absolute;
+  left: 26.2rem;
+  top: 1.25rem;
+}
+.separation-line-refuel {
+  position: absolute;
+  left: 24.75rem;
+  top: 1rem;
+  height: 7.5rem;
+  width: 1px;
+  background-color: white;
 }
 .max-capacity-label {
   display: block;
@@ -136,6 +150,7 @@
   margin-left: auto;
   margin-right: auto;
   top: 34rem;
+  z-index: 1;
 }
 
 .control-grid {
@@ -172,9 +187,17 @@
 }
 
 .fuel-truck {
-  right: calc(27.5% + 18rem);
-  top: 14rem;
+  height: 3.5rem;
+  width: 3.5rem;
+  margin: auto;
+  right: calc(55% + 18rem);
+  top: 21rem;
   grid-template-columns: minmax(0, 1fr);
+  @apply p-2;
+  @apply bg-gray-800;
+  @apply rounded-lg;
+  color: #232b3d;
+  grid-gap: 0.5rem;
 }
 
 .baggage {
@@ -195,9 +218,14 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-.call {
+.call-inop {
   @apply bg-green-500;
   grid-column: 1 / 1;
+}
+
+.call-inop > svg {
+  height: 100%;
+  width: 100%;
 }
 
 .selected {
@@ -224,4 +252,45 @@
 .down-right {
   @apply bg-green-500;
   grid-column: 3/3;
+}
+
+.refuel-speed {
+  position: absolute;
+  padding: 1rem;
+  padding-bottom: 0rem;
+  z-index: 1000;
+  bottom: 2rem;
+  left: 37%;
+  width: 23rem;
+  height: 7.75%;
+}
+
+.in-progress {
+  background-color: #fc9a38 !important;
+}
+
+.in-progress-text {
+  color: #fc9a38 !important;
+}
+
+.disabled {
+  background-color: #9aa2ad !important;
+}
+
+.disabled-text {
+  color: #9aa2ad !important;
+}
+
+.completed-text {
+  color: #10b981;
+}
+
+.inop-label-fuel-page {
+  margin-left: 18%;
+}
+
+.fuel-truck-avail {
+  position: absolute;
+  left: -12%;
+  top: 115%;
 }

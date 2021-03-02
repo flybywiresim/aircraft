@@ -8,6 +8,7 @@ type SimpleInputProps = {
     min?: number,
     max?: number,
     number?: boolean,
+    noLeftMargin?: boolean,
     reverse?: boolean // Flip label/input order,
     className?: string
 };
@@ -76,7 +77,7 @@ export default class SimpleInput extends React.Component<SimpleInputProps, Simpl
     render() {
         return (
             <div className={`flex ${this.props.className} ${this.props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
-                <div className={`flex flex-grow m-2.5 items-center ${this.props.reverse ? 'justify-start' : 'justify-end'}`}>{this.props.label ?? ''}</div>
+                <div className={`flex flex-grow ${this.props.noLeftMargin ? '' : 'm-2.5' } items-center ${this.props.reverse ? 'justify-start' : 'justify-end'}`}>{this.props.label ?? ''}</div>
                 <div className="flex items-center">
                     <input
                         className="w-28 text-lg bg-gray-900 px-3 py-1.5 rounded"
