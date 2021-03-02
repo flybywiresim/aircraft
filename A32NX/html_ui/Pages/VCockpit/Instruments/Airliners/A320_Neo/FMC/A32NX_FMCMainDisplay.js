@@ -1950,20 +1950,6 @@ class FMCMainDisplay extends BaseAirliners {
         return true;
     }
 
-    async getTransitionAltitude(departICAO) {
-        await NXApi.getAirport(departICAO)
-            .then((data) => {
-                this.transitionAltitude = data.transAlt;
-                if (this.transitionAltitude === -1) {
-                    SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
-                    return;
-                } else {
-                    SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", this.transitionAltitude);
-                    return;
-                }
-            });
-    }
-
     //Needs PR Merge #3082
     trySetThrustReductionAccelerationAltitude(s) {
         if (s === FMCMainDisplay.clrValue) {
@@ -2591,20 +2577,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.transitionArrivalAltitudeIsPilotEntered = true;
         SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", value);
         return true;
-    }
-
-    async getArrivalTransitionAltitude(arrivalICAO) {
-        await NXApi.getAirport(arrivalICAO)
-            .then((data) => {
-                this.transitionApprAltitude = data.transAlt;
-                if (this.transitionApprAltitude === -1) {
-                    SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
-                    return;
-                } else {
-                    SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", this.transitionApprAltitude);
-                    return;
-                }
-            });
     }
 
     /**
@@ -3365,21 +3337,47 @@ class FMCMainDisplay extends BaseAirliners {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
     }
 
-    // Only update when changing departure & arrival airport
+    getTransitionAltitude(icao, phase) {
+        NXApi.getAirport(icao)
+            .then((data) => {
+                this.transitionAltitude = data.transAlt;
+                if (this.transitionAltitude === -1) {
+                    if (phase === "origin") {
+                        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
+                        return;
+                    }
+                    if (phase === "destination") {
+                        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
+                        return;
+                    }
+                } else {
+                    if (phase === "origin") {
+                        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", this.transitionAltitude);
+                        return;
+                    }
+                    if (phase === "destination") {
+                        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", this.transitionAltitude);
+                        return;
+                    }
+                }
+            });
+    }
+
+    // Only update when changing origin & destination airport
     updateDepartArrive(_deltaTime) {
         if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident && this.offlineTACore.offline !== true) {
             if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident && this.offlineTACore.offline !== true) {
-                const departureAirport = this.flightPlanManager.getOrigin().ident;
-                const arrivalAirport = this.flightPlanManager.getDestination().ident;
-                if (this.currentOrigin !== departureAirport) {
-                    NXDataStore.set("PLAN_ORIGIN", departureAirport);
-                    this.getTransitionAltitude(departureAirport);
-                    this.currentOrigin = departureAirport;
+                const originAirport = this.flightPlanManager.getOrigin().ident;
+                const destinationAirport = this.flightPlanManager.getDestination().ident;
+                if (this.currentOrigin !== originAirport) {
+                    NXDataStore.set("PLAN_ORIGIN", originAirport);
+                    this.getTransitionAltitude(originAirport, "origin");
+                    this.currentOrigin = originAirport;
                 }
-                if (this.currentDestination !== arrivalAirport) {
-                    NXDataStore.set("PLAN_DESTINATION", arrivalAirport);
-                    this.getArrivalTransitionAltitude(arrivalAirport);
-                    this.currentDestination = arrivalAirport;
+                if (this.currentDestination !== destinationAirport) {
+                    NXDataStore.set("PLAN_DESTINATION", destinationAirport);
+                    this.getTransitionAltitude(destinationAirport, "destination");
+                    this.currentDestination = destinationAirport;
                 }
             }
         }

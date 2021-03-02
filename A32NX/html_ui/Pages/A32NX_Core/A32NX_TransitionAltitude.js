@@ -24,11 +24,11 @@ class A32NX_TransitionAltitude {
         const Destination = NXDataStore.get("PLAN_DESTINATION", "");
         if (Origin !== "" && Destination !== "") {
             if (this.currentDeparture !== Origin) {
-                this.transitionAltitude(Origin, "takeoff");
+                this.transitionAltitude(Origin, "origin");
                 this.currentDeparture = Origin;
             }
             if (this.currentArrival !== Destination) {
-                this.transitionAltitude(Destination, "arrival");
+                this.transitionAltitude(Destination, "destination");
                 this.currentArrival = Destination;
             }
         }
@@ -36,10 +36,10 @@ class A32NX_TransitionAltitude {
 
     transitionAltitude(airport, phase) {
         let phaseTransAlt = "";
-        if (phase === "takeoff") {
+        if (phase === "origin") {
             phaseTransAlt = "L:AIRLINER_TRANS_ALT";
         }
-        if (phase === "arrival") {
+        if (phase === "destination") {
             phaseTransAlt = "L:AIRLINER_APPR_TRANS_ALT";
         }
         const airportFirstLetter = airport.substr(0,1);
