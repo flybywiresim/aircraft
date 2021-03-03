@@ -553,6 +553,7 @@ pub struct A320HydraulicBrakingLogic {
 impl A320HydraulicBrakingLogic {
     const PARK_BRAKE_DEMAND_DYNAMIC: f64 = 0.8; //Dynamic of the parking brake application/removal in (percent/100) per s
     const LOW_PASS_FILTER_BRAKE_COMMAND: f64 = 0.85; //Low pass filter on all brake commands
+    const MIN_PRESSURE_BRAKE_ALTN:f64 = 1500.; //Minimum pressure until main switched on ALTN brakes
 
     pub fn new() -> A320HydraulicBrakingLogic {
         A320HydraulicBrakingLogic {
@@ -572,8 +573,8 @@ impl A320HydraulicBrakingLogic {
     //Updates final brake demands per hydraulic loop based on pilot pedal demands
     //TODO: think about where to build those brake demands from autobrake if not from brake pedals
     pub fn update_brake_demands(&mut self, delta_time_update: &Duration, green_loop: &HydLoop) {
-        let green_used_for_brakes = green_loop.get_pressure()
-            > Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED)
+        let green_used_for_brakes = green_loop.get_pressure() //TODO Check this logic
+            > Pressure::new::<psi>(A320HydraulicBrakingLogic::MIN_PRESSURE_BRAKE_ALTN )
             && self.anti_skid_activated
             && !self.parking_brake_demand;
 
