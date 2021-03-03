@@ -10,6 +10,8 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    env:
+      CDN_DIR: /flybywiresim/addons/a32nx/fragmenter-test/
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
@@ -42,9 +44,20 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/build.sh
       - name: Generate ZIP files
         run: |
+          ./scripts/dev-env/run.sh node ./scripts/fragment.js
+
           mkdir tmp_A32NX
           mv A32NX tmp_A32NX/
           mv tmp_A32NX A32NX
+      - name: Upload to Bunny CDN
+        uses: sebastianpopp/ftp-action@releases/v2
+        with:
+          host: ${{ secrets.BUNNY_BUCKET_HOST }}
+          user: ${{ secrets.BUNNY_BUCKET_USERNAME }}
+          password: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
+          localDir: ./build-modules/
+          remoteDir: ${{ env.CDN_DIR }}
+          options: "--delete --asci --transfer-all --verbose"
       - uses: actions/upload-artifact@v2
         with:
           name: A32NX
