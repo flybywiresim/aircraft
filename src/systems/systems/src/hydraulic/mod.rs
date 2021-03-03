@@ -702,7 +702,7 @@ impl Pump {
     fn update(&mut self, delta_time: &Duration, context: &UpdateContext, line: &HydLoop, rpm: f64) {
         let displacement = self.calculate_displacement(line.get_pressure());
 
-        let flow = Pump::calculate_flow(rpm, displacement);
+        let flow = Pump::calculate_flow(rpm, displacement).max(VolumeRate::new::<gallon_per_second>(0.));
 
         self.delta_vol_max = (1.0 - self.displacement_dynamic) * self.delta_vol_max
             + self.displacement_dynamic * flow * Time::new::<second>(delta_time.as_secs_f64());
