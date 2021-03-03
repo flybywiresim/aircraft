@@ -17,7 +17,7 @@ The following aircraft configuration is currently simulated:
  Model      A320-251N
  Engine     LEAP 1A-26
  FMGS       Honeywell Pegasus II
- FWC Std.   H2F9E
+ FWC Std.   H2F9C
  ```
 
 Please note that this configuration may change in the future as the A32NX project evolves and changes.

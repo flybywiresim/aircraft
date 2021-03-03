@@ -36,8 +36,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* global BaseInstrument */
-/* global registerInstrument */
+/* global Airliners */
+
 
 // eslint-disable-next-line camelcase
 class A32NX_PAGE_NAME_Logic extends Airliners.EICASTemplateElement {
@@ -81,4 +81,4 @@ class A32NX_PAGE_NAME_Logic extends Airliners.EICASTemplateElement {
     }
 }
 
-registerInstrument('a32nx-PAGE_NAME_LOWER_SKEWER-element', A32NX_PAGE_NAME_Logic);
+customElements.define('a32nx-PAGE_NAME_LOWER_SKEWER-element', A32NX_PAGE_NAME_Logic);
