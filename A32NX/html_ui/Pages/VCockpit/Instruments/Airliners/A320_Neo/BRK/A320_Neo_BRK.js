@@ -74,11 +74,11 @@ var A320_Neo_BRK;
             if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
                 return;
             }
-            const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
+
             const powerAvailable = SimVar.GetSimVarValue("L:DCPowerAvailable","Bool");
             if (this.topGauge != null) {
                 if (powerAvailable) {
-                    this.topGauge.setValue(3);
+                    this.topGauge.setValue(3 * (SimVar.GetSimVarValue("L:A32NX_HYD_BRAKE_ALTN_ACC_PRESS","PSI") / 3000));
                 } else {
                     this.topGauge.setValue(0);
                 }
@@ -86,22 +86,14 @@ var A320_Neo_BRK;
 
             if (this.leftGauge != null) {
                 if (powerAvailable) {
-                    if (currentPKGBrakeState != 0) {
-                        this.leftGauge.setValue(2);
-                    } else {
-                        this.leftGauge.setValue(2 * (SimVar.GetSimVarValue("BRAKE LEFT POSITION","SINT32") / 32000));
-                    }
+                    this.leftGauge.setValue(3 * (SimVar.GetSimVarValue("L:A32NX_HYD_BRAKE_ALTN_LEFT_PRESS","PSI") / 3000));    
                 } else {
                     this.leftGauge.setValue(0);
                 }
             }
             if (this.rightGauge != null) {
                 if (powerAvailable) {
-                    if (currentPKGBrakeState != 0) {
-                        this.rightGauge.setValue(2);
-                    } else {
-                        this.rightGauge.setValue(2 * (SimVar.GetSimVarValue("BRAKE RIGHT POSITION","SINT32") / 32000));
-                    }
+                    this.rightGauge.setValue(3 * (SimVar.GetSimVarValue("L:A32NX_HYD_BRAKE_ALTN_RIGHT_PRESS","PSI") / 3000));
                 } else {
                     this.rightGauge.setValue(0);
                 }

@@ -5,7 +5,7 @@ mod pneumatic;
 
 use self::{fuel::A320Fuel, pneumatic::A320PneumaticOverheadPanel};
 use electrical::{A320Electrical, A320ElectricalOverheadPanel};
-use hydraulic::A320Hydraulic;
+use hydraulic::{A320Hydraulic,A320HydraulicOverheadPanel};
 use systems::{
     apu::{
         Aps3200ApuGenerator, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
@@ -28,6 +28,7 @@ pub struct A320 {
     electrical: A320Electrical,
     ext_pwr: ExternalPowerSource,
     hydraulic: A320Hydraulic,
+    hydraulic_overhead: A320HydraulicOverheadPanel,
 }
 impl A320 {
     pub fn new() -> A320 {
@@ -43,6 +44,7 @@ impl A320 {
             electrical: A320Electrical::new(),
             ext_pwr: ExternalPowerSource::new(),
             hydraulic: A320Hydraulic::new(),
+            hydraulic_overhead: A320HydraulicOverheadPanel::new(),
         }
     }
 }
@@ -80,6 +82,13 @@ impl Aircraft for A320 {
             &self.electrical_overhead,
         );
         self.electrical_overhead.update_after_elec(&self.electrical);
+
+        self.hydraulic.update(
+            context,
+            &self.engine_1,
+            &self.engine_2,
+            &self.hydraulic_overhead,
+        );
     }
 }
 impl SimulationElement for A320 {
@@ -94,6 +103,8 @@ impl SimulationElement for A320 {
         self.engine_2.accept(visitor);
         self.electrical.accept(visitor);
         self.ext_pwr.accept(visitor);
+        self.hydraulic.accept(visitor);
+        self.hydraulic_overhead.accept(visitor);
         visitor.visit(self);
     }
 }
