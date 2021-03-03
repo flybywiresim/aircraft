@@ -558,7 +558,7 @@
 -A32NX_APU_AUTOEXITING_TEST_OK
     -Bool
     -True if APU AUTOEXITING TEST returns OK.
-=======
+    
 - A32NX_OVHD_{name}_PB_IS_AVAILABLE
     - Bool
     - True when the push button's AVAIL light should illuminate
