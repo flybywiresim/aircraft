@@ -188,7 +188,7 @@ impl A320Hydraulic {
             ); //Keep track of time left after all fixed loop are done
 
             //UPDATING HYDRAULICS AT FIXED STEP
-            for cur_loop in 0..num_of_update_loops {
+            for _cur_loop in 0..num_of_update_loops {
                 //Base logic update based on overhead Could be done only once (before that loop) but if so delta time should be set accordingly
                 self.update_hyd_logic_inputs(&min_hyd_loop_timestep, &overhead_panel, &ct);
 
@@ -261,7 +261,7 @@ impl A320Hydraulic {
                 num_of_update_loops * A320Hydraulic::ACTUATORS_SIM_TIME_STEP_MULT;
             let delta_time_physics =
                 min_hyd_loop_timestep / A320Hydraulic::ACTUATORS_SIM_TIME_STEP_MULT; //If X times faster we divide step by X
-            for cur_loop in 0..num_of_actuators_update_loops {
+            for _cur_loop in 0..num_of_actuators_update_loops {
                 self.rat
                     .update_physics(&delta_time_physics, &ct.indicated_airspeed);
             }
@@ -806,7 +806,7 @@ impl A320HydraulicOverheadPanel {
         }
     }
 
-    pub fn update_pb_faults(&mut self, context: &UpdateContext, hyd : &A320Hydraulic  ) {
+    pub fn update_pb_faults(&mut self, hyd : &A320Hydraulic  ) {
         self.edp1_push_button.set_fault(hyd.hyd_logic_inputs.green_edp_has_fault);
         self.edp2_push_button.set_fault(hyd.hyd_logic_inputs.yellow_edp_has_fault);
         self.blue_epump_push_button.set_fault(hyd.hyd_logic_inputs.blue_epump_has_fault);
