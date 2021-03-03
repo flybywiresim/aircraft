@@ -10,8 +10,6 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    env:
-      CDN_DIR: /flybywiresim/addons/a32nx/fragmenter-test/
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
@@ -34,6 +32,8 @@ jobs:
           docker run --rm -v "$(pwd)":/external ghcr.io/flybywiresim/dev-env@sha256:0bf0844b914cbd45a8a0a866a71c7a07fa09308f48cb961708be479f0d63aa0f scripts/test-rust.sh
   build:
     runs-on: ubuntu-latest
+    env:
+      CDN_DIR: /flybywiresim/addons/a32nx/fragmenter-test/
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
@@ -44,7 +44,7 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/build.sh
       - name: Generate ZIP files
         run: |
-          ./scripts/dev-env/run.sh node ./scripts/fragment.js
+          node ./scripts/fragment.js
 
           mkdir tmp_A32NX
           mv A32NX tmp_A32NX/
