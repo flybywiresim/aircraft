@@ -129,7 +129,7 @@ var Airliners;
             this.SwitchToPageName(BaseEICAS.LOWER_SCREEN_GROUP_NAME, pageName);
             for (let i = 0; i < this.lowerScreenPages.length; i++) {
                 if (this.lowerScreenPages[i].name == pageName) {
-                    SimVar.SetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number", i);
+                    SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", i);
                     break;
                 }
             }

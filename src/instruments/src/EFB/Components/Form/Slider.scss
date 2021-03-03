@@ -1,0 +1,51 @@
+/*!
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.slider {
+  @apply bg-blue-darker;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 5px;
+  outline: none;
+}
+
+@mixin slider-handle {
+  @apply bg-blue-light-contrast;
+  @apply rounded-full;
+  @apply border-0;
+  @apply shadow-lg;
+
+  $slider-size: 14px;
+
+  width: $slider-size !important;
+  height: $slider-size !important;
+
+  transform: translateY(10px);
+
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+  @include slider-handle;
+  -webkit-appearance: none;
+}
+
+.slider::-moz-range-thumb {
+  @include slider-handle;
+  appearance: none;
+}
