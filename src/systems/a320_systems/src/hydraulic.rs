@@ -805,8 +805,14 @@ impl A320HydraulicOverheadPanel {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {}
+    pub fn update_pb_faults(&mut self, context: &UpdateContext, hyd : &A320Hydraulic  ) {
+        self.edp1_push_button.set_fault(hyd.hyd_logic_inputs.green_edp_has_fault);
+        self.edp2_push_button.set_fault(hyd.hyd_logic_inputs.yellow_edp_has_fault);
+        self.blue_epump_push_button.set_fault(hyd.hyd_logic_inputs.blue_epump_has_fault);
+        self.yellow_epump_push_button.set_fault(hyd.hyd_logic_inputs.yellow_epump_has_fault);
+    }
 }
+
 
 impl SimulationElement for A320HydraulicOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {

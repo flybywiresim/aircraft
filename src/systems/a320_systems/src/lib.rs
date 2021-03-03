@@ -89,6 +89,8 @@ impl Aircraft for A320 {
             &self.engine_2,
             &self.hydraulic_overhead,
         );
+
+        self.hydraulic_overhead.update_pb_faults(context, &self.hydraulic);
     }
 }
 impl SimulationElement for A320 {

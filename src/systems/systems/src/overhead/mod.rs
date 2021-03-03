@@ -240,7 +240,7 @@ impl AutoOffFaultPushButton {
         self.has_fault
     }
 
-    fn set_fault(&mut self, value: bool) {
+    pub fn set_fault(&mut self, value: bool) {
         self.has_fault = value;
     }
 }
