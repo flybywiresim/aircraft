@@ -90,23 +90,35 @@ class A32NX_FlightPhaseManager {
         const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
         const fl = Math.round(Simplane.getAltitude() / 100);
 
-        // Try initiate des
-        const dest = this.fmc.flightPlanManager.getDestination();
-        if (
-            this.fmc.currentFlightPhase !== FmgcFlightPhases.DESCENT &&
-            !!dest && dest.liveDistanceTo < 200 &&
-            fcuSelFl < fl
-        ) {
-            this.changeFlightPhase(FmgcFlightPhases.DESCENT);
-            return;
-        }
-
-        // Try Initiate Climb
+        // Try Initiate climb
         if (
             this.fmc.currentFlightPhase !== FmgcFlightPhases.CLIMB &&
             fcuSelFl > fl
         ) {
             this.changeFlightPhase(FmgcFlightPhases.CLIMB);
+            return;
+        }
+
+        const dest = this.fmc.flightPlanManager.getDestination();
+
+        // Try initiate descent
+        if (
+            this.fmc.currentFlightPhase !== FmgcFlightPhases.DESCENT &&
+            (!!dest && dest.liveDistanceTo < 200 || !dest) &&
+            fcuSelFl < this.fmc.cruiseFlightLevel
+        ) {
+            this.changeFlightPhase(FmgcFlightPhases.DESCENT);
+            return;
+        }
+
+        // Try initiate early descent
+        if (
+            this.fmc.currentFlightPhase !== FmgcFlightPhases.DESCENT &&
+            !!dest && dest.liveDistanceTo > 200 &&
+            fl > 200 &&
+            fcuSelFl < 200
+        ) {
+            this.changeFlightPhase(FmgcFlightPhases.DESCENT);
         }
     }
 
@@ -201,6 +213,7 @@ class A32NX_FlightPhase_Climb {
     }
 }
 
+//TODO: implement ability to initiate descent with V/S knob
 class A32NX_FlightPhase_Cruise {
     constructor() {
     }

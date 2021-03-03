@@ -108,7 +108,7 @@ class CDUProgressPage {
             altCell = mcdu.cruiseFlightLevel.toFixed(0);
         }
         mcdu.onRightInput[0] = (value) => {
-            if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
+            if (mcdu.setCruiseFlightLevelAndTemperature(value, true)) {
                 CDUProgressPage.ShowReportPage(mcdu);
             }
         };

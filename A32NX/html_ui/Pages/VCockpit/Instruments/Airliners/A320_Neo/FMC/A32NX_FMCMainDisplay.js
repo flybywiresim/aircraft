@@ -177,6 +177,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
         this.flightPhaseUpdateThrottler = new UpdateThrottler(800);
+        this._cruiseFlightLevel = undefined;
+        this._activeCruiseFlightLevel = undefined;
     }
 
     Init() {
@@ -991,6 +993,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     onEvent(_event) {
+        console.log("_event: " + _event);
         if (_event === "MODE_SELECTED_SPEED") {
             this._onModeSelectedSpeed();
         }
@@ -1020,9 +1023,11 @@ class FMCMainDisplay extends BaseAirliners {
             this._onModeManagedHeading();
         }
         if (_event === "MODE_SELECTED_ALTITUDE") {
+            this.flightPhaseManager.handleFcuInput();
             this._onModeSelectedAltitude();
         }
         if (_event === "MODE_MANAGED_ALTITUDE") {
+            this.flightPhaseManager.handleFcuInput();
             this._onModeManagedAltitude();
         }
         if (_event === "AP_DEC_SPEED" || _event === "AP_INC_SPEED") {
@@ -1077,8 +1082,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     _onModeSelectedAltitude() {
-        this.flightPhaseManager.handleFcuInput();
-
         if (!Simplane.getAutoPilotGlideslopeHold()) {
             SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
         }
@@ -1087,8 +1090,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     _onModeManagedAltitude() {
-        this.flightPhaseManager.handleFcuInput();
-
         SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 2);
         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate);
         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate);
@@ -1114,15 +1115,15 @@ class FMCMainDisplay extends BaseAirliners {
     /* MCDU GET/SET METHODS */
 
     get cruiseFlightLevel() {
-        return this._cruiseFlightLevel;
+        return this._activeCruiseFlightLevel;
     }
 
     set cruiseFlightLevel(fl) {
-        this._cruiseFlightLevel = Math.round(fl);
-        SimVar.SetSimVarValue("L:AIRLINER_CRUISE_ALTITUDE", "number", this._cruiseFlightLevel * 100);
+        this._activeCruiseFlightLevel = Math.round(fl);
+        SimVar.SetSimVarValue("L:AIRLINER_CRUISE_ALTITUDE", "number", this._activeCruiseFlightLevel * 100);
     }
 
-    setCruiseFlightLevelAndTemperature(input) {
+    setCruiseFlightLevelAndTemperature(input, _setActive = false) {
         if (input === FMCMainDisplay.clrValue) {
             this.cruiseFlightLevel = undefined;
             this.cruiseTemperature = undefined;
@@ -1132,7 +1133,7 @@ class FMCMainDisplay extends BaseAirliners {
         const tempString = input.split("/")[1];
         const onlyTemp = flString.length === 0;
 
-        if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString))) {
+        if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString), _setActive)) {
             if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") === 1 && SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
                 SimVar.SetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number", this.cruiseFlightLevel);
             } else {
@@ -2211,15 +2212,16 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
-        return this.trySetCruiseFl(parseFloat(flString));
+        return this.trySetCruiseFl(parseFloat(flString), true);
     }
 
     /**
      * Sets new Cruise FL if all conditions good
      * @param fl {number} Altitude or FL
+     * @param _setActive {boolean} If false => update the cruise fl entered on init a page
      * @returns {boolean} input passed checks
      */
-    trySetCruiseFl(fl) {
+    trySetCruiseFl(fl, _setActive) {
         if (!isFinite(fl)) {
             this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
@@ -2242,6 +2244,9 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
         if (fl > 0 && fl <= this.maxCruiseFL) {
+            if (!_setActive) {
+                this._cruiseFlightLevel = fl;
+            }
             this.cruiseFlightLevel = fl;
             this._cruiseEntered = true;
             this.cruiseTemperature = undefined;
