@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class NavSystem extends BaseInstrument {
     constructor() {
         super(...arguments);
@@ -33,6 +51,7 @@ class NavSystem extends BaseInstrument {
         this.initAcknowledged = true;
         this.reversionaryMode = false;
         this.alwaysUpdateList = new Array();
+        this.accumulatedDeltaTime = 0;
     }
     get flightPlanManager() {
         return this.currFlightPlanManager;
@@ -321,119 +340,111 @@ class NavSystem extends BaseInstrument {
     }
     Update() {
         super.Update();
-        if (this.CanUpdate()) {
-            if (NavSystem._iterations < 10000) {
-                NavSystem._iterations += 1;
+        this.accumulatedDeltaTime += this.deltaTime;
+
+        if (NavSystem._iterations < 10000) {
+            NavSystem._iterations += 1;
+        }
+        const t0 = performance.now();
+        if (this.isElectricityAvailable()) {
+            if (!this.isStarted) {
+                this.onPowerOn();
             }
-            const t0 = performance.now();
-            if (this.isElectricityAvailable()) {
-                if (!this.isStarted) {
-                    this.onPowerOn();
-                }
-                if (this.isBootProcedureComplete()) {
-                    if (this.reversionaryMode) {
-                        if (this.electricity) {
-                            this.electricity.setAttribute("state", "Backup");
-                            SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 1);
-                            SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 3);
-                        }
-                    } else {
-                        if (this.electricity) {
-                            this.electricity.setAttribute("state", "on");
-                            SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 1);
-                            SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 2);
-                        }
-                    }
-                } else if (Date.now() - this.startTime > this.initDuration) {
+            if (this.isBootProcedureComplete()) {
+                if (this.reversionaryMode) {
                     if (this.electricity) {
-                        this.electricity.setAttribute("state", "initWaitingValidation");
-                        SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 0.2);
-                        SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 1);
+                        this.electricity.setAttribute("state", "Backup");
+                        SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 1);
+                        SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 3);
                     }
                 } else {
                     if (this.electricity) {
-                        this.electricity.setAttribute("state", "init");
-                        SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 0.2);
-                        SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 1);
+                        this.electricity.setAttribute("state", "on");
+                        SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 1);
+                        SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 2);
                     }
                 }
-            } else {
-                if (this.isStarted) {
-                    this.onShutDown();
-                }
+            } else if (Date.now() - this.startTime > this.initDuration) {
                 if (this.electricity) {
-                    this.electricity.setAttribute("state", "off");
-                    SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 0);
-                    SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 0);
+                    this.electricity.setAttribute("state", "initWaitingValidation");
+                    SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 0.2);
+                    SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 1);
                 }
-            }
-            this.updateAspectRatio();
-            if (this.currFlightPlanManager.isLoadedApproach() && !this.currFlightPlanManager.isActiveApproach() && (this.currFlightPlanManager.getActiveWaypointIndex() == -1 || (this.currFlightPlanManager.getActiveWaypointIndex() > this.currFlightPlanManager.getLastIndexBeforeApproach()))) {
-                if (SimVar.GetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number") != 1) {
-                    this.currFlightPlanManager.tryAutoActivateApproach();
-                }
-            }
-            if (this.popUpElement) {
-                this.popUpElement.onUpdate(this.deltaTime);
-            }
-            if (this.pagesContainer) {
-                this.pagesContainer.setAttribute("state", this.getCurrentPage().htmlElemId);
-            }
-            if (this.useUpdateBudget) {
-                this.updateGroupsWithBudget();
             } else {
-                this.updateGroups();
+                if (this.electricity) {
+                    this.electricity.setAttribute("state", "init");
+                    SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 0.2);
+                    SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 1);
+                }
             }
-            switch (this.currentInteractionState) {
-                case 0:
-                    for (var i = 0; i < this.currentSelectableArray.length; i++) {
-                        this.currentSelectableArray[i].updateSelection(false);
-                    }
-                    break;
-                case 1:
-                    for (var i = 0; i < this.currentSelectableArray.length; i++) {
-                        if (i == this.cursorIndex) {
-                            this.currentSelectableArray[i].updateSelection(this.blinkGetState(400, 200));
-                        } else {
-                            this.currentSelectableArray[i].updateSelection(false);
-                        }
-                    }
-                    break;
-                case 2:
-                    this.currentContextualMenu.Update(this, this.menuMaxElems);
-                    break;
-            }
-            this.onUpdate(this.deltaTime);
-            const t = performance.now() - t0;
-            NavSystem.maxTimeUpdateAllTime = Math.max(t, NavSystem.maxTimeUpdateAllTime);
-            NavSystem.maxTimeUpdate = Math.max(t, NavSystem.maxTimeUpdate);
-            const factor = 1 / NavSystem._iterations;
-            NavSystem.mediumTimeUpdate *= (1 - factor);
-            NavSystem.mediumTimeUpdate += factor * t;
         } else {
-            for (var i = 0; i < this.alwaysUpdateList.length; i++) {
-                this.alwaysUpdateList[i].onUpdate(this.deltaTime);
+            if (this.isStarted) {
+                this.onShutDown();
+            }
+            if (this.electricity) {
+                this.electricity.setAttribute("state", "off");
+                SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_ScreenLuminosity", "number", 0);
+                SimVar.SetSimVarValue("L:" + this.instrumentIdentifier + "_State", "number", 0);
             }
         }
+        this.updateAspectRatio();
+        if (this.popUpElement) {
+            this.popUpElement.onUpdate(this.accumulatedDeltaTime);
+        }
+        if (this.pagesContainer) {
+            this.pagesContainer.setAttribute("state", this.getCurrentPage().htmlElemId);
+        }
+        if (this.useUpdateBudget) {
+            this.updateGroupsWithBudget();
+        } else {
+            this.updateGroups();
+        }
+        switch (this.currentInteractionState) {
+            case 0:
+                for (var i = 0; i < this.currentSelectableArray.length; i++) {
+                    this.currentSelectableArray[i].updateSelection(false);
+                }
+                break;
+            case 1:
+                for (var i = 0; i < this.currentSelectableArray.length; i++) {
+                    if (i == this.cursorIndex) {
+                        this.currentSelectableArray[i].updateSelection(this.blinkGetState(400, 200));
+                    } else {
+                        this.currentSelectableArray[i].updateSelection(false);
+                    }
+                }
+                break;
+            case 2:
+                this.currentContextualMenu.Update(this, this.menuMaxElems);
+                break;
+        }
+        this.onUpdate(this.accumulatedDeltaTime);
+        const t = performance.now() - t0;
+        NavSystem.maxTimeUpdateAllTime = Math.max(t, NavSystem.maxTimeUpdateAllTime);
+        NavSystem.maxTimeUpdate = Math.max(t, NavSystem.maxTimeUpdate);
+        const factor = 1 / NavSystem._iterations;
+        NavSystem.mediumTimeUpdate *= (1 - factor);
+        NavSystem.mediumTimeUpdate += factor * t;
+        this.accumulatedDeltaTime = 0;
     }
     updateGroups() {
         for (let i = 0; i < this.IndependentsElements.length; i++) {
-            this.IndependentsElements[i].onUpdate(this.deltaTime);
+            this.IndependentsElements[i].onUpdate(this.accumulatedDeltaTime);
         }
         if (!this.overridePage) {
             const currentGroup = this.getCurrentPageGroup();
             if (currentGroup) {
-                currentGroup.onUpdate(this.deltaTime);
+                currentGroup.onUpdate(this.accumulatedDeltaTime);
             }
         } else {
-            this.overridePage.onUpdate(this.deltaTime);
+            this.overridePage.onUpdate(this.accumulatedDeltaTime);
         }
     }
     updateGroupsWithBudget() {
         const target = this.budgetedItemId + this.maxUpdateBudget;
         while (this.budgetedItemId < target) {
             if (this.budgetedItemId < this.IndependentsElements.length) {
-                this.IndependentsElements[this.budgetedItemId].onUpdate(this.deltaTime);
+                this.IndependentsElements[this.budgetedItemId].onUpdate(this.accumulatedDeltaTime);
                 this.budgetedItemId++;
                 continue;
             }
@@ -441,13 +452,13 @@ class NavSystem extends BaseInstrument {
                 const currentGroup = this.getCurrentPageGroup();
                 if (currentGroup) {
                     const itemId = this.budgetedItemId - this.IndependentsElements.length;
-                    if (currentGroup.onUpdateSpecificItem(this.deltaTime, itemId)) {
+                    if (currentGroup.onUpdateSpecificItem(this.accumulatedDeltaTime, itemId)) {
                         this.budgetedItemId++;
                         continue;
                     }
                 }
             } else {
-                this.overridePage.onUpdate(this.deltaTime);
+                this.overridePage.onUpdate(this.accumulatedDeltaTime);
             }
             this.budgetedItemId = 0;
             break;
@@ -1112,8 +1123,8 @@ class NavSystemPage extends NavSystemElementContainer {
         return this.softKeys;
     }
 }
-class Updatable {
-}
+// class Updatable {
+// }
 class NavSystemElement extends Updatable {
     constructor() {
         super(...arguments);
