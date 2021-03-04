@@ -29,7 +29,7 @@ var A320_Neo_BAT;
                 }
             } else {
                 for (let i = 0; i < 2; ++i) {
-                    const batValue = SimVar.GetSimVarValue("ELECTRICAL BATTERY BUS VOLTAGE", "Volts");
+                    const batValue = SimVar.GetSimVarValue(`L:A32NX_ELEC_BAT_${i + 10}_POTENTIAL`, "Volts");
                     this.batValues[i] = batValue;
                     this.batTexts[i].textContent = this.batValues[i].toFixed(1) + "V";
                 }
