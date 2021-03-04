@@ -725,16 +725,8 @@ class CDUPerformancePage {
             } else {
                 qnhCell = mcdu.perfApprQNH.toFixed(0) + "[color]cyan";
             }
-        } else if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().infos) {
-            const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
-            const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
-            const planeLla = new LatLongAlt(lat, long);
-            const distance = Avionics.Utils.computeGreatCircleDistance(
-                planeLla, mcdu.flightPlanManager.getDestination().infos.coordinates
-            );
-            if (distance <= 180) {
-                qnhCell = "____[color]amber";
-            }
+        } else if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().liveDistanceTo <= 180) {
+            qnhCell = "____[color]amber";
         }
         mcdu.onLeftInput[0] = (value) => {
             if (mcdu.setPerfApprQNH(value)) {
