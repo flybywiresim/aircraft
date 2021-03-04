@@ -2156,7 +2156,7 @@
                     </UseTemplate>
 
                     <!-- Data Loading Selector-->
-                    <Component ID = "Data_Loading_Selector">
+                    <Component ID="Data_Loading_Selector">
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_DLS_SELCTL</NODE_ID>
                             <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
@@ -2694,7 +2694,7 @@
                             <SEQ2_CODE>0</SEQ2_CODE>
                         </UseTemplate>
                     </Component>
-                    </Component>
+                </Component>
 
                     <CameraTitle>Overhead</CameraTitle>
                 </Component>
