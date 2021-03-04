@@ -173,6 +173,8 @@
 1. [ELEC] SHED appears below the DC ESS BUS when DC ESS SHED BUS is unpowered - @davidwalschots (David Walschots)
 1. [TEXTURE] Improved overhead panel decals - @ImenesFBW (Imenes)
 1. [MCDU] Import cost index when importing flight plan from SimBrief - @aviadnissel (Aviad)
+1. [FLIGHTMODEL] Revert flaps hotfix due to MSFS hotfix in MSFS update 1.13.17.0 - @donstim (donbikes#4084)
+1. [MISC] Fixed chrono watch colon appearance - @SergeySoprykin (SergeyS)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
