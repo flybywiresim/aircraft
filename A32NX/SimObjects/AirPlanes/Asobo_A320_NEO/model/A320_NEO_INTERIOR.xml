@@ -2618,7 +2618,7 @@
                             </UseTemplate>
                         </Component>
 
-                        <Component ID = "RCDR">
+                        <Component ID="RCDR">
                              <UseTemplate Name="FBW_Push_Toggle">
                              <NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
                              <TOGGLE_SIMVAR>L:A32NX_RCDR_GROUND_CONTROL_ON</TOGGLE_SIMVAR>
@@ -2637,7 +2637,7 @@
                             </UseTemplate>
                         </Component>
 
-                        <Component ID = "OXYGEN">
+                        <Component ID="OXYGEN">
                         <UseTemplate Name="FBW_Covered_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_OXYGEN_RATMANON</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_OXYGEN_RATMANON</LOCK_NODE_ID>
@@ -2668,7 +2668,7 @@
                         </UseTemplate>
                     </Component>
 
-                    <Component ID = "CALLS">
+                    <Component ID="CALLS">
                         <UseTemplate Name="FBW_Push_Held">
                             <NODE_ID>PUSH_OVHD_CALLS_MECH</NODE_ID>
                             <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_MECH</HOLD_SIMVAR>
@@ -2699,7 +2699,7 @@
                     <CameraTitle>Overhead</CameraTitle>
                 </Component>
                 
-                <Component ID = "Right_Pedestal_Misc">
+                <Component ID="Right_Pedestal_Misc">
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_PANELCS_AIDS</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_AIDS_PRINT_ON</HOLD_SIMVAR>
