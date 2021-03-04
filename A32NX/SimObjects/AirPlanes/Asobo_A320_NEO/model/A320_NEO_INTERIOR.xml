@@ -726,8 +726,8 @@
                     <NODE_ID>SWITCH_RADAR_GCS</NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_RADAR_GCS_AUTO</TOGGLE_SIMVAR>
                     <ANIM_NAME>SWITCH_RADAR_GCS</ANIM_NAME>
-                    <ANIMTIP_0>Set GCS to AUTO</ANIMTIP_0>
-                    <ANIMTIP_1>Set GCS to OFF</ANIMTIP_1>
+                    <ANIMTIP_0>Set GCS to AUTO (Inop.)</ANIMTIP_0>
+                    <ANIMTIP_1>Set GCS to OFF (Inop.)</ANIMTIP_1>
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
