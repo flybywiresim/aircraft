@@ -3837,9 +3837,25 @@
                 <NODE_ID>KNOB_CHRONO_GPS</NODE_ID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_CHRONO_RUN</NODE_ID>
-            </UseTemplate>
+            <!-- Should be springloaded in the 3rd position, not sure how to do that. -->
+            <Component ID="KNOB_CHRONO_RUN" Node="KNOB_CHRONO_RUN">
+                <UseTemplate Name="ASOBO_GT_Knob_Finite_Code">
+                    <NODE_ID>KNOB_CHRONO_RUN</NODE_ID>
+                    <ANIM_NAME>KNOB_CHRONO_RUN</ANIM_NAME>
+                    <WWISE_EVENT>lswitch</WWISE_EVENT>
+                    <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                    <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                    <ANIM_CODE>(L:A32NX_CHRONO_ET_SWITCH_POS, number) 10 *</ANIM_CODE>
+                    <CLOCKWISE_CODE>
+                        (L:A32NX_CHRONO_ET_SWITCH_POS, number) 1 + 2 min (&gt;L:A32NX_CHRONO_ET_SWITCH_POS, number)
+                        (&gt;H:A32NX_CHRONO_ET_POS_CHANGED)
+                    </CLOCKWISE_CODE>
+                    <ANTICLOCKWISE_CODE>
+                        (L:A32NX_CHRONO_ET_SWITCH_POS, number) 1 - 0 max (&gt;L:A32NX_CHRONO_ET_SWITCH_POS, number)
+                        (&gt;H:A32NX_CHRONO_ET_POS_CHANGED)
+                    </ANTICLOCKWISE_CODE>
+                </UseTemplate>
+            </Component>
 
             <CameraTitle>ECAM</CameraTitle>
         </Component>

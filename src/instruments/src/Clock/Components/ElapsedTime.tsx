@@ -6,7 +6,7 @@ const getDisplayString = (seconds: number, running: boolean) : string => (second
 
 export const ElapsedTime = () => {
     const [ltsTest] = useSimVar('L:XMLVAR_LTS_Test', 'bool', 250);
-    const [elapsedKnobPos] = useInteractionSimVar('', '', '');
+    const [elapsedKnobPos] = useInteractionSimVar('L:A32NX_CHRONO_ET_SWITCH_POS', 'number', 'A32NX_CHRONO_ET_POS_CHANGED');
     const [absTime] = useSimVar('E:ABSOLUTE TIME', 'Seconds', 1000);
     const [prevTime, setPrevTime] = useState(absTime);
 
