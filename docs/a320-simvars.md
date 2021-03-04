@@ -453,11 +453,11 @@
 
 - A32NX_RAIN_REPELLENT_RIGHT_ON
     -Bool
-    -True if rain repellent is activated on the right windshield.  
+    -True if rain repellent is activated on the right windshield.
 
 - A32NX_RAIN_REPELLENT_LEFT_ON
     -Bool
-    -True if rain repellent is activated on the left windshield.  
+    -True if rain repellent is activated on the left windshield.
 
 - A32NX_RCDR_TEST
     -Bool
@@ -493,7 +493,7 @@
 
 -A32NX_OXYGEN_TMR_RESET
     -Bool
-    -True if oxygen timer is being reset. 
+    -True if oxygen timer is being reset.
 
 -A32NX_OXYGEN_TMR_RESET_FAULT
     -Bool
@@ -513,7 +513,7 @@
 
 -A32NX_DLS_ON
     -Bool
-    -True if data loading selector is on. 
+    -True if data loading selector is on.
 
 -A32NX_CREW_HEAD_SET
     -Bool
@@ -526,14 +526,6 @@
 -A32NX_AVIONICS_COMPLT_ON
     -Bool
     -True if avionics comp lt is on.
-
--A32NX_ENG1N1_ON
-    -Bool
-    -True if engine one n1 is on. 
-
--A32NX_ENG2N1_ON
-    -Bool
-    -True if engine two n1 is on. 
 
 -A32NX_CARGOSMOKE_FWD_DISCHARGED
     -Bool
@@ -558,7 +550,7 @@
 -A32NX_APU_AUTOEXITING_TEST_OK
     -Bool
     -True if APU AUTOEXITING TEST returns OK.
-    
+
 - A32NX_OVHD_{name}_PB_IS_AVAILABLE
     - Bool
     - True when the push button's AVAIL light should illuminate
