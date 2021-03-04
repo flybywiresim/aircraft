@@ -705,7 +705,7 @@
                     <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                     <SWITCH_POSITION_VAR>A32NX_SWITCH_RADAR_PWS_Position</SWITCH_POSITION_VAR>
                     <ANIMTIP_0>Set predictive windshear to AUTO (INOP)</ANIMTIP_0>
-                    <ANIMTIP_1>Turn OFF predictive windshear</ANIMTIP_1>
+                    <ANIMTIP_1>Turn OFF predictive windshear (Inop.)</ANIMTIP_1>
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
@@ -715,8 +715,8 @@
                     <NODE_ID>SWITCH_RADAR_MULTISCAN</NODE_ID>
                     <ANIM_NAME>SWITCH_RADAR_MULTISCAN</ANIM_NAME>
                     <TOGGLE_SIMVAR>L:A32NX_RADAR_MULTISCAN_AUTO</TOGGLE_SIMVAR>
-                    <ANIMTIP_0>Set Multiscans to AUTO</ANIMTIP_0>
-                    <ANIMTIP_1>Set Multiscans to MAN</ANIMTIP_1>
+                    <ANIMTIP_0>Set Multiscans to AUTO (Inop.)</ANIMTIP_0>
+                    <ANIMTIP_1>Set Multiscans to MAN (Inop.)</ANIMTIP_1>
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                     <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
@@ -1800,12 +1800,12 @@
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_ELT_TEST</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_ELT_TEST_RESET</HOLD_SIMVAR>
-                        <TOOLTIPID>Test/Reset ELT</TOOLTIPID>
+                        <TOOLTIPID>Test/Reset ELT (Inop.)</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_ELT_ON</NODE_ID>
                         <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_ELT_ON)</LEFT_SINGLE_CODE>
-                        <TOOLTIPID>Turn ON ELT</TOOLTIPID>
+                        <TOOLTIPID>Turn ON ELT (Inop.)</TOOLTIPID>
                     </UseTemplate>
 
                     <!-- PA -->
@@ -1925,7 +1925,7 @@
 
                             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_EMERELECPWR_GEN_TEST)</LEFT_SINGLE_CODE>
 
-                            <TOOLTIPID>Test emergency generator</TOOLTIPID>
+                            <TOOLTIPID>Test emergency generator (Inop.)</TOOLTIPID>
                             
                             <MOMENTARY/>
                         </UseTemplate>
@@ -1955,7 +1955,7 @@
                             <NODE_ID>PUSH_OVHD_EMERELECPWR_MANON</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_EMERELECPWR_MANON</LOCK_NODE_ID>
                             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_EMERELECPWR_MAN_ON)</LEFT_SINGLE_CODE>
-                            <TOOLTIPID>%((L:A32NX_EMERELECPWR_MAN_ON, Bool))%{if}Ram air turbine deployed%{else}Deploy ram air turbine%{end}</TOOLTIPID>
+                            <TOOLTIPID>%((L:A32NX_EMERELECPWR_MAN_ON, Bool))%{if}Ram air turbine deployed (Inop.)%{else}Deploy ram air turbine (Inop.)%{end}</TOOLTIPID>
                             <MOMENTARY/>                       
                         </UseTemplate>
                     </Component>
@@ -2116,7 +2116,7 @@
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_CWRHEADSET</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_CREW_HEAD_SET</HOLD_SIMVAR>
-                        <TOOLTIPID>CVR headset</TOOLTIPID>
+                        <TOOLTIPID>CVR headset (Inop.)</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OXYGEN_TWRRESET</NODE_ID>
@@ -2134,14 +2134,14 @@
                         <TOGGLE_SIMVAR>L:A32NX_SVGEINT_OVRD_ON</TOGGLE_SIMVAR>
         
                         <SEQ2_CODE>(L:A32NX_SVGEINT_OVRD_ON, Bool)</SEQ2_CODE>
-                        <TOOLTIPID>%((L:A32NX_SVGEINT_OVRD_ON, Bool))%{if}Turn OFF SVGE INT OVRD%{else}Turn ON SVGE INT OVRD%{end}</TOOLTIPID>
+                        <TOOLTIPID>%((L:A32NX_SVGEINT_OVRD_ON, Bool))%{if}Turn OFF SVGE INT OVRD (Inop.)%{else}Turn ON SVGE INT OVRD (Inop.)%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_AVIONICS_COMPLT</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AVIONICS_COMPLT_ON</TOGGLE_SIMVAR>
 
                         <SEQ2_CODE>(L:A32NX_AVIONICS_COMPLT_ON, Bool)</SEQ2_CODE>
-                        <TOOLTIPID>%((L:A32NX_AVIONICS_COMPLT_ON, Bool))%{if}Set avionics comp lt to AUTO%{else}Turn ON avionics comp lt%{end}</TOOLTIPID>
+                        <TOOLTIPID>%((L:A32NX_AVIONICS_COMPLT_ON, Bool))%{if}Set avionics comp lt to AUTO (Inop.)%{else}Turn ON avionics comp lt (Inop.)%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_OVHD_CARGOVENT_AFTISOL</NODE_ID>
@@ -2161,29 +2161,29 @@
                             <NODE_ID>PUSH_OVHD_DLS_SELCTL</NODE_ID>
                             <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
             
-                            <TOOLTIPID>Select/Control</TOOLTIPID>
+                            <TOOLTIPID>Select/Control (Inop.)</TOOLTIPID>
                             <MOMENTARY/>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_DLS_PREV</NODE_ID>
                             <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
             
-                            <TOOLTIPID>Previous</TOOLTIPID>
+                            <TOOLTIPID>Previous (Inop.)</TOOLTIPID>
                             <MOMENTARY/>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_DLS_NEXT</NODE_ID>
                             <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
             
-                            <TOOLTIPID>Next</TOOLTIPID>
+                            <TOOLTIPID>Next (Inop.)</TOOLTIPID>
                             <MOMENTARY/>
                         </UseTemplate>
                         <UseTemplate Name="A32NX_GT_Switch_Dummy">
                             <NODE_ID>SWITCH_OVHD_DLS</NODE_ID>
                             <TOGGLE_SIMVAR>L:A32NX_DLS_ON</TOGGLE_SIMVAR>
                             <ANIM_NAME>SWITCH_OVHD_DLS</ANIM_NAME>
-                            <ANIMTIP_0>Turn ON data loading selector</ANIMTIP_0>
-                            <ANIMTIP_1>Turn OFF data loading selector</ANIMTIP_1>
+                            <ANIMTIP_0>Turn ON data loading selector (Inop.)</ANIMTIP_0>
+                            <ANIMTIP_1>Turn OFF data loading selector (Inop.)</ANIMTIP_1>
                             <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
                             <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
@@ -2412,12 +2412,12 @@
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_RAINRPLNTL</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_RAIN_REPELLENT_LEFT_ON</HOLD_SIMVAR>
-                        <TOOLTIPID>Dispense rain repellent</TOOLTIPID>
+                        <TOOLTIPID>Dispense rain repellent (Inop.)</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_RAINRPNLTR</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_RAIN_REPELLENT_RIGHT_ON</HOLD_SIMVAR>
-                        <TOOLTIPID>Dispense rain repellent</TOOLTIPID>
+                        <TOOLTIPID>Dispense rain repellent (Inop.)</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_Wiper_Knob">
                         <NODE_ID>HANDLING_Switch_Wiper_left</NODE_ID>
@@ -2546,14 +2546,14 @@
                             <NODE_ID>PUSH_OVHD_CARGOSMOKE_2</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_CARGOSMOKE_2</LOCK_NODE_ID>
                             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_CARGOSMOKE_AFT_DISCHARGED)</LEFT_SINGLE_CODE>
-                            <TOOLTIPID>%((L:A32NX_CARGOSMOKE_AFT_DISCHARGED, Bool))%{if}Fire-extinguisher discharged%{else}Discharge fire-extinguisher%{end}</TOOLTIPID>
+                            <TOOLTIPID>%((L:A32NX_CARGOSMOKE_AFT_DISCHARGED, Bool))%{if}Fire-extinguisher discharged (Inop.)%{else}Discharge fire-extinguisher (Inop.)%{end}</TOOLTIPID>
                             <MOMENTARY/>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Covered_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_CARGOSMOKE_1</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_CARGOSMOKE_1</LOCK_NODE_ID>
                             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_CARGOSMOKE_FWD_DISCHARGED)</LEFT_SINGLE_CODE>
-                            <TOOLTIPID>%((L:A32NX_CARGOSMOKE_FWD_DISCHARGED, Bool))%{if}Fire-extinguisher discharged%{else}Discharge fire-extinguisher%{end}</TOOLTIPID>
+                            <TOOLTIPID>%((L:A32NX_CARGOSMOKE_FWD_DISCHARGED, Bool))%{if}Fire-extinguisher discharged (Inop.)%{else}Discharge fire-extinguisher (Inop.)%{end}</TOOLTIPID>
                             <MOMENTARY/>
                         </UseTemplate>
                     </Component>
@@ -2624,16 +2624,16 @@
                              <TOGGLE_SIMVAR>L:A32NX_RCDR_GROUND_CONTROL_ON</TOGGLE_SIMVAR>
             
                                 <SEQ2_CODE>(L:A32NX_RCDR_GROUND_CONTROL_ON, Bool)</SEQ2_CODE>
-                                <TOOLTIPID>%((L:A32NX_RCDR_GROUND_CONTROL_ON, Bool))%{if}Set Ground Control to AUTO%{else}Turn ON Ground Control%{end}</TOOLTIPID>
+                                <TOOLTIPID>%((L:A32NX_RCDR_GROUND_CONTROL_ON, Bool))%{if}Set Ground Control to AUTO (Inop.)%{else}Turn ON Ground Control (Inop.)%{end}</TOOLTIPID>
                             </UseTemplate>
                             <UseTemplate Name="FBW_Push_Held">
                                 <NODE_ID>PUSH_OVHD_RCDR_ERASE</NODE_ID>
-                                <TOOLTIPID>Erase CVR</TOOLTIPID>
+                                <TOOLTIPID>Erase CVR (Inop.)</TOOLTIPID>
                             </UseTemplate>
                             <UseTemplate Name="FBW_Push_Held">
                                 <NODE_ID>PUSH_OVHD_RCDR_TEST</NODE_ID>
                                 <HOLD_SIMVAR>L:A32NX_RCDR_TEST</HOLD_SIMVAR>
-                                <TOOLTIPID>Test CVR</TOOLTIPID>
+                                <TOOLTIPID>Test CVR (Inop.)</TOOLTIPID>
                             </UseTemplate>
                         </Component>
 
@@ -2708,7 +2708,7 @@
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_PANELCS_DFDR</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_DFDR_EVENT_ON</HOLD_SIMVAR>
-                        <TOOLTIP>Print data</TOOLTIP>
+                        <TOOLTIP>Print data (Inop.)</TOOLTIP>
                     </UseTemplate>
                 </Component>
 
@@ -2813,7 +2813,7 @@
                         <TOGGLE_SIMVAR>L:A32NX_APU_AUTOEXITING_TEST_ON</TOGGLE_SIMVAR>
                          <SEQ1_CODE>(L:A32NX_APU_AUTOEXITING_TEST_OK)</SEQ1_CODE>
                          <SEQ2_CODE>(L:A32NX_APU_AUTOEXITING_TEST_ON)</SEQ2_CODE>
-                         <TOOLTIPID>Test APU autoexiting</TOOLTIPID>
+                         <TOOLTIPID>Test APU autoexiting (Inop.)</TOOLTIPID>
                     </UseTemplate>
 
                     <!-- APU AUTO EXITING RESET-->
@@ -2821,7 +2821,7 @@
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_APU_AUTOEXITING_RESET</NODE_ID>
                         <HOLD_SIMVAR>L:A32NX_APU_AUTOEXITING_RESET</HOLD_SIMVAR>
-                        <TOOLTIPID>Reset APU autoexiting</TOOLTIPID>
+                        <TOOLTIPID>Reset APU autoexiting (Inop.)</TOOLTIPID>
                     </UseTemplate>
                 </Component>
 
