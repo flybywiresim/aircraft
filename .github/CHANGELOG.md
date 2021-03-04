@@ -109,7 +109,6 @@
 1. [TEXTURE] Improved cockpit decal fonts and emissives, and remade various labels in the cockpit. @FoxinTale (Aubrey)
 1. [FWC] Add aural Altitude Alert (C Chord) - @Kimbyeongjang (김병장#7165)
 1. [CAMERA] Added new interior views - @Snapmatics (Harry)
-1. [TEXTURE] Improved cockpit decal fonts and emissives, and remade various labels in the cockpit. @FoxinTale (Aubrey)
 1. [CDU] RADNAV - A manual VOR/ADF ident input is now permament - @St54Kevin
 1. [CDU] RADNAV - ID/Frequency fields now format to correct font size depending on pilot input - @St54Kevin
 1. [CDU] RADNAV - All fields now have correct format display and input restricitons - @St54Kevin
@@ -174,6 +173,7 @@
 1. [TEXTURE] Improved overhead panel decals - @ImenesFBW (Imenes)
 1. [MCDU] Import cost index when importing flight plan from SimBrief - @aviadnissel (Aviad)
 1. [FLIGHTMODEL] Revert flaps hotfix due to MSFS hotfix in MSFS update 1.13.17.0 - @donstim (donbikes#4084)
+1. [TEXTURE] Upscaled the external airframe decals to go nicely with the upscaled livery. @FoxinTale (Aubrey)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
