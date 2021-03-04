@@ -717,17 +717,13 @@ class CDUPerformancePage {
                 }
             }
         };
-        let titleColor = "white";
-        if (mcdu.currentFlightPhase === FmgcFlightPhases.APPROACH) {
-            titleColor = "green";
-        }
 
-        let qnhCell = "[\xa0\xa0]";
+        let qnhCell = "[\xa0\xa0][color]cyan";
         if (isFinite(mcdu.perfApprQNH)) {
             if (mcdu.perfApprQNH < 500) {
-                qnhCell = mcdu.perfApprQNH.toFixed(2);
+                qnhCell = mcdu.perfApprQNH.toFixed(2) + "[color]cyan";
             } else {
-                qnhCell = mcdu.perfApprQNH.toFixed(0);
+                qnhCell = mcdu.perfApprQNH.toFixed(0) + "[color]cyan";
             }
         } else if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().infos) {
             const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
@@ -761,7 +757,7 @@ class CDUPerformancePage {
         }
         let magWindSpeedCell = "[\xa0]";
         if (isFinite(mcdu.perfApprWindSpeed)) {
-            magWindSpeedCell = mcdu.perfApprWindSpeed.toFixed(0);
+            magWindSpeedCell = mcdu.perfApprWindSpeed.toFixed(0).padStart(3, "0");
         }
         mcdu.onLeftInput[2] = (value) => {
             if (mcdu.setPerfApprWind(value)) {
@@ -801,13 +797,8 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
-        mcdu.onRightInput[3] = () => {
-            mcdu.setPerfApprFlaps3(true);
-            mcdu.updatePerfSpeeds();
-            CDUPerformancePage.ShowAPPRPage(mcdu);
-        };
         mcdu.onRightInput[4] = () => {
-            mcdu.setPerfApprFlaps3(false);
+            mcdu.setPerfApprFlaps3(!mcdu.perfApprFlaps3);
             mcdu.updatePerfSpeeds();
             CDUPerformancePage.ShowAPPRPage(mcdu);
         };
@@ -815,7 +806,7 @@ class CDUPerformancePage {
         let finalCell = "";
         const approach = mcdu.flightPlanManager.getApproach();
         if (approach && approach.name) {
-            finalCell = Avionics.Utils.formatRunway(approach.name).replace(/ /g, "") + "[color]green";
+            finalCell = `\xa0{green}${Avionics.Utils.formatRunway(approach.name).replace(/ /g, "")}{end}\xa0\xa0\xa0\xa0\xa0`;
         }
 
         let baroCell = "[\xa0\xa0\xa0]";
@@ -832,7 +823,7 @@ class CDUPerformancePage {
         let radioLabel = "";
         let radioCell = "";
         if (isILS) {
-            radioLabel = "RADIO\xa0";
+            radioLabel = "RADIO";
             if (isFinite(mcdu.perfApprDH)) {
                 radioCell = mcdu.perfApprDH.toFixed(0);
             } else if (mcdu.perfApprDH === "NO DH") {
@@ -847,11 +838,23 @@ class CDUPerformancePage {
             };
         }
 
+        let finalAppCell = "";
+        if (!isILS) {
+            finalAppCell = "{small}{inop}FLS*{end}{end}{cyan}/FINAL APP{end}";
+        }
+        mcdu.onRightInput[0] = () => {
+            if (!isILS) {
+                mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+            }
+        };
+
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
+        let titleColor = "white";
         if (mcdu.currentFlightPhase === FmgcFlightPhases.APPROACH) {
             bottomRowLabels[0] = "";
             bottomRowCells[0] = "";
+            titleColor = "green";
         } else {
             if (mcdu.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
                 mcdu.leftInputDelay[5] = () => {
@@ -882,19 +885,19 @@ class CDUPerformancePage {
         }
 
         mcdu.setTemplate([
-            [`APPR[color]${titleColor}`],
-            ["\xa0QNH", "FINAL\xa0", "FLP RETR"],
-            [qnhCell + "[color]cyan", finalCell, "F=" + flpRetrCell],
-            ["\xa0TEMP", "BARO\xa0", "SLT RETR"],
-            [tempCell + "°[color]cyan", baroCell + "[color]cyan", "S=" + sltRetrCell],
-            ["MAG WIND", radioLabel, "CLEAN"],
-            [magWindHeadingCell + "°/" + magWindSpeedCell + "[color]cyan", radioCell + "[color]cyan", "O=" + cleanCell],
-            ["TRANS ALT", "LDG CONF\xa0"],
-            [transAltCell + "[color]cyan", mcdu.perfApprFlaps3 ? "CONF3[color]cyan" : "[s-text]CONF3*[color]cyan"],
-            ["\xa0VAPP", "", "VLS"],
-            [vappCell + "[color]cyan", mcdu.perfApprFlaps3 ? "[s-text]FULL*[color]cyan" : "FULL[color]cyan", vlsCell + "[color]green"],
-            bottomRowLabels,
-            bottomRowCells,
+            /* t  */[`{${titleColor}}APPR{end}${finalCell}`],
+            /* 1l */["QNH"],
+            /* 1L */[qnhCell, finalAppCell],
+            /* 2l */["TEMP", "BARO"],
+            /* 2L */[tempCell + "°[color]cyan", baroCell + "[color]cyan", "O=" + cleanCell],
+            /* 3l */["MAG WIND", radioLabel],
+            /* 3L */[magWindHeadingCell + "°/" + magWindSpeedCell + "[color]cyan", radioCell + "[color]cyan", "S=" + sltRetrCell],
+            /* 4l */["TRANS ALT"],
+            /* 4L */[transAltCell + "[color]cyan", "", "F=" + flpRetrCell],
+            /* 5l */["VAPP", "LDG CONF\xa0", "VLS\xa0\xa0\xa0\xa0\xa0\xa0"],
+            /* 5L */[vappCell + "[color]cyan", mcdu.perfApprFlaps3 ? "{small}FULL*{end}{cyan}/CONF3{end}" : "{cyan}FULL/{end}{small}CONF3*{end}", vlsCell + "\xa0\xa0\xa0\xa0\xa0\xa0"],
+            /* 6l */bottomRowLabels,
+            /* 6L */bottomRowCells,
         ]);
     }
 

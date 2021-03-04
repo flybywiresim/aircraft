@@ -2477,48 +2477,54 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprQNH(s) {
         const value = parseFloat(s);
-        const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
+        const HPA_REGEX = /^[0-9]{3,4}$/;
+        const INHG_REGEX = /^[0-9]{2}\.[0-9]{1,2}$/;
+        const hpa = SimVar.GetSimVarValue("KOHLSMAN SETTING STD", "Bool") === 0;
 
-        if (QNH_REGEX.test(value)) {
-            this.perfApprQNH = value;
-            return true;
-        } else if (isFinite(value)) {
-            this.perfApprQNH = value;
-            return true;
+        if (hpa && HPA_REGEX.test(value)) {
+            if (value >= 745 && value <= 1050) {
+                this.perfApprQNH = value;
+                return true;
+            } else {
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                return false;
+            }
+        } else if (!hpa && INHG_REGEX.test(value)) {
+            if (value >= 22.0 && value <= 31.00) {
+                this.perfApprQNH = value;
+                return true;
+            } else {
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                return false;
+            }
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
+        this.addNewMessage(NXSystemMessages.formatError);
         return false;
     }
 
     setPerfApprTemp(s) {
-        const value = parseFloat(s);
-        if (isFinite(value) && value > -270 && value < 150) {
-            this.perfApprTemp = value;
-            return true;
+        if (!/^[\+\-]?\d{1,2}$/.test(s)) {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return false;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
+        this.perfApprTemp = parseInt(s);
+        return true;
     }
 
     setPerfApprWind(s) {
-        let heading = NaN;
-        let speed = NaN;
-        if (s) {
-            const sSplit = s.split("/");
-            heading = parseFloat(sSplit[0]);
-            speed = parseFloat(sSplit[1]);
+        // both must be entered
+        if (!/^\d{1,3}\/\d{1,3}$/.test(s)) {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return false;
         }
-        if ((isFinite(heading) && heading >= 0 && heading < 360) || (isFinite(speed) && speed > 0)) {
-            if (isFinite(heading)) {
-                this.perfApprWindHeading = heading;
-            }
-            if (isFinite(speed)) {
-                this.perfApprWindSpeed = speed;
-            }
-            return true;
+        const [dir, mag] = s.split("/").map((v) => parseInt(v));
+        if (dir > 360 || mag > 500) {
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
+        this.perfApprWindHeading = dir % 360; // 360 is displayed as 0
+        this.perfApprWindSpeed = mag;
+        return true;
     }
 
     setPerfApprTransAlt(s) {
