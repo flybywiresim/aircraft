@@ -4,7 +4,7 @@ use crate::simulation::{SimulationElement, SimulatorReader, UpdateContext};
 
 pub struct Engine {
     corrected_n2_id: String,
-    corrected_n2: Ratio,
+    pub corrected_n2: Ratio,
 }
 impl Engine {
     pub fn new(number: usize) -> Engine {
