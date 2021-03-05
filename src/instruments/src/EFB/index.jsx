@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { MemoryRouter as Router } from 'react-router-dom';
 import Efb from './Efb.tsx';
 import { getSimVar, setSimVar } from '../util.js';
 import logo from './Assets/fbw-logo.svg';
@@ -70,7 +71,11 @@ const EFBLoad = () => {
     case 'loading':
         return <ScreenLoading />;
     case 'loaded':
-        return <Efb currentFlight={getSimVar('ATC FLIGHT NUMBER', 'string')} />;
+        return (
+            <Router>
+                <Efb currentFlight={getSimVar('ATC FLIGHT NUMBER', 'string')} />
+            </Router>
+        );
     default:
         throw new Error();
     }
