@@ -17,10 +17,8 @@
  */
 
 import React from 'react';
-import { CurrentFlight, Map } from '@flybywiresim/map';
-import FlightWidget from './Widgets/FlightWidget';
-import WeatherWidget from './Widgets/WeatherWidget';
-import { useSimVar } from '../../Common/simVars';
+import FlightWidget from "./Widgets/FlightWidget";
+import WeatherWidget from "./Widgets/WeatherWidget";
 
 type DashboardProps = {
     currentFlight: string,
@@ -37,21 +35,19 @@ type DashboardProps = {
     schedOut: string,
     schedIn: string,
     fetchSimbrief: Function,
-    route: string
+    route: string,
+    altIcao: string,
+    costInd: string
 }
 
-const Dashboard: React.FC<DashboardProps> = (props) => {
-    const [flightNumber] = useSimVar('ATC FLIGHT NUMBER', 'String', 1_000);
-    const [aircraftType] = useSimVar('TITLE', 'String', 1_000);
-    const [altitude] = useSimVar('PLANE ALTITUDE', 'feet', 500);
-    const [heading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 500);
-    const [latitude] = useSimVar('PLANE LATITUDE', 'degree latitude', 500);
-    const [longitude] = useSimVar('PLANE LONGITUDE', 'degree longitude', 500);
+type DashboardState = {}
 
-    const calculateFlightTime = (flightETAInSeconds: string): string => {
+class Dashboard extends React.Component<DashboardProps, DashboardState> {
+
+    calculateFlightTime(flightETAInSeconds: string): string {
         const timeInMinutes: number = parseInt(flightETAInSeconds) * 0.0166;
-        if (timeInMinutes.toString() === 'NaN') {
-            return '00:00';
+        if (timeInMinutes.toString() === "NaN") {
+            return "00:00";
         }
 
         const hours = (timeInMinutes / 60);
@@ -59,61 +55,41 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
         const minutes = (hours - roundedHours) * 60;
         const roundedMinutes = Math.round(minutes);
 
-        return `${(roundedHours <= 9 ? '0' : '') + roundedHours}:${roundedMinutes <= 9 ? '0' : ''}${roundedMinutes}`;
-    };
+        return (roundedHours <= 9 ? "0" : "") + roundedHours + ":" + (roundedMinutes <= 9 ? "0" : "") + roundedMinutes;
+    }
 
-    const handleGettingCurrentFlightData = (): CurrentFlight => ({
-        flightNumber,
-        aircraftType,
-        altitude,
-        heading,
-        origin: '',
-        destination: '',
-        latitude,
-        longitude,
-    });
+    render() {
+        return (
+            <div className="w-full">
+                <h1 className="text-3xl text-white">Dashboard</h1>
+                <div className="flex w-full mt-6">
 
-    return (
-        <div className="flex p-6 w-full">
-            <div className="w-4/12 mr-4">
-                <h1 className="text-white font-medium mb-4 text-2xl">Today's Flight</h1>
-
-                <FlightWidget
+                    <FlightWidget
                     name="todays"
-                    airline={props.airline}
-                    flightNum={props.flightNum}
-                    aircraftReg={props.aircraftReg}
-                    dep={props.departingAirport}
-                    depIata={props.depIata}
-                    arrIata={props.arrIata}
-                    arr={props.arrivingAirport}
-                    route={props.route}
-                    distance={props.flightDistance}
-                    // @ts-ignore
-                    eta={calculateFlightTime(props.flightETAInSeconds)}
-                    timeSinceStart={props.timeSinceStart}
-                    sta={props.schedIn}
-                    std={props.schedOut}
-                    fetchSimbrief={props.fetchSimbrief}
-                />
-            </div>
+                    airline={this.props.airline}
+                    flightNum={this.props.flightNum}
+                    aircraftReg={this.props.aircraftReg}
+                    dep={this.props.departingAirport}
+                    depIata={this.props.depIata}
+                    arrIata={this.props.arrIata}
+                    arr={this.props.arrivingAirport}
+                    route={this.props.route}
+                    distance={this.props.flightDistance}
+                    eta={this.calculateFlightTime(this.props.flightETAInSeconds)}
+                    timeSinceStart={this.props.timeSinceStart}
+                    sta={this.props.schedIn}
+                    std={this.props.schedOut}
+                    fetchSimbrief={this.props.fetchSimbrief}
+                    altIcao={this.props.altIcao}
+                    costInd={this.props.costInd} />
 
-            <div className="w-3/12">
-                <h1 className="text-white font-medium mb-4 text-2xl">Weather</h1>
+                    <div className="w-3/5 h-efb bg-blue-default rounded-xl ml-3 shadow-lg">
 
-                <WeatherWidget name="origin" editIcao="yes" icao={props.departingAirport} />
-                <WeatherWidget name="dest" editIcao="yes" icao={props.arrivingAirport} />
-            </div>
-
-            <div className="w-5/12 ml-4">
-                <h1 className="text-white font-medium mb-4 text-2xl">Map</h1>
-
-                <div className="w-full h-map rounded-lg overflow-hidden">
-                    <Map currentFlight={handleGettingCurrentFlightData} disableMenu hideOthers />
+                    </div>
                 </div>
             </div>
-        </div>
-    );
-};
+        );
+    }
+}
 
 export default Dashboard;

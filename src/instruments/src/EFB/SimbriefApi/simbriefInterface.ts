@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable camelcase */
-
 export interface ISimbriefData {
     origin: IAirportInfo,
     destination: IAirportInfo,
@@ -25,7 +23,7 @@ export interface ISimbriefData {
     flightNumber: string,
     aircraftReg: string,
     cruiseAltitude: number,
-    costIndex: number,
+    costIndex: string,
     route: string,
     distance: string,
     flightETAInSeconds: string,
