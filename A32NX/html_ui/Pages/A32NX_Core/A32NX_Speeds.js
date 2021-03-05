@@ -75,7 +75,7 @@ class A32NX_Speeds {
         this.p = p;
 
         const kcas = NXSpeedsUtils.getKCasFromTas(tas, tat, p);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_KCAS", "number", kcas).then();
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_KCAS", "number", kcas);
     }
 
     /**
