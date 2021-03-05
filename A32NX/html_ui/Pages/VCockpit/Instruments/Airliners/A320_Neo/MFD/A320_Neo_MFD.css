@@ -253,6 +253,10 @@ a320-neo-mfd-element #Mainframe #TopBox text.Units {
   font-size: 30px;
   fill: var(--displayCyan);
 }
+a320-neo-mfd-element #Mainframe #TopBox text.DegreeSymbol {
+  font-size: 50px;
+  fill: var(--displayCyan);
+}
 a320-neo-mfd-element #Mainframe #TopBox text.Title {
   font-size: 44px;
   fill: var(--displayGreen);
