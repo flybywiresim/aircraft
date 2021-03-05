@@ -16,16 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { IconBattery4, IconSettings } from '@tabler/icons';
-import { Navbar } from "../Components/Navbar";
+import { Navbar } from '../Components/Navbar';
+import logo from '../Assets/fbw-tail.png';
+import { IconClipboard, IconMap, IconPlane, IconTool} from '@tabler/icons'
 
 type ToolbarProps = {
     setPageIndex: (number) => void;
+    tabs: string[],
+    onSelected: (index: number) => void;
 };
 
 type ToolbarState = {
     activeIndex: number;
+};
+
+const c = {
+    active: "cursor-pointer py-4 bg-white bg-opacity-5 py-4 mx-5 rounded-lg mt-2",
+    inactive: "cursor-pointer hover:bg-white hover:bg-opacity-5 transition duration-300 ease-in-out py-4 mx-5 rounded-lg mt-2"
 };
 
 class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
@@ -47,7 +56,33 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
         return (
             <nav className="overflow-hidden bg-blue-efb-dark w-32 justify-between flex flex-col -mx-1">
                 <div className="mt-6">
-                    <Navbar onSelected={index => this.handleClick(index)} />
+                    <ul>
+                        <li className={0 === this.state.activeIndex ? c.active : c.inactive}>
+                            <a onClick={() => this.handleClick(0)}>
+                                <img src={logo} className="w-10 py-2 mx-auto" />
+                            </a>
+                        </li>
+                        <li className={1 === this.state.activeIndex ? c.active : c.inactive}>
+                            <a onClick={() => this.handleClick(1)}>
+                                <IconClipboard className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
+                            </a>
+                        </li>
+                        <li className={2 === this.state.activeIndex ? c.active : c.inactive}>
+                            <a onClick={() => this.handleClick(2)}>
+                                <IconMap className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
+                            </a>
+                        </li>
+                        <li className={3 === this.state.activeIndex ? c.active : c.inactive}>
+                            <a onClick={() => this.handleClick(3)}>
+                                <IconPlane className="transform -rotate-45 mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
+                            </a>
+                        </li>
+                        <li className={4 === this.state.activeIndex ? c.active : c.inactive}>
+                            <a onClick={() => this.handleClick(4)}>
+                                <IconTool className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
+                            </a>
+                        </li>
+                    </ul>
                 </div>
                 <div className="mb-6">
                     <div className="text-white font-semibold text-center text-lg">12:18</div>
