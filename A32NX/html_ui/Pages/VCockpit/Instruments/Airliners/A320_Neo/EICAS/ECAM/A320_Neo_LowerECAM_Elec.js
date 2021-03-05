@@ -413,8 +413,8 @@ var A320_Neo_LowerECAM_Elec;
             const atLeastOneBatteryIsAuto = !!SimVar.GetSimVarValue("L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO", "Bool")
                 || !!SimVar.GetSimVarValue("L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO", "Bool");
 
-            // TODO: When battery voltage is implemented. The title should also be amber when BAT BUS voltage < 25 V.
-            this.greenWhen(this.e_DCBATBUS_TITLE, dcBatBusIsPowered && atLeastOneBatteryIsAuto);
+            const dcBatBusPotentialNormal = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_BAT_BUS_POTENTIAL_NORMAL", "Bool");
+            this.greenWhen(this.e_DCBATBUS_TITLE, dcBatBusIsPowered && dcBatBusPotentialNormal && atLeastOneBatteryIsAuto);
             this.setValue(this.e_DCBATBUS_TITLE, dcBatBusIsPowered && atLeastOneBatteryIsAuto ? "DC BAT" : "XX");
 
             const dcBus1IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_1_BUS_IS_POWERED", "Bool");
