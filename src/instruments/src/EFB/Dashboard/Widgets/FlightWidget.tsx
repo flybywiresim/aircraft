@@ -20,7 +20,7 @@ import React, { useState } from 'react';
 import { IconBox, IconLink, IconPlane } from '@tabler/icons';
 import { IconPlaneDeparture } from '@tabler/icons';
 import { IconPlaneArrival } from '@tabler/icons';
-import nose from '../../Assets/320neo-outline-nose.svg';
+import engine from '../../Assets/320neo-leap1a26.svg';
 
 type FlightWidgetProps = {
     name: string,
@@ -51,9 +51,9 @@ const FlightWidget = (props: FlightWidgetProps) => {
 	}
 
     return (
-        <div id={'flight-' + props.name} className="w-2/5 h-efb bg-blue-dark text-white rounded-xl mr-3 shadow-lg p-6 overflow-hidden">
+        <div id={'flight-' + props.name} className="w-2/5 h-efb bg-blue-efb-dark text-white rounded-xl mr-3 shadow-lg p-6 overflow-hidden">
             <div className="h-full flex flex-col justify-between">
-                <div className="w-full mb-3">
+                <div className="w-full">
                     <div className="text-center mb-6">
                         <h1 className="text-2xl font-medium">{resolveFlightName()}</h1>
                         <span>{props.aircraftReg}</span> <br />
@@ -66,7 +66,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
                         <span className="mx-3 text-3xl">{props.arr}</span> [{props.arrIata}]
                     </div>
 
-                    <div className="flex mb-6">
+                    <div className="flex">
                         <div className="w-1/2 mr-4">
                             <div className="flex justify-end text-lg">
                                 STD <IconPlaneDeparture className="ml-2" size={23} stroke={1.5} strokeLinejoin="miter" />
@@ -80,13 +80,9 @@ const FlightWidget = (props: FlightWidgetProps) => {
                             <div className="text-left mt-1 text-2xl">{props.sta}</div>
                         </div>
                     </div>
-
-                    <div className="flex justify-center text-center text-lg max-w-md uppercase font-mono">
-                        {props.route} [{props.distance}]
-                    </div>
                 </div>
-                <div className="w-full my-3">
-                    <img src={nose} className="w-96 flip-vertical -ml-44" />
+                <div className="w-full flex justify-center my-3">
+                    <img src={engine} className="w-96" />
                 </div>
                 <div className="w-full mt-3">
                     <div className="grid grid-cols-3 gap-4 text-center mb-10">
@@ -116,7 +112,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
                         </div>
                     </div>
                     <div className="flex">
-                        <button onClick={() => props.fetchSimbrief()} className="mr-1 w-1/2 text-white bg-blue-fbw p-2 flex items-center justify-center rounded-lg focus:outline-none">
+                        <button onClick={() => props.fetchSimbrief()} className="mr-1 w-1/2 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none">
                             <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> FROM SIMBRIEF
                         </button>
                         <button className="ml-1 w-1/2 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none">

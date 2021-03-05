@@ -45,7 +45,7 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
 
     render() {
         return (
-            <nav className="overflow-hidden bg-blue-dark w-32 justify-between flex flex-col -mx-1">
+            <nav className="overflow-hidden bg-blue-efb-dark w-32 justify-between flex flex-col -mx-1">
                 <div className="mt-6">
                     <Navbar onSelected={index => this.handleClick(index)} />
                 </div>

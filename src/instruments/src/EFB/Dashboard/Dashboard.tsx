@@ -19,6 +19,7 @@
 import React from 'react';
 import FlightWidget from "./Widgets/FlightWidget";
 import WeatherWidget from "./Widgets/WeatherWidget";
+import { CurrentFlight, Map } from '@flybywiresim/map';
 
 type DashboardProps = {
     currentFlight: string,
@@ -83,8 +84,10 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                     altIcao={this.props.altIcao}
                     costInd={this.props.costInd} />
 
-                    <div className="w-3/5 h-efb bg-blue-default rounded-xl ml-3 shadow-lg">
-
+                    <div className="w-3/5 h-efb bg-blue-efb-dark rounded-xl ml-3 shadow-lg p-6">
+                        <div className="h-full rounded-lg overflow-hidden">
+                            <Map disableMenu hideOthers={true} />
+                        </div>
                     </div>
                 </div>
             </div>
