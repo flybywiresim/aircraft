@@ -288,7 +288,6 @@ class CDUPerformancePage {
             flapsThs = `${flaps}/${ths}[color]cyan`;
             mcdu.onRightInput[2] = (value) => {
                 if (mcdu.trySetFlapsTHS(value)) {
-                    mcdu.tryCheckToData();
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 }
             };
@@ -309,12 +308,16 @@ class CDUPerformancePage {
                 }
             }
             mcdu.onRightInput[3] = (value) => {
-                if (value === "") {
-                    mcdu._toFlexChecked = true;
-                } else if (mcdu.setPerfTOFlexTemp(value)) {
-                    mcdu.tryCheckToData();
+                if (mcdu._toFlexChecked) {
+                    if (mcdu.setPerfTOFlexTemp(value)) {
+                        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                    }
+                } else {
+                    if (value === "" || mcdu.setPerfTOFlexTemp(value)) {
+                        mcdu._toFlexChecked = true;
+                        CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+                    }
                 }
-                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             };
         } else {
             if (isFinite(mcdu.perfTOTemp)) {
@@ -356,7 +359,7 @@ class CDUPerformancePage {
 
         let next = "NEXT\xa0";
         let nextPhase = "PHASE>";
-        if ((!mcdu._v1Checked || !mcdu._vRChecked || !mcdu._v2Checked) && mcdu.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+        if (!(mcdu._v1Checked && mcdu._vRChecked && mcdu._v2Checked && mcdu._toFlexChecked) && mcdu.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF) {
             next = "CONFIRM\xa0";
             nextPhase = "TO DATA*";
             mcdu.onRightInput[5] = (value) => {

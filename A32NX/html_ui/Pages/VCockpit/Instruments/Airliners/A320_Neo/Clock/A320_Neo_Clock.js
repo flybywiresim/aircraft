@@ -5,6 +5,7 @@ class A320_Neo_Clock extends BaseAirliners {
         this.chronoStart = 0;
         this.lastChronoState = null;
         this.lastChronoTime = null;
+        this.lastChronoTime2 = null;
         this.lastDisplayTime = null;
         this.lastDisplayTime2 = null;
         this.lastFlightTime = null;
@@ -18,6 +19,8 @@ class A320_Neo_Clock extends BaseAirliners {
     connectedCallback() {
         super.connectedCallback();
         this.topSelectorElem = this.getChildById("TopSelectorValue");
+        this.topSelectorElem2 = this.getChildById("TopSelectorValue2");
+        this.topSelectorElemSeparator = this.getChildById("TopSelectorSeparator");
         this.middleSelectorElem = this.getChildById("MiddleSelectorValue");
         this.middleSelectorElem2 = this.getChildById("MiddleSelectorValue2");
         this.bottomSelectorElem = this.getChildById("BottomSelectorValue");
@@ -57,12 +60,30 @@ class A320_Neo_Clock extends BaseAirliners {
         }
         if (this.topSelectorElem) {
             if (lightsTest) {
-                this.topSelectorElem.textContent = "88:88";
+                this.topSelectorElem.textContent = "88";
             } else {
-                const chronoTime = this.getChronoTime();
+                const chronoTime = this.getChronoValue1();
                 if (chronoTime !== this.lastChronoTime || lightsTestChanged) {
                     this.lastChronoTime = chronoTime;
                     this.topSelectorElem.textContent = chronoTime;
+                }
+            }
+        }
+        if (this.topSelectorElemSeparator) {
+            if (lightsTest || chronoState === 1) {
+                this.topSelectorElemSeparator.textContent = ":";
+            } else {
+                this.topSelectorElemSeparator.textContent = "";
+            }
+        }
+        if (this.topSelectorElem2) {
+            if (lightsTest) {
+                this.topSelectorElem2.textContent = "88";
+            } else {
+                const chronoTime = this.getChronoValue2();
+                if (chronoTime !== this.lastChronoTime2 || lightsTestChanged) {
+                    this.lastChronoTime2 = chronoTime;
+                    this.topSelectorElem2.textContent = chronoTime;
                 }
             }
         }
@@ -138,18 +159,30 @@ class A320_Neo_Clock extends BaseAirliners {
         }
         return "";
     }
-    getChronoTime() {
+    getChronoValue1() {
         const totalSeconds = this.chronoSeconds;
 
         if (this.chronoStart || totalSeconds > 0) {
-            const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-            const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-
-            if (hours === "00") {
-                const seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
-                return `${minutes}:${seconds}`;
+            if (totalSeconds < 3600) {
+                const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+                return `${minutes}`;
             } else {
-                return `${hours}:${minutes}`;
+                const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+                return `${hours}`;
+            }
+        }
+        return "";
+    }
+    getChronoValue2() {
+        const totalSeconds = this.chronoSeconds;
+
+        if (this.chronoStart || totalSeconds > 0) {
+            if (totalSeconds < 3600) {
+                const seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
+                return `${seconds}`;
+            } else {
+                const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+                return `${minutes}`;
             }
         }
         return "";

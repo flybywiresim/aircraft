@@ -2055,7 +2055,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val Code="(L:A32NX_APU_MASTER_SW_ACTIVATED)"/>
+                  <Val Code="(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"/>
                   <Val Value="0"/>
                </Operator>
             </TestValue>
