@@ -102,6 +102,7 @@
 1. [MISC] Added brake fan button (with on and hot label) - @Inexorable92 (Inexorable)
 1. [MISC] Better brake cooling simulation (with and without brake fan) - @Inexorable92 (Inexorable)
 1. [MISC] Added registration decal - @tyler58546(tyler58546), @DarkOfNova (DarkOfNova)
+1. [OVHD] Implement even more additional overhead button/switch functionality (MASK MAN ON, EMER ELEC PWR MAN ON, Cargo smoke DISCH, etc.) - @ErickSharp (Erick Torres)
 1. [CDU] Fix ILS frequencies not autofilling - @pareil6 (pareil6)
 1. [LIGHTS] Improved Exterior Lights - @Snapmatics (Harry)
 1. [SOUND] Added custom sounds to multiple buttons and Throttle Lever Reverse Locks - @ImenesFBW (Imenes)
@@ -171,9 +172,11 @@
 1. [ELEC] When the IDG is disconnected, DISC appears in amber - @davidwalschots (David Walschots)
 1. [ELEC] SHED appears below the AC ESS BUS when AC ESS SHED BUS is unpowered - @davidwalschots (David Walschots)
 1. [ELEC] SHED appears below the DC ESS BUS when DC ESS SHED BUS is unpowered - @davidwalschots (David Walschots)
+1. [MISC] Added EFB cockpit camera view - @tracernz (Mike)
 1. [TEXTURE] Improved overhead panel decals - @ImenesFBW (Imenes)
 1. [MCDU] Import cost index when importing flight plan from SimBrief - @aviadnissel (Aviad)
 1. [FLIGHTMODEL] Revert flaps hotfix due to MSFS hotfix in MSFS update 1.13.17.0 - @donstim (donbikes#4084)
+1. [MISC] Fixed chrono watch colon appearance - @SergeySoprykin (SergeyS)
 1. [CDU] Reworked Flight Phase system - @MisterChocker (Leon)
 
 ## 0.5.2

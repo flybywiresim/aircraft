@@ -295,11 +295,12 @@ a320-neo-mfd-element #Mainframe #VORDMENavaids #Mode {
   text-decoration: underline;
 }
 a320-neo-mfd-element #Mainframe #VORDMENavaids #Distance {
-  font-size: calc(3 * 1vh * var(--bodyHeightScale));
+  font-size: calc(2.85 * 1vh * var(--bodyHeightScale));
+  letter-spacing: -2.25px;
   fill: var(--displayGreen);
 }
 a320-neo-mfd-element #Mainframe #VORDMENavaids #Unit {
-  font-size: calc(3 * 1vh * var(--bodyHeightScale));
+  font-size: calc(2.25 * 1vh * var(--bodyHeightScale));
   fill: var(--displayCyan);
 }
 a320-neo-mfd-element #Mainframe #VORDMENavaids #Arrow-Left {
