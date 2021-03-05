@@ -1,10 +1,9 @@
 class McduMessage {
-    constructor(_text = "", _isAmber = false, _isTypeTwo = false, _subDefault = "", _subAfter = true) {
+    constructor(_text, _isAmber = false, _isTypeTwo = false, _replace = "") {
         this.cText = _text;
         this.isAmber = _isAmber;
         this.isTypeTwo = _isTypeTwo;
-        this.sText = _subDefault;
-        this.isSAfterC = _subAfter;
+        this.replace = _replace;
     }
 
     /**
@@ -13,7 +12,7 @@ class McduMessage {
      */
 
     get text() {
-        return this.isSAfterC ? this.cText + this.sText : this.sText + this.cText;
+        return this.cText();
     }
 
     /**
@@ -21,7 +20,7 @@ class McduMessage {
      */
     getSetMessage(t) {
         return {
-            text: !!t ? (this.isSAfterC ? this.cText + t : t + this.cText) : this.isSAfterC ? this.cText + this.sText : this.sText + this.cText,
+            text: !!t ? this.cText.replace(this.replace, "" + t) : this.cText(),
             isAmber: this.isAmber,
             isTypeTwo: this.isTypeTwo
         };
@@ -43,7 +42,7 @@ const NXSystemMessages = {
     gpsPrimary:             new McduMessage("GPS PRIMARY", false, true),
     gpsPrimaryLost:         new McduMessage("GPS PRIMARY LOST", true, true),
     initializeWeightOrCg:   new McduMessage("INITIALIZE WEIGHT/CG", true, true),
-    newCrzAlt:              new McduMessage("NEW CRZ ALT-", false, true, "HHHHH"),
+    newCrzAlt:              new McduMessage("NEW CRZ ALT-HHHHH", false, true, "HHHHH"),
     noIntersectionFound:    new McduMessage("NO INTERSECTION FOUND", false, false),
     notAllowed:             new McduMessage("NOT ALLOWED", false, false),
     notInDatabase:          new McduMessage("NOT IN DATABASE", false, false),
