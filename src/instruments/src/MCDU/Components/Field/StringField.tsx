@@ -12,6 +12,7 @@ type StringFieldProps = {
     size?: lineSizes,
     isInput?: boolean,
     selectedCallback?: (value?: string) => any,
+    selectedValidation?: (value?: string) => boolean,
     lsk?: lineSelectKeys
 }
 export const StringField: React.FC<StringFieldProps> = (
@@ -22,22 +23,28 @@ export const StringField: React.FC<StringFieldProps> = (
         side,
         size,
         selectedCallback,
+        selectedValidation,
         lsk,
         isInput,
     },
 ) => {
-    const [scratchpad, , , ] = useContext(RootContext);
-
-    if (lsk) {
-        useInteractionEvent(lsk, () => {
-            if (selectedCallback) {
+    const [scratchpad, setScratchpad, , ] = useContext(RootContext); // eslint-disable-line array-bracket-spacing
+    if (selectedCallback) {
+        if (lsk) {
+            useInteractionEvent(lsk, () => {
                 if (isInput) {
-                    selectedCallback(scratchpad);
+                    if (selectedValidation) {
+                        if (selectedValidation(scratchpad)) {
+                            selectedCallback(scratchpad);
+                        } else {
+                            setScratchpad('FORMAT ERROR');
+                        }
+                    }
                 } else {
                     selectedCallback();
                 }
-            }
-        });
+            });
+        }
     }
 
     return (

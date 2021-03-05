@@ -30,10 +30,10 @@ export const NumberField: React.FC<NumberFieldProps> = (
         lsk,
     },
 ) => {
-    const [scratchpad, setScratchpad, , ] = useContext(RootContext);
-    if (lsk) {
-        useInteractionEvent(lsk, () => {
-            if (selectedCallback) {
+    const [scratchpad, setScratchpad, , ] = useContext(RootContext); // eslint-disable-line array-bracket-spacing
+    if (selectedCallback) {
+        if (lsk) {
+            useInteractionEvent(lsk, () => {
                 const value = float === true ? parseFloat(scratchpad) : parseInt(scratchpad);
                 if (!Number.isNaN(value)) {
                     if (value >= min && value <= max) {
@@ -44,8 +44,8 @@ export const NumberField: React.FC<NumberFieldProps> = (
                 } else {
                     setScratchpad('FORMAT ERROR');
                 }
-            }
-        });
+            });
+        }
     }
 
     return (
