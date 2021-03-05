@@ -28,9 +28,7 @@
 @tailwind utilities;
 
 /*
-
   Custom CSS for a32nx [EFB]
-
 */
 
 .loading-screen {
@@ -54,8 +52,7 @@
 
   .loaded {
     @apply w-full h-full bg-white;
-    animation: 6s linear loading;
-    animation-fill-mode: forwards;
+    animation: 6s linear infinite loading;
     transform-origin: 0%;
   }
 

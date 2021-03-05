@@ -17,7 +17,7 @@
  */
 
 .default-input-container {
-  @apply h-16 px-4 py-3 border-2 border-blue-dark bg-blue-medium-contrast rounded-lg;
+  @apply h-16 px-4 py-3 border-2 border-blue-dark bg-teal-medium-contrast rounded-lg;
   @apply flex flex-row items-center;
 
   &.dark-option {
