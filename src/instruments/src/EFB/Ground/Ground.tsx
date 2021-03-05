@@ -17,16 +17,17 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconStairsUp, IconPower } from '@tabler/icons';
+import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconStairsUp, IconPower, IconPlug, IconArrowDownLeft } from '@tabler/icons';
 import './Ground.scss';
 import fuselage from '../Assets/320neo-outline-upright.svg';
 import { useSplitSimVar } from '../../Common/simVars';
+import Button, { BUTTON_TYPE } from '../Components/Button/Button';
 
 export const Ground: React.FC = () => {
     const [activeButtons, setActiveButtons] = useState <string[]>([]);
     const [jetWayActive, setJetWayActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_JETWAY', 'bool', 1000);
     const [_rampActive, setRampActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
-    const [cargoActive, setCargoActive] = useSplitSimVar('A:EXIT OPEN:5', 'Enum', 'K:REQUEST_LUGGAGE', 'bool', 1000);
+    const [cargoActive, setCargoActive] = useSplitSimVar('A:EXIT OPEN:5', 'Enum', 'A:EXIT OPEN:5', 'percent over 100', 1000);
     const [cateringActive, setCateringActive] = useSplitSimVar('A:EXIT OPEN:3', 'Enum', 'K:REQUEST_CATERING', 'bool', 1000);
     const [fuelingActive, setFuelingActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:9', 'percent', 'K:REQUEST_FUEL_KEY', 'bool', 1000);
     const [tugHeading, setTugHeading] = useSplitSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 'K:KEY_TUG_HEADING', 'UINT32', 1000);
@@ -68,7 +69,12 @@ export const Ground: React.FC = () => {
 
     const handleClick = (callBack: () => void, event: React.MouseEvent) => {
         const updatedState = activeButtons;
-        if (!tugActive) {
+        if (!activeButtons.includes(event.currentTarget.id)) {
+            activeButtons.push(event.currentTarget.id);
+            callBack();
+
+            // return className;
+        } else if (!tugActive) {
             const index = activeButtons.indexOf(event.currentTarget.id);
             if (index > -1) {
                 updatedState.splice(index, 1);
@@ -89,9 +95,10 @@ export const Ground: React.FC = () => {
 
     const applySelected = (className: string, id?: string) => {
         if (id) {
-            return className + (activeButtons.includes(id) ? ' selected' : '');
+            console.log(`vtuh${id}`);
+            return className + (activeButtons.includes(id) ? ' bg-green-600' : ' border-blue-500 bg-blue-500 text-white');
         }
-        return className + (activeButtons.includes(className) ? ' selected' : '');
+        return className + (activeButtons.includes(className) ? ' bg-green-600' : ' border-blue-500 bg-blue-500 text-white');
     };
 
     /**
@@ -99,113 +106,151 @@ export const Ground: React.FC = () => {
      * This ensures the displayed state is in sync with the active services
      */
     const applySelectedWithSync = (className: string, id: string, gameSync) => {
-        if (gameSync > 0) {
-            if (!activeButtons.includes(id)) {
-                activeButtons.push(id);
-            }
-            return `${className} selected`;
-        } if (activeButtons.includes(id)) {
+        if (gameSync > 0 && activeButtons.includes(id)) {
+            return `${className} selectedActive`;
+        } /* if (activeButtons.includes(id)) {
             const updatedActiveButtons = activeButtons;
             updatedActiveButtons.splice(activeButtons.indexOf(id));
             setActiveButtons(updatedActiveButtons);
+        } */
+        if (gameSync > 0 && !activeButtons.includes(id)) {
+            return `${className} text-white, border-white, bg-gray-600`;
         }
-        return className;
+        console.log(className + (activeButtons.includes(id) ? ' text-white, border-white, bg-gray-600' : ''));
+        return className + (activeButtons.includes(id) ? ' text-white, border-white, bg-gray-600' : ' border-blue-500 bg-blue-500 text-white');
     };
 
     return (
         <div className="wrapper flex-grow flex flex-col">
             <img className="airplane w-full" src={fuselage} />
-            <div className="pushback control-grid">
-                <h1 className="text-white font-medium text-xl">Pushback</h1>
-                <div
-                    id="stop"
-                    onMouseDown={(e) => handlePushBackClick(() => togglePushback(false), e)}
-                    className={applySelected('stop')}
-                >
-                    <IconHandStop />
+            <div className="left-1/4 grid grid-cols-2 control-grid absolute top-12">
+                <div className="">
+                    <h1 className="text-white font-medium text-xl text-center pb-1">Jetway</h1>
+                    <Button
+                        onClick={(e) => handleClick(() => setJetWayActive(1), e)}
+                        className={applySelectedWithSync('call w-32 ', 'jetway', jetWayActive)}
+                        text=""
+                        type={BUTTON_TYPE.NONE}
+                        id="jetway"
+                    >
+                        <IconBuildingArch size="3rem" stroke="1.5" />
+                    </Button>
                 </div>
-                <div
+                <div className="">
+                    <h1 className="text-white font-medium text-xl text-center pb-1">Stairs</h1>
+                    <Button
+                        onClick={(e) => handleClick(() => setRampActive(1), e)}
+                        className={applySelectedWithSync('call  w-32 ', 'jetway', jetWayActive)}
+                        text=""
+                        type={BUTTON_TYPE.NONE}
+                        id="jetway"
+                    >
+                        <IconStairsUp size="3rem" stroke="1.5" />
+                    </Button>
+                </div>
+            </div>
+
+            <div className="left-1/4 grid grid-cols-1 control-grid absolute top-48">
+                <div className="">
+                    <h1 className="text-white font-medium text-xl text-center pb-1">Fuel</h1>
+                    <Button
+                        onClick={(e) => handleClick(() => setFuelingActive(1), e)}
+                        className={applySelectedWithSync('call w-32', 'fuel', fuelingActive)}
+                        text=""
+                        type={BUTTON_TYPE.NONE}
+                        id="fuel"
+                    >
+                        <IconTruck size="3rem" stroke="1.5" />
+                    </Button>
+                </div>
+            </div>
+
+            <div className="right-1/4 grid grid-cols-2 control-grid absolute top-12">
+
+                <div>
+                    <h1 className="text-white font-medium text-xl text-center pb-1">Baggage</h1>
+                    <Button
+                        onClick={(e) => handleClick(() => setCargoActive(1), e)}
+                        className={applySelectedWithSync('call w-32', 'baggage', cargoActive)}
+                        text=""
+                        type={BUTTON_TYPE.NONE}
+                        id="baggage"
+                    >
+                        <IconBriefcase size="3rem" stroke="1.5" />
+                    </Button>
+                </div>
+                <div>
+                    <h1 className="text-white font-medium text-xl text-center pb-1">Ground Pow</h1>
+                    <Button
+                        onClick={(e) => handleClick(() => setPowerActive(1), e)}
+                        className={applySelectedWithSync('call w-32', 'power', powerActive)}
+                        text=""
+                        type={BUTTON_TYPE.NONE}
+                        id="power"
+                    >
+                        <IconPlug size="3rem" stroke="1.5" />
+                    </Button>
+                </div>
+            </div>
+            <div className="right-1/4 grid grid-cols-2 control-grid absolute bottom-36">
+                <div>
+                    <h1 className="text-white font-medium text-xl text-center pb-1">Catering</h1>
+                    <Button
+                        onClick={(e) => handleClick(() => setCateringActive(1), e)}
+                        className={applySelectedWithSync('call  w-32', 'catering', cateringActive)}
+                        text=""
+                        type={BUTTON_TYPE.NONE}
+                        id="catering"
+                    >
+                        <IconArchive size="3rem" stroke="1.5" />
+
+                    </Button>
+                </div>
+            </div>
+
+            <div className="right-0 mr-4 grid grid-cols-3 absolute bottom-16 control-grid">
+                <div className="stop">
+                    <h1 className="text-white font-medium text-xl text-center">Pushback</h1>
+                    <Button
+                        id="stop"
+                        text=""
+                        onClick={(e) => handlePushBackClick(() => togglePushback(false), e)}
+                        className={applySelected('w-32 stop', 'stop')}
+                        type={BUTTON_TYPE.NONE}
+                    >
+                        <IconHandStop size="3rem" stroke="1.5" />
+                    </Button>
+                </div>
+
+                <Button
                     id="down-left"
-                    onMouseDown={(e) => handlePushBackClick(() => computeAndSetTugHeading(90), e)}
-                    className={applySelected('down-left')}
+                    text=""
+                    type={BUTTON_TYPE.NONE}
+                    onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(90), e)}
+                    className={applySelected('w-32 down-left', 'down-left')}
                 >
                     <IconCornerDownLeft />
-                </div>
-                <div
+                </Button>
+                <Button
                     id="down"
-                    onMouseDown={(e) => handlePushBackClick(() => computeAndSetTugHeading(0), e)}
-                    className={applySelected('down')}
+                    text=""
+                    type={BUTTON_TYPE.NONE}
+                    onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(0), e)}
+                    className={applySelected('down w-32 down', 'down')}
                 >
                     <IconArrowDown />
-                </div>
-                <div
+                </Button>
+                <Button
                     id="down-right"
-                    onMouseDown={(e) => handlePushBackClick(() => computeAndSetTugHeading(270), e)}
-                    className={applySelected('down-right')}
+                    text=""
+                    type={BUTTON_TYPE.NONE}
+                    onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(270), e)}
+                    className={applySelected('w-32 down-right', 'down-right')}
                 >
                     <IconCornerDownRight />
-                </div>
+                </Button>
             </div>
-            <div className="fuel control-grid">
-                <h1 className="text-white font-medium text-xl">Fuel</h1>
-                <div
-                    id="fuel"
-                    onMouseDown={(e) => handleClick(() => setFuelingActive(1), e)}
-                    className={applySelectedWithSync('call', 'fuel', fuelingActive)}
-                >
-                    <IconTruck />
-                </div>
-            </div>
-            <div className="baggage control-grid">
-                <h1 className="text-white font-medium text-xl">Baggage</h1>
-                <div
-                    id="baggage"
-                    onMouseDown={(e) => handleClick(() => setCargoActive(1), e)}
-                    className={applySelectedWithSync('call', 'baggage', cargoActive)}
-                >
-                    <IconBriefcase />
-                </div>
-            </div>
-            <div className="power control-grid">
-                <h1 className="text-white font-medium text-xl">Ground Power</h1>
-                <div
-                    id="baggage"
-                    onMouseDown={(e) => handleClick(() => setPowerActive(1), e)}
-                    className={applySelectedWithSync('call', 'power', powerActive)}
-                >
-                    <IconPower />
-                </div>
-            </div>
-            <div className="catering control-grid">
-                <h1 className="text-white font-medium text-xl">Catering</h1>
-                <div
-                    id="catering"
-                    onMouseDown={(e) => handleClick(() => setCateringActive(1), e)}
-                    className={applySelectedWithSync('call', 'catering', cateringActive)}
-                >
-                    <IconArchive />
-                </div>
-            </div>
-            <div className="jetway control-grid">
-                <h1 className="text-white font-medium text-xl">Jetway</h1>
-                <div
-                    id="jetway"
-                    onMouseDown={(e) => handleClick(() => setJetWayActive(1), e)}
-                    className={applySelectedWithSync('call', 'jetway', jetWayActive)}
-                >
-                    <IconBuildingArch />
-                </div>
-            </div>
-            <div className="ramp control-grid">
-                <h1 className="text-white font-medium text-xl">Stairs</h1>
-                <div
-                    id="ramp"
-                    onMouseDown={(e) => handleClick(() => setRampActive(1), e)}
-                    className={applySelectedWithSync('call', 'jetway', jetWayActive)}
-                >
-                    <IconStairsUp />
-                </div>
-            </div>
+
         </div>
     );
 };

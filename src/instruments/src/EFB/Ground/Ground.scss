@@ -38,13 +38,13 @@
 }
 
 .control-grid {
-  @apply p-2;
+  /*  @apply p-2;
   @apply grid;
   @apply bg-gray-800;
-  @apply rounded-lg;
-  position: absolute;
+  @apply rounded-lg; */
+  //position: absolute;
   color: #232b3d;
-  grid-gap: 0.5rem;
+  grid-gap: 1rem;
 }
 
 .control-grid h1 {
@@ -54,21 +54,21 @@
 }
 
 .control-grid > * {
-  display: block;
+  // display: block;
 }
 
-.control-grid > div {
+.control-grid > button {
   @apply rounded-lg;
   height: 4rem;
   width: 8rem;
   margin: auto;
 }
 
-.control-grid > div > svg {
+.control-grid > button > svg {
   height: 100%;
   width: 52px;
   margin: auto;
-  stroke-width: 1.5;
+  //stroke-width: 1.5;
 }
 
 .pushback {
@@ -77,31 +77,31 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.fuel {
+/* .fuel {
   right: calc(50% + 15rem);
   top: 15rem;
   grid-template-columns: minmax(0, 1fr);
-}
+} */
 
-.baggage {
+/* .baggage {
   left: calc(50% + 5rem);
   top: 4rem;
   grid-template-columns: minmax(0, 1fr);
-}
-
+} */
+/*
 .power {
   left: calc(50% + 15rem);
   top: 4rem;
   grid-template-columns: minmax(0, 1fr);
 }
-
-.catering {
+ */
+/* .catering {
   right: calc(50% + 5rem);
   bottom: 9rem;
   grid-template-columns: minmax(0, 1fr);
-}
+} */
 
-.jetway {
+/* .jetway {
   right: calc(50% + 5rem);
   top: 4rem;
   grid-template-columns: minmax(0, 1fr);
@@ -111,10 +111,16 @@
   right: calc(50% + 15rem);
   top: 4rem;
   grid-template-columns: minmax(0, 1fr);
-}
+} */
 
 .call {
-  @apply bg-green-500;
+  // @apply bg-gray-500;
+}
+
+.selectedActive {
+  @apply bg-green-600;
+  border-color: #ccc;
+  border-width: 2px;
 }
 
 .selected {
@@ -123,14 +129,21 @@
   border-width: 2px;
 }
 
-.pushback .stop {
-  @apply bg-red-500;
+.requested {
+  @apply text-white;
+  @apply border-white;
+  @apply bg-gray-600;
+  //border-width: 2px;
+}
+
+.stop {
   grid-column: 2 / 3;
 }
 
 .pushback > div:hover,
 .call:hover {
   @apply text-white;
+  @apply border-white;
 }
 
 .pushback > div:active,
@@ -139,17 +152,24 @@
   @apply translate-y-1;
 }
 
+button:hover {
+  @apply text-white;
+  @apply border-white;
+}
+
+button:active {
+  @apply transform;
+  @apply translate-y-1;
+}
+
 .down-left {
-  @apply bg-green-500;
   grid-column: 1/1;
 }
 
 .down {
-  @apply bg-green-500;
   grid-column: 2/2;
 }
 
 .down-right {
-  @apply bg-green-500;
   grid-column: 3/3;
 }
