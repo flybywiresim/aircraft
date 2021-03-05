@@ -693,16 +693,17 @@ impl Pump {
         Pump {
             delta_vol_max: Volume::new::<gallon>(0.),
             delta_vol_min: Volume::new::<gallon>(0.),
-            press_breakpoints: press_breakpoints,
-            displacement_carac: displacement_carac,
-            displacement_dynamic: displacement_dynamic,
+            press_breakpoints,
+            displacement_carac,
+            displacement_dynamic,
         }
     }
 
     fn update(&mut self, delta_time: &Duration, context: &UpdateContext, line: &HydLoop, rpm: f64) {
         let displacement = self.calculate_displacement(line.get_pressure());
 
-        let flow = Pump::calculate_flow(rpm, displacement).max(VolumeRate::new::<gallon_per_second>(0.));
+        let flow =
+            Pump::calculate_flow(rpm, displacement).max(VolumeRate::new::<gallon_per_second>(0.));
 
         self.delta_vol_max = (1.0 - self.displacement_dynamic) * self.delta_vol_max
             + self.displacement_dynamic * flow * Time::new::<second>(delta_time.as_secs_f64());
@@ -906,10 +907,7 @@ impl RatPropeller {
         self.torque_sum += air_speed_torque;
     }
 
-    fn update_friction_torque(
-        &mut self,
-        displacement_ratio: f64,
-    ) {
+    fn update_friction_torque(&mut self, displacement_ratio: f64) {
         let mut pump_torque = 0.;
         if self.rpm < RatPropeller::LOW_SPEED_PHYSICS_ACTIVATION {
             pump_torque += (self.pos * 4.).cos() * displacement_ratio.max(0.35) * 35.;
@@ -938,7 +936,7 @@ impl RatPropeller {
         displacement_ratio: f64,
     ) {
         self.update_generated_torque(indicated_speed, stow_pos);
-        self.update_friction_torque( displacement_ratio);
+        self.update_friction_torque(displacement_ratio);
         self.update_physics(delta_time);
     }
 }

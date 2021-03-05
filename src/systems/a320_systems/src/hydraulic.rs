@@ -553,7 +553,7 @@ pub struct A320HydraulicBrakingLogic {
 impl A320HydraulicBrakingLogic {
     const PARK_BRAKE_DEMAND_DYNAMIC: f64 = 0.8; //Dynamic of the parking brake application/removal in (percent/100) per s
     const LOW_PASS_FILTER_BRAKE_COMMAND: f64 = 0.85; //Low pass filter on all brake commands
-    const MIN_PRESSURE_BRAKE_ALTN:f64 = 1500.; //Minimum pressure until main switched on ALTN brakes
+    const MIN_PRESSURE_BRAKE_ALTN: f64 = 1500.; //Minimum pressure until main switched on ALTN brakes
 
     pub fn new() -> A320HydraulicBrakingLogic {
         A320HydraulicBrakingLogic {
@@ -806,14 +806,17 @@ impl A320HydraulicOverheadPanel {
         }
     }
 
-    pub fn update_pb_faults(&mut self, hyd : &A320Hydraulic  ) {
-        self.edp1_push_button.set_fault(hyd.hyd_logic_inputs.green_edp_has_fault);
-        self.edp2_push_button.set_fault(hyd.hyd_logic_inputs.yellow_edp_has_fault);
-        self.blue_epump_push_button.set_fault(hyd.hyd_logic_inputs.blue_epump_has_fault);
-        self.yellow_epump_push_button.set_fault(hyd.hyd_logic_inputs.yellow_epump_has_fault);
+    pub fn update_pb_faults(&mut self, hyd: &A320Hydraulic) {
+        self.edp1_push_button
+            .set_fault(hyd.hyd_logic_inputs.green_edp_has_fault);
+        self.edp2_push_button
+            .set_fault(hyd.hyd_logic_inputs.yellow_edp_has_fault);
+        self.blue_epump_push_button
+            .set_fault(hyd.hyd_logic_inputs.blue_epump_has_fault);
+        self.yellow_epump_push_button
+            .set_fault(hyd.hyd_logic_inputs.yellow_epump_has_fault);
     }
 }
-
 
 impl SimulationElement for A320HydraulicOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
