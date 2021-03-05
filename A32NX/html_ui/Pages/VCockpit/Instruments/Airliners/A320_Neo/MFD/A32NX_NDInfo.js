@@ -185,7 +185,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     if ((_track != this.currentWaypointTrack) || _force) {
                         this.currentWaypointTrack = _track;
                         if (this.waypointTrack) {
-                            this.waypointTrack.textContent = this.currentWaypointTrack.toString().padStart(3, "0") + String.fromCharCode(176);
+                            this.waypointTrack.textContent = this.currentWaypointTrack.toString().padStart(3, "0");
                         }
                     }
                     if ((_distance != this.currentWaypointDistance) || _force) {
@@ -211,7 +211,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
                         this.waypointName.textContent = "";
                     }
                     if (this.waypointTrack != null) {
-                        this.waypointTrack.textContent = "---°";
+                        this.waypointTrack.textContent = "---";
                     }
                     if (this.waypointDistance != null) {
                         this.waypointDistance.textContent = "-.-";
