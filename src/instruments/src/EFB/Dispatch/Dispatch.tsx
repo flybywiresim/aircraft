@@ -20,6 +20,7 @@ import React from 'react';
 
 import OverviewPage from './Pages/OverviewPage';
 import LoadsheetPage from './Pages/LoadsheetPage';
+import { Navbar } from '../Components/Navbar';
 
 type DispatchProps = {
     loadsheet: string,
@@ -65,28 +66,53 @@ type DispatchProps = {
 
 type DispatchState = {
     activeIndex: number,
-    currentPageIndex: number
 };
 
 class Dispatch extends React.Component<DispatchProps, DispatchState> {
+    tabs = [
+        'Overview',
+        'Loadsheet',
+        'Fuel',
+        'Payload',
+    ];
+
     constructor(props: DispatchProps) {
         super(props);
         this.handleClick = this.handleClick.bind(this);
+        this.state = { activeIndex: 0 };
+    }
+
+    handleClick(index: number) {
+        this.setState({ activeIndex: index });
     }
 
     currentPage() {
-        switch (this.state.currentPageIndex) {
-            case 1:
-                return <LoadsheetPage
-                    loadsheet={this.props.loadsheet} />;
-            case 2:
-                return <h1>Page 2</h1>;
-            case 3:
-                return <h1>Page 3</h1>;
-            case 4:
-                return <h1>Page 4</h1>;
-            default:
-                return <OverviewPage
+        switch (this.state.activeIndex) {
+        case 1:
+            return (
+                <LoadsheetPage loadsheet={this.props.loadsheet} />
+            );
+        case 2:
+            return (
+                <div className="w-full h-full">
+                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
+                </div>
+            );
+        case 3:
+            return (
+                <div className="w-full h-full">
+                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
+                </div>
+            );
+        case 4:
+            return (
+                <div className="w-full h-full">
+                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
+                </div>
+            );
+        default:
+            return (
+                <OverviewPage
                     weights={this.props.weights}
                     fuels={this.props.fuels}
                     units={this.props.units}
@@ -100,60 +126,16 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
                     tripTime={this.props.tripTime}
                     contFuelTime={this.props.contFuelTime}
                     resFuelTime={this.props.resFuelTime}
-                    taxiOutTime={this.props.taxiOutTime} />;
+                    taxiOutTime={this.props.taxiOutTime}
+                />
+            );
         }
-    }
-
-    tabs = [
-        { id: 0, name: 'Overview', link: 'dashboard'},
-        { id: 1, name: 'Loadsheet', link: 'dispatch'},
-        { id: 2, name: 'Fuel', link: 'flight' },
-        { id: 3, name: 'Payload', link: 'ground'}
-    ];
-
-    state: DispatchState = {
-        activeIndex: this.indexInit(),
-        currentPageIndex: 0
-    };
-
-    indexInit(): number {
-        const url = window.location.pathname;
-        let index = 0;
-        this.tabs.map((tab) => {
-            if (("/" + tab.link) === url) {
-                index = tab.id;
-            } else if (url === "/") {
-                index = 0;
-            }
-        });
-        return index;
-    }
-
-    handleClick(index: number) {
-        return (() => {
-            this.setState({activeIndex: index});
-            this.setState({currentPageIndex: index});
-        });
     }
 
     render() {
         return (
-            <div>
-                <nav className="bg-none">
-                    <div className="flex justify-between p-6">
-                        <div className="flex-1 flex items-center justify-start">
-                            <div className="flex space-x-4 text-xl">
-                                {
-                                    this.tabs.map((tab) =>
-                                        <a className={tab.id === this.state.activeIndex ? 'border-b-2 border-t-0 border-r-0 border-l-0 text-white px-3 pb-2 font-medium' : 'text-white px-3 pb-2 font-medium'} key={tab.id} onClick={this.handleClick(tab.id)}>
-                                            {tab.name}
-                                        </a>
-                                    )
-                                }
-                            </div>
-                        </div>
-                    </div>
-                </nav>
+            <div className="w-full">
+                <Navbar tabs={this.tabs} onSelected={(index) => this.handleClick(index)} />
                 <div>
                     {this.currentPage()}
                 </div>

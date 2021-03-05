@@ -3,6 +3,7 @@
 // The selector calculates the new value based on other simvars and some logic.
 // The updater compares the new value from the selector with the current value from the local simvar,
 // and then updates the local simvar if it changed.
+
 const FLAPS_IN_MOTION_MIN_DELTA = 0.1;
 
 class A32NX_LocalVarUpdater {
@@ -70,6 +71,11 @@ class A32NX_LocalVarUpdater {
                 varName: "L:32NX_PACKS_1_IS_SUPPLYING",
                 type: "Bool",
                 selector: this._isPacksOneSupplying.bind(this)
+            },
+            {
+                varName: "L:A32NX_SLIDES_ARMED",
+                type: "Bool",
+                selector: this._areSlidesArmed.bind(this)
             }
             // New updaters go here...
         ];
@@ -170,16 +176,34 @@ class A32NX_LocalVarUpdater {
 
         const xBleedPos = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
         const engineModeSelector = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum");
-        const isApuDelivering = SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95 && SimVar.GetSimVarValue("BLEED AIR APU", "Bool") && engineModeSelector === 1;
-        const isEngineOneDelivering = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:1", "Rpm(0 to 16384 = 0 to 100%)") >= 55 && SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool");
-        const isEngineTwoDelivering = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:2", "Rpm(0 to 16384 = 0 to 100%)") >= 55 && SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool");
+
+        const isApuDelivering = SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") && engineModeSelector === 1;
+        const isEngineOneRunning = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:1", "Rpm(0 to 16384 = 0 to 100%)") >= 55;
+        const isEngineTwoRunning = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool") && SimVar.GetSimVarValue("ENG N2 RPM:2", "Rpm(0 to 16384 = 0 to 100%)") >= 55;
+        const isEngineOneDelivering = isEngineOneRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool");
+        const isEngineTwoDelivering = isEngineTwoRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool");
 
         const isXBleedOpen = xBleedPos === 2 || (xBleedPos === 1 && (isApuDelivering || engineModeSelector !== 1));
-        const packOneHasAir = isApuDelivering || isEngineOneDelivering || (isEngineTwoDelivering && isXBleedOpen);
+
+        /**
+         * Whether engine mode selector is set to norm or both engines are running -> return packOneHasSupply state; otherwise return false
+         */
+        const packOneHasAir = engineModeSelector === 1 || (isEngineOneRunning && isEngineTwoRunning) ? isApuDelivering || isEngineOneDelivering || (isEngineTwoDelivering && isXBleedOpen) : false;
 
         this.isPacksOneSupplying = packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool");
 
         return this.isPacksOneSupplying;
+    }
+
+    _areSlidesArmed() {
+
+        return !SimVar.GetSimVarValue('SIM ON GROUND', 'bool') ||
+        SimVar.GetSimVarValue('ON ANY RUNWAY', 'bool') ||
+        (SimVar.GetSimVarValue('LIGHT BEACON ON', 'bool') &&
+            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 5 && // Pilot side front door for ramp/stairs
+            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 5 && // Rear door, FO side for catering
+            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') < 5 // Cargo door FO side
+        );
     }
 
     // New selectors go here...

@@ -21,6 +21,8 @@ class A32NX_Speeds {
         this.lastFhi = -1;
         this.ldgPos = -1;
         this.alt = -1;
+        this.cgw = 0;
+        this.isTo = false;
         this.tas = 0;
         this.tat = 0;
         this.p = 0;
@@ -32,6 +34,9 @@ class A32NX_Speeds {
         setInterval(() => {
             const fp = Simplane.getCurrentFlightPhase();
             let fhi = Simplane.getFlapsHandleIndex();
+            /** Using true fhi for comparison */
+            const isTo = fhi === SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number");
+            /** Change fhi to differentiate between 1 and 1 + F */
             if (fhi === 1 && SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") < 9.99) {
                 fhi = 5;
             }
@@ -39,8 +44,16 @@ class A32NX_Speeds {
             const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
             const alt = this.round(Simplane.getAltitude());
 
-            if (fhi === this.lastFhi && gw === this.lastGw && ldg === this.ldgPos && alt === this.alt) {
+            if (fhi === this.lastFhi && gw === this.lastGw && ldg === this.ldgPos && alt === this.alt && isTo === this.isTo) {
                 return;
+            }
+
+            /** During Take Off allow to change this.isTo
+            * Otherwise if we are in take off config and change the fhi, we no longer are in take off config */
+            if (fp === FlightPhase.FLIGHT_PHASE_TAKEOFF && Simplane.getAltitudeAboveGround() < 1.5) {
+                this.isTo = isTo;
+            } else if (this.isTo && this.lastFhi !== fhi) {
+                this.isTo = false;
             }
 
             this.lastFhi = fhi;
@@ -48,7 +61,7 @@ class A32NX_Speeds {
             this.ldgPos = ldg;
             this.alt = alt;
 
-            const speeds = new NXSpeeds(gw, this.lastFhi, ldg, fp < FlightPhase.FLIGHT_PHASE_CLIMB);
+            const speeds = new NXSpeeds(gw, this.lastFhi, ldg, this.isTo);
             speeds.compensateForMachEffect(alt);
 
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_VS", "number", speeds.vs);

@@ -192,6 +192,12 @@
 						</Effect>
 					</ChildrenList>
 				</Folder>
+				<Effect Name="New_Wwise_Pitch_Shifter" ID="{0AE67B9F-969B-412E-AFAE-2AC613F09C21}" PluginName="Wwise Pitch Shifter" CompanyID="0" PluginID="136" PluginType="3">
+					<PropertyList>
+						<Property Name="FilterFrequency" Type="Real32" Value="7388"/>
+						<Property Name="FilterType" Type="int32" Value="4"/>
+					</PropertyList>
+				</Effect>
 			</ChildrenList>
 		</WorkUnit>
 	</Effects>

@@ -48,14 +48,14 @@ class CDUAtcRequest {
             CDUAtcRequest.ShowPage(mcdu, store);
         };
 
-        mcdu.rightInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
         mcdu.onRightInput[1] = (value) => {
             if (value != "") {
                 store["spdMach"] = "[" + value + "][color]cyan";
             }
             CDUAtcRequest.ShowPage(mcdu, store);
+        };
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.leftInputDelay[5] = () => {
