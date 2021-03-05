@@ -115,7 +115,7 @@
             <Range LowerBound="1.0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="apuflapopen" FadeOutType="2" FadeOutTime="1" Continuous="true" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_MASTER_SW_ACTIVATED" Units="BOOLEAN">
+        <Sound WwiseData="true" WwiseEvent="apuflapopen" FadeOutType="2" FadeOutTime="1" Continuous="true" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_OVHD_APU_MASTER_SW_PB_IS_ON" Units="BOOLEAN">
             <Range LowerBound="1.0" />
             <Requires LocalVar="APU_FLAP_OPEN" Units="PERCENT" Index="0">
                 <Range UpperBound="99" />
@@ -1444,6 +1444,22 @@
                 <Range LowerBound="28" />
             </Requires>
         </Sound>
+        
+        <!-- Altitude deviation warning =====================================================================-->
+
+        <Sound WwiseData="true" WwiseEvent="cchordloop" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ALT_DEVIATION" Continuous="true">
+            <Range LowerBound="1" />
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="cchordshort" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ALT_DEVIATION_SHORT" Continuous="false">
+            <Range LowerBound="1" />
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
 
     </SimVarSounds>
 
@@ -1527,6 +1543,7 @@
         <Sound WwiseData="true" WwiseEvent="engine_mode_switch" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="throttle_lever_lock_on" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="throttle_lever_lock_off" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="detent" ViewPoint="Inside"/>
 
         <!-- FUEL ==========================================================================================  -->
         <Sound WwiseData="true" WwiseEvent="fuel_pump_push_button_on" ViewPoint="Inside"/>

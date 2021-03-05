@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
     get templateID() {
@@ -40,7 +58,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                     pageIndex = -1;
                 }
                 this.currentPage = pageIndex;
-                SimVar.SetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number", pageIndex);
+                SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", pageIndex);
                 break;
             }
         }
@@ -67,7 +85,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("FUEL", "BottomScreen", "a320-neo-lower-ecam-fuel");
         this.createLowerScreenPage("APU", "BottomScreen", "a320-neo-lower-ecam-apu");
         this.createLowerScreenPage("COND", "BottomScreen", "a320-neo-lower-ecam-cond"); // MODIFIED
-        this.createLowerScreenPage("DOOR", "BottomScreen", "a320-neo-lower-ecam-door"); // MODIFIED
+        this.createLowerScreenPage("DOOR", "BottomScreen", "a32nx-door-page-element"); // MODIFIED
         this.createLowerScreenPage("WHEEL", "BottomScreen", "a320-neo-lower-ecam-wheel"); // MODIFIED
         this.createLowerScreenPage("FTCL", "BottomScreen", "a320-neo-lower-ecam-ftcl"); // MODIFIED
         this.createLowerScreenPage("STS", "BottomScreen", "a320-neo-lower-ecam-status"); // MODIFIED
@@ -213,7 +231,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.ACPowerLastState = isACPowerAvailable;
 
         // modification start here
-        const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool");
+        const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
 
         //Determine displayed page when no button is selected
         const prevPage = this.pageNameWhenUnselected;
@@ -225,7 +243,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
         const ToPowerSet = (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
-        const apuAvailable = SimVar.GetSimVarValue("L:A32NX_APU_AVAILABLE", "Bool");
+        const apuAvailable = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool");
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
         const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number") != 0 || SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "percent") != 0;
 
@@ -291,7 +309,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             // Disable user selected page when new failure detected
             if (this.PrevFailPage !== sFailPage) {
                 this.currentPage = -1;
-                SimVar.SetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number", -1);
+                SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", -1);
             }
         }
 

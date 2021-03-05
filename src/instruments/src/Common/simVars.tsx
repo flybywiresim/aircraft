@@ -17,9 +17,7 @@
  */
 
 import * as React from 'react';
-import {
-    useContext, useEffect, useRef, useState,
-} from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { useInteractionEvents, useUpdate } from './hooks';
 
 /**

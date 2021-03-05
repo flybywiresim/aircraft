@@ -17,7 +17,7 @@ The following aircraft configuration is currently simulated:
  Model      A320-251N
  Engine     LEAP 1A-26
  FMGS       Honeywell Pegasus II
- FWC Std.   H2F9E
+ FWC Std.   H2F9C
  ```
 
 Please note that this configuration may change in the future as the A32NX project evolves and changes.
@@ -53,7 +53,7 @@ This has the latest features, but is much more unstable, use at your own risk.
 
 This version is the same as the regular master/development version, but with the WIP custom fly-by-wire system. Expect issues with flight directors/autopilot if you intend to use this version. No support will be provided via Discord.
 
-[Download custom FBW development build here.](https://flybywiresim-packages.nyc3.cdn.digitaloceanspaces.com/vmaster-cfbw/A32NX-master-cfbw.zip)
+[Download custom FBW development build here.](https://api.flybywiresim.com/api/v1/download?url=https://flybywiresim-packages.b-cdn.net/vmaster-cfbw/A32NX-master-cfbw.zip)
 
 [**IMPORTANT:** view warnings and info for the custom FBW build here.](https://github.com/flybywiresim/a32nx/tree/fbw/docs)
 
