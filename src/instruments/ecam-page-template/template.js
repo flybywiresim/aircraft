@@ -38,7 +38,6 @@
 
 /* global Airliners */
 
-
 // eslint-disable-next-line camelcase
 class A32NX_PAGE_NAME_Logic extends Airliners.EICASTemplateElement {
     constructor() {
@@ -63,17 +62,21 @@ class A32NX_PAGE_NAME_Logic extends Airliners.EICASTemplateElement {
 
         // This is big hack, see `template.html`.
         {
-            const code = document.getElementById('A32NX_BUNDLED_STYLE').innerHTML;
+            const code = document.getElementById('A32NX_PAGE_NAME_BUNDLED_STYLE').innerHTML;
             const style = document.createElement('style');
             style.innerHTML = code;
             document.head.appendChild(style);
         }
         {
-            const code = document.getElementById('A32NX_BUNDLED_LOGIC').innerHTML;
+            const code = document.getElementById('A32NX_PAGE_NAME_BUNDLED_LOGIC').innerHTML;
             const script = document.createElement('script');
             script.innerHTML = code;
             document.body.appendChild(script);
         }
+    }
+
+    onEvent(_event) {
+        console.log(JSON.stringify(_event));
     }
 
     update(_deltaTime) {
