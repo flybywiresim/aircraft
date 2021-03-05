@@ -289,7 +289,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
         return (
                 <div className="flex flex-row h-full">
                     <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} />
-                    <div className="py-14 px-8 text-gray-700 bg-blue-darker h-screen w-screen">
+                    <div className="py-14 px-8 text-gray-700 bg-blue-efb-darker h-screen w-screen">
                         {this.currentPage()}
                     </div>
                 </div>
