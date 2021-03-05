@@ -8,15 +8,15 @@ class A32NX_Speeds {
 
     init() {
         console.log('A32NX_VSPEEDS init');
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VS", "number", 0).then();
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VLS", "number", 0).then();
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_F", "number", 0).then();
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_S", "number", 0).then();
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", 0).then();
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", 0).then();
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", 0).then();
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", 0).then();
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_KCAS", "number", 0).then();
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VS", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VLS", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_F", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_S", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_KCAS", "number", 0);
         this.lastGw = 50;
         this.lastFhi = -1;
         this.ldgPos = -1;
