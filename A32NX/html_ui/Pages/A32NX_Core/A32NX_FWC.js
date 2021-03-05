@@ -354,6 +354,12 @@ class A32NX_FWC {
         const landingGearIsDown = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
         const glideSlopeCaptured = SimVar.GetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool") === 1;
         if (landingGearIsDown || glideSlopeCaptured) {
+            this._wasBellowThreshold = false;
+            this._wasAboveThreshold = false;
+            this._wasInRange = false;
+            this._wasReach200ft = false;
+            SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", false);
+            SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
             return;
         }
 
