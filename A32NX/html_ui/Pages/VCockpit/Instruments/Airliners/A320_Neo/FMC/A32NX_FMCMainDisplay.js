@@ -179,6 +179,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.flightPhaseUpdateThrottler = new UpdateThrottler(800);
         this._cruiseFlightLevel = undefined;
         this._activeCruiseFlightLevel = undefined;
+        this._activeCruiseFlightLevelDefaulToFcu = false;
     }
 
     Init() {
@@ -993,7 +994,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     onEvent(_event) {
-        console.log("_event: " + _event);
         if (_event === "MODE_SELECTED_SPEED") {
             this._onModeSelectedSpeed();
         }
@@ -1029,6 +1029,14 @@ class FMCMainDisplay extends BaseAirliners {
         if (_event === "MODE_MANAGED_ALTITUDE") {
             this.flightPhaseManager.handleFcuInput();
             this._onModeManagedAltitude();
+        }
+        if (_event === "AP_DEC_ALT" || _event === "AP_INC_ALT") {
+            if (this._activeCruiseFlightLevelDefaulToFcu && this.currentFlightPhase === FmgcFlightPhases.CLIMB) {
+                this.cruiseFlightLevel = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
+                if (this.page.Current === this.page.ProgressPage) {
+                    CDUProgressPage.ShowPage(this);
+                }
+            }
         }
         if (_event === "AP_DEC_SPEED" || _event === "AP_INC_SPEED") {
             if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 0) {
@@ -2249,6 +2257,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
             this.cruiseFlightLevel = fl;
             this._cruiseEntered = true;
+            this._activeCruiseFlightLevelDefaulToFcu = false;
             this.cruiseTemperature = undefined;
             this.updateConstraints();
             return true;

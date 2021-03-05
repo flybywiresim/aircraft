@@ -206,6 +206,10 @@ class A32NX_FlightPhase_Climb {
     }
 
     init(_fmc) {
+        if (!_fmc.cruiseFlightLevel) {
+            _fmc.cruiseFlightLevel = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
+            _fmc._activeCruiseFlightLevelDefaulToFcu = true;
+        }
     }
 
     check(_deltaTime, _fmc) {
@@ -219,6 +223,7 @@ class A32NX_FlightPhase_Cruise {
     }
 
     init(_fmc) {
+        _fmc._activeCruiseFlightLevelDefaulToFcu = false;
     }
 
     check(_deltaTime, _fmc) {
@@ -233,6 +238,7 @@ class A32NX_FlightPhase_Descent {
     init(_fmc) {
         this.nextFmgcFlightPhase = FmgcFlightPhases.APPROACH;
         _fmc.cruiseFlightLevel = undefined;
+        _fmc._activeCruiseFlightLevelDefaulToFcu = true;
     }
 
     check(_deltaTime, _fmc) {
