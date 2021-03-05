@@ -38,11 +38,6 @@
 }
 
 .control-grid {
-  /*  @apply p-2;
-  @apply grid;
-  @apply bg-gray-800;
-  @apply rounded-lg; */
-  //position: absolute;
   color: #232b3d;
   grid-gap: 1rem;
 }
@@ -64,77 +59,11 @@
   margin: auto;
 }
 
-/* .control-grid > button > svg {
-  height: 100%;
-  width: 52px;
-  margin: auto;
-  //stroke-width: 1.5;
-}
- */
 .pushback {
   right: 1rem;
   bottom: 1rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
-
-/* .fuel {
-  right: calc(50% + 15rem);
-  top: 15rem;
-  grid-template-columns: minmax(0, 1fr);
-} */
-
-/* .baggage {
-  left: calc(50% + 5rem);
-  top: 4rem;
-  grid-template-columns: minmax(0, 1fr);
-} */
-/*
-.power {
-  left: calc(50% + 15rem);
-  top: 4rem;
-  grid-template-columns: minmax(0, 1fr);
-}
- */
-/* .catering {
-  right: calc(50% + 5rem);
-  bottom: 9rem;
-  grid-template-columns: minmax(0, 1fr);
-} */
-
-/* .jetway {
-  right: calc(50% + 5rem);
-  top: 4rem;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.ramp {
-  right: calc(50% + 15rem);
-  top: 4rem;
-  grid-template-columns: minmax(0, 1fr);
-} */
-
-.call {
-  // @apply bg-gray-500;
-}
-
-/* .selectedActive {
-  @apply bg-green-600;
-  border-color: #ccc;
-  border-width: 2px;
-}
-
-.selected {
-  @apply text-white;
-  border-color: #ccc;
-  border-width: 2px;
-}
-
-.requested {
-  @apply text-white;
-  @apply border-white;
-  @apply bg-gray-600;
-  //border-width: 2px;
-} */
 
 .stop {
   grid-column: 2 / 3;

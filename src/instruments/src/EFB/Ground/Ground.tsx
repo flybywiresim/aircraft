@@ -99,7 +99,7 @@ export const Ground: React.FC = () => {
             return className + (activeButtons.includes(id) ? ' text-white bg-green-600 border-green-600'
                 : ' border-blue-500 hover:bg-blue-600 hover:border-blue-600 bg-blue-500 text-blue-darkest');
         }
-        return className;// + (activeButtons.includes(className) ? ' text-white bg-green-600' : ' border-blue-500 bg-blue-500 text-blue-darkest');
+        return className;
     };
 
     /**
@@ -108,15 +108,8 @@ export const Ground: React.FC = () => {
      */
     const applySelectedWithSync = (className: string, id: string, gameSync) => {
         if (gameSync > 0 && activeButtons.includes(id)) {
-            return `${className} selectedActive`;
+            return `${className} bg-green-500 border-green-500 text-white`;
         }
-
-        /*  if (gameSync === 0 && activeButtons.includes(id)) {
-            // return `${className} selectedActive`;
-            const updatedActiveButtons = activeButtons;
-            updatedActiveButtons.splice(activeButtons.indexOf(id));
-            setActiveButtons(updatedActiveButtons);
-        } */
 
         if (gameSync > 0 && !activeButtons.includes(id)) {
             return `${className} text-white, border-white, bg-gray-600`;
