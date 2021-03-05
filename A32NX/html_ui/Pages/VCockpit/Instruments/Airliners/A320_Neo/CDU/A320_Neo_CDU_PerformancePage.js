@@ -761,7 +761,7 @@ class CDUPerformancePage {
             const arrivalTransAltitude = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
             if (arrivalTransAltitude !== 0) {
                 transAltCell = `{cyan}${arrivalTransAltitude}{end}`;
-                if (!mcdu.transitionAltitudeIsPilotEntered) {
+                if (!mcdu.transitionArrivalAltitudeIsPilotEntered) {
                     transAltCell += "[s-text]";
                 }
             } else {
