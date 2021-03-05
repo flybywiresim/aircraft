@@ -86,7 +86,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
 
                     <div className="w-3/5 h-efb bg-blue-efb-dark rounded-xl ml-3 shadow-lg p-6">
                         <div className="h-full rounded-lg overflow-hidden">
-                            <Map disableMenu hideOthers={true} />
+                            <Map disableMenu={true} hideOthers={true} />
                         </div>
                     </div>
                 </div>
