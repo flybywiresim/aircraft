@@ -61,7 +61,7 @@ jobs:
           password: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
           localDir: ./build-modules/
           remoteDir: ${{ env.CDN_DIR }}
-          options: "--delete --ascii --transfer-all --verbose"
+          options: "--delete --transfer-all --verbose"
       - uses: actions/upload-artifact@v2
         with:
           name: A32NX
