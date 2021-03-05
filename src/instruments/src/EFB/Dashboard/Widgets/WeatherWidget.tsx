@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import metarParser from 'aewx-metar-parser';
 import { Metar } from '@flybywiresim/api-client';
-import { IconWind, IconGauge, IconDroplet, IconTemperature, IconAccessPoint, IconRouter, IconPoint } from '@tabler/icons';
+import { IconWind, IconGauge, IconDroplet, IconTemperature, IconPoint, IconCloud } from '@tabler/icons';
 
 declare type MetarParserType = {
     raw_text: string,
@@ -131,7 +131,7 @@ const MetarParserTypeProp: MetarParserType = {
     flight_category: '',
 };
 
-type WeatherWidgetProps = { name: string, editIcao: string, icao: string };
+type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
 
 const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
@@ -148,7 +148,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     };
 
     function getMetar(icao:any, source: any) {
-        if (icao.length !== 4) {
+        if (icao.length !== 4 || icao === '----') {
             return new Promise(() => {
                 setMetar(MetarParserTypeProp);
             });
@@ -169,115 +169,103 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     }, [props.icao]);
 
     return (
-        <div className="bg-gray-800 rounded-xl p-6 text-white mb-4 shadow-lg" id={`weather-card-${props.name}`}>
+        <div className="text-white">
             {metar === undefined
                 ? <p>Loading ...</p>
                 : (
                     <>
                         <div className="mb-6">
-                            <div className="inline-flex items-center">
-                                {props.editIcao === 'yes' ? (
-                                    <>
-                                        <IconAccessPoint size={35} stroke={1.5} strokeLinejoin="miter" />
-                                        <input
-                                            className="input ml-2 border-none focus:outline-none text-2xl bg-transparent font-medium uppercase"
-                                            type="text"
-                                            placeholder={props.icao}
-                                            onChange={handleIcao}
-                                        />
-                                    </>
-                                )
-                                    : metar.icao}
+                            <div className="inline-flex items-center w-64 overflow-hidden">
+                                <div className="ml-8">
+                                    <IconCloud size={35} stroke={1.5} strokeLinejoin="miter" />
+                                </div>
+                                <input
+                                    className="text-left ml-4 border-none focus:outline-none text-2xl bg-transparent font-medium uppercase"
+                                    type="text"
+                                    placeholder={props.icao}
+                                    onChange={handleIcao}
+                                />
                             </div>
                         </div>
-                        <div className="mb-6">
-                            <div className="grid grid-cols-2">
-                                <div className="text-center text-lg">
-                                    <div className="flex justify-center">
-                                        <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
-                                    </div>
-                                    {metar.barometer ? (
+                        <div className="grid grid-cols-2">
+                            <div className="text-center text-lg">
+                                <div className="flex justify-center">
+                                    <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                </div>
+                                {metar.barometer ? (
+                                    <>
+                                        {metar.barometer.mb.toFixed(0)}
+                                        {' '}
+                                        mb
+                                    </>
+                                ) : 'N/A'}
+                            </div>
+                            <div className="text-center text-lg">
+                                <div className="flex justify-center">
+                                    <IconWind className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                </div>
+                                {metar.wind
+                                    ? (
                                         <>
-                                            {metar.barometer.mb.toFixed(0)}
+                                            {metar.wind.degrees.toFixed(0)}
                                             {' '}
-                                            mb
+                                            <IconPoint
+                                                className="inline-block -mx-1 -mt-3"
+                                                size={20}
+                                                stroke={2}
+                                                strokeLinejoin="miter"
+                                            />
+                                            {' '}
+                                            /
+                                            {' '}
+                                            {metar.wind.speed_kts.toFixed(0)}
+                                            {' '}
+                                            kts
                                         </>
                                     ) : 'N/A'}
-                                </div>
-                                <div className="text-center text-lg">
-                                    <div className="flex justify-center">
-                                        <IconWind className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
-                                    </div>
-                                    {metar.wind
-                                        ? (
-                                            <>
-                                                {metar.wind.degrees.toFixed(0)}
-                                                {' '}
-                                                <IconPoint
-                                                    className="inline-block -mx-1 -mt-3"
-                                                    size={20}
-                                                    stroke={2}
-                                                    strokeLinejoin="miter"
-                                                />
-                                                {' '}
-                                                /
-                                                {' '}
-                                                {metar.wind.speed_kts.toFixed(0)}
-                                                {' '}
-                                                kts
-                                            </>
-                                        ) : 'N/A'}
-                                </div>
-                                <div className="text-center text-lg mt-3">
-                                    <div className="flex justify-center">
-                                        <IconTemperature className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
-                                    </div>
-                                    {metar.temperature
-                                        ? (
-                                            <>
-                                                {metar.temperature.celsius.toFixed(0)}
-                                                {' '}
-                                                <IconPoint
-                                                    className="inline-block -mx-1 -mt-3"
-                                                    size={20}
-                                                    stroke={2}
-                                                    strokeLinejoin="miter"
-                                                />
-                                                {' '}
-                                                {' '}
-                                                C
-                                            </>
-                                        ) : 'N/A'}
-                                </div>
-                                <div className="text-center text-lg mt-3">
-                                    <div className="flex justify-center">
-                                        <IconDroplet className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
-                                    </div>
-                                    {metar.dewpoint
-                                        ? (
-                                            <>
-                                                {metar.dewpoint.celsius.toFixed(0)}
-                                                {' '}
-                                                <IconPoint
-                                                    className="inline-block -mx-1 -mt-3"
-                                                    size={20}
-                                                    stroke={2}
-                                                    strokeLinejoin="miter"
-                                                />
-                                                {' '}
-                                                {' '}
-                                                C
-                                            </>
-                                        ) : 'N/A'}
-                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <span className="font-medium leading-4">
-                                <IconRouter className="mr-2 inline-block -mt-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                {metar.raw_text !== '' ? metar.raw_text : '-------------------------------------------------'}
-                            </span>
+                            <div className="text-center text-lg mt-6">
+                                <div className="flex justify-center">
+                                    <IconTemperature className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                </div>
+                                {metar.temperature
+                                    ? (
+                                        <>
+                                            {metar.temperature.celsius.toFixed(0)}
+                                            {' '}
+                                            <IconPoint
+                                                className="inline-block -mx-1 -mt-3"
+                                                size={20}
+                                                stroke={2}
+                                                strokeLinejoin="miter"
+                                            />
+                                            {' '}
+                                            {' '}
+                                            C
+                                        </>
+                                    ) : 'N/A'}
+                            </div>
+                            <div className="text-center text-lg mt-6">
+                                <div className="flex justify-center">
+                                    <IconDroplet className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                </div>
+                                {metar.dewpoint
+                                    ? (
+                                        <>
+                                            {metar.dewpoint.celsius.toFixed(0)}
+                                            {' '}
+                                            <IconPoint
+                                                className="inline-block -mx-1 -mt-3"
+                                                size={20}
+                                                stroke={2}
+                                                strokeLinejoin="miter"
+                                            />
+                                            {' '}
+                                            {' '}
+                                            C
+                                        </>
+                                    ) : 'N/A'}
+                            </div>
                         </div>
                     </>
                 )}
