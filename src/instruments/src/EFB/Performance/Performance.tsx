@@ -5,7 +5,7 @@ import { Navbar } from '../Components/Navbar';
 import TODCalculator from '../TODCalculator/TODCalculator';
 
 const tabs = [
-    { name: 'TOD Calculator', renderComponent: () => <TODCalculator /> },
+    { name: 'Top of Descent', renderComponent: () => <TODCalculator /> },
 ];
 
 const Performance = () => {
@@ -13,6 +13,7 @@ const Performance = () => {
 
     return (
         <div className="w-full">
+            <h1 className="text-3xl pt-6 text-white">Performance</h1>
             <Navbar tabs={map(tabs, 'name')} onSelected={(activeIndex) => setActiveIndex(activeIndex)} />
             <div>
                 {tabs[activeIndex].renderComponent()}
