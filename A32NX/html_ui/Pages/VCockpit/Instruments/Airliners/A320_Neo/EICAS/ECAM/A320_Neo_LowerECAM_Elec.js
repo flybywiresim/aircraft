@@ -182,8 +182,19 @@ var A320_Neo_LowerECAM_Elec;
             this.e_WIRE_AC1_TR1 = this.querySelector("#WIRE_AC1_TR1");
             this.e_WIRE_TR1_DC1 = this.querySelector("#WIRE_TR1_DC1");
             this.e_WIRE_ACESS_ESSTR = this.querySelector("#WIRE_ACESS_ESSTR");
+
             this.e_WIRE_BAT1_DCBAT_FULL = this.querySelector("#WIRE_BAT1_DCBAT_FULL");
+            this.e_WIRE_DCBAT_BAT1 = this.querySelector("#WIRE_DCBAT_BAT1");
+            this.e_ARROW_DCBAT_BAT1 = this.querySelector("#ARROW_DCBAT_BAT1");
+            this.e_WIRE_BAT1_DCBAT = this.querySelector("#WIRE_BAT1_DCBAT");
+            this.e_ARROW_BAT1_DCBAT = this.querySelector("#ARROW_BAT1_DCBAT");
+
             this.e_WIRE_BAT2_DCBAT_FULL = this.querySelector("#WIRE_BAT2_DCBAT_FULL");
+            this.e_WIRE_DCBAT_BAT2 = this.querySelector("#WIRE_DCBAT_BAT2");
+            this.e_ARROW_DCBAT_BAT2 = this.querySelector("#ARROW_DCBAT_BAT2");
+            this.e_WIRE_BAT2_DCBAT = this.querySelector("#WIRE_BAT2_DCBAT");
+            this.e_ARROW_BAT2_DCBAT = this.querySelector("#ARROW_BAT2_DCBAT");
+
             this.e_WIRE_AC2_TR2 = this.querySelector("#WIRE_AC2_TR2");
             this.e_WIRE_TR2_DC2 = this.querySelector("#WIRE_TR2_DC2");
             this.e_WIRE_EMERGEN_ESSTR = this.querySelector("#WIRE_EMERGEN_ESSTR");
@@ -435,11 +446,33 @@ var A320_Neo_LowerECAM_Elec;
             const dcBus2ToBatBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_1PC2_IS_CLOSED", "Bool");
             this.toggle(this.e_WIRE_DC2_DCBAT, dcBus2ToBatBusContactorClosed);
 
-            const battery1ContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_6PB1_IS_CLOSED", "Bool");
-            this.toggle(this.e_WIRE_BAT1_DCBAT_FULL, battery1ContactorClosed);
+            this.drawBatteryWire(10, "6PB1", {
+                wireOnly: this.e_WIRE_BAT1_DCBAT_FULL,
+                wireFromBusToBat: this.e_WIRE_DCBAT_BAT1,
+                arrowFromBusToBat: this.e_ARROW_DCBAT_BAT1,
+                wireFromBatToBus: this.e_WIRE_BAT1_DCBAT,
+                arrowFromBatToBus: this.e_ARROW_BAT1_DCBAT
+            });
 
-            const battery2ContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_6PB2_IS_CLOSED", "Bool");
-            this.toggle(this.e_WIRE_BAT2_DCBAT_FULL, battery2ContactorClosed);
+            this.drawBatteryWire(11, "6PB2", {
+                wireOnly: this.e_WIRE_BAT2_DCBAT_FULL,
+                wireFromBusToBat: this.e_WIRE_DCBAT_BAT2,
+                arrowFromBusToBat: this.e_ARROW_DCBAT_BAT2,
+                wireFromBatToBus: this.e_WIRE_BAT2_DCBAT,
+                arrowFromBatToBus: this.e_ARROW_BAT2_DCBAT
+            });
+        }
+
+        drawBatteryWire(number, contactor, elements) {
+            const batteryContactorClosed = !!SimVar.GetSimVarValue(`L:A32NX_ELEC_CONTACTOR_${contactor}_IS_CLOSED`, "Bool");
+            const batteryCurrent = SimVar.GetSimVarValue(`L:A32NX_ELEC_BAT_${number}_CURRENT`, "Ampere");
+            const chargingBatteryAtMoreThan1Ampere = batteryCurrent > 1;
+            const dischargingBatteryAtMoreThan1Ampere = batteryCurrent < -1;
+            this.toggle(elements.wireOnly, batteryContactorClosed && !chargingBatteryAtMoreThan1Ampere && !dischargingBatteryAtMoreThan1Ampere);
+            this.toggle(elements.wireFromBusToBat, batteryContactorClosed && chargingBatteryAtMoreThan1Ampere);
+            this.toggle(elements.arrowFromBusToBat, batteryContactorClosed && chargingBatteryAtMoreThan1Ampere);
+            this.toggle(elements.wireFromBatToBus, batteryContactorClosed && dischargingBatteryAtMoreThan1Ampere);
+            this.toggle(elements.arrowFromBatToBus, batteryContactorClosed && dischargingBatteryAtMoreThan1Ampere);
         }
 
         drawTransformerRectifiers() {
@@ -524,7 +557,7 @@ var A320_Neo_LowerECAM_Elec;
             this.toggle(elements.voltsUnit, batPushButtonIsAuto);
 
             this.toggle(elements.ampsValue, batPushButtonIsAuto);
-            this.setValue(elements.ampsValue, Math.round(SimVar.GetSimVarValue(`L:A32NX_ELEC_BAT_${number}_CURRENT`, "Ampere")));
+            this.setValue(elements.ampsValue, Math.abs(Math.round(SimVar.GetSimVarValue(`L:A32NX_ELEC_BAT_${number}_CURRENT`, "Ampere"))));
             const currentWithinNormalRange = !!SimVar.GetSimVarValue(`L:A32NX_ELEC_BAT_${number}_CURRENT_NORMAL`, "Bool");
             this.greenWhen(elements.ampsValue, currentWithinNormalRange);
             this.toggle(elements.ampsUnit, batPushButtonIsAuto);

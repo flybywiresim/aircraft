@@ -724,8 +724,8 @@
         - TR_1
         - TR_2
         - TR_3: TR ESS
-        - BAT_10: Battery 1
-        - BAT_11: Battery 2
+        - BAT_10: Battery 1 (negative when discharging, positive when charging)
+        - BAT_11: Battery 2 (negative when discharging, positive when charging)
 
 - A32NX_ELEC_{name}_CURRENT_NORMAL
     - Ampere
