@@ -17,7 +17,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconStairsUp, IconPower, IconPlug, IconArrowDownLeft } from '@tabler/icons';
+import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconStairsUp, IconPlug } from '@tabler/icons';
 import './Ground.scss';
 import fuselage from '../Assets/320neo-outline-upright.svg';
 import { useSplitSimVar } from '../../Common/simVars';
@@ -27,7 +27,7 @@ export const Ground: React.FC = () => {
     const [activeButtons, setActiveButtons] = useState <string[]>([]);
     const [jetWayActive, setJetWayActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_JETWAY', 'bool', 1000);
     const [_rampActive, setRampActive] = useSplitSimVar('A:EXIT OPEN:0', 'Enum', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
-    const [cargoActive, setCargoActive] = useSplitSimVar('A:EXIT OPEN:5', 'Enum', 'A:EXIT OPEN:5', 'percent over 100', 1000);
+    const [cargoActive, setCargoActive] = useSplitSimVar('A:EXIT OPEN:5', 'Enum', 'K:REQUEST_LUGGAGE', 'bool', 1000);
     const [cateringActive, setCateringActive] = useSplitSimVar('A:EXIT OPEN:3', 'Enum', 'K:REQUEST_CATERING', 'bool', 1000);
     const [fuelingActive, setFuelingActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:9', 'percent', 'K:REQUEST_FUEL_KEY', 'bool', 1000);
     const [tugHeading, setTugHeading] = useSplitSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 'K:KEY_TUG_HEADING', 'UINT32', 1000);
@@ -94,11 +94,12 @@ export const Ground: React.FC = () => {
     };
 
     const applySelected = (className: string, id?: string) => {
-        if (id) {
+        if (id && id !== 'stop') {
             console.log(`vtuh${id}`);
-            return className + (activeButtons.includes(id) ? ' bg-green-600' : ' border-blue-500 bg-blue-500 text-white');
+            return className + (activeButtons.includes(id) ? ' text-white bg-green-600 border-green-600'
+                : ' border-blue-500 hover:bg-blue-600 hover:border-blue-600 bg-blue-500 text-blue-darkest');
         }
-        return className + (activeButtons.includes(className) ? ' bg-green-600' : ' border-blue-500 bg-blue-500 text-white');
+        return className;// + (activeButtons.includes(className) ? ' text-white bg-green-600' : ' border-blue-500 bg-blue-500 text-blue-darkest');
     };
 
     /**
@@ -108,16 +109,20 @@ export const Ground: React.FC = () => {
     const applySelectedWithSync = (className: string, id: string, gameSync) => {
         if (gameSync > 0 && activeButtons.includes(id)) {
             return `${className} selectedActive`;
-        } /* if (activeButtons.includes(id)) {
+        }
+
+        /*  if (gameSync === 0 && activeButtons.includes(id)) {
+            // return `${className} selectedActive`;
             const updatedActiveButtons = activeButtons;
             updatedActiveButtons.splice(activeButtons.indexOf(id));
             setActiveButtons(updatedActiveButtons);
         } */
+
         if (gameSync > 0 && !activeButtons.includes(id)) {
             return `${className} text-white, border-white, bg-gray-600`;
         }
-        console.log(className + (activeButtons.includes(id) ? ' text-white, border-white, bg-gray-600' : ''));
-        return className + (activeButtons.includes(id) ? ' text-white, border-white, bg-gray-600' : ' border-blue-500 bg-blue-500 text-white');
+        return className + (activeButtons.includes(id) ? ' text-white border-green-600, bg-gray-600'
+            : '  border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 text-blue-darkest');
     };
 
     return (
@@ -180,7 +185,7 @@ export const Ground: React.FC = () => {
                     </Button>
                 </div>
                 <div>
-                    <h1 className="text-white font-medium text-xl text-center pb-1">Ground Pow</h1>
+                    <h1 className="text-white font-medium text-xl text-center pb-1">Ground Power</h1>
                     <Button
                         onClick={(e) => handleClick(() => setPowerActive(1), e)}
                         className={applySelectedWithSync('call w-32', 'power', powerActive)}
@@ -215,7 +220,7 @@ export const Ground: React.FC = () => {
                         id="stop"
                         text=""
                         onClick={(e) => handlePushBackClick(() => togglePushback(false), e)}
-                        className={applySelected('w-32 stop', 'stop')}
+                        className={applySelected('w-32 stop bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600 text-blue-darkest', 'stop')}
                         type={BUTTON_TYPE.NONE}
                     >
                         <IconHandStop size="3rem" stroke="1.5" />
@@ -229,7 +234,7 @@ export const Ground: React.FC = () => {
                     onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(90), e)}
                     className={applySelected('w-32 down-left', 'down-left')}
                 >
-                    <IconCornerDownLeft />
+                    <IconCornerDownLeft size="3rem" stroke="1.5" />
                 </Button>
                 <Button
                     id="down"
@@ -238,7 +243,7 @@ export const Ground: React.FC = () => {
                     onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(0), e)}
                     className={applySelected('down w-32 down', 'down')}
                 >
-                    <IconArrowDown />
+                    <IconArrowDown size="3rem" stroke="1.5" />
                 </Button>
                 <Button
                     id="down-right"
@@ -247,7 +252,7 @@ export const Ground: React.FC = () => {
                     onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(270), e)}
                     className={applySelected('w-32 down-right', 'down-right')}
                 >
-                    <IconCornerDownRight />
+                    <IconCornerDownRight size="3rem" stroke="1.5" />
                 </Button>
             </div>
 

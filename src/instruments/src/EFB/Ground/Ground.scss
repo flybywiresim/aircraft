@@ -64,13 +64,13 @@
   margin: auto;
 }
 
-.control-grid > button > svg {
+/* .control-grid > button > svg {
   height: 100%;
   width: 52px;
   margin: auto;
   //stroke-width: 1.5;
 }
-
+ */
 .pushback {
   right: 1rem;
   bottom: 1rem;
@@ -117,7 +117,7 @@
   // @apply bg-gray-500;
 }
 
-.selectedActive {
+/* .selectedActive {
   @apply bg-green-600;
   border-color: #ccc;
   border-width: 2px;
@@ -134,13 +134,13 @@
   @apply border-white;
   @apply bg-gray-600;
   //border-width: 2px;
-}
+} */
 
 .stop {
   grid-column: 2 / 3;
 }
 
-.pushback > div:hover,
+/* .pushback > div:hover,
 .call:hover {
   @apply text-white;
   @apply border-white;
@@ -150,11 +150,13 @@
 .call:active {
   @apply transform;
   @apply translate-y-1;
-}
+} */
 
 button:hover {
-  @apply text-white;
-  @apply border-white;
+  // @apply text-white;
+  // @apply border-white;
+  // @apply bg-blue-600;
+  //@apply border-blue-600;
 }
 
 button:active {
