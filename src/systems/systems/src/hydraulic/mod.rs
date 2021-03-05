@@ -680,29 +680,30 @@ impl HydLoop {
 pub struct Pump {
     delta_vol_max: Volume,
     delta_vol_min: Volume,
-    pressBreakpoints: [f64; 9],
-    displacementCarac: [f64; 9],
+    press_breakpoints: [f64; 9],
+    displacement_carac: [f64; 9],
     displacement_dynamic: f64, //Displacement low pass filter. [0:1], 0 frozen -> 1 instantaneous dynamic
 }
 impl Pump {
     fn new(
-        pressBreakpoints: [f64; 9],
-        displacementCarac: [f64; 9],
+        press_breakpoints: [f64; 9],
+        displacement_carac: [f64; 9],
         displacement_dynamic: f64,
     ) -> Pump {
         Pump {
             delta_vol_max: Volume::new::<gallon>(0.),
             delta_vol_min: Volume::new::<gallon>(0.),
-            pressBreakpoints: pressBreakpoints,
-            displacementCarac: displacementCarac,
-            displacement_dynamic: displacement_dynamic,
+            press_breakpoints,
+            displacement_carac,
+            displacement_dynamic,
         }
     }
 
     fn update(&mut self, delta_time: &Duration, context: &UpdateContext, line: &HydLoop, rpm: f64) {
         let displacement = self.calculate_displacement(line.get_pressure());
 
-        let flow = Pump::calculate_flow(rpm, displacement);
+        let flow =
+            Pump::calculate_flow(rpm, displacement).max(VolumeRate::new::<gallon_per_second>(0.));
 
         self.delta_vol_max = (1.0 - self.displacement_dynamic) * self.delta_vol_max
             + self.displacement_dynamic * flow * Time::new::<second>(delta_time.as_secs_f64());
@@ -711,8 +712,8 @@ impl Pump {
 
     fn calculate_displacement(&self, pressure: Pressure) -> Volume {
         Volume::new::<cubic_inch>(interpolation(
-            &self.pressBreakpoints,
-            &self.displacementCarac,
+            &self.press_breakpoints,
+            &self.displacement_carac,
             pressure.get::<psi>(),
         ))
     }
@@ -801,7 +802,6 @@ pub struct EngineDrivenPump {
     pump: Pump,
 }
 impl EngineDrivenPump {
-    const LEAP_1A26_MAX_N2_RPM: f64 = 16645.0;
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3050.0, 3500.0,
     ];
@@ -907,12 +907,7 @@ impl RatPropeller {
         self.torque_sum += air_speed_torque;
     }
 
-    fn update_friction_torque(
-        &mut self,
-        delta_time: &Duration,
-        indicated_speed: &Velocity,
-        displacement_ratio: f64,
-    ) {
+    fn update_friction_torque(&mut self, displacement_ratio: f64) {
         let mut pump_torque = 0.;
         if self.rpm < RatPropeller::LOW_SPEED_PHYSICS_ACTIVATION {
             pump_torque += (self.pos * 4.).cos() * displacement_ratio.max(0.35) * 35.;
@@ -941,7 +936,7 @@ impl RatPropeller {
         displacement_ratio: f64,
     ) {
         self.update_generated_torque(indicated_speed, stow_pos);
-        self.update_friction_torque(delta_time, indicated_speed, displacement_ratio);
+        self.update_friction_torque(displacement_ratio);
         self.update_physics(delta_time);
     }
 }
@@ -1152,15 +1147,15 @@ impl History {
             .x_label("Time (s)")
             .y_label("Value");
 
-        for curData in self.dataVector {
+        for cur_data in self.dataVector {
             //Here build the 2 by Xsamples vector
-            let mut newVector: Vec<(f64, f64)> = Vec::new();
-            for sampleIdx in 0..self.timeVector.len() {
-                newVector.push((self.timeVector[sampleIdx], curData[sampleIdx]));
+            let mut new_vector: Vec<(f64, f64)> = Vec::new();
+            for sample_idx in 0..self.timeVector.len() {
+                new_vector.push((self.timeVector[sample_idx], cur_data[sample_idx]));
             }
 
             // We create our scatter plot from the data
-            let s1: Plot = Plot::new(newVector).line_style(LineStyle::new().colour("#DD3355"));
+            let s1: Plot = Plot::new(new_vector).line_style(LineStyle::new().colour("#DD3355"));
 
             v = v.add(s1);
         }

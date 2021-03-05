@@ -1,5 +1,8 @@
 use std::time::Duration;
-use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, velocity::knot, acceleration::foot_per_second_squared};
+use uom::si::{
+    acceleration::foot_per_second_squared, f64::*, length::foot,
+    thermodynamic_temperature::degree_celsius, velocity::knot,
+};
 
 use super::SimulatorReader;
 

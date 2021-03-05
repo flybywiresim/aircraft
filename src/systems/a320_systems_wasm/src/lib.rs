@@ -85,7 +85,7 @@ impl A320SimulatorReaderWriter {
             )?,
             sim_on_ground: AircraftVariable::from("SIM ON GROUND", "Bool", 0)?,
             unlimited_fuel: AircraftVariable::from("UNLIMITED FUEL", "Bool", 0)?,
-        
+
             parking_brake: AircraftVariable::from("BRAKE PARKING POSITION", "Bool", 1)?,
             parking_brake_demand: AircraftVariable::from("BRAKE PARKING INDICATOR", "Bool", 0)?,
             master_eng_1: AircraftVariable::from("GENERAL ENG STARTER ACTIVE", "Bool", 1)?,

@@ -5,7 +5,7 @@ mod pneumatic;
 
 use self::{fuel::A320Fuel, pneumatic::A320PneumaticOverheadPanel};
 use electrical::{A320Electrical, A320ElectricalOverheadPanel};
-use hydraulic::{A320Hydraulic,A320HydraulicOverheadPanel};
+use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use systems::{
     apu::{
         Aps3200ApuGenerator, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
@@ -90,7 +90,7 @@ impl Aircraft for A320 {
             &self.hydraulic_overhead,
         );
 
-        self.hydraulic_overhead.update_pb_faults(context, &self.hydraulic);
+        self.hydraulic_overhead.update_pb_faults(&self.hydraulic);
     }
 }
 impl SimulationElement for A320 {
