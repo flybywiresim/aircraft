@@ -307,7 +307,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.updateDisplayedConstraints();
 
-        this.updateDepartArrive(_deltaTime);
+        this.updateDepartArrive();
     }
 
     //TODO: for independence introduce new simvar for current flight phase "L:A32NX_FLIGHT_PHASE_CURRENT"
@@ -3378,7 +3378,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     // Only update when changing origin & destination airport
-    updateDepartArrive(_deltaTime) {
+    updateDepartArrive() {
         if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident) {
             if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
                 const originAirport = this.flightPlanManager.getOrigin().ident;
