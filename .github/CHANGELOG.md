@@ -172,6 +172,7 @@
 1. [ELEC] When the IDG is disconnected, DISC appears in amber - @davidwalschots (David Walschots)
 1. [ELEC] SHED appears below the AC ESS BUS when AC ESS SHED BUS is unpowered - @davidwalschots (David Walschots)
 1. [ELEC] SHED appears below the DC ESS BUS when DC ESS SHED BUS is unpowered - @davidwalschots (David Walschots)
+1. [MISC] Added EFB cockpit camera view - @tracernz (Mike)
 1. [TEXTURE] Improved overhead panel decals - @ImenesFBW (Imenes)
 1. [MCDU] Import cost index when importing flight plan from SimBrief - @aviadnissel (Aviad)
 1. [FLIGHTMODEL] Revert flaps hotfix due to MSFS hotfix in MSFS update 1.13.17.0 - @donstim (donbikes#4084)

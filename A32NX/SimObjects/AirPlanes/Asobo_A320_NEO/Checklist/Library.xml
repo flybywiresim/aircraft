@@ -70,15 +70,21 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_PREP_WIPERS">
+         <ForceCamera name="OverheadLower" />
          <CheckpointDesc SubjectTT="TT:Wipers" ExpectationTT="TT:OFF" />
          <Instrument Id="HANDLING_Switch_Wipers" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_APU_FIRE_TEST">
          <CheckpointDesc SubjectTT="TT:APU Fire Test" ExpectationTT="TT:PERFORM" />
+         <Instrument Id="APU_FIRE_TEST_BUTTON" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_COCKPIT_LIGHTS">
+         <ForceCamera name="Pilot" />
          <CheckpointDesc SubjectTT="TT:Cockpit Lights" ExpectationTT="TT:AS REQUIRED" />
-         <Instrument ID="LIGHTING_Glareshield_Light" />
+         <Instrument ID="Lighting_Knob_Glareshield_Pilot_0" />
+         <Instrument ID="Lighting_Knob_Glareshield_1" />
+         <Instrument ID="Lighting_Knob_Glareshield_2" />
+         <Instrument ID="Lighting_Knob_Glareshield_3" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_PARKING_BRAKE">
          <CheckpointDesc SubjectTT="TT:Parking Brake" ExpectationTT="TT:ON" />
@@ -139,6 +145,7 @@
       </Checkpoint>
       <Checkpoint Id="A320_PREP_XBLEED">
          <CheckpointDesc SubjectTT="TT:X-Bleed" ExpectationTT="TT:AUTO" />
+         <Instrument Id="KNOB_OVHD_AIRCOND_XBLEED" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_WEATHER_RADAR">
          <CheckpointDesc SubjectTT="TT:Weather Radar" ExpectationTT="TT:OFF" />
@@ -2258,16 +2265,14 @@
                   <Val Code="6 (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:10, Bool)" />
                </TestValue>
                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="6 10 (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)" />
-               <Instrument Id="ELECTRICAL_Switch_Battery_Master" />
-               <Instrument Id="knob_electric_master" />
+               <Instrument Id="BATTERY_MASTER_SWITCH_1" />
             </Test>
             <Test>
                <TestValue>
                   <Val Code="6 (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:11, Bool)" />
                </TestValue>
                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="6 11 (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)" />
-               <Instrument Id="ELECTRICAL_Switch_Battery_Master" />
-               <Instrument Id="knob_electric_master" />
+               <Instrument Id="BATTERY_MASTER_SWITCH_2" />
             </Test>
          </Sequence>
       </Checkpoint>
