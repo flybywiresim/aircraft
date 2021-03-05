@@ -16,21 +16,6 @@ class A32NX_TransitionAltitude {
         }
     }
 
-    offlineTransAlt() {
-        const Origin = NXDataStore.get("PLAN_ORIGIN", "");
-        const Destination = NXDataStore.get("PLAN_DESTINATION", "");
-        if (Origin !== "" && Destination !== "") {
-            if (this.currentDeparture !== Origin) {
-                this.transitionAltitude(Origin, "origin");
-                this.currentDeparture = Origin;
-            }
-            if (this.currentArrival !== Destination) {
-                this.transitionAltitude(Destination, "destination");
-                this.currentArrival = Destination;
-            }
-        }
-    }
-
     transitionAltitude(airport, phase) {
         let phaseTransAlt = "";
         if (phase === "origin") {
