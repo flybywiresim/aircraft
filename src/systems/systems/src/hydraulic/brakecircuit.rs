@@ -4,8 +4,11 @@ use std::f64::consts::E;
 use std::time::Duration;
 use uom::{
     si::{
-        acceleration::foot_per_second_squared, f64::*, pressure::psi, time::second, volume::gallon,
+        acceleration::foot_per_second_squared, f64::*, pressure::{psi,pascal}, time::second, volume::gallon,
         volume_rate::gallon_per_second,
+        thermodynamic_temperature::degree_celsius,
+        velocity::knot,
+        length::foot,
     },
     typenum::private::IsLessOrEqualPrivate,
 };

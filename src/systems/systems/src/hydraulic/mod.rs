@@ -802,13 +802,18 @@ pub struct EngineDrivenPump {
     pump: Pump,
 }
 impl EngineDrivenPump {
+    const LEAP_1A26_MAX_N2_RPM: f64 = 16645.0; //according to the Type Certificate Data Sheet of LEAP 1A26
+                                                //max N2 rpm is 116.5% @ 19391 RPM
+                                                //100% @ 16645 RPM
+    const PUMP_N2_GEAR_RATIO: f64 = 0.211;
+
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3050.0, 3500.0,
     ];
     const DISPLACEMENT_MAP: [f64; 9] = [2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 2.0, 0.0, 0.0];
     const MAX_RPM: f64 = 4000.;
 
-    const DISPLACEMENT_DYNAMICS: f64 = 0.05; //0.1 == 90% filtering on max displacement transient
+    const DISPLACEMENT_DYNAMICS: f64 = 0.3; //0.1 == 90% filtering on max displacement transient
 
     pub fn new() -> EngineDrivenPump {
         EngineDrivenPump {
@@ -828,17 +833,15 @@ impl EngineDrivenPump {
         line: &HydLoop,
         engine: &Engine,
     ) {
-        let mut rpm = EngineDrivenPump::MAX_RPM.min(
-            engine.corrected_n2().get::<percent>().powi(2) * 0.08 * EngineDrivenPump::MAX_RPM
-                / 100.0,
-        );
+        let n2_rpm = engine.corrected_n2().get::<percent>() * EngineDrivenPump::LEAP_1A26_MAX_N2_RPM / 100.;
+        let mut pump_rpm = n2_rpm * EngineDrivenPump::PUMP_N2_GEAR_RATIO;
 
         //TODO Activate pumps realistically, maybe with a displacement rate limited when activated/deactivated?
         if !self.active {
             //Hack for pump activation
-            rpm = 0.0;
+            pump_rpm = 0.0;
         }
-        self.pump.update(delta_time, context, line, rpm);
+        self.pump.update(delta_time, context, line, pump_rpm);
     }
 
     pub fn start(&mut self) {
@@ -1232,7 +1235,7 @@ mod tests {
             0.0,
             vec![
                 edp1.get_delta_vol_max().get::<liter>(),
-                engine1.n2.get::<percent>() as f64,
+                engine1.corrected_n2.get::<percent>() as f64,
             ],
         );
         accuGreenHistory.init(
@@ -1306,7 +1309,7 @@ mod tests {
                 ct.delta.as_secs_f64(),
                 vec![
                     edp1.get_delta_vol_max().get::<liter>(),
-                    engine1.n2.get::<percent>() as f64,
+                    engine1.corrected_n2.get::<percent>() as f64,
                 ],
             );
             accuGreenHistory.update(
@@ -1324,81 +1327,6 @@ mod tests {
         greenLoopHistory.showMatplotlib("green_loop_edp_simulation_press");
         edp1_History.showMatplotlib("green_loop_edp_simulation_EDP1 data");
         accuGreenHistory.showMatplotlib("green_loop_edp_simulation_Green Accum data");
-    }
-
-    #[test]
-    //Tests fixed step mechanism as implemented in A320Hydraulics
-    fn fixed_step_loop_test() {
-        use rand::Rng;
-
-        let mut edp1 = engine_driven_pump();
-        let mut green_loop = hydraulic_loop(LoopColor::Green);
-        edp1.active = true;
-
-        let init_n2 = Ratio::new::<percent>(0.5);
-        let mut engine1 = engine(init_n2);
-
-        let mut rng = rand::thread_rng();
-        let mut real_time = Duration::from_millis(0);
-        let mut ct = context(Duration::from_millis(rng.gen_range(2..110)));
-
-        let min_hyd_loop_timestep = Duration::from_millis(100); //Hyd Sim rate = 10 Hz
-        let mut total_sim_time_elapsed = Duration::from_millis(0);
-        let mut lag_time_accumulator = Duration::from_millis(0);
-
-        while real_time < Duration::from_secs_f64(5.0) {
-            ct.delta = Duration::from_millis(rng.gen_range(2..110));
-            real_time += ct.delta;
-            //println!("CALLED DELTA {:.3}", ct.delta.as_secs_f64());
-            //println!("Real time: {:.3}", real_time.as_secs_f64());
-
-            total_sim_time_elapsed += ct.delta;
-            let time_to_catch = ct.delta + lag_time_accumulator;
-
-            let numberOfSteps_f64 =
-                time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
-
-            assert!(lag_time_accumulator.as_secs_f64() < 0.2);
-            assert!(numberOfSteps_f64 < 5.0);
-            if numberOfSteps_f64 < 1.0 {
-                //Can't do a full time step
-                //we can either do an update with smaller step or wait next iteration
-                //Other option is to update only actuator position based on known hydraulic
-                //state to avoid lag of control surfaces if sim runs really fast
-                lag_time_accumulator = Duration::from_secs_f64(
-                    numberOfSteps_f64 * min_hyd_loop_timestep.as_secs_f64(),
-                ); //Time lag is float part of num of steps * fixed time step to get a result in time
-            } else {
-                //TRUE UPDATE LOOP HERE
-                let num_of_update_loops = numberOfSteps_f64.floor() as u32; //Int part is the actual number of loops to do
-                                                                            //Rest of floating part goes into accumulator
-                lag_time_accumulator = Duration::from_secs_f64(
-                    (numberOfSteps_f64 - (num_of_update_loops as f64))
-                        * min_hyd_loop_timestep.as_secs_f64(),
-                ); //Keep track of time left after all fixed loop are done
-
-                //UPDATING HYDRAULICS AT FIXED STEP
-                for curLoop in 0..num_of_update_loops {
-                    //UPDATE HYDRAULICS FIXED TIME STEP
-                    edp1.update(&ct.delta, &ct, &green_loop, &engine1);
-                    green_loop.update(
-                        &ct.delta,
-                        &ct,
-                        Vec::new(),
-                        vec![&edp1],
-                        Vec::new(),
-                        Vec::new(),
-                    );
-                    //println!("---PSI: {}", green_loop.loop_pressure.get::<psi>());
-                    //println!("---Sim time: {:.3}", total_sim_time_elapsed.as_secs_f64());
-                    //println!("---Lag time: {:.3}", lag_time_accumulator.as_secs_f64());
-                    //println!("---num_of_update_loops: {:.1}",num_of_update_loops);
-                }
-            }
-        }
-
-        assert!(lag_time_accumulator.as_secs_f64() < 1.0);
-        assert!((real_time - total_sim_time_elapsed).as_secs_f64().abs() < 0.2);
     }
 
     #[test]
@@ -1679,7 +1607,7 @@ mod tests {
         let yellow_res_at_start = yellow_loop.reservoir_volume;
         let green_res_at_start = green_loop.reservoir_volume;
 
-        engine1.n2 = Ratio::new::<percent>(100.0);
+        engine1.corrected_n2 = Ratio::new::<percent>(100.0);
         for x in 0..800 {
             if x == 10 {
                 //After 1s powering electric pump
@@ -1826,7 +1754,7 @@ mod tests {
                     yellow_loop.max_loop_volume.get::<gallon>()
                 );
                 println!("---PSI GREEN: {}", green_loop.loop_pressure.get::<psi>());
-                println!("---N2  GREEN: {}", engine1.n2.get::<percent>());
+                println!("---N2  GREEN: {}", engine1.corrected_n2.get::<percent>());
                 println!(
                     "---Priming State: {}/{}",
                     green_loop.loop_volume.get::<gallon>(),
@@ -1889,7 +1817,7 @@ mod tests {
 
     fn engine(n2: Ratio) -> Engine {
         let mut engine = Engine::new(1);
-        engine.n2 = n2;
+        engine.corrected_n2 = n2;
 
         engine
     }
@@ -2013,7 +1941,7 @@ mod tests {
                 let mut flowTab: Vec<f64> = Vec::new();
                 for rpm in (0..10000).step_by(150) {
                     green_loop.loop_pressure = Pressure::new::<psi>(pressure as f64);
-                    engine1.n2 =
+                    engine1.corrected_n2 =
                         Ratio::new::<percent>((rpm as f64) / (4.0 * EngineDrivenPump::MAX_RPM));
                     edpump.update(&context.delta, &context, &green_loop, &engine1);
                     rpmTab.push(rpm as f64);
