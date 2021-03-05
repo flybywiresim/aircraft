@@ -51,6 +51,10 @@ const settingsToSync: SettingSync[] = [
         simVar: ['L:A32NX_SOUND_INTERIOR_WIND', 'number'],
         propertyName: 'SOUND_INTERIOR_WIND',
     },
+    {
+        simVar: ['L:A32NX_REFUEL_RATE_SETTING', 'number'],
+        propertyName: 'REFUEL_RATE_SETTING',
+    }
 ];
 
 export function readSettingsFromPersistentStorage() {

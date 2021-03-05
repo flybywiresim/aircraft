@@ -24,9 +24,10 @@ import ProgressBar from "@ramonak/react-progress-bar";
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput'
 import '../Styles/Fuel.scss'
 import { round } from 'lodash';
-import fuselage from '../../Assets/320neo-outline-fuel-tanks-transparency.png'
+import fuselage from '../../Assets/320neo_outline_fuel.svg'
 import { useState } from 'react';
 import { useSplitSimVar, useSimVar } from '../../../Common/simVars';
+import { useSimVarSyncedPersistentProperty } from '../../../Common/persistence';
 
 type FuelPageProps = {
     fuels: {}
@@ -41,8 +42,12 @@ const FuelWidget = (props: FuelPageProps) => {
     const innerCell = 5499
     const centerTank = 6598
     const currentUnit = "Kg"
-    const [flightPhase] = [1] //useSimVar("L:A32NX_FWC_FLIGHT_PHASE", "Number", 1000);
-    const [simGroundSpeed] = [1] //useSimVar('GPS GROUND SPEED', 'knots', 1_000);
+    //const [flightPhase] = useSimVar("L:A32NX_FWC_FLIGHT_PHASE", "Enum", 1_000);
+    const [simGroundSpeed] = [0] //useSimVar('GPS GROUND SPEED', 'knots', 1_000);
+    const [isOnGround] = [true] //useSimVar('SIM ON GROUND', 'Bool', 1_000);
+    const [eng1Running] = [false] //useSimVar("ENG COMBUSTION:1", "Bool", 1_000);
+    const [eng2Running] = [false] //useSimVar("ENG COMBUSTION:2", "Bool", 1_000);
+    const [refuelRate, setRefuelRate] = useState<number>(); // useSimVarSyncedPersistentProperty('L:A32NX_REFUEL_RATE_SETTING', 'Number', 'REFUEL_RATE_SETTING');
     const [sliderValue, setSliderValue] = useState<number>();
     const [totalTarget, setTotalTarget] = useState<number>();
     const [centerTarget, setCenterTarget] = useState<number>();
@@ -61,20 +66,19 @@ const FuelWidget = (props: FuelPageProps) => {
         return 6 + 0.51 * percent
     }
     const airplaneCanRefuel = () => {
-        let gs = round(simGroundSpeed);
-        if((flightPhase < 2 || flightPhase > 9) && gs<1 ){
-            return true;
+        if(simGroundSpeed>0.1 || eng1Running || eng2Running || !isOnGround){
+            return false;
         }
-        return false;
+        return true;
     }
     const formatRefuelStatusLabel = () => {
         if(airplaneCanRefuel()){
             if(totalTarget == totalCurrent) {
-                return "Available";
+                return "(Available)";
             }
-            return "Refueling";
+            return (totalTarget > totalCurrent) ? "(Defueling...)" : "(Refueling...)";
         }
-        return " Unavail.";
+        return "(Unavailable)";
     }
     const formatRefuelStatusClass = () => {
         let newClass = 'fuel-truck-avail';
@@ -169,16 +173,15 @@ const FuelWidget = (props: FuelPageProps) => {
                 </div>
             </div>
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info refuel-info">
-            <h2 className="text-2xl font-medium">Refuel</h2>
+            <h2 className="text-2xl font-medium">Refuel</h2><label className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</label>
                     <div className="flex mt-n5">
                         <div className="fuel-progress"><Slider value={sliderValue} onInput={(value) => updateSlider(value)} className="w-48" /></div>
                         <div className="fuel-label"><SimpleInput noLeftMargin={true} placeholder={totalFuel.toString()} number={true} min={0} max={totalFuel} value={totalTarget} onChange={(x) => updateDesiredFuel(x)} /></div>
-                        <div className="unit-label">{currentUnit + ' / ' + flightPhase + ' / '+ simGroundSpeed}</div>
+                        <div className="unit-label">{currentUnit}</div>
                         <div className="separation-line-refuel"></div>
                         <div className="manage-fuel-truck">
                             <div className='call-inop fuel-truck disabled'><IconTruck /></div>
                             <label className="inop-label-fuel-page">Inop.</label>
-                            <label className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</label>
                         </div>
                     </div>
                     <span>Current fuel :</span>
@@ -203,27 +206,31 @@ const FuelWidget = (props: FuelPageProps) => {
                     <div className="fuel-label"><label>{ROutCurrent||0}/{outerCell} {currentUnit}</label></div>
                 </div>
             </div>
-            <div className='wrapper center-tank' style={{background:formatFuelFilling(centerCurrent||0,centerTank)}}>
+            <div className='wrapper visible-tank center-tank' style={{background:formatFuelFilling(centerCurrent||0,centerTank)}}>
             </div>
-            <div className='wrapper inner-left-tank' style={{background:formatFuelFilling(LInnCurrent||0,innerCell)}}>
+            <div className='wrapper visible-tank inner-left-tank' style={{background:formatFuelFilling(LInnCurrent||0,innerCell)}}>
             </div>
-            <div className='wrapper inner-right-tank' style={{background:formatFuelFilling(RInnCurrent||0,innerCell)}}>
+            <div className='wrapper visible-tank inner-right-tank' style={{background:formatFuelFilling(RInnCurrent||0,innerCell)}}>
             </div>
-            <div className='wrapper outer-left-tank' style={{background:formatFuelFilling(LOutCurrent||0,outerCell)}}>
+            <div className='wrapper visible-tank outer-left-tank' style={{background:formatFuelFilling(LOutCurrent||0,outerCell)}}>
             </div>
-            <div className='wrapper outer-right-tank' style={{background:formatFuelFilling(ROutCurrent||0,outerCell)}}>
+            <div className='wrapper visible-tank outer-right-tank' style={{background:formatFuelFilling(ROutCurrent||0,outerCell)}}>
             </div>
             <img className="airplane-fuel w-full" src={fuselage} />
             <div className="bg-gray-800 rounded-xl text-white shadow-lg mr-4 overflow-x-hidden refuel-speed">
                 <div className="mb-3.5 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Refuel Time</span>
                     <SelectGroup>
-                        <SelectItem>Instant</SelectItem>
-                        <SelectItem>Fast</SelectItem>
-                        <SelectItem selected>Real</SelectItem>
+                        <SelectItem selected={refuelRate == 2} onSelect={() => setRefuelRate(2)}>Instant</SelectItem>
+                        <SelectItem selected={refuelRate == 1} onSelect={() => setRefuelRate(1)}>Fast</SelectItem>
+                        <SelectItem selected={refuelRate == 0} onSelect={() => setRefuelRate(0)}>Real</SelectItem>
                     </SelectGroup>
                 </div>
             </div>
+            <div className='wrapper hiding-block hiding-block-top-left'></div>
+            <div className='wrapper hiding-block hiding-block-bottom-left'></div>
+            <div className='wrapper hiding-block hiding-block-top-right'></div>
+            <div className='wrapper hiding-block hiding-block-bottom-right'></div>
         </div>
     );
 };

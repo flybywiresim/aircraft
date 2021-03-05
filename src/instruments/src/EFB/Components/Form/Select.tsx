@@ -26,10 +26,10 @@ export const Select: React.FC<SelectProps> = (props) => (
     </div>
 );
 
-export type SelectItemProps = { selected?: boolean; };
+export type SelectItemProps = { selected?: boolean , onSelect?: () => void };
 
 export const SelectItem: React.FC<SelectItemProps> = (props) => (
-    <span className={`text-lg font-medium ${props.selected ? 'bg-blue-light-contrast text-blue-darkest' : 'text-white'} py-2 px-3.5 rounded-lg`}>
+    <span onClick={props.onSelect || (() => {})} className={`text-lg font-medium ${props.selected ? 'bg-blue-light-contrast text-blue-darkest' : 'text-white'} py-2 px-3.5 rounded-lg`}>
         {props.children}
     </span>
 );
