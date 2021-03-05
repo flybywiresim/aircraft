@@ -3379,19 +3379,31 @@ class FMCMainDisplay extends BaseAirliners {
 
     // Only update when changing origin & destination airport
     updateDepartArrive(_deltaTime) {
-        if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident && this.offlineTACore.offline !== true) {
-            if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident && this.offlineTACore.offline !== true) {
+        if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident) {
+            if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
                 const originAirport = this.flightPlanManager.getOrigin().ident;
                 const destinationAirport = this.flightPlanManager.getDestination().ident;
-                if (this.currentOrigin !== originAirport) {
-                    NXDataStore.set("PLAN_ORIGIN", originAirport);
-                    this.getTransitionAltitude(originAirport, "origin");
-                    this.currentOrigin = originAirport;
+                if (this.offlineTACore.offline !== true) {
+                    if (this.currentOrigin !== originAirport) {
+                        NXDataStore.set("PLAN_ORIGIN", originAirport);
+                        this.getTransitionAltitude(originAirport, "origin");
+                        this.currentOrigin = originAirport;
+                    }
+                    if (this.currentDestination !== destinationAirport) {
+                        NXDataStore.set("PLAN_DESTINATION", destinationAirport);
+                        this.getTransitionAltitude(destinationAirport, "destination");
+                        this.currentDestination = destinationAirport;
+                    }
                 }
-                if (this.currentDestination !== destinationAirport) {
-                    NXDataStore.set("PLAN_DESTINATION", destinationAirport);
-                    this.getTransitionAltitude(destinationAirport, "destination");
-                    this.currentDestination = destinationAirport;
+                if (this.offlineTACore.offline !== true) {
+                    if (this.currentOrigin !== originAirport) {
+                        this.offlineTACore.transitionAltitude(originAirport, "origin");
+                        this.currentOrigin = originAirport;
+                    }
+                    if (this.currentDestination !== destinationAirport) {
+                        this.offlineTACore.transitionAltitude(destinationAirport, "destination");
+                        this.currentDestination = destinationAirport;
+                    }
                 }
             }
         }

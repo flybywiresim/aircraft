@@ -8,9 +8,6 @@ class A32NX_TransitionAltitude {
     }
 
     update(_deltaTime, _core) {
-        if (this.offline) {
-            this.offlineTransAlt();
-        }
     }
 
     serverStatus() {
