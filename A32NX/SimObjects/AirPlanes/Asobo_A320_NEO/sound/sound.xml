@@ -115,7 +115,7 @@
             <Range LowerBound="1.0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="apuflapopen" FadeOutType="2" FadeOutTime="1" Continuous="true" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_MASTER_SW_ACTIVATED" Units="BOOLEAN">
+        <Sound WwiseData="true" WwiseEvent="apuflapopen" FadeOutType="2" FadeOutTime="1" Continuous="true" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_OVHD_APU_MASTER_SW_PB_IS_ON" Units="BOOLEAN">
             <Range LowerBound="1.0" />
             <Requires LocalVar="APU_FLAP_OPEN" Units="PERCENT" Index="0">
                 <Range UpperBound="99" />

@@ -423,7 +423,7 @@ var A320_Neo_UpperECAM;
                                         message: "APU",
                                         action: "START",
                                         isCompleted: () => {
-                                            return this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool") === 1;
+                                            return this.getCachedSimVar("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool") === 1;
                                         }
                                     },
                                     {
@@ -1083,7 +1083,7 @@ var A320_Neo_UpperECAM;
                                         style: "action",
                                         message: "MASTER SW",
                                         action: "OFF",
-                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool"),
+                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool"),
                                     },
                                 ]
                             },
@@ -1097,7 +1097,7 @@ var A320_Neo_UpperECAM;
                                         style: "action",
                                         message: "MASTER SW",
                                         action: "OFF",
-                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool"),
+                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool"),
                                     },
                                 ]
                             }
@@ -1346,14 +1346,14 @@ var A320_Neo_UpperECAM;
                         message: "APU AVAIL",
                         isActive: () => (
                             !SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") &&
-                                this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool")
+                                this.getCachedSimVar("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool")
                         )
                     },
                     {
                         message: "APU BLEED",
                         isActive: () => (
                             SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") &&
-                                this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool")
+                                this.getCachedSimVar("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool")
                         )
                     },
                     {
@@ -1583,7 +1583,7 @@ var A320_Neo_UpperECAM;
                 const eng1active = this.getCachedSimVar("ENG COMBUSTION:1", "Bool");
                 const eng2active = this.getCachedSimVar("ENG COMBUSTION:2", "Bool");
                 const xBleedPos = this.getCachedSimVar("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
-                const engBleedAndPackActive = xBleedPos === 2 || (xBleedPos === 1 && this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool") === 1 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool")) ?
+                const engBleedAndPackActive = xBleedPos === 2 || (xBleedPos === 1 && this.getCachedSimVar("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool") === 1 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool")) ?
                     (this.getCachedSimVar("BLEED AIR ENGINE:1", "Bool") || this.getCachedSimVar("BLEED AIR ENGINE:2", "Bool"))
                     && ((this.getCachedSimVar("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && eng1active) || (this.getCachedSimVar("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && eng2active))
                     :
