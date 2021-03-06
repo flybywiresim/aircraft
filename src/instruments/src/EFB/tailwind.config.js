@@ -5,12 +5,6 @@ module.exports = {
             height: () => ({
                 'efb': '52.5rem',
             }),
-            colors: {
-                blue: {
-                    'efb-dark': '#252F41',
-                    'efb-darker': '#1B2434'
-                }
-            }
         }
     },
     variants: {
