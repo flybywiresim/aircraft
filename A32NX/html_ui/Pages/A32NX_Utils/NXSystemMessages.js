@@ -20,7 +20,7 @@ class McduMessage {
      */
     getSetMessage(t) {
         return {
-            text: !!t ? this.cText.replace(this.replace, "" + t) : this.cText(),
+            text: !!t ? this.cText.replace(this.replace, "" + t) : this.cText,
             isAmber: this.isAmber,
             isTypeTwo: this.isTypeTwo
         };
