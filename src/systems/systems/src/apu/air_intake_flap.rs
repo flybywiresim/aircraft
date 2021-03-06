@@ -1,11 +1,10 @@
 use super::AirIntakeFlapController;
-use crate::{shared::random_number, simulator::UpdateContext};
+use crate::{shared::random_number, simulation::UpdateContext};
 use std::time::Duration;
 use uom::si::{f64::*, ratio::percent};
 
-#[derive(Debug)]
 pub struct AirIntakeFlap {
-    state: Ratio,
+    open_amount: Ratio,
     delay: Duration,
 }
 impl AirIntakeFlap {
@@ -21,23 +20,25 @@ impl AirIntakeFlap {
         );
 
         AirIntakeFlap {
-            state: Ratio::new::<percent>(0.),
+            open_amount: Ratio::new::<percent>(0.),
             delay,
         }
     }
 
     pub fn update<T: AirIntakeFlapController>(&mut self, context: &UpdateContext, controller: &T) {
-        if controller.should_open_air_intake_flap() && self.state < Ratio::new::<percent>(100.) {
-            self.state += Ratio::new::<percent>(
+        if controller.should_open_air_intake_flap()
+            && self.open_amount < Ratio::new::<percent>(100.)
+        {
+            self.open_amount += Ratio::new::<percent>(
                 self.get_flap_change_for_delta(context)
-                    .min(100. - self.state.get::<percent>()),
+                    .min(100. - self.open_amount.get::<percent>()),
             );
         } else if !controller.should_open_air_intake_flap()
-            && self.state > Ratio::new::<percent>(0.)
+            && self.open_amount > Ratio::new::<percent>(0.)
         {
-            self.state -= Ratio::new::<percent>(
+            self.open_amount -= Ratio::new::<percent>(
                 self.get_flap_change_for_delta(context)
-                    .min(self.state.get::<percent>()),
+                    .min(self.open_amount.get::<percent>()),
             );
         }
     }
@@ -47,11 +48,11 @@ impl AirIntakeFlap {
     }
 
     pub fn is_fully_open(&self) -> bool {
-        self.state == Ratio::new::<percent>(100.)
+        self.open_amount == Ratio::new::<percent>(100.)
     }
 
-    pub fn get_open_amount(&self) -> Ratio {
-        self.state
+    pub fn open_amount(&self) -> Ratio {
+        self.open_amount
     }
 
     #[cfg(test)]
@@ -62,10 +63,10 @@ impl AirIntakeFlap {
 
 #[cfg(test)]
 mod air_intake_flap_tests {
-    use ntest::assert_about_eq;
+    use crate::simulation::context_with;
 
     use super::*;
-    use crate::simulator::test_helpers::context_with;
+    use ntest::assert_about_eq;
 
     struct TestFlapController {
         should_open: bool,
@@ -100,7 +101,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert!(flap.state.get::<percent>() > 0.);
+        assert!(flap.open_amount.get::<percent>() > 0.);
     }
 
     #[test]
@@ -118,7 +119,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert!(flap.state.get::<percent>() < 100.);
+        assert!(flap.open_amount.get::<percent>() < 100.);
     }
 
     #[test]
@@ -131,7 +132,7 @@ mod air_intake_flap_tests {
             &context_with().delta(Duration::from_secs(5)).build(),
             &controller,
         );
-        let open_percentage = flap.state.get::<percent>();
+        let open_percentage = flap.open_amount.get::<percent>();
 
         controller.close();
         flap.update(
@@ -139,7 +140,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert!(flap.state.get::<percent>() < open_percentage);
+        assert!(flap.open_amount.get::<percent>() < open_percentage);
     }
 
     #[test]
@@ -167,7 +168,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert!(flap.state.get::<percent>() > 0.);
+        assert!(flap.open_amount.get::<percent>() > 0.);
     }
 
     #[test]
@@ -181,7 +182,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert_about_eq!(flap.state.get::<percent>(), 0.);
+        assert_about_eq!(flap.open_amount.get::<percent>(), 0.);
     }
 
     #[test]
@@ -195,7 +196,7 @@ mod air_intake_flap_tests {
             &controller,
         );
 
-        assert_about_eq!(flap.state.get::<percent>(), 100.);
+        assert_about_eq!(flap.open_amount.get::<percent>(), 100.);
     }
 
     #[test]

@@ -1,0 +1,494 @@
+<!--
+  ~ A32NX
+  ~ Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<ModelBehaviors>
+    <Template Name="FBW_ENGINE_Lever_Throttle_Template">
+    <DefaultTemplateParameters>
+        <ID>1</ID>
+        <Condition Check="AIRBUS_TYPE">
+            <True>
+                <LEVER_TYPE>AIRBUS</LEVER_TYPE>
+            </True>
+        </Condition>
+        <POSITION_TYPE>O</POSITION_TYPE>
+        <POSITION_VAR>Position</POSITION_VAR>
+    </DefaultTemplateParameters>
+    <UseTemplate Name="FBW_ENGINE_Lever_Throttle_SubTemplate">
+        <ID_NODE>#ID#</ID_NODE>
+        <Condition Check="ID_ENG">
+            <ID>#ID_ENG#</ID>
+        </Condition>
+    </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_ENGINE_Lever_Throttle_SubTemplate">
+        <DefaultTemplateParameters>
+            <ANIM_NAME>ENGINE_Lever_Throttle_#ID_NODE#</ANIM_NAME>
+            <NODE_ID>ENGINE_Lever_Throttle_#ID_NODE#</NODE_ID>
+            <PART_ID>ENGINE_Lever_Throttle</PART_ID>
+        </DefaultTemplateParameters>
+        <OverrideTemplateParameters>
+            <PROCESS_LIMITS>
+                (A:THROTTLE LOWER LIMIT, position 16k) (&gt;O:XMLVAR_MIN_Limit)
+                16384 (&gt;O:XMLVAR_MAX_Limit)
+            </PROCESS_LIMITS>
+        </OverrideTemplateParameters>
+
+        <UseTemplate Name="FBW_ENGINE_Lever_Throttle_SubTemplate2">
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_ENGINE_Lever_Throttle_SubTemplate2">
+        <DefaultTemplateParameters>
+            <DRAG_AXIS_SCALE>-450</DRAG_AXIS_SCALE>
+            <TOOLTIPID>TT:COCKPIT.TOOLTIPS.THROTTLE_CONTROL</TOOLTIPID>
+            <POSITION_TYPE>O</POSITION_TYPE>
+            <POSITION_VAR>Position</POSITION_VAR>
+            <DRAG_ANIMATION_VARIABLE_TYPE>O</DRAG_ANIMATION_VARIABLE_TYPE>
+            <DRAG_ANIMATION_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Position</DRAG_ANIMATION_VARIABLE_NAME>
+            <AXIS>Y</AXIS>
+            <NO_ARROWS/>
+            <CURSOR>Hand</CURSOR>
+            <INCREMENT>163.84</INCREMENT>
+            <SCROLL_INCREMENT>701</SCROLL_INCREMENT>
+            <DELTA_MIN>0.00025</DELTA_MIN>
+            <USE_TRAJECTORY_DRAG_MODE>true</USE_TRAJECTORY_DRAG_MODE>
+            <Condition NotEmpty="AFTERBURNER_GATE_POS">
+                <True>
+                    <AFTERBURNER_GATE_POS_16K Process="Int">#AFTERBURNER_GATE_POS# 16384 *</AFTERBURNER_GATE_POS_16K>
+                </True>
+            </Condition>
+            <Condition NotEmpty="OFF_GATE_POS">
+                <True>
+                    <OFF_GATE_POS_16K Process="Int">#OFF_GATE_POS# 16384 *</OFF_GATE_POS_16K>
+                </True>
+            </Condition>
+            <GATE_MARGIN>256</GATE_MARGIN>
+        </DefaultTemplateParameters>
+        <OverrideTemplateParameters>
+            <RESET_LIMITS/>
+            <Condition Check="LEVER_TYPE" Match="BOEING">
+                <True>
+                    <DRAG_MAX_VALUE>16384</DRAG_MAX_VALUE>
+                    <DRAG_MIN_VALUE>0</DRAG_MIN_VALUE>
+                </True>
+                <False>
+                    <Condition Check="LEVER_TYPE" Match="AIRBUS">
+                        <True>
+                            <CLIMB_LEVEL>89</CLIMB_LEVEL>
+                            <FLEX_LEVEL>95</FLEX_LEVEL>
+                            <TOGA_LEVEL>100</TOGA_LEVEL>
+                        </True>
+                    </Condition>
+                    <Switch>
+                        <Case Check="HAS_IDLE_GATE">
+                            <DRAG_MAX_VALUE>16384 (O:XMLVAR_MAX_Limit) min</DRAG_MAX_VALUE>
+                            <PROCESS_LIMITS>
+                                #PROCESS_LIMITS#
+                                (A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, position 16k) 0 &gt; if{
+                                    0 (&gt;O:XMLVAR_MIN_Limit)
+                                } els{
+                                    0 (&gt;O:XMLVAR_MAX_Limit)
+                                }
+                            </PROCESS_LIMITS>
+                            <RESET_LIMITS>
+                                (A:THROTTLE LOWER LIMIT, position 16k) (&gt;O:XMLVAR_MIN_Limit)
+                                16384 (&gt;O:XMLVAR_MAX_Limit)
+                                0 (&gt;O:XMLVAR_Limits_Needs_Recalculation)
+                            </RESET_LIMITS>
+                            <DRAG_MIN_VALUE>(A:THROTTLE LOWER LIMIT, position 16k) (O:XMLVAR_MIN_Limit) max</DRAG_MIN_VALUE>
+                        </Case>
+                        <Case NotEmpty="OFF_GATE_POS">
+                            <DRAG_MAX_VALUE>16384 (O:XMLVAR_MAX_Limit) min</DRAG_MAX_VALUE>
+                            <DRAG_MIN_VALUE>(A:THROTTLE LOWER LIMIT, position 16k) (O:XMLVAR_MIN_Limit) max</DRAG_MIN_VALUE>
+                            <PROCESS_LIMITS>
+                                #PROCESS_LIMITS#
+                                (A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, position 16k) #OFF_GATE_POS# &gt; if{
+                                    #OFF_GATE_POS# (&gt;O:XMLVAR_MIN_Limit)
+                                }
+                            </PROCESS_LIMITS>
+                            <RESET_LIMITS>
+                                (A:THROTTLE LOWER LIMIT, position 16k) (&gt;O:XMLVAR_MIN_Limit)
+                                16384 (&gt;O:XMLVAR_MAX_Limit)
+                                0 (&gt;O:XMLVAR_Limits_Needs_Recalculation)
+                            </RESET_LIMITS>
+                        </Case>
+                        <Default>
+                            <DRAG_MAX_VALUE>16384</DRAG_MAX_VALUE>
+                            <DRAG_MIN_VALUE Process="Int">(A:THROTTLE LOWER LIMIT, position 16k)</DRAG_MIN_VALUE>
+                        </Default>
+                    </Switch>
+                </False>
+            </Condition>
+            <DRAG_ANIM_VAR>(#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)</DRAG_ANIM_VAR>
+        </OverrideTemplateParameters>
+
+        <UseTemplate Name="FBW_ENGINE_Lever_Throttle_SubTemplate3">
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_ENGINE_Lever_Throttle_SubTemplate3">
+        <DefaultTemplateParameters>
+            <MIN_DIFF_POS_16K>819.2</MIN_DIFF_POS_16K>
+            <Condition Valid="USE_TRAJECTORY_DRAG_MODE">
+                <DRAG_ANIM_NAME>#ANIM_NAME#</DRAG_ANIM_NAME>
+            </Condition>
+            <MAIN_LEVER_REVERSE_POSITION Process="Int">(A:THROTTLE LOWER LIMIT, position 16k)</MAIN_LEVER_REVERSE_POSITION>
+            <MAIN_LEVER_REVERSE_POSITION_PCT Process="Int">(A:THROTTLE LOWER LIMIT, percent)</MAIN_LEVER_REVERSE_POSITION_PCT>
+            <SNAP_DISTANCE>1</SNAP_DISTANCE>
+            <ADJUST_RAW_DRAG_VALUE/>
+            <Condition Check="USE_BUTTON">
+                <BUTTON_NODE_ID>ENGINE_Lever_Throttle_#ID#_Button</BUTTON_NODE_ID>
+                <BUTTON_ANIM_NAME>ENGINE_Lever_Throttle_#ID#_Button</BUTTON_ANIM_NAME>
+            </Condition>
+            <Condition Check="BUTTON_NODE_ID">
+                <BUTTON_ANIM_NAME>#BUTTON_NODE_ID#</BUTTON_ANIM_NAME>
+            </Condition>
+            <DRAG_VALUE_OVERRIDE/>
+        </DefaultTemplateParameters>
+        <OverrideTemplateParameters>
+            <Condition NotEmpty="AFTERBURNER_GATE_POS_16K">
+                <DRAG_MIN_VALUE>(A:THROTTLE LOWER LIMIT, position 16k) (O:XMLVAR_MIN_Limit) max</DRAG_MIN_VALUE>
+                <DRAG_MAX_VALUE>16384 (O:XMLVAR_MAX_Limit) min</DRAG_MAX_VALUE>
+                <PROCESS_LIMITS>
+                    #PROCESS_LIMITS#
+                    (A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, position 16k) #AFTERBURNER_GATE_POS_16K# - abs #GATE_MARGIN# &gt; if{
+                        (A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, position 16k) #AFTERBURNER_GATE_POS_16K# &gt; if{
+                            #AFTERBURNER_GATE_POS_16K# (&gt;O:XMLVAR_MIN_Limit)
+                        } els{
+                            #AFTERBURNER_GATE_POS_16K# (&gt;O:XMLVAR_MAX_Limit)
+                        }
+                    }
+                </PROCESS_LIMITS>
+                <RESET_LIMITS>
+                    (A:THROTTLE LOWER LIMIT, position 16k) (&gt;O:XMLVAR_MIN_Limit)
+                    16384 (&gt;O:XMLVAR_MAX_Limit)
+                    0 (&gt;O:XMLVAR_Limits_Needs_Recalculation)
+                </RESET_LIMITS>
+            </Condition>
+            <ANIMATION_CODE_SETTER>(A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, Percent)</ANIMATION_CODE_SETTER>
+            <Switch Param="LEVER_TYPE">
+                <Case Value="AIRBUS">
+                    <ANIMATION_CODE_SETTER>(#POSITION_TYPE#:#POSITION_VAR#) 4 / 100 *</ANIMATION_CODE_SETTER>
+                    <THROTTLE_ANIM_CODE>
+                        (A:THROTTLE LOWER LIMIT, percent) sp0
+                        (A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, Percent) s1 0 &lt; if{
+                            1 l1 l0 / - 25 * sp2
+                            0 sp3
+                            #MAIN_LEVER_REVERSE_POSITION_PCT# sp4
+                            0 sp5
+                        } els{
+                            l1 #CLIMB_LEVEL# &lt; if{
+                                1 sp3
+                                0 sp4
+                                #CLIMB_LEVEL# sp5
+                            } els{
+                                l1 #FLEX_LEVEL# &lt; if{
+                                    2 sp3
+                                    #CLIMB_LEVEL# sp4
+                                    #FLEX_LEVEL# sp5
+                                } els{
+                                    3 sp3
+                                    #FLEX_LEVEL# sp4
+                                    #TOGA_LEVEL# sp5
+                                }
+                            }
+                            l1 l4 - l5 l4 - / l3 + 25 * sp2
+                        }
+
+                        (O:IsDragging) ! if{
+                            -200 sp6
+                            l1 l4 - #SNAP_DISTANCE# &lt; if{
+                                l3 25 * sp6
+                            } els{
+                                l5 l1 - #SNAP_DISTANCE# &lt; if{
+                                    l3 1 + 25 * sp6
+                                }
+                            }
+
+                            l6 -200 != if{
+                                l6 sp2
+                            }
+
+                            l2 0.04 * (&gt;#POSITION_TYPE#:#POSITION_VAR#)
+                        }
+                        l2 (&gt;O:XMLVAR_AnimationPosition_PostSnap)
+                        l2
+                    </THROTTLE_ANIM_CODE>
+                </Case>
+                <Case Value="BOEING">
+                    <THROTTLE_ANIM_CODE>
+                        #DRAG_ANIM_VAR#
+                    </THROTTLE_ANIM_CODE>
+                    <MAIN_LEVER_REVERSE_POSITION>0</MAIN_LEVER_REVERSE_POSITION>
+                </Case>
+                <Case NotEmpty="OFF_GATE_POS">
+                    <THROTTLE_ANIM_CODE>
+                            (#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) (A:THROTTLE LOWER LIMIT, percent) -
+                            100 (A:THROTTLE LOWER LIMIT, percent) - /
+                            1 #OFF_GATE_POS# - *
+                            (A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Boolean) #OFF_GATE_POS# * +
+                            100 *
+                    </THROTTLE_ANIM_CODE>
+                    <ADJUST_RAW_DRAG_VALUE>
+                        #OFF_GATE_POS# max #OFF_GATE_POS# - 1 #OFF_GATE_POS# - /
+                    </ADJUST_RAW_DRAG_VALUE>
+                    <DRAG_VALUE_OVERRIDE>
+                        (M:DragPercent) #OFF_GATE_POS# 0.5 * &lt; (O:XMLVAR_MIN_Limit) #OFF_GATE_POS# &lt; and if{
+                            (A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Boolean) if{
+                                #VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_CLOSE)
+                            }
+                        } els{
+                            (A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Boolean) ! if{
+                                #VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_OPEN)
+                            }
+                        }
+                    </DRAG_VALUE_OVERRIDE>
+                </Case>
+                <Default>
+                    <THROTTLE_ANIM_CODE>
+                            (#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) (A:THROTTLE LOWER LIMIT, percent) -
+                            100 (A:THROTTLE LOWER LIMIT, percent) - /
+                            100 *
+                    </THROTTLE_ANIM_CODE>
+                </Default>
+            </Switch>
+        </OverrideTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <Condition Check="ANIM_NAME_REVERSE_LOCK">
+                <UseTemplate Name="ASOBO_GT_Anim_Code">
+                    <Switch Param="LEVER_TYPE">
+                        <Case Value="AIRBUS">
+                            <ANIM_CODE>
+                                (#POSITION_TYPE#:#POSITION_VAR#) 1 &lt; 100 *
+                            </ANIM_CODE>
+                        </Case>
+                        <Default>
+                            <ANIM_CODE>
+                                (#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) 0 &lt; 100 *
+                            </ANIM_CODE>
+                        </Default>
+                    </Switch>
+                    <ANIM_NAME>#ANIM_NAME_REVERSE_LOCK#</ANIM_NAME>
+                </UseTemplate>
+                <UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+                    <ANIM_NAME>#ANIM_NAME_REVERSE_LOCK#</ANIM_NAME>
+                    <WWISE_EVENT_1>detent</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>detent</WWISE_EVENT_2>
+                </UseTemplate>
+            </Condition>
+                <UseTemplate Name="ASOBO_GT_Anim_Code">
+                    <Condition Valid="OVERRIDE_ANIM_CODE">
+                        <True>
+                            <ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
+                        </True>
+                        <False>
+                            <ANIM_CODE>#THROTTLE_ANIM_CODE#</ANIM_CODE>
+                        </False>
+                    </Condition>
+                </UseTemplate>
+            <Switch Param="LEVER_TYPE">
+                <Case Value="AIRBUS">
+                    <Update Once="true">
+                        (A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, percent over 100) (A:THROTTLE LOWER LIMIT, percent over 100) - 4 * (&gt;#POSITION_TYPE#:#POSITION_VAR#)
+                    </Update>
+                    <Update Frequency="5">
+                        (* Keep Track of Airbus Throttle Setting *)
+                        0 (&gt;L:XML_Airbus_Throttle#ID#_TOGA)
+                        0 (&gt;L:XML_Airbus_Throttle#ID#_Flex_MCT)
+                        0 (&gt;L:XML_Airbus_Throttle#ID#_Climb)
+                        0 (&gt;L:XML_Airbus_Throttle#ID#_Idle)
+                        0 (&gt;L:XML_Airbus_Throttle#ID#_Rev)
+
+                        (O:XMLVAR_AnimationPosition_PostSnap) 25 &lt; if{
+                            1 (&gt;L:XML_Airbus_Throttle#ID#_Rev)
+                        } els{
+                            (O:XMLVAR_AnimationPosition_PostSnap) 50 &lt; if{
+                                1 (&gt;L:XML_Airbus_Throttle#ID#_Idle)
+                            } els{
+                                (O:XMLVAR_AnimationPosition_PostSnap) 75 &lt; if{
+                                    1 (&gt;L:XML_Airbus_Throttle#ID#_Climb)
+                                } els{
+                                    (O:XMLVAR_AnimationPosition_PostSnap) 100 &lt; if{
+                                        1 (&gt;L:XML_Airbus_Throttle#ID#_Flex_MCT)
+                                    } els{
+                                        1 (&gt;L:XML_Airbus_Throttle#ID#_TOGA)
+                                    }
+                                }
+                            }
+                        }
+                    (O:XMLVAR_AnimationPosition_PostSnap) 25 % 25 / (&gt;L:XML_Airbus_Throttle#ID#_Value)
+                    </Update>
+                    <UseTemplate Name="ASOBO_GT_Interaction_DraggingYAxis_Gates">
+                        <HELPID>HELPID_GAUGE_THROTTLE_THROTTLE</HELPID>
+                        <STEPS_NUMBER>4</STEPS_NUMBER>
+                        <DRAG_CODE>
+                            (#POSITION_TYPE#:#POSITION_VAR#) s0 flr sp1 l0 dec sp2
+                            l1 1 &lt; if{
+                                #MAIN_LEVER_REVERSE_POSITION_PCT# sp4
+                                0 sp5
+                            } els{
+                                l1 2 &lt; if{
+                                    0 sp4
+                                    #CLIMB_LEVEL# sp5
+                                } els{
+                                    l1 3 &lt; if{
+                                        #CLIMB_LEVEL# sp4
+                                        #FLEX_LEVEL# sp5
+                                    } els{
+                                        l1 4 &lt; if{
+                                            #FLEX_LEVEL# sp4
+                                            #TOGA_LEVEL# sp5
+                                        } els{
+                                            #TOGA_LEVEL# sp4
+                                            #TOGA_LEVEL# sp5
+                                        }
+                                    }
+                                }
+                            }
+                            l5 l4 - l2 * l4 + 163.84 * (&gt;K:THROTTLE#ID#_SET)
+                        </DRAG_CODE>
+                        <GATE_DIRECTION>0</GATE_DIRECTION>
+                    </UseTemplate>
+                </Case>
+                <Default>
+                    <Condition Check="USE_BUTTON">
+                        <True>
+                            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                                <ANIM_LAG>800</ANIM_LAG>
+                                <ANIM_NAME>#BUTTON_ANIM_NAME#</ANIM_NAME>
+                                <ANIM_CODE>
+                                    (I:XMLVAR_Interacting_With_Lever_Throttle_#ID#) 100 *
+                                </ANIM_CODE>
+                                <ANIM_LENGTH>100</ANIM_LENGTH>
+                            </UseTemplate>
+                            <UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents">
+                                <ANIM_NAME>#BUTTON_ANIM_NAME#</ANIM_NAME>
+                                <WWISE_EVENT_1>throttle_lever_button_on</WWISE_EVENT_1>
+                                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                                <DIRECTION_1>Forward</DIRECTION_1>
+                                <WWISE_EVENT_2>throttle_lever_button_off</WWISE_EVENT_2>
+                                <NORMALIZED_TIME_2>0.9</NORMALIZED_TIME_2>
+                                <DIRECTION_2>Backward</DIRECTION_2>
+                            </UseTemplate>
+                        </True>
+                    </Condition>
+                    <Update Once="True">
+                        #RESET_LIMITS#
+                    </Update>
+                    <UseTemplate Name="ASOBO_GT_Interaction_WheelLeftDrag_Axis">
+                        <LOCK_CODE>
+                            (A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, position 16k) abs #MIN_DIFF_POS_16K# &lt; if{
+                                1 (&gt;O:XMLVAR_Limits_Needs_Recalculation)
+                            } els{
+                                #PROCESS_LIMITS#
+                            }
+                        </LOCK_CODE>
+                        <UNLOCK_CODE>
+                            #RESET_LIMITS#
+                        </UNLOCK_CODE>
+                        <HELPID>HELPID_GAUGE_THROTTLE_THROTTLE</HELPID>
+                        <DRAG_SIMVAR>GENERAL ENG THROTTLE LEVER POSITION:#ID#</DRAG_SIMVAR>
+                        <Condition Valid="USE_TRAJECTORY_DRAG_MODE">
+                            <True>
+                                <DRAG_CODE>
+                                    (M:InputType) 1 == if{
+                                        (O:_ResetLimitsTime) (E:SIMULATION TIME, second) &lt; if{
+                                            (A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, position 16k) abs #MIN_DIFF_POS_16K# &lt; if{
+                                                #RESET_LIMITS#
+                                                1 (&gt;O:XMLVAR_Limits_Needs_Recalculation)
+                                            }
+                                        }
+                                        (E:SIMULATION TIME, second) 0.1 + (&gt;O:_ResetLimitsTime)
+                                    }
+                                    16384 #MAIN_LEVER_REVERSE_POSITION# - (M:DragPercent) #ADJUST_RAW_DRAG_VALUE# * #MAIN_LEVER_REVERSE_POSITION# + sp0
+                                    #DRAG_VALUE_OVERRIDE#
+                                    l0 #DRAG_MAX_VALUE# min #DRAG_MIN_VALUE# max (&gt;K:THROTTLE#ID#_SET)
+                                    (O:XMLVAR_Limits_Needs_Recalculation) if{
+                                        (A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, position 16k) abs #MIN_DIFF_POS_16K# &gt; if{
+                                            #PROCESS_LIMITS#
+                                            0 (&gt;O:XMLVAR_Limits_Needs_Recalculation)
+                                        }
+                                    }
+                                </DRAG_CODE>
+                            </True>
+                            <False>
+                                <DRAG_CODE>
+                                    (A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, position 16k) #INCREMENT# (O:DragScale) * + #DRAG_MAX_VALUE# min #DRAG_MIN_VALUE# max (&gt;K:THROTTLE#ID#_SET)
+                                    (O:XMLVAR_Limits_Needs_Recalculation) if{
+                                        (A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, position 16k) abs #MIN_DIFF_POS_16K# &gt; if{
+                                            #PROCESS_LIMITS#
+                                            0 (&gt;O:XMLVAR_Limits_Needs_Recalculation)
+                                        }
+                                    }
+                                </DRAG_CODE>
+                            </False>
+                        </Condition>
+                        <POSITIVE_AXIS_CODE>(A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, position 16k) #SCROLL_INCREMENT# + #DRAG_MAX_VALUE# min (&gt;K:THROTTLE#ID#_SET)</POSITIVE_AXIS_CODE>
+                        <NEGATIVE_AXIS_CODE>(A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, position 16k) #SCROLL_INCREMENT# - #DRAG_MIN_VALUE# max (&gt;K:THROTTLE#ID#_SET)</NEGATIVE_AXIS_CODE>
+                    </UseTemplate>
+                </Default>
+            </Switch>
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:XMLVAR_LeverThrottleHidden#ID#) !</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <Condition Check="LEVER_TYPE" Match="BOEING">
+            <True>
+                <Component ID="#NODE_ID_REVERSER#" Node="#NODE_ID_REVERSER#">
+                    <OverrideTemplateParameters>
+                        <DRAG_ANIMATION_VARIABLE_TYPE>O</DRAG_ANIMATION_VARIABLE_TYPE>
+                        <DRAG_ANIMATION_VARIABLE_NAME>XMLVAR_#NODE_ID_REVERSER#_Animation_Position</DRAG_ANIMATION_VARIABLE_NAME>
+                        <ANIM_NAME>#ANIM_NAME_REVERSER#</ANIM_NAME>
+                        <DRAG_ANIM_NAME>#ANIM_NAME_REVERSER#</DRAG_ANIM_NAME>
+                        <DRAG_NODE_ID>#NODE_ID_REVERSER#</DRAG_NODE_ID>
+                        <Condition Valid="REVERSER_INVERT_IM_DRAG_INPUT_SCALAR">
+                            <INVERT_IM_DRAG_INPUT_SCALAR>#REVERSER_INVERT_IM_DRAG_INPUT_SCALAR#</INVERT_IM_DRAG_INPUT_SCALAR>
+                        </Condition>
+                    </OverrideTemplateParameters>
+
+                    <UseTemplate Name="ASOBO_GT_Anim_Code">
+                        <ANIM_CODE>
+                            (#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) (A:THROTTLE LOWER LIMIT, percent) / 100 *
+                        </ANIM_CODE>
+                    </UseTemplate>
+                    <UseTemplate Name="ASOBO_GT_Interaction_WheelLeftDrag_Axis">
+                        <POSITION_TYPE>O</POSITION_TYPE>
+                        <POSITION_VAR>XMLVAR_Reverser#ID#_Position</POSITION_VAR>
+                        <DRAG_CODE>
+                            (A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, Percent) 0 &lt;= if{
+                                (A:THROTTLE LOWER LIMIT, position 16k) (M:DragPercent) * (&gt;K:THROTTLE#ID#_SET)
+                            } els{
+                                0 (&gt;O:XMLVAR_Reverser#ID#_Position)
+                            }
+                        </DRAG_CODE>
+                        <POSITIVE_AXIS_CODE>(A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, position 16k) s0 0 &lt;= if{ l0 #SCROLL_INCREMENT# - (A:THROTTLE LOWER LIMIT, position 16k) max (&gt;K:THROTTLE#ID#_SET) }</POSITIVE_AXIS_CODE>
+                        <NEGATIVE_AXIS_CODE>(A:GENERAL ENG THROTTLE LEVER POSITION:#ID#, position 16k) s0 0 &lt;= if{ l0 #SCROLL_INCREMENT# + 0 min (&gt;K:THROTTLE#ID#_SET) }</NEGATIVE_AXIS_CODE>
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+
+        <Condition Check="HIGHLIGHT_NODE_ID">
+            <UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
+                <NODE_ID>#HIGHLIGHT_NODE_ID#</NODE_ID>
+            </UseTemplate>
+        </Condition>
+    </Template>
+</ModelBehaviors>

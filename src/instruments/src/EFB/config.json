@@ -1,4 +1,4 @@
 {
-  "index": "./temporary.jsx",
-  "isInteractive": false
+  "index": "./index.jsx",
+  "isInteractive": true
 }

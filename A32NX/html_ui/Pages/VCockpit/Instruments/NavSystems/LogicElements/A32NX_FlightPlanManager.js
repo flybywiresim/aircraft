@@ -26,6 +26,9 @@ class FlightPlanManager {
         this._isLoadedApproachTimeLastSimVarCall = 0;
         this._isActiveApproachTimeLastSimVarCall = 0;
         this._approachActivated = false;
+        this._currentFlightPlanVersion = -1;
+        this._newFlightPlanVersion = -1;
+        this._currentFlightPlanApproachVersion = -1;
         FlightPlanManager.DEBUG_INSTANCE = this;
         this.instrument = _instrument;
         this.registerListener();
@@ -50,6 +53,82 @@ class FlightPlanManager {
             wp.legAltitude1 = 3200;
         } else if (icao.indexOf("WK1KSEADGLAS") != -1) {
             wp.legAltitude1 = 1900;
+        }
+    }
+
+    updateWaypointDistances(approach) {
+
+        // TODO: This should share code with _loadWaypoints but since flight plan manager is rewritten in any case soonly,
+        // this wouldn't be worth the effort.
+        const activeIdent = this.getActiveWaypointIdent();
+        const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots") < 100 ? 400 : SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
+        const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+        const waypoints = approach ? this._approachWaypoints : this._waypoints[this._currentFlightPlanIndex];
+        const activeIndex = waypoints.findIndex(wp => {
+            return wp && wp.ident === activeIdent;
+        });
+        const planeCoord = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
+        const lastWaypoint = this._waypoints[this._currentFlightPlanIndex][this._waypoints[this._currentFlightPlanIndex].length - 2];
+        for (let i = 0; i < waypoints.length; i++) {
+            const waypoint = waypoints[i];
+            if (waypoint.ident === activeIdent) {
+                waypoint.liveDistanceTo = Avionics.Utils.computeGreatCircleDistance(planeCoord, waypoint.infos.coordinates);
+                waypoint.liveETATo = waypoint.liveDistanceTo / groundSpeed * 3600;
+                waypoint.liveUTCTo = utcTime + waypoint.liveETATo;
+                if (approach) {
+                    const prevWp = (i > 1 ? waypoints[i - 1] : lastWaypoint);
+                    waypoint.distance = Avionics.Utils.computeGreatCircleDistance(prevWp.infos.coordinates, waypoint.infos.coordinates);
+                    waypoint.cumulativeDistanceInFP = prevWp.cumulativeDistanceInFP + waypoint.distance;
+                }
+            } else if (!approach && activeIndex >= 0 && i > activeIndex) {
+                const prevWp = waypoints[i - 1];
+                waypoint.distance = Avionics.Utils.computeGreatCircleDistance(prevWp.infos.coordinates, waypoint.infos.coordinates);
+                waypoint.liveDistanceTo = prevWp.liveDistanceTo + waypoint.distance;
+                waypoint.liveETATo = waypoint.liveDistanceTo / groundSpeed * 3600;
+                waypoint.liveUTCTo = utcTime + waypoint.liveETATo;
+            } else if (approach) {
+                const prevWp = (i > 1 ? waypoints[i - 1] : lastWaypoint);
+                waypoint.distance = Avionics.Utils.computeGreatCircleDistance(prevWp.infos.coordinates, waypoint.infos.coordinates);
+                if (waypoint.ident != "USER") {
+                    waypoint.cumulativeDistanceInFP = prevWp.cumulativeDistanceInFP + waypoint.distance;
+                }
+                waypoint.bearing = Avionics.Utils.computeGreatCircleHeading(prevWp.infos.coordinates, waypoint.infos.coordinates);
+                if (activeIndex < 0 || (activeIndex >= 0 && i > activeIndex)) {
+                    waypoint.liveDistanceTo = prevWp.liveDistanceTo + waypoint.distance;
+                    waypoint.liveETATo = waypoint.liveDistanceTo / groundSpeed * 3600;
+                    waypoint.liveUTCTo = utcTime + waypoint.liveETATo;
+                }
+                if (i === waypoints.length - 1) {
+                    const destWp = this.getWaypoint(this.getWaypointsCount() - 1);
+                    destWp.distanceInFP = Avionics.Utils.computeGreatCircleDistance(waypoint.infos.coordinates , destWp.infos.coordinates);
+                }
+            } else {
+                waypoint.liveDistanceTo = 0;
+                waypoint.liveETATo = 0;
+                waypoint.liveUTCTo = 0;
+            }
+        }
+        const destination = this.getDestination();
+        if (destination && approach) {
+            if (waypoints.length > 0) {
+                const lastWaypoint = waypoints[waypoints.length - 1];
+                if (lastWaypoint) {
+                    const distance = Math.round(Avionics.Utils.computeGreatCircleDistance(lastWaypoint.infos.coordinates, destination.infos.coordinates));
+                    destination.cumulativeDistanceInFP = lastWaypoint.cumulativeDistanceInFP + distance;
+                    destination.liveDistanceTo = lastWaypoint.liveDistanceTo + distance;
+                    destination.liveETATo = lastWaypoint.liveETATo + (distance / groundSpeed * 3600);
+                    destination.liveUTCTo = utcTime + destination.liveETATo;
+                }
+            }
+            if (!this.getApproachWaypointsCount() || (this.getApproachWaypointsCount() > 0 && approach)) {
+                if (this.decelWaypoint && this.decelWaypoint.prevWp) {
+                    const prevWp = this.decelWaypoint.prevWp;
+                    const dist = Avionics.Utils.computeGreatCircleDistance(planeCoord, this.decelWaypoint.infos.coordinates);
+                    this.decelWaypoint.liveDistanceTo = prevWp.liveDistanceTo ? prevWp.liveDistanceTo + this.decelWaypoint.distanceInFP : dist;
+                    this.decelWaypoint.liveETATo = (this._decelReached ? this._waypointReachedAt : this.decelWaypoint.liveDistanceTo / groundSpeed * 3600);
+                    this.decelWaypoint.liveUTCTo = utcTime + this.decelWaypoint.liveETATo;
+                }
+            }
         }
     }
     update(_deltaTime) {
@@ -358,6 +437,7 @@ class FlightPlanManager {
                             this.decelWaypoint.longitudeFP = this.decelWaypoint.infos.coordinates.long;
                             this.decelWaypoint.altitudeinFP = decelPosition.alt;
                             this.decelWaypoint.cumulativeDistanceInFP = decelPosition.cumulativeDistance;
+                            this.decelWaypoint.prevWp = decelPosition.prevWp;
                             this.decelPrevIndex = decelPosition.prevIndex;
                             const prevWaypoint = decelPosition.prevWp;
                             if (prevWaypoint) {
@@ -391,7 +471,34 @@ class FlightPlanManager {
             this._activeWaypointIndex = waypointIndex;
         });
     }
+
+    _syncFlightPlanVersion() {
+        // Each FPM instance tracks its own local version to guarantee an
+        // increment call will trigger an update, but other instances can also
+        // change the version, so check both the SimVar and the member and take
+        // the newest version
+        const simVarVersion = SimVar.GetSimVarValue("L:A32NX_FLIGHT_PLAN_VERSION", 'number');
+        if (this._newFlightPlanVersion < simVarVersion) {
+            this._newFlightPlanVersion = simVarVersion;
+        }
+    }
+
+    _incrementFlightPlanVersion() {
+        this._syncFlightPlanVersion();
+        this._newFlightPlanVersion++;
+        SimVar.SetSimVarValue("L:A32NX_FLIGHT_PLAN_VERSION", 'number', this._newFlightPlanVersion);
+    }
+
     updateFlightPlan(callback = () => { }, log = false) {
+        this._syncFlightPlanVersion();
+        if (this._newFlightPlanVersion === this._currentFlightPlanVersion) {
+            if (callback) {
+                callback();
+            }
+            return;
+        }
+        const first = this._currentFlightPlanVersion === -1;
+        this._currentFlightPlanVersion = this._newFlightPlanVersion;
         const t0 = performance.now();
         Coherent.call("GET_FLIGHTPLAN").then((flightPlanData) => {
             const t1 = performance.now();
@@ -436,13 +543,26 @@ class FlightPlanManager {
                 const t2 = performance.now();
                 if (log) {
                 }
-                if (callback) {
+
+                // HACK: Initial call to load approach will fail because flight plan isn't loaded yet,
+                // so force it to load now as we have the flight plan ready.
+                if (first) {
+                    this.updateCurrentApproach(callback, false, true);
+                } else if (callback) {
                     callback();
                 }
             });
         });
     }
-    updateCurrentApproach(callback = () => { }, log = false) {
+    updateCurrentApproach(callback = () => { }, log = false, force = false) {
+        this._syncFlightPlanVersion();
+        if (!force && this._newFlightPlanVersion === this._currentFlightPlanApproachVersion) {
+            if (callback) {
+                callback();
+            }
+            return;
+        }
+        this._currentFlightPlanApproachVersion = this._newFlightPlanVersion;
         const t0 = performance.now();
         Coherent.call("GET_APPROACH_FLIGHTPLAN").then((flightPlanData) => {
             this._loadWaypoints(flightPlanData.waypoints, this._approachWaypoints, true, (wps) => {
@@ -534,6 +654,7 @@ class FlightPlanManager {
                     if (value === index) {
                         console.log("setCurrentFlightPlanIndex : Values matching, return after " + attempts + " attempts");
                         this._currentFlightPlanIndex = index;
+                        this._incrementFlightPlanVersion();
                         this.updateFlightPlan(() => {
                             callback(true);
                         });
@@ -570,6 +691,7 @@ class FlightPlanManager {
     }
     clearFlightPlan(callback = EmptyCallback.Void) {
         Coherent.call("CLEAR_CURRENT_FLIGHT_PLAN").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(() => {
                 this.updateCurrentApproach(() => {
                     this.instrument.requestCall(callback);
@@ -589,6 +711,7 @@ class FlightPlanManager {
         NXDataStore.set("PLAN_ORIGIN", icao.replace("A      ", "").trim());
 
         Coherent.call("SET_ORIGIN", icao).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -617,10 +740,16 @@ class FlightPlanManager {
         return waypointIndex;
     }
     setActiveWaypointIndex(index, callback = EmptyCallback.Void) {
-        Coherent.call("SET_ACTIVE_WAYPOINT_INDEX", index).then(callback);
+        Coherent.call("SET_ACTIVE_WAYPOINT_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
+            this.updateFlightPlan(callback);
+        });
     }
     recomputeActiveWaypointIndex(callback = EmptyCallback.Void) {
-        Coherent.call("RECOMPUTE_ACTIVE_WAYPOINT_INDEX").then(callback);
+        Coherent.call("RECOMPUTE_ACTIVE_WAYPOINT_INDEX").then(() => {
+            this._incrementFlightPlanVersion();
+            this.updateFlightPlan(callback);
+        });
     }
     getPreviousActiveWaypoint(forceSimVarCall = false) {
         const ident = this.getActiveWaypointIdent(forceSimVarCall);
@@ -947,6 +1076,7 @@ class FlightPlanManager {
         NXDataStore.set("PLAN_DESTINATION", icao.replace("A      ", "").trim());
 
         Coherent.call("SET_DESTINATION", icao).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -955,16 +1085,19 @@ class FlightPlanManager {
             index = this._waypoints.length;
         }
         Coherent.call("ADD_WAYPOINT", icao, index, setActive).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     setWaypointAltitude(altitude, index, callback = () => { }) {
         Coherent.call("SET_WAYPOINT_ALTITUDE", altitude, index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     setWaypointAdditionalData(index, key, value, callback = () => { }) {
         Coherent.call("SET_WAYPOINT_ADDITIONAL_DATA", index, key, value).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -975,6 +1108,7 @@ class FlightPlanManager {
     }
     invertActiveFlightPlan(callback = () => { }) {
         Coherent.call("INVERT_ACTIVE_FLIGHT_PLAN").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1000,6 +1134,7 @@ class FlightPlanManager {
     }
     removeWaypoint(index, thenSetActive = false, callback = () => { }) {
         Coherent.call("REMOVE_WAYPOINT", index, thenSetActive).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1097,16 +1232,19 @@ class FlightPlanManager {
     }
     setDepartureProcIndex(index, callback = () => { }) {
         Coherent.call("SET_DEPARTURE_PROC_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     setDepartureRunwayIndex(index, callback = EmptyCallback.Void) {
         Coherent.call("SET_DEPARTURE_RUNWAY_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     setOriginRunwayIndex(index, callback = EmptyCallback.Void) {
         Coherent.call("SET_ORIGIN_RUNWAY_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1115,6 +1253,7 @@ class FlightPlanManager {
     }
     setDepartureEnRouteTransitionIndex(index, callback = EmptyCallback.Void) {
         Coherent.call("SET_DEPARTURE_ENROUTE_TRANSITION_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1123,11 +1262,13 @@ class FlightPlanManager {
     }
     clearDepartureDiscontinuity(callback = EmptyCallback.Void) {
         Coherent.call("CLEAR_DEPARTURE_DISCONTINUITY").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     removeDeparture(callback = () => { }) {
         Coherent.call("REMOVE_DEPARTURE_PROC").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1139,6 +1280,7 @@ class FlightPlanManager {
     }
     setArrivalProcIndex(index, callback = () => { }) {
         Coherent.call("SET_ARRIVAL_PROC_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1147,16 +1289,19 @@ class FlightPlanManager {
     }
     clearArrivalDiscontinuity(callback = EmptyCallback.Void) {
         Coherent.call("CLEAR_ARRIVAL_DISCONTINUITY").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     setArrivalEnRouteTransitionIndex(index, callback = () => { }) {
         Coherent.call("SET_ARRIVAL_ENROUTE_TRANSITION_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     setArrivalRunwayIndex(index, callback = () => { }) {
         Coherent.call("SET_ARRIVAL_RUNWAY_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
@@ -1166,6 +1311,7 @@ class FlightPlanManager {
     setApproachIndex(index, callback = () => { }, transition = 0) {
         Coherent.call("SET_APPROACH_INDEX", index).then(() => {
             Coherent.call("SET_APPROACH_TRANSITION_INDEX", transition).then(() => {
+                this._incrementFlightPlanVersion();
                 this.updateFlightPlan(() => {
                     this.updateCurrentApproach(() => {
                         callback();
@@ -1275,10 +1421,27 @@ class FlightPlanManager {
             if (infos instanceof AirportInfo) {
                 const approach = infos.approaches[this._approachIndex];
                 if (approach) {
-                    const runway = infos.oneWayRunways.find(r => {
-                        return r.designation.indexOf(approach.runway.replace(" ", "")) !== -1;
+                    const approachRunway = approach.runway.replace(" ", "");
+                    const runways = infos.oneWayRunways.filter(r => {
+                        return r.designation.indexOf(approachRunway) !== -1;
                     });
-                    return runway;
+                    if (runways.length > 1 && approachRunway.match(/\d$/)) {
+                        let runway = runways.find(rw => {
+                            return rw.designation.replace(" ", "") === approachRunway;
+                        });
+                        if (runway) {
+                            return runway;
+                        } else {
+                            const approachRunwayC = approachRunway + 'C';
+                            runway = runways.find(rw => {
+                                return rw.designation.replace(" ", "") === approachRunwayC;
+                            });
+                            if (runway) {
+                                return runway;
+                            }
+                        }
+                    }
+                    return runways[0];
                 }
             }
         }
@@ -1304,21 +1467,25 @@ class FlightPlanManager {
     }
     setApproachTransitionIndex(index, callback = () => { }) {
         Coherent.call("SET_APPROACH_TRANSITION_INDEX", index).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     removeArrival(callback = () => { }) {
         Coherent.call("REMOVE_ARRIVAL_PROC").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     activateDirectTo(icao, callback = EmptyCallback.Void) {
         Coherent.call("ACTIVATE_DIRECT_TO", icao).then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
     cancelDirectTo(callback = EmptyCallback.Void) {
         Coherent.call("CANCEL_DIRECT_TO").then(() => {
+            this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
         });
     }
