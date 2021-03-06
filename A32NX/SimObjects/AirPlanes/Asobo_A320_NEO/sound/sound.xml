@@ -1282,7 +1282,7 @@
             <WwiseRTPC LocalVar="XMLVAR_Throttle2Position" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE2_LEVER_POSITION" />
         </Sound>
 
-                <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
             <Range LowerBound="73" UpperBound="77" />
         </Sound>
 
