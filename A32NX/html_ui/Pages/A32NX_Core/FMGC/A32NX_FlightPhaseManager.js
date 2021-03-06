@@ -215,6 +215,12 @@ class A32NX_FlightPhase_Cruise {
 
     init(_fmc) {
         _fmc._activeCruiseFlightLevelDefaulToFcu = false;
+        // This checks against the pilot defined cruise altitude and the automatically populated cruise altitude
+        if (_fmc.cruiseFlightLevel !== _fmc._cruiseFlightLevel) {
+            _fmc._cruiseFlightLevel = _fmc.cruiseFlightLevel;
+            const msg = NXSystemMessages.newCrzAlt;
+            _fmc.addNewMessage({text: msg.text + _fmc._cruiseFlightLevel * 100, isAmber: msg.isAmber, isTypeTwo: msg.isTypeTwo});
+        }
     }
 
     check(_deltaTime, _fmc) {

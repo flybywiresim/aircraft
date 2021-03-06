@@ -1138,6 +1138,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     _onStepClimb(_targetFl) {
         this.cruiseFlightLevel = _targetFl;
+        this._cruiseFlightLevel = _targetFl;
         const msg = NXSystemMessages.newCrzAlt;
         this.addNewMessage({text: msg.text + _targetFl * 100, isAmber: msg.isAmber, isTypeTwo: msg.isTypeTwo});
     }
