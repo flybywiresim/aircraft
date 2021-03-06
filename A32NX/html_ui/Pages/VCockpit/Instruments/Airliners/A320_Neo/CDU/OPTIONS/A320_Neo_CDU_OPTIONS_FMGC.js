@@ -28,7 +28,7 @@ class CDU_OPTIONS_FMGC {
 
         mcdu.setTemplate([
             ["A32NX OPTIONS FMGC"],
-            ["\xa0DEFAULT BARO", "THR RED H\xa0"],
+            ["DEFAULT BARO", "THR RED H\xa0"],
             [`*${storedInitBaroUnit}[color]cyan`, `{small}[FT]{end}{cyan}${storedThrRedAlt}*{end}`],
             ["\xa0WEIGHT UNIT", "ACC H\xa0"],
             [`*${storedUsingMetric === 1 ? "KG" : "LBS"}[color]cyan`, `{small}[FT]{end}{cyan}${storedAccelAlt}*{end}`],
