@@ -51,18 +51,5 @@ jobs:
           mv tmp_A32NX A32NX
       - uses: actions/upload-artifact@v2
         with:
-          name: Modules
-          path: ./build-modules/
-      - name: Upload to Bunny CDN
-        uses: sebastianpopp/ftp-action@releases/v2
-        with:
-          host: ${{ secrets.BUNNY_BUCKET_HOST }}
-          user: ${{ secrets.BUNNY_BUCKET_USERNAME }}
-          password: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
-          localDir: ./build-modules/
-          remoteDir: ${{ env.CDN_DIR }}
-          options: "--delete --transfer-all --verbose"
-      - uses: actions/upload-artifact@v2
-        with:
           name: A32NX
-          path: A32NX
+          path: ./build-modules/full.zip
