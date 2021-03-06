@@ -112,6 +112,7 @@
 1. [CDU] RADNAV - A manual VOR/ADF ident input is now permament - @St54Kevin
 1. [CDU] RADNAV - ID/Frequency fields now format to correct font size depending on pilot input - @St54Kevin
 1. [CDU] RADNAV - All fields now have correct format display and input restricitons - @St54Kevin
+1. [ECAM] Add Autopilot & Autothrottle Disconnect Warning and Sound - @Kimbyeongjang (김병장#7165)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
