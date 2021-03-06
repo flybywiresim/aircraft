@@ -7,42 +7,54 @@ on:
       - reopened
       - ready_for_review
 
+env:
+  CARGO_HOME: $HOME/target/cargo_home
+
 jobs:
   lint:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
+    container: ghcr.io/flybywiresim/dev-env@sha256:0bf0844b914cbd45a8a0a866a71c7a07fa09308f48cb961708be479f0d63aa0f
+#    if: github.event.pull_request.draft == false
     steps:
+      - name: Setup cargo
+        run: echo "${{ env.CARGO_HOME }}/bin" >> $GITHUB_PATH
       - name: Checkout source
         uses: actions/checkout@v2
-      - name: install
-        run: npm install --no-optional
+      - name: npm install
+        run: npm install --no-optional --legacy-peer-deps
       - name: npm run lint
-        run: ./scripts/dev-env/run.sh npm run lint
+        run: npm run lint
       - name: lint-rust.sh
-        run: |
-          docker run --rm -v "$(pwd)":/external ghcr.io/flybywiresim/dev-env@sha256:0bf0844b914cbd45a8a0a866a71c7a07fa09308f48cb961708be479f0d63aa0f scripts/lint-rust.sh
+        run: ./scripts/lint-rust.sh
+
   test:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
+    container: ghcr.io/flybywiresim/dev-env@sha256:0bf0844b914cbd45a8a0a866a71c7a07fa09308f48cb961708be479f0d63aa0f
+#    if: github.event.pull_request.draft == false
     steps:
+      - name: Setup cargo
+        run: echo "${{ env.CARGO_HOME }}/bin" >> $GITHUB_PATH
       - name: Checkout source
         uses: actions/checkout@v2
       - name: test-rust.sh
-        run: |
-          docker run --rm -v "$(pwd)":/external ghcr.io/flybywiresim/dev-env@sha256:0bf0844b914cbd45a8a0a866a71c7a07fa09308f48cb961708be479f0d63aa0f scripts/test-rust.sh
+        run: ./scripts/test-rust.sh
+
   build:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
+    container: ghcr.io/flybywiresim/dev-env@sha256:0bf0844b914cbd45a8a0a866a71c7a07fa09308f48cb961708be479f0d63aa0f
+#    if: github.event.pull_request.draft == false
     env:
       ZIP_NAME: A32NX.zip
       BUILD_DIR_NAME: zip-build
     steps:
+      - name: Setup cargo
+        run: echo "${{ env.CARGO_HOME }}/bin" >> $GITHUB_PATH
       - name: Checkout source
         uses: actions/checkout@v2
+      - name: npm install
+        run: npm install --no-optional --legacy-peer-deps
       - name: Build A32NX
-        run: |
-          ./scripts/dev-env/run.sh ./scripts/setup.sh
-          ./scripts/dev-env/run.sh ./scripts/build.sh
+        run: ./scripts/build.sh
       - name: Generate ZIP file
         run: |
           mkdir ./${{ env.BUILD_DIR_NAME }}
