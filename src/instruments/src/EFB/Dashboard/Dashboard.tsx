@@ -63,8 +63,7 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
         return (
             <div className="w-full">
                 <h1 className="text-3xl text-white">Dashboard</h1>
-                <div className="flex w-full mt-6">
-
+                <div className="flex w-full mt-6 h-efb">
                     <FlightWidget
                     name="todays"
                     airline={this.props.airline}
@@ -84,8 +83,14 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                     altIcao={this.props.altIcao}
                     costInd={this.props.costInd} />
 
-                    <div className="w-3/5 h-efb bg-blue-efb-dark rounded-xl ml-3 shadow-lg p-6">
-                        <div className="h-full rounded-lg overflow-hidden">
+                    <div className="flex flex-col w-3/5">
+                        <div className="h-2/5 bg-navy-medium rounded-xl ml-3 mb-3 shadow-lg p-6">
+                            <div className="h-full rounded-lg overflow-hidden">
+
+                            </div>
+                        </div>
+
+                        <div className="h-3/5 ml-3 mt-3 rounded-xl overflow-hidden shadow-lg">
                             <Map disableMenu={true} hideOthers={true} />
                         </div>
                     </div>

@@ -52,7 +52,8 @@
 
   .loaded {
     @apply w-full h-full bg-white;
-    animation: 6s linear infinite loading;
+    animation: 6s linear loading;
+    animation-fill-mode: forwards;
     transform-origin: 0%;
   }
 

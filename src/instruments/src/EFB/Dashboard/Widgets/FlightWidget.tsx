@@ -20,7 +20,7 @@ import React, { useState } from 'react';
 import { IconBox, IconLink, IconPlane } from '@tabler/icons';
 import { IconPlaneDeparture } from '@tabler/icons';
 import { IconPlaneArrival } from '@tabler/icons';
-import engine from '../../Assets/320neo-leap1a26.svg';
+import fuselage from '../../Assets/320neo-outline-nose.svg';
 
 type FlightWidgetProps = {
     name: string,
@@ -51,7 +51,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
 	}
 
     return (
-        <div id={'flight-' + props.name} className="w-2/5 h-efb bg-blue-efb-dark text-white rounded-xl mr-3 shadow-lg p-6 overflow-hidden">
+        <div id={'flight-' + props.name} className="w-2/5 h-full bg-navy-medium text-white rounded-xl mr-3 shadow-lg p-6 overflow-hidden">
             <div className="h-full flex flex-col justify-between">
                 <div className="w-full">
                     <div className="text-center mb-6">
@@ -81,8 +81,8 @@ const FlightWidget = (props: FlightWidgetProps) => {
                         </div>
                     </div>
                 </div>
-                <div className="w-full flex justify-center my-3">
-                    <img src={engine} className="w-96" />
+                <div className="w-full my-3">
+                    <img src={fuselage} className="flip-vertical -ml-48" />
                 </div>
                 <div className="w-full mt-3">
                     <div className="grid grid-cols-3 gap-4 text-center mb-10">
