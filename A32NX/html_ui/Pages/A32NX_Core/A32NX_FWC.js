@@ -67,6 +67,12 @@ class A32NX_FWC {
         this._wasAboveThreshold = false;
         this._wasInRange = false;
         this._wasReach200ft = false;
+
+        // autopilot warning
+        this.AutothrottleWarningCanceled = false;
+        this.AutopilotWarningCanceled = false;
+        this.athrdeltaTime = 0;
+        this.apdeltaTime = 0;
     }
 
     update(_deltaTime, _core) {
@@ -76,6 +82,7 @@ class A32NX_FWC {
         this._updateButtons(_deltaTime);
         this._updateTakeoffMemo(_deltaTime);
         this._updateLandingMemo(_deltaTime);
+        this._autopilotDisconnect(_deltaTime);
         this._updateAltitudeWarning();
     }
 
@@ -102,13 +109,20 @@ class A32NX_FWC {
         const inhibOverride = this.memoFlightPhaseInhibOvrd_memo.write(recall, this.flightPhaseEndedPulse);
         SimVar.SetSimVarValue("L:A32NX_FWC_INHIBOVRD", "Bool", inhibOverride);
 
+        const overspeed = Simplane.getIndicatedSpeed() > (SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") + 4);
         if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_R", "Bool")) {
             this.warningPressed = true;
+            if (!overspeed) {
+                SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", false);
+                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
+            }
         } else {
             this.warningPressed = false;
         }
         if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT_R", "Bool")) {
             this.cautionPressed = true;
+            SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
+            SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
         } else {
             this.cautionPressed = false;
         }
@@ -400,5 +414,48 @@ class A32NX_FWC {
             }
         }
         return true;
+    }
+
+    _autopilotDisconnect(_deltaTime) {
+        const apStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool");
+        const atherStatus = SimVar.GetSimVarValue("AUTOTHROTTLE ACTIVE", "Bool");
+
+        if (atherStatus === 1) {
+            SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", false);
+            SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
+            this.AutothrottleWarningCanceled = false;
+            this.athrdeltaTime = 0;
+        }
+
+        if (atherStatus === 0 && this.AutothrottleWarningCanceled === false) {
+            SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", true);
+            SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", true);
+            this.athrdeltaTime += _deltaTime;
+            if (this.cautionPressed === true || (this.athrdeltaTime / 1000) >= 3) {
+                this.AutothrottleWarningCanceled = true;
+                SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", false);
+                SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
+                this.athrdeltaTime = 0;
+            }
+        }
+
+        if (apStatus === 1) {
+            SimVar.SetSimVarValue("L:A32NX_AP_DISC", "Bool", false);
+            SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
+            this.AutopilotWarningCanceled = false;
+            this.apdeltaTime = 0;
+        }
+
+        if (apStatus === 0 && this.AutopilotWarningCanceled === false) {
+            SimVar.SetSimVarValue("L:A32NX_AP_DISC", "Bool", true);
+            SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
+            this.apdeltaTime += _deltaTime;
+            if (this.warningPressed === true || (this.apdeltaTime / 1000) >= 3) {
+                this.AutopilotWarningCanceled = true;
+                SimVar.SetSimVarValue("L:A32NX_AP_DISC", "Bool", false);
+                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
+                this.apdeltaTime = 0;
+            }
+        }
     }
 }

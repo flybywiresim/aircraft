@@ -294,20 +294,6 @@
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
-            <Range UpperBound="0" />
-            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
-                <Range LowerBound="1" />
-            </Requires>
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
-            <Range UpperBound="0" />
-            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
-                <Range LowerBound="1" />
-            </Requires>
-        </Sound>
-
         <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="SCREEN_PFD_L" ViewPoint="Inside" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
             <Range UpperBound="0" />
             <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
@@ -1444,7 +1430,7 @@
                 <Range LowerBound="28" />
             </Requires>
         </Sound>
-        
+
         <!-- Altitude deviation warning =====================================================================-->
 
         <Sound WwiseData="true" WwiseEvent="cchordloop" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ALT_DEVIATION" Continuous="true">
@@ -1458,6 +1444,29 @@
             <Range LowerBound="1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
                 <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
+        <!-- Autopilot & Autothrottle warning =============================================================-->
+
+        <Sound WwiseData="true" WwiseEvent="improved_tone_caution" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ATHR_DISC" Continuous="false">
+            <Range LowerBound="1" />
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+            <Range UpperBound="0" />
+            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
+                <Range LowerBound="1" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+            <Range UpperBound="0" />
+            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
