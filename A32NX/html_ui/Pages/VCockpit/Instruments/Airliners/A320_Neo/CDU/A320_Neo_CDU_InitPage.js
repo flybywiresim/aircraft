@@ -106,7 +106,7 @@ class CDUInitPage {
 
                 // CRZ FL / FLX TEMP
                 mcdu.onLeftInput[5] = (value) => {
-                    if (mcdu.setCruiseFlightLevelAndTemperature(value, false)) {
+                    if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
                         CDUInitPage.ShowPage1(mcdu);
                     }
                 };

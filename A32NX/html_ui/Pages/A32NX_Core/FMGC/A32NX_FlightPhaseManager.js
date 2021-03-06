@@ -82,43 +82,34 @@ class A32NX_FlightPhaseManager {
     }
 
     handleFcuInput() {
-        if (this.fmc.currentFlightPhase < FmgcFlightPhases.CLIMB ||
-            this.fmc.currentFlightPhase > FmgcFlightPhases.APPROACH) {
-            return;
-        }
-
         const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
         const fl = Math.round(Simplane.getAltitude() / 100);
 
         // Try Initiate climb
-        if (
-            this.fmc.currentFlightPhase !== FmgcFlightPhases.CLIMB &&
-            fcuSelFl > fl
-        ) {
+        if (this.fmc.currentFlightPhase === FmgcFlightPhases.TAKEOFF) {
             this.changeFlightPhase(FmgcFlightPhases.CLIMB);
             return;
         }
 
-        const dest = this.fmc.flightPlanManager.getDestination();
+        if (this.fmc.currentFlightPhase === FmgcFlightPhases.CLIMB || this.fmc.currentFlightPhase === FmgcFlightPhases.CRUISE) {
+            const dest = this.fmc.flightPlanManager.getDestination();
+            // Try initiate descent
+            if (
+                (!!dest && dest.liveDistanceTo < 200 || !dest) &&
+                fcuSelFl < this.fmc.cruiseFlightLevel
+            ) {
+                this.changeFlightPhase(FmgcFlightPhases.DESCENT);
+                return;
+            }
 
-        // Try initiate descent
-        if (
-            this.fmc.currentFlightPhase !== FmgcFlightPhases.DESCENT &&
-            (!!dest && dest.liveDistanceTo < 200 || !dest) &&
-            fcuSelFl < this.fmc.cruiseFlightLevel
-        ) {
-            this.changeFlightPhase(FmgcFlightPhases.DESCENT);
-            return;
-        }
-
-        // Try initiate early descent
-        if (
-            this.fmc.currentFlightPhase !== FmgcFlightPhases.DESCENT &&
-            !!dest && dest.liveDistanceTo > 200 &&
-            fl > 200 &&
-            fcuSelFl < 200
-        ) {
-            this.changeFlightPhase(FmgcFlightPhases.DESCENT);
+            // Try initiate early descent
+            if (
+                !!dest && dest.liveDistanceTo > 200 &&
+                fl > 200 &&
+                fcuSelFl < 200
+            ) {
+                this.changeFlightPhase(FmgcFlightPhases.DESCENT);
+            }
         }
     }
 
@@ -250,7 +241,7 @@ class A32NX_FlightPhase_Descent {
         }
 
         // TODO: move this somewhere else (inside fmgc) and call flightPhaseManager.changeFlightPhase(FmgcFlightPhases.APPROACH)
-        if (_fmc.flightPlanManager.decelWaypoint) {
+        if (!_fmc.flightPlanManager._decelReached && _fmc.flightPlanManager.decelWaypoint) {
             const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
             const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
             const planeLla = new LatLongAlt(lat, long);
@@ -258,14 +249,19 @@ class A32NX_FlightPhase_Descent {
             if (dist < 3) {
                 _fmc.flightPlanManager._decelReached = true;
                 _fmc._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-                if (Simplane.getAltitudeAboveGround() < 9500) {
-                    this.nextFmgcFlightPhase = FmgcFlightPhases.APPROACH;
-                    return true;
-                }
             }
         }
 
-        return false;
+        return _fmc.flightPlanManager._decelReached &&
+            (
+                Simplane.getAltitudeAboveGround() < 9500 &&
+                (
+                    Simplane.getAutoPilotHeadingManaged() ||
+                    (
+                        Simplane.getAutoPilotApproachType() !== 10 && Simplane.getAutoPilotAPPRActive()
+                    )
+                )
+            );
     }
 }
 

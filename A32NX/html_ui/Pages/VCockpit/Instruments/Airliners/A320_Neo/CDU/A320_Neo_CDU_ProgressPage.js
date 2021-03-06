@@ -37,27 +37,14 @@ class CDUProgressPage {
             case FmgcFlightPhases.CLIMB: {
                 const alt = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
                 const altCtn = Math.round(mcdu.constraintAlt / 100);
-                if (!mcdu._cruiseEntered) {
+                if (!mcdu._cruiseEntered && !mcdu._activeCruiseFlightLevelDefaulToFcu) {
                     flCrz = "FL" + (altCtn && alt > altCtn ? altCtn.toFixed(0).padStart(3, "0") : alt.toFixed(0).padStart(3, "0")) + "[color]cyan";
-                } else if (mcdu.cruiseFlightLevel < alt) {
-                    mcdu.cruiseFlightLevel = alt;
-                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
-                    const msg = NXSystemMessages.newCrzAlt;
-                    msg.text = msg.text + mcdu.cruiseFlightLevel * 100;
-                    mcdu.addNewMessage(msg);
                 } else {
                     flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 }
                 break;
             }
             case FmgcFlightPhases.CRUISE: {
-                const fl = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
-                if (fl > mcdu.cruiseFlightLevel) {
-                    mcdu.cruiseFlightLevel = fl;
-                    const msg = NXSystemMessages.newCrzAlt;
-                    msg.text = msg.text + mcdu.cruiseFlightLevel * 100;
-                    mcdu.addNewMessage(msg);
-                }
                 flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 break;
             }
@@ -108,7 +95,7 @@ class CDUProgressPage {
             altCell = mcdu.cruiseFlightLevel.toFixed(0);
         }
         mcdu.onRightInput[0] = (value) => {
-            if (mcdu.setCruiseFlightLevelAndTemperature(value, true)) {
+            if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
                 CDUProgressPage.ShowReportPage(mcdu);
             }
         };
