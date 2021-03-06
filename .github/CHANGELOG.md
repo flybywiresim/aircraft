@@ -177,6 +177,7 @@
 1. [MCDU] Import cost index when importing flight plan from SimBrief - @aviadnissel (Aviad)
 1. [FLIGHTMODEL] Revert flaps hotfix due to MSFS hotfix in MSFS update 1.13.17.0 - @donstim (donbikes#4084)
 1. [MISC] Fixed chrono watch colon appearance - @SergeySoprykin (SergeyS)
+1. [MCDU] Fixed options page text overlap - @MisterChocker (Leon)
 1. [CDU] Reworked Flight Phase system - @MisterChocker (Leon)
 
 ## 0.5.2
