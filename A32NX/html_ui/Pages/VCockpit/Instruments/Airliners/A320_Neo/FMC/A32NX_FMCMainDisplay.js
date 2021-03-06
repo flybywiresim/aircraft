@@ -1053,12 +1053,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (_event === "AP_DEC_ALT" || _event === "AP_INC_ALT") {
             if (this.currentFlightPhase === FmgcFlightPhases.CLIMB) {
                 const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
-                if (this._activeCruiseFlightLevelDefaulToFcu) {
-                    this.cruiseFlightLevel = fcuFl;
-                    if (this.page.Current === this.page.ProgressPage) {
-                        CDUProgressPage.ShowPage(this);
-                    }
-                } else if (fcuFl >= this._cruiseFlightLevel) {
+                if (this._activeCruiseFlightLevelDefaulToFcu || fcuFl >= this._cruiseFlightLevel) {
                     this.cruiseFlightLevel = fcuFl;
                     if (this.page.Current === this.page.ProgressPage) {
                         CDUProgressPage.ShowPage(this);
