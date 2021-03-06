@@ -235,7 +235,7 @@ class A32NX_FlightPhase_Descent {
     init(_fmc) {
         this.nextFmgcFlightPhase = FmgcFlightPhases.APPROACH;
         _fmc.cruiseFlightLevel = undefined;
-        _fmc._activeCruiseFlightLevelDefaulToFcu = true;
+        _fmc._activeCruiseFlightLevelDefaulToFcu = false;
     }
 
     check(_deltaTime, _fmc) {
@@ -283,13 +283,6 @@ class A32NX_FlightPhase_Approach {
     check(_deltaTime, _fmc) {
         if (Simplane.getEngineThrottleMode(0) === ThrottleMode.TOGA || Simplane.getEngineThrottleMode(1) === ThrottleMode.TOGA) {
             this.nextFmgcFlightPhase = FmgcFlightPhases.GOAROUND;
-            return true;
-        }
-
-        const fl = Math.round(Simplane.getAltitude() / 100);
-
-        if (fl === _fmc.cruiseFlightLevel) {
-            this.nextFmgcFlightPhase = FmgcFlightPhases.CRUISE;
             return true;
         }
 
