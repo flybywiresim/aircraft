@@ -718,6 +718,8 @@ class CDUPerformancePage {
             }
         };
 
+        const closeToDest = mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().liveDistanceTo <= 180;
+
         let qnhCell = "[\xa0\xa0][color]cyan";
         if (isFinite(mcdu.perfApprQNH)) {
             if (mcdu.perfApprQNH < 500) {
@@ -725,7 +727,7 @@ class CDUPerformancePage {
             } else {
                 qnhCell = mcdu.perfApprQNH.toFixed(0) + "[color]cyan";
             }
-        } else if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().liveDistanceTo <= 180) {
+        } else if (closeToDest) {
             qnhCell = "____[color]amber";
         }
         mcdu.onLeftInput[0] = (value) => {
@@ -734,9 +736,11 @@ class CDUPerformancePage {
             }
         };
 
-        let tempCell = "[\xa0]";
+        let tempCell = "[\xa0]°[color]cyan";
         if (isFinite(mcdu.perfApprTemp)) {
-            tempCell = ("" + mcdu.perfApprTemp.toFixed(0)).padStart(3).replace(/ /g, "\xa0");
+            tempCell = ("" + mcdu.perfApprTemp.toFixed(0)).padStart(3).replace(/ /g, "\xa0") + "°[color]cyan";
+        } else if (closeToDest) {
+            tempCell = "___°[color]amber";
         }
         mcdu.onLeftInput[1] = (value) => {
             if (mcdu.setPerfApprTemp(value)) {
@@ -884,7 +888,7 @@ class CDUPerformancePage {
             /* 1l */["QNH"],
             /* 1L */[qnhCell, finalAppCell],
             /* 2l */["TEMP", "BARO"],
-            /* 2L */[tempCell + "°[color]cyan", baroCell + "[color]cyan", "O=" + cleanCell],
+            /* 2L */[tempCell, baroCell + "[color]cyan", "O=" + cleanCell],
             /* 3l */["MAG WIND", radioLabel],
             /* 3L */[magWindHeadingCell + "°/" + magWindSpeedCell + "[color]cyan", radioCell + "[color]cyan", "S=" + sltRetrCell],
             /* 4l */["TRANS ALT"],
