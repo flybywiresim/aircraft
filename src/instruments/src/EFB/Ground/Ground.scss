@@ -19,7 +19,6 @@
 @import "../Assets/Efb.scss";
 
 .wrapper {
-  flex-grow: 1;
   // this lets us use position:absolute in widgets
   position: relative;
   padding: 1rem;
@@ -38,54 +37,11 @@
 }
 
 .control-grid {
-  color: #232b3d;
   grid-gap: 1rem;
-}
-
-.control-grid h1 {
-  text-align: center;
-  grid-column: 1/-1;
-  padding: 0.2rem;
-}
-
-.control-grid > * {
-  // display: block;
-}
-
-.control-grid > button {
-  @apply rounded-lg;
-  height: 4rem;
-  width: 8rem;
-  margin: auto;
-}
-
-.pushback {
-  right: 1rem;
-  bottom: 1rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .stop {
   grid-column: 2 / 3;
-}
-
-/* .pushback > div:hover,
-.call:hover {
-  @apply text-white;
-  @apply border-white;
-}
-
-.pushback > div:active,
-.call:active {
-  @apply transform;
-  @apply translate-y-1;
-} */
-
-button:hover {
-  // @apply text-white;
-  // @apply border-white;
-  // @apply bg-blue-600;
-  //@apply border-blue-600;
 }
 
 button:active {

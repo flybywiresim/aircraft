@@ -22,11 +22,12 @@ import classNames from 'classnames';
 export enum BUTTON_TYPE {BLUE, BLUE_OUTLINE, GREEN, GREEN_OUTLINE, RED, RED_OUTLINE, NONE}
 
 type props = {
-    text: string,
+    text?: string,
     type?: BUTTON_TYPE,
     onClick: (e?) => any,
     className?: any,
-    id: any,
+    id?: any,
+    disabled?,
     children?: any
 };
 
