@@ -1,0 +1,51 @@
+@import "../../../Common/definitions.scss";
+
+#hyd-page {
+
+  .PageTitle {
+    font-size: $font-size-title;
+    text-decoration: underline;
+    fill: $display-white;
+  }
+
+  .title {
+      font-size: $font-size-huge;
+      fill: $display-white;
+      text-anchor: middle !important;
+  }
+
+  .pressure {
+      font-size: $font-size-huge;
+      fill: $display-green;
+      text-anchor: middle !important;
+  }
+
+  .triangle {
+    fill: none;
+    stroke: $display-green;
+    stroke-width: 2;
+  }
+
+  .green-line {
+    fill: none;
+    stroke: $display-green;
+    stroke-width: 2;
+  }
+
+  .amber-line {
+    fill: none;
+    stroke: $display-amber;
+    stroke-width: 2;
+  }
+
+  .white-line {
+    stroke: $display-white;
+    stroke-width: 2;
+  }
+
+  .hide {
+    display:none;
+  }
+
+
+}

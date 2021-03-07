@@ -44,6 +44,10 @@ const extraInstruments = [
         name: 'cond-page',
         path: 'SD/Pages/Cond',
     },
+    {
+        name: 'hyd-page',
+        path: 'SD/Pages/Hyd',
+    },
 ];
 
 function makePostcssPluginList(instrumentPath) {
