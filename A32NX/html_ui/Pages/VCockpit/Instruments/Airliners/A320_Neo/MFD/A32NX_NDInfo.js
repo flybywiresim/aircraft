@@ -192,7 +192,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
                         this.currentWaypointDistance = _distance;
                         if (this.waypointDistance != null) {
                             if (this.currentWaypointDistance < 10000) {
-                                if (this.currentWaypointDistance > 20) {
+                                if (this.currentWaypointDistance > 19.9) {
                                     this.currentWaypointDistance = Math.round(this.currentWaypointDistance);
                                     this.waypointDistance.textContent = fastToFixed(this.currentWaypointDistance, 1);
                                 } else {
