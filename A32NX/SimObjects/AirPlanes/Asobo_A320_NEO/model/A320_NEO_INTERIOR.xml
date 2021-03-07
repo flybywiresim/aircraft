@@ -839,14 +839,20 @@
                 <UseTemplate Name="FBW_AIRBUS_Push_TERRONND_Template">
                     <NODE_ID>PUSH_TERRONND</NODE_ID>
                     <ANIM_NAME>PUSH_TERRONND</ANIM_NAME>
-                    <BLOCK_SEQ1>1</BLOCK_SEQ1>
+                    <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <ID>1</ID>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_AIRBUS_Push_TERRONND_Template">
                     <NODE_ID>PUSH_AUTOBKR_TERRONND</NODE_ID>
                     <ANIM_NAME>PUSH_AUTOBKR_TERRONND</ANIM_NAME>
-                    <BLOCK_SEQ1>1</BLOCK_SEQ1>
+                    <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <ID>2</ID>
                 </UseTemplate>
 
@@ -1010,6 +1016,8 @@
                     <NODE_ID_ON>PUSH_BKRFAN_IMPORTED_SEQ2</NODE_ID_ON>
                     <NODE_ID_HOT>PUSH_BKRFAN_IMPORTED_SEQ1</NODE_ID_HOT>
                     <TOGGLE_SIMVAR>L:A32NX_BRAKE_FAN_BTN_PRESSED</TOGGLE_SIMVAR>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Turn OFF brake fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
                 </UseTemplate>
             </Component>
@@ -1305,6 +1313,9 @@
                     <ID>1</ID>
                     <BATTERY_BUS_ID>10</BATTERY_BUS_ID>
                     <HOT_BATTERY_BUS_ID>6</HOT_BATTERY_BUS_ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Battery_Master_Switch">
@@ -1313,21 +1324,33 @@
                     <ID>2</ID>
                     <BATTERY_BUS_ID>11</BATTERY_BUS_ID>
                     <HOT_BATTERY_BUS_ID>6</HOT_BATTERY_BUS_ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Engine_Generator_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_GEN1</NODE_ID>
                     <ID>1</ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Engine_Generator_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_GEN2</NODE_ID>
                     <ID>2</ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_APU_Generator_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_APUGEN</NODE_ID>
                     <ID>1</ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
                 <!-- EXT PWR -->
@@ -1336,43 +1359,56 @@
                     <PART_ID>ELECTRICAL_Switch_ExternalPower</PART_ID>
                     <ID>1</ID>
                     <FAILURE_CIRCUIT>76</FAILURE_CIRCUIT>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Engine_Bleed_Switch">
                     <NODE_ID>PUSH_OVHD_AIRCOND_ENG1BLEED</NODE_ID>
                     <ID>1</ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_Engine_Bleed_Switch">
                     <NODE_ID>PUSH_OVHD_AIRCOND_ENG2BLEED</NODE_ID>
                     <ID>2</ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Airbus_APU_Bleed_Switch">
                     <NODE_ID>PUSH_OVHD_AIRCOND_APUBLEED</NODE_ID>
                     <PART_ID>ELECTRICAL_Switch_APU_Bleed</PART_ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
                 <!-- ELEC COMMERCIAL -->
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_COMMERCIAL</NODE_ID>
-
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_COMMERCIAL_PB_IS_ON</TOGGLE_SIMVAR>
-
                     <SEQ2_CODE>(L:A32NX_OVHD_ELEC_COMMERCIAL_PB_IS_ON, Bool) !</SEQ2_CODE>
-
+                    <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <TOOLTIPID>%((L:A32NX_OVHD_ELEC_COMMERCIAL_PB_IS_ON, Bool))%{if}Turn OFF commercial%{else}Turn ON commercial%{end}</TOOLTIPID>
                 </UseTemplate>
 
                 <!-- ELEC GALY & CAB AUTO -->
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_GALYCAB</NODE_ID>
-
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO</TOGGLE_SIMVAR>
-
                     <SEQ1_CODE>(L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_HAS_FAULT, Bool)</SEQ1_CODE>
                     <SEQ2_CODE>(L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO, Bool) !</SEQ2_CODE>
-
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <TOOLTIPID>%((L:A32NX_OVHD_ELEC_GALY_AND_CAB_PB_IS_AUTO, Bool))%{if}Turn OFF galy &amp; cab%{else}Turn ON galy &amp; cab%{end}</TOOLTIPID>
                 </UseTemplate>
 
@@ -1380,11 +1416,11 @@
                 <UseTemplate Name="FBW_Covered_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_IDG1</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ELEC_IDG1</LOCK_NODE_ID>
-
                     <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_ELEC_IDG_1_PB_IS_RELEASED)</LEFT_SINGLE_CODE>
-
                     <SEQ1_CODE>(L:A32NX_OVHD_ELEC_IDG_1_PB_HAS_FAULT)</SEQ1_CODE>
-
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <MOMENTARY/>
                 </UseTemplate>
 
@@ -1392,31 +1428,34 @@
                 <UseTemplate Name="FBW_Covered_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_IDG2</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ELEC_IDG2</LOCK_NODE_ID>
-
                     <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_ELEC_IDG_2_PB_IS_RELEASED)</LEFT_SINGLE_CODE>
-
                     <SEQ1_CODE>(L:A32NX_OVHD_ELEC_IDG_2_PB_HAS_FAULT)</SEQ1_CODE>
-
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <MOMENTARY/>
                 </UseTemplate>
 
                 <!-- BUS TIE AUTO -->
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_BUSTIE</NODE_ID>
-
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO</TOGGLE_SIMVAR>
-
                     <SEQ2_CODE>(L:A32NX_OVHD_ELEC_BUS_TIE_PB_IS_AUTO, Bool) !</SEQ2_CODE>
+                    <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
                 <!-- AC ESS FEED -->
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_ACESSFEED</NODE_ID>
-
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL</TOGGLE_SIMVAR>
-
                     <SEQ1_CODE>(L:A32NX_OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT, Bool)</SEQ1_CODE>
                     <SEQ2_CODE>(L:A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL, Bool) !</SEQ2_CODE>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
                 <!-- APU MASTER SW -->
@@ -1433,10 +1472,11 @@
                         }
                     </LEFT_SINGLE_CODE>
                     <DOWN_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)</DOWN_CODE>
-
                     <SEQ1_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_HAS_FAULT, Bool)</SEQ1_CODE>
                     <SEQ2_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)</SEQ2_CODE>
-
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <TOOLTIPID>%((L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool))%{if}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.APU_SWITCH_TURN_ON%{end}</TOOLTIPID>
                 </UseTemplate>
 
@@ -1445,6 +1485,9 @@
                     <NODE_ID>PUSH_OVHD_APU_START</NODE_ID>
                     <PART_ID>ELECTRICAL_Switch_APU_Starter</PART_ID>
                     <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool) and</EXTRA_CONDITION>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
             </Component>
 
@@ -1537,6 +1580,9 @@
 
                 <UseTemplate Name="FBW_AIRLINER_SIGNS_LIGHT_Template">
                     <NODE_ID>PUSH_OVHD_SIGNS</NODE_ID>
+                    <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
 
                 <UseTemplate Name="A32NX_GT_Switch_Dummy">
@@ -1736,36 +1782,54 @@
                 <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED</NODE_ID>
                     <ID>3</ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_LTKPUMPS1</NODE_ID>
                     <ID>2</ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_1_L_TK_PUMP1_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_1_L_TK_PUMP1_ON</ON_TOOLTIP>
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_LTKPUMPS2</NODE_ID>
                     <ID>5</ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_1_L_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_1_L_TK_PUMP2_ON</ON_TOOLTIP>
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_PUMP1</NODE_ID>
                     <ID>1</ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.CTR_TK_PUMP_1_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.CTR_TK_PUMP_1_ON</ON_TOOLTIP>
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_PUMP2</NODE_ID>
                     <ID>4</ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.CTR_TK_PUMP_2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.CTR_TK_PUMP_2_ON</ON_TOOLTIP>
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_RTKPUMPS1</NODE_ID>
                     <ID>3</ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP1_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP1_ON</ON_TOOLTIP>
                 </UseTemplate>
@@ -1774,6 +1838,9 @@
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_ON</ON_TOOLTIP>
                     <ID>6</ID>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
                 <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                     <NODE_ID>PUSH_OVHD_FUEL_MODESEL</NODE_ID>
@@ -1782,6 +1849,9 @@
                     (A:FUELSYSTEM TANK WEIGHT:2, pound) 11000 &lt;
                     (A:FUELSYSTEM TANK WEIGHT:3, pound) 11000 &lt; or and
                     </SEQ1_EMISSIVE_CODE>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                 </UseTemplate>
             </Component>
 
@@ -1820,6 +1890,8 @@
                     <!-- PA -->
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_PA</NODE_ID>
+                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>PA Annunciator</TOOLTIPID>
                         <DUMMY_BUTTON/>
                     </UseTemplate>
@@ -1828,9 +1900,11 @@
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_COCKPITDOORVIDEO</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE</TOGGLE_SIMVAR>
-
                         <SEQ2_CODE>(L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE, Bool) !</SEQ2_CODE>
-
+                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE, Bool))%{if}Turn OFF door video%{else}Turn ON door video%{end}</TOOLTIPID>
                     </UseTemplate>
 
@@ -1842,14 +1916,23 @@
                     <Component ID="ADIRS">
                         <UseTemplate Name="FBW_Airbus_ADIRS_Light">
                             <ID>1</ID>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
 
                         <UseTemplate Name="FBW_Airbus_ADIRS_Light">
                             <ID>2</ID>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
 
                         <UseTemplate Name="FBW_Airbus_ADIRS_Light">
                             <ID>3</ID>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
 
                         <UseTemplate Name="FBW_Push_Toggle">
@@ -1882,14 +1965,23 @@
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_ADIRS_1</NODE_ID>
                             <ID>1</ID>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_ADIRS_2</NODE_ID>
                             <ID>2</ID>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_ADIRS_3</NODE_ID>
                             <ID>3</ID>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
 
                     <Component ID="EVAC">
@@ -1924,7 +2016,7 @@
                             <LEFT_SINGLE_CODE>(L:A32NX_EVAC_CAPT_TOGGLE) ! (>L:A32NX_EVAC_CAPT_TOGGLE)</LEFT_SINGLE_CODE>
                         </UseTemplate>
                     </Component>
-                    
+
 
                     <Component ID="EMER_ELEC_PWR">
                         <!-- EMER GEN TEST -->
@@ -1935,7 +2027,7 @@
                             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_EMERELECPWR_GEN_TEST)</LEFT_SINGLE_CODE>
 
                             <TOOLTIPID>Test emergency generator (Inop.)</TOOLTIPID>
-                            
+
                             <MOMENTARY/>
                         </UseTemplate>
 
@@ -1943,10 +2035,11 @@
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_EMERELECPWR_GEN1</NODE_ID>
                             <TOGGLE_SIMVAR>L:A32NX_EMERELECPWR_GEN1_TOGGLE</TOGGLE_SIMVAR>
-
                             <SEQ1_CODE>(L:A32NX_EMERELECPWR_GEN1_FAULT, Bool)</SEQ1_CODE>
                             <SEQ2_CODE>(L:A32NX_EMERELECPWR_GEN1_TOGGLE, Bool) !</SEQ2_CODE>
-
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                             <TOOLTIPID>%((L:A32NX_EMERELECPWR_GEN1_TOGGLE, Bool))%{if}Turn OFF gen 1 line%{else}Turn ON gen 1 line%{end}</TOOLTIPID>
                         </UseTemplate>
 
@@ -1955,6 +2048,9 @@
                             <NODE_ID>PUSH_OVHD_EMERELECPWR_RAT</NODE_ID>
                             <SEQ1_EMISSIVE_CODE>(L:A32NX_EMERELECPWR_RAT_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
                             <SEQ2_EMISSIVE_CODE>1 ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                             <TOOLTIPID>%((L:A32NX_EMERELECPWR_RAT_FAULT, Bool))%{if}RAT and emer gen FAULT%{else}RAT and emer gen NORMAL%{end}</TOOLTIPID>
                             <DUMMY_BUTTON/>
                         </UseTemplate>
@@ -1965,38 +2061,33 @@
                             <LOCK_NODE_ID>LOCK_OVHD_EMERELECPWR_MANON</LOCK_NODE_ID>
                             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_EMERELECPWR_MAN_ON)</LEFT_SINGLE_CODE>
                             <TOOLTIPID>%((L:A32NX_EMERELECPWR_MAN_ON, Bool))%{if}Ram air turbine deployed (Inop.)%{else}Deploy ram air turbine (Inop.)%{end}</TOOLTIPID>
-                            <MOMENTARY/>                       
+                            <MOMENTARY/>
                         </UseTemplate>
                     </Component>
-
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
-                        <BLOCK_SEQ1>1</BLOCK_SEQ1>
-                    </UseTemplate>
                 </Component>
 
                 <Component ID="Center_Column">
                     <!-- ENG 1 PUMP -->
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_ENG1PUMP</NODE_ID>
-
                         <TOGGLE_SIMVAR>L:A32NX_HYD_ENG1PUMP_TOGGLE</TOGGLE_SIMVAR>
-
                         <SEQ1_CODE>(L:A32NX_HYD_ENG1PUMP_FAULT, Bool)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_HYD_ENG1PUMP_TOGGLE, Bool) !</SEQ2_CODE>
-
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_HYD_ENG1PUMP_TOGGLE, Bool))%{if}Turn OFF eng 1 hyd pump%{else}Turn ON eng 1 hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
 
                     <!-- ENG 2 PUMP -->
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_ENG2PUMP</NODE_ID>
-
                         <TOGGLE_SIMVAR>L:A32NX_HYD_ENG2PUMP_TOGGLE</TOGGLE_SIMVAR>
-
                         <SEQ1_CODE>(L:A32NX_HYD_ENG2PUMP_FAULT, Bool)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_HYD_ENG2PUMP_TOGGLE, Bool) !</SEQ2_CODE>
-
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_HYD_ENG2PUMP_TOGGLE, Bool))%{if}Turn OFF eng 2 hyd pump%{else}Turn ON eng 2 hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
 
@@ -2014,10 +2105,11 @@
                         <NODE_ID>PUSH_OVHD_HYD_ELECPUMP</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_ELECPUMP</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_HYD_ELECPUMP_TOGGLE</TOGGLE_SIMVAR>
-
                         <SEQ1_CODE>(L:A32NX_HYD_ELECPUMP_FAULT, Bool)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_HYD_ELECPUMP_TOGGLE, Bool) !</SEQ2_CODE>
-
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_HYD_ELECPUMP_TOGGLE, Bool))%{if}Turn OFF elec hyd pump%{else}Turn ON elec hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
 
@@ -2025,10 +2117,11 @@
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_PTU</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_HYD_PTU_TOGGLE</TOGGLE_SIMVAR>
-
                         <SEQ1_CODE>(L:A32NX_HYD_PTU_FAULT, Bool)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_HYD_PTU_TOGGLE, Bool) !</SEQ2_CODE>
-
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_HYD_PTU_TOGGLE, Bool))%{if}Turn OFF PTU%{else}Turn ON PTU%{end}</TOOLTIPID>
                     </UseTemplate>
 
@@ -2036,12 +2129,12 @@
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_HYD_ELECPUMPY</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_HYD_ELECPUMPY_TOGGLE</TOGGLE_SIMVAR>
-
                         <SEQ1_CODE>(L:A32NX_HYD_ELECPUMPY_FAULT, Bool)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_HYD_ELECPUMPY_TOGGLE, Bool) !</SEQ2_CODE>
-
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <MOMENTARY />
-
                         <TOOLTIPID>%((L:A32NX_HYD_ELECPUMPY_TOGGLE, Bool))%{if}Turn ON yellow elec hyd pump%{else}Turn OFF yellow elec hyd pump%{end}</TOOLTIPID>
                     </UseTemplate>
 
@@ -2049,10 +2142,11 @@
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_AIRCOND_PACK1</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AIRCOND_PACK1_TOGGLE</TOGGLE_SIMVAR>
-
                         <SEQ1_CODE>(L:A32NX_AIRCOND_PACK1_FAULT, Bool)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_AIRCOND_PACK1_TOGGLE, Bool) !</SEQ2_CODE>
-
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_AIRCOND_PACK1_TOGGLE, Bool))%{if}Turn OFF pack 1%{else}Turn ON pack 1%{end}</TOOLTIPID>
                     </UseTemplate>
 
@@ -2060,10 +2154,11 @@
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_AIRCOND_PACK2</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AIRCOND_PACK2_TOGGLE</TOGGLE_SIMVAR>
-
                         <SEQ1_CODE>(L:A32NX_AIRCOND_PACK2_FAULT, Bool)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_AIRCOND_PACK2_TOGGLE, Bool) !</SEQ2_CODE>
-
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_AIRCOND_PACK2_TOGGLE, Bool))%{if}Turn OFF pack 2%{else}Turn ON pack 2%{end}</TOOLTIPID>
                     </UseTemplate>
 
@@ -2071,10 +2166,11 @@
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_AIRCOND_HOTAIR</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AIRCOND_HOTAIR_TOGGLE</TOGGLE_SIMVAR>
-
                         <SEQ1_CODE>(L:A32NX_AIRCOND_HOTAIR_FAULT, Bool)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_AIRCOND_HOTAIR_TOGGLE, Bool) !</SEQ2_CODE>
-
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_AIRCOND_HOTAIR_TOGGLE, Bool))%{if}Turn OFF hot air%{else}Turn ON hot air%{end}</TOOLTIPID>
                     </UseTemplate>
 
@@ -2083,10 +2179,12 @@
                         <NODE_ID>PUSH_OVHD_AIRCOND_RAMAIR</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_AIRCOND_RAMAIR</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AIRCOND_RAMAIR_TOGGLE</TOGGLE_SIMVAR>
-
                         <SEQ1_CODE>(L:A32NX_AIRCOND_RAMAIR_FAULT, Bool)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_AIRCOND_RAMAIR_TOGGLE, Bool) !</SEQ2_CODE>
-
+                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_AIRCOND_RAMAIR_TOGGLE, Bool))%{if}Turn OFF ram air%{else}Turn ON ram air%{end}</TOOLTIPID>
                     </UseTemplate>
 
@@ -2136,24 +2234,36 @@
                         </LEFT_SINGLE_CODE>
                         <SEQ1_CODE>(L:A32NX_OXYGEN_TMR_RESET_FAULT, Bool)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_OXYGEN_TMR_RESET, Bool)</SEQ2_CODE>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>Reset oxygen timer</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_SVGEINT</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_SVGEINT_OVRD_ON</TOGGLE_SIMVAR>
-        
                         <SEQ2_CODE>(L:A32NX_SVGEINT_OVRD_ON, Bool)</SEQ2_CODE>
+                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_SVGEINT_OVRD_ON, Bool))%{if}Turn OFF SVGE INT OVRD (Inop.)%{else}Turn ON SVGE INT OVRD (Inop.)%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_AVIONICS_COMPLT</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AVIONICS_COMPLT_ON</TOGGLE_SIMVAR>
-
                         <SEQ2_CODE>(L:A32NX_AVIONICS_COMPLT_ON, Bool)</SEQ2_CODE>
+                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <TOOLTIPID>%((L:A32NX_AVIONICS_COMPLT_ON, Bool))%{if}Set avionics comp lt to AUTO (Inop.)%{else}Turn ON avionics comp lt (Inop.)%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_OVHD_CARGOVENT_AFTISOL</NODE_ID>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD1</NODE_ID>
@@ -2169,21 +2279,21 @@
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_DLS_SELCTL</NODE_ID>
                             <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
-            
+
                             <TOOLTIPID>Select/Control (Inop.)</TOOLTIPID>
                             <MOMENTARY/>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_DLS_PREV</NODE_ID>
                             <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
-            
+
                             <TOOLTIPID>Previous (Inop.)</TOOLTIPID>
                             <MOMENTARY/>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_DLS_NEXT</NODE_ID>
                             <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
-            
+
                             <TOOLTIPID>Next (Inop.)</TOOLTIPID>
                             <MOMENTARY/>
                         </UseTemplate>
@@ -2228,36 +2338,36 @@
                         <!-- BLOWER -->
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_VENTILATION_BLOWER</NODE_ID>
-
                             <TOGGLE_SIMVAR>L:A32NX_VENTILATION_BLOWER_TOGGLE</TOGGLE_SIMVAR>
-
                             <SEQ1_CODE>(L:A32NX_VENTILATION_BLOWER_FAULT, Bool)</SEQ1_CODE>
                             <SEQ2_CODE>(L:A32NX_VENTILATION_BLOWER_TOGGLE, Bool) !</SEQ2_CODE>
-
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                             <TOOLTIPID>%((L:A32NX_VENTILATION_BLOWER_TOGGLE, Bool))%{if}Turn OFF blower fan%{else}Turn blower fan to AUTO%{end}</TOOLTIPID>
                         </UseTemplate>
 
                         <!-- EXTRACT -->
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_VENTILATION_EXTRACT</NODE_ID>
-
                             <TOGGLE_SIMVAR>L:A32NX_VENTILATION_EXTRACT_TOGGLE</TOGGLE_SIMVAR>
-
                             <SEQ1_CODE>(L:A32NX_VENTILATION_EXTRACT_FAULT, Bool)</SEQ1_CODE>
                             <SEQ2_CODE>(L:A32NX_VENTILATION_EXTRACT_TOGGLE, Bool) !</SEQ2_CODE>
-
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                             <TOOLTIPID>%((L:A32NX_VENTILATION_EXTRACT_TOGGLE, Bool))%{if}Turn OFF extraction fan%{else}Turn extraction fan to AUTO%{end}</TOOLTIPID>
                         </UseTemplate>
 
                         <!-- CAB FANS -->
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_VENTILATION_CABFANS</NODE_ID>
-
                             <TOGGLE_SIMVAR>L:A32NX_VENTILATION_CABFANS_TOGGLE</TOGGLE_SIMVAR>
-
-                            <DISABLE_SEQ1 />
                             <SEQ2_CODE>(L:A32NX_VENTILATION_CABFANS_TOGGLE, Bool) !</SEQ2_CODE>
-
+                            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                             <TOOLTIPID>%((L:A32NX_VENTILATION_CABFANS_TOGGLE, Bool))%{if}Turn OFF cabin fans%{else}Turn ON cabin fans%{end}</TOOLTIPID>
                         </UseTemplate>
                     </Component>
@@ -2268,12 +2378,12 @@
                         <UseTemplate Name="FBW_Covered_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_ENGMANSTART_1</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_ENGMANSTART_1</LOCK_NODE_ID>
-
                             <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART1_TOGGLE</TOGGLE_SIMVAR>
-
-                            <DISABLE_SEQ1 />
                             <SEQ2_CODE>(L:A32NX_ENGMANSTART1_TOGGLE, Bool)</SEQ2_CODE>
-
+                            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                             <TOOLTIPID>%((L:A32NX_ENGMANSTART1_TOGGLE, Bool))%{if}Turn OFF engine 1 manual start%{else}Turn ON engine 1 manual start%{end}</TOOLTIPID>
                         </UseTemplate>
 
@@ -2281,12 +2391,12 @@
                         <UseTemplate Name="FBW_Covered_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_ENGMANSTART_2</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_ENGMANSTART_2</LOCK_NODE_ID>
-
                             <TOGGLE_SIMVAR>L:A32NX_ENGMANSTART2_TOGGLE</TOGGLE_SIMVAR>
-
-                            <DISABLE_SEQ1 />
                             <SEQ2_CODE>(L:A32NX_ENGMANSTART2_TOGGLE, Bool)</SEQ2_CODE>
-
+                            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                             <TOOLTIPID>%((L:A32NX_ENGMANSTART2_TOGGLE, Bool))%{if}Turn OFF engine 2 manual start%{else}Turn ON engine 2 manual start%{end}</TOOLTIPID>
                         </UseTemplate>
                     </Component>
@@ -2297,12 +2407,20 @@
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_ENGN1MODE_1</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_ENGN1MODE_1</LOCK_NODE_ID>
+                            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
 
                         <!-- 2 SHOULD NOT BE USED; IS NOT IN REAL AIRCRAFT-->
                         <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                             <NODE_ID>PUSH_OVHD_ENGN1MODE_2</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_ENGN1MODE_2</LOCK_NODE_ID>
+                            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
                     </Component>
 
@@ -2404,16 +2522,29 @@
                     <UseTemplate Name="FBW_Airbus_AntiIce_Engine">
                         <NODE_ID>PUSH_OVHD_ANTIICE_ENG1</NODE_ID>
                         <ID>1</ID>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_AntiIce_Engine">
                         <NODE_ID>PUSH_OVHD_ANTIICE_ENG2</NODE_ID>
                         <ID>2</ID>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_AntiIce_Wing">
                         <NODE_ID>PUSH_OVHD_ANTIICE_WING</NODE_ID>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_Probes_Window_Heat">
                         <NODE_ID>PUSH_OVHD_PROBESWINDOW</NODE_ID>
+                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
                 </Component>
 
@@ -2461,10 +2592,16 @@
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT1</NODE_ID>
                             <AGENT_ID>1</AGENT_ID>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT2</NODE_ID>
                             <AGENT_ID>2</AGENT_ID>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_TEST_LIGHTS">
                             <NODE_ID>PUSH_ENGINES_1</NODE_ID>
@@ -2491,10 +2628,16 @@
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
                             <AGENT_ID>1</AGENT_ID>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT2</NODE_ID>
                             <AGENT_ID>2</AGENT_ID>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_TEST_LIGHTS">
                             <NODE_ID>PUSH_ENGINES_2</NODE_ID>
@@ -2521,6 +2664,9 @@
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
                             <AGENT_ID>1</AGENT_ID>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                             <NODE_ID>PUSH_OVHD_FIRE_APU</NODE_ID>
@@ -2577,9 +2723,9 @@
                                 <NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_TERR_OFF</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:A32NX_GPWS_TERR_OFF, Bool) !</DOWN_CODE>
-
-                                <SEQ1_CODE>(L:A32NX_GPWS_TERR_FAULT, Bool)</SEQ1_CODE>
-
+                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                                 <TOOLTIPID>%((L:A32NX_GPWS_TERR_OFF, Bool))%{if}(Inop.) Turn ON GPWS TERR%{else}(Inop.) Turn OFF GPWS TERR%{end}</TOOLTIPID>
                             </UseTemplate>
 
@@ -2587,9 +2733,9 @@
                                 <NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_SYS_OFF</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:A32NX_GPWS_SYS_OFF, Bool) !</DOWN_CODE>
-
-                                <SEQ1_CODE>(L:A32NX_GPWS_SYS_FAULT, Bool)</SEQ1_CODE>
-
+                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                                 <TOOLTIPID>%((L:A32NX_GPWS_SYS_OFF, Bool))%{if}Turn ON GPWS SYS%{else}Turn OFF GPWS SYS%{end}</TOOLTIPID>
                             </UseTemplate>
 
@@ -2597,9 +2743,10 @@
                                 <NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_GS_OFF</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:A32NX_GPWS_GS_OFF, Bool) !</DOWN_CODE>
-
-                                <DISABLE_SEQ1/>
-
+                                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                                 <TOOLTIPID>%((L:A32NX_GPWS_GS_OFF, Bool))%{if}Turn ON GPWS G/S mode%{else}Turn OFF GPWS G/S mode%{end}</TOOLTIPID>
                             </UseTemplate>
 
@@ -2608,9 +2755,10 @@
                                 <PART_ID>GPWS_Flap</PART_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_FLAP_OFF</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:A32NX_GPWS_FLAP_OFF, Bool) !</DOWN_CODE>
-
-                                <DISABLE_SEQ1/>
-
+                                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                                 <TOOLTIPID>%((L:A32NX_GPWS_FLAP_OFF, Bool))%{if}Turn ON GPWS flap mode%{else}Turn OFF GPWS flap mode%{end}</TOOLTIPID>
                             </UseTemplate>
 
@@ -2620,19 +2768,23 @@
                                 <PART_ID>GPWS_Flap3</PART_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_GPWS_FLAPS3</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:A32NX_GPWS_FLAPS3, Bool)</DOWN_CODE>
-
-                                <DISABLE_SEQ1 />
-
+                                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                                 <TOOLTIPID>%((L:A32NX_GPWS_FLAPS3, Bool))%{if}Switch landing flaps to FULL%{else}Switch landing flaps to 3%{end}</TOOLTIPID>
                             </UseTemplate>
                         </Component>
 
                         <Component ID="RCDR">
-                             <UseTemplate Name="FBW_Push_Toggle">
-                             <NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
-                             <TOGGLE_SIMVAR>L:A32NX_RCDR_GROUND_CONTROL_ON</TOGGLE_SIMVAR>
-            
+                            <UseTemplate Name="FBW_Push_Toggle">
+                                <NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
+                                <TOGGLE_SIMVAR>L:A32NX_RCDR_GROUND_CONTROL_ON</TOGGLE_SIMVAR>
                                 <SEQ2_CODE>(L:A32NX_RCDR_GROUND_CONTROL_ON, Bool)</SEQ2_CODE>
+                                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                                 <TOOLTIPID>%((L:A32NX_RCDR_GROUND_CONTROL_ON, Bool))%{if}Set Ground Control to AUTO (Inop.)%{else}Turn ON Ground Control (Inop.)%{end}</TOOLTIPID>
                             </UseTemplate>
                             <UseTemplate Name="FBW_Push_Held">
@@ -2650,29 +2802,33 @@
                             <UseTemplate Name="FBW_Covered_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_OXYGEN_RATMANON</NODE_ID>
                                 <LOCK_NODE_ID>LOCK_OVHD_OXYGEN_RATMANON</LOCK_NODE_ID>
-                
+
                                 <LEFT_SINGLE_CODE>
                                 1 (&gt;L:A32NX_OXYGEN_MASKS_DEPLOYED)
                                 1 (&gt;L:A32NX_OXYGEN_PASSENGER_LIGHT_ON)</LEFT_SINGLE_CODE>
                             <TOOLTIPID>%((L:A32NX_OXYGEN_MASKS_DEPLOYED, Bool))%{if}Cabin oxygen masks deployed%{else}Deploy cabin oxygen masks%{end}</TOOLTIPID>
                             <MOMENTARY/>
                             </UseTemplate>
-                            
+
                             <UseTemplate Name="FBW_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
                                 <SEQ1_CODE>(L:A32NX_OXYGEN_PASSENGER_LIGHT_ON, Bool)</SEQ1_CODE>
+                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                                 <TOOLTIPID>Oxygen mask doors annunciator</TOOLTIPID>
                                 <DUMMY_BUTTON/>
                             </UseTemplate>
-                        
+
                             <UseTemplate Name="FBW_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
                                 <PART_ID>Crew_Supply</PART_ID>
                                 <TOGGLE_SIMVAR>L:PUSH_OVHD_OXYGEN_CREW</TOGGLE_SIMVAR>
                                 <DOWN_CODE>(L:PUSH_OVHD_OXYGEN_CREW, Bool) !</DOWN_CODE>
-
-                                <DISABLE_SEQ1/>
-
+                                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                                 <TOOLTIPID>Crew oxygen supply</TOOLTIPID>
                             </UseTemplate>
                         </Component>
@@ -2701,11 +2857,14 @@
                                 <TOOLTIPID>%((L:A32NX_CALLS_EMER_ON, Bool))%{if}Turn OFF emergency call%{else}Turn ON emergency call%{end}</TOOLTIPID>
                                 <SEQ1_CODE>(L:A32NX_CALLS_EMER_ON, Bool)</SEQ1_CODE>
                                 <SEQ2_CODE>0</SEQ2_CODE>
+                                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                                <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                                <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                             </UseTemplate>
                         </Component>
                     </Component>
                 </Component>
-                
+
                 <Component ID="Right_Pedestal_Misc">
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_PANELCS_AIDS</NODE_ID>
@@ -2759,8 +2918,10 @@
                         <NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_BLUEPUMPOVRD</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_BLUEPUMP_OVRD</TOGGLE_SIMVAR>
-
-                        <INVERTED/>
+                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
 
                     <!-- "HYD LEAK MEASUREMENT VALVES" -->
@@ -2771,7 +2932,10 @@
                         <NODE_ID>PUSH_OVHD_HYD_G</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_G</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_G</TOGGLE_SIMVAR>
-
+                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <INVERTED/>
                     </UseTemplate>
 
@@ -2781,7 +2945,10 @@
                         <NODE_ID>PUSH_OVHD_HYD_B</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_B</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_B</TOGGLE_SIMVAR>
-
+                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <INVERTED/>
                     </UseTemplate>
 
@@ -2791,7 +2958,10 @@
                         <NODE_ID>PUSH_OVHD_HYD_Y</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_HYD_Y</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y</TOGGLE_SIMVAR>
-
+                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                         <INVERTED/>
                     </UseTemplate>
 
@@ -2803,6 +2973,10 @@
                         <NODE_ID>PUSH_OVHD_ENG_FADEC2</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC2</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_1</TOGGLE_SIMVAR>
+                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
 
                     <!-- 2 -->
@@ -2811,6 +2985,10 @@
                         <NODE_ID>PUSH_OVHD_ENG_FADEC1</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC1</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_2</TOGGLE_SIMVAR>
+                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
 
                     <!-- APU AUTO EXTING TEST-->
@@ -2820,6 +2998,9 @@
                         <TOGGLE_SIMVAR>L:A32NX_APU_AUTOEXITING_TEST_ON</TOGGLE_SIMVAR>
                          <SEQ1_CODE>(L:A32NX_APU_AUTOEXITING_TEST_OK)</SEQ1_CODE>
                          <SEQ2_CODE>(L:A32NX_APU_AUTOEXITING_TEST_ON)</SEQ2_CODE>
+                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                         <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                          <TOOLTIPID>Test APU autoexiting (Inop.)</TOOLTIPID>
                     </UseTemplate>
 
@@ -2855,9 +3036,11 @@
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_CAB_PRESS_MODE_MAN</TOGGLE_SIMVAR>
-
                         <SEQ1_CODE>(L:A32NX_CAB_PRESS_SYS_FAULT)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_CAB_PRESS_MODE_MAN)</SEQ2_CODE>
+                        <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                        <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Covered_Push_Toggle">
