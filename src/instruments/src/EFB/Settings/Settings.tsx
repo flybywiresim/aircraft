@@ -138,21 +138,21 @@ const SoundSettings: React.FC = () => {
                     <span className="text-lg text-gray-300">Exterior Master Volume</span>
                     <div className="flex flex-row items-center">
                         <span className="text-base pr-3">{exteriorVolume}</span>
-                        <Slider value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} className="w-60" />
+                        <Slider className="w-60" value={exteriorVolume + 50} onInput={(value) => setExteriorVolume(value - 50)} />
                     </div>
                 </div>
                 <div className="mb-4 pt-3 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Engine Interior Volume</span>
                     <div className="flex flex-row items-center">
                         <span className="text-base pr-3">{engineVolume}</span>
-                        <Slider value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} className="w-60" />
+                        <Slider className="w-60" value={engineVolume + 50} onInput={(value) => setEngineVolume(value - 50)} />
                     </div>
                 </div>
                 <div className="pt-3 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Wind Interior Volume</span>
                     <div className="flex flex-row items-center">
                         <span className="text-base pr-3">{windVolume}</span>
-                        <Slider value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} className="w-60" />
+                        <Slider className="w-60" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
                     </div>
                 </div>
             </div>
@@ -160,14 +160,18 @@ const SoundSettings: React.FC = () => {
     );
 };
 
-const FlyPadSettings: React.FC = () => (
-    <div className="bg-gray-800 divide-y divide-gray-700 flex flex-col rounded-xl px-6 py-4 shadow-lg">
-        <div className="flex flex-row justify-between items-center">
-            <span className="text-lg text-gray-300">Brightness</span>
-            <Slider value={90} onInput={() => {}} className="w-60" />
+const FlyPadSettings: React.FC = () => {
+    const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
+
+    return (
+        <div className="bg-gray-800 divide-y divide-gray-700 flex flex-col rounded-xl px-6 py-4 shadow-lg">
+            <div className="flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Brightness</span>
+                <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const Settings: React.FC = () => (
     <div className="w-full h-full flex flex-col">
@@ -183,10 +187,8 @@ const Settings: React.FC = () => (
                 <h1 className="text-2xl text-white mb-4">Audio Settings</h1>
                 <SoundSettings />
 
-                <div className="opacity-40">
-                    <h1 className="text-2xl text-white mt-5 mb-4">flyPad Settings</h1>
-                    <FlyPadSettings />
-                </div>
+                <h1 className="text-2xl text-white mt-5 mb-4">flyPad Settings</h1>
+                <FlyPadSettings />
 
                 <h1 className="text-4xl text-center text-gray-700 pt-10">flyPadOS</h1>
                 <h1 className="text-xl text-center text-gray-600 py-2">vAlpha</h1>
