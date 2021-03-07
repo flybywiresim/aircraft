@@ -12,7 +12,7 @@ class McduMessage {
      */
 
     get text() {
-        return this.cText();
+        return this.cText;
     }
 
     /**
