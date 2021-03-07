@@ -1122,17 +1122,17 @@ impl History {
     }
 
     //Sets initialisation values of each data before first step
-    pub fn init(&mut self, startTime: f64, values: Vec<f64>) {
-        self.timeVector.push(startTime);
+    pub fn init(&mut self, start_time: f64, values: Vec<f64>) {
+        self.timeVector.push(start_time);
         for idx in 0..(values.len()) {
             self.dataVector.push(vec![values[idx]]);
         }
     }
 
     //Updates all values and time vector
-    pub fn update(&mut self, deltaTime: f64, values: Vec<f64>) {
+    pub fn update(&mut self, delta_time: f64, values: Vec<f64>) {
         self.timeVector
-            .push(self.timeVector.last().unwrap() + deltaTime);
+            .push(self.timeVector.last().unwrap() + delta_time);
         self.pushData(values);
     }
 
