@@ -11,6 +11,7 @@ jobs:
     env:
       RELEASE_ZIP_NAME: A32NX-stable.zip
       BUILD_DIR_NAME: stable
+      CDN_DIR: /flybywiresim/addons/a32nx/stable/
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
@@ -31,7 +32,16 @@ jobs:
           asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }}
           asset_name: ${{ env.RELEASE_ZIP_NAME }}
           asset_content_type: application/zip
-      - name: Upload to CDN
+      - name: Upload to Bunny CDN
+        uses: sebastianpopp/ftp-action@releases/v2
+        with:
+          host: ${{ secrets.BUNNY_BUCKET_HOST }}
+          user: ${{ secrets.BUNNY_BUCKET_USERNAME }}
+          password: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
+          localDir: ./build-modules/
+          remoteDir: ${{ env.CDN_DIR }}
+          options: "--delete --transfer-all --verbose"
+      - name: Upload to DigitalOcean CDN
         uses: LibreTexts/do-space-sync-action@master
         with:
           args: --acl public-read

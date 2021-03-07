@@ -2,3 +2,4 @@
 A32NX/html_ui/Pages/A32NX_Core/math.js
 build.*.js
 buildSrc/*
+src/instruments/ecam-page-template/template.js

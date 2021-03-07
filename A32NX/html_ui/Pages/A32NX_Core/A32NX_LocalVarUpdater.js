@@ -3,6 +3,7 @@
 // The selector calculates the new value based on other simvars and some logic.
 // The updater compares the new value from the selector with the current value from the local simvar,
 // and then updates the local simvar if it changed.
+
 const FLAPS_IN_MOTION_MIN_DELTA = 0.1;
 
 class A32NX_LocalVarUpdater {
@@ -11,7 +12,6 @@ class A32NX_LocalVarUpdater {
         this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
         this.lastUpdatePackOne = NaN;
         this.updatePackCooldown = 0;
-        this.updatePackDelay = 0;
         this.isPacksOneSupplying = false;
         // track which compartment has gotten temperature initialization
         this.initializedCabinTemp = {
@@ -71,6 +71,11 @@ class A32NX_LocalVarUpdater {
                 varName: "L:32NX_PACKS_1_IS_SUPPLYING",
                 type: "Bool",
                 selector: this._isPacksOneSupplying.bind(this)
+            },
+            {
+                varName: "L:A32NX_SLIDES_ARMED",
+                type: "Bool",
+                selector: this._areSlidesArmed.bind(this)
             }
             // New updaters go here...
         ];
@@ -179,26 +184,26 @@ class A32NX_LocalVarUpdater {
         const isEngineTwoDelivering = isEngineTwoRunning && SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool");
 
         const isXBleedOpen = xBleedPos === 2 || (xBleedPos === 1 && (isApuDelivering || engineModeSelector !== 1));
-        const packOneHasAir = this._isPackOpen(engineModeSelector, isEngineOneRunning || isEngineTwoRunning) &&
-            (isApuDelivering || isEngineOneDelivering || (isEngineTwoDelivering && isXBleedOpen));
+
+        /**
+         * Whether engine mode selector is set to norm or both engines are running -> return packOneHasSupply state; otherwise return false
+         */
+        const packOneHasAir = engineModeSelector === 1 || (isEngineOneRunning && isEngineTwoRunning) ? isApuDelivering || isEngineOneDelivering || (isEngineTwoDelivering && isXBleedOpen) : false;
 
         this.isPacksOneSupplying = packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool");
 
         return this.isPacksOneSupplying;
     }
 
-    _isPackOpen(_engineModeSelector, _isAnEngineOn) {
-        if (_engineModeSelector === 1 || !_isAnEngineOn) {
-            this.updatePackDelay = 0;
-            return true;
-        }
+    _areSlidesArmed() {
 
-        if (this.updatePackDelay > 30) {
-            return true;
-        }
-
-        this.updatePackDelay += 1;
-        return false;
+        return !SimVar.GetSimVarValue('SIM ON GROUND', 'bool') ||
+        SimVar.GetSimVarValue('ON ANY RUNWAY', 'bool') ||
+        (SimVar.GetSimVarValue('LIGHT BEACON ON', 'bool') &&
+            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 5 && // Pilot side front door for ramp/stairs
+            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 5 && // Rear door, FO side for catering
+            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') < 5 // Cargo door FO side
+        );
     }
 
     // New selectors go here...

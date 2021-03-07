@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ReactDOM from 'react-dom';
 import { useState, useEffect } from 'react';
 import Efb from './Efb.tsx';
-import {
-    renderTarget, getSimVar, setSimVar,
-} from '../util.mjs';
+import { getSimVar, setSimVar } from '../util.js';
 import logo from './Assets/fbw-logo.svg';
 
+import './Assets/Reset.scss';
 import './Assets/Efb.scss';
+import { render } from '../Common/index.tsx';
+import { readSettingsFromPersistentStorage } from './Settings/sync.ts';
 
 function ScreenLoading() {
     return (
@@ -78,4 +78,6 @@ function EFBLoad() {
     return content;
 }
 
-ReactDOM.render(<EFBLoad />, renderTarget);
+readSettingsFromPersistentStorage();
+
+render(<EFBLoad />);

@@ -114,7 +114,6 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
 			</div>
             </div>
         </div>
-    );
-};
-
+	);
+}
 export default LoadSheetWidget;

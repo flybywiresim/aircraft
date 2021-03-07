@@ -423,7 +423,7 @@ var A320_Neo_UpperECAM;
                                         message: "APU",
                                         action: "START",
                                         isCompleted: () => {
-                                            return this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool") === 1;
+                                            return this.getCachedSimVar("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool") === 1;
                                         }
                                     },
                                     {
@@ -831,13 +831,65 @@ var A320_Neo_UpperECAM;
                                 isActive: () => SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool"),
                                 actions: [
                                     {
+                                        style: "remark",
+                                        message: "IF PERF PERMITS",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
                                         style: "action",
                                         message: "PARK BRK",
-                                        action: "PREFER CHOCKS"
+                                        action: "PREFER CHOCKS",
+                                        isCompleted: () => {
+                                            return !this.isInFlightPhase(1, 10);
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "MAX SPEED",
+                                        action: "250/.60",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "BRK FAN",
+                                        action: "ON",
+                                        isCompleted: () => {
+                                            return !(this.isInFlightPhase(1, 2) && !SimVar.GetSimVarValue("L:A32NX_BRAKE_FAN", "Bool"));
+                                        },
                                     },
                                     {
                                         style: "cyan",
-                                        message: "&nbsp;-DELAY T.O FOR COOL"
+                                        message: "&nbsp;-DELAY T.O FOR COOL",
+                                        isCompleted: () => {
+                                            return !Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "L/G",
+                                        action: "DN FOR COOL",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
+                                        style: "remark",
+                                        message: "FOR L/G RETRACTION",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "MAX SPEED",
+                                        action: "220/.54",
+                                        isCompleted: () => {
+                                            return Simplane.getIsGrounded();
+                                        }
                                     }
                                 ]
                             },
@@ -949,11 +1001,12 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "TCAS STBY",
                                 level: 2,
-                                inopSystems: [
-                                    "TCAS"
-                                ],
                                 flightPhasesInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
-                                isActive: () => this.getCachedSimVar("L:A32NX_SWITCH_TCAS_Position", "Enum") == 0,
+                                isActive: () => (
+                                    this.fwcFlightPhase === 6 &&
+                                    this.getCachedSimVar("L:A32NX_SWITCH_TCAS_Position", "Enum") === 0 &&
+                                    this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") === 2
+                                ),
                             }
                         ]
                     },
@@ -1030,7 +1083,7 @@ var A320_Neo_UpperECAM;
                                         style: "action",
                                         message: "MASTER SW",
                                         action: "OFF",
-                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool"),
+                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool"),
                                     },
                                 ]
                             },
@@ -1044,7 +1097,7 @@ var A320_Neo_UpperECAM;
                                         style: "action",
                                         message: "MASTER SW",
                                         action: "OFF",
-                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_APU_MASTER_SW_ACTIVATED", "Bool"),
+                                        isCompleted: () => !this.getCachedSimVar("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool"),
                                     },
                                 ]
                             }
@@ -1246,9 +1299,7 @@ var A320_Neo_UpperECAM;
                         style: () => (
                             this.isInFlightPhase(6)
                         ) ? "InfoCaution" : "InfoIndication",
-                        isActive: () => {
-                            return (SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Position", "Enum") == 0 || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") < 2));
-                        }
+                        isActive: () => SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Position", "Enum") === 0,
                     },
                     {
                         message: "COMPANY MSG",
@@ -1278,14 +1329,14 @@ var A320_Neo_UpperECAM;
                         message: "APU AVAIL",
                         isActive: () => (
                             !SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") &&
-                                this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool")
+                                this.getCachedSimVar("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool")
                         )
                     },
                     {
                         message: "APU BLEED",
                         isActive: () => (
                             SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool") &&
-                                this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool")
+                                this.getCachedSimVar("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool")
                         )
                     },
                     {
@@ -1294,6 +1345,12 @@ var A320_Neo_UpperECAM;
                             !SimVar.GetSimVarValue("L:LANDING_1_Retracted", "Bool") ||
                             !SimVar.GetSimVarValue("L:LANDING_2_Retracted", "Bool")
                         ),
+                    },
+                    {
+                        message: "BRK FAN",
+                        isActive: () => {
+                            return this.getCachedSimVar("L:A32NX_BRAKE_FAN", "Bool");
+                        }
                     },
                     {
                         message: "SWITCHG PNL",
@@ -1509,7 +1566,7 @@ var A320_Neo_UpperECAM;
                 const eng1active = this.getCachedSimVar("ENG COMBUSTION:1", "Bool");
                 const eng2active = this.getCachedSimVar("ENG COMBUSTION:2", "Bool");
                 const xBleedPos = this.getCachedSimVar("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
-                const engBleedAndPackActive = xBleedPos === 2 || (xBleedPos === 1 && this.getCachedSimVar("L:A32NX_APU_AVAILABLE", "Bool") === 1 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool")) ?
+                const engBleedAndPackActive = xBleedPos === 2 || (xBleedPos === 1 && this.getCachedSimVar("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool") === 1 && SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool")) ?
                     (this.getCachedSimVar("BLEED AIR ENGINE:1", "Bool") || this.getCachedSimVar("BLEED AIR ENGINE:2", "Bool"))
                     && ((this.getCachedSimVar("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && eng1active) || (this.getCachedSimVar("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && eng2active))
                     :

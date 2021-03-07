@@ -17,7 +17,7 @@ The following aircraft configuration is currently simulated:
  Model      A320-251N
  Engine     LEAP 1A-26
  FMGS       Honeywell Pegasus II
- FWC Std.   H2F9E
+ FWC Std.   H2F9C
  ```
 
 Please note that this configuration may change in the future as the A32NX project evolves and changes.
@@ -53,7 +53,7 @@ This has the latest features, but is much more unstable, use at your own risk.
 
 This version is the same as the regular master/development version, but with the WIP custom fly-by-wire system. Expect issues with flight directors/autopilot if you intend to use this version. No support will be provided via Discord.
 
-[Download custom FBW development build here.](https://flybywiresim-packages.nyc3.cdn.digitaloceanspaces.com/vmaster-cfbw/A32NX-master-cfbw.zip)
+[Download custom FBW development build here.](https://api.flybywiresim.com/api/v1/download?url=https://flybywiresim-packages.b-cdn.net/vmaster-cfbw/A32NX-master-cfbw.zip)
 
 [**IMPORTANT:** view warnings and info for the custom FBW build here.](https://github.com/flybywiresim/a32nx/tree/fbw/docs)
 
@@ -100,11 +100,13 @@ See [Contributing.md](.github/Contributing.md)
 
 ## License
 
-The contents of this repository are DUAL LICENSED.
+The original contents of this repository are DUAL LICENSED.
 
-Textual-form source code in this repository is licensed under the GNU General Public License version 3. Artistic assets (including but not limited to images, sound banks, 3D models, and textures) are licensed under [Creative Commons CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+Original textual-form source code in this repository is licensed under the GNU General Public License version 3. Artistic assets (including but not limited to images, sound banks, 3D models, and textures) are licensed under [Creative Commons CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
-Any other works found to be not explicitly covered by the above definitions are all rights reserved to avoid ambiguities at the moment, but we are very permissive about their use if you contact us.
+Any other original works found to be not explicitly covered by the above definitions are all rights reserved to avoid ambiguities at the moment, but we are very permissive about their use if you contact us.
+
+**Microsoft Flight Simulator © Microsoft Corporation. The FlyByWire Simulations A32NX was created under Microsoft's "Game Content Usage Rules" using assets from Microsoft Flight Simulator, and it is not endorsed by or affiliated with Microsoft.**
 
 ## FAQ
 

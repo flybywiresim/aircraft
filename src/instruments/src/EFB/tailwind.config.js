@@ -19,7 +19,7 @@
 'use strict';
 
 module.exports = {
-    purge: ['./**/*.{js,jsx,ts,tsx}', 'a.html'],
+    purge: ['./**/*.{js,jsx,ts,tsx}'],
     darkMode: false, // or 'media' or 'class'
     theme: {
         extend: {
@@ -35,9 +35,7 @@ module.exports = {
                     '50%': { transform: 'rotate(2.5deg)' },
                 },
             },
-            animation: {
-                wiggle: 'wiggle 15s ease-in-out infinite',
-            },
+            animation: { wiggle: 'wiggle 15s ease-in-out infinite' },
             backgroundColor: ['active'],
             textColor: ['active'],
             colors: {
@@ -47,12 +45,12 @@ module.exports = {
                     'light-contrast': '#009da6',
                     'medium': '#006166',
                     'medium-contrast': '#1f2937',
-                    'dark': '#1B2434',
-                    'darker': '#141E30',
+                    'darkish': '#1a2742',
+                    'dark': '#1b2434',
+                    'darker': '#182130',
+                    'darkest': '#0b101a',
                 },
-                gray: {
-                    medium: '#797979',
-                },
+                gray: { medium: '#797979' },
             },
             boxShadow: {
                 'md-dark': '1px 1px 7px 1px rgba(0, 0, 0, 0.2)',
@@ -66,7 +64,11 @@ module.exports = {
         },
     },
     variants: {
-        extend: {},
+        extend: {
+            display: ['last'],
+            margin: ['first', 'last'],
+            padding: ['first', 'last'],
+        },
     },
     plugins: [],
 };
