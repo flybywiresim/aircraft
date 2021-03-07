@@ -15,24 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- @tailwind base;
- @tailwind components;
- @tailwind utilities;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-.loadsheet-container{
+.loadsheet-container {
   height: 700px;
 }
 
 .show-scrollbar::-webkit-scrollbar {
-  @apply w-4;
+  @apply w-8;
   @apply bg-gray-800;
 }
 
 .show-scrollbar::-webkit-scrollbar-track {
   background-color: rgba(255, 255, 255, 0.5);
   @apply rounded-xl;
-  @apply border-solid ;
-  @apply border-6;
+  border-right: 12px solid;
+  border-left: 12px solid;
   @apply border-gray-800;
 }
 
@@ -41,18 +41,17 @@
   @apply bg-blue-light;
 }
 
-
 .font-size-button {
-	width: 50px;
-	height: 50px;
-	@apply text-xl;
-	@apply ml-2;
-	@apply mb-2;
-	@apply text-white;
-	@apply font-medium;
-	@apply bg-blue-light;
-	@apply p-2;
-	@apply rounded-lg;
+  width: 50px;
+  height: 50px;
+  @apply text-xl;
+  @apply ml-2;
+  @apply mb-2;
+  @apply text-white;
+  @apply font-medium;
+  @apply bg-blue-light;
+  @apply p-2;
+  @apply rounded-lg;
 }
 
 .grabbable {

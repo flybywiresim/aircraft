@@ -96,7 +96,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
 				<div className="relative bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4">
 				{props.loadsheet !== 'N/A' ?
 				<>
-					<div className="flex flex-col justify-end absolute bottom-5 right-14">
+					<div className="flex flex-col justify-end absolute bottom-5 right-16">
 						<button onClick={fontIncreaseHandler} className="font-size-button">
 							+
 						</button>
