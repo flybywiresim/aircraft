@@ -4,19 +4,19 @@ class SimBriefApi {
             return fetch(`${SimBriefApi.url}&userid=${userId}`)
                 .then((response) => {
                     if (!response.ok) {
-                        throw (response);
+                        throw new HttpError(response.status);
                     }
 
                     return response.json();
                 });
         } else {
-            throw ("No SimBrief pilot ID provided");
+            throw new Error("No SimBrief pilot ID provided");
         }
     }
 
     static getSimBriefUser(value) {
         if (!value) {
-            throw ("No SimBrief username/pilot ID provided");
+            throw new Error("No SimBrief username/pilot ID provided");
         }
 
         // The SimBrief API will try both username and pilot ID if either one
@@ -30,7 +30,7 @@ class SimBriefApi {
             .then((response) => {
                 // 400 status means request was invalid, probably invalid username so preserve to display error properly
                 if (!response.ok && response.status != 400) {
-                    throw (response);
+                    throw new HttpError(response.status);
                 }
 
                 return response.json();

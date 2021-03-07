@@ -138,7 +138,7 @@ const getSimBriefOfp = (mcdu, updateView) => {
 
     if (!simBriefUserId) {
         mcdu.addNewMessage(NXFictionalMessages.noSimBriefUser);
-        throw ("No SimBrief pilot ID provided");
+        throw new Error("No SimBrief pilot ID provided");
     }
 
     mcdu.simbrief["sendStatus"] = "REQUESTING";
@@ -187,7 +187,7 @@ const getSimBriefOfp = (mcdu, updateView) => {
 
 const getSimBriefUser = (value, mcdu, updateView) => {
     if (!value) {
-        throw ("No SimBrief username/pilot ID provided");
+        throw new Error("No SimBrief username/pilot ID provided");
     }
 
     SimBriefApi.getSimBriefUser(value)
