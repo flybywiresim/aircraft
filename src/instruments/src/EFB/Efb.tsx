@@ -18,6 +18,9 @@
 
 import React from "react";
 
+import { Provider } from 'react-redux';
+import store from './Store';
+
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
 import StatusBar from "./StatusBar/StatusBar";
 import ToolBar from "./ToolBar/ToolBar";
@@ -62,8 +65,6 @@ type EfbState = {
     loadsheet: string,
     costInd: string
 };
-
-document.body.classList.add('darkMode');
 
 class Efb extends React.Component<EfbProps, EfbState> {
     constructor(props: EfbProps) {
@@ -129,21 +130,9 @@ class Efb extends React.Component<EfbProps, EfbState> {
         costInd: '--'
     }
 
-    updateCurrentTime(currentTime: Date) {
-        this.setState({currentTime: currentTime});
-    }
-
-    updateTimeSinceStart(timeSinceStart: string) {
-        this.setState({timeSinceStart: timeSinceStart});
-    }
-
-    fetchSimbriefUsername() {
-        const username = window.localStorage.getItem("SimbriefUsername");
-        if (username === null) {
-            return '';
-        } else {
-            return username;
-        }
+    changeSimbriefUsername = (name: string) => {
+        this.setState({ simbriefUsername: name });
+        window.localStorage.setItem('SimbriefUsername', name);
     }
 
     async fetchSimbriefData() {
@@ -206,9 +195,20 @@ class Efb extends React.Component<EfbProps, EfbState> {
         });
     }
 
-    changeSimbriefUsername = (name: string) => {
-        this.setState({ simbriefUsername: name });
-        window.localStorage.setItem("SimbriefUsername", name);
+    updateCurrentTime(currentTime: Date) {
+        this.setState({currentTime: currentTime});
+    }
+
+    updateTimeSinceStart(timeSinceStart: string) {
+        this.setState({timeSinceStart: timeSinceStart});
+    }
+
+    fetchSimbriefUsername() {
+        const username = window.localStorage.getItem('SimbriefUsername');
+        if (username === null) {
+            return '';
+        }
+        return username;
     }
 
     currentPage() {
@@ -287,21 +287,17 @@ class Efb extends React.Component<EfbProps, EfbState> {
 
     render() {
         return (
-                <div className="flex flex-row h-full">
-                    <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} />
-                    <div className="py-14 px-8 text-gray-700 bg-navy-light: h-screen w-screen">
-                        {this.currentPage()}
+            <Provider store={store}>
+                <div className="flex flex-col h-full">
+                    <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart} />
+                    <div className="flex flex-row">
+                        <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} />
+                        <div className="py-14 px-8 text-gray-700 bg-navy-light: h-screen w-screen">
+                            {this.currentPage()}
+                        </div>
                     </div>
                 </div>
-
-                /**<div className="w-full h-screen bg-blue-darker flex flex-col">
-                    <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart} />
-                    <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} />
-                    <div className="w-full flex-1 flex flex-col">
-                        {this.currentPage()}
-                    </div>
-                </div>**/
-
+            </Provider>
         );
     }
 }

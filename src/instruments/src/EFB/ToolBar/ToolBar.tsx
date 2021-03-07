@@ -71,17 +71,17 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
                             </a>
                         </li>
                         <li className={3 === this.state.activeIndex ? c.active : c.inactive}>
-                            <a onClick={() => this.handleClick(2)}>
+                            <a onClick={() => this.handleClick(3)}>
                                 <IconMap className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
                             </a>
                         </li>
                         <li className={4 === this.state.activeIndex ? c.active : c.inactive}>
-                            <a onClick={() => this.handleClick(3)}>
+                            <a onClick={() => this.handleClick(4)}>
                                 <IconPlane className="transform -rotate-45 mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
                             </a>
                         </li>
                         <li className={5 === this.state.activeIndex ? c.active : c.inactive}>
-                            <a onClick={() => this.handleClick(4)}>
+                            <a onClick={() => this.handleClick(5)}>
                                 <IconTool className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
                             </a>
                         </li>
