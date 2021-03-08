@@ -46,7 +46,7 @@ class CDUAocRequestsWeather {
                 ["", `${store["arpt4"] != "" ? store["arpt4"] : "[ ]"}[color]cyan`],
                 [""],
                 [""],
-                ["RETURN TO", `${store["sendStatus"]}`],
+                ["\xa0RETURN TO", `${store["sendStatus"]}`],
                 ["<AOC MENU", "SEND*[color]cyan"]
             ]);
         };

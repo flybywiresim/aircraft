@@ -48,11 +48,11 @@ class CDUAocRequestsAtis {
         }
 
         if (store.reqID == 0) {
-            arrivalText = "~ARRIVAL[color]cyan";
+            arrivalText = "\xa0ARRIVAL[color]cyan";
         } else if (store.reqID == 1) {
-            departureText = "~DEPARTURE[color]cyan";
+            departureText = "\xa0DEPARTURE[color]cyan";
         } else {
-            enrouteText = "ENROUTE~[color]cyan";
+            enrouteText = "ENROUTE\xa0[color]cyan";
         }
 
         let arrText;
@@ -66,7 +66,7 @@ class CDUAocRequestsAtis {
         const updateView = () => {
             mcdu.setTemplate([
                 ["AOC ATIS REQUEST"],
-                ["AIRPORT", "↓FORMAT FOR"],
+                ["\xa0AIRPORT", "↓FORMAT FOR\xa0"],
                 [`${arrText}[color]cyan`, formatString],
                 ["", "", "-------SELECT ONE-------"],
                 [arrivalText, enrouteText],
@@ -76,7 +76,7 @@ class CDUAocRequestsAtis {
                 ["{ARRIVAL/AUTO UPDATE[color]inop"],
                 [""],
                 ["{TERMINATE AUTO UPDATE[color]inop"],
-                ["RETURN TO", `${store["sendStatus"]}`],
+                ["\xa0RETURN TO", `${store["sendStatus"]}`],
                 ["<AOC MENU", "SEND*[color]cyan"]
             ]);
         };

@@ -30,7 +30,7 @@ class CDUAocRequestsMessage {
             [`[s-text]${lines[offset + 6] ? lines[offset + 6] : ""}`],
             [`[b-text]${lines[offset + 7] ? lines[offset + 7] : ""}`],
             [`[s-text]${lines[offset + 8] ? lines[offset + 8] : ""}`],
-            ["RETURN TO"],
+            ["\xa0RETURN TO"],
             ["<RCVD MSGS", "PRINT*[color]cyan"]
         ]);
 

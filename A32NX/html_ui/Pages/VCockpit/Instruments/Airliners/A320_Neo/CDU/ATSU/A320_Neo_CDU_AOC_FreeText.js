@@ -33,7 +33,7 @@ class CDUAocFreeText {
                 [`${store["msg_line3"] != "" ? store["msg_line3"] : "["}[color]cyan`, `${store["msg_line3"] != "" ? "" : "]"}[color]cyan`],
                 [""],
                 [`${store["msg_line4"] != "" ? store["msg_line4"] : "["}[color]cyan`, `${store["msg_line4"] != "" ? "" : "]"}[color]cyan`],
-                ["RETURN TO", `${store["sendStatus"]}`],
+                ["\xa0RETURN TO", `${store["sendStatus"]}`],
                 ["<AOC MENU", "SEND*[color]cyan"]
             ]);
         };
