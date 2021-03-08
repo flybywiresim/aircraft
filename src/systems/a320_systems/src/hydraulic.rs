@@ -42,9 +42,9 @@ pub struct A320Hydraulic {
     lag_time_accumulator: Duration,
     debug_refresh_duration: Duration,
 
-    is_green_pressurised : bool,
-    is_blue_pressurised : bool,
-    is_yellow_pressurised : bool,
+    is_green_pressurised: bool,
+    is_blue_pressurised: bool,
+    is_yellow_pressurised: bool,
 }
 
 impl A320Hydraulic {
@@ -113,29 +113,41 @@ impl A320Hydraulic {
             lag_time_accumulator: Duration::new(0, 0),
             debug_refresh_duration: Duration::new(0, 0),
 
-            is_green_pressurised : false,
-            is_blue_pressurised : false,
-            is_yellow_pressurised : false,
+            is_green_pressurised: false,
+            is_blue_pressurised: false,
+            is_yellow_pressurised: false,
         }
     }
 
     //Updates pressure available state based on pressure switches
-    fn update_hyd_avail_states (&mut self) {
-        if self.green_loop.get_pressure() <= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_LO_HYST) {
+    fn update_hyd_avail_states(&mut self) {
+        if self.green_loop.get_pressure()
+            <= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_LO_HYST)
+        {
             self.is_green_pressurised = false;
-        } else if self.green_loop.get_pressure() >= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_HI_HYST) {
+        } else if self.green_loop.get_pressure()
+            >= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_HI_HYST)
+        {
             self.is_green_pressurised = true;
         }
 
-        if self.blue_loop.get_pressure() <= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_LO_HYST) {
+        if self.blue_loop.get_pressure()
+            <= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_LO_HYST)
+        {
             self.is_blue_pressurised = false;
-        } else if self.blue_loop.get_pressure() >= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_HI_HYST) {
+        } else if self.blue_loop.get_pressure()
+            >= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_HI_HYST)
+        {
             self.is_blue_pressurised = true;
         }
 
-        if self.yellow_loop.get_pressure() <= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_LO_HYST) {
+        if self.yellow_loop.get_pressure()
+            <= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_LO_HYST)
+        {
             self.is_yellow_pressurised = false;
-        } else if self.yellow_loop.get_pressure() >= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_HI_HYST) {
+        } else if self.yellow_loop.get_pressure()
+            >= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_HI_HYST)
+        {
             self.is_yellow_pressurised = true;
         }
     }
@@ -640,10 +652,16 @@ impl A320HydraulicBrakingLogic {
                         * self.right_brake_command
                         + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
                             * self.right_brake_yellow_command;
+                if !self.anti_skid_activated {
+                    self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.37);
+                    self.right_brake_yellow_command = self.right_brake_yellow_command.min(0.37);
+                }
             } else {
                 //Else we just use parking brake
                 self.left_brake_yellow_command += dynamic_increment;
+                self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.7);
                 self.right_brake_yellow_command += dynamic_increment;
+                self.right_brake_yellow_command = self.right_brake_yellow_command.min(0.7);
             }
             self.left_brake_green_command -= dynamic_increment;
             self.right_brake_green_command -= dynamic_increment;

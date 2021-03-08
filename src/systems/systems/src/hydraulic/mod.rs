@@ -803,8 +803,8 @@ pub struct EngineDrivenPump {
 }
 impl EngineDrivenPump {
     const LEAP_1A26_MAX_N2_RPM: f64 = 16645.0; //according to the Type Certificate Data Sheet of LEAP 1A26
-                                                //max N2 rpm is 116.5% @ 19391 RPM
-                                                //100% @ 16645 RPM
+                                               //max N2 rpm is 116.5% @ 19391 RPM
+                                               //100% @ 16645 RPM
     const PUMP_N2_GEAR_RATIO: f64 = 0.211;
 
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
@@ -833,7 +833,8 @@ impl EngineDrivenPump {
         line: &HydLoop,
         engine: &Engine,
     ) {
-        let n2_rpm = engine.corrected_n2().get::<percent>() * EngineDrivenPump::LEAP_1A26_MAX_N2_RPM / 100.;
+        let n2_rpm =
+            engine.corrected_n2().get::<percent>() * EngineDrivenPump::LEAP_1A26_MAX_N2_RPM / 100.;
         let mut pump_rpm = n2_rpm * EngineDrivenPump::PUMP_N2_GEAR_RATIO;
 
         //TODO Activate pumps realistically, maybe with a displacement rate limited when activated/deactivated?

@@ -78,7 +78,7 @@ var A320_Neo_BRK;
             const powerAvailable = SimVar.GetSimVarValue("L:DCPowerAvailable","Bool");
             if (this.topGauge != null) {
                 if (powerAvailable) {
-                    this.topGauge.setValue(3 * (SimVar.GetSimVarValue("L:A32NX_HYD_BRAKE_ALTN_ACC_PRESS","PSI") / 3000));
+                    this.topGauge.setValue(SimVar.GetSimVarValue("L:A32NX_HYD_BRAKE_ALTN_ACC_PRESS","PSI") / 1000);
                 } else {
                     this.topGauge.setValue(0);
                 }
@@ -86,14 +86,14 @@ var A320_Neo_BRK;
 
             if (this.leftGauge != null) {
                 if (powerAvailable) {
-                    this.leftGauge.setValue(3 * (SimVar.GetSimVarValue("L:A32NX_HYD_BRAKE_ALTN_LEFT_PRESS","PSI") / 3000));    
+                    this.leftGauge.setValue(SimVar.GetSimVarValue("L:A32NX_HYD_BRAKE_ALTN_LEFT_PRESS","PSI") / 1000);
                 } else {
                     this.leftGauge.setValue(0);
                 }
             }
             if (this.rightGauge != null) {
                 if (powerAvailable) {
-                    this.rightGauge.setValue(3 * (SimVar.GetSimVarValue("L:A32NX_HYD_BRAKE_ALTN_RIGHT_PRESS","PSI") / 3000));
+                    this.rightGauge.setValue(SimVar.GetSimVarValue("L:A32NX_HYD_BRAKE_ALTN_RIGHT_PRESS","PSI") / 1000);
                 } else {
                     this.rightGauge.setValue(0);
                 }
