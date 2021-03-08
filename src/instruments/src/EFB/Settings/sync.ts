@@ -54,7 +54,10 @@ const settingsToSync: SettingSync[] = [
     {
         simVar: ['L:A32NX_REFUEL_RATE_SETTING', 'number'],
         propertyName: 'REFUEL_RATE_SETTING',
-    }
+    },
+        simVar: ['L:A32NX_EFB_BRIGHTNESS', 'number'],
+        propertyName: 'EFB_BRIGHTNESS',
+    },
 ];
 
 export function readSettingsFromPersistentStorage() {
