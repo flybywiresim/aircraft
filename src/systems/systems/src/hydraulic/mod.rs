@@ -803,8 +803,8 @@ pub struct EngineDrivenPump {
 }
 impl EngineDrivenPump {
     const LEAP_1A26_MAX_N2_RPM: f64 = 16645.0; //according to the Type Certificate Data Sheet of LEAP 1A26
-                                                //max N2 rpm is 116.5% @ 19391 RPM
-                                                //100% @ 16645 RPM
+                                               //max N2 rpm is 116.5% @ 19391 RPM
+                                               //100% @ 16645 RPM
     const PUMP_N2_GEAR_RATIO: f64 = 0.211;
 
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
@@ -833,7 +833,8 @@ impl EngineDrivenPump {
         line: &HydLoop,
         engine: &Engine,
     ) {
-        let n2_rpm = engine.corrected_n2().get::<percent>() * EngineDrivenPump::LEAP_1A26_MAX_N2_RPM / 100.;
+        let n2_rpm =
+            engine.corrected_n2().get::<percent>() * EngineDrivenPump::LEAP_1A26_MAX_N2_RPM / 100.;
         let mut pump_rpm = n2_rpm * EngineDrivenPump::PUMP_N2_GEAR_RATIO;
 
         //TODO Activate pumps realistically, maybe with a displacement rate limited when activated/deactivated?
@@ -1122,17 +1123,17 @@ impl History {
     }
 
     //Sets initialisation values of each data before first step
-    pub fn init(&mut self, startTime: f64, values: Vec<f64>) {
-        self.timeVector.push(startTime);
+    pub fn init(&mut self, start_time: f64, values: Vec<f64>) {
+        self.timeVector.push(start_time);
         for idx in 0..(values.len()) {
             self.dataVector.push(vec![values[idx]]);
         }
     }
 
     //Updates all values and time vector
-    pub fn update(&mut self, deltaTime: f64, values: Vec<f64>) {
+    pub fn update(&mut self, delta_time: f64, values: Vec<f64>) {
         self.timeVector
-            .push(self.timeVector.last().unwrap() + deltaTime);
+            .push(self.timeVector.last().unwrap() + delta_time);
         self.pushData(values);
     }
 

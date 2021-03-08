@@ -41,10 +41,16 @@ pub struct A320Hydraulic {
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
     debug_refresh_duration: Duration,
+
+    is_green_pressurised: bool,
+    is_blue_pressurised: bool,
+    is_yellow_pressurised: bool,
 }
 
 impl A320Hydraulic {
-    const MIN_PRESS_PRESSURISED: f64 = 150.0;
+    const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
+    const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 1750.0;
+
     const HYDRAULIC_SIM_TIME_STEP: u64 = 100; //refresh rate of hydraulic simulation in ms
     const ACTUATORS_SIM_TIME_STEP_MULT: u32 = 2; //refresh rate of actuators as multiplier of hydraulics. 2 means double frequency update
 
@@ -106,19 +112,56 @@ impl A320Hydraulic {
             total_sim_time_elapsed: Duration::new(0, 0),
             lag_time_accumulator: Duration::new(0, 0),
             debug_refresh_duration: Duration::new(0, 0),
+
+            is_green_pressurised: false,
+            is_blue_pressurised: false,
+            is_yellow_pressurised: false,
+        }
+    }
+
+    //Updates pressure available state based on pressure switches
+    fn update_hyd_avail_states(&mut self) {
+        if self.green_loop.get_pressure()
+            <= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_LO_HYST)
+        {
+            self.is_green_pressurised = false;
+        } else if self.green_loop.get_pressure()
+            >= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_HI_HYST)
+        {
+            self.is_green_pressurised = true;
+        }
+
+        if self.blue_loop.get_pressure()
+            <= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_LO_HYST)
+        {
+            self.is_blue_pressurised = false;
+        } else if self.blue_loop.get_pressure()
+            >= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_HI_HYST)
+        {
+            self.is_blue_pressurised = true;
+        }
+
+        if self.yellow_loop.get_pressure()
+            <= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_LO_HYST)
+        {
+            self.is_yellow_pressurised = false;
+        } else if self.yellow_loop.get_pressure()
+            >= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_HI_HYST)
+        {
+            self.is_yellow_pressurised = true;
         }
     }
 
     pub fn is_blue_pressurised(&self) -> bool {
-        self.blue_loop.get_pressure().get::<psi>() >= A320Hydraulic::MIN_PRESS_PRESSURISED
+        self.is_blue_pressurised
     }
 
     pub fn is_green_pressurised(&self) -> bool {
-        self.green_loop.get_pressure().get::<psi>() >= A320Hydraulic::MIN_PRESS_PRESSURISED
+        self.is_green_pressurised
     }
 
     pub fn is_yellow_pressurised(&self) -> bool {
-        self.yellow_loop.get_pressure().get::<psi>() >= A320Hydraulic::MIN_PRESS_PRESSURISED
+        self.is_yellow_pressurised
     }
 
     pub fn update(
@@ -246,6 +289,8 @@ impl A320Hydraulic {
                     Vec::new(),
                 );
 
+                self.update_hyd_avail_states();
+
                 //self.autobrake_controller.update(&ct.delta, &ct);
                 self.braking_circuit_norm
                     .update(&min_hyd_loop_timestep, &self.green_loop);
@@ -291,7 +336,8 @@ impl A320Hydraulic {
                 .is_nsw_pin_inserted_flag(&delta_time_update);
         }
 
-        //Basic faults of pumps
+        //Basic faults of pumps //TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
+        //At current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
         if self.yellow_electric_pump.is_active() && !self.is_yellow_pressurised() {
             self.hyd_logic_inputs.yellow_epump_has_fault = true;
         } else {
@@ -606,10 +652,16 @@ impl A320HydraulicBrakingLogic {
                         * self.right_brake_command
                         + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
                             * self.right_brake_yellow_command;
+                if !self.anti_skid_activated {
+                    self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.37);
+                    self.right_brake_yellow_command = self.right_brake_yellow_command.min(0.37);
+                }
             } else {
                 //Else we just use parking brake
                 self.left_brake_yellow_command += dynamic_increment;
+                self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.7);
                 self.right_brake_yellow_command += dynamic_increment;
+                self.right_brake_yellow_command = self.right_brake_yellow_command.min(0.7);
             }
             self.left_brake_green_command -= dynamic_increment;
             self.right_brake_green_command -= dynamic_increment;
