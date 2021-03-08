@@ -498,11 +498,12 @@ var A320_Neo_LowerECAM_Elec;
             this.toggle(this.e_ESSTR_VOLTS_UNIT, trEssContactorClosed);
             this.toggle(this.e_ESSTR_AMPS_VALUE, trEssContactorClosed);
             this.toggle(this.e_ESSTR_AMPS_UNIT, trEssContactorClosed);
-
-            this.toggle(this.e_WIRE_ACESS_ESSTR, trEssContactorClosed);
-
             this.toggle(this.e_WIRE_ESSTR_DCESS, trEssContactorClosed);
             this.greenOrWhiteOtherwise(this.e_ARROW_ESSTR_DCESS, trEssContactorClosed);
+
+            const emergencyGenContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_2XE_IS_CLOSED", "Bool");
+            const acEssBusContactorClosed = !!SimVar.GetSimVarValue("L:A32NX_ELEC_CONTACTOR_15XE1_IS_CLOSED", "Bool");
+            this.toggle(this.e_WIRE_ACESS_ESSTR, acEssBusContactorClosed && !emergencyGenContactorClosed);
 
             this.drawTransformerRectifier(3, {
                 title: this.e_ESSTR_TITLE,
@@ -583,8 +584,8 @@ var A320_Neo_LowerECAM_Elec;
             this.toggle(this.e_EMERGEN_VOLTS_UNIT, emergencyGenContactorClosed);
 
             this.toggle(this.e_EMERGEN_FREQ_VALUE, emergencyGenContactorClosed);
-            this.setValue(this.e_EMERGEN_FREQ_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_EMER_GEN_CURRENT", "Ampere")));
-            const currentWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_EMER_GEN_CURRENT_NORMAL", "Bool");
+            this.setValue(this.e_EMERGEN_FREQ_VALUE, Math.round(SimVar.GetSimVarValue("L:A32NX_ELEC_EMER_GEN_FREQUENCY", "Hertz")));
+            const currentWithinNormalRange = !!SimVar.GetSimVarValue("L:A32NX_ELEC_EMER_GEN_FREQUENCY_NORMAL", "Bool");
             this.greenWhen(this.e_EMERGEN_FREQ_VALUE, currentWithinNormalRange);
             this.toggle(this.e_EMERGEN_FREQ_UNIT, emergencyGenContactorClosed);
 
