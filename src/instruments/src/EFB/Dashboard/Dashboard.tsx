@@ -77,7 +77,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
 
     return (
         <div className="w-full">
-            <h1 className="text-3xl text-white">Dashboard</h1>
+            <h1 className="text-3xl pt-6 text-white">Dashboard</h1>
             <div className="flex w-full mt-6 h-efb">
                 <FlightWidget
                 name="todays"
@@ -99,13 +99,13 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                 costInd={props.costInd} />
 
                 <div className="flex flex-col w-3/5">
-                    <div className="h-2/5 bg-navy-medium rounded-xl ml-3 mb-3 shadow-lg p-6">
+                    <div className="h-2/5 bg-navy-lighter rounded-2xl ml-3 mb-3 shadow-lg p-6">
                         <div className="h-full rounded-lg overflow-hidden">
 
                         </div>
                     </div>
 
-                    <div className="h-3/5 ml-3 mt-3 rounded-xl overflow-hidden shadow-lg">
+                    <div className="h-3/5 ml-3 mt-3 rounded-2xl overflow-hidden shadow-lg">
                         <Map currentFlight={handleGettingCurrentFlightData} disableMenu hideOthers />
                     </div>
                 </div>

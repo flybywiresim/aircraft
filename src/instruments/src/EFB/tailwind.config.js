@@ -3,7 +3,7 @@ module.exports = {
     theme: {
         extend: {
             height: () => ({
-                'efb': '52.5rem',
+                'efb': '50rem',
             }),
         }
     },

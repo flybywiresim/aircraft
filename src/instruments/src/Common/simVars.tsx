@@ -288,7 +288,7 @@ export const useSimVar = (
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
 
-    return [0, () => {}];
+    // return [0, () => {}];
 
     const value = useSimVarValue(name, unit, maxStaleness);
     const setter = useSimVarSetter(name, unit);
