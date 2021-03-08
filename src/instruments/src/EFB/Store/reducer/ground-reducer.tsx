@@ -27,7 +27,7 @@ import {
 } from '../actions';
 
 type ButtonSelectionState = {
-    activeButtons: string[];
+    activeButtons: any[];
     disabledButtons: string[];
     tugRequestOnly: boolean,
 

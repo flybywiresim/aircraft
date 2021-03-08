@@ -29,6 +29,11 @@ import {
     setActiveButtons, addDisabledButton, removeDisabledButton,
 } from '../Store/action-creator/ground-state';
 
+type StatefulButton = {
+    id: string,
+    state: string
+}
+
 export const Ground = ({
     activeButtons, disabledButtons, tugRequestOnly,
     setTugRequestOnly, addActiveButton, removeActiveButton, setActiveButtons, addDisabledButton, removeDisabledButton,
@@ -51,6 +56,9 @@ export const Ground = ({
 
     const buttonBlue = ' border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 text-blue-darkest disabled:bg-grey-600';
     const buttonActive = ' text-white bg-green-600 border-green-600';
+
+    const STATE_WAITING = 'WAITING';
+    const STATE_ACTIVE = 'ACTIVE';
     /**
      * allows a direction to be selected directly
      * rather than first backwards and after that the direction
@@ -61,10 +69,9 @@ export const Ground = ({
             setTugDirection(0);
         }
         /**
-         * Timer needed, as we cannot check, when the variable "Pushback Wait" is being set to false after calling the tug
+         * Timer needed, as we cannot check when the variable "Pushback Wait" is being set to false after calling the tug
          */
         const timer = setInterval(() => {
-            console.log(tugRequestOnly);
             if (tugRequestOnly) {
                 setPushBackWait(1);
             }
@@ -93,14 +100,14 @@ export const Ground = ({
     };
 
     const handleClick = (callBack: () => void, event: React.MouseEvent, disabledButton?: string) => {
-        if (!activeButtons.includes(event.currentTarget.id)) {
-            addActiveButton(event.currentTarget.id);
+        if (!activeButtons.map((b: StatefulButton) => b.id).includes(event.currentTarget.id)) {
+            addActiveButton({ id: event.currentTarget.id, state: STATE_WAITING });
             if (disabledButton) {
                 addDisabledButton(disabledButton);
             }
             callBack();
         } else if (!tugActive) {
-            const index = activeButtons.indexOf(event.currentTarget.id);
+            const index = activeButtons.map((b: StatefulButton) => b.id).indexOf(event.currentTarget.id);
             if (index > -1) {
                 removeActiveButton(index);
             }
@@ -118,17 +125,17 @@ export const Ground = ({
      */
     const handlePushBackClick = (callBack: () => void, event: React.MouseEvent) => {
         const tugRequest = 'tug-request';
-        if (activeButtons.includes(tugRequest) && event.currentTarget.id === tugRequest) {
+        if (activeButtons.map((b: StatefulButton) => b.id).includes(tugRequest) && event.currentTarget.id === tugRequest) {
             setActiveButtons([]);
         } else {
-            setActiveButtons([event.currentTarget.id, tugRequest]);
+            setActiveButtons([{ id: event.currentTarget.id, state: STATE_ACTIVE }, { id: tugRequest, state: STATE_WAITING }]);
         }
         callBack();
     };
 
     const applySelected = (className: string, id?: string) => {
         if (id) {
-            return className + (activeButtons.includes(id) ? buttonActive
+            return className + (activeButtons.map((b: StatefulButton) => b.id).includes(id) ? buttonActive
                 : buttonBlue);
         }
         return className;
@@ -139,10 +146,24 @@ export const Ground = ({
      * This ensures the displayed state is in sync with the active services
      */
     const applySelectedWithSync = (className: string, id: string, gameSync) => {
-        if (gameSync > 0.5 && (activeButtons.includes(id) || disabledButtons.includes(id))) {
+        const index = activeButtons.map((b: StatefulButton) => b.id).indexOf(id);
+        const disabledIndex = disabledButtons.indexOf(id);
+        if (gameSync > 0.5 && index !== -1 || disabledIndex !== -1) {
+            const button: StatefulButton = activeButtons[index];
+            if (button && button.state === STATE_WAITING) {
+                button.state = STATE_ACTIVE;
+                setActiveButtons(activeButtons);
+                removeDisabledButton(disabledIndex);
+            }
             return `${className} ${buttonActive}`;
         }
-        return className + (activeButtons.includes(id) ? ' text-white bg-gray-600'
+        if (gameSync === 0 && index !== -1) {
+            const button: StatefulButton = activeButtons[index];
+            if (button.state === STATE_ACTIVE) {
+                removeActiveButton(index);
+            }
+        }
+        return className + (activeButtons.map((b: StatefulButton) => b.id).includes(id) ? ' text-white bg-gray-600'
             : buttonBlue);
     };
 
@@ -152,10 +173,7 @@ export const Ground = ({
             <div className="left-1/4 grid grid-cols-2 control-grid absolute top-12">
 
                 <div>
-                    <h1 className="text-white font-medium text-xl text-center pb-1">
-                        Jetway
-                    </h1>
-
+                    <h1 className="text-white font-medium text-xl text-center pb-1">Ramp</h1>
                     <Button
                         onClick={(e) => handleClick(() => {
                             setJetWayActive(1);
@@ -204,7 +222,7 @@ export const Ground = ({
                     <h1 className="text-white font-medium text-xl text-center pb-1">Ext. Power</h1>
                     <Button
                         onClick={(e) => handleClick(() => setPowerActive(1), e)}
-                        className={applySelectedWithSync('call w-32', 'power', powerActive)}
+                        className={applySelectedWithSync('w-32', 'power', powerActive)}
                         type={BUTTON_TYPE.NONE}
                         id="power"
                     >
@@ -221,7 +239,7 @@ export const Ground = ({
                     <h1 className="text-white font-medium text-xl text-center pb-1">Catering</h1>
                     <Button
                         onClick={(e) => handleClick(() => setCateringActive(1), e, 'door-aft-right')}
-                        className={applySelectedWithSync('call w-32', 'catering', cateringActive)}
+                        className={applySelectedWithSync('w-32', 'catering', cateringActive)}
                         type={BUTTON_TYPE.NONE}
                         id="catering"
                     >
@@ -248,6 +266,7 @@ export const Ground = ({
                     <Button
                         id="stop"
                         onClick={(e) => handlePushBackClick(() => {
+                            computeAndSetTugHeading(0);
                             setTugRequestOnly(true);
                         }, e)}
                         className={applySelected('w-32 stop bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600 text-blue-darkest')}
