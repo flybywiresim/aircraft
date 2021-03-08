@@ -153,7 +153,6 @@ export const Ground = ({
             if (button && button.state === STATE_WAITING) {
                 button.state = STATE_ACTIVE;
                 setActiveButtons(activeButtons);
-                removeDisabledButton(disabledIndex);
             }
             return `${className} ${buttonActive}`;
         }
@@ -161,6 +160,7 @@ export const Ground = ({
             const button: StatefulButton = activeButtons[index];
             if (button.state === STATE_ACTIVE) {
                 removeActiveButton(index);
+                removeDisabledButton(disabledIndex);
             }
         }
         return className + (activeButtons.map((b: StatefulButton) => b.id).includes(id) ? ' text-white bg-gray-600'
