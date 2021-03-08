@@ -26,35 +26,25 @@ class CDUProgressPage {
         const flMax = mcdu.getMaxFlCorrected();
         const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
         let flCrz = "-----";
-        switch (Simplane.getCurrentFlightPhase()) {
-            case FlightPhase.FLIGHT_PHASE_PREFLIGHT:
-            case FlightPhase.FLIGHT_PHASE_TAXI:
-            case FlightPhase.FLIGHT_PHASE_TAKEOFF: {
+        switch (mcdu.currentFlightPhase) {
+            case FmgcFlightPhases.PREFLIGHT:
+            case FmgcFlightPhases.TAKEOFF: {
                 if (mcdu._cruiseEntered) {
                     flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 }
                 break;
             }
-            case FlightPhase.FLIGHT_PHASE_CLIMB: {
+            case FmgcFlightPhases.CLIMB: {
                 const alt = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
                 const altCtn = Math.round(mcdu.constraintAlt / 100);
-                if (!mcdu._cruiseEntered) {
+                if (!mcdu._cruiseEntered && !mcdu._activeCruiseFlightLevelDefaulToFcu) {
                     flCrz = "FL" + (altCtn && alt > altCtn ? altCtn.toFixed(0).padStart(3, "0") : alt.toFixed(0).padStart(3, "0")) + "[color]cyan";
-                } else if (mcdu.cruiseFlightLevel < alt) {
-                    mcdu.cruiseFlightLevel = alt;
-                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
-                    mcdu.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(mcdu.cruiseFlightLevel * 100));
                 } else {
                     flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 }
                 break;
             }
-            case FlightPhase.FLIGHT_PHASE_CRUISE: {
-                const fl = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
-                if (fl > mcdu.cruiseFlightLevel) {
-                    mcdu.cruiseFlightLevel = fl;
-                    mcdu.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(mcdu.cruiseFlightLevel * 100));
-                }
+            case FmgcFlightPhases.CRUISE: {
                 flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 break;
             }
