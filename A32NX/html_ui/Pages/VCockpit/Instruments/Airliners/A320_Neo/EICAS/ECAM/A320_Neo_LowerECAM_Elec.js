@@ -466,13 +466,16 @@ var A320_Neo_LowerECAM_Elec;
         drawBatteryWire(number, contactor, elements) {
             const batteryContactorClosed = !!SimVar.GetSimVarValue(`L:A32NX_ELEC_CONTACTOR_${contactor}_IS_CLOSED`, "Bool");
             const batteryCurrent = SimVar.GetSimVarValue(`L:A32NX_ELEC_BAT_${number}_CURRENT`, "Ampere");
-            const chargingBatteryAtMoreThan1Ampere = batteryCurrent > 1;
-            const dischargingBatteryAtMoreThan1Ampere = batteryCurrent < -1;
-            this.toggle(elements.wireOnly, batteryContactorClosed && !chargingBatteryAtMoreThan1Ampere && !dischargingBatteryAtMoreThan1Ampere);
-            this.toggle(elements.wireFromBusToBat, batteryContactorClosed && chargingBatteryAtMoreThan1Ampere);
-            this.toggle(elements.arrowFromBusToBat, batteryContactorClosed && chargingBatteryAtMoreThan1Ampere);
-            this.toggle(elements.wireFromBatToBus, batteryContactorClosed && dischargingBatteryAtMoreThan1Ampere);
-            this.toggle(elements.arrowFromBatToBus, batteryContactorClosed && dischargingBatteryAtMoreThan1Ampere);
+            const showArrowWhenContactorClosed = batteryContactorClosed &&
+                !!SimVar.GetSimVarValue(`L:A32NX_ELEC_CONTACTOR_${contactor}_SHOW_ARROW_WHEN_CLOSED`, "Bool");
+
+            const isCharging = batteryCurrent > 0;
+            const isDischarging = batteryCurrent < 0;
+            this.toggle(elements.wireOnly, batteryContactorClosed && !showArrowWhenContactorClosed);
+            this.toggle(elements.wireFromBusToBat, batteryContactorClosed && showArrowWhenContactorClosed && isCharging);
+            this.toggle(elements.arrowFromBusToBat, batteryContactorClosed && showArrowWhenContactorClosed && isCharging);
+            this.toggle(elements.wireFromBatToBus, batteryContactorClosed && showArrowWhenContactorClosed && isDischarging);
+            this.toggle(elements.arrowFromBatToBus, batteryContactorClosed && showArrowWhenContactorClosed && isDischarging);
         }
 
         drawTransformerRectifiers() {

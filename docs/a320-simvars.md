@@ -629,6 +629,14 @@
         - 15XE1: Contactor between AC ESS BUS and TR ESS + EMER GEN
         - 15XE2: Contactor between the static inverter and AC ESS BUS
 
+- A32NX_ELEC_CONTACTOR_{name}_SHOW_ARROW_WHEN_CLOSED
+    - Bool
+    - True when the arrow from the battery to the battery bus or vice versa needs to be displayed
+      when the contactor is closed.
+    - {name}
+        - 6PB1: Battery 1 contactor
+        - 6PB2: Battery 2 contactor
+
 - A32NX_ELEC_{name}_BUS_IS_POWERED
     - Bool
     - True when the given bus is powered
