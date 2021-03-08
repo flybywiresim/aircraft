@@ -16,11 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useState } from 'react';
-import { IconCalculator, IconSettings } from '@tabler/icons';
-import { Navbar } from '../Components/Navbar';
+import React from 'react';
 import logo from '../Assets/fbw-logo.svg';
-import { IconClipboard, IconMap, IconPlane, IconTool} from '@tabler/icons'
+import { IconClipboard, IconMap, IconTool, IconCalculator, IconSettings, IconTruck} from '@tabler/icons'
 
 type ToolbarProps = {
     setPageIndex: (index) => void;
@@ -52,8 +50,8 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
 
     render() {
         return (
-            <nav className="overflow-hidden bg-navy-medium w-32 justify-between flex flex-col -mx-1">
-                <div className="mt-6">
+            <nav className="overflow-hidden bg-navy-lighter w-32 justify-between flex flex-col -mx-1">
+                <div className="mt-14">
                     <ul>
                         <li className={0 === this.state.activeIndex ? c.active : c.inactive}>
                             <a onClick={() => this.handleClick(0)}>
@@ -67,17 +65,17 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
                         </li>
                         <li className={2 === this.state.activeIndex ? c.active : c.inactive}>
                             <a onClick={() => this.handleClick(2)}>
-                                <IconCalculator className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
+                                <IconTruck className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
                             </a>
                         </li>
                         <li className={3 === this.state.activeIndex ? c.active : c.inactive}>
                             <a onClick={() => this.handleClick(3)}>
-                                <IconMap className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
+                                <IconCalculator className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
                             </a>
                         </li>
                         <li className={4 === this.state.activeIndex ? c.active : c.inactive}>
                             <a onClick={() => this.handleClick(4)}>
-                                <IconPlane className="transform -rotate-45 mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
+                                <IconMap className="mx-auto" size={45} color="white" stroke={1} strokeLinejoin="miter" />
                             </a>
                         </li>
                         <li className={5 === this.state.activeIndex ? c.active : c.inactive}>

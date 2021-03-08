@@ -17,7 +17,7 @@
  */
 
 import React from 'react';
-import { IconBatteryCharging, IconWifi } from '@tabler/icons';
+import { IconAccessPoint, IconBattery4, IconBatteryCharging, IconWifi } from '@tabler/icons';
 import { connect } from 'react-redux';
 import { efbClearState } from '../Store/action-creator/efb';
 
@@ -73,21 +73,22 @@ class StatusBar extends React.Component<Props, TimeState> {
         const { efbClearState } = this.props;
 
         return (
-            <div className="flex items-center justify-between px-6 py-1 text-white font-medium leading-none">
-                <div>flyPad</div>
+            <div className="fixed w-full py-2 px-8 flex items-center justify-between bg-navy-medium text-white font-medium leading-none">
+                <div className="flex items-center">
+                    <IconAccessPoint className="mr-2" size={22} stroke={1.5} strokeLinejoin="miter" />
+                    flyPad
+                </div>
                 <div>{`${formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getUTCMinutes()]))}z`}</div>
                 <div className="flex items-center">
-                    <IconWifi className="mr-2" size={22} stroke={1.5} strokeLinejoin="miter" />
                     100%
 
                     {/* TODO find a way to use `setSimVar` here */}
-                    <IconBatteryCharging
+                    <IconBattery4
                         onClick={() => {
                             efbClearState();
                             SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0);
                         }}
                         className="ml-2"
-                        color="yellow"
                         size={25}
                         stroke={1.5}
                         strokeLinejoin="miter"

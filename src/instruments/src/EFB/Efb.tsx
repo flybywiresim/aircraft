@@ -288,11 +288,11 @@ class Efb extends React.Component<EfbProps, EfbState> {
     render() {
         return (
             <Provider store={store}>
-                <div className="flex flex-col h-full">
+                <div className="flex flex-col">
                     <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart} />
                     <div className="flex flex-row">
                         <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} />
-                        <div className="py-14 px-8 text-gray-700 bg-navy-light: h-screen w-screen">
+                        <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen">
                             {this.currentPage()}
                         </div>
                     </div>

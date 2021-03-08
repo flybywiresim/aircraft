@@ -51,7 +51,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
 	}
 
     return (
-        <div id={'flight-' + props.name} className="w-2/5 h-full bg-navy-medium text-white rounded-xl mr-3 shadow-lg p-6 overflow-hidden">
+        <div id={'flight-' + props.name} className="w-2/5 h-full bg-navy-lighter text-white rounded-2xl mr-3 shadow-lg p-6 overflow-hidden">
             <div className="h-full flex flex-col justify-between">
                 <div className="w-full">
                     <div className="text-center mb-6">
