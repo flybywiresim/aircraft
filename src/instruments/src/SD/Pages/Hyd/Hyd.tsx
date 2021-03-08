@@ -50,7 +50,6 @@ type HydSysProps = {
 
 const HydSys = ({ title, pressure, hydLevel, x } : HydSysProps) => {
     console.log(`Hyd system ${title}`);
-    console.log(pressure + hydLevel);
 
     const polyPoints = `${x + 9},53 ${x},35 ${x - 9},53`;
 
@@ -77,10 +76,28 @@ type HydReservoirProps = {
 
 const HydReservoir = ({ system, x } : HydReservoirProps) => {
     console.log(`Reservoir${system}`);
+    const levels = [
+        { system: 'GREEN', max: 14.5, low: 3.5, norm: 2.6 },
+        { system: 'YELLOW', max: 12.5, low: 3.5, norm: 2.6 },
+        { system: 'BLUE', max: 6.5, low: 2.4, norm: 1.6 },
+    ];
+
+    const values = levels.filter((item) => item.system === system);
+    const litersPerPixel = 96 / values[0].max;
+    const reserveHeight = (litersPerPixel * values[0].low);
+    const upperReserve = 470 - reserveHeight;
+    const lowerNorm = 374 + (litersPerPixel * values[0].norm);
+
+    console.log(`Upper reserve is ${upperReserve} lower norm is ${lowerNorm}`);
+
     return (
         <>
             <line className="green-line" x1={x} y1="374" x2={x} y2="342" />
-            <line className="white-line" x1={x} y1="470" x2={x} y2="374" />
+            <line className="white-line" x1={x} y1={upperReserve.toFixed(0)} x2={x} y2="374" />
+            <line className="green-line" x1={x} y1="374" x2={x + 6} y2="374" />
+            <line className="green-line" x1={x + 6} y1={lowerNorm.toFixed(0)} x2={x + 6} y2="374" />
+            <line className="green-line" x1={x} y1={lowerNorm.toFixed(0)} x2={x + 6} y2={lowerNorm.toFixed(0)} />
+            <rect className="amber-line" x={x} y={upperReserve.toFixed(0)} width={4} height={reserveHeight} />
         </>
     );
 };
