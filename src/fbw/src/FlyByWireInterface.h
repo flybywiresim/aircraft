@@ -124,7 +124,8 @@ class FlyByWireInterface {
   ID idFlightGuidanceTrackAngleError;
   ID idFlightGuidancePhiCommand;
 
-  ID idFlightPhase;
+  ID idFwcFlightPhase;
+  ID idFmgcFlightPhase;
   ID idFmgcV2;
   ID idFmgcV_APP;
   ID idFmgcV_LS;

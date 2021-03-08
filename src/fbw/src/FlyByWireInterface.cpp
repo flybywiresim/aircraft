@@ -117,7 +117,7 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   // update client data for flight guidance
   if (!autopilotStateMachineEnabled || !autopilotLawsEnabled) {
     ClientDataLocalVariables clientDataLocalVariables = {
-        get_named_variable_value(idFlightPhase),
+        get_named_variable_value(idFwcFlightPhase),
         get_named_variable_value(idFmgcV2),
         get_named_variable_value(idFmgcV_APP),
         get_named_variable_value(idFmgcV_LS),
@@ -203,7 +203,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
                                     : simData.gpsWpTrackAngleError;
     autopilotStateMachineInput.in.data.flight_guidance_phi_deg =
         customFlightGuidanceEnabled ? get_named_variable_value(idFlightGuidancePhiCommand) : 0;
-    autopilotStateMachineInput.in.data.flight_phase = get_named_variable_value(idFlightPhase);
+    autopilotStateMachineInput.in.data.flight_phase = get_named_variable_value(idFwcFlightPhase);
     autopilotStateMachineInput.in.data.V2_kn = get_named_variable_value(idFmgcV2);
     autopilotStateMachineInput.in.data.VAPP_kn = get_named_variable_value(idFmgcV_APP);
     autopilotStateMachineInput.in.data.VLS_kn = get_named_variable_value(idFmgcV_LS);
@@ -429,7 +429,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
                                                              : simData.gpsWpTrackAngleError;
     autopilotLawsInput.in.data.flight_guidance_phi_deg =
         customFlightGuidanceEnabled ? get_named_variable_value(idFlightGuidancePhiCommand) : 0;
-    autopilotLawsInput.in.data.flight_phase = get_named_variable_value(idFlightPhase);
+    autopilotLawsInput.in.data.flight_phase = get_named_variable_value(idFwcFlightPhase);
     autopilotLawsInput.in.data.V2_kn = get_named_variable_value(idFmgcV2);
     autopilotLawsInput.in.data.VAPP_kn = get_named_variable_value(idFmgcV_APP);
     autopilotLawsInput.in.data.VLS_kn = get_named_variable_value(idFmgcV_LS);
@@ -680,7 +680,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutopilotAutothrustMode = register_named_variable("A32NX_AUTOPILOT_AUTOTHRUST_MODE");
 
   // register L variables for flight guidance
-  idFlightPhase = register_named_variable("A32NX_FWC_FLIGHT_PHASE");
+  idFwcFlightPhase = register_named_variable("A32NX_FWC_FLIGHT_PHASE");
+  idFmgcFlightPhase = register_named_variable("A32NX_FMGC_FLIGHT_PHASE");
   idFmgcV2 = register_named_variable("AIRLINER_V2_SPEED");
   idFmgcV_APP = register_named_variable("AIRLINER_VAPP_SPEED");
   idFmgcV_LS = register_named_variable("AIRLINER_VLS_SPEED");
