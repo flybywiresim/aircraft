@@ -192,7 +192,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
                         this.currentWaypointDistance = _distance;
                         if (this.waypointDistance != null) {
                             if (this.currentWaypointDistance < 10000) {
-                                if (this.currentWaypointDistance > 19.95) {
+                                if (this.currentWaypointDistance > 19.9) {
                                     this.currentWaypointDistance = Math.round(this.currentWaypointDistance);
                                     this.waypointDistance.textContent = fastToFixed(this.currentWaypointDistance, 1);
                                 } else {
@@ -570,7 +570,7 @@ class VORDMENavAid {
             const displayStr = "block";
             if (this.distanceText != null) {
                 if (showDistance) {
-                    if (this.distanceValue > 19.95) {
+                    if (this.distanceValue > 20) {
                         this.distanceValue = Math.round(this.distanceValue);
                         this.distanceText.textContent = fastToFixed(this.distanceValue, 1);
                     } else {
