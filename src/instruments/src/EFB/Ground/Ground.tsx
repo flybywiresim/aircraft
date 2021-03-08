@@ -148,7 +148,7 @@ export const Ground = ({
     const applySelectedWithSync = (className: string, id: string, gameSync) => {
         const index = activeButtons.map((b: StatefulButton) => b.id).indexOf(id);
         const disabledIndex = disabledButtons.indexOf(id);
-        if (gameSync > 0.5 && index !== -1 || disabledIndex !== -1) {
+        if (gameSync > 0.5 && (index !== -1 || disabledIndex !== -1)) {
             const button: StatefulButton = activeButtons[index];
             if (button && button.state === STATE_WAITING) {
                 button.state = STATE_ACTIVE;

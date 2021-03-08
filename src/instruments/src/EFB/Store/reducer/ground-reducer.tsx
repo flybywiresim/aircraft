@@ -48,8 +48,9 @@ export const buttonsReducer = typeToReducer(
 
         [REMOVE_ACTIVE_BUTTON]: (state, { elementIndex }) => {
             const activeButtons = [...state.activeButtons];
-            activeButtons.splice(elementIndex, 1);
-
+            if (elementIndex !== -1) {
+                activeButtons.splice(elementIndex, 1);
+            }
             return {
                 ...state,
                 activeButtons,
