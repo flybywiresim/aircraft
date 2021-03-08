@@ -35,34 +35,57 @@ type FuelPageProps = {
 
 
 const FuelWidget = (props: FuelPageProps) => {
-    const totalFuel = 18979;
-    const outerCells = 1382;
-    const outerCell = 691;
-    const innerCells = 10998;
-    const innerCell = 5499
-    const centerTank = 6598
-    const currentUnit = "Kg"
+    const totalFuelGallons = 6243;
+    const outerCellGallon = 227;
+    const innerCellGallon = 1809;
+    const centerTankGallon = 2173;
+    const [usingMetrics] = useSimVar("CONFIG_USING_METRIC_UNIT", "Number", 1_000);
+    const currentUnit = () => {
+        return usingMetrics == 1 ? 'Kgs' : 'Lbs';
+    }
+    const convertUnit = () => {
+        return usingMetrics == 1 ? 1 : 2.20462;
+    }
+    const [galToKg] = useSimVar("FUEL WEIGHT PER GALLON", "kilograms", 1_000);
+    const outerCell = () => {
+        return outerCellGallon * galToKg * convertUnit();
+    };
+    const outerCells = () => {
+        return outerCell() * 2;
+    };
+    const innerCell = () => {
+        return innerCellGallon * galToKg * convertUnit();
+    };
+    const innerCells = () => {
+        return innerCell() * 2;
+    };
+    const centerTank = () => {
+        return centerTankGallon * galToKg * convertUnit();
+    }
+    const totalFuel = () => {
+        return centerTank() + innerCells() + outerCells();
+    }
     //const [flightPhase] = useSimVar("L:A32NX_FWC_FLIGHT_PHASE", "Enum", 1_000);
-    const [simGroundSpeed] = [0] //useSimVar('GPS GROUND SPEED', 'knots', 1_000);
-    const [isOnGround] = [true] //useSimVar('SIM ON GROUND', 'Bool', 1_000);
-    const [eng1Running] = [false] //useSimVar("ENG COMBUSTION:1", "Bool", 1_000);
-    const [eng2Running] = [false] //useSimVar("ENG COMBUSTION:2", "Bool", 1_000);
-    const [refuelRate, setRefuelRate] = useState<number>(); // useSimVarSyncedPersistentProperty('L:A32NX_REFUEL_RATE_SETTING', 'Number', 'REFUEL_RATE_SETTING');
+    const [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 1_000);
+    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 1_000);
+    const [eng1Running] = useSimVar("ENG COMBUSTION:1", "Bool", 1_000);
+    const [eng2Running] = useSimVar("ENG COMBUSTION:2", "Bool", 1_000);
+    const [refuelRate, setRefuelRate] = useSimVarSyncedPersistentProperty('L:A32NX_REFUEL_RATE_SETTING', 'Number', 'REFUEL_RATE_SETTING');
     const [sliderValue, setSliderValue] = useState<number>();
+    const [inputValue, setInputValue] = useState<number>();
     const [totalTarget, setTotalTarget] = useState<number>();
-    const [centerTarget, setCenterTarget] = useState<number>();
-    const [LInnTarget, setLInnTarget] = useState<number>();
-    const [LOutTarget, setLOutTarget] = useState<number>();
-    const [RInnTarget, setRInnTarget] = useState<number>();
-    const [ROutTarget, setROutTarget] = useState<number>();
-    const [totalCurrent, setTotalCurrent] = useState<number>();
-    const [centerCurrent, setCenterCurrent] = useState<number>();
-    const [LInnCurrent, setLInnCurrent] = useState<number>();
-    const [LOutCurrent, setLOutCurrent] = useState<number>();
-    const [RInnCurrent, setRInnCurrent] = useState<number>();
-    const [ROutCurrent, setROutCurrent] = useState<number>();
+    const [centerTarget, setCenterTarget] = useSimVar("FUEL TANK CENTER DESIRED", "Gallons", 1_000);
+    const [LInnTarget, setLInnTarget] = useSimVar("FUEL TANK LEFT MAIN DESIRED", "Gallons", 1_000);
+    const [LOutTarget, setLOutTarget] = useSimVar("FUEL TANK LEFT AUX DESIRED", "Gallons", 1_000);
+    const [RInnTarget, setRInnTarget] = useSimVar("FUEL TANK RIGHT MAIN DESIRED", "Gallons", 1_000);
+    const [ROutTarget, setROutTarget] = useSimVar("FUEL TANK RIGHT AUX DESIRED", "Gallons", 1_000);
+    const [centerCurrent, setCenterCurrent] = useSimVar("FUEL TANK CENTER QUANTITY", "Gallons", 1_000);
+    const [LInnCurrent, setLInnCurrent] = useSimVar("FUEL TANK LEFT MAIN QUANTITY", "Gallons", 1_000);
+    const [LOutCurrent, setLOutCurrent] = useSimVar("FUEL TANK LEFT AUX QUANTITY", "Gallons", 1_000);
+    const [RInnCurrent, setRInnCurrent] = useSimVar("FUEL TANK RIGHT MAIN QUANTITY", "Gallons", 1_000);
+    const [ROutCurrent, setROutCurrent] = useSimVar("FUEL TANK RIGHT AUX QUANTITY", "Gallons", 1_000);
     const formatFuelBar = (curr:number, max: number) => {
-        let percent = (curr/max)*100
+        let percent = (Math.max(curr,0)/max)*100
         return 6 + 0.51 * percent
     }
     const airplaneCanRefuel = () => {
@@ -71,32 +94,44 @@ const FuelWidget = (props: FuelPageProps) => {
         }
         return true;
     }
+    const convertToGallon = (curr : number) => {
+        return curr * (1/convertUnit()) * (1/galToKg);
+    }
+    const totalCurrent = () => {
+        return round(Math.max((LInnCurrent + LOutCurrent + RInnCurrent + ROutCurrent + centerCurrent),0) * getFuelMultiplier());
+    }
     const formatRefuelStatusLabel = () => {
         if(airplaneCanRefuel()){
-            if(totalTarget == totalCurrent) {
+            if(totalTarget == totalCurrent()) {
                 return "(Available)";
             }
-            return (totalTarget > totalCurrent) ? "(Defueling...)" : "(Refueling...)";
+            return ((totalTarget||0) > (totalCurrent())) ? "(Defueling...)" : "(Refueling...)";
         }
         return "(Unavailable)";
     }
     const formatRefuelStatusClass = () => {
         let newClass = 'fuel-truck-avail';
         if(airplaneCanRefuel()){
-            if(totalTarget == totalCurrent) {
+            if(totalTarget == totalCurrent()) {
                 return newClass + ' completed-text'
             }
             return newClass + ' in-progress-text'
         }
         return newClass + ' disabled-text'
     }
+    const getFuelMultiplier = () => {
+        return galToKg * convertUnit();
+    }
     const formatFuelFilling = (curr: number, max: number) => {
-        let percent = (curr/max)*100;
+        let percent = (Math.max(curr,0)/max)*100;
         return 'linear-gradient(to top, #3b82f6 '+percent+'%,#ffffff00 0%)';
     }
+    const convertFuelValue = (curr: number) => {
+        return round(Math.max(curr,0)*getFuelMultiplier());
+    }
     const setDesiredFuel = (fuel: number) => {
-        fuel -= outerCells;
-        let outerTank = (outerCells + Math.min(fuel, 0))/2;
+        fuel -= outerCellGallon*2;
+        let outerTank = ((outerCellGallon*2) + Math.min(fuel, 0))/2;
         setLOutTarget(outerTank);
         setROutTarget(outerTank);
         if(fuel <= 0) {
@@ -105,8 +140,8 @@ const FuelWidget = (props: FuelPageProps) => {
             setCenterTarget(0);
             return;
         }
-        fuel -= innerCells
-        let innerTank = (innerCells + Math.min(fuel, 0))/2;
+        fuel -= innerCellGallon*2
+        let innerTank = ((innerCellGallon*2) + Math.min(fuel, 0))/2;
         setLInnTarget(innerTank);
         setRInnTarget(innerTank);
         if(fuel <= 0) {
@@ -117,27 +152,29 @@ const FuelWidget = (props: FuelPageProps) => {
     }
     const updateDesiredFuel = (value:string) => {
         let fuel = 0
+        let originalFuel = 0
         if(value.length>0){
-            fuel = parseInt(value)
+            originalFuel = parseInt(value)
+            fuel = convertToGallon(originalFuel)
+            setInputValue(originalFuel)
         }
-        if(fuel>totalFuel){
-            fuel = totalFuel
+        if(fuel>totalFuelGallons){
+            fuel = totalFuelGallons
         }
         setTotalTarget(fuel)
-        setSliderValue((fuel/totalFuel)*100);
+        setSliderValue((fuel/totalFuelGallons)*100);
         setDesiredFuel(fuel)
 
-        setTotalCurrent(16232)
-        setCenterCurrent(0)
+        /*setCenterCurrent(0)
         setLInnCurrent(2425)
         setRInnCurrent(2425)
         setLOutCurrent(691)
-        setROutCurrent(691)
+        setROutCurrent(691)*/
         //setFuelingActive(1);
 	}
     const updateSlider = (value: number) => {
         setSliderValue(value);
-        let fuel = Math.round(totalFuel * (value/100));
+        let fuel = Math.round(totalFuel() * (value/100));
         updateDesiredFuel(fuel.toString());
     }
 
@@ -151,33 +188,33 @@ const FuelWidget = (props: FuelPageProps) => {
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info">
             <h2 className="text-2xl font-medium">Left inner tank</h2>
                 <div className="flex mt-4">
-                    <div className="fuel-bar" style={{left:''+formatFuelBar(LInnTarget||0,innerCell)+'%'}}></div>
-                    <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={((LInnCurrent||0)/innerCell)*100} /></div>
-                    <div className="fuel-label"><label>{LInnCurrent||0}/{innerCell} {currentUnit}</label></div>
+                    <div className="fuel-bar" style={{left:''+formatFuelBar(LInnTarget,innerCellGallon)+'%'}}></div>
+                    <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={(Math.max(LInnCurrent, 0)/innerCellGallon)*100} /></div>
+                    <div className="fuel-label"><label>{convertFuelValue(LInnCurrent)}/{round(innerCell())} {currentUnit()}</label></div>
                 </div>
             </div>
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info outter">
             <h2 className="text-2xl font-medium">Left outer tank</h2>
                 <div className="flex mt-4">
-                    <div className="fuel-bar" style={{left:''+formatFuelBar(LOutTarget||0,outerCell)+'%'}}></div>
-                    <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={((LOutCurrent||0)/outerCell)*100} /></div>
-                    <div className="fuel-label"><label>{LOutCurrent||0}/{outerCell} {currentUnit}</label></div>
+                    <div className="fuel-bar" style={{left:''+formatFuelBar(LOutTarget,outerCellGallon)+'%'}}></div>
+                    <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={(Math.max(LOutCurrent,0)/outerCellGallon)*100} /></div>
+                    <div className="fuel-label"><label>{convertFuelValue(LOutCurrent)}/{round(outerCell())} {currentUnit()}</label></div>
                 </div>
             </div>
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info center-tanks-info">
             <h2 className="text-2xl font-medium">Center tank</h2>
                 <div className="flex mt-4">
-                    <div className="fuel-bar" style={{left:''+formatFuelBar(centerTarget||0,centerTank)+'%'}}></div>
-                    <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={((centerCurrent||0)/centerTank)*100} /></div>
-                    <div className="fuel-label"><label>{centerCurrent||0}/{centerTank} {currentUnit}</label></div>
+                    <div className="fuel-bar" style={{left:''+formatFuelBar(centerTarget,centerTankGallon)+'%'}}></div>
+                    <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={(Math.max(centerCurrent,0)/centerTankGallon)*100} /></div>
+                    <div className="fuel-label"><label>{convertFuelValue(centerCurrent)}/{round(centerTank())} {currentUnit()}</label></div>
                 </div>
             </div>
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info refuel-info">
             <h2 className="text-2xl font-medium">Refuel</h2><label className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</label>
                     <div className="flex mt-n5">
                         <div className="fuel-progress"><Slider value={sliderValue} onInput={(value) => updateSlider(value)} className="w-48" /></div>
-                        <div className="fuel-label"><SimpleInput noLeftMargin={true} placeholder={totalFuel.toString()} number={true} min={0} max={totalFuel} value={totalTarget} onChange={(x) => updateDesiredFuel(x)} /></div>
-                        <div className="unit-label">{currentUnit}</div>
+                        <div className="fuel-label"><SimpleInput noLeftMargin={true} placeholder={round(totalFuel()).toString()} number={true} min={0} max={round(totalFuel())} value={inputValue} onChange={(x) => updateDesiredFuel(x)} /></div>
+                        <div className="unit-label">{currentUnit() +'/'+ usingMetrics}</div>
                         <div className="separation-line-refuel"></div>
                         <div className="manage-fuel-truck">
                             <div className='call-inop fuel-truck disabled'><IconTruck /></div>
@@ -186,35 +223,35 @@ const FuelWidget = (props: FuelPageProps) => {
                     </div>
                     <span>Current fuel :</span>
                     <div className="flex mt-n5">
-                        <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={((totalCurrent||0)/totalFuel)*100} /></div>
-                        <div className="fuel-label"><label>{totalCurrent||0}/{totalFuel} {currentUnit}</label></div>
+                        <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={(totalCurrent()/totalFuel())*100} /></div>
+                        <div className="fuel-label"><label>{totalCurrent()}/{round(totalFuel())} {currentUnit()}</label></div>
                     </div>
             </div>
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info right-tanks-info">
             <h2 className="text-2xl font-medium">Right inner tank</h2>
                 <div className="flex mt-4">
-                    <div className="fuel-bar" style={{left:''+formatFuelBar(RInnTarget||0,innerCell)+'%'}}></div>
-                    <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={((RInnCurrent||0)/innerCell)*100} /></div>
-                    <div className="fuel-label"><label>{RInnCurrent||0}/{innerCell} {currentUnit}</label></div>
+                    <div className="fuel-bar" style={{left:''+formatFuelBar(RInnTarget,innerCellGallon)+'%'}}></div>
+                    <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={(Math.max(RInnCurrent,0)/innerCellGallon)*100} /></div>
+                    <div className="fuel-label"><label>{convertFuelValue(RInnCurrent)}/{round(innerCell())} {currentUnit()}</label></div>
                 </div>
             </div>
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info right-tanks-info outter">
             <h2 className="text-2xl font-medium">Right outer tank</h2>
                 <div className="flex mt-4">
-                    <div className="fuel-bar" style={{left:''+formatFuelBar(ROutTarget||0,outerCell)+'%'}}></div>
-                    <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={((ROutCurrent||0)/outerCell)*100} /></div>
-                    <div className="fuel-label"><label>{ROutCurrent||0}/{outerCell} {currentUnit}</label></div>
+                    <div className="fuel-bar" style={{left:''+formatFuelBar(ROutTarget,outerCellGallon)+'%'}}></div>
+                    <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={(Math.max(ROutCurrent,0)/outerCellGallon)*100} /></div>
+                    <div className="fuel-label"><label>{convertFuelValue(ROutCurrent)}/{round(outerCell())} {currentUnit()}</label></div>
                 </div>
             </div>
-            <div className='wrapper visible-tank center-tank' style={{background:formatFuelFilling(centerCurrent||0,centerTank)}}>
+            <div className='wrapper visible-tank center-tank' style={{background:formatFuelFilling(centerCurrent||0,centerTankGallon)}}>
             </div>
-            <div className='wrapper visible-tank inner-left-tank' style={{background:formatFuelFilling(LInnCurrent||0,innerCell)}}>
+            <div className='wrapper visible-tank inner-left-tank' style={{background:formatFuelFilling(LInnCurrent||0,innerCellGallon)}}>
             </div>
-            <div className='wrapper visible-tank inner-right-tank' style={{background:formatFuelFilling(RInnCurrent||0,innerCell)}}>
+            <div className='wrapper visible-tank inner-right-tank' style={{background:formatFuelFilling(RInnCurrent||0,innerCellGallon)}}>
             </div>
-            <div className='wrapper visible-tank outer-left-tank' style={{background:formatFuelFilling(LOutCurrent||0,outerCell)}}>
+            <div className='wrapper visible-tank outer-left-tank' style={{background:formatFuelFilling(LOutCurrent||0,outerCellGallon)}}>
             </div>
-            <div className='wrapper visible-tank outer-right-tank' style={{background:formatFuelFilling(ROutCurrent||0,outerCell)}}>
+            <div className='wrapper visible-tank outer-right-tank' style={{background:formatFuelFilling(ROutCurrent||0,outerCellGallon)}}>
             </div>
             <img className="airplane-fuel w-full" src={fuselage} />
             <div className="bg-gray-800 rounded-xl text-white shadow-lg mr-4 overflow-x-hidden refuel-speed">
