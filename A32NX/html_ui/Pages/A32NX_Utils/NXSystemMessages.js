@@ -42,7 +42,7 @@ const NXSystemMessages = {
     gpsPrimary:             new McduMessage("GPS PRIMARY", false, true),
     gpsPrimaryLost:         new McduMessage("GPS PRIMARY LOST", true, true),
     initializeWeightOrCg:   new McduMessage("INITIALIZE WEIGHT/CG", true, true),
-    newCrzAlt:              new McduMessage("NEW CRZ ALT-HHHHH", false, true, "HHHHH"),
+    newCrzAlt:              new McduMessage("NEW CRZ ALT - HHHHH", false, true, "HHHHH"),
     noIntersectionFound:    new McduMessage("NO INTERSECTION FOUND", false, false),
     notAllowed:             new McduMessage("NOT ALLOWED", false, false),
     notInDatabase:          new McduMessage("NOT IN DATABASE", false, false),
