@@ -37,3 +37,4 @@ node_modules
 /target
 /src/instruments/src/EFB/web/
 /src/systems/target/
+/src/systems/systems/*.png
