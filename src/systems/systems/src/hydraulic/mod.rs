@@ -365,7 +365,7 @@ impl HydLoop {
         //PTU flows handling
         let mut ptu_act = false;
         for ptu in ptus {
-            let actual_flow ;
+            let actual_flow;
             if self.connected_to_ptu_left_side {
                 if ptu.is_active_left || ptu.is_active_right {
                     ptu_act = true;
@@ -855,10 +855,6 @@ impl PressureSource for RatPump {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// TESTS
-////////////////////////////////////////////////////////////////////////////////
-
 #[cfg(test)]
 mod tests {
 
@@ -876,7 +872,7 @@ mod tests {
 
     use plotlib::page::Page;
     use plotlib::repr::Plot;
-    use plotlib::style::{LineStyle, PointMarker, PointStyle};
+    use plotlib::style::LineStyle;
     use plotlib::view::ContinuousView;
 
     extern crate rustplotlib;
