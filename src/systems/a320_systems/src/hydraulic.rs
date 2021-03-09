@@ -714,7 +714,7 @@ impl SimulationElement for A320HydraulicLogic {
     fn read(&mut self, state: &mut SimulatorReader) {
         self.parking_brake_lever_pos = state.read_bool("BRAKE PARKING INDICATOR");
         self.eng_1_master_on = state.read_bool("GENERAL ENG1 STARTER ACTIVE");
-        self.eng_2_master_on = state.read_bool("GENERAL ENG1 STARTER ACTIVE");
+        self.eng_2_master_on = state.read_bool("GENERAL ENG2 STARTER ACTIVE");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
 
         //Handling here of the previous values of cargo doors
