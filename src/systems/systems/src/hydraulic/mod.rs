@@ -455,14 +455,14 @@ impl HydLoop {
         //END ACCUMULATOR
 
         //Actuators
-        let used_fluid_qty = Volume::new::<gallon>(0.); // %%total fluid used
-                                                       //foreach actuator
-                                                       //used_fluidQty =used_fluidQty+aileron.volumeToActuatorAccumulated*264.172; %264.172 is m^3 to gallons
-                                                       //reservoirReturn=reservoirReturn+aileron.volumeToResAccumulated*264.172;
-                                                       //actuator.resetVolumes()
-                                                       //actuator.set_available_pressure(self.loop_pressure)
-                                                       //end foreach
-                                                       //end actuator
+        let used_fluid_qty = Volume::new::<gallon>(0.);
+        //foreach actuator
+        //used_fluidQty =used_fluidQty+aileron.volumeToActuatorAccumulated
+        //reservoirReturn=reservoirReturn+aileron.volumeToResAccumulated
+        //actuator.resetVolumes()
+        //actuator.set_available_pressure(self.loop_pressure)
+        //end foreach
+        //end actuator
 
         delta_vol -= used_fluid_qty;
 
