@@ -14,7 +14,6 @@ jobs:
       MASTER_PRE_RELEASE_TAG: vmaster
       MASTER_ZIP_NAME: A32NX-master.zip
       BUILD_DIR_NAME: vmaster
-      CDN_DIR: /flybywiresim/addons/a32nx/vmaster/
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
