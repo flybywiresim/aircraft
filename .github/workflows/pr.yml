@@ -45,15 +45,8 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/build.sh
       - name: Generate ZIP file
         run: |
-          ./scripts/dev-env/run.sh node ./scripts/fragment.js
-
           mkdir ./${{ env.BUILD_DIR_NAME }}
           zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.ZIP_NAME }} ./A32NX/
-      - name: Upload to Bunny CDN
-        env:
-          BUNNY_BUCKET_PASSWORD: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
-          BUNNY_BUCKET_DESTINATION: test
-        run: ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION
       - uses: actions/upload-artifact@v2
         with:
           name: A32NX
