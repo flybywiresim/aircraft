@@ -32,6 +32,8 @@ export const HydPage = () => {
             <svg id="hyd-page" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
                 <text id="PageTitle" className="Title" x="300" y="10" textAnchor="middle" alignmentBaseline="central" textDecoration="underline">HYD</text>
 
+                <PTU x={300} y={150} ptuOn={0} />
+
                 <HydSys title="GREEN" pressure={3000} hydLevel={13.5} x={100} />
                 <HydSys title="BLUE" pressure={3000} hydLevel={13.5} x={300} />
                 <HydSys title="YELLOW" pressure={3000} hydLevel={13.5} x={500} />
@@ -94,9 +96,9 @@ const HydReservoir = ({ system, x } : HydReservoirProps) => {
         <>
             <line className="green-line" x1={x} y1="374" x2={x} y2="342" />
             <line className="white-line" x1={x} y1={upperReserve.toFixed(0)} x2={x} y2="374" />
-            <line className="green-line" x1={x} y1="374" x2={x + 6} y2="374" />
-            <line className="green-line" x1={x + 6} y1={lowerNorm.toFixed(0)} x2={x + 6} y2="374" />
-            <line className="green-line" x1={x} y1={lowerNorm.toFixed(0)} x2={x + 6} y2={lowerNorm.toFixed(0)} />
+            <line className="green-line" x1={x} y1="374" x2={x + 4} y2="374" strokeLinejoin="miter" />
+            <line className="green-line" x1={x + 4} y1={lowerNorm.toFixed(0)} x2={x + 4} y2="374" strokeLinejoin="miter" />
+            <line className="green-line" x1={x} y1={lowerNorm.toFixed(0)} x2={x + 4} y2={lowerNorm.toFixed(0)} strokeLinejoin="miter" />
             <rect className="amber-line" x={x} y={upperReserve.toFixed(0)} width={4} height={reserveHeight} />
         </>
     );
@@ -160,6 +162,26 @@ const HydEngPump = ({ system, pumpOn, x } : HydEngPumpProps) => {
             <line className={pumpOn ? 'green-line' : 'green-line hide'} x1={x} y1={y} x2={x} y2={y - 80} />
             <line className={pumpOn ? 'hide' : 'amber-line'} x1={x - 12} y1={y - 64} x2={x + 12} y2={y - 64} />
             <line className="green-line" x1={x} y1={y} x2={x} y2={y - 48} />
+        </>
+    );
+};
+
+type PTUProps = {
+    x: number,
+    y: number,
+    ptuOn: number
+}
+
+const PTU = ({ x, y, ptuOn } : PTUProps) => {
+    console.log(`PTU status is ${ptuOn}`);
+    const semiCircleD = `M${x - 16},${y} C${x - 16},${y + 24} ${x + 16},${y + 24} ${x + 16},${y}`;
+    console.log(semiCircleD);
+
+    return (
+        <>
+            <line className="green-line" x1={x - 50} y1={y} x2={x - 16} y2={y} />
+            <path className="green-line" d={semiCircleD} />
+            <line className="green-line" x1={x + 16} y1={y} x2={x + 50} y2={y} />
         </>
     );
 };
