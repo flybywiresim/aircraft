@@ -1085,9 +1085,12 @@ impl History {
 
 #[cfg(test)]
 mod tests {
-    //use uom::si::volume_rate::VolumeRate;
 
-    use uom::si::acceleration::foot_per_second_squared;
+    use crate::simulation::UpdateContext;
+    use uom::si::{
+        acceleration::foot_per_second_squared, f64::*, pressure::{pascal,psi}, time::second, volume::{liter,gallon},
+        volume_rate::gallon_per_second,length::foot,thermodynamic_temperature::degree_celsius,
+    };
 
     use super::*;
     #[test]
@@ -1159,10 +1162,9 @@ mod tests {
                 assert!(green_loop.loop_pressure <= Pressure::new::<psi>(250.0));
             }
 
-            edp1.update(&ct.delta, &ct, &green_loop, &engine1);
+            edp1.update(&ct.delta, &green_loop, &engine1);
             green_loop.update(
                 &ct.delta,
-                &ct,
                 Vec::new(),
                 vec![&edp1],
                 Vec::new(),
@@ -1245,10 +1247,9 @@ mod tests {
                 //X+200 after shutoff = X + 20seconds @ 100ms, so pressure shall be low
                 assert!(yellow_loop.loop_pressure <= Pressure::new::<psi>(200.0));
             }
-            epump.update(&ct.delta, &ct, &yellow_loop);
+            epump.update(&ct.delta, &yellow_loop);
             yellow_loop.update(
                 &ct.delta,
-                &ct,
                 vec![&epump],
                 Vec::new(),
                 Vec::new(),
@@ -1295,10 +1296,9 @@ mod tests {
                 //X+200 after shutoff = X + 20seconds @ 100ms, so pressure shall be low
                 assert!(blue_loop.loop_pressure <= Pressure::new::<psi>(100.0));
             }
-            epump.update(&ct.delta, &ct, &blue_loop);
+            epump.update(&ct.delta, &blue_loop);
             blue_loop.update(
                 &ct.delta,
-                &ct,
                 vec![&epump],
                 Vec::new(),
                 Vec::new(),
@@ -1376,10 +1376,9 @@ mod tests {
             }
 
             rat.update_physics(&ct.delta, &indicated_airpseed);
-            rat.update(&ct.delta, &ct, &blue_loop);
+            rat.update(&ct.delta, &blue_loop);
             blue_loop.update(
                 &ct.delta,
-                &ct,
                 Vec::new(),
                 Vec::new(),
                 vec![&rat],
@@ -1479,8 +1478,8 @@ mod tests {
                 ptu.flow_to_left.get::<gallon_per_second>(),
                 ptu.flow_to_right.get::<gallon_per_second>(),
                 green_loop.loop_pressure.get::<psi>() - yellow_loop.loop_pressure.get::<psi>(),
-                ptu.isActiveLeft as i8 as f64,
-                ptu.isActiveRight as i8 as f64,
+                ptu.is_active_left as i8 as f64,
+                ptu.is_active_right as i8 as f64,
             ],
         );
         accuGreenHistory.init(
@@ -1551,7 +1550,7 @@ mod tests {
                 println!("------------IS PTU ACTIVE??------------");
                 assert!(yellow_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
                 assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
-                assert!(!ptu.isActiveLeft && !ptu.isActiveRight);
+                assert!(!ptu.is_active_left && !ptu.is_active_right);
             }
 
             if x == 600 {
@@ -1580,12 +1579,11 @@ mod tests {
             }
 
             ptu.update(&green_loop, &yellow_loop);
-            edp1.update(&ct.delta, &ct, &green_loop, &engine1);
-            epump.update(&ct.delta, &ct, &yellow_loop);
+            edp1.update(&ct.delta,  &green_loop, &engine1);
+            epump.update(&ct.delta,  &yellow_loop);
 
             yellow_loop.update(
                 &ct.delta,
-                &ct,
                 vec![&epump],
                 Vec::new(),
                 Vec::new(),
@@ -1593,7 +1591,6 @@ mod tests {
             );
             green_loop.update(
                 &ct.delta,
-                &ct,
                 Vec::new(),
                 vec![&edp1],
                 Vec::new(),
@@ -1617,8 +1614,8 @@ mod tests {
                     ptu.flow_to_left.get::<gallon_per_second>(),
                     ptu.flow_to_right.get::<gallon_per_second>(),
                     green_loop.loop_pressure.get::<psi>() - yellow_loop.loop_pressure.get::<psi>(),
-                    ptu.isActiveLeft as i8 as f64,
-                    ptu.isActiveRight as i8 as f64,
+                    ptu.is_active_left as i8 as f64,
+                    ptu.is_active_right as i8 as f64,
                 ],
             );
 
@@ -1804,7 +1801,7 @@ mod tests {
                 for rpm in (0..10000).step_by(150) {
                     green_loop.loop_pressure = Pressure::new::<psi>(pressure as f64);
                     epump.rpm = rpm as f64;
-                    epump.update(&context.delta, &context, &green_loop);
+                    epump.update(&context.delta, &green_loop);
                     rpmTab.push(rpm as f64);
                     let flow = epump.get_delta_vol_max()
                         / Time::new::<second>(context.delta.as_secs_f64());
@@ -1845,7 +1842,7 @@ mod tests {
                             / (EngineDrivenPump::PUMP_N2_GEAR_RATIO
                                 * EngineDrivenPump::LEAP_1A26_MAX_N2_RPM),
                     );
-                    edpump.update(&context.delta, &context, &green_loop, &engine1);
+                    edpump.update(&context.delta, &green_loop, &engine1);
                     rpmTab.push(rpm as f64);
                     let flow = edpump.get_delta_vol_max()
                         / Time::new::<second>(context.delta.as_secs_f64());
@@ -1965,9 +1962,9 @@ mod tests {
 
             edp.start();
             line.loop_pressure = pressure;
-            edp.update(&dummyUpdate, &context, &line, &eng); //Update 10 times to stabilize displacement
+            edp.update(&dummyUpdate, &line, &eng); //Update 10 times to stabilize displacement
 
-            edp.update(&time, &context, &line, &eng);
+            edp.update(&time, &line, &eng);
             edp.get_delta_vol_max()
         }
 

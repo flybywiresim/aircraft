@@ -304,8 +304,10 @@ impl AutoBrakeController {
 
 #[cfg(test)]
 mod tests {
-    //use uom::si::volume_rate::VolumeRate;
-    //use BrakeCircuit;
+    use uom::si::{
+        acceleration::foot_per_second_squared, f64::*, pressure::{pascal,psi}, time::second, volume::gallon,
+        volume_rate::gallon_per_second,velocity::knot,length::foot,thermodynamic_temperature::degree_celsius,
+    };
     use super::*;
     use crate::{
         hydraulic::{HydFluid, HydLoop, LoopColor},
@@ -421,16 +423,6 @@ mod tests {
 
     #[test]
     fn auto_brake_controller() {
-        // let init_max_vol = Volume::new::<gallon>(0.0);
-        // let mut hyd_loop = hydraulic_loop(LoopColor::Yellow);
-        // hyd_loop.loop_pressure= Pressure::new::<psi>(3000.0);
-
-        // let mut brake_circuit_primed = BrakeCircuit::new(
-        //     init_max_vol,
-        //     init_max_vol,
-        //     Volume::new::<gallon>(0.1)
-        // );
-
         let mut controller = AutoBrakeController::new(vec![
             Acceleration::new::<foot_per_second_squared>(-1.5),
             Acceleration::new::<foot_per_second_squared>(-3.),
