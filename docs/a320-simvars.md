@@ -750,3 +750,8 @@
     - {number}
         - 1
         - 2
+
+- A32NX_FMGC_FLIGHT_PHASE
+    - Enum
+    - Holds the FMGCs current flight phase
+    - Use FMGC_FLIGHT_PHASES to check for phases (import NXFMGCFlightPhases from A32NX_Utils)
