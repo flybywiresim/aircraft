@@ -180,6 +180,7 @@
 1. [MISC] Fixed chrono watch colon appearance - @SergeySoprykin (SergeyS)
 1. [MCDU] Fixed options page text overlap - @MisterChocker (Leon)
 1. [CDU] Reworked Flight Phase system - @MisterChocker (Leon)
+1. [FLIGHTMODEL] Fixed flaps to be compatible with MSFS 1.14.5.0 update - @donstim (donbikes#4084)
 
 
 ## 0.5.2
