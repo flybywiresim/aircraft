@@ -519,17 +519,12 @@ impl HydLoop {
         //Priming the loop if not filled in
         //TODO bug, ptu can't prime the loop is it is not providing flow through delta_vol_max
         if self.loop_volume < self.max_loop_volume {
-            //} %TODO what to do if we are back under max volume and unprime the loop?
             let difference = self.max_loop_volume - self.loop_volume;
-            // println!("---Priming diff {}", difference.get::<gallon>());
             let availableFluidVol = self.reservoir_volume.min(delta_vol_max);
             let delta_loop_vol = availableFluidVol.min(difference);
-            delta_vol_max -= delta_loop_vol; //%TODO check if we cross the deltaVolMin?
+            delta_vol_max -= delta_loop_vol; //TODO check if we cross the deltaVolMin?
             self.loop_volume += delta_loop_vol;
             self.reservoir_volume -= delta_loop_vol;
-        // println!("---Priming vol {} / {}", self.loop_volume.get::<gallon>(),self.max_loop_volume.get::<gallon>());
-        } else {
-            // println!("---Primed {}", self.loop_volume.get::<gallon>());
         }
         //end priming
 

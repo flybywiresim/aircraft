@@ -31,7 +31,6 @@ pub struct A320Hydraulic {
     braking_circuit_altn: BrakeCircuit,
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
-    debug_refresh_duration: Duration,
 
     is_green_pressurised: bool,
     is_blue_pressurised: bool,
@@ -101,7 +100,6 @@ impl A320Hydraulic {
 
             total_sim_time_elapsed: Duration::new(0, 0),
             lag_time_accumulator: Duration::new(0, 0),
-            debug_refresh_duration: Duration::new(0, 0),
 
             is_green_pressurised: false,
             is_blue_pressurised: false,
@@ -170,27 +168,6 @@ impl A320Hydraulic {
 
         //Number of time steps to do according to required time step
         let number_of_steps_f64 = time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
-
-        self.debug_refresh_duration += ct.delta;
-        if self.debug_refresh_duration > Duration::from_secs_f64(0.3) {
-            println!(
-                "---HYDRAULIC UPDATE : t={}",
-                self.total_sim_time_elapsed.as_secs_f64()
-            );
-            println!(
-                "---G: {:.0} B: {:.0} Y: {:.0}",
-                self.green_loop.get_pressure().get::<psi>(),
-                self.blue_loop.get_pressure().get::<psi>(),
-                self.yellow_loop.get_pressure().get::<psi>()
-            );
-            println!(
-                "---RAT stow {:.0} Rat rpm: {:.0}",
-                self.rat.get_stow_position(),
-                self.rat.prop.get_rpm(),
-            );
-
-            self.debug_refresh_duration = Duration::from_secs_f64(0.0);
-        }
 
         //updating rat stowed pos on all frames in case it's used for graphics
         self.rat.update_stow_pos(&ct.delta);
