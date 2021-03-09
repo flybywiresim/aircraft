@@ -801,8 +801,8 @@ impl SimulationElement for A320HydraulicOverheadPanel {
 
 #[cfg(test)]
 pub mod tests {
-    use std::time::Duration;
     use super::A320HydraulicLogic;
+    use std::time::Duration;
 
     fn hyd_logic() -> A320HydraulicLogic {
         A320HydraulicLogic::new()
