@@ -406,10 +406,6 @@ impl SimulationElement for A320Hydraulic {
             self.engine_driven_pump_1.is_active(),
         );
         writer.write_bool(
-            "HYD_GREEN_EDPUMP_LOW_PRESS",
-            self.hyd_logic_inputs.green_edp_has_fault,
-        );
-        writer.write_bool(
             "HYD_GREEN_FIRE_VALVE_OPENED",
             self.green_loop.get_fire_shutoff_valve_state(),
         );
@@ -423,10 +419,6 @@ impl SimulationElement for A320Hydraulic {
             self.blue_loop.get_reservoir_volume().get::<gallon>(),
         );
         writer.write_bool("HYD_BLUE_EPUMP_ACTIVE", self.blue_electric_pump.is_active());
-        writer.write_bool(
-            "HYD_BLUE_EPUMP_LOW_PRESS",
-            self.hyd_logic_inputs.blue_epump_has_fault,
-        );
 
         writer.write_f64(
             "HYD_YELLOW_PRESSURE",
@@ -441,20 +433,12 @@ impl SimulationElement for A320Hydraulic {
             self.engine_driven_pump_2.is_active(),
         );
         writer.write_bool(
-            "HYD_YELLOW_EDPUMP_LOW_PRESS",
-            self.hyd_logic_inputs.yellow_edp_has_fault,
-        );
-        writer.write_bool(
             "HYD_YELLOW_FIRE_VALVE_OPENED",
             self.yellow_loop.get_fire_shutoff_valve_state(),
         );
         writer.write_bool(
             "HYD_YELLOW_EPUMP_ACTIVE",
             self.yellow_electric_pump.is_active(),
-        );
-        writer.write_bool(
-            "HYD_YELLOW_EPUMP_LOW_PRESS",
-            self.hyd_logic_inputs.yellow_epump_has_fault,
         );
 
         writer.write_bool("HYD_PTU_VALVE_OPENED", self.ptu.is_enabled());
@@ -497,24 +481,6 @@ impl SimulationElement for A320Hydraulic {
         writer.write_f64(
             "HYD_BRAKE_ALTN_ACC_PRESS",
             self.braking_circuit_altn.get_acc_pressure().get::<psi>(),
-        );
-
-        //Send overhead fault info
-        writer.write_bool(
-            "OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT",
-            self.hyd_logic_inputs.green_edp_has_fault,
-        );
-        writer.write_bool(
-            "OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT",
-            self.hyd_logic_inputs.yellow_edp_has_fault,
-        );
-        writer.write_bool(
-            "OVHD_HYD_EPUMPB_PB_HAS_FAULT",
-            self.hyd_logic_inputs.blue_epump_has_fault,
-        );
-        writer.write_bool(
-            "OVHD_HYD_EPUMPY_PB_HAS_FAULT",
-            self.hyd_logic_inputs.yellow_epump_has_fault,
         );
     }
 }
@@ -761,6 +727,47 @@ impl SimulationElement for A320HydraulicLogic {
         self.pushback_angle_prev = self.pushback_angle;
         self.pushback_angle = state.read_f64("PUSHBACK ANGLE");
         self.pushback_state = state.read_f64("PUSHBACK STATE");
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+
+        writer.write_bool(
+            "HYD_GREEN_EDPUMP_LOW_PRESS",
+            self.green_edp_has_fault,
+        );
+
+        writer.write_bool(
+            "HYD_BLUE_EPUMP_LOW_PRESS",
+            self.blue_epump_has_fault,
+        );
+
+        writer.write_bool(
+            "HYD_YELLOW_EDPUMP_LOW_PRESS",
+            self.yellow_edp_has_fault,
+        );
+
+        writer.write_bool(
+            "HYD_YELLOW_EPUMP_LOW_PRESS",
+            self.yellow_epump_has_fault,
+        );
+
+        //Send overhead fault info
+        writer.write_bool(
+            "OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT",
+            self.green_edp_has_fault,
+        );
+        writer.write_bool(
+            "OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT",
+            self.yellow_edp_has_fault,
+        );
+        writer.write_bool(
+            "OVHD_HYD_EPUMPB_PB_HAS_FAULT",
+            self.blue_epump_has_fault,
+        );
+        writer.write_bool(
+            "OVHD_HYD_EPUMPY_PB_HAS_FAULT",
+            self.yellow_epump_has_fault,
+        );
     }
 }
 
