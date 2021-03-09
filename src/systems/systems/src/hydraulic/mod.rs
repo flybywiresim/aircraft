@@ -868,9 +868,11 @@ impl RatPropeller {
         stow_pos: f64,
         displacement_ratio: f64,
     ) {
-        self.update_generated_torque(indicated_speed, stow_pos);
-        self.update_friction_torque(displacement_ratio);
-        self.update_physics(delta_time);
+        if stow_pos > 0.1 { //Do not update anything on the propeller if still stowed
+            self.update_generated_torque(indicated_speed, stow_pos);
+            self.update_friction_torque(displacement_ratio);
+            self.update_physics(delta_time);
+        }
     }
 }
 pub struct RatPump {
