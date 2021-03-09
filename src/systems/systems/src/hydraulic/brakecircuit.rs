@@ -263,7 +263,7 @@ impl AutoBrakeController {
 
     pub fn update(&mut self, delta_time: &Duration, ct: &UpdateContext) {
         self.current_filtered_accel = self.current_filtered_accel
-            + (ct.acc_long - self.current_filtered_accel)
+            + (ct._longitudinal_acceleration - self.current_filtered_accel)
                 * (1.
                     - E.powf(
                         -delta_time.as_secs_f64() / AutoBrakeController::LONG_ACC_FILTER_TIMECONST,
@@ -429,7 +429,7 @@ mod tests {
             Acceleration::new::<foot_per_second_squared>(-15.),
         ]);
         let mut context = context(Duration::from_secs_f64(0.));
-        context.acc_long = Acceleration::new::<foot_per_second_squared>(0.0);
+        context._longitudinal_acceleration = Acceleration::new::<foot_per_second_squared>(0.0);
 
         assert!(controller.get_brake_command() <= 0.0);
 
@@ -484,9 +484,6 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
-            0.0,
-            0.0,
-            0.0,
         )
     }
 }

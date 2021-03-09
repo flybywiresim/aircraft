@@ -375,7 +375,7 @@ impl A320Hydraulic {
             && (!self.hyd_logic_inputs.weight_on_wheels
                 || self.hyd_logic_inputs.eng_1_master_on && self.hyd_logic_inputs.eng_2_master_on
                 || !self.hyd_logic_inputs.eng_1_master_on && !self.hyd_logic_inputs.eng_2_master_on
-                || (!self.hyd_logic_inputs.parking_brake_applied && !nsw_pin_inserted))
+                || (!self.hyd_logic_inputs.parking_brake_lever_pos && !nsw_pin_inserted))
             && !ptu_inhibit
         {
             self.ptu.enabling(true);
@@ -591,17 +591,17 @@ impl SimulationElement for A320HydraulicBrakingLogic {
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.parking_brake_demand = state.read_bool("PARK_BRAKE_DMND"); //TODO see if A32nx var exists
+        self.parking_brake_demand = state.read_bool("BRAKE PARKING INDICATOR");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
-        self.anti_skid_activated = state.read_bool("ANTISKID ACTIVE");
-        self.left_brake_command = state.read_f64("BRAKE LEFT DMND") / 100.0;
-        self.right_brake_command = state.read_f64("BRAKE RIGHT DMND") / 100.0;
+        self.anti_skid_activated = state.read_bool("ANTISKID BRAKES ACTIVE");
+        self.left_brake_command = state.read_f64("BRAKE LEFT POSITION") / 100.0;
+        self.right_brake_command = state.read_f64("BRAKE RIGHT POSITION") / 100.0;
         self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
     }
 }
 
 pub struct A320HydraulicLogic {
-    parking_brake_applied: bool,
+    parking_brake_lever_pos: bool,
     weight_on_wheels: bool,
     eng_1_master_on: bool,
     eng_2_master_on: bool,
@@ -629,7 +629,7 @@ impl A320HydraulicLogic {
 
     pub fn new() -> A320HydraulicLogic {
         A320HydraulicLogic {
-            parking_brake_applied: true,
+            parking_brake_lever_pos: true,
             weight_on_wheels: true,
             eng_1_master_on: false,
             eng_2_master_on: false,
@@ -712,16 +712,16 @@ impl SimulationElement for A320HydraulicLogic {
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.parking_brake_applied = state.read_bool("PARK_BRAKE_ON");
-        self.eng_1_master_on = state.read_bool("ENG MASTER 1");
-        self.eng_2_master_on = state.read_bool("ENG MASTER 2");
+        self.parking_brake_lever_pos = state.read_bool("BRAKE PARKING INDICATOR");
+        self.eng_1_master_on = state.read_bool("GENERAL ENG1 STARTER ACTIVE");
+        self.eng_2_master_on = state.read_bool("GENERAL ENG1 STARTER ACTIVE");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
 
         //Handling here of the previous values of cargo doors
         self.cargo_door_front_pos_prev = self.cargo_door_front_pos;
-        self.cargo_door_front_pos = state.read_f64("CARGO FRONT POS");
+        self.cargo_door_front_pos = state.read_f64("EXIT OPEN 5");
         self.cargo_door_back_pos_prev = self.cargo_door_back_pos;
-        self.cargo_door_back_pos = state.read_f64("CARGO BACK POS");
+        self.cargo_door_back_pos = state.read_f64("EXIT OPEN 3");
 
         //Handling here of the previous values of pushback angle. Angle keeps moving while towed. Feel free to find better hack
         self.pushback_angle_prev = self.pushback_angle;
@@ -857,10 +857,7 @@ pub mod tests {
             Length::new::<foot>(2000.),
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
-            Acceleration::new::<foot_per_second_squared>(0.),
-            0.0,
-            0.0,
-            0.0,
+            Acceleration::new::<foot_per_second_squared>(0.)
         )
     }
 

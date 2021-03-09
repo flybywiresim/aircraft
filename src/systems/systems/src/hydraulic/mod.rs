@@ -520,8 +520,8 @@ impl HydLoop {
         //TODO bug, ptu can't prime the loop is it is not providing flow through delta_vol_max
         if self.loop_volume < self.max_loop_volume {
             let difference = self.max_loop_volume - self.loop_volume;
-            let availableFluidVol = self.reservoir_volume.min(delta_vol_max);
-            let delta_loop_vol = availableFluidVol.min(difference);
+            let available_fluid_vol = self.reservoir_volume.min(delta_vol_max);
+            let delta_loop_vol = available_fluid_vol.min(difference);
             delta_vol_max -= delta_loop_vol; //TODO check if we cross the deltaVolMin?
             self.loop_volume += delta_loop_vol;
             self.reservoir_volume -= delta_loop_vol;
@@ -1725,9 +1725,6 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
-            0.0,
-            0.0,
-            0.0,
         )
     }
 
