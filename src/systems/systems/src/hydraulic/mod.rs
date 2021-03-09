@@ -1014,7 +1014,7 @@ mod tests {
         edp1.active = true;
 
         let init_n2 = Ratio::new::<percent>(55.0);
-        let mut engine1 = engine(init_n2);
+        let engine1 = engine(init_n2);
         let ct = context(Duration::from_millis(100));
 
         let green_acc_var_names = vec![
@@ -1820,7 +1820,7 @@ mod tests {
             let eng = engine(n2);
             let mut edp = engine_driven_pump();
             let dummyUpdate = Duration::from_secs(1);
-            let mut context = context((time));
+            let mut context = context(time);
             let mut line = hydraulic_loop(LoopColor::Green);
 
             edp.start();

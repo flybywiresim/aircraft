@@ -82,7 +82,7 @@ impl BrakeCircuit {
         }
 
         BrakeCircuit {
-            total_displacement: total_displacement,
+            total_displacement,
             current_brake_position_left: 0.0,
             demanded_brake_position_left: 0.0,
             pressure_applied_left: Pressure::new::<psi>(0.0),
@@ -249,7 +249,7 @@ impl AutoBrakeController {
         let num = accel_targets.len();
         assert!(num > 0);
         AutoBrakeController {
-            accel_targets: accel_targets,
+            accel_targets,
             num_of_modes: num,
             current_selected_mode: 0,
             current_filtered_accel: Acceleration::new::<foot_per_second_squared>(0.0),
@@ -307,7 +307,7 @@ mod tests {
     use super::*;
     use crate::{
         hydraulic::{HydFluid, HydLoop, LoopColor},
-        simulation::{UpdateContext, UpdateContextBuilder},
+        simulation::UpdateContext,
     };
     use uom::si::{
         acceleration::foot_per_second_squared,
