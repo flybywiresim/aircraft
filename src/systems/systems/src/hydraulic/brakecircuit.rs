@@ -304,14 +304,21 @@ impl AutoBrakeController {
 
 #[cfg(test)]
 mod tests {
-    use uom::si::{
-        acceleration::foot_per_second_squared, f64::*, pressure::{pascal,psi}, time::second, volume::gallon,
-        volume_rate::gallon_per_second,velocity::knot,length::foot,thermodynamic_temperature::degree_celsius,
-    };
     use super::*;
     use crate::{
         hydraulic::{HydFluid, HydLoop, LoopColor},
         simulation::{UpdateContext, UpdateContextBuilder},
+    };
+    use uom::si::{
+        acceleration::foot_per_second_squared,
+        f64::*,
+        length::foot,
+        pressure::{pascal, psi},
+        thermodynamic_temperature::degree_celsius,
+        time::second,
+        velocity::knot,
+        volume::gallon,
+        volume_rate::gallon_per_second,
     };
 
     #[test]

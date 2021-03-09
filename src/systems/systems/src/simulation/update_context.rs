@@ -46,7 +46,9 @@ impl UpdateContext {
             indicated_altitude: Length::new::<foot>(reader.read_f64("INDICATED ALTITUDE")),
             is_on_ground: reader.read_bool("SIM ON GROUND"),
             delta: delta_time,
-            _longitudinal_acceleration: Acceleration::new::<foot_per_second_squared>(reader.read_f64("ACCELERATION BODY Z")),
+            _longitudinal_acceleration: Acceleration::new::<foot_per_second_squared>(
+                reader.read_f64("ACCELERATION BODY Z"),
+            ),
         }
     }
 

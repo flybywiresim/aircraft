@@ -4,7 +4,6 @@ use uom::si::{
     volume_rate::gallon_per_second,
 };
 
-//use crate::{ hydraulic::{ElectricPump, EngineDrivenPump, HydFluid, HydLoop, LoopColor, PressureSource, Ptu, Pump, RatPump}, overhead::{OnOffFaultPushButton}, shared::DelayedTrueLogicGate};
 use systems::engine::Engine;
 use systems::hydraulic::brakecircuit::BrakeCircuit;
 use systems::hydraulic::{
@@ -730,44 +729,21 @@ impl SimulationElement for A320HydraulicLogic {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool("HYD_GREEN_EDPUMP_LOW_PRESS", self.green_edp_has_fault);
 
-        writer.write_bool(
-            "HYD_GREEN_EDPUMP_LOW_PRESS",
-            self.green_edp_has_fault,
-        );
+        writer.write_bool("HYD_BLUE_EPUMP_LOW_PRESS", self.blue_epump_has_fault);
 
-        writer.write_bool(
-            "HYD_BLUE_EPUMP_LOW_PRESS",
-            self.blue_epump_has_fault,
-        );
+        writer.write_bool("HYD_YELLOW_EDPUMP_LOW_PRESS", self.yellow_edp_has_fault);
 
-        writer.write_bool(
-            "HYD_YELLOW_EDPUMP_LOW_PRESS",
-            self.yellow_edp_has_fault,
-        );
+        writer.write_bool("HYD_YELLOW_EPUMP_LOW_PRESS", self.yellow_epump_has_fault);
 
-        writer.write_bool(
-            "HYD_YELLOW_EPUMP_LOW_PRESS",
-            self.yellow_epump_has_fault,
-        );
-
-        //Send overhead fault info
-        writer.write_bool(
-            "OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT",
-            self.green_edp_has_fault,
-        );
+        writer.write_bool("OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT", self.green_edp_has_fault);
         writer.write_bool(
             "OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT",
             self.yellow_edp_has_fault,
         );
-        writer.write_bool(
-            "OVHD_HYD_EPUMPB_PB_HAS_FAULT",
-            self.blue_epump_has_fault,
-        );
-        writer.write_bool(
-            "OVHD_HYD_EPUMPY_PB_HAS_FAULT",
-            self.yellow_epump_has_fault,
-        );
+        writer.write_bool("OVHD_HYD_EPUMPB_PB_HAS_FAULT", self.blue_epump_has_fault);
+        writer.write_bool("OVHD_HYD_EPUMPY_PB_HAS_FAULT", self.yellow_epump_has_fault);
     }
 }
 
@@ -857,7 +833,7 @@ pub mod tests {
             Length::new::<foot>(2000.),
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
-            Acceleration::new::<foot_per_second_squared>(0.)
+            Acceleration::new::<foot_per_second_squared>(0.),
         )
     }
 

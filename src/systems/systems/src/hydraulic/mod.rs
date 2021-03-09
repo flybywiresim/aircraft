@@ -34,109 +34,6 @@ pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// DATA & REFERENCES
-////////////////////////////////////////////////////////////////////////////////
-///
-/// On A320, the reservoir level variation can, depending on the system,
-/// decrease in flight by about 3.5 l (G RSVR), 4 l (Y RSVR) and 0.5 l (B RSVR)
-///
-/// Each MLG door open (2 total) uses 0.25 liters each of green hyd fluid
-/// Each cargo door open (3 total) uses 0.2 liters each of yellow hyd fluid
-///
-/// Reservoirs
-/// ------------------------------------------
-/// Normal Qty:
-/// -----------
-/// Blue: 6.5L (1.7 US Gal)
-/// Yellow: 12.5L (3.3 US Gal)
-/// Green: 14.5L (3.8 US Gal)
-///
-/// Loops
-/// ------------------------------------------
-/// Max loop volume - green: 100L 26.41gal including reservoir
-/// Max loop volume - yellow: 75L 19.81gal including reservoir
-/// Max loop volume - blue: 50L 15.85gal including reservoir
-///
-/// EDP (Eaton PV3-240-10C/D/F (F is neo)):
-/// ------------------------------------------
-/// 37.5 GPM max (100% N2)
-/// 3750 RPM
-/// 3000 PSI
-/// Displacement: 2.40 in3/rev
-///
-///
-/// Electric Pump (Eaton MPEV3-032-EA2 (neo) MPEV-032-15 (ceo)):
-/// ------------------------------------------
-/// Uses 115/200 VAC, 400HZ electric motor
-/// 8.45 GPM max
-/// 7600 RPM at full displacement, 8000 RPM at no displacement
-/// 3000 PSI
-/// Displacement: 0.263 in3/rev
-///
-///
-/// PTU (Eaton Vickers MPHV3-115-1C):
-/// ------------------------------------------
-/// 2987 PSI
-///
-/// Yellow to Green
-/// ---------------
-/// 34 GPM (130 L/min) from Yellow system
-/// 24 GPM (90 L/min) to Green system
-/// Maintains constant pressure near 3000PSI in green
-///
-/// Green to Yellow
-/// ---------------
-/// 16 GPM (60 L/min) from Green system
-/// 13 GPM (50 L/min) to Yellow system
-/// Maintains constant pressure near 3000PSI in yellow
-///
-///
-/// RAT PUMP (Eaton PV3-115):
-/// ------------------------------------------
-/// Max displacement: 1.15 in3/rev, 18.85 mL/rev
-/// Normal speed: 6,600 RPM
-/// Max. Ov. Speed: 8,250 RPM
-/// Theoretical Flow at normal speed: 32.86 gpm, 124.4 l/m
-///
-///
-/// Equations:
-/// ------------------------------------------
-/// Flow (Q), gpm:  Q = (in3/rev * rpm) / 231
-/// Velocity (V), ft/s: V = (0.3208 * flow rate, gpm) / internal area, sq in
-/// Force (F), lbs: F = density * area * velocity^2
-/// Pressure (P), PSI: P = force / area
-/// PressureDelta = VolumeDelta / Total_uncompressed_volume * Fluid_Bulk_Modulus
-///
-///
-/// Hydraulic Fluid: EXXON HyJet IV
-/// ------------------------------------------
-/// Kinematic viscosity at 40C: 10.55 mm^2 s^-1, +/- 20%
-/// Density at 25C: 996 kg m^-3
-///
-/// Hydraulic Line (HP) inner diameter
-/// ------------------------------------------
-/// Currently unknown. Estimating to be 7.5mm for now?
-///
-///
-/// Actuator Force Simvars
-/// -------------------------------------------
-/// ACCELERATION BODY X (relative to aircraft, "east/west", Feet per second squared)
-/// ACCELERATION BODY Y (relative to aircraft, vertical, Feet per second squared)
-/// ACCELERATION BODY Z (relative to aircraft, "north/south", Feet per second squared)
-/// ROTATION VELOCITY BODY X (feet per second)
-/// ROTATION VELOCITY BODY Y (feet per second)
-/// ROTATION VELOCITY BODY Z (feet per second)
-/// VELOCITY BODY X (feet per second)
-/// VELOCITY BODY Y (feet per second)
-/// VELOCITY BODY Z (feet per second)
-/// WING FLEX PCT (:1 for left, :2 for right; settable) (percent over 100)
-///
-
-////////////////////////////////////////////////////////////////////////////////
-// ENUMERATIONS
-////////////////////////////////////////////////////////////////////////////////
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum LoopColor {
     Blue,
@@ -150,10 +47,6 @@ pub enum PtuState {
     GreenToYellow,
     YellowToGreen,
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// TRAITS
-////////////////////////////////////////////////////////////////////////////////
 
 // Trait common to all hydraulic pumps
 // Max gives maximum available volume at that time as if it is a variable displacement
@@ -562,7 +455,7 @@ impl HydLoop {
         //END ACCUMULATOR
 
         //Actuators
-        let used_fluidQty = Volume::new::<gallon>(0.); // %%total fluid used
+        let used_fluid_qty = Volume::new::<gallon>(0.); // %%total fluid used
                                                        //foreach actuator
                                                        //used_fluidQty =used_fluidQty+aileron.volumeToActuatorAccumulated*264.172; %264.172 is m^3 to gallons
                                                        //reservoirReturn=reservoirReturn+aileron.volumeToResAccumulated*264.172;
@@ -571,7 +464,7 @@ impl HydLoop {
                                                        //end foreach
                                                        //end actuator
 
-        delta_vol -= used_fluidQty;
+        delta_vol -= used_fluid_qty;
 
         //How much we need to reach target of 3000?
         let mut volume_needed_to_reach_pressure_target =
@@ -868,7 +761,8 @@ impl RatPropeller {
         stow_pos: f64,
         displacement_ratio: f64,
     ) {
-        if stow_pos > 0.1 { //Do not update anything on the propeller if still stowed
+        if stow_pos > 0.1 {
+            //Do not update anything on the propeller if still stowed
             self.update_generated_torque(indicated_speed, stow_pos);
             self.update_friction_torque(displacement_ratio);
             self.update_physics(delta_time);
@@ -965,14 +859,19 @@ impl PressureSource for RatPump {
 // TESTS
 ////////////////////////////////////////////////////////////////////////////////
 
-
 #[cfg(test)]
 mod tests {
 
     use crate::simulation::UpdateContext;
     use uom::si::{
-        acceleration::foot_per_second_squared, f64::*, pressure::{pascal,psi}, time::second, volume::{liter,gallon},
-        volume_rate::gallon_per_second,length::foot,thermodynamic_temperature::degree_celsius,
+        acceleration::foot_per_second_squared,
+        f64::*,
+        length::foot,
+        pressure::{pascal, psi},
+        thermodynamic_temperature::degree_celsius,
+        time::second,
+        volume::{gallon, liter},
+        volume_rate::gallon_per_second,
     };
 
     use plotlib::page::Page;
@@ -1166,13 +1065,7 @@ mod tests {
             }
 
             edp1.update(&ct.delta, &green_loop, &engine1);
-            green_loop.update(
-                &ct.delta,
-                Vec::new(),
-                vec![&edp1],
-                Vec::new(),
-                Vec::new(),
-            );
+            green_loop.update(&ct.delta, Vec::new(), vec![&edp1], Vec::new(), Vec::new());
             if x % 20 == 0 {
                 println!("Iteration {}", x);
                 println!("-------------------------------------------");
@@ -1251,13 +1144,7 @@ mod tests {
                 assert!(yellow_loop.loop_pressure <= Pressure::new::<psi>(200.0));
             }
             epump.update(&ct.delta, &yellow_loop);
-            yellow_loop.update(
-                &ct.delta,
-                vec![&epump],
-                Vec::new(),
-                Vec::new(),
-                Vec::new(),
-            );
+            yellow_loop.update(&ct.delta, vec![&epump], Vec::new(), Vec::new(), Vec::new());
             if x % 20 == 0 {
                 println!("Iteration {}", x);
                 println!("-------------------------------------------");
@@ -1300,13 +1187,7 @@ mod tests {
                 assert!(blue_loop.loop_pressure <= Pressure::new::<psi>(100.0));
             }
             epump.update(&ct.delta, &blue_loop);
-            blue_loop.update(
-                &ct.delta,
-                vec![&epump],
-                Vec::new(),
-                Vec::new(),
-                Vec::new(),
-            );
+            blue_loop.update(&ct.delta, vec![&epump], Vec::new(), Vec::new(), Vec::new());
             if x % 20 == 0 {
                 println!("Iteration {}", x);
                 println!("-------------------------------------------");
@@ -1380,13 +1261,7 @@ mod tests {
 
             rat.update_physics(&ct.delta, &indicated_airpseed);
             rat.update(&ct.delta, &blue_loop);
-            blue_loop.update(
-                &ct.delta,
-                Vec::new(),
-                Vec::new(),
-                vec![&rat],
-                Vec::new(),
-            );
+            blue_loop.update(&ct.delta, Vec::new(), Vec::new(), vec![&rat], Vec::new());
             if x % 20 == 0 {
                 println!("Iteration {} Time {}", x, time);
                 println!("-------------------------------------------");
@@ -1582,23 +1457,11 @@ mod tests {
             }
 
             ptu.update(&green_loop, &yellow_loop);
-            edp1.update(&ct.delta,  &green_loop, &engine1);
-            epump.update(&ct.delta,  &yellow_loop);
+            edp1.update(&ct.delta, &green_loop, &engine1);
+            epump.update(&ct.delta, &yellow_loop);
 
-            yellow_loop.update(
-                &ct.delta,
-                vec![&epump],
-                Vec::new(),
-                Vec::new(),
-                vec![&ptu],
-            );
-            green_loop.update(
-                &ct.delta,
-                Vec::new(),
-                vec![&edp1],
-                Vec::new(),
-                vec![&ptu],
-            );
+            yellow_loop.update(&ct.delta, vec![&epump], Vec::new(), Vec::new(), vec![&ptu]);
+            green_loop.update(&ct.delta, Vec::new(), vec![&edp1], Vec::new(), vec![&ptu]);
 
             LoopHistory.update(
                 ct.delta.as_secs_f64(),
