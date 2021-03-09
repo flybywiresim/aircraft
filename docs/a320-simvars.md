@@ -752,7 +752,7 @@
         - 2
 
 - A32NX_HYD_{loop_name}_PRESSURE
-    - Pressure
+    - Psi
     - Current pressure in the {loop_name} hydraulic circuit
     - {loop_name}
         - GREEN
@@ -760,7 +760,7 @@
         - YELLOW
 
 - A32NX_HYD_{loop_name}_RESERVOIR
-    - Volume
+    - Gallon
     - Current fluid level in the {loop_name} hydraulic circuit reservoir
     - {loop_name}
         - GREEN
@@ -818,7 +818,7 @@
     - Power Transfer Unit instantaneous flow in motor side
 
 - A32NX_HYD_RAT_STOW_POSITION
-    - Position [0.0 : 1.0]
+    - Percent over 100
     - RAT position, from fully stowed (0) to fully deployed (1)
 
 - A32NX_HYD_RAT_RPM
@@ -826,21 +826,21 @@
     - RAT propeller current RPM
 
 - A32NX_HYD_BRAKE_NORM_{brake_side}_PRESS
-    - psi
+    - Psi
     - Current pressure in brake slave circuit on green brake circuit
     - {brake_side}
         - LEFT
         - RIGHT
 
 - A32NX_HYD_BRAKE_ALTN_{brake_side}_PRESS
-    - psi
+    - Psi
     - Current pressure in brake slave circuit on yellow alternate brake circuit
     - {brake_side}
         - LEFT
         - RIGHT
 
 - A32NX_HYD_BRAKE_ALTN_ACC_PRESS
-    - psi
+    - Psi
     - Current pressure in brake accumulator on yellow alternate brake circuit
 
 - A32NX_FMGC_FLIGHT_PHASE
