@@ -8,5 +8,7 @@ edition = "2018"
 uom = "0.30.0"
 rand = "0.8.0"
 ntest = "0.7.2"
+
+[dev-dependencies]
 plotlib = "0.5.1"
 rustplotlib = "0.0.4"

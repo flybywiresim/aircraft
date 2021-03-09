@@ -311,21 +311,18 @@ mod tests {
     };
     use uom::si::{
         acceleration::foot_per_second_squared,
-        f64::*,
         length::foot,
         pressure::{pascal, psi},
         thermodynamic_temperature::degree_celsius,
-        time::second,
         velocity::knot,
         volume::gallon,
-        volume_rate::gallon_per_second,
     };
 
     #[test]
     //Runs engine driven pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn brake_state_at_init() {
         let init_max_vol = Volume::new::<gallon>(1.5);
-        let mut brake_circuit_unprimed = BrakeCircuit::new(
+        let brake_circuit_unprimed = BrakeCircuit::new(
             init_max_vol,
             Volume::new::<gallon>(0.0),
             Volume::new::<gallon>(0.1),
@@ -340,7 +337,7 @@ mod tests {
         assert!(brake_circuit_unprimed.accumulator_fluid_volume == Volume::new::<gallon>(0.0));
         assert!(brake_circuit_unprimed.accumulator_gas_volume == init_max_vol);
 
-        let mut brake_circuit_primed =
+        let brake_circuit_primed =
             BrakeCircuit::new(init_max_vol, init_max_vol / 2.0, Volume::new::<gallon>(0.1));
 
         assert!(

@@ -651,54 +651,51 @@ impl A320HydraulicLogic {
 
     //TODO, code duplication to handle timeouts: generic function to do
     pub fn is_cargo_operation_flag(&mut self, delta_time_update: &Duration) -> bool {
-        let cargo_door_moved = self.cargo_door_back_pos != self.cargo_door_back_pos_prev
-            || self.cargo_door_front_pos != self.cargo_door_front_pos_prev;
+        let cargo_door_moved = (self.cargo_door_back_pos - self.cargo_door_back_pos_prev).abs()
+            > f64::EPSILON
+            || (self.cargo_door_front_pos - self.cargo_door_front_pos_prev).abs() > f64::EPSILON;
 
         if cargo_door_moved {
             self.cargo_door_timer =
                 Duration::from_secs_f64(A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_YPUMP);
+        } else if self.cargo_door_timer > *delta_time_update {
+            self.cargo_door_timer -= *delta_time_update;
         } else {
-            if self.cargo_door_timer > *delta_time_update {
-                self.cargo_door_timer -= *delta_time_update;
-            } else {
-                self.cargo_door_timer = Duration::from_secs(0);
-            }
+            self.cargo_door_timer = Duration::from_secs(0);
         }
 
         self.cargo_door_timer > Duration::from_secs_f64(0.0)
     }
 
     pub fn is_cargo_operation_ptu_flag(&mut self, delta_time_update: &Duration) -> bool {
-        let cargo_door_moved = self.cargo_door_back_pos != self.cargo_door_back_pos_prev
-            || self.cargo_door_front_pos != self.cargo_door_front_pos_prev;
+        let cargo_door_moved = (self.cargo_door_back_pos - self.cargo_door_back_pos_prev).abs()
+            > f64::EPSILON
+            || (self.cargo_door_front_pos - self.cargo_door_front_pos_prev).abs() > f64::EPSILON;
 
         if cargo_door_moved {
             self.cargo_door_timer_ptu =
                 Duration::from_secs_f64(A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_PTU);
+        } else if self.cargo_door_timer_ptu > *delta_time_update {
+            self.cargo_door_timer_ptu -= *delta_time_update;
         } else {
-            if self.cargo_door_timer_ptu > *delta_time_update {
-                self.cargo_door_timer_ptu -= *delta_time_update;
-            } else {
-                self.cargo_door_timer_ptu = Duration::from_secs(0);
-            }
+            self.cargo_door_timer_ptu = Duration::from_secs(0);
         }
 
         self.cargo_door_timer_ptu > Duration::from_secs_f64(0.0)
     }
 
     pub fn is_nsw_pin_inserted_flag(&mut self, delta_time_update: &Duration) -> bool {
-        let pushback_in_progress =
-            (self.pushback_angle != self.pushback_angle_prev) && self.pushback_state != 3.0;
+        let pushback_in_progress = (self.pushback_angle - self.pushback_angle_prev).abs()
+            > f64::EPSILON
+            && (self.pushback_state - 3.0).abs() > f64::EPSILON;
 
         if pushback_in_progress {
             self.nws_tow_engaged_timer =
                 Duration::from_secs_f64(A320HydraulicLogic::NWS_PIN_REMOVE_TIMEOUT);
+        } else if self.nws_tow_engaged_timer > *delta_time_update {
+            self.nws_tow_engaged_timer -= *delta_time_update; //TODO CHECK if rollover issue to expect if not limiting to 0
         } else {
-            if self.nws_tow_engaged_timer > *delta_time_update {
-                self.nws_tow_engaged_timer -= *delta_time_update; //TODO CHECK if rollover issue to expect if not limiting to 0
-            } else {
-                self.nws_tow_engaged_timer = Duration::from_secs(0);
-            }
+            self.nws_tow_engaged_timer = Duration::from_secs(0);
         }
 
         self.nws_tow_engaged_timer > Duration::from_secs(0)
@@ -805,36 +802,10 @@ impl SimulationElement for A320HydraulicOverheadPanel {
 #[cfg(test)]
 pub mod tests {
     use std::time::Duration;
-
-    use uom::si::{
-        acceleration::{foot_per_second_squared, Acceleration},
-        f64::*,
-        length::foot,
-        thermodynamic_temperature::degree_celsius,
-        velocity::knot,
-    };
-
     use super::A320HydraulicLogic;
-    use super::A320HydraulicOverheadPanel;
-    use crate::UpdateContext;
-
-    fn overhead() -> A320HydraulicOverheadPanel {
-        A320HydraulicOverheadPanel::new()
-    }
 
     fn hyd_logic() -> A320HydraulicLogic {
         A320HydraulicLogic::new()
-    }
-
-    fn context(delta_time: Duration) -> UpdateContext {
-        UpdateContext::new(
-            delta_time,
-            Velocity::new::<knot>(0.),
-            Length::new::<foot>(2000.),
-            ThermodynamicTemperature::new::<degree_celsius>(25.0),
-            true,
-            Acceleration::new::<foot_per_second_squared>(0.),
-        )
     }
 
     #[test]
