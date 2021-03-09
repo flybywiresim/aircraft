@@ -365,7 +365,7 @@ impl HydLoop {
         //PTU flows handling
         let mut ptu_act = false;
         for ptu in ptus {
-            let mut actual_flow = VolumeRate::new::<gallon_per_second>(0.0);
+            let actual_flow ;
             if self.connected_to_ptu_left_side {
                 if ptu.is_active_left || ptu.is_active_right {
                     ptu_act = true;
@@ -1598,8 +1598,8 @@ mod tests {
 
     struct PressureCaracteristic {
         pressure: Pressure,
-        rpmTab: Vec<f64>,
-        flowTab: Vec<f64>,
+        rpm_tab: Vec<f64>,
+        flow_tab: Vec<f64>,
     }
 
     mod characteristics_tests {
@@ -1620,7 +1620,7 @@ mod tests {
                 currAxis = currAxis
                     .add(
                         Line2D::new(press_str.as_str())
-                            .data(&curPressure.rpmTab, &curPressure.flowTab)
+                            .data(&curPressure.rpm_tab, &curPressure.flow_tab)
                             .color(colors[colorIdx])
                             //.marker("x")
                             .linestyle(linestyles[styleIdx])
@@ -1629,7 +1629,7 @@ mod tests {
                     .xlabel("RPM")
                     .ylabel("Max Flow")
                     .legend("best")
-                    .xlim(0.0, *curPressure.rpmTab.last().unwrap());
+                    .xlim(0.0, *curPressure.rpm_tab.last().unwrap());
                 //.ylim(-2.0, 2.0);
                 colorIdx = (colorIdx + 1) % colors.len();
                 styleIdx = (styleIdx + 1) % linestyles.len();
@@ -1659,22 +1659,22 @@ mod tests {
 
             epump.start();
             for pressure in (0..3500).step_by(500) {
-                let mut rpmTab: Vec<f64> = Vec::new();
-                let mut flowTab: Vec<f64> = Vec::new();
+                let mut rpm_tab: Vec<f64> = Vec::new();
+                let mut flow_tab: Vec<f64> = Vec::new();
                 for rpm in (0..10000).step_by(150) {
                     green_loop.loop_pressure = Pressure::new::<psi>(pressure as f64);
                     epump.rpm = rpm as f64;
                     epump.update(&context.delta, &green_loop);
-                    rpmTab.push(rpm as f64);
+                    rpm_tab.push(rpm as f64);
                     let flow = epump.get_delta_vol_max()
                         / Time::new::<second>(context.delta.as_secs_f64());
                     let flowGal = flow.get::<gallon_per_second>() as f64;
-                    flowTab.push(flowGal);
+                    flow_tab.push(flowGal);
                 }
                 outputCaracteristics.push(PressureCaracteristic {
                     pressure: green_loop.loop_pressure,
-                    rpmTab,
-                    flowTab,
+                    rpm_tab,
+                    flow_tab,
                 });
             }
             show_carac("Epump_carac", &outputCaracteristics);
@@ -1695,8 +1695,8 @@ mod tests {
 
             edpump.update(&context.delta, &green_loop, &engine1);
             for pressure in (0..3500).step_by(500) {
-                let mut rpmTab: Vec<f64> = Vec::new();
-                let mut flowTab: Vec<f64> = Vec::new();
+                let mut rpm_tab: Vec<f64> = Vec::new();
+                let mut flow_tab: Vec<f64> = Vec::new();
                 for rpm in (0..10000).step_by(150) {
                     green_loop.loop_pressure = Pressure::new::<psi>(pressure as f64);
 
@@ -1706,16 +1706,16 @@ mod tests {
                                 * EngineDrivenPump::LEAP_1A26_MAX_N2_RPM),
                     );
                     edpump.update(&context.delta, &green_loop, &engine1);
-                    rpmTab.push(rpm as f64);
+                    rpm_tab.push(rpm as f64);
                     let flow = edpump.get_delta_vol_max()
                         / Time::new::<second>(context.delta.as_secs_f64());
-                    let flowGal = flow.get::<gallon_per_second>() as f64;
-                    flowTab.push(flowGal);
+                    let flow_gal = flow.get::<gallon_per_second>() as f64;
+                    flow_tab.push(flow_gal);
                 }
                 outputCaracteristics.push(PressureCaracteristic {
                     pressure: green_loop.loop_pressure,
-                    rpmTab,
-                    flowTab,
+                    rpm_tab,
+                    flow_tab,
                 });
             }
             show_carac("Eng_Driv_pump_carac", &outputCaracteristics);
@@ -1763,13 +1763,13 @@ mod tests {
 
             //Speed check
             let mut rng = rand::thread_rng();
-            let timeStart = Instant::now();
+            let time_start = Instant::now();
             for idx in 0..1000000 {
-                let testVal = rng.gen_range(xs1[0]..*xs1.last().unwrap());
-                let mut res = interpolation(&xs1, &ys1, testVal);
+                let test_val = rng.gen_range(xs1[0]..*xs1.last().unwrap());
+                let mut res = interpolation(&xs1, &ys1, test_val);
                 res = res + 2.78;
             }
-            let time_elapsed = timeStart.elapsed();
+            let time_elapsed = time_start.elapsed();
 
             println!(
                 "Time elapsed for 1000000 calls {} s",
@@ -1819,13 +1819,13 @@ mod tests {
         fn get_edp_actual_delta_vol_when(n2: Ratio, pressure: Pressure, time: Duration) -> Volume {
             let eng = engine(n2);
             let mut edp = engine_driven_pump();
-            let dummyUpdate = Duration::from_secs(1);
+            let dummy_update = Duration::from_secs(1);
             let mut context = context(time);
             let mut line = hydraulic_loop(LoopColor::Green);
 
             edp.start();
             line.loop_pressure = pressure;
-            edp.update(&dummyUpdate, &line, &eng); //Update 10 times to stabilize displacement
+            edp.update(&dummy_update, &line, &eng); //Update 10 times to stabilize displacement
 
             edp.update(&time, &line, &eng);
             edp.get_delta_vol_max()

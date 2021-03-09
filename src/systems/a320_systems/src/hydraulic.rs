@@ -839,7 +839,6 @@ pub mod tests {
 
     #[test]
     fn is_nws_pin_engaged_test() {
-        let mut overhead = overhead();
         let mut logic = hyd_logic();
 
         let update_delta = Duration::from_secs_f64(0.08);
