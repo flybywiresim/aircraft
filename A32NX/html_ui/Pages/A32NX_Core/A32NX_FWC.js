@@ -354,9 +354,10 @@ class A32NX_FWC {
         // - Landing gear down & slats extended
         // - Glide slope captured
         // - Landing locked down
-        const landingGearIsDown = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
+
+        const landingGearIsDown = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum") >= 1 && SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
         const glideSlopeCaptured = SimVar.GetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool") === 1;
-        const landingGearIsLcokedDown = true;
+        const landingGearIsLcokedDown = SimVar.GetSimVarValue("GEAR POSITION:0", "Enum") > 0.9;
         if (landingGearIsDown || glideSlopeCaptured || landingGearIsLcokedDown) {
             this._wasBellowThreshold = false;
             this._wasAboveThreshold = false;
