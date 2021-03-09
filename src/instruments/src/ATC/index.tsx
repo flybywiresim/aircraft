@@ -12,7 +12,8 @@ const getDigitsFromBco16 = (code: number): number[] => {
         codeCopy = Math.floor(codeCopy / 16);
     }
     if (digits.length < 4) {
-        for (let i = 0; i <= 4 - digits.length; i++) {
+        const digitsToAdd = 4 - digits.length;
+        for (let i = 0; i < digitsToAdd; i++) {
             digits.push(0);
         }
     }

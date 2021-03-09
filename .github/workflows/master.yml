@@ -14,6 +14,7 @@ jobs:
       MASTER_PRE_RELEASE_TAG: vmaster
       MASTER_ZIP_NAME: A32NX-master.zip
       BUILD_DIR_NAME: vmaster
+      CDN_DIR: /flybywiresim/addons/a32nx/vmaster/
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
@@ -23,8 +24,10 @@ jobs:
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
           ./scripts/dev-env/run.sh ./scripts/build.sh
-      - name: Build ZIP file
+      - name: Build ZIP files
         run: |
+          ./scripts/dev-env/run.sh node ./scripts/fragment.js
+
           mkdir ./${{ env.BUILD_DIR_NAME }}
           zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./A32NX/
       - name: Get and delete master pre-release zip asset
@@ -62,7 +65,16 @@ jobs:
             --data-raw '{
               "body": "This pre-release has its ${{ env.MASTER_ZIP_NAME }} asset updated on every commit to the master branch\nDo not use the source code assets, they are never updated\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.MASTER_PRE_RELEASE_TAG }}/${{ env.MASTER_ZIP_NAME }}"
             }'
-      - name: Upload to CDN
+      - name: Upload to Bunny CDN
+        uses: sebastianpopp/ftp-action@releases/v2
+        with:
+          host: ${{ secrets.BUNNY_BUCKET_HOST }}
+          user: ${{ secrets.BUNNY_BUCKET_USERNAME }}
+          password: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
+          localDir: ./build-modules/
+          remoteDir: ${{ env.CDN_DIR }}
+          options: "--delete --transfer-all --ignore-size --ignore-time --verbose"
+      - name: Upload to DigitalOcean CDN
         uses: LibreTexts/do-space-sync-action@master
         with:
           args: --acl public-read
