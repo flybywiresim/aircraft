@@ -23098,7 +23098,7 @@
             ]
         },
         {
-            "name": "HANDLING_Wipers",
+            "name": "HANDLING_Wiper_left",
             "channels": [
                 {
                     "sampler": 0,
@@ -23111,22 +23111,7 @@
                     "target": { "node": 315, "path": "translation" }
                 },
                 { "sampler": 4, "target": { "node": 315, "path": "rotation" } },
-                { "sampler": 5, "target": { "node": 315, "path": "scale" } },
-                {
-                    "sampler": 6,
-                    "target": { "node": 318, "path": "translation" }
-                },
-                { "sampler": 7, "target": { "node": 318, "path": "rotation" } },
-                { "sampler": 8, "target": { "node": 318, "path": "scale" } },
-                {
-                    "sampler": 9,
-                    "target": { "node": 319, "path": "translation" }
-                },
-                {
-                    "sampler": 10,
-                    "target": { "node": 319, "path": "rotation" }
-                },
-                { "sampler": 11, "target": { "node": 319, "path": "scale" } }
+                { "sampler": 5, "target": { "node": 315, "path": "scale" } }
             ],
             "samplers": [
                 { "input": 690, "output": 691, "interpolation": "LINEAR" },
@@ -23134,7 +23119,29 @@
                 { "input": 694, "output": 695, "interpolation": "LINEAR" },
                 { "input": 696, "output": 697, "interpolation": "LINEAR" },
                 { "input": 698, "output": 699, "interpolation": "LINEAR" },
-                { "input": 700, "output": 701, "interpolation": "LINEAR" },
+                { "input": 700, "output": 701, "interpolation": "LINEAR" }
+            ]
+        },
+        {
+            "name": "HANDLING_Wiper_right",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": { "node": 318, "path": "translation" }
+                },
+                { "sampler": 1, "target": { "node": 318, "path": "rotation" } },
+                { "sampler": 2, "target": { "node": 318, "path": "scale" } },
+                {
+                    "sampler": 3,
+                    "target": { "node": 319, "path": "translation" }
+                },
+                {
+                    "sampler": 4,
+                    "target": { "node": 319, "path": "rotation" }
+                },
+                { "sampler": 5, "target": { "node": 319, "path": "scale" } }
+            ],
+            "samplers": [
                 { "input": 702, "output": 703, "interpolation": "LINEAR" },
                 { "input": 704, "output": 705, "interpolation": "LINEAR" },
                 { "input": 706, "output": 707, "interpolation": "LINEAR" },
