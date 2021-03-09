@@ -329,10 +329,12 @@ class A32NX_FWC {
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
         }
 
+        // Use FCU displayed value
         const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
         const currentFCUAltitude = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
         const targetAltitude = currentAltitudeConstraint && !this.hasAltitudeConstraint() ? currentAltitudeConstraint : currentFCUAltitude;
         if (currentFCUAltitude === 0) {
+            // Use default 5,000 number on init process due to late update
             SimVar.SetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number", 5000);
         }
 
@@ -349,11 +351,13 @@ class A32NX_FWC {
         }
 
         // Exit when:
-        // - Landing gear down
+        // - Landing gear down & slats extended
         // - Glide slope captured
+        // - Landing locked down
         const landingGearIsDown = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
         const glideSlopeCaptured = SimVar.GetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool") === 1;
-        if (landingGearIsDown || glideSlopeCaptured) {
+        const landingGearIsLcokedDown = true;
+        if (landingGearIsDown || glideSlopeCaptured || landingGearIsLcokedDown) {
             this._wasBellowThreshold = false;
             this._wasAboveThreshold = false;
             this._wasInRange = false;
