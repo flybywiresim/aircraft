@@ -40,7 +40,10 @@ double InterpolatingLookupTable::get(double value) {
       double diff_n = mappingTable[i + 1].first - mappingTable[i].first;
 
       // interpolation
-      double result = mappingTable[i].second + (mappingTable[i + 1].second - mappingTable[i].second) * diff_x / diff_n;
+      double result = mappingTable[i].first;
+      if (diff_n != 0) {
+        result = mappingTable[i].second + (mappingTable[i + 1].second - mappingTable[i].second) * diff_x / diff_n;
+      }
 
       // clip the result to minimum and maximum
       if (result < mappingMinimum) {

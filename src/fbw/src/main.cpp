@@ -23,9 +23,7 @@
 
 FlyByWireInterface flyByWireInterface;
 
-__attribute__((export_name("fbw_gauge_callback"))) extern "C" bool fbw_gauge_callback(FsContext ctx,
-                                                                                      int service_id,
-                                                                                      void* pData) {
+__attribute__((export_name("fbw_gauge_callback"))) extern "C" bool fbw_gauge_callback(FsContext ctx, int service_id, void* pData) {
   // print event type
   switch (service_id) {
     case PANEL_SERVICE_PRE_INSTALL: {

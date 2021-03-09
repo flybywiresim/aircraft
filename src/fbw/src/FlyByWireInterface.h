@@ -29,6 +29,7 @@
 #include "InterpolatingLookupTable.h"
 #include "RateLimiter.h"
 #include "SimConnectInterface.h"
+#include "ThrottleAxisMapping.h"
 
 class FlyByWireInterface {
  public:
@@ -39,18 +40,7 @@ class FlyByWireInterface {
   bool update(double sampleTime);
 
  private:
-  const std::string MODEL_CONFIGURATION_FILEPATH = "\\work\\ModelConfiguration.ini";
-  const std::string THROTTLE_CONFIGURATION_FILEPATH = "\\work\\ThrottleConfiguration.ini";
-
-  bool isThrottleLoggingEnabled = false;
-  bool isThrottleHandlingEnabled = false;
-  bool useReverseOnAxis = false;
-  bool useReverseIdle = false;
-  double idleThrottleInput = 0;
-  double throttleDetentDeadZone = 2.0;
-
-  double lastThrottleInput_1 = -1;
-  double lastThrottleInput_2 = -1;
+  const std::string CONFIGURATION_FILEPATH = "\\work\\ModelConfiguration.ini";
 
   double previousSimulationTime = 0;
 
@@ -149,30 +139,21 @@ class FlyByWireInterface {
   ID idAutothrustStatus;
   ID idAutothrustMode;
   ID idAutothrustModeMessage;
-  ID idAutothrust_TLA_1;
-  ID idAutothrust_TLA_2;
   ID idThrottlePosition3d_1;
   ID idThrottlePosition3d_2;
-  InterpolatingLookupTable idThrottlePositionLookupTable;
+  InterpolatingLookupTable idThrottlePositionLookupTable3d;
+
+  std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
+
+  void loadConfiguration();
+  void setupLocalVariables();
 
   bool readDataAndLocalVariables(double sampleTime);
 
   bool updateAutopilotStateMachine(double sampleTime);
-
   bool updateAutopilotLaws(double sampleTime);
-
   bool updateFlyByWire(double sampleTime);
-
-  void setupLocalVariables();
-
-  void loadConfiguration();
-
-  void initializeThrottles();
-
-  bool processThrottles();
-
-  double calculateDeadzones(double deadzone, double input);
-  double calculateDeadzone(double deadzone, double target, double input);
+  bool updateAutothrust(double sampleTime);
 
   double smoothFlightDirector(double sampleTime, double factor, double limit, double currentValue, double targetValue);
 };

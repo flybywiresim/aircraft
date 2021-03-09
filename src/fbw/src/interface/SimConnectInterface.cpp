@@ -23,12 +23,10 @@
 
 using namespace std;
 
-bool SimConnectInterface::connect(bool isThrottleHandlingEnabled,
-                                  double idleThrottleInput,
-                                  bool useReverseOnAxis,
-                                  bool autopilotStateMachineEnabled,
+bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
                                   bool autopilotLawsEnabled,
-                                  bool flyByWireEnabled) {
+                                  bool flyByWireEnabled,
+                                  const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis) {
   // info message
   cout << "WASM: Connecting..." << endl;
 
@@ -39,17 +37,11 @@ bool SimConnectInterface::connect(bool isThrottleHandlingEnabled,
     // we are now connected
     isConnected = true;
     cout << "WASM: Connected" << endl;
-    // store is reverse is mapped to axis
-    this->useReverseOnAxis = useReverseOnAxis;
-    // store idle level
-    this->idleThrottleInput = idleThrottleInput;
-    // initialize inputs with idle input
-    simInputThrottles.throttles[0] = idleThrottleInput;
-    simInputThrottles.throttles[1] = idleThrottleInput;
+    // store throttle axis handler
+    this->throttleAxis = throttleAxis;
     // add data to definition
     bool prepareResult = prepareSimDataSimConnectDataDefinitions();
-    prepareResult &= prepareSimInputSimConnectDataDefinitions(isThrottleHandlingEnabled, autopilotStateMachineEnabled,
-                                                              autopilotLawsEnabled, flyByWireEnabled);
+    prepareResult &= prepareSimInputSimConnectDataDefinitions(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled);
     prepareResult &= prepareSimOutputSimConnectDataDefinitions();
     prepareResult &= prepareClientDataDefinitions();
     // check result
@@ -90,12 +82,9 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PLANE BANK DEGREES", "DEGREE");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_XYZ, "STRUCT BODY ROTATION VELOCITY", "STRUCT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_XYZ, "STRUCT BODY ROTATION ACCELERATION", "STRUCT");
-  result &=
-      addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "ACCELERATION BODY Z", "METER PER SECOND SQUARED");
-  result &=
-      addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "ACCELERATION BODY X", "METER PER SECOND SQUARED");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "ACCELERATION WORLD Y",
-                              "METER PER SECOND SQUARED");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "ACCELERATION BODY Z", "METER PER SECOND SQUARED");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "ACCELERATION BODY X", "METER PER SECOND SQUARED");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "ACCELERATION WORLD Y", "METER PER SECOND SQUARED");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PLANE HEADING DEGREES MAGNETIC", "DEGREES");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PLANE HEADING DEGREES TRUE", "DEGREES");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GPS GROUND MAGNETIC TRACK", "DEGREES");
@@ -121,10 +110,8 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:1", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR ANIMATION POSITION:2", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FLAPS HANDLE INDEX", "NUMBER");
-  result &=
-      addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS LEFT POSITION", "PERCENT OVER 100");
-  result &=
-      addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS RIGHT POSITION", "PERCENT OVER 100");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS LEFT POSITION", "PERCENT OVER 100");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "SPOILERS RIGHT POSITION", "PERCENT OVER 100");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "IS SLEW ACTIVE", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "AUTOPILOT MASTER", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "AUTOPILOT FLIGHT DIRECTOR ACTIVE:1", "BOOL");
@@ -137,8 +124,7 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "LINEAR CL ALPHA", "PER DEGREE");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "STALL ALPHA", "DEGREE");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "ZERO LIFT ALPHA", "DEGREE");
-  result &=
-      addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "AMBIENT DENSITY", "KILOGRAM PER CUBIC METER");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "AMBIENT DENSITY", "KILOGRAM PER CUBIC METER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "AMBIENT PRESSURE", "MILLIBARS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "AMBIENT TEMPERATURE", "CELSIUS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "AMBIENT WIND X", "KNOTS");
@@ -149,10 +135,8 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TOTAL AIR TEMPERATURE", "CELSIUS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PLANE LATITUDE", "DEGREES");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "PLANE LONGITUDE", "DEGREES");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:1",
-                              "PERCENT");
-  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:2",
-                              "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:1", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:2", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG JET THRUST:1", "POUNDS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG JET THRUST:2", "POUNDS");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "NAV HAS NAV:3", "BOOL");
@@ -182,8 +166,7 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   return result;
 }
 
-bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool isThrottleHandlingEnabled,
-                                                                   bool autopilotStateMachineEnabled,
+bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilotStateMachineEnabled,
                                                                    bool autopilotLawsEnabled,
                                                                    bool flyByWireEnabled) {
   bool result = true;
@@ -203,8 +186,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool isThrott
   result &= addInputDataDefinition(hSimConnect, 0, Events::AILERONS_LEFT, "AILERONS_LEFT", flyByWireEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AILERONS_RIGHT, "AILERONS_RIGHT", flyByWireEnabled);
 
-  result &=
-      addInputDataDefinition(hSimConnect, 0, Events::CENTER_AILER_RUDDER, "CENTER_AILER_RUDDER", flyByWireEnabled);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::CENTER_AILER_RUDDER, "CENTER_AILER_RUDDER", flyByWireEnabled);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEVATOR_SET, "ELEVATOR_SET", flyByWireEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_DOWN, "ELEV_DOWN", flyByWireEnabled);
@@ -223,53 +205,56 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool isThrott
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_LOC_PUSH, "A32NX.FCU_LOC_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_APPR_PUSH, "A32NX.FCU_APPR_PUSH", false);
 
-  if (isThrottleHandlingEnabled) {
-    result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_ARM, "AUTO_THROTTLE_ARM", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_ARM, "AUTO_THROTTLE_ARM", true);
 
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_SET, "THROTTLE_SET", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_SET, "THROTTLE1_SET", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_SET, "THROTTLE2_SET", true);
+  result &=
+      addInputDataDefinition(hSimConnect, 0, Events::A32NX_THROTTLE_MAPPING_LOAD_FROM_FILE, "A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES,
+                                   "A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES", false);
+  result &=
+      addInputDataDefinition(hSimConnect, 0, Events::A32NX_THROTTLE_MAPPING_SAVE_TO_FILE, "A32NX.THROTTLE_MAPPING_SAVE_TO_FILE", false);
 
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_AXIS_SET_EX1, "THROTTLE_AXIS_SET_EX1", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_AXIS_SET_EX1, "THROTTLE1_AXIS_SET_EX1", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_AXIS_SET_EX1, "THROTTLE2_AXIS_SET_EX1", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_SET, "THROTTLE_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_SET, "THROTTLE1_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_SET, "THROTTLE2_SET", true);
 
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_FULL, "THROTTLE_FULL", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_CUT, "THROTTLE_CUT", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_INCR, "THROTTLE_INCR", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_DECR, "THROTTLE_DECR", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_INCR_SMALL, "THROTTLE_INCR_SMALL", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_DECR_SMALL, "THROTTLE_DECR_SMALL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_AXIS_SET_EX1, "THROTTLE_AXIS_SET_EX1", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_AXIS_SET_EX1, "THROTTLE1_AXIS_SET_EX1", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_AXIS_SET_EX1, "THROTTLE2_AXIS_SET_EX1", true);
 
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_10, "THROTTLE_10", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_20, "THROTTLE_20", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_30, "THROTTLE_30", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_40, "THROTTLE_40", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_50, "THROTTLE_50", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_60, "THROTTLE_60", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_70, "THROTTLE_70", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_80, "THROTTLE_80", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_90, "THROTTLE_90", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_FULL, "THROTTLE_FULL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_CUT, "THROTTLE_CUT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_INCR, "THROTTLE_INCR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_DECR, "THROTTLE_DECR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_INCR_SMALL, "THROTTLE_INCR_SMALL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_DECR_SMALL, "THROTTLE_DECR_SMALL", true);
 
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_FULL, "THROTTLE1_FULL", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_CUT, "THROTTLE1_CUT", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_INCR, "THROTTLE1_INCR", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_DECR, "THROTTLE1_DECR", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_INCR_SMALL, "THROTTLE1_INCR_SMALL", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_DECR_SMALL, "THROTTLE1_DECR_SMALL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_10, "THROTTLE_10", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_20, "THROTTLE_20", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_30, "THROTTLE_30", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_40, "THROTTLE_40", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_50, "THROTTLE_50", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_60, "THROTTLE_60", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_70, "THROTTLE_70", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_80, "THROTTLE_80", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_90, "THROTTLE_90", true);
 
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_FULL, "THROTTLE2_FULL", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_CUT, "THROTTLE2_CUT", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_INCR, "THROTTLE2_INCR", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_DECR, "THROTTLE2_DECR", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_INCR_SMALL, "THROTTLE2_INCR_SMALL", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_DECR_SMALL, "THROTTLE2_DECR_SMALL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_FULL, "THROTTLE1_FULL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_CUT, "THROTTLE1_CUT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_INCR, "THROTTLE1_INCR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_DECR, "THROTTLE1_DECR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_INCR_SMALL, "THROTTLE1_INCR_SMALL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE1_DECR_SMALL, "THROTTLE1_DECR_SMALL", true);
 
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_REVERSE_THRUST_TOGGLE,
-                                     "THROTTLE_REVERSE_THRUST_TOGGLE", true);
-    result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_REVERSE_THRUST_HOLD,
-                                     "THROTTLE_REVERSE_THRUST_HOLD", true);
-  }
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_FULL, "THROTTLE2_FULL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_CUT, "THROTTLE2_CUT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_INCR, "THROTTLE2_INCR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_DECR, "THROTTLE2_DECR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_INCR_SMALL, "THROTTLE2_INCR_SMALL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_DECR_SMALL, "THROTTLE2_DECR_SMALL", true);
+
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_REVERSE_THRUST_TOGGLE, "THROTTLE_REVERSE_THRUST_TOGGLE", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_REVERSE_THRUST_HOLD, "THROTTLE_REVERSE_THRUST_HOLD", true);
 
   return result;
 }
@@ -285,14 +270,10 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
 
   result &= addDataDefinition(hSimConnect, 3, SIMCONNECT_DATATYPE_FLOAT64, "RUDDER TRIM PCT", "PERCENT OVER 100");
 
-  result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:1",
-                              "PERCENT");
-  result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:2",
-                              "PERCENT");
-  result &=
-      addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:1", "NUMBER");
-  result &=
-      addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:2", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:1", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:2", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:1", "NUMBER");
+  result &= addDataDefinition(hSimConnect, 4, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE MANAGED MODE:2", "NUMBER");
 
   return result;
 }
@@ -304,78 +285,74 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   // ------------------------------------------------------------------------------------------------------------------
 
   // map client id
-  result = SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_AUTOPILOT_STATE_MACHINE",
-                                            ClientData::AUTOPILOT_STATE_MACHINE);
+  result = SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_AUTOPILOT_STATE_MACHINE", ClientData::AUTOPILOT_STATE_MACHINE);
   // create client data
-  result &=
-      SimConnect_CreateClientData(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                  sizeof(ClientDataAutopilotStateMachine), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, sizeof(ClientDataAutopilotStateMachine),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_INT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_INT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
 
   // request data to be updated when set
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE,
-                                         ClientData::AUTOPILOT_STATE_MACHINE, ClientData::AUTOPILOT_STATE_MACHINE,
-                                         SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, ClientData::AUTOPILOT_STATE_MACHINE,
+                                         ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
 
   // ------------------------------------------------------------------------------------------------------------------
 
   // map client id
-  result &=
-      SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_AUTOPILOT_LAWS", ClientData::AUTOPILOT_LAWS);
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_AUTOPILOT_LAWS", ClientData::AUTOPILOT_LAWS);
   // create client data
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::AUTOPILOT_LAWS, sizeof(ClientDataAutopilotLaws),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_INT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_INT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
 
   // request data to be updated when set
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOPILOT_LAWS, ClientData::AUTOPILOT_LAWS,
-                                         ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOPILOT_LAWS, ClientData::AUTOPILOT_LAWS, ClientData::AUTOPILOT_LAWS,
+                                         SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
 
   // ------------------------------------------------------------------------------------------------------------------
 
@@ -409,111 +386,109 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
 
   // request data to be updated when set
-  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOTHRUST, ClientData::AUTOTHRUST,
-                                         ClientData::AUTOTHRUST, SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+  result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOTHRUST, ClientData::AUTOTHRUST, ClientData::AUTOTHRUST,
+                                         SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET);
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  // map client id
+  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_LOCAL_VARIABLES", ClientData::LOCAL_VARIABLES);
+  // create client data
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES, sizeof(ClientDataLocalVariables),
+                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+  // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
 
   // ------------------------------------------------------------------------------------------------------------------
 
   // map client id
   result &=
-      SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_LOCAL_VARIABLES", ClientData::LOCAL_VARIABLES);
-  // create client data
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES, sizeof(ClientDataLocalVariables),
-                                        SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-
-  // ------------------------------------------------------------------------------------------------------------------
-
-  // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_LOCAL_VARIABLES_AUTOTHRUST",
-                                             ClientData::LOCAL_VARIABLES_AUTOTHRUST);
+      SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_LOCAL_VARIABLES_AUTOTHRUST", ClientData::LOCAL_VARIABLES_AUTOTHRUST);
   // create client
-  result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                        sizeof(ClientDataLocalVariablesAutothrust),
+  result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, sizeof(ClientDataLocalVariablesAutothrust),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST,
-                                                 SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
 
   // ------------------------------------------------------------------------------------------------------------------
 
@@ -548,8 +523,7 @@ bool SimConnectInterface::requestData() {
   }
 
   // request data
-  HRESULT result =
-      SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
+  HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
 
   // check result of data request
   if (result != S_OK) {
@@ -684,18 +658,6 @@ ClientDataAutothrust SimConnectInterface::getClientDataAutothrust() {
   return clientDataAutothrust;
 }
 
-bool SimConnectInterface::getIsAutothrottlesArmed() {
-  return isAutothrustArmed;
-}
-
-bool SimConnectInterface::getIsAnyReverseToggleActive() {
-  return isReverseToggleActive || isReverseToggleKeyActive[0] || isReverseToggleKeyActive[1];
-}
-
-bool SimConnectInterface::getIsReverseToggleActive(int index) {
-  return isReverseToggleActive || isReverseToggleKeyActive[index];
-}
-
 void SimConnectInterface::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
   switch (pData->dwID) {
     case SIMCONNECT_RECV_ID_OPEN:
@@ -727,8 +689,7 @@ void SimConnectInterface::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pDat
     case SIMCONNECT_RECV_ID_EXCEPTION:
       // exception
       cout << "WASM: Exception in SimConnect connection: ";
-      cout << getSimConnectExceptionString(
-          static_cast<SIMCONNECT_EXCEPTION>(static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
+      cout << getSimConnectExceptionString(static_cast<SIMCONNECT_EXCEPTION>(static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
       cout << endl;
       break;
 
@@ -876,323 +837,215 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
 
     case Events::AUTO_THROTTLE_ARM: {
       simInputThrottles.ATHR_push = 1;
-      isAutothrustArmed = !isAutothrustArmed;
       cout << "WASM: event triggered: AUTO_THROTTLE_ARM" << endl;
       break;
     }
 
-    case Events::THROTTLE_SET:
-      simInputThrottles.throttles[0] = static_cast<long>(event->dwData) / 16384.0;
-      simInputThrottles.throttles[1] = static_cast<long>(event->dwData) / 16384.0;
+    case Events::A32NX_THROTTLE_MAPPING_LOAD_FROM_FILE: {
+      cout << "WASM: event triggered: THROTTLE_MAPPING_LOAD_FROM_FILE" << endl;
+      throttleAxis[0]->loadFromFile();
+      throttleAxis[1]->loadFromFile();
       break;
-    case Events::THROTTLE1_SET:
-      simInputThrottles.throttles[0] = static_cast<long>(event->dwData) / 16384.0;
-      break;
-    case Events::THROTTLE2_SET:
-      simInputThrottles.throttles[1] = static_cast<long>(event->dwData) / 16384.0;
-      break;
+    }
 
-    case Events::THROTTLE_AXIS_SET_EX1:
-      if (!useReverseOnAxis && !isReverseToggleActive) {
-        isReverseToggleKeyActive[0] = false;
-        isReverseToggleKeyActive[1] = false;
-      }
-      simInputThrottles.throttles[0] = static_cast<long>(event->dwData) / 16384.0;
-      simInputThrottles.throttles[1] = static_cast<long>(event->dwData) / 16384.0;
+    case Events::A32NX_THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES: {
+      cout << "WASM: event triggered: THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES" << endl;
+      throttleAxis[0]->loadFromLocalVariables();
+      throttleAxis[1]->loadFromLocalVariables();
       break;
-    case Events::THROTTLE1_AXIS_SET_EX1:
-      if (!useReverseOnAxis && !isReverseToggleActive) {
-        isReverseToggleKeyActive[0] = false;
-      }
-      simInputThrottles.throttles[0] = static_cast<long>(event->dwData) / 16384.0;
-      break;
-    case Events::THROTTLE2_AXIS_SET_EX1:
-      if (!useReverseOnAxis && !isReverseToggleActive) {
-        isReverseToggleKeyActive[1] = false;
-      }
-      simInputThrottles.throttles[1] = static_cast<long>(event->dwData) / 16384.0;
-      break;
+    }
 
-    case Events::THROTTLE_FULL:
-      simInputThrottles.throttles[0] = 1.0;
-      simInputThrottles.throttles[1] = 1.0;
+    case Events::A32NX_THROTTLE_MAPPING_SAVE_TO_FILE: {
+      cout << "WASM: event triggered: THROTTLE_MAPPING_SAVE_TO_FILE" << endl;
+      throttleAxis[0]->saveToFile();
+      throttleAxis[1]->saveToFile();
       break;
-    case Events::THROTTLE_CUT:
-      isReverseToggleActive = false;
-      isReverseToggleKeyActive[0] = false;
-      isReverseToggleKeyActive[1] = false;
-      simInputThrottles.throttles[0] = idleThrottleInput;
-      simInputThrottles.throttles[1] = idleThrottleInput;
+    }
+
+    case Events::THROTTLE_SET: {
+      throttleAxis[0]->onEventThrottleSet(static_cast<long>(event->dwData));
+      throttleAxis[1]->onEventThrottleSet(static_cast<long>(event->dwData));
       break;
-    case Events::THROTTLE_INCR:
-      if (!useReverseOnAxis) {
-        // check if we have reached the minimum -> toggle reverse
-        if (simInputThrottles.throttles[0] == -1.0) {
-          isReverseToggleKeyActive[0] = !isReverseToggleKeyActive[0];
-        }
-        if (simInputThrottles.throttles[1] == -1.0) {
-          isReverseToggleKeyActive[1] = !isReverseToggleKeyActive[1];
-        }
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[0]) {
-        simInputThrottles.throttles[0] = max(-1.0, simInputThrottles.throttles[0] - 0.05);
-      } else {
-        simInputThrottles.throttles[0] = min(1.0, simInputThrottles.throttles[0] + 0.05);
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[1]) {
-        simInputThrottles.throttles[1] = max(-1.0, simInputThrottles.throttles[1] - 0.05);
-      } else {
-        simInputThrottles.throttles[1] = min(1.0, simInputThrottles.throttles[1] + 0.05);
-      }
+    }
+
+    case Events::THROTTLE1_SET: {
+      throttleAxis[0]->onEventThrottleSet(static_cast<long>(event->dwData));
       break;
-    case Events::THROTTLE_DECR:
-      if (!useReverseOnAxis) {
-        // check if we have reached the minimum -> toggle reverse
-        if (simInputThrottles.throttles[0] == -1.0) {
-          isReverseToggleKeyActive[0] = !isReverseToggleKeyActive[0];
-        }
-        if (simInputThrottles.throttles[1] == -1.0) {
-          isReverseToggleKeyActive[1] = !isReverseToggleKeyActive[1];
-        }
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[0]) {
-        simInputThrottles.throttles[0] = min(1.0, simInputThrottles.throttles[0] + 0.05);
-      } else {
-        simInputThrottles.throttles[0] = max(-1.0, simInputThrottles.throttles[0] - 0.05);
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[1]) {
-        simInputThrottles.throttles[1] = min(1.0, simInputThrottles.throttles[1] + 0.05);
-      } else {
-        simInputThrottles.throttles[1] = max(-1.0, simInputThrottles.throttles[1] - 0.05);
-      }
+    }
+
+    case Events::THROTTLE2_SET: {
+      throttleAxis[1]->onEventThrottleSet(static_cast<long>(event->dwData));
       break;
-    case Events::THROTTLE_INCR_SMALL:
-      if (!useReverseOnAxis) {
-        // check if we have reached the minimum -> toggle reverse
-        if (simInputThrottles.throttles[0] == -1.0) {
-          isReverseToggleKeyActive[0] = !isReverseToggleKeyActive[0];
-        }
-        if (simInputThrottles.throttles[1] == -1.0) {
-          isReverseToggleKeyActive[1] = !isReverseToggleKeyActive[1];
-        }
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[0]) {
-        simInputThrottles.throttles[0] = max(-1.0, simInputThrottles.throttles[0] - 0.025);
-      } else {
-        simInputThrottles.throttles[0] = min(1.0, simInputThrottles.throttles[0] + 0.025);
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[1]) {
-        simInputThrottles.throttles[1] = max(-1.0, simInputThrottles.throttles[1] - 0.025);
-      } else {
-        simInputThrottles.throttles[1] = min(1.0, simInputThrottles.throttles[1] + 0.025);
-      }
+    }
+
+    case Events::THROTTLE_AXIS_SET_EX1: {
+      throttleAxis[0]->onEventThrottleSet(static_cast<long>(event->dwData));
+      throttleAxis[1]->onEventThrottleSet(static_cast<long>(event->dwData));
       break;
-    case Events::THROTTLE_DECR_SMALL:
-      if (!useReverseOnAxis) {
-        // check if we have reached the minimum -> toggle reverse
-        if (simInputThrottles.throttles[0] == -1.0) {
-          isReverseToggleKeyActive[0] = !isReverseToggleKeyActive[0];
-        }
-        if (simInputThrottles.throttles[1] == -1.0) {
-          isReverseToggleKeyActive[1] = !isReverseToggleKeyActive[1];
-        }
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[0]) {
-        simInputThrottles.throttles[0] = min(1.0, simInputThrottles.throttles[0] + 0.025);
-      } else {
-        simInputThrottles.throttles[0] = max(-1.0, simInputThrottles.throttles[0] - 0.025);
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[1]) {
-        simInputThrottles.throttles[1] = min(1.0, simInputThrottles.throttles[1] + 0.025);
-      } else {
-        simInputThrottles.throttles[1] = max(-1.0, simInputThrottles.throttles[1] - 0.025);
-      }
+    }
+
+    case Events::THROTTLE1_AXIS_SET_EX1: {
+      throttleAxis[0]->onEventThrottleSet(static_cast<long>(event->dwData));
       break;
+    }
+
+    case Events::THROTTLE2_AXIS_SET_EX1: {
+      throttleAxis[1]->onEventThrottleSet(static_cast<long>(event->dwData));
+      break;
+    }
+
+    case Events::THROTTLE_FULL: {
+      throttleAxis[0]->onEventThrottleFull();
+      throttleAxis[1]->onEventThrottleFull();
+      break;
+    }
+
+    case Events::THROTTLE_CUT: {
+      throttleAxis[0]->onEventThrottleCut();
+      throttleAxis[1]->onEventThrottleCut();
+      break;
+    }
+
+    case Events::THROTTLE_INCR: {
+      throttleAxis[0]->onEventThrottleIncrease();
+      throttleAxis[1]->onEventThrottleIncrease();
+      break;
+    }
+
+    case Events::THROTTLE_DECR: {
+      throttleAxis[0]->onEventThrottleDecrease();
+      throttleAxis[1]->onEventThrottleDecrease();
+      break;
+    }
+
+    case Events::THROTTLE_INCR_SMALL: {
+      throttleAxis[0]->onEventThrottleIncreaseSmall();
+      throttleAxis[1]->onEventThrottleIncreaseSmall();
+      break;
+    }
+
+    case Events::THROTTLE_DECR_SMALL: {
+      throttleAxis[0]->onEventThrottleDecreaseSmall();
+      throttleAxis[1]->onEventThrottleDecreaseSmall();
+      break;
+    }
 
     case Events::THROTTLE_10: {
-      simInputThrottles.throttles[0] = idleThrottleInput + (10 * (fabs(idleThrottleInput - 1) / 100.0));
-      simInputThrottles.throttles[1] = simInputThrottles.throttles[0];
+      throttleAxis[0]->onEventThrottleSet_10();
+      throttleAxis[1]->onEventThrottleSet_10();
       break;
     }
 
     case Events::THROTTLE_20:
-      simInputThrottles.throttles[0] = idleThrottleInput + (20 * (fabs(idleThrottleInput - 1) / 100.0));
-      simInputThrottles.throttles[1] = simInputThrottles.throttles[0];
+      throttleAxis[0]->onEventThrottleSet_20();
+      throttleAxis[1]->onEventThrottleSet_20();
       break;
 
     case Events::THROTTLE_30:
-      simInputThrottles.throttles[0] = idleThrottleInput + (30 * (fabs(idleThrottleInput - 1) / 100.0));
-      simInputThrottles.throttles[1] = simInputThrottles.throttles[0];
+      throttleAxis[0]->onEventThrottleSet_30();
+      throttleAxis[1]->onEventThrottleSet_30();
       break;
 
     case Events::THROTTLE_40:
-      simInputThrottles.throttles[0] = idleThrottleInput + (40 * (fabs(idleThrottleInput - 1) / 100.0));
-      simInputThrottles.throttles[1] = simInputThrottles.throttles[0];
+      throttleAxis[0]->onEventThrottleSet_40();
+      throttleAxis[1]->onEventThrottleSet_40();
       break;
 
     case Events::THROTTLE_50:
-      simInputThrottles.throttles[0] = idleThrottleInput + (50 * (fabs(idleThrottleInput - 1) / 100.0));
-      simInputThrottles.throttles[1] = simInputThrottles.throttles[0];
+      throttleAxis[0]->onEventThrottleSet_50();
+      throttleAxis[1]->onEventThrottleSet_50();
       break;
 
     case Events::THROTTLE_60:
-      simInputThrottles.throttles[0] = idleThrottleInput + (60 * (fabs(idleThrottleInput - 1) / 100.0));
-      simInputThrottles.throttles[1] = simInputThrottles.throttles[0];
+      throttleAxis[0]->onEventThrottleSet_50();
+      throttleAxis[1]->onEventThrottleSet_60();
       break;
 
     case Events::THROTTLE_70:
-      simInputThrottles.throttles[0] = idleThrottleInput + (70 * (fabs(idleThrottleInput - 1) / 100.0));
-      simInputThrottles.throttles[1] = simInputThrottles.throttles[0];
+      throttleAxis[0]->onEventThrottleSet_70();
+      throttleAxis[1]->onEventThrottleSet_70();
       break;
 
     case Events::THROTTLE_80:
-      simInputThrottles.throttles[0] = idleThrottleInput + (80 * (fabs(idleThrottleInput - 1) / 100.0));
-      simInputThrottles.throttles[1] = simInputThrottles.throttles[0];
+      throttleAxis[0]->onEventThrottleSet_80();
+      throttleAxis[1]->onEventThrottleSet_80();
       break;
 
     case Events::THROTTLE_90:
-      simInputThrottles.throttles[0] = idleThrottleInput + (90 * (fabs(idleThrottleInput - 1) / 100.0));
-      simInputThrottles.throttles[1] = simInputThrottles.throttles[0];
+      throttleAxis[0]->onEventThrottleSet_90();
+      throttleAxis[1]->onEventThrottleSet_90();
       break;
 
-    case Events::THROTTLE1_FULL:
-      simInputThrottles.throttles[0] = 1.0;
+    case Events::THROTTLE1_FULL: {
+      throttleAxis[0]->onEventThrottleFull();
       break;
-    case Events::THROTTLE1_CUT:
-      isReverseToggleActive = false;
-      isReverseToggleKeyActive[0] = false;
-      simInputThrottles.throttles[0] = idleThrottleInput;
-      break;
-    case Events::THROTTLE1_INCR:
-      if (!useReverseOnAxis) {
-        // check if we have reached the minimum -> toggle reverse
-        if (simInputThrottles.throttles[0] == -1.0) {
-          isReverseToggleKeyActive[0] = !isReverseToggleKeyActive[0];
-        }
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[0]) {
-        simInputThrottles.throttles[0] = max(-1.0, simInputThrottles.throttles[0] - 0.05);
-      } else {
-        simInputThrottles.throttles[0] = min(1.0, simInputThrottles.throttles[0] + 0.05);
-      }
-      break;
-    case Events::THROTTLE1_DECR:
-      if (!useReverseOnAxis) {
-        // check if we have reached the minimum -> toggle reverse
-        if (simInputThrottles.throttles[0] == -1.0) {
-          isReverseToggleKeyActive[0] = !isReverseToggleKeyActive[0];
-        }
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[0]) {
-        simInputThrottles.throttles[0] = min(1.0, simInputThrottles.throttles[0] + 0.05);
-      } else {
-        simInputThrottles.throttles[0] = max(-1.0, simInputThrottles.throttles[0] - 0.05);
-      }
-      break;
-    case Events::THROTTLE1_INCR_SMALL:
-      if (!useReverseOnAxis) {
-        // check if we have reached the minimum -> toggle reverse
-        if (simInputThrottles.throttles[0] == -1.0) {
-          isReverseToggleKeyActive[0] = !isReverseToggleKeyActive[0];
-        }
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[0]) {
-        simInputThrottles.throttles[0] = max(-1.0, simInputThrottles.throttles[0] - 0.025);
-      } else {
-        simInputThrottles.throttles[0] = min(1.0, simInputThrottles.throttles[0] + 0.025);
-      }
-      break;
-    case Events::THROTTLE1_DECR_SMALL:
-      if (!useReverseOnAxis) {
-        // check if we have reached the minimum -> toggle reverse
-        if (simInputThrottles.throttles[0] == -1.0) {
-          isReverseToggleKeyActive[0] = !isReverseToggleKeyActive[0];
-        }
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[0]) {
-        simInputThrottles.throttles[0] = min(1.0, simInputThrottles.throttles[0] + 0.025);
-      } else {
-        simInputThrottles.throttles[0] = max(-1.0, simInputThrottles.throttles[0] - 0.025);
-      }
-      break;
+    }
 
-    case Events::THROTTLE2_FULL:
-      simInputThrottles.throttles[1] = 1.0;
+    case Events::THROTTLE1_CUT: {
+      throttleAxis[0]->onEventThrottleCut();
       break;
-    case Events::THROTTLE2_CUT:
-      isReverseToggleActive = false;
-      isReverseToggleKeyActive[1] = false;
-      simInputThrottles.throttles[1] = idleThrottleInput;
-      break;
-    case Events::THROTTLE2_INCR:
-      if (!useReverseOnAxis) {
-        // check if we have reached the minimum -> toggle reverse
-        if (simInputThrottles.throttles[1] == -1.0) {
-          isReverseToggleKeyActive[1] = !isReverseToggleKeyActive[1];
-        }
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[1]) {
-        simInputThrottles.throttles[1] = max(-1.0, simInputThrottles.throttles[1] - 0.05);
-      } else {
-        simInputThrottles.throttles[1] = min(1.0, simInputThrottles.throttles[1] + 0.05);
-      }
-      break;
-    case Events::THROTTLE2_DECR:
-      if (!useReverseOnAxis) {
-        // check if we have reached the minimum -> toggle reverse
-        if (simInputThrottles.throttles[1] == -1.0) {
-          isReverseToggleKeyActive[1] = !isReverseToggleKeyActive[1];
-        }
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[1]) {
-        simInputThrottles.throttles[1] = min(1.0, simInputThrottles.throttles[1] + 0.05);
-      } else {
-        simInputThrottles.throttles[1] = max(-1.0, simInputThrottles.throttles[1] - 0.05);
-      }
-      break;
-    case Events::THROTTLE2_INCR_SMALL:
-      if (!useReverseOnAxis) {
-        // check if we have reached the minimum -> toggle reverse
-        if (simInputThrottles.throttles[1] == -1.0) {
-          isReverseToggleKeyActive[1] = !isReverseToggleKeyActive[1];
-        }
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[1]) {
-        simInputThrottles.throttles[1] = max(-1.0, simInputThrottles.throttles[1] - 0.025);
-      } else {
-        simInputThrottles.throttles[1] = min(1.0, simInputThrottles.throttles[1] + 0.025);
-      }
-      break;
-    case Events::THROTTLE2_DECR_SMALL:
-      if (!useReverseOnAxis) {
-        // check if we have reached the minimum -> toggle reverse
-        if (simInputThrottles.throttles[1] == -1.0) {
-          isReverseToggleKeyActive[1] = !isReverseToggleKeyActive[1];
-        }
-      }
-      if (isReverseToggleActive | isReverseToggleKeyActive[1]) {
-        simInputThrottles.throttles[1] = min(1.0, simInputThrottles.throttles[1] + 0.025);
-      } else {
-        simInputThrottles.throttles[1] = max(-1.0, simInputThrottles.throttles[1] - 0.025);
-      }
-      break;
+    }
 
-    case Events::THROTTLE_REVERSE_THRUST_TOGGLE:
-      isReverseToggleActive = !isReverseToggleActive;
-      isReverseToggleKeyActive[0] = isReverseToggleActive;
-      isReverseToggleKeyActive[1] = isReverseToggleActive;
-      simInputThrottles.throttles[0] = idleThrottleInput;
-      simInputThrottles.throttles[1] = idleThrottleInput;
+    case Events::THROTTLE1_INCR: {
+      throttleAxis[0]->onEventThrottleIncrease();
       break;
-    case Events::THROTTLE_REVERSE_THRUST_HOLD:
-      isReverseToggleActive = static_cast<bool>(event->dwData);
-      isReverseToggleKeyActive[0] = isReverseToggleActive;
-      isReverseToggleKeyActive[1] = isReverseToggleActive;
-      if (!isReverseToggleActive) {
-        simInputThrottles.throttles[0] = idleThrottleInput;
-        simInputThrottles.throttles[1] = idleThrottleInput;
-      }
+    }
+
+    case Events::THROTTLE1_DECR: {
+      throttleAxis[0]->onEventThrottleDecrease();
       break;
+    }
+
+    case Events::THROTTLE1_INCR_SMALL: {
+      throttleAxis[0]->onEventThrottleIncreaseSmall();
+      break;
+    }
+
+    case Events::THROTTLE1_DECR_SMALL: {
+      throttleAxis[0]->onEventThrottleDecreaseSmall();
+      break;
+    }
+
+    case Events::THROTTLE2_FULL: {
+      throttleAxis[1]->onEventThrottleFull();
+      break;
+    }
+
+    case Events::THROTTLE2_CUT: {
+      throttleAxis[1]->onEventThrottleCut();
+      break;
+    }
+
+    case Events::THROTTLE2_INCR: {
+      throttleAxis[1]->onEventThrottleIncrease();
+      break;
+    }
+
+    case Events::THROTTLE2_DECR: {
+      throttleAxis[1]->onEventThrottleDecrease();
+      break;
+    }
+
+    case Events::THROTTLE2_INCR_SMALL: {
+      throttleAxis[1]->onEventThrottleIncreaseSmall();
+      break;
+    }
+
+    case Events::THROTTLE2_DECR_SMALL: {
+      throttleAxis[1]->onEventThrottleDecreaseSmall();
+      break;
+    }
+
+    case Events::THROTTLE_REVERSE_THRUST_TOGGLE: {
+      throttleAxis[0]->onEventReverseToggle();
+      throttleAxis[1]->onEventReverseToggle();
+      break;
+    }
+    case Events::THROTTLE_REVERSE_THRUST_HOLD: {
+      throttleAxis[0]->onEventReverseHold(static_cast<bool>(event->dwData));
+      throttleAxis[1]->onEventReverseHold(static_cast<bool>(event->dwData));
+      break;
+    }
 
     default:
       break;
@@ -1248,8 +1101,7 @@ bool SimConnectInterface::sendClientData(SIMCONNECT_DATA_DEFINITION_ID id, DWORD
   }
 
   // set output data
-  HRESULT result =
-      SimConnect_SetClientData(hSimConnect, id, id, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, size, data);
+  HRESULT result = SimConnect_SetClientData(hSimConnect, id, id, SIMCONNECT_CLIENT_DATA_SET_FLAG_DEFAULT, 0, size, data);
 
   // check result of data request
   if (result != S_OK) {
@@ -1285,9 +1137,9 @@ bool SimConnectInterface::addDataDefinition(const HANDLE connectionHandle,
                                             const SIMCONNECT_DATATYPE dataType,
                                             const string& dataName,
                                             const string& dataUnit) {
-  HRESULT result = SimConnect_AddToDataDefinition(
-      connectionHandle, id, dataName.c_str(),
-      SimConnectInterface::isSimConnectDataTypeStruct(dataType) ? nullptr : dataUnit.c_str(), dataType);
+  HRESULT result =
+      SimConnect_AddToDataDefinition(connectionHandle, id, dataName.c_str(),
+                                     SimConnectInterface::isSimConnectDataTypeStruct(dataType) ? nullptr : dataUnit.c_str(), dataType);
 
   return (result == S_OK);
 }
@@ -1310,8 +1162,7 @@ bool SimConnectInterface::addInputDataDefinition(const HANDLE connectionHandle,
     return false;
   }
 
-  result =
-      SimConnect_SetNotificationGroupPriority(connectionHandle, groupId, SIMCONNECT_GROUP_PRIORITY_HIGHEST_MASKABLE);
+  result = SimConnect_SetNotificationGroupPriority(connectionHandle, groupId, SIMCONNECT_GROUP_PRIORITY_HIGHEST_MASKABLE);
 
   if (result != S_OK) {
     // failed -> abort

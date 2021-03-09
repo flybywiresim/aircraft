@@ -40,6 +40,12 @@
     "editor.formatOnPaste": false
   },
   "files.associations": {
-    "iostream": "cpp"
+    "iostream": "cpp",
+    "string": "cpp",
+    "filesystem": "cpp",
+    "iosfwd": "cpp",
+    "xstring": "cpp",
+    "ostream": "cpp",
+    "vector": "cpp"
   },
 }

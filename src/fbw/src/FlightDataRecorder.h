@@ -44,7 +44,7 @@ class FlightDataRecorder {
   int sampleCounter = false;
   int maximumSampleCounter = 0;
   int maximumFileCount = 0;
-  gzofstream* fileStream = nullptr;
+  std::shared_ptr<gzofstream> fileStream;
 
   void manageFlightDataRecorderFiles();
 

@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "../ThrottleAxisMapping.h"
 #include "SimConnectData.h"
 
 class SimConnectInterface {
@@ -57,6 +58,9 @@ class SimConnectInterface {
     A32NX_FCU_LOC_PUSH,
     A32NX_FCU_APPR_PUSH,
     AUTO_THROTTLE_ARM,
+    A32NX_THROTTLE_MAPPING_LOAD_FROM_FILE,
+    A32NX_THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES,
+    A32NX_THROTTLE_MAPPING_SAVE_TO_FILE,
     THROTTLE_SET,
     THROTTLE1_SET,
     THROTTLE2_SET,
@@ -98,12 +102,10 @@ class SimConnectInterface {
 
   ~SimConnectInterface() = default;
 
-  bool connect(bool isThrottleHandlingEnabled,
-               double idleThrottleInput,
-               bool useReverseOnAxis,
-               bool autopilotStateMachineEnabled,
+  bool connect(bool autopilotStateMachineEnabled,
                bool autopilotLawsEnabled,
-               bool flyByWireEnabled);
+               bool flyByWireEnabled,
+               const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis);
 
   void disconnect();
 
@@ -147,10 +149,6 @@ class SimConnectInterface {
 
   ClientDataAutothrust getClientDataAutothrust();
 
-  bool getIsAnyReverseToggleActive();
-  bool getIsReverseToggleActive(int index);
-  bool getIsAutothrottlesArmed();
-
  private:
   enum ClientData {
     AUTOPILOT_STATE_MACHINE,
@@ -168,11 +166,7 @@ class SimConnectInterface {
   SimInputAutopilot simInputAutopilot = {};
 
   SimInputThrottles simInputThrottles = {};
-  bool useReverseOnAxis = false;
-  bool isReverseToggleKeyActive[2] = {};
-  bool isReverseToggleActive = false;
-  bool isAutothrustArmed = false;
-  double idleThrottleInput = -1.0;
+  std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
   ClientDataAutopilotStateMachine clientDataAutopilotStateMachine = {};
   ClientDataAutopilotLaws clientDataAutopilotLaws = {};
@@ -180,10 +174,7 @@ class SimConnectInterface {
 
   bool prepareSimDataSimConnectDataDefinitions();
 
-  bool prepareSimInputSimConnectDataDefinitions(bool isThrottleHandlingEnabled,
-                                                bool autopilotStateMachineEnabled,
-                                                bool autopilotLawsEnabled,
-                                                bool flyByWireEnabled);
+  bool prepareSimInputSimConnectDataDefinitions(bool autopilotStateMachineEnabled, bool autopilotLawsEnabled, bool flyByWireEnabled);
 
   bool prepareSimOutputSimConnectDataDefinitions();
 
