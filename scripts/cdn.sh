@@ -1,7 +1,7 @@
 #!/bin/bash
 
-CDN_URL="storage.bunnycdn.com/flybywiresim/addons/a32nx"
-CDN_DIR=${1:-"test"}
+CDN_URL="storage.bunnycdn.com/flybywiresim"
+CDN_DIR=${1:-"addons/a32nx/test"}
 
 for FILE in ./build-modules/*; do
     DEST="$CDN_URL/$CDN_DIR/$(basename -- "$FILE")"
