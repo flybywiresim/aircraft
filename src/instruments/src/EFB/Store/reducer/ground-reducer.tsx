@@ -65,10 +65,10 @@ export const buttonsReducer = typeToReducer(
             disabledButtons: [...state.disabledButtons, button],
         }),
         [REMOVE_DISABLED_BUTTON]: (state, { elementIndex }) => {
-            console.error(`REMOIGN${elementIndex}`);
             const disabledButtons = [...state.disabledButtons];
-            disabledButtons.splice(elementIndex, 1);
-
+            if (elementIndex !== -1) {
+                disabledButtons.splice(elementIndex, 1);
+            }
             return {
                 ...state,
                 disabledButtons,

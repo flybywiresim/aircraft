@@ -173,7 +173,7 @@ export const Ground = ({
             <div className="left-1/4 grid grid-cols-2 control-grid absolute top-12">
 
                 <div>
-                    <h1 className="text-white font-medium text-xl text-center pb-1">Ramp</h1>
+                    <h1 className="text-white font-medium text-xl text-center pb-1">Pax</h1>
                     <Button
                         onClick={(e) => handleClick(() => {
                             setJetWayActive(1);
