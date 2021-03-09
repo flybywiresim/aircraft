@@ -4,7 +4,6 @@ use uom::si::{
     volume_rate::gallon_per_second,
 };
 
-//use crate::{ hydraulic::{ElectricPump, EngineDrivenPump, HydFluid, HydLoop, LoopColor, PressureSource, Ptu, Pump, RatPump}, overhead::{OnOffFaultPushButton}, shared::DelayedTrueLogicGate};
 use systems::engine::Engine;
 use systems::hydraulic::brakecircuit::BrakeCircuit;
 use systems::hydraulic::{
@@ -31,7 +30,6 @@ pub struct A320Hydraulic {
     braking_circuit_altn: BrakeCircuit,
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
-    debug_refresh_duration: Duration,
 
     is_green_pressurised: bool,
     is_blue_pressurised: bool,
@@ -101,7 +99,6 @@ impl A320Hydraulic {
 
             total_sim_time_elapsed: Duration::new(0, 0),
             lag_time_accumulator: Duration::new(0, 0),
-            debug_refresh_duration: Duration::new(0, 0),
 
             is_green_pressurised: false,
             is_blue_pressurised: false,
@@ -170,27 +167,6 @@ impl A320Hydraulic {
 
         //Number of time steps to do according to required time step
         let number_of_steps_f64 = time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
-
-        self.debug_refresh_duration += ct.delta;
-        if self.debug_refresh_duration > Duration::from_secs_f64(0.3) {
-            println!(
-                "---HYDRAULIC UPDATE : t={}",
-                self.total_sim_time_elapsed.as_secs_f64()
-            );
-            println!(
-                "---G: {:.0} B: {:.0} Y: {:.0}",
-                self.green_loop.get_pressure().get::<psi>(),
-                self.blue_loop.get_pressure().get::<psi>(),
-                self.yellow_loop.get_pressure().get::<psi>()
-            );
-            println!(
-                "---RAT stow {:.0} Rat rpm: {:.0}",
-                self.rat.get_stow_position(),
-                self.rat.prop.get_rpm(),
-            );
-
-            self.debug_refresh_duration = Duration::from_secs_f64(0.0);
-        }
 
         //updating rat stowed pos on all frames in case it's used for graphics
         self.rat.update_stow_pos(&ct.delta);
@@ -398,7 +374,7 @@ impl A320Hydraulic {
             && (!self.hyd_logic_inputs.weight_on_wheels
                 || self.hyd_logic_inputs.eng_1_master_on && self.hyd_logic_inputs.eng_2_master_on
                 || !self.hyd_logic_inputs.eng_1_master_on && !self.hyd_logic_inputs.eng_2_master_on
-                || (!self.hyd_logic_inputs.parking_brake_applied && !nsw_pin_inserted))
+                || (!self.hyd_logic_inputs.parking_brake_lever_pos && !nsw_pin_inserted))
             && !ptu_inhibit
         {
             self.ptu.enabling(true);
@@ -614,17 +590,17 @@ impl SimulationElement for A320HydraulicBrakingLogic {
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.parking_brake_demand = state.read_bool("PARK_BRAKE_DMND"); //TODO see if A32nx var exists
+        self.parking_brake_demand = state.read_bool("BRAKE PARKING INDICATOR");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
-        self.anti_skid_activated = state.read_bool("ANTISKID ACTIVE");
-        self.left_brake_command = state.read_f64("BRAKE LEFT DMND") / 100.0;
-        self.right_brake_command = state.read_f64("BRAKE RIGHT DMND") / 100.0;
+        self.anti_skid_activated = state.read_bool("ANTISKID BRAKES ACTIVE");
+        self.left_brake_command = state.read_f64("BRAKE LEFT POSITION") / 100.0;
+        self.right_brake_command = state.read_f64("BRAKE RIGHT POSITION") / 100.0;
         self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
     }
 }
 
 pub struct A320HydraulicLogic {
-    parking_brake_applied: bool,
+    parking_brake_lever_pos: bool,
     weight_on_wheels: bool,
     eng_1_master_on: bool,
     eng_2_master_on: bool,
@@ -652,7 +628,7 @@ impl A320HydraulicLogic {
 
     pub fn new() -> A320HydraulicLogic {
         A320HydraulicLogic {
-            parking_brake_applied: true,
+            parking_brake_lever_pos: true,
             weight_on_wheels: true,
             eng_1_master_on: false,
             eng_2_master_on: false,
@@ -675,54 +651,51 @@ impl A320HydraulicLogic {
 
     //TODO, code duplication to handle timeouts: generic function to do
     pub fn is_cargo_operation_flag(&mut self, delta_time_update: &Duration) -> bool {
-        let cargo_door_moved = self.cargo_door_back_pos != self.cargo_door_back_pos_prev
-            || self.cargo_door_front_pos != self.cargo_door_front_pos_prev;
+        let cargo_door_moved = (self.cargo_door_back_pos - self.cargo_door_back_pos_prev).abs()
+            > f64::EPSILON
+            || (self.cargo_door_front_pos - self.cargo_door_front_pos_prev).abs() > f64::EPSILON;
 
         if cargo_door_moved {
             self.cargo_door_timer =
                 Duration::from_secs_f64(A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_YPUMP);
+        } else if self.cargo_door_timer > *delta_time_update {
+            self.cargo_door_timer -= *delta_time_update;
         } else {
-            if self.cargo_door_timer > *delta_time_update {
-                self.cargo_door_timer -= *delta_time_update;
-            } else {
-                self.cargo_door_timer = Duration::from_secs(0);
-            }
+            self.cargo_door_timer = Duration::from_secs(0);
         }
 
         self.cargo_door_timer > Duration::from_secs_f64(0.0)
     }
 
     pub fn is_cargo_operation_ptu_flag(&mut self, delta_time_update: &Duration) -> bool {
-        let cargo_door_moved = self.cargo_door_back_pos != self.cargo_door_back_pos_prev
-            || self.cargo_door_front_pos != self.cargo_door_front_pos_prev;
+        let cargo_door_moved = (self.cargo_door_back_pos - self.cargo_door_back_pos_prev).abs()
+            > f64::EPSILON
+            || (self.cargo_door_front_pos - self.cargo_door_front_pos_prev).abs() > f64::EPSILON;
 
         if cargo_door_moved {
             self.cargo_door_timer_ptu =
                 Duration::from_secs_f64(A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_PTU);
+        } else if self.cargo_door_timer_ptu > *delta_time_update {
+            self.cargo_door_timer_ptu -= *delta_time_update;
         } else {
-            if self.cargo_door_timer_ptu > *delta_time_update {
-                self.cargo_door_timer_ptu -= *delta_time_update;
-            } else {
-                self.cargo_door_timer_ptu = Duration::from_secs(0);
-            }
+            self.cargo_door_timer_ptu = Duration::from_secs(0);
         }
 
         self.cargo_door_timer_ptu > Duration::from_secs_f64(0.0)
     }
 
     pub fn is_nsw_pin_inserted_flag(&mut self, delta_time_update: &Duration) -> bool {
-        let pushback_in_progress =
-            (self.pushback_angle != self.pushback_angle_prev) && self.pushback_state != 3.0;
+        let pushback_in_progress = (self.pushback_angle - self.pushback_angle_prev).abs()
+            > f64::EPSILON
+            && (self.pushback_state - 3.0).abs() > f64::EPSILON;
 
         if pushback_in_progress {
             self.nws_tow_engaged_timer =
                 Duration::from_secs_f64(A320HydraulicLogic::NWS_PIN_REMOVE_TIMEOUT);
+        } else if self.nws_tow_engaged_timer > *delta_time_update {
+            self.nws_tow_engaged_timer -= *delta_time_update; //TODO CHECK if rollover issue to expect if not limiting to 0
         } else {
-            if self.nws_tow_engaged_timer > *delta_time_update {
-                self.nws_tow_engaged_timer -= *delta_time_update; //TODO CHECK if rollover issue to expect if not limiting to 0
-            } else {
-                self.nws_tow_engaged_timer = Duration::from_secs(0);
-            }
+            self.nws_tow_engaged_timer = Duration::from_secs(0);
         }
 
         self.nws_tow_engaged_timer > Duration::from_secs(0)
@@ -735,16 +708,16 @@ impl SimulationElement for A320HydraulicLogic {
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.parking_brake_applied = state.read_bool("PARK_BRAKE_ON");
-        self.eng_1_master_on = state.read_bool("ENG MASTER 1");
-        self.eng_2_master_on = state.read_bool("ENG MASTER 2");
+        self.parking_brake_lever_pos = state.read_bool("BRAKE PARKING INDICATOR");
+        self.eng_1_master_on = state.read_bool("GENERAL ENG1 STARTER ACTIVE");
+        self.eng_2_master_on = state.read_bool("GENERAL ENG2 STARTER ACTIVE");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
 
         //Handling here of the previous values of cargo doors
         self.cargo_door_front_pos_prev = self.cargo_door_front_pos;
-        self.cargo_door_front_pos = state.read_f64("CARGO FRONT POS");
+        self.cargo_door_front_pos = state.read_f64("EXIT OPEN 5");
         self.cargo_door_back_pos_prev = self.cargo_door_back_pos;
-        self.cargo_door_back_pos = state.read_f64("CARGO BACK POS");
+        self.cargo_door_back_pos = state.read_f64("EXIT OPEN 3");
 
         //Handling here of the previous values of pushback angle. Angle keeps moving while towed. Feel free to find better hack
         self.pushback_angle_prev = self.pushback_angle;
@@ -753,44 +726,21 @@ impl SimulationElement for A320HydraulicLogic {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool("HYD_GREEN_EDPUMP_LOW_PRESS", self.green_edp_has_fault);
 
-        writer.write_bool(
-            "HYD_GREEN_EDPUMP_LOW_PRESS",
-            self.green_edp_has_fault,
-        );
+        writer.write_bool("HYD_BLUE_EPUMP_LOW_PRESS", self.blue_epump_has_fault);
 
-        writer.write_bool(
-            "HYD_BLUE_EPUMP_LOW_PRESS",
-            self.blue_epump_has_fault,
-        );
+        writer.write_bool("HYD_YELLOW_EDPUMP_LOW_PRESS", self.yellow_edp_has_fault);
 
-        writer.write_bool(
-            "HYD_YELLOW_EDPUMP_LOW_PRESS",
-            self.yellow_edp_has_fault,
-        );
+        writer.write_bool("HYD_YELLOW_EPUMP_LOW_PRESS", self.yellow_epump_has_fault);
 
-        writer.write_bool(
-            "HYD_YELLOW_EPUMP_LOW_PRESS",
-            self.yellow_epump_has_fault,
-        );
-
-        //Send overhead fault info
-        writer.write_bool(
-            "OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT",
-            self.green_edp_has_fault,
-        );
+        writer.write_bool("OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT", self.green_edp_has_fault);
         writer.write_bool(
             "OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT",
             self.yellow_edp_has_fault,
         );
-        writer.write_bool(
-            "OVHD_HYD_EPUMPB_PB_HAS_FAULT",
-            self.blue_epump_has_fault,
-        );
-        writer.write_bool(
-            "OVHD_HYD_EPUMPY_PB_HAS_FAULT",
-            self.yellow_epump_has_fault,
-        );
+        writer.write_bool("OVHD_HYD_EPUMPB_PB_HAS_FAULT", self.blue_epump_has_fault);
+        writer.write_bool("OVHD_HYD_EPUMPY_PB_HAS_FAULT", self.yellow_epump_has_fault);
     }
 }
 
@@ -851,45 +801,15 @@ impl SimulationElement for A320HydraulicOverheadPanel {
 
 #[cfg(test)]
 pub mod tests {
-    use std::time::Duration;
-
-    use uom::si::{
-        acceleration::{foot_per_second_squared, Acceleration},
-        f64::*,
-        length::foot,
-        thermodynamic_temperature::degree_celsius,
-        velocity::knot,
-    };
-
     use super::A320HydraulicLogic;
-    use super::A320HydraulicOverheadPanel;
-    use crate::UpdateContext;
-
-    fn overhead() -> A320HydraulicOverheadPanel {
-        A320HydraulicOverheadPanel::new()
-    }
+    use std::time::Duration;
 
     fn hyd_logic() -> A320HydraulicLogic {
         A320HydraulicLogic::new()
     }
 
-    fn context(delta_time: Duration) -> UpdateContext {
-        UpdateContext::new(
-            delta_time,
-            Velocity::new::<knot>(0.),
-            Length::new::<foot>(2000.),
-            ThermodynamicTemperature::new::<degree_celsius>(25.0),
-            true,
-            Acceleration::new::<foot_per_second_squared>(0.),
-            0.0,
-            0.0,
-            0.0,
-        )
-    }
-
     #[test]
     fn is_nws_pin_engaged_test() {
-        let mut overhead = overhead();
         let mut logic = hyd_logic();
 
         let update_delta = Duration::from_secs_f64(0.08);

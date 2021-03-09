@@ -15,10 +15,7 @@ pub struct UpdateContext {
     pub indicated_altitude: Length,
     pub ambient_temperature: ThermodynamicTemperature,
     pub is_on_ground: bool,
-    pub acc_long: Acceleration,
-    pub wheel_center_rpm: f64,
-    pub wheel_left_rpm: f64,
-    pub wheel_right_rpm: f64,
+    pub _longitudinal_acceleration: Acceleration,
 }
 impl UpdateContext {
     pub fn new(
@@ -27,10 +24,7 @@ impl UpdateContext {
         indicated_altitude: Length,
         ambient_temperature: ThermodynamicTemperature,
         is_on_ground: bool,
-        acc_long: Acceleration,
-        wheel_center_rpm: f64,
-        wheel_left_rpm: f64,
-        wheel_right_rpm: f64,
+        _longitudinal_acceleration: Acceleration,
     ) -> UpdateContext {
         UpdateContext {
             delta,
@@ -38,10 +32,7 @@ impl UpdateContext {
             indicated_altitude,
             ambient_temperature,
             is_on_ground,
-            acc_long: Acceleration::new::<foot_per_second_squared>(0.),
-            wheel_center_rpm: 0.0,
-            wheel_left_rpm: 0.0,
-            wheel_right_rpm: 0.0,
+            _longitudinal_acceleration: Acceleration::new::<foot_per_second_squared>(0.),
         }
     }
 
@@ -55,10 +46,9 @@ impl UpdateContext {
             indicated_altitude: Length::new::<foot>(reader.read_f64("INDICATED ALTITUDE")),
             is_on_ground: reader.read_bool("SIM ON GROUND"),
             delta: delta_time,
-            acc_long: Acceleration::new::<foot_per_second_squared>(reader.read_f64("LONG ACC")),
-            wheel_center_rpm: reader.read_f64("WHEEL RPM CENTER"),
-            wheel_left_rpm: reader.read_f64("WHEEL RPM LEFT"),
-            wheel_right_rpm: reader.read_f64("WHEEL RPM RIGHT"),
+            _longitudinal_acceleration: Acceleration::new::<foot_per_second_squared>(
+                reader.read_f64("ACCELERATION BODY Z"),
+            ),
         }
     }
 
@@ -81,10 +71,7 @@ pub struct UpdateContextBuilder {
     indicated_altitude: Length,
     ambient_temperature: ThermodynamicTemperature,
     on_ground: bool,
-    acc_long: Acceleration,
-    wheel_center_rpm: f64,
-    wheel_left_rpm: f64,
-    wheel_right_rpm: f64,
+    _longitudinal_acceleration: Acceleration,
 }
 impl UpdateContextBuilder {
     fn new() -> UpdateContextBuilder {
@@ -94,10 +81,7 @@ impl UpdateContextBuilder {
             indicated_altitude: Length::new::<foot>(5000.),
             ambient_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
             on_ground: false,
-            acc_long: Acceleration::new::<foot_per_second_squared>(0.),
-            wheel_center_rpm: 0.0,
-            wheel_left_rpm: 0.0,
-            wheel_right_rpm: 0.0,
+            _longitudinal_acceleration: Acceleration::new::<foot_per_second_squared>(0.),
         }
     }
 
@@ -108,10 +92,7 @@ impl UpdateContextBuilder {
             self.indicated_altitude,
             self.ambient_temperature,
             self.on_ground,
-            self.acc_long,
-            self.wheel_center_rpm,
-            self.wheel_left_rpm,
-            self.wheel_right_rpm,
+            self._longitudinal_acceleration,
         )
     }
 

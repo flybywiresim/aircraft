@@ -36,7 +36,6 @@ struct A320SimulatorReaderWriter {
     fuel_tank_left_main_quantity: AircraftVariable,
     sim_on_ground: AircraftVariable,
     unlimited_fuel: AircraftVariable,
-    parking_brake: AircraftVariable,
     parking_brake_demand: AircraftVariable,
     master_eng_1: AircraftVariable,
     master_eng_2: AircraftVariable,
@@ -47,10 +46,7 @@ struct A320SimulatorReaderWriter {
     anti_skid_activated: AircraftVariable,
     left_brake_command: AircraftVariable,
     right_brake_command: AircraftVariable,
-    long_accel: AircraftVariable,
-    wheel_rpm_center: AircraftVariable,
-    wheel_rpm_left: AircraftVariable,
-    wheel_rpm_right: AircraftVariable,
+    longitudinal_accel: AircraftVariable,
 }
 impl A320SimulatorReaderWriter {
     fn new() -> Result<Self, Box<dyn std::error::Error>> {
@@ -85,8 +81,6 @@ impl A320SimulatorReaderWriter {
             )?,
             sim_on_ground: AircraftVariable::from("SIM ON GROUND", "Bool", 0)?,
             unlimited_fuel: AircraftVariable::from("UNLIMITED FUEL", "Bool", 0)?,
-
-            parking_brake: AircraftVariable::from("BRAKE PARKING POSITION", "Bool", 1)?,
             parking_brake_demand: AircraftVariable::from("BRAKE PARKING INDICATOR", "Bool", 0)?,
             master_eng_1: AircraftVariable::from("GENERAL ENG STARTER ACTIVE", "Bool", 1)?,
             master_eng_2: AircraftVariable::from("GENERAL ENG STARTER ACTIVE", "Bool", 2)?,
@@ -97,14 +91,11 @@ impl A320SimulatorReaderWriter {
             anti_skid_activated: AircraftVariable::from("ANTISKID BRAKES ACTIVE", "Bool", 0)?,
             left_brake_command: AircraftVariable::from("BRAKE LEFT POSITION", "Percent", 0)?,
             right_brake_command: AircraftVariable::from("BRAKE RIGHT POSITION", "Percent", 0)?,
-            long_accel: AircraftVariable::from(
+            longitudinal_accel: AircraftVariable::from(
                 "ACCELERATION BODY Z",
                 "feet per second squared",
                 0,
             )?,
-            wheel_rpm_center: AircraftVariable::from("CENTER WHEEL RPM", "Rpm", 0)?,
-            wheel_rpm_left: AircraftVariable::from("LEFT WHEEL RPM", "Rpm", 0)?,
-            wheel_rpm_right: AircraftVariable::from("RIGHT WHEEL RPM", "Rpm", 0)?,
         })
     }
 }
@@ -125,21 +116,17 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
             "AIRSPEED INDICATED" => self.airspeed_indicated.get(),
             "INDICATED ALTITUDE" => self.indicated_altitude.get(),
             "SIM ON GROUND" => self.sim_on_ground.get(),
-            "ENG MASTER 1" => self.master_eng_1.get(),
-            "ENG MASTER 2" => self.master_eng_2.get(),
-            "PARK_BRAKE_ON" => self.parking_brake.get(),
-            "PARK_BRAKE_DMND" => self.parking_brake_demand.get(),
-            "CARGO FRONT POS" => self.cargo_door_front_pos.get(),
-            "CARGO BACK POS" => self.cargo_door_back_pos.get(),
+            "GENERAL ENG1 STARTER ACTIVE" => self.master_eng_1.get(),
+            "GENERAL ENG2 STARTER ACTIVE" => self.master_eng_2.get(),
+            "BRAKE PARKING INDICATOR" => self.parking_brake_demand.get(),
+            "EXIT OPEN 5" => self.cargo_door_front_pos.get(),
+            "EXIT OPEN 3" => self.cargo_door_back_pos.get(),
             "PUSHBACK ANGLE" => self.pushback_angle.get(),
             "PUSHBACK STATE" => self.pushback_state.get(),
-            "ANTISKID ACTIVE" => self.anti_skid_activated.get(),
-            "BRAKE LEFT DMND" => self.left_brake_command.get(),
-            "BRAKE RIGHT DMND" => self.right_brake_command.get(),
-            "LONG ACC" => self.long_accel.get(),
-            "WHEEL RPM CENTER" => self.wheel_rpm_center.get(),
-            "WHEEL RPM LEFT" => self.wheel_rpm_left.get(),
-            "WHEEL RPM RIGHT" => self.wheel_rpm_right.get(),
+            "ANTISKID BRAKES ACTIVE" => self.anti_skid_activated.get(),
+            "BRAKE LEFT POSITION" => self.left_brake_command.get(),
+            "BRAKE RIGHT POSITION" => self.right_brake_command.get(),
+            "ACCELERATION BODY Z" => self.longitudinal_accel.get(),
             _ => {
                 lookup_named_variable(&mut self.dynamic_named_variables, "A32NX_", name).get_value()
             }

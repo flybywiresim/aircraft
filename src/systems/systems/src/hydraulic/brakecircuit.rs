@@ -82,7 +82,7 @@ impl BrakeCircuit {
         }
 
         BrakeCircuit {
-            total_displacement: total_displacement,
+            total_displacement,
             current_brake_position_left: 0.0,
             demanded_brake_position_left: 0.0,
             pressure_applied_left: Pressure::new::<psi>(0.0),
@@ -249,7 +249,7 @@ impl AutoBrakeController {
         let num = accel_targets.len();
         assert!(num > 0);
         AutoBrakeController {
-            accel_targets: accel_targets,
+            accel_targets,
             num_of_modes: num,
             current_selected_mode: 0,
             current_filtered_accel: Acceleration::new::<foot_per_second_squared>(0.0),
@@ -263,7 +263,7 @@ impl AutoBrakeController {
 
     pub fn update(&mut self, delta_time: &Duration, ct: &UpdateContext) {
         self.current_filtered_accel = self.current_filtered_accel
-            + (ct.acc_long - self.current_filtered_accel)
+            + (ct._longitudinal_acceleration - self.current_filtered_accel)
                 * (1.
                     - E.powf(
                         -delta_time.as_secs_f64() / AutoBrakeController::LONG_ACC_FILTER_TIMECONST,
@@ -304,19 +304,25 @@ impl AutoBrakeController {
 
 #[cfg(test)]
 mod tests {
-    //use uom::si::volume_rate::VolumeRate;
-    //use BrakeCircuit;
     use super::*;
     use crate::{
         hydraulic::{HydFluid, HydLoop, LoopColor},
-        simulation::{UpdateContext, UpdateContextBuilder},
+        simulation::UpdateContext,
+    };
+    use uom::si::{
+        acceleration::foot_per_second_squared,
+        length::foot,
+        pressure::{pascal, psi},
+        thermodynamic_temperature::degree_celsius,
+        velocity::knot,
+        volume::gallon,
     };
 
     #[test]
     //Runs engine driven pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn brake_state_at_init() {
         let init_max_vol = Volume::new::<gallon>(1.5);
-        let mut brake_circuit_unprimed = BrakeCircuit::new(
+        let brake_circuit_unprimed = BrakeCircuit::new(
             init_max_vol,
             Volume::new::<gallon>(0.0),
             Volume::new::<gallon>(0.1),
@@ -331,7 +337,7 @@ mod tests {
         assert!(brake_circuit_unprimed.accumulator_fluid_volume == Volume::new::<gallon>(0.0));
         assert!(brake_circuit_unprimed.accumulator_gas_volume == init_max_vol);
 
-        let mut brake_circuit_primed =
+        let brake_circuit_primed =
             BrakeCircuit::new(init_max_vol, init_max_vol / 2.0, Volume::new::<gallon>(0.1));
 
         assert!(
@@ -421,23 +427,13 @@ mod tests {
 
     #[test]
     fn auto_brake_controller() {
-        // let init_max_vol = Volume::new::<gallon>(0.0);
-        // let mut hyd_loop = hydraulic_loop(LoopColor::Yellow);
-        // hyd_loop.loop_pressure= Pressure::new::<psi>(3000.0);
-
-        // let mut brake_circuit_primed = BrakeCircuit::new(
-        //     init_max_vol,
-        //     init_max_vol,
-        //     Volume::new::<gallon>(0.1)
-        // );
-
         let mut controller = AutoBrakeController::new(vec![
             Acceleration::new::<foot_per_second_squared>(-1.5),
             Acceleration::new::<foot_per_second_squared>(-3.),
             Acceleration::new::<foot_per_second_squared>(-15.),
         ]);
         let mut context = context(Duration::from_secs_f64(0.));
-        context.acc_long = Acceleration::new::<foot_per_second_squared>(0.0);
+        context._longitudinal_acceleration = Acceleration::new::<foot_per_second_squared>(0.0);
 
         assert!(controller.get_brake_command() <= 0.0);
 
@@ -492,9 +488,6 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
-            0.0,
-            0.0,
-            0.0,
         )
     }
 }

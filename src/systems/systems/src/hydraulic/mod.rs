@@ -34,109 +34,6 @@ pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// DATA & REFERENCES
-////////////////////////////////////////////////////////////////////////////////
-///
-/// On A320, the reservoir level variation can, depending on the system,
-/// decrease in flight by about 3.5 l (G RSVR), 4 l (Y RSVR) and 0.5 l (B RSVR)
-///
-/// Each MLG door open (2 total) uses 0.25 liters each of green hyd fluid
-/// Each cargo door open (3 total) uses 0.2 liters each of yellow hyd fluid
-///
-/// Reservoirs
-/// ------------------------------------------
-/// Normal Qty:
-/// -----------
-/// Blue: 6.5L (1.7 US Gal)
-/// Yellow: 12.5L (3.3 US Gal)
-/// Green: 14.5L (3.8 US Gal)
-///
-/// Loops
-/// ------------------------------------------
-/// Max loop volume - green: 100L 26.41gal including reservoir
-/// Max loop volume - yellow: 75L 19.81gal including reservoir
-/// Max loop volume - blue: 50L 15.85gal including reservoir
-///
-/// EDP (Eaton PV3-240-10C/D/F (F is neo)):
-/// ------------------------------------------
-/// 37.5 GPM max (100% N2)
-/// 3750 RPM
-/// 3000 PSI
-/// Displacement: 2.40 in3/rev
-///
-///
-/// Electric Pump (Eaton MPEV3-032-EA2 (neo) MPEV-032-15 (ceo)):
-/// ------------------------------------------
-/// Uses 115/200 VAC, 400HZ electric motor
-/// 8.45 GPM max
-/// 7600 RPM at full displacement, 8000 RPM at no displacement
-/// 3000 PSI
-/// Displacement: 0.263 in3/rev
-///
-///
-/// PTU (Eaton Vickers MPHV3-115-1C):
-/// ------------------------------------------
-/// 2987 PSI
-///
-/// Yellow to Green
-/// ---------------
-/// 34 GPM (130 L/min) from Yellow system
-/// 24 GPM (90 L/min) to Green system
-/// Maintains constant pressure near 3000PSI in green
-///
-/// Green to Yellow
-/// ---------------
-/// 16 GPM (60 L/min) from Green system
-/// 13 GPM (50 L/min) to Yellow system
-/// Maintains constant pressure near 3000PSI in yellow
-///
-///
-/// RAT PUMP (Eaton PV3-115):
-/// ------------------------------------------
-/// Max displacement: 1.15 in3/rev, 18.85 mL/rev
-/// Normal speed: 6,600 RPM
-/// Max. Ov. Speed: 8,250 RPM
-/// Theoretical Flow at normal speed: 32.86 gpm, 124.4 l/m
-///
-///
-/// Equations:
-/// ------------------------------------------
-/// Flow (Q), gpm:  Q = (in3/rev * rpm) / 231
-/// Velocity (V), ft/s: V = (0.3208 * flow rate, gpm) / internal area, sq in
-/// Force (F), lbs: F = density * area * velocity^2
-/// Pressure (P), PSI: P = force / area
-/// PressureDelta = VolumeDelta / Total_uncompressed_volume * Fluid_Bulk_Modulus
-///
-///
-/// Hydraulic Fluid: EXXON HyJet IV
-/// ------------------------------------------
-/// Kinematic viscosity at 40C: 10.55 mm^2 s^-1, +/- 20%
-/// Density at 25C: 996 kg m^-3
-///
-/// Hydraulic Line (HP) inner diameter
-/// ------------------------------------------
-/// Currently unknown. Estimating to be 7.5mm for now?
-///
-///
-/// Actuator Force Simvars
-/// -------------------------------------------
-/// ACCELERATION BODY X (relative to aircraft, "east/west", Feet per second squared)
-/// ACCELERATION BODY Y (relative to aircraft, vertical, Feet per second squared)
-/// ACCELERATION BODY Z (relative to aircraft, "north/south", Feet per second squared)
-/// ROTATION VELOCITY BODY X (feet per second)
-/// ROTATION VELOCITY BODY Y (feet per second)
-/// ROTATION VELOCITY BODY Z (feet per second)
-/// VELOCITY BODY X (feet per second)
-/// VELOCITY BODY Y (feet per second)
-/// VELOCITY BODY Z (feet per second)
-/// WING FLEX PCT (:1 for left, :2 for right; settable) (percent over 100)
-///
-
-////////////////////////////////////////////////////////////////////////////////
-// ENUMERATIONS
-////////////////////////////////////////////////////////////////////////////////
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum LoopColor {
     Blue,
@@ -150,10 +47,6 @@ pub enum PtuState {
     GreenToYellow,
     YellowToGreen,
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// TRAITS
-////////////////////////////////////////////////////////////////////////////////
 
 // Trait common to all hydraulic pumps
 // Max gives maximum available volume at that time as if it is a variable displacement
@@ -318,7 +211,7 @@ pub struct HydLoop {
     accumulator_fluid_volume: Volume,
     accumulator_press_breakpoints: [f64; 9],
     accumulator_flow_carac: [f64; 9],
-    color: LoopColor,
+    _color: LoopColor,
     connected_to_ptu_left_side: bool,
     connected_to_ptu_right_side: bool,
     loop_pressure: Pressure,
@@ -348,7 +241,7 @@ impl HydLoop {
     const ACCUMULATOR_FLOW_CARAC: [f64; 9] = [0.0, 0.005, 0.008, 0.01, 0.02, 0.08, 0.15, 0.35, 0.5];
 
     pub fn new(
-        color: LoopColor,
+        _color: LoopColor,
         connected_to_ptu_left_side: bool, //Is connected to PTU "left" side: non variable displacement side
         connected_to_ptu_right_side: bool, //Is connected to PTU "right" side: variable displacement side
         loop_volume: Volume,
@@ -361,7 +254,7 @@ impl HydLoop {
             accumulator_gas_pressure: Pressure::new::<psi>(HydLoop::ACCUMULATOR_GAS_PRE_CHARGE),
             accumulator_gas_volume: Volume::new::<gallon>(HydLoop::ACCUMULATOR_MAX_VOLUME),
             accumulator_fluid_volume: Volume::new::<gallon>(0.),
-            color,
+            _color,
             connected_to_ptu_left_side,
             connected_to_ptu_right_side,
             loop_pressure: Pressure::new::<psi>(14.7),
@@ -472,7 +365,7 @@ impl HydLoop {
         //PTU flows handling
         let mut ptu_act = false;
         for ptu in ptus {
-            let mut actual_flow = VolumeRate::new::<gallon_per_second>(0.0);
+            let actual_flow;
             if self.connected_to_ptu_left_side {
                 if ptu.is_active_left || ptu.is_active_right {
                     ptu_act = true;
@@ -519,17 +412,12 @@ impl HydLoop {
         //Priming the loop if not filled in
         //TODO bug, ptu can't prime the loop is it is not providing flow through delta_vol_max
         if self.loop_volume < self.max_loop_volume {
-            //} %TODO what to do if we are back under max volume and unprime the loop?
             let difference = self.max_loop_volume - self.loop_volume;
-            // println!("---Priming diff {}", difference.get::<gallon>());
-            let availableFluidVol = self.reservoir_volume.min(delta_vol_max);
-            let delta_loop_vol = availableFluidVol.min(difference);
-            delta_vol_max -= delta_loop_vol; //%TODO check if we cross the deltaVolMin?
+            let available_fluid_vol = self.reservoir_volume.min(delta_vol_max);
+            let delta_loop_vol = available_fluid_vol.min(difference);
+            delta_vol_max -= delta_loop_vol; //TODO check if we cross the deltaVolMin?
             self.loop_volume += delta_loop_vol;
             self.reservoir_volume -= delta_loop_vol;
-        // println!("---Priming vol {} / {}", self.loop_volume.get::<gallon>(),self.max_loop_volume.get::<gallon>());
-        } else {
-            // println!("---Primed {}", self.loop_volume.get::<gallon>());
         }
         //end priming
 
@@ -567,16 +455,16 @@ impl HydLoop {
         //END ACCUMULATOR
 
         //Actuators
-        let used_fluidQty = Volume::new::<gallon>(0.); // %%total fluid used
-                                                       //foreach actuator
-                                                       //used_fluidQty =used_fluidQty+aileron.volumeToActuatorAccumulated*264.172; %264.172 is m^3 to gallons
-                                                       //reservoirReturn=reservoirReturn+aileron.volumeToResAccumulated*264.172;
-                                                       //actuator.resetVolumes()
-                                                       //actuator.set_available_pressure(self.loop_pressure)
-                                                       //end foreach
-                                                       //end actuator
+        let used_fluid_qty = Volume::new::<gallon>(0.);
+        //foreach actuator
+        //used_fluidQty =used_fluidQty+aileron.volumeToActuatorAccumulated
+        //reservoirReturn=reservoirReturn+aileron.volumeToResAccumulated
+        //actuator.resetVolumes()
+        //actuator.set_available_pressure(self.loop_pressure)
+        //end foreach
+        //end actuator
 
-        delta_vol -= used_fluidQty;
+        delta_vol -= used_fluid_qty;
 
         //How much we need to reach target of 3000?
         let mut volume_needed_to_reach_pressure_target =
@@ -873,9 +761,12 @@ impl RatPropeller {
         stow_pos: f64,
         displacement_ratio: f64,
     ) {
-        self.update_generated_torque(indicated_speed, stow_pos);
-        self.update_friction_torque(displacement_ratio);
-        self.update_physics(delta_time);
+        if stow_pos > 0.1 {
+            //Do not update anything on the propeller if still stowed
+            self.update_generated_torque(indicated_speed, stow_pos);
+            self.update_friction_torque(displacement_ratio);
+            self.update_physics(delta_time);
+        }
     }
 }
 pub struct RatPump {
@@ -964,135 +855,139 @@ impl PressureSource for RatPump {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// TESTS
-////////////////////////////////////////////////////////////////////////////////
-
-use plotlib::page::Page;
-use plotlib::repr::Plot;
-use plotlib::style::{LineStyle, PointMarker, PointStyle};
-use plotlib::view::ContinuousView;
-
-extern crate rustplotlib;
-use rustplotlib::Figure;
-
-fn make_figure<'a>(h: &'a History) -> Figure<'a> {
-    use rustplotlib::{Axes2D, Line2D};
-
-    let mut allAxis: Vec<Option<Axes2D>> = Vec::new();
-
-    let mut idx = 0;
-    for curData in &h.dataVector {
-        let mut currAxis = Axes2D::new()
-            .add(
-                Line2D::new(h.nameVector[idx].as_str())
-                    .data(&h.timeVector, &curData)
-                    .color("blue")
-                    //.marker("x")
-                    //.linestyle("--")
-                    .linewidth(1.0),
-            )
-            .xlabel("Time [sec]")
-            .ylabel(h.nameVector[idx].as_str())
-            .legend("best")
-            .xlim(0.0, *h.timeVector.last().unwrap());
-        //.ylim(-2.0, 2.0);
-
-        currAxis = currAxis.grid(true);
-        idx = idx + 1;
-        allAxis.push(Some(currAxis));
-    }
-
-    Figure::new().subplots(allAxis.len() as u32, 1, allAxis)
-}
-
-//History class to record a simulation
-pub struct History {
-    timeVector: Vec<f64>,      //Simulation time starting from 0
-    nameVector: Vec<String>,   //Name of each var saved
-    dataVector: Vec<Vec<f64>>, //Vector data for each var saved
-    dataSize: usize,
-}
-
-impl History {
-    pub fn new(names: Vec<String>) -> History {
-        History {
-            timeVector: Vec::new(),
-            nameVector: names.clone(),
-            dataVector: Vec::new(),
-            dataSize: names.len(),
-        }
-    }
-
-    //Sets initialisation values of each data before first step
-    pub fn init(&mut self, start_time: f64, values: Vec<f64>) {
-        self.timeVector.push(start_time);
-        for idx in 0..(values.len()) {
-            self.dataVector.push(vec![values[idx]]);
-        }
-    }
-
-    //Updates all values and time vector
-    pub fn update(&mut self, delta_time: f64, values: Vec<f64>) {
-        self.timeVector
-            .push(self.timeVector.last().unwrap() + delta_time);
-        self.pushData(values);
-    }
-
-    pub fn pushData(&mut self, values: Vec<f64>) {
-        for idx in 0..values.len() {
-            self.dataVector[idx].push(values[idx]);
-        }
-    }
-
-    //Builds a graph using rust crate plotlib
-    pub fn show(self) {
-        let mut v = ContinuousView::new()
-            .x_range(0.0, *self.timeVector.last().unwrap())
-            .y_range(0.0, 3500.0)
-            .x_label("Time (s)")
-            .y_label("Value");
-
-        for cur_data in self.dataVector {
-            //Here build the 2 by Xsamples vector
-            let mut new_vector: Vec<(f64, f64)> = Vec::new();
-            for sample_idx in 0..self.timeVector.len() {
-                new_vector.push((self.timeVector[sample_idx], cur_data[sample_idx]));
-            }
-
-            // We create our scatter plot from the data
-            let s1: Plot = Plot::new(new_vector).line_style(LineStyle::new().colour("#DD3355"));
-
-            v = v.add(s1);
-        }
-
-        // A page with a single view is then saved to an SVG file
-        Page::single(&v).save("scatter.svg").unwrap();
-    }
-
-    //builds a graph using matplotlib python backend. PYTHON REQUIRED AS WELL AS MATPLOTLIB PACKAGE
-    pub fn showMatplotlib(&self, figure_title: &str) {
-        let fig = make_figure(&self);
-
-        use rustplotlib::backend::Matplotlib;
-        use rustplotlib::Backend;
-        let mut mpl = Matplotlib::new().unwrap();
-        mpl.set_style("ggplot").unwrap();
-
-        fig.apply(&mut mpl).unwrap();
-
-        //mpl.savefig("simple.png").unwrap();
-        mpl.savefig(figure_title);
-        //mpl.dump_pickle("simple.fig.pickle").unwrap();
-        mpl.wait().unwrap();
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    //use uom::si::volume_rate::VolumeRate;
 
-    use uom::si::acceleration::foot_per_second_squared;
+    use crate::simulation::UpdateContext;
+    use uom::si::{
+        acceleration::foot_per_second_squared,
+        f64::*,
+        length::foot,
+        pressure::{pascal, psi},
+        thermodynamic_temperature::degree_celsius,
+        time::second,
+        volume::{gallon, liter},
+        volume_rate::gallon_per_second,
+    };
+
+    use plotlib::page::Page;
+    use plotlib::repr::Plot;
+    use plotlib::style::LineStyle;
+    use plotlib::view::ContinuousView;
+
+    extern crate rustplotlib;
+    use rustplotlib::Figure;
+
+    fn make_figure<'a>(h: &'a History) -> Figure<'a> {
+        use rustplotlib::{Axes2D, Line2D};
+
+        let mut all_axis: Vec<Option<Axes2D>> = Vec::new();
+
+        let mut idx = 0;
+        for cur_data in &h.data_vector {
+            let mut curr_axis = Axes2D::new()
+                .add(
+                    Line2D::new(h.name_vector[idx].as_str())
+                        .data(&h.time_vector, &cur_data)
+                        .color("blue")
+                        //.marker("x")
+                        //.linestyle("--")
+                        .linewidth(1.0),
+                )
+                .xlabel("Time [sec]")
+                .ylabel(h.name_vector[idx].as_str())
+                .legend("best")
+                .xlim(0.0, *h.time_vector.last().unwrap());
+            //.ylim(-2.0, 2.0);
+
+            curr_axis = curr_axis.grid(true);
+            idx = idx + 1;
+            all_axis.push(Some(curr_axis));
+        }
+
+        Figure::new().subplots(all_axis.len() as u32, 1, all_axis)
+    }
+
+    //History class to record a simulation
+    pub struct History {
+        time_vector: Vec<f64>,      //Simulation time starting from 0
+        name_vector: Vec<String>,   //Name of each var saved
+        data_vector: Vec<Vec<f64>>, //Vector data for each var saved
+        _data_size: usize,
+    }
+
+    impl History {
+        pub fn new(names: Vec<String>) -> History {
+            History {
+                time_vector: Vec::new(),
+                name_vector: names.clone(),
+                data_vector: Vec::new(),
+                _data_size: names.len(),
+            }
+        }
+
+        //Sets initialisation values of each data before first step
+        pub fn init(&mut self, start_time: f64, values: Vec<f64>) {
+            self.time_vector.push(start_time);
+            for idx in 0..(values.len()) {
+                self.data_vector.push(vec![values[idx]]);
+            }
+        }
+
+        //Updates all values and time vector
+        pub fn update(&mut self, delta_time: f64, values: Vec<f64>) {
+            self.time_vector
+                .push(self.time_vector.last().unwrap() + delta_time);
+            self.push_data(values);
+        }
+
+        pub fn push_data(&mut self, values: Vec<f64>) {
+            for idx in 0..values.len() {
+                self.data_vector[idx].push(values[idx]);
+            }
+        }
+
+        //Builds a graph using rust crate plotlib
+        pub fn _show(self) {
+            let mut v = ContinuousView::new()
+                .x_range(0.0, *self.time_vector.last().unwrap())
+                .y_range(0.0, 3500.0)
+                .x_label("Time (s)")
+                .y_label("Value");
+
+            for cur_data in self.data_vector {
+                //Here build the 2 by Xsamples vector
+                let mut new_vector: Vec<(f64, f64)> = Vec::new();
+                for sample_idx in 0..self.time_vector.len() {
+                    new_vector.push((self.time_vector[sample_idx], cur_data[sample_idx]));
+                }
+
+                // We create our scatter plot from the data
+                let s1: Plot = Plot::new(new_vector).line_style(LineStyle::new().colour("#DD3355"));
+
+                v = v.add(s1);
+            }
+
+            // A page with a single view is then saved to an SVG file
+            Page::single(&v).save("scatter.svg").unwrap();
+        }
+
+        //builds a graph using matplotlib python backend. PYTHON REQUIRED AS WELL AS MATPLOTLIB PACKAGE
+        pub fn show_matplotlib(&self, figure_title: &str) {
+            let fig = make_figure(&self);
+
+            use rustplotlib::backend::Matplotlib;
+            use rustplotlib::Backend;
+            let mut mpl = Matplotlib::new().unwrap();
+            mpl.set_style("ggplot").unwrap();
+
+            fig.apply(&mut mpl).unwrap();
+
+            let _result = mpl.savefig(figure_title);
+
+            mpl.wait().unwrap();
+        }
+    }
 
     use super::*;
     #[test]
@@ -1104,17 +999,17 @@ mod tests {
             "Loop Reservoir".to_string(),
             "Loop Flow".to_string(),
         ];
-        let mut greenLoopHistory = History::new(green_loop_var_names);
+        let mut green_loop_history = History::new(green_loop_var_names);
 
         let edp1_var_names = vec!["Delta Vol Max".to_string(), "n2 ratio".to_string()];
-        let mut edp1_History = History::new(edp1_var_names);
+        let mut edp1_history = History::new(edp1_var_names);
 
         let mut edp1 = engine_driven_pump();
         let mut green_loop = hydraulic_loop(LoopColor::Green);
         edp1.active = true;
 
         let init_n2 = Ratio::new::<percent>(55.0);
-        let mut engine1 = engine(init_n2);
+        let engine1 = engine(init_n2);
         let ct = context(Duration::from_millis(100));
 
         let green_acc_var_names = vec![
@@ -1123,9 +1018,9 @@ mod tests {
             "Acc fluid vol".to_string(),
             "Acc gas vol".to_string(),
         ];
-        let mut accuGreenHistory = History::new(green_acc_var_names);
+        let mut accu_green_history = History::new(green_acc_var_names);
 
-        greenLoopHistory.init(
+        green_loop_history.init(
             0.0,
             vec![
                 green_loop.loop_pressure.get::<psi>(),
@@ -1134,14 +1029,14 @@ mod tests {
                 green_loop.current_flow.get::<gallon_per_second>(),
             ],
         );
-        edp1_History.init(
+        edp1_history.init(
             0.0,
             vec![
                 edp1.get_delta_vol_max().get::<liter>(),
                 engine1.corrected_n2.get::<percent>() as f64,
             ],
         );
-        accuGreenHistory.init(
+        accu_green_history.init(
             0.0,
             vec![
                 green_loop.loop_pressure.get::<psi>(),
@@ -1164,15 +1059,8 @@ mod tests {
                 assert!(green_loop.loop_pressure <= Pressure::new::<psi>(250.0));
             }
 
-            edp1.update(&ct.delta, &ct, &green_loop, &engine1);
-            green_loop.update(
-                &ct.delta,
-                &ct,
-                Vec::new(),
-                vec![&edp1],
-                Vec::new(),
-                Vec::new(),
-            );
+            edp1.update(&ct.delta, &green_loop, &engine1);
+            green_loop.update(&ct.delta, Vec::new(), vec![&edp1], Vec::new(), Vec::new());
             if x % 20 == 0 {
                 println!("Iteration {}", x);
                 println!("-------------------------------------------");
@@ -1199,7 +1087,7 @@ mod tests {
                 );
             }
 
-            greenLoopHistory.update(
+            green_loop_history.update(
                 ct.delta.as_secs_f64(),
                 vec![
                     green_loop.loop_pressure.get::<psi>(),
@@ -1208,14 +1096,14 @@ mod tests {
                     green_loop.current_flow.get::<gallon_per_second>(),
                 ],
             );
-            edp1_History.update(
+            edp1_history.update(
                 ct.delta.as_secs_f64(),
                 vec![
                     edp1.get_delta_vol_max().get::<liter>(),
                     engine1.corrected_n2.get::<percent>() as f64,
                 ],
             );
-            accuGreenHistory.update(
+            accu_green_history.update(
                 ct.delta.as_secs_f64(),
                 vec![
                     green_loop.loop_pressure.get::<psi>(),
@@ -1227,9 +1115,9 @@ mod tests {
         }
         assert!(true);
 
-        greenLoopHistory.showMatplotlib("green_loop_edp_simulation_press");
-        edp1_History.showMatplotlib("green_loop_edp_simulation_EDP1 data");
-        accuGreenHistory.showMatplotlib("green_loop_edp_simulation_Green Accum data");
+        green_loop_history.show_matplotlib("green_loop_edp_simulation_press");
+        edp1_history.show_matplotlib("green_loop_edp_simulation_EDP1 data");
+        accu_green_history.show_matplotlib("green_loop_edp_simulation_Green Accum data");
     }
 
     #[test]
@@ -1250,15 +1138,8 @@ mod tests {
                 //X+200 after shutoff = X + 20seconds @ 100ms, so pressure shall be low
                 assert!(yellow_loop.loop_pressure <= Pressure::new::<psi>(200.0));
             }
-            epump.update(&ct.delta, &ct, &yellow_loop);
-            yellow_loop.update(
-                &ct.delta,
-                &ct,
-                vec![&epump],
-                Vec::new(),
-                Vec::new(),
-                Vec::new(),
-            );
+            epump.update(&ct.delta, &yellow_loop);
+            yellow_loop.update(&ct.delta, vec![&epump], Vec::new(), Vec::new(), Vec::new());
             if x % 20 == 0 {
                 println!("Iteration {}", x);
                 println!("-------------------------------------------");
@@ -1300,15 +1181,8 @@ mod tests {
                 //X+200 after shutoff = X + 20seconds @ 100ms, so pressure shall be low
                 assert!(blue_loop.loop_pressure <= Pressure::new::<psi>(100.0));
             }
-            epump.update(&ct.delta, &ct, &blue_loop);
-            blue_loop.update(
-                &ct.delta,
-                &ct,
-                vec![&epump],
-                Vec::new(),
-                Vec::new(),
-                Vec::new(),
-            );
+            epump.update(&ct.delta, &blue_loop);
+            blue_loop.update(&ct.delta, vec![&epump], Vec::new(), Vec::new(), Vec::new());
             if x % 20 == 0 {
                 println!("Iteration {}", x);
                 println!("-------------------------------------------");
@@ -1381,15 +1255,8 @@ mod tests {
             }
 
             rat.update_physics(&ct.delta, &indicated_airpseed);
-            rat.update(&ct.delta, &ct, &blue_loop);
-            blue_loop.update(
-                &ct.delta,
-                &ct,
-                Vec::new(),
-                Vec::new(),
-                vec![&rat],
-                Vec::new(),
-            );
+            rat.update(&ct.delta, &blue_loop);
+            blue_loop.update(&ct.delta, Vec::new(), Vec::new(), vec![&rat], Vec::new());
             if x % 20 == 0 {
                 println!("Iteration {} Time {}", x, time);
                 println!("-------------------------------------------");
@@ -1425,7 +1292,7 @@ mod tests {
             "GREEN Loop delta vol".to_string(),
             "YELLOW Loop delta vol".to_string(),
         ];
-        let mut LoopHistory = History::new(loop_var_names);
+        let mut loop_history = History::new(loop_var_names);
 
         let ptu_var_names = vec![
             "GREEN side flow".to_string(),
@@ -1442,7 +1309,7 @@ mod tests {
             "Acc fluid vol".to_string(),
             "Acc gas vol".to_string(),
         ];
-        let mut accuGreenHistory = History::new(green_acc_var_names);
+        let mut accu_green_history = History::new(green_acc_var_names);
 
         let yellow_acc_var_names = vec![
             "Loop Pressure".to_string(),
@@ -1450,7 +1317,7 @@ mod tests {
             "Acc fluid vol".to_string(),
             "Acc gas vol".to_string(),
         ];
-        let mut accuYellowHistory = History::new(yellow_acc_var_names);
+        let mut accu_yellow_history = History::new(yellow_acc_var_names);
 
         let mut epump = electric_pump();
         epump.stop();
@@ -1467,7 +1334,7 @@ mod tests {
 
         let ct = context(Duration::from_millis(100));
 
-        LoopHistory.init(
+        loop_history.init(
             0.0,
             vec![
                 green_loop.loop_pressure.get::<psi>(),
@@ -1484,11 +1351,11 @@ mod tests {
                 ptu.flow_to_left.get::<gallon_per_second>(),
                 ptu.flow_to_right.get::<gallon_per_second>(),
                 green_loop.loop_pressure.get::<psi>() - yellow_loop.loop_pressure.get::<psi>(),
-                ptu.isActiveLeft as i8 as f64,
-                ptu.isActiveRight as i8 as f64,
+                ptu.is_active_left as i8 as f64,
+                ptu.is_active_right as i8 as f64,
             ],
         );
-        accuGreenHistory.init(
+        accu_green_history.init(
             0.0,
             vec![
                 green_loop.loop_pressure.get::<psi>(),
@@ -1497,7 +1364,7 @@ mod tests {
                 green_loop.accumulator_gas_volume.get::<gallon>(),
             ],
         );
-        accuYellowHistory.init(
+        accu_yellow_history.init(
             0.0,
             vec![
                 yellow_loop.loop_pressure.get::<psi>(),
@@ -1556,7 +1423,7 @@ mod tests {
                 println!("------------IS PTU ACTIVE??------------");
                 assert!(yellow_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
                 assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
-                assert!(!ptu.isActiveLeft && !ptu.isActiveRight);
+                assert!(!ptu.is_active_left && !ptu.is_active_right);
             }
 
             if x == 600 {
@@ -1585,27 +1452,13 @@ mod tests {
             }
 
             ptu.update(&green_loop, &yellow_loop);
-            edp1.update(&ct.delta, &ct, &green_loop, &engine1);
-            epump.update(&ct.delta, &ct, &yellow_loop);
+            edp1.update(&ct.delta, &green_loop, &engine1);
+            epump.update(&ct.delta, &yellow_loop);
 
-            yellow_loop.update(
-                &ct.delta,
-                &ct,
-                vec![&epump],
-                Vec::new(),
-                Vec::new(),
-                vec![&ptu],
-            );
-            green_loop.update(
-                &ct.delta,
-                &ct,
-                Vec::new(),
-                vec![&edp1],
-                Vec::new(),
-                vec![&ptu],
-            );
+            yellow_loop.update(&ct.delta, vec![&epump], Vec::new(), Vec::new(), vec![&ptu]);
+            green_loop.update(&ct.delta, Vec::new(), vec![&edp1], Vec::new(), vec![&ptu]);
 
-            LoopHistory.update(
+            loop_history.update(
                 ct.delta.as_secs_f64(),
                 vec![
                     green_loop.loop_pressure.get::<psi>(),
@@ -1622,12 +1475,12 @@ mod tests {
                     ptu.flow_to_left.get::<gallon_per_second>(),
                     ptu.flow_to_right.get::<gallon_per_second>(),
                     green_loop.loop_pressure.get::<psi>() - yellow_loop.loop_pressure.get::<psi>(),
-                    ptu.isActiveLeft as i8 as f64,
-                    ptu.isActiveRight as i8 as f64,
+                    ptu.is_active_left as i8 as f64,
+                    ptu.is_active_right as i8 as f64,
                 ],
             );
 
-            accuGreenHistory.update(
+            accu_green_history.update(
                 ct.delta.as_secs_f64(),
                 vec![
                     green_loop.loop_pressure.get::<psi>(),
@@ -1636,7 +1489,7 @@ mod tests {
                     green_loop.accumulator_gas_volume.get::<gallon>(),
                 ],
             );
-            accuYellowHistory.update(
+            accu_yellow_history.update(
                 ct.delta.as_secs_f64(),
                 vec![
                     yellow_loop.loop_pressure.get::<psi>(),
@@ -1666,11 +1519,11 @@ mod tests {
             }
         }
 
-        LoopHistory.showMatplotlib("yellow_green_ptu_loop_simulation()_Loop_press");
-        ptu_history.showMatplotlib("yellow_green_ptu_loop_simulation()_PTU");
+        loop_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Loop_press");
+        ptu_history.show_matplotlib("yellow_green_ptu_loop_simulation()_PTU");
 
-        accuGreenHistory.showMatplotlib("yellow_green_ptu_loop_simulation()_Green_acc");
-        accuYellowHistory.showMatplotlib("yellow_green_ptu_loop_simulation()_Yellow_acc");
+        accu_green_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Green_acc");
+        accu_yellow_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Yellow_acc");
 
         assert!(true)
     }
@@ -1733,9 +1586,6 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(25.0),
             true,
             Acceleration::new::<foot_per_second_squared>(0.),
-            0.0,
-            0.0,
-            0.0,
         )
     }
 
@@ -1743,44 +1593,44 @@ mod tests {
 
     struct PressureCaracteristic {
         pressure: Pressure,
-        rpmTab: Vec<f64>,
-        flowTab: Vec<f64>,
+        rpm_tab: Vec<f64>,
+        flow_tab: Vec<f64>,
     }
 
     mod characteristics_tests {
         use super::*;
 
-        fn show_carac(figure_title: &str, outputCaracteristics: &Vec<PressureCaracteristic>) {
+        fn show_carac(figure_title: &str, output_caracteristics: &Vec<PressureCaracteristic>) {
             use rustplotlib::{Axes2D, Line2D};
 
-            let mut allAxis: Vec<Option<Axes2D>> = Vec::new();
+            let mut all_axis: Vec<Option<Axes2D>> = Vec::new();
             let colors = ["blue", "yellow", "red", "black", "cyan", "magenta", "green"];
             let linestyles = ["--", "-.", "-"];
-            let mut currAxis = Axes2D::new();
-            currAxis = currAxis.grid(true);
-            let mut colorIdx = 0;
-            let mut styleIdx = 0;
-            for curPressure in outputCaracteristics {
-                let press_str = format!("P={:.0}", curPressure.pressure.get::<psi>());
-                currAxis = currAxis
+            let mut curr_axis = Axes2D::new();
+            curr_axis = curr_axis.grid(true);
+            let mut color_idx = 0;
+            let mut style_idx = 0;
+            for cur_pressure in output_caracteristics {
+                let press_str = format!("P={:.0}", cur_pressure.pressure.get::<psi>());
+                curr_axis = curr_axis
                     .add(
                         Line2D::new(press_str.as_str())
-                            .data(&curPressure.rpmTab, &curPressure.flowTab)
-                            .color(colors[colorIdx])
+                            .data(&cur_pressure.rpm_tab, &cur_pressure.flow_tab)
+                            .color(colors[color_idx])
                             //.marker("x")
-                            .linestyle(linestyles[styleIdx])
+                            .linestyle(linestyles[style_idx])
                             .linewidth(1.0),
                     )
                     .xlabel("RPM")
                     .ylabel("Max Flow")
                     .legend("best")
-                    .xlim(0.0, *curPressure.rpmTab.last().unwrap());
+                    .xlim(0.0, *cur_pressure.rpm_tab.last().unwrap());
                 //.ylim(-2.0, 2.0);
-                colorIdx = (colorIdx + 1) % colors.len();
-                styleIdx = (styleIdx + 1) % linestyles.len();
+                color_idx = (color_idx + 1) % colors.len();
+                style_idx = (style_idx + 1) % linestyles.len();
             }
-            allAxis.push(Some(currAxis));
-            let fig = Figure::new().subplots(allAxis.len() as u32, 1, allAxis);
+            all_axis.push(Some(curr_axis));
+            let fig = Figure::new().subplots(all_axis.len() as u32, 1, all_axis);
 
             use rustplotlib::backend::Matplotlib;
             use rustplotlib::Backend;
@@ -1789,14 +1639,14 @@ mod tests {
 
             fig.apply(&mut mpl).unwrap();
 
-            mpl.savefig(figure_title);
+            let _result = mpl.savefig(figure_title);
 
             mpl.wait().unwrap();
         }
 
         #[test]
         fn epump_charac() {
-            let mut outputCaracteristics: Vec<PressureCaracteristic> = Vec::new();
+            let mut output_caracteristics: Vec<PressureCaracteristic> = Vec::new();
             let mut epump = ElectricPump::new();
             let context = context(Duration::from_secs_f64(0.0001)); //Small dt to freeze spool up effect
 
@@ -1804,31 +1654,31 @@ mod tests {
 
             epump.start();
             for pressure in (0..3500).step_by(500) {
-                let mut rpmTab: Vec<f64> = Vec::new();
-                let mut flowTab: Vec<f64> = Vec::new();
+                let mut rpm_tab: Vec<f64> = Vec::new();
+                let mut flow_tab: Vec<f64> = Vec::new();
                 for rpm in (0..10000).step_by(150) {
                     green_loop.loop_pressure = Pressure::new::<psi>(pressure as f64);
                     epump.rpm = rpm as f64;
-                    epump.update(&context.delta, &context, &green_loop);
-                    rpmTab.push(rpm as f64);
+                    epump.update(&context.delta, &green_loop);
+                    rpm_tab.push(rpm as f64);
                     let flow = epump.get_delta_vol_max()
                         / Time::new::<second>(context.delta.as_secs_f64());
-                    let flowGal = flow.get::<gallon_per_second>() as f64;
-                    flowTab.push(flowGal);
+                    let flow_gal = flow.get::<gallon_per_second>() as f64;
+                    flow_tab.push(flow_gal);
                 }
-                outputCaracteristics.push(PressureCaracteristic {
+                output_caracteristics.push(PressureCaracteristic {
                     pressure: green_loop.loop_pressure,
-                    rpmTab,
-                    flowTab,
+                    rpm_tab,
+                    flow_tab,
                 });
             }
-            show_carac("Epump_carac", &outputCaracteristics);
+            show_carac("Epump_carac", &output_caracteristics);
         }
 
         #[test]
         //TODO broken until rpm relation repaired
         fn engine_d_pump_charac() {
-            let mut outputCaracteristics: Vec<PressureCaracteristic> = Vec::new();
+            let mut output_caracteristics: Vec<PressureCaracteristic> = Vec::new();
             let mut edpump = EngineDrivenPump::new();
             //let context = context(Duration::from_secs_f64(0.0001) ); //Small dt to freeze spool up effect
 
@@ -1840,8 +1690,8 @@ mod tests {
 
             edpump.update(&context.delta, &green_loop, &engine1);
             for pressure in (0..3500).step_by(500) {
-                let mut rpmTab: Vec<f64> = Vec::new();
-                let mut flowTab: Vec<f64> = Vec::new();
+                let mut rpm_tab: Vec<f64> = Vec::new();
+                let mut flow_tab: Vec<f64> = Vec::new();
                 for rpm in (0..10000).step_by(150) {
                     green_loop.loop_pressure = Pressure::new::<psi>(pressure as f64);
 
@@ -1850,20 +1700,20 @@ mod tests {
                             / (EngineDrivenPump::PUMP_N2_GEAR_RATIO
                                 * EngineDrivenPump::LEAP_1A26_MAX_N2_RPM),
                     );
-                    edpump.update(&context.delta, &context, &green_loop, &engine1);
-                    rpmTab.push(rpm as f64);
+                    edpump.update(&context.delta, &green_loop, &engine1);
+                    rpm_tab.push(rpm as f64);
                     let flow = edpump.get_delta_vol_max()
                         / Time::new::<second>(context.delta.as_secs_f64());
-                    let flowGal = flow.get::<gallon_per_second>() as f64;
-                    flowTab.push(flowGal);
+                    let flow_gal = flow.get::<gallon_per_second>() as f64;
+                    flow_tab.push(flow_gal);
                 }
-                outputCaracteristics.push(PressureCaracteristic {
+                output_caracteristics.push(PressureCaracteristic {
                     pressure: green_loop.loop_pressure,
-                    rpmTab,
-                    flowTab,
+                    rpm_tab,
+                    flow_tab,
                 });
             }
-            show_carac("Eng_Driv_pump_carac", &outputCaracteristics);
+            show_carac("Eng_Driv_pump_carac", &output_caracteristics);
         }
     }
 
@@ -1908,13 +1758,13 @@ mod tests {
 
             //Speed check
             let mut rng = rand::thread_rng();
-            let timeStart = Instant::now();
-            for idx in 0..1000000 {
-                let testVal = rng.gen_range(xs1[0]..*xs1.last().unwrap());
-                let mut res = interpolation(&xs1, &ys1, testVal);
-                res = res + 2.78;
+            let time_start = Instant::now();
+            for _idx in 0..1000000 {
+                let test_val = rng.gen_range(xs1[0]..*xs1.last().unwrap());
+                let mut _res = interpolation(&xs1, &ys1, test_val);
+                _res = _res + 2.78;
             }
-            let time_elapsed = timeStart.elapsed();
+            let time_elapsed = time_start.elapsed();
 
             println!(
                 "Time elapsed for 1000000 calls {} s",
@@ -1964,15 +1814,14 @@ mod tests {
         fn get_edp_actual_delta_vol_when(n2: Ratio, pressure: Pressure, time: Duration) -> Volume {
             let eng = engine(n2);
             let mut edp = engine_driven_pump();
-            let dummyUpdate = Duration::from_secs(1);
-            let mut context = context((time));
+            let dummy_update = Duration::from_secs(1);
             let mut line = hydraulic_loop(LoopColor::Green);
 
             edp.start();
             line.loop_pressure = pressure;
-            edp.update(&dummyUpdate, &context, &line, &eng); //Update 10 times to stabilize displacement
+            edp.update(&dummy_update, &line, &eng); //Update 10 times to stabilize displacement
 
-            edp.update(&time, &context, &line, &eng);
+            edp.update(&time, &line, &eng);
             edp.get_delta_vol_max()
         }
 
