@@ -63,7 +63,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             }
         }
         this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, pageName);
-        SimVar.SetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number", this.currentPage);
+        SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", this.currentPage);
     }
 
     createUpperScreenPage() {
