@@ -1,8 +1,13 @@
 use std::time::Duration;
 
 use uom::si::{
-    f64::*, pressure::psi, ratio::percent, time::second, velocity::knot, volume::cubic_inch,
-    volume::gallon, volume_rate::gallon_per_second,
+    f64::*,
+    pressure::psi,
+    ratio::percent,
+    time::second,
+    velocity::knot,
+    volume::{cubic_inch, gallon},
+    volume_rate::gallon_per_second,
 };
 
 use crate::engine::Engine;
@@ -79,7 +84,7 @@ impl HydFluid {
     }
 
     pub fn get_bulk_mod(&self) -> Pressure {
-        return self.current_bulk;
+        self.current_bulk
     }
 }
 
@@ -92,6 +97,12 @@ pub struct Ptu {
     flow_to_right: VolumeRate,
     flow_to_left: VolumeRate,
     last_flow: VolumeRate,
+}
+
+impl Default for Ptu {
+    fn default() -> Self {
+        Ptu::new()
+    }
 }
 
 impl Ptu {
@@ -320,6 +331,94 @@ impl HydLoop {
         self.fire_shutoff_valve_opened
     }
 
+    fn update_accumulator(&mut self, delta_time: &Duration, delta_vol: &mut Volume) {
+        let accumulator_delta_press = self.accumulator_gas_pressure - self.loop_pressure;
+        let flow_variation = VolumeRate::new::<gallon_per_second>(interpolation(
+            &self.accumulator_press_breakpoints,
+            &self.accumulator_flow_carac,
+            accumulator_delta_press.get::<psi>().abs(),
+        ));
+
+        //TODO HANDLE OR CHECK IF RESERVOIR AVAILABILITY is OK
+        //TODO check if accumulator can be used as a min/max flow producer to
+        //avoid it being a consumer that might unsettle pressure
+        if accumulator_delta_press.get::<psi>() > 0.0 {
+            let volume_from_acc = self
+                .accumulator_fluid_volume
+                .min(flow_variation * Time::new::<second>(delta_time.as_secs_f64()));
+            self.accumulator_fluid_volume -= volume_from_acc;
+            self.accumulator_gas_volume += volume_from_acc;
+            *delta_vol += volume_from_acc;
+        } else {
+            let volume_to_acc = delta_vol
+                .max(Volume::new::<gallon>(0.0))
+                .max(flow_variation * Time::new::<second>(delta_time.as_secs_f64()));
+            self.accumulator_fluid_volume += volume_to_acc;
+            self.accumulator_gas_volume -= volume_to_acc;
+            *delta_vol -= volume_to_acc;
+        }
+
+        self.accumulator_gas_pressure = (Pressure::new::<psi>(HydLoop::ACCUMULATOR_GAS_PRE_CHARGE)
+            * Volume::new::<gallon>(HydLoop::ACCUMULATOR_MAX_VOLUME))
+            / (Volume::new::<gallon>(HydLoop::ACCUMULATOR_MAX_VOLUME)
+                - self.accumulator_fluid_volume);
+    }
+
+    fn update_ptu_flows(
+        &mut self,
+        delta_time: &Duration,
+        ptus: Vec<&Ptu>,
+        delta_vol: &mut Volume,
+        reservoir_return: &mut Volume,
+    ) {
+        let mut ptu_act = false;
+        for ptu in ptus {
+            let actual_flow;
+            if self.connected_to_ptu_left_side {
+                if ptu.is_active_left || ptu.is_active_right {
+                    ptu_act = true;
+                }
+                if ptu.flow_to_left > VolumeRate::new::<gallon_per_second>(0.0) {
+                    //were are left side of PTU and positive flow so we receive flow using own reservoir
+                    actual_flow = self.get_usable_reservoir_flow(
+                        ptu.flow_to_left,
+                        Time::new::<second>(delta_time.as_secs_f64()),
+                    );
+                    self.reservoir_volume -=
+                        actual_flow * Time::new::<second>(delta_time.as_secs_f64());
+                } else {
+                    //we are using own flow to power right side so we send that back
+                    //to our own reservoir
+                    actual_flow = ptu.flow_to_left;
+                    *reservoir_return -=
+                        actual_flow * Time::new::<second>(delta_time.as_secs_f64());
+                }
+                *delta_vol += actual_flow * Time::new::<second>(delta_time.as_secs_f64());
+            } else if self.connected_to_ptu_right_side {
+                if ptu.is_active_left || ptu.is_active_right {
+                    ptu_act = true;
+                }
+                if ptu.flow_to_right > VolumeRate::new::<gallon_per_second>(0.0) {
+                    //were are right side of PTU and positive flow so we receive flow using own reservoir
+                    actual_flow = self.get_usable_reservoir_flow(
+                        ptu.flow_to_right,
+                        Time::new::<second>(delta_time.as_secs_f64()),
+                    );
+                    self.reservoir_volume -=
+                        actual_flow * Time::new::<second>(delta_time.as_secs_f64());
+                } else {
+                    //we are using own flow to power left side so we send that back
+                    //to our own reservoir
+                    actual_flow = ptu.flow_to_right;
+                    *reservoir_return -=
+                        actual_flow * Time::new::<second>(delta_time.as_secs_f64());
+                }
+                *delta_vol += actual_flow * Time::new::<second>(delta_time.as_secs_f64());
+            }
+        }
+        self.ptu_active = ptu_act;
+    }
+
     pub fn update(
         &mut self,
         delta_time: &Duration,
@@ -362,55 +461,14 @@ impl HydLoop {
         delta_vol -= static_leaks_vol;
         reservoir_return += static_leaks_vol;
 
-        //PTU flows handling
-        let mut ptu_act = false;
-        for ptu in ptus {
-            let actual_flow;
-            if self.connected_to_ptu_left_side {
-                if ptu.is_active_left || ptu.is_active_right {
-                    ptu_act = true;
-                }
-                if ptu.flow_to_left > VolumeRate::new::<gallon_per_second>(0.0) {
-                    //were are left side of PTU and positive flow so we receive flow using own reservoir
-                    actual_flow = self.get_usable_reservoir_flow(
-                        ptu.flow_to_left,
-                        Time::new::<second>(delta_time.as_secs_f64()),
-                    );
-                    self.reservoir_volume -=
-                        actual_flow * Time::new::<second>(delta_time.as_secs_f64());
-                } else {
-                    //we are using own flow to power right side so we send that back
-                    //to our own reservoir
-                    actual_flow = ptu.flow_to_left;
-                    reservoir_return -= actual_flow * Time::new::<second>(delta_time.as_secs_f64());
-                }
-                delta_vol += actual_flow * Time::new::<second>(delta_time.as_secs_f64());
-            } else if self.connected_to_ptu_right_side {
-                if ptu.is_active_left || ptu.is_active_right {
-                    ptu_act = true;
-                }
-                if ptu.flow_to_right > VolumeRate::new::<gallon_per_second>(0.0) {
-                    //were are right side of PTU and positive flow so we receive flow using own reservoir
-                    actual_flow = self.get_usable_reservoir_flow(
-                        ptu.flow_to_right,
-                        Time::new::<second>(delta_time.as_secs_f64()),
-                    );
-                    self.reservoir_volume -=
-                        actual_flow * Time::new::<second>(delta_time.as_secs_f64());
-                } else {
-                    //we are using own flow to power left side so we send that back
-                    //to our own reservoir
-                    actual_flow = ptu.flow_to_right;
-                    reservoir_return -= actual_flow * Time::new::<second>(delta_time.as_secs_f64());
-                }
-                delta_vol += actual_flow * Time::new::<second>(delta_time.as_secs_f64());
-            }
-        }
-        self.ptu_active = ptu_act;
-        //END PTU
+        //Updates current delta_vol and reservoir return quantity based on current ptu flows
+        self.update_ptu_flows(delta_time, ptus, &mut delta_vol, &mut reservoir_return);
 
-        //Priming the loop if not filled in
-        //TODO bug, ptu can't prime the loop is it is not providing flow through delta_vol_max
+        //Updates current accumulator state and updates loop delta_vol
+        self.update_accumulator(delta_time, &mut delta_vol);
+
+        //Priming the loop if not filled in yet
+        //TODO bug, ptu can't prime the loop as it is not providing flow through delta_vol_max
         if self.loop_volume < self.max_loop_volume {
             let difference = self.max_loop_volume - self.loop_volume;
             let available_fluid_vol = self.reservoir_volume.min(delta_vol_max);
@@ -419,44 +477,10 @@ impl HydLoop {
             self.loop_volume += delta_loop_vol;
             self.reservoir_volume -= delta_loop_vol;
         }
-        //end priming
 
-        //ACCUMULATOR
-        let accumulator_delta_press = self.accumulator_gas_pressure - self.loop_pressure;
-        let flow_variation = VolumeRate::new::<gallon_per_second>(interpolation(
-            &self.accumulator_press_breakpoints,
-            &self.accumulator_flow_carac,
-            accumulator_delta_press.get::<psi>().abs(),
-        ));
-
-        //TODO HANDLE OR CHECK IF RESERVOIR AVAILABILITY is OK
-        //TODO check if accumulator can be used as a min/max flow producer to
-        //avoid it being a consumer that might unsettle pressure
-        if accumulator_delta_press.get::<psi>() > 0.0 {
-            let volume_from_acc = self
-                .accumulator_fluid_volume
-                .min(flow_variation * Time::new::<second>(delta_time.as_secs_f64()));
-            self.accumulator_fluid_volume -= volume_from_acc;
-            self.accumulator_gas_volume += volume_from_acc;
-            delta_vol += volume_from_acc;
-        } else {
-            let volume_to_acc = delta_vol
-                .max(Volume::new::<gallon>(0.0))
-                .max(flow_variation * Time::new::<second>(delta_time.as_secs_f64()));
-            self.accumulator_fluid_volume += volume_to_acc;
-            self.accumulator_gas_volume -= volume_to_acc;
-            delta_vol -= volume_to_acc;
-        }
-
-        self.accumulator_gas_pressure = (Pressure::new::<psi>(HydLoop::ACCUMULATOR_GAS_PRE_CHARGE)
-            * Volume::new::<gallon>(HydLoop::ACCUMULATOR_MAX_VOLUME))
-            / (Volume::new::<gallon>(HydLoop::ACCUMULATOR_MAX_VOLUME)
-                - self.accumulator_fluid_volume);
-        //END ACCUMULATOR
-
-        //Actuators
+        //Actuators to update here, we get their accumulated consumptions and returns, then reset them for next iteration
         let used_fluid_qty = Volume::new::<gallon>(0.);
-        //foreach actuator
+        //foreach actuator pseudocode
         //used_fluidQty =used_fluidQty+aileron.volumeToActuatorAccumulated
         //reservoirReturn=reservoirReturn+aileron.volumeToResAccumulated
         //actuator.resetVolumes()
@@ -501,10 +525,6 @@ impl HydLoop {
         self.current_flow = delta_vol / Time::new::<second>(delta_time.as_secs_f64());
     }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// PUMP DEFINITION
-////////////////////////////////////////////////////////////////////////////////
 
 pub struct Pump {
     delta_vol_max: Volume,
@@ -566,6 +586,13 @@ pub struct ElectricPump {
     rpm: f64,
     pump: Pump,
 }
+
+impl Default for ElectricPump {
+    fn default() -> Self {
+        ElectricPump::new()
+    }
+}
+
 impl ElectricPump {
     const SPOOLUP_TIME: f64 = 4.0;
     const SPOOLDOWN_TIME: f64 = 4.0;
@@ -630,6 +657,13 @@ pub struct EngineDrivenPump {
     active: bool,
     pump: Pump,
 }
+
+impl Default for EngineDrivenPump {
+    fn default() -> Self {
+        EngineDrivenPump::new()
+    }
+}
+
 impl EngineDrivenPump {
     const LEAP_1A26_MAX_N2_RPM: f64 = 16645.0; //according to the Type Certificate Data Sheet of LEAP 1A26
                                                //max N2 rpm is 116.5% @ 19391 RPM
@@ -694,6 +728,12 @@ pub struct RatPropeller {
     acc: f64,
     rpm: f64,
     torque_sum: f64,
+}
+
+impl Default for RatPropeller {
+    fn default() -> Self {
+        RatPropeller::new()
+    }
 }
 
 impl RatPropeller {
@@ -776,6 +816,13 @@ pub struct RatPump {
     stowed_position: f64,
     max_displacement: f64,
 }
+
+impl Default for RatPump {
+    fn default() -> Self {
+        RatPump::new()
+    }
+}
+
 impl RatPump {
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3050.0, 3500.0,
