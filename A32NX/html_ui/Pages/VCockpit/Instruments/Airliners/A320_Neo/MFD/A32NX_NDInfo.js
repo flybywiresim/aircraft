@@ -34,6 +34,8 @@ class Jet_MFD_NDInfo extends HTMLElement {
         this.waypointName = this.querySelector("#WP_Name");
         this.waypointTrack = this.querySelector("#WP_Track_Value");
         this.waypointDistance = this.querySelector("#WP_Distance_Value");
+        this.waypointUnit = this.querySelector("#WP_Distance_Units");
+        this.waypointSymbol = this.querySelector("#WP_Degree_Symbol");
         this.waypointTime = this.querySelector("#WP_Time");
         this.VORLeft = new VORDMENavAid(this.querySelector("#VORDMENavaid_Left"), 1);
         this.VORRight = new VORDMENavAid(this.querySelector("#VORDMENavaid_Right"), 2);
@@ -184,15 +186,22 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     }
                     if ((_track != this.currentWaypointTrack) || _force) {
                         this.currentWaypointTrack = _track;
+                        this.waypointSymbol.textContent = String.fromCharCode(176);
                         if (this.waypointTrack) {
-                            this.waypointTrack.textContent = this.currentWaypointTrack.toString().padStart(3, "0") + String.fromCharCode(176);
+                            this.waypointTrack.textContent = this.currentWaypointTrack.toString().padStart(3, "0");
                         }
                     }
                     if ((_distance != this.currentWaypointDistance) || _force) {
                         this.currentWaypointDistance = _distance;
                         if (this.waypointDistance != null) {
+                            this.waypointUnit.textContent = "NM";
                             if (this.currentWaypointDistance < 10000) {
-                                this.waypointDistance.textContent = this.currentWaypointDistance.toFixed(1);
+                                if (this.currentWaypointDistance > 19.95) {
+                                    this.waypointDistance.textContent = Math.round(this.currentWaypointDistance);
+                                } else {
+                                    this.currentWaypointDistance = parseFloat(this.currentWaypointDistance).toFixed(1);
+                                    this.waypointDistance.textContent = this.currentWaypointDistance;
+                                }
                             } else {
                                 this.waypointDistance.textContent = this.currentWaypointDistance.toFixed(0);
                             }
@@ -208,16 +217,16 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     }
                 } else {
                     if (this.waypointName != null) {
-                        this.waypointName.textContent = "";
+                        this.waypointName.textContent = "PPOS";
                     }
                     if (this.waypointTrack != null) {
-                        this.waypointTrack.textContent = "---°";
+                        this.waypointTrack.textContent = "";
                     }
                     if (this.waypointDistance != null) {
-                        this.waypointDistance.textContent = "-.-";
+                        this.waypointDistance.textContent = "";
                     }
                     if (this.waypointTime != null) {
-                        this.waypointTime.textContent = "--:--";
+                        this.waypointTime.textContent = "";
                     }
                 }
             }
@@ -314,9 +323,9 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     this.approachCourse.textContent = course;
                     this.approachInfo.textContent = ident;
                     if (this.aircraft != Aircraft.CJ4) {
-                        this.approachFreq.setAttribute("class", "ValueVor");
+                        this.approachFreq.setAttribute("class", "Large");
                         this.approachCourse.setAttribute("class", "ValueVor");
-                        this.approachInfo.setAttribute("class", "ValueVor");
+                        this.approachInfo.setAttribute("class", "Large");
                     }
                     break;
                 }
@@ -510,7 +519,7 @@ class VORDMENavAid {
             this.idValue = _value;
             if (this.idText != null) {
                 if (this.idValue == 0) {
-                    this.idText.textContent = "---";
+                    this.idText.textContent = "";
                 } else {
                     switch (this.currentState) {
                         case NAV_AID_STATE.ADF:
@@ -564,11 +573,10 @@ class VORDMENavAid {
             const displayStr = "block";
             if (this.distanceText != null) {
                 if (showDistance) {
-                    if (this.distanceValue > 20) {
-                        this.distanceValue = Math.round(this.distanceValue);
-                        this.distanceText.textContent = fastToFixed(this.distanceValue, 1);
+                    if (this.distanceValue > 19.95) {
+                        this.distanceText.textContent = Math.round(this.distanceValue);
                     } else {
-                        this.distanceValue = parseFloat(this.distanceValue).toFixed(1);
+                        this.distanceValue = this.distanceValue.toFixed(1);
                         this.distanceText.textContent = this.distanceValue;
                     }
                 } else {
