@@ -555,8 +555,8 @@ impl A320HydraulicBrakingLogic {
                         + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
                             * self.right_brake_yellow_command;
                 if !self.anti_skid_activated {
-                    self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.37);
-                    self.right_brake_yellow_command = self.right_brake_yellow_command.min(0.37);
+                    self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.5);
+                    self.right_brake_yellow_command = self.right_brake_yellow_command.min(0.5);
                 }
             } else {
                 //Else we just use parking brake
