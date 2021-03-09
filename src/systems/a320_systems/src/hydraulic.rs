@@ -1,26 +1,18 @@
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use uom::si::{
-    acceleration::foot_per_second_squared, area::square_meter, f64::*, force::newton, length::foot,
-    length::meter, mass_density::kilogram_per_cubic_meter, pressure::atmosphere, pressure::pascal,
-    pressure::psi, ratio::percent, thermodynamic_temperature::degree_celsius, time::second,
-    velocity::knot, volume::cubic_inch, volume::gallon, volume::liter,
-    volume_rate::cubic_meter_per_second, volume_rate::gallon_per_second,
+    f64::*, pressure::pascal, pressure::psi, velocity::knot, volume::gallon,
+    volume_rate::gallon_per_second,
 };
 
 //use crate::{ hydraulic::{ElectricPump, EngineDrivenPump, HydFluid, HydLoop, LoopColor, PressureSource, Ptu, Pump, RatPump}, overhead::{OnOffFaultPushButton}, shared::DelayedTrueLogicGate};
 use systems::engine::Engine;
 use systems::hydraulic::brakecircuit::BrakeCircuit;
 use systems::hydraulic::{
-    ElectricPump, EngineDrivenPump, HydFluid, HydLoop, LoopColor, PressureSource, Ptu,
-    RatPropeller, RatPump,
+    ElectricPump, EngineDrivenPump, HydFluid, HydLoop, LoopColor, Ptu, RatPump,
 };
 use systems::overhead::{AutoOffFaultPushButton, FirePushButton, OnOffFaultPushButton};
-use systems::{
-    hydraulic::brakecircuit::AutoBrakeController,
-    simulation::{
-        SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-        UpdateContext,
-    },
+use systems::simulation::{
+    SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, UpdateContext,
 };
 
 pub struct A320Hydraulic {
@@ -36,7 +28,6 @@ pub struct A320Hydraulic {
     rat: RatPump,
     ptu: Ptu,
     braking_circuit_norm: BrakeCircuit,
-    //autobrake_controller : AutoBrakeController,
     braking_circuit_altn: BrakeCircuit,
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
@@ -102,7 +93,6 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(0.08),
             ),
 
-            //autobrake_controller : AutoBrakeController::new(vec![Acceleration::new::<foot_per_second_squared>(-5.),Acceleration::new::<foot_per_second_squared>(-10.),Acceleration::new::<foot_per_second_squared>(-20.)]),
             braking_circuit_altn: BrakeCircuit::new(
                 Volume::new::<gallon>(1.5),
                 Volume::new::<gallon>(0.0),
@@ -198,17 +188,7 @@ impl A320Hydraulic {
                 self.rat.get_stow_position(),
                 self.rat.prop.get_rpm(),
             );
-            // println!("---BRAKELOGIC : Ldmn={} Rdmn={} PbrakInd={} Askid={}",self.hyd_brake_logic.left_brake_command,self.hyd_brake_logic.right_brake_command,self.hyd_brake_logic.parking_brake_demand,self.hyd_brake_logic.anti_skid_activated);
-            // println!("---BRAKEDMNDS : LG={} RG={} LY={} RY={}",self.hyd_brake_logic.left_brake_green_command,self.hyd_brake_logic.right_brake_green_command,self.hyd_brake_logic.left_brake_yellow_command,self.hyd_brake_logic.right_brake_yellow_command);
-            //println!("---L={:.0} C={:.0} R={:.0}",ct.wheel_left_rpm,ct.wheel_center_rpm,ct.wheel_right_rpm);
 
-            // let leftLock = ct.wheel_center_rpm / ct.wheel_left_rpm.max(1.);
-            // let rightLock = ct.wheel_center_rpm / ct.wheel_right_rpm.max(1.);
-            // println!("---LS={:.0} RS={:.0}",leftLock,rightLock);
-            // println!("---EDP1 n2={} EDP2 n2={}", engine1.n2.get::<percent>(), engine2.n2.get::<percent>());
-            // println!("---EDP1 flowMax={:.1}gpm EDP2 flowMax={:.1}gpm", (self.engine_driven_pump_1.get_delta_vol_max().get::<gallon>() / min_hyd_loop_timestep.as_secs_f64() )* 60.0, (self.engine_driven_pump_2.get_delta_vol_max().get::<gallon>()/min_hyd_loop_timestep.as_secs_f64())*60.0);
-            //println!("---AutoBrakes={:.0} command={:0.2} accel={:0.2} accerror={:0.2}",self.hyd_brake_logic.autobrakes_setting,self.autobrake_controller.get_brake_command(),self.autobrake_controller.current_filtered_accel.get::<foot_per_second_squared>(),self.autobrake_controller.current_accel_error.get::<foot_per_second_squared>());
-            // println!("---steps required: {:.2}", number_of_steps_f64);
             self.debug_refresh_duration = Duration::from_secs_f64(0.0);
         }
 
@@ -247,26 +227,22 @@ impl A320Hydraulic {
                 self.ptu.update(&self.green_loop, &self.yellow_loop);
                 self.engine_driven_pump_1.update(
                     &min_hyd_loop_timestep,
-                    &ct,
                     &self.green_loop,
                     &engine1,
                 );
                 self.engine_driven_pump_2.update(
                     &min_hyd_loop_timestep,
-                    &ct,
                     &self.yellow_loop,
                     &engine2,
                 );
                 self.yellow_electric_pump
-                    .update(&min_hyd_loop_timestep, &ct, &self.yellow_loop);
+                    .update(&min_hyd_loop_timestep, &self.yellow_loop);
                 self.blue_electric_pump
-                    .update(&min_hyd_loop_timestep, &ct, &self.blue_loop);
+                    .update(&min_hyd_loop_timestep, &self.blue_loop);
 
-                self.rat
-                    .update(&min_hyd_loop_timestep, &ct, &self.blue_loop);
+                self.rat.update(&min_hyd_loop_timestep, &self.blue_loop);
                 self.green_loop.update(
                     &min_hyd_loop_timestep,
-                    &ct,
                     Vec::new(),
                     vec![&self.engine_driven_pump_1],
                     Vec::new(),
@@ -274,7 +250,6 @@ impl A320Hydraulic {
                 );
                 self.yellow_loop.update(
                     &min_hyd_loop_timestep,
-                    &ct,
                     vec![&self.yellow_electric_pump],
                     vec![&self.engine_driven_pump_2],
                     Vec::new(),
@@ -282,7 +257,6 @@ impl A320Hydraulic {
                 );
                 self.blue_loop.update(
                     &min_hyd_loop_timestep,
-                    &ct,
                     vec![&self.blue_electric_pump],
                     Vec::new(),
                     vec![&self.rat],
@@ -291,7 +265,6 @@ impl A320Hydraulic {
 
                 self.update_hyd_avail_states();
 
-                //self.autobrake_controller.update(&ct.delta, &ct);
                 self.braking_circuit_norm
                     .update(&min_hyd_loop_timestep, &self.green_loop);
                 self.braking_circuit_altn
@@ -566,19 +539,6 @@ impl SimulationElement for A320Hydraulic {
             "OVHD_HYD_EPUMPY_PB_HAS_FAULT",
             self.hyd_logic_inputs.yellow_epump_has_fault,
         );
-
-        //TODO Write here brake position based on applied pressure?
-        //TODO Decide here to set parking brake position to true if it's actually the case in hydraulic?
-        // let mut max_left_press= self.braking_circuit_norm.get_brake_pressure_left().get::<psi>().max(self.braking_circuit_altn.get_brake_pressure_left().get::<psi>());
-        // max_left_press = max_left_press / 3000.0;
-        // max_left_press = max_left_press.min(1.0).max(0.0);
-
-        // let mut max_right_press= self.braking_circuit_norm.get_brake_pressure_right().get::<psi>().max(self.braking_circuit_altn.get_brake_pressure_right().get::<psi>());
-        // max_right_press = max_right_press / 3000.0;
-        // max_right_press = max_right_press.min(1.0).max(0.0);
-
-        // writer.write_f64("BRAKE LEFT DMND", max_left_press);
-        // writer.write_f64("BRAKE RIGHT DMND", max_right_press);
     }
 }
 
@@ -694,10 +654,6 @@ impl SimulationElement for A320HydraulicBrakingLogic {
         self.left_brake_command = state.read_f64("BRAKE LEFT DMND") / 100.0;
         self.right_brake_command = state.read_f64("BRAKE RIGHT DMND") / 100.0;
         self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
-    }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        //TODO Decide here to set parking brake position to true if it's actually the case in hydraulic?
     }
 }
 

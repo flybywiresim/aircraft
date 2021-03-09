@@ -2,19 +2,9 @@ use crate::{hydraulic::HydLoop, simulation::UpdateContext};
 
 use std::f64::consts::E;
 use std::time::Duration;
-use uom::{
-    si::{
-        acceleration::foot_per_second_squared,
-        f64::*,
-        length::foot,
-        pressure::{pascal, psi},
-        thermodynamic_temperature::degree_celsius,
-        time::second,
-        velocity::knot,
-        volume::gallon,
-        volume_rate::gallon_per_second,
-    },
-    typenum::private::IsLessOrEqualPrivate,
+use uom::si::{
+    acceleration::foot_per_second_squared, f64::*, pressure::psi, time::second, volume::gallon,
+    volume_rate::gallon_per_second,
 };
 
 pub trait ActuatorHydInterface {
