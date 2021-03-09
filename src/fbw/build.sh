@@ -94,6 +94,7 @@ clang++ \
   "${DIR}/src/FlyByWireInterface.cpp" \
   "${DIR}/src/FlightDataRecorder.cpp" \
   "${DIR}/src/InterpolatingLookupTable.cpp" \
+  "${DIR}/src/ThrottleAxisMapping.cpp" \
   "${DIR}/src/main.cpp" \
   "${DIR}/obj/adler32.o" \
   "${DIR}/obj/crc32.o" \

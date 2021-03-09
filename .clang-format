@@ -2,4 +2,4 @@
 BasedOnStyle: Chromium
 ---
 Language: Cpp
-ColumnLimit: 120
+ColumnLimit: 140

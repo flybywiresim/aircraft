@@ -23,6 +23,8 @@
 
 class InterpolatingLookupTable {
  public:
+  InterpolatingLookupTable() = default;
+
   void initialize(std::vector<std::pair<double, double>> mapping, double minimum, double maximum);
 
   double get(double value);

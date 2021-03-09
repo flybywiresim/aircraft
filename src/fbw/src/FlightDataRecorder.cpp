@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <INIReader.h>
 #include <dirent.h>
+#include <ini.h>
+#include <ini_type_conversion.h>
 #include <stdio.h>
 #include <chrono>
 #include <fstream>
@@ -29,25 +30,25 @@
 #include "FlightDataRecorder.h"
 
 using namespace std;
+using namespace mINI;
 
 void FlightDataRecorder::initialize() {
   // read configuration
-  INIReader configuration(CONFIGURATION_FILEPATH);
-  if (configuration.ParseError() < 0) {
+  INIStructure iniStructure;
+  INIFile iniFile(CONFIGURATION_FILEPATH);
+  if (!iniFile.read(iniStructure)) {
     // file does not exist yet -> store the default configuration in a file
-    ofstream configFile;
-    configFile.open(CONFIGURATION_FILEPATH);
-    configFile << "[FlightDataRecorder]" << endl;
-    configFile << "Enabled = true" << endl;
-    configFile << "MaximumNumberOfFiles = 15" << endl;
-    configFile << "MaximumNumberOfEntriesPerFile = 864000" << endl;
-    configFile.close();
+    iniStructure["FLIGHT_DATA_RECORDER"]["ENABLED"] = "true";
+    iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_FILES"] = "15";
+    iniStructure["FLIGHT_DATA_RECORDER"]["MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE"] = "864000";
+    iniFile.write(iniStructure, true);
   }
 
   // read basic configuration
-  isEnabled = configuration.GetBoolean("FlightDataRecorder", "Enabled", true);
-  maximumFileCount = configuration.GetInteger("FlightDataRecorder", "MaximumNumberOfFiles", 15);
-  maximumSampleCounter = configuration.GetInteger("FlightDataRecorder", "MaximumNumberOfEntriesPerFile", 864000);
+  isEnabled = INITypeConversion::getBoolean(iniStructure, "FLIGHT_DATA_RECORDER", "ENABLED", true);
+  maximumFileCount = INITypeConversion::getInteger(iniStructure, "FLIGHT_DATA_RECORDER", "MAXIMUM_NUMBER_OF_FILES", 15);
+  maximumSampleCounter =
+      INITypeConversion::getInteger(iniStructure, "FLIGHT_DATA_RECORDER", "MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE", 864000);
 
   // print configuration
   cout << "WASM: Flight Data Recorder Configuration : Enabled                  "
@@ -84,10 +85,9 @@ void FlightDataRecorder::update(AutopilotStateMachineModelClass* autopilotStateM
 }
 
 void FlightDataRecorder::terminate() {
-  if (fileStream != nullptr) {
+  if (fileStream) {
     fileStream->close();
-    fileStream = nullptr;
-    delete fileStream;
+    fileStream.reset();
   }
 }
 
@@ -98,18 +98,17 @@ void FlightDataRecorder::manageFlightDataRecorderFiles() {
   // check if file is considered full
   if (sampleCounter >= maximumSampleCounter) {
     // close file and delete
-    fileStream->close();
-    delete fileStream;
-    fileStream = nullptr;
+    if (fileStream) {
+      fileStream->close();
+      fileStream.reset();
+    }
     // reset counter
     sampleCounter = 0;
   }
 
-  if (fileStream == nullptr) {
-    // get filename
-    string filename = getFlightDataRecorderFilename();
+  if (!fileStream) {
     // create new file
-    fileStream = new gzofstream(filename.c_str());
+    fileStream = make_shared<gzofstream>(getFlightDataRecorderFilename().c_str());
     // clean up directory
     cleanUpFlightDataRecorderFiles();
   }
