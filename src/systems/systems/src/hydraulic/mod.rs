@@ -963,125 +963,6 @@ impl PressureSource for RatPump {
 // TESTS
 ////////////////////////////////////////////////////////////////////////////////
 
-use plotlib::page::Page;
-use plotlib::repr::Plot;
-use plotlib::style::{LineStyle, PointMarker, PointStyle};
-use plotlib::view::ContinuousView;
-
-extern crate rustplotlib;
-use rustplotlib::Figure;
-
-fn make_figure<'a>(h: &'a History) -> Figure<'a> {
-    use rustplotlib::{Axes2D, Line2D};
-
-    let mut allAxis: Vec<Option<Axes2D>> = Vec::new();
-
-    let mut idx = 0;
-    for curData in &h.dataVector {
-        let mut currAxis = Axes2D::new()
-            .add(
-                Line2D::new(h.nameVector[idx].as_str())
-                    .data(&h.timeVector, &curData)
-                    .color("blue")
-                    //.marker("x")
-                    //.linestyle("--")
-                    .linewidth(1.0),
-            )
-            .xlabel("Time [sec]")
-            .ylabel(h.nameVector[idx].as_str())
-            .legend("best")
-            .xlim(0.0, *h.timeVector.last().unwrap());
-        //.ylim(-2.0, 2.0);
-
-        currAxis = currAxis.grid(true);
-        idx = idx + 1;
-        allAxis.push(Some(currAxis));
-    }
-
-    Figure::new().subplots(allAxis.len() as u32, 1, allAxis)
-}
-
-//History class to record a simulation
-pub struct History {
-    timeVector: Vec<f64>,      //Simulation time starting from 0
-    nameVector: Vec<String>,   //Name of each var saved
-    dataVector: Vec<Vec<f64>>, //Vector data for each var saved
-    dataSize: usize,
-}
-
-impl History {
-    pub fn new(names: Vec<String>) -> History {
-        History {
-            timeVector: Vec::new(),
-            nameVector: names.clone(),
-            dataVector: Vec::new(),
-            dataSize: names.len(),
-        }
-    }
-
-    //Sets initialisation values of each data before first step
-    pub fn init(&mut self, start_time: f64, values: Vec<f64>) {
-        self.timeVector.push(start_time);
-        for idx in 0..(values.len()) {
-            self.dataVector.push(vec![values[idx]]);
-        }
-    }
-
-    //Updates all values and time vector
-    pub fn update(&mut self, delta_time: f64, values: Vec<f64>) {
-        self.timeVector
-            .push(self.timeVector.last().unwrap() + delta_time);
-        self.pushData(values);
-    }
-
-    pub fn pushData(&mut self, values: Vec<f64>) {
-        for idx in 0..values.len() {
-            self.dataVector[idx].push(values[idx]);
-        }
-    }
-
-    //Builds a graph using rust crate plotlib
-    pub fn show(self) {
-        let mut v = ContinuousView::new()
-            .x_range(0.0, *self.timeVector.last().unwrap())
-            .y_range(0.0, 3500.0)
-            .x_label("Time (s)")
-            .y_label("Value");
-
-        for cur_data in self.dataVector {
-            //Here build the 2 by Xsamples vector
-            let mut new_vector: Vec<(f64, f64)> = Vec::new();
-            for sample_idx in 0..self.timeVector.len() {
-                new_vector.push((self.timeVector[sample_idx], cur_data[sample_idx]));
-            }
-
-            // We create our scatter plot from the data
-            let s1: Plot = Plot::new(new_vector).line_style(LineStyle::new().colour("#DD3355"));
-
-            v = v.add(s1);
-        }
-
-        // A page with a single view is then saved to an SVG file
-        Page::single(&v).save("scatter.svg").unwrap();
-    }
-
-    //builds a graph using matplotlib python backend. PYTHON REQUIRED AS WELL AS MATPLOTLIB PACKAGE
-    pub fn showMatplotlib(&self, figure_title: &str) {
-        let fig = make_figure(&self);
-
-        use rustplotlib::backend::Matplotlib;
-        use rustplotlib::Backend;
-        let mut mpl = Matplotlib::new().unwrap();
-        mpl.set_style("ggplot").unwrap();
-
-        fig.apply(&mut mpl).unwrap();
-
-        //mpl.savefig("simple.png").unwrap();
-        mpl.savefig(figure_title);
-        //mpl.dump_pickle("simple.fig.pickle").unwrap();
-        mpl.wait().unwrap();
-    }
-}
 
 #[cfg(test)]
 mod tests {
@@ -1091,6 +972,126 @@ mod tests {
         acceleration::foot_per_second_squared, f64::*, pressure::{pascal,psi}, time::second, volume::{liter,gallon},
         volume_rate::gallon_per_second,length::foot,thermodynamic_temperature::degree_celsius,
     };
+
+    use plotlib::page::Page;
+    use plotlib::repr::Plot;
+    use plotlib::style::{LineStyle, PointMarker, PointStyle};
+    use plotlib::view::ContinuousView;
+
+    extern crate rustplotlib;
+    use rustplotlib::Figure;
+
+    fn make_figure<'a>(h: &'a History) -> Figure<'a> {
+        use rustplotlib::{Axes2D, Line2D};
+
+        let mut allAxis: Vec<Option<Axes2D>> = Vec::new();
+
+        let mut idx = 0;
+        for curData in &h.dataVector {
+            let mut currAxis = Axes2D::new()
+                .add(
+                    Line2D::new(h.nameVector[idx].as_str())
+                        .data(&h.timeVector, &curData)
+                        .color("blue")
+                        //.marker("x")
+                        //.linestyle("--")
+                        .linewidth(1.0),
+                )
+                .xlabel("Time [sec]")
+                .ylabel(h.nameVector[idx].as_str())
+                .legend("best")
+                .xlim(0.0, *h.timeVector.last().unwrap());
+            //.ylim(-2.0, 2.0);
+
+            currAxis = currAxis.grid(true);
+            idx = idx + 1;
+            allAxis.push(Some(currAxis));
+        }
+
+        Figure::new().subplots(allAxis.len() as u32, 1, allAxis)
+    }
+
+    //History class to record a simulation
+    pub struct History {
+        timeVector: Vec<f64>,      //Simulation time starting from 0
+        nameVector: Vec<String>,   //Name of each var saved
+        dataVector: Vec<Vec<f64>>, //Vector data for each var saved
+        dataSize: usize,
+    }
+
+    impl History {
+        pub fn new(names: Vec<String>) -> History {
+            History {
+                timeVector: Vec::new(),
+                nameVector: names.clone(),
+                dataVector: Vec::new(),
+                dataSize: names.len(),
+            }
+        }
+
+        //Sets initialisation values of each data before first step
+        pub fn init(&mut self, start_time: f64, values: Vec<f64>) {
+            self.timeVector.push(start_time);
+            for idx in 0..(values.len()) {
+                self.dataVector.push(vec![values[idx]]);
+            }
+        }
+
+        //Updates all values and time vector
+        pub fn update(&mut self, delta_time: f64, values: Vec<f64>) {
+            self.timeVector
+                .push(self.timeVector.last().unwrap() + delta_time);
+            self.pushData(values);
+        }
+
+        pub fn pushData(&mut self, values: Vec<f64>) {
+            for idx in 0..values.len() {
+                self.dataVector[idx].push(values[idx]);
+            }
+        }
+
+        //Builds a graph using rust crate plotlib
+        pub fn show(self) {
+            let mut v = ContinuousView::new()
+                .x_range(0.0, *self.timeVector.last().unwrap())
+                .y_range(0.0, 3500.0)
+                .x_label("Time (s)")
+                .y_label("Value");
+
+            for cur_data in self.dataVector {
+                //Here build the 2 by Xsamples vector
+                let mut new_vector: Vec<(f64, f64)> = Vec::new();
+                for sample_idx in 0..self.timeVector.len() {
+                    new_vector.push((self.timeVector[sample_idx], cur_data[sample_idx]));
+                }
+
+                // We create our scatter plot from the data
+                let s1: Plot = Plot::new(new_vector).line_style(LineStyle::new().colour("#DD3355"));
+
+                v = v.add(s1);
+            }
+
+            // A page with a single view is then saved to an SVG file
+            Page::single(&v).save("scatter.svg").unwrap();
+        }
+
+        //builds a graph using matplotlib python backend. PYTHON REQUIRED AS WELL AS MATPLOTLIB PACKAGE
+        pub fn showMatplotlib(&self, figure_title: &str) {
+            let fig = make_figure(&self);
+
+            use rustplotlib::backend::Matplotlib;
+            use rustplotlib::Backend;
+            let mut mpl = Matplotlib::new().unwrap();
+            mpl.set_style("ggplot").unwrap();
+
+            fig.apply(&mut mpl).unwrap();
+
+            //mpl.savefig("simple.png").unwrap();
+            mpl.savefig(figure_title);
+            //mpl.dump_pickle("simple.fig.pickle").unwrap();
+            mpl.wait().unwrap();
+        }
+    }
 
     use super::*;
     #[test]
