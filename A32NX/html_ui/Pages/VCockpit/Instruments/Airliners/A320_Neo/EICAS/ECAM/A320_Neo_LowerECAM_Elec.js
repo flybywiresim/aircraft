@@ -413,6 +413,13 @@ var A320_Neo_LowerECAM_Elec;
             const atLeastOneBatteryIsAuto = !!SimVar.GetSimVarValue("L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO", "Bool")
                 || !!SimVar.GetSimVarValue("L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO", "Bool");
 
+            // It's good to note that in the real aircraft, the battery charge limiters (BCLs) are
+            // responsible for supplying the DC BAT BUS potential information to the SDAC. When the battery push
+            // button is off the associated BCL is unpowered and thus not sending a signal to the SDAC.
+            // If neither BCL sends signals to the SDAC this is translated into the amber XX you see
+            // on the ECAM screen.
+            // Once the SDAC is implemented we can likely simplify the logic here to read a single value
+            // with three states: normal, abnormal, and no signal.
             const dcBatBusPotentialNormal = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_BAT_BUS_POTENTIAL_NORMAL", "Bool");
             this.greenWhen(this.e_DCBATBUS_TITLE, dcBatBusIsPowered && dcBatBusPotentialNormal && atLeastOneBatteryIsAuto);
             this.setValue(this.e_DCBATBUS_TITLE, dcBatBusIsPowered && atLeastOneBatteryIsAuto ? "DC BAT" : "XX");
