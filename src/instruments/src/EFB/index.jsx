@@ -18,31 +18,40 @@
 
 import { useState, useEffect } from 'react';
 import Efb from './Efb.tsx';
-import { getSimVar, setSimVar } from '../util.mjs';
+import { getSimVar, setSimVar } from '../util.js';
 import logo from './Assets/fbw-logo.svg';
 
+import './Assets/Reset.scss';
 import './Assets/Efb.scss';
 import { render } from '../Common/index.tsx';
+import { readSettingsFromPersistentStorage } from './Settings/sync.ts';
+import { useSimVar } from '../Common/simVars.tsx';
 
-function ScreenLoading() {
+const ScreenBlank = () => {
+    const [, setTurnedOn] = useSimVar('L:A32NX_EFB_TURNED_ON', 'number');
+
     return (
-        <div className="loading-screen">
-            <div className="center">
-                <div className="placeholder">
-                    <img src={logo} className="fbw-logo" alt="logo" />
-                    {' '}
-                    flyPad
-                </div>
-                <div className="loading-bar">
-                    <div className="loaded" />
-                </div>
+        <div onClick={() => setTurnedOn(1)} style={{ width: '100vw', height: '100vh' }} />
+    );
+};
+
+const ScreenLoading = () => (
+    <div className="loading-screen">
+        <div className="center">
+            <div className="placeholder">
+                <img src={logo} className="fbw-logo" alt="logo" />
+                {' '}
+                flyPad
+            </div>
+            <div className="loading-bar">
+                <div className="loaded" />
             </div>
         </div>
-    );
-}
+    </div>
+);
 
-function EFBLoad() {
-    const [content, setContent] = useState(<></>);
+const EFBLoad = () => {
+    const [content, setContent] = useState('off');
     const [loadingTimeout, setLoadingTimeout] = useState();
 
     useEffect(() => {
@@ -51,10 +60,10 @@ function EFBLoad() {
 
             switch (nowPoweredOn) {
             case 0:
-                setContent(<></>);
+                setContent('off');
                 break;
             case 1:
-                setContent(<ScreenLoading />);
+                setContent('loading');
                 if (!loadingTimeout) {
                     setLoadingTimeout(setTimeout(() => {
                         setSimVar('L:A32NX_EFB_TURNED_ON', 2, 'number');
@@ -63,7 +72,7 @@ function EFBLoad() {
                 }
                 break;
             case 2:
-                setContent(<Efb currentFlight={getSimVar('ATC FLIGHT NUMBER', 'string')} />);
+                setContent('loaded');
                 break;
             default:
                 throw new RangeError();
@@ -73,7 +82,18 @@ function EFBLoad() {
         return () => clearInterval(interval);
     }, [loadingTimeout]);
 
-    return content;
-}
+    switch (content) {
+    case 'off':
+        return <ScreenBlank />;
+    case 'loading':
+        return <ScreenLoading />;
+    case 'loaded':
+        return <Efb currentFlight={getSimVar('ATC FLIGHT NUMBER', 'string')} />;
+    default:
+        throw new Error();
+    }
+};
+
+readSettingsFromPersistentStorage();
 
 render(<EFBLoad />);

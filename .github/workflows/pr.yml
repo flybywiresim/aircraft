@@ -33,18 +33,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    env:
+      ZIP_NAME: A32NX.zip
+      BUILD_DIR_NAME: zip-build
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
-      - name: Generate layout.json and update manifest.json
+      - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
           ./scripts/dev-env/run.sh ./scripts/build.sh
-
-          mkdir tmp_A32NX
-          mv A32NX tmp_A32NX/
-          mv tmp_A32NX A32NX
+      - name: Generate ZIP file
+        run: |
+          mkdir ./${{ env.BUILD_DIR_NAME }}
+          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.ZIP_NAME }} ./A32NX/
       - uses: actions/upload-artifact@v2
         with:
           name: A32NX
-          path: A32NX
+          path: ${{ env.BUILD_DIR_NAME }}/${{ env.ZIP_NAME }}

@@ -3,6 +3,7 @@
 // The selector calculates the new value based on other simvars and some logic.
 // The updater compares the new value from the selector with the current value from the local simvar,
 // and then updates the local simvar if it changed.
+
 const FLAPS_IN_MOTION_MIN_DELTA = 0.1;
 
 class A32NX_LocalVarUpdater {
@@ -70,6 +71,11 @@ class A32NX_LocalVarUpdater {
                 varName: "L:32NX_PACKS_1_IS_SUPPLYING",
                 type: "Bool",
                 selector: this._isPacksOneSupplying.bind(this)
+            },
+            {
+                varName: "L:A32NX_SLIDES_ARMED",
+                type: "Bool",
+                selector: this._areSlidesArmed.bind(this)
             }
             // New updaters go here...
         ];
@@ -187,6 +193,17 @@ class A32NX_LocalVarUpdater {
         this.isPacksOneSupplying = packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool");
 
         return this.isPacksOneSupplying;
+    }
+
+    _areSlidesArmed() {
+
+        return !SimVar.GetSimVarValue('SIM ON GROUND', 'bool') ||
+        SimVar.GetSimVarValue('ON ANY RUNWAY', 'bool') ||
+        (SimVar.GetSimVarValue('LIGHT BEACON ON', 'bool') &&
+            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:0', 'percent') < 5 && // Pilot side front door for ramp/stairs
+            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:3', 'percent') < 5 && // Rear door, FO side for catering
+            SimVar.GetSimVarValue('INTERACTIVE POINT OPEN:5', 'percent') < 5 // Cargo door FO side
+        );
     }
 
     // New selectors go here...

@@ -63,7 +63,24 @@ a320-neo-clock-element #Mainframe #TopSelector {
 a320-neo-clock-element #Mainframe #TopSelector #TopSelectorValue {
   font-family: "AirbusChronometer";
   font-size: 65px;
+  margin-right: 3%;
   text-align: center;
+  width: 29%;
+  color: rgba(155, 148, 148, 0.911);
+}
+a320-neo-clock-element #Mainframe #TopSelector #TopSelectorSeparator {
+  font-family: "AirbusChronometer";
+  font-size: 65px;
+  text-align: center;
+  width: 5%;
+  color: rgba(155, 148, 148, 0.911);
+}
+a320-neo-clock-element #Mainframe #TopSelector #TopSelectorValue2 {
+  font-family: "AirbusChronometer";
+  font-size: 65px;
+  margin-right: 2%;
+  text-align: center;
+  width: 30%;
   color: rgba(155, 148, 148, 0.911);
 }
 a320-neo-clock-element #Mainframe #MiddleSelector {
