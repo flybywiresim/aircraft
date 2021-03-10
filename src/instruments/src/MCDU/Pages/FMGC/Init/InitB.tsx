@@ -2,14 +2,14 @@ import React from 'react';
 import { Content } from '../../../Components/Content';
 import { LineHolder } from '../../../Components/Lines/LineHolder';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
-import { Line, lineSides } from '../../../Components/Lines/Line';
-import { StringField } from '../../../Components/Field/StringField';
+import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
+import { Field } from '../../../Components/Fields/NonInteractive/Field';
 
 export const InitBPage: React.FC = () => (
     <Content>
         <LineHolder>
             <EmptyLine />
-            <Line value={<StringField value="WIP" nullValue="" side={lineSides.center} />} />
+            <Line value={<Field value="WIP" color={lineColors.white} size={lineSizes.regular} side={lineSides.center} />} />
         </LineHolder>
     </Content>
 );
