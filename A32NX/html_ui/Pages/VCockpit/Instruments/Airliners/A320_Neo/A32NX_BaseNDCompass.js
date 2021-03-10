@@ -447,38 +447,39 @@ class Jet_NDCompass extends HTMLElement {
     }
     updateNavigationInfo() {
         if (this.courseGroup) {
-            if (this.navigationMode == Jet_NDCompass_Navigation.ILS || this.navigationMode == Jet_NDCompass_Navigation.VOR) {
-                this.courseGroup.classList.toggle('hide', false);
-                const compass = Number(this.getAttribute('rotation'));
-                let displayCourseDeviation = false;
-                let displayVerticalDeviation = false;
-                if (this.navigationMode == Jet_NDCompass_Navigation.ILS || this.navigationMode === Jet_NDCompass_Navigation.VOR) {
-                    let beacon;
-                    if (this.navigationMode == Jet_NDCompass_Navigation.ILS) {
-                        beacon = this.gps.radioNav.getBestILSBeacon();
-                    } else if (this.navigationMode === Jet_NDCompass_Navigation.VOR) {
-                        beacon = this.gps.radioNav.getBestVORBeacon();
-                    }
-                    if (beacon.id > 0) {
-                        displayCourseDeviation = true;
-                        let deviation = (SimVar.GetSimVarValue("NAV CDI:" + beacon.id, "number") / 127);
-                        const backCourse = SimVar.GetSimVarValue("AUTOPILOT BACKCOURSE HOLD", "bool");
-                        if (backCourse) {
-                            deviation = -deviation;
-                        }
-                        this.setAttribute("course", beacon.course.toString());
-                        this.setAttribute("course_deviation", deviation.toString());
-                        if (SimVar.GetSimVarValue("NAV HAS GLIDE SLOPE:" + beacon.id, "Bool")) {
-                            displayVerticalDeviation = true;
-                            this.setAttribute("vertical_deviation", (SimVar.GetSimVarValue("NAV GSI:" + beacon.id, "number") / 127.0).toString());
-                        }
-                    } else {
-                        this.setAttribute("course", compass.toString());
-                        this.setAttribute("course_deviation", "0");
-                    }
+            const compass = Number(this.getAttribute('rotation'));
+            let displayCourseDeviation = false;
+            let displayVerticalDeviation = false;
+            if (this.navigationMode == Jet_NDCompass_Navigation.ILS || this.navigationMode === Jet_NDCompass_Navigation.VOR) {
+                let beacon;
+                if (this.navigationMode == Jet_NDCompass_Navigation.ILS) {
+                    beacon = this.gps.radioNav.getBestILSBeacon();
+                } else if (this.navigationMode === Jet_NDCompass_Navigation.VOR) {
+                    beacon = this.gps.radioNav.getBestVORBeacon();
                 }
+                if (beacon.id > 0) {
+                    displayCourseDeviation = true;
+                    let deviation = (SimVar.GetSimVarValue("NAV CDI:" + beacon.id, "number") / 127);
+                    const backCourse = SimVar.GetSimVarValue("AUTOPILOT BACKCOURSE HOLD", "bool");
+                    if (backCourse) {
+                        deviation = -deviation;
+                    }
+                    this.setAttribute("course", beacon.course.toString());
+                    this.setAttribute("course_deviation", deviation.toString());
+                    if (SimVar.GetSimVarValue("NAV HAS GLIDE SLOPE:" + beacon.id, "Bool")) {
+                        displayVerticalDeviation = true;
+                        this.setAttribute("vertical_deviation", (SimVar.GetSimVarValue("NAV GSI:" + beacon.id, "number") / 127.0).toString());
+                    }
+                } else {
+                    this.setAttribute("course", compass.toString());
+                    this.setAttribute("course_deviation", "0");
+                }
+            }
+            if (this.courseDeviation) {
                 this.setAttribute("display_course_deviation", displayCourseDeviation ? "True" : "False");
                 this.setAttribute("display_vertical_deviation", displayVerticalDeviation ? "True" : "False");
+            }
+            if (this.navigationMode != Jet_NDCompass_Navigation.ILS) {
                 switch (this.logic_brg1Source) {
                     case 1:
                     {
@@ -551,8 +552,6 @@ class Jet_NDCompass extends HTMLElement {
                         break;
                     }
                 }
-            } else {
-                this.courseGroup.classList.toggle('hide', true);
             }
         }
     }

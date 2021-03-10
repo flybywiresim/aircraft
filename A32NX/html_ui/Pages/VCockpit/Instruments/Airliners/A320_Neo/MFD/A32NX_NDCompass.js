@@ -144,6 +144,49 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                         graduationGroup.appendChild(line);
                     }
                 }
+                this.courseGroup = document.createElementNS(Avionics.SVG.NS, "g");
+                this.courseGroup.setAttribute("id", "CourseInfo");
+                this.rotatingCircle.appendChild(this.courseGroup);
+                {
+                    const bearing = document.createElementNS(Avionics.SVG.NS, "g");
+                    bearing.setAttribute("id", "bearing");
+                    this.courseGroup.appendChild(bearing);
+                    {
+                        this.bearing1 = document.createElementNS(Avionics.SVG.NS, "g");
+                        this.bearing1.setAttribute("id", "bearing1");
+                        this.bearing1.setAttribute("visibility", "hidden");
+                        bearing.appendChild(this.bearing1);
+
+                        const arrow1 = document.createElementNS(Avionics.SVG.NS, "path");
+                        arrow1.setAttribute("d", "M50 475 L50 460 M50 440 L50 370    M63 460 L50 440 L37 460 Z     M50 -375 L50 -360 M50 -340 L50 -270     M63 -340 L50 -360 L37 -340 Z");
+                        if (Simplane.getAutoPilotNavAidState(this.aircraft, 1, 1) === NAV_AID_STATE.ADF) {
+                            arrow1.setAttribute("stroke", "lime");
+                        } else {
+                            arrow1.setAttribute("stroke", "white");
+                        }
+                        arrow1.setAttribute("stroke-width", "4");
+                        arrow1.setAttribute("fill", "none");
+                        arrow1.setAttribute("id", "bearing1");
+                        this.bearing1.appendChild(arrow1);
+
+                        this.bearing2 = document.createElementNS(Avionics.SVG.NS, "g");
+                        this.bearing2.setAttribute("id", "bearing2");
+                        this.bearing2.setAttribute("visibility", "hidden");
+                        bearing.appendChild(this.bearing2);
+
+                        const arrow2 = document.createElementNS(Avionics.SVG.NS, "path");
+                        arrow2.setAttribute("d", "M50 475 L50 420 M58 420 L42 420    M58 420 L58 370 M42 420 L42 370     M50 -375 L50 -320   M58 -270 L58 -300 L63 -300 L50 -320 L37 -300 L42 -300 L42 -270");
+                        if (Simplane.getAutoPilotNavAidState(this.aircraft, 1, 2) === NAV_AID_STATE.ADF) {
+                            arrow2.setAttribute("stroke", "lime");
+                        } else {
+                            arrow2.setAttribute("stroke", "white");
+                        }
+                        arrow2.setAttribute("stroke-width", "4");
+                        arrow2.setAttribute("fill", "none");
+                        arrow2.setAttribute("id", "bearing2");
+                        this.bearing2.appendChild(arrow2);
+                    }
+                }
                 this.rotatingCircle.appendChild(graduationGroup);
                 this.trackingGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.trackingGroup.setAttribute("id", "trackingGroup");
