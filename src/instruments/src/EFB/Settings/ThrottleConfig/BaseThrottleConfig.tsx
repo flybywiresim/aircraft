@@ -5,7 +5,6 @@ import DetentConfig from './DetentConfig';
 interface Props {
     throttleNumber: string,
     throttleCount: number,
-    values: Array<any>,
 }
 
 class ThrottleSimvar {
@@ -15,11 +14,7 @@ class ThrottleSimvar {
 
     hiSetter: Array<any>;
 
-    hiGetter: Array<any>;
-
     lowSetter: Array<any>;
-
-    lowGetter: Array<any>;
 
     constructor(readableName: string, technicalName: string) {
         this.readableName = readableName;
@@ -66,56 +61,20 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
                 <div className="justify-between items-center">
 
                     {mappings.map((m) => {
-                        console.log(`HHII${m.hiSetter}`);
-                        console.log(`Low${m.lowSetter}`);
-
                         const [lowValue, setLowValue] = m.lowSetter;
-                        console.log(`LLOOOOL${m.lowSetter[1]}`);
+                        console.log(`Lower boundary: ${lowValue}`);
+                        console.log(`Higher boundary: ${lowValue}`);
 
                         const [hiValue, setHiValue] = m.hiSetter;
                         return (
                             <div className="divide-y divide-gray-700 ">
                                 <span className="text-lg text-gray-300">{lowValue}</span>
 
-                                <DetentConfig text={m.readableName} fromVar={setLowValue} toVar={setHiValue} throttleNumber={props.throttleNumber} values={props.values} />
+                                <DetentConfig text={m.readableName} fromVar={setLowValue} toVar={setHiValue} throttleNumber={props.throttleNumber} />
 
                             </div>
                         );
                     })}
-
-                    {/*                   <div className="divide-y divide-gray-700 flex flex-col">
-                        <span className="text-lg text-gray-300">{throttleRevIdle.toFixed(2)}</span>
-
-                        <div className="mb-4 flex flex-row justify-between items-center">
-                            <Button className="w-full" text="REV Idle" onClick={() => setThrottleRevIdle(throttle1Position)} />
-                        </div>
-                    </div>
-                    <div className="divide-y divide-gray-700 flex flex-col">
-                        <span className="text-lg text-gray-300">{throttleIdle.toFixed(2)}</span>
-
-                        <div className="mb-4 flex flex-row justify-between items-center">
-                            <Button className="w-full" text="Idle" onClick={() => setThrottleIdle(throttle1Position)} />
-                        </div>
-                    </div>
-                    <div className="divide-y divide-gray-700 flex flex-col">
-                        <span className="text-lg text-gray-300">{throttleClb.toFixed(2)}</span>
-
-                        <div className="mb-4 flex flex-row justify-between items-center">
-                            <Button className="w-full" text="CLB" onClick={() => setThrottleClb(throttle1Position)} />
-                        </div>
-                    </div>
-                    <div className="divide-y divide-gray-700 flex flex-col">
-                        <span className="text-lg text-gray-300">{throttleFlex.toFixed(2)}</span>
-                        <div className="mb-4 flex flex-row justify-between items-center">
-                            <Button className="w-full" text="FLEX" onClick={() => setThrottleFlex(throttle1Position)} />
-                        </div>
-                    </div>
-                    <div className="divide-y divide-gray-700 flex flex-col">
-                        <span className="text-lg text-gray-300">{throttleToga.toFixed(2)}</span>
-                        <div className="mb-4 flex flex-row justify-between items-center">
-                            <Button className="w-full" text="TOGA" onClick={() => setThrottleToga(throttle1Position)} />
-                        </div>
-                    </div> */}
                 </div>
             </div>
         </div>

@@ -8,7 +8,6 @@ interface Props {
     toVar,
     throttleNumber,
     text,
-    values: Array<any>,
 }
 
 type DetentConfigState = {
@@ -18,7 +17,7 @@ type DetentConfigState = {
 }
 
 const DetentConfig: React.FC<Props> = (props: Props) => {
-    const [throttle1Position] = useSimVar(`GENERAL ENG THROTTLE LEVER POSITION:${props.throttleNumber}`, 'number');
+    const [throttle1Position] = useSimVar(`A32NX_THROTTLE_MAPPING_INPUT:${props.throttleNumber}`, 'number');
 
     const [state, setState] = useState<DetentConfigState>({ DETENT_FROM_SET: false, DETENT_TO_SET: false, RESET: true });
 
