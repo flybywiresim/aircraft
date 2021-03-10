@@ -142,17 +142,14 @@ class A32NX_FlightPhase_PreFlight {
     }
 
     check(_deltaTime, _fmc) {
-        // Simplane.getAltitudeAboveGround() > 1500; is used to skip flight phase in case ac reloaded midair
         return this.takeoffConfirmation.write(
             (
-                (
-                    Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT ||
-                    Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT
-                ) && (
-                    SimVar.GetSimVarValue("ENG N1 RPM:1", "percent") > .75 ||
-                    SimVar.GetSimVarValue("ENG N1 RPM:2", "percent") > .75
-                )
-            ) || Simplane.getAltitudeAboveGround() > 1500,
+                Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT ||
+                Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT
+            ) && (
+                SimVar.GetSimVarValue("ENG N1 RPM:1", "percent") > .75 ||
+                SimVar.GetSimVarValue("ENG N1 RPM:2", "percent") > .75
+            ),
             _deltaTime
         );
     }
