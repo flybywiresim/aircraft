@@ -839,7 +839,7 @@ class CDUPerformancePage {
 
         let finalAppCell = "";
         if (!isILS) {
-            finalAppCell = "{small}{inop}FLS*{end}{end}{cyan}/FINAL APP{end}";
+            finalAppCell = "{cyan}FINAL APP/{end}{small}{inop}FLS*{end}{end}";
         }
         mcdu.onRightInput[0] = () => {
             if (!isILS) {
@@ -894,7 +894,7 @@ class CDUPerformancePage {
             /* 4l */["TRANS ALT"],
             /* 4L */[transAltCell + "[color]cyan", "", "F=" + flpRetrCell],
             /* 5l */["VAPP", "LDG CONF\xa0", "VLS\xa0\xa0\xa0\xa0\xa0\xa0"],
-            /* 5L */[vappCell + "[color]cyan", mcdu.perfApprFlaps3 ? "{small}FULL*{end}{cyan}/CONF3{end}" : "{cyan}FULL/{end}{small}CONF3*{end}", vlsCell + "\xa0\xa0\xa0\xa0\xa0\xa0"],
+            /* 5L */[vappCell + "[color]cyan", mcdu.perfApprFlaps3 ? "{cyan}CONF3/{end}{small}FULL*{end}" : "{cyan}FULL/{end}{small}CONF3*{end}", vlsCell + "\xa0\xa0\xa0\xa0\xa0\xa0"],
             /* 6l */bottomRowLabels,
             /* 6L */bottomRowCells,
         ]);

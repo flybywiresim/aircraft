@@ -2478,11 +2478,10 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprQNH(s) {
         const value = parseFloat(s);
-        const HPA_REGEX = /^[0-9]{3,4}$/;
-        const INHG_REGEX = /^[0-9]{2}\.[0-9]{1,2}$/;
-        const hpa = Simplane.getPressureSelectedUnits() === "millibar";
+        const HPA_REGEX = /^[01]?[0-9]{3}$/;
+        const INHG_REGEX = /^[23][0-9]\.?[0-9]{2}$/;
 
-        if (hpa && HPA_REGEX.test(value)) {
+        if (HPA_REGEX.test(value)) {
             if (value >= 745 && value <= 1050) {
                 this.perfApprQNH = value;
                 return true;
@@ -2490,8 +2489,11 @@ class FMCMainDisplay extends BaseAirliners {
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
                 return false;
             }
-        } else if (!hpa && INHG_REGEX.test(value)) {
-            if (value >= 22.0 && value <= 31.00) {
+        } else if (INHG_REGEX.test(value)) {
+            if (value >= 2200 && value <= 3100) {
+                this.perfApprQNH = value / 100;
+                return true;
+            } else if (value >= 22.0 && value <= 31.00) {
                 this.perfApprQNH = value;
                 return true;
             } else {
