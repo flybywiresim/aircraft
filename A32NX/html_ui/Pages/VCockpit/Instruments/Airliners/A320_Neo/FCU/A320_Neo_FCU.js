@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class A320_Neo_FCU extends BaseAirliners {
     constructor() {
         super();
@@ -487,7 +505,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
     }
     onFlightStart() {
         super.onFlightStart();
-        const selectedValue = Simplane.getAutoPilotSelectedVerticalSpeedHoldValue();
+        const selectedValue = Simplane.getAutoPilotDisplayedVerticalSpeedHoldValue();
         if (selectedValue == 0) {
             this._enterIdleState(0);
         } else {
@@ -522,7 +540,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             this.gps.requestCall(() => {
                 this.currentState = A320_Neo_FCU_VSpeed_State.Flying;
                 if (!this.isFPAMode) {
-                    const selectedValue = Simplane.getAutoPilotSelectedVerticalSpeedHoldValue();
+                    const selectedValue = Simplane.getAutoPilotDisplayedVerticalSpeedHoldValue();
                     Coherent.call("AP_VS_VAR_SET_ENGLISH", 1, selectedValue);
                 }
                 SimVar.SetSimVarValue("K:VS_SLOT_INDEX_SET", "number", 1);
@@ -534,7 +552,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         if (this.currentState != A320_Neo_FCU_VSpeed_State.Idle) {
             this.currentState = A320_Neo_FCU_VSpeed_State.Flying;
             if (!this.isFPAMode) {
-                const selectedValue = Simplane.getAutoPilotSelectedVerticalSpeedHoldValue();
+                const selectedValue = Simplane.getAutoPilotDisplayedVerticalSpeedHoldValue();
                 Coherent.call("AP_VS_VAR_SET_ENGLISH", 1, selectedValue);
             }
             SimVar.SetSimVarValue("K:VS_SLOT_INDEX_SET", "number", 1);
@@ -543,7 +561,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             this.forceUpdate = true;
         } else {
             this.currentState = A320_Neo_FCU_VSpeed_State.Flying;
-            const currentValue = Simplane.getVerticalSpeed();
+            const currentValue = Simplane.getAutoPilotDisplayedVerticalSpeedHoldValue();
             if (this.isFPAMode) {
                 const angle = this.calculateAngleForVerticalSpeed(currentValue);
                 SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree", angle);
@@ -626,7 +644,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             const angle = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree");
             this.refresh(true, true, angle, lightsTest, this.forceUpdate);
         } else {
-            this.refresh(true, false, Simplane.getAutoPilotSelectedVerticalSpeedHoldValue(), lightsTest, this.forceUpdate);
+            this.refresh(true, false, Simplane.getAutoPilotDisplayedVerticalSpeedHoldValue(), lightsTest, this.forceUpdate);
         }
         this.forceUpdate = false;
     }
