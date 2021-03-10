@@ -1,14 +1,9 @@
 use std::time::Duration;
-use uom::si::{
-    f64::*, pressure::pascal, pressure::psi, velocity::knot, volume::gallon,
-    volume_rate::gallon_per_second,
-};
+use uom::si::{f64::*, pressure::pascal, pressure::psi, velocity::knot, volume::gallon};
 
 use systems::engine::Engine;
 use systems::hydraulic::brakecircuit::BrakeCircuit;
-use systems::hydraulic::{
-    ElectricPump, EngineDrivenPump, HydFluid, HydLoop, LoopColor, Ptu, RatPump,
-};
+use systems::hydraulic::{ElectricPump, EngineDrivenPump, HydFluid, HydLoop, Ptu, RatPump};
 use systems::overhead::{AutoOffFaultPushButton, FirePushButton, OnOffFaultPushButton};
 use systems::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, UpdateContext,
@@ -49,7 +44,7 @@ impl A320Hydraulic {
             hyd_brake_logic: A320HydraulicBrakingLogic::new(),
 
             blue_loop: HydLoop::new(
-                LoopColor::Blue,
+                "BLUE",
                 false,
                 false,
                 Volume::new::<gallon>(15.8),
@@ -57,9 +52,10 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(8.0),
                 Volume::new::<gallon>(1.56),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                false,
             ),
             green_loop: HydLoop::new(
-                LoopColor::Green,
+                "GREEN",
                 true,
                 false,
                 Volume::new::<gallon>(26.38),
@@ -67,9 +63,10 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(15.),
                 Volume::new::<gallon>(3.6),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                true,
             ),
             yellow_loop: HydLoop::new(
-                LoopColor::Yellow,
+                "YELLOW",
                 false,
                 true,
                 Volume::new::<gallon>(19.75),
@@ -77,21 +74,24 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(10.0),
                 Volume::new::<gallon>(3.15),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                true,
             ),
-            engine_driven_pump_1: EngineDrivenPump::new(),
-            engine_driven_pump_2: EngineDrivenPump::new(),
-            blue_electric_pump: ElectricPump::new(),
-            yellow_electric_pump: ElectricPump::new(),
-            rat: RatPump::new(),
-            ptu: Ptu::new(),
+            engine_driven_pump_1: EngineDrivenPump::new("GREEN"),
+            engine_driven_pump_2: EngineDrivenPump::new("YELLOW"),
+            blue_electric_pump: ElectricPump::new("BLUE"),
+            yellow_electric_pump: ElectricPump::new("YELLOW"),
+            rat: RatPump::new(""),
+            ptu: Ptu::new(""),
 
             braking_circuit_norm: BrakeCircuit::new(
+                "NORM",
                 Volume::new::<gallon>(0.),
                 Volume::new::<gallon>(0.),
                 Volume::new::<gallon>(0.08),
             ),
 
             braking_circuit_altn: BrakeCircuit::new(
+                "ALTN",
                 Volume::new::<gallon>(1.5),
                 Volume::new::<gallon>(0.0),
                 Volume::new::<gallon>(0.08),
@@ -386,101 +386,24 @@ impl A320Hydraulic {
 
 impl SimulationElement for A320Hydraulic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(&mut self.hyd_logic_inputs);
-        visitor.visit(&mut self.hyd_brake_logic);
+        self.yellow_electric_pump.accept(visitor);
+        self.blue_electric_pump.accept(visitor);
+        self.engine_driven_pump_1.accept(visitor);
+        self.engine_driven_pump_2.accept(visitor);
+
+        self.ptu.accept(visitor);
+
+        self.blue_loop.accept(visitor);
+        self.green_loop.accept(visitor);
+        self.yellow_loop.accept(visitor);
+
+        self.hyd_logic_inputs.accept(visitor);
+        self.hyd_brake_logic.accept(visitor);
+
+        self.braking_circuit_norm.accept(visitor);
+        self.braking_circuit_altn.accept(visitor);
+
         visitor.visit(self);
-    }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(
-            "HYD_GREEN_PRESSURE",
-            self.green_loop.get_pressure().get::<psi>(),
-        );
-        writer.write_f64(
-            "HYD_GREEN_RESERVOIR",
-            self.green_loop.get_reservoir_volume().get::<gallon>(),
-        );
-        writer.write_bool(
-            "HYD_GREEN_EDPUMP_ACTIVE",
-            self.engine_driven_pump_1.is_active(),
-        );
-        writer.write_bool(
-            "HYD_GREEN_FIRE_VALVE_OPENED",
-            self.green_loop.get_fire_shutoff_valve_state(),
-        );
-
-        writer.write_f64(
-            "HYD_BLUE_PRESSURE",
-            self.blue_loop.get_pressure().get::<psi>(),
-        );
-        writer.write_f64(
-            "HYD_BLUE_RESERVOIR",
-            self.blue_loop.get_reservoir_volume().get::<gallon>(),
-        );
-        writer.write_bool("HYD_BLUE_EPUMP_ACTIVE", self.blue_electric_pump.is_active());
-
-        writer.write_f64(
-            "HYD_YELLOW_PRESSURE",
-            self.yellow_loop.get_pressure().get::<psi>(),
-        );
-        writer.write_f64(
-            "HYD_YELLOW_RESERVOIR",
-            self.yellow_loop.get_reservoir_volume().get::<gallon>(),
-        );
-        writer.write_bool(
-            "HYD_YELLOW_EDPUMP_ACTIVE",
-            self.engine_driven_pump_2.is_active(),
-        );
-        writer.write_bool(
-            "HYD_YELLOW_FIRE_VALVE_OPENED",
-            self.yellow_loop.get_fire_shutoff_valve_state(),
-        );
-        writer.write_bool(
-            "HYD_YELLOW_EPUMP_ACTIVE",
-            self.yellow_electric_pump.is_active(),
-        );
-
-        writer.write_bool("HYD_PTU_VALVE_OPENED", self.ptu.is_enabled());
-        writer.write_bool("HYD_PTU_ACTIVE_Y2G", self.ptu.get_is_active_right_to_left());
-        writer.write_bool("HYD_PTU_ACTIVE_G2Y", self.ptu.get_is_active_left_to_right());
-        writer.write_f64(
-            "HYD_PTU_MOTOR_FLOW",
-            self.ptu.get_flow().get::<gallon_per_second>(),
-        );
-
-        writer.write_f64("HYD_RAT_STOW_POSITION", self.rat.get_stow_position());
-
-        writer.write_f64("HYD_RAT_RPM", self.rat.prop.get_rpm());
-
-        //BRAKES
-        writer.write_f64(
-            "HYD_BRAKE_NORM_LEFT_PRESS",
-            self.braking_circuit_norm
-                .get_brake_pressure_left()
-                .get::<psi>(),
-        );
-        writer.write_f64(
-            "HYD_BRAKE_NORM_RIGHT_PRESS",
-            self.braking_circuit_norm
-                .get_brake_pressure_right()
-                .get::<psi>(),
-        );
-        writer.write_f64(
-            "HYD_BRAKE_ALTN_LEFT_PRESS",
-            self.braking_circuit_altn
-                .get_brake_pressure_left()
-                .get::<psi>(),
-        );
-        writer.write_f64(
-            "HYD_BRAKE_ALTN_RIGHT_PRESS",
-            self.braking_circuit_altn
-                .get_brake_pressure_right()
-                .get::<psi>(),
-        );
-        writer.write_f64(
-            "HYD_BRAKE_ALTN_ACC_PRESS",
-            self.braking_circuit_altn.get_acc_pressure().get::<psi>(),
-        );
     }
 }
 

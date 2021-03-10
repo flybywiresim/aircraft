@@ -808,10 +808,10 @@
 
 - A32NX_HYD_PTU_ACTIVE_{motor_side}
     - Bool
-    - Power Transfer Unit is trying to transfer hydraulic power from either yellow to green or green to yellow circuits
+    - Power Transfer Unit is trying to transfer hydraulic power from either yellow to green (R2L) or green to yellow (L2R) circuits
     - {motor_side}
-        - Y2G
-        - G2Y
+        - L2R
+        - R2L
 
 - A32NX_HYD_PTU_MOTOR_FLOW
     - Gallon per second

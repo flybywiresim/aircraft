@@ -1,3 +1,4 @@
+use std::string::String;
 use std::time::Duration;
 
 use uom::si::{
@@ -11,6 +12,7 @@ use uom::si::{
 };
 
 use crate::engine::Engine;
+use crate::simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter};
 pub mod brakecircuit;
 
 // //Interpolate values_map_y at point value_at_point in breakpoints break_points_x
@@ -37,20 +39,6 @@ pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
         ys[idx - 1]
             + (intermediate_x - xs[idx - 1]) / (xs[idx] - xs[idx - 1]) * (ys[idx] - ys[idx - 1])
     }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum LoopColor {
-    Blue,
-    Green,
-    Yellow,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum PtuState {
-    Off,
-    GreenToYellow,
-    YellowToGreen,
 }
 
 // Trait common to all hydraulic pumps
@@ -91,6 +79,12 @@ impl HydFluid {
 //Power Transfer Unit
 //TODO enhance simulation with RPM and variable displacement on one side?
 pub struct Ptu {
+    _id: String,
+    active_left_id: String,
+    active_right_id: String,
+    flow_id: String,
+    enabled_id: String,
+
     is_enabled: bool,
     is_active_right: bool,
     is_active_left: bool,
@@ -101,7 +95,16 @@ pub struct Ptu {
 
 impl Default for Ptu {
     fn default() -> Self {
-        Ptu::new()
+        Ptu::new("")
+    }
+}
+
+impl SimulationElement for Ptu {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool(&self.active_left_id, self.is_active_left);
+        writer.write_bool(&self.active_right_id, self.is_active_left);
+        writer.write_f64(&self.flow_id, self.get_flow().get::<gallon_per_second>());
+        writer.write_bool(&self.enabled_id, self.is_enabled());
     }
 }
 
@@ -115,8 +118,13 @@ impl Ptu {
     // set to 0.5 PTU will only use half of the flow that all pumps are able to generate
     const AGRESSIVENESS_FACTOR: f64 = 0.7;
 
-    pub fn new() -> Ptu {
+    pub fn new(id: &str) -> Ptu {
         Ptu {
+            _id: id.to_uppercase(),
+            active_left_id: format!("HYD_PTU{}_ACTIVE_L2R", id),
+            active_right_id: format!("HYD_PTU{}_ACTIVE_R2L", id),
+            flow_id: format!("HYD_PTU{}_MOTOR_FLOW", id),
+            enabled_id: format!("HYD_PTU{}_VALVE_OPENED", id),
             is_enabled: false,
             is_active_right: false,
             is_active_left: false,
@@ -216,13 +224,16 @@ impl Ptu {
 }
 
 pub struct HydLoop {
+    _color_id: String,
+    pressure_id: String,
+    reservoir_id: String,
+    fire_valve_id: String,
     fluid: HydFluid,
     accumulator_gas_pressure: Pressure,
     accumulator_gas_volume: Volume,
     accumulator_fluid_volume: Volume,
     accumulator_press_breakpoints: [f64; 9],
     accumulator_flow_carac: [f64; 9],
-    _color: LoopColor,
     connected_to_ptu_left_side: bool,
     connected_to_ptu_right_side: bool,
     loop_pressure: Pressure,
@@ -235,6 +246,20 @@ pub struct HydLoop {
     current_flow: VolumeRate,
     current_max_flow: VolumeRate, //Current total max flow available from pressure sources
     fire_shutoff_valve_opened: bool,
+    has_fire_valve: bool,
+}
+
+impl SimulationElement for HydLoop {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_f64(&self.pressure_id, self.get_pressure().get::<psi>());
+        writer.write_f64(
+            &self.reservoir_id,
+            self.get_reservoir_volume().get::<gallon>(),
+        );
+        if self.has_fire_valve {
+            writer.write_bool(&self.fire_valve_id, self.get_fire_shutoff_valve_state());
+        }
+    }
 }
 
 impl HydLoop {
@@ -251,8 +276,9 @@ impl HydLoop {
         [0.0, 5.0, 10.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 10000.0];
     const ACCUMULATOR_FLOW_CARAC: [f64; 9] = [0.0, 0.005, 0.008, 0.01, 0.02, 0.08, 0.15, 0.35, 0.5];
 
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
-        _color: LoopColor,
+        id: &str,
         connected_to_ptu_left_side: bool, //Is connected to PTU "left" side: non variable displacement side
         connected_to_ptu_right_side: bool, //Is connected to PTU "right" side: variable displacement side
         loop_volume: Volume,
@@ -260,12 +286,17 @@ impl HydLoop {
         high_pressure_volume: Volume,
         reservoir_volume: Volume,
         fluid: HydFluid,
+        has_fire_valve: bool,
     ) -> HydLoop {
         HydLoop {
+            _color_id: id.to_uppercase(),
+            pressure_id: format!("HYD_{}_PRESSURE", id),
+            reservoir_id: format!("HYD_{}_RESERVOIR", id),
+            fire_valve_id: format!("HYD_{}_FIRE_VALVE_OPENED", id),
+
             accumulator_gas_pressure: Pressure::new::<psi>(HydLoop::ACCUMULATOR_GAS_PRE_CHARGE),
             accumulator_gas_volume: Volume::new::<gallon>(HydLoop::ACCUMULATOR_MAX_VOLUME),
             accumulator_fluid_volume: Volume::new::<gallon>(0.),
-            _color,
             connected_to_ptu_left_side,
             connected_to_ptu_right_side,
             loop_pressure: Pressure::new::<psi>(14.7),
@@ -281,6 +312,7 @@ impl HydLoop {
             accumulator_flow_carac: HydLoop::ACCUMULATOR_FLOW_CARAC,
             current_max_flow: VolumeRate::new::<gallon_per_second>(0.),
             fire_shutoff_valve_opened: true,
+            has_fire_valve,
         }
     }
 
@@ -432,7 +464,7 @@ impl HydLoop {
         let mut reservoir_return = Volume::new::<gallon>(0.);
         let mut delta_vol = Volume::new::<gallon>(0.);
 
-        if self.fire_shutoff_valve_opened {
+        if self.fire_shutoff_valve_opened && self.has_fire_valve {
             for p in engine_driven_pumps {
                 delta_vol_max += p.get_delta_vol_max();
                 delta_vol_min += p.get_delta_vol_min();
@@ -582,6 +614,9 @@ impl PressureSource for Pump {
 }
 
 pub struct ElectricPump {
+    _id: String,
+    active_id: String,
+
     active: bool,
     rpm: f64,
     pump: Pump,
@@ -589,7 +624,13 @@ pub struct ElectricPump {
 
 impl Default for ElectricPump {
     fn default() -> Self {
-        ElectricPump::new()
+        ElectricPump::new("DEFAULT")
+    }
+}
+
+impl SimulationElement for ElectricPump {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool(&self.active_id, self.is_active());
     }
 }
 
@@ -603,8 +644,10 @@ impl ElectricPump {
     const DISPLACEMENT_MAP: [f64; 9] = [0.263, 0.263, 0.263, 0.263, 0.263, 0.263, 0.163, 0.0, 0.0];
     const DISPLACEMENT_DYNAMICS: f64 = 1.0; //1 == No filtering
 
-    pub fn new() -> ElectricPump {
+    pub fn new(id: &str) -> ElectricPump {
         ElectricPump {
+            _id: String::from(id).to_uppercase(),
+            active_id: format!("HYD_{}_EPUMP_ACTIVE", id),
             active: false,
             rpm: 0.,
             pump: Pump::new(
@@ -654,13 +697,22 @@ impl PressureSource for ElectricPump {
 }
 
 pub struct EngineDrivenPump {
+    _id: String,
+    active_id: String,
+
     active: bool,
     pump: Pump,
 }
 
 impl Default for EngineDrivenPump {
     fn default() -> Self {
-        EngineDrivenPump::new()
+        EngineDrivenPump::new("DEFAULT")
+    }
+}
+
+impl SimulationElement for EngineDrivenPump {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool(&self.active_id, self.is_active());
     }
 }
 
@@ -677,8 +729,10 @@ impl EngineDrivenPump {
 
     const DISPLACEMENT_DYNAMICS: f64 = 0.3; //0.1 == 90% filtering on max displacement transient
 
-    pub fn new() -> EngineDrivenPump {
+    pub fn new(id: &str) -> EngineDrivenPump {
         EngineDrivenPump {
+            _id: String::from(id).to_uppercase(),
+            active_id: format!("HYD_{}_EDPUMP_ACTIVE", id),
             active: false,
             pump: Pump::new(
                 EngineDrivenPump::DISPLACEMENT_BREAKPTS,
@@ -723,6 +777,9 @@ impl PressureSource for EngineDrivenPump {
 }
 
 pub struct RatPropeller {
+    _id: String,
+    rpm_id: String,
+
     pos: f64,
     speed: f64,
     acc: f64,
@@ -732,7 +789,13 @@ pub struct RatPropeller {
 
 impl Default for RatPropeller {
     fn default() -> Self {
-        RatPropeller::new()
+        RatPropeller::new("")
+    }
+}
+
+impl SimulationElement for RatPropeller {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_f64(&self.rpm_id, self.get_rpm());
     }
 }
 
@@ -745,8 +808,10 @@ impl RatPropeller {
     ];
     const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 5., 1., 1.];
 
-    pub fn new() -> RatPropeller {
+    pub fn new(id: &str) -> RatPropeller {
         RatPropeller {
+            _id: String::from(id).to_uppercase(),
+            rpm_id: format!("HYD_{}RAT_RPM", id),
             pos: RatPropeller::STOWED_ANGLE,
             speed: 0.,
             acc: 0.,
@@ -810,6 +875,9 @@ impl RatPropeller {
     }
 }
 pub struct RatPump {
+    _id: String,
+    stow_pos_id: String,
+
     active: bool,
     pump: Pump,
     pub prop: RatPropeller,
@@ -819,7 +887,18 @@ pub struct RatPump {
 
 impl Default for RatPump {
     fn default() -> Self {
-        RatPump::new()
+        RatPump::new("")
+    }
+}
+
+impl SimulationElement for RatPump {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.prop.accept(visitor);
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_f64(&self.stow_pos_id, self.get_stow_position());
     }
 }
 
@@ -833,7 +912,7 @@ impl RatPump {
 
     const STOWING_SPEED: f64 = 1.; //Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
 
-    pub fn new() -> RatPump {
+    pub fn new(id: &str) -> RatPump {
         let mut max_disp = 0.;
         for v in RatPump::DISPLACEMENT_MAP.iter() {
             if v > &max_disp {
@@ -842,13 +921,15 @@ impl RatPump {
         }
 
         RatPump {
+            _id: String::from(id).to_uppercase(),
+            stow_pos_id: format!("HYD_{}RAT_STOW_POSITION", id),
             active: false,
             pump: Pump::new(
                 RatPump::DISPLACEMENT_BREAKPTS,
                 RatPump::DISPLACEMENT_MAP,
                 RatPump::DISPLACEMENT_DYNAMICS,
             ),
-            prop: RatPropeller::new(),
+            prop: RatPropeller::new(id),
             stowed_position: 0.,
             max_displacement: max_disp,
         }
@@ -948,7 +1029,7 @@ mod tests {
             //.ylim(-2.0, 2.0);
 
             curr_axis = curr_axis.grid(true);
-            idx = idx + 1;
+            idx += 1;
             all_axis.push(Some(curr_axis));
         }
 
@@ -976,8 +1057,8 @@ mod tests {
         //Sets initialisation values of each data before first step
         pub fn init(&mut self, start_time: f64, values: Vec<f64>) {
             self.time_vector.push(start_time);
-            for idx in 0..(values.len()) {
-                self.data_vector.push(vec![values[idx]]);
+            for v in values {
+                self.data_vector.push(vec![v]);
             }
         }
 
@@ -1052,7 +1133,7 @@ mod tests {
         let mut edp1_history = History::new(edp1_var_names);
 
         let mut edp1 = engine_driven_pump();
-        let mut green_loop = hydraulic_loop(LoopColor::Green);
+        let mut green_loop = hydraulic_loop("GREEN");
         edp1.active = true;
 
         let init_n2 = Ratio::new::<percent>(55.0);
@@ -1160,7 +1241,6 @@ mod tests {
                 ],
             );
         }
-        assert!(true);
 
         green_loop_history.show_matplotlib("green_loop_edp_simulation_press");
         edp1_history.show_matplotlib("green_loop_edp_simulation_EDP1 data");
@@ -1171,7 +1251,7 @@ mod tests {
     //Runs electric pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn yellow_loop_epump_simulation() {
         let mut epump = electric_pump();
-        let mut yellow_loop = hydraulic_loop(LoopColor::Yellow);
+        let mut yellow_loop = hydraulic_loop("YELLOW");
         epump.active = true;
 
         let ct = context(Duration::from_millis(100));
@@ -1206,15 +1286,13 @@ mod tests {
                 );
             }
         }
-
-        assert!(true)
     }
 
     #[test]
     //Runs electric pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn blue_loop_epump_simulation() {
         let mut epump = electric_pump();
-        let mut blue_loop = hydraulic_loop(LoopColor::Blue);
+        let mut blue_loop = hydraulic_loop("BLUE");
         epump.active = true;
 
         let ct = context(Duration::from_millis(100));
@@ -1249,15 +1327,13 @@ mod tests {
                 );
             }
         }
-
-        assert!(true)
     }
 
     #[test]
     //Runs electric pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn blue_loop_rat_deploy_simulation() {
-        let mut rat = RatPump::new();
-        let mut blue_loop = hydraulic_loop(LoopColor::Blue);
+        let mut rat = RatPump::new("");
+        let mut blue_loop = hydraulic_loop("BLUE");
 
         let timestep = 0.05;
         let ct = context(Duration::from_secs_f64(timestep));
@@ -1322,8 +1398,6 @@ mod tests {
             }
             time += timestep;
         }
-
-        assert!(true)
     }
 
     #[test]
@@ -1368,16 +1442,16 @@ mod tests {
 
         let mut epump = electric_pump();
         epump.stop();
-        let mut yellow_loop = hydraulic_loop(LoopColor::Yellow);
+        let mut yellow_loop = hydraulic_loop("YELLOW");
 
         let mut edp1 = engine_driven_pump();
         assert!(!edp1.active); //Is off when created?
 
         let mut engine1 = engine(Ratio::new::<percent>(0.0));
 
-        let mut green_loop = hydraulic_loop(LoopColor::Green);
+        let mut green_loop = hydraulic_loop("GREEN");
 
-        let mut ptu = Ptu::new();
+        let mut ptu = Ptu::new("");
 
         let ct = context(Duration::from_millis(100));
 
@@ -1465,7 +1539,7 @@ mod tests {
                 edp1.start();
             }
 
-            if x >= 500 && x <= 600 {
+            if (500..=600).contains(&x) {
                 //10s later and during 10s, ptu should stay inactive
                 println!("------------IS PTU ACTIVE??------------");
                 assert!(yellow_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
@@ -1479,14 +1553,14 @@ mod tests {
                 assert!(yellow_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
                 assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
                 edp1.stop();
-                // epump.active = false;
+                epump.stop();
             }
 
             if x == 800 {
                 //@80s diabling edp and epump
                 println!("-----------IS PRESSURE OFF?-----------");
                 assert!(yellow_loop.loop_pressure < Pressure::new::<psi>(50.0));
-                assert!(green_loop.loop_pressure >= Pressure::new::<psi>(50.0));
+                assert!(green_loop.loop_pressure <= Pressure::new::<psi>(50.0));
 
                 assert!(
                     green_loop.reservoir_volume > Volume::new::<gallon>(0.0)
@@ -1571,31 +1645,31 @@ mod tests {
 
         accu_green_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Green_acc");
         accu_yellow_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Yellow_acc");
-
-        assert!(true)
     }
 
-    fn hydraulic_loop(loop_color: LoopColor) -> HydLoop {
+    fn hydraulic_loop(loop_color: &str) -> HydLoop {
         match loop_color {
-            LoopColor::Yellow => HydLoop::new(
+            "GREEN" => HydLoop::new(
                 loop_color,
-                false,
                 true,
-                Volume::new::<gallon>(26.00),
+                false,
+                Volume::new::<gallon>(26.41),
                 Volume::new::<gallon>(26.41),
                 Volume::new::<gallon>(10.0),
                 Volume::new::<gallon>(3.83),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
-            ),
-            LoopColor::Green => HydLoop::new(
-                loop_color,
                 true,
+            ),
+            "YELLOW" => HydLoop::new(
+                loop_color,
                 false,
+                true,
                 Volume::new::<gallon>(10.2),
                 Volume::new::<gallon>(10.2),
                 Volume::new::<gallon>(8.0),
                 Volume::new::<gallon>(3.3),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                true,
             ),
             _ => HydLoop::new(
                 loop_color,
@@ -1606,16 +1680,17 @@ mod tests {
                 Volume::new::<gallon>(8.0),
                 Volume::new::<gallon>(1.5),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                false,
             ),
         }
     }
 
     fn electric_pump() -> ElectricPump {
-        ElectricPump::new()
+        ElectricPump::new("DEFAULT")
     }
 
     fn engine_driven_pump() -> EngineDrivenPump {
-        EngineDrivenPump::new()
+        EngineDrivenPump::new("DEFAULT")
     }
 
     fn engine(n2: Ratio) -> Engine {
@@ -1647,7 +1722,7 @@ mod tests {
     mod characteristics_tests {
         use super::*;
 
-        fn show_carac(figure_title: &str, output_caracteristics: &Vec<PressureCaracteristic>) {
+        fn show_carac(figure_title: &str, output_caracteristics: &[PressureCaracteristic]) {
             use rustplotlib::{Axes2D, Line2D};
 
             let mut all_axis: Vec<Option<Axes2D>> = Vec::new();
@@ -1694,10 +1769,10 @@ mod tests {
         #[test]
         fn epump_charac() {
             let mut output_caracteristics: Vec<PressureCaracteristic> = Vec::new();
-            let mut epump = ElectricPump::new();
+            let mut epump = ElectricPump::new("YELLOW");
             let context = context(Duration::from_secs_f64(0.0001)); //Small dt to freeze spool up effect
 
-            let mut green_loop = hydraulic_loop(LoopColor::Green);
+            let mut green_loop = hydraulic_loop("GREEN");
 
             epump.start();
             for pressure in (0..3500).step_by(500) {
@@ -1726,10 +1801,10 @@ mod tests {
         //TODO broken until rpm relation repaired
         fn engine_d_pump_charac() {
             let mut output_caracteristics: Vec<PressureCaracteristic> = Vec::new();
-            let mut edpump = EngineDrivenPump::new();
+            let mut edpump = EngineDrivenPump::new("GREEN");
             //let context = context(Duration::from_secs_f64(0.0001) ); //Small dt to freeze spool up effect
 
-            let mut green_loop = hydraulic_loop(LoopColor::Green);
+            let mut green_loop = hydraulic_loop("GREEN");
             let mut engine1 = engine(Ratio::new::<percent>(0.0));
 
             edpump.start();
@@ -1780,16 +1855,25 @@ mod tests {
             ];
 
             //Check before first element
-            assert!(interpolation(&xs1, &ys1, -500.0) == ys1[0]);
+            assert!((interpolation(&xs1, &ys1, -500.0) - ys1[0]).abs() < f64::EPSILON);
 
             //Check after last
-            assert!(interpolation(&xs1, &ys1, 100000000.0) == *ys1.last().unwrap());
+            assert!(
+                (interpolation(&xs1, &ys1, 100000000.0) - *ys1.last().unwrap()).abs()
+                    < f64::EPSILON
+            );
 
             //Check equal first
-            assert!(interpolation(&xs1, &ys1, *xs1.first().unwrap()) == *ys1.first().unwrap());
+            assert!(
+                (interpolation(&xs1, &ys1, *xs1.first().unwrap()) - *ys1.first().unwrap()).abs()
+                    < f64::EPSILON
+            );
 
             //Check equal last
-            assert!(interpolation(&xs1, &ys1, *xs1.last().unwrap()) == *ys1.last().unwrap());
+            assert!(
+                (interpolation(&xs1, &ys1, *xs1.last().unwrap()) - *ys1.last().unwrap()).abs()
+                    < f64::EPSILON
+            );
 
             //Check interp middle
             let res = interpolation(&xs1, &ys1, 358.0);
@@ -1809,7 +1893,7 @@ mod tests {
             for _idx in 0..1000000 {
                 let test_val = rng.gen_range(xs1[0]..*xs1.last().unwrap());
                 let mut _res = interpolation(&xs1, &ys1, test_val);
-                _res = _res + 2.78;
+                _res += 2.78;
             }
             let time_elapsed = time_start.elapsed();
 
@@ -1833,7 +1917,7 @@ mod tests {
 
         #[test]
         fn starts_inactive() {
-            assert!(engine_driven_pump().active == false);
+            assert!(!engine_driven_pump().active);
         }
 
         #[test]
@@ -1862,7 +1946,7 @@ mod tests {
             let eng = engine(n2);
             let mut edp = engine_driven_pump();
             let dummy_update = Duration::from_secs(1);
-            let mut line = hydraulic_loop(LoopColor::Green);
+            let mut line = hydraulic_loop("GREEN");
 
             edp.start();
             line.loop_pressure = pressure;

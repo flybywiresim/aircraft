@@ -1,7 +1,12 @@
-use crate::{hydraulic::HydLoop, simulation::UpdateContext};
+use crate::{
+    hydraulic::HydLoop,
+    simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
+};
 
 use std::f64::consts::E;
+use std::string::String;
 use std::time::Duration;
+
 use uom::si::{
     acceleration::foot_per_second_squared, f64::*, pressure::psi, time::second, volume::gallon,
     volume_rate::gallon_per_second,
@@ -16,6 +21,10 @@ pub trait ActuatorHydInterface {
 //Brake model is simplified as we just move brake position from 0 to 1 and take conrresponding fluid volume (vol = max_displacement * brake_position).
 // So it's fairly simplified as we just end up with brake pressure = hyd_pressure * current_position
 pub struct BrakeCircuit {
+    _id: String,
+    id_left_press: String,
+    id_right_press: String,
+    id_acc_press: String,
     //Total volume used when at max braking position.
     //Simple model for now we assume at max braking we have max brake displacement
     total_displacement: Volume,
@@ -45,6 +54,26 @@ pub struct BrakeCircuit {
     accumulator_fluid_pressure_sensor_filtered: Pressure, //Fluid pressure in brake circuit filtered for cockpit gauges
 }
 
+impl SimulationElement for BrakeCircuit {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_f64(
+            &self.id_left_press,
+            self.get_brake_pressure_left().get::<psi>(),
+        );
+        writer.write_f64(
+            &self.id_right_press,
+            self.get_brake_pressure_right().get::<psi>(),
+        );
+        if self.has_accumulator {
+            writer.write_f64(&self.id_acc_press, self.get_acc_pressure().get::<psi>());
+        }
+    }
+}
+
 impl BrakeCircuit {
     const ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1000.0; // Nitrogen PSI
     const ACCUMULATOR_PRESS_BREAKPTS: [f64; 9] =
@@ -55,6 +84,7 @@ impl BrakeCircuit {
     const ACC_PRESSURE_SENSOR_FILTER_TIMECONST: f64 = 0.1; //Time constant of the filter used to measure brake circuit pressure
 
     pub fn new(
+        id: &str,
         accumulator_volume: Volume,
         accumulator_fluid_volume_at_init: Volume,
         total_displacement: Volume,
@@ -82,6 +112,11 @@ impl BrakeCircuit {
         }
 
         BrakeCircuit {
+            _id: String::from(id).to_uppercase(),
+            id_left_press: format!("HYD_BRAKE_{}_LEFT_PRESS", id),
+            id_right_press: format!("HYD_BRAKE_{}_RIGHT_PRESS", id),
+            id_acc_press: format!("HYD_BRAKE_{}_ACC_PRESS", id),
+
             total_displacement,
             current_brake_position_left: 0.0,
             demanded_brake_position_left: 0.0,
@@ -138,8 +173,8 @@ impl BrakeCircuit {
                     self.demanded_brake_position_right = self.current_brake_position_right;
                 }
             } else {
-                self.volume_to_res_accumulator = self.volume_to_res_accumulator
-                    + delta_vol.abs().min(self.accumulator_fluid_volume);
+                self.volume_to_res_accumulator +=
+                    delta_vol.abs().min(self.accumulator_fluid_volume);
             }
 
             self.accumulator_gas_pressure =
@@ -306,7 +341,7 @@ impl AutoBrakeController {
 mod tests {
     use super::*;
     use crate::{
-        hydraulic::{HydFluid, HydLoop, LoopColor},
+        hydraulic::{HydFluid, HydLoop},
         simulation::UpdateContext,
     };
     use uom::si::{
@@ -323,6 +358,7 @@ mod tests {
     fn brake_state_at_init() {
         let init_max_vol = Volume::new::<gallon>(1.5);
         let brake_circuit_unprimed = BrakeCircuit::new(
+            "altn",
             init_max_vol,
             Volume::new::<gallon>(0.0),
             Volume::new::<gallon>(0.1),
@@ -337,8 +373,12 @@ mod tests {
         assert!(brake_circuit_unprimed.accumulator_fluid_volume == Volume::new::<gallon>(0.0));
         assert!(brake_circuit_unprimed.accumulator_gas_volume == init_max_vol);
 
-        let brake_circuit_primed =
-            BrakeCircuit::new(init_max_vol, init_max_vol / 2.0, Volume::new::<gallon>(0.1));
+        let brake_circuit_primed = BrakeCircuit::new(
+            "altn",
+            init_max_vol,
+            init_max_vol / 2.0,
+            Volume::new::<gallon>(0.1),
+        );
 
         assert!(
             brake_circuit_unprimed.get_brake_pressure_left()
@@ -353,11 +393,15 @@ mod tests {
     #[test]
     fn brake_pressure_rise() {
         let init_max_vol = Volume::new::<gallon>(1.5);
-        let mut hyd_loop = hydraulic_loop(LoopColor::Yellow);
+        let mut hyd_loop = hydraulic_loop("YELLOW");
         hyd_loop.loop_pressure = Pressure::new::<psi>(2500.0);
 
-        let mut brake_circuit_primed =
-            BrakeCircuit::new(init_max_vol, init_max_vol / 2.0, Volume::new::<gallon>(0.1));
+        let mut brake_circuit_primed = BrakeCircuit::new(
+            "Altn",
+            init_max_vol,
+            init_max_vol / 2.0,
+            Volume::new::<gallon>(0.1),
+        );
 
         assert!(
             brake_circuit_primed.get_brake_pressure_left()
@@ -391,11 +435,15 @@ mod tests {
     #[test]
     fn brake_pressure_rise_no_accumulator() {
         let init_max_vol = Volume::new::<gallon>(0.0);
-        let mut hyd_loop = hydraulic_loop(LoopColor::Yellow);
+        let mut hyd_loop = hydraulic_loop("GREEN");
         hyd_loop.loop_pressure = Pressure::new::<psi>(2500.0);
 
-        let mut brake_circuit_primed =
-            BrakeCircuit::new(init_max_vol, init_max_vol / 2.0, Volume::new::<gallon>(0.1));
+        let mut brake_circuit_primed = BrakeCircuit::new(
+            "norm",
+            init_max_vol,
+            init_max_vol / 2.0,
+            Volume::new::<gallon>(0.1),
+        );
 
         assert!(
             brake_circuit_primed.get_brake_pressure_left()
@@ -445,9 +493,9 @@ mod tests {
         assert!(controller.get_brake_command() >= 0.0);
     }
 
-    fn hydraulic_loop(loop_color: LoopColor) -> HydLoop {
+    fn hydraulic_loop(loop_color: &str) -> HydLoop {
         match loop_color {
-            LoopColor::Yellow => HydLoop::new(
+            "GREEN" => HydLoop::new(
                 loop_color,
                 false,
                 true,
@@ -456,8 +504,9 @@ mod tests {
                 Volume::new::<gallon>(10.0),
                 Volume::new::<gallon>(3.83),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                true,
             ),
-            LoopColor::Green => HydLoop::new(
+            "YELLOW" => HydLoop::new(
                 loop_color,
                 true,
                 false,
@@ -466,6 +515,7 @@ mod tests {
                 Volume::new::<gallon>(8.0),
                 Volume::new::<gallon>(3.3),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                true,
             ),
             _ => HydLoop::new(
                 loop_color,
@@ -476,6 +526,7 @@ mod tests {
                 Volume::new::<gallon>(8.0),
                 Volume::new::<gallon>(1.5),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                false,
             ),
         }
     }
