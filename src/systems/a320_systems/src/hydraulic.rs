@@ -189,7 +189,7 @@ impl A320Hydraulic {
             //UPDATING HYDRAULICS AT FIXED STEP
             for _cur_loop in 0..num_of_update_loops {
                 //Base logic update based on overhead Could be done only once (before that loop) but if so delta time should be set accordingly
-                self.update_hyd_logic_inputs(&min_hyd_loop_timestep, &overhead_panel, &ct);
+                self.update_logic(&min_hyd_loop_timestep, overhead_panel, ct);
 
                 //Process brake logic (which circuit brakes) and send brake demands (how much)
                 self.hyd_brake_logic
@@ -239,8 +239,6 @@ impl A320Hydraulic {
                     Vec::new(),
                 );
 
-                self.update_hyd_avail_states();
-
                 self.braking_circuit_norm
                     .update(&min_hyd_loop_timestep, &self.green_loop);
                 self.braking_circuit_altn
@@ -262,29 +260,71 @@ impl A320Hydraulic {
         }
     }
 
-    pub fn update_hyd_logic_inputs(
+    fn update_logic(
         &mut self,
         delta_time_update: &Duration,
         overhead_panel: &A320HydraulicOverheadPanel,
         ct: &UpdateContext,
     ) {
-        let mut cargo_operated_ptu = false;
-        let mut cargo_operated_ypump = false;
-        let mut nsw_pin_inserted = false;
+        self.update_external_cond(&delta_time_update);
 
+        self.update_hyd_avail_states();
+
+        self.update_pump_faults();
+
+        self.update_rat_deploy(ct);
+
+        self.update_ed_pump_states(overhead_panel);
+
+        self.update_e_pump_states(overhead_panel);
+
+        self.update_ptu_logic(overhead_panel);
+    }
+
+    fn update_ptu_logic(&mut self, overhead_panel: &A320HydraulicOverheadPanel) {
+        let ptu_inhibit = self.hyd_logic_inputs.cargo_operated_ptu_cond
+            && overhead_panel.yellow_epump_push_button.is_auto(); //TODO is auto will change once auto/on button is created in overhead library
+        if overhead_panel.ptu_push_button.is_auto()
+            && (!self.hyd_logic_inputs.weight_on_wheels
+                || self.hyd_logic_inputs.eng_1_master_on && self.hyd_logic_inputs.eng_2_master_on
+                || !self.hyd_logic_inputs.eng_1_master_on && !self.hyd_logic_inputs.eng_2_master_on
+                || (!self.hyd_logic_inputs.parking_brake_lever_pos
+                    && !self.hyd_logic_inputs.nsw_pin_inserted_cond))
+            && !ptu_inhibit
+        {
+            self.ptu.enabling(true);
+        } else {
+            self.ptu.enabling(false);
+        }
+    }
+
+    fn update_rat_deploy(&mut self, ct: &UpdateContext) {
+        //RAT Deployment //Todo check all other needed conditions
+        if !self.hyd_logic_inputs.eng_1_master_on
+            && !self.hyd_logic_inputs.eng_2_master_on
+            && ct.indicated_airspeed > Velocity::new::<knot>(100.)
+        //Todo get speed from ADIRS
+        {
+            self.rat.set_active();
+        }
+    }
+
+    fn update_external_cond(&mut self, delta_time_update: &Duration) {
         //Only evaluate ground conditions if on ground, if superman needs to operate cargo door in flight feel free to update
         if self.hyd_logic_inputs.weight_on_wheels {
-            cargo_operated_ptu = self
+            self.hyd_logic_inputs.cargo_operated_ptu_cond = self
                 .hyd_logic_inputs
                 .is_cargo_operation_ptu_flag(&delta_time_update);
-            cargo_operated_ypump = self
+            self.hyd_logic_inputs.cargo_operated_ypump_cond = self
                 .hyd_logic_inputs
                 .is_cargo_operation_flag(&delta_time_update);
-            nsw_pin_inserted = self
+            self.hyd_logic_inputs.nsw_pin_inserted_cond = self
                 .hyd_logic_inputs
                 .is_nsw_pin_inserted_flag(&delta_time_update);
         }
+    }
 
+    fn update_pump_faults(&mut self) {
         //Basic faults of pumps //TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
         //At current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
         if self.yellow_electric_pump.is_active() && !self.is_yellow_pressurised() {
@@ -307,16 +347,9 @@ impl A320Hydraulic {
         } else {
             self.hyd_logic_inputs.blue_epump_has_fault = false;
         }
+    }
 
-        //RAT Deployment //Todo check all other needed conditions
-        if !self.hyd_logic_inputs.eng_1_master_on
-            && !self.hyd_logic_inputs.eng_2_master_on
-            && ct.indicated_airspeed > Velocity::new::<knot>(100.)
-        //Todo get speed from ADIRS
-        {
-            self.rat.set_active();
-        }
-
+    fn update_ed_pump_states(&mut self, overhead_panel: &A320HydraulicOverheadPanel) {
         if overhead_panel.edp1_push_button.is_auto()
             && self.hyd_logic_inputs.eng_1_master_on
             && !overhead_panel.eng1_fire_pb.is_released()
@@ -350,8 +383,12 @@ impl A320Hydraulic {
         } else {
             self.yellow_loop.set_fire_shutoff_valve_state(true);
         }
+    }
 
-        if overhead_panel.yellow_epump_push_button.is_off() || cargo_operated_ypump {
+    fn update_e_pump_states(&mut self, overhead_panel: &A320HydraulicOverheadPanel) {
+        if overhead_panel.yellow_epump_push_button.is_off()
+            || self.hyd_logic_inputs.cargo_operated_ypump_cond
+        {
             self.yellow_electric_pump.start();
         } else if overhead_panel.yellow_epump_push_button.is_auto() {
             self.yellow_electric_pump.stop();
@@ -368,19 +405,6 @@ impl A320Hydraulic {
         } else if overhead_panel.blue_epump_push_button.is_off() {
             self.blue_electric_pump.stop();
         }
-
-        let ptu_inhibit = cargo_operated_ptu && overhead_panel.yellow_epump_push_button.is_auto(); //TODO is auto will change once auto/on button is created in overhead library
-        if overhead_panel.ptu_push_button.is_auto()
-            && (!self.hyd_logic_inputs.weight_on_wheels
-                || self.hyd_logic_inputs.eng_1_master_on && self.hyd_logic_inputs.eng_2_master_on
-                || !self.hyd_logic_inputs.eng_1_master_on && !self.hyd_logic_inputs.eng_2_master_on
-                || (!self.hyd_logic_inputs.parking_brake_lever_pos && !nsw_pin_inserted))
-            && !ptu_inhibit
-        {
-            self.ptu.enabling(true);
-        } else {
-            self.ptu.enabling(false);
-        }
     }
 }
 
@@ -390,6 +414,7 @@ impl SimulationElement for A320Hydraulic {
         self.blue_electric_pump.accept(visitor);
         self.engine_driven_pump_1.accept(visitor);
         self.engine_driven_pump_2.accept(visitor);
+        self.rat.accept(visitor);
 
         self.ptu.accept(visitor);
 
@@ -541,6 +566,10 @@ pub struct A320HydraulicLogic {
     blue_epump_has_fault: bool,
     green_edp_has_fault: bool,
     yellow_edp_has_fault: bool,
+
+    cargo_operated_ptu_cond: bool,
+    cargo_operated_ypump_cond: bool,
+    nsw_pin_inserted_cond: bool,
 }
 
 //Implements low level logic for all hydraulics commands
@@ -569,6 +598,10 @@ impl A320HydraulicLogic {
             blue_epump_has_fault: false,
             green_edp_has_fault: false,
             yellow_edp_has_fault: false,
+
+            cargo_operated_ptu_cond: false,
+            cargo_operated_ypump_cond: false,
+            nsw_pin_inserted_cond: false,
         }
     }
 

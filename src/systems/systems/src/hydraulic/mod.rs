@@ -102,7 +102,7 @@ impl Default for Ptu {
 impl SimulationElement for Ptu {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_bool(&self.active_left_id, self.is_active_left);
-        writer.write_bool(&self.active_right_id, self.is_active_left);
+        writer.write_bool(&self.active_right_id, self.is_active_right);
         writer.write_f64(&self.flow_id, self.get_flow().get::<gallon_per_second>());
         writer.write_bool(&self.enabled_id, self.is_enabled());
     }
@@ -111,12 +111,12 @@ impl SimulationElement for Ptu {
 impl Ptu {
     //Low pass filter to handle flow dynamic: avoids instantaneous flow transient,
     // simulating RPM dynamic of PTU
-    const FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE: f64 = 0.1;
-    const FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE: f64 = 0.08;
+    const FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE: f64 = 0.2;
+    const FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE: f64 = 0.2;
 
     //Part of the max total pump capacity PTU model is allowed to take. Set to 1 all capacity used
     // set to 0.5 PTU will only use half of the flow that all pumps are able to generate
-    const AGRESSIVENESS_FACTOR: f64 = 0.7;
+    const AGRESSIVENESS_FACTOR: f64 = 0.8;
 
     pub fn new(id: &str) -> Ptu {
         Ptu {
