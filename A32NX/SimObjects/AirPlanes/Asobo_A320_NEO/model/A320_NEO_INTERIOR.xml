@@ -1924,7 +1924,7 @@
                             <LEFT_SINGLE_CODE>(L:A32NX_EVAC_CAPT_TOGGLE) ! (>L:A32NX_EVAC_CAPT_TOGGLE)</LEFT_SINGLE_CODE>
                         </UseTemplate>
                     </Component>
-                    
+
 
                     <Component ID="EMER_ELEC_PWR">
                         <!-- EMER GEN TEST -->
@@ -1935,7 +1935,7 @@
                             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_EMERELECPWR_GEN_TEST)</LEFT_SINGLE_CODE>
 
                             <TOOLTIPID>Test emergency generator (Inop.)</TOOLTIPID>
-                            
+
                             <MOMENTARY/>
                         </UseTemplate>
 
@@ -1965,7 +1965,7 @@
                             <LOCK_NODE_ID>LOCK_OVHD_EMERELECPWR_MANON</LOCK_NODE_ID>
                             <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_EMERELECPWR_MAN_ON)</LEFT_SINGLE_CODE>
                             <TOOLTIPID>%((L:A32NX_EMERELECPWR_MAN_ON, Bool))%{if}Ram air turbine deployed (Inop.)%{else}Deploy ram air turbine (Inop.)%{end}</TOOLTIPID>
-                            <MOMENTARY/>                       
+                            <MOMENTARY/>
                         </UseTemplate>
                     </Component>
 
@@ -2141,7 +2141,7 @@
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_SVGEINT</NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_SVGEINT_OVRD_ON</TOGGLE_SIMVAR>
-        
+
                         <SEQ2_CODE>(L:A32NX_SVGEINT_OVRD_ON, Bool)</SEQ2_CODE>
                         <TOOLTIPID>%((L:A32NX_SVGEINT_OVRD_ON, Bool))%{if}Turn OFF SVGE INT OVRD (Inop.)%{else}Turn ON SVGE INT OVRD (Inop.)%{end}</TOOLTIPID>
                     </UseTemplate>
@@ -2169,21 +2169,21 @@
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_DLS_SELCTL</NODE_ID>
                             <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
-            
+
                             <TOOLTIPID>Select/Control (Inop.)</TOOLTIPID>
                             <MOMENTARY/>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_DLS_PREV</NODE_ID>
                             <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
-            
+
                             <TOOLTIPID>Previous (Inop.)</TOOLTIPID>
                             <MOMENTARY/>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_DLS_NEXT</NODE_ID>
                             <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
-            
+
                             <TOOLTIPID>Next (Inop.)</TOOLTIPID>
                             <MOMENTARY/>
                         </UseTemplate>
@@ -2631,7 +2631,7 @@
                              <UseTemplate Name="FBW_Push_Toggle">
                              <NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
                              <TOGGLE_SIMVAR>L:A32NX_RCDR_GROUND_CONTROL_ON</TOGGLE_SIMVAR>
-            
+
                                 <SEQ2_CODE>(L:A32NX_RCDR_GROUND_CONTROL_ON, Bool)</SEQ2_CODE>
                                 <TOOLTIPID>%((L:A32NX_RCDR_GROUND_CONTROL_ON, Bool))%{if}Set Ground Control to AUTO (Inop.)%{else}Turn ON Ground Control (Inop.)%{end}</TOOLTIPID>
                             </UseTemplate>
@@ -2650,21 +2650,21 @@
                             <UseTemplate Name="FBW_Covered_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_OXYGEN_RATMANON</NODE_ID>
                                 <LOCK_NODE_ID>LOCK_OVHD_OXYGEN_RATMANON</LOCK_NODE_ID>
-                
+
                                 <LEFT_SINGLE_CODE>
                                 1 (&gt;L:A32NX_OXYGEN_MASKS_DEPLOYED)
                                 1 (&gt;L:A32NX_OXYGEN_PASSENGER_LIGHT_ON)</LEFT_SINGLE_CODE>
                             <TOOLTIPID>%((L:A32NX_OXYGEN_MASKS_DEPLOYED, Bool))%{if}Cabin oxygen masks deployed%{else}Deploy cabin oxygen masks%{end}</TOOLTIPID>
                             <MOMENTARY/>
                             </UseTemplate>
-                            
+
                             <UseTemplate Name="FBW_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
                                 <SEQ1_CODE>(L:A32NX_OXYGEN_PASSENGER_LIGHT_ON, Bool)</SEQ1_CODE>
                                 <TOOLTIPID>Oxygen mask doors annunciator</TOOLTIPID>
                                 <DUMMY_BUTTON/>
                             </UseTemplate>
-                        
+
                             <UseTemplate Name="FBW_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
                                 <PART_ID>Crew_Supply</PART_ID>
@@ -2705,7 +2705,7 @@
                         </Component>
                     </Component>
                 </Component>
-                
+
                 <Component ID="Right_Pedestal_Misc">
                     <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_PANELCS_AIDS</NODE_ID>
