@@ -1006,13 +1006,12 @@ mod tests {
     extern crate rustplotlib;
     use rustplotlib::Figure;
 
-    fn make_figure<'a>(h: &'a History) -> Figure<'a> {
+    fn make_figure(h: &History) -> Figure {
         use rustplotlib::{Axes2D, Line2D};
 
         let mut all_axis: Vec<Option<Axes2D>> = Vec::new();
 
-        let mut idx = 0;
-        for cur_data in &h.data_vector {
+        for (idx, cur_data) in h.data_vector.iter().enumerate() {
             let mut curr_axis = Axes2D::new()
                 .add(
                     Line2D::new(h.name_vector[idx].as_str())
@@ -1029,7 +1028,6 @@ mod tests {
             //.ylim(-2.0, 2.0);
 
             curr_axis = curr_axis.grid(true);
-            idx += 1;
             all_axis.push(Some(curr_axis));
         }
 
@@ -1070,8 +1068,8 @@ mod tests {
         }
 
         pub fn push_data(&mut self, values: Vec<f64>) {
-            for idx in 0..values.len() {
-                self.data_vector[idx].push(values[idx]);
+            for (idx, v) in values.iter().enumerate() {
+                self.data_vector[idx].push(*v);
             }
         }
 
@@ -1086,8 +1084,8 @@ mod tests {
             for cur_data in self.data_vector {
                 //Here build the 2 by Xsamples vector
                 let mut new_vector: Vec<(f64, f64)> = Vec::new();
-                for sample_idx in 0..self.time_vector.len() {
-                    new_vector.push((self.time_vector[sample_idx], cur_data[sample_idx]));
+                for (idx, sample) in self.time_vector.iter().enumerate() {
+                    new_vector.push((*sample, cur_data[idx]));
                 }
 
                 // We create our scatter plot from the data
