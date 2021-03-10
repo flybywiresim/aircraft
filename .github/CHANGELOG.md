@@ -180,6 +180,7 @@
 1. [MISC] Fixed chrono watch colon appearance - @SergeySoprykin (SergeyS)
 1. [MCDU] Fixed options page text overlap - @MisterChocker (Leon)
 1. [CDU] Reworked Flight Phase system - @MisterChocker (Leon)
+1. [MISC] Fixed button labels not showing when unlit - @ImenesFBW (Imenes)
 1. [EFB] Added functionality to ground services page - @Saschl (saschl#9432)
 
 ## 0.5.2
