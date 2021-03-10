@@ -366,10 +366,6 @@
     - Percent
     - The APU's rotations per minute in percentage of the maximum RPM
 
-- A32NX_APU_START_CONTACTOR_ENERGIZED
-    - Bool
-    - Indicates if the APU START contactor is energized
-
 - A32NX_APU_BLEED_AIR_VALVE_OPEN
     - Bool
     - Indicates if the APU bleed air valve is open
@@ -628,6 +624,7 @@
         - 11XU2: AC BUS tie 2 contactor
         - 15XE1: Contactor between AC ESS BUS and TR ESS + EMER GEN
         - 15XE2: Contactor between the static inverter and AC ESS BUS
+        - 10KA_AND_5KA: The two contactors leading to the APU start motor
 
 - A32NX_ELEC_CONTACTOR_{name}_SHOW_ARROW_WHEN_CLOSED
     - Bool
