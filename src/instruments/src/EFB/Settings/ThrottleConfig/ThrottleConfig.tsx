@@ -14,6 +14,28 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     }
 
     return (
+        <div className="flex flex-col-2 justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="flex flex-row justify-center">
+                <BaseThrottleConfig throttleNumber="1" throttleCount={1} />
+                <BaseThrottleConfig throttleNumber="2" />
+            </div>
+
+            <div className="bg-gray-800  px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <Button
+                    text="Close"
+                    type={BUTTON_TYPE.GREEN_OUTLINE}
+                    onClick={props.onClose}
+                />
+                <Button
+                    text="Save"
+                    type={BUTTON_TYPE.GREEN_OUTLINE}
+                    onClick={props.onClose}
+                />
+            </div>
+        </div>
+    );
+};
+/*    return (
         <div className="fixed z-10 inset-0 overflow-y-auto">
             <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
 
@@ -30,8 +52,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                     aria-modal="true"
                     aria-labelledby="modal-headline"
                 >
-                    {/* content here */
-                    }
+
                     <div className=" flex flex-row justify-between items-center">
                         <BaseThrottleConfig throttleNumber="1" />
                         <BaseThrottleConfig throttleNumber="2" />
@@ -48,6 +69,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
             </div>
         </div>
     );
-};
+}; */
 
 export default ThrottleConfig;
