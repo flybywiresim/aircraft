@@ -22,7 +22,6 @@ export const DoorToggle = (props: Props) => {
             disabled={props.disabled}
         >
             <IconLayoutSidebar size="2.825rem" stroke="1.5" />
-
         </Button>
     );
 };
