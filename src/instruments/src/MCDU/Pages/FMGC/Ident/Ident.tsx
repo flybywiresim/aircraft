@@ -5,9 +5,9 @@ import { RootContext } from '../../../RootContext.jsx';
 import { LineHolder } from '../../../Components/Lines/LineHolder';
 import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
 import { RowHolder } from '../../../Components/RowHolder';
-import { Label } from '../../../Components/Lines/Label';
-import { StringField } from '../../../Components/Field/StringField';
+import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
+import { Field } from '../../../Components/Fields/NonInteractive/Field';
 
 // TODO move this to utils?
 /* const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
@@ -89,14 +89,13 @@ const IdentPage: React.FC = () => {
         <Content>
             <RowHolder index={1}>
                 <LineHolder>
-                    <Line value={<Label value="\xa0ENG" side={lineSides.left} />} />
+                    <Line value={<LabelField value="\xa0ENG" side={lineSides.left} color={lineColors.white} />} />
                     <Line value={(
-                        <StringField
-                            isInput
+                        <Field
                             value="LEAP-1A26"
-                            nullValue=""
                             side={lineSides.left}
                             color={lineColors.green}
+                            size={lineSizes.regular}
                         />
                     )}
                     />
@@ -104,14 +103,13 @@ const IdentPage: React.FC = () => {
             </RowHolder>
             <RowHolder index={2}>
                 <LineHolder>
-                    <Line value={<Label value="\xa0ACTIVE NAV DATA BASE" side={lineSides.left} />} />
+                    <Line value={<LabelField value="\xa0ACTIVE NAV DATA BASE" side={lineSides.left} color={lineColors.white} />} />
                     <Line value={(
-                        <StringField
-                            isInput
+                        <Field
                             value="TODO"
-                            nullValue=""
                             side={lineSides.left}
                             color={lineColors.cyan}
+                            size={lineSizes.regular}
                         />
                     )}
                     />
@@ -119,12 +117,11 @@ const IdentPage: React.FC = () => {
                 <LineHolder>
                     <EmptyLine />
                     <Line value={(
-                        <StringField
-                            isInput
+                        <Field
                             value="AIRAC"
-                            nullValue=""
                             side={lineSides.right}
                             color={lineColors.green}
+                            size={lineSizes.regular}
                         />
                     )}
                     />
@@ -132,12 +129,10 @@ const IdentPage: React.FC = () => {
             </RowHolder>
             <RowHolder index={3}>
                 <LineHolder>
-                    <Line value={<Label value="\xa0SECOND NAV DATA BASE" side={lineSides.left} />} />
+                    <Line value={<LabelField value="\xa0SECOND NAV DATA BASE" side={lineSides.left} color={lineColors.white} />} />
                     <Line value={(
-                        <StringField
-                            isInput
+                        <Field
                             value="TODO"
-                            nullValue=""
                             side={lineSides.left}
                             color={lineColors.inop}
                             size={lineSizes.small}
@@ -148,12 +143,10 @@ const IdentPage: React.FC = () => {
             </RowHolder>
             <RowHolder index={5}>
                 <LineHolder>
-                    <Line value={<Label value="CHG CODE" side={lineSides.left} />} />
+                    <Line value={<LabelField value="CHG CODE" side={lineSides.left} color={lineColors.white} />} />
                     <Line value={(
-                        <StringField
-                            isInput
+                        <Field
                             value="[  ]"
-                            nullValue=""
                             side={lineSides.left}
                             color={lineColors.inop}
                             size={lineSizes.small}
@@ -164,27 +157,25 @@ const IdentPage: React.FC = () => {
             </RowHolder>
             <RowHolder index={6}>
                 <LineHolder>
-                    <Line value={<Label value="+0.0/+0.0" side={lineSides.left} />} />
+                    <Line value={<LabelField value="+0.0/+0.0" side={lineSides.left} color={lineColors.white} />} />
                     <Line value={(
-                        <StringField
-                            isInput
+                        <Field
                             value="IDLE/PERF"
-                            nullValue=""
                             side={lineSides.left}
                             color={lineColors.green}
+                            size={lineSizes.regular}
                         />
                     )}
                     />
                 </LineHolder>
                 <LineHolder>
-                    <Line value={<Label value="SOFTWARE" side={lineSides.right} />} />
+                    <Line value={<LabelField value="SOFTWARE" side={lineSides.right} color={lineColors.white} />} />
                     <Line value={(
-                        <StringField
-                            isInput
+                        <Field
                             value="STATUS/XLOAD"
-                            nullValue=""
                             side={lineSides.right}
                             color={lineColors.inop}
+                            size={lineSizes.regular}
                         />
                     )}
                     />

@@ -1,14 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
 import '../../../Components/styles.scss';
 import { LineHolder } from '../../../Components/Lines/LineHolder';
-import { Line, lineColors, lineSides } from '../../../Components/Lines/Line';
+import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
 import { RowHolder } from '../../../Components/RowHolder';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';
-import { StringField } from '../../../Components/Field/StringField';
 import { lineSelectKeys } from '../../../Components/Buttons';
-import { Label } from '../../../Components/Lines/Label';
+import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { RootContext } from '../../../RootContext';
 import { Content } from '../../../Components/Content';
+import { Field } from '../../../Components/Fields/NonInteractive/Field';
+import { LineSelectField } from '../../../Components/Fields/Interactive/LineSelectField';
 
 type MenuProps = {
     setPage: React.Dispatch<React.SetStateAction<string>>
@@ -47,12 +48,10 @@ const FMGCText: React.FC<TextProps> = ({ activeSys, setActiveSys, setPage, selec
         <LineHolder>
             <EmptyLine />
             <Line value={(
-                <StringField
+                <LineSelectField
                     value={determineText()}
                     side={lineSides.left}
-                    nullValue=""
                     color={determineColor()}
-                    isInput={false}
                     lsk={lineSelectKeys.L1}
                     selectedCallback={(() => {
                         setActiveSys('FMGC'); // Placeholder until we can retrieve activeSys from FMGC
@@ -63,6 +62,7 @@ const FMGCText: React.FC<TextProps> = ({ activeSys, setActiveSys, setPage, selec
                             }
                         }, Math.floor(Math.random() * 400) + 400);
                     })}
+                    size={lineSizes.regular}
                 />
             )}
             />
@@ -98,12 +98,11 @@ const MenuLineText: React.FC<TextProps> = ({ side, system, activeSys, setActiveS
         <LineHolder>
             <EmptyLine />
             <Line value={(
-                <StringField
+                <LineSelectField
                     side={side !== undefined ? side : lineSides.left}
+                    size={lineSizes.regular}
                     value={determineText()}
-                    nullValue=""
                     color={determineColor()}
-                    isInput={false}
                     lsk={lineSelectKeys.L2}
                     selectedCallback={(() => {
                         if (system) {
@@ -120,15 +119,15 @@ const MenuLineText: React.FC<TextProps> = ({ side, system, activeSys, setActiveS
 
 const NAVBText: React.FC = () => (
     <LineHolder>
-        <Line value={<Label side={lineSides.right} value={'SELECT\xa0'} />} />
-        <Line value={<StringField value="NAV B/UP" nullValue="" side={lineSides.right} />} />
+        <Line value={<LabelField side={lineSides.right} value={'SELECT\xa0'} color={lineColors.white} />} />
+        <Line value={<Field value="NAV B/UP" side={lineSides.right} color={lineColors.white} size={lineSizes.regular} />} />
     </LineHolder>
 );
 
 const OptionsText: React.FC = () => (
     <LineHolder>
         <EmptyLine />
-        <Line value={<StringField value="OPTIONS>" nullValue="" side={lineSides.right} />} />
+        <Line value={<Field value="OPTIONS>" side={lineSides.right} color={lineColors.white} size={lineSizes.regular} />} />
     </LineHolder>
 );
 
