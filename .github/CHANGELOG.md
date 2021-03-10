@@ -219,6 +219,7 @@
 1. [MISC] Fixed default positions of RAM AIR, WX Mode, TCAS ALT RPTG and TCAS THRT switches - @tshomas (Shomas#2719)
 1. [MCDU] Fixed waypoint deletion not showing in TMPY flight plan after SU3 - @pareil6 (pareil6)
 1. [CORE] Fixed bug in altitude constraints calculation code - @SergeySoprykin (SergeyS)
+1. [ND] Add VOR/ADF needles on ARC display mode - @tracernz (Mike)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
