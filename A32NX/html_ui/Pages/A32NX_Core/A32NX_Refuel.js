@@ -1,38 +1,15 @@
-const REFUEL_FACTOR = 0.0001;
+const REFUEL_FACTOR = 1;
 
 class A32NX_Refuel {
     constructor() {}
 
     init() { }
 
-    refuelOrDefuelTank(current, target, multiplier) {
-        if (target > current) {
-            current += REFUEL_FACTOR * multiplier;
-            if (current > target) {
-                current = target;
-            }
-        }
-        if (target < current) {
-            current -= REFUEL_FACTOR * multiplier;
-            if (current < target) {
-                current = target;
-            }
-        }
-        return current;
+    defuelTank(multiplier) {
+        return -REFUEL_FACTOR * multiplier;
     }
-    defuelTank(current, target, multiplier) {
-        current -= REFUEL_FACTOR * multiplier;
-        if (current < target) {
-            current = target;
-        }
-        return current;
-    }
-    refuelTank(current, target, multiplier) {
-        current += REFUEL_FACTOR * multiplier;
-        if (current > target) {
-            current = target;
-        }
-        return current;
+    refuelTank(multiplier) {
+        return REFUEL_FACTOR * multiplier;
     }
 
     update(_deltaTime) {
@@ -47,16 +24,21 @@ class A32NX_Refuel {
             return;
         }
         const refuelRate = SimVar.GetSimVarValue("L:A32NX_REFUEL_RATE_SETTING", "Number");
-        const centerTarget = SimVar.GetSimVarValue("FUEL TANK CENTER DESIRED", "Gallons");
-        const LInnTarget = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN DESIRED", "Gallons");
-        const LOutTarget = SimVar.GetSimVarValue("FUEL TANK LEFT AUX DESIRED", "Gallons");
-        const RInnTarget = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN DESIRED", "Gallons");
-        const ROutTarget = SimVar.GetSimVarValue("FUEL TANK RIGHT AUX DESIRED", "Gallons");
-        const centerCurrent = SimVar.GetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons");
-        const LInnCurrent = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons");
-        const LOutCurrent = SimVar.GetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons");
-        const RInnCurrent = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
-        const ROutCurrent = SimVar.GetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons");
+        const centerTarget = SimVar.GetSimVarValue("L:A32NX_FUEL_CENTER_DESIRED", "Number");
+        const LInnTarget = SimVar.GetSimVarValue("L:A32NX_FUEL_LEFT_MAIN_DESIRED", "Number");
+        const LOutTarget = SimVar.GetSimVarValue("L:A32NX_FUEL_LEFT_AUX_DESIRED", "Number");
+        const RInnTarget = SimVar.GetSimVarValue("L:A32NX_FUEL_RIGHT_MAIN_DESIRED", "Number");
+        const ROutTarget = SimVar.GetSimVarValue("L:A32NX_FUEL_RIGHT_AUX_DESIRED", "Number");
+        const centerCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons");
+        const LInnCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons");
+        const LOutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons");
+        const RInnCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
+        const ROutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons");
+        let centerCurrent = Math.round(centerCurrentSimVar);
+        let LInnCurrent = Math.round(LInnCurrentSimVar);
+        let LOutCurrent = Math.round(LOutCurrentSimVar);
+        let RInnCurrent = Math.round(RInnCurrentSimVar);
+        let ROutCurrent = Math.round(ROutCurrentSimVar);
         if (refuelRate == 2) {
             SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerTarget);
             SimVar.SetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons", LInnTarget);
@@ -69,35 +51,73 @@ class A32NX_Refuel {
         if (refuelRate == 1) {
             multiplier = 5 * REFUEL_FACTOR;
         }
+        SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", (centerCurrent - 1));
         //DEFUELING (center tank first, then main, then aux)
         if (centerCurrent > centerTarget) {
-            centerCurrent = defuelTank(centerCurrent, centerTarget, multiplier);
+            centerCurrent += defuelTank(multiplier);
+            if (centerCurrent < centerTarget) {
+                centerCurrent = centerTarget;
+            }
             SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerCurrent);
             if (centerCurrent != centerTarget) {
                 return;
             }
         }
         if (LInnCurrent > LInnTarget || RInnCurrent > RInnTarget) {
-            LInnCurrent = defuelTank(LInnCurrent, LInnTarget, multiplier);
-            RInnCurrent = defuelTank(RInnCurrent, RInnTarget, multiplier);
+            LInnCurrent += defuelTank(multiplier);
+            RInnCurrent += defuelTank(multiplier);
+            if (LInnCurrent < LInnTarget) {
+                LInnCurrent = LInnTarget;
+            }
+            if (RInnCurrent < RInnTarget) {
+                RInnCurrent = RInnTarget;
+            }
             SimVar.SetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons", RInnTarget);
             SimVar.SetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons", LInnTarget);
             if (LInnCurrent != LInnTarget || RInnCurrent != RInnTarget) {
                 return;
             }
         }
-        //REFUELING OR DEFUELING FOR AUX TANKS
-        LOutCurrent = refuelOrDefuelTank(LOutCurrent, LOutTarget, multiplier);
-        ROutCurrent = refuelOrDefuelTank(ROutCurrent, ROutTarget, multiplier);
-        SimVar.SetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons", LOutCurrent);
-        SimVar.SetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons", ROutCurrent);
-        if (LOutTarget != LOutCurrent || ROutTarget != ROutCurrent) {
-            return;
+        if (LOutCurrent > LOutTarget || ROutCurrent > ROutTarget) {
+            LOutCurrent += defuelTank(multiplier);
+            ROutCurrent += defuelTank(multiplier);
+            if (LOutCurrent < LOutTarget) {
+                LOutCurrent = LOutTarget;
+            }
+            if (ROutCurrent < ROutTarget) {
+                ROutCurrent = ROutTarget;
+            }
+            SimVar.SetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons", ROutTarget);
+            SimVar.SetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons", LOutTarget);
+            if (LOutCurrent != LOutTarget || ROutCurrent != ROutTarget) {
+                return;
+            }
         }
         // REFUELING (aux first, then main, then center tank)
+        if (LOutCurrent < LOutTarget || ROutCurrent < ROutTarget) {
+            LOutCurrent += refuelTank(multiplier);
+            ROutCurrent += refuelTank(multiplier);
+            if (LOutCurrent > LOutTarget) {
+                LOutCurrent = LOutTarget;
+            }
+            if (ROutCurrent > ROutTarget) {
+                ROutCurrent = ROutTarget;
+            }
+            SimVar.SetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons", ROutTarget);
+            SimVar.SetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons", LOutTarget);
+            if (LOutCurrent != LOutTarget || ROutCurrent != ROutTarget) {
+                return;
+            }
+        }
         if (LInnCurrent < LInnTarget || RInnCurrent < RInnTarget) {
-            LInnCurrent = refuelTank(LInnCurrent, LInnTarget, multiplier);
-            RInnCurrent = refuelTank(RInnCurrent, RInnTarget, multiplier);
+            LInnCurrent += refuelTank(multiplier);
+            RInnCurrent += refuelTank(multiplier);
+            if (LInnCurrent > LInnTarget) {
+                LInnCurrent = LInnTarget;
+            }
+            if (RInnCurrent > RInnTarget) {
+                RInnCurrent = RInnTarget;
+            }
             SimVar.SetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons", RInnTarget);
             SimVar.SetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons", LInnTarget);
             if (LInnCurrent != LInnTarget || RInnCurrent != RInnTarget) {
@@ -105,7 +125,10 @@ class A32NX_Refuel {
             }
         }
         if (centerCurrent < centerTarget) {
-            centerCurrent = refuelTank(centerCurrent, centerTarget, multiplier);
+            centerCurrent += refuelTank(multiplier);
+            if (centerCurrent > centerTarget) {
+                centerCurrent = centerTarget;
+            }
             SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerCurrent);
             if (centerCurrent != centerTarget) {
                 return;

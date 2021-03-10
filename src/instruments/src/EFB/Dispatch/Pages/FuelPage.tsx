@@ -37,9 +37,12 @@ type FuelPageProps = {
 const FuelWidget = (props: FuelPageProps) => {
     const totalFuelGallons = 6243;
     const outerCellGallon = 227;
+    const outerCellUnusableGallon = 1;
+    const innerCellUnusableGallon = 7;
     const innerCellGallon = 1809;
+    const centerTankUnusableGallon = 24;
     const centerTankGallon = 2173;
-    const [usingMetrics] = useSimVar("CONFIG_USING_METRIC_UNIT", "Number", 1_000);
+    const [usingMetrics, setUsingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
     const currentUnit = () => {
         return usingMetrics == 1 ? 'Kgs' : 'Lbs';
     }
@@ -74,11 +77,11 @@ const FuelWidget = (props: FuelPageProps) => {
     const [sliderValue, setSliderValue] = useState<number>();
     const [inputValue, setInputValue] = useState<number>();
     const [totalTarget, setTotalTarget] = useState<number>();
-    const [centerTarget, setCenterTarget] = useSimVar("FUEL TANK CENTER DESIRED", "Gallons", 1_000);
-    const [LInnTarget, setLInnTarget] = useSimVar("FUEL TANK LEFT MAIN DESIRED", "Gallons", 1_000);
-    const [LOutTarget, setLOutTarget] = useSimVar("FUEL TANK LEFT AUX DESIRED", "Gallons", 1_000);
-    const [RInnTarget, setRInnTarget] = useSimVar("FUEL TANK RIGHT MAIN DESIRED", "Gallons", 1_000);
-    const [ROutTarget, setROutTarget] = useSimVar("FUEL TANK RIGHT AUX DESIRED", "Gallons", 1_000);
+    const [centerTarget, setCenterTarget] = useSimVar("L:A32NX_FUEL_CENTER_DESIRED", "Number");
+    const [LInnTarget, setLInnTarget] = useSimVar("L:A32NX_FUEL_LEFT_MAIN_DESIRED", "Number");
+    const [LOutTarget, setLOutTarget] = useSimVar("L:A32NX_FUEL_LEFT_AUX_DESIRED", "Number");
+    const [RInnTarget, setRInnTarget] = useSimVar("L:A32NX_FUEL_RIGHT_MAIN_DESIRED", "Number");
+    const [ROutTarget, setROutTarget] = useSimVar("L:A32NX_FUEL_RIGHT_AUX_DESIRED", "Number");
     const [centerCurrent, setCenterCurrent] = useSimVar("FUEL TANK CENTER QUANTITY", "Gallons", 1_000);
     const [LInnCurrent, setLInnCurrent] = useSimVar("FUEL TANK LEFT MAIN QUANTITY", "Gallons", 1_000);
     const [LOutCurrent, setLOutCurrent] = useSimVar("FUEL TANK LEFT AUX QUANTITY", "Gallons", 1_000);
@@ -102,10 +105,10 @@ const FuelWidget = (props: FuelPageProps) => {
     }
     const formatRefuelStatusLabel = () => {
         if(airplaneCanRefuel()){
-            if(totalTarget == totalCurrent()) {
+            if(totalTarget == totalFuelGallons) {
                 return "(Available)";
             }
-            return ((totalTarget||0) > (totalCurrent())) ? "(Defueling...)" : "(Refueling...)";
+            return ((totalTarget||0) > (totalFuelGallons)) ? "(Defueling...)" : "(Refueling...)";
         }
         return "(Unavailable)";
     }
@@ -130,8 +133,8 @@ const FuelWidget = (props: FuelPageProps) => {
         return round(Math.max(curr,0)*getFuelMultiplier());
     }
     const setDesiredFuel = (fuel: number) => {
-        fuel -= outerCellGallon*2;
-        let outerTank = ((outerCellGallon*2) + Math.min(fuel, 0))/2;
+        fuel -= (outerCellGallon+outerCellUnusableGallon)*2;
+        let outerTank = (((outerCellGallon+outerCellUnusableGallon)*2) + Math.min(fuel, 0))/2;
         setLOutTarget(outerTank);
         setROutTarget(outerTank);
         if(fuel <= 0) {
@@ -140,15 +143,15 @@ const FuelWidget = (props: FuelPageProps) => {
             setCenterTarget(0);
             return;
         }
-        fuel -= innerCellGallon*2
-        let innerTank = ((innerCellGallon*2) + Math.min(fuel, 0))/2;
+        fuel -= (innerCellGallon+innerCellUnusableGallon)*2
+        let innerTank = (((innerCellGallon+innerCellUnusableGallon)*2) + Math.min(fuel, 0))/2;
         setLInnTarget(innerTank);
         setRInnTarget(innerTank);
         if(fuel <= 0) {
             setCenterTarget(0);
             return;
         }
-        setCenterTarget(fuel);
+        setCenterTarget(fuel+centerTankUnusableGallon);
     }
     const updateDesiredFuel = (value:string) => {
         let fuel = 0
@@ -161,6 +164,7 @@ const FuelWidget = (props: FuelPageProps) => {
         if(fuel>totalFuelGallons){
             fuel = totalFuelGallons
         }
+        setUsingMetrics(2)
         setTotalTarget(fuel)
         setSliderValue((fuel/totalFuelGallons)*100);
         setDesiredFuel(fuel)
@@ -214,7 +218,7 @@ const FuelWidget = (props: FuelPageProps) => {
                     <div className="flex mt-n5">
                         <div className="fuel-progress"><Slider value={sliderValue} onInput={(value) => updateSlider(value)} className="w-48" /></div>
                         <div className="fuel-label"><SimpleInput noLeftMargin={true} placeholder={round(totalFuel()).toString()} number={true} min={0} max={round(totalFuel())} value={inputValue} onChange={(x) => updateDesiredFuel(x)} /></div>
-                        <div className="unit-label">{currentUnit() +'/'+ usingMetrics}</div>
+                        <div className="unit-label">{currentUnit() +'/'+ centerTarget + '/' + centerCurrent}</div>
                         <div className="separation-line-refuel"></div>
                         <div className="manage-fuel-truck">
                             <div className='call-inop fuel-truck disabled'><IconTruck /></div>
@@ -223,7 +227,7 @@ const FuelWidget = (props: FuelPageProps) => {
                     </div>
                     <span>Current fuel :</span>
                     <div className="flex mt-n5">
-                        <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={(totalCurrent()/totalFuel())*100} /></div>
+                        <div className="fuel-progress"><ProgressBar height={"10px"} width={"200px"} isLabelVisible={false} bgcolor={'#3b82f6'} completed={(totalCurrent()/round(totalFuel()))*100} /></div>
                         <div className="fuel-label"><label>{totalCurrent()}/{round(totalFuel())} {currentUnit()}</label></div>
                     </div>
             </div>
