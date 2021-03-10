@@ -180,7 +180,7 @@
 1. [MISC] Fixed chrono watch colon appearance - @SergeySoprykin (SergeyS)
 1. [MCDU] Fixed options page text overlap - @MisterChocker (Leon)
 1. [CDU] Reworked Flight Phase system - @MisterChocker (Leon)
-1. [LIGHT] Remove leftover particle from the latest exterior lighting update - @Snapmatics (Harry(
+1. [LIGHT] Remove leftover particle from the latest exterior lighting update - @Snapmatics (Harry)
 
 
 ## 0.5.2
