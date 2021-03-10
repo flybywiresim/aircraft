@@ -3703,6 +3703,7 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_MASTERAWARN_L</ANIM_NAME>
                 <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
                 <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
                 <AIRBUS_TYPE/>
                 <NO_SEQ2/>
             </UseTemplate>
@@ -3719,6 +3720,7 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_MASTERCAUT_L</ANIM_NAME>
                 <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
                 <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
                 <AIRBUS_TYPE/>
                 <NO_SEQ2/>
             </UseTemplate>
@@ -3734,6 +3736,7 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_MASTERAWARN_R</ANIM_NAME>
                 <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
                 <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
                 <AIRBUS_TYPE/>
                 <NO_SEQ2/>
             </UseTemplate>
@@ -3750,6 +3753,7 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_MASTERCAUT_R</ANIM_NAME>
                 <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
                 <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
                 <AIRBUS_TYPE/>
                 <NO_SEQ2/>
             </UseTemplate>
