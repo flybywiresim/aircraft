@@ -330,7 +330,6 @@ class A32NX_FlightPhase_GoAround {
 class A32NX_FlightPhase_Done {
     constructor() {
         this.takeoffConfirmation = new NXLogic_ConfirmNode(.2);
-        this.cleanupConfirmation = new NXLogic_ConfirmNode(10);
     }
 
     init(_fmc) {
@@ -340,25 +339,32 @@ class A32NX_FlightPhase_Done {
     }
 
     check(_deltaTime, _fmc) {
-        if (this.takeoffConfirmation.write(
-            (
-                Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT ||
-                Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT
-            ) &&
-            !isNaN(_fmc.v2Speed) &&
-            (
+        if (Simplane.getAltitudeAboveGround() > 1000) {
+            this.nextFmgcFlightPhase = FmgcFlightPhases.CLIMB;
+            return true;
+        }
+
+        if (
+            this.takeoffConfirmation.write(
                 (
-                    SimVar.GetSimVarValue("ENG N1 RPM:1", "percent") > .85 &&
-                    SimVar.GetSimVarValue("ENG N1 RPM:2", "percent") > .85
-                ) ||
-                Math.abs(Simplane.getGroundSpeed()) > 80
-            ),
-            _deltaTime
-        )) {
+                    Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT ||
+                    Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT
+                ) &&
+                !isNaN(_fmc.v2Speed) &&
+                (
+                    (
+                        SimVar.GetSimVarValue("ENG N1 RPM:1", "percent") > .85 &&
+                        SimVar.GetSimVarValue("ENG N1 RPM:2", "percent") > .85
+                    ) ||
+                    Math.abs(Simplane.getGroundSpeed()) > 80
+                ),
+                _deltaTime
+            )
+        ) {
             this.nextFmgcFlightPhase = FmgcFlightPhases.TAKEOFF;
             return true;
         }
 
-        return this.cleanupConfirmation.write(true, _deltaTime);
+        return false;
     }
 }
