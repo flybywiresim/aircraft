@@ -443,7 +443,7 @@ class VORDMENavAid {
         this.aircraft = _aircraft;
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         const index = parseInt(url.substring(url.length - 1));
-        let state = Simplane.getAutoPilotNavAidState(index, this.index);
+        let state = Simplane.getAutoPilotNavAidState(_aircraft, index, this.index);
         if (_aircraft == Aircraft.B747_8) {
             state--;
             if (state < 0) {
