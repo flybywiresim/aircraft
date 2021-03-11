@@ -28,6 +28,8 @@ typedef struct {
 
 typedef struct {
   real_T nz_g;
+  real_T Theta_deg;
+  real_T Phi_deg;
   real_T V_ias_kn;
   real_T V_tas_kn;
   real_T V_mach;
@@ -152,6 +154,8 @@ typedef enum {
 
 typedef struct {
   real_T nz_g;
+  real_T Theta_deg;
+  real_T Phi_deg;
   real_T V_ias_kn;
   real_T V_tas_kn;
   real_T V_mach;
@@ -161,6 +165,9 @@ typedef struct {
   real_T H_ind_ft;
   real_T H_radio_ft;
   real_T H_dot_fpm;
+  real_T ax_m_s2;
+  real_T ay_m_s2;
+  real_T az_m_s2;
   real_T bx_m_s2;
   real_T by_m_s2;
   real_T bz_m_s2;

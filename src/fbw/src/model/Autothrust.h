@@ -56,6 +56,7 @@ class AutothrustModelClass {
     real_T ScheduledGain2_BreakpointsForDimension1[2];
     real_T ScheduledGain1_BreakpointsForDimension1[2];
     real_T ScheduledGain_BreakpointsForDimension1[2];
+    real_T ScheduledGain3_BreakpointsForDimension1[4];
     real_T LagFilter_C1;
     real_T DiscreteDerivativeVariableTs_Gain;
     real_T DiscreteTimeIntegratorVariableTsLimit_Gain;
@@ -76,6 +77,7 @@ class AutothrustModelClass {
     real_T ScheduledGain2_Table[2];
     real_T ScheduledGain1_Table[2];
     real_T ScheduledGain_Table[2];
+    real_T ScheduledGain3_Table[4];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T DiscreteTimeIntegratorVariableTs1_UpperLimit;
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit_p;
@@ -90,6 +92,8 @@ class AutothrustModelClass {
     real_T Constant1_Value;
     real_T Gain_Gain;
     real_T Gain_Gain_m;
+    real_T Gain2_Gain;
+    real_T Gain3_Gain;
     real_T Gain_Gain_p;
     real_T Constant1_Value_d;
     real_T Saturation_UpperSat;
@@ -106,6 +110,8 @@ class AutothrustModelClass {
     real_T MAXIMUMTAKEOFF_tableData[756];
     real_T MAXIMUMTAKEOFF_bp01Data[36];
     real_T MAXIMUMTAKEOFF_bp02Data[21];
+    real_T Saturation_UpperSat_l;
+    real_T Saturation_LowerSat_i;
     real_T Gain1_Gain_c;
     real_T Gain_Gain_h;
     real_T Gain_Gain_b;

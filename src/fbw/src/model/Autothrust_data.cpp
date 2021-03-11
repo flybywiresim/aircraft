@@ -22,6 +22,11 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
       0.0,
       0.0,
       0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
       false,
       0.0,
       false,
@@ -88,6 +93,8 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
   { 0.0, 1.0 },
 
   { 0.0, 1.0 },
+
+  { 0.0, 5.0, 10.0, 15.0 },
   10.0,
   1.0,
   1.0,
@@ -111,6 +118,8 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
   { 0.8, 1.0 },
 
   { 0.3, 0.6 },
+
+  { 0.5, 0.5, 0.0, 0.0 },
   100.0,
   0.0,
   100.0,
@@ -125,6 +134,8 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
   0.0,
   0.4,
   0.4,
+  -1.0,
+  -1.0,
   2.0,
   1.0,
   1.0,
@@ -227,6 +238,8 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
 
   { -2000.0, -1000.0, 0.0, 500.0, 1000.0, 2000.0, 3000.0, 4000.0, 5000.0, 6000.0, 7000.0, 8000.0, 9000.0, 10000.0,
     11000.0, 12000.0, 13000.0, 14000.0, 15000.0, 16000.0, 16600.0 },
+  3.0,
+  1.0,
   0.017453292519943295,
   0.1019367991845056,
   57.295779513082323,

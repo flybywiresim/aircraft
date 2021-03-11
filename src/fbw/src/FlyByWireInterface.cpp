@@ -795,6 +795,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.time.simulation_time = simData.simulationTime;
 
     autoThrustInput.in.data.nz_g = simData.nz_g;
+    autoThrustInput.in.data.Theta_deg = simData.Theta_deg;
+    autoThrustInput.in.data.Phi_deg = simData.Phi_deg;
     autoThrustInput.in.data.V_ias_kn = simData.V_ias_kn;
     autoThrustInput.in.data.V_tas_kn = simData.V_tas_kn;
     autoThrustInput.in.data.V_mach = simData.V_mach;
