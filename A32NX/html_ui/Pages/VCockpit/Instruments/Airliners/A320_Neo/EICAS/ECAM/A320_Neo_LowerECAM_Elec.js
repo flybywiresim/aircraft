@@ -422,7 +422,7 @@ var A320_Neo_LowerECAM_Elec;
             // with three states: normal, abnormal, and no signal.
             const dcBatBusPotentialNormal = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_BAT_BUS_POTENTIAL_NORMAL", "Bool");
             this.greenWhen(this.e_DCBATBUS_TITLE, dcBatBusIsPowered && dcBatBusPotentialNormal && atLeastOneBatteryIsAuto);
-            this.setValue(this.e_DCBATBUS_TITLE, dcBatBusIsPowered && atLeastOneBatteryIsAuto ? "DC BAT" : "XX");
+            this.setValue(this.e_DCBATBUS_TITLE, atLeastOneBatteryIsAuto ? "DC BAT" : "XX");
 
             const dcBus1IsPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_1_BUS_IS_POWERED", "Bool");
             this.greenWhen(this.e_DCBUS1_TITLE, dcBus1IsPowered);
