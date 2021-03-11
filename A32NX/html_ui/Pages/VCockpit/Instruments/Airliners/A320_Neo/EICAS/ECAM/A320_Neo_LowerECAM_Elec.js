@@ -213,10 +213,13 @@ var A320_Neo_LowerECAM_Elec;
             this.updateThrottler = new UpdateThrottler(500);
 
             this.isInitialised = true;
+
+            this.draw();
+            this.show(this.querySelector("#main-elec"));
         }
 
-        update(_deltaTime) {
-            if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+        update(deltaTime) {
+            if (!this.isInitialised || this.updateThrottler.canUpdate(deltaTime) === -1) {
                 return;
             }
 
