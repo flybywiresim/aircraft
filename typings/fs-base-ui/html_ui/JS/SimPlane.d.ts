@@ -341,7 +341,7 @@ declare global {
         function getAutoPilotGlideslopeHold(): boolean | null;
         function getAutoPilotApproachType(): ApproachType | null;
         function getAutoPilotApproachLoaded(): boolean | null;
-        function getAutoPilotNavAidState(user: number, _switch: any): number | null;
+        function getAutoPilotNavAidState(aircraft: Aircraft, user: number, _switch: any): number | null;
         function getAutoPilotIsHeadingAligned(): boolean | null;
         function getNextWaypointName(): string | null;
         function getNextWaypointTrack(): Degrees | null;
