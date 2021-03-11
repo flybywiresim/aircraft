@@ -2277,11 +2277,6 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-        const acFl = Math.floor(Simplane.getAltitude() / 100);
-        if (fl > acFl && phase === FmgcFlightPhases.DESCENT) {
-            this.addNewMessage(NXSystemMessages.entryOutOfRange);
-            return false;
-        }
 
         if (fl <= 0 || fl > this.maxCruiseFL) {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -2295,11 +2290,11 @@ class FMCMainDisplay extends BaseAirliners {
         this.cruiseTemperature = undefined;
         this.updateConstraints();
 
+        const acFl = Math.floor(Simplane.getAltitude() / 100);
+
         if (acFl > fl && (phase === FmgcFlightPhases.CLIMB || phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH)) {
             this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.CRUISE);
-        }
-
-        if (acFl < fl && (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH || phase === FmgcFlightPhases.GOAROUND)) {
+        } else if (acFl < fl && (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH || phase === FmgcFlightPhases.GOAROUND)) {
             this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.CLIMB);
         }
 
