@@ -17,9 +17,9 @@ type DetentConfigState = {
 }
 
 const DetentConfig: React.FC<Props> = (props: Props) => {
-    const [throttle1Position] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${props.throttleNumber}`, 'number', 500);
-
     const [state, setState] = useState<DetentConfigState>({ DETENT_FROM_SET: false, DETENT_TO_SET: false, RESET: false });
+
+    const [throttle1Position] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${props.throttleNumber}`, 'number', 500);
 
     const applyButtonStateStyling = (state: DetentConfigState) => {
         if (state.DETENT_FROM_SET && !state.RESET) {

@@ -31,8 +31,6 @@ class ThrottleSimvar {
 }
 
 const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
-    // const throts = new Map<String, Array<[any, (newValueOrSetter) => void]>>();
-
     const mappings: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse', 'L:A32NX_THROTTLE_MAPPING_REVERSE_'),
         new ThrottleSimvar('Reverse Idle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_'),
@@ -59,16 +57,10 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
         <div className="bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4 mt-4 mb-4">
             <div className="sm:flex sm:items-start">
                 <div className="justify-between items-center">
-
                     { mappings.map((m) => (
-
-                        // console.log(`Higher boundary: ${lowValue}`);
-
                         <div className="divide-y divide-gray-700 ">
                             <span className="text-lg text-gray-300">{`${m.lowGetter[0].toFixed(2)} -> ${m.hiGetter[0].toFixed(2)}`}</span>
-
                             <DetentConfig text={`${m.readableName}`} fromVar={m.lowSetter} toVar={m.hiSetter} throttleNumber={props.throttleNumber} />
-
                         </div>
                     ))}
                 </div>

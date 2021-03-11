@@ -16,21 +16,19 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         return null;
     }
 
-    const [reverserOnAxis, setReverserOnAxis] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
+    const [dualAxis, setDualAxis] = useState(0);
 
+    const [reverserOnAxis, setReverserOnAxis] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
     const [, syncToDisk] = useSimVar('K:A32NX.THROTTLE_MAPPING_SAVE_TO_FILE', 'number', 1000);
     const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 1000);
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
-    const [dualAxis, setDualAxis] = useState(0);
 
     return (
         <div className="flex flex-row justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="bg-gray-800 rounded-xl px-6 py-4 shadow-lg mt-4 mb-4">
                 <div className=" flex flex-row w-full top-1/2">
                     <div className="mb-4 flex flex-col right-0 w-1/2" />
-
                 </div>
-
                 <span />
 
                 { dualAxis !== 0
@@ -49,9 +47,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                             <BaseThrottleConfig throttleNumber={1} throttleCount={2} />
                         </div>
                     )}
-
             </div>
-
             <div className="bg-gray-800 flex flex-row-reverse">
                 <Button
                     text="Close"
@@ -90,7 +86,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 </div>
             </div>
         </div>
-
     );
 };
 
