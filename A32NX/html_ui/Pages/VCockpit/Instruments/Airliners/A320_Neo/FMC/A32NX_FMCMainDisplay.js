@@ -2643,35 +2643,19 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     tryGoInApproachPhase() {
-        if (this.currentFlightPhase === FmgcFlightPhases.CLIMB) {
+        if (
+            this.currentFlightPhase === FmgcFlightPhases.PREFLIGHT ||
+            this.currentFlightPhase === FmgcFlightPhases.TAKEOFF ||
+            this.currentFlightPhase === FmgcFlightPhases.DONE
+        ) {
+            return false;
+        }
+
+        if (this.currentFlightPhase !== FmgcFlightPhases.APPROACH) {
             this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.APPROACH);
-            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-            return true;
         }
-        if (this.currentFlightPhase === FmgcFlightPhases.CRUISE) {
-            this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.APPROACH);
-            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-            return true;
-        }
-        if (this.currentFlightPhase === FmgcFlightPhases.DESCENT) {
-            this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.APPROACH);
-            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-            return true;
-        }
-        if (this.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
-            this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.APPROACH);
-            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-            return true;
-        }
-        if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-            return true;
-        }
-        return false;
+
+        return true;
     }
 
     connectIlsFrequency(_freq) {
