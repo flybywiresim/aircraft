@@ -47,7 +47,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
         <div className="mb-4 w-56 justify-between items-center">
             <Button
                 className={applyButtonStateStyling(state)}
-                text={!state.DETENT_FROM_SET ? `${props.text} - from` : `${props.text} - to`}
+                text={!state.DETENT_FROM_SET ? `${props.text} - low` : `${props.text} - high`}
                 onClick={() => setFromTo(throttle1Position, props.fromVar, props.toVar)}
                 type={BUTTON_TYPE.NONE}
             />
