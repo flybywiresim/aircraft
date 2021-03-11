@@ -1,4 +1,4 @@
-const REFUEL_FACTOR = 0.43;
+const REFUEL_FACTOR = 0.42;
 const CENTER_MODIFIER = 3;
 
 class A32NX_Refuel {
