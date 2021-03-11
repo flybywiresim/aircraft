@@ -2477,6 +2477,11 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfApprQNH(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.addNewMessage(NXSystemMessages.notAllowed);
+            return false;
+        }
+
         const value = parseFloat(s);
         const HPA_REGEX = /^[01]?[0-9]{3}$/;
         const INHG_REGEX = /^[23][0-9]\.?[0-9]{2}$/;
@@ -2506,6 +2511,11 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfApprTemp(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.addNewMessage(NXSystemMessages.notAllowed);
+            return false;
+        }
+
         if (!/^[\+\-]?\d{1,2}$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
@@ -2515,6 +2525,11 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfApprWind(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.addNewMessage(NXSystemMessages.notAllowed);
+            return false;
+        }
+
         // both must be entered
         if (!/^\d{1,3}\/\d{1,3}$/.test(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
