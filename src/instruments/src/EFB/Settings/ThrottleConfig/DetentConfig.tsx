@@ -17,9 +17,10 @@ type DetentConfigState = {
 }
 
 const DetentConfig: React.FC<Props> = (props: Props) => {
-    const [throttle1Position] = useSimVar(`A32NX_THROTTLE_MAPPING_INPUT:${props.throttleNumber}`, 'number');
+    const [throttle1Position] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${props.throttleNumber}`, 'number', 500);
+    // console.log(`THROT 1 ${throttle1Position}`);
 
-    const [state, setState] = useState<DetentConfigState>({ DETENT_FROM_SET: false, DETENT_TO_SET: false, RESET: true });
+    const [state, setState] = useState<DetentConfigState>({ DETENT_FROM_SET: false, DETENT_TO_SET: false, RESET: false });
 
     const setFromTo = (throttle1Position, fromVar, toVar) => {
         if (!state.DETENT_FROM_SET) {
@@ -34,8 +35,8 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
     };
 
     return (
-        <div className="mb-4  w-44 justify-between items-center">
-            <Button className="w-full" text={state.RESET ? `${props.text} - from` : `${props.text} - to`} onClick={() => setFromTo(throttle1Position, props.fromVar, props.toVar)} />
+        <div className="mb-4 w-56 justify-between items-center">
+            <Button className="w-full" text={!state.DETENT_FROM_SET ? `${props.text} - from` : `${props.text} - to`} onClick={() => setFromTo(throttle1Position, props.fromVar, props.toVar)} />
         </div>
     );
 };
