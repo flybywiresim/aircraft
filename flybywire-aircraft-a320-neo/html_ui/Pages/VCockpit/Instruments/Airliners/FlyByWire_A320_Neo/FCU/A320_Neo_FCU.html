@@ -1,0 +1,104 @@
+<link rel="stylesheet" href="A320_Neo_FCU.css" />
+
+<script type="text/html" id="A320_Neo_FCU">
+    <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
+    <div id="Mainframe">
+        <div id="Electricity" state="off">
+            <div id="LargeScreen">
+                <div id="Speed">
+                    <svg width="100%" height="100%">
+                        <text id="SPD" class="Common Active" x="15%" y="30%">SPD</text>
+                        <text id="MACH" class="Common Inactive" x="40%" y="30%">MACH</text>
+                        <text id="Value" class="Common Value" x="18%" y="85%">---</text>
+                        <circle id="Illuminator" r="7%" cx="73%" cy="62%" />
+                    </svg>
+                </div>
+
+                <div id="Heading">
+                    <svg width="100%" height="100%">
+                        <text id="HDG" class="Common Active" x="15%" y="30%">HDG</text>
+                        <text id="TRK" class="Common Inactive" x="41%" y="30%">TRK</text>
+                        <text id="LAT" class="Common Active" x="64%" y="30%">LAT</text>
+                        <text id="Value" class="Common Value" x="17%" y="85%">---</text>
+                        <circle id="Illuminator" r="7%" cx="73%" cy="62%" />
+                    </svg>
+                </div>
+
+                <div id="Mode">
+                    <svg width="100%" height="100%">
+                        <text id="HDG" class="Common Active" x="40%" y="50%" text-anchor="end" alignment-baseline="middle">HDG</text>
+                        <text id="TRK" class="Common Inactive" x="40%" y="85%" text-anchor="end">TRK</text>
+                        <rect id="separator" x="47%" y="0%" width="6%" height="100%" fill="rgb(158, 158, 157)" fill-opacity="0.05" />
+                        <text id="VS" class="Common Active" x="60%" y="50%" alignment-baseline="middle">V/S</text>
+                        <text id="FPA" class="Common Inactive" x="60%" y="85%">FPA</text>
+                    </svg>
+                </div>
+
+                <div id="AltVS">
+                    <div id="VerticalSpeed">
+                        <svg width="100%" height="100%">
+                            <text id="VS" class="Common Active" x="68%" y="30%" text-anchor="end">V/S</text>
+                            <text id="FPA" class="Common Inactive" x="90%" y="30%" text-anchor="end">FPA</text>
+                            <text id="Value" class="Common Value" x="15%" y="85%">-----</text>
+                        </svg>
+                    </div>
+
+                    <div id="Altitude">
+                        <svg width="125%" height="100%">
+                            <text id="ALT" class="Common Active" x="40%" y="30%">ALT</text>
+                            <text id="Value" class="Common Value" x="15%" y="85%">-----</text>
+                            <circle id="Illuminator" r="5.6%" cx="85%" cy="62%" />
+                        </svg>
+                    </div>
+
+                    <svg width="100%" height="100%">
+                        <line x1="36%" y1="18%" x2="36%" y2="30%" />
+                        <line x1="36%" y1="20%" x2="43%" y2="20%" />
+                        <text id="LVLCH" class="Common Active" x="44%" y="30%">LVL/CH</text>
+                        <line x1="73%" y1="18%" x2="73%" y2="30%" />
+                        <line x1="73%" y1="20%" x2="66%" y2="20%" />
+                    </svg>
+                </div>
+            </div>
+
+            <div id="SmallScreen">
+                <div id="Selected">
+                    <svg width="100%" height="100%">
+                        <text id="QFE" class="Common Active" x="14%" y="32%">QFE</text>
+                        <text id="QNH" class="Common Inactive" x="84%" y="32%" text-anchor="end">QNH</text>
+                        <text id="Value" class="Common Value" x="8%" y="86%">00.00</text>
+                    </svg>
+                </div>
+                <div id="Standard">
+                    <svg width="100%" height="100%">
+                        <text class="Common Value" x="14%" y="59%">Std</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" import-script="/JS/A32NX_Util.js" import-async="false"></script>
+
+<script type="text/html" import-script="/JS/SimPlane.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/Highlight/Highlight.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/FlightPlan.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/LogicElements/A32NX_FlightPlanManager.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/FlightElements/Waypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/NearestWaypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/Approach.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/Runway.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/GeoCalc.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SelectableElement.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/A320_Neo/A32NX_NavSystem.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/A32NX_BaseAirliners.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/FCU/A320_Neo_FCU.js"></script>
