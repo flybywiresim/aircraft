@@ -27,30 +27,24 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         <div className="flex flex-row justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="bg-gray-800 rounded-xl px-6 py-4 shadow-lg mt-4 mb-4">
                 <div className=" flex flex-row w-full top-1/2">
-                    <div className="mb-4 flex flex-col right-0 w-1/2">
-                        <div className="flex flex-row-reverse divide-x pr-4 divide-gray-700">
-                            <span>
-                                <span className="text-lg text-gray-300 mr-2">Reverser On Axis</span>
-                            </span>
-                            <Toggle value={!!reverserOnAxis} onToggle={(value) => setReverserOnAxis(value ? 1 : 0)} />
-                            <div className="flex flex-row-reverse divide-y divide-gray-700" />
-                            <span>
-                                <span className="text-lg text-gray-300 mr-2">Dual Axis</span>
-                            </span>
-                            <Toggle value={!!dualAxis} onToggle={(value) => setDualAxis(value ? 1 : 0)} />
-                        </div>
-                    </div>
+                    <div className="mb-4 flex flex-col right-0 w-1/2" />
 
                 </div>
-                { dualAxis
+
+                <span />
+
+                { dualAxis !== 0
+
                     && (
                         <div className="flex flex-row justify-center">
                             <BaseThrottleConfig throttleNumber={1} throttleCount={1} />
                             <BaseThrottleConfig throttleNumber={2} throttleCount={1} />
                         </div>
                     )}
-                { !dualAxis
+
+                { dualAxis === 0
                     && (
+
                         <div className="flex flex-row justify-center">
                             <BaseThrottleConfig throttleNumber={1} throttleCount={2} />
                         </div>
@@ -58,27 +52,42 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
 
             </div>
 
-            <div className="bg-gray-800 flex flex-row-reverse gap-1">
+            <div className="bg-gray-800 flex flex-row-reverse">
                 <Button
                     text="Close"
-                    type={BUTTON_TYPE.GREEN_OUTLINE}
+                    type={BUTTON_TYPE.RED}
                     onClick={props.onClose}
-                />
-                <Button
-                    text="Appy"
-                    type={BUTTON_TYPE.GREEN_OUTLINE}
-                    onClick={() => applyLocalVar(1)}
+                    className="ml-2"
+
                 />
                 <Button
                     text="Persist"
-                    type={BUTTON_TYPE.GREEN_OUTLINE}
+                    type={BUTTON_TYPE.GREEN}
                     onClick={() => syncToDisk(1)}
+                    className="ml-2"
                 />
                 <Button
-                    text="Load"
-                    type={BUTTON_TYPE.GREEN_OUTLINE}
-                    onClick={() => syncToThrottle(1)}
+                    text="Apply"
+                    type={BUTTON_TYPE.BLUE}
+                    onClick={() => applyLocalVar(1)}
+                    className="ml-2"
                 />
+                <Button
+                    text="Load "
+                    type={BUTTON_TYPE.BLUE}
+                    onClick={() => syncToThrottle(1)}
+                    className="ml-2"
+                />
+                <div className="flex left-0 mt-auto mb-auto">
+
+                    <span className="text-lg text-gray-300 mr-2">Reverser On Axis</span>
+                    <Toggle value={!!reverserOnAxis} onToggle={(value) => setReverserOnAxis(value ? 1 : 0)} />
+                    <div className="flex flex-row-reverse divide-y divide-gray-700" />
+                    <span>
+                        <span className="text-lg text-gray-300 mr-2 ml-2">Dual Axis</span>
+                    </span>
+                    <Toggle value={!!dualAxis} onToggle={(value) => setDualAxis(value ? 1 : 0)} />
+                </div>
             </div>
         </div>
 

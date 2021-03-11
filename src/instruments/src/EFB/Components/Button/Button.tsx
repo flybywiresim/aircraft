@@ -19,7 +19,7 @@
 import React from 'react';
 import classNames from 'classnames';
 
-export enum BUTTON_TYPE {BLUE, BLUE_OUTLINE, GREEN, GREEN_OUTLINE, RED, RED_OUTLINE}
+export enum BUTTON_TYPE {BLUE, BLUE_OUTLINE, GREEN, GREEN_OUTLINE, RED, RED_OUTLINE, NONE}
 
 type props = {
     text: string,
@@ -40,6 +40,7 @@ const Button = ({ text, type = BUTTON_TYPE.BLUE, onClick, className, ...props }:
                 'border-green-500 text-green-500': type === BUTTON_TYPE.GREEN_OUTLINE,
                 'bg-red-500 border-red-500': type === BUTTON_TYPE.RED,
                 'border-red-500 text-red-500': type === BUTTON_TYPE.RED_OUTLINE,
+                '': type === BUTTON_TYPE.NONE,
             },
             'font-medium text-lg py-2 px-4 text-white flex items-center justify-center rounded-lg focus:outline-none border-4',
             className,
