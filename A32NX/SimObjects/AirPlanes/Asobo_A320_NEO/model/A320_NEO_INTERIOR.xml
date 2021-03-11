@@ -3885,9 +3885,6 @@
                 <NODE_ID>PUSH_EFIS_FO_PFD</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>SWITCH_EFIS_FO_CONSOLE</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>KNOB_EFIS_FO_LOUDSPKR</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
