@@ -142,6 +142,14 @@ class A32NX_FlightPhase_PreFlight {
     }
 
     check(_deltaTime, _fmc) {
+        const ra = Simplane.getAltitudeAboveGround();
+        const alt = Simplane.getAltitude();
+
+        if (Math.round(ra / 100) !== Math.round(alt / 100) && ra > 1000) {
+            this.nextFmgcFlightPhase = FmgcFlightPhases.CLIMB;
+            return true;
+        }
+
         return this.takeoffConfirmation.write(
             (
                 Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT ||
