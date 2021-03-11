@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useSimVar } from '../../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
-import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import { Toggle } from '../../Components/Form/Toggle';
 
 import BaseThrottleConfig from './BaseThrottleConfig';
@@ -16,12 +15,19 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         return null;
     }
 
-    const [dualAxis, setDualAxis] = useState(0);
+    const [dualAxis, setDualAxis] = useState(1);
 
-    const [reverserOnAxis, setReverserOnAxis] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
+    const [reverserOnAxis1, setReverserOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
+    const [, setReverserOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:2', 'number', 1000);
+
     const [, syncToDisk] = useSimVar('K:A32NX.THROTTLE_MAPPING_SAVE_TO_FILE', 'number', 1000);
     const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 1000);
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
+
+    const setReversOnAxis = (reverserOnAxis: number) => {
+        setReverserOnAxis1(reverserOnAxis);
+        setReverserOnAxis2(reverserOnAxis);
+    };
 
     return (
         <div className="flex flex-row justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -77,7 +83,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 <div className="flex left-0 mt-auto mb-auto">
 
                     <span className="text-lg text-gray-300 mr-2">Reverser On Axis</span>
-                    <Toggle value={!!reverserOnAxis} onToggle={(value) => setReverserOnAxis(value ? 1 : 0)} />
+                    <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversOnAxis(value ? 1 : 0)} />
                     <div className="flex flex-row-reverse divide-y divide-gray-700" />
                     <span>
                         <span className="text-lg text-gray-300 mr-2 ml-2">Dual Axis</span>

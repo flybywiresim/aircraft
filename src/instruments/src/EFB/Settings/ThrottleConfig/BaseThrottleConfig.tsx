@@ -44,11 +44,11 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
         for (let index = 1; index <= props.throttleCount; index++) {
             const throttleNumber: number = props.throttleCount > 1 ? index : props.throttleNumber;
 
-            mapped.hiGetter.push(useSimVar(`${mapped.technicalName}HIGH:${throttleNumber - 1}`, 'number', 100)[0]);
-            mapped.hiSetter.push(useSimVar(`${mapped.technicalName}HIGH:${throttleNumber - 1}`, 'number', 100)[1]);
+            mapped.hiGetter.push(useSimVar(`${mapped.technicalName}HIGH:${throttleNumber}`, 'number', 100)[0]);
+            mapped.hiSetter.push(useSimVar(`${mapped.technicalName}HIGH:${throttleNumber}`, 'number', 100)[1]);
 
-            mapped.lowGetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber - 1}`, 'number', 100)[0]);
-            mapped.lowSetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber - 1}`, 'number', 100)[1]);
+            mapped.lowGetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber}`, 'number', 100)[0]);
+            mapped.lowSetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber}`, 'number', 100)[1]);
         }
     }
 
