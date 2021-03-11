@@ -42,12 +42,12 @@ type DashboardProps = {
 
 const Dashboard: React.FC<DashboardProps> = (props) => {
     //TODO: remove those false variables when we merge
-    const [flightNumber] = [0] //useSimVar("ATC FLIGHT NUMBER", "String", 1_000);
-    const [aircraftType] = [0] //useSimVar("TITLE", "String", 1_000);
-    const [altitude] = [0] //useSimVar("PLANE ALTITUDE", "feet", 500);
-    const [heading] = [0] //useSimVar("PLANE HEADING DEGREES TRUE", "degrees", 500);
-    const [latitude] = [0] //useSimVar("PLANE LATITUDE", "degree latitude", 500);
-    const [longitude] = [0] //useSimVar("PLANE LONGITUDE", "degree longitude", 500);
+    const [flightNumber] = useSimVar("ATC FLIGHT NUMBER", "String", 1_000);
+    const [aircraftType] = useSimVar("TITLE", "String", 1_000);
+    const [altitude] = useSimVar("PLANE ALTITUDE", "feet", 500);
+    const [heading] = useSimVar("PLANE HEADING DEGREES TRUE", "degrees", 500);
+    const [latitude] = useSimVar("PLANE LATITUDE", "degree latitude", 500);
+    const [longitude] = useSimVar("PLANE LONGITUDE", "degree longitude", 500);
 
     const calculateFlightTime = (flightETAInSeconds: string): string => {
         const timeInMinutes: number = parseInt(flightETAInSeconds) * 0.0166;

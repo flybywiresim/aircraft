@@ -1,4 +1,5 @@
-const REFUEL_FACTOR = 1;
+const REFUEL_FACTOR = 0.43;
+const CENTER_MODIFIER = 3;
 
 class A32NX_Refuel {
     constructor() {}
@@ -34,11 +35,11 @@ class A32NX_Refuel {
         const LOutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons");
         const RInnCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
         const ROutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons");
-        let centerCurrent = Math.round(centerCurrentSimVar);
-        let LInnCurrent = Math.round(LInnCurrentSimVar);
-        let LOutCurrent = Math.round(LOutCurrentSimVar);
-        let RInnCurrent = Math.round(RInnCurrentSimVar);
-        let ROutCurrent = Math.round(ROutCurrentSimVar);
+        let centerCurrent = centerCurrentSimVar + 6;
+        let LInnCurrent = LInnCurrentSimVar + 7;
+        let LOutCurrent = LOutCurrentSimVar + 1;
+        let RInnCurrent = RInnCurrentSimVar + 7;
+        let ROutCurrent = ROutCurrentSimVar + 1;
         if (refuelRate == 2) {
             SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerTarget);
             SimVar.SetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons", LInnTarget);
@@ -51,10 +52,9 @@ class A32NX_Refuel {
         if (refuelRate == 1) {
             multiplier = 5 * REFUEL_FACTOR;
         }
-        SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", (centerCurrent - 1));
         //DEFUELING (center tank first, then main, then aux)
         if (centerCurrent > centerTarget) {
-            centerCurrent += defuelTank(multiplier);
+            centerCurrent += this.defuelTank(multiplier) * CENTER_MODIFIER;
             if (centerCurrent < centerTarget) {
                 centerCurrent = centerTarget;
             }
@@ -64,68 +64,68 @@ class A32NX_Refuel {
             }
         }
         if (LInnCurrent > LInnTarget || RInnCurrent > RInnTarget) {
-            LInnCurrent += defuelTank(multiplier);
-            RInnCurrent += defuelTank(multiplier);
+            LInnCurrent += this.defuelTank(multiplier) / 2;
+            RInnCurrent += this.defuelTank(multiplier) / 2;
             if (LInnCurrent < LInnTarget) {
                 LInnCurrent = LInnTarget;
             }
             if (RInnCurrent < RInnTarget) {
                 RInnCurrent = RInnTarget;
             }
-            SimVar.SetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons", RInnTarget);
-            SimVar.SetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons", LInnTarget);
+            SimVar.SetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons", RInnCurrent);
+            SimVar.SetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons", LInnCurrent);
             if (LInnCurrent != LInnTarget || RInnCurrent != RInnTarget) {
                 return;
             }
         }
         if (LOutCurrent > LOutTarget || ROutCurrent > ROutTarget) {
-            LOutCurrent += defuelTank(multiplier);
-            ROutCurrent += defuelTank(multiplier);
+            LOutCurrent += this.defuelTank(multiplier) / 2;
+            ROutCurrent += this.defuelTank(multiplier) / 2;
             if (LOutCurrent < LOutTarget) {
                 LOutCurrent = LOutTarget;
             }
             if (ROutCurrent < ROutTarget) {
                 ROutCurrent = ROutTarget;
             }
-            SimVar.SetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons", ROutTarget);
-            SimVar.SetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons", LOutTarget);
+            SimVar.SetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons", ROutCurrent);
+            SimVar.SetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons", LOutCurrent);
             if (LOutCurrent != LOutTarget || ROutCurrent != ROutTarget) {
                 return;
             }
         }
         // REFUELING (aux first, then main, then center tank)
         if (LOutCurrent < LOutTarget || ROutCurrent < ROutTarget) {
-            LOutCurrent += refuelTank(multiplier);
-            ROutCurrent += refuelTank(multiplier);
+            LOutCurrent += this.refuelTank(multiplier) / 2;
+            ROutCurrent += this.refuelTank(multiplier) / 2;
             if (LOutCurrent > LOutTarget) {
                 LOutCurrent = LOutTarget;
             }
             if (ROutCurrent > ROutTarget) {
                 ROutCurrent = ROutTarget;
             }
-            SimVar.SetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons", ROutTarget);
-            SimVar.SetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons", LOutTarget);
+            SimVar.SetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons", ROutCurrent);
+            SimVar.SetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons", LOutCurrent);
             if (LOutCurrent != LOutTarget || ROutCurrent != ROutTarget) {
                 return;
             }
         }
         if (LInnCurrent < LInnTarget || RInnCurrent < RInnTarget) {
-            LInnCurrent += refuelTank(multiplier);
-            RInnCurrent += refuelTank(multiplier);
+            LInnCurrent += this.refuelTank(multiplier) / 2;
+            RInnCurrent += this.refuelTank(multiplier) / 2;
             if (LInnCurrent > LInnTarget) {
                 LInnCurrent = LInnTarget;
             }
             if (RInnCurrent > RInnTarget) {
                 RInnCurrent = RInnTarget;
             }
-            SimVar.SetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons", RInnTarget);
-            SimVar.SetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons", LInnTarget);
+            SimVar.SetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons", RInnCurrent);
+            SimVar.SetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons", LInnCurrent);
             if (LInnCurrent != LInnTarget || RInnCurrent != RInnTarget) {
                 return;
             }
         }
         if (centerCurrent < centerTarget) {
-            centerCurrent += refuelTank(multiplier);
+            centerCurrent += this.refuelTank(multiplier) * CENTER_MODIFIER;
             if (centerCurrent > centerTarget) {
                 centerCurrent = centerTarget;
             }

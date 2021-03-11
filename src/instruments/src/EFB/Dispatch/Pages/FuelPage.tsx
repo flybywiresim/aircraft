@@ -103,9 +103,12 @@ const FuelWidget = (props: FuelPageProps) => {
     const totalCurrent = () => {
         return round(Math.max((LInnCurrent + LOutCurrent + RInnCurrent + ROutCurrent + centerCurrent),0) * getFuelMultiplier());
     }
+    const totalCurrentGallon = () => {
+        return round(Math.max((LInnCurrent + LOutCurrent + RInnCurrent + ROutCurrent + centerCurrent),0));
+    }
     const formatRefuelStatusLabel = () => {
         if(airplaneCanRefuel()){
-            if(totalTarget == totalFuelGallons) {
+            if(totalTarget == totalCurrentGallon()) {
                 return "(Available)";
             }
             return ((totalTarget||0) > (totalFuelGallons)) ? "(Defueling...)" : "(Refueling...)";
@@ -218,7 +221,7 @@ const FuelWidget = (props: FuelPageProps) => {
                     <div className="flex mt-n5">
                         <div className="fuel-progress"><Slider value={sliderValue} onInput={(value) => updateSlider(value)} className="w-48" /></div>
                         <div className="fuel-label"><SimpleInput noLeftMargin={true} placeholder={round(totalFuel()).toString()} number={true} min={0} max={round(totalFuel())} value={inputValue} onChange={(x) => updateDesiredFuel(x)} /></div>
-                        <div className="unit-label">{currentUnit() +'/'+ centerTarget + '/' + centerCurrent}</div>
+                        <div className="unit-label">{currentUnit()}</div>
                         <div className="separation-line-refuel"></div>
                         <div className="manage-fuel-truck">
                             <div className='call-inop fuel-truck disabled'><IconTruck /></div>
