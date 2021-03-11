@@ -18,7 +18,7 @@ function* readdir(d) {
 }
 
 const MS_FILETIME_EPOCH = 116444736000000000n;
-const A32NX = path.resolve(__dirname, '..', 'A32NX');
+const A32NX = path.resolve(__dirname, '..', 'flybywire-aircraft-a320-neo');
 
 const contentEntries = [];
 let totalPackageSize = 0;

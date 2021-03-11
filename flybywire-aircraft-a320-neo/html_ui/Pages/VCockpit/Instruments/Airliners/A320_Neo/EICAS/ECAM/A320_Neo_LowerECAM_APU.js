@@ -47,7 +47,7 @@ var A320_Neo_LowerECAM_APU;
             }
 
             // *******************************************************************************************************
-            // APU Logic that isn't tied to the APU ECAM SCREEN belongs in A32NX/html_ui/Pages/A32NX_Core/A32NX_APU.js
+            // APU Logic that isn't tied to the APU ECAM SCREEN belongs in flybywire-aircraft-a320-neo/html_ui/Pages/A32NX_Core/A32NX_APU.js
             // *******************************************************************************************************
 
             // Bleed
