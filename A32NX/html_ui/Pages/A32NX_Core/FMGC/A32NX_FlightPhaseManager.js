@@ -146,9 +146,14 @@ class A32NX_FlightPhase_PreFlight {
             (
                 Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT ||
                 Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT
-            ) && (
-                SimVar.GetSimVarValue("ENG N1 RPM:1", "percent") > .75 ||
-                SimVar.GetSimVarValue("ENG N1 RPM:2", "percent") > .75
+            ) &&
+            !isNaN(_fmc.v2Speed) &&
+            (
+                (
+                    SimVar.GetSimVarValue("ENG N1 RPM:1", "percent") > .85 &&
+                    SimVar.GetSimVarValue("ENG N1 RPM:2", "percent") > .85
+                ) ||
+                Math.abs(Simplane.getGroundSpeed()) > 80
             ),
             _deltaTime
         );
@@ -184,16 +189,20 @@ class A32NX_FlightPhase_TakeOff {
             this.nextFmgcFlightPhase = FmgcFlightPhases.PREFLIGHT;
             return true;
         }
+        if (!_fmc.isAnEngineOn() && Simplane.getAltitudeAboveGround() < 1.5) {
+            this.nextFmgcFlightPhase = FmgcFlightPhases.DONE;
+            return true;
+        }
         return Simplane.getAltitude() > this.accelerationAltitudeMsl;
     }
 }
 
 class A32NX_FlightPhase_Climb {
     constructor() {
-        this.nextFmgcFlightPhase = FmgcFlightPhases.CRUISE;
     }
 
     init(_fmc) {
+        this.nextFmgcFlightPhase = FmgcFlightPhases.CRUISE;
         if (!_fmc.cruiseFlightLevel) {
             _fmc.cruiseFlightLevel = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
             _fmc._activeCruiseFlightLevelDefaulToFcu = true;
@@ -201,6 +210,10 @@ class A32NX_FlightPhase_Climb {
     }
 
     check(_deltaTime, _fmc) {
+        if (!_fmc.isAnEngineOn() && Simplane.getAltitudeAboveGround() < 1.5) {
+            this.nextFmgcFlightPhase = FmgcFlightPhases.DONE;
+            return true;
+        }
         return Math.round(Simplane.getAltitude() / 100) >= _fmc.cruiseFlightLevel;
     }
 }
@@ -208,6 +221,7 @@ class A32NX_FlightPhase_Climb {
 //TODO: implement ability to initiate descent with V/S knob
 class A32NX_FlightPhase_Cruise {
     constructor() {
+        this.nextFmgcFlightPhase = FmgcFlightPhases.DONE;
     }
 
     init(_fmc) {
@@ -221,7 +235,7 @@ class A32NX_FlightPhase_Cruise {
     }
 
     check(_deltaTime, _fmc) {
-        return false;
+        return !_fmc.isAnEngineOn() && Simplane.getAltitudeAboveGround() < 1.5;
     }
 }
 
@@ -240,6 +254,11 @@ class A32NX_FlightPhase_Descent {
         const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
         if (fl === _fmc.cruiseFlightLevel && fcuSelFl === fl) {
             this.nextFmgcFlightPhase = FmgcFlightPhases.CRUISE;
+            return true;
+        }
+
+        if (!_fmc.isAnEngineOn() && Simplane.getAltitudeAboveGround() < 1.5) {
+            this.nextFmgcFlightPhase = FmgcFlightPhases.DONE;
             return true;
         }
 
@@ -283,34 +302,55 @@ class A32NX_FlightPhase_Approach {
             return true;
         }
 
-        return this.landingConfirmation.write(Simplane.getAltitudeAboveGround() < 1.5 || !_fmc.isAnEngineOn(), _deltaTime);
+        return this.landingConfirmation.write(Simplane.getAltitudeAboveGround() < 1.5, _deltaTime) || !_fmc.isAnEngineOn();
     }
 }
 
 class A32NX_FlightPhase_GoAround {
     constructor() {
+        this.nextFmgcFlightPhase = FmgcFlightPhases.DONE;
     }
 
     init(_fmc) {
     }
 
     check(_deltaTime, _fmc) {
-        return false;
+        return !_fmc.isAnEngineOn() && Simplane.getAltitudeAboveGround() < 1.5;
     }
 }
 
 class A32NX_FlightPhase_Done {
     constructor() {
-        this.nextFmgcFlightPhase = FmgcFlightPhases.PREFLIGHT;
+        this.takeoffConfirmation = new NXLogic_ConfirmNode(.2);
         this.cleanupConfirmation = new NXLogic_ConfirmNode(10);
     }
 
     init(_fmc) {
+        this.nextFmgcFlightPhase = FmgcFlightPhases.PREFLIGHT;
         SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
         CDUIdentPage.ShowPage(_fmc);
     }
 
     check(_deltaTime, _fmc) {
+        if (this.takeoffConfirmation.write(
+            (
+                Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT ||
+                Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT
+            ) &&
+            !isNaN(_fmc.v2Speed) &&
+            (
+                (
+                    SimVar.GetSimVarValue("ENG N1 RPM:1", "percent") > .85 &&
+                    SimVar.GetSimVarValue("ENG N1 RPM:2", "percent") > .85
+                ) ||
+                Math.abs(Simplane.getGroundSpeed()) > 80
+            ),
+            _deltaTime
+        )) {
+            this.nextFmgcFlightPhase = FmgcFlightPhases.TAKEOFF;
+            return true;
+        }
+
         return this.cleanupConfirmation.write(true, _deltaTime);
     }
 }
