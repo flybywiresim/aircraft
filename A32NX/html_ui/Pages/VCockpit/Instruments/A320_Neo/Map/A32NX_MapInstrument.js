@@ -84,6 +84,8 @@ class MapInstrument extends ISvgMapRootElement {
         this.bEnableCenterOnFplnWaypoint = false;
         this.bHideFlightPlanIfBushtrip = false;
         this.bIsFlightPlanVisible = false;
+        this.mapRotationMode = EMapRotationMode.NorthUp;
+        this.lastRotationMode = EMapRotationMode.NorthUp;
         this.maskElements = [];
         this.topOfCurveElements = [];
         this.backOnTracks = [];
@@ -102,6 +104,7 @@ class MapInstrument extends ISvgMapRootElement {
         this.flightPlanThrottler = new UpdateThrottler(250);
         this.approachThrottler = new UpdateThrottler(250);
         this.constraintThrottler = new UpdateThrottler(750);
+        this.overdrawFactor = 1;
     }
     get flightPlanManager() {
         return this._flightPlanManager;
@@ -163,6 +166,16 @@ class MapInstrument extends ISvgMapRootElement {
         if (this.hasAttribute("config-path")) {
             this.configPath = this.getAttribute("config-path");
         }
+        if (this.hasAttribute("overdrawFactor")) {
+            this.overdrawFactor = parseFloat(this.getAttribute("overdrawFactor"));
+        }
+        this.lineCanvas = document.createElement("canvas");
+        this.lineCanvas.id = "line-canvas";
+        this.lineCanvas.style.position = "absolute";
+        this.lineCanvas.style.top = "-" + (this.overdrawFactor - 1) * 50 + "%";
+        this.lineCanvas.style.left = "-" + (this.overdrawFactor - 1) * 50 + "%";
+        this.lineCanvas.style.width = (this.overdrawFactor * 100).toFixed(0) + "%";
+        this.lineCanvas.style.height = (this.overdrawFactor * 100).toFixed(0) + "%";
         for (let i = 0; i < MapInstrument.observedAttributes.length; i++) {
             const attr = MapInstrument.observedAttributes[i];
             if (this.hasAttribute(attr)) {
@@ -350,6 +363,7 @@ class MapInstrument extends ISvgMapRootElement {
         if (this.eBingMode !== EBingMode.HORIZON) {
             this.navMap = new SvgMap(this, { svgElement: this.getElementsByTagName("svg")[0], configPath: this.configPath });
             this.navMap.lineCanvas = this.lineCanvas;
+            this.navMap.overdrawFactor = this.overdrawFactor;
             const mapSVG = this.querySelector("#MapSVG");
             mapSVG.setAttribute("display", "visible");
             this.insertBefore(this.lineCanvas, mapSVG);
@@ -369,6 +383,7 @@ class MapInstrument extends ISvgMapRootElement {
             this.mapNearestVorList = new NearestVORList(this.instrument);
             this.testAirspaceList = new NearestAirspaceList(this.instrument);
             this.roadNetwork = new SvgRoadNetworkElement();
+            this.roadNetwork.overdrawFactor = this.overdrawFactor;
             this.cityManager = new SvgCityManager(this.navMap);
             this.airwayIterator = 0;
             this.airspaceIterator = 0;
@@ -408,7 +423,7 @@ class MapInstrument extends ISvgMapRootElement {
             this.tmpFlightPlanElement = new SvgFlightPlanElement();
             this.tmpFlightPlanElement.source = this.flightPlanManager;
             this.tmpFlightPlanElement.flightPlanIndex = 1;
-            this.directToElement = new SvgBackOnTrackElement();
+            this.directToElement = new SvgDirectToElement();
             Coherent.call("RESET_ROAD_ITERATOR");
             this.addEventListener("mousedown", this.OnMouseDown.bind(this));
             this.addEventListener("mousemove", this.OnMouseMove.bind(this));
@@ -575,7 +590,7 @@ class MapInstrument extends ISvgMapRootElement {
                 if (this.isDisplayingWeather()) {
                     this.navMap.setRange(this.getWeatherRange());
                 } else {
-                    this.navMap.setRange(this.getDisplayRange());
+                    this.navMap.setRange(this.getDisplayRange() * this.overdrawFactor);
                 }
                 const bingRadius = this.navMap.NMWidth * 0.5 * this.rangeFactor;
                 if (!this.isDisplayingWeather()) {
@@ -801,7 +816,6 @@ class MapInstrument extends ISvgMapRootElement {
                     if (this.flightPlanManager.getIsDirectTo()) {
                         this.directToElement.llaRequested = this.flightPlanManager.getDirecToOrigin();
                         this.directToElement.targetWaypoint = this.flightPlanManager.getDirectToTarget();
-                        this.directToElement.planeHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES TRUE", "degree");
                         this.navMap.mapElements.push(this.directToElement);
                     }
                     if (this.tmpDirectToElement) {
@@ -822,10 +836,24 @@ class MapInstrument extends ISvgMapRootElement {
                 this.navMap.mapElements = this.navMap.mapElements.sort((a, b) => {
                     return b.sortIndex - a.sortIndex;
                 });
-                if (this.bingMap) {
+                if (this.bingMap && this.mapRotationMode != EMapRotationMode.KeepCurrent) {
                     let transform = "";
-                    if (this.bRotateWithAirplane && !this.isDisplayingWeatherRadar()) {
-                        const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES TRUE", "degree");
+                    if (this.mapRotationMode != EMapRotationMode.NorthUp && !this.isDisplayingWeatherRadar()) {
+                        let compass = 0;
+                        switch (this.mapRotationMode) {
+                            case EMapRotationMode.DTKUp:
+                                compass = SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degrees");
+                                break;
+                            case EMapRotationMode.HDGUp:
+                                compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES TRUE", "degrees");
+                                break;
+                            case EMapRotationMode.TrackUp:
+                                compass = SimVar.GetSimVarValue("GPS GROUND TRUE TRACK", "degrees");
+                                break;
+                            default:
+                                compass = 0;
+                                break;
+                        }
                         const roundedCompass = fastToFixed(compass, 3);
                         transform = "rotate(" + -roundedCompass + "deg)";
                     }
@@ -1051,8 +1079,8 @@ class MapInstrument extends ISvgMapRootElement {
     }
     updateSize(_bForce = false) {
         if (_bForce || this.curWidth <= 0 || this.curHeight <= 0) {
-            this.curWidth = this.clientWidth;
-            this.curHeight = this.clientHeight;
+            this.curWidth = this.clientWidth * this.overdrawFactor;
+            this.curHeight = this.clientHeight * this.overdrawFactor;
         }
     }
     getWidth() {
@@ -1167,10 +1195,38 @@ class MapInstrument extends ISvgMapRootElement {
         this.bEnableCenterOnFplnWaypoint = _val;
     }
     rotateWithPlane(_val) {
-        this.bRotateWithAirplane = _val;
+        this.mapRotationMode = _val ? EMapRotationMode.HDGUp : EMapRotationMode.NorthUp;
         if (this.navMap) {
-            this.navMap.rotateWithPlane = _val;
+            this.navMap.rotationMode = _val ? EMapRotationMode.HDGUp : EMapRotationMode.NorthUp;
         }
+    }
+    setRotationMode(_val) {
+        if (this.mapOrientationElement) {
+            switch (_val) {
+                case EMapRotationMode.NorthUp:
+                    this.mapOrientationElement.textContent = "NORTH UP";
+                    break;
+                case EMapRotationMode.DTKUp:
+                    this.mapOrientationElement.textContent = "DTK UP";
+                    break;
+                case EMapRotationMode.HDGUp:
+                    this.mapOrientationElement.textContent = "HDG UP";
+                    break;
+                case EMapRotationMode.TrackUp:
+                    this.mapOrientationElement.textContent = "TRACK UP";
+                    break;
+            }
+        }
+        this.mapRotationMode = _val;
+        if (this.navMap) {
+            this.navMap.rotationMode = _val;
+            if (this.roadNetwork) {
+                this.roadNetwork.refreshRotation(this.navMap);
+            }
+        }
+    }
+    getRotationMode() {
+        return this.mapRotationMode;
     }
     setPlaneScale(_scale) {
         if (this.airplaneIconElement) {
@@ -1212,8 +1268,8 @@ class MapInstrument extends ISvgMapRootElement {
             this.lastWH = w * h;
             this.bingMap.style.width = fastToFixed(max, 0) + "px";
             this.bingMap.style.height = fastToFixed(max, 0) + "px";
-            this.bingMap.style.top = fastToFixed((h - max) / 2, 0) + "px";
-            this.bingMap.style.left = fastToFixed((w - max) / 2, 0) + "px";
+            this.bingMap.style.top = fastToFixed(((h - max) - h * (1 - 1 / this.overdrawFactor)) / 2, 0) + "px";
+            this.bingMap.style.left = fastToFixed(((w - max) - w * (1 - 1 / this.overdrawFactor)) / 2, 0) + "px";
         }
     }
     setBingMapStyle(_top, _left, _width, _height) {
@@ -1320,6 +1376,11 @@ class MapInstrument extends ISvgMapRootElement {
         }
         this.eBingMode = EBingMode.CURSOR;
         this.setCursorPos(50, 50);
+        this.lastRotationMode = this.mapRotationMode;
+        if (this.navMap) {
+            this.navMap.rotationMode = EMapRotationMode.KeepCurrent;
+        }
+        this.mapRotationMode = EMapRotationMode.KeepCurrent;
     }
     deactivateCursor() {
         if (this.bWasCenteredOnPlane) {
@@ -1329,6 +1390,10 @@ class MapInstrument extends ISvgMapRootElement {
             this.eBingMode = EBingMode.VFR;
             this.setCenter(this.lastCenter);
         }
+        if (this.navMap) {
+            this.navMap.rotationMode = this.lastRotationMode;
+        }
+        this.mapRotationMode = this.lastRotationMode;
         this.hideCursor();
     }
     setCursorPos(x, y) {
@@ -1369,8 +1434,10 @@ class MapInstrument extends ISvgMapRootElement {
     scrollMap(_dispX, _dispY) {
         if (this.navMap.lastCenterCoordinates) {
             const scaleFactor = parseInt(window.getComputedStyle(this).height) / 1000;
-            const long = -_dispX * this.navMap.angularWidth / (1000 * scaleFactor);
-            const lat = _dispY * this.navMap.angularHeight / (1000 * scaleFactor);
+            const movelong = _dispX * this.navMap.sinMapRightDirection + _dispY * this.navMap.sinMapUpDirection;
+            const movelat = _dispX * this.navMap.cosMapRightDirection + _dispY * this.navMap.cosMapUpDirection;
+            const long = -movelong * this.navMap.angularWidth / (1000 * scaleFactor);
+            const lat = movelat * this.navMap.angularHeight / (1000 * scaleFactor);
             const newCoordinates = new LatLongAlt(this.navMap.lastCenterCoordinates);
             newCoordinates.long += long;
             newCoordinates.lat += lat;
@@ -1404,8 +1471,10 @@ class MapInstrument extends ISvgMapRootElement {
         return this.rangeIndex;
     }
     OnMouseDown(_e) {
-        this.bMouseDown = true;
-        this.refMousePos = { x: _e.x, y: _e.y };
+        if (_e.button == 0) {
+            this.bMouseDown = true;
+            this.refMousePos = { x: _e.x, y: _e.y };
+        }
     }
     OnMouseMove(_e) {
         if (this.bMouseDown && this.eBingMode === EBingMode.VFR) {
@@ -1432,6 +1501,19 @@ class MapInstrument extends ISvgMapRootElement {
     }
     supportMouseWheel(_val) {
         this._supportMouseWheel = _val;
+    }
+    getMapUpDirection() {
+        return this.navMap.mapUpDirection;
+    }
+    getPlaneCoords() {
+        const planePosition = new Vec2(0, 0);
+        if (this.navMap.planeCoordinates) {
+            this.navMap.coordinatesToXYToRef(this.navMap.planeCoordinates, planePosition);
+        }
+        return planePosition;
+    }
+    getOverdrawFactor() {
+        return this.overdrawFactor;
     }
 }
 customElements.define("map-instrument", MapInstrument);

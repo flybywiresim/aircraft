@@ -434,7 +434,7 @@ class VORDMENavAid {
         this.aircraft = _aircraft;
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         const index = parseInt(url.substring(url.length - 1));
-        let state = Simplane.getAutoPilotNavAidState(index, this.index);
+        let state = Simplane.getAutoPilotNavAidState(_aircraft, index, this.index);
         if (_aircraft == Aircraft.B747_8) {
             state--;
             if (state < 0) {
@@ -564,7 +564,13 @@ class VORDMENavAid {
             const displayStr = "block";
             if (this.distanceText != null) {
                 if (showDistance) {
-                    this.distanceText.textContent = fastToFixed(this.distanceValue, 1);
+                    if (this.distanceValue > 20) {
+                        this.distanceValue = Math.round(this.distanceValue);
+                        this.distanceText.textContent = fastToFixed(this.distanceValue, 1);
+                    } else {
+                        this.distanceValue = parseFloat(this.distanceValue).toFixed(1);
+                        this.distanceText.textContent = this.distanceValue;
+                    }
                 } else {
                     this.distanceText.textContent = "---";
                 }

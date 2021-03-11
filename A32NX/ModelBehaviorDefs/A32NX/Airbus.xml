@@ -512,6 +512,18 @@
 			<TOOLTIPID>Test T.O CONFIG</TOOLTIPID>
 		</UseTemplate>
 
+		<UseTemplate Name="FBW_ECAM_BUTTON_Template">
+			<BASE_NAME>EMERCANC</BASE_NAME>
+			<PART_ID>ECAM_EMERCANC</PART_ID>
+			<TOOLTIPID>Emergency cancel (Inop.)</TOOLTIPID>
+		</UseTemplate>
+		
+		<UseTemplate Name="FBW_Covered_Push_Toggle">
+			<LOCK_NODE_ID>LOCK_ECAM_EMERCANC</LOCK_NODE_ID>
+
+		   <TOOLTIPID>Emergency cancel (Inop.)</TOOLTIPID>
+		</UseTemplate>
+
 		<UseTemplate Name="A32NX_ECAM_CLR_BUTTON_Template">
 			<BASE_NAME>CLR</BASE_NAME>
 			<PART_ID>ECAM_CLR</PART_ID>
@@ -606,13 +618,13 @@
                     <NODE_ID>PUSH_OVHD_FLTCTL_ELAC#ID#</NODE_ID>
                 </Default>
             </Switch>
-
             <LEFT_SINGLE_CODE>#ID# (&gt;K:FLY_BY_WIRE_ELAC_TOGGLE)</LEFT_SINGLE_CODE>
             <DOWN_CODE>(A:FLY BY WIRE ELAC SWITCH:#ID#, Bool)</DOWN_CODE>
-
             <SEQ1_CODE>(A:FLY BY WIRE ELAC FAILED:#ID#, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(A:FLY BY WIRE ELAC SWITCH:#ID#, Bool) !</SEQ2_CODE>
-
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
             <TOOLTIPID>%((A:FLY BY WIRE ELAC SWITCH:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.ELAC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.ELAC#ID#_TURN_OFF%{end}</TOOLTIPID>
         </UseTemplate>
 	</Template>
@@ -628,13 +640,13 @@
                     <NODE_ID>PUSH_OVHD_FLTCTL_SEC#ID#</NODE_ID>
                 </Default>
             </Switch>
-
             <LEFT_SINGLE_CODE>#ID# (&gt;K:FLY_BY_WIRE_SEC_TOGGLE)</LEFT_SINGLE_CODE>
             <DOWN_CODE>(A:FLY BY WIRE SEC SWITCH:#ID#, Bool)</DOWN_CODE>
-
             <SEQ1_CODE>(A:FLY BY WIRE SEC FAILED:#ID#, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(A:FLY BY WIRE SEC SWITCH:#ID#, Bool) !</SEQ2_CODE>
-
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
             <TOOLTIPID>%((A:FLY BY WIRE SEC SWITCH:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.SEC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.SEC#ID#_TURN_OFF%{end}</TOOLTIPID>
         </UseTemplate>
 	</Template>
@@ -650,13 +662,13 @@
                     <NODE_ID>PUSH_OVHD_FLTCTL_FAC#ID#</NODE_ID>
                 </Default>
             </Switch>
-
             <LEFT_SINGLE_CODE>#ID# (&gt;K:FLY_BY_WIRE_FAC_TOGGLE)</LEFT_SINGLE_CODE>
             <DOWN_CODE>(A:FLY BY WIRE FAC SWITCH:#ID#, Bool)</DOWN_CODE>
-
             <SEQ1_CODE>(A:FLY BY WIRE FAC FAILED:#ID#, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(A:FLY BY WIRE FAC SWITCH:#ID#, Bool) !</SEQ2_CODE>
-
+            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
             <TOOLTIPID>%((A:FLY BY WIRE FAC SWITCH:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.FAC#ID#_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.FAC#ID#_TURN_OFF%{end}</TOOLTIPID>
         </UseTemplate>
 	</Template>
@@ -755,7 +767,7 @@
 			<HELPID/>
 			<PART_ID>Chrono</PART_ID>
 			<MouseFlags>LeftSingle</MouseFlags>
-			<CURSOR>Grab</CURSOR>
+			<CURSOR>Hand</CURSOR>
 		</DefaultTemplateParameters>
 
 		<UseTemplate Name="FBW_AIRLINER_SubNodes_Setter_Template">

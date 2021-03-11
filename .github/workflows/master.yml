@@ -23,8 +23,10 @@ jobs:
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
           ./scripts/dev-env/run.sh ./scripts/build.sh
-      - name: Build ZIP file
+      - name: Build ZIP files
         run: |
+          ./scripts/dev-env/run.sh node ./scripts/fragment.js
+
           mkdir ./${{ env.BUILD_DIR_NAME }}
           zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./A32NX/
       - name: Get and delete master pre-release zip asset
@@ -62,7 +64,12 @@ jobs:
             --data-raw '{
               "body": "This pre-release has its ${{ env.MASTER_ZIP_NAME }} asset updated on every commit to the master branch\nDo not use the source code assets, they are never updated\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.MASTER_PRE_RELEASE_TAG }}/${{ env.MASTER_ZIP_NAME }}"
             }'
-      - name: Upload to CDN
+      - name: Upload to Bunny CDN
+        env:
+          BUNNY_BUCKET_PASSWORD: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
+          BUNNY_BUCKET_DESTINATION: addons/a32nx/master
+        run: ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION
+      - name: Upload to DigitalOcean CDN
         uses: LibreTexts/do-space-sync-action@master
         with:
           args: --acl public-read
