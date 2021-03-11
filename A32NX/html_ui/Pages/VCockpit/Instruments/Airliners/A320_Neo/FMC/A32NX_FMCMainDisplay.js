@@ -2294,7 +2294,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (acFl > fl && (phase === FmgcFlightPhases.CLIMB || phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH)) {
             this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.CRUISE);
-        } else if (acFl < fl && (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH || phase === FmgcFlightPhases.GOAROUND)) {
+        } else if (acFl < fl && (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH)) {
             this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.CLIMB);
         }
 
