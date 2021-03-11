@@ -180,8 +180,8 @@
 1. [MISC] Fixed chrono watch colon appearance - @SergeySoprykin (SergeyS)
 1. [MCDU] Fixed options page text overlap - @MisterChocker (Leon)
 1. [CDU] Reworked Flight Phase system - @MisterChocker (Leon)
+1. [MISC] Fixed button labels not showing when unlit - @ImenesFBW (Imenes)
 1. [MCDU] Improved Message compatibility for future features - @MisterChocker (Leon)
-
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
