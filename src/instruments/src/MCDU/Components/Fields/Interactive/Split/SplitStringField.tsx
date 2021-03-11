@@ -1,12 +1,13 @@
 import React, { useContext, useEffect } from 'react';
-import { lineColors, lineSides, lineSizes } from '../../../Lines/Line';
+import { lineColors, lineSizes } from '../../../Lines/Line';
 import { RootContext } from '../../../../RootContext';
+import { fieldSides } from '../../NonInteractive/Field';
 
 type SplitStringFieldProps = {
     value: string | undefined,
     nullValue: string,
     color: lineColors,
-    side: lineSides,
+    side?: fieldSides,
     size: lineSizes,
     selectedCallback: (value: string) => any,
     selectedValidation: (value: string) => boolean,

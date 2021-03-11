@@ -9,7 +9,7 @@ export const InitBPage: React.FC = () => (
     <Content>
         <LineHolder>
             <EmptyLine />
-            <Line value={<Field value="WIP" color={lineColors.white} size={lineSizes.regular} side={lineSides.center} />} />
+            <Line side={lineSides.center} value={<Field value="WIP" color={lineColors.white} size={lineSizes.regular} />} />
         </LineHolder>
     </Content>
 );

@@ -89,95 +89,102 @@ const IdentPage: React.FC = () => {
         <Content>
             <RowHolder index={1}>
                 <LineHolder>
-                    <Line value={<LabelField value="\xa0ENG" side={lineSides.left} color={lineColors.white} />} />
-                    <Line value={(
-                        <Field
-                            value="LEAP-1A26"
-                            side={lineSides.left}
-                            color={lineColors.green}
-                            size={lineSizes.regular}
-                        />
-                    )}
+                    <Line side={lineSides.left} value={<LabelField value="\xa0ENG" color={lineColors.white} />} />
+                    <Line
+                        side={lineSides.left}
+                        value={(
+                            <Field
+                                value="LEAP-1A26"
+                                color={lineColors.green}
+                                size={lineSizes.regular}
+                            />
+                        )}
                     />
                 </LineHolder>
             </RowHolder>
             <RowHolder index={2}>
                 <LineHolder>
-                    <Line value={<LabelField value="\xa0ACTIVE NAV DATA BASE" side={lineSides.left} color={lineColors.white} />} />
-                    <Line value={(
-                        <Field
-                            value="TODO"
-                            side={lineSides.left}
-                            color={lineColors.cyan}
-                            size={lineSizes.regular}
-                        />
-                    )}
+                    <Line side={lineSides.left} value={<LabelField value="\xa0ACTIVE NAV DATA BASE" color={lineColors.white} />} />
+                    <Line
+                        side={lineSides.left}
+                        value={(
+                            <Field
+                                value="TODO"
+                                color={lineColors.cyan}
+                                size={lineSizes.regular}
+                            />
+                        )}
                     />
                 </LineHolder>
                 <LineHolder>
                     <EmptyLine />
-                    <Line value={(
-                        <Field
-                            value="AIRAC"
-                            side={lineSides.right}
-                            color={lineColors.green}
-                            size={lineSizes.regular}
-                        />
-                    )}
+                    <Line
+                        side={lineSides.right}
+                        value={(
+                            <Field
+                                value="AIRAC"
+                                color={lineColors.green}
+                                size={lineSizes.regular}
+                            />
+                        )}
                     />
                 </LineHolder>
             </RowHolder>
             <RowHolder index={3}>
                 <LineHolder>
-                    <Line value={<LabelField value="\xa0SECOND NAV DATA BASE" side={lineSides.left} color={lineColors.white} />} />
-                    <Line value={(
-                        <Field
-                            value="TODO"
-                            side={lineSides.left}
-                            color={lineColors.inop}
-                            size={lineSizes.small}
-                        />
-                    )}
+                    <Line side={lineSides.left} value={<LabelField value="\xa0SECOND NAV DATA BASE" color={lineColors.white} />} />
+                    <Line
+                        side={lineSides.left}
+                        value={(
+                            <Field
+                                value="TODO"
+                                color={lineColors.inop}
+                                size={lineSizes.small}
+                            />
+                        )}
                     />
                 </LineHolder>
             </RowHolder>
             <RowHolder index={5}>
                 <LineHolder>
-                    <Line value={<LabelField value="CHG CODE" side={lineSides.left} color={lineColors.white} />} />
-                    <Line value={(
-                        <Field
-                            value="[  ]"
-                            side={lineSides.left}
-                            color={lineColors.inop}
-                            size={lineSizes.small}
-                        />
-                    )}
+                    <Line side={lineSides.left} value={<LabelField value="CHG CODE" color={lineColors.white} />} />
+                    <Line
+                        side={lineSides.left}
+                        value={(
+                            <Field
+                                value="[  ]"
+                                color={lineColors.inop}
+                                size={lineSizes.small}
+                            />
+                        )}
                     />
                 </LineHolder>
             </RowHolder>
             <RowHolder index={6}>
                 <LineHolder>
-                    <Line value={<LabelField value="+0.0/+0.0" side={lineSides.left} color={lineColors.white} />} />
-                    <Line value={(
-                        <Field
-                            value="IDLE/PERF"
-                            side={lineSides.left}
-                            color={lineColors.green}
-                            size={lineSizes.regular}
-                        />
-                    )}
+                    <Line side={lineSides.left} value={<LabelField value="+0.0/+0.0" color={lineColors.white} />} />
+                    <Line
+                        side={lineSides.left}
+                        value={(
+                            <Field
+                                value="IDLE/PERF"
+                                color={lineColors.green}
+                                size={lineSizes.regular}
+                            />
+                        )}
                     />
                 </LineHolder>
                 <LineHolder>
-                    <Line value={<LabelField value="SOFTWARE" side={lineSides.right} color={lineColors.white} />} />
-                    <Line value={(
-                        <Field
-                            value="STATUS/XLOAD"
-                            side={lineSides.right}
-                            color={lineColors.inop}
-                            size={lineSizes.regular}
-                        />
-                    )}
+                    <Line side={lineSides.right} value={<LabelField value="SOFTWARE" color={lineColors.white} />} />
+                    <Line
+                        side={lineSides.right}
+                        value={(
+                            <Field
+                                value="STATUS/XLOAD"
+                                color={lineColors.inop}
+                                size={lineSizes.regular}
+                            />
+                        )}
                     />
                 </LineHolder>
             </RowHolder>

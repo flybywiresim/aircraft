@@ -1,10 +1,10 @@
 import React from 'react';
-import { lineColors, lineSides, lineSizes } from '../../Lines/Line';
-import { Field } from './Field';
+import { lineColors, lineSizes } from '../../Lines/Line';
+import { Field, fieldSides } from './Field';
 
 type LabelProps = {
     value: string,
-    side: lineSides,
+    side?: fieldSides,
     color: lineColors
 }
 export const LabelField: React.FC<LabelProps> = ({ color, value, side }) => (
