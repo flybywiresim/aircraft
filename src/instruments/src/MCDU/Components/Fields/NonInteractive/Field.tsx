@@ -1,8 +1,13 @@
 import React from 'react';
-import { lineColors, lineSides, lineSizes } from '../../Lines/Line';
+import { lineColors, lineSizes } from '../../Lines/Line';
+
+export enum fieldSides {
+    left= 'field-left',
+    right= 'field-right',
+}
 
 type FieldProps = {
-    side: lineSides,
+    side?: fieldSides,
     value: string,
     color: lineColors,
     size: lineSizes

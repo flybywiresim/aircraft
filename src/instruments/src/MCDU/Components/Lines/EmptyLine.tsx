@@ -1,7 +1,7 @@
 import React from 'react';
-import { Line } from './Line';
+import { Line, lineSides } from './Line';
 
 type EmptyLineProps = {}
 export const EmptyLine: React.FC<EmptyLineProps> = () => (
-    <Line />
+    <Line side={lineSides.left} />
 );

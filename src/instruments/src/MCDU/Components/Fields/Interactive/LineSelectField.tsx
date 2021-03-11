@@ -1,12 +1,13 @@
 import React from 'react';
-import { lineColors, lineSides, lineSizes } from '../../Lines/Line';
+import { lineColors, lineSizes } from '../../Lines/Line';
 import { lineSelectKeys } from '../../Buttons';
 import { useInteractionEvent } from '../../../../Common/hooks';
+import { fieldSides } from '../NonInteractive/Field';
 
 type LineSelectFieldProps = {
     value: string,
     color: lineColors,
-    side: lineSides,
+    side?: fieldSides,
     size: lineSizes,
     lsk: lineSelectKeys,
     selectedCallback: () => any;

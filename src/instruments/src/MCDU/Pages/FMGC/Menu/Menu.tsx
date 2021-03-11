@@ -11,19 +11,14 @@ import { Content } from '../../../Components/Content';
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
 import { LineSelectField } from '../../../Components/Fields/Interactive/LineSelectField';
 
-type MenuProps = {
-    setPage: React.Dispatch<React.SetStateAction<string>>
-}
-type TextProps = {
-    system?: string,
+type FMGCTextProps = {
     activeSys: string,
     setActiveSys: React.Dispatch<React.SetStateAction<string>>,
-    setPage?: React.Dispatch<React.SetStateAction<string>>,
+    setPage: React.Dispatch<React.SetStateAction<string>>,
     selected: string,
-    side?: lineSides,
     setSelected: React.Dispatch<React.SetStateAction<string>>,
 }
-const FMGCText: React.FC<TextProps> = ({ activeSys, setActiveSys, setPage, selected, setSelected }) => {
+const FMGCText: React.FC<FMGCTextProps> = ({ activeSys, setActiveSys, setPage, selected, setSelected }) => {
     function determineColor() {
         if (activeSys === 'FMGC') {
             if (selected === 'FMGC') {
@@ -47,29 +42,39 @@ const FMGCText: React.FC<TextProps> = ({ activeSys, setActiveSys, setPage, selec
     return (
         <LineHolder>
             <EmptyLine />
-            <Line value={(
-                <LineSelectField
-                    value={determineText()}
-                    side={lineSides.left}
-                    color={determineColor()}
-                    lsk={lineSelectKeys.L1}
-                    selectedCallback={(() => {
-                        setActiveSys('FMGC'); // Placeholder until we can retrieve activeSys from FMGC
-                        setSelected('FMGC');
-                        setTimeout(() => {
-                            if (setPage) {
-                                setPage('IDENT');
-                            }
-                        }, Math.floor(Math.random() * 400) + 400);
-                    })}
-                    size={lineSizes.regular}
-                />
-            )}
+            <Line
+                side={lineSides.left}
+                value={(
+                    <LineSelectField
+                        value={determineText()}
+                        color={determineColor()}
+                        lsk={lineSelectKeys.L1}
+                        selectedCallback={(() => {
+                            setActiveSys('FMGC'); // Placeholder until we can retrieve activeSys from FMGC
+                            setSelected('FMGC');
+                            setTimeout(() => {
+                                if (setPage) {
+                                    setPage('IDENT');
+                                }
+                            }, Math.floor(Math.random() * 400) + 400);
+                        })}
+                        size={lineSizes.regular}
+                    />
+                )}
             />
         </LineHolder>
     );
 };
 
+type TextProps = {
+    system: string,
+    activeSys: string,
+    setActiveSys: React.Dispatch<React.SetStateAction<string>>,
+    setPage?: React.Dispatch<React.SetStateAction<string>>,
+    selected: string,
+    side: lineSides,
+    setSelected: React.Dispatch<React.SetStateAction<string>>,
+}
 const MenuLineText: React.FC<TextProps> = ({ side, system, activeSys, setActiveSys, selected, setSelected }) => {
     function determineColor() {
         if (activeSys === system) {
@@ -85,11 +90,11 @@ const MenuLineText: React.FC<TextProps> = ({ side, system, activeSys, setActiveS
         if (side) {
             if (activeSys === system) {
                 if (selected === system) {
-                    return side === lineSides.left ? `<${selected} (SEL)` : `(SEL) ${selected}>`;
+                    return side === lineSides.left ? `<${system} (SEL)` : `(SEL) ${system}>`;
                 }
-                return side === lineSides.left ? `<${selected}` : `${selected}>`;
+                return side === lineSides.left ? `<${system}` : `${system}>`;
             }
-            return side === lineSides.left ? `<${selected}` : `${selected}>`;
+            return side === lineSides.left ? `<${system}` : `${system}>`;
         }
         return 'INSERT A SIDE';
     }
@@ -97,21 +102,22 @@ const MenuLineText: React.FC<TextProps> = ({ side, system, activeSys, setActiveS
     return (
         <LineHolder>
             <EmptyLine />
-            <Line value={(
-                <LineSelectField
-                    side={side !== undefined ? side : lineSides.left}
-                    size={lineSizes.regular}
-                    value={determineText()}
-                    color={determineColor()}
-                    lsk={lineSelectKeys.L2}
-                    selectedCallback={(() => {
-                        if (system) {
-                            setActiveSys(system);
-                            setSelected(system);
-                        }
-                    })}
-                />
-            )}
+            <Line
+                side={lineSides.left}
+                value={(
+                    <LineSelectField
+                        size={lineSizes.regular}
+                        value={determineText()}
+                        color={determineColor()}
+                        lsk={lineSelectKeys.L2}
+                        selectedCallback={(() => {
+                            if (system) {
+                                setActiveSys(system);
+                                setSelected(system);
+                            }
+                        })}
+                    />
+                )}
             />
         </LineHolder>
     );
@@ -119,18 +125,21 @@ const MenuLineText: React.FC<TextProps> = ({ side, system, activeSys, setActiveS
 
 const NAVBText: React.FC = () => (
     <LineHolder>
-        <Line value={<LabelField side={lineSides.right} value={'SELECT\xa0'} color={lineColors.white} />} />
-        <Line value={<Field value="NAV B/UP" side={lineSides.right} color={lineColors.white} size={lineSizes.regular} />} />
+        <Line side={lineSides.right} value={<LabelField value={'SELECT\xa0'} color={lineColors.white} />} />
+        <Line side={lineSides.right} value={<Field value="NAV B/UP" color={lineColors.white} size={lineSizes.regular} />} />
     </LineHolder>
 );
 
 const OptionsText: React.FC = () => (
     <LineHolder>
         <EmptyLine />
-        <Line value={<Field value="OPTIONS>" side={lineSides.right} color={lineColors.white} size={lineSizes.regular} />} />
+        <Line side={lineSides.right} value={<Field value="OPTIONS>" color={lineColors.white} size={lineSizes.regular} />} />
     </LineHolder>
 );
 
+type MenuProps = {
+    setPage: React.Dispatch<React.SetStateAction<string>>
+}
 const MenuPage: React.FC<MenuProps> = ({ setPage }) => {
     const [activeSys, setActiveSys] = useState('FMGC'); // Placeholder till FMGS in place
     const [selected, setSelected] = useState('');

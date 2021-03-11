@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
-import { lineColors, lineSides, lineSizes } from '../../Lines/Line';
+import { lineColors, lineSizes } from '../../Lines/Line';
 import { lineSelectKeys } from '../../Buttons';
 import { RootContext } from '../../../RootContext';
 import { useInteractionEvent } from '../../../../Common/hooks';
+import { fieldSides } from '../NonInteractive/Field';
 
 type NumberFieldProps = {
     value: number | undefined,
@@ -11,7 +12,7 @@ type NumberFieldProps = {
     max: number,
     float: boolean
     color: lineColors,
-    side: lineSides,
+    side?: fieldSides,
     size: lineSizes,
     selectedCallback: (value: number) => any,
     lsk: lineSelectKeys

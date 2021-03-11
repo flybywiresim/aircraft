@@ -24,18 +24,20 @@ export enum lineColors {
 }
 
 type LineProps = {
-    value: ReactElement
+    value?: ReactElement
+    side: lineSides
 }
 
 /**
  * A Line component that can handle split fields and single value fields. This is a composite component with which to
  * insert <span /> components into.
  * @param value Used for single value fields, ReactElement should return a <span />.
+ * @param side used to define the alignment of the line, left, right and center.
  * @constructor
  */
-export const Line: React.FC<LineProps> = ({ value }) => (
+export const Line: React.FC<LineProps> = ({ value, side }) => (
     <>
-        <p className="line">
+        <p className={`line ${side}`}>
             {value}
         </p>
     </>
