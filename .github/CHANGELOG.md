@@ -181,6 +181,7 @@
 1. [MCDU] Fixed options page text overlap - @MisterChocker (Leon)
 1. [CDU] Reworked Flight Phase system - @MisterChocker (Leon)
 1. [MISC] Fixed button labels not showing when unlit - @ImenesFBW (Imenes)
+1. [EFB] Added functionality to ground services page - @Saschl (saschl#9432)
 1. [MISC] Added functionality to the console/floor light switch - @ImenesFBW (Imenes)
 
 ## 0.5.2
