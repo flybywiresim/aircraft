@@ -12,7 +12,7 @@ import { NumberInputField } from '../../../Components/Fields/Interactive/NumberI
 import { Field } from '../../../Components/Fields/NonInteractive/Field';
 import { useSimVar } from '../../../../Common/simVars';
 import { LineSelectField } from '../../../Components/Fields/Interactive/LineSelectField';
-import { SplitLine } from '../../../Components/Lines/SplitLine';
+import { InteractiveSplitLine } from '../../../Components/Lines/InteractiveSplitLine';
 import { SplitStringField } from '../../../Components/Fields/Interactive/Split/SplitStringField';
 import { SplitNumberField } from '../../../Components/Fields/Interactive/Split/SplitNumberField';
 
@@ -151,7 +151,6 @@ const CostIndexLine: React.FC = () => {
                         max={999}
                         color={costIndex !== undefined ? lineColors.cyan : lineColors.amber}
                         lsk={lineSelectKeys.L5}
-                        float={false}
                         selectedCallback={(value) => {
                             setCostIndex(value);
                         }}
@@ -170,7 +169,8 @@ const CruiseFLTemp: React.FC = () => {
     return (
         <LineHolder>
             <Line side={lineSides.left} value={<LabelField value="CRZ FL/TEMP" color={lineColors.white} />} />
-            <SplitLine
+            <InteractiveSplitLine
+                slashColor={flString !== undefined ? lineColors.cyan : lineColors.amber}
                 lsk={lineSelectKeys.L6}
                 leftSide={(
                     <SplitStringField
@@ -224,7 +224,6 @@ const TropoLine: React.FC = () => {
                         max={60000}
                         min={0}
                         color={lineColors.cyan}
-                        float={false}
                         size={lineSizes.regular}
                         lsk={lineSelectKeys.R5}
                         selectedCallback={(value) => {
