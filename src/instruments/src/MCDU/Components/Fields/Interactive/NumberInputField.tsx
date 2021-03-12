@@ -6,11 +6,10 @@ import { useInteractionEvent } from '../../../../Common/hooks';
 import { fieldSides } from '../NonInteractive/Field';
 
 type NumberFieldProps = {
-    value: number | undefined,
+    value: number | string | undefined,
     nullValue: string,
     min: number,
     max: number,
-    float: boolean
     color: lineColors,
     side?: fieldSides,
     size: lineSizes,
@@ -26,15 +25,20 @@ export const NumberInputField: React.FC<NumberFieldProps> = (
         color,
         side,
         size,
-        float,
         selectedCallback,
         lsk,
     },
 ) => {
     const [scratchpad, setScratchpad, , ] = useContext(RootContext); // eslint-disable-line array-bracket-spacing
+    let numVal;
+    if (typeof value === 'string') {
+        numVal = value;
+    } else if (typeof value === 'number') {
+        numVal = value.toFixed(1);
+    }
 
     useInteractionEvent(lsk, () => {
-        const newVal = float ? parseFloat(scratchpad) : parseInt(scratchpad);
+        const newVal = parseFloat(scratchpad);
         if (!Number.isNaN(newVal)) {
             if (newVal >= min && newVal <= max) {
                 selectedCallback(newVal);
@@ -47,6 +51,6 @@ export const NumberInputField: React.FC<NumberFieldProps> = (
     });
 
     return (
-        <span className={`${color} ${side} ${size}`}>{value === undefined ? nullValue : value}</span>
+        <span className={`${color} ${side} ${size}`}>{value === undefined ? nullValue : numVal}</span>
     );
 };
