@@ -76,6 +76,112 @@ function calculateSecDate(date) {
     }
 }  */
 
+const EngineLine: React.FC = () => (
+    <LineHolder>
+        <Line side={lineSides.left} value={<LabelField value={'\xa0ENG'} color={lineColors.white} />} />
+        <Line
+            side={lineSides.left}
+            value={(<Field value="LEAP-1A26" color={lineColors.green} size={lineSizes.regular} />)}
+        />
+    </LineHolder>
+);
+
+const ActiveNavDataLine: React.FC = () => (
+    <LineHolder>
+        <Line side={lineSides.left} value={<LabelField value="ACTIVE DATA BASE" color={lineColors.white} />} />
+        <Line
+            side={lineSides.left}
+            value={(
+                <Field
+                    value="TODO"
+                    color={lineColors.cyan}
+                    size={lineSizes.regular}
+                />
+            )}
+        />
+    </LineHolder>
+);
+
+const SecondaryNavDataLine: React.FC = () => (
+    <LineHolder>
+        <Line side={lineSides.left} value={<LabelField value="SECOND DATA BASE" color={lineColors.white} />} />
+        <Line
+            side={lineSides.left}
+            value={(
+                <Field
+                    value="TODO"
+                    color={lineColors.inop}
+                    size={lineSizes.small}
+                />
+            )}
+        />
+    </LineHolder>
+);
+
+const AiracLine: React.FC = () => (
+    <LineHolder>
+        <EmptyLine />
+        <Line
+            side={lineSides.right}
+            value={(
+                <Field
+                    value="AIRAC"
+                    color={lineColors.green}
+                    size={lineSizes.regular}
+                />
+            )}
+        />
+    </LineHolder>
+);
+
+const ChgCodeLine: React.FC = () => (
+    <LineHolder>
+        <Line side={lineSides.left} value={<LabelField value="CHG CODE" color={lineColors.white} />} />
+        <Line
+            side={lineSides.left}
+            value={(
+                <Field
+                    value="[  ]"
+                    color={lineColors.inop}
+                    size={lineSizes.small}
+                />
+            )}
+        />
+    </LineHolder>
+);
+
+const TodoNameLine: React.FC = () => (
+    <LineHolder>
+        <Line side={lineSides.left} value={<LabelField value="IDLE/PERF" color={lineColors.white} />} />
+        <Line
+            side={lineSides.left}
+            value={(
+                <Field
+                    value="+0.0/+0.0"
+                    color={lineColors.green}
+                    size={lineSizes.regular}
+                />
+            )}
+        />
+    </LineHolder>
+);
+
+const SoftwareLine: React.FC = () => (
+    <LineHolder>
+        <Line side={lineSides.right} value={<LabelField value="SOFTWARE" color={lineColors.white} />} />
+        <Line
+            side={lineSides.right}
+            value={(
+                <Field
+                    value="STATUS/XLOAD"
+                    color={lineColors.inop}
+                    size={lineSizes.regular}
+                />
+            )}
+        />
+    </LineHolder>
+);
+
 const IdentPage: React.FC = () => {
     const [, , , setTitle] = useContext(RootContext);
     // const date = useSimVar("FLIGHT NAVDATA DATE RANGE", "string"
@@ -84,111 +190,28 @@ const IdentPage: React.FC = () => {
         setTitle('A320-200');
     }, []);
 
-    // TODO convert this vomit into components
     return (
-        <Content>
-            <RowHolder index={1}>
-                <LineHolder>
-                    <Line side={lineSides.left} value={<LabelField value={'\xa0ENG'} color={lineColors.white} />} />
-                    <Line
-                        side={lineSides.left}
-                        value={(
-                            <Field
-                                value="LEAP-1A26"
-                                color={lineColors.green}
-                                size={lineSizes.regular}
-                            />
-                        )}
-                    />
-                </LineHolder>
-            </RowHolder>
-            <RowHolder index={2}>
-                <LineHolder>
-                    <Line side={lineSides.left} value={<LabelField value={'\xa0ACTIVE NAV DATA BASE'} color={lineColors.white} />} />
-                    <Line
-                        side={lineSides.left}
-                        value={(
-                            <Field
-                                value="TODO"
-                                color={lineColors.cyan}
-                                size={lineSizes.regular}
-                            />
-                        )}
-                    />
-                </LineHolder>
-                <LineHolder>
-                    <EmptyLine />
-                    <Line
-                        side={lineSides.right}
-                        value={(
-                            <Field
-                                value="AIRAC"
-                                color={lineColors.green}
-                                size={lineSizes.regular}
-                            />
-                        )}
-                    />
-                </LineHolder>
-            </RowHolder>
-            <RowHolder index={3}>
-                <LineHolder>
-                    <Line side={lineSides.left} value={<LabelField value={'\xa0SECOND NAV DATA BASE'} color={lineColors.white} />} />
-                    <Line
-                        side={lineSides.left}
-                        value={(
-                            <Field
-                                value="TODO"
-                                color={lineColors.inop}
-                                size={lineSizes.small}
-                            />
-                        )}
-                    />
-                </LineHolder>
-            </RowHolder>
-            <RowHolder index={5}>
-                <LineHolder>
-                    <Line side={lineSides.left} value={<LabelField value="CHG CODE" color={lineColors.white} />} />
-                    <Line
-                        side={lineSides.left}
-                        value={(
-                            <Field
-                                value="[  ]"
-                                color={lineColors.inop}
-                                size={lineSizes.small}
-                            />
-                        )}
-                    />
-                </LineHolder>
-            </RowHolder>
-            <RowHolder index={6}>
-                <LineHolder>
-                    <Line side={lineSides.left} value={<LabelField value="+0.0/+0.0" color={lineColors.white} />} />
-                    <Line
-                        side={lineSides.left}
-                        value={(
-                            <Field
-                                value="IDLE/PERF"
-                                color={lineColors.green}
-                                size={lineSizes.regular}
-                            />
-                        )}
-                    />
-                </LineHolder>
-                <LineHolder>
-                    <Line side={lineSides.right} value={<LabelField value="SOFTWARE" color={lineColors.white} />} />
-                    <Line
-                        side={lineSides.right}
-                        value={(
-                            <Field
-                                value="STATUS/XLOAD"
-                                color={lineColors.inop}
-                                size={lineSizes.regular}
-                            />
-                        )}
-                    />
-                </LineHolder>
-            </RowHolder>
-        </Content>
+        <>
+            <Content>
+                <RowHolder index={1}>
+                    <EngineLine />
+                </RowHolder>
+                <RowHolder index={2}>
+                    <ActiveNavDataLine />
+                    <AiracLine />
+                </RowHolder>
+                <RowHolder index={3}>
+                    <SecondaryNavDataLine />
+                </RowHolder>
+                <RowHolder index={5}>
+                    <ChgCodeLine />
+                </RowHolder>
+                <RowHolder index={6}>
+                    <TodoNameLine />
+                    <SoftwareLine />
+                </RowHolder>
+            </Content>
+        </>
     );
 };
 
