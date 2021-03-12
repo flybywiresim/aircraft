@@ -25,11 +25,11 @@ class A32NX_Refuel {
             return;
         }
         const refuelRate = SimVar.GetSimVarValue("L:A32NX_REFUEL_RATE_SETTING", "Number");
-        const centerTarget = SimVar.GetSimVarValue("L:A32NX_FUEL_CENTER_DESIRED", "Number");
-        const LInnTarget = SimVar.GetSimVarValue("L:A32NX_FUEL_LEFT_MAIN_DESIRED", "Number");
-        const LOutTarget = SimVar.GetSimVarValue("L:A32NX_FUEL_LEFT_AUX_DESIRED", "Number");
-        const RInnTarget = SimVar.GetSimVarValue("L:A32NX_FUEL_RIGHT_MAIN_DESIRED", "Number");
-        const ROutTarget = SimVar.GetSimVarValue("L:A32NX_FUEL_RIGHT_AUX_DESIRED", "Number");
+        const centerTargetSimVar = SimVar.GetSimVarValue("L:A32NX_FUEL_CENTER_DESIRED", "Number");
+        const LInnTargetSimVar = SimVar.GetSimVarValue("L:A32NX_FUEL_LEFT_MAIN_DESIRED", "Number");
+        const LOutTargetSimVar = SimVar.GetSimVarValue("L:A32NX_FUEL_LEFT_AUX_DESIRED", "Number");
+        const RInnTargetSimVar = SimVar.GetSimVarValue("L:A32NX_FUEL_RIGHT_MAIN_DESIRED", "Number");
+        const ROutTargetSimVar = SimVar.GetSimVarValue("L:A32NX_FUEL_RIGHT_AUX_DESIRED", "Number");
         const centerCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons");
         const LInnCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons");
         const LOutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons");
@@ -40,6 +40,11 @@ class A32NX_Refuel {
         let LOutCurrent = LOutCurrentSimVar + 1;
         let RInnCurrent = RInnCurrentSimVar + 7;
         let ROutCurrent = ROutCurrentSimVar + 1;
+        const centerTarget = centerTargetSimVar + 6;
+        const LInnTarget = LInnTargetSimVar + 7;
+        const LOutTarget = LOutTargetSimVar + 1;
+        const RInnTarget = RInnTargetSimVar + 7;
+        const ROutTarget = ROutTargetSimVar + 1;
         if (refuelRate == 2) {
             SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerTarget);
             SimVar.SetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons", LInnTarget);

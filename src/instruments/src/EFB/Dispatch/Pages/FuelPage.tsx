@@ -49,7 +49,7 @@ const FuelWidget = (props: FuelPageProps) => {
     const convertUnit = () => {
         return usingMetrics == 1 ? 1 : 2.20462;
     }
-    const [galToKg] = useSimVar("FUEL WEIGHT PER GALLON", "kilograms", 1_000);
+    const [galToKg] = [1] //useSimVar("FUEL WEIGHT PER GALLON", "kilograms", 1_000);
     const outerCell = () => {
         return outerCellGallon * galToKg * convertUnit();
     };
@@ -92,6 +92,9 @@ const FuelWidget = (props: FuelPageProps) => {
         return 6 + 0.51 * percent
     }
     const airplaneCanRefuel = () => {
+        if(usingMetrics != 1){
+            setUsingMetrics(1);
+        }
         if(simGroundSpeed>0.1 || eng1Running || eng2Running || !isOnGround){
             return false;
         }
@@ -100,11 +103,11 @@ const FuelWidget = (props: FuelPageProps) => {
     const convertToGallon = (curr : number) => {
         return curr * (1/convertUnit()) * (1/galToKg);
     }
-    const totalCurrent = () => {
-        return round(Math.max((LInnCurrent + LOutCurrent + RInnCurrent + ROutCurrent + centerCurrent),0) * getFuelMultiplier());
-    }
     const totalCurrentGallon = () => {
         return round(Math.max((LInnCurrent + LOutCurrent + RInnCurrent + ROutCurrent + centerCurrent),0));
+    }
+    const totalCurrent = () => {
+        return totalCurrentGallon() * getFuelMultiplier();
     }
     const formatRefuelStatusLabel = () => {
         if(airplaneCanRefuel()){
@@ -133,11 +136,11 @@ const FuelWidget = (props: FuelPageProps) => {
         return 'linear-gradient(to top, #3b82f6 '+percent+'%,#ffffff00 0%)';
     }
     const convertFuelValue = (curr: number) => {
-        return round(Math.max(curr,0)*getFuelMultiplier());
+        return round(Math.max(curr,0))*getFuelMultiplier();
     }
     const setDesiredFuel = (fuel: number) => {
-        fuel -= (outerCellGallon+outerCellUnusableGallon)*2;
-        let outerTank = (((outerCellGallon+outerCellUnusableGallon)*2) + Math.min(fuel, 0))/2;
+        fuel -= (outerCellGallon)*2;
+        let outerTank = (((outerCellGallon)*2) + Math.min(fuel, 0))/2;
         setLOutTarget(outerTank);
         setROutTarget(outerTank);
         if(fuel <= 0) {
@@ -146,15 +149,15 @@ const FuelWidget = (props: FuelPageProps) => {
             setCenterTarget(0);
             return;
         }
-        fuel -= (innerCellGallon+innerCellUnusableGallon)*2
-        let innerTank = (((innerCellGallon+innerCellUnusableGallon)*2) + Math.min(fuel, 0))/2;
+        fuel -= (innerCellGallon)*2
+        let innerTank = (((innerCellGallon)*2) + Math.min(fuel, 0))/2;
         setLInnTarget(innerTank);
         setRInnTarget(innerTank);
         if(fuel <= 0) {
             setCenterTarget(0);
             return;
         }
-        setCenterTarget(fuel+centerTankUnusableGallon);
+        setCenterTarget(fuel);
     }
     const updateDesiredFuel = (value:string) => {
         let fuel = 0
@@ -162,15 +165,17 @@ const FuelWidget = (props: FuelPageProps) => {
         if(value.length>0){
             originalFuel = parseInt(value)
             fuel = convertToGallon(originalFuel)
+            if(originalFuel>totalFuel()){
+                originalFuel = round(totalFuel())
+            }
             setInputValue(originalFuel)
         }
         if(fuel>totalFuelGallons){
-            fuel = totalFuelGallons
+            fuel = totalFuelGallons+2;
         }
-        setUsingMetrics(2)
-        setTotalTarget(fuel)
+        setTotalTarget(fuel);
         setSliderValue((fuel/totalFuelGallons)*100);
-        setDesiredFuel(fuel)
+        setDesiredFuel(fuel);
 
         /*setCenterCurrent(0)
         setLInnCurrent(2425)
@@ -180,6 +185,9 @@ const FuelWidget = (props: FuelPageProps) => {
         //setFuelingActive(1);
 	}
     const updateSlider = (value: number) => {
+        if(value < 2){
+            value = 0;
+        }
         setSliderValue(value);
         let fuel = Math.round(totalFuel() * (value/100));
         updateDesiredFuel(fuel.toString());
