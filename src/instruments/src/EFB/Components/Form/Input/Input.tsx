@@ -74,7 +74,7 @@ const Input = ({
             {leftComponent}
 
             <div className="flex-1">
-                {!!label && !emptyValue && <span className="text-sm text-blue-light font-light inline-block -mb-2.5 overflow-hidden">{label}</span>}
+                {!!label && !emptyValue && <span className="text-sm text-white font-light inline-block -mb-2.5 overflow-hidden">{label}</span>}
 
                 <div className={classNames('inner-container', { disabled })}>
                     {leftInnerComponent}

@@ -18,6 +18,8 @@
 
 'use strict';
 
+require('dotenv').config();
+
 const image = require('@rollup/plugin-image');
 const babel = require('@rollup/plugin-babel').default;
 const commonjs = require('@rollup/plugin-commonjs');
@@ -50,7 +52,13 @@ module.exports = {
             babelHelpers: 'runtime',
             extensions,
         }),
-        replace({ 'process.env.NODE_ENV': JSON.stringify('production') }),
+        replace({
+            'process.env.NODE_ENV': JSON.stringify('development'),
+            'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),
+            'process.env.CLIENT_SECRET': JSON.stringify(process.env.CLIENT_SECRET),
+            'process.env.CHARTFOX_SECRET': JSON.stringify(process.env.CHARTFOX_SECRET),
+            'process.env.SIMVAR_DISABLE': 'true',
+        }),
         postcss({
             use: { sass: {} },
             plugins: [tailwindcss(`${__dirname}/tailwind.config.js`)],

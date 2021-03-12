@@ -39,3 +39,4 @@ node_modules
 /src/systems/target/
 !igniter.config.mjs
 .igniter
+.env

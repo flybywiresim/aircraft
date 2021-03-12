@@ -287,8 +287,9 @@ export const useSimVar = (
     maxStaleness: number = 0,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
-
-    // return [0, () => {}];
+    if (process.env.SIMVAR_DISABLE) {
+        return [0, () => {}];
+    }
 
     const value = useSimVarValue(name, unit, maxStaleness);
     const setter = useSimVarSetter(name, unit);

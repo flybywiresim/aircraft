@@ -18,6 +18,8 @@
 
 'use strict';
 
+require('dotenv').config();
+
 const os = require('os');
 const fs = require('fs');
 const image = require('@rollup/plugin-image');
@@ -113,7 +115,13 @@ module.exports = getInstrumentsToCompile()
                     compact: false,
                     extensions,
                 }),
-                replace({ 'process.env.NODE_ENV': '"production"' }),
+                replace({
+                    'process.env.NODE_ENV': JSON.stringify('production'),
+                    'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),
+                    'process.env.CLIENT_SECRET': JSON.stringify(process.env.CLIENT_SECRET),
+                    'process.env.CHARTFOX_SECRET': JSON.stringify(process.env.CHARTFOX_SECRET),
+                    'process.env.SIMVAR_DISABLE': 'false',
+                }),
                 postcss({
                     use: { sass: {} },
                     plugins: makePostcssPluginList(path),
