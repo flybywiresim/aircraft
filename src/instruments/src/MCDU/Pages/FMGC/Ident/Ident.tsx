@@ -89,7 +89,7 @@ const IdentPage: React.FC = () => {
         <Content>
             <RowHolder index={1}>
                 <LineHolder>
-                    <Line side={lineSides.left} value={<LabelField value="\xa0ENG" color={lineColors.white} />} />
+                    <Line side={lineSides.left} value={<LabelField value={'\xa0ENG'} color={lineColors.white} />} />
                     <Line
                         side={lineSides.left}
                         value={(
@@ -104,7 +104,7 @@ const IdentPage: React.FC = () => {
             </RowHolder>
             <RowHolder index={2}>
                 <LineHolder>
-                    <Line side={lineSides.left} value={<LabelField value="\xa0ACTIVE NAV DATA BASE" color={lineColors.white} />} />
+                    <Line side={lineSides.left} value={<LabelField value={'\xa0ACTIVE NAV DATA BASE'} color={lineColors.white} />} />
                     <Line
                         side={lineSides.left}
                         value={(
@@ -132,7 +132,7 @@ const IdentPage: React.FC = () => {
             </RowHolder>
             <RowHolder index={3}>
                 <LineHolder>
-                    <Line side={lineSides.left} value={<LabelField value="\xa0SECOND NAV DATA BASE" color={lineColors.white} />} />
+                    <Line side={lineSides.left} value={<LabelField value={'\xa0SECOND NAV DATA BASE'} color={lineColors.white} />} />
                     <Line
                         side={lineSides.left}
                         value={(

@@ -32,7 +32,7 @@ const FMGCText: React.FC<FMGCTextProps> = ({ activeSys, setActiveSys, setPage, s
     function determineText() {
         if (activeSys === 'FMGC') {
             if (selected === 'FMGC') {
-                return 'FMGC (SEL)';
+                return '<FMGC (SEL)';
             }
             return '<FMGC (REQ)';
         }
@@ -74,8 +74,9 @@ type TextProps = {
     selected: string,
     side: lineSides,
     setSelected: React.Dispatch<React.SetStateAction<string>>,
+    lsk: lineSelectKeys
 }
-const MenuLineText: React.FC<TextProps> = ({ side, system, activeSys, setActiveSys, selected, setSelected }) => {
+const MenuLineText: React.FC<TextProps> = ({ lsk, side, system, activeSys, setActiveSys, selected, setSelected }) => {
     function determineColor() {
         if (activeSys === system) {
             if (selected === system) {
@@ -109,7 +110,7 @@ const MenuLineText: React.FC<TextProps> = ({ side, system, activeSys, setActiveS
                         size={lineSizes.regular}
                         value={determineText()}
                         color={determineColor()}
-                        lsk={lineSelectKeys.L2}
+                        lsk={lsk}
                         selectedCallback={(() => {
                             if (system) {
                                 setActiveSys(system);
@@ -133,7 +134,28 @@ const NAVBText: React.FC = () => (
 const OptionsText: React.FC = () => (
     <LineHolder>
         <EmptyLine />
-        <Line side={lineSides.right} value={<Field value="OPTIONS>" color={lineColors.white} size={lineSizes.regular} />} />
+        <Line
+            side={lineSides.right}
+            value={(
+                <Field value="OPTIONS>" size={lineSizes.regular} color={lineColors.inop} />
+            )}
+        />
+    </LineHolder>
+);
+
+const ReturnText: React.FC = () => (
+    <LineHolder>
+        <EmptyLine />
+        <Line
+            side={lineSides.right}
+            value={(
+                <Field
+                    color={lineColors.inop}
+                    size={lineSizes.regular}
+                    value="RETURN>"
+                />
+            )}
+        />
     </LineHolder>
 );
 
@@ -157,19 +179,43 @@ const MenuPage: React.FC<MenuProps> = ({ setPage }) => {
                     <NAVBText />
                 </RowHolder>
                 <RowHolder index={2}>
-                    <MenuLineText system="ATSU" side={lineSides.left} activeSys={activeSys} setActiveSys={setActiveSys} selected={selected} setSelected={setSelected} />
+                    <MenuLineText
+                        lsk={lineSelectKeys.L2}
+                        system="ATSU"
+                        side={lineSides.left}
+                        activeSys={activeSys}
+                        setActiveSys={setActiveSys}
+                        selected={selected}
+                        setSelected={setSelected}
+                    />
                 </RowHolder>
                 <RowHolder index={3}>
-                    <MenuLineText system="AIDS" side={lineSides.left} activeSys={activeSys} setActiveSys={setActiveSys} selected={selected} setSelected={setSelected} />
+                    <MenuLineText
+                        lsk={lineSelectKeys.L3}
+                        system="AIDS"
+                        side={lineSides.left}
+                        activeSys={activeSys}
+                        setActiveSys={setActiveSys}
+                        selected={selected}
+                        setSelected={setSelected}
+                    />
                 </RowHolder>
                 <RowHolder index={4}>
-                    <MenuLineText system="CFDS" side={lineSides.left} activeSys={activeSys} setActiveSys={setActiveSys} selected={selected} setSelected={setSelected} />
+                    <MenuLineText
+                        lsk={lineSelectKeys.L4}
+                        system="CFDS"
+                        side={lineSides.left}
+                        activeSys={activeSys}
+                        setActiveSys={setActiveSys}
+                        selected={selected}
+                        setSelected={setSelected}
+                    />
                 </RowHolder>
                 <RowHolder index={5}>
                     <OptionsText />
                 </RowHolder>
                 <RowHolder index={6}>
-                    <MenuLineText system="RETURN" side={lineSides.right} activeSys={activeSys} setActiveSys={setActiveSys} selected={selected} setSelected={setSelected} />
+                    <ReturnText />
                 </RowHolder>
             </Content>
         </>
