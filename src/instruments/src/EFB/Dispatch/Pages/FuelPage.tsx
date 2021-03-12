@@ -105,11 +105,15 @@ const FuelWidget = (props: FuelPageProps) => {
         return round(Math.max((LInnCurrent + (LOutCurrent) + (RInnCurrent) + (ROutCurrent) + (centerCurrent)),0));
     }
     const totalCurrent = () => {
-        return round(totalCurrentGallon() * getFuelMultiplier());
+        let val = round(totalCurrentGallon() * getFuelMultiplier());
+        if(centerCurrent>0 && centerCurrent<centerTankGallon){
+            return round(val + convertUnit());
+        }
+        return val;
     }
     const formatRefuelStatusLabel = () => {
         if(airplaneCanRefuel()){
-            if(totalTarget == totalCurrentGallon()) {
+            if(round(totalTarget) == totalCurrentGallon()) {
                 return "(Available)";
             }
             return ((totalTarget||0) > (totalFuelGallons)) ? "(Refueling...)" : "(Defueling...)" ;
@@ -135,6 +139,12 @@ const FuelWidget = (props: FuelPageProps) => {
     }
     const convertFuelValue = (curr: number) => {
         return round(round(Math.max(curr,0))*getFuelMultiplier());
+    }
+    const convertFuelValueCenter = (curr: number) => {
+        if(curr == centerTankGallon){
+            return convertFuelValue(curr);
+        }
+        return round(convertFuelValue(curr) + convertUnit());
     }
     const setDesiredFuel = (fuel: number) => {
         fuel -= (outerCellGallon)*2;
@@ -174,13 +184,6 @@ const FuelWidget = (props: FuelPageProps) => {
         setTotalTarget(fuel);
         setSliderValue((fuel/totalFuelGallons)*100);
         setDesiredFuel(fuel);
-
-        /*setCenterCurrent(0)
-        setLInnCurrent(2425)
-        setRInnCurrent(2425)
-        setLOutCurrent(691)
-        setROutCurrent(691)*/
-        //setFuelingActive(1);
 	}
     const updateSlider = (value: number) => {
         if(value < 2){
@@ -211,7 +214,7 @@ const FuelWidget = (props: FuelPageProps) => {
             <h2 className="text-2xl font-medium">Center tank</h2>
                 <div className="flex mt-4">
                     <ProgressBar height={"10px"} width={"200px"} displayBar={true} completedBar={getFuelBarPercent(centerTarget,centerTankGallon)} isLabelVisible={false} bgcolor={'#3b82f6'} completed={(Math.max(centerCurrent,0)/centerTankGallon)*100} />
-                    <div className="fuel-label"><label>{convertFuelValue(centerCurrent)}/{round(centerTank())} {currentUnit()}</label></div>
+                    <div className="fuel-label"><label>{convertFuelValueCenter(centerCurrent)}/{round(centerTank())} {currentUnit()}</label></div>
                 </div>
             </div>
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info refuel-info">
