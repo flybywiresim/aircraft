@@ -526,18 +526,18 @@ class VORDMENavAid {
                             if (SimVar.GetSimVarValue(`ADF SIGNAL:${this.index}`, "number")) {
                                 this.idText.textContent = SimVar.GetSimVarValue(`ADF IDENT:${this.index}`, "string");
                             } else {
-                                this.idText.textContent = fastToFixed(this.idValue, 1);
+                                this.idText.textContent = parseFloat(this.idValue).toFixed(2);
                             }
                             break;
                         case NAV_AID_STATE.VOR:
                             if (SimVar.GetSimVarValue(`NAV HAS NAV:${this.index}`, "number")) {
                                 this.idText.textContent = SimVar.GetSimVarValue(`NAV IDENT:${this.index}`, "string");
                             } else {
-                                this.idText.textContent = fastToFixed(this.idValue, 1);
+                                this.idText.textContent = parseFloat(this.idValue).toFixed(2);
                             }
                             break;
                         default:
-                            this.idText.textContent = fastToFixed(this.idValue, 1);
+                            this.idText.textContent = parseFloat(this.idValue).toFixed(2);
                     }
                 }
             }
