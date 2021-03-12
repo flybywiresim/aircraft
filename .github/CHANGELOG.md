@@ -181,6 +181,7 @@
 1. [MCDU] Fixed options page text overlap - @MisterChocker (Leon)
 1. [CDU] Reworked Flight Phase system - @MisterChocker (Leon)
 1. [MISC] Fixed button labels not showing when unlit - @ImenesFBW (Imenes)
+1. [EFB] Added functionality to ground services page - @Saschl (saschl#9432)
 1. [FLIGHTMODEL] Fixed flaps to be compatible with MSFS 1.14.5.0 update - @donstim (donbikes#4084)
 
 ## 0.5.2
