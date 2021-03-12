@@ -6,7 +6,13 @@
     font-size: $font-size-title;
     text-decoration: underline;
     fill: $display-white;
+    text-anchor: middle !important;
   }
+
+  .EngineNumber {
+    font-size: $font-size-title;
+    text-anchor: middle !important;
+  };
 
   .title {
       font-size: $font-size-huge;
@@ -20,20 +26,39 @@
       text-anchor: middle !important;
   }
 
-  .triangle {
+  .psi {
+    font-size: $font-size-medium;
+    fill: $display-cyan;
+    text-anchor: middle !important;
+  }
+
+  .rat-ptu-elec {
+    font-size: $font-size-larger;
+    text-anchor: middle !important;
+  }
+
+  .no-fill {
     fill: none;
-    stroke: $display-green;
-    stroke-width: 2;
+  }
+
+  .fill-green {
+    fill: $display-green;
+  }
+
+  .fill-amber {
+    fill: $display-amber;
+  }
+
+  .fill-white {
+    fill: $display-white;
   }
 
   .green-line {
-    fill: none;
     stroke: $display-green;
     stroke-width: 2;
   }
 
   .amber-line {
-    fill: none;
     stroke: $display-amber;
     stroke-width: 2;
   }
