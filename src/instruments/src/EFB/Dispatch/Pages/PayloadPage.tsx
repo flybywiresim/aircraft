@@ -24,7 +24,7 @@ import nose from '../../Assets/320neo-outline-nose.svg';
 import fuselage from '../../Assets/320neo-outline-fuselage.svg';
 import { RootState } from '../../Store';
 
-const MAX_SEAT_AVAILABLE = 162;
+const MAX_SEAT_AVAILABLE = 174;
 const PAX_WEIGHT = 84;
 const BAG_WEIGHT = 20;
 
@@ -49,8 +49,8 @@ const PayloadPage = () => {
         fillStation('rows14_20', paxRemaining);
 
         const remainingByTwo = Math.trunc(paxRemaining / 2);
-        fillStation('rows7_13', remainingByTwo);
-        fillStation('rows1_6', paxRemaining);
+        fillStation('rows1_6', remainingByTwo);
+        fillStation('rows7_13', paxRemaining);
 
         // setPayload(numberOfPax);
     }
