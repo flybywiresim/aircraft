@@ -1,0 +1,12 @@
+.vertical-progress-bar {
+  @apply bg-blue-light-contrast;
+  position: absolute;
+  margin-top: -3px;
+  width: 5px;
+  height: 31px;
+  // background-color: #5e72e4;
+}
+.progress-bar {
+  margin-top: 7px;
+  margin-right: 15px;
+}

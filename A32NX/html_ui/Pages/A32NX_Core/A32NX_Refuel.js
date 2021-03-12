@@ -4,7 +4,18 @@ const CENTER_MODIFIER = 3;
 class A32NX_Refuel {
     constructor() {}
 
-    init() { }
+    init() {
+        const centerCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons");
+        const LInnCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons");
+        const LOutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons");
+        const RInnCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
+        const ROutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons");
+        SimVar.SetSimVarValue("L:A32NX_FUEL_CENTER_DESIRED", "Number", centerCurrentSimVar);
+        SimVar.SetSimVarValue("L:A32NX_FUEL_LEFT_MAIN_DESIRED", "Number", LInnCurrentSimVar);
+        SimVar.SetSimVarValue("L:A32NX_FUEL_LEFT_AUX_DESIRED", "Number", LOutCurrentSimVar);
+        SimVar.SetSimVarValue("L:A32NX_FUEL_RIGHT_MAIN_DESIRED", "Number", RInnCurrentSimVar);
+        SimVar.SetSimVarValue("L:A32NX_FUEL_RIGHT_AUX_DESIRED", "Number", ROutCurrentSimVar);
+    }
 
     defuelTank(multiplier) {
         return -REFUEL_FACTOR * multiplier;

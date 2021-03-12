@@ -136,18 +136,6 @@
   background: -o-linear-gradient(top, #3b82f6 50%, #ffffff00 0%);
   background: linear-gradient(to top, #3b82f6 50%, #ffffff00 0%);
 }
-.fuel-bar {
-  @apply bg-blue-light-contrast;
-  position: absolute;
-  margin-top: -3px;
-  width: 5px;
-  height: 31px;
-  // background-color: #5e72e4;
-}
-.fuel-progress {
-  margin-top: 7px;
-  margin-right: 15px;
-}
 .fuel-label {
   float: right;
 }
@@ -213,12 +201,6 @@
   margin: auto;
 }
 
-.pushback {
-  right: 3rem;
-  bottom: 3rem;
-  top: 21rem;
-}
-
 .fuel-truck {
   height: 3.5rem;
   width: 3.5rem;
@@ -233,24 +215,6 @@
   grid-gap: 0.5rem;
 }
 
-.baggage {
-  left: calc(50% + 4rem);
-  top: 4rem;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.catering {
-  left: calc(50% + 4rem);
-  bottom: 9rem;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.jetway {
-  right: calc(50% + 4rem);
-  top: 4rem;
-  grid-template-columns: minmax(0, 1fr);
-}
-
 .call-inop {
   @apply bg-green-500;
   grid-column: 1 / 1;
@@ -259,32 +223,6 @@
 .call-inop > svg {
   height: 100%;
   width: 100%;
-}
-
-.selected {
-  @apply text-white;
-  border-color: #ccc;
-  border-width: 2px;
-}
-
-.pushback .stop {
-  @apply bg-red-500;
-  grid-column: 2 / 3;
-}
-
-.down-left {
-  @apply bg-green-500;
-  grid-column: 1/1;
-}
-
-.down {
-  @apply bg-green-500;
-  grid-column: 2/2;
-}
-
-.down-right {
-  @apply bg-green-500;
-  grid-column: 3/3;
 }
 
 .refuel-speed {
