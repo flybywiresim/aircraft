@@ -84,7 +84,7 @@ const ZeroFuelWeightLine : React.FC = () => (
 // When we can retrieve trip info then it'll populate and dynamically change colors
 const TripWeightLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value={'TRIP\xa0\xa0/TIME'} color={lineColors.white} />} />
+        <Line side={lineSides.left} value={<LabelField value={'TRIP\xa0/TIME'} color={lineColors.white} />} />
         <SplitLine
             side={lineSides.left}
             slashColor={lineColors.white}
@@ -154,7 +154,7 @@ const ReserveWeightLine: React.FC = () => (
 
 const AlternateWeightLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value={'ALTN\xa0\xa0/TIME'} color={lineColors.white} />} />
+        <Line side={lineSides.left} value={<LabelField value={'ALTN\xa0/TIME'} color={lineColors.white} />} />
         <InteractiveSplitLine
             slashColor={lineColors.white}
             leftSide={(
@@ -176,7 +176,7 @@ const AlternateWeightLine: React.FC = () => (
 
 const LwTwLine : React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.right} value={<LabelField value={'TOW/\xa0\xa0\xa0\xa0LW'} color={lineColors.white} />} />
+        <Line side={lineSides.right} value={<LabelField value={'TOW/\xa0\xa0\xa0LW'} color={lineColors.white} />} />
         <SplitLine
             slashColor={lineColors.white}
             leftSide={(<Field value="---.-" color={lineColors.white} size={lineSizes.regular} />)}
@@ -189,7 +189,7 @@ const LwTwLine : React.FC = () => (
 /* Need to find a way to only allow entering one or the other but not both */
 const FinalWeightCell : React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.left} value={<LabelField value={'FINAL\xa0/TIME'} color={lineColors.white} />} />
+        <Line side={lineSides.left} value={<LabelField value="FINAL/TIME" color={lineColors.white} />} />
         <Line
             side={lineSides.left}
             value={(
@@ -267,7 +267,7 @@ const MinDestFOBLine : React.FC = () => (
 
 const ExtraWeightLine : React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.right} value={<LabelField value={'TOW/\xa0\xa0\xa0\xa0LW'} color={lineColors.white} />} />
+        <Line side={lineSides.right} value={<LabelField value="EXTRA/TIME" color={lineColors.white} />} />
         <SplitLine
             slashColor={lineColors.white}
             side={lineSides.right}

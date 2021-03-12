@@ -37,7 +37,7 @@ const CoRouteLine: React.FC = () => (
 // This is specifically not a split field line because of the operations of FROM/TO
 const FromToLine: React.FC = () => (
     <LineHolder>
-        <Line side={lineSides.right} value={<LabelField value="FROM/TO" color={lineColors.white} />} />
+        <Line side={lineSides.right} value={<LabelField value={'FROM/TO\xa0\xa0'} color={lineColors.white} />} />
         <Line
             side={lineSides.right}
             value={(

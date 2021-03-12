@@ -7,7 +7,6 @@
   font-style: normal;
 }
 
-// TODO why doesn't this fucking work?
 @font-face {
   src: url("/Fonts/HoneywellMCDU.ttf") format("truetype");
   font-family: "HoneywellMCDU";
@@ -84,15 +83,16 @@
 
 // TEXT
 .s-text {
+  font-family: HoneywellMCDUSmall, HoneywellMCDU !important;
+  line-height: 1.25;
   font-size: 4.2vw;
   //letter-spacing: 0.6vw;
-  line-height: 5.8vw;
 }
 
 p {
-  font-family: "ECAMFontRegular" !important;
+  font-family: "HoneywellMCDU" !important;
   color: var(--mcduWhite);
-  font-size: 5.8vw;
+  font-size: 5.3vw !important;
   letter-spacing: normal;
 }
 
