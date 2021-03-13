@@ -243,12 +243,12 @@ export const FuelPage = () => {
             </div>
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info refuel-info">
                 <h2 className="text-2xl font-medium">Refuel</h2>
-                <label className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</label>
+                <label htmlFor="fuel-label" className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</label>
                 <div className="flex mt-n5">
                     <div className="fuel-progress"><Slider value={sliderValue} onInput={(value) => updateSlider(value)} className="w-48" /></div>
                     <div className="fuel-label">
                         <SimpleInput
-                            label="fuel-label"
+                            label=""
                             noLeftMargin
                             placeholder={round(totalFuel()).toString()}
                             number
@@ -262,7 +262,7 @@ export const FuelPage = () => {
                     <div className="separation-line-refuel" />
                     <div className="manage-fuel-truck">
                         <div className="call-inop fuel-truck disabled"><IconTruck /></div>
-                        <label htmlFor="manage-fuel-truck" className="inop-label-fuel-page">Inop.</label>
+                        <label htmlFor="fuel-label" className="inop-label-fuel-page">Inop.</label>
                     </div>
                 </div>
                 <span>Current fuel :</span>
