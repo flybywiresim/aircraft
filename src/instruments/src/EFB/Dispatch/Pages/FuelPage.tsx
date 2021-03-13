@@ -36,10 +36,7 @@ type FuelPageProps = {
 export const FuelPage = (props: FuelPageProps) => {
     const totalFuelGallons = 6243;
     const outerCellGallon = 227;
-    // const outerCellUnusableGallon = 1;
-    // const innerCellUnusableGallon = 7;
     const innerCellGallon = 1809;
-    // const centerTankUnusableGallon = 24;
     const centerTankGallon = 2173;
     const [usingMetrics, setUsingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
     const currentUnit = () => usingMetrics == 1 ? 'Kgs' : 'Lbs';
