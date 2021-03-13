@@ -1,3 +1,21 @@
+<!--
+  ~ A32NX
+  ~ Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
 <ModelBehaviors>
     <Template Name="FBW_Airbus_FCU_Baro_Knob">
         <DefaultTemplateParameters>
@@ -287,7 +305,7 @@
                     (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
                         (&gt;H:A320_Neo_FCU_AP_INC_FPA)
                     } els{
-                        2 (&gt;K:AP_VS_VAR_INC)
+                        3 (&gt;K:AP_VS_VAR_INC)
                         (&gt;H:A320_Neo_FCU_VS_INC)
                     }
                 </CLOCKWISE_CODE>
@@ -295,7 +313,7 @@
                     (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
                         (&gt;H:A320_Neo_FCU_AP_DEC_FPA)
                     } els{
-                        2 (&gt;K:AP_VS_VAR_DEC)
+                        3 (&gt;K:AP_VS_VAR_DEC)
                         (&gt;H:A320_Neo_FCU_VS_DEC)
                     }
                 </ANTICLOCKWISE_CODE>

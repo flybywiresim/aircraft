@@ -107,6 +107,7 @@
 1. [LIGHTS] Improved Exterior Lights - @Snapmatics (Harry)
 1. [SOUND] Added custom sounds to multiple buttons and Throttle Lever Reverse Locks - @ImenesFBW (Imenes)
 1. [MCDU] Added custom MCDU font - @tyler58546 (tyler58546)
+1. [MISC] Add hangar.flt - @Awemeter (Awemeter#7919)
 1. [TEXTURE] Improved cockpit decal fonts and emissives, and remade various labels in the cockpit. @FoxinTale (Aubrey)
 1. [FWC] Add aural Altitude Alert (C Chord) - @Kimbyeongjang (김병장#7165)
 1. [CAMERA] Added new interior views - @Snapmatics (Harry)
@@ -180,6 +181,8 @@
 1. [MISC] Fixed chrono watch colon appearance - @SergeySoprykin (SergeyS)
 1. [MCDU] Fixed options page text overlap - @MisterChocker (Leon)
 1. [CDU] Reworked Flight Phase system - @MisterChocker (Leon)
+1. [MISC] Fixed button labels not showing when unlit - @ImenesFBW (Imenes)
+1. [EFB] Added functionality to ground services page - @Saschl (saschl#9432)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
