@@ -208,8 +208,8 @@ class SvgTopOfXElement extends SvgMapElement {
                 this.svgElement.setAttribute("x", fastToFixed((this.x - map.config.waypointIconSize), 1));
                 this.svgElement.setAttribute("y", fastToFixed((this.y - map.config.waypointIconSize), 1));
                 let angle = this.heading;
-                if (map.rotateWithPlane) {
-                    angle -= map.planeDirection;
+                if (map.rotationMode != EMapRotationMode.NorthUp) {
+                    angle -= map.mapUpDirection;
                 }
                 this.svgElement.setAttribute("transform", "rotate(" + angle.toFixed(0) + " " + this.x.toFixed(0) + " " + this.y.toFixed(0) + ")");
                 this._lastX = this.x;
