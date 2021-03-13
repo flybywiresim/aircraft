@@ -54,7 +54,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         let cFontSize = fontSize;
         let cImageSize = imageSize;
 
-        if (cFontSize < 26) {
+        if (cFontSize < 24) {
             cFontSize += 2;
             cImageSize += 5;
             handleScaling(cFontSize);
