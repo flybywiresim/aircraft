@@ -35,7 +35,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     isLabelVisible,
 }) => {
     const getAlignment = (
-        alignmentOption: ProgressBarProps['labelAlignment']
+        alignmentOption: ProgressBarProps['labelAlignment'],
     ) => {
         if (alignmentOption === 'left') {
             return 'flex-start';
@@ -128,5 +128,5 @@ ProgressBar.defaultProps = {
     labelSize: '15px',
     isLabelVisible: true,
     displayBar: false,
-    completedBar: 0
+    completedBar: 0,
 };
