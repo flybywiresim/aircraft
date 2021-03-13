@@ -262,8 +262,9 @@ export const FuelPage = () => {
                     <div className="separation-line-refuel" />
                     <div className="manage-fuel-truck">
                         <div className="call-inop fuel-truck disabled"><IconTruck /></div>
-                        {/* tslint:disable-next-line */}
+                        {/* tslint:disable */}
                         <label className="inop-label-fuel-page">Inop.</label>
+                        {/* tslint:enable */}
                     </div>
                 </div>
                 <span>Current fuel :</span>
