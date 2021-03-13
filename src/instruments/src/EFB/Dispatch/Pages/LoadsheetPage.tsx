@@ -30,7 +30,6 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
     const [fontSize, setFontSize] = useState(14);
     const [imageSize, setImageSize] = useState(60);
 
-
     const mouseDownHandler = (event) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
         position.current.y = event.clientY;
@@ -44,14 +43,14 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         if (ref.current) {
             ref.current.scrollTop = position.current.top - dy;
         }
-    }
+    };
 
-    const mouseUpHandler = function () {
+    const mouseUpHandler = () => {
         document.removeEventListener('mousemove', mouseMoveHandler);
         document.removeEventListener('mouseup', mouseUpHandler);
     };
 
-    const fontIncreaseHandler = function () {
+    const fontIncreaseHandler = () => {
         let cFontSize = fontSize;
         let cImageSize = imageSize;
 
@@ -59,11 +58,11 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
             cFontSize += 2;
             cImageSize += 5;
             handleScaling(cFontSize);
-            setImageSize(cImageSize)
+            setImageSize(cImageSize);
         }
     };
 
-    const fontDecreaseHandler = function () {
+    const fontDecreaseHandler = () => {
         let cFontSize = fontSize;
         let cImageSize = imageSize;
 
@@ -71,14 +70,14 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
             cFontSize -= 2;
             cImageSize -= 5;
             handleScaling(cFontSize);
-            setImageSize(cImageSize)
+            setImageSize(cImageSize);
         }
     };
 
     const handleScaling = (cFontSize) => {
         const pLoadsheet = ref.current?.firstChild as HTMLElement;
 
-        const pImages = ref.current?.getElementsByTagName("img") as HTMLCollectionOf<HTMLElement>;
+        const pImages = ref.current?.getElementsByTagName('img');
 
         if (pLoadsheet) {
             pLoadsheet.style.fontSize = `${cFontSize}px`;
@@ -86,26 +85,25 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
             setFontSize(cFontSize);
             if (pImages) {
                 for (let i = 0; i < pImages.length; i++) {
-                    pImages[i].style.width = `${imageSize}%`
+                    pImages[i].style.width = `${imageSize}%`;
                 }
             }
         }
-    }
-
+    };
 
     return (
         <div className="px-6">
             <div className="w-full">
                 <div className="relative bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4">
-                    {props.loadsheet !== 'N/A' ?
-                        <>
+                    {props.loadsheet !== 'N/A'
+                      ? <>
                             <div className="flex flex-col justify-end absolute bottom-5 right-16">
                                 <button onClick={fontIncreaseHandler} className="font-size-button">
                                     +
-                        </button>
+                                 </button>
                                 <button onClick={fontDecreaseHandler} className="font-size-button">
                                     -
-                        </button>
+                                </button>
                             </div>
                             <div
                                 ref={ref}
