@@ -99,14 +99,14 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
                         <>
                             <div className="flex flex-col justify-end absolute bottom-5 right-16">
                                 <button
-								    type='button'
+                                    type="button"
                                     onClick={fontIncreaseHandler}
                                     className="font-size-button"
                                 >
                                     +
                                 </button>
                                 <button
-									type='button'
+                                    type="button"
                                     onClick={fontDecreaseHandler}
                                     className="font-size-button"
                                 >
@@ -117,7 +117,8 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
                                 ref={ref}
                                 className="loadsheet-container grabbable show-scrollbar overflow-y-scroll"
                                 onMouseDown={mouseDownHandler}
-                                dangerouslySetInnerHTML={{__html: props.loadsheet}}
+								// eslint-disable-next-line react/no-danger
+                                dangerouslySetInnerHTML={{ __html: props.loadsheet }}
                             />
                         </>
                     ) : (
