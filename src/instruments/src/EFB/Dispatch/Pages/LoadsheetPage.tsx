@@ -117,7 +117,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
                                 ref={ref}
                                 className="loadsheet-container grabbable show-scrollbar overflow-y-scroll"
                                 onMouseDown={mouseDownHandler}
-								// eslint-disable-next-line react/no-danger
+                                // eslint-disable-next-line react/no-danger
                                 dangerouslySetInnerHTML={{ __html: props.loadsheet }}
                             />
                         </>
