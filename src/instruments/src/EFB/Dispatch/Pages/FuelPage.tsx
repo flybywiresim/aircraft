@@ -262,7 +262,7 @@ export const FuelPage = () => {
                     <div className="separation-line-refuel" />
                     <div className="manage-fuel-truck">
                         <div className="call-inop fuel-truck disabled"><IconTruck /></div>
-                        <label htmlFor="fuel-label" className="inop-label-fuel-page">Inop.</label>
+                        <label htmlFor="call-inop" className="inop-label-fuel-page">Inop.</label>
                     </div>
                 </div>
                 <span>Current fuel :</span>
