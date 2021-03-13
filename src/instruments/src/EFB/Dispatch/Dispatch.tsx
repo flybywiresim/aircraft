@@ -95,7 +95,7 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
             );
         case 2:
             return (
-                <FuelPage fuels={this.props.fuels} />
+                <FuelPage />
             );
         case 3:
             return (

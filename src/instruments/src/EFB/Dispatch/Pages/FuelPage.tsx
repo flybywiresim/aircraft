@@ -28,11 +28,7 @@ import fuselage from '../../Assets/320neo_outline_fuel.svg';
 import { useSimVar } from '../../../Common/simVars';
 import { useSimVarSyncedPersistentProperty } from '../../../Common/persistence';
 
-type FuelPageProps = {
-    fuels: {}
-};
-
-export const FuelPage = (props: FuelPageProps) => {
+export const FuelPage = () => {
     const totalFuelGallons = 6243;
     const outerCellGallon = 227;
     const innerCellGallon = 1809;
@@ -252,6 +248,7 @@ export const FuelPage = (props: FuelPageProps) => {
                     <div className="fuel-progress"><Slider value={sliderValue} onInput={(value) => updateSlider(value)} className="w-48" /></div>
                     <div className="fuel-label">
                         <SimpleInput
+                            label="fuel-label"
                             noLeftMargin
                             placeholder={round(totalFuel()).toString()}
                             number
@@ -265,7 +262,7 @@ export const FuelPage = (props: FuelPageProps) => {
                     <div className="separation-line-refuel" />
                     <div className="manage-fuel-truck">
                         <div className="call-inop fuel-truck disabled"><IconTruck /></div>
-                        <label htmlFor="fuel-truck-inop" className="inop-label-fuel-page">Inop.</label>
+                        <label htmlFor="manage-fuel-truck" className="inop-label-fuel-page">Inop.</label>
                     </div>
                 </div>
                 <span>Current fuel :</span>
