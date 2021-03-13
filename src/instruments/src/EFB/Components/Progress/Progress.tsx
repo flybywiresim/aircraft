@@ -56,19 +56,19 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     const alignment = getAlignment(labelAlignment);
 
     const containerStyles: React.CSSProperties = {
-        height: height,
+        height,
         backgroundColor: baseBgColor,
-        borderRadius: borderRadius,
-        padding: padding,
-        width: width,
-        margin: margin,
+        borderRadius,
+        padding,
+        width,
+        margin,
     };
 
     const fillerStyles: React.CSSProperties = {
-        height: height,
+        height,
         width:
             typeof completed === 'string' || completed > 100
-                ? `100%`
+                ? '100%'
                 : `${completed}%`,
         backgroundColor: bgcolor,
         transition: 'width 1s ease-in-out',
@@ -93,9 +93,9 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     };
 
     return (
-        <React.Fragment>
-            <div className={displayBar ? 'vertical-progress-bar' : 'hidden'} style={{ left: '' + formatBar(completedBar || 0) + '%' }}></div>
-            <div className='progress-bar'>
+        <>
+            <div className={displayBar ? 'vertical-progress-bar' : 'hidden'} style={{ left: `${formatBar(completedBar || 0)}%` }} />
+            <div className="progress-bar">
                 <div style={outsideStyles}>
                     <div style={containerStyles}>
                         <div style={fillerStyles}>
@@ -113,7 +113,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
                     )}
                 </div>
             </div>
-        </React.Fragment>
+        </>
     );
 };
 

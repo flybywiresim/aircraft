@@ -21,9 +21,7 @@ export default class SimpleInput extends React.Component<SimpleInputProps, Simpl
     constructor(props: SimpleInputProps) {
         super(props);
 
-        this.state = {
-            value: this.props.value ? this.props.value : '',
-        };
+        this.state = { value: this.props.value ? this.props.value : '' };
     }
 
     public componentDidUpdate(prevProps: SimpleInputProps): void {
@@ -43,9 +41,7 @@ export default class SimpleInput extends React.Component<SimpleInputProps, Simpl
         }
 
         this.props.onChange?.(originalValue);
-        this.setState({
-            value: originalValue,
-        });
+        this.setState({ value: originalValue });
     }
 
     private onFocusOut(event: React.FocusEvent<HTMLInputElement>): void {
@@ -53,9 +49,7 @@ export default class SimpleInput extends React.Component<SimpleInputProps, Simpl
         const constrainedValue = this.getConstrainedValue(value);
 
         this.props.onChange?.(constrainedValue);
-        this.setState({
-            value: constrainedValue,
-        });
+        this.setState({ value: constrainedValue });
     }
 
     private getConstrainedValue(value: string): string {
@@ -77,7 +71,7 @@ export default class SimpleInput extends React.Component<SimpleInputProps, Simpl
     render() {
         return (
             <div className={`flex ${this.props.className} ${this.props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
-                <div className={`flex flex-grow ${this.props.noLeftMargin ? '' : 'm-2.5' } items-center ${this.props.reverse ? 'justify-start' : 'justify-end'}`}>{this.props.label ?? ''}</div>
+                <div className={`flex flex-grow ${this.props.noLeftMargin ? '' : 'm-2.5'} items-center ${this.props.reverse ? 'justify-start' : 'justify-end'}`}>{this.props.label ?? ''}</div>
                 <div className="flex items-center">
                     <input
                         className="w-28 text-lg bg-gray-900 px-3 py-1.5 rounded"

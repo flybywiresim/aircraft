@@ -177,98 +177,162 @@ export const FuelPage = (props: FuelPageProps) => {
     return (
         <div className="text-white px-6">
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info">
-            <h2 className="text-2xl font-medium">Left inner tank</h2>
+                <h2 className="text-2xl font-medium">Left inner tank</h2>
                 <div className="flex mt-4">
-                    <ProgressBar height='10px' width='200px' isLabelVisible={false} displayBar completedBar={getFuelBarPercent(LInnTarget, innerCellGallon)} bgcolor='#3b82f6'
-                    completed={(Math.max(LInnCurrent, 0) / innerCellGallon) * 100} />
+                    <ProgressBar
+                        height="10px"
+                        width="200px"
+                        isLabelVisible={false}
+                        displayBar
+                        completedBar={getFuelBarPercent(LInnTarget, innerCellGallon)}
+                        bgcolor="#3b82f6"
+                        completed={(Math.max(LInnCurrent, 0) / innerCellGallon) * 100}
+                    />
                     <div className="fuel-label">
                         <label>
-                            {convertFuelValue(LInnCurrent)}/{round(innerCell())} {currentUnit()}
+                            {convertFuelValue(LInnCurrent)}
+                            /
+                            {round(innerCell())}
+                            {' '}
+                            {currentUnit()}
                         </label>
                     </div>
                 </div>
             </div>
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info outter">
-            <h2 className="text-2xl font-medium">Left outer tank</h2>
+                <h2 className="text-2xl font-medium">Left outer tank</h2>
                 <div className="flex mt-4">
-                    <ProgressBar height='10px' width='200px' displayBar completedBar={getFuelBarPercent(LOutTarget, outerCellGallon)} isLabelVisible={false} bgcolor='#3b82f6'
-                    completed={(Math.max(LOutCurrent, 0) / outerCellGallon) * 100} />
+                    <ProgressBar
+                        height="10px"
+                        width="200px"
+                        displayBar
+                        completedBar={getFuelBarPercent(LOutTarget, outerCellGallon)}
+                        isLabelVisible={false}
+                        bgcolor="#3b82f6"
+                        completed={(Math.max(LOutCurrent, 0) / outerCellGallon) * 100}
+                    />
                     <div className="fuel-label">
                         <label>
-                            {convertFuelValue(LOutCurrent)}/{round(outerCell())} {currentUnit()}
+                            {convertFuelValue(LOutCurrent)}
+                            /
+                            {round(outerCell())}
+                            {' '}
+                            {currentUnit()}
                         </label>
                     </div>
                 </div>
             </div>
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info center-tanks-info">
-            <h2 className="text-2xl font-medium">Center tank</h2>
+                <h2 className="text-2xl font-medium">Center tank</h2>
                 <div className="flex mt-4">
-                    <ProgressBar height='10px' width='200px' displayBar completedBar={getFuelBarPercent(centerTarget, centerTankGallon)} isLabelVisible={false} bgcolor='#3b82f6'
-                    completed={(Math.max(centerCurrent, 0) / centerTankGallon) * 100} />
+                    <ProgressBar
+                        height="10px"
+                        width="200px"
+                        displayBar
+                        completedBar={getFuelBarPercent(centerTarget, centerTankGallon)}
+                        isLabelVisible={false}
+                        bgcolor="#3b82f6"
+                        completed={(Math.max(centerCurrent, 0) / centerTankGallon) * 100}
+                    />
                     <div className="fuel-label">
                         <label>
-                            {convertFuelValueCenter(centerCurrent)}/{round(centerTank())} {currentUnit()}
+                            {convertFuelValueCenter(centerCurrent)}
+                            /
+                            {round(centerTank())}
+                            {' '}
+                            {currentUnit()}
                         </label>
                     </div>
                 </div>
             </div>
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info refuel-info">
-            <h2 className="text-2xl font-medium">Refuel</h2><label className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</label>
-                    <div className="flex mt-n5">
-                        <div className="fuel-progress"><Slider value={sliderValue} onInput={(value) => updateSlider(value)} className="w-48" /></div>
-                        <div className="fuel-label"><SimpleInput noLeftMargin={true} placeholder={round(totalFuel()).toString()} number={true} min={0}
-                        max={round(totalFuel())} value={inputValue} onChange={(x) => updateDesiredFuel(x)} /></div>
-                        <div className="unit-label">{currentUnit()}</div>
-                        <div className="separation-line-refuel"></div>
-                        <div className="manage-fuel-truck">
-                            <div className='call-inop fuel-truck disabled'><IconTruck /></div>
-                            <label className="inop-label-fuel-page">Inop.</label>
-                        </div>
+                <h2 className="text-2xl font-medium">Refuel</h2>
+                <label className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</label>
+                <div className="flex mt-n5">
+                    <div className="fuel-progress"><Slider value={sliderValue} onInput={(value) => updateSlider(value)} className="w-48" /></div>
+                    <div className="fuel-label">
+                        <SimpleInput
+                            noLeftMargin
+                            placeholder={round(totalFuel()).toString()}
+                            number
+                            min={0}
+                            max={round(totalFuel())}
+                            value={inputValue}
+                            onChange={(x) => updateDesiredFuel(x)}
+                        />
                     </div>
-                    <span>Current fuel :</span>
-                    <div className="flex mt-n5">
-                        <ProgressBar height='10px' width='200px' displayBar={false} isLabelVisible={false} bgcolor='#3b82f6' completed={(totalCurrent() / round(totalFuel())) * 100} />
-                        <div className="fuel-label">
-                            <label>
-                                {totalCurrent()}/{round(totalFuel())} {currentUnit()}
-                            </label>
-                        </div>
+                    <div className="unit-label">{currentUnit()}</div>
+                    <div className="separation-line-refuel" />
+                    <div className="manage-fuel-truck">
+                        <div className="call-inop fuel-truck disabled"><IconTruck /></div>
+                        <label className="inop-label-fuel-page">Inop.</label>
                     </div>
-            </div>
-            <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info right-tanks-info">
-            <h2 className="text-2xl font-medium">Right inner tank</h2>
-                <div className="flex mt-4">
-                    <ProgressBar height='10px' width='200px' displayBar completedBar={getFuelBarPercent(RInnTarget, innerCellGallon)} isLabelVisible={false} bgcolor='#3b82f6'
-                    completed={(Math.max(RInnCurrent, 0) / innerCellGallon) * 100} />
+                </div>
+                <span>Current fuel :</span>
+                <div className="flex mt-n5">
+                    <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(totalCurrent() / round(totalFuel())) * 100} />
                     <div className="fuel-label">
                         <label>
-                            {convertFuelValue(RInnCurrent)}/{round(innerCell())} {currentUnit()}
+                            {totalCurrent()}
+                            /
+                            {round(totalFuel())}
+                            {' '}
+                            {currentUnit()}
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info right-tanks-info">
+                <h2 className="text-2xl font-medium">Right inner tank</h2>
+                <div className="flex mt-4">
+                    <ProgressBar
+                        height="10px"
+                        width="200px"
+                        displayBar
+                        completedBar={getFuelBarPercent(RInnTarget, innerCellGallon)}
+                        isLabelVisible={false}
+                        bgcolor="#3b82f6"
+                        completed={(Math.max(RInnCurrent, 0) / innerCellGallon) * 100}
+                    />
+                    <div className="fuel-label">
+                        <label>
+                            {convertFuelValue(RInnCurrent)}
+                            /
+                            {round(innerCell())}
+                            {' '}
+                            {currentUnit()}
                         </label>
                     </div>
                 </div>
             </div>
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info right-tanks-info outter">
-            <h2 className="text-2xl font-medium">Right outer tank</h2>
+                <h2 className="text-2xl font-medium">Right outer tank</h2>
                 <div className="flex mt-4">
-                    <ProgressBar height='10px' width='200px' displayBar completedBar={getFuelBarPercent(ROutTarget, outerCellGallon)} isLabelVisible={false} bgcolor='#3b82f6'
-                    completed={(Math.max(ROutCurrent, 0) / outerCellGallon) * 100} />
+                    <ProgressBar
+                        height="10px"
+                        width="200px"
+                        displayBar
+                        completedBar={getFuelBarPercent(ROutTarget, outerCellGallon)}
+                        isLabelVisible={false}
+                        bgcolor="#3b82f6"
+                        completed={(Math.max(ROutCurrent, 0) / outerCellGallon) * 100}
+                    />
                     <div className="fuel-label">
                         <label>
-                            {convertFuelValue(ROutCurrent)}/{round(outerCell())} {currentUnit()}
+                            {convertFuelValue(ROutCurrent)}
+                            /
+                            {round(outerCell())}
+                            {' '}
+                            {currentUnit()}
                         </label>
                     </div>
                 </div>
             </div>
-            <div className="wrapper visible-tank center-tank" style={{background: formatFuelFilling(centerCurrent,centerTankGallon)}}>
-            </div>
-            <div className="wrapper visible-tank inner-left-tank" style={{background: formatFuelFilling(LInnCurrent,innerCellGallon)}}>
-            </div>
-            <div className="wrapper visible-tank inner-right-tank" style={{background: formatFuelFilling(RInnCurrent,innerCellGallon)}}>
-            </div>
-            <div className="wrapper visible-tank outer-left-tank" style={{background: formatFuelFilling(LOutCurrent,outerCellGallon)}}>
-            </div>
-            <div className="wrapper visible-tank outer-right-tank" style={{background: formatFuelFilling(ROutCurrent,outerCellGallon)}}>
-            </div>
+            <div className="wrapper visible-tank center-tank" style={{ background: formatFuelFilling(centerCurrent, centerTankGallon) }} />
+            <div className="wrapper visible-tank inner-left-tank" style={{ background: formatFuelFilling(LInnCurrent, innerCellGallon) }} />
+            <div className="wrapper visible-tank inner-right-tank" style={{ background: formatFuelFilling(RInnCurrent, innerCellGallon) }} />
+            <div className="wrapper visible-tank outer-left-tank" style={{ background: formatFuelFilling(LOutCurrent, outerCellGallon) }} />
+            <div className="wrapper visible-tank outer-right-tank" style={{ background: formatFuelFilling(ROutCurrent, outerCellGallon) }} />
             <img className="airplane-fuel w-full" src={fuselage} />
             <div className="bg-gray-800 rounded-xl text-white shadow-lg mr-4 overflow-x-hidden refuel-speed">
                 <div className="mb-3.5 flex flex-row justify-between items-center">
@@ -280,10 +344,10 @@ export const FuelPage = (props: FuelPageProps) => {
                     </SelectGroup>
                 </div>
             </div>
-            <div className="wrapper hiding-block hiding-block-top-left"></div>
-            <div className="wrapper hiding-block hiding-block-bottom-left"></div>
-            <div className="wrapper hiding-block hiding-block-top-right"></div>
-            <div className="wrapper hiding-block hiding-block-bottom-right"></div>
+            <div className="wrapper hiding-block hiding-block-top-left" />
+            <div className="wrapper hiding-block hiding-block-bottom-left" />
+            <div className="wrapper hiding-block hiding-block-top-right" />
+            <div className="wrapper hiding-block hiding-block-bottom-right" />
         </div>
     );
 };
