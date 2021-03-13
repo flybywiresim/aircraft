@@ -16,12 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import './Loadsheet.scss';
 
 type LoadsheetPageProps = {
     loadsheet: string,
 };
+
 
 const LoadSheetWidget = (props: LoadsheetPageProps) => {
     const position = useRef({ top: 0, y: 0 });
@@ -29,6 +30,26 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
 
     const [fontSize, setFontSize] = useState(14);
     const [imageSize, setImageSize] = useState(60);
+
+    useEffect(() => {
+        const pImages = ref.current?.getElementsByTagName('img');
+
+        if (pImages) {
+            for (let i = 0; i < pImages.length; i++) {
+                pImages[i].style.width = `${imageSize}%`;
+            }
+        }
+    }, [imageSize]);
+
+    useEffect(() => {
+        const pLoadsheet = ref.current?.firstChild as HTMLElement;
+
+        if (pLoadsheet) {
+            pLoadsheet.style.fontSize = `${fontSize}px`;
+            pLoadsheet.style.lineHeight = `${fontSize}px`;
+
+        }
+    }, [fontSize]);
 
     const mouseDownHandler = (event) => {
         position.current.top = ref.current ? ref.current.scrollTop : 0;
@@ -54,11 +75,10 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         let cFontSize = fontSize;
         let cImageSize = imageSize;
 
-        if (cFontSize < 24) {
+        if (cFontSize < 26) {
             cFontSize += 2;
             cImageSize += 5;
-            handleScaling(cFontSize);
-            setImageSize(cImageSize);
+            handleScaling(cFontSize, cImageSize);
         }
     };
 
@@ -69,26 +89,13 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         if (cFontSize > 14) {
             cFontSize -= 2;
             cImageSize -= 5;
-            handleScaling(cFontSize);
-            setImageSize(cImageSize);
+            handleScaling(cFontSize, cImageSize);
         }
     };
 
-    const handleScaling = (cFontSize) => {
-        const pLoadsheet = ref.current?.firstChild as HTMLElement;
-
-        const pImages = ref.current?.getElementsByTagName('img');
-
-        if (pLoadsheet) {
-            pLoadsheet.style.fontSize = `${cFontSize}px`;
-            pLoadsheet.style.lineHeight = `${cFontSize}px`;
-            setFontSize(cFontSize);
-            if (pImages) {
-                for (let i = 0; i < pImages.length; i++) {
-                    pImages[i].style.width = `${imageSize}%`;
-                }
-            }
-        }
+    const handleScaling = (cFontSize, cImageSize) => {
+        setFontSize(cFontSize);
+        setImageSize(cImageSize);
     };
 
     return (
