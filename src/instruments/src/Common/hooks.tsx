@@ -17,7 +17,7 @@
  */
 
 import React from 'react';
-import { rootElement } from './defaults';
+import { getRootElement } from './defaults';
 
 export const useUpdate = (handler: (deltaTime: number) => void) => {
     // Logic based on https://usehooks.com/useEventListener/
@@ -30,9 +30,9 @@ export const useUpdate = (handler: (deltaTime: number) => void) => {
         const wrappedHandler = (event: CustomEvent) => {
             savedHandler.current(event.detail);
         };
-        rootElement.addEventListener('update', wrappedHandler);
+        getRootElement().addEventListener('update', wrappedHandler);
         return () => {
-            rootElement.removeEventListener('update', wrappedHandler);
+            getRootElement().removeEventListener('update', wrappedHandler);
         };
     });
 };
@@ -52,9 +52,9 @@ export const useInteractionEvent = (event: string, handler: (any?) => void): voi
                 savedHandler.current();
             }
         };
-        rootElement.addEventListener(event, wrappedHandler);
+        getRootElement().addEventListener(event, wrappedHandler);
         return () => {
-            rootElement.removeEventListener(event, wrappedHandler);
+            getRootElement().removeEventListener(event, wrappedHandler);
         };
     }, [event]);
 };
@@ -70,9 +70,9 @@ export const useInteractionEvents = (events: string[], handler: (any?) => void):
         const wrappedHandler = () => {
             savedHandler.current();
         };
-        events.forEach((event) => rootElement.addEventListener(event, wrappedHandler));
+        events.forEach((event) => getRootElement().addEventListener(event, wrappedHandler));
         return () => {
-            events.forEach((event) => rootElement.removeEventListener(event, wrappedHandler));
+            events.forEach((event) => getRootElement().removeEventListener(event, wrappedHandler));
         };
     }, [
         ...events,
