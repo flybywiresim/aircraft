@@ -61,7 +61,6 @@
   "dependencies": {
     "@flybywiresim/api-client": "~0.7.0",
     "@flybywiresim/map": "~0.5.2",
-    "@ramonak/react-progress-bar": "^2.1.3",
     "@tabler/icons": "^1.38.0",
     "@tailwindcss/postcss7-compat": "^2.0.2",
     "aewx-metar-parser": "~0.10.1",
@@ -70,7 +69,6 @@
     "lodash": "^4.17.20",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
-    "react-input-slider": "^6.0.0",
     "react-leaflet": "~3.0.5",
     "react-redux": "^7.2.2",
     "react-router": "~5.2.0",

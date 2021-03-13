@@ -17,79 +17,61 @@
  */
 
 import React from 'react';
-import { IconPlayerPlay, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive } from '@tabler/icons'
+import { IconTruck } from '@tabler/icons';
 import { Slider } from '../../Components/Form/Slider';
-import { Select, SelectGroup, SelectItem } from '../../Components/Form/Select';
-import ProgressBar from "../../Components/Progress/Progress";
-import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput'
-import '../Styles/Fuel.scss'
+import { SelectGroup, SelectItem } from '../../Components/Form/Select';
+import { ProgressBar } from "../../Components/Progress/Progress";
+import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import '../Styles/Fuel.scss';
 import { round } from 'lodash';
-import fuselage from '../../Assets/320neo_outline_fuel.svg'
+import fuselage from '../../Assets/320neo_outline_fuel.svg';
 import { useState } from 'react';
-import { useSplitSimVar, useSimVar } from '../../../Common/simVars';
+import { useSimVar } from '../../../Common/simVars';
 import { useSimVarSyncedPersistentProperty } from '../../../Common/persistence';
 
 type FuelPageProps = {
     fuels: {}
 };
 
-
-const FuelWidget = (props: FuelPageProps) => {
+export const FuelPage = (props: FuelPageProps) => {
     const totalFuelGallons = 6243;
     const outerCellGallon = 227;
-    const outerCellUnusableGallon = 1;
-    const innerCellUnusableGallon = 7;
+    // const outerCellUnusableGallon = 1;
+    // const innerCellUnusableGallon = 7;
     const innerCellGallon = 1809;
-    const centerTankUnusableGallon = 24;
+    // const centerTankUnusableGallon = 24;
     const centerTankGallon = 2173;
     const [usingMetrics, setUsingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
-    const currentUnit = () => {
-        return usingMetrics == 1 ? 'Kgs' : 'Lbs';
-    }
-    const convertUnit = () => {
-        return usingMetrics == 1 ? 1 : 2.20462;
-    }
-    const [galToKg] = useSimVar("FUEL WEIGHT PER GALLON", "kilograms", 1_000);
-    const outerCell = () => {
-        return outerCellGallon * galToKg * convertUnit();
-    };
-    const outerCells = () => {
-        return outerCell() * 2;
-    };
-    const innerCell = () => {
-        return innerCellGallon * galToKg * convertUnit();
-    };
-    const innerCells = () => {
-        return innerCell() * 2;
-    };
-    const centerTank = () => {
-        return centerTankGallon * galToKg * convertUnit();
-    }
-    const totalFuel = () => {
-        return centerTank() + innerCells() + outerCells();
-    }
+    const currentUnit = () => usingMetrics == 1 ? 'Kgs' : 'Lbs';
+    const convertUnit = () => usingMetrics == 1 ? 1 : 2.20462;
+    const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 1_000);
+    const outerCell = () => outerCellGallon * galToKg * convertUnit();
+    const outerCells = () => outerCell() * 2;
+    const innerCell = () => innerCellGallon * galToKg * convertUnit();
+    const innerCells = () => innerCell() * 2;
+    const centerTank = () => centerTankGallon * galToKg * convertUnit();
+    const totalFuel = () => centerTank() + innerCells() + outerCells();
     const [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 1_000);
     const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 1_000);
-    const [eng1Running] = useSimVar("ENG COMBUSTION:1", "Bool", 1_000);
-    const [eng2Running] = useSimVar("ENG COMBUSTION:2", "Bool", 1_000);
+    const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 1_000);
+    const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 1_000);
     const [refuelRate, setRefuelRate] = useSimVarSyncedPersistentProperty('L:A32NX_REFUEL_RATE_SETTING', 'Number', 'REFUEL_RATE_SETTING');
     const [sliderValue, setSliderValue] = useState<number>();
     const [inputValue, setInputValue] = useState<number>();
     const [totalTarget, setTotalTarget] = useState<number>();
-    const [centerTarget, setCenterTarget] = useSimVar("L:A32NX_FUEL_CENTER_DESIRED", "Number");
-    const [LInnTarget, setLInnTarget] = useSimVar("L:A32NX_FUEL_LEFT_MAIN_DESIRED", "Number");
-    const [LOutTarget, setLOutTarget] = useSimVar("L:A32NX_FUEL_LEFT_AUX_DESIRED", "Number");
-    const [RInnTarget, setRInnTarget] = useSimVar("L:A32NX_FUEL_RIGHT_MAIN_DESIRED", "Number");
-    const [ROutTarget, setROutTarget] = useSimVar("L:A32NX_FUEL_RIGHT_AUX_DESIRED", "Number");
-    const [centerCurrent, setCenterCurrent] = useSimVar("FUEL TANK CENTER QUANTITY", "Gallons", 1_000);
-    const [LInnCurrent, setLInnCurrent] = useSimVar("FUEL TANK LEFT MAIN QUANTITY", "Gallons", 1_000);
-    const [LOutCurrent, setLOutCurrent] = useSimVar("FUEL TANK LEFT AUX QUANTITY", "Gallons", 1_000);
-    const [RInnCurrent, setRInnCurrent] = useSimVar("FUEL TANK RIGHT MAIN QUANTITY", "Gallons", 1_000);
-    const [ROutCurrent, setROutCurrent] = useSimVar("FUEL TANK RIGHT AUX QUANTITY", "Gallons", 1_000);
-    const getFuelBarPercent = (curr:number, max: number) => {
-        return (Math.max(curr,0)/max)*100;
-    }
+    const [centerTarget, setCenterTarget] = useSimVar('L:A32NX_FUEL_CENTER_DESIRED', 'Number');
+    const [LInnTarget, setLInnTarget] = useSimVar('L:A32NX_FUEL_LEFT_MAIN_DESIRED', 'Number');
+    const [LOutTarget, setLOutTarget] = useSimVar('L:A32NX_FUEL_LEFT_AUX_DESIRED', 'Number');
+    const [RInnTarget, setRInnTarget] = useSimVar('L:A32NX_FUEL_RIGHT_MAIN_DESIRED', 'Number');
+    const [ROutTarget, setROutTarget] = useSimVar('L:A32NX_FUEL_RIGHT_AUX_DESIRED', 'Number');
+    const [centerCurrent, setCenterCurrent] = useSimVar('FUEL TANK CENTER QUANTITY', 'Gallons', 1_000);
+    const [LInnCurrent, setLInnCurrent] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'Gallons', 1_000);
+    const [LOutCurrent, setLOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'Gallons', 1_000);
+    const [RInnCurrent, setRInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons', 1_000);
+    const [ROutCurrent, setROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
+    const getFuelBarPercent = (curr:number, max: number) => (Math.max(curr,0)/max)*100;
     const airplaneCanRefuel = () => {
+        // TODO : REMOVE THIS IF WHENEVER PERSISTANCE IS IMPLEMENTED
         if(usingMetrics != 1){
             setUsingMetrics(1);
         }
@@ -98,12 +80,8 @@ const FuelWidget = (props: FuelPageProps) => {
         }
         return true;
     }
-    const convertToGallon = (curr : number) => {
-        return curr * (1/convertUnit()) * (1/galToKg);
-    }
-    const totalCurrentGallon = () => {
-        return round(Math.max((LInnCurrent + (LOutCurrent) + (RInnCurrent) + (ROutCurrent) + (centerCurrent)),0));
-    }
+    const convertToGallon = (curr : number) => curr * (1/convertUnit()) * (1/galToKg);
+    const totalCurrentGallon = () => round(Math.max((LInnCurrent + (LOutCurrent) + (RInnCurrent) + (ROutCurrent) + (centerCurrent)),0));
     const totalCurrent = () => {
         let val = round(totalCurrentGallon() * getFuelMultiplier());
         if(centerCurrent>0 && centerCurrent<centerTankGallon){
@@ -114,32 +92,28 @@ const FuelWidget = (props: FuelPageProps) => {
     const formatRefuelStatusLabel = () => {
         if(airplaneCanRefuel()){
             if(round(totalTarget) == totalCurrentGallon()) {
-                return "(Available)";
+                return '(Available)';
             }
-            return ((totalTarget||0) > (totalFuelGallons)) ? "(Refueling...)" : "(Defueling...)" ;
+            return ((totalTarget||0) > (totalFuelGallons)) ? '(Refueling...)' : '(Defueling...)' ;
         }
-        return "(Unavailable)";
+        return '(Unavailable)';
     }
     const formatRefuelStatusClass = () => {
         let newClass = 'fuel-truck-avail';
         if(airplaneCanRefuel()){
-            if(totalTarget == totalCurrent()) {
+            if(round(totalTarget) == totalCurrentGallon()) {
                 return newClass + ' completed-text'
             }
             return newClass + ' in-progress-text'
         }
         return newClass + ' disabled-text'
     }
-    const getFuelMultiplier = () => {
-        return galToKg * convertUnit();
-    }
+    const getFuelMultiplier = () => galToKg * convertUnit();
     const formatFuelFilling = (curr: number, max: number) => {
         let percent = (Math.max(curr,0)/max)*100;
         return 'linear-gradient(to top, #3b82f6 '+percent+'%,#ffffff00 0%)';
     }
-    const convertFuelValue = (curr: number) => {
-        return round(round(Math.max(curr,0))*getFuelMultiplier());
-    }
+    const convertFuelValue = (curr: number) => round(round(Math.max(curr,0))*getFuelMultiplier());
     const convertFuelValueCenter = (curr: number) => {
         if(curr == centerTankGallon){
             return convertFuelValue(curr);
@@ -277,5 +251,3 @@ const FuelWidget = (props: FuelPageProps) => {
         </div>
     );
 };
-
-export default FuelWidget;

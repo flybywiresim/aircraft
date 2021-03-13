@@ -21,7 +21,7 @@ import React from 'react';
 import OverviewPage from './Pages/OverviewPage';
 import LoadsheetPage from './Pages/LoadsheetPage';
 import { Navbar } from "../Components/Navbar";
-import FuelPage from './Pages/FuelPage';
+import { FuelPage } from './Pages/FuelPage';
 
 type DispatchProps = {
     loadsheet: string,
