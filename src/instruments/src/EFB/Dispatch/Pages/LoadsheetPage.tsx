@@ -25,14 +25,14 @@ type LoadsheetPageProps = {
 
 const LoadSheetWidget = (props: LoadsheetPageProps) => {
     const position = useRef({ top: 0, y: 0 });
-    const ref = useRef(null);
+    const ref = useRef<HTMLDivElement>(null);
 
 	const [fontSize, setFontSize] = useState(14);
 	const [imageSize, setImageSize] = useState(60);
 
 
     const mouseDownHandler = (event) => {
-      position.current.top = ref.current.scrollTop;
+      position.current.top = ref.current ? ref.current.scrollTop : 0;
       position.current.y = event.clientY;
 
       document.addEventListener('mousemove', mouseMoveHandler);
@@ -41,7 +41,9 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
 
     const mouseMoveHandler = (event) => {
       const dy = event.clientY - position.current.y;
-      ref.current.scrollTop = position.current.top - dy;
+	  if(ref.current) {
+		ref.current.scrollTop = position.current.top - dy;
+	  }
     }
 
     const mouseUpHandler = function () {
@@ -74,16 +76,17 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
 	};
 
 	const handleScaling = (cFontSize) => {
-		const pLoadsheet = ref.current.firstChild;
-		const pImages = ref.current.getElementsByTagName("img");
+		const pLoadsheet= ref.current?.firstChild as HTMLElement;
+
+		const pImages = ref.current?.getElementsByTagName("img") as HTMLCollectionOf<HTMLElement>;
 
 		if(pLoadsheet){
 			pLoadsheet.style.fontSize = `${cFontSize}px`;
 			pLoadsheet.style.lineHeight = `${cFontSize}px`;
 			setFontSize(cFontSize);
 			if(pImages) {
-				for(let image of pImages) {
-					image.style.width = `${imageSize}%`
+				for(let i=0; i<pImages.length;i++) {
+					pImages[i].style.width = `${imageSize}%`
 				}
 			}
 		}
