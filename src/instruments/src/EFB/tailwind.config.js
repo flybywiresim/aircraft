@@ -58,6 +58,9 @@ module.exports = {
                 'lg-dark': '1px 1px 10px 1px rgba(0, 0, 0, 0.15)',
                 '2xl-light': '0 0 50px -20px rgba(255, 255, 255, 0.15)',
             },
+            borderWidth: {
+                6: '6px',
+            },
         },
     },
     variants: {
