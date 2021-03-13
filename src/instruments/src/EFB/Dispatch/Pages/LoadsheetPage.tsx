@@ -95,13 +95,19 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         <div className="px-6">
             <div className="w-full">
                 <div className="relative bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4">
-                    {props.loadsheet !== 'N/A'
-                      ? <>
+                    {props.loadsheet !== "N/A" ? (
+                        <>
                             <div className="flex flex-col justify-end absolute bottom-5 right-16">
-                                <button onClick={fontIncreaseHandler} className="font-size-button">
+                                <button
+                                    onClick={fontIncreaseHandler}
+                                    className="font-size-button"
+                                >
                                     +
-                                 </button>
-                                <button onClick={fontDecreaseHandler} className="font-size-button">
+                                </button>
+                                <button
+                                    onClick={fontDecreaseHandler}
+                                    className="font-size-button"
+                                >
                                     -
                                 </button>
                             </div>
@@ -109,12 +115,17 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
                                 ref={ref}
                                 className="loadsheet-container grabbable show-scrollbar overflow-y-scroll"
                                 onMouseDown={mouseDownHandler}
-                                dangerouslySetInnerHTML={{ __html: props.loadsheet }} />
+                                dangerouslySetInnerHTML={{
+                                    __html: props.loadsheet,
+                                }}
+                            />
                         </>
-                        : "N/A"}
+                    ) : (
+                        'N/A'
+                    )}
                 </div>
             </div>
         </div>
     );
-}
+};
 export default LoadSheetWidget;
