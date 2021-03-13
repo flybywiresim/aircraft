@@ -246,7 +246,7 @@ export const FuelPage = () => {
                 <label htmlFor="fuel-label" className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</label>
                 <div className="flex mt-n5">
                     <div className="fuel-progress"><Slider value={sliderValue} onInput={(value) => updateSlider(value)} className="w-48" /></div>
-                    <div className="fuel-label">
+                    <div className="fuel-label pad15">
                         <SimpleInput
                             label=""
                             noLeftMargin
@@ -262,8 +262,7 @@ export const FuelPage = () => {
                     <div className="separation-line-refuel" />
                     <div className="manage-fuel-truck">
                         <div className="call-inop fuel-truck disabled"><IconTruck /></div>
-                        {/* @ts-ignore */}
-                        <label className="inop-label-fuel-page">Inop.</label>
+                        <span className="inop-label-fuel-page">Inop.</span>
                     </div>
                 </div>
                 <span>Current fuel :</span>

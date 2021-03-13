@@ -129,6 +129,9 @@
 .mt-n5 {
   margin-top: -0.5rem;
 }
+.pad15 {
+  padding-left: 15px;
+}
 .actual-fuel {
   background: -webkit-linear-gradient(top, #3b82f6 50%, #ffffff00 0%);
   background: -moz-linear-gradient(top, #3b82f6 50%, #ffffff00 0%);
@@ -141,7 +144,7 @@
 }
 .unit-label {
   position: absolute;
-  left: 62%;
+  left: 65%;
   top: 3.75rem;
   color: #9ca3af;
 }
