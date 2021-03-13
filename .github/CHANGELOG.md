@@ -182,6 +182,7 @@
 1. [CDU] Reworked Flight Phase system - @MisterChocker (Leon)
 1. [MISC] Fixed button labels not showing when unlit - @ImenesFBW (Imenes)
 1. [EFB] Added functionality to ground services page - @Saschl (saschl#9432)
+1. [MISC] Add cockpit.cfg and fixes flaps full angle in external view - @donstim (donbikes#4084)
 1. [ELEC] Power consumption during different phases of flight - @davidwalschots (David Walschots)
 1. [ELEC] The APU generator's load % is calculated and displayed on the ECAM - @davidwalschots (David Walschots)
 1. [ELEC] The engine generator's load % is calculated and displayed on the ECAM - @davidwalschots (David Walschots)
@@ -211,7 +212,6 @@
 1. [ELEC] The BCL opens the contactor on entering the EMER ELEC situation - @davidwalschots (David Walschots)
 1. [ELEC] The BCL opens the contactor when in EMER ELEC and over three minutes have passed with the APU MASTER SW in the ON position - @davidwalschots (David Walschots)
 1. [ELEC] When the battery push button is in the OFF position, the BCL is not powered. This means that any conditions which depend on external factors (such as APU start) or the timers for certain conditions are not remembered - @davidwalschots (David Walschots)
-
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
