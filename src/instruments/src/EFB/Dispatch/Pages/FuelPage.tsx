@@ -189,7 +189,7 @@ export const FuelPage = (props: FuelPageProps) => {
                         completed={(Math.max(LInnCurrent, 0) / innerCellGallon) * 100}
                     />
                     <div className="fuel-label">
-                        <label>
+                        <label htmlFor="fuel-label">
                             {convertFuelValue(LInnCurrent)}
                             /
                             {round(innerCell())}
@@ -212,7 +212,7 @@ export const FuelPage = (props: FuelPageProps) => {
                         completed={(Math.max(LOutCurrent, 0) / outerCellGallon) * 100}
                     />
                     <div className="fuel-label">
-                        <label>
+                        <label htmlFor="fuel-label">
                             {convertFuelValue(LOutCurrent)}
                             /
                             {round(outerCell())}
@@ -235,7 +235,7 @@ export const FuelPage = (props: FuelPageProps) => {
                         completed={(Math.max(centerCurrent, 0) / centerTankGallon) * 100}
                     />
                     <div className="fuel-label">
-                        <label>
+                        <label htmlFor="fuel-label">
                             {convertFuelValueCenter(centerCurrent)}
                             /
                             {round(centerTank())}
@@ -265,14 +265,14 @@ export const FuelPage = (props: FuelPageProps) => {
                     <div className="separation-line-refuel" />
                     <div className="manage-fuel-truck">
                         <div className="call-inop fuel-truck disabled"><IconTruck /></div>
-                        <label className="inop-label-fuel-page">Inop.</label>
+                        <label htmlFor="fuel-truck-inop" className="inop-label-fuel-page">Inop.</label>
                     </div>
                 </div>
                 <span>Current fuel :</span>
                 <div className="flex mt-n5">
                     <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(totalCurrent() / round(totalFuel())) * 100} />
                     <div className="fuel-label">
-                        <label>
+                        <label htmlFor="fuel-label">
                             {totalCurrent()}
                             /
                             {round(totalFuel())}
@@ -295,7 +295,7 @@ export const FuelPage = (props: FuelPageProps) => {
                         completed={(Math.max(RInnCurrent, 0) / innerCellGallon) * 100}
                     />
                     <div className="fuel-label">
-                        <label>
+                        <label htmlFor="fuel-label">
                             {convertFuelValue(RInnCurrent)}
                             /
                             {round(innerCell())}
@@ -318,7 +318,7 @@ export const FuelPage = (props: FuelPageProps) => {
                         completed={(Math.max(ROutCurrent, 0) / outerCellGallon) * 100}
                     />
                     <div className="fuel-label">
-                        <label>
+                        <label htmlFor="fuel-label">
                             {convertFuelValue(ROutCurrent)}
                             /
                             {round(outerCell())}
@@ -338,9 +338,9 @@ export const FuelPage = (props: FuelPageProps) => {
                 <div className="mb-3.5 flex flex-row justify-between items-center">
                     <span className="text-lg text-gray-300">Refuel Time</span>
                     <SelectGroup>
-                        <SelectItem selected={refuelRate == 2} onSelect={() => setRefuelRate(2)}>Instant</SelectItem>
-                        <SelectItem selected={refuelRate == 1} onSelect={() => setRefuelRate(1)}>Fast</SelectItem>
-                        <SelectItem selected={refuelRate == 0} onSelect={() => setRefuelRate(0)}>Real</SelectItem>
+                        <SelectItem selected={refuelRate === 2} onSelect={() => setRefuelRate(2)}>Instant</SelectItem>
+                        <SelectItem selected={refuelRate === 1} onSelect={() => setRefuelRate(1)}>Fast</SelectItem>
+                        <SelectItem selected={refuelRate === 0} onSelect={() => setRefuelRate(0)}>Real</SelectItem>
                     </SelectGroup>
                 </div>
             </div>

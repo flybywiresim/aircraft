@@ -46,9 +46,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         if (alignmentOption === 'right') {
             return 'flex-end';
         }
-        {
-            return null;
-        }
+        return null;
     };
 
     const formatBar = (percent: number) => 6 + 0.51 * percent;
