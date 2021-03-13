@@ -97,11 +97,11 @@ impl Potential {
     }
 
     pub fn count(&self) -> usize {
-        self.origins.iter().filter_map(|&x| x).count()
+        self.origins().count()
     }
 
-    pub fn origins(&self) -> std::slice::Iter<'_, Option<PotentialOrigin>> {
-        self.origins.iter()
+    pub fn origins(&self) -> impl Iterator<Item = PotentialOrigin> + '_ {
+        self.origins.iter().filter_map(|&x| x)
     }
 
     pub fn merge(&self, other: &Potential) -> Self {
@@ -109,12 +109,7 @@ impl Potential {
         // "equality" some slack. This prevents continuously switching between potential
         // sources, such as the battery.
         if (self.raw - other.raw).abs() <= ElectricPotential::new::<volt>(0.001) {
-            let mut elements = self
-                .origins
-                .iter()
-                .filter_map(|&x| x)
-                .chain(other.origins.iter().filter_map(|&x| x))
-                .unique();
+            let mut elements = self.origins().chain(other.origins()).unique();
 
             let merged = Self {
                 origins: [elements.next(), elements.next(), elements.next()],

@@ -252,7 +252,7 @@ impl PowerConsumption {
     }
 
     pub fn add(&mut self, potential: &Potential, power: Power) {
-        for origin in potential.origins().filter_map(|&x| x) {
+        for origin in potential.origins() {
             let y = self.consumption.entry(origin).or_default();
             *y += power / potential.count() as f64;
         }
