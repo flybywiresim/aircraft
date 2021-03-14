@@ -23,7 +23,6 @@ type LoadsheetPageProps = {
     loadsheet: string,
 };
 
-
 const LoadSheetWidget = (props: LoadsheetPageProps) => {
     const position = useRef({ top: 0, y: 0 });
     const ref = useRef<HTMLDivElement>(null);
@@ -47,7 +46,6 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
         if (pLoadsheet) {
             pLoadsheet.style.fontSize = `${fontSize}px`;
             pLoadsheet.style.lineHeight = `${fontSize}px`;
-
         }
     }, [fontSize]);
 
@@ -122,7 +120,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
                             </div>
                             <div
                                 ref={ref}
-                                className="loadsheet-container grabbable show-scrollbar overflow-y-scroll"
+                                className="loadsheet-container grabbable show-scrollbar overflow-y-scroll disable-links"
                                 onMouseDown={mouseDownHandler}
                                 // eslint-disable-next-line react/no-danger
                                 dangerouslySetInnerHTML={{ __html: props.loadsheet }}
