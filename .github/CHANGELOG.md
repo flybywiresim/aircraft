@@ -115,9 +115,10 @@
 1. [CDU] RADNAV - A manual VOR/ADF ident input is now permament - @St54Kevin
 1. [CDU] RADNAV - ID/Frequency fields now format to correct font size depending on pilot input - @St54Kevin
 1. [CDU] RADNAV - All fields now have correct format display and input restricitons - @St54Kevin
-1. [ECAM] Refactor COND/OXY page to use new useSimVars - @RichardPilbery (tricky_dicky[Z+0]#3571)
+1. [ECAM] Refactor DOORS/OXY page to use new useSimVars - @RichardPilbery (tricky_dicky[Z+0]#3571)
 1. [LIGHTS] Added ambient light to the cockpit - @ImenesFBW (Imenes)
 1. [MCDU] INIT-B page - Fixed Trip Wind value handling - @SergeySoprykin (SergeyS)
+1. [ECAM] Refactor COND page to use new useSimVars - @RichardPilbery (tricky_dicky[Z+0]#3571)
 1. [ELEC] Basic integrated drive generator implementation - @davidwalschots (David Walschots)
 1. [ELEC] A fully functional ELEC page on the lower ECAM - @davidwalschots (David Walschots)
 1. [ELEC] Contactor logic is fully modelled - @davidwalschots (David Walschots)
@@ -181,6 +182,8 @@
 1. [MCDU] Fixed options page text overlap - @MisterChocker (Leon)
 1. [CDU] Reworked Flight Phase system - @MisterChocker (Leon)
 1. [MISC] Fixed button labels not showing when unlit - @ImenesFBW (Imenes)
+1. [EFB] Added functionality to ground services page - @Saschl (saschl#9432)
+1. [MISC] Add cockpit.cfg and fixes flaps full angle in external view - @donstim (donbikes#4084)
 1. [MCDU] Improved Message compatibility for future features - @MisterChocker (Leon)
 
 ## 0.5.2
