@@ -291,6 +291,7 @@ a320-neo-mfd-element #Mainframe #VORDMENavaids #State {
 }
 a320-neo-mfd-element #Mainframe #VORDMENavaids #ID {
   font-size: calc(3 * 1vh * var(--bodyHeightScale));
+  letter-spacing: -3px;
   fill: var(--displayWhite);
 }
 a320-neo-mfd-element #Mainframe #VORDMENavaids #Mode {
