@@ -172,6 +172,7 @@ class A32NX_FlightPhase_TakeOff {
     init(_fmc) {
         this.nextFmgcFlightPhase = FmgcFlightPhases.CLIMB;
         this.accelerationAltitudeMsl = (_fmc.accelerationAltitude || _fmc.thrustReductionAltitude);
+        this.accelerationAltitudeMslEo = _fmc.engineOutAccelerationAltitude;
 
         if (!this.accelerationAltitudeMsl) {
             if (!_fmc.climbTransitionGroundAltitude) {
@@ -187,6 +188,10 @@ class A32NX_FlightPhase_TakeOff {
 
             this.accelerationAltitudeMsl = _fmc.climbTransitionGroundAltitude + parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
         }
+
+        if (!this.accelerationAltitudeMslEo) {
+            this.accelerationAltitudeMslEo = _fmc.climbTransitionGroundAltitude + parseInt(NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500"));
+        }
     }
 
     check(_deltaTime, _fmc) {
@@ -200,7 +205,7 @@ class A32NX_FlightPhase_TakeOff {
             this.nextFmgcFlightPhase = FmgcFlightPhases.DONE;
             return true;
         }
-        return Simplane.getAltitude() > this.accelerationAltitudeMsl;
+        return Simplane.getAltitude() > (_fmc.isAllEngineOn() ? this.accelerationAltitudeMsl : this.accelerationAltitudeMslEo);
     }
 }
 
