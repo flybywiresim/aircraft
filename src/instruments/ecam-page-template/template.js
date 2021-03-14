@@ -74,11 +74,7 @@ class A32NX_PAGE_NAME_Logic extends Airliners.EICASTemplateElement {
             document.body.appendChild(script);
         }
     }
-
-    onEvent(_event) {
-        console.log(JSON.stringify(_event));
-    }
-
+  
     update(_deltaTime) {
         this.dispatchEvent(new CustomEvent('update', { detail: this.getDeltaTime() }));
     }
