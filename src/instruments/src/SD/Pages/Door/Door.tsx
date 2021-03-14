@@ -19,8 +19,10 @@
 import './Door.scss';
 import ReactDOM from 'react-dom';
 import React from 'react';
-import { renderTarget } from '../../../Common/defaults';
+import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+
+setIsEcamPage('door_page');
 
 export const DoorPage = () => {
     const [cabin] = useSimVar('INTERACTIVE POINT OPEN:0', 'percent', 1000);
@@ -104,4 +106,4 @@ export const DoorPage = () => {
     );
 };
 
-ReactDOM.render(<SimVarProvider><DoorPage /></SimVarProvider>, renderTarget);
+ReactDOM.render(<SimVarProvider><DoorPage /></SimVarProvider>, getRenderTarget());

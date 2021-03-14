@@ -1035,7 +1035,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._onModeSelectedAltitude();
 
             if (this.currentFlightPhase === FmgcFlightPhases.CRUISE) {
-                this._onStepClimb(Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100);
+                this._onStepClimbDescent(Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100);
             }
         }
         if (_event === "MODE_MANAGED_ALTITUDE") {
@@ -1043,7 +1043,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._onModeManagedAltitude();
 
             if (this.currentFlightPhase === FmgcFlightPhases.CRUISE) {
-                this._onStepClimb(Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100);
+                this._onStepClimbDescent(Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100);
             }
         }
         if (_event === "AP_DEC_ALT" || _event === "AP_INC_ALT") {
@@ -1127,11 +1127,14 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    _onStepClimb(_targetFl) {
+    _onStepClimbDescent(_targetFl) {
+        // Only show the message on step climbs
+        if (_targetFl > this.cruiseFlightLevel) {
+            const msg = NXSystemMessages.newCrzAlt;
+            this.addNewMessage({text: msg.text + _targetFl * 100, isAmber: msg.isAmber, isTypeTwo: msg.isTypeTwo});
+        }
         this.cruiseFlightLevel = _targetFl;
         this._cruiseFlightLevel = _targetFl;
-        const msg = NXSystemMessages.newCrzAlt;
-        this.addNewMessage({text: msg.text + _targetFl * 100, isAmber: msg.isAmber, isTypeTwo: msg.isTypeTwo});
     }
 
     /* END OF FMS EVENTS */
