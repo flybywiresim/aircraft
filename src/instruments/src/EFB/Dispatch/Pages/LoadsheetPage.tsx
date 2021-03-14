@@ -120,7 +120,7 @@ const LoadSheetWidget = (props: LoadsheetPageProps) => {
                             </div>
                             <div
                                 ref={ref}
-                                className="loadsheet-container grabbable show-scrollbar overflow-y-scroll disable-links"
+                                className="loadsheet-container grabbable show-scrollbar overflow-y-scroll"
                                 onMouseDown={mouseDownHandler}
                                 // eslint-disable-next-line react/no-danger
                                 dangerouslySetInnerHTML={{ __html: props.loadsheet }}
