@@ -2633,7 +2633,13 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         } else if (s.match(/^[0-9]{1,5}$/) !== null) {
             const value = Math.round(parseInt(s) / 10) * 10;
-            const ldgRwy = this.flightPlanManager.getApproachRunway();
+            let ldgRwy = this.flightPlanManager.getApproachRunway();
+            if (!ldgRwy) {
+                const dest = this.flightPlanManager.getDestination();
+                if (dest && dest.infos && dest.infos.runways.length > 0) {
+                    ldgRwy = dest.infos.runways[0];
+                }
+            }
             const limitLo = ldgRwy ? ldgRwy.elevation * 3.28084 : 0;
             const limitHi = ldgRwy ? ldgRwy.elevation * 3.28084 + 5000 : 39000;
             if (value >= limitLo && value <= limitHi) {
