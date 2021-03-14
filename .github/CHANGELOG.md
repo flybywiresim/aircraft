@@ -1,5 +1,5 @@
 ## 0.5.4
-1. [FLIGHTMODEL] Revert flaps hotfix due to MSFS hotfix in MSFS update 1.13.17.0 - @donstim (donbikes#4084)
+1. [FLIGHTMODEL] Fixed flaps to be compatible with MSFS 1.14.5.0 update - @donstim (donbikes#4084)
 
 ## 0.5.3
 1. [DISPLAYS] Optimize performance by throttling instrument updates - @XSJoJo (Jorim Jaggi)
