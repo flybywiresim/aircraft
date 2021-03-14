@@ -2478,8 +2478,14 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprQNH(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
+            const dest = this.flightPlanManager.getDestination();
+            if (dest && dest.liveDistanceTo < 180) {
+                this.addNewMessage(NXSystemMessages.notAllowed);
+                return false;
+            } else {
+                this.perfApprQNH = NaN;
+                return true;
+            }
         }
 
         const value = parseFloat(s);
@@ -2512,8 +2518,14 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprTemp(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
+            const dest = this.flightPlanManager.getDestination();
+            if (dest && dest.liveDistanceTo < 180) {
+                this.addNewMessage(NXSystemMessages.notAllowed);
+                return false;
+            } else {
+                this.perfApprTemp = NaN;
+                return true;
+            }
         }
 
         if (!/^[\+\-]?\d{1,2}$/.test(s)) {
@@ -2526,8 +2538,9 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprWind(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
+            this.perfApprWindHeading = NaN;
+            this.perfApprWindSpeed = NaN;
+            return true;
         }
 
         // both must be entered
@@ -2557,15 +2570,16 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
-        const v = parseInt(s);
-        if (isFinite(v) && v > 0) {
-            this.perfApprTransAlt = v;
-            this.perfApprTransAltPilotEntered = true;
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", v);
-            return true;
+        const value = Math.round(parseInt(s) / 10) * 10;
+        if (value < 1000 || value > 45000) {
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
         }
-        this.addNewMessage(NXSystemMessages.notAllowed);
-        return false;
+
+        this.perfApprTransAlt = value;
+        this.perfApprTransAltPilotEntered = true;
+        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", value);
+        return true;
     }
 
     /**
@@ -2617,14 +2631,20 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfApprMDA = NaN;
             SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
             return true;
-        } else {
-            const value = parseFloat(s);
-            if (isFinite(value)) {
+        } else if (s.match(/^[0-9]{1,5}$/) !== null) {
+            const value = Math.round(parseInt(s) / 10) * 10;
+            const ldgRwy = this.flightPlanManager.getApproachRunway();
+            const limitLo = ldgRwy ? ldgRwy.elevation * 3.28084 : 0;
+            const limitHi = ldgRwy ? ldgRwy.elevation * 3.28084 + 5000 : 39000;
+            if (value >= limitLo && value <= limitHi) {
                 this.perfApprMDA = value;
                 SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", this.perfApprMDA);
                 return true;
             }
-            this.addNewMessage(NXSystemMessages.notAllowed);
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        } else {
+            this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
     }
@@ -2634,28 +2654,29 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfApprDH = NaN;
             SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
             return true;
-        } else if (s === "NO" || s === "NO DH" || s === "NODH") {
-            if (Simplane.getAutoPilotApproachType() === 4) {
-                this.perfApprDH = "NO DH";
-                SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -2);
+        }
+
+        if (Simplane.getAutoPilotApproachType() !== 4) {
+            this.addNewMessage(NXSystemMessages.notAllowed);
+            return false;
+        }
+
+        if (s === "NO" || s === "NO DH" || s === "NODH") {
+            this.perfApprDH = "NO DH";
+            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -2);
+            return true;
+        } else if (s.match(/^[0-9]{1,5}$/) !== null) {
+            const value = Math.round(parseInt(s) / 10) * 10;
+            if (value >= 0 && value <= 5000) {
+                this.perfApprDH = value;
+                SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", this.perfApprDH);
                 return true;
             } else {
-                this.addNewMessage(NXSystemMessages.notAllowed);
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
                 return false;
             }
         } else {
-            const value = parseFloat(s);
-            if (isFinite(value)) {
-                if (value >= 0 && value <= 700) {
-                    this.perfApprDH = value;
-                    SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", this.perfApprDH);
-                    return true;
-                } else {
-                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
-                    return false;
-                }
-            }
-            this.addNewMessage(NXSystemMessages.notAllowed);
+            this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
     }
