@@ -492,10 +492,10 @@ var A320_Neo_UpperECAM;
                         ]
                     },
                     {
-                    name: "L/G GEAR NOT DOWN",
+                        name: "L/G",
                         messages: [
                             {
-                                message: "",
+                                message: "GEAR NOT DOWN",
                                 level: 3,
                                 page: "WHEEL",
                                 isActive: () => (
