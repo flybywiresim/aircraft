@@ -49,7 +49,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         return null;
     };
 
-    const formatBar = (percent: number) => 6 + 0.51 * percent;
+    const formatBar = (percent: number) => `calc(${width} * (${percent} / 100))`;
 
     const alignment = getAlignment(labelAlignment);
 
@@ -92,8 +92,8 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 
     return (
         <>
-            <div className={displayBar ? 'vertical-progress-bar' : 'hidden'} style={{ left: `${formatBar(completedBar || 0)}%` }} />
             <div className="progress-bar">
+                <div className={displayBar ? 'vertical-progress-bar' : 'hidden'} style={{ marginLeft: `${formatBar(completedBar || 0)}` }} />
                 <div style={outsideStyles}>
                     <div style={containerStyles}>
                         <div style={fillerStyles}>
