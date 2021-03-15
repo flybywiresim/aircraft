@@ -60,7 +60,6 @@ class A32NX_FWC {
         // master warning & caution buttons
         this.warningPressed = false;
         this.cautionPressed = false;
-        this.emerCancel = false;
 
         // altitude warning
         this.previousTargetAltitude = NaN;
@@ -113,7 +112,7 @@ class A32NX_FWC {
         const overspeed = Simplane.getIndicatedSpeed() > (SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") + 4);
         if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_R", "Bool")) {
             this.warningPressed = true;
-            if (!overspeed || !this.emerCancel) {
+            if (!overspeed) {
                 SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", false);
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
             }
@@ -473,15 +472,13 @@ class A32NX_FWC {
             if (!isLandingGearLockedDown && ((eng1N1 < 75 && eng2N1 < 75) || this.engineShutdown(1) || this.engineShutdown(2))) {
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
             } else {
-                this.emerCancel = false;
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
             }
 
             if (!(isTogaFlexMct1 && isTogaFlexMct2) && !isLandingGearLockedDown && flapPosition >= 1) {
-                this.emerCancel = true;
+                //this situation can't cancelled with master warning. but after fwc rewrite, will fixed.
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
             } else {
-                this.emerCancel = false;
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
             }
         }

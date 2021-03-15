@@ -497,7 +497,7 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "",
                                 level: 3,
-                                page: "ENG",
+                                page: "WHEEL",
                                 isActive: () => (
                                     this.getCachedSimVar("L:A32NX_LDG_NOT_DOWN", "Bool")
                                 )
