@@ -468,24 +468,26 @@ class A32NX_FWC {
         const isTogaFlexMct1 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:1", "number") > 4;
         const isTogaFlexMct2 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:2", "number") > 4;
         const flapPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        const isEngine1Shutdown = (SimVar.GetSimVarValue("TURB ENG N1:1", "Percent") < 15 || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:1", "Bool") == 0) && !Simplane.getIsGrounded();
+        const isEngine2Shutdown = (SimVar.GetSimVarValue("TURB ENG N1:2", "Percent") < 15 || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:2", "Bool") == 0) && !Simplane.getIsGrounded();
 
-        if (radioHeight < 750 && !(this.flightPhase === 3 || this.flightPhase === 4 || this.flightPhase === 5)) {
-            if ((!isLandingGearLockedDown && ((eng1N1 < 75 && eng2N1 < 75)) || this.engineShutdown(1) || this.engineShutdown(2))) {
+        if (!isLandingGearLockedDown && radioHeight < 750 && !(this.flightPhase === 3 || this.flightPhase === 4 || this.flightPhase === 5)) {
+            if (eng1N1 < 75 && eng2N1 < 75) {
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
-            } else {
-                SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
-            }
-
-            if (!(isTogaFlexMct1 && isTogaFlexMct2) && !isLandingGearLockedDown && flapPosition >= 1) {
+            } else if (isEngine1Shutdown && eng2N1 < 97) {
+                console.log("YES");
+                SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
+            } else if (isEngine2Shutdown && eng2N1 < 97) {
+                console.log("YES2");
+                SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
+            } else if (!(isTogaFlexMct1 && isTogaFlexMct2) && flapPosition >= 1) {
                 //this situation can't cancelled with master warning. but after fwc rewrite, will fixed.
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
             } else {
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
             }
+        } else {
+            SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
         }
-    }
-
-    engineShutdown(_engine) {
-        return (SimVar.GetSimVarValue("TURB ENG N1:" + _engine, "Percent") < 15 || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:" + (_engine), "Bool") == 0) && !Simplane.getIsGrounded();
     }
 }
