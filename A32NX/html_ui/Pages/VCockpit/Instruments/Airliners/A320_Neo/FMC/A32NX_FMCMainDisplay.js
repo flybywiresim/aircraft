@@ -180,6 +180,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._cruiseFlightLevel = undefined;
         this._activeCruiseFlightLevel = undefined;
         this._activeCruiseFlightLevelDefaulToFcu = false;
+        this.fmsUpdateThrottler = new UpdateThrottler(250);
         this.currentOrigin = "";
         this.currentDestination = "";
     }
@@ -300,21 +301,16 @@ class FMCMainDisplay extends BaseAirliners {
             this.flightPlanManager.updateFlightPlan();
             this.flightPlanManager.updateCurrentApproach();
         }
-        if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
-            // Is this LVar used by anything? It doesn't look like it...
-            //TODO: figure out usage
-            // looks similar to usage in updateAutopilot
-            SimVar.SetSimVarValue("L:AIRLINER_MANAGED_APPROACH_SPEED", "number", this.getAppManagedSpeed());
+
+        if (this.fmsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
+            this.updateRadioNavState();
+            this.updateGPSMessage();
+            this.updateDisplayedConstraints();
         }
-        this.updateRadioNavState();
 
         this.A32NXCore.update();
 
         this.updateAutopilot();
-
-        this.updateGPSMessage();
-
-        this.updateDisplayedConstraints();
 
         this.updateDepartArrive();
     }
@@ -1045,7 +1041,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._onModeSelectedAltitude();
 
             if (this.currentFlightPhase === FmgcFlightPhases.CRUISE) {
-                this._onStepClimb(Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100);
+                this._onStepClimbDescent(Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100);
             }
         }
         if (_event === "MODE_MANAGED_ALTITUDE") {
@@ -1053,7 +1049,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._onModeManagedAltitude();
 
             if (this.currentFlightPhase === FmgcFlightPhases.CRUISE) {
-                this._onStepClimb(Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100);
+                this._onStepClimbDescent(Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100);
             }
         }
         if (_event === "AP_DEC_ALT" || _event === "AP_INC_ALT") {
@@ -1137,11 +1133,14 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    _onStepClimb(_targetFl) {
+    _onStepClimbDescent(_targetFl) {
+        // Only show the message on step climbs
+        if (_targetFl > this.cruiseFlightLevel) {
+            const msg = NXSystemMessages.newCrzAlt;
+            this.addNewMessage({text: msg.text + _targetFl * 100, isAmber: msg.isAmber, isTypeTwo: msg.isTypeTwo});
+        }
         this.cruiseFlightLevel = _targetFl;
         this._cruiseFlightLevel = _targetFl;
-        const msg = NXSystemMessages.newCrzAlt;
-        this.addNewMessage({text: msg.text + _targetFl * 100, isAmber: msg.isAmber, isTypeTwo: msg.isTypeTwo});
     }
 
     /* END OF FMS EVENTS */
