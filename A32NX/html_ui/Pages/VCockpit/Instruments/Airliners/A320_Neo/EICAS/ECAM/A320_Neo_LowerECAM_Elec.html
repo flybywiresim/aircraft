@@ -93,7 +93,7 @@
 </style>
 
 <script type="text/html" id="LowerECAMElecTemplate">
-    <svg id="main-elec" version="1.1" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+    <svg id="main-elec" class="hidden" version="1.1" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
         <rect id="BAT2_BOX" class="box" x="108" y="4" width="23" height="19" />
         <text id="BAT2_OFF" class="middle" dominant-baseline="middle" x="119.5" y="15">OFF</text>
         <text id="BAT2_TITLE" class="right" x="122" y="9.5">BAT</text>
@@ -269,20 +269,19 @@
         <path id="WIRE_ESSTR_DCESS" class="green" d="m 68.921 38.3 v 1.8951 v -1.8951" />
 
         <path id="WIRE_BAT1_DCBAT_FULL" class="green" d="m 61.67 13.539 h -9.3735 h 9.3735" />
+        <path id="WIRE_DCBAT_BAT1" class="green" d="m 61.7 13.539 h -6.2735 h 6.2735" />
+        <path id="ARROW_DCBAT_BAT1" class="arrow green" d="m 55.2 15.36 v-3.6633l-2.3982 1.8316z" />
+        <path id="WIRE_BAT1_DCBAT" class="amber" d="m 58.62 13.539 h -6.2711 h 6.2711" />
+        <path id="ARROW_BAT1_DCBAT" class="arrow amber" d="m59.187 11.697v3.6633l2.3982-1.8316z" />
+
         <path id="WIRE_BAT2_DCBAT_FULL" class="green" d="m 107.3 13.539 h -9.3735 h 9.3735" />
+        <path id="WIRE_DCBAT_BAT2" class="green" d="m 104.2 13.539 h -6.2711 h 6.2711" />
+        <path id="ARROW_DCBAT_BAT2" class="arrow green" d="m104.7 11.697v3.6633l2.3982-1.8316z" />
+        <path id="WIRE_BAT2_DCBAT" class="amber" d="m 107.35 13.539 h -6.2735 h 6.2735" />
+        <path id="ARROW_BAT2_DCBAT" class="arrow amber" d="m100.85 15.36v-3.6633l-2.3982 1.8316z" />
 
         <path id="WIRE_EMERGEN_ESSTR" class="green" d="m 85.072 55.441 h -5.3449 h 5.3449" />
         <path id="WIRE_EMERGEN_ACESS" class="green" d="m 91.612 63.366 v 3.8012 v -3.8012" />
-
-        <!-- When implementing the BAT 1 + 2 to DC BAT with electricity flowing. One can use these paths. -->
-        <!-- <path id="WIRE_BAT1_DCBAT" class="green" d="m58.52 13.539h-6.2711" /> -->
-        <!-- <path id="WIRE_DCBAT_BAT1" class="green" d="m62.1 13.539h-6.2735" /> -->
-        <!-- <path id="WIRE_BAT2_DCBAT" class="green" d="m107.7 13.539h-6.2735" /> -->
-        <!-- <path id="WIRE_DCBAT_BAT2" class="green" d="m104.3 13.539h-6.2711" /> -->
-        <!-- <path id="ARROW_BAT1_DCBAT" class="arrow green" d="m58.687 11.697v3.6633l2.3982-1.8316z" /> -->
-        <!-- <path id="ARROW_BAT2_DCBAT" class="arrow green" d="m101.2 15.36v-3.6633l-2.3982 1.8316z" /> -->
-        <!-- <path id="ARROW_DCBAT_BAT1" class="arrow green" d="m55.6 15.36v-3.6633l-2.3982 1.8316z" /> -->
-        <!-- <path id="ARROW_DCBAT_BAT2" class="arrow green" d="m104.7 11.697v3.6633l2.3982-1.8316z" /> -->
 
         <path id="ARROW_ESSTR_DCESS" class="arrow" d="m67.1 42.02h3.6633l-1.8316-2.3982z" />
         <path id="ARROW_XFEED_AC1" class="arrow green" d="m13.191 81.005h3.6633l-1.8316-2.3982z" />
