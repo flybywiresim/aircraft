@@ -83,6 +83,7 @@ class A32NX_FWC {
         this._updateTakeoffMemo(_deltaTime);
         this._updateLandingMemo(_deltaTime);
         this._autopilotDisconnect(_deltaTime);
+        this._checkLandingGear();
         this._updateAltitudeWarning();
     }
 
@@ -464,12 +465,12 @@ class A32NX_FWC {
         const eng1N1 = SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent");
         const eng2N1 = SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent");
         const isLandingGearLockedDown = SimVar.GetSimVarValue("GEAR POSITION:0", "Enum") > 0.9;
-        const isTogaFlexMct1 = this.getCachedSimVar("GENERAL ENG THROTTLE MANAGED MODE:1", "number") > 4;
-        const isTogaFlexMct2 = this.getCachedSimVar("GENERAL ENG THROTTLE MANAGED MODE:2", "number") > 4;
+        const isTogaFlexMct1 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:1", "number") > 4;
+        const isTogaFlexMct2 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:2", "number") > 4;
         const flapPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
 
         if (radioHeight < 750 && !(this.flightPhase === 3 || this.flightPhase === 4 || this.flightPhase === 5)) {
-            if (!isLandingGearLockedDown && ((eng1N1 < 75 && eng2N1 < 75) || this.engineShutdown(1) || this.engineShutdown(2))) {
+            if ((!isLandingGearLockedDown && ((eng1N1 < 75 && eng2N1 < 75)) || this.engineShutdown(1) || this.engineShutdown(2))) {
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
             } else {
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
@@ -485,6 +486,6 @@ class A32NX_FWC {
     }
 
     engineShutdown(_engine) {
-        return (this.getCachedSimVar("TURB ENG N1:" + _engine, "Percent") < 15 || this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine), "Bool") == 0) && !Simplane.getIsGrounded();
+        return (SimVar.GetSimVarValue("TURB ENG N1:" + _engine, "Percent") < 15 || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:" + (_engine), "Bool") == 0) && !Simplane.getIsGrounded();
     }
 }

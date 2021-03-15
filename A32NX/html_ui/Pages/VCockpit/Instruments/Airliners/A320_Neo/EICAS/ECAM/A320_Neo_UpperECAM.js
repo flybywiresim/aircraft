@@ -1216,7 +1216,6 @@ var A320_Neo_UpperECAM;
                         important: true,
                         isActive: () => this.leftEcamMessagePanel.landASAP === 2 && !Simplane.getIsGrounded()
                     },
-
                     {
                         message: "A/THR OFF",
                         style: "InfoCaution",
