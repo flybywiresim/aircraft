@@ -14,8 +14,8 @@ const BatDisplay = ({ bat, x, y }) => {
 
 const BatRoot = () => (
     <svg className="bat-svg" viewBox="0 0 200 100">
-        <BatDisplay bat={1} x="92%" y="45%" />
-        <BatDisplay bat={2} x="92%" y="95%" />
+        <BatDisplay bat={1} x="184" y="45" />
+        <BatDisplay bat={2} x="184" y="95" />
     </svg>
 );
 

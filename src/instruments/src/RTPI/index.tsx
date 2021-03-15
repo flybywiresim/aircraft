@@ -7,12 +7,7 @@ const RTPIDisplay = () => {
     const [ltsTest] = useSimVar('L:XMLVAR_LTS_Test', 'Bool', 400);
     const [rudderTrim] = useSimVar('RUDDER TRIM', 'degrees', 100);
 
-    let directionText = '';
-    if (rudderTrim <= 0) {
-        directionText = 'L';
-    } else {
-        directionText = 'R';
-    }
+    const directionText = rudderTrim <= 0 ? 'L' : 'R';
 
     return (
         <>
