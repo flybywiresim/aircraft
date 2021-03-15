@@ -6,11 +6,19 @@ class A32NX_Refuel {
 
     init() {
         console.log('A32NX_Refuel init');
+        const totalFuelGallons = 6243;
+        const fuelWeight = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms");
+        const usingMetrics = SimVar.GetSimVarValue("L:A32NX_CONFIG_USING_METRIC_UNIT", "Number");
         const centerCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons");
         const LInnCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons");
         const LOutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons");
         const RInnCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
         const ROutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons");
+        const total = Math.round(Math.max((LInnCurrentSimVar + (LOutCurrentSimVar) + (RInnCurrentSimVar) + (ROutCurrentSimVar) + (centerCurrentSimVar)), 0));
+        const totalConverted = Math.round(total * fuelWeight * usingMetrics);
+        SimVar.SetSimVarValue("L:A32NX_FUEL_TOTAL_DESIRED", "Number", total);
+        SimVar.SetSimVarValue("L:A32NX_FUEL_DESIRED", "Number", totalConverted);
+        SimVar.SetSimVarValue("L:A32NX_FUEL_DESIRED_PERCENT", "Number", Math.round((total / totalFuelGallons) * 100));
         SimVar.SetSimVarValue("L:A32NX_FUEL_CENTER_DESIRED", "Number", centerCurrentSimVar);
         SimVar.SetSimVarValue("L:A32NX_FUEL_LEFT_MAIN_DESIRED", "Number", LInnCurrentSimVar);
         SimVar.SetSimVarValue("L:A32NX_FUEL_LEFT_AUX_DESIRED", "Number", LOutCurrentSimVar);

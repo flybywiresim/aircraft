@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { round } from 'lodash';
 import { IconTruck } from '@tabler/icons';
 import { Slider } from '../../Components/Form/Slider';
@@ -58,9 +58,9 @@ export const FuelPage = () => {
     const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 1_000);
     const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 1_000);
     const [refuelRate, setRefuelRate] = useSimVarSyncedPersistentProperty('L:A32NX_REFUEL_RATE_SETTING', 'Number', 'REFUEL_RATE_SETTING');
-    const [sliderValue, setSliderValue] = useState<number>();
-    const [inputValue, setInputValue] = useState<number>();
-    const [totalTarget, setTotalTarget] = useState<number>();
+    const [sliderValue, setSliderValue] = useSimVar('L:A32NX_FUEL_DESIRED_PERCENT', 'Number');
+    const [inputValue, setInputValue] = useSimVar('L:A32NX_FUEL_DESIRED', 'Number');
+    const [totalTarget, setTotalTarget] = useSimVar('L:A32NX_FUEL_TOTAL_DESIRED', 'Number');
     const [centerTarget, setCenterTarget] = useSimVar('L:A32NX_FUEL_CENTER_DESIRED', 'Number');
     const [LInnTarget, setLInnTarget] = useSimVar('L:A32NX_FUEL_LEFT_MAIN_DESIRED', 'Number');
     const [LOutTarget, setLOutTarget] = useSimVar('L:A32NX_FUEL_LEFT_AUX_DESIRED', 'Number');
