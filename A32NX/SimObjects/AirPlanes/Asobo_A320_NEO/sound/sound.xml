@@ -126,11 +126,11 @@
             <Range LowerBound="100" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="startcontactors" NodeName="FUSES01" Continuous="false" ViewPoint="Inside" LocalVar="A32NX_APU_START_CONTACTOR_ENERGIZED" Units="BOOLEAN" Index="0">
+        <Sound WwiseData="true" WwiseEvent="startcontactors" NodeName="FUSES01" Continuous="false" ViewPoint="Inside" LocalVar="A32NX_ELEC_CONTACTOR_10KA_AND_5KA_IS_CLOSED" Units="BOOLEAN" Index="0">
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="startcontactorsdc" NodeName="FUSES01" Continuous="false" ViewPoint="Inside" LocalVar="A32NX_APU_START_CONTACTOR_ENERGIZED" Units="BOOLEAN" Index="0">
+        <Sound WwiseData="true" WwiseEvent="startcontactorsdc" NodeName="FUSES01" Continuous="false" ViewPoint="Inside" LocalVar="A32NX_ELEC_CONTACTOR_10KA_AND_5KA_IS_CLOSED" Units="BOOLEAN" Index="0">
             <Range UpperBound="0" />
         </Sound>
 

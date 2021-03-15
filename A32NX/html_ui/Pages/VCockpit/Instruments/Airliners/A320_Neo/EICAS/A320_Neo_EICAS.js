@@ -84,7 +84,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("HYD", "BottomScreen", "a320-neo-lower-ecam-hyd"); // MODIFIED
         this.createLowerScreenPage("FUEL", "BottomScreen", "a320-neo-lower-ecam-fuel");
         this.createLowerScreenPage("APU", "BottomScreen", "a320-neo-lower-ecam-apu");
-        this.createLowerScreenPage("COND", "BottomScreen", "a320-neo-lower-ecam-cond"); // MODIFIED
+        this.createLowerScreenPage("COND", "BottomScreen", "a32nx-cond-page-element"); // MODIFIED
         this.createLowerScreenPage("DOOR", "BottomScreen", "a32nx-door-page-element"); // MODIFIED
         this.createLowerScreenPage("WHEEL", "BottomScreen", "a320-neo-lower-ecam-wheel"); // MODIFIED
         this.createLowerScreenPage("FTCL", "BottomScreen", "a320-neo-lower-ecam-ftcl"); // MODIFIED
@@ -238,7 +238,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         const altitude = Simplane.getAltitude();
         const isGearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95;
-        const currFlightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number");
+        const currFlightPhase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number");
         const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
@@ -247,11 +247,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
         const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number") != 0 || SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "percent") != 0;
 
-        const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB || currFlightPhase == FlightPhase.FLIGHT_PHASE_CRUISE) && this.CrzCondTimer <= 0) || (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB && !spoilerOrFlapsDeployed && !ToPowerSet);
+        const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) && this.CrzCondTimer <= 0) || (currFlightPhase == FmgcFlightPhases.CLIMB && !spoilerOrFlapsDeployed && !ToPowerSet);
 
-        if ((currFlightPhase != FlightPhase.FLIGHT_PHASE_CLIMB || currFlightPhase == FlightPhase.FLIGHT_PHASE_CRUISE) || (!spoilerOrFlapsDeployed && !ToPowerSet) && this.CrzCondTimer >= 0) {
+        if ((currFlightPhase != FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) || (!spoilerOrFlapsDeployed && !ToPowerSet) && this.CrzCondTimer >= 0) {
             this.CrzCondTimer = 60;
-        } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB || currFlightPhase == FlightPhase.FLIGHT_PHASE_CRUISE) && this.CrzCondTimer >= 0) {
+        } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) && this.CrzCondTimer >= 0) {
             this.CrzCondTimer -= _deltaTime / 1000;
         }
 
