@@ -25,6 +25,7 @@ interface Station {
     pax: number;
     stationIndex: number,
     position: number,
+    seatsRange: Array<number>,
 }
 
 // station_load.0 = 185, 42.36, 0, 0, PILOT, 1
@@ -46,6 +47,7 @@ const paxStations: {[index: string]: Station} = {
         pax: 0,
         stationIndex: 2 + 1,
         position: 21.98,
+        seatsRange: [1, 36],
     },
     rows7_13: {
         name: 'ECONOMY ROWS 7-13',
@@ -54,6 +56,7 @@ const paxStations: {[index: string]: Station} = {
         pax: 0,
         stationIndex: 3 + 1,
         position: 2.86,
+        seatsRange: [37, 78],
     },
     rows14_20: {
         name: 'ECONOMY ROWS 14-21',
@@ -62,6 +65,7 @@ const paxStations: {[index: string]: Station} = {
         pax: 0,
         stationIndex: 4 + 1,
         position: -15.34,
+        seatsRange: [79, 126],
     },
     rows21_27: {
         name: 'ECONOMY ROWS 22-29',
@@ -70,6 +74,7 @@ const paxStations: {[index: string]: Station} = {
         pax: 0,
         stationIndex: 5 + 1,
         position: -32.81,
+        seatsRange: [127, 174],
     },
 };
 

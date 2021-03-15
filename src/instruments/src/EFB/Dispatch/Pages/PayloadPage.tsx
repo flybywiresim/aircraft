@@ -17,11 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { IconAlignRight, IconBox, IconBolt, IconBoxPadding } from '@tabler/icons';
+import { IconBox, IconMan, IconLifebuoy, IconFriends, IconScale } from '@tabler/icons';
+import { Slider } from '@flybywiresim/react-components';
 import nose from '../../Assets/320neo-outline-nose.svg';
-import fuselage from '../../Assets/320neo-outline-fuselage.svg';
+import Fuselage from './Fuselage';
 import { RootState } from '../../Store';
 
 const MAX_SEAT_AVAILABLE = 174;
@@ -54,6 +55,39 @@ const PayloadPage = () => {
 
         // setPayload(numberOfPax);
     }
+
+    function setSeatColors() {
+        function paintSeat(id: string, clear: boolean = false) {
+            const seatGroupElement = document.getElementById(id);
+            if (seatGroupElement === null) {
+                return null;
+            }
+            const seatPolygon = seatGroupElement.children[0] as HTMLElement;
+
+            if (clear) {
+                seatPolygon.style.fill = 'inherit';
+            } else {
+                seatPolygon.style.fill = '#00AFB7';
+            }
+            return null;
+        }
+
+        Object.values(payload).forEach((station) => {
+            const [min, max] = station.seatsRange;
+            for (let seatNumber = min; seatNumber <= max; seatNumber++) {
+                paintSeat(seatNumber.toString(), true);
+            }
+        });
+
+        Object.values(payload).forEach((station) => {
+            const [min] = station.seatsRange;
+            for (let seatNumber = min; seatNumber < min + station.pax; seatNumber++) {
+                paintSeat(seatNumber.toString());
+            }
+        });
+    }
+
+    setSeatColors();
 
     /**
      * Calculate %MAC ZWFCG of all stations
@@ -93,9 +127,9 @@ const PayloadPage = () => {
 
     function renderStations() {
         return Object.entries(payload).map(([stationKey, station], index) => (
-            <>
+            <div id={`${stationKey}-slider`}>
                 <h3 className={`text-xl font-medium flex items-center ${index !== 0 && 'mt-6'}`}>
-                    <IconBoxPadding className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                    <IconFriends className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                     {' '}
                     {station.name}
                 </h3>
@@ -107,17 +141,14 @@ const PayloadPage = () => {
                     {station.seats}
                 </p>
                 <span className="mt-2 text-lg">
-                    <input
-                        type="range"
-                        min="0"
+                    <Slider
+                        min={0}
                         max={station.seats}
                         value={station.pax}
-                        className="slider"
-                        id={`${stationKey}-slider`}
-                        onChange={(event) => changeStationPax(parseInt(event.target.value), stationKey)}
+                        onInput={(value) => changeStationPax(value, stationKey)}
                     />
                 </span>
-            </>
+            </div>
         ));
     }
 
@@ -134,7 +165,7 @@ const PayloadPage = () => {
                         </div>
                         <div className="w-1/2">
                             <h3 className="text-xl font-medium flex items-center">
-                                <IconBoxPadding className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                                <IconFriends className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                                 {' '}
                                 PAX NO
                             </h3>
@@ -146,21 +177,20 @@ const PayloadPage = () => {
                                 {MAX_SEAT_AVAILABLE}
                             </p>
                             <span className="mt-2 text-lg">
-                                <input
-                                    type="range"
+                                <Slider
                                     min="0"
                                     max={MAX_SEAT_AVAILABLE}
                                     value={totalPax}
                                     className="slider"
                                     id="pax-no-slider"
-                                    onChange={(event) => {
-                                        setPax(parseInt(event.target.value));
+                                    onInput={(value) => {
+                                        setPax(value);
                                     }}
                                 />
                             </span>
 
                             <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                                <IconMan className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                                 {' '}
                                 PAX Weight
                             </h3>
@@ -169,14 +199,13 @@ const PayloadPage = () => {
                                 {' '}
                             </p>
                             <span className="mt-2 text-lg">
-                                <input
-                                    type="range"
+                                <Slider
                                     min="0"
                                     max={150}
                                     value={PAX_WEIGHT}
                                     className="slider"
                                     id="pax-weight-slider"
-                                    onChange={() => {}}
+                                    onInput={() => {}}
                                 />
                             </span>
 
@@ -192,14 +221,14 @@ const PayloadPage = () => {
                             </span>
 
                             <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconBolt className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                                <IconLifebuoy className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                                 {' '}
                                 ZFWCG %MAC
                             </h3>
                             <span className="mt-2 text-lg">{zfwcg}</span>
 
                             <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconAlignRight className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                                <IconScale className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                                 {' '}
                                 ZFW
                             </h3>
@@ -207,8 +236,9 @@ const PayloadPage = () => {
                         </div>
                     </div>
                 </div>
-                <div className="w-1/2 text-white overflow-hidden padding" style={{ padding: '20px' }}>
-                    <img className="-ml-6 transform rotate-90" src={fuselage} />
+                <div className="w-1/2 text-white" style={{ position: 'relative' }}>
+                    <Fuselage />
+                    <div className="gradient-overlay" />
                 </div>
             </div>
         </div>

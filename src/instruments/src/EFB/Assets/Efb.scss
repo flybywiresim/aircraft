@@ -77,3 +77,53 @@
 .flip-vertical {
   transform: scaleX(-1);
 }
+
+.cls-1,
+.cls-2,
+.cls-3,
+.cls-4,
+.cls-5 {
+  fill: none;
+  stroke-miterlimit: 10;
+}
+
+.cls-1,
+.cls-2,
+.cls-3,
+.cls-4 {
+  stroke: #fff;
+}
+
+.cls-1 {
+  stroke-width: 0.75px;
+}
+
+.cls-3 {
+  stroke-width: 0.25px;
+}
+
+.cls-4 {
+  stroke-width: 0.5px;
+  background-color: blue;
+  color: blue;
+  stroke-color: blue;
+}
+
+.cls-5 {
+  stroke: #d43500;
+}
+
+.gradient-overlay {
+  background: rgb(24, 33, 48);
+  background: linear-gradient(
+    90deg,
+    rgba(24, 33, 48, 1) 15%,
+    rgba(0, 0, 0, 0) 50%,
+    rgba(24, 33, 48, 1) 85%
+  );
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
