@@ -25,7 +25,7 @@ import { ElecPage } from './Pages/Elec.jsx';
 import { HydPage } from './Pages/Hyd.jsx';
 import { FuelPage } from './Pages/Fuel.jsx';
 import { ApuPage } from './Pages/Apu.jsx';
-import { CondPage } from './Pages/Cond/Cond.jsx';
+import { CondPage } from './Pages/Cond/Cond.tsx';
 import { DoorPage } from './Pages/Door/Door.tsx';
 import { WheelPage } from './Pages/Wheel.jsx';
 import { FctlPage } from './Pages/Fctl.jsx';
