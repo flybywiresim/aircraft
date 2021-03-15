@@ -22,7 +22,7 @@ class SimBriefApi {
         // The SimBrief API will try both username and pilot ID if either one
         // isn't valid, so request both if the input is plausibly a pilot ID.
         let apiUrl = `${SimBriefApi.url}&username=${value}`;
-        if (/^\d{1,6}$/.test(value)) {
+        if (/^\d{1,8}$/.test(value)) {
             apiUrl += `&userid=${value}`;
         }
 
