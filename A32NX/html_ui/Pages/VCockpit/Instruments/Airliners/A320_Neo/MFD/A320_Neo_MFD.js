@@ -859,7 +859,8 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         const ws = this.ndInfo.querySelector("#Wind_Strength");
         const wa = this.ndInfo.querySelector("#Wind_Arrow");
         const wptg = this.ndInfo.querySelector("#Waypoint_Group");
-        if (ADIRSState != 2 || groundSpeed <= 100) {
+        const onGround = Simplane.getIsGrounded();
+        if (ADIRSState != 2 || groundSpeed <= 100 && !onGround) {
             //Hide TAS, and wind info
             tas.textContent = "---";
             wd.textContent = "---";
