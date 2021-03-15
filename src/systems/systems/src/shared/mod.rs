@@ -1,9 +1,38 @@
-use crate::simulation::UpdateContext;
+use crate::{
+    electrical::{Potential, PotentialSource},
+    simulation::UpdateContext,
+};
+use num_derive::FromPrimitive;
 use std::time::Duration;
 use uom::si::{f64::*, thermodynamic_temperature::degree_celsius};
 
 mod random;
 pub use random::*;
+
+/// Signals to the APU start contactor what position it should be in.
+pub trait ApuStartContactorsController {
+    fn should_close_start_contactors(&self) -> bool;
+}
+
+pub trait AuxiliaryPowerUnitElectrical: PotentialSource + ApuStartContactorsController {
+    fn start_motor_powered_by(&mut self, source: Potential);
+    fn is_available(&self) -> bool;
+    fn output_within_normal_parameters(&self) -> bool;
+}
+
+#[derive(FromPrimitive)]
+pub(crate) enum FwcFlightPhase {
+    ElecPwr = 1,
+    FirstEngineStarted = 2,
+    FirstEngineTakeOffPower = 3,
+    AtOrAboveEightyKnots = 4,
+    LiftOff = 5,
+    AtOrAbove1500Feet = 6,
+    AtOrBelow800Feet = 7,
+    TouchDown = 8,
+    AtOrBelowEightyKnots = 9,
+    EnginesShutdown = 10,
+}
 
 /// The delay logic gate delays the true result of a given expression by the given amount of time.
 /// False results are output immediately.
@@ -22,9 +51,8 @@ impl DelayedTrueLogicGate {
     }
 
     pub fn update(&mut self, context: &UpdateContext, expression_result: bool) {
-        // We do not include the delta representing the moment before the expression_result became true.
-        if self.expression_result && expression_result {
-            self.true_duration += context.delta;
+        if expression_result {
+            self.true_duration += context.delta();
         } else {
             self.true_duration = Duration::from_millis(0);
         }
@@ -34,41 +62,6 @@ impl DelayedTrueLogicGate {
 
     pub fn output(&self) -> bool {
         self.expression_result && self.delay <= self.true_duration
-    }
-}
-
-/// Provides a way to return a different value from a collection of values
-/// which is randomly selected once per the given duration.
-pub struct TimedRandom<T> {
-    recalculate_every: Duration,
-    passed_time: Duration,
-    values: Vec<T>,
-    current_value_index: usize,
-}
-impl<T: Copy + Default> TimedRandom<T> {
-    pub fn new(recalculate_every: Duration, values: Vec<T>) -> Self {
-        TimedRandom {
-            recalculate_every,
-            passed_time: Duration::from_secs(0),
-            values,
-            current_value_index: 0,
-        }
-    }
-
-    pub fn update(&mut self, context: &UpdateContext) {
-        self.passed_time += context.delta;
-        if self.passed_time >= self.recalculate_every {
-            self.passed_time = Duration::from_secs(0);
-
-            self.current_value_index = random_number() as usize % self.values.len();
-        }
-    }
-
-    pub fn current_value(&self) -> T {
-        self.values
-            .get(self.current_value_index)
-            .cloned()
-            .unwrap_or_default()
     }
 }
 
@@ -97,137 +90,97 @@ pub(crate) fn calculate_towards_target_temperature(
 
 #[cfg(test)]
 mod delayed_true_logic_gate_tests {
-    use crate::simulation::context_with;
-
     use super::*;
+    use crate::simulation::test::SimulationTestBed;
+    use crate::simulation::{Aircraft, SimulationElement};
+
+    struct TestAircraft {
+        gate: DelayedTrueLogicGate,
+        expression_result: bool,
+    }
+    impl TestAircraft {
+        fn new(gate: DelayedTrueLogicGate) -> Self {
+            Self {
+                gate,
+                expression_result: false,
+            }
+        }
+
+        fn set_expression(&mut self, value: bool) {
+            self.expression_result = value;
+        }
+
+        fn gate_output(&self) -> bool {
+            self.gate.output()
+        }
+    }
+    impl Aircraft for TestAircraft {
+        fn update_before_power_distribution(&mut self, context: &UpdateContext) {
+            self.gate.update(context, self.expression_result);
+        }
+    }
+    impl SimulationElement for TestAircraft {}
 
     #[test]
     fn when_the_expression_is_false_returns_false() {
-        let mut gate = delay_logic_gate(Duration::from_millis(100));
-        gate.update(
-            &context_with().delta(Duration::from_millis(0)).build(),
-            false,
-        );
-        gate.update(
-            &context_with().delta(Duration::from_millis(1_000)).build(),
-            false,
-        );
+        let mut aircraft = TestAircraft::new(DelayedTrueLogicGate::new(Duration::from_millis(100)));
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_millis(0));
 
-        assert_eq!(gate.output(), false);
+        test_bed.run_aircraft(&mut aircraft);
+        test_bed.set_delta(Duration::from_millis(1_000));
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert_eq!(aircraft.gate_output(), false);
     }
 
     #[test]
     fn when_the_expression_is_true_and_delay_hasnt_passed_returns_false() {
-        let mut gate = delay_logic_gate(Duration::from_millis(10_000));
-        gate.update(
-            &context_with().delta(Duration::from_millis(0)).build(),
-            false,
-        );
-        gate.update(
-            &context_with().delta(Duration::from_millis(1_000)).build(),
-            false,
-        );
+        let mut aircraft =
+            TestAircraft::new(DelayedTrueLogicGate::new(Duration::from_millis(10_000)));
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_millis(0));
 
-        assert_eq!(gate.output(), false);
+        aircraft.set_expression(true);
+
+        test_bed.run_aircraft(&mut aircraft);
+        test_bed.set_delta(Duration::from_millis(1_000));
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert_eq!(aircraft.gate_output(), false);
     }
 
     #[test]
     fn when_the_expression_is_true_and_delay_has_passed_returns_true() {
-        let mut gate = delay_logic_gate(Duration::from_millis(100));
-        gate.update(
-            &context_with().delta(Duration::from_millis(0)).build(),
-            true,
-        );
-        gate.update(
-            &context_with().delta(Duration::from_millis(1_000)).build(),
-            true,
-        );
+        let mut aircraft = TestAircraft::new(DelayedTrueLogicGate::new(Duration::from_millis(100)));
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_millis(0));
 
-        assert_eq!(gate.output(), true);
+        aircraft.set_expression(true);
+
+        test_bed.run_aircraft(&mut aircraft);
+        test_bed.set_delta(Duration::from_millis(1_000));
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert_eq!(aircraft.gate_output(), true);
     }
 
     #[test]
     fn when_the_expression_is_true_and_becomes_false_before_delay_has_passed_returns_false_once_delay_passed(
     ) {
-        let mut gate = delay_logic_gate(Duration::from_millis(1_000));
-        gate.update(
-            &context_with().delta(Duration::from_millis(0)).build(),
-            true,
-        );
-        gate.update(
-            &context_with().delta(Duration::from_millis(800)).build(),
-            true,
-        );
-        gate.update(
-            &context_with().delta(Duration::from_millis(100)).build(),
-            false,
-        );
-        gate.update(
-            &context_with().delta(Duration::from_millis(200)).build(),
-            false,
-        );
+        let mut aircraft =
+            TestAircraft::new(DelayedTrueLogicGate::new(Duration::from_millis(1_000)));
+        let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_millis(0));
 
-        assert_eq!(gate.output(), false);
-    }
+        aircraft.set_expression(true);
+        test_bed.run_aircraft(&mut aircraft);
+        test_bed.set_delta(Duration::from_millis(800));
+        test_bed.run_aircraft(&mut aircraft);
 
-    #[test]
-    fn does_not_include_delta_at_the_moment_of_expression_becoming_true() {
-        let mut gate = delay_logic_gate(Duration::from_millis(1_000));
-        gate.update(
-            &context_with().delta(Duration::from_millis(900)).build(),
-            true,
-        );
-        gate.update(
-            &context_with().delta(Duration::from_millis(200)).build(),
-            true,
-        );
+        aircraft.set_expression(false);
+        test_bed.set_delta(Duration::from_millis(100));
+        test_bed.run_aircraft(&mut aircraft);
+        test_bed.set_delta(Duration::from_millis(200));
+        test_bed.run_aircraft(&mut aircraft);
 
-        assert_eq!(gate.output(), false);
-    }
-
-    fn delay_logic_gate(delay: Duration) -> DelayedTrueLogicGate {
-        DelayedTrueLogicGate::new(delay)
-    }
-}
-
-#[cfg(test)]
-mod timed_random_tests {
-    use crate::simulation::context_with;
-
-    use super::TimedRandom;
-    use std::time::Duration;
-
-    #[test]
-    fn empty_values_returns_default() {
-        let tr = TimedRandom::<u8>::new(Duration::from_secs(1), vec![]);
-
-        assert_eq!(tr.current_value(), 0);
-    }
-
-    #[test]
-    fn single_value_returns_value() {
-        let tr = TimedRandom::<u8>::new(Duration::from_secs(1), vec![4]);
-
-        assert_eq!(tr.current_value(), 4);
-    }
-
-    #[test]
-    fn multiple_values_returns_one_of_the_values() {
-        let mut tr = TimedRandom::<u8>::new(Duration::from_secs(1), vec![4, 5]);
-        tr.update(&context_with().delta(Duration::from_secs(2)).build());
-
-        assert!(tr.current_value() == 4 || tr.current_value() == 5);
-    }
-
-    #[test]
-    fn value_does_not_change_when_recalculation_time_not_passed() {
-        let mut tr =
-            TimedRandom::<u8>::new(Duration::from_secs(1), vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
-        let value = tr.current_value();
-
-        tr.update(&context_with().delta(Duration::from_millis(999)).build());
-
-        assert_eq!(tr.current_value(), value);
+        assert_eq!(aircraft.gate_output(), false);
     }
 }
 
