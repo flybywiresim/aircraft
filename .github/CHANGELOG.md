@@ -214,6 +214,7 @@
 1. [ELEC] The BCL opens the contactor on entering the EMER ELEC situation - @davidwalschots (David Walschots)
 1. [ELEC] The BCL opens the contactor when in EMER ELEC and over three minutes have passed with the APU MASTER SW in the ON position - @davidwalschots (David Walschots)
 1. [ELEC] When the battery push button is in the OFF position, the BCL is not powered. This means that any conditions which depend on external factors (such as APU start) or the timers for certain conditions are not remembered - @davidwalschots (David Walschots)
+1. [MISC] Fixed default positions of RAM AIR, WX Mode, TCAS ALT RPTG and TCAS THRT switches - @tshomas (Shomas#2719)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
