@@ -491,6 +491,19 @@ var A320_Neo_UpperECAM;
                             },
                         ]
                     },
+                    {
+                    name: "L/G GEAR NOT DOWN",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                page: "ENG",
+                                isActive: () => (
+                                    this.getCachedSimVar("L:A32NX_LDG_NOT_DOWN", "Bool")
+                                )
+                            },
+                        ]
+                    },
                     //Ground
                     {
                         name: "ENG 1 FIRE",
