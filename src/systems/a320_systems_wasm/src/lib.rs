@@ -1,7 +1,7 @@
 #![cfg(any(target_arch = "wasm32", doc))]
 use a320_systems::A320;
 use msfs::{
-    legacy::{AircraftVariable, NamedVariable},
+    legacy::{AircraftVariable, NamedVariable, CompiledCalculatorCode},
     MSFSEvent,
 };
 use std::collections::HashMap;
@@ -24,6 +24,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
 
 struct A320SimulatorReaderWriter {
     dynamic_named_variables: HashMap<String, NamedVariable>,
+    electrical_bus_connections: ElectricalBusConnections,
 
     ambient_temperature: AircraftVariable,
     apu_generator_pb_on: AircraftVariable,
@@ -44,6 +45,8 @@ impl A320SimulatorReaderWriter {
     fn new() -> Result<Self, Box<dyn std::error::Error>> {
         Ok(A320SimulatorReaderWriter {
             dynamic_named_variables: HashMap::new(),
+            electrical_bus_connections: ElectricalBusConnections::new(),
+
             ambient_temperature: AircraftVariable::from("AMBIENT TEMPERATURE", "celsius", 0)?,
             apu_generator_pb_on: AircraftVariable::from("APU GENERATOR SWITCH", "Bool", 0)?,
             external_power_available: AircraftVariable::from(
@@ -102,6 +105,10 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
     }
 
     fn write(&mut self, name: &str, value: f64) {
+        if name.starts_with("ELEC_") && name.ends_with("_BUS_IS_POWERED") {
+            self.electrical_bus_connections.update(name, value);
+        }
+
         let named_variable =
             lookup_named_variable(&mut self.dynamic_named_variables, "A32NX_", name);
 
@@ -119,4 +126,80 @@ fn lookup_named_variable<'a>(
     collection
         .entry(key.clone())
         .or_insert_with(|| NamedVariable::from(&key))
+}
+
+struct ElectricalBusConnections {
+    ac_bus_1: ElectricalBusConnection,
+    ac_bus_2: ElectricalBusConnection,
+    ac_ess_bus: ElectricalBusConnection,
+    ac_ess_shed_bus: ElectricalBusConnection,
+    ac_stat_inv_bus: ElectricalBusConnection,
+    dc_bus_1: ElectricalBusConnection,
+    dc_bus_2: ElectricalBusConnection,
+    dc_ess_bus: ElectricalBusConnection,
+    dc_ess_shed_bus: ElectricalBusConnection,
+    dc_bat_bus: ElectricalBusConnection,
+    dc_hot_bus_1: ElectricalBusConnection,
+    dc_hot_bus_2: ElectricalBusConnection,
+}
+impl ElectricalBusConnections {
+    const INFINIBAT_BUS: usize = 12;
+
+    fn new() -> Self {
+        Self {
+            // The numbers used here are those defined for buses in the systems.cfg [ELECTRICAL] section.
+            ac_bus_1: ElectricalBusConnection::new(13, ElectricalBusConnections::INFINIBAT_BUS),
+            ac_bus_2: ElectricalBusConnection::new(14, ElectricalBusConnections::INFINIBAT_BUS),
+            ac_ess_bus: ElectricalBusConnection::new(15, ElectricalBusConnections::INFINIBAT_BUS),
+            ac_ess_shed_bus: ElectricalBusConnection::new(16, ElectricalBusConnections::INFINIBAT_BUS),
+            ac_stat_inv_bus: ElectricalBusConnection::new(17, ElectricalBusConnections::INFINIBAT_BUS),
+            dc_bus_1: ElectricalBusConnection::new(18, ElectricalBusConnections::INFINIBAT_BUS),
+            dc_bus_2: ElectricalBusConnection::new(19, ElectricalBusConnections::INFINIBAT_BUS),
+            dc_ess_bus: ElectricalBusConnection::new(20, ElectricalBusConnections::INFINIBAT_BUS),
+            dc_ess_shed_bus: ElectricalBusConnection::new(21, ElectricalBusConnections::INFINIBAT_BUS),
+            dc_bat_bus: ElectricalBusConnection::new(22, ElectricalBusConnections::INFINIBAT_BUS),
+            dc_hot_bus_1: ElectricalBusConnection::new(23, ElectricalBusConnections::INFINIBAT_BUS),
+            dc_hot_bus_2: ElectricalBusConnection::new(24, ElectricalBusConnections::INFINIBAT_BUS),
+        }
+    }
+
+    fn update(&mut self, name: &str, value: f64) {
+        match name {
+            "ELEC_AC_1_BUS_IS_POWERED" => self.ac_bus_1.update(value),
+            "ELEC_AC_2_BUS_IS_POWERED" => self.ac_bus_2.update(value),
+            "ELEC_AC_ESS_BUS_IS_POWERED" => self.ac_ess_bus.update(value),
+            "ELEC_AC_ESS_SHED_BUS_IS_POWERED" => self.ac_ess_shed_bus.update(value),
+            "ELEC_AC_STAT_INV_BUS_IS_POWERED" => self.ac_stat_inv_bus.update(value),
+            "ELEC_DC_1_BUS_IS_POWERED" => self.dc_bus_1.update(value),
+            "ELEC_DC_2_BUS_IS_POWERED" => self.dc_bus_2.update(value),
+            "ELEC_DC_ESS_BUS_IS_POWERED" => self.dc_ess_bus.update(value),
+            "ELEC_DC_ESS_SHED_BUS_IS_POWERED" => self.dc_ess_shed_bus.update(value),
+            "ELEC_DC_BAT_BUS_IS_POWERED" => self.dc_bat_bus.update(value),
+            "ELEC_DC_HOT_1_BUS_IS_POWERED" => self.dc_hot_bus_1.update(value),
+            "ELEC_DC_HOT_2_BUS_IS_POWERED" => self.dc_hot_bus_2.update(value),
+            _ => panic!("No known connection for electrical bus '{}'.", name),
+        }
+    }
+}
+
+struct ElectricalBusConnection {
+    connected: bool,
+    toggle_code: CompiledCalculatorCode,
+}
+impl ElectricalBusConnection {
+    fn new(from: usize, to: usize) -> Self {
+        Self {
+            connected: false,
+            toggle_code: CompiledCalculatorCode::new(&format!("{} {} (>K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)", from, to)).unwrap(),
+        }
+    }
+
+    fn update(&mut self, value: f64) {
+        let should_be_connected = (value - 1.).abs() < f64::EPSILON;
+        if should_be_connected != self.connected {
+            println!("execute");
+            self.toggle_code.execute::<()>();
+            self.connected = !self.connected;
+        }
+    }
 }
