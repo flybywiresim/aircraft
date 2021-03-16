@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import './styles.scss';
-import { LineHolder } from './Lines/LineHolder';
+import { LineHolder } from './LineHolder';
 import { RowHolder } from './RowHolder';
 
 function handleChildInsertion(children: any, value: number) : ReactElement {

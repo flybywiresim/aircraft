@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { LineHolder } from '../../../Components/Lines/LineHolder';
+import { LineHolder } from '../../../Components/LineHolder';
 import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { NumberInputField } from '../../../Components/Fields/Interactive/NumberInputField';
