@@ -233,6 +233,9 @@ a320-neo-mfd-element #Mainframe #TopBox text.Value {
   font-size: 44px;
   fill: var(--displayGreen);
 }
+a320-neo-mfd-element #Mainframe #TopBox text .small {
+  font-size: 36px;
+}
 a320-neo-mfd-element #Mainframe #TopBox text.ValueVor {
   font-size: 44px;
   fill: var(--displayCyan);
@@ -250,7 +253,7 @@ a320-neo-mfd-element #Mainframe #TopBox text.Large {
   fill: var(--displayWhite);
 }
 a320-neo-mfd-element #Mainframe #TopBox text.Units {
-  font-size: 30px;
+  font-size: 32px;
   fill: var(--displayCyan);
 }
 a320-neo-mfd-element #Mainframe #TopBox text.DegreeSymbol {
@@ -280,10 +283,19 @@ a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Left {
 a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Right {
   right: 0%;
 }
+a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Left text {
+  text-anchor: start;
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Left #Distance,
+a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Right text {
+  text-anchor: end;
+}
 a320-neo-mfd-element #Mainframe #VORDMENavaids text {
   font-family: ECAMFontRegular;
   text-align: center;
-  text-anchor: middle;
+}
+a320-neo-mfd-element #Mainframe #VORDMENavaids text .small {
+  font-size: calc(2.25 * 1vh * var(--bodyHeightScale));
 }
 a320-neo-mfd-element #Mainframe #VORDMENavaids #State {
   font-size: calc(3 * 1vh * var(--bodyHeightScale));
