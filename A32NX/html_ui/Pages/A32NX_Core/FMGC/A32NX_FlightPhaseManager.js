@@ -193,6 +193,8 @@ class A32NX_FlightPhase_TakeOff {
         if (!this.accelerationAltitudeMslEo) {
             this.accelerationAltitudeMslEo = _fmc.climbTransitionGroundAltitude + parseInt(NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500"));
         }
+
+        _fmc.updateManagedSpeed();
     }
 
     check(_deltaTime, _fmc) {
@@ -220,6 +222,7 @@ class A32NX_FlightPhase_Climb {
             _fmc.cruiseFlightLevel = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
             _fmc._activeCruiseFlightLevelDefaulToFcu = true;
         }
+        _fmc.updateManagedSpeed();
     }
 
     check(_deltaTime, _fmc) {
@@ -244,6 +247,7 @@ class A32NX_FlightPhase_Cruise {
             _fmc._cruiseFlightLevel = _fmc.cruiseFlightLevel;
             _fmc.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(_fmc._cruiseFlightLevel * 100));
         }
+        _fmc.updateManagedSpeed();
     }
 
     check(_deltaTime, _fmc) {
@@ -259,6 +263,7 @@ class A32NX_FlightPhase_Descent {
         this.nextFmgcFlightPhase = FmgcFlightPhases.APPROACH;
         _fmc.cruiseFlightLevel = undefined;
         _fmc._activeCruiseFlightLevelDefaulToFcu = false;
+        _fmc.updateManagedSpeed();
     }
 
     check(_deltaTime, _fmc) {
@@ -306,6 +311,7 @@ class A32NX_FlightPhase_Approach {
 
     init(_fmc) {
         this.nextFmgcFlightPhase = FmgcFlightPhases.DONE;
+        _fmc.updateManagedSpeed();
     }
 
     check(_deltaTime, _fmc) {
@@ -324,6 +330,7 @@ class A32NX_FlightPhase_GoAround {
     }
 
     init(_fmc) {
+        _fmc.updateManagedSpeed();
     }
 
     check(_deltaTime, _fmc) {

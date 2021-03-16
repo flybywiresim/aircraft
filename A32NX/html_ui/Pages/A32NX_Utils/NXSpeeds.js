@@ -552,4 +552,12 @@ class NXSpeedsUtils {
             Simplane.getFlapsHandleIndex() === 4 ? Simplane.getMaxSpeed(Aircraft.A320_NEO) - 5 : Simplane.getNextFlapsExtendSpeed(Aircraft.A320_NEO)
         )));
     }
+
+    static convertKCasToMach(
+        Vc,
+        T = _convertCtoK(Simplane.getAmbientTemperature()),
+        p = SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar")
+    ) {
+        return _convertKTASToMach(_convertKCasToKTAS(Vc, T, p), T);
+    }
 }
