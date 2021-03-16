@@ -861,7 +861,6 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         const ws = this.ndInfo.querySelector("#Wind_Strength");
         const wa = this.ndInfo.querySelector("#Wind_Arrow");
         const wptg = this.ndInfo.querySelector("#Waypoint_Group");
-        const onGround = Simplane.getIsGrounded();
         if (ADIRSState != 2 || trueAirSpeed < 60) {
             //TAS info Conditions
             tas.textContent = "---";
@@ -876,7 +875,6 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         } else {
             wa.setAttribute("visibility", "visible");
         }
-
         if (ADIRSState != 2) {
             gs.textContent = "---";
         } else {
