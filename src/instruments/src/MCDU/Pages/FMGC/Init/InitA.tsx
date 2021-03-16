@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { RootContext } from '../../../RootContext';
-import { LineHolder } from '../../../Components/Lines/LineHolder';
+import { LineHolder } from '../../../Components/LineHolder';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';
 import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
 import { lineSelectKeys } from '../../../Components/Buttons';

@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import { Content } from '../../../Components/Content';
 import '../../../Components/styles.scss';
 import { RootContext } from '../../../RootContext.jsx';
-import { LineHolder } from '../../../Components/Lines/LineHolder';
+import { LineHolder } from '../../../Components/LineHolder';
 import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
 import { RowHolder } from '../../../Components/RowHolder';
 import { LabelField } from '../../../Components/Fields/NonInteractive/LabelField';

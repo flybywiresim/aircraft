@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import '../../../Components/styles.scss';
-import { LineHolder } from '../../../Components/Lines/LineHolder';
+import { LineHolder } from '../../../Components/LineHolder';
 import { Line, lineColors, lineSides, lineSizes } from '../../../Components/Lines/Line';
 import { RowHolder } from '../../../Components/RowHolder';
 import { EmptyLine } from '../../../Components/Lines/EmptyLine';

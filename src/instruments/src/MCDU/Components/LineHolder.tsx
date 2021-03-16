@@ -1,5 +1,5 @@
 import React from 'react';
-import { EmptyLine } from './EmptyLine';
+import { EmptyLine } from './Lines/EmptyLine';
 
 export const LineHolder: React.FC = ({ children }) => {
     if (children) {
