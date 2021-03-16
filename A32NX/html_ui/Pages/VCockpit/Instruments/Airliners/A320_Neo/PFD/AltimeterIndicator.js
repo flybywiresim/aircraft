@@ -554,27 +554,17 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 if ((transTakeoffAlt <= indicatedAltitude) && (baroMode !== "STD")) {
                     this._blinkQNH();
                 }
-                if ((transTakeoffAlt > indicatedAltitude) && (baroMode === "STD")) {
-                    this._blinkSTD();
-                }
             }
         }
-
         if ((transApprAlt !== 0) && (!Simplane.getIsGrounded())) {
             if ((SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Number") > 4) && (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Number") < 7)) {
                 if ((transApprAlt >= indicatedAltitude) && (baroMode === "STD")) {
                     this._blinkSTD();
                 }
-                if ((transApprAlt <= indicatedAltitude) && (baroMode !== "STD")) {
-                    this._blinkQNH();
-                }
             }
             if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Number") == 7) {
                 if ((transApprAlt <= indicatedAltitude) && (baroMode !== "STD")) {
                     this._blinkQNH();
-                }
-                if ((transApprAlt > indicatedAltitude) && (baroMode === "STD")) {
-                    this._blinkSTD();
                 }
             }
         }
