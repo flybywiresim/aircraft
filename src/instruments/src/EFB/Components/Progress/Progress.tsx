@@ -16,7 +16,7 @@ export type ProgressBarProps = {
     labelColor?: string;
     labelSize?: string;
     isLabelVisible?: boolean;
-};
+}
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
     bgcolor,
