@@ -228,7 +228,8 @@ const SimVarProvider: React.FC = ({ children }) => {
         } else {
             // ...otherwise, filter out the first occurence of this value
             const index = listeners.current[key].indexOf(maxStaleness || 0);
-            listeners.current[key] = listeners.current[key].splice(index, 1);
+            // splice removes in-place, so an assignment would be wrong here as the return value is the removed element
+            listeners.current[key].splice(index, 1);
         }
     };
 
