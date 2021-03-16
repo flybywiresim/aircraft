@@ -42,7 +42,7 @@ jobs:
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
-          ./scripts/dev-env/run.sh ./scripts/build.sh
+          ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty
       - name: Generate ZIP file
         run: |
           mkdir ./${{ env.BUILD_DIR_NAME }}
