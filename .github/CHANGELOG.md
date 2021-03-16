@@ -214,6 +214,8 @@
 1. [ELEC] The BCL opens the contactor on entering the EMER ELEC situation - @davidwalschots (David Walschots)
 1. [ELEC] The BCL opens the contactor when in EMER ELEC and over three minutes have passed with the APU MASTER SW in the ON position - @davidwalschots (David Walschots)
 1. [ELEC] When the battery push button is in the OFF position, the BCL is not powered. This means that any conditions which depend on external factors (such as APU start) or the timers for certain conditions are not remembered - @davidwalschots (David Walschots)
+1. [MISC] Added functionality to the console/floor light switch - @ImenesFBW (Imenes)
+1. [MCDU] Improved Message compatibility for future features - @MisterChocker (Leon)
 1. [ND] Correct Behaviour of TAS and Wind Arrow Information Displayed with correct conditions - @ChruutvoLuzi (ChruutvoLuzi#8902)
 
 ## 0.5.2
