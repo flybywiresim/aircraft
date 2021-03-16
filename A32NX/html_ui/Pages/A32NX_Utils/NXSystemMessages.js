@@ -1,46 +1,75 @@
+class McduMessage {
+    constructor(_text, _isAmber = false, _isTypeTwo = false, _replace = "") {
+        this.cText = _text;
+        this.isAmber = _isAmber;
+        this.isTypeTwo = _isTypeTwo;
+        this.replace = _replace;
+    }
+
+    /**
+     * `set text(_t) {}` is not allowed to ensure thread safety, editing the original definition should never be allowed
+     * Both NXSystemMessages and NXFictionalMessages messages shall always be readable ONLY
+     */
+
+    get text() {
+        return this.cText;
+    }
+
+    /**
+     * Only returning a "copy" of the object to ensure thread safety when trying to edit the original message
+     */
+    getSetMessage(t) {
+        return {
+            text: !!t ? this.cText.replace(this.replace, "" + t) : this.cText,
+            isAmber: this.isAmber,
+            isTypeTwo: this.isTypeTwo
+        };
+    }
+}
+
 /**
  NXSystemMessages only holds real messages
  */
 const NXSystemMessages = {
-    aocActFplnUplink:       {text: "AOC ACT F-PLN UPLINK", isAmber: false, isTypeTwo: true},
-    awyWptMismatch:         {text: "AWY/WPT MISMATCH", isAmber: false, isTypeTwo: false},
-    checkMinDestFob:        {text: "CHECK MIN DEST FOB", isAmber: false, isTypeTwo: true},
-    checkToData:            {text: "CHECK TAKE OFF DATA", isAmber: true, isTypeTwo: true},
-    destEfobBelowMin:       {text: "DEST EFOB BELOW MIN", isAmber: true, isTypeTwo: true},
-    enterDestData:          {text: "ENTER DEST DATA", isAmber: true, isTypeTwo: true},
-    entryOutOfRange:        {text: "ENTRY OUT OF RANGE", isAmber: false, isTypeTwo: false},
-    formatError:            {text: "FORMAT ERROR", isAmber: false, isTypeTwo: false},
-    gpsPrimary:             {text: "GPS PRIMARY", isAmber: false, isTypeTwo: true},
-    gpsPrimaryLost:         {text: "GPS PRIMARY LOST", isAmber: true, isTypeTwo: true},
-    initializeWeightOrCg:   {text: "INITIALIZE WEIGHT/CG", isAmber: true, isTypeTwo: true},
-    newCrzAlt:              {text: "NEW CRZ ALT-", isAmber: false, isTypeTwo: true},
-    noIntersectionFound:    {text: "NO INTERSECTION FOUND", isAmber: false, isTypeTwo: false},
-    notAllowed:             {text: "NOT ALLOWED", isAmber: false, isTypeTwo: false},
-    notInDatabase:          {text: "NOT IN DATABASE", isAmber: false, isTypeTwo: false},
-    selectDesiredSystem:    {text: "SELECT DESIRED SYSTEM", isAmber: false, isTypeTwo: false},
-    uplinkInsertInProg:     {text: "UPLINK INSERT IN PROG", isAmber: false, isTypeTwo: true},
-    vToDisagree:            {text: "V1/VR/V2 DISAGREE", isAmber: true, isTypeTwo: true},
-    waitForSystemResponse:  {text: "WAIT FOR SYSTEM RESPONSE", isAmber: false, isTypeTwo: false}
+    aocActFplnUplink:       new McduMessage("AOC ACT F-PLN UPLINK", false, true),
+    awyWptMismatch:         new McduMessage("AWY/WPT MISMATCH", false, false),
+    checkMinDestFob:        new McduMessage("CHECK MIN DEST FOB", false, true),
+    checkToData:            new McduMessage("CHECK TAKE OFF DATA", true, true),
+    destEfobBelowMin:       new McduMessage("DEST EFOB BELOW MIN", true, true),
+    enterDestData:          new McduMessage("ENTER DEST DATA", true, true),
+    entryOutOfRange:        new McduMessage("ENTRY OUT OF RANGE", false, false),
+    formatError:            new McduMessage("FORMAT ERROR", false, false),
+    gpsPrimary:             new McduMessage("GPS PRIMARY", false, true),
+    gpsPrimaryLost:         new McduMessage("GPS PRIMARY LOST", true, true),
+    initializeWeightOrCg:   new McduMessage("INITIALIZE WEIGHT/CG", true, true),
+    newCrzAlt:              new McduMessage("NEW CRZ ALT - HHHHH", false, true, "HHHHH"),
+    noIntersectionFound:    new McduMessage("NO INTERSECTION FOUND", false, false),
+    notAllowed:             new McduMessage("NOT ALLOWED", false, false),
+    notInDatabase:          new McduMessage("NOT IN DATABASE", false, false),
+    selectDesiredSystem:    new McduMessage("SELECT DESIRED SYSTEM", false, false),
+    uplinkInsertInProg:     new McduMessage("UPLINK INSERT IN PROG", false, true),
+    vToDisagree:            new McduMessage("V1/VR/V2 DISAGREE", true, true),
+    waitForSystemResponse:  new McduMessage("WAIT FOR SYSTEM RESPONSE", false, false)
 };
 
 const NXFictionalMessages = {
-    noSimBriefUser:         {text: "NO SIMBRIEF USER", isAmber: false, isTypeTwo: false},
-    fltNbrInUse:            {text: "FLT NBR IN USE", isAmber: false, isTypeTwo: false},
-    notYetImplemented:      {text: "NOT YET IMPLEMENTED", isAmber: false, isTypeTwo: false},
-    recipientNotFound:      {text: "RECIPIENT NOT FOUND", isAmber: false, isTypeTwo: false},
-    authErr:                {text: "AUTH ERR", isAmber: false, isTypeTwo: false},
-    invalidMsg:             {text: "INVALID MSG", isAmber: false, isTypeTwo: false},
-    unknownDownlinkErr:     {text: "UNKNOWN DOWNLINK ERR", isAmber: false, isTypeTwo: false},
-    telexNotEnabled:        {text: "TELEX NOT ENABLED", isAmber: false, isTypeTwo: false},
-    freeTextDisabled:       {text: "FREE TEXT DISABLED", isAmber: false, isTypeTwo: false},
-    freetextEnabled:        {text: "FREE TEXT ENABLED", isAmber: false, isTypeTwo: false},
-    enabledFltNbrInUse:     {text: "ENABLED. FLT NBR IN USE", isAmber: false, isTypeTwo: false},
-    noOriginApt:            {text: "NO ORIGIN AIRPORT", isAmber: false, isTypeTwo: false},
-    noOriginSet:            {text: "NO ORIGIN SET", isAmber: false, isTypeTwo: false},
-    secondIndexNotFound:    {text: "2ND INDEX NOT FOUND", isAmber: false, isTypeTwo: false},
-    firstIndexNotFound:     {text: "1ST INDEX NOT FOUND", isAmber: false, isTypeTwo: false},
-    noRefWpt:               {text: "NO REF WAYPOINT", isAmber: false, isTypeTwo: false},
-    noWptInfos:             {text: "NO WAYPOINT INFOS", isAmber: false, isTypeTwo: false},
-    emptyMessage:           {text: "", isAmber: false, isTypeTwo: false},
-    weightUnitChanged:      {text: "UNIT CHANGED RELOAD A/C", isAmber: true, isTypeTwo: true}
+    noSimBriefUser:         new McduMessage("NO SIMBRIEF USER", false, false),
+    fltNbrInUse:            new McduMessage("FLT NBR IN USE", false, false),
+    notYetImplemented:      new McduMessage("NOT YET IMPLEMENTED", false, false),
+    recipientNotFound:      new McduMessage("RECIPIENT NOT FOUND", false, false),
+    authErr:                new McduMessage("AUTH ERR", false, false),
+    invalidMsg:             new McduMessage("INVALID MSG", false, false),
+    unknownDownlinkErr:     new McduMessage("UNKNOWN DOWNLINK ERR", false, false),
+    telexNotEnabled:        new McduMessage("TELEX NOT ENABLED", false, false),
+    freeTextDisabled:       new McduMessage("FREE TEXT DISABLED", false, false),
+    freetextEnabled:        new McduMessage("FREE TEXT ENABLED", false, false),
+    enabledFltNbrInUse:     new McduMessage("ENABLED. FLT NBR IN USE", false, false),
+    noOriginApt:            new McduMessage("NO ORIGIN AIRPORT", false, false),
+    noOriginSet:            new McduMessage("NO ORIGIN SET", false, false),
+    secondIndexNotFound:    new McduMessage("2ND INDEX NOT FOUND", false, false),
+    firstIndexNotFound:     new McduMessage("1ST INDEX NOT FOUND", false, false),
+    noRefWpt:               new McduMessage("NO REF WAYPOINT", false, false),
+    noWptInfos:             new McduMessage("NO WAYPOINT INFOS", false, false),
+    emptyMessage:           new McduMessage(),
+    weightUnitChanged:      new McduMessage("UNIT CHANGED RELOAD A/C", true, true)
 };
