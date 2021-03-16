@@ -2,4 +2,5 @@
 A32NX/html_ui/Pages/A32NX_Core/math.js
 build.*.js
 buildSrc/*
+igniter.config.mjs
 src/instruments/ecam-page-template/template.js
