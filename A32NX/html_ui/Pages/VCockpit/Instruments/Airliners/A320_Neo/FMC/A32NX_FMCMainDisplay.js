@@ -1130,8 +1130,7 @@ class FMCMainDisplay extends BaseAirliners {
     _onStepClimbDescent(_targetFl) {
         // Only show the message on step climbs
         if (_targetFl > this.cruiseFlightLevel) {
-            const msg = NXSystemMessages.newCrzAlt;
-            this.addNewMessage({text: msg.text + _targetFl * 100, isAmber: msg.isAmber, isTypeTwo: msg.isTypeTwo});
+            this.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(_targetFl * 100));
         }
         this.cruiseFlightLevel = _targetFl;
         this._cruiseFlightLevel = _targetFl;
