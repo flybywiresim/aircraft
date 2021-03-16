@@ -853,6 +853,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         }
         const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
         const groundSpeed = Math.round(Simplane.getGroundSpeed());
+        const trueSpeed = Math.round(Simplane.getTrueSpeed());
         const gs = this.ndInfo.querySelector("#GS_Value");
         const tas = this.ndInfo.querySelector("#TAS_Value");
         const wd = this.ndInfo.querySelector("#Wind_Direction");
@@ -860,15 +861,21 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         const wa = this.ndInfo.querySelector("#Wind_Arrow");
         const wptg = this.ndInfo.querySelector("#Waypoint_Group");
         const onGround = Simplane.getIsGrounded();
-        if (ADIRSState != 2 || groundSpeed <= 100 && onGround) {
-            //Hide TAS, and wind info
+        if (ADIRSState != 2 || trueSpeed < 60) {
+            //TAS info Conditions
             tas.textContent = "---";
+        } else {
+
+        }
+        if (ADIRSState != 2 || trueSpeed < 100) {
+            //Wind info Arrow Conditions
             wd.textContent = "---";
             ws.textContent = "---";
             wa.setAttribute("visibility", "hidden");
         } else {
             wa.setAttribute("visibility", "visible");
         }
+
         if (ADIRSState != 2) {
             gs.textContent = "---";
         } else {
