@@ -15,7 +15,7 @@ export const Chrono = () => {
 
     useEffect(() => {
         if (running) {
-            setElapsedTime((elapsedTime || 0) + absTime - prevTime);
+            setElapsedTime(Math.max((elapsedTime || 0) + absTime - prevTime, 0));
         }
         setPrevTime(absTime);
     }, [absTime]);

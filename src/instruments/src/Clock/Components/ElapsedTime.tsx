@@ -14,7 +14,7 @@ export const ElapsedTime = () => {
 
     useEffect(() => {
         if (elapsedKnobPos === 0) {
-            setElapsedTime(elapsedTime + absTime - prevTime);
+            setElapsedTime(Math.max(elapsedTime + absTime - prevTime, 0));
         } else if (elapsedKnobPos === 2) {
             setElapsedTime(0);
         }
