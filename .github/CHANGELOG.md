@@ -183,6 +183,7 @@
 1. [CDU] Reworked Flight Phase system - @MisterChocker (Leon)
 1. [MISC] Fixed button labels not showing when unlit - @ImenesFBW (Imenes)
 1. [EFB] Added functionality to ground services page - @Saschl (saschl#9432)
+1. [MISC] Add cockpit.cfg and fixes flaps full angle in external view - @donstim (donbikes#4084)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
