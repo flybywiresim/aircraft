@@ -216,6 +216,7 @@
 1. [ELEC] When the battery push button is in the OFF position, the BCL is not powered. This means that any conditions which depend on external factors (such as APU start) or the timers for certain conditions are not remembered - @davidwalschots (David Walschots)
 1. [MISC] Added functionality to the console/floor light switch - @ImenesFBW (Imenes)
 1. [EFB] Added EFB fuel page and refuel logic - @Inexorable95 (Inexorable)
+1. [MCDU] Improved Message compatibility for future features - @MisterChocker (Leon)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
