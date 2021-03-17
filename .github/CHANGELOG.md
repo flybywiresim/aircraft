@@ -217,6 +217,7 @@
 1. [MISC] Added functionality to the console/floor light switch - @ImenesFBW (Imenes)
 1. [EFB] Added EFB fuel page and refuel logic - @Inexorable95 (Inexorable)
 1. [MCDU] Improved Message compatibility for future features - @MisterChocker (Leon)
+1. [MISC] Fixed default positions of RAM AIR, WX Mode, TCAS ALT RPTG and TCAS THRT switches - @tshomas (Shomas#2719)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
