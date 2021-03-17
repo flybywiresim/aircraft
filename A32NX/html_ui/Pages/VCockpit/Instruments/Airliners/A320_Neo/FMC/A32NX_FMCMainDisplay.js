@@ -1136,8 +1136,7 @@ class FMCMainDisplay extends BaseAirliners {
     _onStepClimbDescent(_targetFl) {
         // Only show the message on step climbs
         if (_targetFl > this.cruiseFlightLevel) {
-            const msg = NXSystemMessages.newCrzAlt;
-            this.addNewMessage({text: msg.text + _targetFl * 100, isAmber: msg.isAmber, isTypeTwo: msg.isTypeTwo});
+            this.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(_targetFl * 100));
         }
         this.cruiseFlightLevel = _targetFl;
         this._cruiseFlightLevel = _targetFl;
@@ -1913,7 +1912,9 @@ class FMCMainDisplay extends BaseAirliners {
     //Needs PR Merge #3082
     trySetThrustReductionAccelerationAltitude(s) {
         if (s === FMCMainDisplay.clrValue) {
-            CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
+            this.thrustReductionAltitudeIsPilotEntered = false;
+            this.accelerationAltitudeIsPilotEntered = false;
+            CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
             return true;
         }
 
@@ -1973,6 +1974,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     trySetEngineOutAcceleration(s) {
         if (s === FMCMainDisplay.clrValue) {
+            this.engineOutAccelerationAltitudeIsPilotEntered = false;
             CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
             return true;
         }
