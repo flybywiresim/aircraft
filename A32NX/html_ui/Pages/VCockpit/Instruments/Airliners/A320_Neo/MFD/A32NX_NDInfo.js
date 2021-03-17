@@ -34,6 +34,8 @@ class Jet_MFD_NDInfo extends HTMLElement {
         this.waypointName = this.querySelector("#WP_Name");
         this.waypointTrack = this.querySelector("#WP_Track_Value");
         this.waypointDistance = this.querySelector("#WP_Distance_Value");
+        this.waypointUnit = this.querySelector("#WP_Distance_Units");
+        this.waypointSymbol = this.querySelector("#WP_Degree_Symbol");
         this.waypointTime = this.querySelector("#WP_Time");
         this.VORLeft = new VORDMENavAid(this.querySelector("#VORDMENavaid_Left"), 1);
         this.VORRight = new VORDMENavAid(this.querySelector("#VORDMENavaid_Right"), 2);
@@ -172,6 +174,12 @@ class Jet_MFD_NDInfo extends HTMLElement {
             }
         }
     }
+
+    formatDistDecimalSvg(distValue, distDigits) {
+        const [distNum, distDec] = distValue.toFixed(distDigits).split(".");
+        return `${distNum}.<tspan class="small">${distDec}</tspan>`;
+    }
+
     setWaypoint(_name, _track, _distance, _eta, _force = false) {
         if (this.waypoint) {
             if (this._navMode == Jet_NDCompass_Navigation.NAV) {
@@ -184,15 +192,21 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     }
                     if ((_track != this.currentWaypointTrack) || _force) {
                         this.currentWaypointTrack = _track;
+                        this.waypointSymbol.textContent = String.fromCharCode(176);
                         if (this.waypointTrack) {
-                            this.waypointTrack.textContent = this.currentWaypointTrack.toString().padStart(3, "0") + String.fromCharCode(176);
+                            this.waypointTrack.textContent = this.currentWaypointTrack.toString().padStart(3, "0");
                         }
                     }
                     if ((_distance != this.currentWaypointDistance) || _force) {
                         this.currentWaypointDistance = _distance;
                         if (this.waypointDistance != null) {
+                            this.waypointUnit.textContent = "NM";
                             if (this.currentWaypointDistance < 10000) {
-                                this.waypointDistance.textContent = this.currentWaypointDistance.toFixed(1);
+                                if (this.currentWaypointDistance > 19.95) {
+                                    this.waypointDistance.textContent = Math.round(this.currentWaypointDistance);
+                                } else {
+                                    this.waypointDistance.innerHTML = this.formatDistDecimalSvg(this.currentWaypointDistance,1);
+                                }
                             } else {
                                 this.waypointDistance.textContent = this.currentWaypointDistance.toFixed(0);
                             }
@@ -206,18 +220,21 @@ class Jet_MFD_NDInfo extends HTMLElement {
                             this.waypointTime.textContent = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
                         }
                     }
+                    //Fakes PPOS when there is no waypoint entered, can be removed when FPLN Manager is fully implemented.
                 } else {
                     if (this.waypointName != null) {
-                        this.waypointName.textContent = "";
+                        this.waypointName.textContent = "PPOS";
+                        this.waypointSymbol.textContent = "";
+                        this.waypointUnit.textContent = "";
                     }
                     if (this.waypointTrack != null) {
-                        this.waypointTrack.textContent = "---°";
+                        this.waypointTrack.textContent = ""; //---°
                     }
                     if (this.waypointDistance != null) {
-                        this.waypointDistance.textContent = "-.-";
+                        this.waypointDistance.textContent = ""; //-.-
                     }
                     if (this.waypointTime != null) {
-                        this.waypointTime.textContent = "--:--";
+                        this.waypointTime.textContent = ""; //--:--
                     }
                 }
             }
@@ -269,6 +286,12 @@ class Jet_MFD_NDInfo extends HTMLElement {
             this.VORRight.update(this.gps, this.aircraft);
         }
     }
+
+    formatVORDecimalSvg(VORvalue, VORdigits) {
+        const [VORnum, VORdec] = VORvalue.toFixed(VORdigits).split(".");
+        return `${VORnum}.<tspan class="small">${VORdec}</tspan>`;
+    }
+
     updateApproach() {
         if (this.approach != null) {
             switch (this._navMode) {
@@ -299,7 +322,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     let course = "---°";
                     let ident = "";
                     if (vor.id > 0) {
-                        freq = vor.freq.toFixed(2);
+                        freq = this.formatVORDecimalSvg(parseFloat(vor.freq), 2);
                         course = Utils.leadingZeros(Math.round(vor.course), 3) + "°";
                         ident = vor.ident;
                         if (this.aircraft == Aircraft.CJ4) {
@@ -310,13 +333,13 @@ class Jet_MFD_NDInfo extends HTMLElement {
                         }
                     }
                     this.approachType.textContent = type + suffix;
-                    this.approachFreq.textContent = freq;
+                    this.approachFreq.innerHTML = freq;
                     this.approachCourse.textContent = course;
                     this.approachInfo.textContent = ident;
                     if (this.aircraft != Aircraft.CJ4) {
-                        this.approachFreq.setAttribute("class", "ValueVor");
+                        this.approachFreq.setAttribute("class", "Large");
                         this.approachCourse.setAttribute("class", "ValueVor");
-                        this.approachInfo.setAttribute("class", "ValueVor");
+                        this.approachInfo.setAttribute("class", "Large");
                     }
                     break;
                 }
@@ -347,12 +370,12 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     let course = "---°";
                     let ident = "";
                     if (ils.id > 0) {
-                        freq = ils.freq.toFixed(2);
+                        freq = this.formatVORDecimalSvg(parseFloat(ils.freq), 2);
                         course = Utils.leadingZeros(Math.round(ils.course), 3) + "°";
-                        ident = ils.name;
+                        ident = ils.ident;
                     }
                     this.approachType.textContent = type + suffix;
-                    this.approachFreq.textContent = freq;
+                    this.approachFreq.innerHTML = freq;
                     this.approachCourse.textContent = course;
                     this.approachInfo.textContent = ident;
                     if (this.aircraft != Aircraft.CJ4) {
@@ -434,7 +457,7 @@ class VORDMENavAid {
         this.aircraft = _aircraft;
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         const index = parseInt(url.substring(url.length - 1));
-        let state = Simplane.getAutoPilotNavAidState(index, this.index);
+        let state = Simplane.getAutoPilotNavAidState(_aircraft, index, this.index);
         if (_aircraft == Aircraft.B747_8) {
             state--;
             if (state < 0) {
@@ -499,6 +522,11 @@ class VORDMENavAid {
         }
     }
 
+    formatDecimalSvg(value, digits) {
+        const [num, dec] = value.toFixed(digits).split(".");
+        return `${num}.<tspan class="small">${dec}</tspan>`;
+    }
+
     /**
      * Modify to show ID instead of frequency when locked
      *
@@ -510,25 +538,25 @@ class VORDMENavAid {
             this.idValue = _value;
             if (this.idText != null) {
                 if (this.idValue == 0) {
-                    this.idText.textContent = "---";
+                    this.idText.textContent = "";
                 } else {
                     switch (this.currentState) {
                         case NAV_AID_STATE.ADF:
                             if (SimVar.GetSimVarValue(`ADF SIGNAL:${this.index}`, "number")) {
                                 this.idText.textContent = SimVar.GetSimVarValue(`ADF IDENT:${this.index}`, "string");
                             } else {
-                                this.idText.textContent = fastToFixed(this.idValue, 1);
+                                this.idText.innerHTML = this.formatDecimalSvg(parseFloat(this.idValue), 2);
                             }
                             break;
                         case NAV_AID_STATE.VOR:
                             if (SimVar.GetSimVarValue(`NAV HAS NAV:${this.index}`, "number")) {
                                 this.idText.textContent = SimVar.GetSimVarValue(`NAV IDENT:${this.index}`, "string");
                             } else {
-                                this.idText.textContent = fastToFixed(this.idValue, 1);
+                                this.idText.innerHTML = this.formatDecimalSvg(parseFloat(this.idValue), 2);
                             }
                             break;
                         default:
-                            this.idText.textContent = fastToFixed(this.idValue, 1);
+                            this.idText.innerHTML = this.formatDecimalSvg(parseFloat(this.idValue), 2);
                     }
                 }
             }
@@ -564,12 +592,10 @@ class VORDMENavAid {
             const displayStr = "block";
             if (this.distanceText != null) {
                 if (showDistance) {
-                    if (this.distanceValue > 20) {
-                        this.distanceValue = Math.round(this.distanceValue);
-                        this.distanceText.textContent = fastToFixed(this.distanceValue, 1);
+                    if (this.distanceValue > 19.95) {
+                        this.distanceText.textContent = Math.round(this.distanceValue);
                     } else {
-                        this.distanceValue = parseFloat(this.distanceValue).toFixed(1);
-                        this.distanceText.textContent = this.distanceValue;
+                        this.distanceText.innerHTML = this.formatDecimalSvg(this.distanceValue, 1);
                     }
                 } else {
                     this.distanceText.textContent = "---";

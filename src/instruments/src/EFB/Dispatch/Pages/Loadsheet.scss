@@ -1,0 +1,68 @@
+/*!
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.loadsheet-container {
+  height: 700px;
+}
+
+.show-scrollbar::-webkit-scrollbar {
+  @apply w-8;
+  @apply bg-gray-800;
+}
+
+.show-scrollbar::-webkit-scrollbar-track {
+  background-color: rgba(255, 255, 255, 0.5);
+  @apply rounded-xl;
+  border-right: 12px solid;
+  border-left: 12px solid;
+  @apply border-gray-800;
+}
+
+.show-scrollbar::-webkit-scrollbar-thumb {
+  @apply rounded-xl;
+  @apply bg-blue-light;
+}
+
+.font-size-button {
+  width: 50px;
+  height: 50px;
+  @apply text-xl;
+  @apply ml-2;
+  @apply mb-2;
+  @apply text-white;
+  @apply font-medium;
+  @apply bg-blue-light;
+  @apply p-2;
+  @apply rounded-lg;
+}
+
+.grabbable {
+  cursor: move;
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+
+  &:active {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+  }
+}

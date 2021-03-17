@@ -17,61 +17,34 @@
  */
 
 import './Cond.scss';
-import { useState } from 'react';
-import { getSimVar, useUpdate } from '../../../util.js';
+import ReactDOM from 'react-dom';
+import React from 'react';
+import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
+import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+
+setIsEcamPage('cond_page');
 
 export const CondPage = () => {
-    const [ckptTemp, setCkptTemp] = useState({
-        selectedTemp: 99,
-        trimTemp: 99,
-        cabinTemp: 99,
-        rotation: 0,
-    });
-
-    const [fwdTemp, setFwdTemp] = useState({
-        selectedTemp: 99,
-        trimTemp: 99,
-        cabinTemp: 99,
-        rotation: 0,
-    });
-
-    const [aftTemp, setAftTemp] = useState({
-        selectedTemp: 99,
-        trimTemp: 99,
-        cabinTemp: 99,
-        rotation: 0,
-    });
-
-    const [hotAir, setHotAir] = useState(false);
-
     // Disaply trim valve position for each zone
     const gaugeOffset = -50; // Gauges range is from -50 degree to +50 degree
 
-    useUpdate(() => {
-        setCkptTemp({
-            selectedTemp: getSimVar('L:A320_Neo_AIRCOND_LVL_1', 'number'),
-            trimTemp: getSimVar('L:A32NX_CKPT_TRIM_TEMP', 'celsius').toFixed(0),
-            cabinTemp: getSimVar('L:A32NX_CKPT_TEMP', 'celsius').toFixed(0),
-            rotateTemp: gaugeOffset + ckptTemp.selectedTemp,
-        });
-        setFwdTemp({
-            selectedTemp: getSimVar('L:A320_Neo_AIRCOND_LVL_2', 'number'),
-            trimTemp: getSimVar('L:A32NX_FWD_TRIM_TEMP', 'celsius').toFixed(0),
-            cabinTemp: getSimVar('L:A32NX_FWD_TEMP', 'celsius').toFixed(0),
-            rotateTemp: gaugeOffset + fwdTemp.selectedTemp,
-        });
-        setAftTemp({
-            selectedTemp: getSimVar('L:A320_Neo_AIRCOND_LVL_3', 'number'),
-            trimTemp: getSimVar('L:A32NX_AFT_TRIM_TEMP', 'celsius').toFixed(0),
-            cabinTemp: getSimVar('L:A32NX_AFT_TEMP', 'celsius').toFixed(0),
-            rotateTemp: gaugeOffset + aftTemp.selectedTemp,
-        });
-        setHotAir(getSimVar('L:A32NX_AIRCOND_HOTAIR_TOGGLE', 'bool'));
-    });
+    const [cockpitSelectedTemp] = useSimVar('L:A320_Neo_AIRCOND_LVL_1', 'number', 1000);
+    const [cockpitTrimTemp] = useSimVar('L:A32NX_CKPT_TRIM_TEMP', 'celsius', 1000);
+    const [cockpitCabinTemp] = useSimVar('L:A32NX_CKPT_TEMP', 'celsius', 1000);
+
+    const [fwdSelectedTemp] = useSimVar('L:A320_Neo_AIRCOND_LVL_2', 'number', 1000);
+    const [fwdTrimTemp] = useSimVar('L:A32NX_FWD_TRIM_TEMP', 'celsius', 1000);
+    const [fwdCabinTemp] = useSimVar('L:A32NX_FWD_TEMP', 'celsius', 1000);
+
+    const [aftSelectedTemp] = useSimVar('L:A320_Neo_AIRCOND_LVL_3', 'number', 1000);
+    const [aftTrimTemp] = useSimVar('L:A32NX_AFT_TRIM_TEMP', 'celsius', 1000);
+    const [aftCabinTemp] = useSimVar('L:A32NX_AFT_TEMP', 'celsius', 1000);
+
+    const [hotAir] = useSimVar('L:A32NX_AIRCOND_HOTAIR_TOGGLE', 'bool', 1000);
 
     return (
         <>
-            <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+            <svg id="cond-page" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
                 {/* Title and unit */}
                 <g id="titleAndWarnings">
                     <text className="PageTitle" x="5" y="27">COND</text>
@@ -79,9 +52,9 @@ export const CondPage = () => {
                     <text className="tempText" x="553" y="27">:</text>
                     <text id="CondTempUnit" className="UnitText" x="564" y="27">°C</text>
                     { /* Not yet implemented
-                    <text id="LeftFanWarning" className="warningText" x="170" y="60">FAN</text>
-                    <text id="RightFanWarning" className="warningText" x="350" y="60">FAN</text>
-                    <text id="AltnMode" className="valueText" x="225" y="35">ALTN MODE</text>
+                        <text id="LeftFanWarning" className="warningText" x="170" y="60">FAN</text>
+                        <text id="RightFanWarning" className="warningText" x="350" y="60">FAN</text>
+                        <text id="AltnMode" className="valueText" x="225" y="35">ALTN MODE</text>
                     */}
                 </g>
 
@@ -90,13 +63,13 @@ export const CondPage = () => {
                 <path id="PlaneSymbol" className="CondPlane" d="m213.8428,68.36133l0,83.97584l55.55171,0m31.00094,0l51.73732,0l0,-50.70766m0,50.70766l55.55173,0m34.81534,0l22.46143,0.14881l14.27533,-10.61944m-265.3938,10.47063l-43.25439,0.17314m-31.10621,0.0111c-48.43094,0.21796 -46.00225,-7.78263 -67.15623,-15.92789m407.68806,-58.64412l-15.47207,-9.94078c-116.67487,0.0387 -207.24004,-0.30086 -323.91504,-0.12489c-20.94778,1.56194 -28.42552,8.14482 -31.50305,11.74302l-9.3201,10.8969l-27.55615,9.99176" />
 
                 {/* Cockpit */}
-                <CondUnit title="CKPT" cabinTemp={ckptTemp.cabinTemp} trimTemp={ckptTemp.trimTemp} x="153" rotateTemp={ckptTemp.rotateTemp} />
+                <CondUnit title="CKPT" selectedTemp={cockpitSelectedTemp} cabinTemp={cockpitCabinTemp} trimTemp={cockpitTrimTemp} x={153} offset={gaugeOffset} />
 
                 {/* Fwd */}
-                <CondUnit title="FWD" cabinTemp={fwdTemp.cabinTemp} trimTemp={fwdTemp.trimTemp} x="283" rotateTemp={fwdTemp.rotateTemp} />
+                <CondUnit title="FWD" selectedTemp={fwdSelectedTemp} cabinTemp={fwdCabinTemp} trimTemp={fwdTrimTemp} x={283} offset={gaugeOffset} />
 
                 {/*  Aft */}
-                <CondUnit title="AFT" cabinTemp={aftTemp.cabinTemp} trimTemp={aftTemp.trimTemp} x="423" rotateTemp={aftTemp.rotateTemp} />
+                <CondUnit title="AFT" selectedTemp={aftSelectedTemp} cabinTemp={aftCabinTemp} trimTemp={aftTrimTemp} x={423} offset={gaugeOffset} />
 
                 {/* Valve and tubes */}
                 <g id="ValveAndTubes">
@@ -117,13 +90,23 @@ export const CondPage = () => {
     );
 };
 
-const CondUnit = ({ title, cabinTemp, trimTemp, x, rotateTemp }) => {
-    const polyPoints = `${Number(x) + 4},206 ${x},199 ${Number(x) - 4},206`;
-    const gaugeD = `m ${Number(x) - 26} 208 Q ${x} 186 ${Number(x) + 26} 208`;
-    const ductC = `${Number(x) - 40}`;
-    const ductH = `${Number(x) + 40}`;
+type CondUnitProps = {
+    title: string,
+    selectedTemp: number,
+    cabinTemp: number,
+    trimTemp: number,
+    x: number,
+    offset: number
+}
+
+const CondUnit = ({ title, selectedTemp, cabinTemp, trimTemp, x, offset } : CondUnitProps) => {
+    const rotateTemp = offset + selectedTemp;
+    const polyPoints = `${x + 4},206 ${x},199 ${x - 4},206`;
+    const gaugeD = `m ${x - 26} 208 Q ${x} 186 ${x + 26} 208`;
+    const ductC = `${x - 40}`;
+    const ductH = `${x + 40}`;
     const transformStyle = {
-        transform: `rotate(${rotateTemp}deg)`,
+        transform: `rotate(${rotateTemp.toFixed(0)}deg)`,
         transformOrigin: `${x}px 230px`,
     };
 
@@ -131,8 +114,8 @@ const CondUnit = ({ title, cabinTemp, trimTemp, x, rotateTemp }) => {
         <>
             <g className="Cond">
                 <text className="title" x={x} y="105">{title}</text>
-                <text id="CkptCabinTemp" className="valueText" x={x} y="130">{cabinTemp}</text>
-                <text id="CkptTrimTemp" className="valueText" x={x} y="180">{trimTemp}</text>
+                <text id="CkptCabinTemp" className="valueText" x={x} y="130">{cabinTemp.toFixed(0)}</text>
+                <text id="CkptTrimTemp" className="valueText" x={x} y="180">{trimTemp.toFixed(0)}</text>
                 <text className="DuctStatus" x={ductC} y="215">C</text>
                 <text className="DuctStatus" x={ductH} y="215">H</text>
                 <g id="CkptGauge" style={transformStyle}>
@@ -148,3 +131,5 @@ const CondUnit = ({ title, cabinTemp, trimTemp, x, rotateTemp }) => {
         </>
     );
 };
+
+ReactDOM.render(<SimVarProvider><CondPage /></SimVarProvider>, getRenderTarget());

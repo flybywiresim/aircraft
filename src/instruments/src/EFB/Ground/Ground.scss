@@ -19,7 +19,6 @@
 @import "../Assets/Efb.scss";
 
 .wrapper {
-  flex-grow: 1;
   // this lets us use position:absolute in widgets
   position: relative;
   padding: 1rem;
@@ -38,94 +37,26 @@
 }
 
 .control-grid {
-  @apply p-2;
-  @apply grid;
-  @apply bg-gray-800;
-  @apply rounded-lg;
-  position: absolute;
-  color: #232b3d;
-  grid-gap: 0.5rem;
+  grid-gap: 1rem;
 }
 
-.control-grid h1 {
-  text-align: center;
-  grid-column: 1/-1;
-  padding: 0.2rem;
-}
-
-.control-grid > * {
-  display: block;
-}
-
-.control-grid > div {
-  @apply rounded-lg;
-  height: 3rem;
-  width: 3rem;
-  margin: auto;
-}
-
-.control-grid > div > svg {
-  height: 100%;
-  width: 100%;
-}
-
-.pushback {
-  right: 3rem;
-  bottom: 3rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.fuel {
-  right: calc(55% + 18rem);
-  top: 21rem;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.baggage {
-  left: calc(50% + 4rem);
-  top: 4rem;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.catering {
-  left: calc(50% + 4rem);
-  bottom: 9rem;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.jetway {
-  right: calc(50% + 4rem);
-  top: 4rem;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.call {
-  @apply bg-green-500;
-  grid-column: 1 / 1;
-}
-
-.selected {
-  @apply text-white;
-  border-color: #ccc;
-  border-width: 2px;
-}
-
-.pushback .stop {
-  @apply bg-red-500;
+.stop {
   grid-column: 2 / 3;
 }
 
+button:active {
+  @apply transform;
+  @apply translate-y-1;
+}
+
 .down-left {
-  @apply bg-green-500;
   grid-column: 1/1;
 }
 
 .down {
-  @apply bg-green-500;
   grid-column: 2/2;
 }
 
 .down-right {
-  @apply bg-green-500;
   grid-column: 3/3;
 }
