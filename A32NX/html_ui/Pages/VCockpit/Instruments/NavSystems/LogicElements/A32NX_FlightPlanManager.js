@@ -1157,6 +1157,7 @@ class FlightPlanManager {
         });
     }
     removeWaypoint(index, thenSetActive = false, callback = () => { }) {
+        this._incrementFlightPlanVersion();
         if (index == 0 && SimVar.GetSimVarValue("L:Glasscockpits_FPLHaveOrigin", "boolean")) {
             Coherent.call("REMOVE_ORIGIN", index, thenSetActive).then(() => {
                 SimVar.SetSimVarValue("L:Glasscockpits_FPLHaveOrigin", "boolean", 0);
