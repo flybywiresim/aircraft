@@ -18,7 +18,6 @@
 
 import React from 'react';
 import { round } from 'lodash';
-import { IconTruck } from '@tabler/icons';
 import { Slider } from '../../Components/Form/Slider';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import { ProgressBar } from '../../Components/Progress/Progress';
@@ -259,11 +258,6 @@ export const FuelPage = () => {
                         />
                     </div>
                     <div className="unit-label">{currentUnit()}</div>
-                    <div className="separation-line-refuel" />
-                    <div className="manage-fuel-truck">
-                        <div className="call-inop fuel-truck disabled"><IconTruck /></div>
-                        <span className="inop-label-fuel-page">Inop.</span>
-                    </div>
                 </div>
                 <span>Current fuel :</span>
                 <div className="flex mt-n5">
