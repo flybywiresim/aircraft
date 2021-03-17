@@ -3363,11 +3363,19 @@ class FMCMainDisplay extends BaseAirliners {
                 const destinationAirport = this.flightPlanManager.getDestination().ident;
                 if (!this.offlineTACore.offline) {
                     if (this.currentOrigin !== originAirport) {
-                        this.updateTransitionAltitude(originAirport, "origin");
+                        this.updateTransitionAltitude(originAirport, "origin")
+                            .catch((error)=> {
+                                console.log(error);
+                                SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
+                            });
                         this.currentOrigin = originAirport;
                     }
                     if (this.currentDestination !== destinationAirport) {
-                        this.updateTransitionAltitude(destinationAirport, "destination");
+                        this.updateTransitionAltitude(destinationAirport, "destination")
+                            .catch((error)=> {
+                                console.log(error);
+                                SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
+                            });
                         this.currentDestination = destinationAirport;
                     }
                 } else {
