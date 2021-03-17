@@ -29,20 +29,25 @@
 - A32NX_BRAKE_TEMPERATURE_{1,2,3,4}
     - celsius
     - represents the brake temperature of the rear wheels
+
 - A32NX_REPORTED_BRAKE_TEMPERATURE_{1,2,3,4}
     - celsius
     - represents the reported brake temperature of the rear wheels by the sensor.
-    - It can be different from the brake temperature when the brake fan has been used, because the brake fan will cool the sensor more than the brakes 
+    - It can be different from the brake temperature when the brake fan has been used, because the brake fan will cool the sensor more than the brakes
 	- (which have much more energy to dissipate) therefore giving potentially erroneous readings that the pilots must take into account
+
 - A32NX_BRAKE_FAN
 	- boolean
 	- whether or not the brake fan is running (brake fan button pressed AND left main landing gear down and locked)
+
 - A32NX_BRAKE_FAN_BTN_PRESSED
 	- boolean
 	- whether or not the brake fan button is pressed
+
 - A32NX_BRAKES_HOT
     - boolean
     - whether one of the brakes are hot (>300°C)
+
 - XMLVAR_Auto
     - Used in the `.flt` files to set a default value for the ATC 3 way switch on the TCAS panel
     - Maps to the `I:XMLVAR_Auto` variable which is the actual backing var for the switch
@@ -366,10 +371,6 @@
     - Percent
     - The APU's rotations per minute in percentage of the maximum RPM
 
-- A32NX_APU_START_CONTACTOR_ENERGIZED
-    - Bool
-    - Indicates if the APU START contactor is energized
-
 - A32NX_APU_BLEED_AIR_VALVE_OPEN
     - Bool
     - Indicates if the APU bleed air valve is open
@@ -393,10 +394,6 @@
 - A32NX_APU_FLAP_OPEN_PERCENTAGE
     - Percent
     - Indicates the percentage the APU air intake flap is open
-
-- A32NX_APU_FLAP_ECAM_OPEN
-    - Bool
-    - Indicates if the APU air intake flap should be indicated as open on the APU ECAM
 
 - A32NX_FIRE_BUTTON_APU
     - Bool
@@ -453,6 +450,110 @@
 - A32NX_ENG_OUT_ACC_ALT
     - feet
     - The engine out acceleration altitude, set in the PERF TAKE OFF page.
+
+- A32NX_SLIDES_ARMED
+    - Boolean
+    - Indicates whether the door slides are armed or not
+
+- A32NX_RAIN_REPELLENT_RIGHT_ON
+    -Bool
+    -True if rain repellent is activated on the right windshield.
+
+- A32NX_RAIN_REPELLENT_LEFT_ON
+    -Bool
+    -True if rain repellent is activated on the left windshield.
+
+- A32NX_RCDR_TEST
+    -Bool
+    -True if RCDR being tested.
+
+- A32NX_RADAR_MULTISCAN_AUTO
+    -Bool
+    -True if multiscan switch is set to AUTO.
+
+- A32NX_RADAR_GCS_AUTO
+    -Bool
+    -True if GCS switch is set to AUTO.
+
+-A32NX_OXYGEN_MASKS_DEPLOYED
+    -Bool
+    -True if cabin oxygen masks have been deployed.
+
+-A32NX_RCDR_GROUND_CONTROL_ON
+    -Bool
+    -True if ground control is on.
+
+-A32NX_EMERELECPWR_MAN_ON
+    -Bool
+    -True if Ram Air Turbine has been manually deployed.
+
+-A32NX_EMERELECPWR_GEN_TEST
+    -Bool
+    -True if emergency generator is being tested.
+
+-A32NX_OXYGEN_PASSENGER_LIGHT_ON
+    -Bool
+    -True if cabin oxygen mask doors open.
+
+-A32NX_OXYGEN_TMR_RESET
+    -Bool
+    -True if oxygen timer is being reset.
+
+-A32NX_OXYGEN_TMR_RESET_FAULT
+    -Bool
+    -True if fault with oxygen timer.
+
+-A32NX_APU_AUTOEXITING_RESET
+    -Bool
+    -True if APU autoexiting is being reset.
+
+-A32NX_ELT_TEST_RESET
+    -Bool
+    -True if ELT is being tested/reset.
+
+-A32NX_ELT_ON
+    -Bool
+    -True if ELT is on.
+
+-A32NX_DLS_ON
+    -Bool
+    -True if data loading selector is on.
+
+-A32NX_CREW_HEAD_SET
+    -Bool
+    -True if CVR crew head set is being pressed.
+
+-A32NX_SVGEINT_OVRD_ON
+    -Bool
+    -True if SVGE INT OVRD is on.
+
+-A32NX_AVIONICS_COMPLT_ON
+    -Bool
+    -True if avionics comp lt is on.
+
+-A32NX_CARGOSMOKE_FWD_DISCHARGED
+    -Bool
+    -True if cargosmoke one bottle is discharged
+
+-A32NX_CARGOSMOKE_AFT_DISCHARGED
+    -Bool
+    -True if cargosmoke two bottle is discharged
+
+-A32NX_AIDS_PRINT_ON
+    -Bool
+    -True if AIDS print is on.
+
+-A32NX_DFDR_EVENT_ON
+    -Bool
+    -True if DFDR event is on.
+
+-A32NX_APU_AUTOEXITING_TEST_ON
+    -Bool
+    -True if APU AUTOEXITING is being tested.
+
+-A32NX_APU_AUTOEXITING_TEST_OK
+    -Bool
+    -True if APU AUTOEXITING TEST returns OK.
 
 - A32NX_OVHD_{name}_PB_IS_AVAILABLE
     - Bool
@@ -531,6 +632,15 @@
         - 11XU2: AC BUS tie 2 contactor
         - 15XE1: Contactor between AC ESS BUS and TR ESS + EMER GEN
         - 15XE2: Contactor between the static inverter and AC ESS BUS
+        - 10KA_AND_5KA: The two contactors leading to the APU start motor
+
+- A32NX_ELEC_CONTACTOR_{name}_SHOW_ARROW_WHEN_CLOSED
+    - Bool
+    - True when the arrow from the battery to the battery bus or vice versa needs to be displayed
+      when the contactor is closed.
+    - {name}
+        - 6PB1: Battery 1 contactor
+        - 6PB2: Battery 2 contactor
 
 - A32NX_ELEC_{name}_BUS_IS_POWERED
     - Bool
@@ -627,8 +737,8 @@
         - TR_1
         - TR_2
         - TR_3: TR ESS
-        - BAT_10: Battery 1
-        - BAT_11: Battery 2
+        - BAT_10: Battery 1 (negative when discharging, positive when charging)
+        - BAT_11: Battery 2 (negative when discharging, positive when charging)
 
 - A32NX_ELEC_{name}_CURRENT_NORMAL
     - Ampere
@@ -653,3 +763,8 @@
     - {number}
         - 1
         - 2
+
+- A32NX_FMGC_FLIGHT_PHASE
+    - Enum
+    - Holds the FMGCs current flight phase
+    - Use FMGC_FLIGHT_PHASES to check for phases (import NXFMGCFlightPhases from A32NX_Utils)

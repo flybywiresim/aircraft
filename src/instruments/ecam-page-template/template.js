@@ -36,8 +36,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* global BaseInstrument */
-/* global registerInstrument */
+/* global Airliners */
 
 // eslint-disable-next-line camelcase
 class A32NX_PAGE_NAME_Logic extends Airliners.EICASTemplateElement {
@@ -63,17 +62,20 @@ class A32NX_PAGE_NAME_Logic extends Airliners.EICASTemplateElement {
 
         // This is big hack, see `template.html`.
         {
-            const code = document.getElementById('A32NX_BUNDLED_STYLE').innerHTML;
+            const code = document.getElementById('A32NX_PAGE_NAME_BUNDLED_STYLE').innerHTML;
             const style = document.createElement('style');
             style.innerHTML = code;
             document.head.appendChild(style);
         }
         {
-            const code = document.getElementById('A32NX_BUNDLED_LOGIC').innerHTML;
+            const code = document.getElementById('A32NX_PAGE_NAME_BUNDLED_LOGIC').innerHTML;
             const script = document.createElement('script');
             script.innerHTML = code;
             document.body.appendChild(script);
         }
+    }
+
+    onEvent(_event) {
     }
 
     update(_deltaTime) {
@@ -81,4 +83,4 @@ class A32NX_PAGE_NAME_Logic extends Airliners.EICASTemplateElement {
     }
 }
 
-registerInstrument('a32nx-PAGE_NAME_LOWER_SKEWER-element', A32NX_PAGE_NAME_Logic);
+customElements.define('a32nx-PAGE_NAME_LOWER_SKEWER-element', A32NX_PAGE_NAME_Logic);

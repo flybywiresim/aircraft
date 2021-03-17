@@ -307,6 +307,27 @@
     </Template>
 
     <!--
+    Template for console light switches
+    -->
+    <Template Name="FBW_LIGHTING_Switch_Console_Template">
+        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
+            <DIMMER/>
+            <ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+            <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
+            <ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
+            <ANIMTIP_0>Set CONSOLE/FLOOR OFF</ANIMTIP_0>
+            <ANIMTIP_1>Set CONSOLE/FLOOR DIM</ANIMTIP_1>
+            <ANIMTIP_2>Set CONSOLE/FLOOR BRT</ANIMTIP_2>
+            <ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
+            <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
+            <INVERT_ANIM>True</INVERT_ANIM>
+            <WWISE_EVENT>lswitch</WWISE_EVENT>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+        </UseTemplate>
+    </Template>
+
+    <!--
     Template for handling landing gear indications
     -->
     <Template Name="FBW_Airbus_LANDING_GEAR_Light_Template">

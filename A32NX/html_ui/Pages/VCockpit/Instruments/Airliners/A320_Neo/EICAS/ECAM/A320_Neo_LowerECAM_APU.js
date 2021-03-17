@@ -106,8 +106,8 @@ var A320_Neo_LowerECAM_APU;
             const lowFuelPressure = SimVar.GetSimVarValue("L:A32NX_APU_LOW_FUEL_PRESSURE_FAULT", "Bool");
             toggleVisibility(this.FuelLoPr, lowFuelPressure);
 
-            const apuFlapOpen = SimVar.GetSimVarValue("L:A32NX_APU_FLAP_ECAM_OPEN", "Bool");
-            toggleVisibility(this.APUFlapOpen, apuFlapOpen);
+            const apuFlapOpenPercent = SimVar.GetSimVarValue("L:A32NX_APU_FLAP_OPEN_PERCENTAGE", "Percent");
+            toggleVisibility(this.APUFlapOpen, apuFlapOpenPercent === 100);
 
             this.apuInfo.update(_deltaTime);
         }
@@ -218,9 +218,9 @@ var A320_Neo_LowerECAM_APU;
     function shouldShowApuData() {
         // Once ELEC is implemented, this depends on the ECB being powered or not.
         // The ECB will be powered when the MASTER SW is on and unpower when MASTER SW is off, N = 0, and the flap is closed.
-        const apuFlapOpen = SimVar.GetSimVarValue("L:A32NX_APU_FLAP_ECAM_OPEN", "Bool");
+        const apuFlapOpenPercent = SimVar.GetSimVarValue("L:A32NX_APU_FLAP_OPEN_PERCENTAGE", "Percent");
         const apuMasterSwitch = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
-        return apuMasterSwitch || getN() > 0 || apuFlapOpen;
+        return apuMasterSwitch || getN() > 0 || apuFlapOpenPercent !== 0;
     }
 
     function getN() {

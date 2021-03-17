@@ -113,7 +113,7 @@ class CDUFlightPlanPage {
         } else {
             first = Math.max(0, mcdu.flightPlanManager.getActiveWaypointIndex() - 1);
         }
-        if (mcdu.currentFlightPhase <= FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+        if (mcdu.currentFlightPhase <= FmgcFlightPhases.TAKEOFF) {
             first = 0;
         }
         for (let i = first; i < mcdu.flightPlanManager.getWaypointsCount(); i++) {

@@ -873,8 +873,8 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         } else {
             gs.textContent = groundSpeed.toString().padStart(3);
         }
-        //Hide waypoint when ADIRS not aligned
-        wptg.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
+        //Shows waypoint group when ADIRS not aligned (PPOS)
+        wptg.setAttribute("visibility", (ADIRSState != 2) ? "visible" : "visible");
     }
     onExit() {
     }
