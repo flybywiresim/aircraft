@@ -425,16 +425,16 @@ class A32NX_FWC {
 
     _autopilotDisconnect(_deltaTime) {
         const apStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool");
-        const atherStatus = SimVar.GetSimVarValue("AUTOTHROTTLE ACTIVE", "Bool");
+        const athrStatus = SimVar.GetSimVarValue("AUTOTHROTTLE ACTIVE", "Bool");
 
-        if (atherStatus === 1) {
+        if (athrStatus === 1) {
             SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", false);
             SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
             this.AutothrottleWarningCanceled = false;
             this.athrdeltaTime = 0;
         }
 
-        if (atherStatus === 0 && this.AutothrottleWarningCanceled === false) {
+        if (athrStatus === 0 && this.AutothrottleWarningCanceled === false) {
             SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", true);
             SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", true);
             this.athrdeltaTime += _deltaTime;
