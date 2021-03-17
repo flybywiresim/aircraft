@@ -145,7 +145,7 @@ class PFD extends Component {
             if (isMach) {
                 targetSpeed = SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', Simplane.getAutoPilotMachHoldValue());
             } else {
-                targetSpeed = Simplane.getAutoPilotAirspeedHoldValue();
+                targetSpeed = getSimVar('L:A32NX_SPEEDS_MANAGED_PFD', 'knots');
             }
         } if (targetSpeed < 0) {
             if (isMach) {
