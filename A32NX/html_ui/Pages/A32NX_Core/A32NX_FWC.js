@@ -85,9 +85,9 @@ class A32NX_FWC {
         this._updateButtons(_deltaTime);
         this._updateTakeoffMemo(_deltaTime);
         this._updateLandingMemo(_deltaTime);
+        this._autopilotDisconnect(_deltaTime);
 
         if (this.updateThrottler.canUpdate(_deltaTime) !== -1) {
-            this._autopilotDisconnect(_deltaTime);
             this._checkLandingGear();
             this._updateAltitudeWarning();
         }
