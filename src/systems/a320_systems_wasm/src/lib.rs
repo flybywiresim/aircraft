@@ -9,7 +9,9 @@ use systems::simulation::{Simulation, SimulatorReaderWriter};
 
 #[msfs::gauge(name=systems)]
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error>> {
-    let mut simulation = Simulation::new(A320::new(), A320SimulatorReaderWriter::new()?);
+    let mut reader_writer = A320SimulatorReaderWriter::new()?;
+    let mut a320 = A320::new();
+    let mut simulation = Simulation::new(&mut a320, &mut reader_writer);
 
     while let Some(event) = gauge.next_event().await {
         if let MSFSEvent::PreDraw(d) = event {
@@ -29,6 +31,7 @@ struct A320SimulatorReaderWriter {
     external_power_pb_on: AircraftVariable,
     engine_generator_1_pb_on: AircraftVariable,
     engine_generator_2_pb_on: AircraftVariable,
+    gear_center_position: AircraftVariable,
     turb_eng_corrected_n2_1: AircraftVariable,
     turb_eng_corrected_n2_2: AircraftVariable,
     airspeed_indicated: AircraftVariable,
@@ -59,6 +62,7 @@ impl A320SimulatorReaderWriter {
                 "Bool",
                 2,
             )?,
+            gear_center_position: AircraftVariable::from("GEAR CENTER POSITION", "Percent", 0)?,
             turb_eng_corrected_n2_1: AircraftVariable::from("TURB ENG CORRECTED N2", "Percent", 1)?,
             turb_eng_corrected_n2_2: AircraftVariable::from("TURB ENG CORRECTED N2", "Percent", 2)?,
             airspeed_indicated: AircraftVariable::from("AIRSPEED INDICATED", "Knots", 0)?,
@@ -83,6 +87,7 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
             "OVHD_ELEC_ENG_GEN_2_PB_IS_ON" => self.engine_generator_2_pb_on.get(),
             "AMBIENT TEMPERATURE" => self.ambient_temperature.get(),
             "EXTERNAL POWER AVAILABLE:1" => self.external_power_available.get(),
+            "GEAR CENTER POSITION" => self.gear_center_position.get(),
             "TURB ENG CORRECTED N2:1" => self.turb_eng_corrected_n2_1.get(),
             "TURB ENG CORRECTED N2:2" => self.turb_eng_corrected_n2_2.get(),
             "FUEL TANK LEFT MAIN QUANTITY" => self.fuel_tank_left_main_quantity.get(),
