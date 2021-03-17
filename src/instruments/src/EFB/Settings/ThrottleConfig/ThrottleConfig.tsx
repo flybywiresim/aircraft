@@ -1,5 +1,8 @@
+import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
 import React, { useState } from 'react';
+import { NXDataStore, usePersistentProperty } from '../../../Common/persistence';
 import { useSimVar } from '../../../Common/simVars';
+import Bar from '../../Components/Bar/Bar';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import { Toggle } from '../../Components/Form/Toggle';
 
@@ -15,7 +18,8 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         return null;
     }
 
-    const [dualAxis, setDualAxis] = useState(1);
+    const dualAxis = NXDataStore.get('dualAxis', '0');
+    const [selectedIndex, setSelectedIndex] = useState(0);
 
     const [reverserOnAxis1, setReverserOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
     const [, setReverserOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:2', 'number', 1000);
@@ -29,6 +33,13 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         setReverserOnAxis2(reverserOnAxis);
     };
 
+    const switchDetent = (index: number) => {
+        console.log('click');
+        if (index >= 0 && index <= 5) {
+            setSelectedIndex(index);
+        }
+    };
+
     return (
         <div className="flex flex-row justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="bg-gray-800 rounded-xl px-6 py-4 shadow-lg mt-4 mb-4">
@@ -37,36 +48,54 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 </div>
                 <span />
 
-                { dualAxis !== 0
+                { parseInt(dualAxis) !== 0
 
-                    && (
-                        <div className="flex flex-row justify-center">
-                            <BaseThrottleConfig throttleNumber={1} throttleCount={1} />
-                            <BaseThrottleConfig throttleNumber={2} throttleCount={1} />
-                        </div>
-                    )}
-
-                { dualAxis === 0
                     && (
 
                         <div className="flex flex-row justify-center">
-                            <BaseThrottleConfig throttleNumber={1} throttleCount={2} />
+
+                            <div className="mt-auto mr-6 mb-auto text-3xl">
+                                <IconArrowLeft
+                                    size="4rem"
+                                    onClick={() => switchDetent(selectedIndex - 1)}
+                                    className={`mt-auto mb-auto w-42 ${selectedIndex === 0 ? 'text-gray-600' : 'text-white hover:text-blue'}`}
+                                />
+
+                            </div>
+
+                            <BaseThrottleConfig throttleNumber={1} throttleCount={1} activeIndex={selectedIndex} />
+
+                            <BaseThrottleConfig throttleNumber={2} throttleCount={1} activeIndex={selectedIndex} />
+
+                            <div className="mt-auto ml-4 mb-auto text-3xl">
+                                <IconArrowRight
+                                    size="4rem"
+                                    onClick={() => switchDetent(selectedIndex + 1)}
+                                    className={`mt-auto mb-auto w-42 ${selectedIndex === 5 ? 'text-gray-600' : 'text-white hover:text-blue'}`}
+                                />
+
+                            </div>
+
                         </div>
                     )}
+
+                { parseInt(dualAxis) === 0
+                    && (
+                        <div className="flex flex-row justify-center">
+
+                            <BaseThrottleConfig throttleNumber={1} throttleCount={2} activeIndex={selectedIndex} />
+                        </div>
+                    )}
+                <div className="flex flex-row  " />
+
             </div>
             <div className="bg-gray-800 flex flex-row-reverse">
-                <Button
-                    text="Close"
-                    type={BUTTON_TYPE.RED}
-                    onClick={props.onClose}
-                    className="ml-2"
 
-                />
                 <Button
-                    text="Persist"
+                    text="Save"
                     type={BUTTON_TYPE.GREEN}
                     onClick={() => syncToDisk(1)}
-                    className="ml-2"
+                    className="ml-2 mr-2"
                 />
                 <Button
                     text="Apply"
@@ -75,7 +104,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                     className="ml-2"
                 />
                 <Button
-                    text="Load "
+                    text="Reset"
                     type={BUTTON_TYPE.BLUE}
                     onClick={() => syncToThrottle(1)}
                     className="ml-2"
@@ -88,7 +117,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                     <span>
                         <span className="text-lg text-gray-300 mr-2 ml-2">Dual Axis</span>
                     </span>
-                    <Toggle value={!!dualAxis} onToggle={(value) => setDualAxis(value ? 1 : 0)} />
+                    <Toggle value={!!parseInt(dualAxis)} onToggle={(value) => NXDataStore.set('dualAxis', value ? '1' : '0')} />
                 </div>
             </div>
         </div>
