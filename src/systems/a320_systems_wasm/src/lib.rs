@@ -1,7 +1,7 @@
 #![cfg(any(target_arch = "wasm32", doc))]
 use a320_systems::A320;
 use msfs::{
-    legacy::{AircraftVariable, NamedVariable, CompiledCalculatorCode},
+    legacy::{AircraftVariable, NamedVariable, execute_calculator_code},
     MSFSEvent,
 };
 use std::collections::HashMap;
@@ -143,23 +143,21 @@ struct ElectricalBusConnections {
     dc_hot_bus_2: ElectricalBusConnection,
 }
 impl ElectricalBusConnections {
-    const INFINIBAT_BUS: usize = 12;
-
     fn new() -> Self {
         Self {
             // The numbers used here are those defined for buses in the systems.cfg [ELECTRICAL] section.
-            ac_bus_1: ElectricalBusConnection::new(13, ElectricalBusConnections::INFINIBAT_BUS),
-            ac_bus_2: ElectricalBusConnection::new(14, ElectricalBusConnections::INFINIBAT_BUS),
-            ac_ess_bus: ElectricalBusConnection::new(15, ElectricalBusConnections::INFINIBAT_BUS),
-            ac_ess_shed_bus: ElectricalBusConnection::new(16, ElectricalBusConnections::INFINIBAT_BUS),
-            ac_stat_inv_bus: ElectricalBusConnection::new(17, ElectricalBusConnections::INFINIBAT_BUS),
-            dc_bus_1: ElectricalBusConnection::new(18, ElectricalBusConnections::INFINIBAT_BUS),
-            dc_bus_2: ElectricalBusConnection::new(19, ElectricalBusConnections::INFINIBAT_BUS),
-            dc_ess_bus: ElectricalBusConnection::new(20, ElectricalBusConnections::INFINIBAT_BUS),
-            dc_ess_shed_bus: ElectricalBusConnection::new(21, ElectricalBusConnections::INFINIBAT_BUS),
-            dc_bat_bus: ElectricalBusConnection::new(22, ElectricalBusConnections::INFINIBAT_BUS),
-            dc_hot_bus_1: ElectricalBusConnection::new(23, ElectricalBusConnections::INFINIBAT_BUS),
-            dc_hot_bus_2: ElectricalBusConnection::new(24, ElectricalBusConnections::INFINIBAT_BUS),
+            ac_bus_1: ElectricalBusConnection::new(1, 2),
+            ac_bus_2: ElectricalBusConnection::new(1, 3),
+            ac_ess_bus: ElectricalBusConnection::new(1, 4),
+            ac_ess_shed_bus: ElectricalBusConnection::new(1, 5),
+            ac_stat_inv_bus: ElectricalBusConnection::new(1, 6),
+            dc_bus_1: ElectricalBusConnection::new(1, 7),
+            dc_bus_2: ElectricalBusConnection::new(1, 8),
+            dc_ess_bus: ElectricalBusConnection::new(1, 9),
+            dc_ess_shed_bus: ElectricalBusConnection::new(1, 10),
+            dc_bat_bus: ElectricalBusConnection::new(1, 11),
+            dc_hot_bus_1: ElectricalBusConnection::new(1, 12),
+            dc_hot_bus_2: ElectricalBusConnection::new(1, 13),
         }
     }
 
@@ -184,21 +182,22 @@ impl ElectricalBusConnections {
 
 struct ElectricalBusConnection {
     connected: bool,
-    toggle_code: CompiledCalculatorCode,
+    from: usize,
+    to: usize,
 }
 impl ElectricalBusConnection {
     fn new(from: usize, to: usize) -> Self {
         Self {
-            connected: false,
-            toggle_code: CompiledCalculatorCode::new(&format!("{} {} (>K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)", from, to)).unwrap(),
+            connected: true,
+            from,
+            to,
         }
     }
 
     fn update(&mut self, value: f64) {
         let should_be_connected = (value - 1.).abs() < f64::EPSILON;
         if should_be_connected != self.connected {
-            println!("execute");
-            self.toggle_code.execute::<()>();
+            execute_calculator_code::<()>(&format!("{} {} (>K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)", self.from, self.to));
             self.connected = !self.connected;
         }
     }

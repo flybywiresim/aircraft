@@ -78,32 +78,11 @@
     <Template Name="FBW_Airbus_Battery_Master_Switch">
         <DefaultTemplateParameters>
             <ID>1</ID>
-            <BATTERY_STATE_CODE>#BATTERY_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#HOT_BATTERY_BUS_ID#, Bool)</BATTERY_STATE_CODE>
         </DefaultTemplateParameters>
-
-        <UseTemplate Name="ASOBO_GT_Helper_Recursive_Param_Builder">
-            <EXIT_TEMPLATE>ASOBO_GT_Update</EXIT_TEMPLATE>
-            <PARAM_NAME>UPDATE_CODE</PARAM_NAME>
-            <PARAM_START>
-                (* Prevent Battery from being shut down, instead disconnect it from bus *)
-            </PARAM_START>
-            <PARAM_REPEATED_START>(A:ELECTRICAL MASTER BATTERY:</PARAM_REPEATED_START>
-            <PARAM_REPEATED_END>, Bool) ! if{ </PARAM_REPEATED_END>
-            <PARAM_REPEATED_2_START>
-                #BATTERY_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#HOT_BATTERY_BUS_ID#, Bool) if{
-                #BATTERY_BUS_ID# #HOT_BATTERY_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
-                }
-            </PARAM_REPEATED_2_START>
-            <PARAM_REPEATED_2_END> (&gt;K:TOGGLE_MASTER_BATTERY)
-                }
-            </PARAM_REPEATED_2_END>
-            <FREQUENCY>1</FREQUENCY>
-        </UseTemplate>
 
         <UseTemplate Name="FBW_Push_Toggle">
             <LEFT_SINGLE_CODE>
-                #BATTERY_BUS_ID# #HOT_BATTERY_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
-                #BATTERY_STATE_CODE# ! if{
+                (L:A32NX_OVHD_ELEC_BAT_#BATTERY_BUS_ID#_PB_IS_AUTO, Bool) if{
                     0 (&gt;L:A32NX_OVHD_ELEC_BAT_#BATTERY_BUS_ID#_PB_IS_AUTO)
                 } els{
                     1 (&gt;L:A32NX_OVHD_ELEC_BAT_#BATTERY_BUS_ID#_PB_IS_AUTO)
@@ -111,11 +90,11 @@
             </LEFT_SINGLE_CODE>
 
             <SEQ1_CODE>(L:A32NX_OVHD_ELEC_BAT_#BATTERY_BUS_ID#_PB_HAS_FAULT, Bool)</SEQ1_CODE>
-            <SEQ2_CODE>#BATTERY_STATE_CODE# !</SEQ2_CODE>
+            <SEQ2_CODE>(L:A32NX_OVHD_ELEC_BAT_#BATTERY_BUS_ID#_PB_IS_AUTO, Bool) !</SEQ2_CODE>
 
-            <DOWN_CODE>#BATTERY_STATE_CODE#</DOWN_CODE>
+            <DOWN_CODE>(L:A32NX_OVHD_ELEC_BAT_#BATTERY_BUS_ID#_PB_IS_AUTO, Bool)</DOWN_CODE>
 
-            <TOOLTIPID>%(#BATTERY_STATE_CODE# !)%{if}TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_BAT_#ID#_OFF%{else}TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_BAT_#ID#_ON%{end}</TOOLTIPID>
+            <TOOLTIPID>%((L:A32NX_OVHD_ELEC_BAT_#BATTERY_BUS_ID#_PB_IS_AUTO, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_BAT_#ID#_OFF%{else}TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_BAT_#ID#_ON%{end}</TOOLTIPID>
         </UseTemplate>
     </Template>
 </ModelBehaviors>

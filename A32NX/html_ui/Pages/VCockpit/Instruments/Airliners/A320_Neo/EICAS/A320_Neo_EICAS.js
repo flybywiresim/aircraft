@@ -183,15 +183,14 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const externalPowerOn = SimVar.GetSimVarValue("EXTERNAL POWER AVAILABLE:1", "Bool") === 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 1;
         const apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
         const isACPowerAvailable = engineOn || apuOn || externalPowerOn;
-        let DCBus = false;
 
         const ACPowerStateChange = (isACPowerAvailable != this.ACPowerLastState);
         SimVar.SetSimVarValue("L:ACPowerStateChange", "Bool", ACPowerStateChange);
 
-        if (SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE", "Volts") >= 20) {
-            DCBus = true;
-        }
-        const isDCPowerAvailable = isACPowerAvailable || DCBus;
+        // TODO: There are multiple DC buses so a "DCPowerAvailable" SimVar doesn't make any sense.
+        // We'll put this here for now, so things kind of work as they did before.
+        const dcEssBusIsPowered = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool");
+        const isDCPowerAvailable = isACPowerAvailable || dcEssBusIsPowered;
         if (isDCPowerAvailable) {
             SimVar.SetSimVarValue("L:DCPowerAvailable", "bool", 1); //True if any AC|DC bus is online
         } else {
