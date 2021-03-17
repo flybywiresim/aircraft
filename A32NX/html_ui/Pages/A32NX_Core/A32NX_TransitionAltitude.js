@@ -16,7 +16,7 @@ class A32NX_TransitionAltitude {
         }
     }
 
-    transitionAltitude(airport, phase) {
+    updateOfflineTransitionAltitude(airport, phase) {
         let phaseTransAlt = "";
         if (phase === "origin") {
             phaseTransAlt = "L:AIRLINER_TRANS_ALT";

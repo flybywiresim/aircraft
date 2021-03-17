@@ -3361,21 +3361,21 @@ class FMCMainDisplay extends BaseAirliners {
                 const destinationAirport = this.flightPlanManager.getDestination().ident;
                 if (!this.offlineTACore.offline) {
                     if (this.currentOrigin !== originAirport) {
-                        this.getTransitionAltitude(originAirport, "origin");
+                        this.updateTransitionAltitude(originAirport, "origin");
                         this.currentOrigin = originAirport;
                     }
                     if (this.currentDestination !== destinationAirport) {
-                        this.getTransitionAltitude(destinationAirport, "destination");
+                        this.updateTransitionAltitude(destinationAirport, "destination");
                         this.currentDestination = destinationAirport;
                     }
                 }
                 else {
                     if (this.currentOrigin !== originAirport) {
-                        this.offlineTACore.transitionAltitude(originAirport, "origin");
+                        this.offlineTACore.updateOfflineTransitionAltitude(originAirport, "origin");
                         this.currentOrigin = originAirport;
                     }
                     if (this.currentDestination !== destinationAirport) {
-                        this.offlineTACore.transitionAltitude(destinationAirport, "destination");
+                        this.offlineTACore.updateOfflineTransitionAltitude(destinationAirport, "destination");
                         this.currentDestination = destinationAirport;
                     }
                 }
