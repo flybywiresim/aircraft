@@ -73,6 +73,9 @@ class A32NX_FWC {
         this.AutopilotWarningCanceled = false;
         this.athrdeltaTime = 0;
         this.apdeltaTime = 0;
+
+        //update throttler
+        this.updateThrottler = new UpdateThrottler(500);
     }
 
     update(_deltaTime, _core) {
@@ -85,6 +88,10 @@ class A32NX_FWC {
         this._autopilotDisconnect(_deltaTime);
         this._checkLandingGear();
         this._updateAltitudeWarning();
+
+        if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+            return;
+        }
     }
 
     _resetPulses() {
