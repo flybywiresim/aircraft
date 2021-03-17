@@ -163,6 +163,10 @@
                 <UPDATE_CODE>#UPDATE_AUTO_TRANSPONDER_STATE#</UPDATE_CODE>
             </UseTemplate>
             <Component ID="#KNOB_XPNDR_ON_OFF_NODE_ID#" Node="#KNOB_XPNDR_ON_OFF_NODE_ID#">
+                <Update Once="True">
+                        (L:XMLVAR_ALT_MODE_REQUESTED) (&gt;I:XMLVAR_ALT_MODE_REQUESTED) 
+                        #UPDATE_AUTO_TRANSPONDER_STATE#
+                </Update>
                 <UseTemplate Name="ASOBO_GT_Switch_Code">
                     <LEFT_SINGLE_CODE>
                         (I:XMLVAR_ALT_MODE_REQUESTED) ! (&gt;I:XMLVAR_ALT_MODE_REQUESTED)
