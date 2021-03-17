@@ -3327,7 +3327,7 @@ class FMCMainDisplay extends BaseAirliners {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
     }
 
-    getTransitionAltitude(icao, phase) {
+    updateTransitionAltitude(icao, phase) {
         NXApi.getAirport(icao)
             .then((data) => {
                 this.transitionAltitude = data.transAlt;
