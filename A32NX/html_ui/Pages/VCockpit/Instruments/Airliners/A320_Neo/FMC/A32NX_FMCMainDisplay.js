@@ -3370,8 +3370,7 @@ class FMCMainDisplay extends BaseAirliners {
                         this.updateTransitionAltitude(destinationAirport, "destination");
                         this.currentDestination = destinationAirport;
                     }
-                }
-                else {
+                } else {
                     if (this.currentOrigin !== originAirport) {
                         this.offlineTACore.updateOfflineTransitionAltitude(originAirport, "origin");
                         this.currentOrigin = originAirport;
