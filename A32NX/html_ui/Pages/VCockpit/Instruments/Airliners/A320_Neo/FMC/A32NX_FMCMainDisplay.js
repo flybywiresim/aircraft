@@ -3361,12 +3361,10 @@ class FMCMainDisplay extends BaseAirliners {
                 const destinationAirport = this.flightPlanManager.getDestination().ident;
                 if (this.offlineTACore.offline !== true) {
                     if (this.currentOrigin !== originAirport) {
-                        NXDataStore.set("PLAN_ORIGIN", originAirport);
                         this.getTransitionAltitude(originAirport, "origin");
                         this.currentOrigin = originAirport;
                     }
                     if (this.currentDestination !== destinationAirport) {
-                        NXDataStore.set("PLAN_DESTINATION", destinationAirport);
                         this.getTransitionAltitude(destinationAirport, "destination");
                         this.currentDestination = destinationAirport;
                     }
