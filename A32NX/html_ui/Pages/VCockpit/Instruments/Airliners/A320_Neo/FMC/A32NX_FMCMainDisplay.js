@@ -227,6 +227,9 @@ class FMCMainDisplay extends BaseAirliners {
 
         SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
 
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", 0);
+
         this.flightPlanManager.onCurrentGameFlightLoaded(() => {
             this.flightPlanManager.updateFlightPlan(() => {
                 this.flightPlanManager.updateCurrentApproach(() => {
@@ -553,6 +556,14 @@ class FMCMainDisplay extends BaseAirliners {
 
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", vPfd);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", vmAt);
+
+        if (vmAt > 1) {
+            Coherent.call("AP_SPD_VAR_SET", 2, vmAt);
+            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
+        } else {
+            Coherent.call("AP_MACH_VAR_SET", 2, vmAt);
+            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
+        }
     }
 
     updateRadioNavState() {
@@ -971,21 +982,6 @@ class FMCMainDisplay extends BaseAirliners {
                 return;
             }
             Coherent.call("AP_SPD_VAR_SET", 1, _speed);
-            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
-        }
-    }
-
-    setAPManagedSpeed(_speed, _aircraft) {
-        if (isFinite(_speed)) {
-            if (Simplane.getAutoPilotMachModeActive()) {
-                let mach = SimVar.GetGameVarValue("FROM KIAS TO MACH", "number", _speed);
-                const cruiseMach = SimVar.GetGameVarValue("AIRCRAFT CRUISE MACH", "mach");
-                mach = Math.min(mach, cruiseMach);
-                Coherent.call("AP_MACH_VAR_SET", 2, mach);
-                SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
-                return;
-            }
-            Coherent.call("AP_SPD_VAR_SET", 2, _speed);
             SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
         }
     }
