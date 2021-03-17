@@ -145,6 +145,7 @@ class A32NX_FlightPhase_PreFlight {
         const ra = Simplane.getAltitudeAboveGround();
 
         return this.takeoffConfirmation.write(
+            // we try to detect a false lift off (during terrain loading) from a true liftoff e.g. during takeoff. (temporary solution only)
             Math.round(ra / 100) !== Math.round(Simplane.getAltitude() / 100) && ra > 1.5 ||
             (
                 (
