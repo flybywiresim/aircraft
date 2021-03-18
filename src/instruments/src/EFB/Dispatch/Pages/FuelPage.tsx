@@ -102,10 +102,13 @@ export const FuelPage = () => {
     };
     const formatRefuelStatusLabel = () => {
         if (airplaneCanRefuel()) {
-            if (round(totalTarget) === totalCurrentGallon() || !refuelStartedByUser) {
-                return '(Available)';
+            if (round(totalTarget) === totalCurrentGallon()) {
+                return '(Completed)';
             }
-            return ((totalTarget) > (totalCurrentGallon())) ? '(Refueling...)' : '(Defueling...)';
+            if (refuelStartedByUser) {
+                return ((totalTarget) > (totalCurrentGallon())) ? '(Refueling...)' : '(Defueling...)';
+            }
+            return '(Ready to start)';
         }
         if (refuelStartedByUser) {
             setRefuelStartedByUser(false);
@@ -119,8 +122,8 @@ export const FuelPage = () => {
         }
         if (airplaneCanRefuel()) {
             if (round(totalTarget) === totalCurrentGallon() || !refuelStartedByUser) {
-                if (refuelStartedByUser && baseClass === 'refuel-icon') {
-                    return `${baseClass} stop-color`;
+                if (refuelStartedByUser) {
+                    setRefuelStartedByUser(false);
                 }
                 return `${baseClass} completed${suffix}`;
             }
