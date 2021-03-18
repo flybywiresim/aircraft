@@ -113,7 +113,7 @@ export const FuelPage = () => {
         if (airplaneCanRefuel()) {
             if (round(totalTarget) === totalCurrentGallon() || !refuelStartedByUser) {
                 if (refuelStartedByUser && baseClass === 'refuel-icon') {
-                    return `${baseClass} stop`;
+                    return `${baseClass} stop-color`;
                 }
                 return `${baseClass} completed${suffix}`;
             }

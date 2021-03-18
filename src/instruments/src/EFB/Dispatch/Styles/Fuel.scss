@@ -179,32 +179,6 @@
   top: 34rem;
   z-index: 3;
 }
-.control-grid {
-  @apply p-2;
-  @apply grid;
-  @apply bg-gray-800;
-  @apply rounded-lg;
-  position: absolute;
-  color: #232b3d;
-  grid-gap: 0.5rem;
-}
-
-.control-grid h1 {
-  text-align: center;
-  grid-column: 1/-1;
-  padding: 0.2rem;
-}
-
-.control-grid > * {
-  display: block;
-}
-
-.control-grid > div {
-  @apply rounded-lg;
-  height: 3rem;
-  width: 3rem;
-  margin: auto;
-}
 
 .refuel-icon {
   height: 3.5rem;
@@ -247,7 +221,7 @@
 .disabled {
   background-color: #9aa2ad !important;
 }
-.stop {
+.stop-color {
   @apply bg-red-500;
 }
 
