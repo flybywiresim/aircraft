@@ -18,6 +18,7 @@
 
 #include <ini.h>
 #include <ini_type_conversion.h>
+#include <cmath>
 #include <iomanip>
 #include <iostream>
 
@@ -68,6 +69,9 @@ bool FlyByWireInterface::update(double sampleTime) {
 
   // get data & inputs
   result &= readDataAndLocalVariables(sampleTime);
+
+  // update calibrated airspeed
+  result &= updateCalibratedAirspeed(sampleTime);
 
   // do not process laws in pause or slew
   if (simConnectInterface.getSimData().slew_on) {
@@ -177,6 +181,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idAutopilotAutothrustMode = register_named_variable("A32NX_AUTOPILOT_AUTOTHRUST_MODE");
 
+  idCalibratedAirspeed = register_named_variable("A32NX_SPEEDS_KCAS");
+
   // register L variables for flight guidance
   idFwcFlightPhase = register_named_variable("A32NX_FWC_FLIGHT_PHASE");
   idFmgcFlightPhase = register_named_variable("A32NX_FMGC_FLIGHT_PHASE");
@@ -284,6 +290,21 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
 
   // success
   return true;
+}
+
+bool FlyByWireInterface::updateCalibratedAirspeed(double sampleTime) {
+  // get sim data
+  SimData simData = simConnectInterface.getSimData();
+  double TAS = max(0, simData.V_tas_kn);
+  double T_KELVIN = simData.ambient_temperature_celsius + 273.15;
+  double PRESSURE = simData.ambient_pressure_mbar;
+
+  // calculate calibrated airspeed
+  double CAS =
+      1479.1 * sqrt(pow((PRESSURE / 1013.25 * (pow((1 + 1 / (T_KELVIN / 288.15) * pow((TAS / 1479.1), 2)), 3.5) - 1) + 1), (1 / 3.5)) - 1);
+
+  // set variable
+  set_named_variable_value(idCalibratedAirspeed, CAS);
 }
 
 bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {

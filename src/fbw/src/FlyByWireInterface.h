@@ -111,6 +111,8 @@ class FlyByWireInterface {
   ID idFcuModeReversionActive;
   ID idFcuModeReversionTrkFpaActive;
 
+  ID idCalibratedAirspeed;
+
   ID idFlightGuidanceAvailable;
   ID idFlightGuidanceCrossTrackError;
   ID idFlightGuidanceTrackAngleError;
@@ -153,6 +155,7 @@ class FlyByWireInterface {
   void setupLocalVariables();
 
   bool readDataAndLocalVariables(double sampleTime);
+  bool updateCalibratedAirspeed(double sampleTime);
 
   bool updateAutopilotStateMachine(double sampleTime);
   bool updateAutopilotLaws(double sampleTime);
