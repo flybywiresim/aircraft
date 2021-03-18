@@ -62,14 +62,14 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
 
             <DetentConfig
                 throttlePosition={throttlePosition}
-                text={`Set ${mappings[props.activeIndex].readableName} - Start`}
+                text={`${mappings[props.activeIndex].readableName} - Start`}
                 detentSetting={mappings[props.activeIndex].lowSetter}
                 detentValue={mappings[props.activeIndex].lowGetter[props.throttleCount - 1]}
                 throttleNumber={props.throttleNumber}
             />
             <DetentConfig
                 throttlePosition={throttlePosition}
-                text={`Set ${mappings[props.activeIndex].readableName} - End`}
+                text={`${mappings[props.activeIndex].readableName} - End`}
                 detentSetting={mappings[props.activeIndex].hiSetter}
                 detentValue={mappings[props.activeIndex].hiGetter[props.throttleCount - 1]}
                 throttleNumber={props.throttleNumber}
@@ -80,13 +80,13 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
     return (
         <div>
 
-            <div className="bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4 mt-4 mb-4">
-                <h1 className="text-white mr-4 mb-8 text-3xl ">
+            <div className="bg-gray-800 rou px-4 pt-5 pb-4 sm:p-6 sm:pb-4 mt-4 mb-4 rounded-lg">
+                <h1 className="text-white mb-8 text-3xl ">
                     Axis
                     {' '}
                     {props.throttleNumber}
-                    {' '}
-                    Value:
+                    {' \n'}
+
                     {' '}
                     {throttlePosition.toFixed(2)}
 
@@ -95,6 +95,26 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
                     {/*                     <Bar d={throttlePosition} barHeight={20} />
  */}
                     <div className="justify-between items-center flex flex-col ">
+
+                        {/* mappings.map((m) => (
+                            <div className="flex flex-row ">
+
+                                <DetentConfig
+                                    throttlePosition={throttlePosition}
+                                    text={`Set ${m.readableName} - Start`}
+                                    detentSetting={m.lowSetter}
+                                    detentValue={m.lowGetter[props.throttleCount - 1]}
+                                    throttleNumber={props.throttleNumber}
+                                />
+                                <DetentConfig
+                                    throttlePosition={throttlePosition}
+                                    text={`Set ${m.readableName} - End`}
+                                    detentSetting={m.hiSetter}
+                                    detentValue={m.hiGetter[props.throttleCount - 1]}
+                                    throttleNumber={props.throttleNumber}
+                                />
+                            </div>
+                        )) */}
 
                         {currentDetent}
 

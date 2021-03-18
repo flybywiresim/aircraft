@@ -47,9 +47,10 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
     };
 
     return (
-        <div className="mb-4 w-56 justify-between items-center mr-4">
+        <div className="mb-4 w-56 justify-between items-center mr-4 p-4">
+            <h1 className="text-xl text-white mb-2">{props.text}</h1>
             <Input
-                label={props.text}
+                // label={props.text}
                 type="number"
                 className="dark-option mb-4"
                 value={props.detentValue !== undefined ? props.detentValue.toFixed(2) : props.detentValue}
@@ -57,7 +58,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
             />
             <Button
                 className={applyButtonStateStyling(state)}
-                text={props.text}
+                text="Set"
                 onClick={() => setFromTo(props.throttlePosition, props.detentSetting)}
                 type={BUTTON_TYPE.NONE}
             />

@@ -42,7 +42,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
 
     return (
         <div className="flex flex-row justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="bg-gray-800 rounded-xl px-6 py-4 shadow-lg mt-4 mb-4">
+            <div className=" rounded-xl px-6 py-4 shadow-lg mt-4 mb-4">
                 <div className=" flex flex-row w-full top-1/2">
                     <div className="mb-4 flex flex-col right-0 w-1/2" />
                 </div>
@@ -65,6 +65,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
 
                             <BaseThrottleConfig throttleNumber={1} throttleCount={1} activeIndex={selectedIndex} />
 
+                            <div className="w-1/12" />
                             <BaseThrottleConfig throttleNumber={2} throttleCount={1} activeIndex={selectedIndex} />
 
                             <div className="mt-auto ml-4 mb-auto text-3xl">
