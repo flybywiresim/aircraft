@@ -4,6 +4,7 @@ import { NXDataStore, usePersistentProperty } from '../../../Common/persistence'
 import { useSimVar } from '../../../Common/simVars';
 import Bar from '../../Components/Bar/Bar';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
+import { SelectGroup, SelectItem, VerticalSelectGroup } from '../../Components/Form/Select';
 import { Toggle } from '../../Components/Form/Toggle';
 
 import BaseThrottleConfig from './BaseThrottleConfig';
@@ -55,12 +56,12 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         <div className="flex flex-row justify-center">
 
                             <div className="mt-auto mr-6 mb-auto text-3xl">
-                                <IconArrowLeft
+                                {/*    <IconArrowLeft
                                     size="4rem"
                                     onClick={() => switchDetent(selectedIndex - 1)}
                                     className={`mt-auto mb-auto w-42 ${selectedIndex === 0 ? 'text-gray-600' : 'text-white hover:text-blue'}`}
                                 />
-
+ */}
                             </div>
 
                             <BaseThrottleConfig throttleNumber={1} throttleCount={1} activeIndex={selectedIndex} />
@@ -68,13 +69,22 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                             <div className="w-1/12" />
                             <BaseThrottleConfig throttleNumber={2} throttleCount={1} activeIndex={selectedIndex} />
 
-                            <div className="mt-auto ml-4 mb-auto text-3xl">
-                                <IconArrowRight
+                            <div className="h-100 ml-52 flex flex-row-reverse">
+
+                                <VerticalSelectGroup>
+                                    <SelectItem classNames="divide-y divide-grey-500 mb-4" onSelect={() => switchDetent(0)} selected={selectedIndex === 0}>Reverse</SelectItem>
+                                    <SelectItem classNames="divide-y divide-grey-500 mb-4" onSelect={() => switchDetent(1)} selected={selectedIndex === 1}>Rev. Idle</SelectItem>
+                                    <SelectItem classNames="divide-y divide-grey-500 mb-4" onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
+                                    <SelectItem classNames="divide-y divide-grey-500 mb-4" onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
+                                    <SelectItem classNames="divide-y divide-grey-500 mb-4" onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
+                                    <SelectItem classNames="divide-y divide-grey-500 mb-4" onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
+                                </VerticalSelectGroup>
+                                {/*        <IconArrowRight
                                     size="4rem"
                                     onClick={() => switchDetent(selectedIndex + 1)}
                                     className={`mt-auto mb-auto w-42 ${selectedIndex === 5 ? 'text-gray-600' : 'text-white hover:text-blue'}`}
                                 />
-
+ */}
                             </div>
 
                         </div>
