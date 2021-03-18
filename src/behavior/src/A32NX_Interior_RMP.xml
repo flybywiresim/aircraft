@@ -1,7 +1,7 @@
 <ModelBehaviors>
     <Template Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
         <DefaultTemplateParameters>
-            <ELEC_BUS>(L:ACPowerAvailable, boolean)</ELEC_BUS>
+            <ELEC_BUS>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</ELEC_BUS>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="FBW_RMP_CONTROLS_Template" />

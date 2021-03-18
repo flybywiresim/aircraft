@@ -3120,8 +3120,7 @@
             <Component ID="Radio_Left">
                 <UseTemplate Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
                     <SIDE>L</SIDE>
-                    <!-- The left RMP is powered by the DC bus. -->
-                    <ELEC_BUS>(L:DCPowerAvailable, boolean)</ELEC_BUS>
+                    <ELEC_BUS>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</ELEC_BUS>
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Left">
