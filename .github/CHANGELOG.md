@@ -216,6 +216,9 @@
 1. [ELEC] When the battery push button is in the OFF position, the BCL is not powered. This means that any conditions which depend on external factors (such as APU start) or the timers for certain conditions are not remembered - @davidwalschots (David Walschots)
 1. [MISC] Added functionality to the console/floor light switch - @ImenesFBW (Imenes)
 1. [MCDU] Improved Message compatibility for future features - @MisterChocker (Leon)
+1. [MISC] Fixed default positions of RAM AIR, WX Mode, TCAS ALT RPTG and TCAS THRT switches - @tshomas (Shomas#2719)
+1. [MCDU] Fixed waypoint deletion not showing in TMPY flight plan after SU3 - @pareil6 (pareil6)
+1. [CORE] Fixed bug in altitude constraints calculation code - @SergeySoprykin (SergeyS)
 1. [FLIGHTMDDEL] Minor improvements to flap drag - @donstim (donbikes#4084)
 
 ## 0.5.2
