@@ -87,6 +87,9 @@ export const FuelPage = () => {
     const convertToGallon = (curr : number) => curr * (1 / convertUnit()) * (1 / galToKg);
     const totalCurrentGallon = () => round(Math.max((LInnCurrent + (LOutCurrent) + (RInnCurrent) + (ROutCurrent) + (centerCurrent)), 0));
     const totalCurrent = () => {
+        if (round(totalTarget) === totalCurrentGallon()) {
+            return inputValue;
+        }
         const val = round(totalCurrentGallon() * getFuelMultiplier());
         if (centerCurrent > 0 && centerCurrent < centerTankGallon) {
             return round(val + convertUnit());
