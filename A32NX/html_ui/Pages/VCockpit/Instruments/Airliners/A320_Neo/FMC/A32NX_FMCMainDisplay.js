@@ -181,8 +181,21 @@ class FMCMainDisplay extends BaseAirliners {
         this._activeCruiseFlightLevel = undefined;
         this._activeCruiseFlightLevelDefaulToFcu = false;
         this.fmsUpdateThrottler = new UpdateThrottler(250);
+        this.managedSpeedTarget = NaN;
         this.managedSpeedLimit = 250;
         this.managedSpeedLimitAlt = 10000;
+        this.managedSpeedClimb = 290;
+        this.managedSpeedClimbIsPilotEntered = false;
+        this.managedSpeedClimbMach = .78;
+        // this.managedSpeedClimbMachIsPilotEntered = false;
+        this.managedSpeedCruise = 290;
+        this.managedSpeedCruiseIsPilotEntered = false;
+        this.managedSpeedCruiseMach = .78;
+        // this.managedSpeedCruiseMachIsPilotEntered = false;
+        this.managedSpeedDescend = 290;
+        this.managedSpeedDescendIsPilotEntered = false;
+        this.managedSpeedDescendMach = .78;
+        // this.managedSpeedDescendMachIsPilotEntered = false;
     }
 
     Init() {
@@ -227,8 +240,8 @@ class FMCMainDisplay extends BaseAirliners {
 
         SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
 
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", 0);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", -1);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", -1);
 
         this.flightPlanManager.onCurrentGameFlightLoaded(() => {
             this.flightPlanManager.updateFlightPlan(() => {
@@ -465,55 +478,86 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    getManagedTargets(v, m) {
+        const T = _convertCtoK(Simplane.getAmbientTemperature());
+        const p = SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar");
+
+        if (NXSpeedsUtils.convertKCasToMach(v, T, p) > m) {
+            return [_convertMachToKCas(m, T, p), true];
+        } else {
+            return [v, false];
+        }
+    }
+
+    updateManagedSpeeds() {
+        if (!this.managedSpeedClimbIsPilotEntered) {
+            this.managedSpeedClimb = this.getClbManagedSpeedFromCostIndex();
+        }
+        if (!this.managedSpeedCruiseIsPilotEntered) {
+            this.managedSpeedCruise = this.getCrzManagedSpeedFromCostIndex();
+        }
+        if (!this.managedSpeedDescendIsPilotEntered) {
+            this.managedSpeedDescend = this.getDesManagedSpeedFromCostIndex();
+        }
+    }
+
     updateManagedSpeed() {
         if (!this.isAirspeedManaged()) {
             return;
         }
 
-        let vPfd = 0;
-        let vmAt = 0;
+        let vPfd = -1;
+        const vAt = 0;
+        let isMach = false;
 
         switch (this.currentFlightPhase) {
-            case FmgcFlightPhases.CLIMB: {
-                const v = this.getClbManagedSpeed();
-                const T = _convertCtoK(Simplane.getAmbientTemperature());
-                const p = SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar");
-
-                if (NXSpeedsUtils.convertKCasToMach(v, T, p) > .78) {
-                    vmAt = .78;
-                    vPfd = _convertMachToKCas(.78, T, p);
-                } else {
-                    vmAt = v;
-                    vPfd = v;
+            case FmgcFlightPhases.PREFLIGHT: {
+                if (this.v2Speed) {
+                    vPfd = this.v2Speed;
+                    this.managedSpeedTarget = this.v2Speed + 10;
                 }
+                break;
+            }
+            case FmgcFlightPhases.TAKEOFF: {
+                if (this.v2Speed) {
+                    vPfd = this.v2Speed;
+                    this.managedSpeedTarget = this.isAllEngineOn() ? this.v2Speed + 10 : this.v2Speed + 20;
+                }
+                break;
+            }
+            case FmgcFlightPhases.CLIMB: {
+                let speed = this.managedSpeedClimb;
+
+                if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
+                    speed = Math.min(speed, this.managedSpeedLimit);
+                }
+
+                speed = Math.min(speed, this.getSpeedConstraint());
+
+                [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedClimbMach);
+                vPfd = this.managedSpeedTarget;
                 break;
             }
             case FmgcFlightPhases.CRUISE: {
-                const v = this.getCrzManagedSpeed();
-                const T = _convertCtoK(Simplane.getAmbientTemperature());
-                const p = SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar");
+                let speed = this.managedSpeedCruise;
 
-                if (NXSpeedsUtils.convertKCasToMach(v, T, p) > .78) {
-                    vmAt = .78;
-                    vPfd = _convertMachToKCas(.78, T, p);
-                } else {
-                    vmAt = v;
-                    vPfd = v;
+                if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
+                    speed = Math.min(speed, this.managedSpeedLimit);
                 }
+
+                [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedCruiseMach);
+                vPfd = this.managedSpeedTarget;
                 break;
             }
             case FmgcFlightPhases.DESCENT: {
-                const v = this.getDesManagedSpeed();
-                const T = _convertCtoK(Simplane.getAmbientTemperature());
-                const p = SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar");
+                let speed = this.managedSpeedDescend;
 
-                if (NXSpeedsUtils.convertKCasToMach(v, T, p) > .78) {
-                    vmAt = .78;
-                    vPfd = _convertMachToKCas(.78, T, p);
-                } else {
-                    vmAt = v;
-                    vPfd = v;
+                if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
+                    speed = Math.min(speed, this.managedSpeedLimit);
                 }
+
+                [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedDescendMach);
+                vPfd = this.managedSpeedTarget;
                 break;
             }
             case FmgcFlightPhases.APPROACH: {
@@ -529,7 +573,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
 
                 vPfd = vls;
-                vmAt = Math.max(speed, vls);
+                this.managedSpeedTarget = Math.max(speed, vls);
                 break;
             }
             case FmgcFlightPhases.GOAROUND: {
@@ -545,24 +589,27 @@ class FMCMainDisplay extends BaseAirliners {
                     SimVar.SetSimVarValue("L:A32NX_TOGA_SPEED", "number", speed); //TODO: figure that this does
 
                     vPfd = speed;
-                    vmAt = speed;
+                    this.managedSpeedTarget = speed;
                 } else {
                     vPfd = this.computedVgd;
-                    vmAt = this.computedVgd;
+                    this.managedSpeedTarget = this.computedVgd;
                 }
                 break;
             }
         }
 
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", vPfd);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", vmAt);
+        console.log("vP: " + vPfd);
+        console.log("vA: " + this.managedSpeedTarget);
 
-        if (vmAt > 1) {
-            Coherent.call("AP_SPD_VAR_SET", 2, vmAt);
-            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
-        } else {
-            Coherent.call("AP_MACH_VAR_SET", 2, vmAt);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", vPfd);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", this.managedSpeedTarget);
+
+        Coherent.call("AP_SPD_VAR_SET", 2, this.managedSpeedTarget);
+
+        if (isMach) {
             SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
+        } else {
+            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
         }
     }
 
@@ -922,45 +969,19 @@ class FMCMainDisplay extends BaseAirliners {
         return wpt.speedConstraint;
     }
 
-    getClbManagedSpeed() {
-        const alt = SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet");
-        let maxSpeed = Infinity;
-        if (isFinite(this.v2Speed)) {
-            if (alt < this.thrustReductionAltitude) {
-                maxSpeed = this.v2Speed + 50;
-            } else {
-                maxSpeed = this.getSpeedConstraint();
-            }
-        }
+    getClbManagedSpeedFromCostIndex() {
         const dCI = (this.costIndex / 999) ** 2;
-        let speed = 290 * (1 - dCI) + 330 * dCI;
-        if (alt < this.managedSpeedLimitAlt) {
-            speed = Math.min(speed, this.managedSpeedLimit);
-        }
-
-        return Math.min(maxSpeed, speed);
+        return 290 * (1 - dCI) + 330 * dCI;
     }
 
-    getCrzManagedSpeed() {
+    getCrzManagedSpeedFromCostIndex() {
         const dCI = (this.costIndex / 999) ** 2;
-        let speed = 290 * (1 - dCI) + 310 * dCI;
-        if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
-            speed = Math.min(speed, this.managedSpeedLimit);
-        }
-        return speed;
+        return 290 * (1 - dCI) + 310 * dCI;
     }
 
-    getDesManagedSpeed() {
+    getDesManagedSpeedFromCostIndex() {
         const dCI = this.costIndex / 999;
-        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex !== 0) {
-            return flapsHandleIndex === 1 ? this.computedVss : this.computedVfs;
-        }
-        let speed = 288 * (1 - dCI) + 300 * dCI;
-        if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
-            speed = Math.min(speed, this.managedSpeedLimit);
-        }
-        return Math.min(speed, this.getSpeedConstraint());
+        return 288 * (1 - dCI) + 300 * dCI;
     }
 
     getAppManagedSpeed() {
@@ -1220,6 +1241,7 @@ class FMCMainDisplay extends BaseAirliners {
                 if (value < 1000) {
                     this.costIndex = value;
                     this.costIndexSet = true;
+                    this.updateManagedSpeeds();
                     return true;
                 } else {
                     this.addNewMessage(NXSystemMessages.entryOutOfRange);

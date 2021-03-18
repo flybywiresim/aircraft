@@ -424,12 +424,7 @@ class CDUPerformancePage {
             costIndexCell = mcdu.costIndex.toFixed(0) + "[color]cyan";
         }
         let managedSpeedCell = "";
-        let managedSpeed;
-        if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
-            managedSpeed = mcdu.computedVgd;
-        } else {
-            managedSpeed = mcdu.getClbManagedSpeed();
-        }
+        const managedSpeed = mcdu.currentFlightPhase === FmgcFlightPhases.CLIMB ? mcdu.managedSpeedTarget : mcdu.managedSpeedClimb;
         if (isFinite(managedSpeed)) {
             managedSpeedCell = managedSpeed.toFixed(0);
         }
@@ -530,7 +525,7 @@ class CDUPerformancePage {
             costIndexCell = mcdu.costIndex.toFixed(0) + "[color]cyan";
         }
         let managedSpeedCell = "";
-        const managedSpeed = mcdu.getCrzManagedSpeed();
+        const managedSpeed = mcdu.currentFlightPhase === FmgcFlightPhases.CRUISE ? mcdu.managedSpeedTarget : mcdu.managedSpeedCruise;
         if (isFinite(managedSpeed)) {
             managedSpeedCell = managedSpeed.toFixed(0);
         }
@@ -631,7 +626,7 @@ class CDUPerformancePage {
             costIndexCell = mcdu.costIndex.toFixed(0) + "[color]cyan";
         }
         let managedSpeedCell = "";
-        const managedSpeed = mcdu.getDesManagedSpeed();
+        const managedSpeed = mcdu.currentFlightPhase === FmgcFlightPhases.DESCENT ? mcdu.managedSpeedTarget : mcdu.managedSpeedDescend;
         if (isFinite(managedSpeed)) {
             managedSpeedCell = managedSpeed.toFixed(0);
         }

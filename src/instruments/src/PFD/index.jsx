@@ -148,14 +148,7 @@ class PFD extends Component {
                 targetSpeed = Simplane.getAutoPilotAirspeedHoldValue();
             }
         } if (targetSpeed < 0) {
-            if (isMach) {
-                targetSpeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH
-                    ? getSimVar('L:A32NX_AP_APPVLS', 'knots')
-                    : SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', Simplane.getAutoPilotMachHoldValue());
-            } else {
-                targetSpeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH
-                    ? getSimVar('L:A32NX_AP_APPVLS', 'knots') : Simplane.getAutoPilotAirspeedHoldValue();
-            }
+            targetSpeed = getSimVar('L:A32NX_SPEEDS_MANAGED_PFD', 'knots');
         }
 
         const FDActive = getSimVar(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${this.dispIndex}`, 'Bool');
