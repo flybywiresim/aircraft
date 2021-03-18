@@ -450,9 +450,9 @@ class Jet_NDCompass extends HTMLElement {
             const compass = Number(this.getAttribute('rotation'));
             let displayCourseDeviation = false;
             let displayVerticalDeviation = false;
-            if (this.navigationMode == Jet_NDCompass_Navigation.ILS || this.navigationMode === Jet_NDCompass_Navigation.VOR) {
+            if (this.navigationMode === Jet_NDCompass_Navigation.ILS || this.navigationMode === Jet_NDCompass_Navigation.VOR) {
                 let beacon;
-                if (this.navigationMode == Jet_NDCompass_Navigation.ILS) {
+                if (this.navigationMode === Jet_NDCompass_Navigation.ILS) {
                     beacon = this.gps.radioNav.getBestILSBeacon();
                 } else if (this.navigationMode === Jet_NDCompass_Navigation.VOR) {
                     beacon = this.gps.radioNav.getBestVORBeacon();
@@ -479,7 +479,7 @@ class Jet_NDCompass extends HTMLElement {
                 this.setAttribute("display_course_deviation", displayCourseDeviation ? "True" : "False");
                 this.setAttribute("display_vertical_deviation", displayVerticalDeviation ? "True" : "False");
             }
-            if (this.navigationMode != Jet_NDCompass_Navigation.ILS) {
+            if (this.navigationMode !== Jet_NDCompass_Navigation.ILS) {
                 switch (this.logic_brg1Source) {
                     case 1:
                     {
