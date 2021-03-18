@@ -306,7 +306,7 @@ export const FuelPage = () => {
                         <span className="eta-label">
                             Est:
                             {calculateEta()}
-                            mn
+                            min
                         </span>
                     </div>
                 </div>
