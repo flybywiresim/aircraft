@@ -46,7 +46,8 @@
   top: 40%;
 }
 .refuel-info {
-  left: 36.25%;
+  width: 35%;
+  left: 32.5%;
   top: 16.25em;
 }
 .visible-tank {
@@ -144,11 +145,12 @@
 }
 .unit-label {
   position: absolute;
-  left: 82.8%;
-  top: 3.95rem;
+  margin-top: -6.5%;
+  margin-left: 17%;
+  font-size: 17px;
   color: #9ca3af;
 }
-.manage-fuel-truck {
+.manage-refuel {
   position: absolute;
   left: 84%;
   top: 29%;
@@ -204,7 +206,7 @@
   margin: auto;
 }
 
-.fuel-truck {
+.refuel-icon {
   height: 3.5rem;
   width: 3.5rem;
   margin: auto;
@@ -212,18 +214,12 @@
   top: 21rem;
   grid-template-columns: minmax(0, 1fr);
   @apply p-2;
-  @apply bg-gray-800;
   @apply rounded-lg;
   color: #232b3d;
   grid-gap: 0.5rem;
 }
 
-.call-inop {
-  @apply bg-green-500;
-  grid-column: 1 / 1;
-}
-
-.call-inop > svg {
+.refuel-icon > button > svg {
   height: 100%;
   width: 100%;
 }
@@ -239,32 +235,58 @@
   height: 7.75%;
 }
 
-.in-progress {
+.completed {
   background-color: #3b82f6 !important;
 }
-
-.in-progress-text {
-  color: #84acef !important;
+.refuel {
+  background-color: #10b981 !important;
 }
-
+.defuel {
+  background-color: #e4a700 !important;
+}
 .disabled {
   background-color: #9aa2ad !important;
 }
+.stop {
+  @apply bg-red-500;
+}
 
+.completed-text {
+  color: #84acef !important;
+}
+.refuel-text {
+  color: #10b981 !important;
+}
+.defuel-text {
+  color: #e4a700 !important;
+}
 .disabled-text {
   color: #9aa2ad !important;
 }
 
-.completed-text {
-  color: #10b981;
-}
-
-.inop-label-fuel-page {
-  margin-left: 25%;
+.eta-label {
+  position: absolute;
+  width: 7.7em;
+  text-align: center;
+  margin-top: 5%;
+  margin-left: -44%;
 }
 
 .fuel-truck-avail {
   position: absolute;
-  left: 25%;
-  top: 23%;
+  margin-left: 15%;
+  font-size: 18px;
+  margin-top: -5.5%;
+}
+
+.refuel-button {
+  border: none;
+  padding: 0 !important;
+  height: 100%;
+  width: 100%;
+}
+
+.refuel-button:active {
+  @apply transform;
+  @apply translate-y-0;
 }

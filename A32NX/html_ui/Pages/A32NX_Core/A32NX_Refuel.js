@@ -16,6 +16,7 @@ class A32NX_Refuel {
         const ROutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons");
         const total = Math.round(Math.max((LInnCurrentSimVar + (LOutCurrentSimVar) + (RInnCurrentSimVar) + (ROutCurrentSimVar) + (centerCurrentSimVar)), 0));
         const totalConverted = Math.round(total * fuelWeight * usingMetrics);
+        SimVar.SetSimVarValue("L:A32NX_REFUEL_STARTED_BY_USR", "Bool", false);
         SimVar.SetSimVarValue("L:A32NX_FUEL_TOTAL_DESIRED", "Number", total);
         SimVar.SetSimVarValue("L:A32NX_FUEL_DESIRED", "Number", totalConverted);
         SimVar.SetSimVarValue("L:A32NX_FUEL_DESIRED_PERCENT", "Number", Math.round((total / totalFuelGallons) * 100));
@@ -34,14 +35,15 @@ class A32NX_Refuel {
     }
 
     update(_deltaTime) {
-        const gs = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
-        if (gs > 0.1) {
+        const refuelStartedByUser = SimVar.GetSimVarValue("L:A32NX_REFUEL_STARTED_BY_USR", "Bool");
+        if (!refuelStartedByUser) {
             return;
         }
+        const gs = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
         const onGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
         const eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool");
         const eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool");
-        if (!onGround || eng1Running || eng2Running) {
+        if (!onGround || eng1Running || eng2Running || gs > 0.1) {
             return;
         }
         const refuelRate = SimVar.GetSimVarValue("L:A32NX_REFUEL_RATE_SETTING", "Number");

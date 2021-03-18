@@ -18,9 +18,11 @@
 
 import React from 'react';
 import { round } from 'lodash';
+import { IconPlayerPlay, IconHandStop } from '@tabler/icons';
 import { Slider } from '../../Components/Form/Slider';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import { ProgressBar } from '../../Components/Progress/Progress';
+import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import '../Styles/Fuel.scss';
 import fuselage from '../../Assets/320neo_outline_fuel.svg';
@@ -32,10 +34,12 @@ export const FuelPage = () => {
     const outerCellGallon = 227;
     const innerCellGallon = 1809;
     const centerTankGallon = 2173;
-    const [usingMetrics, setUsingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
+    const wingTotalRefuelTimeSeconds = 1020;
+    const CenterTotalRefuelTimeSeconds = 180;
+    const [usingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
     const currentUnit = () => {
         if (usingMetrics === 1) {
-            return 'Kgs';
+            return 'Kg';
         }
         return 'Lbs';
     };
@@ -60,6 +64,7 @@ export const FuelPage = () => {
     const [sliderValue, setSliderValue] = useSimVar('L:A32NX_FUEL_DESIRED_PERCENT', 'Number');
     const [inputValue, setInputValue] = useSimVar('L:A32NX_FUEL_DESIRED', 'Number');
     const [totalTarget, setTotalTarget] = useSimVar('L:A32NX_FUEL_TOTAL_DESIRED', 'Number');
+    const [refuelStartedByUser, setRefuelStartedByUser] = useSimVar('L:A32NX_REFUEL_STARTED_BY_USR', 'Bool');
     const [centerTarget, setCenterTarget] = useSimVar('L:A32NX_FUEL_CENTER_DESIRED', 'Number');
     const [LInnTarget, setLInnTarget] = useSimVar('L:A32NX_FUEL_LEFT_MAIN_DESIRED', 'Number');
     const [LOutTarget, setLOutTarget] = useSimVar('L:A32NX_FUEL_LEFT_AUX_DESIRED', 'Number');
@@ -72,15 +77,13 @@ export const FuelPage = () => {
     const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
     const getFuelBarPercent = (curr:number, max: number) => (Math.max(curr, 0) / max) * 100;
     const airplaneCanRefuel = () => {
-        // TODO : REMOVE THIS IF WHENEVER PERSISTANCE IS IMPLEMENTED
-        if (usingMetrics !== 1) {
-            setUsingMetrics(1);
-        }
         if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround) {
             return false;
         }
         return true;
     };
+    const currentWingFuel = () => round(Math.max((LInnCurrent + (LOutCurrent) + (RInnCurrent) + (ROutCurrent)), 0));
+    const targetWingFuel = () => round(Math.max((LInnTarget + (LOutTarget) + (RInnTarget) + (ROutTarget)), 0));
     const convertToGallon = (curr : number) => curr * (1 / convertUnit()) * (1 / galToKg);
     const totalCurrentGallon = () => round(Math.max((LInnCurrent + (LOutCurrent) + (RInnCurrent) + (ROutCurrent) + (centerCurrent)), 0));
     const totalCurrent = () => {
@@ -92,22 +95,31 @@ export const FuelPage = () => {
     };
     const formatRefuelStatusLabel = () => {
         if (airplaneCanRefuel()) {
-            if (round(totalTarget) === totalCurrentGallon()) {
+            if (round(totalTarget) === totalCurrentGallon() || !refuelStartedByUser) {
                 return '(Available)';
             }
-            return ((totalTarget || 0) > (totalFuelGallons)) ? '(Refueling...)' : '(Defueling...)';
+            return ((totalTarget) > (totalCurrentGallon())) ? '(Refueling...)' : '(Defueling...)';
+        }
+        if (refuelStartedByUser) {
+            setRefuelStartedByUser(false);
         }
         return '(Unavailable)';
     };
-    const formatRefuelStatusClass = () => {
-        const newClass = 'fuel-truck-avail';
-        if (airplaneCanRefuel()) {
-            if (round(totalTarget) === totalCurrentGallon()) {
-                return `${newClass} completed-text`;
-            }
-            return `${newClass} in-progress-text`;
+    const formatRefuelStatusClass = (baseClass:string, text:boolean) => {
+        let suffix = '';
+        if (text) {
+            suffix = '-text';
         }
-        return `${newClass} disabled-text`;
+        if (airplaneCanRefuel()) {
+            if (round(totalTarget) === totalCurrentGallon() || !refuelStartedByUser) {
+                if (refuelStartedByUser && baseClass === 'refuel-icon') {
+                    return `${baseClass} stop`;
+                }
+                return `${baseClass} completed${suffix}`;
+            }
+            return ((totalTarget) > (totalCurrentGallon())) ? `${baseClass} refuel${suffix}` : `${baseClass} defuel${suffix}`;
+        }
+        return `${baseClass} disabled${suffix}`;
     };
     const getFuelMultiplier = () => galToKg * convertUnit();
     const formatFuelFilling = (curr: number, max: number) => {
@@ -116,6 +128,9 @@ export const FuelPage = () => {
     };
     const convertFuelValue = (curr: number) => round(round(Math.max(curr, 0)) * getFuelMultiplier());
     const convertFuelValueCenter = (curr: number) => {
+        if (curr < 1) {
+            return 0;
+        }
         if (curr === centerTankGallon) {
             return convertFuelValue(curr);
         }
@@ -168,7 +183,29 @@ export const FuelPage = () => {
         const fuel = Math.round(totalFuel() * (value / 100));
         updateDesiredFuel(fuel.toString());
     };
-
+    const calculateEta = () => {
+        if (round(totalTarget) === totalCurrentGallon() || refuelRate === 2) {
+            return ' 0';
+        }
+        let estimatedTimeSeconds = 0;
+        const totalWingFuel = totalFuelGallons - centerTankGallon;
+        const differentialFuelWings = Math.abs(currentWingFuel() - targetWingFuel());
+        const differentialFuelCenter = Math.abs(centerTarget - centerCurrent);
+        estimatedTimeSeconds += (differentialFuelWings / totalWingFuel) * wingTotalRefuelTimeSeconds;
+        estimatedTimeSeconds += (differentialFuelCenter / centerTankGallon) * CenterTotalRefuelTimeSeconds;
+        if (refuelRate === 1) {
+            estimatedTimeSeconds /= 5;
+        }
+        if (estimatedTimeSeconds < 35) {
+            return ' 0.5';
+        }
+        return ` ${Math.round(estimatedTimeSeconds / 60)}`;
+    };
+    const switchRefuelState = () => {
+        if (airplaneCanRefuel()) {
+            setRefuelStartedByUser(!refuelStartedByUser);
+        }
+    };
     return (
         <div className="text-white px-6">
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info">
@@ -242,7 +279,7 @@ export const FuelPage = () => {
             </div>
             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info refuel-info">
                 <h2 className="text-2xl font-medium">Refuel</h2>
-                <label htmlFor="fuel-label" className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</label>
+                <label htmlFor="fuel-label" className={formatRefuelStatusClass('fuel-truck-avail', true)}>{formatRefuelStatusLabel()}</label>
                 <div className="flex mt-n5">
                     <div className="fuel-progress"><Slider value={sliderValue} onInput={(value) => updateSlider(value)} className="w-48" /></div>
                     <div className="fuel-label pad15">
@@ -256,8 +293,22 @@ export const FuelPage = () => {
                             value={inputValue}
                             onChange={(x) => updateDesiredFuel(x)}
                         />
+                        <div className="unit-label">{currentUnit()}</div>
                     </div>
-                    <div className="unit-label">{currentUnit()}</div>
+                    <div className="separation-line-refuel" />
+                    <div className="manage-refuel">
+                        <div className={formatRefuelStatusClass('refuel-icon', false)}>
+                            <Button className="refuel-button" onClick={() => switchRefuelState()} type={BUTTON_TYPE.NONE}>
+                                <IconPlayerPlay className={refuelStartedByUser ? 'hidden' : ''} />
+                                <IconHandStop className={refuelStartedByUser ? '' : 'hidden'} />
+                            </Button>
+                        </div>
+                        <span className="eta-label">
+                            Est:
+                            {calculateEta()}
+                            mn
+                        </span>
+                    </div>
                 </div>
                 <span>Current fuel :</span>
                 <div className="flex mt-n5">
