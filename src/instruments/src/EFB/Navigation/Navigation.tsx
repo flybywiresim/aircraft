@@ -58,10 +58,10 @@ type ChartDisplay = {
 }
 
 const Loading = () => (
-    <div className="flex flex-col items-center justify-center text-white text-3xl">
-        <p>Loading...</p>
+    <div className="flex flex-col items-center justify-center">
+        <p className="text-white text-3xl">Loading...</p>
         <span
-            className="text-teal-regular"
+            className="text-teal-regular text-2xl"
             onClick={() => window.localStorage.setItem('refreshToken', null)}
         >
             Reset Refresh Token
@@ -185,7 +185,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                 ? (
                     <>
                         {organizedCharts.map((item) => (
-                            <div className="flex flex-col text-l rounded-lg bg-navy-light mr-4 pb-2">
+                            <div className="flex flex-col text-lg rounded-lg bg-navy-light mr-4 pb-2">
                                 <span className="p-1 bg-gray-700 text-center rounded-t-lg">{item.name}</span>
                                 {item.charts.map((chart) => (
                                     <div
@@ -199,7 +199,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                                         <div className="flex flex-col mx-2 my-2">
                                             <span className="">{(chart as NavigraphChart).procedureIdentifier}</span>
                                             <span
-                                                className="mr-auto text-s bg-gray-700 text-gray-400 rounded-md px-2 mt-0.5"
+                                                className="mr-auto text-sm bg-gray-700 text-gray-400 rounded-md px-2 mt-0.5"
                                             >
                                                 {(chart as NavigraphChart).indexNumber}
                                             </span>
@@ -214,7 +214,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                     <>
                         {props.selectedTab.charts.map((chart) => (
                             <div
-                                className="flex bg-navy-light text-l rounded-lg mr-4"
+                                className="flex bg-navy-light text-lg rounded-lg mr-4"
                                 onClick={() => props.handleChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
                                 key={(chart as NavigraphChart).id}
                             >
@@ -224,7 +224,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                                 <div className="flex flex-col mx-2 my-1">
                                     <span className="">{(chart as NavigraphChart).procedureIdentifier}</span>
                                     <span
-                                        className="mr-auto text-s bg-gray-700 text-gray-400 rounded-md px-2"
+                                        className="mr-auto text-sm bg-gray-700 text-gray-400 rounded-md px-2"
                                     >
                                         {(chart as NavigraphChart).indexNumber}
                                     </span>
@@ -350,7 +350,7 @@ const ChartsUi = (props: ChartsUiProps) => {
                                     {organizedCharts.map((organizedChart) => (organizedChart.name === selectedTab.name
                                         ? (
                                             <span
-                                                className="py-2 px-2 text-l rounded-md bg-teal-light-contrast select-none"
+                                                className="py-2 px-2 text-lg rounded-md bg-teal-light-contrast select-none"
                                                 onClick={() => setSelectedTab(organizedChart)}
                                             >
                                                 {organizedChart.name}
@@ -358,14 +358,14 @@ const ChartsUi = (props: ChartsUiProps) => {
                                         )
                                         : (
                                             <span
-                                                className="py-2 px-2 text-l rounded-md select-none"
+                                                className="py-2 px-2 text-lg rounded-md select-none"
                                                 onClick={() => setSelectedTab(organizedChart)}
                                             >
                                                 {organizedChart.name}
                                             </span>
                                         )))}
                                 </div>
-                                <div className="flex flex-col mt-5 h-144 space-y-4 overflow-y-scroll">
+                                <div className="flex flex-col mt-5 py-x h-144 space-y-4 overflow-y-scroll">
                                     {props.enableNavigraph
                                         ? (
                                             <NavigraphChartSelector
