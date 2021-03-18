@@ -1,0 +1,20 @@
+@font-face {
+  font-family: "Digital";
+  src: url("/Fonts/AirbusBAT.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
+
+.bat-svg {
+  background-color: black;
+  height: 100%;
+  width: 100%;
+  left: 0;
+}
+
+text {
+  fill: #db7200;
+  font-family: Digital;
+  font-size: 52px;
+  text-anchor: end;
+}
