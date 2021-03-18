@@ -1,7 +1,6 @@
 ---
 name: Bug report
 about: Create a report to help us improve the mod
-title: "[BUG] INSERT TITLE HERE"
 labels: Bug
 assignees: ''
 

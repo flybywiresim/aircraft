@@ -314,6 +314,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateMCDU();
 
         this.updateScreenState();
+
+        // If legacy SimBrief username variable is in the DataStore, convert it to a user ID and remove it.
+        const simbriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "");
+        if (simbriefUsername) {
+            getSimBriefUser(simbriefUsername, this, () => { });
+            NXDataStore.set("CONFIG_SIMBRIEF_USERNAME", "");
+        }
     }
 
     /* MCDU UPDATE */

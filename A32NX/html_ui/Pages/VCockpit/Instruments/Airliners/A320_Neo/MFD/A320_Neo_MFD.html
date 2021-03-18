@@ -69,11 +69,11 @@
 
                     <div id="Approach">
                         <svg>
-                            <text id="APP_Type" class="Large" x="63%" y="0%" alignment-baseline="baseline"></text>
-                            <text id="APP_Freq" class="ValueVor" x="100%" y="0%" alignment-baseline="baseline">---</text>
-                            <text id="APP_Course" class="Large" x="76%" y="15%" alignment-baseline="baseline">CRS</text>
+                            <text id="APP_Type" class="Large" x="55%" y="3%" alignment-baseline="bottom"></text>
+                            <text id="APP_Freq" class="Value" x="98%" y="3%" alignment-baseline="bottom">---</text>
+                            <text id="APP_Course" class="Large" x="73%" y="15%" alignment-baseline="baseline">CRS</text>
                             <text id="APP_Course_Value" class="ValueVor" x="101%" y="15%" alignment-baseline="baseline"></text>
-                            <text id="APP_Info" class="ValueVor" x="100%" y="30%" alignment-baseline="baseline">---</text>
+                            <text id="APP_Info" class="Large" x="95%" y="30%" alignment-baseline="baseline">---</text>
                         </svg>
                     </div>
 
@@ -81,10 +81,14 @@
                         <svg>
                             <g id="Waypoint_Group">
                                 <text id="WP_Name" class="Large" x="72%" y="0%" alignment-baseline="baseline"></text>
-                                <text id="WP_Track_Value" class="Value" x="100%" y="0%" alignment-baseline="baseline">---&deg</text>
-                                <text id="WP_Distance_Value" class="Value" x="90%" y="15%" alignment-baseline="baseline">-.-</text>
-                                <text id="WP_Distance_Units" class="Units" x="100%" y="15%" alignment-baseline="baseline">NM</text>
-                                <text id="WP_Time" class="Value" x="100%" y="30%" alignment-baseline="baseline">--:--</text>
+                                <text id="WP_Track_Value" class="Value" x="93.5%" y="0%" alignment-baseline="baseline"></text>
+                                <text id="WP_Degree_Symbol" class="DegreeSymbol" x="100%" y="2.5%" alignment-baseline="baseline"></text>
+                                <text id="WP_Distance_Value" class="Value" x="88%" y="18%" alignment-baseline="bottom"></text>
+                                <text id="WP_Distance_Units" class="Units" x="100%" y="12.9%" alignment-baseline="middle"></text>
+                                <text id="WP_Time" class="Value" x="100%" y="30%" alignment-baseline="baseline"></text>
+                            </g>
+                            <g id="Waypoint_PPOS">
+                                <text id="WP_PPOS" class="Large" x="72%" y="0%" alignment-baseline="baseline">PPOS</text>
                             </g>
                         </svg>
                     </div>
@@ -93,22 +97,23 @@
                 <div id="VORDMENavaids">
                     <div id="VORDMENavaid_Left" style="display:none">
                         <svg>
-                            <text id="State" x="31%" y="20%" alignment-baseline="middle"></text>
-                            <text id="ID" x="27%" y="48%" alignment-baseline="middle"></text>
+                            <rect fill="rgba(4,4,5,255)" x="0" y="0" width="77%" height="100%"></rect>
+                            <text id="State" x="15%" y="20%" alignment-baseline="middle"></text>
+                            <text id="ID" x="15%" y="59%" alignment-baseline="bottom"></text>
                             <text id="Mode" x="77.5%" y="50%" alignment-baseline="middle"></text>
-                            <text id="Distance" x="25%" y="80%" alignment-baseline="middle">---</text> <!-- MODIFIED -->
-                            <text id="Unit" x="50.5%" y="81.95%" alignment-baseline="middle">NM</text> <!-- MODIFIED -->
+                            <text id="Distance" x="34%" y="91%" alignment-baseline="bottom">---</text> <!-- MODIFIED -->
+                            <text id="Unit" x="38%" y="81.95%" alignment-baseline="middle">NM</text> <!-- MODIFIED -->
                             <path id="Arrow-Left" d="M0,25 L0,0 L-15,0 L0,-25 L0,-35 M0,-25 L15,0 L0,0" transform="translate(25 55)" />
                         </svg>
                     </div>
 
                     <div id="VORDMENavaid_Right" style="display:none">
                         <svg>
-                            <text id="State" x="69%" y="20%" alignment-baseline="middle"></text>
-                            <text id="ID" x="65.5%" y="48%" alignment-baseline="middle"></text>
+                            <text id="State" x="85%" y="20%" alignment-baseline="middle"></text>
+                            <text id="ID" x="85%" y="59%" alignment-baseline="bottom"></text>
                             <text id="Mode" x="22.5%" y="50%" alignment-baseline="middle"></text>
-                            <text id="Distance" x="65.5%" y="80%" alignment-baseline="middle">---</text> <!-- MODIFIED -->
-                            <text id="Unit" x="91.25%" y="81.95%" alignment-baseline="middle">NM</text> <!-- MODIFIED -->
+                            <text id="Distance" x="82%" y="91%" alignment-baseline="bottom">---</text> <!-- MODIFIED -->
+                            <text id="Unit" x="98%" y="91%" alignment-baseline="bottom">NM</text> <!-- MODIFIED -->
                             <path id="Arrow-Right" d="M-8,25 L-8,0 L-15,0 L0,-25 L0,-35 M0,-25 L15,0 L8,0 L8,25" transform="translate(295 55)" />
                         </svg>
                     </div>
@@ -142,11 +147,12 @@
             </div>
 
 			<div id="div_Chrono" style="position: absolute; left: 3%; top: 83%; width: 30%; height: 30%; border: none; display: none;">
-				<svg id="svg_Chrono" viewBox="0 0 600 600" style="position:absolute; top:83%; left: 3%; width: 100%; height:100%;">
-					<rect fill="rgba(60,60,70,1)" x="0" y="0" width="12.5%" height="4%"></rect>
-					<text id="text_chrono_prefix" class="valueText" text-anchor="left" x="0.5%" y="3.2%" font-size="19px">00'</text>
-					<text id="text_chrono_HRSymbol" class="valueText" text-anchor="left" x="4.6%" y="2.3%" font-size="15px"></text>
-					<text id="text_chrono_suffix" class="valueText" text-anchor="left" x="6.4%" y="3.2%" font-size="19px">00"</text>
+				<svg id="svg_Chrono" viewBox="0 0 600 600" style="position:absolute; top:83%; left: 0%; width: 100%; height:100%;">
+                    <rect fill="rgba(4,4,5,255)" x="0" y="0" width="15%" height="5%"></rect>
+					<rect fill="rgba(250,250,250,0.47)" x="6.2" y="0" width="12.5%" height="4%"></rect>
+					<text id="text_chrono_prefix" class="valueText" text-anchor="left" x="1.5%" y="3.2%" font-size="19px">00'</text>
+					<text id="text_chrono_HRSymbol" class="valueText" text-anchor="left" x="5.6%" y="2.3%" font-size="15px"></text>
+					<text id="text_chrono_suffix" class="valueText" text-anchor="left" x="7.4%" y="3.2%" font-size="19px">00"</text>
                 </svg>
             </div>
 
