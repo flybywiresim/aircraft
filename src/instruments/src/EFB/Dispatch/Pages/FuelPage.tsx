@@ -228,7 +228,7 @@ export const FuelPage = () => {
                         completed={(Math.max(LInnCurrent, 0) / innerCellGallon) * 100}
                     />
                     <div className="fuel-label">
-                        <label htmlFor="fuel-label">
+                        <label className="fuel-content-label" htmlFor="fuel-label">
                             {convertFuelValue(LInnCurrent)}
                             /
                             {round(innerCell())}
@@ -251,7 +251,7 @@ export const FuelPage = () => {
                         completed={(Math.max(LOutCurrent, 0) / outerCellGallon) * 100}
                     />
                     <div className="fuel-label">
-                        <label htmlFor="fuel-label">
+                        <label className="fuel-content-label" htmlFor="fuel-label">
                             {convertFuelValue(LOutCurrent)}
                             /
                             {round(outerCell())}
@@ -274,7 +274,7 @@ export const FuelPage = () => {
                         completed={(Math.max(centerCurrent, 0) / centerTankGallon) * 100}
                     />
                     <div className="fuel-label">
-                        <label htmlFor="fuel-label">
+                        <label className="fuel-content-label" htmlFor="fuel-label">
                             {convertFuelValueCenter(centerCurrent)}
                             /
                             {round(centerTank())}
@@ -317,11 +317,11 @@ export const FuelPage = () => {
                         </span>
                     </div>
                 </div>
-                <span>Current fuel :</span>
-                <div className="flex mt-n5">
+                <span className="fuel-content-label">Current fuel :</span>
+                <div className="flex mt-n5 current-fuel-line">
                     <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(totalCurrent() / round(totalFuel())) * 100} />
                     <div className="fuel-label">
-                        <label htmlFor="fuel-label">
+                        <label className="fuel-content-label" htmlFor="fuel-label">
                             {totalCurrent()}
                             /
                             {round(totalFuel())}
@@ -344,7 +344,7 @@ export const FuelPage = () => {
                         completed={(Math.max(RInnCurrent, 0) / innerCellGallon) * 100}
                     />
                     <div className="fuel-label">
-                        <label htmlFor="fuel-label">
+                        <label className="fuel-content-label" htmlFor="fuel-label">
                             {convertFuelValue(RInnCurrent)}
                             /
                             {round(innerCell())}
@@ -367,7 +367,7 @@ export const FuelPage = () => {
                         completed={(Math.max(ROutCurrent, 0) / outerCellGallon) * 100}
                     />
                     <div className="fuel-label">
-                        <label htmlFor="fuel-label">
+                        <label className="fuel-content-label" htmlFor="fuel-label">
                             {convertFuelValue(ROutCurrent)}
                             /
                             {round(outerCell())}

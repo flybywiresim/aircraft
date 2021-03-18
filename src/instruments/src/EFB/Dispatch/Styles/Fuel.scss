@@ -141,12 +141,12 @@
 }
 .fuel-label {
   float: right;
-  margin-top: 3px;
+  margin-top: -2px;
 }
 .unit-label {
   position: absolute;
-  margin-top: -6.5%;
-  margin-left: 17%;
+  margin-top: -6.75%;
+  margin-left: 16%;
   font-size: 17px;
   color: #9ca3af;
 }
@@ -242,8 +242,13 @@
   position: absolute;
   width: 7.7em;
   text-align: center;
-  margin-top: 5%;
-  margin-left: -45%;
+  margin-top: 17%;
+  font-size: 18px;
+  margin-left: -73%;
+}
+
+.fuel-content-label {
+  font-size: 18px;
 }
 
 .fuel-truck-avail {
@@ -263,4 +268,8 @@
 .refuel-button:active {
   @apply transform;
   @apply translate-y-0;
+}
+
+.current-fuel-line {
+  margin-top: -5px;
 }
