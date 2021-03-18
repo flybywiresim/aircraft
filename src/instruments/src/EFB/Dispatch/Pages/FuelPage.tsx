@@ -36,12 +36,12 @@ export const FuelPage = () => {
     const centerTankGallon = 2173;
     const wingTotalRefuelTimeSeconds = 1020;
     const CenterTotalRefuelTimeSeconds = 180;
-    const [usingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
+    const [usingMetrics, setUsingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
     const currentUnit = () => {
         if (usingMetrics === 1) {
-            return 'Kg';
+            return 'KG';
         }
-        return 'Lbs';
+        return 'LB';
     };
     const convertUnit = () => {
         if (usingMetrics === 1) {
@@ -77,6 +77,10 @@ export const FuelPage = () => {
     const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
     const getFuelBarPercent = (curr:number, max: number) => (Math.max(curr, 0) / max) * 100;
     const airplaneCanRefuel = () => {
+        // TODO : REMOVE THIS IF WHENEVER PERSISTANCE IS IMPLEMENTED
+        if (usingMetrics !== 1) {
+            setUsingMetrics(1);
+        }
         if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround) {
             return false;
         }
