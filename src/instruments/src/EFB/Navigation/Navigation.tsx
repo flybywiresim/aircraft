@@ -189,7 +189,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                                 <span className="p-1 bg-gray-700 text-center rounded-t-lg">{item.name}</span>
                                 {item.charts.map((chart) => (
                                     <div
-                                        className="flex bg-navy-light"
+                                        className="flex flex-row bg-navy-light"
                                         onClick={() => props.handleChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
                                         key={(chart as NavigraphChart).id}
                                     >
@@ -214,7 +214,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                     <>
                         {props.selectedTab.charts.map((chart) => (
                             <div
-                                className="flex bg-navy-light text-lg rounded-lg mr-4"
+                                className="flex flex-row bg-navy-light text-lg rounded-lg mr-4"
                                 onClick={() => props.handleChartClick((chart as NavigraphChart).fileDay, (chart as NavigraphChart).fileNight, (chart as NavigraphChart).id)}
                                 key={(chart as NavigraphChart).id}
                             >
@@ -365,7 +365,7 @@ const ChartsUi = (props: ChartsUiProps) => {
                                             </span>
                                         )))}
                                 </div>
-                                <div className="flex flex-col mt-5 py-x h-144 space-y-4 overflow-y-scroll">
+                                <div className="mt-5 h-144 space-y-4 overflow-scroll">
                                     {props.enableNavigraph
                                         ? (
                                             <NavigraphChartSelector
