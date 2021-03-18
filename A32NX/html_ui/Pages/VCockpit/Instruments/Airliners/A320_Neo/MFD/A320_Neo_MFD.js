@@ -861,6 +861,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         const ws = this.ndInfo.querySelector("#Wind_Strength");
         const wa = this.ndInfo.querySelector("#Wind_Arrow");
         const wptg = this.ndInfo.querySelector("#Waypoint_Group");
+        const wptPPOS = this.ndInfo.querySelector("#Waypoint_PPOS");
         if (ADIRSState != 2 || trueAirSpeed < 60) {
             //TAS info Conditions
             tas.textContent = "---";
@@ -880,8 +881,9 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         } else {
             gs.textContent = groundSpeed.toString().padStart(3);
         }
-        //Shows waypoint group when ADIRS not aligned (PPOS)
-        wptg.setAttribute("visibility", (ADIRSState != 2) ? "visible" : "visible");
+        // Show/Hide waypoint group when ADIRS not aligned
+        wptPPOS.setAttribute("visibility", (ADIRSState != 2) ? "visible" : "hidden");
+        wptg.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
     }
     onExit() {
     }
