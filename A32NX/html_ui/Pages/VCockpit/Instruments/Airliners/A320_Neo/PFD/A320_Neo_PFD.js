@@ -62,6 +62,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         const dispIndex = parseInt(url.substring(url.length - 1));
         this.updateThrottler = new UpdateThrottler(dispIndex == 1 ? 300 : 1000);
         this.yokePositionThrottler = new UpdateThrottler(dispIndex == 1 ? 33 : 66);
+        this.poweredDuringPreviousUpdate = false;
     }
     init() {
         super.init();
@@ -186,10 +187,10 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.headingFail.setAttribute("style", "");
         }
 
-        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
-        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
-
-        if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
+        const isPowered = this.isPowered();
+        const powerStateChanged = isPowered != this.poweredDuringPreviousUpdate;
+        this.poweredDuringPreviousUpdate = isPowered;
+        if ((KnobChanged || powerStateChanged) && isPowered && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
             this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
             this.selfTestTimerStarted = true;
@@ -210,7 +211,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         }
 
         this.selfTestLastKnobValue = currentKnobValue;
-        this.updateScreenState();
+        this.turnScreenOnOrOffDependingOnPowerState();
     }
     onEvent(_event) {
         switch (_event) {
@@ -224,12 +225,16 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         }
     }
 
-    updateScreenState() {
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
-            this.electricity.style.display = "block";
-        } else {
-            this.electricity.style.display = "none";
-        }
+    isCaptainPfd() {
+        return this.disp_index == 1;
+    }
+
+    isPowered() {
+        return !!SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isCaptainPfd() ? "AC_ESS" : "AC_2"}_BUS_IS_POWERED`, "Bool");
+    }
+
+    turnScreenOnOrOffDependingOnPowerState() {
+        this.electricity.style.display = this.isPowered() ? "block" : "none";
     }
 
 }
