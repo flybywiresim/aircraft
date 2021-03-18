@@ -1915,7 +1915,9 @@ class FMCMainDisplay extends BaseAirliners {
     //Needs PR Merge #3082
     trySetThrustReductionAccelerationAltitude(s) {
         if (s === FMCMainDisplay.clrValue) {
-            CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
+            this.thrustReductionAltitudeIsPilotEntered = false;
+            this.accelerationAltitudeIsPilotEntered = false;
+            CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
             return true;
         }
 
@@ -1975,6 +1977,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     trySetEngineOutAcceleration(s) {
         if (s === FMCMainDisplay.clrValue) {
+            this.engineOutAccelerationAltitudeIsPilotEntered = false;
             CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
             return true;
         }
