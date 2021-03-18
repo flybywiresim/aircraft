@@ -240,8 +240,8 @@ class FMCMainDisplay extends BaseAirliners {
 
         SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
 
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", -1);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", -1);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", 0);
 
         this.flightPlanManager.onCurrentGameFlightLoaded(() => {
             this.flightPlanManager.updateFlightPlan(() => {
@@ -506,8 +506,7 @@ class FMCMainDisplay extends BaseAirliners {
             return;
         }
 
-        let vPfd = -1;
-        const vAt = 0;
+        let vPfd = 0;
         let isMach = false;
 
         switch (this.currentFlightPhase) {

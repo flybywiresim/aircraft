@@ -138,7 +138,7 @@ class PFD extends Component {
             }
         }
 
-        let targetSpeed = Simplane.getV2Airspeed();
+        let targetSpeed;
         const isSelected = Simplane.getAutoPilotAirspeedSelected();
         const isMach = Simplane.getAutoPilotMachModeActive();
         if (isSelected) {
@@ -147,8 +147,8 @@ class PFD extends Component {
             } else {
                 targetSpeed = Simplane.getAutoPilotAirspeedHoldValue();
             }
-        } if (targetSpeed < 0) {
-            targetSpeed = getSimVar('L:A32NX_SPEEDS_MANAGED_PFD', 'knots');
+        } else {
+            targetSpeed = getSimVar('L:A32NX_SPEEDS_MANAGED_PFD', 'knots') || NaN;
         }
 
         const FDActive = getSimVar(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${this.dispIndex}`, 'Bool');
