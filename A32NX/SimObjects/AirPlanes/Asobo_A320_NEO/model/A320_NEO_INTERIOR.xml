@@ -1174,15 +1174,7 @@
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_APU_MASTERSW</NODE_ID>
                     <PART_ID>ELECTRICAL_Switch_APU_Master</PART_ID>
-                    <LEFT_SINGLE_CODE>
-                        (L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool) if{
-                            0 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)
-                        } els{
-                            (A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; if{
-                                1 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)
-                            }
-                        }
-                    </LEFT_SINGLE_CODE>
+                    <TOGGLE_SIMVAR>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON</TOGGLE_SIMVAR>
                     <DOWN_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)</DOWN_CODE>
                     <SEQ1_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_HAS_FAULT, Bool)</SEQ1_CODE>
                     <SEQ2_CODE>(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)</SEQ2_CODE>
