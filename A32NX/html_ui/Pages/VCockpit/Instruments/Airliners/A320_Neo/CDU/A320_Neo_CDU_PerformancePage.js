@@ -180,7 +180,7 @@ class CDUPerformancePage {
         }
 
         // transition altitude - remains editable during take off
-        let transAltCell = "{cyan}[]{end}";
+        let transAltCell = "{cyan}[  ]{end}";
         if (hasOrigin) {
             const transAltitude = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
             if (transAltitude !== 0) {
@@ -189,7 +189,7 @@ class CDUPerformancePage {
                     transAltCell += "[s-text]";
                 }
             } else {
-                transAltCell = "{cyan}[]{end}";
+                transAltCell = "{cyan}[  ]{end}";
             }
             mcdu.onLeftInput[3] = (value) => {
                 if (mcdu.trySetTakeOffTransAltitude(value)) {
@@ -756,7 +756,7 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
-        let transAltCell = "---";
+        let transAltCell = "[ ]";
         if (hasDestination) {
             const arrivalTransAltitude = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
             if (arrivalTransAltitude !== 0) {
@@ -765,7 +765,7 @@ class CDUPerformancePage {
                     transAltCell += "[s-text]";
                 }
             } else {
-                transAltCell = "{cyan}---{end}";
+                transAltCell = "{cyan}[ ]{end}";
                 mcdu.onLeftInput[3] = (value) => {
                     if (mcdu.trySetPerfApprTransAlt(value)) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);

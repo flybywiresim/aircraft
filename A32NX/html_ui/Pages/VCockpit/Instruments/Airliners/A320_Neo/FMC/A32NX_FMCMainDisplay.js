@@ -1883,16 +1883,22 @@ class FMCMainDisplay extends BaseAirliners {
         return true;
     }
 
-    trySetTakeOffTransAltitude(s) {
-        if (s === FMCMainDisplay.clrValue) {
+    trySetTakeOffTransAltitude(input) {
+        if (input === FMCMainDisplay.clrValue && this.transitionArrivalAltitudeIsPilotEntered) {
+            this.transitionArrivalAltitudeIsPilotEntered = false;
+            this.updateTransitionAltitude(this.flightPlanManager.getDestination().ident, "destination")
+            return true;
+        }
+
+        if (input === FMCMainDisplay.clrValue && !this.transitionArrivalAltitudeIsPilotEntered) {
             this.transitionAltitude = NaN;
             this.transitionAltitudeIsPilotEntered = false;
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
             return true;
         }
 
-        let value = parseInt(s);
-        if (!isFinite(value) || !/^\d{4,5}$/.test(s)) {
+        let value = parseInt(input);
+        if (!isFinite(value) || !/^\d{4,5}$/.test(input)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
@@ -2520,10 +2526,15 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     trySetPerfApprTransAlt(input) {
-        if (input === FMCMainDisplay.clrValue) {
+        if (input === FMCMainDisplay.clrValue && !this.transitionArrivalAltitudeIsPilotEntered) {
             this.transitionArrivalAltitude = NaN;
-            this.transitionArrivalAltitudeIsPilotEntered = false;
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 0);
+            return true;
+        }
+
+        if (input === FMCMainDisplay.clrValue && this.transitionArrivalAltitudeIsPilotEntered) {
+            this.transitionArrivalAltitudeIsPilotEntered = false;
+            this.updateTransitionAltitude(this.flightPlanManager.getOrigin().ident, "origin");
             return true;
         }
 
