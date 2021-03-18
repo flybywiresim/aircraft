@@ -125,6 +125,8 @@ struct SimInputAutopilot {
   double VS_pull;
   double LOC_push;
   double APPR_push;
+  double EXPED_push;
+  double DIR_TO_trigger;
 };
 
 struct SimInputThrottles {
@@ -170,8 +172,10 @@ struct ClientDataAutopilotStateMachine {
   double vertical_law;
   double vertical_mode;
   double vertical_mode_armed;
-  double mode_reversion;
+  double mode_reversion_lateral;
+  double mode_reversion_vertical;
   double mode_reversion_TRK_FPA;
+  double speed_protection_mode;
   double autothrust_mode;
   double Psi_c_deg;
   double H_c_ft;
@@ -179,6 +183,8 @@ struct ClientDataAutopilotStateMachine {
   double FPA_c_deg;
   double V_c_kn;
   double ALT_soft_mode_active;
+  double EXPED_mode_active;
+  double FD_disconnect;
 };
 
 struct ClientDataAutopilotLaws {
@@ -226,6 +232,7 @@ struct ClientDataLocalVariables {
   double flightManagementCrossTrackError;
   double flightManagementTrackAngleError;
   double flightManagementPhiCommand;
+  double is_SPEED_managed;
 };
 
 struct ClientDataLocalVariablesAutothrust {

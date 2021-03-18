@@ -162,6 +162,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmaLateralArmed = register_named_variable("A32NX_FMA_LATERAL_ARMED");
   idFmaVerticalMode = register_named_variable("A32NX_FMA_VERTICAL_MODE");
   idFmaVerticalArmed = register_named_variable("A32NX_FMA_VERTICAL_ARMED");
+  idFmaExpediteModeActive = register_named_variable("A32NX_FMA_EXPEDITE_MODE");
+  idFmaSpeedProtectionActive = register_named_variable("A32NX_FMA_SPEED_PROTECTION_MODE");
   idFmaSoftAltModeActive = register_named_variable("A32NX_FMA_SOFT_ALT_MODE");
   idFmaApproachCapability = register_named_variable("A32NX_ApproachCapability");
 
@@ -263,14 +265,16 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
         get_named_variable_value(idFmgcAccelerationAltitudeGoAround),
         get_named_variable_value(idFmgcAccelerationAltitudeGoAroundEngineOut),
         get_named_variable_value(idFmgcCruiseAltitude),
-        0,  // DIR-TO trigger
+        simConnectInterface.getSimInputAutopilot().DIR_TO_trigger,
         get_named_variable_value(idFcuTrkFpaModeActive),
         get_named_variable_value(idFcuSelectedVs),
         get_named_variable_value(idFcuSelectedFpa),
         get_named_variable_value(idFcuSelectedHeading),
         customFlightGuidanceEnabled ? get_named_variable_value(idFlightGuidanceCrossTrackError) : simData.gpsWpCrossTrack,
         customFlightGuidanceEnabled ? get_named_variable_value(idFlightGuidanceTrackAngleError) : simData.gpsWpTrackAngleError,
-        customFlightGuidanceEnabled ? get_named_variable_value(idFlightGuidancePhiCommand) : 0};
+        customFlightGuidanceEnabled ? get_named_variable_value(idFlightGuidancePhiCommand) : 0,
+        0  // is speed managed?
+    };
     simConnectInterface.setClientDataLocalVariables(clientDataLocalVariables);
   }
 
@@ -337,6 +341,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.V2_kn = get_named_variable_value(idFmgcV2);
     autopilotStateMachineInput.in.data.VAPP_kn = get_named_variable_value(idFmgcV_APP);
     autopilotStateMachineInput.in.data.VLS_kn = get_named_variable_value(idFmgcV_LS);
+    autopilotStateMachineInput.in.data.VMAX_kn = get_named_variable_value(idFmgcV_MAX);
     autopilotStateMachineInput.in.data.is_flight_plan_available =
         customFlightGuidanceEnabled ? get_named_variable_value(idFlightGuidanceAvailable) : simData.gpsIsFlightPlanActive;
     autopilotStateMachineInput.in.data.altitude_constraint_ft = get_named_variable_value(idFmgcAltitudeConstraint);
@@ -378,7 +383,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.input.FPA_fcu_deg = get_named_variable_value(idFcuSelectedFpa);
     autopilotStateMachineInput.in.input.Psi_fcu_deg = get_named_variable_value(idFcuSelectedHeading);
     autopilotStateMachineInput.in.input.TRK_FPA_mode = get_named_variable_value(idFcuTrkFpaModeActive);
-    autopilotStateMachineInput.in.input.DIR_TO_trigger = 0;
+    autopilotStateMachineInput.in.input.DIR_TO_trigger = simInputAutopilot.DIR_TO_trigger;
     autopilotStateMachineInput.in.input.is_FLX_active = autoThrust.getExternalOutputs().out.data_computed.is_FLX_active;
     autopilotStateMachineInput.in.input.Slew_trigger = wasInSlew;
     autopilotStateMachineInput.in.input.MACH_mode = simData.is_mach_mode_active;
@@ -401,8 +406,10 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineOutput.vertical_law = clientData.vertical_law;
     autopilotStateMachineOutput.vertical_mode = clientData.vertical_mode;
     autopilotStateMachineOutput.vertical_mode_armed = clientData.vertical_mode_armed;
-    autopilotStateMachineOutput.mode_reversion = clientData.mode_reversion;
+    autopilotStateMachineOutput.mode_reversion_lateral = clientData.mode_reversion_lateral;
+    autopilotStateMachineOutput.mode_reversion_vertical = clientData.mode_reversion_vertical;
     autopilotStateMachineOutput.mode_reversion_TRK_FPA = clientData.mode_reversion_TRK_FPA;
+    autopilotStateMachineOutput.speed_protection_mode = clientData.speed_protection_mode;
     autopilotStateMachineOutput.autothrust_mode = clientData.autothrust_mode;
     autopilotStateMachineOutput.Psi_c_deg = clientData.Psi_c_deg;
     autopilotStateMachineOutput.H_c_ft = clientData.H_c_ft;
@@ -410,6 +417,8 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineOutput.FPA_c_deg = clientData.FPA_c_deg;
     autopilotStateMachineOutput.V_c_kn = clientData.V_c_kn;
     autopilotStateMachineOutput.ALT_soft_mode_active = clientData.ALT_soft_mode_active;
+    autopilotStateMachineOutput.EXPED_mode_active = clientData.EXPED_mode_active;
+    autopilotStateMachineOutput.FD_disconnect = clientData.FD_disconnect;
   }
 
   // update autopilot state -------------------------------------------------------------------------------------------
@@ -423,17 +432,38 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
   bool isGsEngaged = autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34;
   set_named_variable_value(idFcuLocModeActive, (isLocArmed || isLocEngaged) && !(isGsArmed || isGsEngaged));
   set_named_variable_value(idFcuApprModeActive, (isLocArmed || isLocEngaged) && (isGsArmed || isGsEngaged));
-  set_named_variable_value(idFcuModeReversionActive, autopilotStateMachineOutput.mode_reversion);
+  set_named_variable_value(idFcuModeReversionActive,
+                           autopilotStateMachineOutput.mode_reversion_lateral || autopilotStateMachineOutput.mode_reversion_vertical);
   set_named_variable_value(idFcuModeReversionTrkFpaActive, autopilotStateMachineOutput.mode_reversion_TRK_FPA);
 
   // update autothrust mode -------------------------------------------------------------------------------------------
   set_named_variable_value(idAutopilotAutothrustMode, autopilotStateMachineOutput.autothrust_mode);
+
+  // disconnect FD if requested ---------------------------------------------------------------------------------------
+  if (!simData.ap_fd_1_active) {
+    flightDirectorLatch_1 = false;
+  }
+  if (!simData.ap_fd_2_active) {
+    flightDirectorLatch_2 = false;
+  }
+  if (autopilotStateMachineOutput.FD_disconnect) {
+    if (simData.ap_fd_1_active && !flightDirectorLatch_1) {
+      flightDirectorLatch_1 = true;
+      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1);
+    }
+    if (simData.ap_fd_2_active && !flightDirectorLatch_2) {
+      flightDirectorLatch_2 = true;
+      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
+    }
+  }
 
   // update FMA variables ---------------------------------------------------------------------------------------------
   set_named_variable_value(idFmaLateralMode, autopilotStateMachineOutput.lateral_mode);
   set_named_variable_value(idFmaLateralArmed, autopilotStateMachineOutput.lateral_mode_armed);
   set_named_variable_value(idFmaVerticalMode, autopilotStateMachineOutput.vertical_mode);
   set_named_variable_value(idFmaVerticalArmed, autopilotStateMachineOutput.vertical_mode_armed);
+  set_named_variable_value(idFmaExpediteModeActive, autopilotStateMachineOutput.EXPED_mode_active);
+  set_named_variable_value(idFmaSpeedProtectionActive, autopilotStateMachineOutput.speed_protection_mode);
   set_named_variable_value(idFmaSoftAltModeActive, autopilotStateMachineOutput.ALT_soft_mode_active);
 
   // calculate and set approach capability
@@ -561,6 +591,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.V2_kn = get_named_variable_value(idFmgcV2);
     autopilotLawsInput.in.data.VAPP_kn = get_named_variable_value(idFmgcV_APP);
     autopilotLawsInput.in.data.VLS_kn = get_named_variable_value(idFmgcV_LS);
+    autopilotLawsInput.in.data.VMAX_kn = get_named_variable_value(idFmgcV_MAX);
     autopilotLawsInput.in.data.is_flight_plan_available =
         customFlightGuidanceEnabled ? get_named_variable_value(idFlightGuidanceAvailable) : simData.gpsIsFlightPlanActive;
     autopilotLawsInput.in.data.altitude_constraint_ft = get_named_variable_value(idFmgcAltitudeConstraint);
@@ -592,23 +623,29 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
   } else {
     if (autopilotStateMachineEnabled) {
       // send data to client data to be read by simulink
-      ClientDataAutopilotStateMachine clientDataStateMachine = {autopilotStateMachineOutput.enabled_AP1,
-                                                                autopilotStateMachineOutput.enabled_AP2,
-                                                                autopilotStateMachineOutput.lateral_law,
-                                                                autopilotStateMachineOutput.lateral_mode,
-                                                                autopilotStateMachineOutput.lateral_mode_armed,
-                                                                autopilotStateMachineOutput.vertical_law,
-                                                                autopilotStateMachineOutput.vertical_mode,
-                                                                autopilotStateMachineOutput.vertical_mode_armed,
-                                                                autopilotStateMachineOutput.mode_reversion,
-                                                                autopilotStateMachineOutput.mode_reversion_TRK_FPA,
-                                                                autopilotStateMachineOutput.autothrust_mode,
-                                                                autopilotStateMachineOutput.Psi_c_deg,
-                                                                autopilotStateMachineOutput.H_c_ft,
-                                                                autopilotStateMachineOutput.H_dot_c_fpm,
-                                                                autopilotStateMachineOutput.FPA_c_deg,
-                                                                autopilotStateMachineOutput.V_c_kn,
-                                                                autopilotStateMachineOutput.ALT_soft_mode_active};
+      ClientDataAutopilotStateMachine clientDataStateMachine = {
+          autopilotStateMachineOutput.enabled_AP1,
+          autopilotStateMachineOutput.enabled_AP2,
+          autopilotStateMachineOutput.lateral_law,
+          autopilotStateMachineOutput.lateral_mode,
+          autopilotStateMachineOutput.lateral_mode_armed,
+          autopilotStateMachineOutput.vertical_law,
+          autopilotStateMachineOutput.vertical_mode,
+          autopilotStateMachineOutput.vertical_mode_armed,
+          autopilotStateMachineOutput.mode_reversion_lateral,
+          autopilotStateMachineOutput.mode_reversion_vertical,
+          autopilotStateMachineOutput.mode_reversion_TRK_FPA,
+          autopilotStateMachineOutput.speed_protection_mode,
+          autopilotStateMachineOutput.autothrust_mode,
+          autopilotStateMachineOutput.Psi_c_deg,
+          autopilotStateMachineOutput.H_c_ft,
+          autopilotStateMachineOutput.H_dot_c_fpm,
+          autopilotStateMachineOutput.FPA_c_deg,
+          autopilotStateMachineOutput.V_c_kn,
+          autopilotStateMachineOutput.ALT_soft_mode_active,
+          autopilotStateMachineOutput.EXPED_mode_active,
+          autopilotStateMachineOutput.FD_disconnect,
+      };
       simConnectInterface.setClientDataAutopilotStateMachine(clientDataStateMachine);
     }
     // read client data written by simulink

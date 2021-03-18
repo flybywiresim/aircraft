@@ -194,6 +194,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MASTER, "AP_MASTER", autopilotStateMachineEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_OFF, "AUTOPILOT_OFF", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::TOGGLE_FLIGHT_DIRECTOR, "TOGGLE_FLIGHT_DIRECTOR", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_1_PUSH, "A32NX.FCU_AP_1_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_AP_2_PUSH, "A32NX.FCU_AP_2_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_HDG_PUSH, "A32NX.FCU_HDG_PUSH", false);
@@ -204,6 +205,8 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_VS_PULL, "A32NX.FCU_VS_PULL", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_LOC_PUSH, "A32NX.FCU_LOC_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_APPR_PUSH, "A32NX.FCU_APPR_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EXPED_PUSH, "A32NX.FCU_EXPED_PUSH", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_DIR_TO_TRIGGER, "A32NX.FMGC_DIR_TO_TRIGGER", false);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_ARM, "AUTO_THROTTLE_ARM", true);
 
@@ -324,6 +327,14 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
 
   // request data to be updated when set
   result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOPILOT_STATE_MACHINE, ClientData::AUTOPILOT_STATE_MACHINE,
@@ -397,6 +408,8 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES, sizeof(ClientDataLocalVariables),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
@@ -575,13 +588,17 @@ bool SimConnectInterface::sendData(SimOutputThrottles output) {
 }
 
 bool SimConnectInterface::sendEvent(Events eventId) {
+  return sendEvent(eventId, 0);
+}
+
+bool SimConnectInterface::sendEvent(Events eventId, DWORD data) {
   // check if we are connected
   if (!isConnected) {
     return false;
   }
 
   // send event
-  HRESULT result = SimConnect_TransmitClientEvent(hSimConnect, 0, eventId, 0, SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+  HRESULT result = SimConnect_TransmitClientEvent(hSimConnect, 0, eventId, data, SIMCONNECT_GROUP_PRIORITY_HIGHEST,
                                                   SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
 
   // check result of data request
@@ -632,6 +649,8 @@ void SimConnectInterface::resetSimInputAutopilot() {
   simInputAutopilot.VS_pull = 0;
   simInputAutopilot.LOC_push = 0;
   simInputAutopilot.APPR_push = 0;
+  simInputAutopilot.EXPED_push = 0;
+  simInputAutopilot.DIR_TO_trigger = 0;
 }
 
 void SimConnectInterface::resetSimInputThrottles() {
@@ -774,6 +793,11 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
+    case Events::TOGGLE_FLIGHT_DIRECTOR: {
+      cout << "WASM: event triggered: TOGGLE_FLIGHT_DIRECTOR:" << static_cast<long>(event->dwData) << endl;
+      break;
+    }
+
     case Events::AP_MASTER: {
       simInputAutopilot.AP_1_push = 1;
       cout << "WASM: event triggered: AP_MASTER" << endl;
@@ -834,6 +858,18 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::A32NX_FCU_APPR_PUSH: {
       simInputAutopilot.APPR_push = 1;
       cout << "WASM: event triggered: A32NX_FCU_APPR_PUSH" << endl;
+      break;
+    }
+
+    case Events::A32NX_FCU_EXPED_PUSH: {
+      simInputAutopilot.EXPED_push = 1;
+      cout << "WASM: event triggered: A32NX_FCU_EXPED_PUSH" << endl;
+      break;
+    }
+
+    case Events::A32NX_FMGC_DIR_TO_TRIGGER: {
+      simInputAutopilot.DIR_TO_trigger = 1;
+      cout << "WASM: event triggered: A32NX_FMGC_DIR_TO_TRIGGER" << endl;
       break;
     }
 

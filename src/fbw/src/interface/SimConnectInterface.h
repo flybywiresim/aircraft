@@ -47,6 +47,7 @@ class SimConnectInterface {
     ELEV_UP,
     AP_MASTER,
     AUTOPILOT_OFF,
+    TOGGLE_FLIGHT_DIRECTOR,
     A32NX_FCU_AP_1_PUSH,
     A32NX_FCU_AP_2_PUSH,
     A32NX_FCU_HDG_PUSH,
@@ -57,6 +58,8 @@ class SimConnectInterface {
     A32NX_FCU_VS_PULL,
     A32NX_FCU_LOC_PUSH,
     A32NX_FCU_APPR_PUSH,
+    A32NX_FCU_EXPED_PUSH,
+    A32NX_FMGC_DIR_TO_TRIGGER,
     AUTO_THROTTLE_ARM,
     A32NX_THROTTLE_MAPPING_LOAD_FROM_FILE,
     A32NX_THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES,
@@ -124,6 +127,8 @@ class SimConnectInterface {
   bool sendData(SimOutputThrottles output);
 
   bool sendEvent(Events eventId);
+
+  bool sendEvent(Events eventId, DWORD data);
 
   bool setClientDataLocalVariables(ClientDataLocalVariables output);
 

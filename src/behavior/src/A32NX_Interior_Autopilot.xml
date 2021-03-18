@@ -89,6 +89,18 @@
             <EMISSIVE_CODE_ACTIVE>(L:A32NX_FCU_APPR_MODE_ACTIVE, bool)</EMISSIVE_CODE_ACTIVE>
         </UseTemplate>
     </Template>
+
+    <Template Name="FBW_AIRBUS_Push_Expedite_Template">
+        <DefaultTemplateParameters>
+            <DEFAULT_NAME>Expedite</DEFAULT_NAME>
+            <PLANE_PREFIX></PLANE_PREFIX>
+            <TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
+            <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_FCU_EXPED_PUSH)</LEFT_SINGLE_CODE>
+            <EMISSIVE_CODE_ACTIVE>(L:A32NX_FMA_EXPEDITE_MODE, bool)</EMISSIVE_CODE_ACTIVE>
+        </UseTemplate>
+    </Template>
     
  <Template Name="FBW_AUTOPILOT_Knob_SpeedMach_Template">
 		<DefaultTemplateParameters>

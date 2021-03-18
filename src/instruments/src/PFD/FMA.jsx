@@ -258,12 +258,6 @@ const B1Cell = () => {
     // case 4:
     //     text = 'F-G/S*';
     //     break;
-    // case 5:
-    //     text = 'EXP DES';
-    //     break;
-    // case 6:
-    //     text = 'EXP CLB';
-    //     break;
     case 40:
     case 41:
         text = 'SRS';
@@ -278,13 +272,21 @@ const B1Cell = () => {
         text = 'DES';
         break;
     case 13:
-        text = 'OP DES';
+        if (getSimVar('L:A32NX_FMA_EXPEDITE_MODE', 'bool')) {
+            text = 'EXP DES';
+        } else {
+            text = 'OP DES';
+        }
         break;
     case 22:
         text = 'CLB';
         break;
     case 12:
-        text = 'OP CLB';
+        if (getSimVar('L:A32NX_FMA_EXPEDITE_MODE', 'bool')) {
+            text = 'EXP CLB';
+        } else {
+            text = 'OP CLB';
+        }
         break;
     case 10:
         if (getSimVar('L:A32NX_FMA_SOFT_ALT_MODE', 'Bool')) {

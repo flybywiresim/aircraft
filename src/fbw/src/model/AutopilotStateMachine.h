@@ -33,10 +33,13 @@ class AutopilotStateMachineModelClass {
     real_T Delay1_DSTATE_p;
     real_T Delay_DSTATE_d2[100];
     real_T Delay_DSTATE_f;
+    real_T Delay_DSTATE_ls;
     real_T Delay_DSTATE_e;
     real_T local_H_fcu_ft;
     real_T local_H_constraint_ft;
     real_T local_H_GA_init_ft;
+    real_T out_H_dot_c_fpm;
+    real_T out_FPA_c_deg;
     real_T eventTime;
     real_T eventTime_i;
     real_T eventTime_p;
@@ -55,6 +58,7 @@ class AutopilotStateMachineModelClass {
     boolean_T DelayInput1_DSTATE_a;
     boolean_T DelayInput1_DSTATE_fn;
     boolean_T DelayInput1_DSTATE_h;
+    boolean_T DelayInput1_DSTATE_o;
     uint8_T is_active_c6_AutopilotStateMachine;
     uint8_T is_c6_AutopilotStateMachine;
     uint8_T is_ON;
@@ -69,6 +73,8 @@ class AutopilotStateMachineModelClass {
     boolean_T wereAllEnginesOperative_not_empty;
     boolean_T wereAllEnginesOperative_d;
     boolean_T wereAllEnginesOperative_not_empty_a;
+    boolean_T out_H_dot_c_fpm_not_empty;
+    boolean_T out_FPA_c_deg_not_empty;
     boolean_T verticalSpeedCancelMode;
     boolean_T sAP1;
     boolean_T sAP2;
@@ -106,12 +112,15 @@ class AutopilotStateMachineModelClass {
     real_T DiscreteDerivativeVariableTs2_Gain;
     real_T DiscreteDerivativeVariableTs2_InitialCondition;
     real_T RateLimiterDynamicVariableTs_InitialCondition;
+    real_T RateLimiterDynamicVariableTs_InitialCondition_d;
     real_T RateLimiterDynamicVariableTs_InitialCondition_g;
     real_T Debounce_Value;
+    real_T Debounce_Value_a;
     real_T Debounce_Value_j;
     real_T CompareToConstant_const;
     real_T CompareToConstant_const_l;
     real_T CompareToConstant_const_d;
+    real_T CompareToConstant_const_j;
     real_T CompareToConstant_const_da;
     real_T DetectDecrease_vinit;
     boolean_T DetectIncrease_vinit;
@@ -125,6 +134,7 @@ class AutopilotStateMachineModelClass {
     boolean_T DetectIncrease8_vinit;
     boolean_T DetectIncrease9_vinit;
     boolean_T DetectIncrease10_vinit;
+    boolean_T DetectIncrease11_vinit;
     ap_vertical Delay1_InitialCondition;
     ap_lateral Delay_InitialCondition;
     real_T Constant_Value;
@@ -168,6 +178,8 @@ class AutopilotStateMachineModelClass {
     real_T Delay_InitialCondition_i4;
     real_T Raising_Value;
     real_T Falling_Value;
+    real_T Raising_Value_f;
+    real_T Falling_Value_b;
     real_T Raising_Value_c;
     real_T Falling_Value_a;
   };
@@ -229,6 +241,7 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_OP_CLB_entry(void);
   void AutopilotStateMachine_OP_DES_entry(void);
   void AutopilotStateMachine_GS_CPT_entry(void);
+  void AutopilotStateMachine_OFF_during(void);
   void AutopilotStateMachine_SRS_entry(void);
   boolean_T AutopilotStateMachine_X_TO_SRS_GA(void);
   void AutopilotStateMachine_VS_during(void);
@@ -253,6 +266,7 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_FLARE_entry_g(void);
   void AutopilotStateMachine_GS(void);
   void AutopilotStateMachine_OP_CLB_during(void);
+  void AutopilotStateMachine_OP_CLB_exit(void);
   void AutopilotStateMachine_OP_DES_during(void);
   void AutopilotStateMachine_SRS_during(void);
   void AutopilotStateMachine_SRS(void);

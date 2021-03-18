@@ -3271,7 +3271,7 @@
                 <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_APPR_SEQ2</EMISSIVE_NODE_ID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AIRBUS_Push_Expedite_Template">
+            <UseTemplate Name="FBW_AIRBUS_Push_Expedite_Template">
                 <NODE_ID>PUSH_AUTOPILOT_EXPED</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_EXPED</ANIM_NAME>
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_EXPED_SEQ1</ACTIVE_NODE_ID>

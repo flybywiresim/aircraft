@@ -51,6 +51,7 @@ typedef struct {
   real_T V2_kn;
   real_T VAPP_kn;
   real_T VLS_kn;
+  real_T VMAX_kn;
   boolean_T is_flight_plan_available;
   real_T altitude_constraint_ft;
   real_T thrust_reduction_altitude;
@@ -88,6 +89,7 @@ typedef struct {
   boolean_T VS_pull;
   boolean_T LOC_push;
   boolean_T APPR_push;
+  boolean_T EXPED_push;
   real_T V_fcu_kn;
   real_T Psi_fcu_deg;
   real_T H_fcu_ft;
@@ -100,6 +102,7 @@ typedef struct {
   boolean_T Slew_trigger;
   boolean_T MACH_mode;
   boolean_T ATHR_engaged;
+  boolean_T is_SPEED_managed;
 } ap_raw_sm_input;
 
 #endif
@@ -182,6 +185,7 @@ typedef struct {
   real_T V2_kn;
   real_T VAPP_kn;
   real_T VLS_kn;
+  real_T VMAX_kn;
   boolean_T is_flight_plan_available;
   real_T altitude_constraint_ft;
   real_T thrust_reduction_altitude;
@@ -382,6 +386,8 @@ typedef struct {
   real_T FPA_c_deg;
   real_T V_c_kn;
   boolean_T ALT_soft_mode_active;
+  boolean_T EXPED_mode_active;
+  boolean_T FD_disconnect;
 } ap_vertical_output;
 
 #endif
@@ -409,8 +415,10 @@ typedef struct {
   real_T vertical_law;
   real_T vertical_mode;
   real_T vertical_mode_armed;
-  real_T mode_reversion;
+  real_T mode_reversion_lateral;
+  real_T mode_reversion_vertical;
   boolean_T mode_reversion_TRK_FPA;
+  boolean_T speed_protection_mode;
   real_T autothrust_mode;
   real_T Psi_c_deg;
   real_T H_c_ft;
@@ -418,6 +426,8 @@ typedef struct {
   real_T FPA_c_deg;
   real_T V_c_kn;
   boolean_T ALT_soft_mode_active;
+  boolean_T EXPED_mode_active;
+  boolean_T FD_disconnect;
 } ap_raw_laws_input;
 
 #endif

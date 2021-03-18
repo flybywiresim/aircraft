@@ -60,6 +60,9 @@ class FlyByWireInterface {
   bool pauseDetected = false;
   bool wasInSlew = false;
 
+  bool flightDirectorLatch_1 = false;
+  bool flightDirectorLatch_2 = false;
+
   FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;
@@ -89,6 +92,8 @@ class FlyByWireInterface {
   ID idFmaVerticalMode;
   ID idFmaVerticalArmed;
   ID idFmaSoftAltModeActive;
+  ID idFmaExpediteModeActive;
+  ID idFmaSpeedProtectionActive;
   ID idFmaApproachCapability;
 
   ID idFlightDirectorBank;
@@ -131,6 +136,7 @@ class FlyByWireInterface {
   ID idFmgcAccelerationAltitudeGoAroundEngineOut;
   ID idFmgcCruiseAltitude;
   ID idFmgcFlexTemperature;
+  ID idFmgcDirToTrigger;
 
   ID idAutothrustN1_TLA_1;
   ID idAutothrustN1_TLA_2;
