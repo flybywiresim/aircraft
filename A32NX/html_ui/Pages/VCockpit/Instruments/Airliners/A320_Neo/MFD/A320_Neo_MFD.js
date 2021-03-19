@@ -71,6 +71,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         ]);
         this.chronoAcc = 0;
         this.chronoStart = 0;
+        this.poweredDuringPreviousUpdate = false;
     }
     init() {
         super.init();
@@ -230,10 +231,10 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.map.instrument.airplaneIconElement._image.setAttribute("visibility", ADIRSState != 2 ? "hidden" : "visible");
         }
 
-        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
-        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
-
-        if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
+        const isPowered = this.isPowered();
+        const powerStateChanged = isPowered != this.poweredDuringPreviousUpdate;
+        this.poweredDuringPreviousUpdate = isPowered;
+        if ((KnobChanged || powerStateChanged) && isPowered && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
             this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
             this.selfTestTimerStarted = true;
@@ -260,7 +261,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         // 0 Off
         // 1 Running
         // 2 Stopped
-        if (ACPowerAvailable) {
+        if (isPowered) {
             // If Chrono button is pushed on
             if (AP_ChronoBtnState) {
                 if (AP_IsChronoState === 2) {
@@ -306,15 +307,19 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         }
 
         this.selfTestLastKnobValue = currentKnobValue;
-        this.updateScreenState();
+        this.turnScreenOnOrOffDependingOnPowerState();
     }
 
-    updateScreenState() {
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
-            this.electricity.style.display = "block";
-        } else {
-            this.electricity.style.display = "none";
-        }
+    isCaptainMfd() {
+        return this.screenIndex == 1;
+    }
+
+    isPowered() {
+        return !!SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isCaptainMfd() ? "AC_ESS_SHED" : "AC_2"}_BUS_IS_POWERED`, "Bool");
+    }
+
+    turnScreenOnOrOffDependingOnPowerState() {
+        this.electricity.style.display = this.isPowered() ? "block" : "none";
     }
 
     _updateNDFiltersStatuses() {
