@@ -1,10 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import QRCode from 'qrcode.react';
-
-import { IconArrowsMaximize, IconArrowsMinimize, IconMoon, IconSun } from '@tabler/icons';
-
+import { IconArrowsMaximize, IconArrowsMinimize, IconLock, IconMoon, IconSun } from '@tabler/icons';
 import useInterval from '../../Common/useInterval';
-
 import NavigraphClient, {
     AirportInfo,
     NavigraphAirportCharts,
@@ -13,6 +10,7 @@ import NavigraphClient, {
     useNavigraph,
 } from '../ChartsApi/Navigraph';
 import ChartFoxClient, { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
+import navigraphLogo from '../Assets/navigraph-logo.svg';
 
 type Chart = NavigraphChart | ChartFoxChart;
 
@@ -76,9 +74,12 @@ const AuthUi = () => {
     const hasQr = !!auth.qrLink;
 
     return (
-        <div className="h-efb w-full flex items-center bg-navy-lighter rounded-2xl text-white shadow-lg p-6 overflow-x-hidden">
+        <div className="h-efb w-full flex items-center justify-center bg-navy-lighter rounded-2xl text-white shadow-lg p-6 overflow-x-hidden">
             <div className="flex flex-col">
-                <p className="text-white text-center text-3xl mb-6">Authenticate with Navigraph</p>
+                <p className="flex text-white items-center justify-center text-2xl mb-6">
+                    <IconLock className="mr-2" size={24} stroke={1.5} strokeLinejoin="miter" />
+                    Authenticate with <img src={navigraphLogo} className="h-10 ml-3" />
+                </p>
                 {hasQr
                     ? (
                         <>
@@ -88,10 +89,10 @@ const AuthUi = () => {
                                     size={400}
                                 />
                             </div>
-                            <p className="mt-4 text-3xl ml-auto mr-auto text-white w-2/3 text-center">
-                                Enter '
+                            <p className="mt-8 text-xl ml-auto mr-auto text-white w-2/3 text-center">
+                                Scan the QR Code or open '
                                 <span className="text-teal-regular">{auth.link}</span>
-                                ' into your browser or scan the QR Code, enter the code below if using the website option
+                                ' into your browser and enter the code below
                             </p>
                             <p className="ml-auto mr-auto rounded-md bg-navy-medium px-4 py-2 mt-4 text-3xl text-center text-white">{auth.code}</p>
                         </>
