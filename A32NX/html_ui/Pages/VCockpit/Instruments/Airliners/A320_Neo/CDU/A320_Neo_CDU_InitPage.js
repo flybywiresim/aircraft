@@ -100,7 +100,7 @@ class CDUInitPage {
                 if (mcdu._cruiseEntered && mcdu._cruiseFlightLevel) {
                     cruiseFlTemp =
                         "{cyan}FL" + mcdu._cruiseFlightLevel.toFixed(0).padStart(3, "0") + "\xa0" +
-                        (!!mcdu.cruiseTemperature ? "/" + mcdu.cruiseTemperature.toFixed(0) + "°" : "{small}/" + mcdu.tempCurve.evaluate(mcdu._cruiseFlightLevel).toFixed(0) + "°{end}") +
+                        (mcdu.cruiseTemperature ? "/" + mcdu.cruiseTemperature.toFixed(0) + "°" : "{small}/" + mcdu.tempCurve.evaluate(mcdu._cruiseFlightLevel).toFixed(0) + "°{end}") +
                         "{end}";
                 }
 
