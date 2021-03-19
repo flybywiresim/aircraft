@@ -18,9 +18,9 @@ const RTPIDisplay = () => {
 };
 
 const RTPIRoot = () => {
-    const [powerAvailable] = useSimVar('L:DCPowerAvailable', 'Boolean', 250);
+    const [dc2IsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Boolean', 250);
 
-    if (!powerAvailable) return null;
+    if (!dc2IsPowered) return null;
 
     return (
         <svg className="rtpi-svg" viewBox="0 0 338 128">
