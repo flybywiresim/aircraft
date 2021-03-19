@@ -95,9 +95,11 @@ const PoweredXpdrDisplay = () => {
 };
 
 const XpdrRootDisplay = () => {
-    const [powerAvailable] = useSimVar('L:DCPowerAvailable', 'Boolean', 250);
+    // XPDR 1 is powered by the AC ESS SHED bus.
+    // When XPDR 2 is added, it should be powered by the AC 2 bus.
+    const [acEssShedIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED', 'Bool', 250);
 
-    if (!powerAvailable) return null;
+    if (!acEssShedIsPowered) return null;
     return <PoweredXpdrDisplay />;
 };
 
