@@ -16,10 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useState } from 'react';
-import { IconBox, IconLink, IconPlane } from '@tabler/icons';
-import { IconPlaneDeparture } from '@tabler/icons';
-import { IconPlaneArrival } from '@tabler/icons';
+import React from 'react';
+import {
+    IconBox,
+    IconLink,
+    IconPlane,
+    IconPlaneDeparture,
+    IconPlaneArrival,
+} from '@tabler/icons';
+
 import fuselage from '../../Assets/320neo-outline-nose.svg';
 
 type FlightWidgetProps = {
@@ -42,47 +47,59 @@ type FlightWidgetProps = {
     costInd: string
 }
 
-
 const FlightWidget = (props: FlightWidgetProps) => {
-
-	const resolveFlightName = () => {
-		const airline = typeof props.airline === 'string' ? props.airline : "";
-		return `${airline}${props.flightNum}`;
-	}
+    const resolveFlightName = () => {
+        const { airline } = props;
+        return `${airline}${props.flightNum}`;
+    };
 
     return (
-        <div id={'flight-' + props.name} className="w-2/5 h-full bg-navy-lighter text-white rounded-2xl mr-3 shadow-lg p-6 overflow-hidden">
+        <div id={`flight-${props.name}`} className="w-2/5 h-full bg-navy-lighter text-white rounded-2xl mr-3 shadow-lg p-6 overflow-hidden">
             <div className="h-full flex flex-col justify-between">
                 <div className="w-full">
                     <div className="text-center mb-6">
                         <h1 className="text-2xl font-medium">{resolveFlightName()}</h1>
-                        <span>{props.aircraftReg}</span> <br />
+                        <span>{props.aircraftReg}</span>
+                        {' '}
+                        <br />
                         <span>A320-251N</span>
                     </div>
 
                     <div className="flex items-center justify-center mb-6 text-lg">
-                        [{props.depIata}] <span className="mx-3 text-3xl">{props.dep}</span>
+                        [
+                        {props.depIata}
+                        ]
+                        {' '}
+                        <span className="mx-3 text-3xl">{props.dep}</span>
                         <IconPlane size={35} stroke={1.5} strokeLinejoin="miter" />
-                        <span className="mx-3 text-3xl">{props.arr}</span> [{props.arrIata}]
+                        <span className="mx-3 text-3xl">{props.arr}</span>
+                        {' '}
+                        [
+                        {props.arrIata}
+                        ]
                     </div>
 
                     <div className="flex">
                         <div className="w-1/2 mr-4">
                             <div className="flex justify-end text-lg">
-                                STD <IconPlaneDeparture className="ml-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                                STD
+                                {' '}
+                                <IconPlaneDeparture className="ml-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                             </div>
                             <div className="text-right mt-1 text-2xl">{props.std}</div>
                         </div>
                         <div className="w-1/2 ml-4">
                             <div className="flex justify-start text-lg">
-                                <IconPlaneArrival className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> STA
+                                <IconPlaneArrival className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                                {' '}
+                                STA
                             </div>
                             <div className="text-left mt-1 text-2xl">{props.sta}</div>
                         </div>
                     </div>
                 </div>
                 <div className="w-full my-3">
-                    <img src={fuselage} className="flip-vertical -ml-48" />
+                    <img src={fuselage} alt="Aircraft outline" className="flip-vertical -ml-48" />
                 </div>
                 <div className="w-full mt-3">
                     <div className="grid grid-cols-3 gap-4 text-center mb-10">
@@ -112,11 +129,22 @@ const FlightWidget = (props: FlightWidgetProps) => {
                         </div>
                     </div>
                     <div className="flex">
-                        <button onClick={() => props.fetchSimbrief()} className="mr-1 w-1/2 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none">
-                            <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> FROM SIMBRIEF
+                        <button
+                            type="button"
+                            onClick={() => props.fetchSimbrief()}
+                            className="mr-1 w-1/2 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none"
+                        >
+                            <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                            {' '}
+                            FROM SIMBRIEF
                         </button>
-                        <button className="ml-1 w-1/2 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none">
-                            <IconLink className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> LINK MCDU
+                        <button
+                            type="button"
+                            className="ml-1 w-1/2 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none"
+                        >
+                            <IconLink className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                            {' '}
+                            LINK MCDU
                         </button>
                     </div>
                 </div>

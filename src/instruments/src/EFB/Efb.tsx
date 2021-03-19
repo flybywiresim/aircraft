@@ -21,7 +21,7 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import store from './Store';
 
-import NavigraphClient, { NavigraphContext } from "./ChartsApi/Navigraph";
+import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
 import StatusBar from './StatusBar/StatusBar';
@@ -76,63 +76,63 @@ class Efb extends React.Component<EfbProps, EfbState> {
         this.updateCurrentTime = this.updateCurrentTime.bind(this);
         this.updateTimeSinceStart = this.updateTimeSinceStart.bind(this);
         this.fetchSimbriefData = this.fetchSimbriefData.bind(this);
-    }
 
-    state: EfbState = {
-        navigraph: new NavigraphClient(),
-        currentPageIndex: 0,
-        airline: '---',
-        flightNum: '----',
-        departingAirport: '----',
-        departingIata: '---',
-        arrivingAirport: '----',
-        arrivingIata: '---',
-        aircraftReg: '-----',
-        simbriefUsername: this.fetchSimbriefUsername(),
-        flightDistance: '---NM',
-        route: '---------------------',
-        flightETAInSeconds: 'N/A',
-        currentTime: new Date(),
-        initTime: new Date(),
-        timeSinceStart: '00:00',
-        weights: {
-            cargo: 0,
-            estLandingWeight: 0,
-            estTakeOffWeight: 0,
-            estZeroFuelWeight: 0,
-            maxLandingWeight: 0,
-            maxTakeOffWeight: 0,
-            maxZeroFuelWeight: 0,
-            passengerCount: 0,
-            passengerWeight: 0,
-            payload: 0,
-        },
-        fuels: {
-            avgFuelFlow: 0,
-            contingency: 0,
-            enrouteBurn: 0,
-            etops: 0,
-            extra: 0,
-            maxTanks: 0,
-            minTakeOff: 0,
-            planLanding: 0,
-            planRamp: 0,
-            planTakeOff: 0,
-            reserve: 0,
-            taxi: 0,
-        },
-        units: 'kgs',
-        altIcao: '----',
-        altIata: '---',
-        altBurn: 0,
-        tripTime: 0,
-        contFuelTime: 0,
-        resFuelTime: 0,
-        taxiOutTime: 0,
-        schedIn: '--:--',
-        schedOut: '--:--',
-        loadsheet: 'N/A',
-        costInd: '--',
+        this.state = {
+            navigraph: new NavigraphClient(),
+            currentPageIndex: 0,
+            airline: '---',
+            flightNum: '----',
+            departingAirport: '----',
+            departingIata: '---',
+            arrivingAirport: '----',
+            arrivingIata: '---',
+            aircraftReg: '-----',
+            simbriefUsername: this.fetchSimbriefUsername(),
+            flightDistance: '---NM',
+            route: '---------------------',
+            flightETAInSeconds: 'N/A',
+            currentTime: new Date(),
+            initTime: new Date(),
+            timeSinceStart: '00:00',
+            weights: {
+                cargo: 0,
+                estLandingWeight: 0,
+                estTakeOffWeight: 0,
+                estZeroFuelWeight: 0,
+                maxLandingWeight: 0,
+                maxTakeOffWeight: 0,
+                maxZeroFuelWeight: 0,
+                passengerCount: 0,
+                passengerWeight: 0,
+                payload: 0,
+            },
+            fuels: {
+                avgFuelFlow: 0,
+                contingency: 0,
+                enrouteBurn: 0,
+                etops: 0,
+                extra: 0,
+                maxTanks: 0,
+                minTakeOff: 0,
+                planLanding: 0,
+                planRamp: 0,
+                planTakeOff: 0,
+                reserve: 0,
+                taxi: 0,
+            },
+            units: 'kgs',
+            altIcao: '----',
+            altIata: '---',
+            altBurn: 0,
+            tripTime: 0,
+            contFuelTime: 0,
+            resFuelTime: 0,
+            taxiOutTime: 0,
+            schedIn: '--:--',
+            schedOut: '--:--',
+            loadsheet: 'N/A',
+            costInd: '--',
+        };
     }
 
     changeSimbriefUsername = (name: string) => {
@@ -146,6 +146,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
         }
 
         console.log('Fetching simbriefData');
+        // eslint-disable-next-line react/no-access-state-in-setstate
         const simbriefData = await getSimbriefData(this.state.simbriefUsername);
         console.info(simbriefData);
         this.setState({
@@ -189,12 +190,12 @@ class Efb extends React.Component<EfbProps, EfbState> {
             altIcao: simbriefData.alternate.icao,
             altIata: simbriefData.alternate.iata,
             altBurn: simbriefData.alternate.burn,
-            tripTime: simbriefData.times.est_time_enroute,
-            contFuelTime: simbriefData.times.contfuel_time,
-            resFuelTime: simbriefData.times.reserve_time,
-            taxiOutTime: simbriefData.times.taxi_out,
-            schedOut: simbriefData.times.sched_out,
-            schedIn: simbriefData.times.sched_in,
+            tripTime: simbriefData.times.estTimeEnroute,
+            contFuelTime: simbriefData.times.contFuelTime,
+            resFuelTime: simbriefData.times.reserveTime,
+            taxiOutTime: simbriefData.times.taxiOut,
+            schedOut: simbriefData.times.schedOut,
+            schedIn: simbriefData.times.schedIn,
             loadsheet: simbriefData.text,
             costInd: simbriefData.costIndex,
         });

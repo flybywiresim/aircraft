@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-declare module "*.svg" {
+declare module '*.svg' {
   const content: any;
   export default content;
 }

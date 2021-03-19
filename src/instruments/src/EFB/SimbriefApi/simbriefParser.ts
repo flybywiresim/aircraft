@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ISimbriefData } from './simbriefInterface';
+import { EmptyISimbriefData, ISimbriefData } from './simbriefInterface';
 
 const simbriefApiUrl: URL = new URL('https://www.simbrief.com/api/xml.fetcher.php');
 const simbriefApiParams = simbriefApiUrl.searchParams;
@@ -32,7 +32,7 @@ export function getSimbriefData(simbriefUsername: string): Promise<ISimbriefData
     simbriefApiParams.append('json', '1');
     simbriefApiUrl.search = simbriefApiParams.toString();
 
-    const simbriefData = fetch(simbriefApiUrl.toString(), getRequestData)
+    return fetch(simbriefApiUrl.toString(), getRequestData)
         .then((res) => res.json())
         .then(
             (result: any) => {
@@ -41,10 +41,9 @@ export function getSimbriefData(simbriefUsername: string): Promise<ISimbriefData
             },
             () => {
                 console.log('err');
+                return EmptyISimbriefData;
             },
         );
-    // @ts-ignore
-    return simbriefData;
 }
 
 function simbriefDataParser(simbriefJson: any): ISimbriefData {
@@ -110,27 +109,27 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
             burn: alternate.burn,
         },
         times: {
-            contfuel_time: times.contfuel_time,
-            dest_timezone: times.dest_timezone,
+            contFuelTime: times.contfuel_time,
+            destTimezone: times.dest_timezone,
             endurance: times.endurance,
-            est_block: times.est_block,
-            est_in: times.est_in,
-            est_off: times.est_off,
-            est_on: times.est_on,
-            est_out: times.est_out,
-            est_time_enroute: times.est_time_enroute,
-            etopsfuel_time: times.etopsfuel_time,
-            extrafuel_time: times.extrafuel_time,
-            orig_timezone: times.orig_timezone,
-            reserve_time: times.reserve_time,
-            sched_block: times.sched_block,
-            sched_in: times.sched_in,
-            sched_off: times.sched_off,
-            sched_on: times.sched_on,
-            sched_out: times.sched_out,
-            sched_time_enroute: times.sched_time_enroute,
-            taxi_in: times.taxi_in,
-            taxi_out: times.taxi_out,
+            estBlock: times.est_block,
+            estIn: times.est_in,
+            estOff: times.est_off,
+            estOn: times.est_on,
+            estOut: times.est_out,
+            estTimeEnroute: times.est_time_enroute,
+            etopsFuelTime: times.etopsfuel_time,
+            extraFuelTime: times.extrafuel_time,
+            origTimeZone: times.orig_timezone,
+            reserveTime: times.reserve_time,
+            schedBlock: times.sched_block,
+            schedIn: times.sched_in,
+            schedOff: times.sched_off,
+            schedOn: times.sched_on,
+            schedOut: times.sched_out,
+            schedTimeEnroute: times.sched_time_enroute,
+            taxiIn: times.taxi_in,
+            taxiOut: times.taxi_out,
         },
         text: text.plan_html,
     };

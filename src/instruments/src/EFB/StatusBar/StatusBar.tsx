@@ -17,7 +17,7 @@
  */
 
 import React from 'react';
-import { IconAccessPoint, IconBattery4, IconBatteryCharging, IconWifi } from '@tabler/icons';
+import { IconAccessPoint, IconBattery4 } from '@tabler/icons';
 import { connect } from 'react-redux';
 import { efbClearState } from '../Store/action-creator/efb';
 
@@ -114,7 +114,7 @@ export function formatTime(numbers: number[]) {
 }
 
 export function dateFormat(date: number): string {
-    let numberWithSuffix = '0';
+    let numberWithSuffix;
     const dateRemOf10 = date % 10;
     const dateRemOf100 = date % 100;
 
