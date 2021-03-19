@@ -597,6 +597,27 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
 
+        if (SimVar.GetSimVarValue("A32NX_FMA_EXPEDITE_MODE", "number")) {
+            if (SimVar.GetSimVarValue("A32NX_FMA_VERTICAL_MODE", "number") === 12) {
+                switch (Simplane.getFlapsHandleIndex()) {
+                    case 0: {
+                        this.managedSpeedTarget = SimVar.GetSimVarValue("A32NX_SPEEDS_GD", "number");
+                        break;
+                    }
+                    case 1: {
+                        this.managedSpeedTarget = SimVar.GetSimVarValue("A32NX_SPEEDS_S", "number");
+                        break;
+                    }
+                    default: {
+                        this.managedSpeedTarget = SimVar.GetSimVarValue("A32NX_SPEEDS_F", "number");
+                    }
+                }
+            } else {
+                this.managedSpeedTarget = SimVar.GetSimVarValue("A32NX_SPEEDS_VMAX", "number");
+            }
+            vPfd = this.managedSpeedTarget;
+        }
+
         console.log("vP: " + vPfd);
         console.log("vA: " + this.managedSpeedTarget);
 
