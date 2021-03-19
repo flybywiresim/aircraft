@@ -135,7 +135,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.doorVideoPressed = false;
 
         // Using ternary in case the LVar is undefined
-        this.ACPowerLastState = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") ? 0 : 1;
+        this.poweredDuringPreviousUpdate = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") ? 0 : 1;
 
         this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
@@ -176,16 +176,13 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.updateDoorVideoState();
 
         this.updateAnnunciations();
-        this.updateScreenState();
+        this.turnScreenOnOrOffDependingOnPowerState();
 
         // TODO Move anything dependent on ac power change to A32NX_Core
         const engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         const externalPowerOn = SimVar.GetSimVarValue("EXTERNAL POWER AVAILABLE:1", "Bool") === 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 1;
         const apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
         const isACPowerAvailable = engineOn || apuOn || externalPowerOn;
-
-        const ACPowerStateChange = (isACPowerAvailable != this.ACPowerLastState);
-        SimVar.SetSimVarValue("L:ACPowerStateChange", "Bool", ACPowerStateChange);
 
         // TODO: There are multiple DC buses so a "DCPowerAvailable" SimVar doesn't make any sense.
         // We'll put this here for now, so things kind of work as they did before.
@@ -210,7 +207,10 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
          * Self test on ECAM screen
          **/
 
-        if ((knobChanged || ACPowerStateChange) && isACPowerAvailable && !this.selfTestTimerStarted) {
+        const isPowered = this.isPowered();
+        const powerStateChanged = isPowered != this.poweredDuringPreviousUpdate;
+        this.poweredDuringPreviousUpdate = isPowered;
+        if ((knobChanged || powerStateChanged) && isPowered && !this.selfTestTimerStarted) {
             if (this.isTopScreen) {
                 this.topSelfTestDiv.style.visibility = "visible";
             } else {
@@ -233,8 +233,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         }
 
         this.selfTestLastKnobValue = selfTestCurrentKnobValue;
-
-        this.ACPowerLastState = isACPowerAvailable;
 
         // modification start here
         const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
@@ -277,7 +275,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             }
 
             this.pageNameWhenUnselected = "APU";
-        } else if (isACPowerAvailable && !engineOn && Simplane.getIsGrounded()) {
+        } else if (isPowered && !engineOn && Simplane.getIsGrounded()) {
             // reset minIndex and cruise timer after shutdown
             this.minPageIndexWhenUnselected = 0;
             this.CrzCondTimer = 60;
@@ -337,6 +335,10 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.PrevFailPage = sFailPage;
     }
 
+    isPowered() {
+        return !!SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isTopScreen ? "AC_ESS" : "AC_2"}_BUS_IS_POWERED`, "Bool");
+    }
+
     updateDoorVideoState() {
         const doorVideoPressedNow = SimVar.GetSimVarValue("L:PUSH_DOORPANEL_VIDEO", "Bool") === 1;
         const doorVideoEnabledNow = SimVar.GetSimVarValue("L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE", "Bool") === 1;
@@ -352,12 +354,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.doorVideoWrapper.style.visibility = this.doorVideoPressed ? "visible" : "hidden";
     }
 
-    updateScreenState() {
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable", "bool")) {
-            this.electricity.style.display = "block";
-        } else {
-            this.electricity.style.display = "none";
-        }
+    turnScreenOnOrOffDependingOnPowerState() {
+        this.electricity.style.display = this.isPowered() ? "block" : "none";
     }
 
     updateAnnunciations() {
