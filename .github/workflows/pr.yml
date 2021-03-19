@@ -30,15 +30,6 @@ jobs:
       - name: test-rust.sh
         run: |
           docker run --rm -v "$(pwd)":/external ghcr.io/flybywiresim/dev-env@sha256:0bf0844b914cbd45a8a0a866a71c7a07fa09308f48cb961708be479f0d63aa0f scripts/test-rust.sh
-  prepare:
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
-    steps:
-      - name: Create .env file
-        run: |
-          echo CLIENT_ID=${{ secrets.NAVIGRAPH_CLIENT_ID }} >> .env
-          echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
-          echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
   build:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
@@ -48,6 +39,11 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
+      - name: Create .env file
+        run: |
+          echo CLIENT_ID=${{ secrets.NAVIGRAPH_CLIENT_ID }} >> .env
+          echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
+          echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
