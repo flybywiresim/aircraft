@@ -91,7 +91,6 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
                 <h1 className="text-white mb-8 text-xl ">
                     Current Value:
                     {' '}
-
                     {throttlePosition.toFixed(2)}
                 </h1>
 
