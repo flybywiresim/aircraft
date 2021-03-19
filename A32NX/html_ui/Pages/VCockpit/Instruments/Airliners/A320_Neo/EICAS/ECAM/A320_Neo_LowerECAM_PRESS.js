@@ -312,12 +312,12 @@ var A320_Neo_LowerECAM_PRESS;
                 this.htmlLdgElevValue.setAttribute("visibility", "visible");
                 this.htmlLdgElevTitle.setAttribute("visibility", "visible");
                 this.htmlLdgElevValueUnit.setAttribute("visibility", "visible");
-                // The switch from one system to the other should only happen if there's at least 10s between presses
+                // The switch from one system to the other should only happen if there's at least 10s between presses - placeholder until PRESS system is fully simulated
                 if ((Date.now() - this.manModeTime) > 10000) {
-                    activeSystem == 1 ? SimVar.SetSimVarValue("L:CPC_SYS1", "Bool", 0) : SimVar.SetSimVarValue("L:CPC_SYS2", "Bool", 1);
-                    activeSystem == 2 ? SimVar.SetSimVarValue("L:CPC_SYS1", "Bool", 1) : SimVar.SetSimVarValue("L:CPC_SYS2", "Bool", 0);
+                    activeSystem === 1 ? SimVar.SetSimVarValue("L:CPC_SYS1", "Bool", 0) : SimVar.SetSimVarValue("L:CPC_SYS2", "Bool", 1);
+                    activeSystem === 2 ? SimVar.SetSimVarValue("L:CPC_SYS1", "Bool", 1) : SimVar.SetSimVarValue("L:CPC_SYS2", "Bool", 0);
                 } else {
-                    activeSystem == 1 ? this.htmlSYS1text.setAttribute("visibility", "visible") : this.htmlSYS2text.setAttribute("visibility", "visible");
+                    activeSystem === 1 ? this.htmlSYS1text.setAttribute("visibility", "visible") : this.htmlSYS2text.setAttribute("visibility", "visible");
                 }
                 this.manModeTime = 0;
                 this.oldManModValue = 0;
