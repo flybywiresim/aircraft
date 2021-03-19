@@ -1,24 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import QRCode from 'qrcode.react';
 
 import { IconArrowsMaximize, IconArrowsMinimize, IconMoon, IconSun } from '@tabler/icons';
 
 import useInterval from '../../Common/useInterval';
 
-import NavigraphClient, { AirportInfo, NavigraphAirportCharts, NavigraphChart } from '../ChartsApi/Navigraph';
+import NavigraphClient, {
+    AirportInfo,
+    NavigraphAirportCharts,
+    NavigraphChart,
+    NavigraphContext,
+    useNavigraph,
+} from '../ChartsApi/Navigraph';
 import ChartFoxClient, { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
 
 type Chart = NavigraphChart | ChartFoxChart;
 
 type Charts = NavigraphAirportCharts | ChartFoxAirportCharts;
 
-type AuthUiProps = {
-    navigraph: NavigraphClient,
-}
-
 type ChartsUiProps = {
     enableNavigraph: boolean,
-    navigraph: NavigraphClient,
     chartFox: ChartFoxClient,
     icao: string,
     charts: Charts,
@@ -62,15 +63,15 @@ const Loading = () => (
         <p className="text-white text-3xl">Loading...</p>
         <span
             className="text-teal-regular text-2xl"
-            onClick={() => window.localStorage.setItem('refreshToken', null)}
+            onClick={() => window.localStorage.setItem('refreshToken', '')}
         >
             Reset Refresh Token
         </span>
     </div>
 );
 
-const AuthUi = (props: AuthUiProps) => {
-    const { auth } = props.navigraph;
+const AuthUi = () => {
+    const { auth } = useNavigraph();
 
     const hasQr = !!auth.qrLink;
 
@@ -238,6 +239,8 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
 };
 
 const ChartsUi = (props: ChartsUiProps) => {
+    const navigraph = useNavigraph();
+
     const [enableDarkCharts, setEnableDarkCharts] = useState<boolean>(true); // Navigraph Only
     const [userInfo, setUserInfo] = useState<string>(''); // Navigraph Only
     const [airportInfo, setAirportInfo] = useState<AirportInfo>({ name: '' }); // Navigraph Only
@@ -259,7 +262,7 @@ const ChartsUi = (props: ChartsUiProps) => {
 
     useEffect(() => {
         if (props.enableNavigraph) {
-            props.navigraph.getAirportInfo(props.icao).then((r) => setAirportInfo(r));
+            navigraph.getAirportInfo(props.icao).then((r) => setAirportInfo(r));
         }
     }, [props.charts]);
 
@@ -284,8 +287,8 @@ const ChartsUi = (props: ChartsUiProps) => {
     useEffect(() => {
         if (props.enableNavigraph) {
             const chartsGet = async () => {
-                const light = await props.navigraph.chartCall(props.icao, selectedChartName.light);
-                const dark = await props.navigraph.chartCall(props.icao, selectedChartName.dark);
+                const light = await navigraph.chartCall(props.icao, selectedChartName.light);
+                const dark = await navigraph.chartCall(props.icao, selectedChartName.dark);
 
                 setChartLink({ light, dark });
             };
@@ -297,7 +300,7 @@ const ChartsUi = (props: ChartsUiProps) => {
     useEffect(() => {
         if (props.enableNavigraph) {
             if (userInfo === '') {
-                props.navigraph.userInfo().then((r) => setUserInfo(r));
+                navigraph.userInfo().then((r) => setUserInfo(r));
             }
         }
     });
@@ -307,7 +310,7 @@ const ChartsUi = (props: ChartsUiProps) => {
 
         if (newValue.length === 4) {
             if (props.enableNavigraph) {
-                props.navigraph.getChartList(newValue).then((r) => {
+                navigraph.getChartList(newValue).then((r) => {
                     if (r) {
                         props.setCharts(r);
                     }
@@ -415,39 +418,39 @@ const ChartsUi = (props: ChartsUiProps) => {
 };
 
 const NavigraphNav = (props: ChartsUiProps) => (
-    <>
-        {NavigraphClient.sufficientEnv()
-            ? (
-                <>
-                    {
-                        props.navigraph.hasToken()
-                            ? (
-                                <ChartsUi
-                                    enableNavigraph
-                                    navigraph={props.navigraph}
-                                    chartFox={props.chartFox}
-                                    icao={props.icao}
-                                    charts={props.charts}
-                                    setIcao={props.setIcao}
-                                    setCharts={props.setCharts}
-                                />
-                            )
-                            : <AuthUi navigraph={props.navigraph} />
-                    }
-                </>
-            )
-            : (
-                <div className="flex items-center justify-center h-efb w-full bg-navy-lightest rounded-xl shadow-lg mr-4 overflow-x-hidden">
-                    <p className="text-3xl pt-6 text-white mb-6">Insufficient .env file</p>
-                </div>
-            )}
-    </>
+    <NavigraphContext.Consumer>
+        {(navigraph) => (
+            <>
+                {NavigraphClient.sufficientEnv()
+                    ? (
+                        <>
+                            {navigraph.hasToken()
+                                ? (
+                                    <ChartsUi
+                                        enableNavigraph
+                                        chartFox={props.chartFox}
+                                        icao={props.icao}
+                                        charts={props.charts}
+                                        setIcao={props.setIcao}
+                                        setCharts={props.setCharts}
+                                    />
+                                )
+                                : <AuthUi />}
+                        </>
+                    )
+                    : (
+                        <div className="flex items-center justify-center h-efb w-full bg-navy-lightest rounded-xl shadow-lg mr-4 overflow-x-hidden">
+                            <p className="text-3xl pt-6 text-white mb-6">Insufficient .env file</p>
+                        </div>
+                    )}
+            </>
+        )}
+    </NavigraphContext.Consumer>
 );
 
 const ChartFoxNav = (props: ChartsUiProps) => (
     <ChartsUi
         enableNavigraph={false}
-        navigraph={props.navigraph}
         chartFox={props.chartFox}
         icao={props.icao}
         charts={props.charts}
@@ -457,8 +460,9 @@ const ChartFoxNav = (props: ChartsUiProps) => (
 );
 
 const Navigation = () => {
+    const navigraph = useContext(NavigraphContext);
+
     const [enableNavigraph] = useState<boolean>(true);
-    const [navigraph] = useState(() => new NavigraphClient());
     const [chartFox] = useState(() => new ChartFoxClient());
     const [icao, setIcao] = useState<string>('');
     const [charts, setCharts] = useState<Charts>({
@@ -492,7 +496,6 @@ const Navigation = () => {
                 ? (
                     <NavigraphNav
                         enableNavigraph={enableNavigraph}
-                        navigraph={navigraph}
                         chartFox={chartFox}
                         icao={icao}
                         charts={charts}
@@ -503,7 +506,6 @@ const Navigation = () => {
                 : (
                     <ChartFoxNav
                         enableNavigraph={enableNavigraph}
-                        navigraph={navigraph}
                         chartFox={chartFox}
                         icao={icao}
                         charts={charts}

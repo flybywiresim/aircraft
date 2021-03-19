@@ -21,6 +21,8 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import store from './Store';
 
+import NavigraphClient, { NavigraphContext } from "./ChartsApi/Navigraph";
+
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
 import StatusBar from './StatusBar/StatusBar';
 import ToolBar from './ToolBar/ToolBar';
@@ -36,6 +38,7 @@ type EfbProps = {
 };
 
 type EfbState = {
+    navigraph: NavigraphClient,
     currentPageIndex: 0 | 1 | 2 | 3 | 4 | 5 | 6,
     simbriefUsername: string,
     departingAirport: string,
@@ -76,6 +79,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
     }
 
     state: EfbState = {
+        navigraph: new NavigraphClient(),
         currentPageIndex: 0,
         airline: '---',
         flightNum: '----',
@@ -288,15 +292,17 @@ class Efb extends React.Component<EfbProps, EfbState> {
     render() {
         return (
             <Provider store={store}>
-                <div className="flex flex-col">
-                    <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart} />
-                    <div className="flex flex-row">
-                        <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} />
-                        <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen">
-                            {this.currentPage()}
+                <NavigraphContext.Provider value={this.state.navigraph}>
+                    <div className="flex flex-col">
+                        <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart} />
+                        <div className="flex flex-row">
+                            <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} />
+                            <div className="py-16 px-8 text-gray-700 bg-navy-regular h-screen w-screen">
+                                {this.currentPage()}
+                            </div>
                         </div>
                     </div>
-                </div>
+                </NavigraphContext.Provider>
             </Provider>
         );
     }

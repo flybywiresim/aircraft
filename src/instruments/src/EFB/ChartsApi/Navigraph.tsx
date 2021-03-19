@@ -1,3 +1,5 @@
+import React, { useContext } from 'react';
+
 export interface ChartType {
     code: string,
     category: string,
@@ -72,7 +74,7 @@ export default class NavigraphClient {
         if (NavigraphClient.sufficientEnv()) {
             const token = window.localStorage.getItem('refreshToken');
 
-            if (token === undefined || token === null) {
+            if (token === undefined || token === null || token === '') {
                 this.authenticate();
             } else {
                 this.refreshToken = token;
@@ -149,10 +151,12 @@ export default class NavigraphClient {
     }
 
     public async chartCall(icao: string, item: string): Promise<string> {
-        const callResp = await fetch(`https://charts.api.navigraph.com/2/airports/${icao}/signedurls/${item}`, { headers: { Authorization: `Bearer ${this.accessToken}` } });
+        if (icao.length === 4) {
+            const callResp = await fetch(`https://charts.api.navigraph.com/2/airports/${icao}/signedurls/${item}`, { headers: { Authorization: `Bearer ${this.accessToken}` } });
 
-        if (callResp.ok) {
-            return callResp.text();
+            if (callResp.ok) {
+                return callResp.text();
+            }
         }
         return Promise.reject();
     }
@@ -259,3 +263,7 @@ export default class NavigraphClient {
         return '';
     }
 }
+
+export const NavigraphContext = React.createContext(new NavigraphClient());
+
+export const useNavigraph = () => useContext(NavigraphContext);
