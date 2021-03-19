@@ -56,7 +56,8 @@ export const FuelPage = () => {
     const innerCells = () => innerCell() * 2;
     const centerTank = () => centerTankGallon * galToKg * convertUnit();
     const totalFuel = () => centerTank() + innerCells() + outerCells();
-    const [DCPowerAvail] = useSimVar('L:DCPowerAvailable', 'Bool', 1_000);
+    const [busDC2] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool', 1_000);
+    const [busDCHot1] = useSimVar('L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED', 'Bool', 1_000);
     const [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 1_000);
     const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 1_000);
     const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 1_000);
@@ -82,7 +83,7 @@ export const FuelPage = () => {
         if (usingMetrics !== 1) {
             setUsingMetrics(1);
         }
-        if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || !DCPowerAvail) {
+        if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
             return false;
         }
         return true;
