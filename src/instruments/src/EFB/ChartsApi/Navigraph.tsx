@@ -1,5 +1,8 @@
 import React, { useContext } from 'react';
+// @ts-ignore
 import pkce from '@navigraph/pkce';
+
+import { NXDataStore } from '../../Common/persistence';
 
 export interface ChartType {
     code: string,
@@ -75,7 +78,7 @@ export default class NavigraphClient {
 
     constructor() {
         if (NavigraphClient.sufficientEnv()) {
-            const token = window.localStorage.getItem('refreshToken');
+            const token = NXDataStore.get('refreshToken');
 
             if (token === undefined || token === null || token === '') {
                 this.authenticate();
@@ -124,7 +127,7 @@ export default class NavigraphClient {
                     this.refreshToken = refreshToken;
                     this.accessToken = r.access_token;
 
-                    window.localStorage.setItem('refreshToken', refreshToken);
+                    NXDataStore.set('refreshToken', refreshToken);
                 });
             }
         });

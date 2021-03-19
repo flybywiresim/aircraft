@@ -33,6 +33,14 @@ export class NXDataStore {
      * @param defaultVal The default value if the property is not set
      */
     static get(key: string, defaultVal?: string) {
+        if (process.env.SIMVAR_DISABLE) {
+            const val = window.localStorage.getItem(`A32NX_${key}`);
+            if (!val) {
+                return defaultVal;
+            }
+            return val;
+        }
+
         const val = GetStoredData(`A32NX_${key}`);
         if (!val) {
             return defaultVal;
@@ -47,6 +55,11 @@ export class NXDataStore {
      * @param val The value to assign to the property
      */
     static set(key: string, val: string) {
+        if (process.env.SIMVAR_DISABLE) {
+            window.localStorage.setItem(`A32NX_${key}`, val);
+            return;
+        }
+
         SetStoredData(`A32NX_${key}`, val);
     }
 }

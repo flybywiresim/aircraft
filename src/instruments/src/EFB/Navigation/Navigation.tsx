@@ -197,8 +197,8 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                                         key={(chart as NavigraphChart).id}
                                     >
                                         {(chart as NavigraphChart).id === props.selectedChartId
-                                            ? <div className="h-full w-2 bg-teal-light-contrast" />
-                                            : <div className="h-full w-2 bg-navy-light" />}
+                                            ? <span className="w-2 bg-teal-light-contrast"> </span>
+                                            : <span className="w-2 bg-navy-light"> </span>}
                                         <div className="flex flex-col mx-2 my-2">
                                             <span className="">{(chart as NavigraphChart).procedureIdentifier}</span>
                                             <span
@@ -222,8 +222,8 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                                 key={(chart as NavigraphChart).id}
                             >
                                 {(chart as NavigraphChart).id === props.selectedChartId
-                                    ? <div className="h-full w-2 bg-teal-light-contrast rounded-l-lg" />
-                                    : <div className="h-full w-2 bg-navy-light rounded-l-lg" />}
+                                    ? <span className="w-2 bg-teal-light-contrast rounded-l-lg"> </span>
+                                    : <span className="w-2 bg-navy-light rounded-l-lg"> </span>}
                                 <div className="flex flex-col mx-2 my-1">
                                     <span className="">{(chart as NavigraphChart).procedureIdentifier}</span>
                                     <span
