@@ -183,6 +183,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.fmsUpdateThrottler = new UpdateThrottler(250);
         this.currentOrigin = "";
         this.currentDestination = "";
+        this.apiRequestError = false;
     }
 
     Init() {
@@ -1884,13 +1885,13 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     trySetTakeOffTransAltitude(input) {
-        if (input === FMCMainDisplay.clrValue && this.transitionArrivalAltitudeIsPilotEntered) {
-            this.transitionArrivalAltitudeIsPilotEntered = false;
-            this.updateTransitionAltitude(this.flightPlanManager.getDestination().ident, "destination")
+        if (input === FMCMainDisplay.clrValue && this.transitionAltitudeIsPilotEntered) {
+            this.transitionAltitudeIsPilotEntered = false;
+            this.updateTransitionAltitude(this.flightPlanManager.getOrigin().ident, "destination")
             return true;
         }
 
-        if (input === FMCMainDisplay.clrValue && !this.transitionArrivalAltitudeIsPilotEntered) {
+        if (input === FMCMainDisplay.clrValue && !this.transitionAltitudeIsPilotEntered) {
             this.transitionAltitude = NaN;
             this.transitionAltitudeIsPilotEntered = false;
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
@@ -2534,7 +2535,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (input === FMCMainDisplay.clrValue && this.transitionArrivalAltitudeIsPilotEntered) {
             this.transitionArrivalAltitudeIsPilotEntered = false;
-            this.updateTransitionAltitude(this.flightPlanManager.getOrigin().ident, "origin");
+            this.updateTransitionAltitude(this.flightPlanManager.getDestination().ident, "origin");
             return true;
         }
 
@@ -3373,20 +3374,26 @@ class FMCMainDisplay extends BaseAirliners {
                 const originAirport = this.flightPlanManager.getOrigin().ident;
                 const destinationAirport = this.flightPlanManager.getDestination().ident;
                 if (!this.offlineTACore.offline) {
-                    if (this.currentOrigin !== originAirport) {
-                        this.updateTransitionAltitude(originAirport, "origin")
-                            .catch((error)=> {
-                                console.log(error);
-                                SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
-                            });
+                    if ((this.currentOrigin !== originAirport) || this.apiRequestError) {
+                        try {
+                            this.updateTransitionAltitude(originAirport, "origin")
+                            this.apiRequestError = false;
+                        } catch (error) {
+                            console.log(error)
+                            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
+                            setTimeout(this.apiRequestError = true, 3000);
+                        }
                         this.currentOrigin = originAirport;
                     }
-                    if (this.currentDestination !== destinationAirport) {
-                        this.updateTransitionAltitude(destinationAirport, "destination")
-                            .catch((error)=> {
-                                console.log(error);
-                                SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
-                            });
+                    if ((this.currentDestination !== destinationAirport) || this.apiRequestError) {
+                        try {
+                            this.updateTransitionAltitude(destinationAirport, "destination")
+                            this.apiRequestError = false;
+                        } catch (error) {
+                            console.log(error)
+                            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
+                            setTimeout(this.apiRequestError = true, 3000);
+                        }
                         this.currentDestination = destinationAirport;
                     }
                 } else {
