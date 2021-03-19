@@ -5,6 +5,16 @@ on:
       - master
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'flybywiresim'
+    steps:
+      - name: Create .env file
+        run: |
+          echo CLIENT_ID=${{ secrets.NAVIGRAPH_CLIENT_ID }} >> .env
+          echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
+          echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
+
   build:
     # Prevent running this on forks
     if: github.repository_owner == 'flybywiresim'
