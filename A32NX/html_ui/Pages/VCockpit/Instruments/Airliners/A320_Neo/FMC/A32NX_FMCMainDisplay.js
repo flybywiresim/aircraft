@@ -509,94 +509,6 @@ class FMCMainDisplay extends BaseAirliners {
         let vPfd = 0;
         let isMach = false;
 
-        switch (this.currentFlightPhase) {
-            case FmgcFlightPhases.PREFLIGHT: {
-                if (this.v2Speed) {
-                    vPfd = this.v2Speed;
-                    this.managedSpeedTarget = this.v2Speed + 10;
-                }
-                break;
-            }
-            case FmgcFlightPhases.TAKEOFF: {
-                if (this.v2Speed) {
-                    vPfd = this.v2Speed;
-                    this.managedSpeedTarget = this.isAllEngineOn() ? this.v2Speed + 10 : this.v2Speed + 20;
-                }
-                break;
-            }
-            case FmgcFlightPhases.CLIMB: {
-                let speed = this.managedSpeedClimb;
-
-                if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
-                    speed = Math.min(speed, this.managedSpeedLimit);
-                }
-
-                speed = Math.min(speed, this.getSpeedConstraint());
-
-                [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedClimbMach);
-                vPfd = this.managedSpeedTarget;
-                break;
-            }
-            case FmgcFlightPhases.CRUISE: {
-                let speed = this.managedSpeedCruise;
-
-                if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
-                    speed = Math.min(speed, this.managedSpeedLimit);
-                }
-
-                [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedCruiseMach);
-                vPfd = this.managedSpeedTarget;
-                break;
-            }
-            case FmgcFlightPhases.DESCENT: {
-                let speed = this.managedSpeedDescend;
-
-                if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
-                    speed = Math.min(speed, this.managedSpeedLimit);
-                }
-
-                [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedDescendMach);
-                vPfd = this.managedSpeedTarget;
-                break;
-            }
-            case FmgcFlightPhases.APPROACH: {
-                const ctn = this.getSpeedConstraint(false);
-                let speed = this.getAppManagedSpeed();
-                let vls = this.getVApp();
-                if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-                    vls = NXSpeedsUtils.getVtargetGSMini(vls, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
-                }
-                if (ctn !== Infinity) {
-                    vls = Math.max(vls, ctn);
-                    speed = Math.max(speed, ctn);
-                }
-
-                vPfd = vls;
-                this.managedSpeedTarget = Math.max(speed, vls);
-                break;
-            }
-            case FmgcFlightPhases.GOAROUND: {
-                if (Simplane.getAltitude() < this.accelerationAltitudeGoaround) {
-                    const speed = Math.min(
-                        this.computedVls + (this.isAllEngineOn() ? 25 : 15),
-                        Math.max(
-                            SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number"),
-                            SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number")
-                        )
-                    );
-
-                    SimVar.SetSimVarValue("L:A32NX_TOGA_SPEED", "number", speed); //TODO: figure that this does
-
-                    vPfd = speed;
-                    this.managedSpeedTarget = speed;
-                } else {
-                    vPfd = this.computedVgd;
-                    this.managedSpeedTarget = this.computedVgd;
-                }
-                break;
-            }
-        }
-
         if (SimVar.GetSimVarValue("L:A32NX_FMA_EXPEDITE_MODE", "number") === 1) {
             if (SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "number") === 12) {
                 switch (Simplane.getFlapsHandleIndex()) {
@@ -616,6 +528,94 @@ class FMCMainDisplay extends BaseAirliners {
                 this.managedSpeedTarget = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number");
             }
             vPfd = this.managedSpeedTarget;
+        } else {
+            switch (this.currentFlightPhase) {
+                case FmgcFlightPhases.PREFLIGHT: {
+                    if (this.v2Speed) {
+                        vPfd = this.v2Speed;
+                        this.managedSpeedTarget = this.v2Speed + 10;
+                    }
+                    break;
+                }
+                case FmgcFlightPhases.TAKEOFF: {
+                    if (this.v2Speed) {
+                        vPfd = this.v2Speed;
+                        this.managedSpeedTarget = this.isAllEngineOn() ? this.v2Speed + 10 : this.v2Speed + 20;
+                    }
+                    break;
+                }
+                case FmgcFlightPhases.CLIMB: {
+                    let speed = this.managedSpeedClimb;
+
+                    if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
+                        speed = Math.min(speed, this.managedSpeedLimit);
+                    }
+
+                    speed = Math.min(speed, this.getSpeedConstraint());
+
+                    [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedClimbMach);
+                    vPfd = this.managedSpeedTarget;
+                    break;
+                }
+                case FmgcFlightPhases.CRUISE: {
+                    let speed = this.managedSpeedCruise;
+
+                    if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
+                        speed = Math.min(speed, this.managedSpeedLimit);
+                    }
+
+                    [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedCruiseMach);
+                    vPfd = this.managedSpeedTarget;
+                    break;
+                }
+                case FmgcFlightPhases.DESCENT: {
+                    let speed = this.managedSpeedDescend;
+
+                    if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
+                        speed = Math.min(speed, this.managedSpeedLimit);
+                    }
+
+                    [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedDescendMach);
+                    vPfd = this.managedSpeedTarget;
+                    break;
+                }
+                case FmgcFlightPhases.APPROACH: {
+                    const ctn = this.getSpeedConstraint(false);
+                    let speed = this.getAppManagedSpeed();
+                    let vls = this.getVApp();
+                    if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+                        vls = NXSpeedsUtils.getVtargetGSMini(vls, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
+                    }
+                    if (ctn !== Infinity) {
+                        vls = Math.max(vls, ctn);
+                        speed = Math.max(speed, ctn);
+                    }
+
+                    vPfd = vls;
+                    this.managedSpeedTarget = Math.max(speed, vls);
+                    break;
+                }
+                case FmgcFlightPhases.GOAROUND: {
+                    if (Simplane.getAltitude() < this.accelerationAltitudeGoaround) {
+                        const speed = Math.min(
+                            this.computedVls + (this.isAllEngineOn() ? 25 : 15),
+                            Math.max(
+                                SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number"),
+                                SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number")
+                            )
+                        );
+
+                        SimVar.SetSimVarValue("L:A32NX_TOGA_SPEED", "number", speed); //TODO: figure that this does
+
+                        vPfd = speed;
+                        this.managedSpeedTarget = speed;
+                    } else {
+                        vPfd = this.computedVgd;
+                        this.managedSpeedTarget = this.computedVgd;
+                    }
+                    break;
+                }
+            }
         }
 
         console.log("vP: " + vPfd);
