@@ -1,9 +1,9 @@
-// eslint-disable-next-line strict
-import generated from '@flybywiresim/tailwind-config';
+'use strict';
 
 module.exports = {
     darkMode: false, // or 'media' or 'class'
     theme: { extend: { height: () => ({ efb: '50rem' }) } },
     variants: { extend: {} },
-    plugins: [generated],
+    // eslint-disable-next-line global-require
+    plugins: [require('@flybywiresim/tailwind-config')],
 };
