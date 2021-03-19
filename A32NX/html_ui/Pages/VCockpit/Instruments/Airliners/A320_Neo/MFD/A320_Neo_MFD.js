@@ -865,8 +865,6 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         if (ADIRSState != 2 || trueAirSpeed < 60) {
             //TAS info Conditions
             tas.textContent = "---";
-        } else {
-
         }
         if (ADIRSState != 2 || trueAirSpeed < 100 || windStrength <= 2) {
             //Wind Arrow info Conditions
