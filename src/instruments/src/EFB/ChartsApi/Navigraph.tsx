@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import pkce from '@navigraph/pkce';
 
 export interface ChartType {
     code: string,
@@ -51,6 +52,8 @@ export default class NavigraphClient {
 
     private static clientSecret = process.env.CLIENT_SECRET;
 
+    private static pkce = pkce();
+
     private deviceCode: string;
 
     private refreshToken: string | null;
@@ -87,6 +90,8 @@ export default class NavigraphClient {
         const secret = {
             client_id: NavigraphClient.clientId,
             client_secret: NavigraphClient.clientSecret,
+            code_challenge: NavigraphClient.pkce.code_challenge,
+            code_challenge_method: 'S256',
         };
 
         fetch('https://identity.api.navigraph.com/connect/deviceauthorization', {
@@ -133,6 +138,7 @@ export default class NavigraphClient {
                 client_id: NavigraphClient.clientId,
                 client_secret: NavigraphClient.clientSecret,
                 scope: 'openid charts offline_access',
+                code_verifier: NavigraphClient.pkce.code_verifier,
             };
 
             const refreshTokenBody = {
