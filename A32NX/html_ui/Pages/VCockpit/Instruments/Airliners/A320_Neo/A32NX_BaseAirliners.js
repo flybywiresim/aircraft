@@ -97,7 +97,6 @@ var Airliners;
             this.createUpperScreenPage();
             this.createLowerScreenPages();
             this.pageGroups = [new NavSystemPageGroup(BaseEICAS.LOWER_SCREEN_GROUP_NAME, this, this.lowerScreenPages)];
-            Coherent.on(BaseEICAS.LOWER_SCREEN_CHANGE_EVENT_NAME, this.onChangeLowerScreenPage.bind(this));
         }
         disconnectedCallback() {
         }
@@ -113,14 +112,7 @@ var Airliners;
                 }
             }
         }
-        onChangeLowerScreenPage(..._args) {
-            if ((_args != null) && (_args.length > 0)) {
-                const strings = _args[0];
-                if ((strings != null) && (strings.length > 0)) {
-                    this.changePage(strings[0]);
-                }
-            }
-        }
+
         createLowerScreenPage(_name, _htmlElemId, _eicasPageSelector) {
             this.lowerScreenPages.push(new NavSystemPage(_name.toUpperCase(), _htmlElemId, new Airliners.EICASPage(_eicasPageSelector)));
         }
