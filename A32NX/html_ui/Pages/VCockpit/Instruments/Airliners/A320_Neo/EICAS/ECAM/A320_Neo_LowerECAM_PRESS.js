@@ -90,6 +90,8 @@ var A320_Neo_LowerECAM_PRESS;
             this.oldActiveSystemValue = 0;
             this.oldManModValue = 0;
 
+            this.manModeTime = 0;
+
             //set initial visibility
             this.htmlSYS1text.setAttribute("visibility", "visible");
             this.htmlSYS2text.setAttribute("visibility", "hidden");
@@ -302,6 +304,7 @@ var A320_Neo_LowerECAM_PRESS;
                 this.htmlLdgElevValueUnit.setAttribute("visibility", "hidden");
                 this.htmlSYS1text.setAttribute("visibility", "hidden");
                 this.htmlSYS2text.setAttribute("visibility", "hidden");
+                this.manModeTime = Date.now();
                 this.oldManModValue = 1;
             } else if (!manMode && this.oldManModValue) {
                 this.htmlMANtext.setAttribute("visibility", "hidden");
@@ -310,8 +313,13 @@ var A320_Neo_LowerECAM_PRESS;
                 this.htmlLdgElevTitle.setAttribute("visibility", "visible");
                 this.htmlLdgElevValueUnit.setAttribute("visibility", "visible");
                 // The switch from one system to the other should only happen if there's at least 10s between presses
-                activeSystem == 1 ? SimVar.SetSimVarValue("L:CPC_SYS1", "Bool", 0) : SimVar.SetSimVarValue("L:CPC_SYS2", "Bool", 1);
-                activeSystem == 2 ? SimVar.SetSimVarValue("L:CPC_SYS1", "Bool", 1) : SimVar.SetSimVarValue("L:CPC_SYS2", "Bool", 0);
+                if ((Date.now() - this.manModeTime) > 10000) {
+                    activeSystem == 1 ? SimVar.SetSimVarValue("L:CPC_SYS1", "Bool", 0) : SimVar.SetSimVarValue("L:CPC_SYS2", "Bool", 1);
+                    activeSystem == 2 ? SimVar.SetSimVarValue("L:CPC_SYS1", "Bool", 1) : SimVar.SetSimVarValue("L:CPC_SYS2", "Bool", 0);
+                } else {
+                    activeSystem == 1 ? this.htmlSYS1text.setAttribute("visibility", "visible") : this.htmlSYS2text.setAttribute("visibility", "visible");
+                }
+                this.manModeTime = 0;
                 this.oldManModValue = 0;
             }
 
