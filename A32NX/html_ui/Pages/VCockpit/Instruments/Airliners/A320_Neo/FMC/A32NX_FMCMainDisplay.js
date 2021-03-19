@@ -597,7 +597,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
 
-        if (SimVar.GetSimVarValue("A32NX_FMA_EXPEDITE_MODE", "number")) {
+        if (SimVar.GetSimVarValue("A32NX_FMA_EXPEDITE_MODE", "number") === 1) {
             if (SimVar.GetSimVarValue("A32NX_FMA_VERTICAL_MODE", "number") === 12) {
                 switch (Simplane.getFlapsHandleIndex()) {
                     case 0: {
