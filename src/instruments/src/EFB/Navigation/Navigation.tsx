@@ -76,17 +76,18 @@ const AuthUi = () => {
     const hasQr = !!auth.qrLink;
 
     return (
-        <div className="h-efb w-full bg-navy-lighter rounded-xl text-white shadow-lg mr-4 overflow-x-hidden">
+        <div className="h-efb w-full bg-navy-lighter rounded-2xl text-white shadow-lg mr-4 overflow-x-hidden">
             <div className="flex flex-col m-6">
                 <p className="text-white text-center text-3xl mb-6">Authenticate with Navigraph</p>
                 {hasQr
                     ? (
                         <>
-                            <QRCode
-                                value={auth.qrLink}
-                                size={400}
-                                className="ml-auto mr-auto"
-                            />
+                            <div className="bg-white p-3 rounded-xl ml-auto mr-auto">
+                                <QRCode
+                                    value={auth.qrLink}
+                                    size={400}
+                                />
+                            </div>
                             <p className="mt-4 text-3xl ml-auto mr-auto text-white w-2/3 text-center">
                                 Enter '
                                 <span className="text-teal-regular">{auth.link}</span>
