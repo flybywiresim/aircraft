@@ -51,6 +51,6 @@ class A32NX_FADEC {
     isDcEssPowered() {
         // This will have to be revisited when implementing the FADEC. One shouldn't consider this reference
         // to DC ESS valuable: it might be powered by multiple buses or related to other things altogether.
-        !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool");
+        return SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool");
     }
 }

@@ -336,7 +336,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
 
     isPowered() {
-        return !!SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isTopScreen ? "AC_ESS" : "AC_2"}_BUS_IS_POWERED`, "Bool");
+        return SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isTopScreen ? "AC_ESS" : "AC_2"}_BUS_IS_POWERED`, "Bool");
     }
 
     updateDoorVideoState() {

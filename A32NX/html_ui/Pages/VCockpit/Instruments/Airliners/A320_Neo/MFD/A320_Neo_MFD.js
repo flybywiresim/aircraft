@@ -315,7 +315,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     }
 
     isPowered() {
-        return !!SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isCaptainMfd() ? "AC_ESS_SHED" : "AC_2"}_BUS_IS_POWERED`, "Bool");
+        return SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isCaptainMfd() ? "AC_ESS_SHED" : "AC_2"}_BUS_IS_POWERED`, "Bool");
     }
 
     turnScreenOnOrOffDependingOnPowerState() {

@@ -350,9 +350,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         // you know which MCDU is powered by which power source.
         this.electricity.style.display =
             // Captain's MCDU
-            !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Bool") ||
+            SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Bool") ||
             // F/O's MCDU
-            !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "Bool") ? "block" : "none";
+            SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "Bool") ? "block" : "none";
     }
 
     checkAocTimes() {

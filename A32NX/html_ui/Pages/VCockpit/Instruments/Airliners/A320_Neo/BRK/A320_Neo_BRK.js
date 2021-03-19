@@ -74,7 +74,7 @@ var A320_Neo_BRK;
                 return;
             }
             const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
-            const isPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool");
+            const isPowered = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool");
             if (this.topGauge != null) {
                 if (isPowered) {
                     this.topGauge.setValue(3);
