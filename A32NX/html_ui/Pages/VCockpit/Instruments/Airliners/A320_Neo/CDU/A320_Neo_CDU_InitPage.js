@@ -222,7 +222,7 @@ class CDUInitPage {
             ["COST INDEX", "TROPO"],
             [costIndex, tropo],
             ["CRZ FL/TEMP", "GND TEMP"],
-            [cruiseFlTemp, "---°[color]inop"],
+            [cruiseFlTemp, "--- [color]inop"],
         ]);
 
         mcdu.setArrows(false, false, true, true);
