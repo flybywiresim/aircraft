@@ -345,11 +345,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     updateScreenState() {
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
-            this.electricity.style.display = "block";
-        } else {
-            this.electricity.style.display = "none";
-        }
+        // Currently the MCDU isn't separated per side. Once it is, the condition
+        // for what powers the screen can be modified. I've added the comments below so
+        // you know which MCDU is powered by which power source.
+        this.electricity.style.display =
+            // Captain's MCDU
+            !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Bool") ||
+            // F/O's MCDU
+            !!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "Bool") ? "block" : "none";
     }
 
     checkAocTimes() {
