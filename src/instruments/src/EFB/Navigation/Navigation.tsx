@@ -186,7 +186,7 @@ const NavigraphChartSelector = (props: NavigraphChartSelectorProps) => {
                 ? (
                     <>
                         {organizedCharts.map((item) => (
-                            <div className="flex flex-col text-lg rounded-lg bg-navy-light mr-4 pb-2">
+                            <div className="flex flex-col text-lg rounded-lg bg-navy-light mr-4 pb-2" key={item.name}>
                                 <span className="p-1 bg-gray-700 text-center rounded-t-lg">{item.name}</span>
                                 {item.charts.map((chart) => (
                                     <div
@@ -355,6 +355,7 @@ const ChartsUi = (props: ChartsUiProps) => {
                                             <span
                                                 className="py-2 px-2 text-lg rounded-md bg-teal-light-contrast select-none"
                                                 onClick={() => setSelectedTab(organizedChart)}
+                                                key={organizedChart.name}
                                             >
                                                 {organizedChart.name}
                                             </span>
@@ -380,7 +381,7 @@ const ChartsUi = (props: ChartsUiProps) => {
                                         : (
                                             <>
                                                 {selectedTab.charts.map((chart) => (
-                                                    <div className="mt-4">
+                                                    <div className="mt-4" key={(chart as ChartFoxChart).name}>
                                                         <span>{(chart as ChartFoxChart).name}</span>
                                                     </div>
                                                 ))}
