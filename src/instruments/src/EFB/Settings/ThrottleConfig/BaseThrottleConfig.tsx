@@ -8,6 +8,7 @@ interface Props {
     throttleNumber: number,
     throttleCount: number,
     activeIndex: number,
+    disabled: boolean
 }
 
 class ThrottleSimvar {
@@ -58,14 +59,14 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
     }
 
     const currentDetent = (
-        <div className="flex flex-row ">
-
+        <div className={`flex flex-row ${props.disabled ? 'opacity-30' : ''}`}>
             <DetentConfig
                 throttlePosition={throttlePosition}
                 text={`${mappings[props.activeIndex].readableName} - Start`}
                 detentSetting={mappings[props.activeIndex].lowSetter}
                 detentValue={mappings[props.activeIndex].lowGetter[props.throttleCount - 1]}
                 throttleNumber={props.throttleNumber}
+                disabled={props.disabled}
             />
             <DetentConfig
                 throttlePosition={throttlePosition}
@@ -73,24 +74,27 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
                 detentSetting={mappings[props.activeIndex].hiSetter}
                 detentValue={mappings[props.activeIndex].hiGetter[props.throttleCount - 1]}
                 throttleNumber={props.throttleNumber}
+                disabled={props.disabled}
             />
         </div>
     );
 
     return (
         <div>
-
+            <h1 className="text-white mb-4 text-3xl ">
+                Axis
+                {' '}
+                {props.throttleNumber}
+                {' '}
+            </h1>
             <div className="bg-gray-800 rou px-4 pt-5 pb-4 sm:p-6 sm:pb-4 mt-4 mb-4 rounded-lg">
-                <h1 className="text-white mb-8 text-3xl ">
-                    Axis
+                <h1 className="text-white mb-8 text-xl ">
+                    Current Value:
                     {' '}
-                    {props.throttleNumber}
-                    {' \n'}
 
-                    {' '}
                     {throttlePosition.toFixed(2)}
-
                 </h1>
+
                 <div className="flex flex-row">
                     {/*                     <Bar d={throttlePosition} barHeight={20} />
  */}
