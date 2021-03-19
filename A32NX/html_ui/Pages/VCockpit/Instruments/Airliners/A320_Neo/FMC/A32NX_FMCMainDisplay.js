@@ -1887,7 +1887,7 @@ class FMCMainDisplay extends BaseAirliners {
     trySetTakeOffTransAltitude(input) {
         if (input === FMCMainDisplay.clrValue && this.transitionAltitudeIsPilotEntered) {
             this.transitionAltitudeIsPilotEntered = false;
-            this.updateTransitionAltitude(this.flightPlanManager.getOrigin().ident, "destination");
+            this.updateDepartArrive(true);
             return true;
         }
 
@@ -2535,7 +2535,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (input === FMCMainDisplay.clrValue && this.transitionArrivalAltitudeIsPilotEntered) {
             this.transitionArrivalAltitudeIsPilotEntered = false;
-            this.updateTransitionAltitude(this.flightPlanManager.getDestination().ident, "origin");
+            this.updateDepartArrive(true);
             return true;
         }
 
@@ -3368,29 +3368,29 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     // Only update when changing origin & destination airport
-    updateDepartArrive() {
+    updateDepartArrive(mode) {
         if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident) {
             if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
                 const originAirport = this.flightPlanManager.getOrigin().ident;
                 const destinationAirport = this.flightPlanManager.getDestination().ident;
                 if (!this.offlineTACore.offline) {
-                    if ((this.currentOrigin !== originAirport) || this.apiRequestError) {
+                    if ((this.currentOrigin !== originAirport) || this.apiRequestError || mode) {
                         try {
-                            this.updateTransitionAltitude(originAirport, "origin");
+                            this.updateTransitionAltitude(originAirport, "origin")
                             this.apiRequestError = false;
                         } catch (error) {
-                            console.log(error);
+                            console.log(error)
                             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
                             setTimeout(this.apiRequestError = true, 3000);
                         }
                         this.currentOrigin = originAirport;
                     }
-                    if ((this.currentDestination !== destinationAirport) || this.apiRequestError) {
+                    if ((this.currentDestination !== destinationAirport) || this.apiRequestError || mode) {
                         try {
-                            this.updateTransitionAltitude(destinationAirport, "destination");
+                            this.updateTransitionAltitude(destinationAirport, "destination")
                             this.apiRequestError = false;
                         } catch (error) {
-                            console.log(error);
+                            console.log(error)
                             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
                             setTimeout(this.apiRequestError = true, 3000);
                         }
