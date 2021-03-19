@@ -1887,7 +1887,7 @@ class FMCMainDisplay extends BaseAirliners {
     trySetTakeOffTransAltitude(input) {
         if (input === FMCMainDisplay.clrValue && this.transitionAltitudeIsPilotEntered) {
             this.transitionAltitudeIsPilotEntered = false;
-            this.updateTransitionAltitude(this.flightPlanManager.getOrigin().ident, "destination")
+            this.updateTransitionAltitude(this.flightPlanManager.getOrigin().ident, "destination");
             return true;
         }
 
@@ -3376,10 +3376,10 @@ class FMCMainDisplay extends BaseAirliners {
                 if (!this.offlineTACore.offline) {
                     if ((this.currentOrigin !== originAirport) || this.apiRequestError) {
                         try {
-                            this.updateTransitionAltitude(originAirport, "origin")
+                            this.updateTransitionAltitude(originAirport, "origin");
                             this.apiRequestError = false;
                         } catch (error) {
-                            console.log(error)
+                            console.log(error);
                             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
                             setTimeout(this.apiRequestError = true, 3000);
                         }
@@ -3387,10 +3387,10 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                     if ((this.currentDestination !== destinationAirport) || this.apiRequestError) {
                         try {
-                            this.updateTransitionAltitude(destinationAirport, "destination")
+                            this.updateTransitionAltitude(destinationAirport, "destination");
                             this.apiRequestError = false;
                         } catch (error) {
-                            console.log(error)
+                            console.log(error);
                             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
                             setTimeout(this.apiRequestError = true, 3000);
                         }
