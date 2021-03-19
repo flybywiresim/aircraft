@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NXDataStore, usePersistentProperty } from '../../../Common/persistence';
+import { NXDataStore } from '../../../Common/persistence';
 import { useSimVar } from '../../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import { SelectItem, VerticalSelectGroup } from '../../Components/Form/Select';

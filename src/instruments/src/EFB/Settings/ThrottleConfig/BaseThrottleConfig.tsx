@@ -1,7 +1,5 @@
-import { IconArrowRight } from '@tabler/icons';
-import React, { useState } from 'react';
+import React from 'react';
 import { useSimVar } from '../../../Common/simVars';
-import Bar from '../../Components/Bar/Bar';
 import DetentConfig from './DetentConfig';
 
 interface Props {

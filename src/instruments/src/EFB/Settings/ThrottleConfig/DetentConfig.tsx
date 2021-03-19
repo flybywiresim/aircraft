@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import Input from '../../Components/Form/Input/Input';
