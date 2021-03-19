@@ -35,7 +35,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     };
 
     const switchDetent = (index: number) => {
-        console.log('click');
         if (index >= 0 && index <= 5) {
             setSelectedIndex(index);
         }
