@@ -51,6 +51,7 @@ module.exports = {
         'jsx-a11y/click-events-have-key-events': 'off',
         'jsx-a11y/anchor-is-valid': 'off',
         'object-curly-newline': ['error', { multiline: true }],
+        'linebreak-style': 'off',
     },
     globals: {
         Simplane: 'readonly',
