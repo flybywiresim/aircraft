@@ -66,7 +66,6 @@ var A320_Neo_BRK;
             this.rightGauge.addMarker(2, false);
             this.rightGauge.addMarker(2.5, true);
             this.rightGauge.addMarker(3, false);
-            this.electricity = this.querySelector("#Electricity");
             this.updateThrottler = new UpdateThrottler(100);
         }
         onUpdate(_deltaTime) {
@@ -75,9 +74,9 @@ var A320_Neo_BRK;
                 return;
             }
             const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
-            const powerAvailable = SimVar.GetSimVarValue("L:DCPowerAvailable","Bool");
+            const isPowered = !!SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool");
             if (this.topGauge != null) {
-                if (powerAvailable) {
+                if (isPowered) {
                     this.topGauge.setValue(3);
                 } else {
                     this.topGauge.setValue(0);
@@ -85,7 +84,7 @@ var A320_Neo_BRK;
             }
 
             if (this.leftGauge != null) {
-                if (powerAvailable) {
+                if (isPowered) {
                     if (currentPKGBrakeState != 0) {
                         this.leftGauge.setValue(2);
                     } else {
@@ -96,7 +95,7 @@ var A320_Neo_BRK;
                 }
             }
             if (this.rightGauge != null) {
-                if (powerAvailable) {
+                if (isPowered) {
                     if (currentPKGBrakeState != 0) {
                         this.rightGauge.setValue(2);
                     } else {
@@ -105,14 +104,6 @@ var A320_Neo_BRK;
                 } else {
                     this.rightGauge.setValue(0);
                 }
-            }
-            this.updateElectricityState(powerAvailable);
-        }
-        updateElectricityState(powerAvailable) {
-            if (powerAvailable) {
-                this.electricity.style.display = "block";
-            } else {
-                this.electricity.style.display = "none";
             }
         }
     }
