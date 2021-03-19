@@ -136,7 +136,7 @@ class A32NX_FWC {
         } else {
             this.cautionPressed = false;
         }
-        if (SimVar.GetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool")) {
+        if (ldgNotDown || overspeed) {
             this.warningPriority = true;
         } else {
             this.warningPriority = false;
