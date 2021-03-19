@@ -766,12 +766,12 @@ class CDUPerformancePage {
                 }
             } else {
                 transAltCell = "{cyan}[ ]{end}";
-                mcdu.onLeftInput[3] = (value) => {
-                    if (mcdu.trySetPerfApprTransAlt(value)) {
-                        CDUPerformancePage.ShowAPPRPage(mcdu);
-                    }
-                };
             }
+            mcdu.onLeftInput[3] = (value) => {
+                if (mcdu.trySetPerfApprTransAlt(value)) {
+                    CDUPerformancePage.ShowAPPRPage(mcdu);
+                }
+            };
         }
 
         let vappCell = "---";
