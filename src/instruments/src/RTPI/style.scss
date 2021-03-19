@@ -1,0 +1,26 @@
+@font-face {
+  font-family: "Digital";
+  src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
+
+.rtpi-svg {
+  background-color: rgba(32, 19, 2, 0.884);
+  position: absolute;
+  width: 105%;
+  height: 100%;
+}
+
+text {
+  font-family: Digital;
+  font-size: 150px;
+  fill: #5f482e;
+  letter-spacing: -5px;
+}
+.direction {
+  text-anchor: start;
+}
+.value {
+  text-anchor: end;
+}

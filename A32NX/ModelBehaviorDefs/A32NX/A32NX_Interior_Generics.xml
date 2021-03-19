@@ -389,6 +389,7 @@
             - SEQ1_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ1 emissive drives the visibility of the SEQ1 text
             - SEQ2_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ2 emissive drives the visibility of the SEQ2 text
             - INVERTED                          False           Whether or not the switch is OFF by default
+            - LEFT_SINGLE_CODE                  Not preseent    Overrides HOLD_SIMVAR, will execute the specified code when the button is pressed, and when it's released
     -->
     <Template Name="FBW_Push_Held">
         <DefaultTemplateParameters>
@@ -406,8 +407,16 @@
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button_Held">
-                <LEFT_SINGLE_CODE>1 (>#HOLD_SIMVAR#)</LEFT_SINGLE_CODE>
-                <LEFT_LEAVE_CODE>0 (>#HOLD_SIMVAR#)</LEFT_LEAVE_CODE>
+                <Condition Valid="LEFT_SINGLE_CODE">
+                    <True>
+                        <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+                        <LEFT_LEAVE_CODE>#LEFT_SINGLE_CODE#</LEFT_LEAVE_CODE>
+                    </True>
+                    <False>
+                        <LEFT_SINGLE_CODE>1 (>#HOLD_SIMVAR#)</LEFT_SINGLE_CODE>
+                        <LEFT_LEAVE_CODE>0 (>#HOLD_SIMVAR#)</LEFT_LEAVE_CODE>
+                    </False>
+                </Condition>
             </UseTemplate>
         </Component>
 
