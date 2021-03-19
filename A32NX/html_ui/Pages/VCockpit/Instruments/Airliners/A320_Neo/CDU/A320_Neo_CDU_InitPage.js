@@ -44,7 +44,7 @@ class CDUInitPage {
         //;
         let altDest = "----|----------";
         let costIndex = "---";
-        let cruiseFlTemp = "-----|---°";
+        let cruiseFlTemp = "-----\xa0|---°";
         let alignOption;
         let tropo = "{small}36090{end}[color]cyan";
         let requestButton = "REQUEST*[color]amber";
@@ -95,11 +95,11 @@ class CDUInitPage {
                     }
                 );
 
-                cruiseFlTemp = "_____|____[color]amber";
+                cruiseFlTemp = "_____\xa0|____[color]amber";
                 //This is done so pilot enters a FL first, rather than using the computed one
                 if (mcdu._cruiseEntered && mcdu._cruiseFlightLevel) {
                     cruiseFlTemp =
-                        "{cyan}FL" + mcdu._cruiseFlightLevel.toFixed(0).padStart(3, "0") + "/" +
+                        "{cyan}FL" + mcdu._cruiseFlightLevel.toFixed(0).padStart(3, "0") + "\xa0/" +
                         (!!mcdu.cruiseTemperature ? mcdu.cruiseTemperature.toFixed(0) + "°" : "{small}" + mcdu.tempCurve.evaluate(mcdu._cruiseFlightLevel).toFixed(0) + "°{end}") +
                         "{end}";
                 }
