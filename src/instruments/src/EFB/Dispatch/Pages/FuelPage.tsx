@@ -56,6 +56,7 @@ export const FuelPage = () => {
     const innerCells = () => innerCell() * 2;
     const centerTank = () => centerTankGallon * galToKg * convertUnit();
     const totalFuel = () => centerTank() + innerCells() + outerCells();
+    const [DCPowerAvail] = useSimVar('L:DCPowerAvailable', 'Bool', 1_000);
     const [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 1_000);
     const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 1_000);
     const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 1_000);
@@ -81,7 +82,7 @@ export const FuelPage = () => {
         if (usingMetrics !== 1) {
             setUsingMetrics(1);
         }
-        if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround) {
+        if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || !DCPowerAvail) {
             return false;
         }
         return true;

@@ -39,11 +39,12 @@ class A32NX_Refuel {
         if (!refuelStartedByUser) {
             return;
         }
+        const dcPowerAvail = SimVar.GetSimVarValue("L:DCPowerAvailable", "Bool");
         const gs = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
         const onGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
         const eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool");
         const eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool");
-        if (!onGround || eng1Running || eng2Running || gs > 0.1) {
+        if (!onGround || eng1Running || eng2Running || gs > 0.1 || !dcPowerAvail) {
             return;
         }
         const refuelRate = SimVar.GetSimVarValue("L:A32NX_REFUEL_RATE_SETTING", "Number");
