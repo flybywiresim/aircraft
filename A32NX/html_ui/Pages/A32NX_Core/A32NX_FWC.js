@@ -60,6 +60,8 @@ class A32NX_FWC {
         // master warning & caution buttons
         this.warningPressed = false;
         this.cautionPressed = false;
+        this.ecamClrPressed = false;
+        this.warningPriority = false;
 
         // altitude warning
         this.previousTargetAltitude = NaN;
@@ -75,7 +77,7 @@ class A32NX_FWC {
         this.apdeltaTime = 0;
 
         //update throttler
-        this.updateThrottler = new UpdateThrottler(500);
+        this.updateThrottler = new UpdateThrottler(200);
     }
 
     update(_deltaTime, _core) {
@@ -117,9 +119,10 @@ class A32NX_FWC {
         SimVar.SetSimVarValue("L:A32NX_FWC_INHIBOVRD", "Bool", inhibOverride);
 
         const overspeed = Simplane.getIndicatedSpeed() > (SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") + 4);
+        const ldgNotDown = SimVar.GetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool");
         if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_R", "Bool")) {
             this.warningPressed = true;
-            if (!overspeed) {
+            if (!overspeed && !ldgNotDown) {
                 SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", false);
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
             }
@@ -132,6 +135,11 @@ class A32NX_FWC {
             SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
         } else {
             this.cautionPressed = false;
+        }
+        if (SimVar.GetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool")) {
+            this.warningPriority = true;
+        } else {
+            this.warningPriority = false;
         }
     }
 
@@ -448,7 +456,9 @@ class A32NX_FWC {
 
         if (apStatus === 1) {
             SimVar.SetSimVarValue("L:A32NX_AP_DISC", "Bool", false);
-            SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
+            if (!this.warningPriority) {
+                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
+            }
             this.AutopilotWarningCanceled = false;
             this.apdeltaTime = 0;
         }
@@ -460,7 +470,9 @@ class A32NX_FWC {
             if (this.warningPressed === true || (this.apdeltaTime / 1000) >= 3) {
                 this.AutopilotWarningCanceled = true;
                 SimVar.SetSimVarValue("L:A32NX_AP_DISC", "Bool", false);
-                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
+                if (!this.warningPriority) {
+                    SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
+                }
                 this.apdeltaTime = 0;
             }
         }
@@ -481,10 +493,8 @@ class A32NX_FWC {
             if (eng1N1 < 75 && eng2N1 < 75) {
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
             } else if (isEngine1Shutdown && eng2N1 < 97) {
-                console.log("YES");
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
             } else if (isEngine2Shutdown && eng2N1 < 97) {
-                console.log("YES2");
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
             } else if (!(isTogaFlexMct1 && isTogaFlexMct2) && flapPosition >= 1) {
                 //this situation can't cancelled with master warning. but after fwc rewrite, will fixed.
