@@ -301,7 +301,7 @@ class NavSystem extends BaseInstrument {
         return null;
     }
     onInteractionEvent(_args) {
-        if (this.isElectricityAvailable() || SimVar.GetSimVarValue("L:DCPowerAvailable", "Bool") == 1) {
+        if (this.isElectricityAvailable() || SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool")) {
             let event = this.DecomposeEventFromPrefix(_args);
             if (event) {
                 if (event == "ElementSetAttribute" && _args.length >= 4) {
