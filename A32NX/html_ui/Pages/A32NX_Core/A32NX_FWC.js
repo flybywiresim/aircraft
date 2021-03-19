@@ -60,7 +60,6 @@ class A32NX_FWC {
         // master warning & caution buttons
         this.warningPressed = false;
         this.cautionPressed = false;
-        this.ecamClrPressed = false;
         this.warningPriority = false;
 
         // altitude warning
