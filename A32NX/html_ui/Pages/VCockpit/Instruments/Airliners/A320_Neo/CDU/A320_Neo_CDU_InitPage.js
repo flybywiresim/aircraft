@@ -99,8 +99,8 @@ class CDUInitPage {
                 //This is done so pilot enters a FL first, rather than using the computed one
                 if (mcdu._cruiseEntered && mcdu._cruiseFlightLevel) {
                     cruiseFlTemp =
-                        "{cyan}FL" + mcdu._cruiseFlightLevel.toFixed(0).padStart(3, "0") + "\xa0/" +
-                        (!!mcdu.cruiseTemperature ? mcdu.cruiseTemperature.toFixed(0) + "°" : "{small}" + mcdu.tempCurve.evaluate(mcdu._cruiseFlightLevel).toFixed(0) + "°{end}") +
+                        "{cyan}FL" + mcdu._cruiseFlightLevel.toFixed(0).padStart(3, "0") + "\xa0" +
+                        (!!mcdu.cruiseTemperature ? "/" + mcdu.cruiseTemperature.toFixed(0) + "°" : "{small}/" + mcdu.tempCurve.evaluate(mcdu._cruiseFlightLevel).toFixed(0) + "°{end}") +
                         "{end}";
                 }
 
