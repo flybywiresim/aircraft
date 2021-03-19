@@ -168,8 +168,8 @@ export const Ground = ({
     };
 
     return (
-        <div className="wrapper flex-grow flex flex-col">
-            <img className="airplane w-full" src={fuselage} />
+        <div className="wrapper h-efb flex-grow flex flex-col">
+            <img className="airplane w-full" src={fuselage} alt="fuselage" />
             <div className="left-1/4 grid grid-cols-2 control-grid absolute top-12">
 
                 <div>
