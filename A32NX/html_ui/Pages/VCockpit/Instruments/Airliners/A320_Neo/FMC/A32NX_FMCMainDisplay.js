@@ -479,14 +479,8 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getManagedTargets(v, m) {
-        const T = _convertCtoK(Simplane.getAmbientTemperature());
-        const p = SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar");
-
-        if (NXSpeedsUtils.convertKCasToMach(v, T, p) > m) {
-            return [_convertMachToKCas(m, T, p), true];
-        } else {
-            return [v, false];
-        }
+        const vM = _convertMachToKCas(m, _convertCtoK(Simplane.getAmbientTemperature()), SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar"));
+        return v > vM ? [vM, true] : [v, false];
     }
 
     updateManagedSpeeds() {
@@ -525,7 +519,9 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                 }
             } else {
-                this.managedSpeedTarget = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number");
+                const T = _convertCtoK(Simplane.getAmbientTemperature());
+                const p = SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar");
+                this.managedSpeedTarget = Simplane.getFlapsHandleIndex() === 0 ? Math.min(340, _convertMachToKCas(.8, T, p)) : SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") - 10;
             }
             vPfd = this.managedSpeedTarget;
         } else {
@@ -618,13 +614,13 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
 
-        console.log("vP: " + vPfd);
-        console.log("vA: " + this.managedSpeedTarget);
+        // Overspeed protection
+        const Vtap = Math.min(this.managedSpeedTarget, SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number"));
 
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", vPfd);
-        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", this.managedSpeedTarget);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", Vtap);
 
-        Coherent.call("AP_SPD_VAR_SET", 2, this.managedSpeedTarget);
+        Coherent.call("AP_SPD_VAR_SET", 2, Vtap);
 
         if (isMach) {
             SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
