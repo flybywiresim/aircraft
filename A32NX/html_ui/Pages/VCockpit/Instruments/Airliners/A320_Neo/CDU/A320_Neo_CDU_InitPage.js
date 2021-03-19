@@ -95,7 +95,7 @@ class CDUInitPage {
                     }
                 );
 
-                cruiseFlTemp = "_____\xa0|____[color]amber";
+                cruiseFlTemp = "_____\xa0|___°[color]amber";
                 //This is done so pilot enters a FL first, rather than using the computed one
                 if (mcdu._cruiseEntered && mcdu._cruiseFlightLevel) {
                     cruiseFlTemp =
