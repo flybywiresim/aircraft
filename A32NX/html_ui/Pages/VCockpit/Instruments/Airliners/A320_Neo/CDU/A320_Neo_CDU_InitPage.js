@@ -211,7 +211,7 @@ class CDUInitPage {
 
         mcdu.setTemplate([
             ["INIT"],
-            ["\xa0CO RTE", "FROM/TO\xa0\xa0\xa0"],
+            ["\xa0CO RTE", "FROM/TO\xa0\xa0"],
             [coRoute, fromTo],
             ["ALTN/CO RTE", requestButtonLabel],
             [altDest, requestButton],
