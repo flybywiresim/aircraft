@@ -219,10 +219,12 @@
 1. [MISC] Fixed default positions of RAM AIR, WX Mode, TCAS ALT RPTG and TCAS THRT switches - @tshomas (Shomas#2719)
 1. [MCDU] Fixed waypoint deletion not showing in TMPY flight plan after SU3 - @pareil6 (pareil6)
 1. [CORE] Fixed bug in altitude constraints calculation code - @SergeySoprykin (SergeyS)
+1. [ECAM] Fixed visual error on COND page when hot air pressure valve was off - @RichardPilbery (tricky_dicky#3571)
 1. [MISC] Fixed ecam page cycling when pressing the all button  - @Saschl (saschl)
 1. [XPDR] Reimplemented XPDR in react, correct the XPDR code entry behavior - @lukecologne (luke)
 1. [MISC] Reimplemented BAT, rudder trim and Clock in react, add elapsed time feature to clock - @lukecologne (luke)
 1. [ND] Add VOR/ADF needles on ARC display mode - @tracernz (Mike)
+1. [MCDU] Rework PERF APPR page to Honeywell Rev. 2 standard - @tracernz (Mike)
 1. [FLIGHTMDDEL] Minor improvements to flap drag - @donstim (donbikes#4084)
 
 ## 0.5.2
