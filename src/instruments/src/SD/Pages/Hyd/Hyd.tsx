@@ -30,18 +30,18 @@ export const HydPage = () => {
     const [Eng2N2] = useSimVar('TURB ENG N2:2', 'Percent', 1000);
 
     const [greenPressure] = useSimVar('L:A32NX_HYD_GREEN_PRESSURE', 'psi', 500);
-    const [bluePressure] = useSimVar('L:A32NX_HYD_BLUE_PRESSURE', 'psi', 500);
     const [yellowPressure] = useSimVar('L:A32NX_HYD_YELLOW_PRESSURE', 'psi', 500);
+    const [bluePressure] = useSimVar('L:A32NX_HYD_BLUE_PRESSURE', 'psi', 500);
 
     const [greenPumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'boolean', 500);
-    const [bluePumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'boolean', 500);
     const [yellowPumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'boolean', 500);
+    const [bluePumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'boolean', 500);
 
     const [yellowElectricPumpStatus] = useSimVar('L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO', 'boolean', 500);
 
     const [greenHydLevel] = useSimVar('L:A32NX_HYD_GREEN_RESERVOIR', 'gallon', 1000);
-    const [blueHydLevel] = useSimVar('L:A32NX_HYD_BLUE_RESERVOIR', 'galllon', 1000);
     const [yellowHydLevel] = useSimVar('L:A32NX_HYD_YELLOW_RESERVOIR', 'gallon', 1000);
+    const [blueHydLevel] = useSimVar('L:A32NX_HYD_BLUE_RESERVOIR', 'galllon', 1000);
 
     const [greenFireValve] = useSimVar('L:A32NX_HYD_GREEN_FIRE_VALVE_OPENED', 'boolean', 500);
     const [yellowFireValve] = useSimVar('L:A32NX_HYD_YELLOW_FIRE_VALVE_OPENED', 'boolean', 500);
@@ -51,7 +51,7 @@ export const HydPage = () => {
     const [bluePumpActive] = useSimVar('L:A32NX_HYD_BLUE_EPUMP_ACTIVE', 'boolean', 500);
 
     const [greenPumpLowPressure] = useSimVar('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'boolean', 500);
-    const [yellowPumpLowPressure] = useSimVar('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'boolean', 500);
+    const [yellowPumpLowPressure] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'boolean', 500);
     const [bluePumpLowPressure] = useSimVar('L:A32NX_HYD_BLUE_EPUMP_LOW_PRESS', 'boolean', 500);
 
     const [engine1Running, setEngine1Running] = useState(0);
@@ -62,115 +62,102 @@ export const HydPage = () => {
         setEngine2Running(Eng2N2 > 15 && yellowFireValve);
     }, [Eng1N2, Eng2N2]);
 
-    // PTU logic
-    const [ptuValveOpen] = useSimVar('L:A32NX_HYD_PTU_VALVE_OPENED', 'boolean', 1000);
+    // PTU variables
+    const [ptuPBStatus] = useSimVar('L:A32NX_OVHD_HYD_PTU_PB_IS_AUTO', 'boolean', 500);
+    const [ptuAvailable] = useSimVar('L:A32NX_HYD_PTU_VALVE_OPENED', 'boolean', 500);
     const [ptuScenario, setPtuScenario] = useState('normal');
-    const [elecRightFormat, setElecRightFormat] = useState('hide');
-    const [elecTriangleFill, setElecTriangleFill] = useState(0);
-    const [elecTriangleColour, setElecTriangleColour] = useState('white');
-    const [low, setLow] = useState('');
-    const [lowValue, setLowValue] = useState(0);
-    const [higValue, setHighValue] = useState(0);
-    const [high, setHigh] = useState(0);
-    const [ptu, setPtu] = useState(true);
 
-    // Might need to keep state of ELEC button and then revert if it's status changes.
-
-    // A32NX_HYD_{loop_name}_EDPUMP_LOW_PRESS should help with pump and line above when it is implemented
-
-    function elecButtonToggle(on) {
-        console.log(`Toggle with ${on}`);
-        if (on) {
-            setLow('green');
-            setHigh('yellow');
-            setLowValue(greenPressure);
-            setHighValue(yellowPressure);
-            setPtu(true);
-            setPtuScenario('elec-pump');
-        } else {
-            setLow('');
-            setHigh('');
-            setLowValue(0);
-            setHighValue(0);
-            setPtu(false);
-            setPtuScenario('normal');
-        }
+    type PressureChartType = {
+        high: string,
+        low: string,
+        highValue: number,
+        lowValue: number,
+        ptuScenario: string
     }
+
+    const [pressureChart, setPressureChart] = useState<PressureChartType>({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
+    const [ptuActive, setPtuActive] = useState(0);
 
     function checkPumpLowPressure(pump) {
         switch (pump) {
         case 'GREEN':
-            return (greenPumpLowPressure && greenPumpActive) || !greenPumpActive || !engine1Running;
+            return (greenPumpLowPressure && greenPumpActive) || !greenPumpActive;
         case 'BLUE':
             return (bluePumpLowPressure && bluePumpActive) || !bluePumpActive;
         case 'YELLOW':
-            return (yellowPumpLowPressure && yellowPumpActive) || !yellowPumpActive || !engine2Running;
+            return (yellowPumpLowPressure && yellowPumpActive) || !yellowPumpActive;
         default:
             return 1;
         }
     }
 
+    const [elecRightFormat, setElecRightFormat] = useState('hide');
+    const [elecTriangleFill, setElecTriangleFill] = useState(0);
+    const [elecTriangleColour, setElecTriangleColour] = useState('white');
+
+    function setPressures(clearState = false) {
+        if (clearState) {
+            setPressureChart({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
+        } else if (yellowPressure > greenPressure) {
+            setPressureChart({
+                high: 'YELLOW',
+                low: 'GREEN',
+                highValue: yellowPressure,
+                lowValue: greenPressure,
+                ptuScenario: 'right-to-left',
+            });
+        } else {
+            setPressureChart({
+                high: 'GREEN',
+                low: 'YELLOW',
+                highValue: greenPressure,
+                lowValue: yellowPressure,
+                ptuScenario: 'left-to-right',
+            });
+        }
+    }
+
     useEffect(() => {
-        if (!ptuValveOpen) {
-            // PTU valve closed
-            setPtuScenario('PTU-off');
-            // setPtuScenario('left-to-right');
-            setPtu(false);
-        } else if (!yellowElectricPumpStatus) {
+        setPtuScenario(pressureChart.ptuScenario);
+    }, [pressureChart]);
+
+    // PTU logic
+    useEffect(() => {
+        if (!yellowElectricPumpStatus) {
             setElecTriangleFill(1);
             setElecTriangleColour(yellowPressure <= 1450 ? 'amber' : 'green');
             setElecRightFormat(yellowPressure <= 1450 ? 'amber-line' : 'green-line');
-            elecButtonToggle(1);
         } else {
             setElecTriangleFill(0);
             setElecTriangleColour('white');
             setElecRightFormat('hide');
-            elecButtonToggle(0);
         }
-    }, [yellowElectricPumpStatus, yellowPressure, ptuValveOpen]);
 
-    useEffect(() => {
-
-    });
-    // useEffect(() => {
-    //     if (!ptuValveOpen) {
-    //         // PTU valve closed
-    //         setPtuScenario('PTU-off');
-    //         setPtu(false);
-    // } else {
-    //     setPtuScenario('normal');
-    //     setPtu(true);
-    // }
-
-    // else if (ptu || ((yellowPressure <= 1450 || greenPressure <= 1450) && (yellowPressure > 1450 || greenPressure > 1450))) {
-    // // One system is low or the PTU flag has been set.
-    //     setElecTriangleFill(0);
-    //     setElecTriangleColour('white');
-    //     setElecRightFormat('hide');
-    //     if (ptu) {
-    //         console.log('PTU has been triggered');
-    //     } else if ((yellowPressure > greenPressure) && (yellowPressure - greenPressure > 200)) {
-    //         console.log('Transfer Y to G');
-    //     } else if ((greenPressure > yellowPressure) && (greenPressure - yellowPressure > 200)) {
-    //         console.log('Transfer G to Y');
-    //     } else {
-    //         console.log('Probably need -300 check here');
-    //     }
-    // } else {
-    // // if(green > yellow && elec pump on then continue left to right)
-
-    //     // else larger > 1450 lowerlevel < 2.5 then show larget to small TransformStream
-
-    //     // if (lower > 1500 and lowerlevel < 2.5 then show largest to smallest)
-
-    //     // Set once larger and lower > 200
-
-    //     // Only reset when lower > larger by 300
-    //     console.log('Back to normal');
-    //     setPtu(false);
-    //     setPtuScenario('normal');
-    // }
-    // }, [ptuValveOpen, greenPressure, yellowPressure, bluePressure, yellowElectricPumpStatus]);
+        if (ptuAvailable && yellowElectricPumpStatus) {
+            // The PTU valve has to be open and the yellow electric pump should not be on
+            const pressureDifferential = Math.abs(greenPressure - yellowPressure);
+            const maxPressure = Math.max(yellowPressure, greenPressure);
+            // const minPressure = Math.min(yellowPressure, greenPressure);
+            const negativePressureDifferential = pressureChart.low === 'GREEN' ? pressureChart.lowValue - yellowPressure : pressureChart.lowValue - greenPressure;
+            if (maxPressure < 1450 || (greenPressure > 2990 && yellowPressure > 2990)) {
+                setPressures(true);
+                setPtuActive(0);
+            } else if (pressureDifferential > 200 && maxPressure > 1450 && !ptuActive) {
+                console.log('Pressure differ > 200');
+                setPtuActive(1);
+                setPressures();
+            } else if (negativePressureDifferential <= -500 && ptuActive) {
+                console.log('Pressure differential is < -500');
+                setPressures(true);
+                setPtuActive(0);
+            }
+        } else if (ptuAvailable && !yellowElectricPumpStatus && greenPressure <= 2990) {
+            setPtuScenario('right-to-left');
+            setPtuActive(1);
+        } else {
+            setPtuScenario(ptuPBStatus ? 'normal' : 'PTU-off');
+        }
+    }, [ptuPBStatus, greenPressure, yellowPressure, yellowElectricPumpStatus]);
 
     const y = 45;
 
@@ -191,6 +178,7 @@ export const HydPage = () => {
                     fireValve={greenFireValve}
                     pumpPBStatus={greenPumpPBStatus}
                     pumpDetectLowPressure={checkPumpLowPressure('GREEN')}
+                    yellowElectricPumpStatus={yellowElectricPumpStatus}
                 />
                 <HydSys
                     title="BLUE"
@@ -201,6 +189,7 @@ export const HydPage = () => {
                     fireValve={0}
                     pumpPBStatus={bluePumpPBStatus}
                     pumpDetectLowPressure={checkPumpLowPressure('BLUE')}
+                    yellowElectricPumpStatus={yellowElectricPumpStatus}
                 />
                 <HydSys
                     title="YELLOW"
@@ -211,6 +200,7 @@ export const HydPage = () => {
                     fireValve={yellowFireValve}
                     pumpPBStatus={yellowPumpPBStatus}
                     pumpDetectLowPressure={checkPumpLowPressure('YELLOW')}
+                    yellowElectricPumpStatus={yellowElectricPumpStatus}
                 />
 
                 <PTU x={300} y={y + 126} ptuScenario={ptuScenario} />
@@ -241,10 +231,11 @@ type HydSysProps = {
     y: number,
     fireValve: number,
     pumpPBStatus: number,
-    pumpDetectLowPressure: number
+    pumpDetectLowPressure: number,
+    yellowElectricPumpStatus: number
 }
 
-const HydSys = ({ title, pressure, hydLevel, x, y, fireValve, pumpPBStatus, pumpDetectLowPressure } : HydSysProps) => {
+const HydSys = ({ title, pressure, hydLevel, x, y, fireValve, pumpPBStatus, pumpDetectLowPressure, yellowElectricPumpStatus } : HydSysProps) => {
     const [hydLevelLow, setHydLevelLow] = useState(false);
     const lowPressure = 1450;
     const pressureNearest50 = Math.round(pressure / 50) * 50 >= 100 ? Math.round(pressure / 50) * 50 : 0;
@@ -257,7 +248,15 @@ const HydSys = ({ title, pressure, hydLevel, x, y, fireValve, pumpPBStatus, pump
 
             {/* The colour of these lines will be affected by the yellow electric pump */}
             <line className={pressureNearest50 <= lowPressure ? 'amber-line' : 'green-line'} x1={x} y1={y + 126} x2={x} y2={y + 83} />
-            <line className={pressureNearest50 <= lowPressure || (pumpDetectLowPressure && title === 'GREEN') ? 'amber-line' : 'green-line'} x1={x} y1={y + 181} x2={x} y2={y + 125} />
+            <line
+                className={pressureNearest50 <= lowPressure
+                 || (pumpDetectLowPressure && title === 'GREEN')
+                 || (pumpDetectLowPressure && yellowElectricPumpStatus && title === 'YELLOW') ? 'amber-line' : 'green-line'}
+                x1={x}
+                y1={y + 181}
+                x2={x}
+                y2={y + 125}
+            />
             <line className={pressureNearest50 <= lowPressure || (pumpDetectLowPressure && title !== 'BLUE') ? 'amber-line' : 'green-line'} x1={x} y1={y + 221} x2={x} y2={y + 180} />
 
             <HydEngPump
