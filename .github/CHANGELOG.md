@@ -223,6 +223,7 @@
 1. [XPDR] Reimplemented XPDR in react, correct the XPDR code entry behavior - @lukecologne (luke)
 1. [MISC] Reimplemented BAT, rudder trim and Clock in react, add elapsed time feature to clock - @lukecologne (luke)
 1. [ND] Add VOR/ADF needles on ARC display mode - @tracernz (Mike)
+1. [MCDU] Rework PERF APPR page to Honeywell Rev. 2 standard - @tracernz (Mike)
 1. [ND] Fix Behaviour of TAS and Wind Info displayed inflight and on Take-Off - @ChruutvoLuzi (ChruutvoLuzi#8902)
 
 ## 0.5.2
