@@ -2279,10 +2279,6 @@ class FMCMainDisplay extends BaseAirliners {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-        if (fl > Math.floor(Simplane.getAltitude() / 100) && phase === FmgcFlightPhases.DESCENT) {
-            this.addNewMessage(NXSystemMessages.entryOutOfRange);
-            return false;
-        }
 
         if (fl <= 0 || fl > this.maxCruiseFL) {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -2296,7 +2292,11 @@ class FMCMainDisplay extends BaseAirliners {
         this.cruiseTemperature = undefined;
         this.updateConstraints();
 
-        if (phase === FmgcFlightPhases.APPROACH || phase === FmgcFlightPhases.GOAROUND) {
+        const acFl = Math.floor(Simplane.getAltitude() / 100);
+
+        if (acFl > fl && (phase === FmgcFlightPhases.CLIMB || phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH)) {
+            this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.CRUISE);
+        } else if (acFl < fl && (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH)) {
             this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.CLIMB);
         }
 
@@ -2698,35 +2698,19 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     tryGoInApproachPhase() {
-        if (this.currentFlightPhase === FmgcFlightPhases.CLIMB) {
+        if (
+            this.currentFlightPhase === FmgcFlightPhases.PREFLIGHT ||
+            this.currentFlightPhase === FmgcFlightPhases.TAKEOFF ||
+            this.currentFlightPhase === FmgcFlightPhases.DONE
+        ) {
+            return false;
+        }
+
+        if (this.currentFlightPhase !== FmgcFlightPhases.APPROACH) {
             this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.APPROACH);
-            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-            return true;
         }
-        if (this.currentFlightPhase === FmgcFlightPhases.CRUISE) {
-            this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.APPROACH);
-            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-            return true;
-        }
-        if (this.currentFlightPhase === FmgcFlightPhases.DESCENT) {
-            this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.APPROACH);
-            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-            return true;
-        }
-        if (this.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
-            this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.APPROACH);
-            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-            return true;
-        }
-        if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
-            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
-            return true;
-        }
-        return false;
+
+        return true;
     }
 
     connectIlsFrequency(_freq) {
