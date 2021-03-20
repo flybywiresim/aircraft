@@ -703,6 +703,7 @@ class CDUPerformancePage {
             bottomRowCells
         ]);
     }
+
     static ShowAPPRPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.PerformancePageAppr;
@@ -716,36 +717,43 @@ class CDUPerformancePage {
                 }
             }
         };
-        let titleColor = "white";
-        if (mcdu.currentFlightPhase === FmgcFlightPhases.APPROACH) {
-            titleColor = "green";
-        }
-        let qnhCell = "[ ]";
-        const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
-        if (isFinite(mcdu.perfApprQNH) || QNH_REGEX.test(mcdu.perfApprQNH)) {
-            qnhCell = mcdu.perfApprQNH;
+
+        const closeToDest = mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().liveDistanceTo <= 180;
+
+        let qnhCell = "[\xa0\xa0][color]cyan";
+        if (isFinite(mcdu.perfApprQNH)) {
+            if (mcdu.perfApprQNH < 500) {
+                qnhCell = mcdu.perfApprQNH.toFixed(2) + "[color]cyan";
+            } else {
+                qnhCell = mcdu.perfApprQNH.toFixed(0) + "[color]cyan";
+            }
+        } else if (closeToDest) {
+            qnhCell = "____[color]amber";
         }
         mcdu.onLeftInput[0] = (value) => {
             if (mcdu.setPerfApprQNH(value)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
-        let tempCell = "[ ]";
+
+        let tempCell = "[\xa0]°[color]cyan";
         if (isFinite(mcdu.perfApprTemp)) {
-            tempCell = mcdu.perfApprTemp.toFixed(0);
+            tempCell = ("" + mcdu.perfApprTemp.toFixed(0)).padStart(3).replace(/ /g, "\xa0") + "°[color]cyan";
+        } else if (closeToDest) {
+            tempCell = "___°[color]amber";
         }
         mcdu.onLeftInput[1] = (value) => {
             if (mcdu.setPerfApprTemp(value)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
-        let magWindHeadingCell = "[ ]";
+        let magWindHeadingCell = "[\xa0]";
         if (isFinite(mcdu.perfApprWindHeading)) {
-            magWindHeadingCell = mcdu.perfApprWindHeading.toFixed(0);
+            magWindHeadingCell = ("" + mcdu.perfApprWindHeading.toFixed(0)).padStart(3, 0);
         }
-        let magWindSpeedCell = "[ ]";
+        let magWindSpeedCell = "[\xa0]";
         if (isFinite(mcdu.perfApprWindSpeed)) {
-            magWindSpeedCell = mcdu.perfApprWindSpeed.toFixed(0);
+            magWindSpeedCell = mcdu.perfApprWindSpeed.toFixed(0).padStart(3, "0");
         }
         mcdu.onLeftInput[2] = (value) => {
             if (mcdu.setPerfApprWind(value)) {
@@ -754,9 +762,13 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
-        let transAltCell = "---";
+
+        let transAltCell = "[\xa0][color]cyan";
         if (isFinite(mcdu.perfApprTransAlt)) {
             transAltCell = mcdu.perfApprTransAlt.toFixed(0);
+            if (!mcdu.perfApprTransAltPilotEntered) {
+                transAltCell += "[s-text]";
+            }
         }
         mcdu.onLeftInput[3] = (value) => {
             if (mcdu.setPerfApprTransAlt(value)) {
@@ -771,10 +783,10 @@ class CDUPerformancePage {
         let cleanCell = "---";
         if (mcdu.approachSpeeds && mcdu.approachSpeeds.valid) {
             vappCell = mcdu.approachSpeeds.vapp.toFixed(0) + "[s-text]";
-            vlsCell = mcdu.approachSpeeds.vls.toFixed(0);
-            flpRetrCell = mcdu.approachSpeeds.f.toFixed(0) + "[color]green";
-            sltRetrCell = mcdu.approachSpeeds.s.toFixed(0) + "[color]green";
-            cleanCell = mcdu.approachSpeeds.gd.toFixed(0) + "[color]green";
+            vlsCell = `{green}${mcdu.approachSpeeds.vls.toFixed(0)}{end}`;
+            flpRetrCell = `{green}${mcdu.approachSpeeds.f.toFixed(0)}{end}`;
+            sltRetrCell = `{green}${mcdu.approachSpeeds.s.toFixed(0)}{end}`;
+            cleanCell = `{green}${mcdu.approachSpeeds.gd.toFixed(0)}{end}`;
         }
         if (isFinite(mcdu.vApp)) { // pilot override
             vappCell = mcdu.vApp.toFixed(0);
@@ -784,47 +796,64 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
-        mcdu.onRightInput[3] = () => {
-            mcdu.setPerfApprFlaps3(true);
-            mcdu.updatePerfSpeeds();
-            CDUPerformancePage.ShowAPPRPage(mcdu);
-        };
         mcdu.onRightInput[4] = () => {
-            mcdu.setPerfApprFlaps3(false);
+            mcdu.setPerfApprFlaps3(!mcdu.perfApprFlaps3);
             mcdu.updatePerfSpeeds();
             CDUPerformancePage.ShowAPPRPage(mcdu);
         };
-        let finalCell = "-----";
+
+        let finalCell = "";
         const approach = mcdu.flightPlanManager.getApproach();
         if (approach && approach.name) {
-            finalCell = Avionics.Utils.formatRunway(approach.name);
+            finalCell = `\xa0{green}${Avionics.Utils.formatRunway(approach.name).replace(/ /g, "")}{end}\xa0\xa0\xa0\xa0\xa0`;
         }
-        let mdaCell = "[ ]";
+
+        let baroCell = "[\xa0\xa0\xa0]";
         if (isFinite(mcdu.perfApprMDA)) {
-            mdaCell = mcdu.perfApprMDA.toFixed(0);
+            baroCell = mcdu.perfApprMDA.toFixed(0);
         }
         mcdu.onRightInput[1] = (value) => {
             if (mcdu.setPerfApprMDA(value) && mcdu.setPerfApprDH(FMCMainDisplay.clrValue)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
-        let dhCell = "[ ]";
-        if (isFinite(mcdu.perfApprDH)) {
-            dhCell = mcdu.perfApprDH.toFixed(0);
-        } else if (mcdu.perfApprDH === "NO DH") {
-            dhCell = "NO DH";
+
+        const isILS = approach && approach.name && approach.name.indexOf("ILS") !== -1;
+        let radioLabel = "";
+        let radioCell = "";
+        if (isILS) {
+            radioLabel = "RADIO";
+            if (isFinite(mcdu.perfApprDH)) {
+                radioCell = mcdu.perfApprDH.toFixed(0);
+            } else if (mcdu.perfApprDH === "NO DH") {
+                radioCell = "NO DH";
+            } else {
+                radioCell = "[\xa0]";
+            }
+            mcdu.onRightInput[2] = (value) => {
+                if (mcdu.setPerfApprDH(value) && mcdu.setPerfApprMDA(FMCMainDisplay.clrValue)) {
+                    CDUPerformancePage.ShowAPPRPage(mcdu);
+                }
+            };
         }
-        mcdu.onRightInput[2] = (value) => {
-            if (mcdu.setPerfApprDH(value) && mcdu.setPerfApprMDA(FMCMainDisplay.clrValue)) {
-                CDUPerformancePage.ShowAPPRPage(mcdu);
+
+        let finalAppCell = "";
+        if (!isILS) {
+            finalAppCell = "{cyan}FINAL APP/{end}{small}{inop}FLS*{end}{end}";
+        }
+        mcdu.onRightInput[0] = () => {
+            if (!isILS) {
+                mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
             }
         };
 
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
+        let titleColor = "white";
         if (mcdu.currentFlightPhase === FmgcFlightPhases.APPROACH) {
             bottomRowLabels[0] = "";
             bottomRowCells[0] = "";
+            titleColor = "green";
         } else {
             if (mcdu.currentFlightPhase === FmgcFlightPhases.GOAROUND) {
                 mcdu.leftInputDelay[5] = () => {
@@ -855,21 +884,22 @@ class CDUPerformancePage {
         }
 
         mcdu.setTemplate([
-            ["APPR[color]" + titleColor],
-            ["QNH", "FINAL", "FLP RETR{sp}"],
-            [qnhCell + "[color]cyan", finalCell + "[color]green", "F=" + flpRetrCell + "[color]green"],
-            ["TEMP", "MDA", "SLT RETR{sp}"],
-            [tempCell + "°[color]cyan", mdaCell + "[color]cyan", "S=" + sltRetrCell + "[color]green"],
-            ["MAG WIND", "DH", "{sp}{sp}CLEAN"],
-            [magWindHeadingCell + "°/" + magWindSpeedCell + "[color]cyan", dhCell + "[color]cyan", "O=" + cleanCell + "[color]green"],
-            ["TRANS ALT", "LDG CONF"],
-            [transAltCell + "[color]cyan", mcdu.perfApprFlaps3 ? "CONF3[color]cyan" : "[s-text]CONF3*[color]cyan"],
-            ["VAPP", "", "VLS"],
-            [vappCell + "[color]cyan", mcdu.perfApprFlaps3 ? "[s-text]FULL*[color]cyan" : "FULL[color]cyan", vlsCell + "[color]green"],
-            bottomRowLabels,
-            bottomRowCells,
+            /* t  */[`{${titleColor}}APPR{end}${finalCell}`],
+            /* 1l */["QNH"],
+            /* 1L */[qnhCell, finalAppCell],
+            /* 2l */["TEMP", "BARO"],
+            /* 2L */[tempCell, baroCell + "[color]cyan", "O=" + cleanCell],
+            /* 3l */["MAG WIND", radioLabel],
+            /* 3L */[magWindHeadingCell + "°/" + magWindSpeedCell + "[color]cyan", radioCell + "[color]cyan", "S=" + sltRetrCell],
+            /* 4l */["TRANS ALT"],
+            /* 4L */[transAltCell + "[color]cyan", "", "F=" + flpRetrCell],
+            /* 5l */["VAPP", "LDG CONF\xa0", "VLS\xa0\xa0\xa0\xa0\xa0\xa0"],
+            /* 5L */[vappCell + "[color]cyan", mcdu.perfApprFlaps3 ? "{cyan}CONF3/{end}{small}FULL*{end}" : "{cyan}FULL/{end}{small}CONF3*{end}", vlsCell + "\xa0\xa0\xa0\xa0\xa0\xa0"],
+            /* 6l */bottomRowLabels,
+            /* 6L */bottomRowCells,
         ]);
     }
+
     static ShowGOAROUNDPage(mcdu, confirmAppr = false) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.PerformancePageGoAround;
