@@ -21,6 +21,7 @@ import { CurrentFlight, Map } from '@flybywiresim/map';
 import FlightWidget from './Widgets/FlightWidget';
 // import WeatherWidget from './Widgets/WeatherWidget';
 import { useSimVar } from '../../Common/simVars';
+import WeatherWidget from './Widgets/WeatherWidget';
 
 type DashboardProps = {
     airline: string,
@@ -99,7 +100,15 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
 
                 <div className="flex flex-col w-3/5">
                     <div className="h-2/5 bg-navy-lighter rounded-2xl ml-3 mb-3 shadow-lg p-6">
-                        <div className="h-full rounded-lg overflow-hidden" />
+                        <div className="h-full flex items-center">
+                            <div className="w-1/2">
+                                <WeatherWidget name="origin" editIcao="yes" icao={props.departingAirport} />
+                            </div>
+                            <div className="border border-gray-500 rounded-full h-48" />
+                            <div className="w-1/2">
+                                <WeatherWidget name="origin" editIcao="yes" cardRight={true} icao={props.arrivingAirport} />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="h-3/5 ml-3 mt-3 rounded-2xl overflow-hidden shadow-lg">
