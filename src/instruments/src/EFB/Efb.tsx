@@ -155,7 +155,7 @@ const Efb = (props: EfbProps) => {
         const returnedSimbriefData = await getSimbriefData(simbriefUsername);
         console.info(returnedSimbriefData);
         setSimbriefData({
-            airline: simbriefData.airline,
+            airline: returnedSimbriefData.airline,
             flightNum: returnedSimbriefData.flightNumber,
             departingAirport: returnedSimbriefData.origin.icao,
             departingIata: returnedSimbriefData.origin.iata,
@@ -266,7 +266,6 @@ const Efb = (props: EfbProps) => {
             return (
                 <Dashboard
                     fetchSimbrief={fetchSimbriefData}
-                    currentFlight={props.currentFlight}
                     airline={simbriefData.airline}
                     flightNum={simbriefData.flightNum}
                     aircraftReg={simbriefData.aircraftReg}

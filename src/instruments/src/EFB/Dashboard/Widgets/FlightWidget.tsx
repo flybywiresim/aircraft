@@ -28,7 +28,6 @@ import {
 import fuselage from '../../Assets/320neo-outline-nose.svg';
 
 type FlightWidgetProps = {
-    name: string,
     airline: string,
     flightNum: string,
     aircraftReg: string,
@@ -48,17 +47,12 @@ type FlightWidgetProps = {
 }
 
 const FlightWidget = (props: FlightWidgetProps) => {
-    const resolveFlightName = () => {
-        const { airline } = props;
-        return `${airline}${props.flightNum}`;
-    };
-
     return (
-        <div id={`flight-${props.name}`} className="w-2/5 h-full bg-navy-lighter text-white rounded-2xl mr-3 shadow-lg p-6 overflow-hidden">
+        <div className="w-2/5 h-full bg-navy-lighter text-white rounded-2xl mr-3 shadow-lg p-6 overflow-hidden">
             <div className="h-full flex flex-col justify-between">
                 <div className="w-full">
                     <div className="text-center mb-6">
-                        <h1 className="text-2xl font-medium">{resolveFlightName()}</h1>
+                        <h1 className="text-2xl font-medium">{props.airline + props.flightNum}</h1>
                         <span>{props.aircraftReg}</span>
                         {' '}
                         <br />
@@ -117,15 +111,15 @@ const FlightWidget = (props: FlightWidgetProps) => {
                         </div>
                         <div>
                             <h3 className="text-xl font-medium">AVG WIND</h3>
-                            <span className="text-lg font-mono font-thin">VIJP</span>
+                            <span className="text-lg font-mono font-thin">-26</span>
                         </div>
                         <div>
                             <h3 className="text-xl font-medium">CI</h3>
                             <span className="text-lg font-mono font-thin">{props.costInd}</span>
                         </div>
                         <div>
-                            <h3 className="text-xl font-medium">CRZ TEMP</h3>
-                            <span className="text-lg font-mono font-thin">VIJP</span>
+                            <h3 className="text-xl font-medium">CRZ</h3>
+                            <span className="text-lg font-mono font-thin">FL360</span>
                         </div>
                     </div>
                     <div className="flex">

@@ -23,7 +23,6 @@ import FlightWidget from './Widgets/FlightWidget';
 import { useSimVar } from '../../Common/simVars';
 
 type DashboardProps = {
-    currentFlight: string,
     airline: string,
     flightNum: string,
     aircraftReg: string,
@@ -80,7 +79,6 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
             <h1 className="text-3xl pt-6 text-white">Dashboard</h1>
             <div className="flex w-full mt-6 h-efb">
                 <FlightWidget
-                    name="todays"
                     airline={props.airline}
                     flightNum={props.flightNum}
                     aircraftReg={props.aircraftReg}
