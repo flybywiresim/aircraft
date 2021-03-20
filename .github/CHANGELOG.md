@@ -222,6 +222,7 @@
 1. [MISC] Fixed ecam page cycling when pressing the all button  - @Saschl (saschl)
 1. [XPDR] Reimplemented XPDR in react, correct the XPDR code entry behavior - @lukecologne (luke)
 1. [MISC] Reimplemented BAT, rudder trim and Clock in react, add elapsed time feature to clock - @lukecologne (luke)
+1. [ND] Add VOR/ADF needles on ARC display mode - @tracernz (Mike)
 1. [FLIGHTMDDEL] Minor improvements to flap drag - @donstim (donbikes#4084)
 
 ## 0.5.2
