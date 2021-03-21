@@ -2576,7 +2576,6 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
 
-        let value = parseInt(input);
         if (!/^\d{4,5}$/.test(input)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
