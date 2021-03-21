@@ -7,7 +7,7 @@ export default new TaskOfTasks('a32nx', [
         new ExecTask('model','node src/model/build.js', ['src/model', 'A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model']),
         new ExecTask('systems', [
             'cargo build --target wasm32-wasi --release',
-            'cp target/wasm32-wasi/release/systems.wasm A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/panel/'
+            'cp -u target/wasm32-wasi/release/systems.wasm A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/panel/'
         ]),
     ], true),
 

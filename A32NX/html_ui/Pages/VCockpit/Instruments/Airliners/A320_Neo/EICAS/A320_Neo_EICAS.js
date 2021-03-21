@@ -57,12 +57,13 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                     pageName = this.pageNameWhenUnselected;
                     pageIndex = -1;
                 }
+
                 this.currentPage = pageIndex;
-                SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", pageIndex);
                 break;
             }
         }
         this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, pageName);
+        SimVar.SetSimVarValue("L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX", "number", this.currentPage);
     }
 
     createUpperScreenPage() {
@@ -100,6 +101,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         super.Init();
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         this.currentPage = -1;
+        this.ecamAllButtonTimer = 1000;
+        this.ecamAllButtonTimerStarted = false;
 
         this.pageNameWhenUnselected = "DOOR";
         //this prevents switching back to previous pages
@@ -156,16 +159,20 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
     onUpdate() {
         let _deltaTime = this.getDeltaTime();
-
         super.onUpdate(_deltaTime);
 
         const selfTestCurrentKnobValue = SimVar.GetSimVarValue(this.isTopScreen ? "LIGHT POTENTIOMETER:92" : "LIGHT POTENTIOMETER:93", "number");
         const knobChanged = (selfTestCurrentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
 
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime === -1 && !knobChanged) {
+        const ecamAllButtonBeingPushed = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
+
+        if (!knobChanged && !ecamAllButtonBeingPushed) {
+            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
+        }
+        if (_deltaTime === -1) {
             return;
         }
+
         this.updateDoorVideoState();
 
         this.updateAnnunciations();
@@ -318,19 +325,16 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, this.pageNameWhenUnselected);
         }
 
-        // ECAM all button
-        this.ecamAllButtonState = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
-
-        if (this.ecamAllButtonState && !this.ecamAllButtonPrevState) { // button press
+        if (ecamAllButtonBeingPushed && !this.ecamAllButtonPrevState) { // button press
             this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
             this.ecamCycleInterval = setInterval(() => {
                 this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
             }, 1000);
-        } else if (!this.ecamAllButtonState && this.ecamAllButtonPrevState) { // button release
+        } else if (!ecamAllButtonBeingPushed && this.ecamAllButtonPrevState) { // button release
             clearInterval(this.ecamCycleInterval);
         }
 
-        this.ecamAllButtonPrevState = this.ecamAllButtonState;
+        this.ecamAllButtonPrevState = ecamAllButtonBeingPushed;
         this.PrevFailPage = sFailPage;
     }
 
