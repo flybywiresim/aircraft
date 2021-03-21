@@ -193,32 +193,31 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                 : (
                     <>
                         <div className="mb-6">
-                                {props.editIcao === 'yes' ? (
-                                    <div className="flex items-center">
-                                        {props.cardRight === true ? (
-                                            <>
-                                                <input
-                                                    className="text-right mr-4 border-none focus:outline-none text-2xl bg-transparent font-medium uppercase"
-                                                    type="text"
-                                                    placeholder={props.icao}
-                                                    onChange={handleIcao}
-                                                />
-                                                <IconCloud className="mr-8" size={35} stroke={1.5} strokeLinejoin="miter" />
-                                            </>
-                                        ) :
-                                        <>
-                                            <IconCloud className="ml-8" size={35} stroke={1.5} strokeLinejoin="miter" />
-                                            <input
-                                                className="text-left ml-4 border-none focus:outline-none text-2xl bg-transparent font-medium uppercase"
-                                                type="text"
-                                                placeholder={props.icao}
-                                                onChange={handleIcao}
-                                            />
-                                        </>
-                                        }
+                            {props.cardRight === true ? (
+                                <div className="inline-flex items-center w-64">
+                                    <input
+                                        className="text-right mr-4 border-none focus:outline-none text-2xl bg-transparent font-medium uppercase"
+                                        type="text"
+                                        placeholder={props.icao}
+                                        onChange={handleIcao}
+                                    />
+                                    <div className="mr-8">
+                                        <IconCloud size={35} stroke={1.5} strokeLinejoin="miter" />
                                     </div>
-                                )
-                                    : metar.icao}
+                                </div>
+                            ) :
+                                <div className="inline-flex items-center w-64 overflow-hidden">
+                                    <div className="ml-8">
+                                        <IconCloud size={35} stroke={1.5} strokeLinejoin="miter" />
+                                    </div>
+                                    <input
+                                        className="text-left ml-4 border-none focus:outline-none text-2xl bg-transparent font-medium uppercase"
+                                        type="text"
+                                        placeholder={props.icao}
+                                        onChange={handleIcao}
+                                    />
+                                </div>
+                            }
                         </div>
                         <div className="grid grid-cols-2">
                             <div className="text-center text-lg">
