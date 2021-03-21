@@ -63,7 +63,6 @@ export const HydPage = () => {
     }, [Eng1N2, Eng2N2]);
 
     // PTU variables
-    const [ptuPBStatus] = useSimVar('L:A32NX_OVHD_HYD_PTU_PB_IS_AUTO', 'boolean', 500);
     const [ptuAvailable] = useSimVar('L:A32NX_HYD_PTU_VALVE_OPENED', 'boolean', 500);
     const [ptuScenario, setPtuScenario] = useState('normal');
 
@@ -155,9 +154,9 @@ export const HydPage = () => {
             setPtuScenario('right-to-left');
             setPtuActive(1);
         } else {
-            setPtuScenario(ptuPBStatus ? 'normal' : 'PTU-off');
+            setPtuScenario(ptuAvailable ? 'normal' : 'PTU-off');
         }
-    }, [ptuPBStatus, greenPressure, yellowPressure, yellowElectricPumpStatus]);
+    }, [greenPressure, yellowPressure, yellowElectricPumpStatus]);
 
     const y = 45;
 
