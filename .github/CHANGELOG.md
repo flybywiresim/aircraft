@@ -226,6 +226,9 @@
 1. [ND] Add VOR/ADF needles on ARC display mode - @tracernz (Mike)
 1. [MCDU] Rework PERF APPR page to Honeywell Rev. 2 standard - @tracernz (Mike)
 1. [EFB] Set font of OFP to monospace - @chkgk (Chriskgk#4359)
+1. [SOUND] Added electrical system sounds - @hotshotp (Boris)
+1. [SOUND] General improvements to cockpit and cabin ambience - @hotshotp (Boris)
+
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
