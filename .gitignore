@@ -39,3 +39,5 @@ node_modules
 /src/systems/target/
 /src/systems/systems/*.png
 .vscode/settings.json
+!igniter.config.mjs
+.igniter

@@ -6,24 +6,14 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
     }
     connectedCallback() {
         super.connectedCallback();
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        this.mfdIndex = parseInt(url.substring(url.length - 1));
     }
     init() {
         super.init();
     }
     constructArc() {
         super.constructArc();
-        if (this.aircraft == Aircraft.CJ4) {
-            this.constructArc_CJ4();
-        } else if (this.aircraft == Aircraft.B747_8) {
-            this.constructArc_B747_8();
-        } else if (this.aircraft == Aircraft.AS01B) {
-            this.constructArc_AS01B();
-        } else {
-            this.constructArc_A320_Neo();
-        }
-    }
-    constructArc_CJ4() { }
-    constructArc_A320_Neo() {
         this.root = document.createElementNS(Avionics.SVG.NS, "svg");
         this.root.setAttribute("width", "100%");
         this.root.setAttribute("height", "100%");
@@ -156,6 +146,49 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                         graduationGroup.appendChild(line);
                     }
                 }
+                this.courseGroup = document.createElementNS(Avionics.SVG.NS, "g");
+                this.courseGroup.setAttribute("id", "CourseInfo");
+                this.rotatingCircle.appendChild(this.courseGroup);
+                {
+                    const bearing = document.createElementNS(Avionics.SVG.NS, "g");
+                    bearing.setAttribute("id", "bearing");
+                    this.courseGroup.appendChild(bearing);
+                    {
+                        this.bearing1 = document.createElementNS(Avionics.SVG.NS, "g");
+                        this.bearing1.setAttribute("id", "bearing1");
+                        this.bearing1.setAttribute("visibility", "hidden");
+                        bearing.appendChild(this.bearing1);
+
+                        const arrow1 = document.createElementNS(Avionics.SVG.NS, "path");
+                        arrow1.setAttribute("d", "M50 475 L50 460 M50 440 L50 370    M63 460 L50 440 L37 460 Z     M50 -375 L50 -360 M50 -340 L50 -270     M63 -340 L50 -360 L37 -340 Z");
+                        if (Simplane.getAutoPilotNavAidState(this.aircraft, this.mfdIndex, 1) === NAV_AID_STATE.ADF) {
+                            arrow1.setAttribute("stroke", "lime");
+                        } else {
+                            arrow1.setAttribute("stroke", "white");
+                        }
+                        arrow1.setAttribute("stroke-width", "4");
+                        arrow1.setAttribute("fill", "none");
+                        arrow1.setAttribute("id", "bearing1");
+                        this.bearing1.appendChild(arrow1);
+
+                        this.bearing2 = document.createElementNS(Avionics.SVG.NS, "g");
+                        this.bearing2.setAttribute("id", "bearing2");
+                        this.bearing2.setAttribute("visibility", "hidden");
+                        bearing.appendChild(this.bearing2);
+
+                        const arrow2 = document.createElementNS(Avionics.SVG.NS, "path");
+                        arrow2.setAttribute("d", "M50 475 L50 420 M58 420 L42 420    M58 420 L58 370 M42 420 L42 370     M50 -375 L50 -320   M58 -270 L58 -300 L63 -300 L50 -320 L37 -300 L42 -300 L42 -270");
+                        if (Simplane.getAutoPilotNavAidState(this.aircraft, this.mfdIndex, 2) === NAV_AID_STATE.ADF) {
+                            arrow2.setAttribute("stroke", "lime");
+                        } else {
+                            arrow2.setAttribute("stroke", "white");
+                        }
+                        arrow2.setAttribute("stroke-width", "4");
+                        arrow2.setAttribute("fill", "none");
+                        arrow2.setAttribute("id", "bearing2");
+                        this.bearing2.appendChild(arrow2);
+                    }
+                }
                 this.rotatingCircle.appendChild(graduationGroup);
                 this.trackingGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.trackingGroup.setAttribute("id", "trackingGroup");
@@ -237,24 +270,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             }
         }
     }
-    constructArc_B747_8() { }
-    constructArc_AS01B() {
-    }
     constructPlan() {
         super.constructPlan();
-        if (this.aircraft == Aircraft.B747_8) {
-            this.constructPlan_B747_8();
-        } else if (this.aircraft == Aircraft.AS01B) {
-            this.constructPlan_AS01B();
-        } else if (this.aircraft == Aircraft.CJ4) {
-            this.constructPlan_CJ4();
-        } else {
-            this.constructPlan_A320_Neo();
-        }
-    }
-    constructPlan_B747_8() { }
-    constructPlan_AS01B() { }
-    constructPlan_A320_Neo() {
         this.root = document.createElementNS(Avionics.SVG.NS, "svg");
         this.root.setAttribute("width", "100%");
         this.root.setAttribute("height", "100%");
@@ -313,20 +330,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             }
         }
     }
-    constructPlan_CJ4() { }
     constructRose() {
         super.constructRose();
-        if (this.aircraft == Aircraft.CJ4) {
-            this.constructRose_CJ4();
-        } else if (this.aircraft == Aircraft.B747_8) {
-            this.constructRose_B747_8();
-        } else if (this.aircraft == Aircraft.AS01B) {
-            this.constructRose_AS01B();
-        } else {
-            this.constructRose_A320_Neo();
-        }
-    }
-    constructRose_A320_Neo() {
         this.root = document.createElementNS(Avionics.SVG.NS, "svg");
         this.root.setAttribute("width", "100%");
         this.root.setAttribute("height", "100%");
@@ -437,7 +442,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 arrow.setAttribute("d", "M 500 835 L 499 785 H 530 L 500 736 V 665 V 736 L 470 785 H 499 M 500 246 L 500 335 M 500 194 L 530 246 H 500 M 500 194 V 168 V 194 L 470 246 H 500"); // Arrow modified
 
                 // Fix ADF arrows turns white when changing ND mode
-                if (Simplane.getAutoPilotNavAidState(1, 1) === NAV_AID_STATE.ADF) {
+                if (Simplane.getAutoPilotNavAidState(this.aircraft, this.mfdIndex, 1) === NAV_AID_STATE.ADF) {
                     arrow.setAttribute("stroke", "lime");
                 } else {
                     arrow.setAttribute("stroke", "white");
@@ -456,7 +461,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 arrow.setAttribute("d", "M 500 832 L 500 736 M 485 665 L 485 736 H 515 L 515 665 M 500 168 L 500 246 L 531 293 H 515 M 500 246 L 469 293 H 485 M 485 292 L 485 335 M 515 292 L 515 335"); // Arrow modified
 
                 // Fix ADF arrows turns white when changing ND mode
-                if (Simplane.getAutoPilotNavAidState(1, 2) === NAV_AID_STATE.ADF) {
+                if (Simplane.getAutoPilotNavAidState(this.aircraft, this.mfdIndex, 2) === NAV_AID_STATE.ADF) {
                     arrow.setAttribute("stroke", "lime");
                 } else {
                     arrow.setAttribute("stroke", "white");
@@ -663,9 +668,6 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             this.root.appendChild(neutralLine);
         }
     }
-    constructRose_B747_8() { }
-    constructRose_AS01B() { }
-    constructRose_CJ4() { }
     updateFail() {
         const failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
         if (this.arcs) {
@@ -708,7 +710,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         }
 
         // Navigation 1
-        const navAid1State = Simplane.getAutoPilotNavAidState(1, 1);
+        const navAid1State = Simplane.getAutoPilotNavAidState(this.aircraft, this.mfdIndex, 1);
         if (this._lastNavAid1State != navAid1State) {
             switch (navAid1State) {
                 case NAV_AID_STATE.OFF:
@@ -750,7 +752,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         }
 
         // Navigation 2
-        const navAid2State = Simplane.getAutoPilotNavAidState(1, 2);
+        const navAid2State = Simplane.getAutoPilotNavAidState(this.aircraft, this.mfdIndex, 2);
         if (this._lastNavAid2State != navAid2State) {
             switch (navAid2State) {
                 case NAV_AID_STATE.OFF:

@@ -30,7 +30,6 @@ pub struct A320Hydraulic {
     is_blue_pressurised: bool,
     is_yellow_pressurised: bool,
 }
-
 impl A320Hydraulic {
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 1750.0;
@@ -775,4 +774,7 @@ pub mod tests {
         logic.pushback_state = 2.0;
         assert!(logic.is_nsw_pin_inserted_flag(&update_delta));
     }
+
+    pub fn update(&mut self, _: &UpdateContext) {}
 }
+impl SimulationElement for A320Hydraulic {}
