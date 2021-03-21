@@ -466,7 +466,8 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getManagedTargets(v, m) {
-        const vM = _convertMachToKCas(m, _convertCtoK(Simplane.getAmbientTemperature()), SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar"));
+        //const vM = _convertMachToKCas(m, _convertCtoK(Simplane.getAmbientTemperature()), SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar"));
+        const vM = SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", m);
         return v > vM ? [vM, true] : [v, false];
     }
 
@@ -509,7 +510,8 @@ class FMCMainDisplay extends BaseAirliners {
             } else if (verticalMode === 13) {
                 const T = _convertCtoK(Simplane.getAmbientTemperature());
                 const p = SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar");
-                this.managedSpeedTarget = Simplane.getFlapsHandleIndex() === 0 ? Math.min(340, _convertMachToKCas(.8, T, p)) : SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") - 10;
+                //this.managedSpeedTarget = Simplane.getFlapsHandleIndex() === 0 ? Math.min(340, _convertMachToKCas(.8, T, p)) : SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") - 10;
+                this.managedSpeedTarget = Simplane.getFlapsHandleIndex() === 0 ? Math.min(340, SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", 0.8)) : SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") - 10;
             }
             vPfd = this.managedSpeedTarget;
         } else {
