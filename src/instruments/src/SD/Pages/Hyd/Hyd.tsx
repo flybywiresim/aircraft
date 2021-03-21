@@ -37,7 +37,7 @@ export const HydPage = () => {
     const [yellowPumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'boolean', 500);
     const [bluePumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'boolean', 500);
 
-    const [yellowElectricPumpStatus] = useSimVar('L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO', 'boolean', 500);
+    const [yellowElectricPumpStatus] = useSimVar('L:A32NX_HYD_YELLOW_EPUMP_ACTIVE', 'boolean', 500);
 
     const [greenHydLevel] = useSimVar('L:A32NX_HYD_GREEN_RESERVOIR', 'gallon', 1000);
     const [yellowHydLevel] = useSimVar('L:A32NX_HYD_YELLOW_RESERVOIR', 'gallon', 1000);
@@ -122,7 +122,7 @@ export const HydPage = () => {
 
     // PTU logic
     useEffect(() => {
-        if (!yellowElectricPumpStatus) {
+        if (yellowElectricPumpStatus) {
             setElecTriangleFill(1);
             setElecTriangleColour(yellowPressure <= 1450 ? 'amber' : 'green');
             setElecRightFormat(yellowPressure <= 1450 ? 'amber-line' : 'green-line');
@@ -132,7 +132,7 @@ export const HydPage = () => {
             setElecRightFormat('hide');
         }
 
-        if (ptuAvailable && yellowElectricPumpStatus) {
+        if (ptuAvailable && !yellowElectricPumpStatus) {
             // The PTU valve has to be open and the yellow electric pump should not be on
             const pressureDifferential = Math.abs(greenPressure - yellowPressure);
             const maxPressure = Math.max(yellowPressure, greenPressure);
@@ -150,7 +150,7 @@ export const HydPage = () => {
                 setPressures(true);
                 setPtuActive(0);
             }
-        } else if (ptuAvailable && !yellowElectricPumpStatus && greenPressure <= 2990) {
+        } else if (ptuAvailable && yellowElectricPumpStatus && greenPressure <= 2990) {
             setPtuScenario('right-to-left');
             setPtuActive(1);
         } else {
@@ -250,7 +250,7 @@ const HydSys = ({ title, pressure, hydLevel, x, y, fireValve, pumpPBStatus, pump
             <line
                 className={pressureNearest50 <= lowPressure
                  || (pumpDetectLowPressure && title === 'GREEN')
-                 || (pumpDetectLowPressure && yellowElectricPumpStatus && title === 'YELLOW') ? 'amber-line' : 'green-line'}
+                 || (pumpDetectLowPressure && !yellowElectricPumpStatus && title === 'YELLOW') ? 'amber-line' : 'green-line'}
                 x1={x}
                 y1={y + 181}
                 x2={x}
