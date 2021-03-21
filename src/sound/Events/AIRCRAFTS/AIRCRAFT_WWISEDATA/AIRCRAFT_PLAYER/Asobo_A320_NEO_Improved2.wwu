@@ -1157,13 +1157,13 @@
 				</Event>
 				<Event Name="Play_Asobo_A320_NEO_packcabinshut" ID="{A01D57D0-162D-471F-82D0-6CEFA6157C73}">
 					<ChildrenList>
-						<Action Name="" ID="{26F7AD2D-56B8-4C5C-8891-A93749A979C0}" ShortID="294219642">
+						<Action Name="" ID="{366E2234-AE54-4EF9-AE2A-DE8DCE6FC73C}" ShortID="449214355">
 							<PropertyList>
 								<Property Name="ActionType" Type="int16" Value="1"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
-									<ObjectRef Name="packscabinshut" ID="{B603F772-4A52-4CE0-9BEA-33F8C9EBEF40}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+									<ObjectRef Name="packscabin" ID="{C755177E-B074-441B-8849-E0ACCDEB4E7A}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
@@ -1290,6 +1290,77 @@
 							<ReferenceList>
 								<Reference Name="Target">
 									<ObjectRef Name="ptusound" ID="{DAB7DB97-4ADB-4A2A-B19A-DD331C11AC54}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Folder Name="RA Calls and warnings" ID="{19811647-A4DE-4DEE-8544-EBD2487B21E8}" ShortID="26567110"/>
+				<Event Name="Play_Asobo_A320_NEO_brakefanshut" ID="{6AC79B20-A4F6-467F-BCF7-D1911DC8E190}">
+					<ChildrenList>
+						<Action Name="" ID="{240C21B6-042F-4C73-B67B-C36B45285F51}" ShortID="177012986">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="brakefanextshut" ID="{DB943948-105F-4454-AB77-756C8B599440}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_brakefan2shut" ID="{D7136647-DEFD-47B4-8260-2AC3674DF035}">
+					<ChildrenList>
+						<Action Name="" ID="{317CB6E0-E3DF-4F69-B166-BD95A51104F3}" ShortID="433592083">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="brakefanext2shut" ID="{2D942337-6B0E-47E6-8617-5F1705BAD94F}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_venttesttransfer" ID="{0E4D987A-558B-4BCF-BE92-58C1632BE37A}">
+					<ChildrenList>
+						<Action Name="" ID="{CBE90B00-AF30-4575-9981-1135EF7074DE}" ShortID="125553905">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="vent test transfer" ID="{E5CC4C9C-F562-45E6-8447-908CB65747FF}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_fanwhine" ID="{BCE1378E-A2D7-419E-8B55-72BBAB8B7AA3}">
+					<ChildrenList>
+						<Action Name="" ID="{B1A8F165-B833-4E4A-89A5-2AA1105ADA19}" ShortID="952026388">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="fanwhine" ID="{2E8676B4-05EE-4F93-97D3-13BEFC798D5D}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_fanwhinetest" ID="{0ED8165F-CB89-47F0-B67E-321A7213A588}">
+					<ChildrenList>
+						<Action Name="" ID="{97A471C2-44B7-43A7-94C1-6FA4A1DD3F1C}" ShortID="753612649">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="fanwhinetest" ID="{42586AF9-9C6D-4DAA-BAB5-3E51AD91D7F6}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
