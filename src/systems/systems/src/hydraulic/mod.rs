@@ -1185,8 +1185,8 @@ mod tests {
                 assert!(green_loop.loop_pressure <= Pressure::new::<psi>(250.0));
             }
 
-            edp1.update(&ct.delta, &green_loop, &engine1);
-            green_loop.update(&ct.delta, Vec::new(), vec![&edp1], Vec::new(), Vec::new());
+            edp1.update(&ct.delta(), &green_loop, &engine1);
+            green_loop.update(&ct.delta(), Vec::new(), vec![&edp1], Vec::new(), Vec::new());
             if x % 20 == 0 {
                 println!("Iteration {}", x);
                 println!("-------------------------------------------");
@@ -1214,7 +1214,7 @@ mod tests {
             }
 
             green_loop_history.update(
-                ct.delta.as_secs_f64(),
+                ct.delta().as_secs_f64(),
                 vec![
                     green_loop.loop_pressure.get::<psi>(),
                     green_loop.loop_volume.get::<gallon>(),
@@ -1223,14 +1223,14 @@ mod tests {
                 ],
             );
             edp1_history.update(
-                ct.delta.as_secs_f64(),
+                ct.delta().as_secs_f64(),
                 vec![
                     edp1.get_delta_vol_max().get::<liter>(),
                     engine1.corrected_n2.get::<percent>() as f64,
                 ],
             );
             accu_green_history.update(
-                ct.delta.as_secs_f64(),
+                ct.delta().as_secs_f64(),
                 vec![
                     green_loop.loop_pressure.get::<psi>(),
                     green_loop.accumulator_gas_pressure.get::<psi>(),
@@ -1263,8 +1263,8 @@ mod tests {
                 //X+200 after shutoff = X + 20seconds @ 100ms, so pressure shall be low
                 assert!(yellow_loop.loop_pressure <= Pressure::new::<psi>(200.0));
             }
-            epump.update(&ct.delta, &yellow_loop);
-            yellow_loop.update(&ct.delta, vec![&epump], Vec::new(), Vec::new(), Vec::new());
+            epump.update(&ct.delta(), &yellow_loop);
+            yellow_loop.update(&ct.delta(), vec![&epump], Vec::new(), Vec::new(), Vec::new());
             if x % 20 == 0 {
                 println!("Iteration {}", x);
                 println!("-------------------------------------------");
@@ -1304,8 +1304,8 @@ mod tests {
                 //X+200 after shutoff = X + 20seconds @ 100ms, so pressure shall be low
                 assert!(blue_loop.loop_pressure <= Pressure::new::<psi>(100.0));
             }
-            epump.update(&ct.delta, &blue_loop);
-            blue_loop.update(&ct.delta, vec![&epump], Vec::new(), Vec::new(), Vec::new());
+            epump.update(&ct.delta(), &blue_loop);
+            blue_loop.update(&ct.delta(), vec![&epump], Vec::new(), Vec::new(), Vec::new());
             if x % 20 == 0 {
                 println!("Iteration {}", x);
                 println!("-------------------------------------------");
@@ -1335,11 +1335,11 @@ mod tests {
 
         let timestep = 0.05;
         let ct = context(Duration::from_secs_f64(timestep));
-        let mut indicated_airpseed = ct.indicated_airspeed;
+        let mut indicated_airpseed = ct.indicated_airspeed();
 
         let mut time = 0.0;
         for x in 0..1500 {
-            rat.update_stow_pos(&ct.delta);
+            rat.update_stow_pos(&ct.delta());
             if time >= 10. && time < 10. + timestep {
                 println!("ASSERT RAT STOWED");
                 assert!(blue_loop.loop_pressure <= Pressure::new::<psi>(50.0));
@@ -1375,9 +1375,9 @@ mod tests {
                 assert!(rat.prop.rpm <= 2500.);
             }
 
-            rat.update_physics(&ct.delta, &indicated_airpseed);
-            rat.update(&ct.delta, &blue_loop);
-            blue_loop.update(&ct.delta, Vec::new(), Vec::new(), vec![&rat], Vec::new());
+            rat.update_physics(&ct.delta(), &indicated_airpseed);
+            rat.update(&ct.delta(), &blue_loop);
+            blue_loop.update(&ct.delta(), Vec::new(), Vec::new(), vec![&rat], Vec::new());
             if x % 20 == 0 {
                 println!("Iteration {} Time {}", x, time);
                 println!("-------------------------------------------");
@@ -1571,14 +1571,14 @@ mod tests {
             }
 
             ptu.update(&green_loop, &yellow_loop);
-            edp1.update(&ct.delta, &green_loop, &engine1);
-            epump.update(&ct.delta, &yellow_loop);
+            edp1.update(&ct.delta(), &green_loop, &engine1);
+            epump.update(&ct.delta(), &yellow_loop);
 
-            yellow_loop.update(&ct.delta, vec![&epump], Vec::new(), Vec::new(), vec![&ptu]);
-            green_loop.update(&ct.delta, Vec::new(), vec![&edp1], Vec::new(), vec![&ptu]);
+            yellow_loop.update(&ct.delta(), vec![&epump], Vec::new(), Vec::new(), vec![&ptu]);
+            green_loop.update(&ct.delta(), Vec::new(), vec![&edp1], Vec::new(), vec![&ptu]);
 
             loop_history.update(
-                ct.delta.as_secs_f64(),
+                ct.delta().as_secs_f64(),
                 vec![
                     green_loop.loop_pressure.get::<psi>(),
                     yellow_loop.loop_pressure.get::<psi>(),
@@ -1589,7 +1589,7 @@ mod tests {
                 ],
             );
             ptu_history.update(
-                ct.delta.as_secs_f64(),
+                ct.delta().as_secs_f64(),
                 vec![
                     ptu.flow_to_left.get::<gallon_per_second>(),
                     ptu.flow_to_right.get::<gallon_per_second>(),
@@ -1600,7 +1600,7 @@ mod tests {
             );
 
             accu_green_history.update(
-                ct.delta.as_secs_f64(),
+                ct.delta().as_secs_f64(),
                 vec![
                     green_loop.loop_pressure.get::<psi>(),
                     green_loop.accumulator_gas_pressure.get::<psi>(),
@@ -1609,7 +1609,7 @@ mod tests {
                 ],
             );
             accu_yellow_history.update(
-                ct.delta.as_secs_f64(),
+                ct.delta().as_secs_f64(),
                 vec![
                     yellow_loop.loop_pressure.get::<psi>(),
                     yellow_loop.accumulator_gas_pressure.get::<psi>(),
@@ -1779,10 +1779,10 @@ mod tests {
                 for rpm in (0..10000).step_by(150) {
                     green_loop.loop_pressure = Pressure::new::<psi>(pressure as f64);
                     epump.rpm = rpm as f64;
-                    epump.update(&context.delta, &green_loop);
+                    epump.update(&context.delta(), &green_loop);
                     rpm_tab.push(rpm as f64);
                     let flow = epump.get_delta_vol_max()
-                        / Time::new::<second>(context.delta.as_secs_f64());
+                        / Time::new::<second>(context.delta().as_secs_f64());
                     let flow_gal = flow.get::<gallon_per_second>() as f64;
                     flow_tab.push(flow_gal);
                 }
@@ -1808,7 +1808,7 @@ mod tests {
             edpump.start();
             let context = context(Duration::from_secs_f64(1.0)); //Small dt to freeze spool up effect
 
-            edpump.update(&context.delta, &green_loop, &engine1);
+            edpump.update(&context.delta(), &green_loop, &engine1);
             for pressure in (0..3500).step_by(500) {
                 let mut rpm_tab: Vec<f64> = Vec::new();
                 let mut flow_tab: Vec<f64> = Vec::new();
@@ -1820,10 +1820,10 @@ mod tests {
                             / (EngineDrivenPump::PUMP_N2_GEAR_RATIO
                                 * EngineDrivenPump::LEAP_1A26_MAX_N2_RPM),
                     );
-                    edpump.update(&context.delta, &green_loop, &engine1);
+                    edpump.update(&context.delta(), &green_loop, &engine1);
                     rpm_tab.push(rpm as f64);
                     let flow = edpump.get_delta_vol_max()
-                        / Time::new::<second>(context.delta.as_secs_f64());
+                        / Time::new::<second>(context.delta().as_secs_f64());
                     let flow_gal = flow.get::<gallon_per_second>() as f64;
                     flow_tab.push(flow_gal);
                 }

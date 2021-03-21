@@ -159,16 +159,16 @@ impl A320Hydraulic {
     ) {
         let min_hyd_loop_timestep = Duration::from_millis(A320Hydraulic::HYDRAULIC_SIM_TIME_STEP); //Hyd Sim rate = 10 Hz
 
-        self.total_sim_time_elapsed += ct.delta;
+        self.total_sim_time_elapsed += ct.delta();
 
         //time to catch up in our simulation = new delta + time not updated last iteration
-        let time_to_catch = ct.delta + self.lag_time_accumulator;
+        let time_to_catch = ct.delta() + self.lag_time_accumulator;
 
         //Number of time steps to do according to required time step
         let number_of_steps_f64 = time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
 
         //updating rat stowed pos on all frames in case it's used for graphics
-        self.rat.update_stow_pos(&ct.delta);
+        self.rat.update_stow_pos(&ct.delta());
 
         if number_of_steps_f64 < 1.0 {
             //Can't do a full time step
@@ -254,7 +254,7 @@ impl A320Hydraulic {
                 min_hyd_loop_timestep / A320Hydraulic::ACTUATORS_SIM_TIME_STEP_MULT; //If X times faster we divide step by X
             for _cur_loop in 0..num_of_actuators_update_loops {
                 self.rat
-                    .update_physics(&delta_time_physics, &ct.indicated_airspeed);
+                    .update_physics(&delta_time_physics, &ct.indicated_airspeed());
             }
         }
     }
@@ -301,7 +301,7 @@ impl A320Hydraulic {
         //RAT Deployment //Todo check all other needed conditions
         if !self.hyd_logic_inputs.eng_1_master_on
             && !self.hyd_logic_inputs.eng_2_master_on
-            && ct.indicated_airspeed > Velocity::new::<knot>(100.)
+            && ct.indicated_airspeed() > Velocity::new::<knot>(100.)
         //Todo get speed from ADIRS
         {
             self.rat.set_active();
@@ -774,7 +774,4 @@ pub mod tests {
         logic.pushback_state = 2.0;
         assert!(logic.is_nsw_pin_inserted_flag(&update_delta));
     }
-
-    pub fn update(&mut self, _: &UpdateContext) {}
 }
-impl SimulationElement for A320Hydraulic {}

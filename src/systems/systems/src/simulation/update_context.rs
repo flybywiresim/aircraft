@@ -15,13 +15,14 @@ pub struct UpdateContext {
     indicated_altitude: Length,
     ambient_temperature: ThermodynamicTemperature,
     is_on_ground: bool,
-    _longitudinal_acceleration: Acceleration,
+    longitudinal_acceleration: Acceleration,
 }
 impl UpdateContext {
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
     pub(crate) const INDICATED_AIRSPEED_KEY: &'static str = "AIRSPEED INDICATED";
     pub(crate) const INDICATED_ALTITUDE_KEY: &'static str = "INDICATED ALTITUDE";
     pub(crate) const IS_ON_GROUND_KEY: &'static str = "SIM ON GROUND";
+    pub(crate) const ACCEL_BODY_Z_KEY: &'static str = "ACCELERATION BODY Z";
 
     pub fn new(
         delta: Duration,
@@ -29,7 +30,7 @@ impl UpdateContext {
         indicated_altitude: Length,
         ambient_temperature: ThermodynamicTemperature,
         is_on_ground: bool,
-        _longitudinal_acceleration: Acceleration,
+        longitudinal_acceleration: Acceleration,
     ) -> UpdateContext {
         UpdateContext {
             delta,
@@ -37,7 +38,7 @@ impl UpdateContext {
             indicated_altitude,
             ambient_temperature,
             is_on_ground,
-            _longitudinal_acceleration: Acceleration::new::<foot_per_second_squared>(0.),
+            longitudinal_acceleration,
         }
     }
 
@@ -55,8 +56,8 @@ impl UpdateContext {
             ),
             is_on_ground: reader.read_bool(UpdateContext::IS_ON_GROUND_KEY),
             delta: delta_time,
-            _longitudinal_acceleration: Acceleration::new::<foot_per_second_squared>(
-                reader.read_f64("ACCELERATION BODY Z"),
+            longitudinal_acceleration: Acceleration::new::<foot_per_second_squared>(
+                reader.read_f64(UpdateContext::ACCEL_BODY_Z_KEY),
             ),
         }
     }
@@ -83,5 +84,9 @@ impl UpdateContext {
 
     pub fn is_on_ground(&self) -> bool {
         self.is_on_ground
+    }
+
+    pub fn long_accel(&self) -> Acceleration {
+        self.longitudinal_acceleration
     }
 }

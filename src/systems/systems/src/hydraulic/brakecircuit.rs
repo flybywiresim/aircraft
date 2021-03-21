@@ -298,7 +298,7 @@ impl AutoBrakeController {
 
     pub fn update(&mut self, delta_time: &Duration, ct: &UpdateContext) {
         self.current_filtered_accel = self.current_filtered_accel
-            + (ct._longitudinal_acceleration - self.current_filtered_accel)
+            + (ct.long_accel() - self.current_filtered_accel)
                 * (1.
                     - E.powf(
                         -delta_time.as_secs_f64() / AutoBrakeController::LONG_ACC_FILTER_TIMECONST,
@@ -307,7 +307,7 @@ impl AutoBrakeController {
         self.current_accel_error =
             self.current_filtered_accel - self.accel_targets[self.current_selected_mode];
 
-        if self.is_enabled && ct.is_on_ground {
+        if self.is_enabled && ct.is_on_ground() {
             let pterm = self.current_accel_error.get::<foot_per_second_squared>()
                 * AutoBrakeController::CONTROLLER_P_GAIN;
             let dterm = (self.current_accel_error - self.accel_error_prev)
@@ -480,16 +480,15 @@ mod tests {
             Acceleration::new::<foot_per_second_squared>(-3.),
             Acceleration::new::<foot_per_second_squared>(-15.),
         ]);
-        let mut context = context(Duration::from_secs_f64(0.));
-        context._longitudinal_acceleration = Acceleration::new::<foot_per_second_squared>(0.0);
+        let context = context(Duration::from_secs_f64(0.));
 
         assert!(controller.get_brake_command() <= 0.0);
 
-        controller.update(&context.delta, &context);
+        controller.update(&context.delta(), &context);
         assert!(controller.get_brake_command() <= 0.0);
 
         controller.set_enable(true);
-        controller.update(&context.delta, &context);
+        controller.update(&context.delta(), &context);
         assert!(controller.get_brake_command() >= 0.0);
     }
 
