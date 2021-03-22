@@ -102,7 +102,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                     <div className="h-2/5 bg-navy-lighter rounded-2xl ml-3 mb-3 shadow-lg p-6">
                         <div className="h-full flex items-center">
                             <div className="w-1/2">
-                                <WeatherWidget name="origin" editIcao="yes" icao={props.departingAirport} />
+                                <WeatherWidget name="origin" editIcao="yes" cardRight={false} icao={props.departingAirport} />
                             </div>
                             <div className="border border-gray-500 rounded-full h-48" />
                             <div className="w-1/2">
