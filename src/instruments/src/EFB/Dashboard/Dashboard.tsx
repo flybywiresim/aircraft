@@ -89,6 +89,7 @@ const Dashboard: React.FC<DashboardProps> = (props) => {
                     arr={props.arrivingAirport}
                     route={props.route}
                     distance={props.flightDistance}
+                    // @ts-ignore
                     eta={calculateFlightTime(props.flightETAInSeconds)}
                     timeSinceStart={props.timeSinceStart}
                     sta={props.schedIn}
