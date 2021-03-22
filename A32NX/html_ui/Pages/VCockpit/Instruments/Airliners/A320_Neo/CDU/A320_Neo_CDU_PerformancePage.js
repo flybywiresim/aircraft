@@ -189,7 +189,7 @@ class CDUPerformancePage {
                     transAltCell += "[s-text]";
                 }
             } else {
-                transAltCell = "{cyan}[  ]{end}";
+                transAltCell = "{cyan}[\xa0\xa0\xa0]{end}";
             }
             mcdu.onLeftInput[3] = (value) => {
                 if (mcdu.trySetTakeOffTransAltitude(value)) {
