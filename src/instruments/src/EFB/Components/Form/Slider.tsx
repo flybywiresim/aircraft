@@ -34,6 +34,6 @@ export const Slider = (props: SliderProps) => {
     };
 
     return (
-        <input value={props.value} ref={sliderRef} onChange={handleInput} type="range" min="1" max="100" className={`slider slider w-60 h-1 pb-1.5 pt-0.5 rounded-full ${props.className}`} />
+        <input value={props.value} ref={sliderRef} onChange={handleInput} type="range" min="1" max="100" className={`slider slider h-1 pb-1.5 pt-0.5 rounded-full ${props.className}`} />
     );
 };
