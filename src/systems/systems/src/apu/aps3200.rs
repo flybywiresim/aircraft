@@ -633,7 +633,7 @@ impl ApuGenerator for Aps3200ApuGenerator {
     /// overtemperature which over time will trigger a mechanical
     /// disconnect of the generator.
     fn output_within_normal_parameters(&self) -> bool {
-        self.potential_normal() && self.frequency_normal()
+        self.should_provide_output() && self.potential_normal() && self.frequency_normal()
     }
 }
 provide_potential!(Aps3200ApuGenerator, (110.0..=120.0));
