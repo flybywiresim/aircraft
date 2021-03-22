@@ -180,7 +180,7 @@ class CDUPerformancePage {
         }
 
         // transition altitude - remains editable during take off
-        let transAltCell = "{cyan}[  ]{end}";
+        let transAltCell = "{cyan}[\xa0\xa0\xa0]{end}";
         if (hasOrigin) {
             const transAltitude = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
             if (transAltitude !== 0) {
