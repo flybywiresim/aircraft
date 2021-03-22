@@ -54,6 +54,9 @@ export const HydPage = () => {
     const [yellowPumpLowPressure] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'boolean', 500);
     const [bluePumpLowPressure] = useSimVar('L:A32NX_HYD_BLUE_EPUMP_LOW_PRESS', 'boolean', 500);
 
+    const [ACBus1IsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool', 1000);
+    const [ACBus2IsPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool', 1000);
+
     const [engine1Running, setEngine1Running] = useState(0);
     const [engine2Running, setEngine2Running] = useState(0);
 
@@ -208,9 +211,27 @@ export const HydPage = () => {
                 <line className="green-line hide" x1={290} y1={y + 180} x2={300} y2={y + 180} />
                 <Triangle x={290} y={y + 180} colour="white" fill={0} orientation={90} />
 
-                <text id="ELEC-centre" className="rat-ptu-elec fill-white" x={350} y={y + 245} alignmentBaseline="central">ELEC</text>
+                <text
+                    id="ELEC-centre"
+                    className={!ACBus1IsPowered ? 'rat-ptu-elec fill-amber' : 'rat-ptu-elec fill-white'}
+                    x={350}
+                    y={y + 245}
+                    alignmentBaseline="central"
+                >
+                    ELEC
 
-                <text id="ELEC-right" className="rat-ptu-elec fill-white" x={548} y={y + 180} alignmentBaseline="central">ELEC</text>
+                </text>
+
+                <text
+                    id="ELEC-right"
+                    className={!ACBus2IsPowered ? 'rat-ptu-elec fill-amber' : 'rat-ptu-elec fill-white'}
+                    x={548}
+                    y={y + 180}
+                    alignmentBaseline="central"
+                >
+                    ELEC
+
+                </text>
                 <Triangle x={500} y={y + 180} colour={elecTriangleColour} fill={elecTriangleFill} orientation={-90} />
                 <line className={elecRightFormat} x1={490} y1={y + 180} x2={500} y2={y + 180} />
 
