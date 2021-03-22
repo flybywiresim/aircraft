@@ -854,6 +854,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
         const groundSpeed = Math.round(Simplane.getGroundSpeed());
         const trueAirSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "knots");
+        const windStrength = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "knots");
         const gs = this.ndInfo.querySelector("#GS_Value");
         const tas = this.ndInfo.querySelector("#TAS_Value");
         const wd = this.ndInfo.querySelector("#Wind_Direction");
@@ -865,7 +866,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
             //TAS info Conditions
             tas.textContent = "---";
         }
-        if (ADIRSState != 2 || trueAirSpeed < 100) {
+        if (ADIRSState != 2 || trueAirSpeed < 100 || windStrength <= 2) {
             //Wind Arrow info Conditions
             wd.textContent = "---";
             ws.textContent = "---";
