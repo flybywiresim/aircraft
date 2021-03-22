@@ -44,7 +44,7 @@ class A32NX_Core {
             {
                 name: 'LocalVars',
                 module: new A32NX_LocalVarUpdater(),
-                updateInterval: 100,
+                updateInterval: 50,
             },
             {
                 name: 'FADEC #1',
