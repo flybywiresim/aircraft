@@ -765,13 +765,11 @@ class CDUPerformancePage {
         let transAltCell = "[\xa0][color]cyan";
         if (hasDestination) {
             const arrivalTransAltitude = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
-            if (isFinite(mcdu.perfApprTransAlt)) {
-                transAltCell = mcdu.perfApprTransAlt.toFixed(0);
+            if (arrivalTransAltitude !== 0) {
+                transAltCell = `{cyan}${arrivalTransAltitude}{end}`;
                 if (!mcdu.perfApprTransAltPilotEntered) {
                     transAltCell += "[s-text]";
                 }
-            } else {
-                transAltCell = "{cyan}[ ]{end}";
             }
             mcdu.onLeftInput[3] = (value) => {
                 if (mcdu.setPerfApprTransAlt(value)) {
