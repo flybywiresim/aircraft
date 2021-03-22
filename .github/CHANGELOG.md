@@ -229,7 +229,6 @@
 1. [SOUND] Added electrical system sounds - @hotshotp (Boris)
 1. [SOUND] General improvements to cockpit and cabin ambience - @hotshotp (Boris)
 
-
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
 1. [CDU] Two tiny fixes for flightphase speeds - @Watsi01 (RogePete)
