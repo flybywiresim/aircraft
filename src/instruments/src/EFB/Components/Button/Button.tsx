@@ -16,7 +16,7 @@ type props = {
 const Button = ({ text, type = BUTTON_TYPE.BLUE, onClick, className, ...props }: props) => (
     <button
         type="button"
-        onClick={onClick}
+        onMouseDown={onClick}
         className={classNames([
             {
                 'bg-blue-500 border-blue-500': type === BUTTON_TYPE.BLUE,

@@ -128,9 +128,10 @@ export const Ground = ({
      * Applies highlighting of an activated service based on SimVars
      * This ensures the displayed state is in sync with the active services
      */
-    const applySelectedWithSync = (className: string, id: string, gameSync) => {
+    const applySelectedWithSync = (className: string, id: string, gameSync, disabledId?: string) => {
         const index = activeButtons.map((b: StatefulButton) => b.id).indexOf(id);
-        const disabledIndex = disabledButtons.indexOf(id);
+        const disabledIndex = disabledButtons.indexOf(disabledId);
+
         if (gameSync > 0.5 && (index !== -1 || disabledIndex !== -1)) {
             const button: StatefulButton = activeButtons[index];
             if (button && button.state === STATE_WAITING) {
@@ -162,7 +163,7 @@ export const Ground = ({
                             setJetWayActive(1);
                             setRampActive(1);
                         }, e, 'door-fwd-left')}
-                        className={applySelectedWithSync('w-32 ', 'jetway', jetWayActive)}
+                        className={applySelectedWithSync('w-32 ', 'jetway', jetWayActive, 'door-fwd-left')}
                         type={BUTTON_TYPE.NONE}
                         id="jetway"
                     >
@@ -222,7 +223,7 @@ export const Ground = ({
                     <h1 className="text-white font-medium text-xl text-center pb-1">Catering</h1>
                     <Button
                         onClick={(e) => handleClick(() => setCateringActive(1), e, 'door-aft-right')}
-                        className={applySelectedWithSync('w-32', 'catering', cateringActive)}
+                        className={applySelectedWithSync('w-32', 'catering', cateringActive, 'door-aft-right')}
                         type={BUTTON_TYPE.NONE}
                         id="catering"
                     >
