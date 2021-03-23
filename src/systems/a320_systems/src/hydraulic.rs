@@ -1126,7 +1126,9 @@ mod tests {
             assert!(!test_bed.is_ptu_enabled());
             test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
             assert!(!test_bed.is_ptu_enabled());
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_PTU )); //Should re enabled after 40s
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(
+                A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_PTU,
+            )); //Should re enabled after 40s
             assert!(test_bed.is_ptu_enabled());
         }
 
