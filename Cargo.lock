@@ -731,6 +731,7 @@ dependencies = [
  "ntest",
  "num-derive",
  "num-traits",
+ "plotlib",
  "rand",
  "rustplotlib",
  "uom",

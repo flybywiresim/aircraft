@@ -502,15 +502,17 @@ impl A320HydraulicBrakingLogic {
                         + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
                             * self.right_brake_yellow_command;
                 if !self.anti_skid_activated {
-                    self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.5);
+                    self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.5); //0.5 is temporary implementation of pressure limitation around 1000psi
                     self.right_brake_yellow_command = self.right_brake_yellow_command.min(0.5);
+                    //0.5 is temporary implementation of pressure limitation around 1000psi
                 }
             } else {
                 //Else we just use parking brake
                 self.left_brake_yellow_command += dynamic_increment;
-                self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.7);
+                self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.7); //0.7 is temporary implementation of pressure limitation around 2000psi for parking brakes
                 self.right_brake_yellow_command += dynamic_increment;
                 self.right_brake_yellow_command = self.right_brake_yellow_command.min(0.7);
+                //0.7 is temporary implementation of pressure limitation around 2000psi for parking brakes
             }
             self.left_brake_green_command -= dynamic_increment;
             self.right_brake_green_command -= dynamic_increment;
@@ -754,24 +756,535 @@ impl SimulationElement for A320HydraulicOverheadPanel {
     }
 }
 
-#[cfg(test)]
-pub mod tests {
-    use super::A320HydraulicLogic;
-    use std::time::Duration;
+// #[cfg(test)]
+// pub mod tests {
+//     use super::A320HydraulicLogic;
+//     use std::time::Duration;
 
-    fn hyd_logic() -> A320HydraulicLogic {
-        A320HydraulicLogic::new()
-    }
+//     fn hyd_logic() -> A320HydraulicLogic {
+//         A320HydraulicLogic::new()
+//     }
+
+//     #[test]
+//     fn is_nws_pin_engaged_test() {
+//         let mut logic = hyd_logic();
+
+//         let update_delta = Duration::from_secs_f64(0.08);
+//         assert!(!logic.is_nsw_pin_inserted_flag(&update_delta));
+
+//         logic.pushback_angle = 1.001;
+//         logic.pushback_state = 2.0;
+//         assert!(logic.is_nsw_pin_inserted_flag(&update_delta));
+//     }
+// }
+
+#[cfg(test)]
+mod a320_hydraulic_simvars {
+    use super::*;
+    use systems::simulation::test::SimulationTestBed;
 
     #[test]
-    fn is_nws_pin_engaged_test() {
-        let mut logic = hyd_logic();
+    fn writes_its_state() {
+        let mut hyd_logic = A320HydraulicLogic::new();
+        let mut test_bed = SimulationTestBed::new();
+        test_bed.run_without_update(&mut hyd_logic);
 
-        let update_delta = Duration::from_secs_f64(0.08);
-        assert!(!logic.is_nsw_pin_inserted_flag(&update_delta));
+        assert!(test_bed.contains_key("HYD_GREEN_EDPUMP_LOW_PRESS"));
+        assert!(test_bed.contains_key("HYD_BLUE_EPUMP_LOW_PRESS"));
+        assert!(test_bed.contains_key("HYD_YELLOW_EDPUMP_LOW_PRESS"));
+        assert!(test_bed.contains_key("HYD_YELLOW_EPUMP_LOW_PRESS"));
+        assert!(test_bed.contains_key("OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT"));
+        assert!(test_bed.contains_key("OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT"));
+        assert!(test_bed.contains_key("OVHD_HYD_EPUMPB_PB_HAS_FAULT"));
+        assert!(test_bed.contains_key("OVHD_HYD_EPUMPY_PB_HAS_FAULT"));
+    }
+}
 
-        logic.pushback_angle = 1.001;
-        logic.pushback_state = 2.0;
-        assert!(logic.is_nsw_pin_inserted_flag(&update_delta));
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod a320_hydraulics {
+        use super::*;
+        use systems::simulation::{test::SimulationTestBed, Aircraft};
+        use uom::si::{length::foot, ratio::percent, velocity::knot};
+
+        struct A320HydraulicsTestAircraft {
+            engine_1: Engine,
+            engine_2: Engine,
+            hydraulics: A320Hydraulic,
+            overhead: A320HydraulicOverheadPanel,
+        }
+        impl A320HydraulicsTestAircraft {
+            fn new() -> Self {
+                Self {
+                    engine_1: Engine::new(1),
+                    engine_2: Engine::new(2),
+                    hydraulics: A320Hydraulic::new(),
+                    overhead: A320HydraulicOverheadPanel::new(),
+                }
+            }
+
+            fn is_ptu_ena(&self) -> bool {
+                self.hydraulics.ptu.is_enabled()
+            }
+
+            fn is_blue_pressurised(&self) -> bool {
+                self.hydraulics.is_blue_pressurised()
+            }
+
+            fn is_green_pressurised(&self) -> bool {
+                self.hydraulics.is_green_pressurised()
+            }
+
+            fn is_yellow_pressurised(&self) -> bool {
+                self.hydraulics.is_yellow_pressurised()
+            }
+
+            fn set_engine_1_n2(&mut self, n2: Ratio) {
+                self.engine_1.corrected_n2 = n2;
+            }
+            fn set_engine_2_n2(&mut self, n2: Ratio) {
+                self.engine_2.corrected_n2 = n2;
+            }
+        }
+
+        impl Aircraft for A320HydraulicsTestAircraft {
+            fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+                self.hydraulics
+                    .update(context, &self.engine_1, &self.engine_2, &self.overhead);
+
+                self.overhead.update_pb_faults(&self.hydraulics);
+            }
+        }
+        impl SimulationElement for A320HydraulicsTestAircraft {
+            fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+                self.hydraulics.accept(visitor);
+                self.overhead.accept(visitor);
+
+                visitor.visit(self);
+            }
+        }
+
+        struct A320HydraulicsTestBed {
+            aircraft: A320HydraulicsTestAircraft,
+            simulation_test_bed: SimulationTestBed,
+        }
+        impl A320HydraulicsTestBed {
+            fn new() -> Self {
+                let mut aircraft = A320HydraulicsTestAircraft::new();
+                Self {
+                    simulation_test_bed: SimulationTestBed::seeded_with(&mut aircraft),
+                    aircraft,
+                }
+            }
+
+            fn run_one_tick(self) -> Self {
+                self.run_waiting_for(Duration::from_millis(
+                    A320Hydraulic::HYDRAULIC_SIM_TIME_STEP,
+                ))
+            }
+
+            fn run_waiting_for(mut self, delta: Duration) -> Self {
+                self.simulation_test_bed.set_delta(delta);
+                self.simulation_test_bed.run_aircraft(&mut self.aircraft);
+                self
+            }
+
+            fn is_ptu_enabled(&self) -> bool {
+                self.aircraft.is_ptu_ena()
+            }
+
+            fn is_blue_pressurised(&self) -> bool {
+                self.aircraft.is_blue_pressurised()
+            }
+
+            fn is_green_pressurised(&self) -> bool {
+                self.aircraft.is_green_pressurised()
+            }
+
+            fn is_yellow_pressurised(&self) -> bool {
+                self.aircraft.is_yellow_pressurised()
+            }
+
+            fn green_pressure(&mut self) -> Pressure {
+                Pressure::new::<psi>(self.simulation_test_bed.read_f64("HYD_GREEN_PRESSURE"))
+            }
+
+            fn blue_pressure(&mut self) -> Pressure {
+                Pressure::new::<psi>(self.simulation_test_bed.read_f64("HYD_BLUE_PRESSURE"))
+            }
+
+            fn yellow_pressure(&mut self) -> Pressure {
+                Pressure::new::<psi>(self.simulation_test_bed.read_f64("HYD_YELLOW_PRESSURE"))
+            }
+
+            fn engines_off(self) -> Self {
+                self.stop_eng1().stop_eng2()
+            }
+
+            fn on_the_ground(mut self) -> Self {
+                self.simulation_test_bed
+                    .set_indicated_altitude(Length::new::<foot>(0.));
+                self.simulation_test_bed.set_on_ground(true);
+                self.simulation_test_bed
+                    .set_indicated_airspeed(Velocity::new::<knot>(5.));
+                self
+            }
+
+            fn set_gear_compressed_switch(mut self, is_compressed: bool) -> Self {
+                self.simulation_test_bed.set_on_ground(is_compressed);
+                self
+            }
+
+            fn set_cargo_door_state(mut self, position: f64) -> Self {
+                self.simulation_test_bed.write_f64("EXIT OPEN 5", position);
+                self
+            }
+
+            fn start_eng1(mut self, n2: Ratio) -> Self {
+                self.simulation_test_bed
+                    .write_bool("GENERAL ENG1 STARTER ACTIVE", true);
+                self.aircraft.set_engine_1_n2(n2);
+
+                self
+            }
+
+            fn start_eng2(mut self, n2: Ratio) -> Self {
+                self.simulation_test_bed
+                    .write_bool("GENERAL ENG2 STARTER ACTIVE", true);
+                self.aircraft.set_engine_2_n2(n2);
+
+                self
+            }
+
+            fn stop_eng1(mut self) -> Self {
+                self.simulation_test_bed
+                    .write_bool("GENERAL ENG1 STARTER ACTIVE", false);
+                self.aircraft.set_engine_1_n2(Ratio::new::<percent>(0.));
+
+                self
+            }
+
+            fn stop_eng2(mut self) -> Self {
+                self.simulation_test_bed
+                    .write_bool("GENERAL ENG2 STARTER ACTIVE", false);
+                self.aircraft.set_engine_2_n2(Ratio::new::<percent>(0.));
+
+                self
+            }
+
+            fn set_park_brake(mut self, is_set: bool) -> Self {
+                self.simulation_test_bed
+                    .write_bool("BRAKE PARKING INDICATOR", is_set);
+                self
+            }
+
+            fn set_anti_skid(mut self, is_set: bool) -> Self {
+                self.simulation_test_bed
+                    .write_bool("ANTISKID BRAKES ACTIVE", is_set);
+                self
+            }
+
+            fn set_yellow_e_pump(mut self, is_auto: bool) -> Self {
+                self.simulation_test_bed
+                    .write_bool("OVHD_HYD_EPUMPY_PB_IS_AUTO", is_auto);
+                self
+            }
+
+            fn set_blue_e_pump(mut self, is_auto: bool) -> Self {
+                self.simulation_test_bed
+                    .write_bool("OVHD_HYD_EPUMPB_PB_IS_AUTO", is_auto);
+                self
+            }
+
+            fn set_blue_e_pump_ovrd(mut self, is_on: bool) -> Self {
+                self.simulation_test_bed
+                    .write_bool("OVHD_HYD_EPUMPY_OVRD_PB_IS_ON", is_on);
+                self
+            }
+
+            fn set_green_ed_pump(mut self, is_auto: bool) -> Self {
+                self.simulation_test_bed
+                    .write_bool("OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO", is_auto);
+                self
+            }
+
+            fn set_yellow_ed_pump(mut self, is_auto: bool) -> Self {
+                self.simulation_test_bed
+                    .write_bool("OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO", is_auto);
+                self
+            }
+
+            fn set_ptu_state(mut self, is_auto: bool) -> Self {
+                self.simulation_test_bed
+                    .write_bool("OVHD_HYD_PTU_PB_IS_AUTO", is_auto);
+                self
+            }
+
+            fn set_cold_dark_inputs(self) -> Self {
+                self.set_blue_e_pump_ovrd(false)
+                    .set_blue_e_pump(true)
+                    .set_yellow_e_pump(true)
+                    .set_green_ed_pump(true)
+                    .set_yellow_ed_pump(true)
+                    .set_ptu_state(true)
+                    .set_park_brake(true)
+                    .set_anti_skid(true)
+                    .set_cargo_door_state(0.)
+            }
+        }
+
+        fn test_bed() -> A320HydraulicsTestBed {
+            A320HydraulicsTestBed::new()
+        }
+
+        fn test_bed_with() -> A320HydraulicsTestBed {
+            test_bed()
+        }
+
+        #[test]
+        fn pressure_state_at_init_one_simulation_step() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            assert!(test_bed.is_ptu_enabled());
+
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn pressure_state_after_5s() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_ptu_enabled());
+
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn ptu_inhibits() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            //Enabled on cold start
+            assert!(test_bed.is_ptu_enabled());
+
+            //Ptu push button disables PTU accordingly
+            test_bed = test_bed.set_ptu_state(false).run_one_tick();
+            assert!(!test_bed.is_ptu_enabled());
+            test_bed = test_bed.set_ptu_state(true).run_one_tick();
+            assert!(test_bed.is_ptu_enabled());
+
+            //Not all engines on or off should disable ptu if on ground and park brake on
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(50.))
+                .run_one_tick();
+            assert!(!test_bed.is_ptu_enabled());
+            test_bed = test_bed.set_park_brake(false).run_one_tick();
+            assert!(test_bed.is_ptu_enabled());
+            test_bed = test_bed.set_park_brake(true).run_one_tick();
+            test_bed = test_bed.set_gear_compressed_switch(true).run_one_tick();
+            assert!(!test_bed.is_ptu_enabled());
+            test_bed = test_bed.set_gear_compressed_switch(false).run_one_tick();
+            assert!(test_bed.is_ptu_enabled());
+        }
+
+        #[test]
+        fn ptu_cargo_operation_inhibit() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            //Enabled on cold start
+            assert!(test_bed.is_ptu_enabled());
+
+            //Ptu push button disables PTU accordingly
+            test_bed = test_bed.set_cargo_door_state(1.).run_one_tick();
+            assert!(!test_bed.is_ptu_enabled());
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+            assert!(!test_bed.is_ptu_enabled());
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(
+                A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_PTU,
+            )); //Should re enabled after 40s
+            assert!(test_bed.is_ptu_enabled());
+        }
+
+        #[test]
+        fn ptu_pressurise_green_from_yellow_epump() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            //Enabled on cold start
+            assert!(test_bed.is_ptu_enabled());
+
+            //No pressure
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+
+            //Yellow epump ON / Waiting 10s
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs(10));
+
+            assert!(test_bed.is_ptu_enabled());
+
+            //Now we should have pressure in yellow and green
+            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2000.));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2000.));
+
+            //Ptu push button disables PTU / green press should fall
+            test_bed = test_bed
+                .set_ptu_state(false)
+                .run_waiting_for(Duration::from_secs(20));
+            assert!(!test_bed.is_ptu_enabled());
+
+            //Now we should have pressure in yellow only
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2000.));
+        }
+
+        #[test]
+        fn green_edp_buildup_test() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            //No pressure
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+
+            //Starting eng 1
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(50.))
+                .run_one_tick();
+            //ALMOST No pressure
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(500.)); //Blue is auto run
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+
+            //Waiting for 5s pressure hsould be at 3000 psi
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(50.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
+            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+
+            //Stoping engine, pressure should fall in 20s
+            test_bed = test_bed
+                .stop_eng1()
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(200.));
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn yellow_edp_buildup_test() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            //No pressure
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+
+            //Starting eng 1
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(50.))
+                .run_one_tick();
+            //ALMOST No pressure
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(500.)); //Blue is auto run
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
+
+            //Waiting for 5s pressure hsould be at 3000 psi
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(50.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
+
+            //Stoping engine, pressure should fall in 20s
+            test_bed = test_bed
+                .stop_eng2()
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(200.));
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
+        }
     }
 }

@@ -394,6 +394,8 @@ pub mod tests {
         power_consumer: PowerConsumer,
         cut_start_motor_power: bool,
         power_consumption: Power,
+        apu_generator_output_within_normal_parameters_before_processing_power_consumption_report:
+            bool,
     }
     impl AuxiliaryPowerUnitTestAircraft {
         fn new() -> Self {
@@ -407,6 +409,7 @@ pub mod tests {
                 power_consumer: PowerConsumer::from(ElectricalBusType::AlternatingCurrent(1)),
                 cut_start_motor_power: false,
                 power_consumption: Power::new::<watt>(0.),
+                apu_generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }
         }
 
@@ -443,8 +446,16 @@ pub mod tests {
             self.cut_start_motor_power = true;
         }
 
-        fn apu_electric_output_within_normal_parameters(&self) -> bool {
+        fn apu_generator_output_within_normal_parameters_after_processing_power_consumption_report(
+            &self,
+        ) -> bool {
             self.apu.output_within_normal_parameters()
+        }
+
+        fn apu_generator_output_within_normal_parameters_before_processing_power_consumption_report(
+            &self,
+        ) -> bool {
+            self.apu_generator_output_within_normal_parameters_before_processing_power_consumption_report
         }
 
         fn power_consumption(&self) -> Power {
@@ -475,6 +486,8 @@ pub mod tests {
 
             self.apu.update_after_electrical();
             self.apu_overhead.update_after_apu(&self.apu);
+
+            self.apu_generator_output_within_normal_parameters_before_processing_power_consumption_report = self.apu.output_within_normal_parameters();
         }
 
         fn get_supplied_power(&mut self) -> SuppliedPower {
@@ -853,7 +866,13 @@ pub mod tests {
         }
 
         fn apu_generator_output_within_normal_parameters(&self) -> bool {
-            self.aircraft.apu_electric_output_within_normal_parameters()
+            self.aircraft.apu_generator_output_within_normal_parameters_after_processing_power_consumption_report()
+        }
+
+        fn generator_output_within_normal_parameters_before_processing_power_consumption_report(
+            &self,
+        ) -> bool {
+            self.aircraft.apu_generator_output_within_normal_parameters_before_processing_power_consumption_report()
         }
 
         fn power_consumption(&self) -> Power {
@@ -1711,6 +1730,26 @@ pub mod tests {
                 .run(Duration::from_secs(0));
 
             assert!(!test_bed.apu_generator_output_within_normal_parameters());
+        }
+
+        #[test]
+        fn output_within_normal_parameters_adapts_to_shutting_down_apu_instantaneously() {
+            // The frequency and potential of the generator are only known at the end of a tick,
+            // due to them being directly related to the power consumption (large changes can cause
+            // spikes and dips). However, the decision if a generator can supply power is made much
+            // earlier in the tick. This is especially of great consequence when the generator no longer
+            // supplies potential but the previous tick's frequency and potential are still normal.
+            // With this test we ensure that a generator which is no longer supplying power is
+            // immediately noticed.
+            let test_bed = test_bed_with()
+                .running_apu()
+                .run(Duration::from_secs(0))
+                .then_continue_with()
+                .running_apu_going_in_emergency_shutdown()
+                // Transition to Stopping state.
+                .run(Duration::from_millis(1));
+
+            assert!(!test_bed.generator_output_within_normal_parameters_before_processing_power_consumption_report());
         }
 
         #[test]
