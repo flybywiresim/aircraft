@@ -54,7 +54,7 @@ impl EngineGenerator {
     /// overtemperature which over time will trigger a mechanical
     /// disconnect of the generator.
     pub fn output_within_normal_parameters(&self) -> bool {
-        self.frequency_normal() && self.potential_normal()
+        self.should_provide_output() && self.frequency_normal() && self.potential_normal()
     }
 
     fn should_provide_output(&self) -> bool {
@@ -324,6 +324,8 @@ mod tests {
             running: bool,
             idg_push_button_released: bool,
             consumer: PowerConsumer,
+            generator_output_within_normal_parameters_before_processing_power_consumption_report:
+                bool,
         }
         impl TestAircraft {
             fn new(running: bool) -> Self {
@@ -332,6 +334,7 @@ mod tests {
                     running,
                     idg_push_button_released: false,
                     consumer: PowerConsumer::from(ElectricalBusType::AlternatingCurrent(1)),
+                    generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
                 }
             }
 
@@ -355,8 +358,20 @@ mod tests {
                 self.consumer.demand(power);
             }
 
-            fn generator_output_within_normal_parameters(&self) -> bool {
+            fn generator_output_within_normal_parameters_after_processing_power_consumption_report(
+                &self,
+            ) -> bool {
                 self.engine_gen.output_within_normal_parameters()
+            }
+
+            fn shutdown_engine(&mut self) {
+                self.running = false;
+            }
+
+            fn generator_output_within_normal_parameters_before_processing_power_consumption_report(
+                &self,
+            ) -> bool {
+                self.generator_output_within_normal_parameters_before_processing_power_consumption_report
             }
         }
         impl Aircraft for TestAircraft {
@@ -368,6 +383,8 @@ mod tests {
                         self.idg_push_button_released,
                     ),
                 );
+
+                self.generator_output_within_normal_parameters_before_processing_power_consumption_report = self.engine_gen.output_within_normal_parameters();
             }
 
             fn get_supplied_power(&mut self) -> SuppliedPower {
@@ -526,7 +543,7 @@ mod tests {
             aircraft.power_demand(Power::new::<watt>((90000. / 0.8) + 1.));
             test_bed.run_aircraft(&mut aircraft);
 
-            assert!(aircraft.generator_output_within_normal_parameters());
+            assert!(aircraft.generator_output_within_normal_parameters_after_processing_power_consumption_report());
         }
 
         #[test]
@@ -536,7 +553,7 @@ mod tests {
 
             test_bed.run_aircraft(&mut aircraft);
 
-            assert!(!aircraft.generator_output_within_normal_parameters());
+            assert!(!aircraft.generator_output_within_normal_parameters_after_processing_power_consumption_report());
         }
 
         #[test]
@@ -546,7 +563,26 @@ mod tests {
 
             test_bed.run_aircraft(&mut aircraft);
 
-            assert!(aircraft.generator_output_within_normal_parameters());
+            assert!(aircraft.generator_output_within_normal_parameters_after_processing_power_consumption_report());
+        }
+
+        #[test]
+        fn output_within_normal_parameters_adapts_to_shutting_down_idg_instantaneously() {
+            // The frequency and potential of the generator are only known at the end of a tick,
+            // due to them being directly related to the power consumption (large changes can cause
+            // spikes and dips). However, the decision if a generator can supply power is made much
+            // earlier in the tick. This is especially of great consequence when the IDG no longer
+            // supplies potential but the previous tick's frequency and potential are still normal.
+            // With this test we ensure that an IDG which is no longer supplying power is
+            // immediately noticed and doesn't require another tick.
+            let mut aircraft = TestAircraft::with_running_engine();
+            let mut test_bed = EngineGeneratorTestBed::new();
+            test_bed.run_aircraft(&mut aircraft);
+
+            aircraft.shutdown_engine();
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert!(!aircraft.generator_output_within_normal_parameters_before_processing_power_consumption_report());
         }
 
         #[test]
