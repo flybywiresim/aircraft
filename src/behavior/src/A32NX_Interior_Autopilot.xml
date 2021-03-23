@@ -128,26 +128,16 @@
 					<UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
 						<ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
 						<ANTICLOCKWISE_CODE>
-							(L:XMLVAR_AirSpeedIsInMach) if{
-								1 (&gt;K:AP_MACH_VAR_DEC)
-							} els{
-								1 (&gt;K:AP_SPD_VAR_DEC)
-							}
-							(&gt;H:A320_Neo_CDU_AP_DEC_SPEED)
+                            (&gt;H:A320_Neo_FCU_SPEED_DEC)
 						</ANTICLOCKWISE_CODE>
 						<CLOCKWISE_CODE>
-							(L:XMLVAR_AirSpeedIsInMach) if{
-								1 (&gt;K:AP_MACH_VAR_INC)
-							} els{
-								1 (&gt;K:AP_SPD_VAR_INC)
-							}
-							(&gt;H:A320_Neo_CDU_AP_INC_SPEED)
+                            (&gt;H:A320_Neo_FCU_SPEED_INC)
 						</CLOCKWISE_CODE>
 						<PULL_CODE>
-							(&gt;H:A320_Neo_CDU_MODE_SELECTED_SPEED)
+							(&gt;H:A320_Neo_FCU_SPEED_PULL)
 						</PULL_CODE>
 						<PUSH_CODE>
-							(&gt;H:A320_Neo_CDU_MODE_MANAGED_SPEED)
+							(&gt;H:A320_Neo_FCU_SPEED_PUSH)
 						</PUSH_CODE>
 						<WWISE_EVENT_1>QNHknob</WWISE_EVENT_1>
 						<WWISE_EVENT_2>QNHknob</WWISE_EVENT_2>
@@ -191,13 +181,14 @@
             <Switch Param="TYPE">
                 <Case Value="AIRBUS">
                     <LEFT_SINGLE_CODE>
-						(&gt;K:AP_MANAGED_SPEED_IN_MACH_TOGGLE)
+                        (&gt;H:A320_Neo_FCU_SPEED_TOGGLE_SPEED_MACH)
                     </LEFT_SINGLE_CODE>
                     <EMISSIVE_CODE_ACTIVE>(A:AUTOPILOT MANAGED SPEED IN MACH, Bool)</EMISSIVE_CODE_ACTIVE>
                     <TOOLTIPID>%((A:AUTOPILOT MANAGED SPEED IN MACH, Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_MACH%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_KNOT%{end}</TOOLTIPID>
                 </Case>
                 <Default>
                     <LEFT_SINGLE_CODE>
+						(&gt;K:AP_MANAGED_SPEED_IN_MACH_TOGGLE)
 						(L:XMLVAR_AirSpeedIsInMach) ! (&gt;L:XMLVAR_AirSpeedIsInMach)
                     </LEFT_SINGLE_CODE>
                     <EMISSIVE_CODE_ACTIVE>(L:XMLVAR_AirSpeedIsInMach)</EMISSIVE_CODE_ACTIVE>

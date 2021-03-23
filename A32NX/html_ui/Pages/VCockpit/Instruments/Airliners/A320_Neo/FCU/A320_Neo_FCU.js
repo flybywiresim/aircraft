@@ -46,7 +46,6 @@ class A320_Neo_FCU extends BaseAirliners {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
-        this.updateMachTransition();
     }
     onEvent(_event) {
     }
@@ -156,25 +155,144 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this.isManaged = false;
         this.showSelectedSpeed = false;
         this.currentValue = 0;
+        this.selectedValue = 0;
+        this.isMachActive = false;
+        this.inSelection = false;
+        this.isSelectedValueActive = false;
+        this.isValidV2 = false;
+        this.isVerticalModeSRS = false;
+
+        this.backToIdleTimeout = 10000;
+        this.MIN_SPEED = 100;
+        this.MAX_SPEED = 399;
+        this.MIN_MACH = 0.10;
+        this.MAX_MACH = 0.99;
+
+        this._rotaryEncoderCurrentSpeed = 1;
+        this._rotaryEncoderMaximumSpeed = 10;
+        this._rotaryEncoderTimeout = 300;
+        this._rotaryEncoderIncrement = 0.15;
+        this._rotaryEncoderPreviousTimestamp = 0;
     }
+
     init() {
+        this.isValidV2 = false;
+        this.isVerticalModeSRS = false;
+        this.selectedValue = this.MIN_SPEED;
+        this.currentValue = this.MIN_SPEED;
         this.textSPD = this.getTextElement("SPD");
         this.textMACH = this.getTextElement("MACH");
         this.illuminator = this.getElement("circle", "Illuminator");
         this.refresh(false, false, false, false, 0, 0, true);
     }
+
     update(_deltaTime) {
-        const showSelectedSpeed = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 1;
+        const showSelectedSpeed = this.inSelection || SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 1;
         const isManaged = Simplane.getAutoPilotAirspeedManaged();
-        const isMachActive = Simplane.getAutoPilotMachModeActive();
-        this.refresh(true, isManaged, showSelectedSpeed, isMachActive, (isMachActive) ? Simplane.getAutoPilotSelectedMachHoldValue() * 100 : Simplane.getAutoPilotSelectedAirspeedHoldValue(), SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
+        const isMachActive = SimVar.GetSimVarValue("AUTOPILOT MANAGED SPEED IN MACH", "bool");
+        const isExpedModeOn = SimVar.GetSimVarValue("L:A32NX_FMA_EXPEDITE_MODE", "number") === 1;
+        const isManagedSpeedAvailable = this.isManagedSpeedAvailable();
+
+        // detect if managed speed should engage due to V2 entry or SRS mode
+        if (this.shouldEngageManagedSpeed()) {
+            this.onPush();
+        }
+        // detect if EXPED mode was engaged
+        if (!isManaged && isExpedModeOn && isManagedSpeedAvailable) {
+            this.onPush();
+        }
+        // when both AP and FD off -> revert to selected
+        if (isManaged && !isManagedSpeedAvailable) {
+            this.onPull();
+        }
+
+        // mach mode was switched
+        if (!isManaged && isMachActive !== this.isMachActive) {
+            if (isMachActive) {
+                this.selectedValue = Utils.Clamp(
+                    Math.round(SimVar.GetGameVarValue("FROM KIAS TO MACH", "number", this.selectedValue) * 100) / 100,
+                    this.MIN_MACH,
+                    this.MAX_MACH
+                );
+            } else {
+                this.selectedValue = Utils.Clamp(
+                    Math.round(SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", this.selectedValue)),
+                    this.MIN_SPEED,
+                    this.MAX_SPEED
+                );
+            }
+        }
+
+        // update speed
+        if (!this.isManaged && isMachActive === this.isMachActive) {
+            // get current target speed
+            const targetSpeed = isMachActive ? SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", this.selectedValue) : this.selectedValue;
+            // set target speed
+            if (targetSpeed !== this.targetSpeed) {
+                Coherent.call("AP_SPD_VAR_SET", 0, targetSpeed);
+                this.targetSpeed = targetSpeed;
+            }
+        }
+
+        this.refresh(
+            true,
+            isManaged,
+            showSelectedSpeed,
+            isMachActive,
+            this.selectedValue,
+            SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool")
+        );
     }
+
+    shouldEngageManagedSpeed() {
+        const isValidV2 = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "knots") > 100;
+        const isVerticalModeSRS = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "enum") === 40;
+
+        // V2 is entered into MCDU (was not set -> set)
+        // SRS mode engages (SRS no engaged -> engaged)
+        let shouldEngage = false;
+        if ((!this.isValidV2 && isValidV2) || (!this.isVerticalModeSRS && isVerticalModeSRS)) {
+            shouldEngage = true;
+        }
+
+        // store state
+        this.isValidV2 = isValidV2;
+        this.isVerticalModeSRS = isVerticalModeSRS;
+
+        return shouldEngage;
+    }
+
+    isManagedSpeedAvailable() {
+        // managed speed is available when flight director or autopilot is engaged, or in approach phase (FMGC flight phase)
+        return Simplane.getAutoPilotFlightDirectorActive(1)
+                || Simplane.getAutoPilotFlightDirectorActive(2)
+                || SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_ACTIVE", "number") === 1
+                || SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number") === 5;
+    }
+
     refresh(_isActive, _isManaged, _showSelectedSpeed, _machActive, _value, _lightsTest, _force = false) {
-        if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_showSelectedSpeed != this.showSelectedSpeed) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
+        if ((_isActive != this.isActive)
+            || (_isManaged != this.isManaged)
+            || (_showSelectedSpeed != this.showSelectedSpeed)
+            || (_machActive != this.isMachActive)
+            || (_value != this.currentValue)
+            || (_lightsTest !== this.lightsTest)
+            || _force) {
             this.isActive = _isActive;
+            if (_isManaged !== this.isManaged && _isManaged) {
+                this.inSelection = false;
+                this.isSelectedValueActive = false;
+                this.selectedValue = -1;
+            }
             this.isManaged = _isManaged;
+            if (_showSelectedSpeed !== this.showSelectedSpeed && !_showSelectedSpeed) {
+                this.inSelection = false;
+                this.isSelectedValueActive = false;
+                this.selectedValue = -1;
+            }
             this.showSelectedSpeed = _showSelectedSpeed;
-            this.currentValue = _value;
+            this.currentValue = _machActive ? _value * 100 : _value;
+            this.isMachActive = _machActive;
             this.setTextElementActive(this.textSPD, !_machActive);
             this.setTextElementActive(this.textMACH, _machActive);
             this.lightsTest = _lightsTest;
@@ -200,6 +318,114 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 }
             }
             this.setElementVisibility(this.illuminator, this.isManaged);
+        }
+    }
+
+    getCurrentSpeed() {
+        return Utils.Clamp(Math.round(Simplane.getIndicatedSpeed()), this.MIN_SPEED, this.MAX_SPEED);
+    }
+
+    getCurrentMach() {
+        return Utils.Clamp(Math.round(Simplane.getMachSpeed() * 100) / 100, this.MIN_MACH, this.MAX_MACH);
+    }
+
+    onRotate() {
+        if (!this.inSelection && this.isManaged) {
+            this.inSelection = true;
+            if (!this.isSelectedValueActive) {
+                if (this.isMachActive) {
+                    this.selectedValue = this.getCurrentMach();
+                } else {
+                    this.selectedValue = this.getCurrentSpeed();
+                }
+            }
+        }
+
+        this.isSelectedValueActive = true;
+
+        if (this.inSelection) {
+            clearTimeout(this._resetSelectionTimeout);
+            this._resetSelectionTimeout = setTimeout(() => {
+                this.selectedValue = -1;
+                this.isSelectedValueActive = false;
+                this.inSelection = false;
+            }, this.backToIdleTimeout);
+        }
+    }
+
+    onPush() {
+        if (!this.isManagedSpeedAvailable()) {
+            return;
+        }
+        // when both AP and FD off -> only selected speed is available
+        clearTimeout(this._resetSelectionTimeout);
+        SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 2);
+        SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number", 0);
+        if (this.isManaged) {
+            this.inSelection = false;
+            this.isSelectedValueActive = false;
+        }
+    }
+
+    onPull() {
+        // add -> pull only allowed 5s after take-off
+        clearTimeout(this._resetSelectionTimeout);
+        if (!this.isSelectedValueActive) {
+            if (this.isMachActive) {
+                this.selectedValue = this.getCurrentMach();
+            } else {
+                this.selectedValue = this.getCurrentSpeed();
+            }
+        }
+        SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
+        SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number", 1);
+    }
+
+    onSwitchSpeedMach() {
+        clearTimeout(this._resetSelectionTimeout);
+        this.inSelection = false;
+        this.isSelectedValueActive = false;
+        if (this.isMachActive) {
+            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 0);
+        } else {
+            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 0);
+        }
+    }
+
+    getRotationSpeed() {
+        if (this._rotaryEncoderCurrentSpeed < 1
+            || (Date.now() - this._rotaryEncoderPreviousTimestamp) > this._rotaryEncoderTimeout) {
+            this._rotaryEncoderCurrentSpeed = 1;
+        } else {
+            this._rotaryEncoderCurrentSpeed += this._rotaryEncoderIncrement;
+        }
+        this._rotaryEncoderPreviousTimestamp = Date.now();
+        return Math.min(this._rotaryEncoderMaximumSpeed, Math.floor(this._rotaryEncoderCurrentSpeed));
+    }
+
+    onEvent(_event) {
+        if (_event === "SPEED_INC") {
+            // use rotary encoder to speed dialing up / down
+            if (this.isMachActive) {
+                this.selectedValue = Utils.Clamp(this.selectedValue + 0.01, this.MIN_MACH, this.MAX_MACH);
+            } else {
+                this.selectedValue = Utils.Clamp(this.selectedValue + this.getRotationSpeed(), this.MIN_SPEED, this.MAX_SPEED);
+            }
+            this.onRotate();
+        } else if (_event === "SPEED_DEC") {
+            // use rotary encoder to speed dialing up / down
+            if (this.isMachActive) {
+                this.selectedValue = Utils.Clamp(this.selectedValue - 0.01, this.MIN_MACH, this.MAX_MACH);
+            } else {
+                this.selectedValue = Utils.Clamp(this.selectedValue - this.getRotationSpeed(), this.MIN_SPEED, this.MAX_SPEED);
+            }
+            this.onRotate();
+        } else if (_event === "SPEED_PUSH") {
+            this.onPush();
+        } else if (_event === "SPEED_PULL") {
+            this.onPull();
+        } else if (_event === "SPEED_TOGGLE_SPEED_MACH") {
+            this.onSwitchSpeedMach();
         }
     }
 }
@@ -865,7 +1091,8 @@ class A320_Neo_FCU_LargeScreen extends NavSystemElement {
     init(root) {
         if (this.components == null) {
             this.components = new Array();
-            this.components.push(new A320_Neo_FCU_Speed(this.gps, "Speed"));
+            this.speedDisplay = new A320_Neo_FCU_Speed(this.gps, "Speed");
+            this.components.push(this.speedDisplay);
             this.headingDisplay = new A320_Neo_FCU_Heading(this.gps, "Heading");
             this.components.push(this.headingDisplay);
             this.components.push(new A320_Neo_FCU_Mode(this.gps, "Mode"));
@@ -909,6 +1136,7 @@ class A320_Neo_FCU_LargeScreen extends NavSystemElement {
     }
     onEvent(_event) {
         this.autopilotInterface.onEvent(_event);
+        this.speedDisplay.onEvent(_event);
         this.headingDisplay.onEvent(_event);
         this.altitudeDisplay.onEvent(_event);
         this.verticalSpeedDisplay.onEvent(_event);
