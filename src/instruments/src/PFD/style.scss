@@ -19,6 +19,12 @@
   font-family: "Ecam", monospace !important;
 }
 
+.PulseCyanFill {
+  @include GenericPulsingFill($display-cyan);
+  animation-name: pulsing;
+  animation-duration: 1s;
+}
+
 .BarAmber {
   fill: $display-amber;
   stroke: $display-amber;

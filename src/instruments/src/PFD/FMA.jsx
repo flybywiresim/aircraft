@@ -244,6 +244,7 @@ const B1Cell = () => {
     const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
 
     let text;
+    let inProtection = false;
 
     switch (activeVerticalMode) {
     case 31:
@@ -309,24 +310,26 @@ const B1Cell = () => {
     //     break;
     case 15: {
         const FPA = getSimVar('L:A32NX_AUTOPILOT_FPA_SELECTED', 'Degree');
+        inProtection = getSimVar('L:A32NX_FMA_SPEED_PROTECTION_MODE', 'bool');
         const FPAText = `${(FPA >= 0 ? '+' : '')}${(Math.round(FPA * 10) / 10).toFixed(1)}°`;
 
         text = (
             <>
                 <tspan>FPA</tspan>
-                <tspan className="Cyan">{FPAText}</tspan>
+                <tspan className={`${inProtection ? 'PulseCyanFill' : 'Cyan'}`} xmlSpace="preserve">{FPAText}</tspan>
             </>
         );
         break;
     }
     case 14: {
         const VS = getSimVar('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
+        inProtection = getSimVar('L:A32NX_FMA_SPEED_PROTECTION_MODE', 'bool');
         const VSText = `${(VS >= 0 ? '+' : '')}${Math.round(VS).toString()}`.padStart(5, ' ');
 
         text = (
             <>
                 <tspan>V/S</tspan>
-                <tspan className="Cyan" xmlSpace="preserve">{VSText}</tspan>
+                <tspan className={`${inProtection ? 'PulseCyanFill' : 'Cyan'}`} xmlSpace="preserve">{VSText}</tspan>
             </>
         );
         break;
@@ -340,6 +343,8 @@ const B1Cell = () => {
             <ShowForSeconds timer={10} id={activeVerticalMode}>
                 <path className="NormalStroke White" d="m34.656 1.8143h29.918v6.0476h-29.918z" />
             </ShowForSeconds>
+            {inProtection && (activeVerticalMode === 14 || activeVerticalMode === 15)
+            && <path className="NormalStroke Amber" d="m34.656 1.8143h29.918v6.0476h-29.918z" />}
             <text className="FontMedium MiddleAlign Green" x="49.498924" y="6.8785663" xmlSpace="preserve">{text}</text>
         </g>
     );
