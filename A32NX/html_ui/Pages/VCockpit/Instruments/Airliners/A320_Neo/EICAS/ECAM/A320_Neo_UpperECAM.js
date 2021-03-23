@@ -357,13 +357,10 @@ var A320_Neo_UpperECAM;
                 {
                     style: "remark-indent-multiLine1",
                     message: "IF NO FUEL LEAK",
-                    //isCompleted: () => this.getCachedSimVar("A:FUELSYSTEM VALVE SWITCH:3", "Bool"),
                 },
                 {
                     style: "remark-indent-multiLine2",
                     message: "AND IMBALANCE",
-                    //isCompleted: () => this.getCachedSimVar("A:FUELSYSTEM VALVE SWITCH:3", "Bool"),
-
                 },
                 {
                     style: "action",
@@ -1203,7 +1200,6 @@ var A320_Neo_UpperECAM;
                         ]
 
                     }
-
                 ],
                 normal: [
                     {
