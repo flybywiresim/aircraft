@@ -1264,7 +1264,13 @@ mod tests {
                 assert!(yellow_loop.loop_pressure <= Pressure::new::<psi>(200.0));
             }
             epump.update(&ct.delta(), &yellow_loop);
-            yellow_loop.update(&ct.delta(), vec![&epump], Vec::new(), Vec::new(), Vec::new());
+            yellow_loop.update(
+                &ct.delta(),
+                vec![&epump],
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+            );
             if x % 20 == 0 {
                 println!("Iteration {}", x);
                 println!("-------------------------------------------");
@@ -1305,7 +1311,13 @@ mod tests {
                 assert!(blue_loop.loop_pressure <= Pressure::new::<psi>(100.0));
             }
             epump.update(&ct.delta(), &blue_loop);
-            blue_loop.update(&ct.delta(), vec![&epump], Vec::new(), Vec::new(), Vec::new());
+            blue_loop.update(
+                &ct.delta(),
+                vec![&epump],
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+            );
             if x % 20 == 0 {
                 println!("Iteration {}", x);
                 println!("-------------------------------------------");
@@ -1574,7 +1586,13 @@ mod tests {
             edp1.update(&ct.delta(), &green_loop, &engine1);
             epump.update(&ct.delta(), &yellow_loop);
 
-            yellow_loop.update(&ct.delta(), vec![&epump], Vec::new(), Vec::new(), vec![&ptu]);
+            yellow_loop.update(
+                &ct.delta(),
+                vec![&epump],
+                Vec::new(),
+                Vec::new(),
+                vec![&ptu],
+            );
             green_loop.update(&ct.delta(), Vec::new(), vec![&edp1], Vec::new(), vec![&ptu]);
 
             loop_history.update(
