@@ -667,6 +667,22 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             neutralLine.setAttribute("stroke-width", "6");
             this.root.appendChild(neutralLine);
         }
+        // fixed angle markers at 45 degree intervals, except 0
+        const arrowMarkGroup = document.createElementNS(Avionics.SVG.NS, "g");
+        this.root.appendChild(arrowMarkGroup);
+        for (let a = 45; a < 360; a = a + 45) {
+            const height = 26;
+            const p1 = (500) + ", " + (500 - circleRadius);
+            const p2 = (500 + height / 2) + ", " + (500 - circleRadius - height);
+            const p3 = (500 - height / 2) + ", " + (500 - circleRadius - height);
+            const arrowMark = document.createElementNS(Avionics.SVG.NS, "polygon");
+            arrowMark.setAttribute("id", `ArrowMark${a}`);
+            arrowMark.setAttribute("transform", `rotate(${a} 500 500)`);
+            arrowMark.setAttribute("points", `${p1} ${p2} ${p3}`);
+            arrowMark.setAttribute("stroke", "white");
+            arrowMark.setAttribute("fill", "white");
+            arrowMarkGroup.appendChild(arrowMark);
+        }
     }
     updateFail() {
         const failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
