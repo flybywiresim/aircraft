@@ -37,7 +37,7 @@
   "airplaneIcon1": "ICON_MAP_PLANE_A320",
   "airplaneIcon2": "ICON_MAP_PLANE_A320",
 
-  "imagesDir": "/Pages/VCockpit/Instruments/Airliners/Shared/MFD/Images/",
+  "imagesDir": "/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/MFD/Images/",
 
   "runwayFillColor": "white",
   "runwayStrokeColor": "gray",
