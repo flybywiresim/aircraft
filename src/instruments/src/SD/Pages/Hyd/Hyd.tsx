@@ -37,7 +37,7 @@ export const HydPage = () => {
     const [yellowPumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'boolean', 500);
     const [bluePumpPBStatus] = useSimVar('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'boolean', 500);
 
-    const [yellowElectricPumpStatus] = useSimVar('L:A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO', 'boolean', 500);
+    const [yellowElectricPumpStatus] = useSimVar('L:A32NX_HYD_YELLOW_EPUMP_ACTIVE', 'boolean', 500);
 
     const [greenHydLevel] = useSimVar('L:A32NX_HYD_GREEN_RESERVOIR', 'gallon', 1000);
     const [yellowHydLevel] = useSimVar('L:A32NX_HYD_YELLOW_RESERVOIR', 'gallon', 1000);
@@ -53,6 +53,9 @@ export const HydPage = () => {
     const [greenPumpLowPressure] = useSimVar('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'boolean', 500);
     const [yellowPumpLowPressure] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'boolean', 500);
     const [bluePumpLowPressure] = useSimVar('L:A32NX_HYD_BLUE_EPUMP_LOW_PRESS', 'boolean', 500);
+
+    const [ACBus1IsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool', 1000);
+    const [ACBus2IsPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool', 1000);
 
     const [engine1Running, setEngine1Running] = useState(0);
     const [engine2Running, setEngine2Running] = useState(0);
@@ -122,7 +125,7 @@ export const HydPage = () => {
 
     // PTU logic
     useEffect(() => {
-        if (!yellowElectricPumpStatus) {
+        if (yellowElectricPumpStatus) {
             setElecTriangleFill(1);
             setElecTriangleColour(yellowPressure <= 1450 ? 'amber' : 'green');
             setElecRightFormat(yellowPressure <= 1450 ? 'amber-line' : 'green-line');
@@ -132,7 +135,7 @@ export const HydPage = () => {
             setElecRightFormat('hide');
         }
 
-        if (ptuAvailable && yellowElectricPumpStatus) {
+        if (ptuAvailable && !yellowElectricPumpStatus) {
             // The PTU valve has to be open and the yellow electric pump should not be on
             const pressureDifferential = Math.abs(greenPressure - yellowPressure);
             const maxPressure = Math.max(yellowPressure, greenPressure);
@@ -150,7 +153,7 @@ export const HydPage = () => {
                 setPressures(true);
                 setPtuActive(0);
             }
-        } else if (ptuAvailable && !yellowElectricPumpStatus && greenPressure <= 2990) {
+        } else if (ptuAvailable && yellowElectricPumpStatus && greenPressure <= 2990) {
             setPtuScenario('right-to-left');
             setPtuActive(1);
         } else {
@@ -208,9 +211,27 @@ export const HydPage = () => {
                 <line className="green-line hide" x1={290} y1={y + 180} x2={300} y2={y + 180} />
                 <Triangle x={290} y={y + 180} colour="white" fill={0} orientation={90} />
 
-                <text id="ELEC-centre" className="rat-ptu-elec fill-white" x={350} y={y + 245} alignmentBaseline="central">ELEC</text>
+                <text
+                    id="ELEC-centre"
+                    className={!ACBus1IsPowered ? 'rat-ptu-elec fill-amber' : 'rat-ptu-elec fill-white'}
+                    x={350}
+                    y={y + 245}
+                    alignmentBaseline="central"
+                >
+                    ELEC
 
-                <text id="ELEC-right" className="rat-ptu-elec fill-white" x={548} y={y + 180} alignmentBaseline="central">ELEC</text>
+                </text>
+
+                <text
+                    id="ELEC-right"
+                    className={!ACBus2IsPowered ? 'rat-ptu-elec fill-amber' : 'rat-ptu-elec fill-white'}
+                    x={548}
+                    y={y + 180}
+                    alignmentBaseline="central"
+                >
+                    ELEC
+
+                </text>
                 <Triangle x={500} y={y + 180} colour={elecTriangleColour} fill={elecTriangleFill} orientation={-90} />
                 <line className={elecRightFormat} x1={490} y1={y + 180} x2={500} y2={y + 180} />
 
@@ -250,7 +271,7 @@ const HydSys = ({ title, pressure, hydLevel, x, y, fireValve, pumpPBStatus, pump
             <line
                 className={pressureNearest50 <= lowPressure
                  || (pumpDetectLowPressure && title === 'GREEN')
-                 || (pumpDetectLowPressure && yellowElectricPumpStatus && title === 'YELLOW') ? 'amber-line' : 'green-line'}
+                 || (pumpDetectLowPressure && !yellowElectricPumpStatus && title === 'YELLOW') ? 'amber-line' : 'green-line'}
                 x1={x}
                 y1={y + 181}
                 x2={x}
