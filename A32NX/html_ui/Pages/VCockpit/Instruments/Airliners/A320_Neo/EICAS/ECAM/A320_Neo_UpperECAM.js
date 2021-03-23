@@ -352,12 +352,50 @@ var A320_Neo_UpperECAM;
                 }
             }
         }
+        getLoWingTankActions(_tankSide) {
+            return [
+                {
+                    style: "remark-indent-multiLine1",
+                    message: "IF NO FUEL LEAK",
+                    //isCompleted: () => this.getCachedSimVar("A:FUELSYSTEM VALVE SWITCH:3", "Bool"),
+                },
+                {
+                    style: "remark-indent-multiLine2",
+                    message: "AND IMBALANCE",
+                    //isCompleted: () => this.getCachedSimVar("A:FUELSYSTEM VALVE SWITCH:3", "Bool"),
+
+                },
+                {
+                    style: "action",
+                    message: "FUEL X FEED",
+                    action: "ON",
+                    isCompleted: () => this.getCachedSimVar("A:FUELSYSTEM VALVE SWITCH:3", "Bool"),
+                },
+                {
+                    style: "action",
+                    message: `${_tankSide} TK PUMP 1`,
+                    action: "OFF",
+                    isCompleted: () => {
+                        return (_tankSide == "R") ? !SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:3", "boolean") : !SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:2", "boolean");
+                        },
+                },
+                {
+                    style: "action",
+                    message: `${_tankSide} TK PUMP 2`,
+                    action: "OFF",
+                    isCompleted: () => {
+                        return (_tankSide == "R") ? !SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:6", "boolean") : !SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:5", "boolean");
+                        },
+                }
+            ];
+        }
         init() {
             this.enginePanel = new A320_Neo_UpperECAM.EnginePanel(this, "EnginesPanel");
             this.infoTopPanel = new A320_Neo_UpperECAM.InfoTopPanel(this, "InfoTopPanel");
             this.flapsPanel = new A320_Neo_UpperECAM.FlapsPanel(this, "FlapsPanel");
             this.overflowArrow = this.querySelector("#overflow-arrow");
             this.statusReminder = this.querySelector("#sts-reminder");
+            this.gallonToKg = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilogram");
             this.activeTakeoffConfigWarnings = [];
             this.clearedSecondaryFailures = [];
             this.ecamMessages = {
@@ -1103,7 +1141,69 @@ var A320_Neo_UpperECAM;
                             }
                         ]
 
+                    },
+                    {
+                        name: "Fuel",
+                        messages: [
+                            {
+                                message: "R WING TK LO LVL",
+                                level: 2,
+                                flightPhasesInhib: [3, 4, 5, 7, 8, 9],
+                                isActive: () => {
+                                    let quantityL = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "gallons")*this.gallonToKg;
+                                    let quantityR = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "gallons")*this.gallonToKg;
+                                    return (quantityR<750) && (quantityL>750);
+                                },
+                                actions: this.getLoWingTankActions("R")                           
+                            },
+                            {
+                                message: "L WING TK LO LVL",
+                                level: 2,
+                                flightPhasesInhib: [3, 4, 5, 7, 8, 9],
+                                isActive: () => {
+                                    let quantityL = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "gallons")*this.gallonToKg;
+                                    let quantityR = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "gallons")*this.gallonToKg;
+                                    return (quantityL<750) && (quantityR>750);
+                                },
+                                actions: this.getLoWingTankActions("L")                           
+                            },
+                            {
+                                message: "CTR TK PUMPS OFF",
+                                level: 2,
+                                flightPhasesInhib: [1, 3, 4, 5, 7, 8, 9, 10],
+                                isActive: () => (!SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:1", "boolean") || !SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:4", "boolean")) && !SimVar.GetSimVarValue("L:A32NX_ECAM_INOP_SYS_FUEL PUMPS", "Bool") && SimVar.GetSimVarValue("FUEL TANK CENTER QUANTITY", "gallons")*this.gallonToKg>250,
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "CTR TK PUMP 1",
+                                        action: "ON",
+                                        isCompleted: () => SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:1", "boolean"),
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "CTR TK PUMP 2",
+                                        action: "ON",
+                                        isCompleted: () => SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:4", "boolean"),
+                                    },
+                                                                   
+                                ]
+                                
+                            },
+                            {
+                                message: "L + R WING TK LO LVL",
+                                level: 2,
+                                flightPhasesInhib: [3, 4, 5, 7, 8, 9],
+                                isActive: () => {
+                                    let quantityL = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "gallons")*this.gallonToKg;
+                                    let quantityR = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "gallons")*this.gallonToKg;
+                                    return (quantityL<750) && (quantityR<750);
+                                },                       
+                            },
+
+                        ]
+
                     }
+
                 ],
                 normal: [
                     {
@@ -2853,6 +2953,12 @@ var A320_Neo_UpperECAM;
                         case "remark-indent":
                             var msgOutput = `&nbsp;&nbsp;&nbsp;&nbsp;.${_message}:`;
                             break;
+                        case "remark-indent-multiLine1":
+                            var msgOutput = `&nbsp;&nbsp;&nbsp;&nbsp;.${_message}`;
+                            break;                            
+                        case "remark-indent-multiLine2":
+                            var msgOutput = `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp${_message}:`;
+                            break;                        
                         default:
                             var msgOutput = " " + _message;
                             if (!_category) {
