@@ -1206,14 +1206,6 @@ mod tests {
             //Enabled on cold start
             assert!(test_bed.is_ptu_enabled());
 
-            //No pressure
-            assert!(!test_bed.is_green_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_blue_pressurised());
-            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_yellow_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
-
             //Yellow epump ON / Waiting 10s
             test_bed = test_bed
                 .set_yellow_e_pump(false)
@@ -1251,14 +1243,6 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .run_one_tick();
-
-            //No pressure
-            assert!(!test_bed.is_green_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_blue_pressurised());
-            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_yellow_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
 
             //Starting eng 1
             test_bed = test_bed
@@ -1304,14 +1288,6 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .run_one_tick();
-
-            //No pressure
-            assert!(!test_bed.is_green_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_blue_pressurised());
-            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_yellow_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
 
             //Starting eng 1
             test_bed = test_bed
@@ -1361,14 +1337,6 @@ mod tests {
             //PTU would mess up the test
             test_bed = test_bed.set_ptu_state(false).run_one_tick();
             assert!(!test_bed.is_ptu_enabled());
-
-            //No pressure
-            assert!(!test_bed.is_green_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_blue_pressurised());
-            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_yellow_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
 
             assert!(!test_bed.is_fire_valve_eng1_closed());
             assert!(!test_bed.is_fire_valve_eng2_closed());
@@ -1429,14 +1397,6 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            //No pressure
-            assert!(!test_bed.is_green_pressurised());
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_blue_pressurised());
-            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
-            assert!(!test_bed.is_yellow_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
-
             //Accumulator empty on cold start
             assert!(test_bed.get_brake_yellow_accumulator_pressure() < Pressure::new::<psi>(50.));
             //No brakes
@@ -1484,6 +1444,122 @@ mod tests {
             assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(2000.));
 
             assert!(test_bed.get_brake_yellow_accumulator_pressure() > Pressure::new::<psi>(2500.));
+        }
+
+        #[test]
+        fn norm_brake_vs_altn_brake_test() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            //No brakes
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .set_park_brake(false)
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_yellow_pressurised());
+            //No brakes if we don't brake
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+
+            //Braking cause green braking system to rise
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(100.))
+                .set_right_brake(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+
+            //Disabling Askid causes alternate braking to work and release green brakes
+            test_bed = test_bed
+                .set_anti_skid(false)
+                .run_waiting_for(Duration::from_secs(2));
+
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(950.));
+            assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(950.));
+        }
+
+        #[test]
+        fn check_brake_inversion_test() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .set_park_brake(false)
+                .run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.is_yellow_pressurised());
+            //Braking left
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(100.))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+
+            //Braking right
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .set_right_brake(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+
+            //Disabling Askid causes alternate braking to work and release green brakes
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .set_right_brake(Ratio::new::<percent>(100.))
+                .set_anti_skid(false)
+                .run_waiting_for(Duration::from_secs(2));
+
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(950.));
+
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(100.))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(2));
+
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(950.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
         }
     }
 }
