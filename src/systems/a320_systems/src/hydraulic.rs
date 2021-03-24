@@ -897,6 +897,41 @@ mod tests {
                 Pressure::new::<psi>(self.simulation_test_bed.read_f64("HYD_YELLOW_PRESSURE"))
             }
 
+            fn get_brake_left_yellow_pressure(&mut self) -> Pressure {
+                Pressure::new::<psi>(
+                    self.simulation_test_bed
+                        .read_f64("HYD_BRAKE_ALTN_LEFT_PRESS"),
+                )
+            }
+
+            fn get_brake_right_yellow_pressure(&mut self) -> Pressure {
+                Pressure::new::<psi>(
+                    self.simulation_test_bed
+                        .read_f64("HYD_BRAKE_ALTN_RIGHT_PRESS"),
+                )
+            }
+
+            fn get_brake_left_green_pressure(&mut self) -> Pressure {
+                Pressure::new::<psi>(
+                    self.simulation_test_bed
+                        .read_f64("HYD_BRAKE_NORM_LEFT_PRESS"),
+                )
+            }
+
+            fn get_brake_right_green_pressure(&mut self) -> Pressure {
+                Pressure::new::<psi>(
+                    self.simulation_test_bed
+                        .read_f64("HYD_BRAKE_NORM_RIGHT_PRESS"),
+                )
+            }
+
+            fn get_brake_yellow_accumulator_pressure(&mut self) -> Pressure {
+                Pressure::new::<psi>(
+                    self.simulation_test_bed
+                        .read_f64("HYD_BRAKE_ALTN_ACC_PRESS"),
+                )
+            }
+
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
                 !self
                     .simulation_test_bed
@@ -1046,6 +1081,20 @@ mod tests {
                     .set_park_brake(true)
                     .set_anti_skid(true)
                     .set_cargo_door_state(0.)
+                    .set_left_brake(Ratio::new::<percent>(0.))
+                    .set_right_brake(Ratio::new::<percent>(0.))
+            }
+
+            fn set_left_brake(mut self, position_percent: Ratio) -> Self {
+                self.simulation_test_bed
+                    .write_f64("BRAKE LEFT POSITION", position_percent.get::<percent>());
+                self
+            }
+
+            fn set_right_brake(mut self, position_percent: Ratio) -> Self {
+                self.simulation_test_bed
+                    .write_f64("BRAKE RIGHT POSITION", position_percent.get::<percent>());
+                self
             }
         }
 
@@ -1370,6 +1419,71 @@ mod tests {
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
             assert!(!test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
+        }
+
+        #[test]
+        fn yellow_brake_accumulator_test() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            //No pressure
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+
+            //Accumulator empty on cold start
+            assert!(test_bed.get_brake_yellow_accumulator_pressure() < Pressure::new::<psi>(50.));
+            //No brakes
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+
+            //No brakes even if we brake
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(100.))
+                .set_right_brake(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_yellow_accumulator_pressure() < Pressure::new::<psi>(50.));
+
+            //Park brake off, loading accumulator, we expect no brake pressure but accumulator loaded
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .set_park_brake(false)
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs(15));
+
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+
+            assert!(test_bed.get_brake_yellow_accumulator_pressure() > Pressure::new::<psi>(2500.));
+
+            //Park brake on, loaded accumulator, we expect brakes on yellow side only
+            test_bed = test_bed
+                .set_park_brake(true)
+                .run_waiting_for(Duration::from_secs(2));
+
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(2000.));
+
+            assert!(test_bed.get_brake_yellow_accumulator_pressure() > Pressure::new::<psi>(2500.));
         }
     }
 }
