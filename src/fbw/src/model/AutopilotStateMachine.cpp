@@ -1238,7 +1238,13 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_LAND_entry_i(void)
 void AutopilotStateMachineModelClass::AutopilotStateMachine_FLARE_entry_g(void)
 {
   AutopilotStateMachine_B.out.mode = vertical_mode_FLARE;
-  AutopilotStateMachine_B.out.mode_autothrust = athr_requested_mode_THRUST_IDLE;
+  if ((AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP1 != 0.0) ||
+      (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP2 != 0.0)) {
+    AutopilotStateMachine_B.out.mode_autothrust = athr_requested_mode_THRUST_IDLE;
+  } else {
+    AutopilotStateMachine_B.out.mode_autothrust = athr_requested_mode_SPEED;
+  }
+
   AutopilotStateMachine_B.out.law = vertical_law_FLARE;
 }
 
