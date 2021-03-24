@@ -257,7 +257,7 @@ impl SimulationElement for HydLoop {
             self.get_reservoir_volume().get::<gallon>(),
         );
         if self.has_fire_valve {
-            writer.write_bool(&self.fire_valve_id, self.get_fire_shutoff_valve_state());
+            writer.write_bool(&self.fire_valve_id, self.is_fire_shutoff_valve_opened());
         }
     }
 }
@@ -359,7 +359,7 @@ impl HydLoop {
         self.fire_shutoff_valve_opened = opened;
     }
 
-    pub fn get_fire_shutoff_valve_state(&self) -> bool {
+    pub fn is_fire_shutoff_valve_opened(&self) -> bool {
         self.fire_shutoff_valve_opened
     }
 
@@ -464,7 +464,7 @@ impl HydLoop {
         let mut reservoir_return = Volume::new::<gallon>(0.);
         let mut delta_vol = Volume::new::<gallon>(0.);
 
-        if self.fire_shutoff_valve_opened && self.has_fire_valve {
+        if self.fire_shutoff_valve_opened {
             for p in engine_driven_pumps {
                 delta_vol_max += p.get_delta_vol_max();
                 delta_vol_min += p.get_delta_vol_min();
