@@ -2200,6 +2200,11 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getRouteReservedWeight() {
+        if (!this._rteReservedEntered && (this._rteFinalCoeffecient !== 0)) {
+            const fivePercentWeight = this._routeReservedPercent * this._routeTripFuelWeight / 100;
+            const fiveMinuteHoldingWeight = (5 * this._rteFinalCoeffecient) / 1000;
+            return fivePercentWeight > fiveMinuteHoldingWeight ? fivePercentWeight : fiveMinuteHoldingWeight;
+        }
         if (isFinite(this._routeReservedWeight) && this._routeReservedWeight !== 0) {
             return this._routeReservedWeight;
         } else {
