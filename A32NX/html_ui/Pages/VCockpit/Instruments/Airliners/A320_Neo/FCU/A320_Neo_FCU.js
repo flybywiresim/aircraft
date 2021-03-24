@@ -206,32 +206,35 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.onPull();
         }
 
-        // mach mode was switched
-        if (!isManaged && isMachActive !== this.isMachActive) {
-            if (isMachActive) {
-                this.selectedValue = Utils.Clamp(
-                    Math.round(SimVar.GetGameVarValue("FROM KIAS TO MACH", "number", this.selectedValue) * 100) / 100,
-                    this.MIN_MACH,
-                    this.MAX_MACH
-                );
-            } else {
-                this.selectedValue = Utils.Clamp(
-                    Math.round(SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", this.selectedValue)),
-                    this.MIN_SPEED,
-                    this.MAX_SPEED
-                );
-            }
-        }
-
         // update speed
-        if (!this.isManaged && isMachActive === this.isMachActive) {
+        if (!this.isManaged && this.selectedValue > 0) {
+            // mach mode was switched
+            if (isMachActive !== this.isMachActive) {
+                if (isMachActive || this.selectedValue > 1) {
+                    // KIAS -> Mach
+                    this.selectedValue = this.clampMach(
+                        Math.round(SimVar.GetGameVarValue("FROM KIAS TO MACH", "number", this.selectedValue) * 100) / 100
+                    );
+                } else {
+                    // Mach -> KIAS
+                    this.selectedValue = this.clampSpeed(
+                        Math.round(SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", this.selectedValue))
+                    );
+                }
+            }
             // get current target speed
-            const targetSpeed = isMachActive ? SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", this.selectedValue) : this.selectedValue;
+            let targetSpeed = (isMachActive || this.selectedValue < 1)
+                ? SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", this.selectedValue)
+                : this.selectedValue;
+            // clamp speed into valid range
+            targetSpeed = this.clampSpeed(targetSpeed);
             // set target speed
             if (targetSpeed !== this.targetSpeed) {
                 Coherent.call("AP_SPD_VAR_SET", 0, targetSpeed);
                 this.targetSpeed = targetSpeed;
             }
+        } else {
+            this.targetSpeed = -1;
         }
 
         this.refresh(
@@ -304,14 +307,17 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 return;
             }
             let value = Math.round(Math.max(this.currentValue, 0)).toString().padStart(3, "0");
-            if (!this.isManaged) {
+            if (!this.isManaged && this.selectedValue > 0) {
                 if (_machActive) {
                     value = `${value.substring(0,1)}.${value.substring(1)}`;
                 }
                 this.textValueContent = value;
                 this.setElementVisibility(this.illuminator, false);
-            } else if (this.isManaged) {
+            } else if (this.isManaged || this.selectedValue < 0) {
                 if (this.showSelectedSpeed) {
+                    if (_machActive) {
+                        value = `${value.substring(0,1)}.${value.substring(1)}`;
+                    }
                     this.textValueContent = value;
                 } else {
                     this.textValueContent = "---";
@@ -321,15 +327,24 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         }
     }
 
+    clampSpeed(value) {
+        return Utils.Clamp(value, this.MIN_SPEED, this.MAX_SPEED);
+    }
+
+    clampMach(value) {
+        return Utils.Clamp(value, this.MIN_MACH, this.MAX_MACH);
+    }
+
     getCurrentSpeed() {
-        return Utils.Clamp(Math.round(Simplane.getIndicatedSpeed()), this.MIN_SPEED, this.MAX_SPEED);
+        return this.clampSpeed(Math.round(Simplane.getIndicatedSpeed()));
     }
 
     getCurrentMach() {
-        return Utils.Clamp(Math.round(Simplane.getMachSpeed() * 100) / 100, this.MIN_MACH, this.MAX_MACH);
+        return this.clampMach(Math.round(Simplane.getMachSpeed() * 100) / 100);
     }
 
     onRotate() {
+        clearTimeout(this._resetSelectionTimeout);
         if (!this.inSelection && this.isManaged) {
             this.inSelection = true;
             if (!this.isSelectedValueActive) {
@@ -340,11 +355,8 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 }
             }
         }
-
         this.isSelectedValueActive = true;
-
         if (this.inSelection) {
-            clearTimeout(this._resetSelectionTimeout);
             this._resetSelectionTimeout = setTimeout(() => {
                 this.selectedValue = -1;
                 this.isSelectedValueActive = false;
@@ -357,18 +369,14 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         if (!this.isManagedSpeedAvailable()) {
             return;
         }
-        // when both AP and FD off -> only selected speed is available
         clearTimeout(this._resetSelectionTimeout);
         SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 2);
         SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number", 0);
-        if (this.isManaged) {
-            this.inSelection = false;
-            this.isSelectedValueActive = false;
-        }
+        this.inSelection = false;
+        this.isSelectedValueActive = false;
     }
 
     onPull() {
-        // add -> pull only allowed 5s after take-off
         clearTimeout(this._resetSelectionTimeout);
         if (!this.isSelectedValueActive) {
             if (this.isMachActive) {
@@ -407,17 +415,17 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         if (_event === "SPEED_INC") {
             // use rotary encoder to speed dialing up / down
             if (this.isMachActive) {
-                this.selectedValue = Utils.Clamp(this.selectedValue + 0.01, this.MIN_MACH, this.MAX_MACH);
+                this.selectedValue = this.clampMach(this.selectedValue + 0.01);
             } else {
-                this.selectedValue = Utils.Clamp(this.selectedValue + this.getRotationSpeed(), this.MIN_SPEED, this.MAX_SPEED);
+                this.selectedValue = this.clampSpeed(this.selectedValue + this.getRotationSpeed());
             }
             this.onRotate();
         } else if (_event === "SPEED_DEC") {
             // use rotary encoder to speed dialing up / down
             if (this.isMachActive) {
-                this.selectedValue = Utils.Clamp(this.selectedValue - 0.01, this.MIN_MACH, this.MAX_MACH);
+                this.selectedValue = this.clampMach(this.selectedValue - 0.01);
             } else {
-                this.selectedValue = Utils.Clamp(this.selectedValue - this.getRotationSpeed(), this.MIN_SPEED, this.MAX_SPEED);
+                this.selectedValue = this.clampSpeed(this.selectedValue - this.getRotationSpeed());
             }
             this.onRotate();
         } else if (_event === "SPEED_PUSH") {
