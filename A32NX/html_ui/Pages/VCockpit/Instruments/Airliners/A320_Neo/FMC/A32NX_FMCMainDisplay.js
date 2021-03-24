@@ -1443,10 +1443,12 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number}
      */
     tryGetExtraFuel(useFOB = false) {
+        const isFlying = parseInt(SimVar.GetSimVarValue("GROUND VELOCITY", "knots")) > 30;
+
         if (useFOB) {
-            return this.getFOB() - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight;
+            return this.getFOB() - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight - (isFlying ? 0 : this.getRouteReservedWeight());
         } else {
-            return this.blockFuel - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight;
+            return this.blockFuel - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight - (isFlying ? 0 : this.getRouteReservedWeight());
         }
     }
 
@@ -2085,12 +2087,13 @@ class FMCMainDisplay extends BaseAirliners {
         this.tryUpdateRouteFinalFuel();
         this.tryUpdateRouteAlternate();
         this.tryUpdateRouteTrip();
-        this.tryUpdateMinDestFob();
 
         this._routeFinalFuelTime = tempRouteFinalFuelTime;
         this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
 
-        this.blockFuel = this.getTotalTripFuelCons() + this._minDestFob + this.taxiFuelWeight;
+        this.tryUpdateMinDestFob();
+
+        this.blockFuel = this.getTotalTripFuelCons() + this._minDestFob + this.taxiFuelWeight + this.getRouteReservedWeight();
         this._fuelPlanningPhase = this._fuelPlanningPhases.IN_PROGRESS;
         return true;
     }
@@ -2200,13 +2203,13 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(this._routeReservedWeight) && this._routeReservedWeight !== 0) {
             return this._routeReservedWeight;
         } else {
-            return this._routeReservedPercent * this.blockFuel / 100;
+            return this._routeReservedPercent * this._routeTripFuelWeight / 100;
         }
     }
 
     getRouteReservedPercent() {
         if (isFinite(this._routeReservedWeight) && isFinite(this.blockFuel) && this._routeReservedWeight !== 0) {
-            return this._routeReservedWeight / this.blockFuel * 100;
+            return this._routeReservedWeight / this._routeTripFuelWeight * 100;
         }
         return this._routeReservedPercent;
     }
