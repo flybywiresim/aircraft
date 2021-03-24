@@ -17,6 +17,8 @@
 1. [MCDU] Show max distance of 9999 NM on duplicate waypoint selection - @tracernz (Mike)
 1. [DU] Display units only run their self-test when unpowered over 10 seconds - @davidwalschots (David Walschots)
 1. [DISPLAYS] RMP backlight, ATC and RTPI font color and backlight - @marcman86 (marcman86#4907)
+1. [ND] Visual tweaks to ND display - @tracernz (Mike)
+1. [ND] Add cross-track error - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
