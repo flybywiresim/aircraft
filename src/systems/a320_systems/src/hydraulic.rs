@@ -756,28 +756,6 @@ impl SimulationElement for A320HydraulicOverheadPanel {
     }
 }
 
-// #[cfg(test)]
-// pub mod tests {
-//     use super::A320HydraulicLogic;
-//     use std::time::Duration;
-
-//     fn hyd_logic() -> A320HydraulicLogic {
-//         A320HydraulicLogic::new()
-//     }
-
-//     #[test]
-//     fn is_nws_pin_engaged_test() {
-//         let mut logic = hyd_logic();
-
-//         let update_delta = Duration::from_secs_f64(0.08);
-//         assert!(!logic.is_nsw_pin_inserted_flag(&update_delta));
-
-//         logic.pushback_angle = 1.001;
-//         logic.pushback_state = 2.0;
-//         assert!(logic.is_nsw_pin_inserted_flag(&update_delta));
-//     }
-// }
-
 #[cfg(test)]
 mod a320_hydraulic_simvars {
     use super::*;
@@ -919,6 +897,28 @@ mod tests {
                 Pressure::new::<psi>(self.simulation_test_bed.read_f64("HYD_YELLOW_PRESSURE"))
             }
 
+            fn is_fire_valve_eng1_closed(&mut self) -> bool {
+                !self
+                    .simulation_test_bed
+                    .read_bool("HYD_GREEN_FIRE_VALVE_OPENED")
+                    && !self
+                        .aircraft
+                        .hydraulics
+                        .green_loop
+                        .is_fire_shutoff_valve_opened()
+            }
+
+            fn is_fire_valve_eng2_closed(&mut self) -> bool {
+                !self
+                    .simulation_test_bed
+                    .read_bool("HYD_YELLOW_FIRE_VALVE_OPENED")
+                    && !self
+                        .aircraft
+                        .hydraulics
+                        .yellow_loop
+                        .is_fire_shutoff_valve_opened()
+            }
+
             fn engines_off(self) -> Self {
                 self.stop_eng1().stop_eng2()
             }
@@ -934,6 +934,18 @@ mod tests {
 
             fn set_gear_compressed_switch(mut self, is_compressed: bool) -> Self {
                 self.simulation_test_bed.set_on_ground(is_compressed);
+                self
+            }
+
+            fn set_eng1_fire_button(mut self, is_active: bool) -> Self {
+                self.simulation_test_bed
+                    .write_bool("FIRE_BUTTON_ENG1", is_active);
+                self
+            }
+
+            fn set_eng2_fire_button(mut self, is_active: bool) -> Self {
+                self.simulation_test_bed
+                    .write_bool("FIRE_BUTTON_ENG2", is_active);
                 self
             }
 
@@ -1024,6 +1036,8 @@ mod tests {
 
             fn set_cold_dark_inputs(self) -> Self {
                 self.set_blue_e_pump_ovrd(false)
+                    .set_eng1_fire_button(false)
+                    .set_eng2_fire_button(false)
                     .set_blue_e_pump(true)
                     .set_yellow_e_pump(true)
                     .set_green_ed_pump(true)
@@ -1126,7 +1140,9 @@ mod tests {
             assert!(!test_bed.is_ptu_enabled());
             test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
             assert!(!test_bed.is_ptu_enabled());
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_PTU )); //Should re enabled after 40s
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(
+                A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_PTU,
+            )); //Should re enabled after 40s
             assert!(test_bed.is_ptu_enabled());
         }
 
@@ -1281,6 +1297,77 @@ mod tests {
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
             assert!(!test_bed.is_blue_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(200.));
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
+        }
+
+        #[test]
+        fn yellow_green_edp_firevalve_test() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            //PTU would mess up the test
+            test_bed = test_bed.set_ptu_state(false).run_one_tick();
+            assert!(!test_bed.is_ptu_enabled());
+
+            //No pressure
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+
+            assert!(!test_bed.is_fire_valve_eng1_closed());
+            assert!(!test_bed.is_fire_valve_eng2_closed());
+
+            //Starting eng 1
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(50.))
+                .start_eng1(Ratio::new::<percent>(50.))
+                .run_waiting_for(Duration::from_secs(5));
+
+            //Waiting for 5s pressure hsould be at 3000 psi
+            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
+            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
+
+            assert!(!test_bed.is_fire_valve_eng1_closed());
+            assert!(!test_bed.is_fire_valve_eng2_closed());
+
+            //Green shutoff valve
+            test_bed = test_bed
+                .set_eng1_fire_button(true)
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(test_bed.is_fire_valve_eng1_closed());
+            assert!(!test_bed.is_fire_valve_eng2_closed());
+
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
+            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
+
+            //Yellow shutoff valve
+            test_bed = test_bed
+                .set_eng2_fire_button(true)
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(test_bed.is_fire_valve_eng1_closed());
+            assert!(test_bed.is_fire_valve_eng2_closed());
+
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
+            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
             assert!(!test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
         }
