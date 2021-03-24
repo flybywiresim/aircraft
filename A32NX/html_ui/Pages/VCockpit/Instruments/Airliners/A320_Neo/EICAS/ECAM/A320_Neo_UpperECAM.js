@@ -2260,13 +2260,7 @@ var A320_Neo_UpperECAM;
             return _isMetric ? "KG/H" : "LBS/H";
         }
         getValue(_engine, _conversion) {
-            const imbalance = SimVar.GetSimVarValue("L:A32NX_ENGINE_IMBALANCE", "number");
-            if (parseInt(imbalance.toString().substr(0, 1)) == _engine) {
-                var ff_i = parseInt(imbalance.toString().substr(3, 2));
-            } else {
-                var ff_i = parseInt(0);
-            }
-            let ff = SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:" + _engine, "number") - ff_i;
+            let ff = SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:" + _engine, "number");
             ff -= ff % 20;
             if (ff < 0) {
                 return 0;
