@@ -151,22 +151,23 @@ class A320_Neo_FCU_Component {
 class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     constructor() {
         super(...arguments);
-        this.isActive = false;
-        this.isManaged = false;
-        this.showSelectedSpeed = false;
-        this.currentValue = 0;
-        this.selectedValue = 0;
-        this.isMachActive = false;
-        this.inSelection = false;
-        this.isSelectedValueActive = false;
-        this.isValidV2 = false;
-        this.isVerticalModeSRS = false;
 
         this.backToIdleTimeout = 10000;
         this.MIN_SPEED = 100;
         this.MAX_SPEED = 399;
         this.MIN_MACH = 0.10;
         this.MAX_MACH = 0.99;
+
+        this.isActive = false;
+        this.isManaged = false;
+        this.showSelectedSpeed = false;
+        this.currentValue = this.MIN_SPEED;
+        this.selectedValue = this.MIN_SPEED;
+        this.isMachActive = false;
+        this.inSelection = false;
+        this.isSelectedValueActive = false;
+        this.isValidV2 = false;
+        this.isVerticalModeSRS = false;
 
         this._rotaryEncoderCurrentSpeed = 1;
         this._rotaryEncoderMaximumSpeed = 10;
@@ -179,11 +180,17 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this.isValidV2 = false;
         this.isVerticalModeSRS = false;
         this.selectedValue = this.MIN_SPEED;
-        this.currentValue = this.MIN_SPEED;
+        this.currentValue = this.selectedValue;
+        this.targetSpeed = this.selectedValue;
+        this.isMachActive = false;
         this.textSPD = this.getTextElement("SPD");
         this.textMACH = this.getTextElement("MACH");
         this.illuminator = this.getElement("circle", "Illuminator");
-        this.refresh(false, false, false, false, 0, 0, true);
+        SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number", 1);
+        SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 0);
+        Coherent.call("AP_SPD_VAR_SET", 0, this.selectedValue);
+        this.refresh(true, false, true, false, this.selectedValue, false, true);
+        this.onPull();
     }
 
     update(_deltaTime) {
@@ -482,7 +489,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.textTRK = this.getTextElement("TRK");
         this.textLAT = this.getTextElement("LAT");
         this.illuminator = this.getElement("circle", "Illuminator");
-        this.refresh(false, false, true, false, 0, 0, true);
+        this.refresh(true, false, false, false, true, 0, false, true);
         this.selectedValue = -1;
         this.isSelectedValueActive = false;
         this.isPreselectionModeActive = false;
