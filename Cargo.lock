@@ -4,6 +4,7 @@
 name = "a320_systems"
 version = "0.1.0"
 dependencies = [
+ "rand",
  "systems",
  "uom",
 ]
