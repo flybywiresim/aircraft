@@ -160,7 +160,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
 
         this.isActive = false;
         this.isManaged = false;
-        this.showSelectedSpeed = false;
+        this.showSelectedSpeed = true;
         this.currentValue = this.MIN_SPEED;
         this.selectedValue = this.MIN_SPEED;
         this.isMachActive = false;
@@ -168,6 +168,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this.isSelectedValueActive = false;
         this.isValidV2 = false;
         this.isVerticalModeSRS = false;
+        this.isTargetManaged = false;
 
         this._rotaryEncoderCurrentSpeed = 1;
         this._rotaryEncoderMaximumSpeed = 10;
@@ -180,22 +181,21 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this.isValidV2 = false;
         this.isVerticalModeSRS = false;
         this.selectedValue = this.MIN_SPEED;
-        this.currentValue = this.selectedValue;
-        this.targetSpeed = this.selectedValue;
+        this.currentValue = this.MIN_SPEED;
+        this.targetSpeed = this.MIN_SPEED;
+        this.isTargetManaged = false;
         this.isMachActive = false;
         this.textSPD = this.getTextElement("SPD");
         this.textMACH = this.getTextElement("MACH");
         this.illuminator = this.getElement("circle", "Illuminator");
-        SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number", 1);
+        Coherent.call("AP_SPD_VAR_SET", 0, this.MIN_SPEED);
         SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 0);
-        Coherent.call("AP_SPD_VAR_SET", 0, this.selectedValue);
-        this.refresh(true, false, true, false, this.selectedValue, false, true);
         this.onPull();
     }
 
     update(_deltaTime) {
-        const showSelectedSpeed = this.inSelection || SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 1;
-        const isManaged = Simplane.getAutoPilotAirspeedManaged();
+        const isManaged = Simplane.getAutoPilotAirspeedManaged() && this.isTargetManaged;
+        const showSelectedSpeed = this.inSelection || !isManaged;
         const isMachActive = SimVar.GetSimVarValue("AUTOPILOT MANAGED SPEED IN MACH", "bool");
         const isExpedModeOn = SimVar.GetSimVarValue("L:A32NX_FMA_EXPEDITE_MODE", "number") === 1;
         const isManagedSpeedAvailable = this.isManagedSpeedAvailable();
@@ -214,9 +214,9 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         }
 
         // update speed
-        if (!this.isManaged && this.selectedValue > 0) {
+        if (!isManaged && this.selectedValue > 0) {
             // mach mode was switched
-            if (isMachActive !== this.isMachActive) {
+            if (isMachActive != this.isMachActive) {
                 if (isMachActive || this.selectedValue > 1) {
                     // KIAS -> Mach
                     this.selectedValue = this.clampMach(
@@ -293,12 +293,14 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 this.inSelection = false;
                 this.isSelectedValueActive = false;
                 this.selectedValue = -1;
+                console.warn("reset due to _isManaged == true");
             }
             this.isManaged = _isManaged;
             if (_showSelectedSpeed !== this.showSelectedSpeed && !_showSelectedSpeed) {
                 this.inSelection = false;
                 this.isSelectedValueActive = false;
                 this.selectedValue = -1;
+                console.warn("reset due to _showSelectedSpeed == false");
             }
             this.showSelectedSpeed = _showSelectedSpeed;
             this.currentValue = _machActive ? _value * 100 : _value;
@@ -313,15 +315,16 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 this.setTextElementActive(this.textMACH, true);
                 return;
             }
-            let value = Math.round(Math.max(this.currentValue, 0)).toString().padStart(3, "0");
-            if (!this.isManaged && this.selectedValue > 0) {
+            let value = _machActive ? Math.max(this.currentValue, 0) : Math.max(this.currentValue, 100);
+            value = Math.round(value).toString().padStart(3, "0");
+            if (!_isManaged && this.currentValue > 0) {
                 if (_machActive) {
                     value = `${value.substring(0,1)}.${value.substring(1)}`;
                 }
                 this.textValueContent = value;
                 this.setElementVisibility(this.illuminator, false);
-            } else if (this.isManaged || this.selectedValue < 0) {
-                if (this.showSelectedSpeed) {
+            } else if (_isManaged || this.currentValue < 0) {
+                if (_showSelectedSpeed) {
                     if (_machActive) {
                         value = `${value.substring(0,1)}.${value.substring(1)}`;
                     }
@@ -378,9 +381,9 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         }
         clearTimeout(this._resetSelectionTimeout);
         SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 2);
-        SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number", 0);
         this.inSelection = false;
         this.isSelectedValueActive = false;
+        this.isTargetManaged = true;
     }
 
     onPull() {
@@ -393,7 +396,9 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             }
         }
         SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
-        SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number", 1);
+        this.inSelection = false;
+        this.isSelectedValueActive = false;
+        this.isTargetManaged = false;
     }
 
     onSwitchSpeedMach() {
@@ -493,6 +498,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.selectedValue = -1;
         this.isSelectedValueActive = false;
         this.isPreselectionModeActive = false;
+        this.onPull();
     }
 
     onFlightStart() {
@@ -546,6 +552,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.isPreselectionModeActive = false;
         this.inSelection = false;
         SimVar.SetSimVarValue("K:A32NX.FCU_HDG_PUSH", "number", 0);
+        SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 2);
     }
 
     onPull() {
@@ -562,6 +569,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.isSelectedValueActive = true;
         this.isPreselectionModeActive = false;
         SimVar.SetSimVarValue("K:A32NX.FCU_HDG_PULL", "number", 0);
+        SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 1);
     }
 
     update(_deltaTime) {
@@ -618,9 +626,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                     }
                 }
             }
-            if (_showSelectedHeading !== this.showSelectedHeading) {
-                SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", _showSelectedHeading == true ? 1 : 0);
-            }
+            SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", _showSelectedHeading == true ? 1 : 0);
             if (_value !== this.currentValue) {
                 SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_HEADING_SELECTED", "Degrees", _value);
                 Coherent.call("HEADING_BUG_SET", 1, Math.max(0, _value));
@@ -836,8 +842,10 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
     onEvent(_event) {
         if (_event === "ALT_PUSH") {
             SimVar.SetSimVarValue("K:A32NX.FCU_ALT_PUSH", "number", 0);
+            SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 2);
         } else if (_event === "ALT_PULL") {
             SimVar.SetSimVarValue("K:A32NX.FCU_ALT_PULL", "number", 0);
+            SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 1);
         }
     }
 }

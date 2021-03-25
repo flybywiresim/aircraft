@@ -1013,8 +1013,8 @@ class FMCMainDisplay extends BaseAirliners {
         }
         this.initRadioNav(true);
 
+        this._onModeSelectedHeading();
         this._onModeSelectedAltitude();
-        this._onModeManagedAltitude();
 
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
         CDUPerformancePage.UpdateThrRedAccFromDestination(this);
