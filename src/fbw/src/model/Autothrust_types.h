@@ -54,6 +54,7 @@ typedef struct {
   real_T corrected_engine_N1_1_percent;
   real_T corrected_engine_N1_2_percent;
   real_T TAT_degC;
+  real_T OAT_degC;
 } athr_raw_data;
 
 #endif
@@ -180,6 +181,8 @@ typedef struct {
   real_T engine_N1_1_percent;
   real_T engine_N1_2_percent;
   real_T TAT_degC;
+  real_T OAT_degC;
+  real_T ISA_degC;
 } athr_data;
 
 #endif

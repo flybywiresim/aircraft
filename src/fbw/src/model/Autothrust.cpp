@@ -5,6 +5,25 @@
 
 const uint8_T Autothrust_IN_InAir = 1U;
 const uint8_T Autothrust_IN_OnGround = 2U;
+void AutothrustModelClass::Autothrust_ThrustMode1(real_T rtu_u, real_T *rty_y)
+{
+  if (rtu_u < 0.0) {
+    *rty_y = 1.0;
+  } else if (rtu_u == 0.0) {
+    *rty_y = 2.0;
+  } else if ((rtu_u > 0.0) && (rtu_u < 25.0)) {
+    *rty_y = 3.0;
+  } else if ((rtu_u >= 25.0) && (rtu_u < 35.0)) {
+    *rty_y = 4.0;
+  } else if ((rtu_u >= 35.0) && (rtu_u < 45.0)) {
+    *rty_y = 5.0;
+  } else if (rtu_u == 45.0) {
+    *rty_y = 6.0;
+  } else {
+    *rty_y = 0.0;
+  }
+}
+
 void AutothrustModelClass::Autothrust_TLAComputation1(const athr_out *rtu_in, real_T rtu_TLA, real_T *rty_N1c, boolean_T
   *rty_inReverse)
 {
@@ -57,52 +76,39 @@ void AutothrustModelClass::Autothrust_TLAComputation1(const athr_out *rtu_in, re
     N1_begin;
 }
 
-void AutothrustModelClass::Autothrust_ThrustMode1(real_T rtu_u, real_T *rty_y)
-{
-  if (rtu_u < 0.0) {
-    *rty_y = 1.0;
-  } else if (rtu_u == 0.0) {
-    *rty_y = 2.0;
-  } else if ((rtu_u > 0.0) && (rtu_u < 25.0)) {
-    *rty_y = 3.0;
-  } else if ((rtu_u >= 25.0) && (rtu_u < 35.0)) {
-    *rty_y = 4.0;
-  } else if ((rtu_u >= 35.0) && (rtu_u < 45.0)) {
-    *rty_y = 5.0;
-  } else if (rtu_u == 45.0) {
-    *rty_y = 6.0;
-  } else {
-    *rty_y = 0.0;
-  }
-}
-
 void AutothrustModelClass::step()
 {
-  athr_out rtb_BusAssignment;
-  real_T result_tmp[9];
+  athr_out rtb_BusAssignment_n;
+  real_T result_tmp_0[9];
   real_T result[3];
+  real_T x[3];
   real_T Phi_rad;
   real_T Theta_rad;
+  real_T result_tmp;
+  real_T rtb_BusAssignment_e_output_N1_TLA_2_percent;
+  real_T rtb_Divide;
   real_T rtb_Gain2;
   real_T rtb_Gain3;
+  real_T rtb_Gain_f;
   real_T rtb_Saturation;
   real_T rtb_Sum2;
-  real_T rtb_Sum_h;
   real_T rtb_Switch_d;
-  real_T rtb_y_b;
+  real_T rtb_Switch_f_idx_1;
+  real_T rtb_Switch_fs;
+  real_T rtb_y_i;
+  real_T rtb_y_jh;
   int32_T i;
   int32_T rtb_on_ground;
   boolean_T ATHR_ENGAGED_tmp;
   boolean_T ATHR_ENGAGED_tmp_0;
-  boolean_T ATHR_ENGAGED_tmp_1;
   boolean_T cUseAutoThrustControl;
   boolean_T condition_AP_FD_ATHR_Specific;
   boolean_T condition_THR_LK_tmp;
-  boolean_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_ATHR_push;
+  boolean_T rtb_NOT;
   boolean_T rtb_NOT1;
   boolean_T rtb_inReverse;
   boolean_T rtb_out;
-  boolean_T rtb_y_h;
+  boolean_T rtb_y_o;
   athr_status rtb_status;
   rtb_Gain2 = Autothrust_P.Gain2_Gain * Autothrust_U.in.data.Theta_deg;
   rtb_Gain3 = Autothrust_P.Gain3_Gain * Autothrust_U.in.data.Phi_deg;
@@ -110,20 +116,20 @@ void AutothrustModelClass::step()
   Phi_rad = 0.017453292519943295 * rtb_Gain3;
   rtb_Saturation = std::cos(Theta_rad);
   Theta_rad = std::sin(Theta_rad);
-  rtb_Switch_d = std::sin(Phi_rad);
+  result_tmp = std::sin(Phi_rad);
   Phi_rad = std::cos(Phi_rad);
-  result_tmp[0] = rtb_Saturation;
-  result_tmp[3] = 0.0;
-  result_tmp[6] = -Theta_rad;
-  result_tmp[1] = rtb_Switch_d * Theta_rad;
-  result_tmp[4] = Phi_rad;
-  result_tmp[7] = rtb_Saturation * rtb_Switch_d;
-  result_tmp[2] = Phi_rad * Theta_rad;
-  result_tmp[5] = 0.0 - rtb_Switch_d;
-  result_tmp[8] = Phi_rad * rtb_Saturation;
+  result_tmp_0[0] = rtb_Saturation;
+  result_tmp_0[3] = 0.0;
+  result_tmp_0[6] = -Theta_rad;
+  result_tmp_0[1] = result_tmp * Theta_rad;
+  result_tmp_0[4] = Phi_rad;
+  result_tmp_0[7] = rtb_Saturation * result_tmp;
+  result_tmp_0[2] = Phi_rad * Theta_rad;
+  result_tmp_0[5] = 0.0 - result_tmp;
+  result_tmp_0[8] = Phi_rad * rtb_Saturation;
   for (i = 0; i < 3; i++) {
-    result[i] = result_tmp[i + 6] * Autothrust_U.in.data.bz_m_s2 + (result_tmp[i + 3] * Autothrust_U.in.data.by_m_s2 +
-      result_tmp[i] * Autothrust_U.in.data.bx_m_s2);
+    result[i] = result_tmp_0[i + 6] * Autothrust_U.in.data.bz_m_s2 + (result_tmp_0[i + 3] * Autothrust_U.in.data.by_m_s2
+      + result_tmp_0[i] * Autothrust_U.in.data.bx_m_s2);
   }
 
   rtb_Saturation = Autothrust_P.Gain_Gain_p * Autothrust_U.in.data.gear_strut_compression_1 -
@@ -165,50 +171,41 @@ void AutothrustModelClass::step()
     }
   }
 
-  rtb_BusAssignment = Autothrust_P.athr_out_MATLABStruct;
-  rtb_BusAssignment.time = Autothrust_U.in.time;
-  rtb_BusAssignment.data.nz_g = Autothrust_U.in.data.nz_g;
-  rtb_BusAssignment.data.Theta_deg = rtb_Gain2;
-  rtb_BusAssignment.data.Phi_deg = rtb_Gain3;
-  rtb_BusAssignment.data.V_ias_kn = Autothrust_U.in.data.V_ias_kn;
-  rtb_BusAssignment.data.V_tas_kn = Autothrust_U.in.data.V_tas_kn;
-  rtb_BusAssignment.data.V_mach = Autothrust_U.in.data.V_mach;
-  rtb_BusAssignment.data.V_gnd_kn = Autothrust_U.in.data.V_gnd_kn;
-  rtb_BusAssignment.data.alpha_deg = Autothrust_U.in.data.alpha_deg;
-  rtb_BusAssignment.data.H_ft = Autothrust_U.in.data.H_ft;
-  rtb_BusAssignment.data.H_ind_ft = Autothrust_U.in.data.H_ind_ft;
-  rtb_BusAssignment.data.H_radio_ft = Autothrust_U.in.data.H_radio_ft;
-  rtb_BusAssignment.data.H_dot_fpm = Autothrust_U.in.data.H_dot_fpm;
-  rtb_BusAssignment.data.ax_m_s2 = result[0];
-  rtb_BusAssignment.data.ay_m_s2 = result[1];
-  rtb_BusAssignment.data.az_m_s2 = result[2];
-  rtb_BusAssignment.data.bx_m_s2 = Autothrust_U.in.data.bx_m_s2;
-  rtb_BusAssignment.data.by_m_s2 = Autothrust_U.in.data.by_m_s2;
-  rtb_BusAssignment.data.bz_m_s2 = Autothrust_U.in.data.bz_m_s2;
-  rtb_BusAssignment.data.on_ground = (rtb_on_ground != 0);
-  rtb_BusAssignment.data.flap_handle_index = Autothrust_U.in.data.flap_handle_index;
-  rtb_BusAssignment.data.is_engine_operative_1 = Autothrust_U.in.data.is_engine_operative_1;
-  rtb_BusAssignment.data.is_engine_operative_2 = Autothrust_U.in.data.is_engine_operative_2;
-  rtb_BusAssignment.data.commanded_engine_N1_1_percent = (Autothrust_U.in.data.engine_N1_1_percent +
-    Autothrust_U.in.data.commanded_engine_N1_1_percent) - Autothrust_U.in.data.corrected_engine_N1_1_percent;
-  rtb_BusAssignment.data.commanded_engine_N1_2_percent = (Autothrust_U.in.data.engine_N1_2_percent +
-    Autothrust_U.in.data.commanded_engine_N1_2_percent) - Autothrust_U.in.data.corrected_engine_N1_2_percent;
-  rtb_BusAssignment.data.engine_N1_1_percent = Autothrust_U.in.data.engine_N1_1_percent;
-  rtb_BusAssignment.data.engine_N1_2_percent = Autothrust_U.in.data.engine_N1_2_percent;
-  rtb_BusAssignment.data.TAT_degC = Autothrust_U.in.data.TAT_degC;
-  rtb_BusAssignment.input = Autothrust_U.in.input;
-  rtb_y_b = look2_binlxpw(Autothrust_U.in.data.TAT_degC, Autothrust_U.in.data.H_ft,
+  rtb_Saturation = 15.0 - 0.0019812 * Autothrust_U.in.data.H_ft;
+  if (rtb_Saturation <= -56.5) {
+    rtb_Saturation = -56.5;
+  }
+
+  Phi_rad = (Autothrust_U.in.data.engine_N1_1_percent + Autothrust_U.in.data.commanded_engine_N1_1_percent) -
+    Autothrust_U.in.data.corrected_engine_N1_1_percent;
+  Theta_rad = (Autothrust_U.in.data.engine_N1_2_percent + Autothrust_U.in.data.commanded_engine_N1_2_percent) -
+    Autothrust_U.in.data.corrected_engine_N1_2_percent;
+  rtb_y_i = look2_binlxpw(Autothrust_U.in.data.TAT_degC, Autothrust_U.in.data.H_ft, Autothrust_P.MAXIMUMCLIMB_bp01Data,
+    Autothrust_P.MAXIMUMCLIMB_bp02Data, Autothrust_P.MAXIMUMCLIMB_tableData, Autothrust_P.MAXIMUMCLIMB_maxIndex, 26U);
+  if (Autothrust_U.in.input.flex_temperature_degC < rtb_Saturation + 55.0) {
+    result_tmp = Autothrust_U.in.input.flex_temperature_degC;
+  } else {
+    result_tmp = rtb_Saturation + 55.0;
+  }
+
+  if (result_tmp <= rtb_Saturation + 29.0) {
+    result_tmp = rtb_Saturation + 29.0;
+  }
+
+  rtb_y_jh = look2_binlxpw(look2_binlxpw(Autothrust_U.in.data.H_ft, result_tmp, Autothrust_P.Right_bp01Data,
+    Autothrust_P.Right_bp02Data, Autothrust_P.Right_tableData, Autothrust_P.Right_maxIndex, 10U),
+    Autothrust_U.in.data.TAT_degC, Autothrust_P.Left_bp01Data, Autothrust_P.Left_bp02Data, Autothrust_P.Left_tableData,
+    Autothrust_P.Left_maxIndex, 2U);
+  if (rtb_y_i > rtb_y_jh) {
+    rtb_y_jh = rtb_y_i;
+  }
+
+  rtb_Switch_d = look2_binlxpw(Autothrust_U.in.data.TAT_degC, Autothrust_U.in.data.H_ft,
     Autothrust_P.MAXIMUMCONTINUOUS_bp01Data, Autothrust_P.MAXIMUMCONTINUOUS_bp02Data,
     Autothrust_P.MAXIMUMCONTINUOUS_tableData, Autothrust_P.MAXIMUMCONTINUOUS_maxIndex, 26U);
-  rtb_Gain2 = look2_binlxpw(Autothrust_U.in.data.TAT_degC, Autothrust_U.in.data.H_ft,
+  rtb_Switch_fs = look2_binlxpw(Autothrust_U.in.data.TAT_degC, Autothrust_U.in.data.H_ft,
     Autothrust_P.MAXIMUMTAKEOFF_bp01Data, Autothrust_P.MAXIMUMTAKEOFF_bp02Data, Autothrust_P.MAXIMUMTAKEOFF_tableData,
     Autothrust_P.MAXIMUMTAKEOFF_maxIndex, 36U);
-  rtb_BusAssignment.input.thrust_limit_CLB_percent = look2_binlxpw(Autothrust_U.in.data.TAT_degC,
-    Autothrust_U.in.data.H_ft, Autothrust_P.MAXIMUMCLIMB_bp01Data, Autothrust_P.MAXIMUMCLIMB_bp02Data,
-    Autothrust_P.MAXIMUMCLIMB_tableData, Autothrust_P.MAXIMUMCLIMB_maxIndex, 26U);
-  rtb_BusAssignment.input.thrust_limit_FLEX_percent = rtb_y_b;
-  rtb_BusAssignment.input.thrust_limit_MCT_percent = rtb_y_b;
-  rtb_BusAssignment.input.thrust_limit_TOGA_percent = rtb_Gain2;
   if (!Autothrust_DWork.eventTime_not_empty) {
     Autothrust_DWork.eventTime = Autothrust_U.in.time.simulation_time;
     Autothrust_DWork.eventTime_not_empty = true;
@@ -221,19 +218,19 @@ void AutothrustModelClass::step()
   Autothrust_DWork.Memory_PreviousInput = Autothrust_P.Logic_table[(((static_cast<uint32_T>
     (Autothrust_U.in.time.simulation_time - Autothrust_DWork.eventTime >= Autothrust_P.CompareToConstant_const) << 1) +
     false) << 1) + Autothrust_DWork.Memory_PreviousInput];
-  if (!Autothrust_DWork.eventTime_not_empty_i) {
-    Autothrust_DWork.eventTime_n = Autothrust_U.in.time.simulation_time;
-    Autothrust_DWork.eventTime_not_empty_i = true;
+  if (!Autothrust_DWork.eventTime_not_empty_g) {
+    Autothrust_DWork.eventTime_f = Autothrust_U.in.time.simulation_time;
+    Autothrust_DWork.eventTime_not_empty_g = true;
   }
 
-  if ((Autothrust_U.in.input.ATHR_push != Autothrust_P.CompareToConstant1_const) || (Autothrust_DWork.eventTime_n == 0.0))
+  if ((Autothrust_U.in.input.ATHR_push != Autothrust_P.CompareToConstant1_const) || (Autothrust_DWork.eventTime_f == 0.0))
   {
-    Autothrust_DWork.eventTime_n = Autothrust_U.in.time.simulation_time;
+    Autothrust_DWork.eventTime_f = Autothrust_U.in.time.simulation_time;
   }
 
-  Autothrust_DWork.Memory_PreviousInput_f = Autothrust_P.Logic_table_g[(((Autothrust_U.in.time.simulation_time -
-    Autothrust_DWork.eventTime_n >= Autothrust_P.CompareToConstant2_const) + (static_cast<uint32_T>
-    (Autothrust_DWork.Delay_DSTATE_b) << 1)) << 1) + Autothrust_DWork.Memory_PreviousInput_f];
+  Autothrust_DWork.Memory_PreviousInput_m = Autothrust_P.Logic_table_m[(((Autothrust_U.in.time.simulation_time -
+    Autothrust_DWork.eventTime_f >= Autothrust_P.CompareToConstant2_const) + (static_cast<uint32_T>
+    (Autothrust_DWork.Delay_DSTATE_a) << 1)) << 1) + Autothrust_DWork.Memory_PreviousInput_m];
   if (Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2) {
     rtb_out = ((Autothrust_U.in.input.TLA_1_deg >= 0.0) && (Autothrust_U.in.input.TLA_1_deg <= 25.0) &&
                (Autothrust_U.in.input.TLA_2_deg >= 0.0) && (Autothrust_U.in.input.TLA_2_deg <= 25.0));
@@ -250,13 +247,80 @@ void AutothrustModelClass::step()
   Autothrust_DWork.latch = (((!Autothrust_DWork.latch) || (((Autothrust_U.in.input.TLA_1_deg != 25.0) ||
     (Autothrust_U.in.input.TLA_2_deg != 25.0)) && ((Autothrust_U.in.input.TLA_1_deg != 45.0) ||
     (Autothrust_U.in.input.TLA_2_deg != 45.0)))) && Autothrust_DWork.latch);
-  rtb_y_h = ((rtb_inReverse && (rtb_on_ground != 0)) || ((rtb_on_ground == 0) && Autothrust_DWork.latch));
-  Autothrust_DWork.Delay_DSTATE_b = (static_cast<int32_T>(Autothrust_U.in.input.ATHR_push) > static_cast<int32_T>
-    (Autothrust_P.CompareToConstant_const_o));
-  rtb_NOT1 = (Autothrust_DWork.Delay_DSTATE_b && (!Autothrust_DWork.Memory_PreviousInput_f));
-  rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_ATHR_push = rtb_NOT1;
-  Autothrust_TLAComputation1(&rtb_BusAssignment, Autothrust_U.in.input.TLA_1_deg, &rtb_Gain2, &rtb_inReverse);
-  Autothrust_TLAComputation1(&rtb_BusAssignment, Autothrust_U.in.input.TLA_2_deg, &rtb_Gain3, &rtb_NOT1);
+  rtb_y_o = ((rtb_inReverse && (rtb_on_ground != 0)) || ((rtb_on_ground == 0) && Autothrust_DWork.latch));
+  Autothrust_DWork.Delay_DSTATE_a = (static_cast<int32_T>(Autothrust_U.in.input.ATHR_push) > static_cast<int32_T>
+    (Autothrust_P.CompareToConstant_const_j));
+  rtb_NOT1 = (Autothrust_DWork.Delay_DSTATE_a && (!Autothrust_DWork.Memory_PreviousInput_m));
+  rtb_BusAssignment_n.time = Autothrust_U.in.time;
+  rtb_BusAssignment_n.data.nz_g = Autothrust_U.in.data.nz_g;
+  rtb_BusAssignment_n.data.Theta_deg = rtb_Gain2;
+  rtb_BusAssignment_n.data.Phi_deg = rtb_Gain3;
+  rtb_BusAssignment_n.data.V_ias_kn = Autothrust_U.in.data.V_ias_kn;
+  rtb_BusAssignment_n.data.V_tas_kn = Autothrust_U.in.data.V_tas_kn;
+  rtb_BusAssignment_n.data.V_mach = Autothrust_U.in.data.V_mach;
+  rtb_BusAssignment_n.data.V_gnd_kn = Autothrust_U.in.data.V_gnd_kn;
+  rtb_BusAssignment_n.data.alpha_deg = Autothrust_U.in.data.alpha_deg;
+  rtb_BusAssignment_n.data.H_ft = Autothrust_U.in.data.H_ft;
+  rtb_BusAssignment_n.data.H_ind_ft = Autothrust_U.in.data.H_ind_ft;
+  rtb_BusAssignment_n.data.H_radio_ft = Autothrust_U.in.data.H_radio_ft;
+  rtb_BusAssignment_n.data.H_dot_fpm = Autothrust_U.in.data.H_dot_fpm;
+  rtb_BusAssignment_n.data.ax_m_s2 = result[0];
+  rtb_BusAssignment_n.data.ay_m_s2 = result[1];
+  rtb_BusAssignment_n.data.az_m_s2 = result[2];
+  rtb_BusAssignment_n.data.bx_m_s2 = Autothrust_U.in.data.bx_m_s2;
+  rtb_BusAssignment_n.data.by_m_s2 = Autothrust_U.in.data.by_m_s2;
+  rtb_BusAssignment_n.data.bz_m_s2 = Autothrust_U.in.data.bz_m_s2;
+  rtb_BusAssignment_n.data.on_ground = (rtb_on_ground != 0);
+  rtb_BusAssignment_n.data.flap_handle_index = Autothrust_U.in.data.flap_handle_index;
+  rtb_BusAssignment_n.data.is_engine_operative_1 = Autothrust_U.in.data.is_engine_operative_1;
+  rtb_BusAssignment_n.data.is_engine_operative_2 = Autothrust_U.in.data.is_engine_operative_2;
+  rtb_BusAssignment_n.data.commanded_engine_N1_1_percent = Phi_rad;
+  rtb_BusAssignment_n.data.commanded_engine_N1_2_percent = Theta_rad;
+  rtb_BusAssignment_n.data.engine_N1_1_percent = Autothrust_U.in.data.engine_N1_1_percent;
+  rtb_BusAssignment_n.data.engine_N1_2_percent = Autothrust_U.in.data.engine_N1_2_percent;
+  rtb_BusAssignment_n.data.TAT_degC = Autothrust_U.in.data.TAT_degC;
+  rtb_BusAssignment_n.data.OAT_degC = Autothrust_U.in.data.OAT_degC;
+  rtb_BusAssignment_n.data.ISA_degC = rtb_Saturation;
+  rtb_BusAssignment_n.input.ATHR_push = Autothrust_U.in.input.ATHR_push;
+  rtb_BusAssignment_n.input.TLA_1_deg = Autothrust_U.in.input.TLA_1_deg;
+  rtb_BusAssignment_n.input.TLA_2_deg = Autothrust_U.in.input.TLA_2_deg;
+  rtb_BusAssignment_n.input.V_c_kn = Autothrust_U.in.input.V_c_kn;
+  rtb_BusAssignment_n.input.V_LS_kn = Autothrust_U.in.input.V_LS_kn;
+  rtb_BusAssignment_n.input.V_MAX_kn = Autothrust_U.in.input.V_MAX_kn;
+  rtb_BusAssignment_n.input.thrust_limit_REV_percent = Autothrust_U.in.input.thrust_limit_REV_percent;
+  rtb_BusAssignment_n.input.thrust_limit_IDLE_percent = Autothrust_U.in.input.thrust_limit_IDLE_percent;
+  rtb_BusAssignment_n.input.thrust_limit_CLB_percent = rtb_y_i;
+  rtb_BusAssignment_n.input.thrust_limit_MCT_percent = rtb_Switch_d;
+  rtb_BusAssignment_n.input.thrust_limit_FLEX_percent = rtb_y_jh;
+  rtb_BusAssignment_n.input.thrust_limit_TOGA_percent = rtb_Switch_fs;
+  rtb_BusAssignment_n.input.flex_temperature_degC = Autothrust_U.in.input.flex_temperature_degC;
+  rtb_BusAssignment_n.input.mode_requested = Autothrust_U.in.input.mode_requested;
+  rtb_BusAssignment_n.input.is_mach_mode_active = Autothrust_U.in.input.is_mach_mode_active;
+  rtb_BusAssignment_n.input.alpha_floor_condition = Autothrust_U.in.input.alpha_floor_condition;
+  rtb_BusAssignment_n.input.is_approach_mode_active = Autothrust_U.in.input.is_approach_mode_active;
+  rtb_BusAssignment_n.input.is_SRS_TO_mode_active = Autothrust_U.in.input.is_SRS_TO_mode_active;
+  rtb_BusAssignment_n.input.is_SRS_GA_mode_active = Autothrust_U.in.input.is_SRS_GA_mode_active;
+  rtb_BusAssignment_n.input.thrust_reduction_altitude = Autothrust_U.in.input.thrust_reduction_altitude;
+  rtb_BusAssignment_n.input.thrust_reduction_altitude_go_around =
+    Autothrust_U.in.input.thrust_reduction_altitude_go_around;
+  rtb_BusAssignment_n.output = Autothrust_P.athr_out_MATLABStruct.output;
+  if (Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2) {
+    rtb_BusAssignment_n.data_computed.TLA_in_active_range = ((Autothrust_U.in.input.TLA_1_deg >= 0.0) &&
+      (Autothrust_U.in.input.TLA_1_deg <= 25.0) && (Autothrust_U.in.input.TLA_2_deg >= 0.0) &&
+      (Autothrust_U.in.input.TLA_2_deg <= 25.0));
+  } else {
+    rtb_BusAssignment_n.data_computed.TLA_in_active_range = ((Autothrust_U.in.data.is_engine_operative_1 &&
+      (Autothrust_U.in.input.TLA_1_deg >= 0.0) && (Autothrust_U.in.input.TLA_1_deg <= 35.0)) ||
+      (Autothrust_U.in.data.is_engine_operative_2 && (Autothrust_U.in.input.TLA_2_deg >= 0.0) &&
+       (Autothrust_U.in.input.TLA_2_deg <= 35.0)));
+  }
+
+  rtb_BusAssignment_n.data_computed.is_FLX_active = ((rtb_inReverse && (rtb_on_ground != 0)) || ((rtb_on_ground == 0) &&
+    Autothrust_DWork.latch));
+  rtb_BusAssignment_n.data_computed.ATHR_push = rtb_NOT1;
+  rtb_BusAssignment_n.data_computed.ATHR_disabled = Autothrust_DWork.Memory_PreviousInput;
+  Autothrust_TLAComputation1(&rtb_BusAssignment_n, Autothrust_U.in.input.TLA_1_deg, &rtb_Switch_d, &rtb_inReverse);
+  Autothrust_TLAComputation1(&rtb_BusAssignment_n, Autothrust_U.in.input.TLA_2_deg, &rtb_Switch_fs, &rtb_NOT1);
   if (!Autothrust_DWork.prev_TLA_1_not_empty) {
     Autothrust_DWork.prev_TLA_1 = Autothrust_U.in.input.TLA_1_deg;
     Autothrust_DWork.prev_TLA_1_not_empty = true;
@@ -269,16 +333,15 @@ void AutothrustModelClass::step()
 
   condition_AP_FD_ATHR_Specific = !Autothrust_DWork.Memory_PreviousInput;
   ATHR_ENGAGED_tmp = !Autothrust_DWork.ATHR_ENGAGED;
-  ATHR_ENGAGED_tmp_0 = ((Autothrust_DWork.prev_TLA_1 <= 0.0) || (Autothrust_U.in.input.TLA_1_deg != 0.0));
-  ATHR_ENGAGED_tmp_1 = ((Autothrust_DWork.prev_TLA_2 <= 0.0) || (Autothrust_U.in.input.TLA_2_deg != 0.0));
+  rtb_NOT = ((Autothrust_DWork.prev_TLA_1 <= 0.0) || (Autothrust_U.in.input.TLA_1_deg != 0.0));
+  ATHR_ENGAGED_tmp_0 = ((Autothrust_DWork.prev_TLA_2 <= 0.0) || (Autothrust_U.in.input.TLA_2_deg != 0.0));
   Autothrust_DWork.ATHR_ENGAGED = ((condition_AP_FD_ATHR_Specific && (((rtb_on_ground == 0) && ATHR_ENGAGED_tmp &&
-    rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_ATHR_push) ||
-    (((Autothrust_U.in.input.TLA_1_deg == 45.0) && (Autothrust_U.in.input.TLA_2_deg == 45.0)) || (rtb_y_h &&
-    (Autothrust_U.in.input.TLA_1_deg >= 35.0) && (Autothrust_U.in.input.TLA_2_deg >= 35.0))) ||
-    Autothrust_U.in.input.alpha_floor_condition)) || (condition_AP_FD_ATHR_Specific &&
-    ((!rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_ATHR_push) || ATHR_ENGAGED_tmp) &&
-    ((ATHR_ENGAGED_tmp_0 || ATHR_ENGAGED_tmp_1) && (ATHR_ENGAGED_tmp_0 || (Autothrust_U.in.input.TLA_2_deg != 0.0)) &&
-     (ATHR_ENGAGED_tmp_1 || (Autothrust_U.in.input.TLA_1_deg != 0.0))) && Autothrust_DWork.ATHR_ENGAGED));
+    rtb_BusAssignment_n.data_computed.ATHR_push) || (((Autothrust_U.in.input.TLA_1_deg == 45.0) &&
+    (Autothrust_U.in.input.TLA_2_deg == 45.0)) || (rtb_y_o && (Autothrust_U.in.input.TLA_1_deg >= 35.0) &&
+    (Autothrust_U.in.input.TLA_2_deg >= 35.0))) || Autothrust_U.in.input.alpha_floor_condition)) ||
+    (condition_AP_FD_ATHR_Specific && ((!rtb_BusAssignment_n.data_computed.ATHR_push) || ATHR_ENGAGED_tmp) && ((rtb_NOT ||
+    ATHR_ENGAGED_tmp_0) && (rtb_NOT || (Autothrust_U.in.input.TLA_2_deg != 0.0)) && (ATHR_ENGAGED_tmp_0 ||
+    (Autothrust_U.in.input.TLA_1_deg != 0.0))) && Autothrust_DWork.ATHR_ENGAGED));
   condition_AP_FD_ATHR_Specific = (Autothrust_DWork.ATHR_ENGAGED && (rtb_out ||
     Autothrust_U.in.input.alpha_floor_condition));
   if (Autothrust_DWork.ATHR_ENGAGED && condition_AP_FD_ATHR_Specific) {
@@ -292,9 +355,9 @@ void AutothrustModelClass::step()
   Autothrust_DWork.prev_TLA_1 = Autothrust_U.in.input.TLA_1_deg;
   Autothrust_DWork.prev_TLA_2 = Autothrust_U.in.input.TLA_2_deg;
   if (Autothrust_U.in.input.TLA_1_deg > Autothrust_U.in.input.TLA_2_deg) {
-    rtb_Saturation = Autothrust_U.in.input.TLA_1_deg;
+    result_tmp = Autothrust_U.in.input.TLA_1_deg;
   } else {
-    rtb_Saturation = Autothrust_U.in.input.TLA_2_deg;
+    result_tmp = Autothrust_U.in.input.TLA_2_deg;
   }
 
   Autothrust_DWork.pConditionAlphaFloor = (Autothrust_U.in.input.alpha_floor_condition || ((!(rtb_status ==
@@ -304,7 +367,7 @@ void AutothrustModelClass::step()
   } else if ((rtb_status == athr_status_ENGAGED_ARMED) && ((Autothrust_U.in.input.TLA_1_deg == 45.0) ||
               (Autothrust_U.in.input.TLA_2_deg == 45.0))) {
     Autothrust_DWork.pMode = athr_mode_MAN_TOGA;
-  } else if ((rtb_status == athr_status_ENGAGED_ARMED) && rtb_y_h && (rtb_Saturation == 35.0)) {
+  } else if ((rtb_status == athr_status_ENGAGED_ARMED) && rtb_y_o && (result_tmp == 35.0)) {
     Autothrust_DWork.pMode = athr_mode_MAN_FLEX;
   } else if ((rtb_status == athr_status_ENGAGED_ARMED) && ((Autothrust_U.in.input.TLA_1_deg == 35.0) ||
               (Autothrust_U.in.input.TLA_2_deg == 35.0))) {
@@ -319,18 +382,18 @@ void AutothrustModelClass::step()
                          (Autothrust_U.in.input.TLA_1_deg <= 35.0)))) {
       Autothrust_DWork.pMode = athr_mode_THR_MCT;
     } else if ((rtb_status == athr_status_ENGAGED_ACTIVE) && (Autothrust_U.in.input.mode_requested == 3.0) &&
-               Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2 &&
-               (rtb_Saturation == 25.0)) {
+               Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2 && (result_tmp ==
+                25.0)) {
       Autothrust_DWork.pMode = athr_mode_THR_CLB;
     } else {
-      ATHR_ENGAGED_tmp_0 = (Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2);
-      if ((rtb_status == athr_status_ENGAGED_ACTIVE) && (Autothrust_U.in.input.mode_requested == 3.0) &&
-          ((ATHR_ENGAGED_tmp_0 && (Autothrust_U.in.input.TLA_1_deg < 25.0) && (Autothrust_U.in.input.TLA_2_deg < 25.0)) ||
+      rtb_NOT = (Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2);
+      if ((rtb_status == athr_status_ENGAGED_ACTIVE) && (Autothrust_U.in.input.mode_requested == 3.0) && ((rtb_NOT &&
+            (Autothrust_U.in.input.TLA_1_deg < 25.0) && (Autothrust_U.in.input.TLA_2_deg < 25.0)) ||
            (condition_AP_FD_ATHR_Specific && (Autothrust_U.in.input.TLA_1_deg < 35.0)) || (ATHR_ENGAGED_tmp &&
             (Autothrust_U.in.input.TLA_2_deg < 35.0)))) {
         Autothrust_DWork.pMode = athr_mode_THR_LVR;
-      } else if ((rtb_status == athr_status_ENGAGED_ARMED) && ((ATHR_ENGAGED_tmp_0 && (rtb_Saturation > 25.0) &&
-                   (rtb_Saturation < 35.0)) || ((rtb_Saturation > 35.0) && (rtb_Saturation < 45.0)))) {
+      } else if ((rtb_status == athr_status_ENGAGED_ARMED) && ((rtb_NOT && (result_tmp > 25.0) && (result_tmp < 35.0)) ||
+                  ((result_tmp > 35.0) && (result_tmp < 45.0)))) {
         Autothrust_DWork.pMode = athr_mode_MAN_THR;
       } else if ((rtb_status == athr_status_ENGAGED_ACTIVE) && (Autothrust_U.in.input.mode_requested == 2.0)) {
         Autothrust_DWork.pMode = athr_mode_THR_IDLE;
@@ -356,12 +419,12 @@ void AutothrustModelClass::step()
     (!Autothrust_DWork.was_SRS_GA_active) && (Autothrust_U.in.data.H_ind_ft >
     Autothrust_U.in.input.thrust_reduction_altitude_go_around)) || ((Autothrust_U.in.input.is_SRS_TO_mode_active ||
     Autothrust_U.in.input.is_SRS_GA_mode_active) && Autothrust_DWork.inhibitAboveThrustReductionAltitude));
-  ATHR_ENGAGED_tmp_0 = (Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2);
-  ATHR_ENGAGED_tmp_1 = (Autothrust_U.in.data.is_engine_operative_1 && (!Autothrust_U.in.data.is_engine_operative_2));
+  rtb_NOT = (Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2);
+  ATHR_ENGAGED_tmp_0 = (Autothrust_U.in.data.is_engine_operative_1 && (!Autothrust_U.in.data.is_engine_operative_2));
   condition_THR_LK_tmp = (Autothrust_U.in.data.is_engine_operative_2 && (!Autothrust_U.in.data.is_engine_operative_1));
   Autothrust_DWork.condition_THR_LK = (((rtb_status == athr_status_DISENGAGED) && (Autothrust_DWork.pStatus !=
-    athr_status_DISENGAGED) && ((ATHR_ENGAGED_tmp_0 && (Autothrust_U.in.input.TLA_1_deg == 25.0) &&
-    (Autothrust_U.in.input.TLA_2_deg == 25.0)) || (ATHR_ENGAGED_tmp_1 && (Autothrust_U.in.input.TLA_1_deg == 35.0) &&
+    athr_status_DISENGAGED) && ((rtb_NOT && (Autothrust_U.in.input.TLA_1_deg == 25.0) &&
+    (Autothrust_U.in.input.TLA_2_deg == 25.0)) || (ATHR_ENGAGED_tmp_0 && (Autothrust_U.in.input.TLA_1_deg == 35.0) &&
     (Autothrust_U.in.input.TLA_2_deg <= 35.0)) || (condition_THR_LK_tmp && (Autothrust_U.in.input.TLA_2_deg == 35.0) &&
     (Autothrust_U.in.input.TLA_1_deg <= 35.0)))) || (((!Autothrust_DWork.condition_THR_LK) || ((!(rtb_status !=
     athr_status_DISENGAGED)) && ((Autothrust_U.in.input.TLA_1_deg == 25.0) || (Autothrust_U.in.input.TLA_2_deg == 25.0) ||
@@ -373,36 +436,36 @@ void AutothrustModelClass::step()
   condition_AP_FD_ATHR_Specific = !Autothrust_U.in.data.is_engine_operative_1;
   ATHR_ENGAGED_tmp = !Autothrust_U.in.data.is_engine_operative_2;
   if ((rtb_on_ground == 0) || (condition_AP_FD_ATHR_Specific && ATHR_ENGAGED_tmp)) {
-    if (rtb_Saturation > 35.0) {
+    if (result_tmp > 35.0) {
       Autothrust_Y.out.output.thrust_limit_type = athr_thrust_limit_type_TOGA;
-      Autothrust_Y.out.output.thrust_limit_percent = rtb_BusAssignment.input.thrust_limit_TOGA_percent;
-    } else if (rtb_Saturation > 25.0) {
-      if (!rtb_y_h) {
+      Autothrust_Y.out.output.thrust_limit_percent = rtb_BusAssignment_n.input.thrust_limit_TOGA_percent;
+    } else if (result_tmp > 25.0) {
+      if (!rtb_y_o) {
         Autothrust_Y.out.output.thrust_limit_type = athr_thrust_limit_type_MCT;
-        Autothrust_Y.out.output.thrust_limit_percent = rtb_y_b;
+        Autothrust_Y.out.output.thrust_limit_percent = rtb_BusAssignment_n.input.thrust_limit_MCT_percent;
       } else {
         Autothrust_Y.out.output.thrust_limit_type = athr_thrust_limit_type_FLEX;
-        Autothrust_Y.out.output.thrust_limit_percent = rtb_y_b;
+        Autothrust_Y.out.output.thrust_limit_percent = rtb_y_jh;
       }
-    } else if (rtb_Saturation >= 0.0) {
+    } else if (result_tmp >= 0.0) {
       Autothrust_Y.out.output.thrust_limit_type = athr_thrust_limit_type_CLB;
-      Autothrust_Y.out.output.thrust_limit_percent = rtb_BusAssignment.input.thrust_limit_CLB_percent;
-    } else if (rtb_Saturation < 0.0) {
+      Autothrust_Y.out.output.thrust_limit_percent = rtb_y_i;
+    } else if (result_tmp < 0.0) {
       Autothrust_Y.out.output.thrust_limit_type = athr_thrust_limit_type_REVERSE;
       Autothrust_Y.out.output.thrust_limit_percent = Autothrust_U.in.input.thrust_limit_REV_percent;
     } else {
       Autothrust_Y.out.output.thrust_limit_type = athr_thrust_limit_type_NONE;
       Autothrust_Y.out.output.thrust_limit_percent = 0.0;
     }
-  } else if (rtb_Saturation >= 0.0) {
-    if ((!rtb_y_h) || (rtb_Saturation > 35.0)) {
+  } else if (result_tmp >= 0.0) {
+    if ((!rtb_y_o) || (result_tmp > 35.0)) {
       Autothrust_Y.out.output.thrust_limit_type = athr_thrust_limit_type_TOGA;
-      Autothrust_Y.out.output.thrust_limit_percent = rtb_BusAssignment.input.thrust_limit_TOGA_percent;
+      Autothrust_Y.out.output.thrust_limit_percent = rtb_BusAssignment_n.input.thrust_limit_TOGA_percent;
     } else {
       Autothrust_Y.out.output.thrust_limit_type = athr_thrust_limit_type_FLEX;
-      Autothrust_Y.out.output.thrust_limit_percent = rtb_y_b;
+      Autothrust_Y.out.output.thrust_limit_percent = rtb_y_jh;
     }
-  } else if (rtb_Saturation < 0.0) {
+  } else if (result_tmp < 0.0) {
     Autothrust_Y.out.output.thrust_limit_type = athr_thrust_limit_type_REVERSE;
     Autothrust_Y.out.output.thrust_limit_percent = Autothrust_U.in.input.thrust_limit_REV_percent;
   } else {
@@ -410,31 +473,33 @@ void AutothrustModelClass::step()
     Autothrust_Y.out.output.thrust_limit_percent = 0.0;
   }
 
-  rtb_Saturation = rtb_Gain2;
+  result_tmp = rtb_Switch_d;
+  rtb_BusAssignment_e_output_N1_TLA_2_percent = rtb_Switch_fs;
   cUseAutoThrustControl = ((rtb_status == athr_status_ENGAGED_ACTIVE) && (((Autothrust_U.in.input.TLA_1_deg <= 35.0) &&
     (Autothrust_U.in.input.TLA_2_deg <= 35.0)) || Autothrust_U.in.input.alpha_floor_condition));
   Autothrust_DWork.pThrustMemoActive = ((((Autothrust_U.in.input.ATHR_push && (rtb_status != athr_status_DISENGAGED)) ||
-    ((!cUseAutoThrustControl) && Autothrust_DWork.pUseAutoThrustControl)) && ((ATHR_ENGAGED_tmp_0 &&
-    (Autothrust_U.in.input.TLA_1_deg == 25.0) && (Autothrust_U.in.input.TLA_2_deg == 25.0)) || (ATHR_ENGAGED_tmp_1 &&
+    ((!cUseAutoThrustControl) && Autothrust_DWork.pUseAutoThrustControl)) && ((rtb_NOT &&
+    (Autothrust_U.in.input.TLA_1_deg == 25.0) && (Autothrust_U.in.input.TLA_2_deg == 25.0)) || (ATHR_ENGAGED_tmp_0 &&
     (Autothrust_U.in.input.TLA_1_deg == 35.0) && (Autothrust_U.in.input.TLA_2_deg <= 35.0)) || (condition_THR_LK_tmp &&
     (Autothrust_U.in.input.TLA_2_deg == 35.0) && (Autothrust_U.in.input.TLA_1_deg <= 35.0)))) ||
     (((Autothrust_U.in.input.TLA_1_deg == 25.0) || (Autothrust_U.in.input.TLA_1_deg == 35.0) ||
       (Autothrust_U.in.input.TLA_2_deg == 25.0) || (Autothrust_U.in.input.TLA_2_deg == 35.0)) &&
      Autothrust_DWork.pThrustMemoActive));
   Autothrust_DWork.pUseAutoThrustControl = cUseAutoThrustControl;
+  rtb_NOT = !(rtb_status == Autothrust_P.CompareToConstant_const_d);
   if (Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2) {
-    rtb_Gain2 = rtb_BusAssignment.input.thrust_limit_CLB_percent;
+    rtb_Switch_fs = rtb_y_i;
   } else {
-    rtb_Gain2 = rtb_y_b;
+    rtb_Switch_fs = rtb_BusAssignment_n.input.thrust_limit_MCT_percent;
   }
 
   rtb_Switch_d = Autothrust_P.Gain1_Gain_c * Autothrust_U.in.data.alpha_deg;
-  rtb_y_b = result[2] * std::sin(rtb_Switch_d);
+  rtb_y_i = result[2] * std::sin(rtb_Switch_d);
   rtb_Switch_d = std::cos(rtb_Switch_d);
   rtb_Switch_d *= result[0];
-  result[0] = Autothrust_U.in.input.V_LS_kn;
-  result[1] = Autothrust_U.in.input.V_c_kn;
-  result[2] = Autothrust_U.in.input.V_MAX_kn;
+  x[0] = Autothrust_U.in.input.V_LS_kn;
+  x[1] = Autothrust_U.in.input.V_c_kn;
+  x[2] = Autothrust_U.in.input.V_MAX_kn;
   if (Autothrust_U.in.input.V_LS_kn < Autothrust_U.in.input.V_c_kn) {
     if (Autothrust_U.in.input.V_c_kn < Autothrust_U.in.input.V_MAX_kn) {
       i = 1;
@@ -451,25 +516,25 @@ void AutothrustModelClass::step()
     i = 1;
   }
 
-  rtb_Sum_h = result[i] - Autothrust_U.in.data.V_ias_kn;
-  rtb_Sum2 = (rtb_y_b + rtb_Switch_d) * Autothrust_P.Gain_Gain_h * Autothrust_P.Gain_Gain_b * look1_binlxpw
+  rtb_y_jh = x[i] - Autothrust_U.in.data.V_ias_kn;
+  rtb_Sum2 = (rtb_y_i + rtb_Switch_d) * Autothrust_P.Gain_Gain_h * Autothrust_P.Gain_Gain_b * look1_binlxpw
     (static_cast<real_T>(Autothrust_U.in.input.is_approach_mode_active),
-     Autothrust_P.ScheduledGain2_BreakpointsForDimension1, Autothrust_P.ScheduledGain2_Table, 1U) + rtb_Sum_h;
-  Phi_rad = Autothrust_P.DiscreteDerivativeVariableTs_Gain * rtb_Sum2;
-  Theta_rad = (Phi_rad - Autothrust_DWork.Delay_DSTATE_g) / Autothrust_U.in.time.dt;
+     Autothrust_P.ScheduledGain2_BreakpointsForDimension1, Autothrust_P.ScheduledGain2_Table, 1U) + rtb_y_jh;
+  rtb_Gain_f = Autothrust_P.DiscreteDerivativeVariableTs_Gain * rtb_Sum2;
+  rtb_Divide = (rtb_Gain_f - Autothrust_DWork.Delay_DSTATE) / Autothrust_U.in.time.dt;
   rtb_Switch_d = Autothrust_U.in.time.dt * Autothrust_P.LagFilter_C1;
-  rtb_y_b = rtb_Switch_d + Autothrust_P.Constant_Value;
-  Autothrust_DWork.Delay1_DSTATE = 1.0 / rtb_y_b * (Autothrust_P.Constant_Value - rtb_Switch_d) *
-    Autothrust_DWork.Delay1_DSTATE + (Theta_rad + Autothrust_DWork.Delay_DSTATE_l) * (rtb_Switch_d / rtb_y_b);
+  rtb_y_i = rtb_Switch_d + Autothrust_P.Constant_Value;
+  Autothrust_DWork.Delay1_DSTATE = 1.0 / rtb_y_i * (Autothrust_P.Constant_Value - rtb_Switch_d) *
+    Autothrust_DWork.Delay1_DSTATE + (rtb_Divide + Autothrust_DWork.Delay_DSTATE_l) * (rtb_Switch_d / rtb_y_i);
   if (Autothrust_U.in.input.mode_requested > Autothrust_P.Saturation_UpperSat_l) {
-    rtb_Switch_d = Autothrust_P.Saturation_UpperSat_l;
+    rtb_y_i = Autothrust_P.Saturation_UpperSat_l;
   } else if (Autothrust_U.in.input.mode_requested < Autothrust_P.Saturation_LowerSat_i) {
-    rtb_Switch_d = Autothrust_P.Saturation_LowerSat_i;
+    rtb_y_i = Autothrust_P.Saturation_LowerSat_i;
   } else {
-    rtb_Switch_d = Autothrust_U.in.input.mode_requested;
+    rtb_y_i = Autothrust_U.in.input.mode_requested;
   }
 
-  switch (static_cast<int32_T>(rtb_Switch_d)) {
+  switch (static_cast<int32_T>(rtb_y_i)) {
    case 0:
     rtb_Switch_d = Autothrust_P.Constant1_Value;
     break;
@@ -479,101 +544,106 @@ void AutothrustModelClass::step()
       (Autothrust_U.in.input.is_approach_mode_active), Autothrust_P.ScheduledGain1_BreakpointsForDimension1,
       Autothrust_P.ScheduledGain1_Table, 1U) + rtb_Sum2 * look1_binlxpw(static_cast<real_T>
       (Autothrust_U.in.input.is_approach_mode_active), Autothrust_P.ScheduledGain_BreakpointsForDimension1,
-      Autothrust_P.ScheduledGain_Table, 1U)) + rtb_Sum_h * look1_binlxpw(std::abs(rtb_Sum_h),
+      Autothrust_P.ScheduledGain_Table, 1U)) + rtb_y_jh * look1_binlxpw(std::abs(rtb_y_jh),
       Autothrust_P.ScheduledGain3_BreakpointsForDimension1, Autothrust_P.ScheduledGain3_Table, 3U);
     break;
 
    case 2:
-    if (rtb_BusAssignment.data.commanded_engine_N1_1_percent > rtb_BusAssignment.data.commanded_engine_N1_2_percent) {
-      rtb_y_b = rtb_BusAssignment.data.commanded_engine_N1_1_percent;
+    if (Phi_rad > Theta_rad) {
+      rtb_y_i = Phi_rad;
     } else {
-      rtb_y_b = rtb_BusAssignment.data.commanded_engine_N1_2_percent;
+      rtb_y_i = Theta_rad;
     }
 
-    rtb_Switch_d = (Autothrust_U.in.input.thrust_limit_IDLE_percent - rtb_y_b) * Autothrust_P.Gain_Gain;
+    rtb_Switch_d = (Autothrust_U.in.input.thrust_limit_IDLE_percent - rtb_y_i) * Autothrust_P.Gain_Gain;
     break;
 
    default:
-    if (rtb_BusAssignment.data.commanded_engine_N1_1_percent > rtb_BusAssignment.data.commanded_engine_N1_2_percent) {
-      rtb_y_b = rtb_BusAssignment.data.commanded_engine_N1_1_percent;
+    if (Phi_rad > Theta_rad) {
+      rtb_y_i = Phi_rad;
     } else {
-      rtb_y_b = rtb_BusAssignment.data.commanded_engine_N1_2_percent;
+      rtb_y_i = Theta_rad;
     }
 
-    rtb_Switch_d = (rtb_BusAssignment.input.thrust_limit_CLB_percent - rtb_y_b) * Autothrust_P.Gain_Gain_m;
+    rtb_Switch_d = (rtb_BusAssignment_n.input.thrust_limit_CLB_percent - rtb_y_i) * Autothrust_P.Gain_Gain_m;
     break;
   }
 
   rtb_Switch_d *= Autothrust_P.DiscreteTimeIntegratorVariableTsLimit_Gain;
   rtb_Switch_d *= Autothrust_U.in.time.dt;
-  if (!(rtb_status == Autothrust_P.CompareToConstant_const_d)) {
+  if (rtb_NOT) {
     Autothrust_DWork.icLoad = 1U;
   }
 
   if (Autothrust_DWork.icLoad != 0) {
-    if (rtb_BusAssignment.data.commanded_engine_N1_1_percent > rtb_BusAssignment.data.commanded_engine_N1_2_percent) {
-      rtb_y_b = rtb_BusAssignment.data.commanded_engine_N1_1_percent;
+    if (Phi_rad > Theta_rad) {
+      rtb_y_i = Phi_rad;
     } else {
-      rtb_y_b = rtb_BusAssignment.data.commanded_engine_N1_2_percent;
+      rtb_y_i = Theta_rad;
     }
 
-    Autothrust_DWork.Delay_DSTATE_k = rtb_y_b - rtb_Switch_d;
+    Autothrust_DWork.Delay_DSTATE_k = rtb_y_i - rtb_Switch_d;
   }
 
   Autothrust_DWork.Delay_DSTATE_k += rtb_Switch_d;
-  if (Autothrust_DWork.Delay_DSTATE_k > rtb_Gain2) {
-    Autothrust_DWork.Delay_DSTATE_k = rtb_Gain2;
+  if (Autothrust_DWork.Delay_DSTATE_k > rtb_Switch_fs) {
+    Autothrust_DWork.Delay_DSTATE_k = rtb_Switch_fs;
   } else {
     if (Autothrust_DWork.Delay_DSTATE_k < Autothrust_U.in.input.thrust_limit_IDLE_percent) {
       Autothrust_DWork.Delay_DSTATE_k = Autothrust_U.in.input.thrust_limit_IDLE_percent;
     }
   }
 
-  rtb_Switch_d = std::abs(Autothrust_P.Constant_Value_g);
-  rtb_y_b = Autothrust_DWork.Delay_DSTATE_k - Autothrust_DWork.Delay_DSTATE;
-  rtb_Gain2 = rtb_Switch_d * Autothrust_U.in.time.dt;
-  if (rtb_y_b < rtb_Gain2) {
-    rtb_Gain2 = rtb_y_b;
+  if (rtb_NOT) {
+    Autothrust_DWork.icLoad_c = 1U;
   }
 
-  rtb_Switch_d *= Autothrust_P.Gain_Gain_p4;
-  rtb_Switch_d *= Autothrust_U.in.time.dt;
-  if (rtb_Gain2 > rtb_Switch_d) {
-    rtb_Switch_d = rtb_Gain2;
+  if (Autothrust_DWork.icLoad_c != 0) {
+    Autothrust_DWork.Delay_DSTATE_j = Autothrust_DWork.Delay_DSTATE_k;
   }
 
-  Autothrust_DWork.Delay_DSTATE += rtb_Switch_d;
+  rtb_y_i = Autothrust_DWork.Delay_DSTATE_k - Autothrust_DWork.Delay_DSTATE_j;
+  rtb_Switch_fs = Autothrust_P.Constant2_Value * Autothrust_U.in.time.dt;
+  if (rtb_y_i < rtb_Switch_fs) {
+    rtb_Switch_fs = rtb_y_i;
+  }
+
+  rtb_y_i = Autothrust_U.in.time.dt * Autothrust_P.Constant3_Value;
+  if (rtb_Switch_fs > rtb_y_i) {
+    rtb_y_i = rtb_Switch_fs;
+  }
+
+  Autothrust_DWork.Delay_DSTATE_j += rtb_y_i;
   if (Autothrust_DWork.pUseAutoThrustControl) {
-    if (Autothrust_DWork.Delay_DSTATE > rtb_Saturation) {
-      rtb_Sum_h = rtb_Saturation;
-    } else if (Autothrust_DWork.Delay_DSTATE < Autothrust_U.in.input.thrust_limit_IDLE_percent) {
-      rtb_Sum_h = Autothrust_U.in.input.thrust_limit_IDLE_percent;
-    } else {
-      rtb_Sum_h = Autothrust_DWork.Delay_DSTATE;
-    }
-
-    if (Autothrust_DWork.Delay_DSTATE > rtb_Gain3) {
-      rtb_Sum2 = rtb_Gain3;
-    } else if (Autothrust_DWork.Delay_DSTATE < Autothrust_U.in.input.thrust_limit_IDLE_percent) {
+    if (Autothrust_DWork.Delay_DSTATE_j > result_tmp) {
+      rtb_Sum2 = result_tmp;
+    } else if (Autothrust_DWork.Delay_DSTATE_j < Autothrust_U.in.input.thrust_limit_IDLE_percent) {
       rtb_Sum2 = Autothrust_U.in.input.thrust_limit_IDLE_percent;
     } else {
-      rtb_Sum2 = Autothrust_DWork.Delay_DSTATE;
+      rtb_Sum2 = Autothrust_DWork.Delay_DSTATE_j;
+    }
+
+    if (Autothrust_DWork.Delay_DSTATE_j > rtb_BusAssignment_e_output_N1_TLA_2_percent) {
+      rtb_Switch_f_idx_1 = rtb_BusAssignment_e_output_N1_TLA_2_percent;
+    } else if (Autothrust_DWork.Delay_DSTATE_j < Autothrust_U.in.input.thrust_limit_IDLE_percent) {
+      rtb_Switch_f_idx_1 = Autothrust_U.in.input.thrust_limit_IDLE_percent;
+    } else {
+      rtb_Switch_f_idx_1 = Autothrust_DWork.Delay_DSTATE_j;
     }
   } else if (Autothrust_DWork.pThrustMemoActive) {
-    rtb_Sum_h = rtb_BusAssignment.data.commanded_engine_N1_1_percent;
-    rtb_Sum2 = rtb_BusAssignment.data.commanded_engine_N1_2_percent;
+    rtb_Sum2 = Phi_rad;
+    rtb_Switch_f_idx_1 = Theta_rad;
   } else {
-    rtb_Sum_h = rtb_Saturation;
-    rtb_Sum2 = rtb_Gain3;
+    rtb_Sum2 = result_tmp;
+    rtb_Switch_f_idx_1 = rtb_BusAssignment_e_output_N1_TLA_2_percent;
   }
 
-  Autothrust_Y.out.output.N1_TLA_2_percent = rtb_Gain3;
-  rtb_Gain2 = rtb_Sum_h - rtb_BusAssignment.data.commanded_engine_N1_1_percent;
+  rtb_Switch_fs = rtb_Sum2 - Phi_rad;
   if (rtb_inReverse) {
     Autothrust_DWork.Delay_DSTATE_n = Autothrust_P.DiscreteTimeIntegratorVariableTs_InitialCondition;
   }
 
-  Autothrust_DWork.Delay_DSTATE_n += Autothrust_P.Gain_Gain_d * rtb_Gain2 *
+  Autothrust_DWork.Delay_DSTATE_n += Autothrust_P.Gain_Gain_d * rtb_Switch_fs *
     Autothrust_P.DiscreteTimeIntegratorVariableTs_Gain * Autothrust_U.in.time.dt;
   if (Autothrust_DWork.Delay_DSTATE_n > Autothrust_P.DiscreteTimeIntegratorVariableTs_UpperLimit) {
     Autothrust_DWork.Delay_DSTATE_n = Autothrust_P.DiscreteTimeIntegratorVariableTs_UpperLimit;
@@ -587,7 +657,7 @@ void AutothrustModelClass::step()
     Autothrust_DWork.Delay_DSTATE_l2 = Autothrust_P.DiscreteTimeIntegratorVariableTs1_InitialCondition;
   }
 
-  Autothrust_DWork.Delay_DSTATE_l2 += Autothrust_P.Gain1_Gain_h * rtb_Gain2 *
+  Autothrust_DWork.Delay_DSTATE_l2 += Autothrust_P.Gain1_Gain_h * rtb_Switch_fs *
     Autothrust_P.DiscreteTimeIntegratorVariableTs1_Gain * Autothrust_U.in.time.dt;
   if (Autothrust_DWork.Delay_DSTATE_l2 > Autothrust_P.DiscreteTimeIntegratorVariableTs1_UpperLimit) {
     Autothrust_DWork.Delay_DSTATE_l2 = Autothrust_P.DiscreteTimeIntegratorVariableTs1_UpperLimit;
@@ -597,20 +667,20 @@ void AutothrustModelClass::step()
     }
   }
 
-  Autothrust_ThrustMode1(Autothrust_U.in.input.TLA_1_deg, &rtb_Gain3);
-  rtb_Switch_d = rtb_Sum2 - rtb_BusAssignment.data.commanded_engine_N1_2_percent;
+  Autothrust_ThrustMode1(Autothrust_U.in.input.TLA_1_deg, &rtb_y_jh);
+  rtb_Switch_d = rtb_Switch_f_idx_1 - Theta_rad;
   if (rtb_NOT1) {
     Autothrust_DWork.Delay_DSTATE_lz = Autothrust_P.DiscreteTimeIntegratorVariableTs_InitialCondition_n;
   }
 
-  rtb_y_b = Autothrust_P.Gain_Gain_bf * rtb_Switch_d * Autothrust_P.DiscreteTimeIntegratorVariableTs_Gain_k *
+  rtb_y_i = Autothrust_P.Gain_Gain_bf * rtb_Switch_d * Autothrust_P.DiscreteTimeIntegratorVariableTs_Gain_k *
     Autothrust_U.in.time.dt + Autothrust_DWork.Delay_DSTATE_lz;
-  if (rtb_y_b > Autothrust_P.DiscreteTimeIntegratorVariableTs_UpperLimit_p) {
+  if (rtb_y_i > Autothrust_P.DiscreteTimeIntegratorVariableTs_UpperLimit_p) {
     Autothrust_DWork.Delay_DSTATE_lz = Autothrust_P.DiscreteTimeIntegratorVariableTs_UpperLimit_p;
-  } else if (rtb_y_b < Autothrust_P.DiscreteTimeIntegratorVariableTs_LowerLimit_e) {
+  } else if (rtb_y_i < Autothrust_P.DiscreteTimeIntegratorVariableTs_LowerLimit_e) {
     Autothrust_DWork.Delay_DSTATE_lz = Autothrust_P.DiscreteTimeIntegratorVariableTs_LowerLimit_e;
   } else {
-    Autothrust_DWork.Delay_DSTATE_lz = rtb_y_b;
+    Autothrust_DWork.Delay_DSTATE_lz = rtb_y_i;
   }
 
   if (!rtb_NOT1) {
@@ -627,15 +697,62 @@ void AutothrustModelClass::step()
     }
   }
 
-  Autothrust_ThrustMode1(Autothrust_U.in.input.TLA_2_deg, &rtb_y_b);
+  Autothrust_ThrustMode1(Autothrust_U.in.input.TLA_2_deg, &rtb_y_i);
   Autothrust_Y.out.time = Autothrust_U.in.time;
-  Autothrust_Y.out.data = rtb_BusAssignment.data;
+  Autothrust_Y.out.data.nz_g = Autothrust_U.in.data.nz_g;
+  Autothrust_Y.out.data.Theta_deg = rtb_Gain2;
+  Autothrust_Y.out.data.Phi_deg = rtb_Gain3;
+  Autothrust_Y.out.data.V_ias_kn = Autothrust_U.in.data.V_ias_kn;
+  Autothrust_Y.out.data.V_tas_kn = Autothrust_U.in.data.V_tas_kn;
+  Autothrust_Y.out.data.V_mach = Autothrust_U.in.data.V_mach;
+  Autothrust_Y.out.data.V_gnd_kn = Autothrust_U.in.data.V_gnd_kn;
+  Autothrust_Y.out.data.alpha_deg = Autothrust_U.in.data.alpha_deg;
+  Autothrust_Y.out.data.H_ft = Autothrust_U.in.data.H_ft;
+  Autothrust_Y.out.data.H_ind_ft = Autothrust_U.in.data.H_ind_ft;
+  Autothrust_Y.out.data.H_radio_ft = Autothrust_U.in.data.H_radio_ft;
+  Autothrust_Y.out.data.H_dot_fpm = Autothrust_U.in.data.H_dot_fpm;
+  Autothrust_Y.out.data.ax_m_s2 = result[0];
+  Autothrust_Y.out.data.ay_m_s2 = result[1];
+  Autothrust_Y.out.data.az_m_s2 = result[2];
+  Autothrust_Y.out.data.bx_m_s2 = Autothrust_U.in.data.bx_m_s2;
+  Autothrust_Y.out.data.by_m_s2 = Autothrust_U.in.data.by_m_s2;
+  Autothrust_Y.out.data.bz_m_s2 = Autothrust_U.in.data.bz_m_s2;
+  Autothrust_Y.out.data.on_ground = (rtb_on_ground != 0);
+  Autothrust_Y.out.data.flap_handle_index = Autothrust_U.in.data.flap_handle_index;
+  Autothrust_Y.out.data.is_engine_operative_1 = Autothrust_U.in.data.is_engine_operative_1;
+  Autothrust_Y.out.data.is_engine_operative_2 = Autothrust_U.in.data.is_engine_operative_2;
+  Autothrust_Y.out.data.commanded_engine_N1_1_percent = Phi_rad;
+  Autothrust_Y.out.data.commanded_engine_N1_2_percent = Theta_rad;
+  Autothrust_Y.out.data.engine_N1_1_percent = Autothrust_U.in.data.engine_N1_1_percent;
+  Autothrust_Y.out.data.engine_N1_2_percent = Autothrust_U.in.data.engine_N1_2_percent;
+  Autothrust_Y.out.data.TAT_degC = Autothrust_U.in.data.TAT_degC;
+  Autothrust_Y.out.data.OAT_degC = Autothrust_U.in.data.OAT_degC;
+  Autothrust_Y.out.data.ISA_degC = rtb_Saturation;
   Autothrust_Y.out.data_computed.TLA_in_active_range = rtb_out;
-  Autothrust_Y.out.data_computed.is_FLX_active = rtb_y_h;
-  Autothrust_Y.out.data_computed.ATHR_push =
-    rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_ATHR_push;
+  Autothrust_Y.out.data_computed.is_FLX_active = rtb_y_o;
+  Autothrust_Y.out.data_computed.ATHR_push = rtb_BusAssignment_n.data_computed.ATHR_push;
   Autothrust_Y.out.data_computed.ATHR_disabled = Autothrust_DWork.Memory_PreviousInput;
-  Autothrust_Y.out.input = rtb_BusAssignment.input;
+  Autothrust_Y.out.input.ATHR_push = Autothrust_U.in.input.ATHR_push;
+  Autothrust_Y.out.input.TLA_1_deg = Autothrust_U.in.input.TLA_1_deg;
+  Autothrust_Y.out.input.TLA_2_deg = Autothrust_U.in.input.TLA_2_deg;
+  Autothrust_Y.out.input.V_c_kn = Autothrust_U.in.input.V_c_kn;
+  Autothrust_Y.out.input.V_LS_kn = Autothrust_U.in.input.V_LS_kn;
+  Autothrust_Y.out.input.V_MAX_kn = Autothrust_U.in.input.V_MAX_kn;
+  Autothrust_Y.out.input.thrust_limit_REV_percent = Autothrust_U.in.input.thrust_limit_REV_percent;
+  Autothrust_Y.out.input.thrust_limit_IDLE_percent = Autothrust_U.in.input.thrust_limit_IDLE_percent;
+  Autothrust_Y.out.input.thrust_limit_CLB_percent = rtb_BusAssignment_n.input.thrust_limit_CLB_percent;
+  Autothrust_Y.out.input.thrust_limit_MCT_percent = rtb_BusAssignment_n.input.thrust_limit_MCT_percent;
+  Autothrust_Y.out.input.thrust_limit_FLEX_percent = rtb_BusAssignment_n.input.thrust_limit_FLEX_percent;
+  Autothrust_Y.out.input.thrust_limit_TOGA_percent = rtb_BusAssignment_n.input.thrust_limit_TOGA_percent;
+  Autothrust_Y.out.input.flex_temperature_degC = Autothrust_U.in.input.flex_temperature_degC;
+  Autothrust_Y.out.input.mode_requested = Autothrust_U.in.input.mode_requested;
+  Autothrust_Y.out.input.is_mach_mode_active = Autothrust_U.in.input.is_mach_mode_active;
+  Autothrust_Y.out.input.alpha_floor_condition = Autothrust_U.in.input.alpha_floor_condition;
+  Autothrust_Y.out.input.is_approach_mode_active = Autothrust_U.in.input.is_approach_mode_active;
+  Autothrust_Y.out.input.is_SRS_TO_mode_active = Autothrust_U.in.input.is_SRS_TO_mode_active;
+  Autothrust_Y.out.input.is_SRS_GA_mode_active = Autothrust_U.in.input.is_SRS_GA_mode_active;
+  Autothrust_Y.out.input.thrust_reduction_altitude = Autothrust_U.in.input.thrust_reduction_altitude;
+  Autothrust_Y.out.input.thrust_reduction_altitude_go_around = Autothrust_U.in.input.thrust_reduction_altitude_go_around;
   if (!rtb_inReverse) {
     Autothrust_Y.out.output.sim_throttle_lever_1_pos = Autothrust_DWork.Delay_DSTATE_n;
   } else {
@@ -648,27 +765,28 @@ void AutothrustModelClass::step()
     Autothrust_Y.out.output.sim_throttle_lever_2_pos = Autothrust_DWork.Delay_DSTATE_h;
   }
 
-  Autothrust_Y.out.output.sim_thrust_mode_1 = rtb_Gain3;
-  Autothrust_Y.out.output.sim_thrust_mode_2 = rtb_y_b;
-  Autothrust_Y.out.output.N1_TLA_1_percent = rtb_Saturation;
+  Autothrust_Y.out.output.sim_thrust_mode_1 = rtb_y_jh;
+  Autothrust_Y.out.output.sim_thrust_mode_2 = rtb_y_i;
+  Autothrust_Y.out.output.N1_TLA_1_percent = result_tmp;
+  Autothrust_Y.out.output.N1_TLA_2_percent = rtb_BusAssignment_e_output_N1_TLA_2_percent;
   Autothrust_Y.out.output.is_in_reverse_1 = rtb_inReverse;
   Autothrust_Y.out.output.is_in_reverse_2 = rtb_NOT1;
-  Autothrust_Y.out.output.N1_c_1_percent = rtb_Sum_h;
-  Autothrust_Y.out.output.N1_c_2_percent = rtb_Sum2;
+  Autothrust_Y.out.output.N1_c_1_percent = rtb_Sum2;
+  Autothrust_Y.out.output.N1_c_2_percent = rtb_Switch_f_idx_1;
   Autothrust_Y.out.output.status = rtb_status;
   Autothrust_Y.out.output.mode = Autothrust_DWork.pMode;
-  ATHR_ENGAGED_tmp_0 = (((!Autothrust_U.in.input.is_SRS_TO_mode_active) || ((Autothrust_U.in.data.H_ind_ft >=
+  rtb_NOT = (((!Autothrust_U.in.input.is_SRS_TO_mode_active) || ((Autothrust_U.in.data.H_ind_ft >=
     Autothrust_U.in.input.thrust_reduction_altitude) && (!Autothrust_DWork.inhibitAboveThrustReductionAltitude))) &&
-                        ((!Autothrust_U.in.input.is_SRS_GA_mode_active) || ((Autothrust_U.in.data.H_ind_ft >=
+             ((!Autothrust_U.in.input.is_SRS_GA_mode_active) || ((Autothrust_U.in.data.H_ind_ft >=
     Autothrust_U.in.input.thrust_reduction_altitude_go_around) && (!Autothrust_DWork.inhibitAboveThrustReductionAltitude))));
-  if ((rtb_status != athr_status_DISENGAGED) && (rtb_on_ground == 0) && ATHR_ENGAGED_tmp_0 &&
+  if ((rtb_status != athr_status_DISENGAGED) && (rtb_on_ground == 0) && rtb_NOT &&
       Autothrust_U.in.data.is_engine_operative_1 && Autothrust_U.in.data.is_engine_operative_2 &&
       (((Autothrust_U.in.input.TLA_1_deg < 25.0) && (Autothrust_U.in.input.TLA_2_deg < 25.0)) ||
        (Autothrust_U.in.input.TLA_1_deg > 25.0) || (Autothrust_U.in.input.TLA_2_deg > 25.0))) {
     Autothrust_Y.out.output.mode_message = athr_mode_message_LVR_CLB;
-  } else if ((rtb_status != athr_status_DISENGAGED) && (rtb_on_ground == 0) && ATHR_ENGAGED_tmp_0 &&
-             (condition_AP_FD_ATHR_Specific || ATHR_ENGAGED_tmp) && (Autothrust_U.in.input.TLA_1_deg != 35.0) &&
-             (Autothrust_U.in.input.TLA_2_deg != 35.0)) {
+  } else if ((rtb_status != athr_status_DISENGAGED) && (rtb_on_ground == 0) && rtb_NOT && (condition_AP_FD_ATHR_Specific
+              || ATHR_ENGAGED_tmp) && (Autothrust_U.in.input.TLA_1_deg != 35.0) && (Autothrust_U.in.input.TLA_2_deg !=
+              35.0)) {
     Autothrust_Y.out.output.mode_message = athr_mode_message_LVR_MCT;
   } else if ((rtb_status == athr_status_ENGAGED_ACTIVE) && Autothrust_U.in.data.is_engine_operative_1 &&
              Autothrust_U.in.data.is_engine_operative_2 && (((Autothrust_U.in.input.TLA_1_deg == 25.0) &&
@@ -681,21 +799,22 @@ void AutothrustModelClass::step()
     Autothrust_Y.out.output.mode_message = athr_mode_message_NONE;
   }
 
-  Autothrust_DWork.Delay_DSTATE_g = Phi_rad;
-  Autothrust_DWork.Delay_DSTATE_l = Theta_rad;
+  Autothrust_DWork.Delay_DSTATE = rtb_Gain_f;
+  Autothrust_DWork.Delay_DSTATE_l = rtb_Divide;
   Autothrust_DWork.icLoad = 0U;
+  Autothrust_DWork.icLoad_c = 0U;
 }
 
 void AutothrustModelClass::initialize()
 {
   Autothrust_DWork.Memory_PreviousInput = Autothrust_P.SRFlipFlop_initial_condition;
-  Autothrust_DWork.Delay_DSTATE_b = Autothrust_P.Delay_InitialCondition_a;
-  Autothrust_DWork.Memory_PreviousInput_f = Autothrust_P.SRFlipFlop_initial_condition_a;
-  Autothrust_DWork.Delay_DSTATE = Autothrust_P.RateLimiterDynamicEqualVariableTs_InitialCondition;
-  Autothrust_DWork.Delay_DSTATE_g = Autothrust_P.DiscreteDerivativeVariableTs_InitialCondition;
+  Autothrust_DWork.Delay_DSTATE_a = Autothrust_P.Delay_InitialCondition_c;
+  Autothrust_DWork.Memory_PreviousInput_m = Autothrust_P.SRFlipFlop_initial_condition_g;
+  Autothrust_DWork.Delay_DSTATE = Autothrust_P.DiscreteDerivativeVariableTs_InitialCondition;
   Autothrust_DWork.Delay_DSTATE_l = Autothrust_P.Delay_InitialCondition;
   Autothrust_DWork.Delay1_DSTATE = Autothrust_P.Delay1_InitialCondition;
   Autothrust_DWork.icLoad = 1U;
+  Autothrust_DWork.icLoad_c = 1U;
   Autothrust_DWork.Delay_DSTATE_n = Autothrust_P.DiscreteTimeIntegratorVariableTs_InitialCondition;
   Autothrust_DWork.Delay_DSTATE_l2 = Autothrust_P.DiscreteTimeIntegratorVariableTs1_InitialCondition;
   Autothrust_DWork.Delay_DSTATE_lz = Autothrust_P.DiscreteTimeIntegratorVariableTs_InitialCondition_n;

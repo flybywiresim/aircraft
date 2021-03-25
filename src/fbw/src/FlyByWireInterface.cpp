@@ -887,6 +887,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.data.corrected_engine_N1_1_percent = simData.corrected_engine_N1_1_percent;
     autoThrustInput.in.data.corrected_engine_N1_2_percent = simData.corrected_engine_N1_2_percent;
     autoThrustInput.in.data.TAT_degC = simData.total_air_temperature_celsius;
+    autoThrustInput.in.data.OAT_degC = simData.ambient_temperature_celsius;
 
     autoThrustInput.in.input.ATHR_push = simConnectInterface.getSimInputThrottles().ATHR_push;
     autoThrustInput.in.input.TLA_1_deg = throttleAxis[0]->getTLA();
