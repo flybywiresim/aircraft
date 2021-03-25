@@ -230,6 +230,7 @@
 1. [EFB] Set font of OFP to monospace - @chkgk (Chriskgk#4359)
 1. [SOUND] Added electrical system sounds - @hotshotp (Boris)
 1. [SOUND] General improvements to cockpit and cabin ambience - @hotshotp (Boris)
+1. [MISC] Added custom loading tips - @Armankir (Arman#5297)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
