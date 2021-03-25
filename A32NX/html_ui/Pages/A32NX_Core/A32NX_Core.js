@@ -74,7 +74,7 @@ class A32NX_Core {
             {
                 name: 'Speeds',
                 module: new A32NX_Speeds(),
-                updateInterval: 200,
+                updateInterval: 500,
             },
         ];
 
