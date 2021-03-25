@@ -609,56 +609,64 @@ impl A320HydraulicLogic {
         }
     }
 
-    //TODO, code duplication to handle timeouts: generic function to do
+    //Given a condition and associated timer and timeout value, returns if timeout is over after condition went to false
+    fn timeout_condition_update(
+        current_timer: &mut Duration,
+        condition: bool,
+        max_duration: f64,
+        delta_time: &Duration,
+    ) -> bool {
+        if condition {
+            *current_timer = Duration::from_secs_f64(max_duration);
+        } else if *current_timer > *delta_time {
+            *current_timer -= *delta_time;
+        } else {
+            *current_timer = Duration::from_secs(0);
+        }
+
+        *current_timer > Duration::from_secs_f64(0.0)
+    }
+
+    //Checks if yellow pump should be activated by the cargo door maintenance panel operation
     pub fn is_cargo_operation_flag(&mut self, delta_time_update: &Duration) -> bool {
         let cargo_door_moved = (self.cargo_door_back_pos - self.cargo_door_back_pos_prev).abs()
             > f64::EPSILON
             || (self.cargo_door_front_pos - self.cargo_door_front_pos_prev).abs() > f64::EPSILON;
 
-        if cargo_door_moved {
-            self.cargo_door_timer =
-                Duration::from_secs_f64(A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_YPUMP);
-        } else if self.cargo_door_timer > *delta_time_update {
-            self.cargo_door_timer -= *delta_time_update;
-        } else {
-            self.cargo_door_timer = Duration::from_secs(0);
-        }
-
-        self.cargo_door_timer > Duration::from_secs_f64(0.0)
+        A320HydraulicLogic::timeout_condition_update(
+            &mut self.cargo_door_timer,
+            cargo_door_moved,
+            A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_YPUMP,
+            delta_time_update,
+        )
     }
 
+    //Checks if ptu inhibit condition is still active after the cargo door operation
     pub fn is_cargo_operation_ptu_flag(&mut self, delta_time_update: &Duration) -> bool {
         let cargo_door_moved = (self.cargo_door_back_pos - self.cargo_door_back_pos_prev).abs()
             > f64::EPSILON
             || (self.cargo_door_front_pos - self.cargo_door_front_pos_prev).abs() > f64::EPSILON;
 
-        if cargo_door_moved {
-            self.cargo_door_timer_ptu =
-                Duration::from_secs_f64(A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_PTU);
-        } else if self.cargo_door_timer_ptu > *delta_time_update {
-            self.cargo_door_timer_ptu -= *delta_time_update;
-        } else {
-            self.cargo_door_timer_ptu = Duration::from_secs(0);
-        }
-
-        self.cargo_door_timer_ptu > Duration::from_secs_f64(0.0)
+        A320HydraulicLogic::timeout_condition_update(
+            &mut self.cargo_door_timer_ptu,
+            cargo_door_moved,
+            A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_PTU,
+            delta_time_update,
+        )
     }
 
+    //Checks if pin is removed by ground crew after a pushback operation
     pub fn is_nsw_pin_inserted_flag(&mut self, delta_time_update: &Duration) -> bool {
         let pushback_in_progress = (self.pushback_angle - self.pushback_angle_prev).abs()
             > f64::EPSILON
             && (self.pushback_state - 3.0).abs() > f64::EPSILON;
 
-        if pushback_in_progress {
-            self.nws_tow_engaged_timer =
-                Duration::from_secs_f64(A320HydraulicLogic::NWS_PIN_REMOVE_TIMEOUT);
-        } else if self.nws_tow_engaged_timer > *delta_time_update {
-            self.nws_tow_engaged_timer -= *delta_time_update; //TODO CHECK if rollover issue to expect if not limiting to 0
-        } else {
-            self.nws_tow_engaged_timer = Duration::from_secs(0);
-        }
-
-        self.nws_tow_engaged_timer > Duration::from_secs(0)
+        A320HydraulicLogic::timeout_condition_update(
+            &mut self.nws_tow_engaged_timer,
+            pushback_in_progress,
+            A320HydraulicLogic::NWS_PIN_REMOVE_TIMEOUT,
+            delta_time_update,
+        )
     }
 }
 
@@ -784,6 +792,7 @@ mod a320_hydraulic_simvars {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rand::Rng;
 
     mod a320_hydraulics {
         use super::*;
@@ -804,6 +813,14 @@ mod tests {
                     hydraulics: A320Hydraulic::new(),
                     overhead: A320HydraulicOverheadPanel::new(),
                 }
+            }
+
+            fn is_nws_pin_inserted(&self) -> bool {
+                self.hydraulics.hyd_logic_inputs.nsw_pin_inserted_cond
+            }
+
+            fn is_cargo_powering_yellow_epump(&self) -> bool {
+                self.hydraulics.hyd_logic_inputs.cargo_operated_ypump_cond
             }
 
             fn is_ptu_ena(&self) -> bool {
@@ -989,6 +1006,19 @@ mod tests {
 
             fn set_cargo_door_state(mut self, position: f64) -> Self {
                 self.simulation_test_bed.write_f64("EXIT OPEN 5", position);
+                self
+            }
+
+            fn set_pushback_state(mut self, is_pushed_back: bool) -> Self {
+                if is_pushed_back {
+                    let mut rng = rand::thread_rng();
+
+                    self.simulation_test_bed
+                        .write_f64("PUSHBACK ANGLE", rng.gen_range(0.0..0.1));
+                    self.simulation_test_bed.write_f64("PUSHBACK STATE", 0.);
+                } else {
+                    self.simulation_test_bed.write_f64("PUSHBACK STATE", 3.);
+                }
                 self
             }
 
@@ -1196,6 +1226,56 @@ mod tests {
                 A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_PTU,
             )); //Should re enabled after 40s
             assert!(test_bed.is_ptu_enabled());
+        }
+
+        #[test]
+        fn nose_wheel_pin_detection() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            assert!(!test_bed.aircraft.is_nws_pin_inserted());
+
+            test_bed = test_bed.set_pushback_state(true).run_one_tick();
+            assert!(test_bed.aircraft.is_nws_pin_inserted());
+
+            test_bed = test_bed
+                .set_pushback_state(false)
+                .run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.aircraft.is_nws_pin_inserted());
+
+            test_bed = test_bed
+                .set_pushback_state(false)
+                .run_waiting_for(Duration::from_secs_f64(
+                    A320HydraulicLogic::NWS_PIN_REMOVE_TIMEOUT,
+                ));
+
+            assert!(!test_bed.aircraft.is_nws_pin_inserted());
+        }
+
+        #[test]
+        fn cargo_door_yellow_epump_powering() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            assert!(!test_bed.aircraft.is_cargo_powering_yellow_epump());
+
+            test_bed = test_bed.set_cargo_door_state(1.0).run_one_tick();
+            assert!(test_bed.aircraft.is_cargo_powering_yellow_epump());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.aircraft.is_cargo_powering_yellow_epump());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(
+                A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_YPUMP,
+            ));
+
+            assert!(!test_bed.aircraft.is_cargo_powering_yellow_epump());
         }
 
         #[test]
