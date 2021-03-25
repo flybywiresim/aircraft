@@ -3475,9 +3475,6 @@
                     </UseTemplate>
                 </Component>
                 <Component ID="Audio_Panel_Left_Volume_Dummies">
-                    <OverrideTemplateParameters>
-                        <EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == 16 *</EMISSIVE_CODE>
-                    </OverrideTemplateParameters>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_VOR1_EMIS</NODE_ID>
                     </UseTemplate>
@@ -3582,9 +3579,6 @@
                     </UseTemplate>
                 </Component>
                 <Component ID="Audio_Panel_Right_Volume_Dummies">
-                    <OverrideTemplateParameters>
-                        <EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == 16 *</EMISSIVE_CODE>
-                    </OverrideTemplateParameters>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_VOR1_EMIS</NODE_ID>
                     </UseTemplate>
