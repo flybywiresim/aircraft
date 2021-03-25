@@ -4,7 +4,9 @@ use uom::si::{f64::*, pressure::pascal, pressure::psi, velocity::knot, volume::g
 use systems::engine::Engine;
 use systems::hydraulic::brakecircuit::BrakeCircuit;
 use systems::hydraulic::{ElectricPump, EngineDrivenPump, HydFluid, HydLoop, Ptu, RatPump};
-use systems::overhead::{AutoOffFaultPushButton, FirePushButton, OnOffFaultPushButton};
+use systems::overhead::{
+    AutoOffFaultPushButton, AutoOnFaultPushButton, FirePushButton, OnOffFaultPushButton,
+};
 use systems::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, UpdateContext,
 };
@@ -282,7 +284,7 @@ impl A320Hydraulic {
 
     fn update_ptu_logic(&mut self, overhead_panel: &A320HydraulicOverheadPanel) {
         let ptu_inhibit = self.hyd_logic_inputs.cargo_operated_ptu_cond
-            && overhead_panel.yellow_epump_push_button.is_auto(); //TODO is auto will change once auto/on button is created in overhead library
+            && overhead_panel.yellow_epump_push_button.is_auto();
         if overhead_panel.ptu_push_button.is_auto()
             && (!self.hyd_logic_inputs.weight_on_wheels
                 || self.hyd_logic_inputs.eng_1_master_on && self.hyd_logic_inputs.eng_2_master_on
@@ -298,7 +300,8 @@ impl A320Hydraulic {
     }
 
     fn update_rat_deploy(&mut self, ct: &UpdateContext) {
-        //RAT Deployment //Todo check all other needed conditions
+        //RAT Deployment
+        //Todo check all other needed conditions this is faked with engine master while it should check elec buses
         if !self.hyd_logic_inputs.eng_1_master_on
             && !self.hyd_logic_inputs.eng_2_master_on
             && ct.indicated_airspeed() > Velocity::new::<knot>(100.)
@@ -385,7 +388,7 @@ impl A320Hydraulic {
     }
 
     fn update_e_pump_states(&mut self, overhead_panel: &A320HydraulicOverheadPanel) {
-        if overhead_panel.yellow_epump_push_button.is_off()
+        if overhead_panel.yellow_epump_push_button.is_on()
             || self.hyd_logic_inputs.cargo_operated_ypump_cond
         {
             self.yellow_electric_pump.start();
@@ -707,7 +710,7 @@ pub struct A320HydraulicOverheadPanel {
     pub blue_epump_push_button: AutoOffFaultPushButton,
     pub ptu_push_button: AutoOffFaultPushButton,
     pub rat_push_button: AutoOffFaultPushButton,
-    pub yellow_epump_push_button: AutoOffFaultPushButton,
+    pub yellow_epump_push_button: AutoOnFaultPushButton,
     pub blue_epump_override_push_button: OnOffFaultPushButton,
     pub eng1_fire_pb: FirePushButton,
     pub eng2_fire_pb: FirePushButton,
@@ -721,7 +724,7 @@ impl A320HydraulicOverheadPanel {
             blue_epump_push_button: AutoOffFaultPushButton::new_auto("HYD_EPUMPB"),
             ptu_push_button: AutoOffFaultPushButton::new_auto("HYD_PTU"),
             rat_push_button: AutoOffFaultPushButton::new_off("HYD_RAT"),
-            yellow_epump_push_button: AutoOffFaultPushButton::new_off("HYD_EPUMPY"),
+            yellow_epump_push_button: AutoOnFaultPushButton::new_auto("HYD_EPUMPY"),
             blue_epump_override_push_button: OnOffFaultPushButton::new_off("HYD_EPUMPY_OVRD"),
             eng1_fire_pb: FirePushButton::new("ENG1"),
             eng2_fire_pb: FirePushButton::new("ENG2"),
@@ -1523,7 +1526,7 @@ mod tests {
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .run_waiting_for(Duration::from_secs(1));
 
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(2000.));
             assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
