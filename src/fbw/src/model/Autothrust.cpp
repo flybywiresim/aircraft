@@ -192,6 +192,10 @@ void AutothrustModelClass::step()
     result_tmp = rtb_Saturation + 29.0;
   }
 
+  if (result_tmp <= Autothrust_U.in.data.OAT_degC) {
+    result_tmp = Autothrust_U.in.data.OAT_degC;
+  }
+
   rtb_y_jh = look2_binlxpw(look2_binlxpw(Autothrust_U.in.data.H_ft, result_tmp, Autothrust_P.Right_bp01Data,
     Autothrust_P.Right_bp02Data, Autothrust_P.Right_tableData, Autothrust_P.Right_maxIndex, 10U),
     Autothrust_U.in.data.TAT_degC, Autothrust_P.Left_bp01Data, Autothrust_P.Left_bp02Data, Autothrust_P.Left_tableData,
