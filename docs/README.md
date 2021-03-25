@@ -20,6 +20,7 @@
 
 - ❌ Due to lack of new LNAV, sometimes the plane banks to the opposite direction before a transition
 - ❌ Due to lack of VNAV, DES mode is currently only using SPD/MACH
+- ❌ Due to lack of VNAV, RNAV approaches are not supported yet
 
 ##### Autopilot
 
