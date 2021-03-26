@@ -1128,14 +1128,6 @@
                     <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
                     <ONLY_SEQ1/>
                 </UseTemplate>
-                <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                    <NODE_ID>PUSH_AUTOPILOT_AUTOLAND_L</NODE_ID>
-                    <ONLY_SEQ1/>
-                </UseTemplate>
-                <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                    <NODE_ID>PUSH_AUTOPILOT_AUTOLAND_R</NODE_ID>
-                    <ONLY_SEQ1/>
-                </UseTemplate>
             </Component>
 
             <Component ID="EICAS_Screens">
@@ -3037,6 +3029,13 @@
                 <PLANE_NAME>A32NX</PLANE_NAME>
             </DefaultTemplateParameters>
 
+            <UseTemplate Name="FBW_Airbus_Autoland_Warning">
+                <SIDE>L</SIDE>
+            </UseTemplate>
+            <UseTemplate Name="FBW_Airbus_Autoland_Warning">
+                <SIDE>R</SIDE>
+            </UseTemplate>
+
             <UseTemplate Name="FBW_AIRLINER_Switch_Baro_Selector_Template">
                 <NODE_ID>KNOB_AUTOPILOT_SELECTOR_L1</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_L1</ANIM_NAME>
@@ -3837,16 +3836,10 @@
                 <NODE_ID>PUSH_AUTOPILOT_LL</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUTOPILOT_AUTOLAND_L</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUTOPILOT_AUTOLAND_R</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUTOPILOT_RR</NODE_ID>

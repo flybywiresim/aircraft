@@ -326,4 +326,17 @@
             </UseTemplate>
         </Component>
     </Template>
+
+    <Template Name="FBW_Airbus_Autoland_Warning">
+        <DefaultTemplateParameters>
+            <NODE_ID>PUSH_AUTOPILOT_AUTOLAND_#SIDE#</NODE_ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Held">
+            <SEQ1_CODE>(L:A32NX_AUTOPILOT_AUTOLAND_WARNING, bool)</SEQ1_CODE>
+            <SEQ2_CODE />
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <LEFT_SINGLE_CODE />
+        </UseTemplate>
+    </Template>
 </ModelBehaviors>
