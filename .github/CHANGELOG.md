@@ -232,6 +232,7 @@
 1. [SOUND] General improvements to cockpit and cabin ambience - @hotshotp (Boris)
 1. [MISC] Added custom loading tips - @Armankir (Arman#5297)
 1. [RMP] Added integral illumination to RMP volume knobs - @ImenesFBW (Imenes)
+1. [ECAM] Added fuel system warnings and memos - @Duncs - (Dunx#2505)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
