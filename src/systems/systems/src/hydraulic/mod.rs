@@ -270,7 +270,7 @@ impl HydLoop {
     //Low pass filter on pressure. This has to be pretty high not to modify behavior of the loop, but still dampening numerical instability
     const PRESSURE_LOW_PASS_FILTER: f64 = 0.75;
 
-    const DELTA_VOL_LOW_PASS_FILTER: f64 = 0.1;
+    const DELTA_VOL_LOW_PASS_FILTER: f64 = 0.4;
 
     const ACCUMULATOR_PRESS_BREAKPTS: [f64; 9] =
         [0.0, 5.0, 10.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 10000.0];
@@ -535,23 +535,22 @@ impl HydLoop {
             .min(delta_vol_min.max(delta_vol_max.min(volume_needed_to_reach_pressure_target)));
         delta_vol += actual_volume_added_to_pressurise;
 
-        //Loop Pressure update From Bulk modulus
-        let press_delta = self.delta_pressure_from_delta_volume(delta_vol);
-        let new_raw_press = self.loop_pressure + press_delta; //New raw pressure before we filter it
-
-        self.loop_pressure = HydLoop::PRESSURE_LOW_PASS_FILTER * new_raw_press
-            + (1. - HydLoop::PRESSURE_LOW_PASS_FILTER) * self.loop_pressure;
-        self.loop_pressure = self.loop_pressure.max(Pressure::new::<psi>(14.7)); //Forcing a min pressure
 
         //Update reservoir
         self.reservoir_volume -= actual_volume_added_to_pressurise; //%limit to 0 min? for case of negative added?
         self.reservoir_volume += reservoir_return;
 
         //Update Volumes
+        self.loop_volume += delta_vol;
         //Low pass filter on final delta vol to help with stability and final flow noise
         delta_vol = HydLoop::DELTA_VOL_LOW_PASS_FILTER * delta_vol
             + (1. - HydLoop::DELTA_VOL_LOW_PASS_FILTER) * self.current_delta_vol;
-        self.loop_volume += delta_vol;
+
+        //Loop Pressure update From Bulk modulus
+        let press_delta = self.delta_pressure_from_delta_volume(delta_vol);
+        self.loop_pressure += press_delta;
+        self.loop_pressure = self.loop_pressure.max(Pressure::new::<psi>(14.7)); //Forcing a min pressure
+
 
         self.current_delta_vol = delta_vol;
         self.current_flow = delta_vol / Time::new::<second>(delta_time.as_secs_f64());
@@ -1174,10 +1173,10 @@ mod tests {
         for x in 0..600 {
             if x == 50 {
                 //After 5s
-                assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2950.0));
+                assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2850.0));
             }
             if x == 200 {
-                assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2950.0));
+                assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2850.0));
                 edp1.stop();
             }
             if x >= 500 {

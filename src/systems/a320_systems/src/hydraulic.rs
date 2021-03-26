@@ -1394,7 +1394,7 @@ mod tests {
             assert!(test_bed.is_blue_pressurised());
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
             assert!(test_bed.is_yellow_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
 
             //Stoping engine, pressure should fall in 20s
             test_bed = test_bed
@@ -1436,7 +1436,7 @@ mod tests {
             assert!(test_bed.is_blue_pressurised());
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
             assert!(test_bed.is_yellow_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
 
             assert!(!test_bed.is_fire_valve_eng1_closed());
             assert!(!test_bed.is_fire_valve_eng2_closed());
