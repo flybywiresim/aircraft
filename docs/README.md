@@ -38,7 +38,7 @@
 - ❌ During start, no fuel flow is shown
 - ❌ Fuel flow is currently always in KG
 - ❌ EWD has issues in correctly displaying N2 > 100
-- ❌ Realistic Descent/ Approach Idle Parameters
+- ❌ Realistic Descent/ Approach Idle Parameters.
 
 ##### Autothrust
 
