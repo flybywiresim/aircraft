@@ -2633,7 +2633,7 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
             return true;
         } else if (s.match(/^[0-9]{1,5}$/) !== null) {
-            const value = Math.round(parseInt(s) / 10) * 10;
+            const value = parseInt(s);
             let ldgRwy = this.flightPlanManager.getApproachRunway();
             if (!ldgRwy) {
                 const dest = this.flightPlanManager.getDestination();
@@ -2663,17 +2663,12 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
 
-        if (Simplane.getAutoPilotApproachType() !== 4) {
-            this.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        }
-
         if (s === "NO" || s === "NO DH" || s === "NODH") {
             this.perfApprDH = "NO DH";
             SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -2);
             return true;
         } else if (s.match(/^[0-9]{1,5}$/) !== null) {
-            const value = Math.round(parseInt(s) / 10) * 10;
+            const value = parseInt(s);
             if (value >= 0 && value <= 5000) {
                 this.perfApprDH = value;
                 SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", this.perfApprDH);

@@ -37,6 +37,11 @@ class A32NX_Core {
                 updateInterval: 150,
             },
             {
+                name: 'Refuel',
+                module: new A32NX_Refuel(),
+                updateInterval: 150,
+            },
+            {
                 name: 'Electricity',
                 module: new A32NX_Electricity(),
                 updateInterval: 100,

@@ -21,6 +21,7 @@ import React from 'react';
 import OverviewPage from './Pages/OverviewPage';
 import LoadsheetPage from './Pages/LoadsheetPage';
 import { Navbar } from '../Components/Navbar';
+import { FuelPage } from './Pages/FuelPage';
 
 type DispatchProps = {
     loadsheet: string,
@@ -94,9 +95,7 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
             );
         case 2:
             return (
-                <div className="w-full h-full">
-                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
-                </div>
+                <FuelPage />
             );
         case 3:
             return (

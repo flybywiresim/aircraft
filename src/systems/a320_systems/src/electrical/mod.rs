@@ -1818,6 +1818,24 @@ mod a320_electrical_circuit_tests {
         assert!(!test_bed.apu_start_motor_is_powered());
     }
 
+    #[test]
+    fn transitions_between_gen_1_and_gen_2_without_interruption() {
+        // The current implementation shouldn't include power interruptions.
+        let mut test_bed = test_bed_with()
+            .running_engine_1()
+            .and()
+            .running_engine_2()
+            .run();
+        assert!(
+            test_bed.ac_bus_1_output().is_powered(),
+            "Precondition: the test assumes the AC 1 bus is powered at this point."
+        );
+
+        test_bed = test_bed.then_continue_with().stopped_engine_1().run_once();
+
+        assert!(test_bed.ac_bus_1_output().is_powered());
+    }
+
     fn test_bed_with() -> A320ElectricalTestBed {
         test_bed()
     }
@@ -1840,8 +1858,8 @@ mod a320_electrical_circuit_tests {
             }
         }
 
-        fn set_apu_available(&mut self) {
-            self.is_available = true;
+        fn set_available(&mut self, available: bool) {
+            self.is_available = available;
         }
 
         fn command_closing_of_start_contactors(&mut self) {
@@ -1912,12 +1930,16 @@ mod a320_electrical_circuit_tests {
             self.engine_1_running = true;
         }
 
+        fn stopped_engine_1(&mut self) {
+            self.engine_1_running = false;
+        }
+
         fn running_engine_2(&mut self) {
             self.engine_2_running = true;
         }
 
         fn running_apu(&mut self) {
-            self.apu.set_apu_available();
+            self.apu.set_available(true);
         }
 
         fn set_apu_master_sw_pb_on(&mut self) {
@@ -2037,6 +2059,11 @@ mod a320_electrical_circuit_tests {
             self.run_waiting_for(Duration::from_millis(
                 INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
             ))
+        }
+
+        fn stopped_engine_1(mut self) -> Self {
+            self.aircraft.stopped_engine_1();
+            self
         }
 
         fn running_engine_2(mut self) -> Self {
@@ -2374,6 +2401,17 @@ mod a320_electrical_circuit_tests {
             // outside of normal parameters, we have to run a second tick before
             // the potential has flown through the system in the way we expected.
             self.simulation_test_bed.set_delta(Duration::from_secs(0));
+            self.simulation_test_bed.run_aircraft(&mut self.aircraft);
+
+            self
+        }
+
+        /// Runs the simulation a single time with a delta of 1 second.
+        /// This particular is useful for tests that want to verify behaviour
+        /// which only occurs in a single tick and would be hidden by
+        /// run or run_waiting_for, which executes two ticks.
+        fn run_once(mut self) -> Self {
+            self.simulation_test_bed.set_delta(Duration::from_secs(1));
             self.simulation_test_bed.run_aircraft(&mut self.aircraft);
 
             self
