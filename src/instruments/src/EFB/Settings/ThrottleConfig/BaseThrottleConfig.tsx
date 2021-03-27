@@ -60,17 +60,10 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
         <div className={`flex flex-row ${props.disabled ? 'opacity-30' : ''}`}>
             <DetentConfig
                 throttlePosition={throttlePosition}
-                text={`${mappings[props.activeIndex].readableName} - Start`}
-                detentSetting={mappings[props.activeIndex].lowSetter}
+                text={`${mappings[props.activeIndex].readableName}`}
+                upperBoundDetentSetter={mappings[props.activeIndex].hiSetter}
+                lowerBoundDetentSetter={mappings[props.activeIndex].lowSetter}
                 detentValue={mappings[props.activeIndex].lowGetter[props.throttleCount - 1]}
-                throttleNumber={props.throttleNumber}
-                disabled={props.disabled}
-            />
-            <DetentConfig
-                throttlePosition={throttlePosition}
-                text={`${mappings[props.activeIndex].readableName} - End`}
-                detentSetting={mappings[props.activeIndex].hiSetter}
-                detentValue={mappings[props.activeIndex].hiGetter[props.throttleCount - 1]}
                 throttleNumber={props.throttleNumber}
                 disabled={props.disabled}
             />
@@ -93,35 +86,17 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
                 </h1>
 
                 <div className="flex flex-row">
-                    {/*                     <Bar d={throttlePosition} barHeight={20} />
- */}
                     <div className="justify-between items-center flex flex-col ">
-
-                        {/* mappings.map((m) => (
-                            <div className="flex flex-row ">
-
-                                <DetentConfig
-                                    throttlePosition={throttlePosition}
-                                    text={`Set ${m.readableName} - Start`}
-                                    detentSetting={m.lowSetter}
-                                    detentValue={m.lowGetter[props.throttleCount - 1]}
-                                    throttleNumber={props.throttleNumber}
-                                />
-                                <DetentConfig
-                                    throttlePosition={throttlePosition}
-                                    text={`Set ${m.readableName} - End`}
-                                    detentSetting={m.hiSetter}
-                                    detentValue={m.hiGetter[props.throttleCount - 1]}
-                                    throttleNumber={props.throttleNumber}
-                                />
-                            </div>
-                        )) */}
-
                         {currentDetent}
-
                     </div>
-
                 </div>
+                <h1 className="text-white mb-8 text-xl ">
+                    Stored Value:
+                    {' '}
+                    {mappings[props.activeIndex].lowGetter[props.throttleCount - 1] > 0.95
+                        ? mappings[props.activeIndex].lowGetter[props.throttleCount - 1]
+                        : (mappings[props.activeIndex].lowGetter[props.throttleCount - 1] + 0.05).toFixed(2) }
+                </h1>
             </div>
         </div>
     );

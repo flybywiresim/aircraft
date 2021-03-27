@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NXDataStore } from '../../../Common/persistence';
 import { useSimVar } from '../../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
@@ -29,9 +29,20 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 1000);
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
 
+    useEffect(() => {
+        if (reverserOnAxis1 === 0) {
+            setSelectedIndex(2);
+        } else {
+            setSelectedIndex(0);
+        }
+    });
+
     const setReversOnAxis = (reverserOnAxis: number) => {
         setReverserOnAxis1(reverserOnAxis);
         setReverserOnAxis2(reverserOnAxis);
+        if (reverserOnAxis === 0 && selectedIndex < 2) {
+            setSelectedIndex(2);
+        }
     };
 
     const switchDetent = (index: number) => {
@@ -69,12 +80,32 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
 
                         <div className="h-100 flex flex-row mt-8 ml-16">
                             <VerticalSelectGroup>
-                                <SelectItem classNames="mb-4" onSelect={() => switchDetent(0)} selected={selectedIndex === 0}>Reverse</SelectItem>
-                                <SelectItem classNames="mb-4" onSelect={() => switchDetent(1)} selected={selectedIndex === 1}>Rev. Idle</SelectItem>
-                                <SelectItem classNames="mb-4" onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
-                                <SelectItem classNames="mb-4" onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
-                                <SelectItem classNames="mb-4" onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
-                                <SelectItem classNames="mb-4" onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
+                                <SelectItem
+                                    classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
+                                    onSelect={() => {
+                                        if (reverserOnAxis1) {
+                                            switchDetent(0);
+                                        }
+                                    }}
+                                    selected={selectedIndex === 0}
+                                >
+                                    Reverse Full
+                                </SelectItem>
+                                <SelectItem
+                                    classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
+                                    onSelect={() => {
+                                        if (reverserOnAxis1) {
+                                            switchDetent(1);
+                                        }
+                                    }}
+                                    selected={selectedIndex === 1}
+                                >
+                                    Reverse Idle
+                                </SelectItem>
+                                <SelectItem onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
+                                <SelectItem onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
+                                <SelectItem onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
+                                <SelectItem onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
                             </VerticalSelectGroup>
                         </div>
 
@@ -87,23 +118,42 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                             <BaseThrottleConfig disabled={false} throttleNumber={1} throttleCount={2} activeIndex={selectedIndex} />
                             <div className="h-100 flex flex-row mt-8 ml-16">
                                 <VerticalSelectGroup>
-                                    <SelectItem classNames="mb-4" onSelect={() => switchDetent(0)} selected={selectedIndex === 0}>Reverse</SelectItem>
-                                    <SelectItem classNames="mb-4" onSelect={() => switchDetent(1)} selected={selectedIndex === 1}>Rev. Idle</SelectItem>
-                                    <SelectItem classNames="mb-4" onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
-                                    <SelectItem classNames="mb-4" onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
-                                    <SelectItem classNames="mb-4" onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
-                                    <SelectItem classNames="mb-4" onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
+                                    <SelectItem
+                                        classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
+                                        onSelect={() => {
+                                            if (reverserOnAxis1) {
+                                                switchDetent(0);
+                                            }
+                                        }}
+                                        selected={selectedIndex === 0}
+                                    >
+                                        Reverse Full
+                                    </SelectItem>
+                                    <SelectItem
+                                        classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
+                                        onSelect={() => {
+                                            if (reverserOnAxis1) {
+                                                switchDetent(1);
+                                            }
+                                        }}
+                                        selected={selectedIndex === 1}
+                                    >
+                                        Reverse Idle
+                                    </SelectItem>
+                                    <SelectItem onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
+                                    <SelectItem onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
+                                    <SelectItem onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
+                                    <SelectItem onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
                                 </VerticalSelectGroup>
                             </div>
                         </div>
                     )}
-
             </div>
 
             <div className="bg-gray-800 flex flex-row-reverse mt-12">
 
                 <Button
-                    text="Save"
+                    text="Save & Apply"
                     type={BUTTON_TYPE.GREEN}
                     onClick={() => {
                         syncToDisk(1);
