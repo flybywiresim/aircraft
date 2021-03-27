@@ -3445,6 +3445,8 @@
                 </UseTemplate>
                 <Component ID="Audio_Panel_Left_Dummies">
                     <OverrideTemplateParameters>
+                        <POTENTIOMETER>1</POTENTIOMETER>
+                        <POTENTIOMETER_SEQ2>85</POTENTIOMETER_SEQ2>
                         <SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ1_EMISSIVE_CODE>
                         <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
@@ -3549,6 +3551,8 @@
                 </UseTemplate>
                 <Component ID="Audio_Panel_Right_Dummies">
                     <OverrideTemplateParameters>
+                        <POTENTIOMETER>1</POTENTIOMETER>
+                        <POTENTIOMETER_SEQ2>85</POTENTIOMETER_SEQ2>
                         <SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ1_EMISSIVE_CODE>
                         <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
