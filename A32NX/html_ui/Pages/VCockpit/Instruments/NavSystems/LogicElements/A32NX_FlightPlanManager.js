@@ -654,7 +654,7 @@ class FlightPlanManager {
             callback();
         });
     }
-    getcruisingAltitude() {
+    get cruisingAltitude() {
         return this._cruisingAltitude;
     }
     getCurrentFlightPlanIndex() {
