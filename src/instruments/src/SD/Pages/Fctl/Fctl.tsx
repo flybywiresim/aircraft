@@ -19,12 +19,12 @@
 import './Fctl.scss';
 import ReactDOM from 'react-dom';
 import React, { useEffect, useState } from 'react';
-import { renderTarget } from '../../../Common/defaults';
+import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 
-export const FctlPage = () => {
-    console.log('FCTL');
+setIsEcamPage('fctl_page');
 
+export const FctlPage = () => {
     const [aileronLeftDeflectionState] = useSimVar('AILERON LEFT DEFLECTION PCT', 'percent over 100', 50);
     const [aileronRightDeflectionState] = useSimVar('AILERON RIGHT DEFLECTION PCT', 'percent over 100', 50);
 
@@ -48,6 +48,8 @@ export const FctlPage = () => {
     const [pitchTrimState] = useSimVar('ELEVATOR TRIM INDICATOR', 'Position 16k', 50);
 
     const [rawPitchTrim, setRawPitchTrim] = useState(0);
+    const [rudderAngle, setRudderAngle] = useState(0);
+    const [maxAngleNorm, setMaxAngleNorm] = useState(1);
 
     useEffect(() => {
         let rPT = pitchTrimState / 1213.6296;
@@ -65,36 +67,60 @@ export const FctlPage = () => {
 
     const [rudderDeflectionState] = useSimVar('RUDDER DEFLECTION PCT', 'percent over 100', 50);
 
-    let rudderAngle = 0;
     useEffect(() => {
-        rudderAngle = -rudderDeflectionState * 25;
+        setRudderAngle(-rudderDeflectionState * 25);
+        console.log(`Rudder ${rudderAngle}`);
     }, [rudderDeflectionState]);
 
     // Update rudder limits
     const [indicatedAirspeedState] = useSimVar('AIRSPEED INDICATED', 'knots', 500);
 
-    let MaxAngleNorm = 1;
     useEffect(() => {
         if (indicatedAirspeedState > 380) {
-            MaxAngleNorm = 3.4 / 25;
+            setMaxAngleNorm(3.4 / 25);
         } else if (indicatedAirspeedState > 160) {
-            MaxAngleNorm = (69.2667 - 0.351818 * indicatedAirspeedState
-                + 0.00047 * indicatedAirspeedState ** 2) / 25;
+            setMaxAngleNorm((69.2667 - 0.351818 * indicatedAirspeedState
+                + 0.00047 * indicatedAirspeedState ** 2) / 25);
         }
     }, [indicatedAirspeedState]);
 
     // Check Hydraulics state
-    // Will probably need changing once hydraulics fully implemented.
 
-    const [engine1State] = useSimVar('ENG COMBUSTION:1', 'bool', 1000);
-    const [engine2State] = useSimVar('ENG COMBUSTION:2', 'bool', 1000);
+    // const [greenPumpActive] = useSimVar('L:A32NX_HYD_GREEN_EDPUMP_ACTIVE', 'boolean', 500);
+    // const [yellowPumpActive] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_ACTIVE', 'boolean', 500);
+    // const [bluePumpActive] = useSimVar('L:A32NX_HYD_BLUE_EPUMP_ACTIVE', 'boolean', 500);
 
-    const [hydraulicGAvailable] = engine1State && engine2State;
-    const [hydraulicYAvailable] = hydraulicGAvailable;
-    const [hydraulicBAvailable] = hydraulicGAvailable;
+    // const [greenPumpLowPressure] = useSimVar('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'boolean', 500);
+    // const [yellowPumpLowPressure] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'boolean', 500);
+    // const [bluePumpLowPressure] = useSimVar('L:A32NX_HYD_BLUE_EPUMP_LOW_PRESS', 'boolean', 500);
+
+    // function checkPumpLowPressure(pump) {
+    //     switch (pump) {
+    //     case 'GREEN':
+    //         return (greenPumpLowPressure && greenPumpActive) || !greenPumpActive;
+    //     case 'BLUE':
+    //         return (bluePumpLowPressure && bluePumpActive) || !bluePumpActive;
+    //     case 'YELLOW':
+    //         return (yellowPumpLowPressure && yellowPumpActive) || !yellowPumpActive;
+    //     default:
+    //         return 1;
+    //     }
+    // }
+
+    // const [hydraulicGAvailable] = checkPumpLowPressure('GREEN');
+    // const [hydraulicYAvailable] = checkPumpLowPressure('YELLOW');
+    // const [hydraulicBAvailable] = checkPumpLowPressure('BLUE');
+
+    const [engine1State] = useSimVar('TURB ENG N2:1', 'Percent', 1000);
+    const [engine2State] = useSimVar('TURB ENG N2:2', 'Percent', 1000);
+
+    const hydraulicGAvailable = engine1State > 15;
+    const hydraulicYAvailable = engine2State > 15;
+    const hydraulicBAvailable = engine1State > 15 || engine2State > 15;
 
     const [leftSpoilerState] = useSimVar('SPOILERS LEFT POSITION', 'percent over 100', 50);
     const [rightSpoilerState] = useSimVar('SPOILERS RIGHT POSITION', 'percent over 100', 50);
+    const [spoilerHandleState] = useSimVar('SPOILERS HANDLE POSITION', 'percent over 100', 100);
 
     const [groundSpeedState] = useSimVar('SURFACE RELATIVE GROUND SPEED', 'feet_per_second', 50);
 
@@ -107,7 +133,7 @@ export const FctlPage = () => {
 
     const spoilersArmed = !!(spoilersArmedState
         && onGroundState
-        && groundSpeedState > 45
+        && groundSpeedState > 25
         && engine1ModeState <= 2
         && engine2ModeState <= 2);
 
@@ -128,7 +154,8 @@ export const FctlPage = () => {
             x={leftX}
             y={YCoord}
             yw={YCoordW}
-            hydAvail={hydraulicGAvailable || hydraulicBAvailable || hydraulicYAvailable}
+            hydAvail={[hydraulicGAvailable, hydraulicBAvailable, hydraulicYAvailable]}
+            speedbrake={spoilerHandleState}
             spoilerpos={leftSpoilerState}
             ailpos={aileronLeftDeflectionState}
             spoilersArmed={spoilersArmed}
@@ -139,7 +166,8 @@ export const FctlPage = () => {
             x={rightX}
             y={YCoord}
             yw={YCoordW}
-            hydAvail={hydraulicGAvailable || hydraulicBAvailable || hydraulicYAvailable}
+            hydAvail={[hydraulicGAvailable, hydraulicBAvailable, hydraulicYAvailable]}
+            speedbrake={spoilerHandleState}
             spoilerpos={rightSpoilerState}
             ailpos={aileronRightDeflectionState}
             spoilersArmed={spoilersArmed}
@@ -148,7 +176,7 @@ export const FctlPage = () => {
 
     return (
         <>
-            <svg id="ecam-fctl" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+            <svg id="ecam-fctl" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
                 <text
                     id="pageTitle"
                     className="PageTitle"
@@ -400,12 +428,12 @@ export const FctlPage = () => {
                     <path id="rudderLeftBorder" className="MainShape" d="m257 472-2 5 7 3 2-5" />
                 </g>
 
-                <g id="rudderLeftMaxAngle" transform={`rotate(${-26.4 * (1 - MaxAngleNorm)} 300 385)`}>
+                <g id="rudderLeftMaxAngle" transform={`rotate(${-26.4 * (1 - maxAngleNorm)} 300 385)`}>
                     <path id="rudderLeftLimitGreen" className="GreenShape" d="m250 484 6 3" />
                     <path id="rudderLeftLimitWhite" className="GreenShape" d="m257 472-7 13" />
                 </g>
 
-                <g id="rudderRightMaxAngle" transform={`rotate(${26.4 * (1 - MaxAngleNorm)} 300 385)`}>
+                <g id="rudderRightMaxAngle" transform={`rotate(${26.4 * (1 - maxAngleNorm)} 300 385)`}>
                     <path id="rudderRightLimitGreen" className="GreenShape" d="m350 484-6 3" />
                     <path id="rudderRightLimitWhite" className="GreenShape" d="m343 472 7 13" />
                 </g>
@@ -443,7 +471,8 @@ const Aileron = ({ leftorright, x, aileronDeflection, hydArray, hydAvail } : Ail
     const hydPositionX2 = leftorright === 'left' ? x + 44 : x - 40;
 
     const aileronDeflectPctNormalized = aileronDeflection * 54;
-    const cursorPath = `M${leftorright === 'left' ? x + 1 : x - 1},${leftorright === 'left' ? 204 + aileronDeflectPctNormalized : 204 - aileronDeflectPctNormalized} l${leftorright === 'right' ? '-' : ''}15,-7 l0,14Z`;
+    const cursorPath = `M${leftorright === 'left' ? x + 1 : x - 1},${leftorright === 'left' ? 204 + aileronDeflectPctNormalized
+        : 204 - aileronDeflectPctNormalized} l${leftorright === 'right' ? '-' : ''}15,-7 l0,14Z`;
 
     return (
         <>
@@ -673,44 +702,52 @@ type SpoilerProps = {
     x: number,
     y: number,
     yw: number,
-    hydAvail: boolean,
+    hydAvail: [boolean, boolean, boolean],
+    speedbrake: number,
     spoilerpos: number,
     ailpos: number,
     spoilersArmed: boolean
 }
 
-const Spoiler = ({ index, leftorright, x, y, yw, hydAvail, spoilerpos, ailpos, spoilersArmed } : SpoilerProps) => {
+const Spoiler = ({ index, leftorright, x, y, yw, hydAvail, speedbrake, spoilerpos, ailpos, spoilersArmed } : SpoilerProps) => {
     let showspoiler = false;
-    if (spoilerpos > 0.07 && index > 1) {
-        showspoiler = true;
-        if (index === 5) {
-            if ((leftorright === 'left' && ailpos < -0.05) || (leftorright === 'right' && ailpos > 0.05)) {
-                showspoiler = true;
-            } else {
-                showspoiler = false;
-            }
-        }
+    let hydraulicsAvailable = false;
+    console.log(`Spoiler side ${leftorright} index ${index} is ${ailpos}`);
+
+    if (index === 1) {
+        showspoiler = !!(spoilersArmed && spoilerpos > 0.07);
+    } else if (index === 5) {
+        showspoiler = speedbrake <= 0.01 && spoilerpos > 0.05 ? true : showspoiler;
+        showspoiler = speedbrake > 0.01 && ((leftorright === 'left' && ailpos < -0.05) || (leftorright === 'right' && ailpos > 0.05)) ? true : showspoiler;
+    } else {
+        showspoiler = spoilerpos > 0.05 ? true : showspoiler;
+        showspoiler = speedbrake > 0.01 ? true : showspoiler;
     }
 
-    if (spoilersArmed && ailpos > 0.0625 && (index === 1 || index === 5)) {
-        showspoiler = true;
-    }
+    // hydraulics
+    showspoiler = !hydAvail[0] && (index === 5 || index === 1) ? false : showspoiler; // Green
+    showspoiler = !hydAvail[1] && index === 3 ? false : showspoiler; // Blue
+    showspoiler = !hydAvail[2] && (index === 2 || index === 4) ? false : showspoiler; // Yellow
+
+    hydraulicsAvailable = hydAvail[0] && (index === 5 || index === 1) ? true : hydraulicsAvailable;
+    hydraulicsAvailable = hydAvail[1] && index === 3 ? true : hydraulicsAvailable;
+    hydraulicsAvailable = hydAvail[2] && (index === 2 || index === 4) ? true : hydraulicsAvailable;
 
     return (
         <>
             <path
-                className={hydAvail ? 'GreenShapeThick' : 'WarningShapeThick'}
+                className={hydraulicsAvailable ? 'GreenShapeThick' : 'WarningShapeThick'}
                 d={`M ${x} ${y} l ${leftorright === 'right' ? '-' : ''}15 0`}
             />
             <path
                 id={`arrow${index}_${leftorright}`}
-                visibility={showspoiler && hydAvail ? 'visible' : 'hidden'}
+                visibility={showspoiler ? 'visible' : 'hidden'}
                 className="GreenShape"
                 d={`M ${leftorright === 'left' ? x + 8 : x - 8} ${y} l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0`}
             />
             <text
                 id={`num${index}_${leftorright}`}
-                visibility={hydAvail ? 'hidden' : 'visible'}
+                visibility={hydraulicsAvailable ? 'hidden' : 'visible'}
                 className="Warning"
                 x={`${leftorright === 'left' ? x + 8 : x - 8}`}
                 y={`${yw}`}
@@ -723,4 +760,4 @@ const Spoiler = ({ index, leftorright, x, y, yw, hydAvail, spoilerpos, ailpos, s
     );
 };
 
-ReactDOM.render(<SimVarProvider><FctlPage /></SimVarProvider>, renderTarget);
+ReactDOM.render(<SimVarProvider><FctlPage /></SimVarProvider>, getRenderTarget());
