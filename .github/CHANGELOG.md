@@ -254,6 +254,7 @@
 1. [ECAM/CORE] Improved flap auto-retraction detection - @MisterChocker (Leon)
 1. [CDU] Error messages now print for invalid trip wind delims - @Lucky38i (Lucky38i)
 1. [TEXTURE] Fixed the overlapping text on the chronometer - @DarkOfNova (DarkOfNova)
+1. [SOUND] Made the altitude callouts louder -@hotshotp (Boris)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
