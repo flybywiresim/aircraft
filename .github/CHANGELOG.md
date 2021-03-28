@@ -6,6 +6,9 @@
 
 ## 0.7.0
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
+1. [MCDU] Implement BRG/DIST function on PROG page - @tracernz (Mike)
+1. [MCDU] Fix max page number on duplicate waypoint selection - @tracernz (Mike)
+1. [MCDU] Show max distance of 9999 NM on duplicate waypoint selection - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
