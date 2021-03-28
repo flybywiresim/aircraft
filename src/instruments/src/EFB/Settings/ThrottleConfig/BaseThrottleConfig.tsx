@@ -43,11 +43,10 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
         new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_'),
     ];
 
-    const comp = new Array<any>();
+    // const comp = new Array<any>();
 
     const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${props.throttleNumber}`, 'number', 50);
 
-    let i = 0;
     for (const mapped of mappings) {
         for (let index = 1; index <= props.throttleCount; index++) {
             const throttleNumber: number = props.throttleCount > 1 ? index : props.throttleNumber;
@@ -58,41 +57,37 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
             mapped.lowGetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber}`, 'number', 100)[0]);
             mapped.lowSetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber}`, 'number', 100)[1]);
         }
-        comp.push(
+        /*    comp.push(
             <div className={`flex flex-row ${props.disabled ? 'opacity-30' : ''}`}>
                 <DetentConfig
                     key={i}
                     index={i}
                     throttlePosition={throttlePosition}
-                    text={`${mappings[i].readableName}`}
                     upperBoundDetentSetter={mappings[i].hiSetter}
                     lowerBoundDetentSetter={mappings[i].lowSetter}
                     lowerBoundDetentGetter={mappings[i].lowGetter[props.throttleCount - 1]}
                     upperBoundDetentGetter={mappings[i].hiGetter[props.throttleCount - 1]}
                     detentValue={mappings[i].lowGetter[props.throttleCount - 1]}
                     throttleNumber={props.throttleNumber}
-                    disabled={props.disabled}
                 />
             </div>,
         );
-        i++;
+        i++; */
     }
 
-    /*     const currentDetent = [...Array(5).keys()].map((i) => (
-        <div className={`flex flex-row ${props.disabled ? 'opacity-30' : ''}`}>
-            <DetentConfig
-                throttlePosition={throttlePosition}
-                text={`${mappings[i].readableName}`}
-                upperBoundDetentSetter={mappings[i].hiSetter}
-                lowerBoundDetentSetter={mappings[i].lowSetter}
-                lowerBoundDetentGetter={mappings[i].lowGetter[props.throttleCount - 1]}
-                upperBoundDetentGetter={mappings[i].hiGetter[props.throttleCount - 1]}
-                detentValue={mappings[i].lowGetter[props.throttleCount - 1]}
-                throttleNumber={props.throttleNumber}
-                disabled={props.disabled}
-            />
-        </div>
-    )); */
+    const currentDetent = (
+        <DetentConfig
+            key={props.activeIndex}
+            index={props.activeIndex}
+            throttlePosition={throttlePosition}
+            upperBoundDetentSetter={mappings[props.activeIndex].hiSetter}
+            lowerBoundDetentSetter={mappings[props.activeIndex].lowSetter}
+            lowerBoundDetentGetter={mappings[props.activeIndex].lowGetter[props.throttleCount - 1]}
+            upperBoundDetentGetter={mappings[props.activeIndex].hiGetter[props.throttleCount - 1]}
+            detentValue={mappings[props.activeIndex].lowGetter[props.throttleCount - 1]}
+            throttleNumber={props.throttleNumber}
+        />
+    );
 
     return (
         <div>
@@ -111,7 +106,7 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
 
                 <div className="flex flex-row">
                     <div className="justify-between items-center flex flex-col ">
-                        {comp[props.activeIndex]}
+                        {currentDetent}
                     </div>
                 </div>
             </div>
