@@ -43,8 +43,6 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
         new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_'),
     ];
 
-    // const comp = new Array<any>();
-
     const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${props.throttleNumber}`, 'number', 50);
 
     for (const mapped of mappings) {
@@ -57,22 +55,6 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
             mapped.lowGetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber}`, 'number', 100)[0]);
             mapped.lowSetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber}`, 'number', 100)[1]);
         }
-        /*    comp.push(
-            <div className={`flex flex-row ${props.disabled ? 'opacity-30' : ''}`}>
-                <DetentConfig
-                    key={i}
-                    index={i}
-                    throttlePosition={throttlePosition}
-                    upperBoundDetentSetter={mappings[i].hiSetter}
-                    lowerBoundDetentSetter={mappings[i].lowSetter}
-                    lowerBoundDetentGetter={mappings[i].lowGetter[props.throttleCount - 1]}
-                    upperBoundDetentGetter={mappings[i].hiGetter[props.throttleCount - 1]}
-                    detentValue={mappings[i].lowGetter[props.throttleCount - 1]}
-                    throttleNumber={props.throttleNumber}
-                />
-            </div>,
-        );
-        i++; */
     }
 
     const currentDetent = (

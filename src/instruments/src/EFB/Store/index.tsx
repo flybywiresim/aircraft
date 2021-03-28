@@ -5,7 +5,6 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 import { todCalculatorReducer } from './reducer/tod-calculator.reducer';
 import { EFB_CLEAR_STATE } from './actions';
 import { buttonsReducer } from './reducer/ground-reducer';
-import { deadZoneReducer } from './reducer/deadzone-reducer';
 
 export const TOD_CALCULATOR_REDUCER = 'todCalculatorReducer';
 export const BUTTON_STATE_REDUCER = 'buttonsReducer';
@@ -16,7 +15,7 @@ export default createStore(
             state = undefined;
         }
 
-        return combineReducers({ [TOD_CALCULATOR_REDUCER]: todCalculatorReducer, [BUTTON_STATE_REDUCER]: buttonsReducer, [DEADZONE_REDUCER]: deadZoneReducer })(state, action);
+        return combineReducers({ [TOD_CALCULATOR_REDUCER]: todCalculatorReducer, [BUTTON_STATE_REDUCER]: buttonsReducer })(state, action);
     },
     composeWithDevTools(applyMiddleware(thunk)),
 );
