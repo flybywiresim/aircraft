@@ -210,11 +210,7 @@ class CDUFuelPredPage {
                 };
                 mcdu.checkEFOBBelowMin();
 
-                if (isFlying) {
-                    extraFuelCell = "{small}" + ((mcdu.tryGetExtraFuel(true) + mcdu.getRouteReservedWeight()) * mcdu._conversionWeight).toFixed(1);
-                } else {
-                    extraFuelCell = "{small}" + (mcdu.tryGetExtraFuel(true) * mcdu._conversionWeight).toFixed(1);
-                }
+                extraFuelCell = "{small}" + (mcdu.tryGetExtraFuel(true) * mcdu._conversionWeight).toFixed(1);
                 extraCellColor = "[color]green";
                 extraTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.tryGetExtraTime(true)) + "{end}";
 
