@@ -95,6 +95,7 @@ class CDULateralRevisionPage {
                 return mcdu.getDelaySwitchPage();
             };
             mcdu.onLeftInput[2] = () => {
+                CDUHoldAtPage.ShowPage(mcdu, waypoint, waypointIndexFP);
                 mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
             };
         }
