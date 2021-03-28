@@ -103,6 +103,11 @@ class CDUInitPage {
                         (mcdu.cruiseTemperature ? "/" + mcdu.cruiseTemperature.toFixed(0) + "°" : "{small}/" + mcdu.tempCurve.evaluate(mcdu._cruiseFlightLevel).toFixed(0) + "°{end}") +
                         "{end}";
                 }
+                if (mcdu._cruiseEntered == false && mcdu.flightPlanManager.getcruisingAltitude())
+                {
+                    cruiseFlTemp = "{cyan}FL" + mcdu.flightPlanManager.getcruisingAltitude()/100 + "\xa0" + (mcdu.cruiseTemperature ? "/" + mcdu.cruiseTemperature.toFixed(0) + "°" : "{small}/" + mcdu.tempCurve.evaluate(mcdu.flightPlanManager.getcruisingAltitude()/100).toFixed(0) + "°{end}") +
+                    "{end}";
+                }
 
                 // CRZ FL / FLX TEMP
                 mcdu.onLeftInput[5] = (value) => {
