@@ -119,11 +119,13 @@ class A32NX_LocalVarUpdater {
     }
 
     _runUpdater(deltaTime, {varName, type, selector, identifier = null}) {
-        if (this.updaterThrottlers[varName].canUpdate(deltaTime) === -1) {
+        const selectorDeltaTime = this.updaterThrottlers[varName].canUpdate(deltaTime);
+
+        if (selectorDeltaTime === -1) {
             return;
         }
 
-        const newValue = selector(identifier);
+        const newValue = selector(selectorDeltaTime, identifier);
         const currentValue = SimVar.GetSimVarValue(varName, type);
 
         if (newValue !== currentValue) {
@@ -148,7 +150,7 @@ class A32NX_LocalVarUpdater {
         return false;
     }
 
-    _condTempSelector(_identifier) {
+    _condTempSelector(_deltaTime, _identifier) {
         // Temporary code until packs code is written and implemented
         // Uses position of AIR COND knobs to generate the trim air temperature
         let trimTemp = null;
@@ -163,7 +165,7 @@ class A32NX_LocalVarUpdater {
         return trimTemp;
     }
 
-    _condTrimOutletSelector(_compartment) {
+    _condTrimOutletSelector(_deltaTime, _compartment) {
         // Cabin initially has outside temperature
         if (!this.initializedCabinTemp[_compartment]) {
             this.initializedCabinTemp[_compartment] = true;
@@ -178,14 +180,14 @@ class A32NX_LocalVarUpdater {
         const deltaTemp = trimTemp - currentCabinTemp;
 
         // temperature variation depends on packflow and compartment size
-        let compartmentSizeModifier = 0.0001;
+        let compartmentSizeModifier = 0.000005;
 
         if (_compartment == "CKPT") {
-            compartmentSizeModifier = 0.0002;
+            compartmentSizeModifier = 0.00001;
         }
 
         const cabinTempVariationSpeed = compartmentSizeModifier * (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "number") + 1);
-        const cabinTemp = currentCabinTemp + deltaTemp * cabinTempVariationSpeed;
+        const cabinTemp = currentCabinTemp + ((deltaTemp * cabinTempVariationSpeed) * _deltaTime);
 
         return cabinTemp;
     }
