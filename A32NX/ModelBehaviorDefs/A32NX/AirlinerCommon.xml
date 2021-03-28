@@ -564,7 +564,13 @@
 			<ANIM_KNOB_PARAM_NAME>ANIM_CODE_SWITCH</ANIM_KNOB_PARAM_NAME>
 		</DefaultTemplateParameters>
 		<OverrideTemplateParameters>
-			<TRANSMIT_EMISSIVE_CODE>(L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) #Button_ID# (L:XMLVAR_COM_Transmit_Channel) == ! and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or 16 *</TRANSMIT_EMISSIVE_CODE>
+			<TRANSMIT_EMISSIVE_CODE>
+                (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) #Button_ID# (L:XMLVAR_COM_Transmit_Channel) == ! and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or if{
+                14
+                } els{
+                (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) 0.5 *
+                }
+            </TRANSMIT_EMISSIVE_CODE>
 		</OverrideTemplateParameters>
 		<Condition Valid="Radio_ID">
 			<True>
