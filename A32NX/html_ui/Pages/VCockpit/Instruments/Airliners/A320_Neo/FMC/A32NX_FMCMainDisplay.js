@@ -1443,10 +1443,12 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number}
      */
     tryGetExtraFuel(useFOB = false) {
+        const isFlying = parseInt(SimVar.GetSimVarValue("GROUND VELOCITY", "knots")) > 30;
+
         if (useFOB) {
-            return this.getFOB() - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight;
+            return this.getFOB() - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight - (isFlying ? 0 : this.getRouteReservedWeight());
         } else {
-            return this.blockFuel - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight;
+            return this.blockFuel - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight - (isFlying ? 0 : this.getRouteReservedWeight());
         }
     }
 
@@ -2085,12 +2087,13 @@ class FMCMainDisplay extends BaseAirliners {
         this.tryUpdateRouteFinalFuel();
         this.tryUpdateRouteAlternate();
         this.tryUpdateRouteTrip();
-        this.tryUpdateMinDestFob();
 
         this._routeFinalFuelTime = tempRouteFinalFuelTime;
         this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
 
-        this.blockFuel = this.getTotalTripFuelCons() + this._minDestFob + this.taxiFuelWeight;
+        this.tryUpdateMinDestFob();
+
+        this.blockFuel = this.getTotalTripFuelCons() + this._minDestFob + this.taxiFuelWeight + this.getRouteReservedWeight();
         this._fuelPlanningPhase = this._fuelPlanningPhases.IN_PROGRESS;
         return true;
     }
@@ -2197,16 +2200,22 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getRouteReservedWeight() {
+        if (!this._rteReservedEntered && (this._rteFinalCoeffecient !== 0)) {
+            const fivePercentWeight = this._routeReservedPercent * this._routeTripFuelWeight / 100;
+            const fiveMinuteHoldingWeight = (5 * this._rteFinalCoeffecient) / 1000;
+
+            return fivePercentWeight > fiveMinuteHoldingWeight ? fivePercentWeight : fiveMinuteHoldingWeight;
+        }
         if (isFinite(this._routeReservedWeight) && this._routeReservedWeight !== 0) {
             return this._routeReservedWeight;
         } else {
-            return this._routeReservedPercent * this.blockFuel / 100;
+            return this._routeReservedPercent * this._routeTripFuelWeight / 100;
         }
     }
 
     getRouteReservedPercent() {
         if (isFinite(this._routeReservedWeight) && isFinite(this.blockFuel) && this._routeReservedWeight !== 0) {
-            return this._routeReservedWeight / this.blockFuel * 100;
+            return this._routeReservedWeight / this._routeTripFuelWeight * 100;
         }
         return this._routeReservedPercent;
     }
@@ -2633,7 +2642,7 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
             return true;
         } else if (s.match(/^[0-9]{1,5}$/) !== null) {
-            const value = Math.round(parseInt(s) / 10) * 10;
+            const value = parseInt(s);
             let ldgRwy = this.flightPlanManager.getApproachRunway();
             if (!ldgRwy) {
                 const dest = this.flightPlanManager.getDestination();
@@ -2663,17 +2672,12 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
 
-        if (Simplane.getAutoPilotApproachType() !== 4) {
-            this.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        }
-
         if (s === "NO" || s === "NO DH" || s === "NODH") {
             this.perfApprDH = "NO DH";
             SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -2);
             return true;
         } else if (s.match(/^[0-9]{1,5}$/) !== null) {
-            const value = Math.round(parseInt(s) / 10) * 10;
+            const value = parseInt(s);
             if (value >= 0 && value <= 5000) {
                 this.perfApprDH = value;
                 SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", this.perfApprDH);
