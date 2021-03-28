@@ -58,7 +58,9 @@ class Jet_NDCompass extends HTMLElement {
             "bearing2_bearing",
             "display_course_deviation",
             "vertical_deviation",
-            "display_vertical_deviation"
+            "display_vertical_deviation",
+            "xtrk_error_left",
+            "xtrk_error_right"
         ];
     }
     static get observedAttributes() {
@@ -553,6 +555,20 @@ class Jet_NDCompass extends HTMLElement {
                 }
             }
         }
+        // x-trk error
+        // TODO L:A32NX_FG_CROSS_TRACK_ERROR for BehEh's new FPM
+        const xtrkErr = SimVar.GetSimVarValue("GPS WP CROSS TRK", "nautical miles");
+        if (Math.abs(xtrkErr) > 0.02) {
+            const digits = (Math.abs(xtrkErr) < 0.3 || false /* RNP */) ? 2 : 1;
+            const xtrk = Math.abs(xtrkErr).toFixed(digits);
+            if (xtrkErr > 0) {
+                this.setAttribute("xtrk_error_left", xtrk);
+            } else {
+                this.setAttribute("xtrk_error_right", xtrk);
+            }
+        } else {
+            this.setAttribute("xtrk_error_left", "");
+        }
     }
     attributeChangedCallback(name, oldValue, newValue) {
         switch (name) {
@@ -707,6 +723,32 @@ class Jet_NDCompass extends HTMLElement {
                 break;
             case "hud":
                 this.isHud = newValue == "true";
+                break;
+            case "xtrk_error_left":
+                if (this.xTrkErrLeft) {
+                    if (newValue !== null && newValue.length > 0) {
+                        this.xTrkErrLeft.textContent = newValue + "L";
+                        this.xTrkErrLeft.setAttribute("visibility", "visible");
+                    } else {
+                        this.xTrkErrLeft.setAttribute("visibility", "hidden");
+                    }
+                }
+                if (this.xTrkErrRight) {
+                    this.xTrkErrRight.setAttribute("visibility", "hidden");
+                }
+                break;
+            case "xtrk_error_right":
+                if (this.xTrkErrLeft) {
+                    this.xTrkErrLeft.setAttribute("visibility", "hidden");
+                }
+                if (this.xTrkErrRight) {
+                    if (newValue !== null && newValue.length > 0) {
+                        this.xTrkErrRight.textContent = newValue + "R";
+                        this.xTrkErrRight.setAttribute("visibility", "visible");
+                    } else {
+                        this.xTrkErrRight.setAttribute("visibility", "hidden");
+                    }
+                }
                 break;
         }
     }

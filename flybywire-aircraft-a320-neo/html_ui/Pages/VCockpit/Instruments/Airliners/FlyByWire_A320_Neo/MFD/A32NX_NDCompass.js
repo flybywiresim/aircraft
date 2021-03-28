@@ -268,6 +268,21 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 neutralLine.setAttribute("stroke-width", "4");
                 viewBox.appendChild(neutralLine);
             }
+            // xtrk error
+            this.xTrkErrLeft = document.createElementNS(Avionics.SVG.NS, "text");
+            this.xTrkErrLeft.setAttribute("x", "20");
+            this.xTrkErrLeft.setAttribute("text-anchor", "end");
+            this.xTrkErrRight = document.createElementNS(Avionics.SVG.NS, "text");
+            this.xTrkErrRight.setAttribute("x", "80");
+            this.xTrkErrRight.setAttribute("text-anchor", "start");
+            [this.xTrkErrLeft, this.xTrkErrRight].forEach((ele) => {
+                ele.setAttribute("y", "65");
+                ele.setAttribute("visibility", "hidden");
+                ele.setAttribute("fill", "lime"); // TODO colour?
+                ele.setAttribute("font-size", "16");
+                ele.setAttribute("alignment-baseline", "top");
+                trsGroup.appendChild(ele);
+            });
         }
     }
     constructPlan() {
@@ -686,6 +701,21 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             arrowMark.setAttribute("fill", "white");
             arrowMarkGroup.appendChild(arrowMark);
         }
+        // xtrk error
+        this.xTrkErrLeft = document.createElementNS(Avionics.SVG.NS, "text");
+        this.xTrkErrLeft.setAttribute("x", "468");
+        this.xTrkErrLeft.setAttribute("text-anchor", "end");
+        this.xTrkErrRight = document.createElementNS(Avionics.SVG.NS, "text");
+        this.xTrkErrRight.setAttribute("x", "532");
+        this.xTrkErrRight.setAttribute("text-anchor", "start");
+        [this.xTrkErrLeft, this.xTrkErrRight].forEach((ele) => {
+            ele.setAttribute("y", "538");
+            ele.setAttribute("visibility", "hidden");
+            ele.setAttribute("fill", "lime"); // TODO colour
+            ele.setAttribute("font-size", "24");
+            ele.setAttribute("alignment-baseline", "top");
+            this.root.appendChild(ele);
+        });
     }
     updateFail() {
         const failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
