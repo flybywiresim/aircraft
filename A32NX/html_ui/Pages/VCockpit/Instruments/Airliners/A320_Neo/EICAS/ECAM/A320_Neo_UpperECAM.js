@@ -356,11 +356,11 @@ var A320_Neo_UpperECAM;
             return [
                 {
                     style: "remark-indent-multiLine1",
-                    message: "IF NO FUEL LEAK",
+                    message: "IF NO FUEL LEAK AND",
                 },
                 {
                     style: "remark-indent-multiLine2",
-                    message: "AND IMBALANCE",
+                    message: "FUEL IMBALANCE",
                 },
                 {
                     style: "action",
@@ -1140,7 +1140,7 @@ var A320_Neo_UpperECAM;
 
                     },
                     {
-                        name: "Fuel",
+                        name: "FUEL",
                         messages: [
                             {
                                 message: "R WING TK LO LVL",
@@ -1187,7 +1187,7 @@ var A320_Neo_UpperECAM;
 
                             },
                             {
-                                message: "L + R WING TK LO LVL",
+                                message: "L+R WING TK LO LVL",
                                 level: 2,
                                 flightPhasesInhib: [3, 4, 5, 7, 8, 9],
                                 isActive: () => {
