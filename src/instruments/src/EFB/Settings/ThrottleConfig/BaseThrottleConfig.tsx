@@ -1,4 +1,5 @@
 import React from 'react';
+import { NXDataStore } from '../../../Common/persistence';
 import { useSimVar } from '../../../Common/simVars';
 import DetentConfig from './DetentConfig';
 
@@ -35,15 +36,18 @@ class ThrottleSimvar {
 const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
     const mappings: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse', 'L:A32NX_THROTTLE_MAPPING_REVERSE_'),
-        new ThrottleSimvar('Rev. Idle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_'),
+        new ThrottleSimvar('RevIdle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_'),
         new ThrottleSimvar('Idle', 'L:A32NX_THROTTLE_MAPPING_IDLE_'),
         new ThrottleSimvar('Climb', 'L:A32NX_THROTTLE_MAPPING_CLIMB_'),
         new ThrottleSimvar('Flex', 'L:A32NX_THROTTLE_MAPPING_FLEXMCT_'),
-        new ThrottleSimvar('TO/GA', 'L:A32NX_THROTTLE_MAPPING_TOGA_'),
+        new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_'),
     ];
+
+    const comp = new Array<any>();
 
     const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${props.throttleNumber}`, 'number', 50);
 
+    let i = 0;
     for (const mapped of mappings) {
         for (let index = 1; index <= props.throttleCount; index++) {
             const throttleNumber: number = props.throttleCount > 1 ? index : props.throttleNumber;
@@ -54,21 +58,41 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
             mapped.lowGetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber}`, 'number', 100)[0]);
             mapped.lowSetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber}`, 'number', 100)[1]);
         }
+        comp.push(
+            <div className={`flex flex-row ${props.disabled ? 'opacity-30' : ''}`}>
+                <DetentConfig
+                    key={i}
+                    index={i}
+                    throttlePosition={throttlePosition}
+                    text={`${mappings[i].readableName}`}
+                    upperBoundDetentSetter={mappings[i].hiSetter}
+                    lowerBoundDetentSetter={mappings[i].lowSetter}
+                    lowerBoundDetentGetter={mappings[i].lowGetter[props.throttleCount - 1]}
+                    upperBoundDetentGetter={mappings[i].hiGetter[props.throttleCount - 1]}
+                    detentValue={mappings[i].lowGetter[props.throttleCount - 1]}
+                    throttleNumber={props.throttleNumber}
+                    disabled={props.disabled}
+                />
+            </div>,
+        );
+        i++;
     }
 
-    const currentDetent = (
+    /*     const currentDetent = [...Array(5).keys()].map((i) => (
         <div className={`flex flex-row ${props.disabled ? 'opacity-30' : ''}`}>
             <DetentConfig
                 throttlePosition={throttlePosition}
-                text={`${mappings[props.activeIndex].readableName}`}
-                upperBoundDetentSetter={mappings[props.activeIndex].hiSetter}
-                lowerBoundDetentSetter={mappings[props.activeIndex].lowSetter}
-                detentValue={mappings[props.activeIndex].lowGetter[props.throttleCount - 1]}
+                text={`${mappings[i].readableName}`}
+                upperBoundDetentSetter={mappings[i].hiSetter}
+                lowerBoundDetentSetter={mappings[i].lowSetter}
+                lowerBoundDetentGetter={mappings[i].lowGetter[props.throttleCount - 1]}
+                upperBoundDetentGetter={mappings[i].hiGetter[props.throttleCount - 1]}
+                detentValue={mappings[i].lowGetter[props.throttleCount - 1]}
                 throttleNumber={props.throttleNumber}
                 disabled={props.disabled}
             />
         </div>
-    );
+    )); */
 
     return (
         <div>
@@ -87,16 +111,9 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
 
                 <div className="flex flex-row">
                     <div className="justify-between items-center flex flex-col ">
-                        {currentDetent}
+                        {comp[props.activeIndex]}
                     </div>
                 </div>
-                <h1 className="text-white mb-8 text-xl ">
-                    Stored Value:
-                    {' '}
-                    {mappings[props.activeIndex].lowGetter[props.throttleCount - 1] > 0.95
-                        ? mappings[props.activeIndex].lowGetter[props.throttleCount - 1]
-                        : (mappings[props.activeIndex].lowGetter[props.throttleCount - 1] + 0.05).toFixed(2) }
-                </h1>
             </div>
         </div>
     );

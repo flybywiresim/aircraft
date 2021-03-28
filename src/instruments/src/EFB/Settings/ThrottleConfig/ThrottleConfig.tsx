@@ -30,10 +30,8 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
 
     useEffect(() => {
-        if (reverserOnAxis1 === 0) {
+        if (reverserOnAxis1 === 0 && selectedIndex < 2) {
             setSelectedIndex(2);
-        } else {
-            setSelectedIndex(0);
         }
     });
 
@@ -159,25 +157,25 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         syncToDisk(1);
                         applyLocalVar(1);
                     }}
-                    className="ml-2 mr-4"
+                    className="ml-2 mr-4 hover:bg-green-600"
                 />
                 <Button
                     text="Apply"
                     type={BUTTON_TYPE.BLUE}
                     onClick={() => applyLocalVar(1)}
-                    className="ml-2"
+                    className="ml-2 hover:bg-blue-600"
                 />
                 <Button
                     text="Reset"
                     type={BUTTON_TYPE.BLUE}
                     onClick={() => syncToThrottle(1)}
-                    className="ml-2"
+                    className="ml-2 hover:bg-blue-600"
                 />
                 <Button
                     text="Back"
                     type={BUTTON_TYPE.BLUE}
                     onClick={() => props.onClose()}
-                    className="ml-4 mr-auto"
+                    className="ml-4 mr-auto hover:bg-blue-600"
                 />
             </div>
         </div>
