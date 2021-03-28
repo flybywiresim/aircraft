@@ -373,7 +373,7 @@ var A320_Neo_UpperECAM;
                     message: `${_tankSide} TK PUMP 1`,
                     action: "OFF",
                     isCompleted: () => {
-                        return (_tankSide == "R") ? !SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:3", "boolean") : !SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:2", "boolean");
+                        return (_tankSide == "R") ? !this.getCachedSimVar("FUELSYSTEM PUMP SWITCH:3", "boolean") : !this.getCachedSimVar("FUELSYSTEM PUMP SWITCH:2", "boolean");
                     },
                 },
                 {
@@ -381,7 +381,7 @@ var A320_Neo_UpperECAM;
                     message: `${_tankSide} TK PUMP 2`,
                     action: "OFF",
                     isCompleted: () => {
-                        return (_tankSide == "R") ? !SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:6", "boolean") : !SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:5", "boolean");
+                        return (_tankSide == "R") ? !this.getCachedSimVar("FUELSYSTEM PUMP SWITCH:6", "boolean") : !this.getCachedSimVar("FUELSYSTEM PUMP SWITCH:5", "boolean");
                     },
                 }
             ];
@@ -1147,8 +1147,8 @@ var A320_Neo_UpperECAM;
                                 level: 2,
                                 flightPhasesInhib: [3, 4, 5, 7, 8, 9],
                                 isActive: () => {
-                                    const quantityL = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "gallons") * this.gallonToKg;
-                                    const quantityR = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "gallons") * this.gallonToKg;
+                                    const quantityL = this.getCachedSimVar("FUEL TANK LEFT MAIN QUANTITY", "gallons") * this.gallonToKg;
+                                    const quantityR = this.getCachedSimVar("FUEL TANK RIGHT MAIN QUANTITY", "gallons") * this.gallonToKg;
                                     return (quantityR < 750) && (quantityL > 750);
                                 },
                                 actions: this.getLoWingTankActions("R")
@@ -1158,8 +1158,8 @@ var A320_Neo_UpperECAM;
                                 level: 2,
                                 flightPhasesInhib: [3, 4, 5, 7, 8, 9],
                                 isActive: () => {
-                                    const quantityL = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "gallons") * this.gallonToKg;
-                                    const quantityR = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "gallons") * this.gallonToKg;
+                                    const quantityL = this.getCachedSimVar("FUEL TANK LEFT MAIN QUANTITY", "gallons") * this.gallonToKg;
+                                    const quantityR = this.getCachedSimVar("FUEL TANK RIGHT MAIN QUANTITY", "gallons") * this.gallonToKg;
                                     return (quantityL < 750) && (quantityR > 750);
                                 },
                                 actions: this.getLoWingTankActions("L")
@@ -1168,19 +1168,23 @@ var A320_Neo_UpperECAM;
                                 message: "CTR TK PUMPS OFF",
                                 level: 2,
                                 flightPhasesInhib: [1, 3, 4, 5, 7, 8, 9, 10],
-                                isActive: () => (!SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:1", "boolean") || !SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:4", "boolean")) && !SimVar.GetSimVarValue("L:A32NX_ECAM_INOP_SYS_FUEL PUMPS", "Bool") && SimVar.GetSimVarValue("FUEL TANK CENTER QUANTITY", "gallons") * this.gallonToKg > 250,
+                                isActive: () => (
+                                    (!this.getCachedSimVar("FUELSYSTEM PUMP SWITCH:1", "boolean") || !this.getCachedSimVar("FUELSYSTEM PUMP SWITCH:4", "boolean"))
+                                    && !this.getCachedSimVar("L:A32NX_ECAM_INOP_SYS_FUEL PUMPS", "Bool")
+                                    && (this.getCachedSimVar("FUEL TANK CENTER QUANTITY", "gallons") * this.gallonToKg > 250)
+                                ),
                                 actions: [
                                     {
                                         style: "action",
                                         message: "CTR TK PUMP 1",
                                         action: "ON",
-                                        isCompleted: () => SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:1", "boolean"),
+                                        isCompleted: () => this.getCachedSimVar("FUELSYSTEM PUMP SWITCH:1", "boolean"),
                                     },
                                     {
                                         style: "action",
                                         message: "CTR TK PUMP 2",
                                         action: "ON",
-                                        isCompleted: () => SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:4", "boolean"),
+                                        isCompleted: () => this.getCachedSimVar("FUELSYSTEM PUMP SWITCH:4", "boolean"),
                                     },
 
                                 ]
@@ -1191,8 +1195,8 @@ var A320_Neo_UpperECAM;
                                 level: 2,
                                 flightPhasesInhib: [3, 4, 5, 7, 8, 9],
                                 isActive: () => {
-                                    const quantityL = SimVar.GetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "gallons") * this.gallonToKg;
-                                    const quantityR = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "gallons") * this.gallonToKg;
+                                    const quantityL = this.getCachedSimVar("FUEL TANK LEFT MAIN QUANTITY", "gallons") * this.gallonToKg;
+                                    const quantityR = this.getCachedSimVar("FUEL TANK RIGHT MAIN QUANTITY", "gallons") * this.gallonToKg;
                                     return (quantityL < 750) && (quantityR < 750);
                                 },
                             },
