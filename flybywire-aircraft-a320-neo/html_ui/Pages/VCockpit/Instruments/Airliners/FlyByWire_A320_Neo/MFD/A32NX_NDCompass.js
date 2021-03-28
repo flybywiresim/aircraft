@@ -340,7 +340,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     circleGroup.appendChild(outerCircle);
                     const vec = new Vec2(1, 1);
                     vec.SetNorm(333 - 45);
-                    this.addMapRange(circleGroup, 500 - vec.x, 500 + vec.y, "#00FFFF", "32", false, 1.0, true);
+                    this.addMapRange(circleGroup, 500 - vec.x, 500 + vec.y, "#00FFFF", "32", false, 0.5, true);
                 }
             }
         }
@@ -396,7 +396,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 outerGroup.appendChild(outerCircle);
                 const vec = new Vec2(1, 1);
                 vec.SetNorm(circleRadius - 45);
-                this.addMapRange(this.root, 500 - vec.x, 500 + vec.y, "#00FFFF", "32", false, 1.0, true);
+                this.addMapRange(this.root, 500 - vec.x, 500 + vec.y, "#00FFFF", "32", false, 0.5, true);
             }
             const innerGroup = document.createElementNS(Avionics.SVG.NS, "g");
             innerGroup.setAttribute("id", "innerCircle");

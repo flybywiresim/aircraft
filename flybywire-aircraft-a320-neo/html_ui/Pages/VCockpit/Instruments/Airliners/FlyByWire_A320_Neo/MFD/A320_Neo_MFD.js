@@ -699,7 +699,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
             case Jet_NDCompass_Display.ROSE:
             {
                 this.planMode = false;
-                this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
+                this.instrument.zoomRanges = this.getAdaptiveRanges(2.18);
                 this.instrument.style.top = "0%";
                 this.instrument.rotateWithPlane(true);
                 this.instrument.centerOnActiveWaypoint(false);
@@ -709,7 +709,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
             case Jet_NDCompass_Display.ARC:
             {
                 this.planMode = false;
-                this.instrument.zoomRanges = this.getAdaptiveRanges(2.3);
+                this.instrument.zoomRanges = this.getAdaptiveRanges(2.18);
                 this.instrument.style.top = "24%";
                 this.instrument.rotateWithPlane(true);
                 this.instrument.centerOnActiveWaypoint(false);
@@ -719,7 +719,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
             case Jet_NDCompass_Display.PLAN:
             {
                 this.planMode = true;
-                this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
+                this.instrument.zoomRanges = this.getAdaptiveRanges(2.18);
                 this.instrument.style.top = "0%";
                 this.instrument.rotateWithPlane(false);
                 this.instrument.centerOnActiveWaypoint(true);
