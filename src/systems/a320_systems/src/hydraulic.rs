@@ -154,23 +154,23 @@ impl A320Hydraulic {
 
     pub fn update(
         &mut self,
-        ct: &UpdateContext,
+        context: &UpdateContext,
         engine1: &Engine,
         engine2: &Engine,
         overhead_panel: &A320HydraulicOverheadPanel,
     ) {
         let min_hyd_loop_timestep = Duration::from_millis(A320Hydraulic::HYDRAULIC_SIM_TIME_STEP); //Hyd Sim rate = 10 Hz
 
-        self.total_sim_time_elapsed += ct.delta();
+        self.total_sim_time_elapsed += context.delta();
 
         //time to catch up in our simulation = new delta + time not updated last iteration
-        let time_to_catch = ct.delta() + self.lag_time_accumulator;
+        let time_to_catch = context.delta() + self.lag_time_accumulator;
 
         //Number of time steps to do according to required time step
         let number_of_steps_f64 = time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
 
         //updating rat stowed pos on all frames in case it's used for graphics
-        self.rat.update_stow_pos(&ct.delta());
+        self.rat.update_stow_pos(&context.delta());
 
         if number_of_steps_f64 < 1.0 {
             //Can't do a full time step
@@ -190,7 +190,7 @@ impl A320Hydraulic {
             //UPDATING HYDRAULICS AT FIXED STEP
             for _cur_loop in 0..num_of_update_loops {
                 //Base logic update based on overhead Could be done only once (before that loop) but if so delta time should be set accordingly
-                self.update_logic(&min_hyd_loop_timestep, overhead_panel, ct);
+                self.update_logic(&min_hyd_loop_timestep, overhead_panel, context);
 
                 //Process brake logic (which circuit brakes) and send brake demands (how much)
                 self.hyd_brake_logic
@@ -256,7 +256,7 @@ impl A320Hydraulic {
                 min_hyd_loop_timestep / A320Hydraulic::ACTUATORS_SIM_TIME_STEP_MULT; //If X times faster we divide step by X
             for _cur_loop in 0..num_of_actuators_update_loops {
                 self.rat
-                    .update_physics(&delta_time_physics, &ct.indicated_airspeed());
+                    .update_physics(&delta_time_physics, &context.indicated_airspeed());
             }
         }
     }
@@ -265,7 +265,7 @@ impl A320Hydraulic {
         &mut self,
         delta_time_update: &Duration,
         overhead_panel: &A320HydraulicOverheadPanel,
-        ct: &UpdateContext,
+        context: &UpdateContext,
     ) {
         self.update_external_cond(&delta_time_update);
 
@@ -273,7 +273,7 @@ impl A320Hydraulic {
 
         self.update_pump_faults();
 
-        self.update_rat_deploy(ct);
+        self.update_rat_deploy(context);
 
         self.update_ed_pump_states(overhead_panel);
 
@@ -299,12 +299,12 @@ impl A320Hydraulic {
         }
     }
 
-    fn update_rat_deploy(&mut self, ct: &UpdateContext) {
+    fn update_rat_deploy(&mut self, context: &UpdateContext) {
         //RAT Deployment
         //Todo check all other needed conditions this is faked with engine master while it should check elec buses
         if !self.hyd_logic_inputs.eng_1_master_on
             && !self.hyd_logic_inputs.eng_2_master_on
-            && ct.indicated_airspeed() > Velocity::new::<knot>(100.)
+            && context.indicated_airspeed() > Velocity::new::<knot>(100.)
         //Todo get speed from ADIRS
         {
             self.rat.set_active();

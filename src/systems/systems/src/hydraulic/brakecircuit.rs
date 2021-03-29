@@ -140,7 +140,6 @@ impl BrakeCircuit {
     pub fn update(
         &mut self,
         delta_time: &Duration,
-        //context: &UpdateContext,
         hyd_loop: &HydLoop,
     ) {
         let delta_vol = ((self.demanded_brake_position_left - self.current_brake_position_left)
@@ -296,9 +295,9 @@ impl AutoBrakeController {
         }
     }
 
-    pub fn update(&mut self, delta_time: &Duration, ct: &UpdateContext) {
+    pub fn update(&mut self, delta_time: &Duration, context: &UpdateContext) {
         self.current_filtered_accel = self.current_filtered_accel
-            + (ct.long_accel() - self.current_filtered_accel)
+            + (context.long_accel() - self.current_filtered_accel)
                 * (1.
                     - E.powf(
                         -delta_time.as_secs_f64() / AutoBrakeController::LONG_ACC_FILTER_TIMECONST,
@@ -307,7 +306,7 @@ impl AutoBrakeController {
         self.current_accel_error =
             self.current_filtered_accel - self.accel_targets[self.current_selected_mode];
 
-        if self.is_enabled && ct.is_on_ground() {
+        if self.is_enabled && context.is_on_ground() {
             let pterm = self.current_accel_error.get::<foot_per_second_squared>()
                 * AutoBrakeController::CONTROLLER_P_GAIN;
             let dterm = (self.current_accel_error - self.accel_error_prev)

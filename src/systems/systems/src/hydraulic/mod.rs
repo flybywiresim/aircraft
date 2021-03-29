@@ -1135,7 +1135,7 @@ mod tests {
 
         let init_n2 = Ratio::new::<percent>(55.0);
         let engine1 = engine(init_n2);
-        let ct = context(Duration::from_millis(100));
+        let context = context(Duration::from_millis(100));
 
         let green_acc_var_names = vec![
             "Loop Pressure".to_string(),
@@ -1184,8 +1184,8 @@ mod tests {
                 assert!(green_loop.loop_pressure <= Pressure::new::<psi>(250.0));
             }
 
-            edp1.update(&ct.delta(), &green_loop, &engine1);
-            green_loop.update(&ct.delta(), Vec::new(), vec![&edp1], Vec::new(), Vec::new());
+            edp1.update(&context.delta(), &green_loop, &engine1);
+            green_loop.update(&context.delta(), Vec::new(), vec![&edp1], Vec::new(), Vec::new());
             if x % 20 == 0 {
                 println!("Iteration {}", x);
                 println!("-------------------------------------------");
@@ -1213,7 +1213,7 @@ mod tests {
             }
 
             green_loop_history.update(
-                ct.delta().as_secs_f64(),
+                context.delta().as_secs_f64(),
                 vec![
                     green_loop.loop_pressure.get::<psi>(),
                     green_loop.loop_volume.get::<gallon>(),
@@ -1222,14 +1222,14 @@ mod tests {
                 ],
             );
             edp1_history.update(
-                ct.delta().as_secs_f64(),
+                context.delta().as_secs_f64(),
                 vec![
                     edp1.get_delta_vol_max().get::<liter>(),
                     engine1.corrected_n2.get::<percent>() as f64,
                 ],
             );
             accu_green_history.update(
-                ct.delta().as_secs_f64(),
+                context.delta().as_secs_f64(),
                 vec![
                     green_loop.loop_pressure.get::<psi>(),
                     green_loop.accumulator_gas_pressure.get::<psi>(),
