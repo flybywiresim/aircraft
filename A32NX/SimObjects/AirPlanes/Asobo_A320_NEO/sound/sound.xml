@@ -287,7 +287,7 @@
             <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="packscabinshut" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0" Continuous="false" >
+        <Sound WwiseData="true" WwiseEvent="packscabinshut" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0" Continuous="false">
             <Range UpperBound="0" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
@@ -1471,28 +1471,28 @@
         <Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_fwd" LocalVar="PUSH_OVHD_CALLS_FWD" Continuous="false">
             <Range LowerBound="1" />
             <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
-            <Range LowerBound="1" />
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_fwd" LocalVar="PUSH_OVHD_CALLS_ALL" Continuous="false">
             <Range LowerBound="1" />
             <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
-            <Range LowerBound="1" />
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_aft" LocalVar="PUSH_OVHD_CALLS_AFT" Continuous="false">
             <Range LowerBound="1" />
             <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
-            <Range LowerBound="1" />
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="emercabincall" NodeName="PUSH_OVHD_ELEC_BAT1" LocalVar="A32NX_CALLS_EMER_ON" Continuous="false">
             <Range LowerBound="1" />
             <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
-            <Range LowerBound="1" />
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
