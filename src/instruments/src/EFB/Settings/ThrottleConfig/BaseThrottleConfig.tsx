@@ -5,8 +5,8 @@ import DetentConfig from './DetentConfig';
 interface Props {
     throttleNumber: number,
     throttleCount: number,
-    mappings: ThrottleSimvar[],
-    mappings2?: ThrottleSimvar[]
+    mappingsAxisOne: ThrottleSimvar[],
+    mappingsAxisTwo?: ThrottleSimvar[]
     activeIndex: number,
     disabled: boolean,
 }
@@ -59,15 +59,15 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
             key={props.activeIndex}
             index={props.activeIndex}
             throttlePosition={throttlePosition}
-            upperBoundDetentSetter={props.mappings2
-                ? [props.mappings[props.activeIndex].getHiSetter(), props.mappings2[props.activeIndex].getHiSetter()]
-                : [props.mappings[props.activeIndex].getHiSetter()]}
-            lowerBoundDetentSetter={props.mappings2
-                ? [props.mappings[props.activeIndex].getLowSetter(), props.mappings2[props.activeIndex].getLowSetter()]
-                : [props.mappings[props.activeIndex].getLowSetter()]}
-            lowerBoundDetentGetter={props.mappings[props.activeIndex].getLowGetter()}
-            upperBoundDetentGetter={props.mappings[props.activeIndex].getHiGetter()}
-            detentValue={props.mappings[props.activeIndex].getLowGetter()}
+            upperBoundDetentSetter={props.mappingsAxisTwo
+                ? [props.mappingsAxisOne[props.activeIndex].getHiSetter(), props.mappingsAxisTwo[props.activeIndex].getHiSetter()]
+                : [props.mappingsAxisOne[props.activeIndex].getHiSetter()]}
+            lowerBoundDetentSetter={props.mappingsAxisTwo
+                ? [props.mappingsAxisOne[props.activeIndex].getLowSetter(), props.mappingsAxisTwo[props.activeIndex].getLowSetter()]
+                : [props.mappingsAxisOne[props.activeIndex].getLowSetter()]}
+            lowerBoundDetentGetter={props.mappingsAxisOne[props.activeIndex].getLowGetter()}
+            upperBoundDetentGetter={props.mappingsAxisOne[props.activeIndex].getHiGetter()}
+            detentValue={props.mappingsAxisOne[props.activeIndex].getLowGetter()}
             throttleNumber={props.throttleNumber}
         />
     );

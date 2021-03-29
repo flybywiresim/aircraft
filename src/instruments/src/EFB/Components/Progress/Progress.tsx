@@ -72,15 +72,15 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 
     };
 
+    const convertProgress = (completed) => (typeof completed === 'string' || completed > 100
+        ? '100%'
+        : `${completed}%`);
+
     const fillerStyles: React.CSSProperties = {
         height: vertical
-            ? typeof completed === 'string' || completed > 100
-                ? '100%'
-                : `${completed}%` : height,
+            ? convertProgress(completed) : height,
         width: !vertical
-            ? typeof completed === 'string' || completed > 100
-                ? '100%'
-                : `${completed}%` : width,
+            ? convertProgress(completed) : width,
         backgroundColor: bgcolor,
         transition: 'width 1s ease-in-out',
         borderRadius: 'inherit',
@@ -103,16 +103,23 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         alignItems: labelAlignment === 'outside' ? 'center' : 'initial',
     };
 
+    const checkOrientation = () => {
+        if (vertical) {
+            return 'horizontal-progress-bar';
+        }
+        return 'vertical-progress-bar';
+    };
+
     return (
         <>
             <div className="progress-bar">
                 <div
-                    className={displayBar ? 'vertical-progress-bar' : 'hidden'}
+                    className={displayBar ? checkOrientation() : 'hidden'}
                     style={vertical
                         ? { marginTop: `${formatBar(completedBar || 0)}` } : { marginLeft: `${formatBar(completedBar || 0)}` }}
                 />
                 <div
-                    className={displayBar ? 'vertical-progress-bar' : 'hidden'}
+                    className={displayBar ? checkOrientation() : 'hidden'}
                     style={vertical
                         ? { marginTop: `${formatBar(completedBar2 || 0)}` } : { marginLeft: `${formatBar(completedBar2 || 0)}` }}
                 />

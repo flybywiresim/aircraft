@@ -103,9 +103,9 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 { parseInt(isDualAxis) === 1 && (
                     <div className="flex flex-row justify-center">
 
-                        <BaseThrottleConfig mappings={mappings} disabled={false} throttleNumber={1} throttleCount={parseInt(isDualAxis) === 0 ? 2 : 1} activeIndex={selectedIndex} />
+                        <BaseThrottleConfig mappingsAxisOne={mappings} disabled={false} throttleNumber={1} throttleCount={parseInt(isDualAxis) === 0 ? 2 : 1} activeIndex={selectedIndex} />
                         <div className="w-8" />
-                        <BaseThrottleConfig mappings={mappings2} disabled={false} throttleNumber={2} throttleCount={1} activeIndex={selectedIndex} />
+                        <BaseThrottleConfig mappingsAxisOne={mappings2} disabled={false} throttleNumber={2} throttleCount={1} activeIndex={selectedIndex} />
 
                         <div className="h-100 flex flex-row mt-8 ml-16">
                             <VerticalSelectGroup>
@@ -144,7 +144,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 { parseInt(isDualAxis) === 0
                     && (
                         <div className="flex flex-row justify-center">
-                            <BaseThrottleConfig mappings={mappings} mappings2={mappings2} disabled={false} throttleNumber={1} throttleCount={2} activeIndex={selectedIndex} />
+                            <BaseThrottleConfig mappingsAxisOne={mappings} mappingsAxisTwo={mappings2} disabled={false} throttleNumber={1} throttleCount={2} activeIndex={selectedIndex} />
                             <div className="h-100 flex flex-row mt-8 ml-16">
                                 <VerticalSelectGroup>
                                     <SelectItem
