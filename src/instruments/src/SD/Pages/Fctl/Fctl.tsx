@@ -590,7 +590,9 @@ type AileronAxisProps = {
 }
 
 const AileronAxis = ({ leftorright, x } : AileronAxisProps) => {
-    const d1 = `M${x},164 l${leftorright === 'left' ? '-' : ''}8,0 l0,-20 l${leftorright === 'right' ? '-' : ''}8,0 l0,120 l${leftorright === 'left' ? '-' : ''}8,0 l0,-10 l${leftorright === 'right' ? '-' : ''}8,0`;
+    const d1 = `M${x},164 l${
+        leftorright === 'left' ? '-' : ''}8,0 l0,-20 l${
+        leftorright === 'right' ? '-' : ''}8,0 l0,120 l${leftorright === 'left' ? '-' : ''}8,0 l0,-10 l${leftorright === 'right' ? '-' : ''}8,0`;
     const d2 = `M${x},200 l${leftorright === 'left' ? '-' : ''}7,0`;
     const d3 = `M${x},205 l${leftorright === 'left' ? '-' : ''}7,0`;
     const d4 = `M${x},210 l${leftorright === 'left' ? '-' : ''}8,0 l0,6 l${leftorright === 'right' ? '-' : ''}8,0`;
@@ -683,7 +685,9 @@ type ElevatorAxisProps = {
 }
 
 const ElevatorAxis = ({ leftorright, x } : ElevatorAxisProps) => {
-    const d1 = `M${x},333 l${leftorright === 'left' ? '-' : ''}8,0 l0,-10 l${leftorright === 'right' ? '-' : ''}8,0 l0,116 l${leftorright === 'left' ? '-' : ''}8,0 l0,-10 l${leftorright === 'right' ? '-' : ''}8,0`;
+    const d1 = `M${x},333 l${
+        leftorright === 'left' ? '-' : ''}8,0 l0,-10 l${
+        leftorright === 'right' ? '-' : ''}8,0 l0,116 l${leftorright === 'left' ? '-' : ''}8,0 l0,-10 l${leftorright === 'right' ? '-' : ''}8,0`;
     const d2 = `M${x},395 l${leftorright === 'left' ? '-' : ''}7,0 l0,5 l${leftorright === 'right' ? '-' : ''}7,0`;
 
     return (
