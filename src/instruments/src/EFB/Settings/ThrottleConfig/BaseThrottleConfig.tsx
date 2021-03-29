@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSimVar } from '../../../Common/simVars';
 import DetentConfig from './DetentConfig';
+import { ThrottleSimvar } from './ThrottleSimVar';
 
 interface Props {
     throttleNumber: number,
@@ -11,48 +12,8 @@ interface Props {
     disabled: boolean,
 }
 
-export class ThrottleSimvar {
-    readableName: string;
-
-    technicalName: string;
-
-    hiValue: Array<any>;
-
-    lowValue;
-
-    deadZone: number;
-
-    getHiGetter = () => this.hiValue[0]
-
-    getHiSetter = () => this.hiValue[1]
-
-    getLowGetter = () => this.lowValue[0]
-
-    getLowSetter = () => this.lowValue[1]
-
-    constructor(readableName: string, technicalName: string, throttleNumber: number) {
-        this.readableName = readableName;
-        this.technicalName = technicalName;
-        this.deadZone = 0.05;
-        this.hiValue = useSimVar(`${technicalName}HIGH:${throttleNumber}`, 'number', 100);
-        this.lowValue = useSimVar(`${technicalName}LOW:${throttleNumber}`, 'number', 100);
-    }
-}
-
 const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
-    const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${props.throttleNumber}`, 'number', 50);
-
-    /*    for (const mapped of mappings) {
-        for (let index = 1; index <= props.throttleCount; index++) {
-            const throttleNumber: number = props.throttleCount > 1 ? index : props.throttleNumber;
-
-            mapped.hiGetter.push(useSimVar(`${mapped.technicalName}HIGH:${throttleNumber}`, 'number', 100)[0]);
-            mapped.hiSetter.push(useSimVar(`${mapped.technicalName}HIGH:${throttleNumber}`, 'number', 100)[1]);
-
-            mapped.lowGetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber}`, 'number', 100)[0]);
-            mapped.lowSetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber}`, 'number', 100)[1]);
-        }
-    } */
+    const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${props.throttleNumber}`, 'number', 30);
 
     const currentDetent = (
         <DetentConfig

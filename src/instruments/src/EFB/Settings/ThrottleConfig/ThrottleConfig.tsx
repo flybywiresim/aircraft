@@ -5,7 +5,8 @@ import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import { SelectItem, VerticalSelectGroup } from '../../Components/Form/Select';
 import { Toggle } from '../../Components/Form/Toggle';
 
-import BaseThrottleConfig, { ThrottleSimvar } from './BaseThrottleConfig';
+import BaseThrottleConfig from './BaseThrottleConfig';
+import { ThrottleSimvar } from './ThrottleSimVar';
 
 interface Props {
     isShown: boolean,
@@ -29,7 +30,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 1000);
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
 
-    const mappings: Array<ThrottleSimvar> = [
+    const mappingsAxisOne: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 1),
         new ThrottleSimvar('RevIdle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_', 1),
         new ThrottleSimvar('Idle', 'L:A32NX_THROTTLE_MAPPING_IDLE_', 1),
@@ -37,7 +38,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         new ThrottleSimvar('Flex', 'L:A32NX_THROTTLE_MAPPING_FLEXMCT_', 1),
         new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 1),
     ];
-    const mappings2: Array<ThrottleSimvar> = [
+    const mappingsAxis2: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 2),
         new ThrottleSimvar('RevIdle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_', 2),
         new ThrottleSimvar('Idle', 'L:A32NX_THROTTLE_MAPPING_IDLE_', 2),
@@ -67,12 +68,11 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
 
     function isConfigValid() {
         const errors: string[] = [];
-        for (let index = reverserOnAxis1 ? 0 : 2; index < mappings.length; index++) {
-            const element = mappings[index];
-            for (let nextIndex = index + 1; nextIndex < mappings.length; nextIndex++) {
-                const nextElement = mappings[nextIndex];
+        for (let index = reverserOnAxis1 ? 0 : 2; index < mappingsAxisOne.length; index++) {
+            const element = mappingsAxisOne[index];
+            for (let nextIndex = index + 1; nextIndex < mappingsAxisOne.length; nextIndex++) {
+                const nextElement = mappingsAxisOne[nextIndex];
                 if (element.getHiGetter() >= nextElement.getLowGetter() || element.getLowGetter() >= nextElement.getHiGetter()) {
-                    console.log(`WARN: ${element.getHiGetter()}is too high for ${nextElement.getLowGetter()}`);
                     errors.push(`${element.readableName} (${element.getLowGetter()}) overlaps with ${nextElement.readableName} (${nextElement.getLowGetter()})`);
                 }
             }
@@ -103,11 +103,23 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 { parseInt(isDualAxis) === 1 && (
                     <div className="flex flex-row justify-center">
 
-                        <BaseThrottleConfig mappingsAxisOne={mappings} disabled={false} throttleNumber={1} throttleCount={parseInt(isDualAxis) === 0 ? 2 : 1} activeIndex={selectedIndex} />
+                        <BaseThrottleConfig
+                            mappingsAxisOne={mappingsAxisOne}
+                            disabled={false}
+                            throttleNumber={1}
+                            throttleCount={parseInt(isDualAxis) === 0 ? 2 : 1}
+                            activeIndex={selectedIndex}
+                        />
                         <div className="w-8" />
-                        <BaseThrottleConfig mappingsAxisOne={mappings2} disabled={false} throttleNumber={2} throttleCount={1} activeIndex={selectedIndex} />
+                        <BaseThrottleConfig
+                            mappingsAxisOne={mappingsAxis2}
+                            disabled={false}
+                            throttleNumber={2}
+                            throttleCount={1}
+                            activeIndex={selectedIndex}
+                        />
 
-                        <div className="h-100 flex flex-row mt-8 ml-16">
+                        <div className="h-70 flex flex-row mt-8 ml-16">
                             <VerticalSelectGroup>
                                 <SelectItem
                                     classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
@@ -144,8 +156,15 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 { parseInt(isDualAxis) === 0
                     && (
                         <div className="flex flex-row justify-center">
-                            <BaseThrottleConfig mappingsAxisOne={mappings} mappingsAxisTwo={mappings2} disabled={false} throttleNumber={1} throttleCount={2} activeIndex={selectedIndex} />
-                            <div className="h-100 flex flex-row mt-8 ml-16">
+                            <BaseThrottleConfig
+                                mappingsAxisOne={mappingsAxisOne}
+                                mappingsAxisTwo={mappingsAxis2}
+                                disabled={false}
+                                throttleNumber={1}
+                                throttleCount={2}
+                                activeIndex={selectedIndex}
+                            />
+                            <div className="h-70 flex flex-row mt-8 ml-16">
                                 <VerticalSelectGroup>
                                     <SelectItem
                                         classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
@@ -180,6 +199,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
             </div>
 
             {isConfigValid().length > 0 && (<div className="text-xl text-red-600">{isConfigValid()[0]}</div>)}
+
             <div className="bg-gray-800 flex flex-row-reverse mt-12">
 
                 <Button
@@ -191,7 +211,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                             applyLocalVar(1);
                         }
                     }}
-                    className={`ml-2 mr-4 ${isConfigValid() ? 'bg-green-500 bg-border-green-500 hover:bg-green-600 hover:border-green-600' : 'bg-gray-500'}`}
+                    className={`ml-2 mr-4 ${isConfigValid().length === 0 ? 'bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600' : 'bg-gray-500'}`}
                 />
                 <Button
                     text="Apply"

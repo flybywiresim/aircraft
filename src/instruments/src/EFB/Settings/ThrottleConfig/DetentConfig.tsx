@@ -4,7 +4,6 @@ import { NXDataStore, usePersistentProperty } from '../../../Common/persistence'
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import Input from '../../Components/Form/Input/Input';
 import { ProgressBar } from '../../Components/Progress/Progress';
-import { VerticalProgressBar } from '../../Components/Progress/VerticalProgress';
 
 interface Props {
     upperBoundDetentSetter,
@@ -31,11 +30,9 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
         settingUpper.forEach((f) => f(newSetting + parseFloat(deadZone) > 1 ? 1 : newSetting + parseFloat(deadZone)));
     };
 
-    const updateDeadzone = (settingLower, settingUpper, upperBoundDetent, lowerBoundDetent, overrideValue: number) => {
-        const newUpperBound: number = (upperBoundDetent - parseFloat(deadZone));
-
-        settingLower.forEach((f) => f(parseFloat(axisValue) - overrideValue < -1 ? -1 : parseFloat(axisValue) - overrideValue));
-        settingUpper.forEach((f) => f(parseFloat(axisValue) + overrideValue > 1 ? 1 : parseFloat(axisValue) + overrideValue));
+    const updateDeadzone = (settingLower, settingUpper, deadZone: number) => {
+        settingLower.forEach((f) => f(parseFloat(axisValue) - deadZone < -1 ? -1 : parseFloat(axisValue) - deadZone));
+        settingUpper.forEach((f) => f(parseFloat(axisValue) + deadZone > 1 ? 1 : parseFloat(axisValue) + deadZone));
     };
 
     return (
@@ -51,7 +48,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                     completedBar2={(props.upperBoundDetentGetter + 1) * 50}
                     bgcolor="#3b82f6"
                     vertical
-                    baseBgColor="black"
+                    baseBgColor="rgba(55, 65, 81, var(--tw-bg-opacity))"
                     completed={(props.throttlePosition + 1) / 2 * 100}
                 />
             </div>
@@ -64,7 +61,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                     value={deadZone}
                     onChange={(deadZone) => {
                         if (parseFloat(deadZone) >= 0.01) {
-                            updateDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, props.lowerBoundDetentGetter, props.upperBoundDetentGetter, parseFloat(deadZone));
+                            updateDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, parseFloat(deadZone));
                             NXDataStore.set(`THROTTLE_${props.throttleNumber}DETENT_${props.index}`, parseFloat(deadZone).toFixed(2));
                             setShowWarning(false);
                             setDeadZone(deadZone);
