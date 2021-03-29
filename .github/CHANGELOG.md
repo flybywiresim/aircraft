@@ -233,6 +233,8 @@
 1. [MISC] Added custom loading tips - @Armankir (Arman#5297)
 1. [MCDU] Revised Reserve Weight Calculation and Default weight rule-set added - @Lucky38i (Lucky38i)
 1. [RMP] Added integral illumination to RMP volume knobs - @ImenesFBW (Imenes)
+1. [RMP] Fixed ACP CALL buttons emissive behavior - @ImenesFBW (Imenes)
+1. [TEXTURE] Fixed decal clipping issues on the overhead fuel panel - @ImenesFBW (Imenes)
 1. [ND] Fix Behaviour of TAS and Wind Info displayed inflight and on Take-Off - @ChruutvoLuzi (ChruutvoLuzi#8902)
 
 ## 0.5.2
