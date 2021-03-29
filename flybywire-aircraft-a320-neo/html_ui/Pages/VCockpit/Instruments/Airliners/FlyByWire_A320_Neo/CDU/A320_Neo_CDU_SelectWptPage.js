@@ -55,7 +55,7 @@ class A320_Neo_CDU_SelectWptPage {
                     callback(w);
                 };
                 mcdu.onLeftInput[5] = () => {
-                    CDUFlightPlanPage.ShowPage(mcdu, 0);
+                    mcdu.returnCallback(mcdu);
                 };
             }
         }
