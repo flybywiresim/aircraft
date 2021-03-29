@@ -104,8 +104,7 @@ class CDUInitPage {
                         "{end}";
                 }
                 if (mcdu._cruiseEntered == false && mcdu.flightPlanManager.cruisingAltitude) {
-                    cruiseFlTemp = "{cyan}FL" + mcdu.flightPlanManager.cruisingAltitude / 100 + "\xa0" + "{small}/" + mcdu.tempCurve.evaluate(mcdu.flightPlanManager.cruisingAltitude / 100).toFixed(0) + "°{end}" +
-                    "{end}";
+                    cruiseFlTemp = "{cyan}FL" + mcdu.flightPlanManager.cruisingAltitude / 100 + "\xa0" + "{small}/" + mcdu.tempCurve.evaluate(mcdu.flightPlanManager.cruisingAltitude / 100).toFixed(0) + "°{end}";
                 }
 
                 // CRZ FL / FLX TEMP
