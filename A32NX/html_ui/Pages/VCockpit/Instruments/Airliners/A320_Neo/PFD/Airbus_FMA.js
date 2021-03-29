@@ -1888,7 +1888,7 @@ var Airbus_FMA;
                     switch (targetState) {
                         case Column4.ROW_3_STATE.DH: {
                             var value = Airbus_FMA.CurrentPlaneState.decisionHeight;
-                            this.setRowMultiText(2, "DH", Airbus_FMA.MODE_STATE.STATUS, value.toFixed(0), Airbus_FMA.MODE_STATE.ARMED);
+                            this.setRowMultiText(2, "RADIO", Airbus_FMA.MODE_STATE.STATUS, value.toFixed(0), Airbus_FMA.MODE_STATE.ARMED);
                             break;
                         }
                         case Column4.ROW_3_STATE.NO_DH: {
@@ -1897,7 +1897,7 @@ var Airbus_FMA;
                         }
                         case Column4.ROW_3_STATE.MDA: {
                             var value = Airbus_FMA.CurrentPlaneState.minimumDescentAltitude;
-                            this.setRowMultiText(2, "MDA", Airbus_FMA.MODE_STATE.STATUS, value.toFixed(0), Airbus_FMA.MODE_STATE.ARMED);
+                            this.setRowMultiText(2, "BARO", Airbus_FMA.MODE_STATE.STATUS, value.toFixed(0), Airbus_FMA.MODE_STATE.ARMED);
                             break;
                         }
                         default: {
