@@ -1,51 +1,48 @@
 import React from 'react';
-import { NXDataStore } from '../../../Common/persistence';
 import { useSimVar } from '../../../Common/simVars';
 import DetentConfig from './DetentConfig';
 
 interface Props {
     throttleNumber: number,
     throttleCount: number,
+    mappings: ThrottleSimvar[],
+    mappings2?: ThrottleSimvar[]
     activeIndex: number,
-    disabled: boolean
+    disabled: boolean,
 }
 
-class ThrottleSimvar {
+export class ThrottleSimvar {
     readableName: string;
 
     technicalName: string;
 
-    hiSetter: Array<any>;
+    hiValue: Array<any>;
 
-    hiGetter: Array<number>;
+    lowValue;
 
-    lowSetter: Array<any>;
+    deadZone: number;
 
-    lowGetter: Array<number>;
+    getHiGetter = () => this.hiValue[0]
 
-    constructor(readableName: string, technicalName: string) {
+    getHiSetter = () => this.hiValue[1]
+
+    getLowGetter = () => this.lowValue[0]
+
+    getLowSetter = () => this.lowValue[1]
+
+    constructor(readableName: string, technicalName: string, throttleNumber: number) {
         this.readableName = readableName;
         this.technicalName = technicalName;
-        this.hiSetter = [];
-        this.hiGetter = [];
-        this.lowGetter = [];
-        this.lowSetter = [];
+        this.deadZone = 0.05;
+        this.hiValue = useSimVar(`${technicalName}HIGH:${throttleNumber}`, 'number', 100);
+        this.lowValue = useSimVar(`${technicalName}LOW:${throttleNumber}`, 'number', 100);
     }
 }
 
 const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
-    const mappings: Array<ThrottleSimvar> = [
-        new ThrottleSimvar('Reverse', 'L:A32NX_THROTTLE_MAPPING_REVERSE_'),
-        new ThrottleSimvar('RevIdle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_'),
-        new ThrottleSimvar('Idle', 'L:A32NX_THROTTLE_MAPPING_IDLE_'),
-        new ThrottleSimvar('Climb', 'L:A32NX_THROTTLE_MAPPING_CLIMB_'),
-        new ThrottleSimvar('Flex', 'L:A32NX_THROTTLE_MAPPING_FLEXMCT_'),
-        new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_'),
-    ];
-
     const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${props.throttleNumber}`, 'number', 50);
 
-    for (const mapped of mappings) {
+    /*    for (const mapped of mappings) {
         for (let index = 1; index <= props.throttleCount; index++) {
             const throttleNumber: number = props.throttleCount > 1 ? index : props.throttleNumber;
 
@@ -55,18 +52,22 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
             mapped.lowGetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber}`, 'number', 100)[0]);
             mapped.lowSetter.push(useSimVar(`${mapped.technicalName}LOW:${throttleNumber}`, 'number', 100)[1]);
         }
-    }
+    } */
 
     const currentDetent = (
         <DetentConfig
             key={props.activeIndex}
             index={props.activeIndex}
             throttlePosition={throttlePosition}
-            upperBoundDetentSetter={mappings[props.activeIndex].hiSetter}
-            lowerBoundDetentSetter={mappings[props.activeIndex].lowSetter}
-            lowerBoundDetentGetter={mappings[props.activeIndex].lowGetter[props.throttleCount - 1]}
-            upperBoundDetentGetter={mappings[props.activeIndex].hiGetter[props.throttleCount - 1]}
-            detentValue={mappings[props.activeIndex].lowGetter[props.throttleCount - 1]}
+            upperBoundDetentSetter={props.mappings2
+                ? [props.mappings[props.activeIndex].getHiSetter(), props.mappings2[props.activeIndex].getHiSetter()]
+                : [props.mappings[props.activeIndex].getHiSetter()]}
+            lowerBoundDetentSetter={props.mappings2
+                ? [props.mappings[props.activeIndex].getLowSetter(), props.mappings2[props.activeIndex].getLowSetter()]
+                : [props.mappings[props.activeIndex].getLowSetter()]}
+            lowerBoundDetentGetter={props.mappings[props.activeIndex].getLowGetter()}
+            upperBoundDetentGetter={props.mappings[props.activeIndex].getHiGetter()}
+            detentValue={props.mappings[props.activeIndex].getLowGetter()}
             throttleNumber={props.throttleNumber}
         />
     );
