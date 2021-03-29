@@ -47,6 +47,26 @@ A32NX_Util.createMachine = (machineDef) => {
 };
 
 /**
+ * Compute a true heading from a magnetic heading
+ * @param {Number} heading true heading
+ * @param {Number=} magVar falls back to current aircraft position magvar
+ * @returns magnetic heading
+ */
+A32NX_Util.trueToMagnetic = (heading, magVar) => {
+    return (360 + heading + (magVar || SimVar.GetSimVarValue("MAGVAR", "degree"))) % 360;
+};
+
+/**
+ * Compute a magnetic heading from a true heading
+ * @param {Number} heading magnetic heading
+ * @param {Number=} magVar falls back to current aircraft position magvar
+ * @returns true heading
+ */
+A32NX_Util.magneticToTrue = (heading, magVar) => {
+    return (360 + heading - (magVar || SimVar.GetSimVarValue("MAGVAR", "degree"))) % 360;
+};
+
+/**
  * Takes a LatLongAlt or LatLong and returns a vector of spherical co-ordinates
  * @param {(LatLong | LatLongAlt)} ll
  */
@@ -59,7 +79,7 @@ A32NX_Util.latLonToSpherical = (ll) => {
 };
 
 /**
- * Computes the intersection point of two bearings on a great circle
+ * Computes the intersection point of two (true) bearings on a great circle
  * @param {(LatLong | LatLongAlt)} latlon1
  * @param {number} brg1
  * @param {(LatLong | LatLongAlt)} latlon2
@@ -68,14 +88,11 @@ A32NX_Util.latLonToSpherical = (ll) => {
 A32NX_Util.greatCircleIntersection = (latlon1, brg1, latlon2, brg2) => {
     // c.f. https://blog.mbedded.ninja/mathematics/geometry/spherical-geometry/finding-the-intersection-of-two-arcs-that-lie-on-a-sphere/
 
-    // TODO should be magvar at the lat, lon
-    const magVar = SimVar.GetSimVarValue("MAGVAR", "degree");
-
     const Pa11 = A32NX_Util.latLonToSpherical(latlon1);
-    const latlon12 = Avionics.Utils.bearingDistanceToCoordinates((360 + brg1 + magVar) % 360, 100, latlon1.lat, latlon1.long);
+    const latlon12 = Avionics.Utils.bearingDistanceToCoordinates(brg1 % 360, 100, latlon1.lat, latlon1.long);
     const Pa12 = A32NX_Util.latLonToSpherical(latlon12);
     const Pa21 = A32NX_Util.latLonToSpherical(latlon2);
-    const latlon22 = Avionics.Utils.bearingDistanceToCoordinates((360 + brg2 + magVar) % 360, 100, latlon2.lat, latlon2.long);
+    const latlon22 = Avionics.Utils.bearingDistanceToCoordinates(brg2 % 360, 100, latlon2.lat, latlon2.long);
     const Pa22 = A32NX_Util.latLonToSpherical(latlon22);
 
     const N1 = math.cross(Pa11, Pa12);

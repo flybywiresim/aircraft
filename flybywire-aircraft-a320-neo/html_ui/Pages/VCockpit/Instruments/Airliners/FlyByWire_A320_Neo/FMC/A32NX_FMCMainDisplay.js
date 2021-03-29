@@ -3224,6 +3224,7 @@ class FMCMainDisplay extends BaseAirliners {
      *
      * @callback LatLongAltCallback
      * @param {LatLongAlt} result
+     * @param {number=} magVar magnetic variation if available
      */
     /**
      * McduMessageCallback
@@ -3331,7 +3332,7 @@ class FMCMainDisplay extends BaseAirliners {
         } else {
             this.getOrSelectWaypointByIdent(place, (waypoint) => {
                 if (waypoint) {
-                    return onSuccess(waypoint.infos.coordinates);
+                    return onSuccess(waypoint.infos.coordinates, waypoint.infos.magneticVariation);
                 } else {
                     return onError(NXSystemMessages.notInDatabase);
                 }
@@ -3365,9 +3366,9 @@ class FMCMainDisplay extends BaseAirliners {
         if (brg1 > 360 || brg2 > 360) {
             return onError(NXSystemMessages.entryOutOfRange);
         }
-        this.parsePlace(pbpb[1], (loc1) => {
-            this.parsePlace(pbpb[3], (loc2) => {
-                onSuccess(A32NX_Util.greatCircleIntersection(loc1, brg1, loc2, brg2));
+        this.parsePlace(pbpb[1], (loc1, magVar1) => {
+            this.parsePlace(pbpb[3], (loc2, magVar2) => {
+                onSuccess(A32NX_Util.greatCircleIntersection(loc1, A32NX_Util.magneticToTrue(brg1, magVar1), loc2, A32NX_Util.magneticToTrue(brg2, magVar2)));
             }, (err2) => {
                 onError(err2);
             });
@@ -3402,7 +3403,7 @@ class FMCMainDisplay extends BaseAirliners {
      * Set the progress page bearing/dist location
      * @param {string} ident ident of the waypoint or runway, will be replaced by "ENTRY" if brg/dist offset are specified
      * @param {LatLongAlt} coordinates co-ordinates of the waypoint/navaid/runway, without brg/dist offset
-     * @param {(number|undefined)} brg undefined or bearing for offset
+     * @param {(number|undefined)} brg undefined or (true) bearing for offset
      * @param {(number|undefined)} dist undefined or dist for offset
      */
     _setProgLocation(ident, coordinates, brg, dist) {
@@ -3410,8 +3411,7 @@ class FMCMainDisplay extends BaseAirliners {
         const displayIdent = (brg !== undefined && dist !== undefined) ? "ENTRY" : ident;
         let adjustedCoordinates = coordinates;
         if (brg !== undefined && dist !== undefined) {
-            const magVar = SimVar.GetSimVarValue("MAGVAR", "degree");
-            adjustedCoordinates = Avionics.Utils.bearingDistanceToCoordinates((360 + brg + magVar) % 360, dist, coordinates.lat, coordinates.long);
+            adjustedCoordinates = Avionics.Utils.bearingDistanceToCoordinates(brg % 360, dist, coordinates.lat, coordinates.long);
         }
         this._progBrgDist = {
             ident: displayIdent,
@@ -3462,8 +3462,8 @@ class FMCMainDisplay extends BaseAirliners {
                 place = s;
             }
             if (this.isPlaceFormat(place)) {
-                this.parsePlace(place, (loc) => {
-                    this._setProgLocation(place, loc, brg, dist);
+                this.parsePlace(place, (loc, magVar) => {
+                    this._setProgLocation(place, loc, brg ? A32NX_Util.magneticToTrue(brg, magVar) : undefined, dist);
                     return callback(true);
                 }, (err) => {
                     this.addNewMessage(err);
@@ -3494,8 +3494,7 @@ class FMCMainDisplay extends BaseAirliners {
         );
         const magVar = SimVar.GetSimVarValue("MAGVAR", "degree");
         this._progBrgDist.distance = Avionics.Utils.computeGreatCircleDistance(planeLla, this._progBrgDist.coordinates);
-        this._progBrgDist.bearing = (360 +
-            Avionics.Utils.computeGreatCircleHeading(planeLla, this._progBrgDist.coordinates) - magVar) % 360;
+        this._progBrgDist.bearing = A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(planeLla, this._progBrgDist.coordinates));
     }
 
     get progBearing() {
