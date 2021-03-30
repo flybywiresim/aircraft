@@ -51,13 +51,13 @@ This has the latest features, but is much more unstable, use at your own risk.
 
 [View info about the latest build here.](https://github.com/flybywiresim/a32nx/releases/tag/vmaster)
 
-#### Unstable Master Branch Build (with custom FBW)
+#### Unstable Master Branch Build (with custom autopilot)
 
-This version is the same as the regular master/development version, but with the WIP custom fly-by-wire system. Expect issues with flight directors/autopilot if you intend to use this version. No support will be provided via Discord.
+This version is the same as the regular master/development version, but with the WIP custom fly-by-wire, autopilot and autothrust system. Expect issues with autopilot, engines, autothrust and the PFD if you intend to use this version. No support will be provided via Discord.
 
-[Download custom FBW development build here.](https://api.flybywiresim.com/api/v1/download?url=https://flybywiresim-packages.b-cdn.net/vmaster-cfbw/A32NX-master-cfbw.zip)
+[Download custom autopilot development build here.](https://api.flybywiresim.com/api/v1/download?url=https://flybywiresim-packages.b-cdn.net/vmaster-cfbw-cap/A32NX-master-cfbw-cap.zip)
 
-[**IMPORTANT:** view warnings and info for the custom FBW build here.](https://github.com/flybywiresim/a32nx/tree/fbw/docs)
+[**IMPORTANT:** view warnings and info for the custom autopilot build here.](https://github.com/flybywiresim/a32nx/tree/autopilot/docs)
 
 ## Installation
 
@@ -92,10 +92,10 @@ See [Contributing.md](.github/Contributing.md)
 - Captain's PFD may occasionally turn off during flight
 - No Smoking switch doesn't use a full range of motion.
 - Automatic ECAM page switching has minor bugs.
-- AP not following the flight plan (leaking input values affect, but don't disconnect the AP) [Workaround: Set dead-zones for your input device higher] 
+- AP not following the flight plan (leaking input values affect, but don't disconnect the AP) [Workaround: Set dead-zones for your input device higher]
 - Autopilot goes direct to RWY on APP (same with the default A320) [Workaround: Use DIR to a waypoint or selected heading]
 - Upper ECAM displays wrong THR levers position / N1 rating.
-- Newly added ASOBO A320 liveries are incompatible with the A32NX mod. 
+- Newly added ASOBO A320 liveries are incompatible with the A32NX mod.
 - Ruder keybindings not working (you have to set your keybinding to rudder axis right and left)
 - Wing dips on landing (due to bad transition to direct law in flare, same with the default A320)  [Workaround use minimal aileron input on landing]
 - Black screens / unable to start (conflict with another mod/livery or incorrect installation of the A32NX mod, use the [installer](https://api.flybywiresim.com/installer))

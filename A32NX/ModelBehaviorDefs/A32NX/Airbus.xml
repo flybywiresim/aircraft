@@ -838,6 +838,13 @@
 	<Template Name="A32NX_Audio_Panel_Volume_Dummy">
 		<Component ID="#NODE_ID#_Light" Node="#NODE_ID#">
 			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				<EMISSIVE_CODE>
+                    (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == if{
+                    14
+                    } els{
+                    (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) 0.5 *
+                    }
+                </EMISSIVE_CODE>
 			</UseTemplate>
 		</Component>
 	</Template>

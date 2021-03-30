@@ -107,59 +107,59 @@ const soundList = {
         length: 0.72
     },
     retard: {
-        name: "aural_retard",
+        name: "new_retard",
         length: 0.9
     },
     alt_2500: {
-        name: "aural_2500ft",
+        name: "new_2500",
         length: 1.1
     },
     alt_1000: {
-        name: "aural_1000ft",
+        name: "new_1000",
         length: 0.9
     },
     alt_500: {
-        name: "aural_500ft",
+        name: "new_500",
         length: 0.6
     },
     alt_400: {
-        name: "aural_400ft",
+        name: "new_400",
         length: 0.6
     },
     alt_300: {
-        name: "aural_300ft",
+        name: "new_300",
         length: 0.6
     },
     alt_200: {
-        name: "aural_200ft",
+        name: "new_200",
         length: 0.6
     },
     alt_100: {
-        name: "aural_100ft",
+        name: "new_100",
         length: 0.6
     },
     alt_50: {
-        name: "aural_50ft",
+        name: "new_50",
         length: 0.4
     },
     alt_40: {
-        name: "aural_40ft",
+        name: "new_40",
         length: 0.4
     },
     alt_30: {
-        name: "aural_30ft",
+        name: "new_30",
         length: 0.4
     },
     alt_20: {
-        name: "aural_20ft",
+        name: "new_20",
         length: 0.4
     },
     alt_10: {
-        name: "aural_10ft",
+        name: "new_10",
         length: 0.3
     },
     alt_5: {
-        name: "aural_5ft",
+        name: "new_5",
         length: 0.3
     }
 };

@@ -8,7 +8,13 @@
       "AIRCRAFT.UI_VARIATION": "Airbus",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "向左调整所选航向(%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "向右调整所选航向(%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
-      "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU available"
+      "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU available",
+      "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NX是由数百名个人贡献者合作完成的。",
+      "A32NX.LOADING.TIPS.A320NEO_002": "你知道吗？A320的横风速度可达38节，尾风速度可达15节！A320可以以38节的速度降落。",
+      "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire的名字来源于空客A320首次引入的飞线控制。",
+      "A32NX.LOADING.TIPS.A320NEO_004": "A320家族飞机共生产9693架! 这几乎和图瓦卢的人口一样多!",
+      "A32NX.LOADING.TIPS.A320NEO_005": "空客A320neo飞机的航程为3500NM或6500KM。这足以从纽约飞到巴黎!",
+      "A32NX.LOADING.TIPS.A320NEO_006": "你知道吗？A320家族有4个变种! A318 A319 A320和A321。"
     }
   }
 }
