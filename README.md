@@ -1,7 +1,9 @@
 # <img src="https://raw.githubusercontent.com/flybywiresim/fbw-branding/master/svg/FBW-Logo.svg" placeholder="FlyByWire" width="400"/>
 
 
-[![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU)
+[![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU) 
+
+[![Twitter](https://img.shields.io/twitter/follow/FlyByWire?style=flat&logo=twitter)](https://twitter.com/FlybywireSim)
 
 [![GitHub latest release version](https://img.shields.io/github/v/release/flybywiresim/a32nx.svg?style=flat)](https://github.com/flybywiresim/a32nx/releases/latest)
 [![Github All Releases download count](https://img.shields.io/github/downloads/flybywiresim/a32nx/total.svg?style=flat)](https://github.com/flybywiresim/a32nx/releases/latest)
@@ -9,7 +11,7 @@
 
 ## About
 
-The A32NX Project is a community-driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
+The A32NX Project is a community-driven open source project to create a freeware Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
 
 The following aircraft configuration is currently simulated:
 
@@ -53,7 +55,7 @@ This has the latest features, but is much more unstable, use at your own risk.
 
 #### Unstable Master Branch Build (with custom autopilot)
 
-This version is the same as the regular master/development version, but with the WIP custom fly-by-wire, autopilot and autothrust system. Expect issues with autopilot, engines, autothrust and the PFD if you intend to use this version. No support will be provided via Discord.
+This version is the same as the regular master/development version, but with the W.I.P. custom fly-by-wire, autopilot and autothrust system. Expect issues with autopilot, engines, autothrust and the PFD if you intend to use this version. No support will be provided via Discord.
 
 [Download custom autopilot development build here.](https://api.flybywiresim.com/api/v1/download?url=https://flybywiresim-packages.b-cdn.net/vmaster-cfbw-cap/A32NX-master-cfbw-cap.zip)
 
@@ -68,15 +70,15 @@ Open the zip that you downloaded from one of the links above, and drag the A32NX
 See below for the location of your Community folder:
 
 For the Microsoft Store edition AND/OR Gamepass edition:
-- Copy the "A32NX" folder into your community package folder. It is located in:
+- Copy the "A32NX" folder into your community package folder. The folder is located in:
 `C:\Users\[YOUR USERNAME]\AppData\Local\Packages\Microsoft.FlightSimulator_<RANDOMLETTERS>\LocalCache\Packages\Community`.
 
 For the Steam edition:
-- Copy the "A32NX" folder into your community package folder. It is located in:
+- Copy the "A32NX" folder into your community package folder. The folder is located in:
 `C:\Users\[YOUR USERNAME]\AppData\Roaming\Microsoft Flight Simulator\Packages\Community`.
 
 For the Boxed edition:
-- Copy the "A32NX" folder into your community package folder. It is located in:
+- Copy the "A32NX" folder into your community package folder. The folder is located in:
 `C:\Users\[YOUR USERNAME]\AppData\Local\MSFSPackages\Community`.
 
 If the above methods do not work:
@@ -96,9 +98,9 @@ See [Contributing.md](.github/Contributing.md)
 - Autopilot goes direct to RWY on APP (same with the default A320) [Workaround: Use DIR to a waypoint or selected heading]
 - Upper ECAM displays wrong THR levers position / N1 rating.
 - Newly added ASOBO A320 liveries are incompatible with the A32NX mod.
-- Ruder keybindings not working (you have to set your keybinding to rudder axis right and left)
+- Rudder keybindings not working (you have to set your keybinding to rudder axis right and left)
 - Wing dips on landing (due to bad transition to direct law in flare, same with the default A320)  [Workaround use minimal aileron input on landing]
-- Black screens / unable to start (conflict with another mod/livery or incorrect installation of the A32NX mod, use the [installer](https://api.flybywiresim.com/installer))
+- Black screens/unable to start (conflict with another mod/livery or incorrect installation of the A32NX mod, use the [installer](https://api.flybywiresim.com/installer))
 
 ## License
 
@@ -114,7 +116,7 @@ Any other original works found to be not explicitly covered by the above definit
 
 **Q: Can I download the aircraft in the current state?**
 
-A: Yes, see [Downloads](#Downloads).
+A: Yes, please seek [Downloads](#Downloads).
 
 **Q: Where is the plane in-sim?**
 
@@ -130,7 +132,7 @@ A: The project is an ongoing rolling release. See [Downloads](#Downloads).
 
 **Q: When is the next update?**
 
-A: We don't know, since it depends on many factors. We will announce each Stable build update via [discord](https://discord.gg/flybywire) and our social media: [Facebook](https://www.facebook.com/FlyByWireSimulations), [Twitter](https://twitter.com/FlybywireSim).
+A: We don't know, since it depends on many factors. We will announce each Stable build update via [Discord](https://discord.gg/flybywire) and our social media: [Facebook](https://www.facebook.com/FlyByWireSimulations), [Twitter](https://twitter.com/FlybywireSim).
 
 **Q: How do I join the team?**
 
@@ -142,8 +144,8 @@ A: No, it is a completely free aircraft, open-source.
 
 **Q: How do we report bugs?**
 
-A: Report bugs to us in the [Discord server](https://discord.gg/flybywire), under the #help channel, or by creating a GitHub issue. Just make sure to search for existing issues first before creating a new one.
+A: You can report bugs to us via the [#help channel](https://discord.gg/snueqJjDUN). Addtionally, you can start/create a GitHub issue (please make sure your issue is not already known and the same as another user). 
 
 **Q: Why is my version not the same as what I see others using?**
 
-A: We have two versions, the Stable and Developer (Master). The Stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The Developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time. If you find this to be the case, you can report these issues in #help in discord or via GitHub Issues (Check there is not an existing issue of the same nature as yours).
+A: We have two versions, the Stable and Developer (Master). The Stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The Developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time. If you find this to be the case, you can report these issues in [#help](https://discord.gg/snueqJjDUN) in Discord or via GitHub Issues (check there is not an existing issue of the same nature as yours).
