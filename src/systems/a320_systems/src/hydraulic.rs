@@ -158,6 +158,7 @@ impl A320Hydraulic {
         engine1: &Engine,
         engine2: &Engine,
         overhead_panel: &A320HydraulicOverheadPanel,
+        engine_fire_overhead: &A320EngineFireOverheadPanel,
     ) {
         let min_hyd_loop_timestep = Duration::from_millis(A320Hydraulic::HYDRAULIC_SIM_TIME_STEP); //Hyd Sim rate = 10 Hz
 
@@ -200,6 +201,7 @@ impl A320Hydraulic {
                     engine1,
                     engine2,
                     overhead_panel,
+                    engine_fire_overhead,
                     &min_hyd_loop_timestep,
                 );
             }
@@ -229,10 +231,16 @@ impl A320Hydraulic {
         engine1: &Engine,
         engine2: &Engine,
         overhead_panel: &A320HydraulicOverheadPanel,
+        engine_fire_overhead: &A320EngineFireOverheadPanel,
         min_hyd_loop_timestep: &Duration,
     ) {
         // Base logic update based on overhead Could be done only once (before that loop) but if so delta time should be set accordingly
-        self.update_logic(&min_hyd_loop_timestep, overhead_panel, context);
+        self.update_logic(
+            &min_hyd_loop_timestep,
+            overhead_panel,
+            engine_fire_overhead,
+            context,
+        );
 
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.hyd_brake_logic
@@ -287,6 +295,7 @@ impl A320Hydraulic {
         &mut self,
         delta_time_update: &Duration,
         overhead_panel: &A320HydraulicOverheadPanel,
+        engine_fire_overhead: &A320EngineFireOverheadPanel,
         context: &UpdateContext,
     ) {
         self.update_external_cond(&delta_time_update);
@@ -297,7 +306,7 @@ impl A320Hydraulic {
 
         self.update_rat_deploy(context);
 
-        self.update_ed_pump_states(overhead_panel);
+        self.update_ed_pump_states(overhead_panel, engine_fire_overhead);
 
         self.update_e_pump_states(overhead_panel);
 
@@ -373,10 +382,14 @@ impl A320Hydraulic {
         }
     }
 
-    fn update_ed_pump_states(&mut self, overhead_panel: &A320HydraulicOverheadPanel) {
+    fn update_ed_pump_states(
+        &mut self,
+        overhead_panel: &A320HydraulicOverheadPanel,
+        engine_fire_overhead: &A320EngineFireOverheadPanel,
+    ) {
         if overhead_panel.edp1_push_button.is_auto()
             && self.hyd_logic_inputs.eng_1_master_on
-            && !overhead_panel.eng1_fire_pb.is_released()
+            && !engine_fire_overhead.eng1_fire_pb.is_released()
         {
             self.engine_driven_pump_1.start();
         } else if overhead_panel.edp1_push_button.is_off() {
@@ -384,7 +397,7 @@ impl A320Hydraulic {
         }
 
         //FIRE valves logic for EDP1
-        if overhead_panel.eng1_fire_pb.is_released() {
+        if engine_fire_overhead.eng1_fire_pb.is_released() {
             self.engine_driven_pump_1.stop();
             self.green_loop.set_fire_shutoff_valve_state(false);
         } else {
@@ -393,7 +406,7 @@ impl A320Hydraulic {
 
         if overhead_panel.edp2_push_button.is_auto()
             && self.hyd_logic_inputs.eng_2_master_on
-            && !overhead_panel.eng2_fire_pb.is_released()
+            && !engine_fire_overhead.eng2_fire_pb.is_released()
         {
             self.engine_driven_pump_2.start();
         } else if overhead_panel.edp2_push_button.is_off() {
@@ -401,7 +414,7 @@ impl A320Hydraulic {
         }
 
         //FIRE valves logic for EDP2
-        if overhead_panel.eng2_fire_pb.is_released() {
+        if engine_fire_overhead.eng2_fire_pb.is_released() {
             self.engine_driven_pump_2.stop();
             self.yellow_loop.set_fire_shutoff_valve_state(false);
         } else {
@@ -742,8 +755,6 @@ pub struct A320HydraulicOverheadPanel {
     pub rat_push_button: AutoOffFaultPushButton,
     pub yellow_epump_push_button: AutoOnFaultPushButton,
     pub blue_epump_override_push_button: OnOffFaultPushButton,
-    pub eng1_fire_pb: FirePushButton,
-    pub eng2_fire_pb: FirePushButton,
 }
 
 impl A320HydraulicOverheadPanel {
@@ -756,8 +767,6 @@ impl A320HydraulicOverheadPanel {
             rat_push_button: AutoOffFaultPushButton::new_off("HYD_RAT"),
             yellow_epump_push_button: AutoOnFaultPushButton::new_auto("HYD_EPUMPY"),
             blue_epump_override_push_button: OnOffFaultPushButton::new_off("HYD_EPUMPY_OVRD"),
-            eng1_fire_pb: FirePushButton::new("ENG1"),
-            eng2_fire_pb: FirePushButton::new("ENG2"),
         }
     }
 
@@ -782,6 +791,27 @@ impl SimulationElement for A320HydraulicOverheadPanel {
         self.rat_push_button.accept(visitor);
         self.yellow_epump_push_button.accept(visitor);
         self.blue_epump_override_push_button.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+pub struct A320EngineFireOverheadPanel {
+    pub eng1_fire_pb: FirePushButton,
+    pub eng2_fire_pb: FirePushButton,
+}
+
+impl A320EngineFireOverheadPanel {
+    pub fn new() -> A320EngineFireOverheadPanel {
+        A320EngineFireOverheadPanel {
+            eng1_fire_pb: FirePushButton::new("ENG1"),
+            eng2_fire_pb: FirePushButton::new("ENG2"),
+        }
+    }
+}
+
+impl SimulationElement for A320EngineFireOverheadPanel {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.eng1_fire_pb.accept(visitor);
         self.eng2_fire_pb.accept(visitor);
 
@@ -826,6 +856,7 @@ mod tests {
             engine_2: Engine,
             hydraulics: A320Hydraulic,
             overhead: A320HydraulicOverheadPanel,
+            engine_fire_overhead: A320EngineFireOverheadPanel,
         }
         impl A320HydraulicsTestAircraft {
             fn new() -> Self {
@@ -834,6 +865,7 @@ mod tests {
                     engine_2: Engine::new(2),
                     hydraulics: A320Hydraulic::new(),
                     overhead: A320HydraulicOverheadPanel::new(),
+                    engine_fire_overhead: A320EngineFireOverheadPanel::new(),
                 }
             }
 
@@ -871,8 +903,13 @@ mod tests {
 
         impl Aircraft for A320HydraulicsTestAircraft {
             fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-                self.hydraulics
-                    .update(context, &self.engine_1, &self.engine_2, &self.overhead);
+                self.hydraulics.update(
+                    context,
+                    &self.engine_1,
+                    &self.engine_2,
+                    &self.overhead,
+                    &self.engine_fire_overhead,
+                );
 
                 self.overhead.update_pb_faults(&self.hydraulics);
             }
@@ -881,6 +918,7 @@ mod tests {
             fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
                 self.hydraulics.accept(visitor);
                 self.overhead.accept(visitor);
+                self.engine_fire_overhead.accept(visitor);
 
                 visitor.visit(self);
             }
