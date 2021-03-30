@@ -116,18 +116,22 @@
     <Template Name="FBW_MCDU_SLEW_KEYS_Template">
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
             <BASE_NAME>DARROW</BASE_NAME>
+            <LEFT_SINGLE_CODE_BTN_NAME>DOWN</LEFT_SINGLE_CODE_BTN_NAME>
         </UseTemplate>
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
             <BASE_NAME>UARROW</BASE_NAME>
+            <LEFT_SINGLE_CODE_BTN_NAME>UP</LEFT_SINGLE_CODE_BTN_NAME>
         </UseTemplate>
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
             <BASE_NAME>LARROW</BASE_NAME>
+            <LEFT_SINGLE_CODE_BTN_NAME>PREVPAGE</LEFT_SINGLE_CODE_BTN_NAME>
         </UseTemplate>
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
             <BASE_NAME>RARROW</BASE_NAME>
+            <LEFT_SINGLE_CODE_BTN_NAME>NEXTPAGE</LEFT_SINGLE_CODE_BTN_NAME>
         </UseTemplate>
     </Template>
 
@@ -292,6 +296,7 @@
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
             <BASE_NAME>SLASH</BASE_NAME>
+            <LEFT_SINGLE_CODE_BTN_NAME>DIV</LEFT_SINGLE_CODE_BTN_NAME>
         </UseTemplate>
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
@@ -306,6 +311,7 @@
     <Template Name="FBW_MCDU_BUTTON_Template">
         <DefaultTemplateParameters>
             <NODE_ID>PUSH_MCDU#SIDE#_#BASE_NAME#</NODE_ID>
+            <LEFT_SINGLE_CODE_BTN_NAME>#BASE_NAME#</LEFT_SINGLE_CODE_BTN_NAME>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -318,7 +324,7 @@
                 <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-                <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_CDU_#SIDE_NUMERIC#_BTN_#BASE_NAME#)</LEFT_SINGLE_CODE>
+                <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_CDU_#SIDE_NUMERIC#_BTN_#LEFT_SINGLE_CODE_BTN_NAME#)</LEFT_SINGLE_CODE>
             </UseTemplate>
         </Component>
     </Template>
