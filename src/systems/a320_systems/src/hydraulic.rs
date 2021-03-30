@@ -488,12 +488,12 @@ impl SimulationElement for A320Hydraulic {
 pub struct A320HydraulicBrakingLogic {
     parking_brake_demand: bool,
     weight_on_wheels: bool,
-    left_brake_command: f64,
-    right_brake_command: f64,
-    left_brake_green_command: f64, //Actual command sent to left green circuit
-    left_brake_yellow_command: f64, //Actual command sent to left yellow circuit
-    right_brake_green_command: f64, //Actual command sent to right green circuit
-    right_brake_yellow_command: f64, //Actual command sent to right yellow circuit
+    left_brake_pilot_input: f64,
+    right_brake_pilot_input: f64,
+    left_brake_green_output: f64,
+    left_brake_yellow_output: f64,
+    right_brake_green_output: f64,
+    right_brake_yellow_output: f64,
     anti_skid_activated: bool,
     autobrakes_setting: u8,
 }
@@ -508,12 +508,12 @@ impl A320HydraulicBrakingLogic {
         A320HydraulicBrakingLogic {
             parking_brake_demand: true, //Position of parking brake lever
             weight_on_wheels: true,
-            left_brake_command: 1.0,         //Command read from pedals
-            right_brake_command: 1.0,        //Command read from pedals
-            left_brake_green_command: 0.0,   //Actual command sent to left green circuit
-            left_brake_yellow_command: 1.0,  //Actual command sent to left yellow circuit
-            right_brake_green_command: 0.0,  //Actual command sent to right green circuit
-            right_brake_yellow_command: 1.0, //Actual command sent to right yellow circuit
+            left_brake_pilot_input: 1.0,    // read from brake pedals
+            right_brake_pilot_input: 1.0,   // read from brake pedals
+            left_brake_green_output: 0.0,   //Actual command sent to left green circuit
+            left_brake_yellow_output: 1.0, //Actual command sent to left yellow circuit. Init 1 as considering park brake on on init
+            right_brake_green_output: 0.0, //Actual command sent to right green circuit
+            right_brake_yellow_output: 1.0, //Actual command sent to right yellow circuit. Init 1 as considering park brake on on init
             anti_skid_activated: true,
             autobrakes_setting: 0,
         }
@@ -531,59 +531,59 @@ impl A320HydraulicBrakingLogic {
             A320HydraulicBrakingLogic::PARK_BRAKE_DEMAND_DYNAMIC * delta_time_update.as_secs_f64();
 
         if green_used_for_brakes {
-            self.left_brake_green_command = A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND
-                * self.left_brake_command
+            self.left_brake_green_output = A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND
+                * self.left_brake_pilot_input
                 + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
-                    * self.left_brake_green_command;
-            self.right_brake_green_command =
-                A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND * self.right_brake_command
-                    + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
-                        * self.right_brake_green_command;
+                    * self.left_brake_green_output;
+            self.right_brake_green_output = A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND
+                * self.right_brake_pilot_input
+                + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
+                    * self.right_brake_green_output;
 
-            self.left_brake_yellow_command -= dynamic_increment;
-            self.right_brake_yellow_command -= dynamic_increment;
+            self.left_brake_yellow_output -= dynamic_increment;
+            self.right_brake_yellow_output -= dynamic_increment;
         } else {
             if !self.parking_brake_demand {
                 //Normal braking but using alternate circuit
-                self.left_brake_yellow_command =
+                self.left_brake_yellow_output =
                     A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND
-                        * self.left_brake_command
+                        * self.left_brake_pilot_input
                         + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
-                            * self.left_brake_yellow_command;
-                self.right_brake_yellow_command =
+                            * self.left_brake_yellow_output;
+                self.right_brake_yellow_output =
                     A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND
-                        * self.right_brake_command
+                        * self.right_brake_pilot_input
                         + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
-                            * self.right_brake_yellow_command;
+                            * self.right_brake_yellow_output;
                 if !self.anti_skid_activated {
-                    self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.5); //0.5 is temporary implementation of pressure limitation around 1000psi
-                    self.right_brake_yellow_command = self.right_brake_yellow_command.min(0.5);
+                    self.left_brake_yellow_output = self.left_brake_yellow_output.min(0.5); //0.5 is temporary implementation of pressure limitation around 1000psi
+                    self.right_brake_yellow_output = self.right_brake_yellow_output.min(0.5);
                     //0.5 is temporary implementation of pressure limitation around 1000psi
                 }
             } else {
                 //Else we just use parking brake
-                self.left_brake_yellow_command += dynamic_increment;
-                self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.7); //0.7 is temporary implementation of pressure limitation around 2000psi for parking brakes
-                self.right_brake_yellow_command += dynamic_increment;
-                self.right_brake_yellow_command = self.right_brake_yellow_command.min(0.7);
+                self.left_brake_yellow_output += dynamic_increment;
+                self.left_brake_yellow_output = self.left_brake_yellow_output.min(0.7); //0.7 is temporary implementation of pressure limitation around 2000psi for parking brakes
+                self.right_brake_yellow_output += dynamic_increment;
+                self.right_brake_yellow_output = self.right_brake_yellow_output.min(0.7);
                 //0.7 is temporary implementation of pressure limitation around 2000psi for parking brakes
             }
-            self.left_brake_green_command -= dynamic_increment;
-            self.right_brake_green_command -= dynamic_increment;
+            self.left_brake_green_output -= dynamic_increment;
+            self.right_brake_green_output -= dynamic_increment;
         }
 
         //limiting final values
-        self.left_brake_yellow_command = self.left_brake_yellow_command.min(1.).max(0.);
-        self.right_brake_yellow_command = self.right_brake_yellow_command.min(1.).max(0.);
-        self.left_brake_green_command = self.left_brake_green_command.min(1.).max(0.);
-        self.right_brake_green_command = self.right_brake_green_command.min(1.).max(0.);
+        self.left_brake_yellow_output = self.left_brake_yellow_output.min(1.).max(0.);
+        self.right_brake_yellow_output = self.right_brake_yellow_output.min(1.).max(0.);
+        self.left_brake_green_output = self.left_brake_green_output.min(1.).max(0.);
+        self.right_brake_green_output = self.right_brake_green_output.min(1.).max(0.);
     }
 
     pub fn send_brake_demands(&mut self, norm: &mut BrakeCircuit, altn: &mut BrakeCircuit) {
-        norm.set_brake_demand_left(self.left_brake_green_command);
-        norm.set_brake_demand_right(self.right_brake_green_command);
-        altn.set_brake_demand_left(self.left_brake_yellow_command);
-        altn.set_brake_demand_right(self.right_brake_yellow_command);
+        norm.set_brake_demand_left(self.left_brake_green_output);
+        norm.set_brake_demand_right(self.right_brake_green_output);
+        altn.set_brake_demand_left(self.left_brake_yellow_output);
+        altn.set_brake_demand_right(self.right_brake_yellow_output);
     }
 }
 
@@ -596,8 +596,8 @@ impl SimulationElement for A320HydraulicBrakingLogic {
         self.parking_brake_demand = state.read_bool("BRAKE PARKING INDICATOR");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
         self.anti_skid_activated = state.read_bool("ANTISKID BRAKES ACTIVE");
-        self.left_brake_command = state.read_f64("BRAKE LEFT POSITION") / 100.0;
-        self.right_brake_command = state.read_f64("BRAKE RIGHT POSITION") / 100.0;
+        self.left_brake_pilot_input = state.read_f64("BRAKE LEFT POSITION") / 100.0;
+        self.right_brake_pilot_input = state.read_f64("BRAKE RIGHT POSITION") / 100.0;
         self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
     }
 }
