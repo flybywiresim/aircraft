@@ -236,6 +236,7 @@
 1. [RMP] Fixed ACP CALL buttons emissive behavior - @ImenesFBW (Imenes)
 1. [TEXTURE] Fixed decal clipping issues on the overhead fuel panel - @ImenesFBW (Imenes)
 1. [ECAM] Refactor flight control page to use React - @RichardPilbery (tricky_dicky#3571)
+
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
 1. [CDU] Two tiny fixes for flightphase speeds - @Watsi01 (RogePete)

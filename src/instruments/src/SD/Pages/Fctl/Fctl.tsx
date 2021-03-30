@@ -69,7 +69,6 @@ export const FctlPage = () => {
 
     useEffect(() => {
         setRudderAngle(-rudderDeflectionState * 25);
-        console.log(`Rudder ${rudderAngle}`);
     }, [rudderDeflectionState]);
 
     // Update rudder limits
@@ -186,7 +185,6 @@ export const FctlPage = () => {
                     alignmentBaseline="central"
                 >
                     F/CTL
-
                 </text>
 
                 {/* Speedbrakes */}
@@ -251,7 +249,6 @@ export const FctlPage = () => {
                         alignmentBaseline="central"
                     >
                         ELAC
-
                     </text>
                     <ElacSecShape
                         id="elac1"
@@ -452,7 +449,6 @@ export const FctlPage = () => {
                 </g>
             </svg>
         </>
-
     );
 };
 
@@ -716,8 +712,6 @@ type SpoilerProps = {
 const Spoiler = ({ index, leftorright, x, y, yw, hydAvail, speedbrake, spoilerpos, ailpos, spoilersArmed } : SpoilerProps) => {
     let showspoiler = false;
     let hydraulicsAvailable = false;
-    console.log(`Spoiler side ${leftorright} index ${index} is ${ailpos}`);
-
     if (index === 1) {
         showspoiler = !!(spoilersArmed && spoilerpos > 0.07);
     } else if (index === 5) {

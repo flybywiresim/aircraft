@@ -41,6 +41,10 @@ const extraInstruments = [
         path: 'SD/Pages/Door',
     },
     {
+        name: 'cond-page',
+        path: 'SD/Pages/Cond',
+    },
+    {
         name: 'fctl-page',
         path: 'SD/Pages/Fctl',
     },
