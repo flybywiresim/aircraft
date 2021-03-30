@@ -1519,7 +1519,7 @@
 						<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="0"/>
 						<Property Name="Volume" Type="Real64">
 							<ValueList>
-								<Value>9</Value>
+								<Value>5</Value>
 							</ValueList>
 						</Property>
 					</PropertyList>
@@ -1657,8 +1657,8 @@
 					<ChildrenList>
 						<AudioFileSource Name="flaps1" ID="{CCB56885-B74E-4929-88C1-74B887106627}">
 							<PropertyList>
-								<Property Name="LoopBegin" Type="Real64" Value="1.45869042961969"/>
-								<Property Name="LoopEnd" Type="Real64" Value="7.67780867537456"/>
+								<Property Name="LoopBegin" Type="Real64" Value="3.71359146961473"/>
+								<Property Name="LoopEnd" Type="Real64" Value="5.1533731988716"/>
 								<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
 								<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
 								<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
@@ -10201,7 +10201,7 @@
 						<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="20"/>
 						<Property Name="Volume" Type="Real64">
 							<ValueList>
-								<Value>15</Value>
+								<Value>18</Value>
 							</ValueList>
 							<RTPCList>
 								<RTPC Name="" ID="{458B321F-2F25-4469-9385-C4ACD86DE110}" ShortID="489899398">
@@ -15123,7 +15123,7 @@
 								<StateRef Name="INSIDE" ID="{FFECDB48-6798-4725-AB04-DCC845B2904E}"/>
 								<CustomState Name="" ID="{7A9BF576-1CAC-44F9-A8EB-D7412535529E}" ShortID="320689101">
 									<PropertyList>
-										<Property Name="Volume" Type="Real64" Value="-10"/>
+										<Property Name="Volume" Type="Real64" Value="-108"/>
 									</PropertyList>
 								</CustomState>
 							</CustomState>
@@ -15464,7 +15464,7 @@
 								<StateRef Name="INSIDE" ID="{FFECDB48-6798-4725-AB04-DCC845B2904E}"/>
 								<CustomState Name="" ID="{93B031BF-9CE5-4EC5-B9F7-92F9E9089A7A}" ShortID="433558719">
 									<PropertyList>
-										<Property Name="Volume" Type="Real64" Value="-10"/>
+										<Property Name="Volume" Type="Real64" Value="-108"/>
 									</PropertyList>
 								</CustomState>
 							</CustomState>
@@ -17894,7 +17894,7 @@
 								<StateRef Name="INSIDE" ID="{FFECDB48-6798-4725-AB04-DCC845B2904E}"/>
 								<CustomState Name="" ID="{F1AC4B6F-B04A-4C53-B5AA-7F1E8BF2078D}" ShortID="280787625">
 									<PropertyList>
-										<Property Name="Volume" Type="Real64" Value="-10"/>
+										<Property Name="Volume" Type="Real64" Value="-108"/>
 									</PropertyList>
 								</CustomState>
 							</CustomState>
@@ -18237,7 +18237,7 @@
 								<StateRef Name="INSIDE" ID="{FFECDB48-6798-4725-AB04-DCC845B2904E}"/>
 								<CustomState Name="" ID="{3C7BF95D-DAA6-4777-9E62-4D13CBF210CB}" ShortID="629160988">
 									<PropertyList>
-										<Property Name="Volume" Type="Real64" Value="-10"/>
+										<Property Name="Volume" Type="Real64" Value="-108"/>
 									</PropertyList>
 								</CustomState>
 							</CustomState>
@@ -18262,7 +18262,7 @@
 						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
 						<Property Name="Volume" Type="Real64">
 							<ValueList>
-								<Value>15</Value>
+								<Value>20</Value>
 							</ValueList>
 							<RTPCList>
 								<RTPC Name="" ID="{D397C804-3BF9-465C-BB58-3133C1EBE1D8}" ShortID="556513446">
@@ -18552,7 +18552,7 @@
 								<StateRef Name="INSIDE" ID="{FFECDB48-6798-4725-AB04-DCC845B2904E}"/>
 								<CustomState Name="" ID="{9AEC6F22-4553-40F9-B5C5-EABE7F43A730}" ShortID="553928557">
 									<PropertyList>
-										<Property Name="Volume" Type="Real64" Value="-2"/>
+										<Property Name="Volume" Type="Real64" Value="-6"/>
 									</PropertyList>
 								</CustomState>
 							</CustomState>
@@ -18577,7 +18577,7 @@
 						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
 						<Property Name="Volume" Type="Real64">
 							<ValueList>
-								<Value>15</Value>
+								<Value>20</Value>
 							</ValueList>
 							<RTPCList>
 								<RTPC Name="" ID="{66B5AF36-7F1F-4820-AF83-EB98F3D0E388}" ShortID="297323757">
@@ -18867,7 +18867,7 @@
 								<StateRef Name="INSIDE" ID="{FFECDB48-6798-4725-AB04-DCC845B2904E}"/>
 								<CustomState Name="" ID="{24B09989-C405-4B93-B473-0B5D36A4F203}" ShortID="375715791">
 									<PropertyList>
-										<Property Name="Volume" Type="Real64" Value="-2"/>
+										<Property Name="Volume" Type="Real64" Value="-6"/>
 									</PropertyList>
 								</CustomState>
 							</CustomState>
@@ -20109,6 +20109,8 @@
 						<ActorMixer Name="RA" ID="{8DE6625D-819F-481B-802E-08E83F186AEA}" ShortID="467540598">
 							<PropertyList>
 								<Property Name="3DSpatialization" Type="int16" Value="2"/>
+								<Property Name="SpeakerPanning" Type="int16" Value="1"/>
+								<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="0"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Attenuation">
@@ -20276,6 +20278,366 @@
 									<ObjectRef Name="warning_inside" ID="{4BCCE09B-10CD-460C-9056-AC161C7B29DD}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
 								</Reference>
 							</ReferenceList>
+							<ChildrenList>
+								<Sound Name="5" ID="{C7D98D8C-1C02-417A-99F8-937A3E4EC65C}" ShortID="438013894">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="5" ID="{1168C21C-1302-4DBB-876E-04D13165E29D}">
+											<PropertyList>
+												<Property Name="FadeInDuration" Type="Real64" Value="0.189752394466123"/>
+												<Property Name="FadeOutDuration" Type="Real64" Value="0.140441291238028"/>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>5.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="5" ID="{1168C21C-1302-4DBB-876E-04D13165E29D}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+								<Sound Name="10" ID="{D3525B53-0646-4747-9E72-F2A215F3F884}" ShortID="476031944">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="10" ID="{A0579A68-5CB0-4DAB-B966-0971403B50CF}">
+											<PropertyList>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>10.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="10" ID="{A0579A68-5CB0-4DAB-B966-0971403B50CF}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+								<Sound Name="20" ID="{A10C7301-7EE8-4DBA-8553-863E10CA474D}" ShortID="583591391">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="20" ID="{FD5ED956-5C30-453C-99D7-04C58256C9B5}">
+											<PropertyList>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>20.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="20" ID="{FD5ED956-5C30-453C-99D7-04C58256C9B5}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+								<Sound Name="30" ID="{4C5EF2A3-3656-4A2D-BB4E-DF8F27FE7E35}" ShortID="102122513">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="30" ID="{A9BEE96E-6024-48FC-B8F1-3B619E503A0C}">
+											<PropertyList>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>30.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="30" ID="{A9BEE96E-6024-48FC-B8F1-3B619E503A0C}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+								<Sound Name="40" ID="{126F7CFA-1F7D-4466-AC90-2F28BEA52A47}" ShortID="679428682">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="40" ID="{ED824CDB-DE9C-478B-B05B-5342374EBAD8}">
+											<PropertyList>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>40.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="40" ID="{ED824CDB-DE9C-478B-B05B-5342374EBAD8}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+								<Sound Name="50" ID="{FC04EC40-BE8F-4734-91E0-945E3D40BF09}" ShortID="810747633">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="50" ID="{A6DCA757-34FD-4F0C-8210-A661E66AC46F}">
+											<PropertyList>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>50.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="50" ID="{A6DCA757-34FD-4F0C-8210-A661E66AC46F}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+								<Sound Name="100" ID="{5A31045E-DADA-4932-B431-5C27EE7F90B0}" ShortID="459430955">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="100" ID="{9AF3B862-9A87-4B2D-BF89-514EFFE8B536}">
+											<PropertyList>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>100.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="100" ID="{9AF3B862-9A87-4B2D-BF89-514EFFE8B536}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+								<Sound Name="200" ID="{913DD85C-EEEF-49B5-8AA1-181C9E4887F0}" ShortID="428673878">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="200" ID="{03A0C54F-0F51-4C4B-92C8-FDD15D13A378}">
+											<PropertyList>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>200.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="200" ID="{03A0C54F-0F51-4C4B-92C8-FDD15D13A378}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+								<Sound Name="300" ID="{25DA864A-D9E5-423D-A6DE-06F9AF645027}" ShortID="920976247">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="300" ID="{1E81B9D0-74B5-48F3-A13B-17AD93C3AF3F}">
+											<PropertyList>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>300.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="300" ID="{1E81B9D0-74B5-48F3-A13B-17AD93C3AF3F}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+								<Sound Name="400" ID="{B5C3788E-EF4D-48E5-8148-33F87783F6DB}" ShortID="806113409">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="400" ID="{EC52EB81-2A01-4FEA-B55B-B93ABCAFB17A}">
+											<PropertyList>
+												<Property Name="FadeOutDuration" Type="Real64" Value="0.0631713373536715"/>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>400.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="400" ID="{EC52EB81-2A01-4FEA-B55B-B93ABCAFB17A}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+								<Sound Name="500" ID="{6FFDBA41-4C2B-4D44-9F52-404388C5339A}" ShortID="150677006">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="500" ID="{33BB763C-68C5-4ECB-9EBF-1BC7829FFF52}">
+											<PropertyList>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>500.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="500" ID="{33BB763C-68C5-4ECB-9EBF-1BC7829FFF52}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+								<Sound Name="2500" ID="{E4A299EF-078F-4742-B403-CFA99AA15153}" ShortID="167663880">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="2500" ID="{FA4F7CE9-12B3-4185-9600-089FB5BF9102}">
+											<PropertyList>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>2500.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="2500" ID="{FA4F7CE9-12B3-4185-9600-089FB5BF9102}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+								<Sound Name="retard" ID="{A4CCE2B1-F68C-4F85-89D0-0D4761DB440D}" ShortID="922234522">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="retard" ID="{916EA394-7B2B-4E48-8D01-F2D9AFF08821}">
+											<PropertyList>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>retard.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="retard" ID="{916EA394-7B2B-4E48-8D01-F2D9AFF08821}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+								<Sound Name="1000" ID="{A7583117-3B0D-4B5C-B2CE-239A3BF2B2E4}" ShortID="505030853">
+									<ReferenceList>
+										<Reference Name="Conversion">
+											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+										</Reference>
+										<Reference Name="OutputBus">
+											<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+										</Reference>
+									</ReferenceList>
+									<ChildrenList>
+										<AudioFileSource Name="1000" ID="{88CA2BB1-A484-4E5B-9A48-F210A7B70CF8}">
+											<PropertyList>
+												<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+												<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+											</PropertyList>
+											<Language>SFX</Language>
+											<AudioFile>1000.wav</AudioFile>
+										</AudioFileSource>
+									</ChildrenList>
+									<ActiveSourceList>
+										<ActiveSource Name="1000" ID="{88CA2BB1-A484-4E5B-9A48-F210A7B70CF8}" Platform="Linked"/>
+									</ActiveSourceList>
+								</Sound>
+							</ChildrenList>
+							<PositioningInfo>
+								<Panner Name="" ID="{79DB2E19-AFDF-4A97-88EF-36248C56480C}"/>
+							</PositioningInfo>
 							<StateInfo>
 								<StateGroupList>
 									<StateGroupInfo>
@@ -20305,7 +20667,7 @@
 						<Property Name="3DSpatialization" Type="int16" Value="2"/>
 						<Property Name="Volume" Type="Real64">
 							<ValueList>
-								<Value>5</Value>
+								<Value>10</Value>
 							</ValueList>
 							<RTPCList>
 								<RTPC Name="" ID="{F09B881B-B05B-4A8B-B005-DB9F8CF4F778}" ShortID="92811551">
@@ -20596,7 +20958,7 @@
 								<StateRef Name="INSIDE" ID="{FFECDB48-6798-4725-AB04-DCC845B2904E}"/>
 								<CustomState Name="" ID="{ABC75C5E-8F0A-4846-87A4-34243E126749}" ShortID="268577321">
 									<PropertyList>
-										<Property Name="Volume" Type="Real64" Value="-2"/>
+										<Property Name="Volume" Type="Real64" Value="-6"/>
 									</PropertyList>
 								</CustomState>
 							</CustomState>
@@ -20615,7 +20977,7 @@
 						<Property Name="3DSpatialization" Type="int16" Value="2"/>
 						<Property Name="Volume" Type="Real64">
 							<ValueList>
-								<Value>5</Value>
+								<Value>10</Value>
 							</ValueList>
 							<RTPCList>
 								<RTPC Name="" ID="{B0FD0173-31CC-4EDB-BCAE-6D656506A1AD}" ShortID="505441047">
@@ -20906,7 +21268,7 @@
 								<StateRef Name="INSIDE" ID="{FFECDB48-6798-4725-AB04-DCC845B2904E}"/>
 								<CustomState Name="" ID="{BB84950B-BA37-462D-916B-F2EB34F9E08C}" ShortID="904289254">
 									<PropertyList>
-										<Property Name="Volume" Type="Real64" Value="-2"/>
+										<Property Name="Volume" Type="Real64" Value="-6"/>
 									</PropertyList>
 								</CustomState>
 							</CustomState>
@@ -21423,6 +21785,38 @@
 							<ValueList>
 								<Value>-17</Value>
 							</ValueList>
+							<RTPCList>
+								<RTPC Name="" ID="{40AC3207-EF89-4975-ABC9-04AEB58A717A}" ShortID="216100679">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="SIMVAR_TURB_ENG_N1" ID="{23BAD005-E61B-45C7-9ADA-EB168F71B891}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{46F03F34-3BB7-43F0-89A8-170F3AF4BB22}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>-0.5</YPos>
+												<Flags>5</Flags>
+												<SegmentShape>Log2</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>60.733</XPos>
+												<YPos>-200</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>200</XPos>
+												<YPos>-200</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
 						</Property>
 					</PropertyList>
 					<ReferenceList>
@@ -21646,6 +22040,38 @@
 							<ValueList>
 								<Value>-17</Value>
 							</ValueList>
+							<RTPCList>
+								<RTPC Name="" ID="{88AE4123-8521-4F2E-8A49-139ACCA40906}" ShortID="440834521">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="SIMVAR_TURB_ENG_N1" ID="{23BAD005-E61B-45C7-9ADA-EB168F71B891}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{95FAFA49-07A0-4D44-B7CD-08B53860D9AE}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>-0.5</YPos>
+												<Flags>5</Flags>
+												<SegmentShape>Log2</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>60.733</XPos>
+												<YPos>-200</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>200</XPos>
+												<YPos>-200</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
 						</Property>
 					</PropertyList>
 					<ReferenceList>
