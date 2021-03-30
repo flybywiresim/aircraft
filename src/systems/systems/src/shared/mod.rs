@@ -88,6 +88,32 @@ pub(crate) fn calculate_towards_target_temperature(
     }
 }
 
+// Interpolate values_map_y at point value_at_point in breakpoints break_points_x
+pub(crate) fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
+    debug_assert!(xs.len() == ys.len());
+    debug_assert!(xs.len() >= 2);
+    debug_assert!(ys.len() >= 2);
+    // The function also assumes xs are ordered from small to large. Consider adding a debug_assert! for that as well.
+
+    if intermediate_x <= xs[0] {
+        *ys.first().unwrap()
+    } else if intermediate_x >= xs[xs.len() - 1] {
+        *ys.last().unwrap()
+    } else {
+        let mut idx: usize = 1;
+
+        while idx < xs.len() - 1 {
+            if intermediate_x < xs[idx] {
+                break;
+            }
+            idx += 1;
+        }
+
+        ys[idx - 1]
+            + (intermediate_x - xs[idx - 1]) / (xs[idx] - xs[idx - 1]) * (ys[idx] - ys[idx - 1])
+    }
+}
+
 #[cfg(test)]
 mod delayed_true_logic_gate_tests {
     use super::*;
@@ -185,10 +211,72 @@ mod delayed_true_logic_gate_tests {
 }
 
 #[cfg(test)]
-mod calculate_towards_target_temperature_tests {
-    use ntest::assert_about_eq;
-
+mod interpolation_tests {
     use super::*;
+
+    const XS1: [f64; 10] = [
+        -100.0, -10.0, 10.0, 240.0, 320.0, 435.3, 678.9, 890.3, 10005.0, 203493.7,
+    ];
+
+    const YS1: [f64; 10] = [
+        -200.0, 10.0, 40.0, -553.0, 238.4, 30423.3, 23000.2, 32000.4, 43200.2, 34.2,
+    ];
+
+    #[test]
+    fn interpolation_before_first_element_test() {
+        //We expect to get first element of YS1
+        assert!((interpolation(&XS1, &YS1, -500.0) - YS1[0]).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn interpolation_after_last_element_test() {
+        //We expect to get last element of YS1
+        assert!(
+            (interpolation(&XS1, &YS1, 100000000.0) - *YS1.last().unwrap()).abs() < f64::EPSILON
+        );
+    }
+
+    #[test]
+    fn interpolation_first_element_test() {
+        //Giving first element of X tab we expect first of Y tab
+        assert!(
+            (interpolation(&XS1, &YS1, *XS1.first().unwrap()) - *YS1.first().unwrap()).abs()
+                < f64::EPSILON
+        );
+    }
+
+    #[test]
+    fn interpolation_last_element_test() {
+        //Giving last element of X tab we expect last of Y tab
+        assert!(
+            (interpolation(&XS1, &YS1, *XS1.last().unwrap()) - *YS1.last().unwrap()).abs()
+                < f64::EPSILON
+        );
+    }
+
+    #[test]
+    fn interpolation_middle_element_test() {
+        let res = interpolation(&XS1, &YS1, 358.0);
+        assert!((res - 10186.589).abs() < 0.001);
+    }
+
+    #[test]
+    fn interpolation_last_segment_element_test() {
+        let res = interpolation(&XS1, &YS1, 22200.0);
+        assert!((res - 40479.579).abs() < 0.001);
+    }
+
+    #[test]
+    fn interpolation_first_segment_element_test() {
+        let res = interpolation(&XS1, &YS1, -50.0);
+        assert!((res - (-83.3333)).abs() < 0.001);
+    }
+}
+
+#[cfg(test)]
+mod calculate_towards_target_temperature_tests {
+    use super::*;
+    use ntest::assert_about_eq;
 
     #[test]
     fn when_current_equals_target_returns_current() {

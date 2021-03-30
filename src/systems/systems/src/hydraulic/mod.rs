@@ -12,34 +12,9 @@ use uom::si::{
 };
 
 use crate::engine::Engine;
+use crate::shared::interpolation;
 use crate::simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter};
 pub mod brakecircuit;
-
-// //Interpolate values_map_y at point value_at_point in breakpoints break_points_x
-pub fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 {
-    debug_assert!(xs.len() == ys.len());
-    debug_assert!(xs.len() >= 2);
-    debug_assert!(ys.len() >= 2);
-    // The function also assumes xs are ordered from small to large. Consider adding a debug_assert! for that as well.
-
-    if intermediate_x <= xs[0] {
-        *ys.first().unwrap()
-    } else if intermediate_x >= xs[xs.len() - 1] {
-        *ys.last().unwrap()
-    } else {
-        let mut idx: usize = 1;
-
-        while idx < xs.len() - 1 {
-            if intermediate_x < xs[idx] {
-                break;
-            }
-            idx += 1;
-        }
-
-        ys[idx - 1]
-            + (intermediate_x - xs[idx - 1]) / (xs[idx] - xs[idx - 1]) * (ys[idx] - ys[idx - 1])
-    }
-}
 
 // Trait common to all hydraulic pumps
 // Max gives maximum available volume at that time as if it is a variable displacement
@@ -1865,77 +1840,6 @@ mod tests {
         }
     }
 
-    #[cfg(test)]
-    mod utility_tests {
-        use crate::hydraulic::interpolation;
-        use rand::Rng;
-        use std::time::Instant;
-
-        #[test]
-        fn interp_test() {
-            let xs1 = [
-                -100.0, -10.0, 10.0, 240.0, 320.0, 435.3, 678.9, 890.3, 10005.0, 203493.7,
-            ];
-            let ys1 = [
-                -200.0, 10.0, 40.0, -553.0, 238.4, 30423.3, 23000.2, 32000.4, 43200.2, 34.2,
-            ];
-
-            //Check before first element
-            assert!((interpolation(&xs1, &ys1, -500.0) - ys1[0]).abs() < f64::EPSILON);
-
-            //Check after last
-            assert!(
-                (interpolation(&xs1, &ys1, 100000000.0) - *ys1.last().unwrap()).abs()
-                    < f64::EPSILON
-            );
-
-            //Check equal first
-            assert!(
-                (interpolation(&xs1, &ys1, *xs1.first().unwrap()) - *ys1.first().unwrap()).abs()
-                    < f64::EPSILON
-            );
-
-            //Check equal last
-            assert!(
-                (interpolation(&xs1, &ys1, *xs1.last().unwrap()) - *ys1.last().unwrap()).abs()
-                    < f64::EPSILON
-            );
-
-            //Check interp middle
-            let res = interpolation(&xs1, &ys1, 358.0);
-            assert!((res - 10186.589).abs() < 0.001);
-
-            //Check interp last segment
-            let res = interpolation(&xs1, &ys1, 22200.0);
-            assert!((res - 40479.579).abs() < 0.001);
-
-            //Check interp first segment
-            let res = interpolation(&xs1, &ys1, -50.0);
-            assert!((res - (-83.3333)).abs() < 0.001);
-
-            //Speed check
-            let mut rng = rand::thread_rng();
-            let time_start = Instant::now();
-            for _idx in 0..1000000 {
-                let test_val = rng.gen_range(xs1[0]..*xs1.last().unwrap());
-                let mut _res = interpolation(&xs1, &ys1, test_val);
-                _res += 2.78;
-            }
-            let time_elapsed = time_start.elapsed();
-
-            println!(
-                "Time elapsed for 1000000 calls {} s",
-                time_elapsed.as_secs_f64()
-            );
-        }
-    }
-    #[cfg(test)]
-    mod loop_tests {}
-
-    #[cfg(test)]
-    mod epump_tests {}
-
-    //TODO to update according to new caracteristics, spoolup times and displacement dynamic
     #[cfg(test)]
     mod edp_tests {
         use super::*;
