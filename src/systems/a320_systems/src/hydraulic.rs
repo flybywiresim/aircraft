@@ -193,7 +193,7 @@ impl A320Hydraulic {
                     * min_hyd_loop_timestep.as_secs_f64(),
             ); // Keep track of time left after all fixed loop are done
 
-            // UPDATING HYDRAULICS AT FIXED STEP
+            // This is main update loop at base fixed step
             for _ in 0..num_of_update_loops {
                 self.update_fixed_step(
                     context,
@@ -204,17 +204,22 @@ impl A320Hydraulic {
                 );
             }
 
-            // UPDATING ACTUATOR PHYSICS AT "FIXED STEP / ACTUATORS_SIM_TIME_STEP_MULT"
-            // Here put everything that needs higher simulation rates
+            // This is the "fast" update loop refreshing ACTUATORS_SIM_TIME_STEP_MULT times faster
+            // here put everything that needs higher simulation rates like physics solving
             let num_of_actuators_update_loops =
                 num_of_update_loops * A320Hydraulic::ACTUATORS_SIM_TIME_STEP_MULT;
             let delta_time_physics =
                 min_hyd_loop_timestep / A320Hydraulic::ACTUATORS_SIM_TIME_STEP_MULT; //If X times faster we divide step by X
-            for _cur_loop in 0..num_of_actuators_update_loops {
-                self.rat
-                    .update_physics(&delta_time_physics, &context.indicated_airspeed());
+            for _ in 0..num_of_actuators_update_loops {
+                self.update_fast_rate(&context, &delta_time_physics);
             }
         }
+    }
+
+    // All the higher frequency updates like physics
+    fn update_fast_rate(&mut self, context: &UpdateContext, delta_time_physics: &Duration) {
+        self.rat
+            .update_physics(&delta_time_physics, &context.indicated_airspeed());
     }
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
