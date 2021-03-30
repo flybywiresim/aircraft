@@ -107,6 +107,22 @@ impl A320Hydraulic {
         }
     }
 
+    pub fn green_edp_has_fault(&self) -> bool {
+        self.engine_driven_pump_1.is_active() && !self.is_green_pressurised()
+    }
+
+    pub fn yellow_epump_has_fault(&self) -> bool {
+        self.yellow_electric_pump.is_active() && !self.is_yellow_pressurised()
+    }
+
+    pub fn yellow_edp_has_fault(&self) -> bool {
+        self.engine_driven_pump_2.is_active() && !self.is_yellow_pressurised()
+    }
+
+    pub fn blue_epump_has_fault(&self) -> bool {
+        self.blue_electric_pump.is_active() && !self.is_blue_pressurised()
+    }
+
     // Updates pressure available state based on pressure switches
     fn update_hyd_avail_states(&mut self) {
         if self.green_loop.get_pressure()
@@ -771,14 +787,12 @@ impl A320HydraulicOverheadPanel {
     }
 
     pub fn update_pb_faults(&mut self, hyd: &A320Hydraulic) {
-        self.edp1_push_button
-            .set_fault(hyd.hyd_logic_inputs.green_edp_has_fault);
-        self.edp2_push_button
-            .set_fault(hyd.hyd_logic_inputs.yellow_edp_has_fault);
+        self.edp1_push_button.set_fault(hyd.green_edp_has_fault());
+        self.edp2_push_button.set_fault(hyd.yellow_edp_has_fault());
         self.blue_epump_push_button
-            .set_fault(hyd.hyd_logic_inputs.blue_epump_has_fault);
+            .set_fault(hyd.blue_epump_has_fault());
         self.yellow_epump_push_button
-            .set_fault(hyd.hyd_logic_inputs.yellow_epump_has_fault);
+            .set_fault(hyd.yellow_epump_has_fault());
     }
 }
 
