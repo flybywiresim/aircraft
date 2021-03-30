@@ -653,7 +653,13 @@
                 <!-- DCDU -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_COM_L</NODE_ID>
-                    <EMISSIVE_CODE>(L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100)</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>
+                        (L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool) if{
+                            (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100)
+                        } els{
+                            0
+                        }
+                    </EMISSIVE_CODE>
                     <PART_ID>SCREEN_COM1</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                 </UseTemplate>
@@ -714,7 +720,13 @@
                 <!-- DCDU -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_COM_R</NODE_ID>
-                    <EMISSIVE_CODE>(L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100)</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>
+                        (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) if{
+                            (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100)
+                        } els{
+                            0
+                        }
+                    </EMISSIVE_CODE>
                     <PART_ID>SCREEN_COM2</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                 </UseTemplate>
