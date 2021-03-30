@@ -137,11 +137,7 @@ impl BrakeCircuit {
         }
     }
 
-    pub fn update(
-        &mut self,
-        delta_time: &Duration,
-        hyd_loop: &HydLoop,
-    ) {
+    pub fn update(&mut self, delta_time: &Duration, hyd_loop: &HydLoop) {
         let delta_vol = ((self.demanded_brake_position_left - self.current_brake_position_left)
             + (self.demanded_brake_position_right - self.current_brake_position_right))
             * self.total_displacement;

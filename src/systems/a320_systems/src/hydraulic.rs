@@ -107,7 +107,7 @@ impl A320Hydraulic {
         }
     }
 
-    //Updates pressure available state based on pressure switches
+    // Updates pressure available state based on pressure switches
     fn update_hyd_avail_states(&mut self) {
         if self.green_loop.get_pressure()
             <= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_LO_HYST)
@@ -163,93 +163,49 @@ impl A320Hydraulic {
 
         self.total_sim_time_elapsed += context.delta();
 
-        //time to catch up in our simulation = new delta + time not updated last iteration
+        // Time to catch up in our simulation = new delta + time not updated last iteration
         let time_to_catch = context.delta() + self.lag_time_accumulator;
 
-        //Number of time steps to do according to required time step
-        let number_of_steps_f64 = time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
+        // Number of time steps (with floating part) to do according to required time step
+        let number_of_steps_floating_point =
+            time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
 
-        //updating rat stowed pos on all frames in case it's used for graphics
+        // Updating rat stowed pos on all frames in case it's used for graphics
         self.rat.update_stow_pos(&context.delta());
 
-        if number_of_steps_f64 < 1.0 {
-            //Can't do a full time step
-            //we can either do an update with smaller step or wait next iteration
+        if number_of_steps_floating_point < 1.0 {
+            // Can't do a full time step
+            // we can decide either do an update with smaller step or wait next iteration
+            // for now we only update lag accumulator and chose a hard fixed step: if smaller
+            // than chosen time step we do nothing and wait next iteration
 
-            self.lag_time_accumulator =
-                Duration::from_secs_f64(number_of_steps_f64 * min_hyd_loop_timestep.as_secs_f64());
-        //Time lag is float part of num of steps * fixed time step to get a result in time
-        } else {
-            let num_of_update_loops = number_of_steps_f64.floor() as u32; //Int part is the actual number of loops to do
-                                                                          //Rest of floating part goes into accumulator
+            // Time lag is float part only of num of steps (because is < 1.0 here) * fixed time step to get a result in time
             self.lag_time_accumulator = Duration::from_secs_f64(
-                (number_of_steps_f64 - (num_of_update_loops as f64))
+                number_of_steps_floating_point * min_hyd_loop_timestep.as_secs_f64(),
+            );
+        } else {
+            // Int part is the actual number of loops to do
+            // rest of floating part goes into accumulator
+            let num_of_update_loops = number_of_steps_floating_point.floor() as u32;
+
+            self.lag_time_accumulator = Duration::from_secs_f64(
+                (number_of_steps_floating_point - (num_of_update_loops as f64))
                     * min_hyd_loop_timestep.as_secs_f64(),
-            ); //Keep track of time left after all fixed loop are done
+            ); // Keep track of time left after all fixed loop are done
 
-            //UPDATING HYDRAULICS AT FIXED STEP
-            for _cur_loop in 0..num_of_update_loops {
-                //Base logic update based on overhead Could be done only once (before that loop) but if so delta time should be set accordingly
-                self.update_logic(&min_hyd_loop_timestep, overhead_panel, context);
-
-                //Process brake logic (which circuit brakes) and send brake demands (how much)
-                self.hyd_brake_logic
-                    .update_brake_demands(&min_hyd_loop_timestep, &self.green_loop);
-                self.hyd_brake_logic.send_brake_demands(
-                    &mut self.braking_circuit_norm,
-                    &mut self.braking_circuit_altn,
-                );
-
-                //UPDATE HYDRAULICS FIXED TIME STEP
-                self.ptu.update(&self.green_loop, &self.yellow_loop);
-                self.engine_driven_pump_1.update(
+            // UPDATING HYDRAULICS AT FIXED STEP
+            for _ in 0..num_of_update_loops {
+                self.update_fixed_step(
+                    context,
+                    engine1,
+                    engine2,
+                    overhead_panel,
                     &min_hyd_loop_timestep,
-                    &self.green_loop,
-                    &engine1,
                 );
-                self.engine_driven_pump_2.update(
-                    &min_hyd_loop_timestep,
-                    &self.yellow_loop,
-                    &engine2,
-                );
-                self.yellow_electric_pump
-                    .update(&min_hyd_loop_timestep, &self.yellow_loop);
-                self.blue_electric_pump
-                    .update(&min_hyd_loop_timestep, &self.blue_loop);
-
-                self.rat.update(&min_hyd_loop_timestep, &self.blue_loop);
-                self.green_loop.update(
-                    &min_hyd_loop_timestep,
-                    Vec::new(),
-                    vec![&self.engine_driven_pump_1],
-                    Vec::new(),
-                    vec![&self.ptu],
-                );
-                self.yellow_loop.update(
-                    &min_hyd_loop_timestep,
-                    vec![&self.yellow_electric_pump],
-                    vec![&self.engine_driven_pump_2],
-                    Vec::new(),
-                    vec![&self.ptu],
-                );
-                self.blue_loop.update(
-                    &min_hyd_loop_timestep,
-                    vec![&self.blue_electric_pump],
-                    Vec::new(),
-                    vec![&self.rat],
-                    Vec::new(),
-                );
-
-                self.braking_circuit_norm
-                    .update(&min_hyd_loop_timestep, &self.green_loop);
-                self.braking_circuit_altn
-                    .update(&min_hyd_loop_timestep, &self.yellow_loop);
-                self.braking_circuit_norm.reset_accumulators();
-                self.braking_circuit_altn.reset_accumulators();
             }
 
-            //UPDATING ACTUATOR PHYSICS AT "FIXED STEP / ACTUATORS_SIM_TIME_STEP_MULT"
-            //Here put everything that needs higher simulation rates
+            // UPDATING ACTUATOR PHYSICS AT "FIXED STEP / ACTUATORS_SIM_TIME_STEP_MULT"
+            // Here put everything that needs higher simulation rates
             let num_of_actuators_update_loops =
                 num_of_update_loops * A320Hydraulic::ACTUATORS_SIM_TIME_STEP_MULT;
             let delta_time_physics =
@@ -259,6 +215,67 @@ impl A320Hydraulic {
                     .update_physics(&delta_time_physics, &context.indicated_airspeed());
             }
         }
+    }
+
+    // All the core hydraulics updates that needs to be done at the slowest fixed step rate
+    fn update_fixed_step(
+        &mut self,
+        context: &UpdateContext,
+        engine1: &Engine,
+        engine2: &Engine,
+        overhead_panel: &A320HydraulicOverheadPanel,
+        min_hyd_loop_timestep: &Duration,
+    ) {
+        // Base logic update based on overhead Could be done only once (before that loop) but if so delta time should be set accordingly
+        self.update_logic(&min_hyd_loop_timestep, overhead_panel, context);
+
+        // Process brake logic (which circuit brakes) and send brake demands (how much)
+        self.hyd_brake_logic
+            .update_brake_demands(&min_hyd_loop_timestep, &self.green_loop);
+        self.hyd_brake_logic.send_brake_demands(
+            &mut self.braking_circuit_norm,
+            &mut self.braking_circuit_altn,
+        );
+
+        self.ptu.update(&self.green_loop, &self.yellow_loop);
+        self.engine_driven_pump_1
+            .update(&min_hyd_loop_timestep, &self.green_loop, &engine1);
+        self.engine_driven_pump_2
+            .update(&min_hyd_loop_timestep, &self.yellow_loop, &engine2);
+        self.yellow_electric_pump
+            .update(&min_hyd_loop_timestep, &self.yellow_loop);
+        self.blue_electric_pump
+            .update(&min_hyd_loop_timestep, &self.blue_loop);
+
+        self.rat.update(&min_hyd_loop_timestep, &self.blue_loop);
+        self.green_loop.update(
+            &min_hyd_loop_timestep,
+            Vec::new(),
+            vec![&self.engine_driven_pump_1],
+            Vec::new(),
+            vec![&self.ptu],
+        );
+        self.yellow_loop.update(
+            &min_hyd_loop_timestep,
+            vec![&self.yellow_electric_pump],
+            vec![&self.engine_driven_pump_2],
+            Vec::new(),
+            vec![&self.ptu],
+        );
+        self.blue_loop.update(
+            &min_hyd_loop_timestep,
+            vec![&self.blue_electric_pump],
+            Vec::new(),
+            vec![&self.rat],
+            Vec::new(),
+        );
+
+        self.braking_circuit_norm
+            .update(&min_hyd_loop_timestep, &self.green_loop);
+        self.braking_circuit_altn
+            .update(&min_hyd_loop_timestep, &self.yellow_loop);
+        self.braking_circuit_norm.reset_accumulators();
+        self.braking_circuit_altn.reset_accumulators();
     }
 
     fn update_logic(
@@ -300,7 +317,7 @@ impl A320Hydraulic {
     }
 
     fn update_rat_deploy(&mut self, context: &UpdateContext) {
-        //RAT Deployment
+        // RAT Deployment
         //Todo check all other needed conditions this is faked with engine master while it should check elec buses
         if !self.hyd_logic_inputs.eng_1_master_on
             && !self.hyd_logic_inputs.eng_2_master_on
@@ -312,7 +329,7 @@ impl A320Hydraulic {
     }
 
     fn update_external_cond(&mut self, delta_time_update: &Duration) {
-        //Only evaluate ground conditions if on ground, if superman needs to operate cargo door in flight feel free to update
+        // Only evaluate ground conditions if on ground, if superman needs to operate cargo door in flight feel free to update
         if self.hyd_logic_inputs.weight_on_wheels {
             self.hyd_logic_inputs.cargo_operated_ptu_cond = self
                 .hyd_logic_inputs
@@ -327,8 +344,8 @@ impl A320Hydraulic {
     }
 
     fn update_pump_faults(&mut self) {
-        //Basic faults of pumps //TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
-        //At current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
+        // Basic faults of pumps //TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
+        // at current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
         if self.yellow_electric_pump.is_active() && !self.is_yellow_pressurised() {
             self.hyd_logic_inputs.yellow_epump_has_fault = true;
         } else {
