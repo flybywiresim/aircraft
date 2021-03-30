@@ -3,7 +3,7 @@
 
 [![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU) 
 
-[![Twitter](https://img.shields.io/twitter/follow/FlyByWire?style=flat&logo=twitter)](https://twitter.com/FlybywireSim)
+[![Twitter](https://img.shields.io/twitter/follow/FlybywireSim?style=flat&logo=twitter)](https://twitter.com/FlybywireSim)
 
 [![GitHub latest release version](https://img.shields.io/github/v/release/flybywiresim/a32nx.svg?style=flat)](https://github.com/flybywiresim/a32nx/releases/latest)
 [![Github All Releases download count](https://img.shields.io/github/downloads/flybywiresim/a32nx/total.svg?style=flat)](https://github.com/flybywiresim/a32nx/releases/latest)
