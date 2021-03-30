@@ -107,7 +107,23 @@ impl A320Hydraulic {
         }
     }
 
-    //Updates pressure available state based on pressure switches
+    pub fn green_edp_has_fault(&self) -> bool {
+        self.engine_driven_pump_1.is_active() && !self.is_green_pressurised()
+    }
+
+    pub fn yellow_epump_has_fault(&self) -> bool {
+        self.yellow_electric_pump.is_active() && !self.is_yellow_pressurised()
+    }
+
+    pub fn yellow_edp_has_fault(&self) -> bool {
+        self.engine_driven_pump_2.is_active() && !self.is_yellow_pressurised()
+    }
+
+    pub fn blue_epump_has_fault(&self) -> bool {
+        self.blue_electric_pump.is_active() && !self.is_blue_pressurised()
+    }
+
+    // Updates pressure available state based on pressure switches
     fn update_hyd_avail_states(&mut self) {
         if self.green_loop.get_pressure()
             <= Pressure::new::<psi>(A320Hydraulic::MIN_PRESS_PRESSURISED_LO_HYST)
@@ -154,118 +170,149 @@ impl A320Hydraulic {
 
     pub fn update(
         &mut self,
-        ct: &UpdateContext,
+        context: &UpdateContext,
         engine1: &Engine,
         engine2: &Engine,
         overhead_panel: &A320HydraulicOverheadPanel,
+        engine_fire_overhead: &A320EngineFireOverheadPanel,
     ) {
         let min_hyd_loop_timestep = Duration::from_millis(A320Hydraulic::HYDRAULIC_SIM_TIME_STEP); //Hyd Sim rate = 10 Hz
 
-        self.total_sim_time_elapsed += ct.delta();
+        self.total_sim_time_elapsed += context.delta();
 
-        //time to catch up in our simulation = new delta + time not updated last iteration
-        let time_to_catch = ct.delta() + self.lag_time_accumulator;
+        // Time to catch up in our simulation = new delta + time not updated last iteration
+        let time_to_catch = context.delta() + self.lag_time_accumulator;
 
-        //Number of time steps to do according to required time step
-        let number_of_steps_f64 = time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
+        // Number of time steps (with floating part) to do according to required time step
+        let number_of_steps_floating_point =
+            time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
 
-        //updating rat stowed pos on all frames in case it's used for graphics
-        self.rat.update_stow_pos(&ct.delta());
+        // Updating rat stowed pos on all frames in case it's used for graphics
+        self.rat.update_stow_pos(&context.delta());
 
-        if number_of_steps_f64 < 1.0 {
-            //Can't do a full time step
-            //we can either do an update with smaller step or wait next iteration
+        if number_of_steps_floating_point < 1.0 {
+            // Can't do a full time step
+            // we can decide either do an update with smaller step or wait next iteration
+            // for now we only update lag accumulator and chose a hard fixed step: if smaller
+            // than chosen time step we do nothing and wait next iteration
 
-            self.lag_time_accumulator =
-                Duration::from_secs_f64(number_of_steps_f64 * min_hyd_loop_timestep.as_secs_f64());
-        //Time lag is float part of num of steps * fixed time step to get a result in time
-        } else {
-            let num_of_update_loops = number_of_steps_f64.floor() as u32; //Int part is the actual number of loops to do
-                                                                          //Rest of floating part goes into accumulator
+            // Time lag is float part only of num of steps (because is < 1.0 here) * fixed time step to get a result in time
             self.lag_time_accumulator = Duration::from_secs_f64(
-                (number_of_steps_f64 - (num_of_update_loops as f64))
+                number_of_steps_floating_point * min_hyd_loop_timestep.as_secs_f64(),
+            );
+        } else {
+            // Int part is the actual number of loops to do
+            // rest of floating part goes into accumulator
+            let num_of_update_loops = number_of_steps_floating_point.floor() as u32;
+
+            self.lag_time_accumulator = Duration::from_secs_f64(
+                (number_of_steps_floating_point - (num_of_update_loops as f64))
                     * min_hyd_loop_timestep.as_secs_f64(),
-            ); //Keep track of time left after all fixed loop are done
+            ); // Keep track of time left after all fixed loop are done
 
-            //UPDATING HYDRAULICS AT FIXED STEP
-            for _cur_loop in 0..num_of_update_loops {
-                //Base logic update based on overhead Could be done only once (before that loop) but if so delta time should be set accordingly
-                self.update_logic(&min_hyd_loop_timestep, overhead_panel, ct);
-
-                //Process brake logic (which circuit brakes) and send brake demands (how much)
-                self.hyd_brake_logic
-                    .update_brake_demands(&min_hyd_loop_timestep, &self.green_loop);
-                self.hyd_brake_logic.send_brake_demands(
-                    &mut self.braking_circuit_norm,
-                    &mut self.braking_circuit_altn,
-                );
-
-                //UPDATE HYDRAULICS FIXED TIME STEP
-                self.ptu.update(&self.green_loop, &self.yellow_loop);
-                self.engine_driven_pump_1.update(
+            // This is main update loop at base fixed step
+            for _ in 0..num_of_update_loops {
+                self.update_fixed_step(
+                    context,
+                    engine1,
+                    engine2,
+                    overhead_panel,
+                    engine_fire_overhead,
                     &min_hyd_loop_timestep,
-                    &self.green_loop,
-                    &engine1,
                 );
-                self.engine_driven_pump_2.update(
-                    &min_hyd_loop_timestep,
-                    &self.yellow_loop,
-                    &engine2,
-                );
-                self.yellow_electric_pump
-                    .update(&min_hyd_loop_timestep, &self.yellow_loop);
-                self.blue_electric_pump
-                    .update(&min_hyd_loop_timestep, &self.blue_loop);
-
-                self.rat.update(&min_hyd_loop_timestep, &self.blue_loop);
-                self.green_loop.update(
-                    &min_hyd_loop_timestep,
-                    Vec::new(),
-                    vec![&self.engine_driven_pump_1],
-                    Vec::new(),
-                    vec![&self.ptu],
-                );
-                self.yellow_loop.update(
-                    &min_hyd_loop_timestep,
-                    vec![&self.yellow_electric_pump],
-                    vec![&self.engine_driven_pump_2],
-                    Vec::new(),
-                    vec![&self.ptu],
-                );
-                self.blue_loop.update(
-                    &min_hyd_loop_timestep,
-                    vec![&self.blue_electric_pump],
-                    Vec::new(),
-                    vec![&self.rat],
-                    Vec::new(),
-                );
-
-                self.braking_circuit_norm
-                    .update(&min_hyd_loop_timestep, &self.green_loop);
-                self.braking_circuit_altn
-                    .update(&min_hyd_loop_timestep, &self.yellow_loop);
-                self.braking_circuit_norm.reset_accumulators();
-                self.braking_circuit_altn.reset_accumulators();
             }
 
-            //UPDATING ACTUATOR PHYSICS AT "FIXED STEP / ACTUATORS_SIM_TIME_STEP_MULT"
-            //Here put everything that needs higher simulation rates
+            // This is the "fast" update loop refreshing ACTUATORS_SIM_TIME_STEP_MULT times faster
+            // here put everything that needs higher simulation rates like physics solving
             let num_of_actuators_update_loops =
                 num_of_update_loops * A320Hydraulic::ACTUATORS_SIM_TIME_STEP_MULT;
             let delta_time_physics =
                 min_hyd_loop_timestep / A320Hydraulic::ACTUATORS_SIM_TIME_STEP_MULT; //If X times faster we divide step by X
-            for _cur_loop in 0..num_of_actuators_update_loops {
-                self.rat
-                    .update_physics(&delta_time_physics, &ct.indicated_airspeed());
+            for _ in 0..num_of_actuators_update_loops {
+                self.update_fast_rate(&context, &delta_time_physics);
             }
         }
+    }
+
+    // All the higher frequency updates like physics
+    fn update_fast_rate(&mut self, context: &UpdateContext, delta_time_physics: &Duration) {
+        self.rat
+            .update_physics(&delta_time_physics, &context.indicated_airspeed());
+    }
+
+    // All the core hydraulics updates that needs to be done at the slowest fixed step rate
+    fn update_fixed_step(
+        &mut self,
+        context: &UpdateContext,
+        engine1: &Engine,
+        engine2: &Engine,
+        overhead_panel: &A320HydraulicOverheadPanel,
+        engine_fire_overhead: &A320EngineFireOverheadPanel,
+        min_hyd_loop_timestep: &Duration,
+    ) {
+        // Base logic update based on overhead Could be done only once (before that loop) but if so delta time should be set accordingly
+        self.update_logic(
+            &min_hyd_loop_timestep,
+            overhead_panel,
+            engine_fire_overhead,
+            context,
+        );
+
+        // Process brake logic (which circuit brakes) and send brake demands (how much)
+        self.hyd_brake_logic
+            .update_brake_demands(&min_hyd_loop_timestep, &self.green_loop);
+        self.hyd_brake_logic.send_brake_demands(
+            &mut self.braking_circuit_norm,
+            &mut self.braking_circuit_altn,
+        );
+
+        self.ptu.update(&self.green_loop, &self.yellow_loop);
+        self.engine_driven_pump_1
+            .update(&min_hyd_loop_timestep, &self.green_loop, &engine1);
+        self.engine_driven_pump_2
+            .update(&min_hyd_loop_timestep, &self.yellow_loop, &engine2);
+        self.yellow_electric_pump
+            .update(&min_hyd_loop_timestep, &self.yellow_loop);
+        self.blue_electric_pump
+            .update(&min_hyd_loop_timestep, &self.blue_loop);
+
+        self.rat.update(&min_hyd_loop_timestep, &self.blue_loop);
+        self.green_loop.update(
+            &min_hyd_loop_timestep,
+            Vec::new(),
+            vec![&self.engine_driven_pump_1],
+            Vec::new(),
+            vec![&self.ptu],
+        );
+        self.yellow_loop.update(
+            &min_hyd_loop_timestep,
+            vec![&self.yellow_electric_pump],
+            vec![&self.engine_driven_pump_2],
+            Vec::new(),
+            vec![&self.ptu],
+        );
+        self.blue_loop.update(
+            &min_hyd_loop_timestep,
+            vec![&self.blue_electric_pump],
+            Vec::new(),
+            vec![&self.rat],
+            Vec::new(),
+        );
+
+        self.braking_circuit_norm
+            .update(&min_hyd_loop_timestep, &self.green_loop);
+        self.braking_circuit_altn
+            .update(&min_hyd_loop_timestep, &self.yellow_loop);
+        self.braking_circuit_norm.reset_accumulators();
+        self.braking_circuit_altn.reset_accumulators();
     }
 
     fn update_logic(
         &mut self,
         delta_time_update: &Duration,
         overhead_panel: &A320HydraulicOverheadPanel,
-        ct: &UpdateContext,
+        engine_fire_overhead: &A320EngineFireOverheadPanel,
+        context: &UpdateContext,
     ) {
         self.update_external_cond(&delta_time_update);
 
@@ -273,9 +320,9 @@ impl A320Hydraulic {
 
         self.update_pump_faults();
 
-        self.update_rat_deploy(ct);
+        self.update_rat_deploy(context);
 
-        self.update_ed_pump_states(overhead_panel);
+        self.update_ed_pump_states(overhead_panel, engine_fire_overhead);
 
         self.update_e_pump_states(overhead_panel);
 
@@ -299,12 +346,12 @@ impl A320Hydraulic {
         }
     }
 
-    fn update_rat_deploy(&mut self, ct: &UpdateContext) {
-        //RAT Deployment
+    fn update_rat_deploy(&mut self, context: &UpdateContext) {
+        // RAT Deployment
         //Todo check all other needed conditions this is faked with engine master while it should check elec buses
         if !self.hyd_logic_inputs.eng_1_master_on
             && !self.hyd_logic_inputs.eng_2_master_on
-            && ct.indicated_airspeed() > Velocity::new::<knot>(100.)
+            && context.indicated_airspeed() > Velocity::new::<knot>(100.)
         //Todo get speed from ADIRS
         {
             self.rat.set_active();
@@ -312,7 +359,7 @@ impl A320Hydraulic {
     }
 
     fn update_external_cond(&mut self, delta_time_update: &Duration) {
-        //Only evaluate ground conditions if on ground, if superman needs to operate cargo door in flight feel free to update
+        // Only evaluate ground conditions if on ground, if superman needs to operate cargo door in flight feel free to update
         if self.hyd_logic_inputs.weight_on_wheels {
             self.hyd_logic_inputs.cargo_operated_ptu_cond = self
                 .hyd_logic_inputs
@@ -327,8 +374,8 @@ impl A320Hydraulic {
     }
 
     fn update_pump_faults(&mut self) {
-        //Basic faults of pumps //TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
-        //At current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
+        // Basic faults of pumps //TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
+        // at current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
         if self.yellow_electric_pump.is_active() && !self.is_yellow_pressurised() {
             self.hyd_logic_inputs.yellow_epump_has_fault = true;
         } else {
@@ -351,10 +398,14 @@ impl A320Hydraulic {
         }
     }
 
-    fn update_ed_pump_states(&mut self, overhead_panel: &A320HydraulicOverheadPanel) {
+    fn update_ed_pump_states(
+        &mut self,
+        overhead_panel: &A320HydraulicOverheadPanel,
+        engine_fire_overhead: &A320EngineFireOverheadPanel,
+    ) {
         if overhead_panel.edp1_push_button.is_auto()
             && self.hyd_logic_inputs.eng_1_master_on
-            && !overhead_panel.eng1_fire_pb.is_released()
+            && !engine_fire_overhead.eng1_fire_pb.is_released()
         {
             self.engine_driven_pump_1.start();
         } else if overhead_panel.edp1_push_button.is_off() {
@@ -362,7 +413,7 @@ impl A320Hydraulic {
         }
 
         //FIRE valves logic for EDP1
-        if overhead_panel.eng1_fire_pb.is_released() {
+        if engine_fire_overhead.eng1_fire_pb.is_released() {
             self.engine_driven_pump_1.stop();
             self.green_loop.set_fire_shutoff_valve_state(false);
         } else {
@@ -371,7 +422,7 @@ impl A320Hydraulic {
 
         if overhead_panel.edp2_push_button.is_auto()
             && self.hyd_logic_inputs.eng_2_master_on
-            && !overhead_panel.eng2_fire_pb.is_released()
+            && !engine_fire_overhead.eng2_fire_pb.is_released()
         {
             self.engine_driven_pump_2.start();
         } else if overhead_panel.edp2_push_button.is_off() {
@@ -379,7 +430,7 @@ impl A320Hydraulic {
         }
 
         //FIRE valves logic for EDP2
-        if overhead_panel.eng2_fire_pb.is_released() {
+        if engine_fire_overhead.eng2_fire_pb.is_released() {
             self.engine_driven_pump_2.stop();
             self.yellow_loop.set_fire_shutoff_valve_state(false);
         } else {
@@ -437,12 +488,12 @@ impl SimulationElement for A320Hydraulic {
 pub struct A320HydraulicBrakingLogic {
     parking_brake_demand: bool,
     weight_on_wheels: bool,
-    left_brake_command: f64,
-    right_brake_command: f64,
-    left_brake_green_command: f64, //Actual command sent to left green circuit
-    left_brake_yellow_command: f64, //Actual command sent to left yellow circuit
-    right_brake_green_command: f64, //Actual command sent to right green circuit
-    right_brake_yellow_command: f64, //Actual command sent to right yellow circuit
+    left_brake_pilot_input: f64,
+    right_brake_pilot_input: f64,
+    left_brake_green_output: f64,
+    left_brake_yellow_output: f64,
+    right_brake_green_output: f64,
+    right_brake_yellow_output: f64,
     anti_skid_activated: bool,
     autobrakes_setting: u8,
 }
@@ -457,12 +508,12 @@ impl A320HydraulicBrakingLogic {
         A320HydraulicBrakingLogic {
             parking_brake_demand: true, //Position of parking brake lever
             weight_on_wheels: true,
-            left_brake_command: 1.0,         //Command read from pedals
-            right_brake_command: 1.0,        //Command read from pedals
-            left_brake_green_command: 0.0,   //Actual command sent to left green circuit
-            left_brake_yellow_command: 1.0,  //Actual command sent to left yellow circuit
-            right_brake_green_command: 0.0,  //Actual command sent to right green circuit
-            right_brake_yellow_command: 1.0, //Actual command sent to right yellow circuit
+            left_brake_pilot_input: 1.0,    // read from brake pedals
+            right_brake_pilot_input: 1.0,   // read from brake pedals
+            left_brake_green_output: 0.0,   //Actual command sent to left green circuit
+            left_brake_yellow_output: 1.0, //Actual command sent to left yellow circuit. Init 1 as considering park brake on on init
+            right_brake_green_output: 0.0, //Actual command sent to right green circuit
+            right_brake_yellow_output: 1.0, //Actual command sent to right yellow circuit. Init 1 as considering park brake on on init
             anti_skid_activated: true,
             autobrakes_setting: 0,
         }
@@ -480,59 +531,59 @@ impl A320HydraulicBrakingLogic {
             A320HydraulicBrakingLogic::PARK_BRAKE_DEMAND_DYNAMIC * delta_time_update.as_secs_f64();
 
         if green_used_for_brakes {
-            self.left_brake_green_command = A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND
-                * self.left_brake_command
+            self.left_brake_green_output = A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND
+                * self.left_brake_pilot_input
                 + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
-                    * self.left_brake_green_command;
-            self.right_brake_green_command =
-                A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND * self.right_brake_command
-                    + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
-                        * self.right_brake_green_command;
+                    * self.left_brake_green_output;
+            self.right_brake_green_output = A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND
+                * self.right_brake_pilot_input
+                + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
+                    * self.right_brake_green_output;
 
-            self.left_brake_yellow_command -= dynamic_increment;
-            self.right_brake_yellow_command -= dynamic_increment;
+            self.left_brake_yellow_output -= dynamic_increment;
+            self.right_brake_yellow_output -= dynamic_increment;
         } else {
             if !self.parking_brake_demand {
                 //Normal braking but using alternate circuit
-                self.left_brake_yellow_command =
+                self.left_brake_yellow_output =
                     A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND
-                        * self.left_brake_command
+                        * self.left_brake_pilot_input
                         + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
-                            * self.left_brake_yellow_command;
-                self.right_brake_yellow_command =
+                            * self.left_brake_yellow_output;
+                self.right_brake_yellow_output =
                     A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND
-                        * self.right_brake_command
+                        * self.right_brake_pilot_input
                         + (1.0 - A320HydraulicBrakingLogic::LOW_PASS_FILTER_BRAKE_COMMAND)
-                            * self.right_brake_yellow_command;
+                            * self.right_brake_yellow_output;
                 if !self.anti_skid_activated {
-                    self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.5); //0.5 is temporary implementation of pressure limitation around 1000psi
-                    self.right_brake_yellow_command = self.right_brake_yellow_command.min(0.5);
+                    self.left_brake_yellow_output = self.left_brake_yellow_output.min(0.5); //0.5 is temporary implementation of pressure limitation around 1000psi
+                    self.right_brake_yellow_output = self.right_brake_yellow_output.min(0.5);
                     //0.5 is temporary implementation of pressure limitation around 1000psi
                 }
             } else {
                 //Else we just use parking brake
-                self.left_brake_yellow_command += dynamic_increment;
-                self.left_brake_yellow_command = self.left_brake_yellow_command.min(0.7); //0.7 is temporary implementation of pressure limitation around 2000psi for parking brakes
-                self.right_brake_yellow_command += dynamic_increment;
-                self.right_brake_yellow_command = self.right_brake_yellow_command.min(0.7);
+                self.left_brake_yellow_output += dynamic_increment;
+                self.left_brake_yellow_output = self.left_brake_yellow_output.min(0.7); //0.7 is temporary implementation of pressure limitation around 2000psi for parking brakes
+                self.right_brake_yellow_output += dynamic_increment;
+                self.right_brake_yellow_output = self.right_brake_yellow_output.min(0.7);
                 //0.7 is temporary implementation of pressure limitation around 2000psi for parking brakes
             }
-            self.left_brake_green_command -= dynamic_increment;
-            self.right_brake_green_command -= dynamic_increment;
+            self.left_brake_green_output -= dynamic_increment;
+            self.right_brake_green_output -= dynamic_increment;
         }
 
         //limiting final values
-        self.left_brake_yellow_command = self.left_brake_yellow_command.min(1.).max(0.);
-        self.right_brake_yellow_command = self.right_brake_yellow_command.min(1.).max(0.);
-        self.left_brake_green_command = self.left_brake_green_command.min(1.).max(0.);
-        self.right_brake_green_command = self.right_brake_green_command.min(1.).max(0.);
+        self.left_brake_yellow_output = self.left_brake_yellow_output.min(1.).max(0.);
+        self.right_brake_yellow_output = self.right_brake_yellow_output.min(1.).max(0.);
+        self.left_brake_green_output = self.left_brake_green_output.min(1.).max(0.);
+        self.right_brake_green_output = self.right_brake_green_output.min(1.).max(0.);
     }
 
     pub fn send_brake_demands(&mut self, norm: &mut BrakeCircuit, altn: &mut BrakeCircuit) {
-        norm.set_brake_demand_left(self.left_brake_green_command);
-        norm.set_brake_demand_right(self.right_brake_green_command);
-        altn.set_brake_demand_left(self.left_brake_yellow_command);
-        altn.set_brake_demand_right(self.right_brake_yellow_command);
+        norm.set_brake_demand_left(self.left_brake_green_output);
+        norm.set_brake_demand_right(self.right_brake_green_output);
+        altn.set_brake_demand_left(self.left_brake_yellow_output);
+        altn.set_brake_demand_right(self.right_brake_yellow_output);
     }
 }
 
@@ -545,8 +596,8 @@ impl SimulationElement for A320HydraulicBrakingLogic {
         self.parking_brake_demand = state.read_bool("BRAKE PARKING INDICATOR");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
         self.anti_skid_activated = state.read_bool("ANTISKID BRAKES ACTIVE");
-        self.left_brake_command = state.read_f64("BRAKE LEFT POSITION") / 100.0;
-        self.right_brake_command = state.read_f64("BRAKE RIGHT POSITION") / 100.0;
+        self.left_brake_pilot_input = state.read_f64("BRAKE LEFT POSITION") / 100.0;
+        self.right_brake_pilot_input = state.read_f64("BRAKE RIGHT POSITION") / 100.0;
         self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
     }
 }
@@ -720,8 +771,6 @@ pub struct A320HydraulicOverheadPanel {
     pub rat_push_button: AutoOffFaultPushButton,
     pub yellow_epump_push_button: AutoOnFaultPushButton,
     pub blue_epump_override_push_button: OnOffFaultPushButton,
-    pub eng1_fire_pb: FirePushButton,
-    pub eng2_fire_pb: FirePushButton,
 }
 
 impl A320HydraulicOverheadPanel {
@@ -734,20 +783,16 @@ impl A320HydraulicOverheadPanel {
             rat_push_button: AutoOffFaultPushButton::new_off("HYD_RAT"),
             yellow_epump_push_button: AutoOnFaultPushButton::new_auto("HYD_EPUMPY"),
             blue_epump_override_push_button: OnOffFaultPushButton::new_off("HYD_EPUMPY_OVRD"),
-            eng1_fire_pb: FirePushButton::new("ENG1"),
-            eng2_fire_pb: FirePushButton::new("ENG2"),
         }
     }
 
     pub fn update_pb_faults(&mut self, hyd: &A320Hydraulic) {
-        self.edp1_push_button
-            .set_fault(hyd.hyd_logic_inputs.green_edp_has_fault);
-        self.edp2_push_button
-            .set_fault(hyd.hyd_logic_inputs.yellow_edp_has_fault);
+        self.edp1_push_button.set_fault(hyd.green_edp_has_fault());
+        self.edp2_push_button.set_fault(hyd.yellow_edp_has_fault());
         self.blue_epump_push_button
-            .set_fault(hyd.hyd_logic_inputs.blue_epump_has_fault);
+            .set_fault(hyd.blue_epump_has_fault());
         self.yellow_epump_push_button
-            .set_fault(hyd.hyd_logic_inputs.yellow_epump_has_fault);
+            .set_fault(hyd.yellow_epump_has_fault());
     }
 }
 
@@ -760,6 +805,27 @@ impl SimulationElement for A320HydraulicOverheadPanel {
         self.rat_push_button.accept(visitor);
         self.yellow_epump_push_button.accept(visitor);
         self.blue_epump_override_push_button.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+pub struct A320EngineFireOverheadPanel {
+    pub eng1_fire_pb: FirePushButton,
+    pub eng2_fire_pb: FirePushButton,
+}
+
+impl A320EngineFireOverheadPanel {
+    pub fn new() -> A320EngineFireOverheadPanel {
+        A320EngineFireOverheadPanel {
+            eng1_fire_pb: FirePushButton::new("ENG1"),
+            eng2_fire_pb: FirePushButton::new("ENG2"),
+        }
+    }
+}
+
+impl SimulationElement for A320EngineFireOverheadPanel {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.eng1_fire_pb.accept(visitor);
         self.eng2_fire_pb.accept(visitor);
 
@@ -804,6 +870,7 @@ mod tests {
             engine_2: Engine,
             hydraulics: A320Hydraulic,
             overhead: A320HydraulicOverheadPanel,
+            engine_fire_overhead: A320EngineFireOverheadPanel,
         }
         impl A320HydraulicsTestAircraft {
             fn new() -> Self {
@@ -812,6 +879,7 @@ mod tests {
                     engine_2: Engine::new(2),
                     hydraulics: A320Hydraulic::new(),
                     overhead: A320HydraulicOverheadPanel::new(),
+                    engine_fire_overhead: A320EngineFireOverheadPanel::new(),
                 }
             }
 
@@ -849,8 +917,13 @@ mod tests {
 
         impl Aircraft for A320HydraulicsTestAircraft {
             fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-                self.hydraulics
-                    .update(context, &self.engine_1, &self.engine_2, &self.overhead);
+                self.hydraulics.update(
+                    context,
+                    &self.engine_1,
+                    &self.engine_2,
+                    &self.overhead,
+                    &self.engine_fire_overhead,
+                );
 
                 self.overhead.update_pb_faults(&self.hydraulics);
             }
@@ -859,6 +932,7 @@ mod tests {
             fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
                 self.hydraulics.accept(visitor);
                 self.overhead.accept(visitor);
+                self.engine_fire_overhead.accept(visitor);
 
                 visitor.visit(self);
             }
@@ -1394,7 +1468,7 @@ mod tests {
             assert!(test_bed.is_blue_pressurised());
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
             assert!(test_bed.is_yellow_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
 
             //Stoping engine, pressure should fall in 20s
             test_bed = test_bed
@@ -1436,7 +1510,7 @@ mod tests {
             assert!(test_bed.is_blue_pressurised());
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
             assert!(test_bed.is_yellow_pressurised());
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
 
             assert!(!test_bed.is_fire_valve_eng1_closed());
             assert!(!test_bed.is_fire_valve_eng2_closed());

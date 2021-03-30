@@ -90,12 +90,12 @@ class CDULateralRevisionPage {
 
         let holdCell = "";
         if (isWaypoint) {
-            holdCell = "<HOLD";
+            holdCell = "<HOLD[color]inop";
             mcdu.leftInputDelay[2] = () => {
                 return mcdu.getDelaySwitchPage();
             };
             mcdu.onLeftInput[2] = () => {
-                CDUHoldAtPage.ShowPage(mcdu, waypoint, waypointIndexFP);
+                mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
             };
         }
 
