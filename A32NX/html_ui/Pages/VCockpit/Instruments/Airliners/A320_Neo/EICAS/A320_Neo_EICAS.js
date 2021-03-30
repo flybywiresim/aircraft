@@ -180,24 +180,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         // TODO Move anything dependent on ac power change to A32NX_Core
         const engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
-        const externalPowerOn = SimVar.GetSimVarValue("EXTERNAL POWER AVAILABLE:1", "Bool") === 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 1;
-        const apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
-        const isACPowerAvailable = engineOn || apuOn || externalPowerOn;
-
-        // TODO: There are multiple DC buses so a "DCPowerAvailable" SimVar doesn't make any sense.
-        // We'll put this here for now, so things kind of work as they did before.
-        const dcEssBusIsPowered = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool");
-        const isDCPowerAvailable = isACPowerAvailable || dcEssBusIsPowered;
-        if (isDCPowerAvailable) {
-            SimVar.SetSimVarValue("L:DCPowerAvailable", "bool", 1); //True if any AC|DC bus is online
-        } else {
-            SimVar.SetSimVarValue("L:DCPowerAvailable", "bool", 0);
-        }
-        if (isACPowerAvailable) {
-            SimVar.SetSimVarValue("L:ACPowerAvailable", "bool", 1); //True if any AC bus is online
-        } else {
-            SimVar.SetSimVarValue("L:ACPowerAvailable", "bool", 0);
-        }
 
         // Engineering self-tests
         updateDisplayDMC("EICAS1", this.upperEngTestDiv, this.upperEngMaintDiv);
