@@ -54,7 +54,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     Init() {
         super.Init();
 
-        let mainFrame = this.getChildById("Electricity");
+        let mainFrame = this.getChildById("Mainframe");
         if (mainFrame == null) {
             mainFrame = this;
         }
@@ -235,7 +235,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.flightPhaseManager.changeFlightPhase(initialFlightPhase);
         }
 
-        this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
         this.initB = false;
 
@@ -313,8 +312,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.updateMCDU();
 
-        this.updateScreenState();
-
         // If legacy SimBrief username variable is in the DataStore, convert it to a user ID and remove it.
         const simbriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "");
         if (simbriefUsername) {
@@ -342,17 +339,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         } else {
             this.initB = false;
         }
-    }
-
-    updateScreenState() {
-        // Currently the MCDU isn't separated per side. Once it is, the condition
-        // for what powers the screen can be modified. I've added the comments below so
-        // you know which MCDU is powered by which power source.
-        this.electricity.style.display =
-            // Captain's MCDU
-            SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Bool") ||
-            // F/O's MCDU
-            SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "Bool") ? "block" : "none";
     }
 
     checkAocTimes() {
