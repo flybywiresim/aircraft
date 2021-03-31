@@ -751,26 +751,17 @@ impl A320HydraulicLogic {
     fn update_pump_faults(&mut self) {
         // Basic faults of pumps //TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
         // at current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
-        if self.yellow_electric_pump_output && !self.yellow_loop_pressurised_feedback {
-            self.yellow_epump_has_fault = true;
-        } else {
-            self.yellow_epump_has_fault = false;
-        }
-        if self.engine_driven_pump_1_output && !self.green_loop_pressurised_feedback {
-            self.green_edp_has_fault = true;
-        } else {
-            self.green_edp_has_fault = false;
-        }
-        if self.engine_driven_pump_2_output && !self.yellow_loop_pressurised_feedback {
-            self.yellow_edp_has_fault = true;
-        } else {
-            self.yellow_edp_has_fault = false;
-        }
-        if self.blue_electric_pump_output && !self.blue_loop_pressurised_feedback {
-            self.blue_epump_has_fault = true;
-        } else {
-            self.blue_epump_has_fault = false;
-        }
+        self.yellow_epump_has_fault =
+            self.yellow_electric_pump_output && !self.yellow_loop_pressurised_feedback;
+
+        self.green_edp_has_fault =
+            self.engine_driven_pump_1_output && !self.green_loop_pressurised_feedback;
+
+        self.yellow_edp_has_fault =
+            self.engine_driven_pump_2_output && !self.yellow_loop_pressurised_feedback;
+
+        self.blue_epump_has_fault =
+            self.blue_electric_pump_output && !self.blue_loop_pressurised_feedback;
     }
 
     fn update_ed_pump_states(
