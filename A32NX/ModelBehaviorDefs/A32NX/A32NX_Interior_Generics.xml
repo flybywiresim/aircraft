@@ -211,6 +211,8 @@
 
     Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position, for the annotated light test.
 
+    Use SEQ_POWERED when both emissives are powered by the same power source. Use SEQ1_POWERED and SEQ2_POWERED otherwise.
+
     Main Parameters:
             - NODE_ID               <no default>    Switch node ID                          (anim name will be same)
             - TOGGLE_SIMVAR         <no default>    SimVar to contain the toggle state
@@ -218,14 +220,25 @@
                                                     If not present, the switch will stay pressed.
             - DOWN_CODE             Not present     Provides custom code to test for "pushed in" condition if TOGGLE_SIMVAR is not used
             - SEQ1_CODE             0               Sequence 1 emissive code
-            - SEQ1_CODE             0               Sequence 2 emissive code
+            - SEQ2_CODE             0               Sequence 2 emissive code
+            - SEQ_POWERED           1               Whether SEQ1 and SEQ2 are powered. When unpowered, the emissive won't emit light
+                                                    even when SEQ1_CODE or SEQ2_CODE is true.
+            - SEQ1_POWERED          1               Whether SEQ1 is powered. When unpowered, the emissive won't emit light
+                                                    even when SEQ1_CODE is true.
+            - SEQ2_POWERED          1               Whether SEQ2 is powered. When unpowered, the emissive won't emit light
+                                                    even when SEQ2_CODE is true.
             - DISABLE_SEQ1          Not present     If present, the SEQ1 emissive is disabled
             - DISABLE_SEQ2          Not present     If present, the SEQ2 emissive is disabled
             - DUMMY_BUTTON          Not present     If true, the button will be a dummy button (not pressable, only emissive)
 
-    Authors: Benjamin Dupont (@Benjozork), lukecologne 12/10/20
+    Authors: Benjamin Dupont (@Benjozork), lukecologne 12/10/20; David Walschots (@davidwalschots)
     -->
     <Template Name="FBW_Push_Toggle">
+        <DefaultTemplateParameters>
+            <SEQ_POWERED>1</SEQ_POWERED>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <SEQ2_POWERED>1</SEQ2_POWERED>
+        </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <NODE_ID>#NODE_ID#</NODE_ID>
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
@@ -301,10 +314,10 @@
                 <False>
                     <Condition Check="SEQ1_CODE">
                         <True>
-                            <SEQ1_EMISSIVE_CODE>#SEQ1_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+                            <SEQ1_EMISSIVE_CODE>#SEQ1_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ1_POWERED# and #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
                         </True>
                         <False>
-                            <SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ1_EMISSIVE_CODE>
+                            <SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == #SEQ1_POWERED# and #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
                         </False>
                     </Condition>
                 </False>
@@ -317,22 +330,22 @@
                 <False>
                     <Condition Check="SEQ2_CODE">
                         <True>
-                            <SEQ2_EMISSIVE_CODE>#SEQ2_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+                            <SEQ2_EMISSIVE_CODE>#SEQ2_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
                         </True>
                         <False>
                             <Condition Check="TOGGLE_SIMVAR">
                                 <True>
                                     <Condition Check="INVERTED">
                                         <True>
-                                            <SEQ2_EMISSIVE_CODE>(#TOGGLE_SIMVAR#, Bool) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+                                            <SEQ2_EMISSIVE_CODE>(#TOGGLE_SIMVAR#, Bool) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
                                         </True>
                                         <false>
-                                            <SEQ2_EMISSIVE_CODE>(#TOGGLE_SIMVAR#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+                                            <SEQ2_EMISSIVE_CODE>(#TOGGLE_SIMVAR#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
                                         </false>
                                     </Condition>
                                 </True>
                                 <False>
-                                    <SEQ2_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+                                    <SEQ2_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
                                 </False>
                             </Condition>
                         </False>
