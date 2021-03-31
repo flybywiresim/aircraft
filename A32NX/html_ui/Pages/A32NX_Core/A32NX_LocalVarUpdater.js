@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 // Use this to create and sync local simvars that are derived from other simvars.
 // To create and sync a new local simvar, you need to add a selector and an updater.
 // The selector calculates the new value based on other simvars and some logic.
@@ -25,69 +43,91 @@ class A32NX_LocalVarUpdater {
                 varName: "L:A32NX_NO_SMOKING_MEMO",
                 type: "Bool",
                 selector: this._noSmokingMemoSelector,
+                refreshInterval: 1000,
             },
             {
                 varName: "L:A32NX_CKPT_TRIM_TEMP",
                 type: "celsius",
                 selector: this._condTempSelector,
+                refreshInterval: 1000,
                 identifier: 1
             },
             {
                 varName: "L:A32NX_FWD_TRIM_TEMP",
                 type: "celsius",
                 selector: this._condTempSelector,
+                refreshInterval: 1000,
                 identifier : 2
             },
             {
                 varName: "L:A32NX_AFT_TRIM_TEMP",
                 type: "celsius",
                 selector: this._condTempSelector,
+                refreshInterval: 1000,
                 identifier: 3
             },
             {
                 varName: "L:A32NX_CKPT_TEMP",
                 type: "celsius",
                 selector: this._condTrimOutletSelector.bind(this),
+                refreshInterval: 2000,
                 identifier: "CKPT"
             },
             {
                 varName: "L:A32NX_FWD_TEMP",
                 type: "celsius",
                 selector: this._condTrimOutletSelector.bind(this),
+                refreshInterval: 2000,
                 identifier: "FWD"
             },
             {
                 varName: "L:A32NX_AFT_TEMP",
                 type: "celsius",
                 selector: this._condTrimOutletSelector.bind(this),
+                refreshInterval: 2000,
                 identifier: "AFT"
             },
             {
                 varName: "L:A32NX_FLAPS_IN_MOTION",
                 type: "Bool",
-                selector: this._flapsInMotionSelector.bind(this)
+                selector: this._flapsInMotionSelector.bind(this),
+                refreshInterval: 50,
             },
             {
                 varName: "L:32NX_PACKS_1_IS_SUPPLYING",
                 type: "Bool",
-                selector: this._isPacksOneSupplying.bind(this)
+                selector: this._isPacksOneSupplying.bind(this),
+                refreshInterval: 100,
             },
             {
                 varName: "L:A32NX_SLIDES_ARMED",
                 type: "Bool",
-                selector: this._areSlidesArmed.bind(this)
+                selector: this._areSlidesArmed.bind(this),
+                refreshInterval: 100,
             }
             // New updaters go here...
         ];
+
+        this.updaterThrottlers = {};
+        this.updaters.forEach((updater) => {
+            this.updaterThrottlers[updater.varName] = new UpdateThrottler(updater.refreshInterval);
+        });
     }
 
-    update() {
-        this.updaters.forEach(this._runUpdater);
+    update(deltaTime) {
+        this.updaters.forEach(updater => this._runUpdater(deltaTime, updater));
     }
 
-    _runUpdater({varName, type, selector, identifier = null}) {
-        const newValue = selector(identifier);
+    _runUpdater(deltaTime, {varName, type, selector, identifier = null}) {
+        const selectorDeltaTime = this.updaterThrottlers[varName].canUpdate(deltaTime);
+
+        if (selectorDeltaTime === -1) {
+            return;
+        }
+
+        const newValue = selector(selectorDeltaTime, identifier);
         const currentValue = SimVar.GetSimVarValue(varName, type);
+
         if (newValue !== currentValue) {
             SimVar.SetSimVarValue(varName, type, newValue);
         }
@@ -110,7 +150,7 @@ class A32NX_LocalVarUpdater {
         return false;
     }
 
-    _condTempSelector(_identifier) {
+    _condTempSelector(_deltaTime, _identifier) {
         // Temporary code until packs code is written and implemented
         // Uses position of AIR COND knobs to generate the trim air temperature
         let trimTemp = null;
@@ -125,7 +165,7 @@ class A32NX_LocalVarUpdater {
         return trimTemp;
     }
 
-    _condTrimOutletSelector(_compartment) {
+    _condTrimOutletSelector(_deltaTime, _compartment) {
         // Cabin initially has outside temperature
         if (!this.initializedCabinTemp[_compartment]) {
             this.initializedCabinTemp[_compartment] = true;
@@ -140,14 +180,14 @@ class A32NX_LocalVarUpdater {
         const deltaTemp = trimTemp - currentCabinTemp;
 
         // temperature variation depends on packflow and compartment size
-        let compartmentSizeModifier = 0.0001;
+        let compartmentSizeModifier = 0.000005;
 
         if (_compartment == "CKPT") {
-            compartmentSizeModifier = 0.0002;
+            compartmentSizeModifier = 0.00001;
         }
 
         const cabinTempVariationSpeed = compartmentSizeModifier * (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "number") + 1);
-        const cabinTemp = currentCabinTemp + deltaTemp * cabinTempVariationSpeed;
+        const cabinTemp = currentCabinTemp + ((deltaTemp * cabinTempVariationSpeed) * _deltaTime);
 
         return cabinTemp;
     }
