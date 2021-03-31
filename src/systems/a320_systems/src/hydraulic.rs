@@ -536,7 +536,8 @@ pub struct A320HydraulicLogic {
     yellow_loop_pressurised_feedback: bool,
 }
 
-//Implements low level logic for all hydraulics commands
+// Implements low level logic for all hydraulics commands
+// takes inputs from hydraulics and from plane systems, update outputs for pumps and all other hyd systems
 impl A320HydraulicLogic {
     const CARGO_OPERATED_TIMEOUT_YPUMP: f64 = 20.0; //Timeout to shut off yellow epump after cargo operation
     const CARGO_OPERATED_TIMEOUT_PTU: f64 = 40.0; //Timeout to keep ptu inhibited after cargo operation
@@ -1540,6 +1541,47 @@ mod tests {
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(200.));
             assert!(!test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn edp_deactivation_test() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_ptu_state(false)
+                .run_one_tick();
+
+            //Starting eng 1
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(50.))
+                .start_eng2(Ratio::new::<percent>(50.))
+                .run_one_tick();
+            //ALMOST No pressure
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
+
+            //Waiting for 5s pressure should be at 3000 psi
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
+
+            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
+
+            //Stoping edp1, pressure should fall in 20s
+            test_bed = test_bed
+                .set_green_ed_pump(false)
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
+
+            //Stoping edp2, pressure should fall in 20s
+            test_bed = test_bed
+                .set_yellow_ed_pump(false)
+                .run_waiting_for(Duration::from_secs(20));
+
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
         }
 
         #[test]
