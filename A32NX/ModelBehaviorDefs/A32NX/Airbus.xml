@@ -776,9 +776,11 @@
 	</Template>
 
 	<Template Name="FBW_AIRLINER_SIGNS_LIGHT_Template">
-		<UseTemplate Name="ASOBO_GT_Push_Button_Airliner_Dummy">
-			<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
-			<SEQ2_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position) 2 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+		<UseTemplate Name="FBW_Push_Toggle">
+            <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
+			<SEQ1_CODE>0</SEQ1_CODE>
+			<SEQ2_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position) 2 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_CODE>
+            <DUMMY_BUTTON/>
 		</UseTemplate>
 	</Template>
 
