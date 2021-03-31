@@ -241,6 +241,8 @@ impl HydLoop {
     const ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1885.0; // Nitrogen PSI
     const ACCUMULATOR_MAX_VOLUME: f64 = 0.264; // in gallons
 
+    const STATIC_LEAK_FLOW: f64 = 0.05; //Gallon per s of flow lost to reservoir @ 3000psi
+
     const DELTA_VOL_LOW_PASS_FILTER: f64 = 0.4;
 
     const ACCUMULATOR_PRESS_BREAKPTS: [f64; 9] =
@@ -461,7 +463,10 @@ impl HydLoop {
         //TODO: separate static leaks per zone of high pressure or actuator
         //TODO: Use external pressure and/or reservoir pressure instead of 14.7 psi default
         let static_leaks_vol = Volume::new::<gallon>(
-            0.04 * delta_time.as_secs_f64() * (self.loop_pressure.get::<psi>() - 14.7) / 3000.0,
+            HydLoop::STATIC_LEAK_FLOW
+                * delta_time.as_secs_f64()
+                * (self.loop_pressure.get::<psi>() - 14.7)
+                / 3000.0,
         );
 
         // Draw delta_vol from reservoir
@@ -533,9 +538,11 @@ impl HydLoop {
 pub struct Pump {
     delta_vol_max: Volume,
     delta_vol_min: Volume,
+    current_displacement: Volume,
     press_breakpoints: [f64; 9],
     displacement_carac: [f64; 9],
     displacement_dynamic: f64, // Displacement low pass filter. [0:1], 0 frozen -> 1 instantaneous dynamic
+    is_pressurised: bool,
 }
 impl Pump {
     fn new(
@@ -546,29 +553,41 @@ impl Pump {
         Pump {
             delta_vol_max: Volume::new::<gallon>(0.),
             delta_vol_min: Volume::new::<gallon>(0.),
+            current_displacement: Volume::new::<gallon>(0.),
             press_breakpoints,
             displacement_carac,
             displacement_dynamic,
+            is_pressurised: true,
         }
     }
 
+    pub fn set_pressurised_state(&mut self, is_pressurised: bool) {
+        self.is_pressurised = is_pressurised;
+    }
+
     fn update(&mut self, delta_time: &Duration, line: &HydLoop, rpm: f64) {
-        let displacement = self.calculate_displacement(line.get_pressure());
+        let theoretical_displacement = self.calculate_displacement(line.get_pressure());
 
-        let flow =
-            Pump::calculate_flow(rpm, displacement).max(VolumeRate::new::<gallon_per_second>(0.));
+        //Actual displacement is the calculated one with a low pass filter applied to mimic displacement transients dynamic
+        self.current_displacement = (1.0 - self.displacement_dynamic) * self.current_displacement
+            + self.displacement_dynamic * theoretical_displacement;
 
-        self.delta_vol_max = (1.0 - self.displacement_dynamic) * self.delta_vol_max
-            + self.displacement_dynamic * flow * Time::new::<second>(delta_time.as_secs_f64());
+        let flow = Pump::calculate_flow(rpm, self.current_displacement)
+            .max(VolumeRate::new::<gallon_per_second>(0.));
+
+        self.delta_vol_max = flow * Time::new::<second>(delta_time.as_secs_f64());
         self.delta_vol_min = Volume::new::<gallon>(0.0);
     }
 
     fn calculate_displacement(&self, pressure: Pressure) -> Volume {
-        Volume::new::<cubic_inch>(interpolation(
-            &self.press_breakpoints,
-            &self.displacement_carac,
-            pressure.get::<psi>(),
-        ))
+        if self.is_pressurised {
+            return Volume::new::<cubic_inch>(interpolation(
+                &self.press_breakpoints,
+                &self.displacement_carac,
+                pressure.get::<psi>(),
+            ));
+        }
+        Volume::new::<cubic_inch>(0.)
     }
 
     fn calculate_flow(rpm: f64, displacement: Volume) -> VolumeRate {
@@ -721,22 +740,19 @@ impl EngineDrivenPump {
     pub fn update(&mut self, delta_time: &Duration, line: &HydLoop, engine: &Engine) {
         let n2_rpm =
             engine.corrected_n2().get::<percent>() * EngineDrivenPump::LEAP_1A26_MAX_N2_RPM / 100.;
-        let mut pump_rpm = n2_rpm * EngineDrivenPump::PUMP_N2_GEAR_RATIO;
+        let pump_rpm = n2_rpm * EngineDrivenPump::PUMP_N2_GEAR_RATIO;
 
-        //TODO Activate pumps realistically, adding a pressurised/unpressurised mode
-        if !self.active {
-            //Hack for pump desactivation
-            pump_rpm = 0.0;
-        }
         self.pump.update(delta_time, line, pump_rpm);
     }
 
     pub fn start(&mut self) {
         self.active = true;
+        self.pump.set_pressurised_state(true);
     }
 
     pub fn stop(&mut self) {
         self.active = false;
+        self.pump.set_pressurised_state(false);
     }
 
     pub fn is_active(&self) -> bool {
@@ -1217,6 +1233,7 @@ mod tests {
 
         let mut edp1 = engine_driven_pump();
         assert!(!edp1.active); //Is off when created?
+        edp1.stop();
 
         let mut engine1 = engine(Ratio::new::<percent>(0.0));
 
