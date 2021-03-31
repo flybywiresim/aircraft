@@ -295,6 +295,10 @@ impl HydLoop {
         self.reservoir_volume
     }
 
+    pub fn get_loop_fluid_volume(&self) -> Volume {
+        self.loop_volume
+    }
+
     pub fn get_usable_reservoir_fluid(&self, amount: Volume) -> Volume {
         let mut drawn = amount;
         if amount > self.reservoir_volume {
@@ -632,6 +636,10 @@ impl ElectricPump {
 
     pub fn stop(&mut self) {
         self.active = false;
+    }
+
+    pub fn get_rpm(&self) -> f64 {
+        self.rpm
     }
 
     pub fn update(&mut self, delta_time: &Duration, line: &HydLoop) {
