@@ -13,7 +13,7 @@ export default new TaskOfTasks('a32nx', [
             'src/fbw/build.sh'
         ]),
         new ExecTask('systems-fadec', [
-            'cp src/fadec/fadec.wasm A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/panel/'
+            'src/fadec/build.sh'
         ]),
     ], true),
 
