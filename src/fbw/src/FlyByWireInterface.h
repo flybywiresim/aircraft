@@ -62,8 +62,10 @@ class FlyByWireInterface {
   bool pauseDetected = false;
   bool wasInSlew = false;
 
-  bool flightDirectorLatch_1 = false;
-  bool flightDirectorLatch_2 = false;
+  bool flightDirectorConnectLatch_1 = false;
+  bool flightDirectorConnectLatch_2 = false;
+  bool flightDirectorDisconnectLatch_1 = false;
+  bool flightDirectorDisconnectLatch_2 = false;
 
   bool autolandWarningLatch = false;
   bool autolandWarningTriggered = false;

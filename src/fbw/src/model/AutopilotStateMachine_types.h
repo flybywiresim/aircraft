@@ -390,6 +390,7 @@ typedef struct {
   boolean_T EXPED_mode_active;
   boolean_T speed_protection_mode;
   boolean_T FD_disconnect;
+  boolean_T FD_connect;
 } ap_vertical_output;
 
 #endif
@@ -430,6 +431,7 @@ typedef struct {
   boolean_T ALT_soft_mode_active;
   boolean_T EXPED_mode_active;
   boolean_T FD_disconnect;
+  boolean_T FD_connect;
 } ap_raw_laws_input;
 
 #endif

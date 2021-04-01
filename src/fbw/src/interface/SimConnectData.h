@@ -208,6 +208,7 @@ struct ClientDataAutopilotStateMachine {
   double ALT_soft_mode_active;
   double EXPED_mode_active;
   double FD_disconnect;
+  double FD_connect;
 };
 
 struct ClientDataAutopilotLaws {
