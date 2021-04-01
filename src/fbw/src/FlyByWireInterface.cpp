@@ -384,9 +384,15 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
 bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
   // get data from interface ------------------------------------------------------------------------------------------
   SimData simData = simConnectInterface.getSimData();
+  SimInput simInput = simConnectInterface.getSimInput();
   SimInputAutopilot simInputAutopilot = simConnectInterface.getSimInputAutopilot();
 
-  // calculate XTK and TAE --------------------------------------------------------------------------------------------
+  // determine disconnection conditions -------------------------------------------------------------------------------
+
+  bool doDisconnect = false;
+  if (autopilotStateMachineOutput.enabled_AP1 || autopilotStateMachineOutput.enabled_AP2) {
+    doDisconnect = fabs(simInput.inputs[0]) > 0.5 || fabs(simInput.inputs[1]) > 0.5 || fabs(simInput.inputs[2]) > 0.4;
+  }
 
   // update state machine ---------------------------------------------------------------------------------------------
   if (autopilotStateMachineEnabled) {
@@ -456,7 +462,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.input.FD_active = simData.ap_fd_1_active | simData.ap_fd_2_active;
     autopilotStateMachineInput.in.input.AP_1_push = simInputAutopilot.AP_1_push;
     autopilotStateMachineInput.in.input.AP_2_push = simInputAutopilot.AP_2_push;
-    autopilotStateMachineInput.in.input.AP_DISCONNECT_push = simInputAutopilot.AP_disconnect || wasInSlew;
+    autopilotStateMachineInput.in.input.AP_DISCONNECT_push = simInputAutopilot.AP_disconnect || wasInSlew || doDisconnect;
     autopilotStateMachineInput.in.input.HDG_push = simInputAutopilot.HDG_push;
     autopilotStateMachineInput.in.input.HDG_pull = simInputAutopilot.HDG_pull;
     autopilotStateMachineInput.in.input.ALT_push = simInputAutopilot.ALT_push;
