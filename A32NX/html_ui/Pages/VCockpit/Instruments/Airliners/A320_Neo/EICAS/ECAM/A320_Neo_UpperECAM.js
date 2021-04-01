@@ -2331,13 +2331,17 @@ var A320_Neo_UpperECAM;
             return _min;
         }
 
-        /**
+        /*
          * @param _active {boolean}
          * @param _value {number}
          * @param _mode {ThrottleMode}
          * @param _grounded {boolean}
          * @param _phase {FlightPhase}
          */
+        formatDecimalSvg(value, digits) {
+            const [num, dec] = value.toFixed(digits).split(".");
+            return `${num}.<span>${dec}</span>`;
+        }
         setThrottle(_active, _value = 0, _mode = ThrottleMode.UNKNOWN, _grounded = true, _phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number")) {
             if (_active !== this.currentThrottleIsActive || _value !== this.currentThrottleValue || _mode !== this.currentThrottleMode || _grounded !== this.currentGrounded || this.currentStart || _phase != this.currentPhase) {
                 this.currentThrottleIsActive = _active;
@@ -2382,11 +2386,7 @@ var A320_Neo_UpperECAM;
                         if (_value >= 0) {
                             this.throttleState.style.visibility = "visible";
                             this.throttleValue.style.visibility = "visible";
-                            const strArray = _value.toFixed(1).split(".");
-                            const wholeNumber = strArray[0];
-                            const decimal = strArray[1];
-                            const throttleVal = wholeNumber + ".<span>" + decimal + "</span>";
-                            this.throttleValue.innerHTML = throttleVal;
+                            this.throttleValue.innerHTML = this.formatDecimalSvg(_value, 1);
                         } else {
                             this.throttleState.style.visibility = "hidden";
                             this.throttleValue.style.visibility = "hidden";
