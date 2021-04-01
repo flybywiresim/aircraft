@@ -2818,7 +2818,7 @@ class Warnings extends NavSystemElement {
     }
     landingGearCallback() {
         const gear = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
-        const throttle = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "percent");
+        const throttle = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number");
         const flaps = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number");
         return !gear && (flaps > 1 || (throttle == 0));
     }

@@ -141,8 +141,8 @@ var A320_Neo_LowerECAM_BLEED;
             const eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool");
             const eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool");
             const xBleedValveOpen = SimVar.GetSimVarValue("L:x_bleed_valve", "bool");
-            const throttleEng1 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "number");
-            const throttleEng2 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "number");
+            const throttleEng1 = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number");
+            const throttleEng2 = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number");
             const apuBleedAirValveOpen = SimVar.GetSimVarValue("L:A32NX_APU_BLEED_AIR_VALVE_OPEN", "Bool");
             const currentXbleedState = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
             const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
@@ -168,7 +168,7 @@ var A320_Neo_LowerECAM_BLEED;
             let currentEngineBleedState = [0, 0];
             currentEngineBleedState = [SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool"), SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool")];
 
-            if (throttleEng1 > 0.891 && throttleEng2 > 0.891) {
+            if (throttleEng1 > 42 && throttleEng2 > 42) {
                 this.thrustTOGAApplied = true;
             } else {
                 this.thrustTOGAApplied = false;
