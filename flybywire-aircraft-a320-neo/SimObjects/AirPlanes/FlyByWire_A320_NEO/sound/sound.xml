@@ -325,39 +325,27 @@
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
             <Range UpperBound="0" />
-            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
-                <Range LowerBound="1" />
-            </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
             <Range UpperBound="0" />
-            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
-                <Range LowerBound="1" />
-            </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="SCREEN_PFD_L" ViewPoint="Inside" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="SCREEN_PFD_L" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
             <Range UpperBound="0" />
-            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
-                <Range LowerBound="1" />
-            </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="SCREEN_PFD_R" ViewPoint="Inside" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="SCREEN_PFD_R" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
             <Range UpperBound="0" />
-            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
-                <Range LowerBound="1" />
-            </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="SCREEN_PFD_L" ViewPoint="Inside" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="SCREEN_PFD_L" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="SCREEN_PFD_R" ViewPoint="Inside" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="SCREEN_PFD_R" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
             <Range LowerBound="1" />
         </Sound>
 
@@ -1311,56 +1299,56 @@
 
         <!-- INSTRUMENTS FOLEYS  =========================================================================  -->
 
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+            <Range LowerBound="0.00" UpperBound="0.00" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+            <Range LowerBound="0.25" UpperBound="0.25" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+            <Range LowerBound="0.50" UpperBound="0.50" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+            <Range LowerBound="0.75" UpperBound="0.75" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+            <Range LowerBound="1.00" UpperBound="1.00" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="Spoiler0" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_HANDLE_POSITION" Units="NUMBER" Index="1">
             <Range LowerBound="0" UpperBound="0" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
-            <Range LowerBound="25" UpperBound="25" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
-            <Range LowerBound="50" UpperBound="50" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
-            <Range LowerBound="75" UpperBound="75" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
-            <Range LowerBound="100" UpperBound="100" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="Spoiler0" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS HANDLE POSITION" Units="PERCENT" Index="1">
-            <Range LowerBound="0" UpperBound="0" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
-            <Requires SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+            <Requires LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
                 <Range UpperBound="0" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="Spoiler50" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS HANDLE POSITION" Units="PERCENT" Index="1">
-            <Range LowerBound="49" UpperBound="51" />
+        <Sound WwiseData="true" WwiseEvent="Spoiler50" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_HANDLE_POSITION" Units="NUMBER" Index="1">
+            <Range LowerBound="0.49" UpperBound="0.51" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
-            <Requires SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+            <Requires LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
                 <Range UpperBound="0" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="Spoiler100" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS HANDLE POSITION" Units="PERCENT" Index="1">
-            <Range LowerBound="99" />
+        <Sound WwiseData="true" WwiseEvent="Spoiler100" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_HANDLE_POSITION" Units="NUMBER" Index="1">
+            <Range LowerBound="0.99" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
-            <Requires SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+            <Requires LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
                 <Range UpperBound="0" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="SpoilerARM" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+        <Sound WwiseData="true" WwiseEvent="SpoilerARM" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
             <Range LowerBound="1" UpperBound="1" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="SpoilerDISARM" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+        <Sound WwiseData="true" WwiseEvent="SpoilerDISARM" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
             <Range LowerBound="0" UpperBound="0" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
@@ -1375,31 +1363,31 @@
             <WwiseRTPC LocalVar="XMLVAR_Throttle2Position" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE2_LEVER_POSITION" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
-            <Range LowerBound="2.9" UpperBound="3.1" />
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
+            <Range LowerBound="73" UpperBound="77" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
-            <Range LowerBound="2.9" UpperBound="3.1" />
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
+            <Range LowerBound="73" UpperBound="77" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="TOGAdetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
-            <Range LowerBound="1.9" UpperBound="2.1" />
+        <Sound WwiseData="true" WwiseEvent="TOGAdetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
+            <Range LowerBound="48" UpperBound="52" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="TOGAdetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
-            <Range LowerBound="1.9" UpperBound="2.1" />
+        <Sound WwiseData="true" WwiseEvent="TOGAdetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
+            <Range LowerBound="48" UpperBound="52" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
-            <Range LowerBound="0.9" UpperBound="1.1" />
-            <Range LowerBound="3.9" />
+        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
+            <Range LowerBound="23" UpperBound="27" />
+            <Range LowerBound="98" />
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
-            <Range LowerBound="0.9" UpperBound="1.1" />
-            <Range LowerBound="3.9" />
+        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
+            <Range LowerBound="23" UpperBound="27" />
+            <Range LowerBound="98" />
             <Range UpperBound="0" />
         </Sound>
 
