@@ -105,7 +105,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FLAPS HANDLE INDEX" Units="Number"/>
+                  <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX)" Units="Number"/>
                   <Val Value="0"/>
                </Operator>
             </TestValue>
@@ -119,7 +119,7 @@
             <Test>
                <TestValue>
                   <Operator OpType="EQUAL">
-                     <Val SimVarName="SPOILERS HANDLE POSITION" Units="Number"/>
+                     <Val Code="(L:A32NX_SPOILERS_HANDLE_POSITION)" Units="Number"/>
                      <Val Value="0"/>
                   </Operator>
                </TestValue>
@@ -129,7 +129,7 @@
             <Test>
                <TestValue>
                   <Operator OpType="NOT">
-                     <Val SimVarName="SPOILERS ARMED" Units="Boolean"/>
+                     <Val Code="(L:A32NX_SPOILERS_ARMED)" Units="Boolean"/>
                   </Operator>
                </TestValue>
                <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="SPOILERS_ARM_TOGGLE"/>
@@ -824,7 +824,7 @@
          <Instrument Id="HANDLING_Lever_Spoilers" />
          <Test>
             <TestValue>
-               <Val SimVarName="SPOILERS ARMED" Units="Boolean"/>
+               <Val Code="(L:A32NX_SPOILERS_ARMED)" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="SPOILERS_ARM_TOGGLE"/>
          </Test>
@@ -1091,7 +1091,7 @@
          <Test>
             <TestValue>
                <Operator OpType="NOT">
-                  <Val SimVarName="SPOILERS ARMED" Units="Boolean"/>
+                  <Val Code="(L:A32NX_SPOILERS_ARMED)" Units="Boolean"/>
                </Operator>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="SPOILERS_ARM_TOGGLE"/>
@@ -1145,7 +1145,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FLAPS HANDLE INDEX" Units="Number"/>
+                  <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX)" Units="Number"/>
                   <Val Value="1"/>
                </Operator>
             </TestValue>
@@ -1158,7 +1158,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FLAPS HANDLE INDEX" Units="Number"/>
+                  <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX)" Units="Number"/>
                   <Val Value="0"/>
                </Operator>
             </TestValue>
@@ -1424,7 +1424,7 @@
          <Instrument Id="HANDLING_Lever_Spoilers" />
          <Test>
             <TestValue>
-               <Val SimVarName="SPOILERS ARMED" Units="Boolean"/>
+               <Val Code="(L:A32NX_SPOILERS_ARMED)" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="SPOILERS_ARM_TOGGLE"/>
          </Test>
@@ -1461,7 +1461,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FLAPS HANDLE INDEX" Units="Number"/>
+                  <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX)" Units="Number"/>
                   <Val Value="1"/>
                </Operator>
             </TestValue>
@@ -1498,7 +1498,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FLAPS HANDLE INDEX" Units="Number"/>
+                  <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX)" Units="Number"/>
                   <Val Value="2"/>
                </Operator>
             </TestValue>
@@ -1528,7 +1528,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FLAPS HANDLE INDEX" Units="Number"/>
+                  <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX)" Units="Number"/>
                   <Val Value="3"/>
                </Operator>
             </TestValue>
@@ -1545,7 +1545,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FLAPS HANDLE INDEX" Units="Number"/>
+                  <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX)" Units="Number"/>
                   <Val Value="4"/>
                </Operator>
             </TestValue>
@@ -1621,7 +1621,7 @@
          <Instrument Id="HANDLING_Lever_Spoilers" />
          <Test>
             <TestValue>
-               <Val SimVarName="SPOILERS ARMED" Units="Boolean"/>
+               <Val Code="(L:A32NX_SPOILERS_ARMED)" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="SPOILERS_ARM_TOGGLE"/>
          </Test>
@@ -1659,7 +1659,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FLAPS HANDLE INDEX" Units="Number"/>
+                  <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX)" Units="Number"/>
                   <Val Value="1"/>
                </Operator>
             </TestValue>
@@ -1678,7 +1678,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FLAPS HANDLE INDEX" Units="Number"/>
+                  <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX)" Units="Number"/>
                   <Val Value="2"/>
                </Operator>
             </TestValue>
@@ -1700,7 +1700,7 @@
          <Instrument Id="HANDLING_Lever_Spoilers" />
          <Test>
             <TestValue>
-               <Val SimVarName="SPOILERS ARMED" Units="Boolean"/>
+               <Val Code="(L:A32NX_SPOILERS_ARMED)" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="SPOILERS_ARM_TOGGLE"/>
          </Test>
@@ -1717,7 +1717,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FLAPS HANDLE INDEX" Units="Number"/>
+                  <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX)" Units="Number"/>
                   <Val Value="3"/>
                </Operator>
             </TestValue>
@@ -1734,7 +1734,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FLAPS HANDLE INDEX" Units="Number"/>
+                  <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX)" Units="Number"/>
                   <Val Value="4"/>
                </Operator>
             </TestValue>
@@ -1892,7 +1892,7 @@
          <Test>
             <TestValue>
                <Operator OpType="NOT">
-                  <Val SimVarName="SPOILERS ARMED" Units="Boolean"/>
+                  <Val Code="(L:A32NX_SPOILERS_ARMED)" Units="Boolean"/>
                </Operator>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="SPOILERS_ARM_TOGGLE"/>
@@ -1904,7 +1904,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FLAPS HANDLE INDEX" Units="Number"/>
+                  <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX)" Units="Number"/>
                   <Val Value="0"/>
                </Operator>
             </TestValue>
@@ -2169,7 +2169,7 @@
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
-                  <Val SimVarName="FLAPS HANDLE INDEX" Units="Number"/>
+                  <Val Code="(L:A32NX_FLAPS_HANDLE_INDEX)" Units="Number"/>
                   <Val Value="3"/>
                </Operator>
             </TestValue>
