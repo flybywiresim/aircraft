@@ -9,20 +9,16 @@
         <DefaultTemplateParameters>
             <DEFAULT_NAME>Autopilot</DEFAULT_NAME>
             <HELPID>HELPID_AUTOPILOT_MASTER</HELPID>
-            <TOOLTIPID>%((A:AUTOPILOT MASTER, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
+            <TOOLTIPID>%((L:A32NX_AUTOPILOT_#ID#_ACTIVE, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
             <AP_COUNT>1</AP_COUNT>
             <ID>1</ID>
             <ON_AP_MASTER_SWITCH></ON_AP_MASTER_SWITCH>
         </DefaultTemplateParameters>
         <OverrideTemplateParameters>
-            <RESET_CODE>
-                1 #ID# != if{ 0 (&gt;L:XMLVAR_Autopilot_1_Status) }
-                2 #ID# != if{ 0 (&gt;L:XMLVAR_Autopilot_2_Status) }
-            </RESET_CODE>
             <TEST_CODE>1</TEST_CODE>
             <Condition Check="ID" Match="1">
                 <True>
-                    <INIT>(A:AUTOPILOT MASTER, Bool) (&gt;L:XMLVAR_Autopilot_#ID#_Status)</INIT>
+                    <INIT>(L:A32NX_AUTOPILOT_#ID#_ACTIVE, Bool)</INIT>
                 </True>
             </Condition>
         </OverrideTemplateParameters>
@@ -31,45 +27,30 @@
                 <UseTemplate Name="ASOBO_GT_Update">
                     <FREQUENCY>3</FREQUENCY>
                     <UPDATE_CODE>
-                        (A:AUTOPILOT MASTER, Bool) (L:XMLVAR_Autopilot_1_Status) (L:XMLVAR_Autopilot_2_Status) or != if{
-                            #RESET_CODE#
-                            (A:AUTOPILOT MASTER, Bool) (&gt;L:XMLVAR_Autopilot_#ID#_Status)
-                        }
+                        (L:A32NX_AUTOPILOT_#ID#_ACTIVE, Bool)
                     </UPDATE_CODE>
                 </UseTemplate>
             </True>
         </Condition>
         <UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
-            <LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_FCU_AP_#ID#_PUSH)</LEFT_SINGLE_CODE>
+            <EMISSIVE_CODE_ACTIVE>(L:A32NX_AUTOPILOT_#ID#_ACTIVE, Bool)</EMISSIVE_CODE_ACTIVE>
+        </UseTemplate>
+    </Template>
 
-                (L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool) if{
-                    (&gt;K:AP_LOC_HOLD_ON)
-                    (&gt;K:AP_LOC_HOLD_OFF)
-                }
-                (L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool) if{
-                    (&gt;K:AP_LOC_HOLD)
-                }
-                (A:AUTOPILOT DISENGAGED, Bool) ! #TEST_CODE# and  if{
-                    #RESET_CODE#
-                    (L:XMLVAR_Autopilot_#ID#_Status) ! (&gt;L:XMLVAR_Autopilot_#ID#_Status)
-                    (L:XMLVAR_Autopilot_1_Status) (L:XMLVAR_Autopilot_2_Status) or
-                    (A:AUTOPILOT MASTER, Bool) != if{
+    <!--
+    Template for the ATHR button on the FCU.
 
-                        (&gt;K:AP_MASTER)
-                        (A:AUTOPILOT MASTER, Bool) ! if{
-                            0 (&gt;L:XMLVAR_Autopilot_#ID#_Status)
-                        }
-                    }
-                }
-                (L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool) if{
-                    (&gt;K:AP_APR_HOLD)
-                }
-                (L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool) if{
-                    (&gt;K:AP_LOC_HOLD)
-                }
-
-            </LEFT_SINGLE_CODE>
-            <EMISSIVE_CODE_ACTIVE>#APPR_CONDITION# (A:AUTOPILOT MASTER, Bool) (L:XMLVAR_Autopilot_#ID#_Status) and or</EMISSIVE_CODE_ACTIVE>
+    Should probably be replaced by a generic template at some point.
+    -->
+    <Template Name="FBW_Airbus_Autopilot_Push_Autothrust">
+        <DefaultTemplateParameters>
+            <DEFAULT_NAME>Autothrust</DEFAULT_NAME>
+            <TOOLTIPID>%((L:A32NX_AUTOTHRUST_STATUS, enum) 0 &gt;)%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_ARMED%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_OFF%{end}</TOOLTIPID>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
+            <LEFT_SINGLE_CODE>1 (&gt;K:AUTO_THROTTLE_ARM)</LEFT_SINGLE_CODE>
+            <EMISSIVE_CODE_ACTIVE>(L:A32NX_AUTOTHRUST_STATUS, enum) 0 &gt;</EMISSIVE_CODE_ACTIVE>
         </UseTemplate>
     </Template>
 
@@ -82,24 +63,12 @@
         <DefaultTemplateParameters>
             <DEFAULT_NAME>Localizer</DEFAULT_NAME>
             <HELPID>HELPID_AUTOPILOT_NAV_HOLD</HELPID>
-            <TOOLTIPID>%(L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool)%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LOC_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LOC_OFF%{end}</TOOLTIPID>
+            <TOOLTIPID>%((L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LOC_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LOC_OFF%{end}</TOOLTIPID>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
-            <LEFT_SINGLE_CODE>
-
-                (L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool) if{
-                    0 (&gt;L:#PLANE_NAME#_AUTOPILOT_APPR_MODE)
-                    0 (&gt;L:#PLANE_NAME#_AUTOPILOT_LOC_MODE)
-                    (&gt;K:AP_LOC_HOLD)
-                } els{
-                    0 (&gt;L:#PLANE_NAME#_AUTOPILOT_APPR_MODE)
-                    1 (&gt;L:#PLANE_NAME#_AUTOPILOT_LOC_MODE)
-                    (&gt;K:AP_LOC_HOLD)
-                }
-
-            </LEFT_SINGLE_CODE>
-            <EMISSIVE_CODE_ACTIVE>(L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool)</EMISSIVE_CODE_ACTIVE>
+            <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_FCU_LOC_PUSH)</LEFT_SINGLE_CODE>
+            <EMISSIVE_CODE_ACTIVE>(L:A32NX_FCU_LOC_MODE_ACTIVE, bool)</EMISSIVE_CODE_ACTIVE>
         </UseTemplate>
     </Template>
 
@@ -116,20 +85,20 @@
         </DefaultTemplateParameters>
 
         <UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
-            <LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_FCU_APPR_PUSH)</LEFT_SINGLE_CODE>
+            <EMISSIVE_CODE_ACTIVE>(L:A32NX_FCU_APPR_MODE_ACTIVE, bool)</EMISSIVE_CODE_ACTIVE>
+        </UseTemplate>
+    </Template>
 
-                (L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool) if{
-                    0 (&gt;L:#PLANE_NAME#_AUTOPILOT_APPR_MODE)
-                    (&gt;K:AP_LOC_HOLD_ON)
-                    (&gt;K:AP_LOC_HOLD_OFF)
-                } els{
-                    1 (&gt;L:#PLANE_NAME#_AUTOPILOT_APPR_MODE)
-                    0 (&gt;L:#PLANE_NAME#_AUTOPILOT_LOC_MODE)
-                    (&gt;K:AP_APR_HOLD_ON)
-                }
-
-            </LEFT_SINGLE_CODE>
-            <EMISSIVE_CODE_ACTIVE>(L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool)</EMISSIVE_CODE_ACTIVE>
+    <Template Name="FBW_AIRBUS_Push_Expedite_Template">
+        <DefaultTemplateParameters>
+            <DEFAULT_NAME>Expedite</DEFAULT_NAME>
+            <PLANE_PREFIX></PLANE_PREFIX>
+            <TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
+            <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_FCU_EXPED_PUSH)</LEFT_SINGLE_CODE>
+            <EMISSIVE_CODE_ACTIVE>(L:A32NX_FMA_EXPEDITE_MODE, bool)</EMISSIVE_CODE_ACTIVE>
         </UseTemplate>
     </Template>
     
@@ -159,26 +128,16 @@
 					<UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
 						<ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
 						<ANTICLOCKWISE_CODE>
-							(L:XMLVAR_AirSpeedIsInMach) if{
-								1 (&gt;K:AP_MACH_VAR_DEC)
-							} els{
-								1 (&gt;K:AP_SPD_VAR_DEC)
-							}
-							(&gt;H:A320_Neo_CDU_AP_DEC_SPEED)
+                            (&gt;H:A320_Neo_FCU_SPEED_DEC)
 						</ANTICLOCKWISE_CODE>
 						<CLOCKWISE_CODE>
-							(L:XMLVAR_AirSpeedIsInMach) if{
-								1 (&gt;K:AP_MACH_VAR_INC)
-							} els{
-								1 (&gt;K:AP_SPD_VAR_INC)
-							}
-							(&gt;H:A320_Neo_CDU_AP_INC_SPEED)
+                            (&gt;H:A320_Neo_FCU_SPEED_INC)
 						</CLOCKWISE_CODE>
 						<PULL_CODE>
-							(&gt;H:A320_Neo_CDU_MODE_SELECTED_SPEED)
+							(&gt;H:A320_Neo_FCU_SPEED_PULL)
 						</PULL_CODE>
 						<PUSH_CODE>
-							(&gt;H:A320_Neo_CDU_MODE_MANAGED_SPEED)
+							(&gt;H:A320_Neo_FCU_SPEED_PUSH)
 						</PUSH_CODE>
 						<WWISE_EVENT_1>QNHknob</WWISE_EVENT_1>
 						<WWISE_EVENT_2>QNHknob</WWISE_EVENT_2>
@@ -190,30 +149,6 @@
 						<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_INCREASE</ANIMTIP_1>
 						<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_ENGAGE_MANAGE_MODE</ANIMTIP_2>
 						<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_ENGAGE_SELECTED_AIRSPEED_MODE</ANIMTIP_3>
-					</UseTemplate>
-				</Case>
-				<Case Value="B747">
-					<UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
-						<ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
-						<ANTICLOCKWISE_CODE>(L:XMLVAR_AirSpeedIsInMach) if{ 1 (&gt;K:AP_MACH_VAR_DEC) } els{ 1 (&gt;K:AP_SPD_VAR_DEC) } </ANTICLOCKWISE_CODE>
-						<CLOCKWISE_CODE>(L:XMLVAR_AirSpeedIsInMach) if{ 1 (&gt;K:AP_MACH_VAR_INC) } els{ 1 (&gt;K:AP_SPD_VAR_INC) } </CLOCKWISE_CODE>
-						<LEFT_SINGLE_CODE>(&gt;H:B747_8_FMC_1_AP_SPEED_INTERVENTION)</LEFT_SINGLE_CODE>
-						<WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
-						<WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
-						<ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>
-						<ANIMTIP_2>%((L:AP_VNAV_ARMED))%{if}%{else}TT:COCKPIT.TOOLTIPS.UNAVAILABLE%{end} TT:COCKPIT.TOOLTIPS.AUTOPILOT_SPD_INTER_ENABLE</ANIMTIP_2>
-					</UseTemplate>
-				</Case>
-				<Case Value="AS01B">
-					<UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
-						<ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
-						<ANTICLOCKWISE_CODE>(L:XMLVAR_AirSpeedIsInMach) if{ 1 (&gt;K:AP_MACH_VAR_DEC) } els{ 1 (&gt;K:AP_SPD_VAR_DEC) } </ANTICLOCKWISE_CODE>
-						<CLOCKWISE_CODE>(L:XMLVAR_AirSpeedIsInMach) if{ 1 (&gt;K:AP_MACH_VAR_INC) } els{ 1 (&gt;K:AP_SPD_VAR_INC) } </CLOCKWISE_CODE>
-						<LEFT_SINGLE_CODE>(&gt;H:AS01B_FMC_1_AP_SPEED_INTERVENTION)</LEFT_SINGLE_CODE>
-						<WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
-						<WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
-						<ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>
-						<ANIMTIP_2>%((L:AP_VNAV_ARMED))%{if}%{else}TT:COCKPIT.TOOLTIPS.UNAVAILABLE%{end} TT:COCKPIT.TOOLTIPS.AUTOPILOT_SPD_INTER_ENABLE</ANIMTIP_2>
 					</UseTemplate>
 				</Case>
 				<Case Value="PUSH">
@@ -237,92 +172,36 @@
 			</Switch>
 		</Component>
 	</Template>
-	<Template Name="FBW_AUTOPILOT_Knob_Speed_Template">
-		<DefaultTemplateParameters>
-			<ANIM_NAME_KNOB>AUTOPILOT_Knob_Speed</ANIM_NAME_KNOB>
-			<ANIM_NAME_MODE>AUTOPILOT_Knob_Speed_Mode</ANIM_NAME_MODE>
-			<ANIM_NAME_PUSH>AUTOPILOT_Knob_Speed_Push</ANIM_NAME_PUSH>
-			<NODE_ID_KNOB>AUTOPILOT_Knob_Speed</NODE_ID_KNOB>
-			<NODE_ID_MODE>AUTOPILOT_Knob_Speed_Mode</NODE_ID_MODE>
-			<PART_ID>AUTOPILOT_Knob_Speed</PART_ID>
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID_KNOB#" Node="#NODE_ID_KNOB#">
-			<Condition Valid="SPEED_MODE_ALWAYS_ON">
-				<True>
-					<UseTemplate Name="ASOBO_GT_Update">
-						<FREQUENCY>1</FREQUENCY>
-						<UPDATE_CODE>
-							(A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool) ! if{
-								(L:XMLVAR_AirSpeedIsInMach) if{
-									(&gt;K:AP_MACH_ON)
-								} els{
-									(&gt;K:AP_AIRSPEED_ON)
-								}
-							}
-						</UPDATE_CODE>
-					</UseTemplate>
-				</True>
-			</Condition>
-			<UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
-				<ANTICLOCKWISE_CODE>
-					(L:XMLVAR_SpeedIsManuallySet) if{
-						(L:XMLVAR_AirSpeedIsInMach) if{
-							(&gt;K:AP_MACH_VAR_DEC)
-						} els{
-							(&gt;K:AP_SPD_VAR_DEC)
-						}
-					}
-				</ANTICLOCKWISE_CODE>
-				<CLOCKWISE_CODE>
-					(L:XMLVAR_SpeedIsManuallySet) if{
-						(L:XMLVAR_AirSpeedIsInMach) if{
-							(&gt;K:AP_MACH_VAR_INC)
-						} els{
-							(&gt;K:AP_SPD_VAR_INC)
-						}
-					}
-				</CLOCKWISE_CODE>
-				<LEFT_SINGLE_CODE>(L:XMLVAR_AirSpeedIsInMach) ! (&gt;L:XMLVAR_AirSpeedIsInMach)</LEFT_SINGLE_CODE>
-				<WWISE_EVENT>autopilot_speed_knob</WWISE_EVENT>
-				<COUNT>36</COUNT>
-				<WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
-				<WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
-				<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
-				<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
-				<ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_DECREASE </ANIMTIP_0>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_INCREASE </ANIMTIP_1>
-				<ANIMTIP_2>%((L:XMLVAR_AirSpeedIsInMach, Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_MACH %{else}%TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_KNOT%{end}</ANIMTIP_2>
-			</UseTemplate>
-		</Component>
-		<Component ID="#NODE_ID_MODE#" Node="#NODE_ID_MODE#">
-			<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-				<!-- ANIMTIPS -->
-					<ANIMREF_ID>0</ANIMREF_ID>
-					<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
-					<ANIMTIP_1_ON_PERCENT>1</ANIMTIP_1_ON_PERCENT>
-					<ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
-					<ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
-					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_ENGAGE_MANAGE_MODE</ANIMTIP_0>
-					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_ENGAGE_SELECTED_AIRSPEED_MODE</ANIMTIP_1>
-				<ANIM_NAME>#ANIM_NAME_MODE#</ANIM_NAME>
-				<ANIM_LAG>300</ANIM_LAG>
-				<OVERRIDE_ANIM_CODE>(L:XMLVAR_SpeedIsManuallySet) 100 *</OVERRIDE_ANIM_CODE>
-				<ANTICLOCKWISE_CODE>0 (&gt;L:XMLVAR_SpeedIsManuallySet)</ANTICLOCKWISE_CODE>
-				<CLOCKWISE_CODE>
-					1 (&gt;L:XMLVAR_SpeedIsManuallySet)
-					(A:FLAPS HANDLE INDEX, Number) 0 &gt; if{ 
-						(A:DESIGN SPEED VS0, knots) sp1 
-					} els{
-						(A:DESIGN SPEED VS1, knots) sp1 
-					}
-					l1 1.3 * (A:AIRSPEED INDICATED, knots) max (&gt;K:AP_SPD_VAR_SET)
-				</CLOCKWISE_CODE>
-				<WWISE_EVENT>autopilot_speed_mode_knob</WWISE_EVENT>
-				<COUNT>1</COUNT>
-				
-			</UseTemplate>
-		</Component>
-	</Template>
+
+    <Template Name="FBW_AUTOPILOT_Push_SpeedToggle_Template">
+        <DefaultTemplateParameters>
+            <DEFAULT_NAME>SpeedToggle</DEFAULT_NAME>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
+            <Switch Param="TYPE">
+                <Case Value="AIRBUS">
+                    <LEFT_SINGLE_CODE>
+                        (&gt;H:A320_Neo_FCU_SPEED_TOGGLE_SPEED_MACH)
+                    </LEFT_SINGLE_CODE>
+                    <EMISSIVE_CODE_ACTIVE>(A:AUTOPILOT MANAGED SPEED IN MACH, Bool)</EMISSIVE_CODE_ACTIVE>
+                    <TOOLTIPID>%((A:AUTOPILOT MANAGED SPEED IN MACH, Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_MACH%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_KNOT%{end}</TOOLTIPID>
+                </Case>
+                <Default>
+                    <LEFT_SINGLE_CODE>
+						(&gt;K:AP_MANAGED_SPEED_IN_MACH_TOGGLE)
+						(L:XMLVAR_AirSpeedIsInMach) ! (&gt;L:XMLVAR_AirSpeedIsInMach)
+                    </LEFT_SINGLE_CODE>
+                    <EMISSIVE_CODE_ACTIVE>(L:XMLVAR_AirSpeedIsInMach)</EMISSIVE_CODE_ACTIVE>
+                    <TOOLTIPID>%((L:XMLVAR_AirSpeedIsInMach, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_MACH%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_KNOT%{end}</TOOLTIPID>
+                </Default>
+            </Switch>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
+        <UseTemplate Name="FBW_Push_Held">
+            <HOLD_SIMVAR>K:A32NX.ATHR_INSTINCTIVE_DISCONNECT</HOLD_SIMVAR>
+        </UseTemplate>
+    </Template>
 
 </ModelBehaviors>

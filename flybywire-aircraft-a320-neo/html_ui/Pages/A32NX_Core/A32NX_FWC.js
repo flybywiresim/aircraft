@@ -19,7 +19,7 @@ class A32NX_FWC {
         this.speedAbove80KtsMemo = new NXLogic_MemoryNode(true);
 
         // ESDL 1. 0. 79 / ESDL 1. 0. 80
-        this.mctMemo = new NXLogic_TriggeredMonostableNode(60, false);
+        this.mctMemo = new NXLogic_ConfirmNode(60, false);
 
         // ESDL 1. 0.100
         this.firePBOutConf = new NXLogic_ConfirmNode(0.2); // CONF01
@@ -141,10 +141,10 @@ class A32NX_FWC {
         const hAbv800 = radioHeight > 800;
 
         // ESLD 1.0.79 + 1.0.80
-        const eng1TLA = Simplane.getEngineThrottleMode(0);
-        const eng2TLA = Simplane.getEngineThrottleMode(1);
-        const eng1OrEng2MCT = eng1TLA >= ThrottleMode.FLEX_MCT || eng2TLA >= ThrottleMode.FLEX_MCT;
-        const eng1AndEng2MCL = eng1TLA >= ThrottleMode.CLIMB && eng2TLA >= ThrottleMode.CLIMB;
+        const eng1TLA = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number");
+        const eng2TLA = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number");
+        const eng1OrEng2MCT = eng1TLA >= 36.7 || eng2TLA >= 36.7;
+        const eng1AndEng2MCL = eng1TLA > 22.9 && eng2TLA > 22.9;
         const eng1Or2TOPower = (
             eng1OrEng2MCT ||
             (this.mctMemo.write(eng1OrEng2MCT, _deltaTime) && !hAbv1500 && eng1AndEng2MCL)
@@ -331,12 +331,8 @@ class A32NX_FWC {
 
         // Use FCU displayed value
         const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
-        const currentFCUAltitude = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
+        const currentFCUAltitude = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR:3", "feet");
         const targetAltitude = currentAltitudeConstraint && !this.hasAltitudeConstraint() ? currentAltitudeConstraint : currentFCUAltitude;
-        if (currentFCUAltitude === 0) {
-            // Use default 5,000 number on init process due to late update
-            SimVar.SetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number", 5000);
-        }
 
         // Exit when selected altitude is being changed
         if (this.previousTargetAltitude !== targetAltitude) {
@@ -356,7 +352,8 @@ class A32NX_FWC {
         // - Landing locked down
 
         const landingGearIsDown = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum") >= 1 && SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
-        const glideSlopeCaptured = SimVar.GetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool") === 1;
+        const verticalMode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "Number");
+        const glideSlopeCaptured = verticalMode >= 30 && verticalMode <= 34;
         const landingGearIsLockedDown = SimVar.GetSimVarValue("GEAR POSITION:0", "Enum") > 0.9;
         if (landingGearIsDown || glideSlopeCaptured || landingGearIsLockedDown) {
             this._wasBellowThreshold = false;
@@ -390,7 +387,7 @@ class A32NX_FWC {
                 SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
             }
         } else if (this._wasAboveThreshold && delta <= 750 && !this._wasReach200ft) {
-            if (!SimVar.GetSimVarValue("L:XMLVAR_Autopilot_1_Status", "Bool") && !SimVar.GetSimVarValue("L:XMLVAR_Autopilot_2_Status", "Bool")) {
+            if (!SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_1_ACTIVE", "Bool") && !SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_2_ACTIVE", "Bool")) {
                 SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", false);
                 SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", true);
             }
