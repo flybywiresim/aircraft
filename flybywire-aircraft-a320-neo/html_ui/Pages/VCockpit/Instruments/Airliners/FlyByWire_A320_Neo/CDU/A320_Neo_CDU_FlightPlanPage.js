@@ -12,8 +12,7 @@ class CDUFlightPlanPage {
                 CDUFlightPlanPage.ShowPage(mcdu, offset);
             }
         };
-        const isFlying = Simplane.getAltitudeAboveGround() > 10 ||
-            Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT && Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT;
+        const isFlying = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE:1", "Enum") === 5;
         let originIdentCell = "----";
         let runway = null;
         let showFrom = false;

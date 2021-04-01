@@ -31,6 +31,7 @@
 node_modules
 /src/sound/.cache
 /src/instruments/src/EFB/dist
+/src/autothrottle/target
 /flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/*.gltf
 /flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/*.bin
 *.wasm
@@ -39,3 +40,6 @@ node_modules
 /src/systems/target/
 !igniter.config.mjs
 .igniter
+/src/fdr2csv/*.exe
+/src/fbw/obj/
+/src/fdr2csv/build/

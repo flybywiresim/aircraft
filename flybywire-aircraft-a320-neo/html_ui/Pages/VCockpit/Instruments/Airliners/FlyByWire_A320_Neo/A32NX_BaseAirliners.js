@@ -29,57 +29,6 @@ class BaseAirliners extends NavSystem {
         }
         return BaseAirliners.isMetric;
     }
-    updateMachTransition() {
-        const crossSpeed = SimVar.GetGameVarValue("AIRCRAFT CROSSOVER SPEED", "knots");
-        const cruiseMach = SimVar.GetGameVarValue("AIRCRAFT CRUISE MACH", "mach");
-        const crossAltitude = Simplane.getCrossoverAltitude(crossSpeed, cruiseMach);
-        const mach = Simplane.getMachSpeed();
-        const altitude = Simplane.getAltitude();
-        switch (this.machTransition) {
-            case -1:
-                if (mach >= cruiseMach && altitude >= crossAltitude) {
-                    this.machTransition = 1;
-                    SimVar.SetSimVarValue("L:XMLVAR_AirSpeedIsInMach", "bool", true);
-                    SimVar.SetSimVarValue("L:AIRLINER_FMC_FORCE_NEXT_UPDATE", "number", 1);
-                }
-                break;
-            case 0:
-                if (mach >= cruiseMach && altitude >= crossAltitude) {
-                    this.machTransition = 1;
-                    SimVar.SetSimVarValue("L:XMLVAR_AirSpeedIsInMach", "bool", true);
-                    SimVar.SetSimVarValue("L:AIRLINER_FMC_FORCE_NEXT_UPDATE", "number", 1);
-                } else {
-                    this.machTransition = -1;
-                    SimVar.SetSimVarValue("L:XMLVAR_AirSpeedIsInMach", "bool", false);
-                    SimVar.SetSimVarValue("L:AIRLINER_FMC_FORCE_NEXT_UPDATE", "number", 1);
-                }
-                break;
-            case 1:
-                if (altitude < crossAltitude) {
-                    this.machTransition = -1;
-                    SimVar.SetSimVarValue("L:XMLVAR_AirSpeedIsInMach", "bool", false);
-                    SimVar.SetSimVarValue("L:AIRLINER_FMC_FORCE_NEXT_UPDATE", "number", 1);
-                }
-                break;
-        }
-        const isMachActive = SimVar.GetSimVarValue("L:XMLVAR_AirSpeedIsInMach", "bool");
-        if (this.isMachActive != isMachActive) {
-            this.isMachActive = isMachActive;
-            if (isMachActive) {
-                let mach = SimVar.GetGameVarValue("FROM KIAS TO MACH", "number", Simplane.getAutoPilotSelectedAirspeedHoldValue());
-                Coherent.call("AP_MACH_VAR_SET", 1, mach);
-                mach = SimVar.GetGameVarValue("FROM KIAS TO MACH", "number", Simplane.getAutoPilotManagedAirspeedHoldValue());
-                Coherent.call("AP_MACH_VAR_SET", 2, mach);
-            } else {
-                let knots = SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotSelectedMachHoldValue());
-                Coherent.call("AP_SPD_VAR_SET", 1, knots);
-                knots = SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotManagedMachHoldValue());
-                Coherent.call("AP_SPD_VAR_SET", 2, knots);
-            }
-            return true;
-        }
-        return false;
-    }
 }
 BaseAirliners.isMetric = false;
 var Airliners;

@@ -405,15 +405,18 @@ class CDUPerformancePage {
         if (isFinite(mcdu.costIndex)) {
             costIndexCell = mcdu.costIndex.toFixed(0) + "[color]cyan";
         }
+        const isSelected = Simplane.getAutoPilotAirspeedSelected();
         let managedSpeedCell = "";
-        let managedSpeed;
-        if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
-            managedSpeed = mcdu.computedVgd;
+        if (mcdu.currentFlightPhase === FmgcFlightPhases.CLIMB) {
+            if (mcdu.managedSpeedTarget === mcdu.managedSpeedClimb) {
+                managedSpeedCell = "{small}" + mcdu.managedSpeedClimb.toFixed(0) + "/" + mcdu.managedSpeedClimbMach.toFixed(2).replace("0.", ".") + "{end}";
+            } else if (Simplane.getAutoPilotMachModeActive() || SimVar.GetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "Bool")) {
+                managedSpeedCell = "{small}" + mcdu.managedSpeedClimbMach.toFixed(2).replace("0.", ".") + "{end}";
+            } else {
+                managedSpeedCell = "{small}" + mcdu.managedSpeedTarget.toFixed(0) + "{end}";
+            }
         } else {
-            managedSpeed = mcdu.getClbManagedSpeed();
-        }
-        if (isFinite(managedSpeed)) {
-            managedSpeedCell = managedSpeed.toFixed(0);
+            managedSpeedCell = (isSelected ? "*" : "") + mcdu.managedSpeedClimb > mcdu.managedSpeedLimit ? mcdu.managedSpeedLimit.toFixed(0) : mcdu.managedSpeedClimb.toFixed(0);
         }
         let selectedSpeedCell = "";
         if (isFinite(mcdu.preSelectedClbSpeed)) {
@@ -512,7 +515,7 @@ class CDUPerformancePage {
             costIndexCell = mcdu.costIndex.toFixed(0) + "[color]cyan";
         }
         let managedSpeedCell = "";
-        const managedSpeed = mcdu.getCrzManagedSpeed();
+        const managedSpeed = mcdu.currentFlightPhase === FmgcFlightPhases.CRUISE ? mcdu.managedSpeedTarget : mcdu.managedSpeedCruise;
         if (isFinite(managedSpeed)) {
             managedSpeedCell = managedSpeed.toFixed(0);
         }
@@ -613,7 +616,7 @@ class CDUPerformancePage {
             costIndexCell = mcdu.costIndex.toFixed(0) + "[color]cyan";
         }
         let managedSpeedCell = "";
-        const managedSpeed = mcdu.getDesManagedSpeed();
+        const managedSpeed = mcdu.currentFlightPhase === FmgcFlightPhases.DESCENT ? mcdu.managedSpeedTarget : mcdu.managedSpeedDescend;
         if (isFinite(managedSpeed)) {
             managedSpeedCell = managedSpeed.toFixed(0);
         }
@@ -1011,7 +1014,7 @@ class CDUPerformancePage {
     }
     static UpdateThrRedAccFromOrigin(mcdu, updateThrRedAlt = true, updateAccAlt = true) {
         const origin = mcdu.flightPlanManager.getOrigin();
-        const elevation = origin ? origin.altitudeinFP : 0;
+        const elevation = origin ? origin.altitudeinFP : SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
 
         if (updateThrRedAlt && !mcdu.thrustReductionAltitudeIsPilotEntered) {
             const thrRedOffset = +NXDataStore.get("CONFIG_THR_RED_ALT", "1500");
@@ -1036,7 +1039,7 @@ class CDUPerformancePage {
             return;
         }
         const origin = mcdu.flightPlanManager.getOrigin();
-        const elevation = origin ? origin.altitudeinFP : 0;
+        const elevation = origin ? origin.altitudeinFP : SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
 
         const offset = +NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500");
         const alt = Math.round((elevation + offset) / 10) * 10;
@@ -1047,7 +1050,7 @@ class CDUPerformancePage {
     }
     static UpdateThrRedAccFromDestination(mcdu) {
         const destination = mcdu.flightPlanManager.getDestination();
-        const elevation = destination ? destination.altitudeinFP : 0;
+        const elevation = destination ? destination.altitudeinFP : SimVar.GetSimVarValue("GROUND ALTITUDE", "feet");
 
         const offset = +NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500");
         const alt = Math.round((elevation + offset) / 10) * 10;
