@@ -12,20 +12,20 @@ export const FctlPage = () => {
 
     const [elevatorDeflectionState] = useSimVar('ELEVATOR DEFLECTION PCT', 'percent over 100', 50);
 
-    const [elac1SwitchState] = useSimVar('FLY BY WIRE ELAC SWITCH:1', 'boolean', 1000);
-    const [elac1FailState] = useSimVar('FLY BY WIRE ELAC FAILED:1', 'boolean', 1000);
+    const [elac1SwitchState] = useSimVar('L:A32NX_FBW_ELAC_SWITCH:1', 'boolean', 1000);
+    const [elac1FailState] = useSimVar('L:A32NX_FBW_ELAC_FAILED:1', 'boolean', 1000);
 
-    const [elac2SwitchState] = useSimVar('FLY BY WIRE ELAC SWITCH:2', 'boolean', 1000);
-    const [elac2FailState] = useSimVar('FLY BY WIRE ELAC FAILED:2', 'boolean', 1000);
+    const [elac2SwitchState] = useSimVar('L:A32NX_FBW_ELAC_SWITCH:2', 'boolean', 1000);
+    const [elac2FailState] = useSimVar('L:A32NX_FBW_ELAC_FAILED:2', 'boolean', 1000);
 
-    const [sec1SwitchState] = useSimVar('FLY BY WIRE SEC SWITCH:1', 'boolean', 1000);
-    const [sec1FailState] = useSimVar('FLY BY WIRE SEC FAILED:1', 'boolean', 1000);
+    const [sec1SwitchState] = useSimVar('L:A32NX_FBW_SEC_SWITCH:1', 'boolean', 1000);
+    const [sec1FailState] = useSimVar('L:A32NX_FBW_SEC_FAILED:1', 'boolean', 1000);
 
-    const [sec2SwitchState] = useSimVar('FLY BY WIRE SEC SWITCH:2', 'boolean', 1000);
-    const [sec2FailState] = useSimVar('FLY BY WIRE SEC FAILED:2', 'boolean', 1000);
+    const [sec2SwitchState] = useSimVar('L:A32NX_FBW_SEC_SWITCH:2', 'boolean', 1000);
+    const [sec2FailState] = useSimVar('L:A32NX_FBW_SEC_FAILED:2', 'boolean', 1000);
 
-    const [sec3SwitchState] = useSimVar('FLY BY WIRE SEC SWITCH:3', 'boolean', 1000);
-    const [sec3FailState] = useSimVar('FLY BY WIRE SEC FAILED:3', 'boolean', 1000);
+    const [sec3SwitchState] = useSimVar('L:A32NX_FBW_SEC_SWITCH:3', 'boolean', 1000);
+    const [sec3FailState] = useSimVar('L:A32NX_FBW_SEC_FAILED:3', 'boolean', 1000);
 
     const [pitchTrimState] = useSimVar('ELEVATOR TRIM INDICATOR', 'Position 16k', 50);
 
@@ -112,7 +112,7 @@ export const FctlPage = () => {
     const [rightSpoilerState] = useSimVar('SPOILERS RIGHT POSITION', 'percent over 100', 50);
     const [spoilerHandleState] = useSimVar('SPOILERS HANDLE POSITION', 'percent over 100', 100);
 
-    const [spoilersArmedState] = useSimVar('SPOILERS ARMED', 'boolean', 500);
+    const [spoilersArmedState] = useSimVar('L:A32NX_SPOILERS_ARMED', 'boolean', 500);
 
     const speedBrakeY = 104;
     const leftSpeedBrakeX = 103;
