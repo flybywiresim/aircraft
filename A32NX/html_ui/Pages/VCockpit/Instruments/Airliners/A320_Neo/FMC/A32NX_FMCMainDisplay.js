@@ -1207,8 +1207,8 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(value)) {
             if (value >= 0) {
                 if (value < 1000) {
-                    this.costIndex = value;
                     this.costIndexSet = true;
+                    this.costIndex = value;
                     return true;
                 } else {
                     this.addNewMessage(NXSystemMessages.entryOutOfRange);
