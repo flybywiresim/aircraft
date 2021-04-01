@@ -26,10 +26,10 @@
   grid-column: 2 / 3;
 }
 
-button:active {
+/* button:active {
   @apply transform;
   @apply translate-y-1;
-}
+} */
 
 .down-left {
   grid-column: 1/1;
