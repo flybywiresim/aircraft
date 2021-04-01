@@ -27,7 +27,7 @@ class A32NX_Speeds {
 
     update() {
         const fp = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
-        let fhi = Simplane.getFlapsHandleIndex();
+        let fhi = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Enum");
         /** Using true fhi for comparison */
         const isTo = fhi === SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number");
         /** Change fhi to differentiate between 1 and 1 + F */

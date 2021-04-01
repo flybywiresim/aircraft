@@ -104,7 +104,7 @@ a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .Inactive {
   letter-spacing: 5px;
 }
 a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .decimal {
-  font-size: 38px !important;
+  font-size: 36px !important;
 }
 a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .activeEngine {
   display: block;
