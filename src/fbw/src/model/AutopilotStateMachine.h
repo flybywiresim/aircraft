@@ -241,9 +241,10 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_OP_CLB_entry(void);
   void AutopilotStateMachine_OP_DES_entry(void);
   void AutopilotStateMachine_GS_CPT_entry(void);
-  void AutopilotStateMachine_OFF_during(void);
-  void AutopilotStateMachine_SRS_entry(void);
   boolean_T AutopilotStateMachine_X_TO_SRS_GA(void);
+  void AutopilotStateMachine_OFF_during(void);
+  void AutopilotStateMachine_SRS_GA_entry(void);
+  void AutopilotStateMachine_SRS_entry(void);
   void AutopilotStateMachine_VS_during(void);
   void AutopilotStateMachine_ALT_entry(void);
   void AutopilotStateMachine_VS(void);
@@ -271,7 +272,6 @@ class AutopilotStateMachineModelClass {
   void AutopilotStateMachine_SRS_during(void);
   void AutopilotStateMachine_SRS(void);
   void AutopilotStateMachine_exit_internal_ON(void);
-  void AutopilotStateMachine_SRS_GA_entry(void);
   void AutopilotStateMachine_ON(void);
 };
 

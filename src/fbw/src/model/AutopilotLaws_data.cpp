@@ -88,6 +88,7 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
       0.0,
       false,
       false,
+      false,
       false
     },
 

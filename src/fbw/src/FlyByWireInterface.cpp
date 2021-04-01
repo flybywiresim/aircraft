@@ -517,6 +517,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineOutput.ALT_soft_mode_active = clientData.ALT_soft_mode_active;
     autopilotStateMachineOutput.EXPED_mode_active = clientData.EXPED_mode_active;
     autopilotStateMachineOutput.FD_disconnect = clientData.FD_disconnect;
+    autopilotStateMachineOutput.FD_connect = clientData.FD_connect;
   }
 
   // update autopilot state -------------------------------------------------------------------------------------------
@@ -537,20 +538,38 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
   // update autothrust mode -------------------------------------------------------------------------------------------
   set_named_variable_value(idAutopilotAutothrustMode, autopilotStateMachineOutput.autothrust_mode);
 
-  // disconnect FD if requested ---------------------------------------------------------------------------------------
-  if (!simData.ap_fd_1_active) {
-    flightDirectorLatch_1 = false;
+  // connect FD if requested ---------------------------------------------------------------------------------------
+  if (simData.ap_fd_1_active) {
+    flightDirectorConnectLatch_1 = false;
   }
-  if (!simData.ap_fd_2_active) {
-    flightDirectorLatch_2 = false;
+  if (simData.ap_fd_2_active) {
+    flightDirectorConnectLatch_2 = false;
   }
-  if (autopilotStateMachineOutput.FD_disconnect) {
-    if (simData.ap_fd_1_active && !flightDirectorLatch_1) {
-      flightDirectorLatch_1 = true;
+  if (autopilotStateMachineOutput.FD_connect) {
+    if (!simData.ap_fd_1_active && !flightDirectorConnectLatch_1) {
+      flightDirectorConnectLatch_1 = true;
       simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1);
     }
-    if (simData.ap_fd_2_active && !flightDirectorLatch_2) {
-      flightDirectorLatch_2 = true;
+    if (!simData.ap_fd_2_active && !flightDirectorConnectLatch_2) {
+      flightDirectorConnectLatch_2 = true;
+      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
+    }
+  }
+
+  // disconnect FD if requested ---------------------------------------------------------------------------------------
+  if (!simData.ap_fd_1_active) {
+    flightDirectorDisconnectLatch_1 = false;
+  }
+  if (!simData.ap_fd_2_active) {
+    flightDirectorDisconnectLatch_2 = false;
+  }
+  if (autopilotStateMachineOutput.FD_disconnect) {
+    if (simData.ap_fd_1_active && !flightDirectorDisconnectLatch_1) {
+      flightDirectorDisconnectLatch_1 = true;
+      simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 1);
+    }
+    if (simData.ap_fd_2_active && !flightDirectorDisconnectLatch_2) {
+      flightDirectorDisconnectLatch_2 = true;
       simConnectInterface.sendEvent(SimConnectInterface::Events::TOGGLE_FLIGHT_DIRECTOR, 2);
     }
   }
@@ -761,6 +780,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
           autopilotStateMachineOutput.ALT_soft_mode_active,
           autopilotStateMachineOutput.EXPED_mode_active,
           autopilotStateMachineOutput.FD_disconnect,
+          autopilotStateMachineOutput.FD_connect,
       };
       simConnectInterface.setClientDataAutopilotStateMachine(clientDataStateMachine);
     }
