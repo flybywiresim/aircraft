@@ -498,14 +498,14 @@
             <WWISE_EVENT_2>yoke_push_button_off</WWISE_EVENT_2>
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
             <ID>1</ID>
-            <TOOLTIPID>%((A:AUTOPILOT MASTER, Bool))%{if}Disc. Autopilot%{else}Take priority%{end}</TOOLTIPID>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button_Held">
+                <TOOLTIPID>%((L:A32NX_AUTOPILOT_ACTIVE, Bool))%{if}Disc. Autopilot%{else}Take priority%{end}</TOOLTIPID>
                 <LEFT_SINGLE_CODE>
-                    (A:AUTOPILOT MASTER, Bool) if{
-                        (&gt;K:AP_MASTER)
+                    (L:A32NX_AUTOPILOT_ACTIVE, Bool) if{
+                        (&gt;K:AUTOPILOT_OFF)
                     } els{
                         1 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)
                     }
