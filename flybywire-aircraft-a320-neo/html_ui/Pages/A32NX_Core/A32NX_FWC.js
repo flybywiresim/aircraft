@@ -142,12 +142,24 @@ class A32NX_FWC {
 
         // ESLD 1.0.79 + 1.0.80
         const eng1TLA = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number");
+        const eng1TLAFTO = SimVar.GetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "number") !== 0; // is a flex temp is set?
+        const eng1MCT = eng1TLA > 33.3 && eng1TLA < 36.7;
+        const eng1TLAFullPwr = eng1TLA > 43.3;
         const eng2TLA = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number");
-        const eng1OrEng2MCT = eng1TLA >= 36.7 || eng2TLA >= 36.7;
+        const eng2TLAFTO = eng1TLAFTO; // until we have proper FADECs
+        const eng2MCT = eng2TLA > 33.3 && eng2TLA < 36.7;
+        const eng2TLAFullPwr = eng2TLA > 43.3;
+        const eng1OrEng2SupMCT = !(eng1TLA < 36.7) || !(eng2TLA < 36.7);
         const eng1AndEng2MCL = eng1TLA > 22.9 && eng2TLA > 22.9;
+        const eng1Or2TOPowerSignal = (
+            (eng1TLAFTO && eng1MCT) ||
+            (eng2TLAFTO && eng2MCT) ||
+            (eng1OrEng2SupMCT || eng1OrEng2SupMCT) ||
+            (eng1TLAFullPwr || eng2TLAFullPwr)
+        );
         const eng1Or2TOPower = (
-            eng1OrEng2MCT ||
-            (this.mctMemo.write(eng1OrEng2MCT, _deltaTime) && !hAbv1500 && eng1AndEng2MCL)
+            eng1Or2TOPowerSignal ||
+            (this.mctMemo.write(eng1Or2TOPowerSignal, _deltaTime) && !hAbv1500 && eng1AndEng2MCL)
         );
 
         // ESLD 1.0.100
