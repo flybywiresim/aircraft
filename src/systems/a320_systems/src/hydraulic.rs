@@ -324,7 +324,8 @@ impl A320Hydraulic {
         self.blue_electric_pump
             .update(&min_hyd_loop_timestep, &self.blue_loop);
 
-        self.ram_air_turbine.update(&min_hyd_loop_timestep, &self.blue_loop);
+        self.ram_air_turbine
+            .update(&min_hyd_loop_timestep, &self.blue_loop);
         self.green_loop.update(
             &min_hyd_loop_timestep,
             Vec::new(),
@@ -392,7 +393,6 @@ pub struct A320HydraulicBrakingLogic {
     anti_skid_activated: bool,
     autobrakes_setting: u8,
 }
-
 //Implements brakes computers logic
 impl A320HydraulicBrakingLogic {
     const PARK_BRAKE_DEMAND_DYNAMIC: f64 = 0.8; //Dynamic of the parking brake application/removal in (percent/100) per s
@@ -481,7 +481,6 @@ impl A320HydraulicBrakingLogic {
         altn.set_brake_demand_right(self.right_brake_yellow_output);
     }
 }
-
 impl SimulationElement for A320HydraulicBrakingLogic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);
@@ -582,7 +581,6 @@ pub struct A320HydraulicLogic {
     blue_loop_pressurised_feedback: bool,
     yellow_loop_pressurised_feedback: bool,
 }
-
 // Implements low level logic for all hydraulics commands
 // takes inputs from hydraulics and from plane systems, update outputs for pumps and all other hyd systems
 impl A320HydraulicLogic {
@@ -814,7 +812,6 @@ impl A320HydraulicLogic {
         }
     }
 }
-
 impl SimulationElement for A320HydraulicLogic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.forward_cargo_door.accept(visitor);
@@ -848,7 +845,6 @@ pub struct A320HydraulicOverheadPanel {
     pub yellow_epump_push_button: AutoOnFaultPushButton,
     pub blue_epump_override_push_button: OnOffFaultPushButton,
 }
-
 impl A320HydraulicOverheadPanel {
     pub fn new() -> A320HydraulicOverheadPanel {
         A320HydraulicOverheadPanel {
@@ -871,7 +867,6 @@ impl A320HydraulicOverheadPanel {
             .set_fault(hyd.yellow_epump_has_fault());
     }
 }
-
 impl SimulationElement for A320HydraulicOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.edp1_push_button.accept(visitor);
@@ -890,7 +885,6 @@ pub struct A320EngineFireOverheadPanel {
     pub eng1_fire_pb: FirePushButton,
     pub eng2_fire_pb: FirePushButton,
 }
-
 impl A320EngineFireOverheadPanel {
     pub fn new() -> A320EngineFireOverheadPanel {
         A320EngineFireOverheadPanel {
@@ -899,7 +893,6 @@ impl A320EngineFireOverheadPanel {
         }
     }
 }
-
 impl SimulationElement for A320EngineFireOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.eng1_fire_pb.accept(visitor);

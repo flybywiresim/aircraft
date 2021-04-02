@@ -67,22 +67,6 @@ pub struct Ptu {
     flow_to_left: VolumeRate,
     last_flow: VolumeRate,
 }
-
-impl Default for Ptu {
-    fn default() -> Self {
-        Ptu::new("")
-    }
-}
-
-impl SimulationElement for Ptu {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.active_left_id, self.is_active_left);
-        writer.write_bool(&self.active_right_id, self.is_active_right);
-        writer.write_f64(&self.flow_id, self.get_flow().get::<gallon_per_second>());
-        writer.write_bool(&self.enabled_id, self.is_enabled());
-    }
-}
-
 impl Ptu {
     //Low pass filter to handle flow dynamic: avoids instantaneous flow transient,
     // simulating RPM dynamic of PTU
@@ -197,6 +181,19 @@ impl Ptu {
         self.is_enabled = enable_flag;
     }
 }
+impl SimulationElement for Ptu {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool(&self.active_left_id, self.is_active_left);
+        writer.write_bool(&self.active_right_id, self.is_active_right);
+        writer.write_f64(&self.flow_id, self.get_flow().get::<gallon_per_second>());
+        writer.write_bool(&self.enabled_id, self.is_enabled());
+    }
+}
+impl Default for Ptu {
+    fn default() -> Self {
+        Ptu::new("")
+    }
+}
 
 pub struct HydLoop {
     _color_id: String,
@@ -223,20 +220,6 @@ pub struct HydLoop {
     fire_shutoff_valve_opened: bool,
     has_fire_valve: bool,
 }
-
-impl SimulationElement for HydLoop {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.pressure_id, self.get_pressure().get::<psi>());
-        writer.write_f64(
-            &self.reservoir_id,
-            self.get_reservoir_volume().get::<gallon>(),
-        );
-        if self.has_fire_valve {
-            writer.write_bool(&self.fire_valve_id, self.is_fire_shutoff_valve_opened());
-        }
-    }
-}
-
 impl HydLoop {
     const ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1885.0; // Nitrogen PSI
     const ACCUMULATOR_MAX_VOLUME: f64 = 0.264; // in gallons
@@ -534,6 +517,18 @@ impl HydLoop {
         self.current_flow = delta_vol / Time::new::<second>(delta_time.as_secs_f64());
     }
 }
+impl SimulationElement for HydLoop {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_f64(&self.pressure_id, self.get_pressure().get::<psi>());
+        writer.write_f64(
+            &self.reservoir_id,
+            self.get_reservoir_volume().get::<gallon>(),
+        );
+        if self.has_fire_valve {
+            writer.write_bool(&self.fire_valve_id, self.is_fire_shutoff_valve_opened());
+        }
+    }
+}
 
 pub struct Pump {
     delta_vol_max: Volume,
@@ -613,19 +608,6 @@ pub struct ElectricPump {
     rpm: f64,
     pump: Pump,
 }
-
-impl Default for ElectricPump {
-    fn default() -> Self {
-        ElectricPump::new("DEFAULT")
-    }
-}
-
-impl SimulationElement for ElectricPump {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.active_id, self.is_active());
-    }
-}
-
 impl ElectricPump {
     const SPOOLUP_TIME: f64 = 4.0;
     const SPOOLDOWN_TIME: f64 = 4.0;
@@ -691,6 +673,16 @@ impl PressureSource for ElectricPump {
         self.pump.get_delta_vol_min()
     }
 }
+impl SimulationElement for ElectricPump {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool(&self.active_id, self.is_active());
+    }
+}
+impl Default for ElectricPump {
+    fn default() -> Self {
+        ElectricPump::new("DEFAULT")
+    }
+}
 
 pub struct EngineDrivenPump {
     _id: String,
@@ -699,19 +691,6 @@ pub struct EngineDrivenPump {
     active: bool,
     pump: Pump,
 }
-
-impl Default for EngineDrivenPump {
-    fn default() -> Self {
-        EngineDrivenPump::new("DEFAULT")
-    }
-}
-
-impl SimulationElement for EngineDrivenPump {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.active_id, self.is_active());
-    }
-}
-
 impl EngineDrivenPump {
     const LEAP_1A26_MAX_N2_RPM: f64 = 16645.0; //according to the Type Certificate Data Sheet of LEAP 1A26
                                                //max N2 rpm is 116.5% @ 19391 RPM
@@ -768,6 +747,16 @@ impl PressureSource for EngineDrivenPump {
         self.pump.get_delta_vol_max()
     }
 }
+impl SimulationElement for EngineDrivenPump {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool(&self.active_id, self.is_active());
+    }
+}
+impl Default for EngineDrivenPump {
+    fn default() -> Self {
+        EngineDrivenPump::new("DEFAULT")
+    }
+}
 
 pub struct WindTurbine {
     rpm_id: String,
@@ -778,19 +767,6 @@ pub struct WindTurbine {
     rpm: f64,
     torque_sum: f64,
 }
-
-impl Default for WindTurbine {
-    fn default() -> Self {
-        WindTurbine::new("")
-    }
-}
-
-impl SimulationElement for WindTurbine {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.rpm_id, self.get_rpm());
-    }
-}
-
 impl WindTurbine {
     // Low speed special calculation threshold. Under that value we compute resistant torque depending on pump angle and displacement.
     const LOW_SPEED_PHYSICS_ACTIVATION: f64 = 50.;
@@ -871,6 +847,17 @@ impl WindTurbine {
         }
     }
 }
+impl SimulationElement for WindTurbine {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_f64(&self.rpm_id, self.get_rpm());
+    }
+}
+impl Default for WindTurbine {
+    fn default() -> Self {
+        WindTurbine::new("")
+    }
+}
+
 pub struct RamAirTurbine {
     position_id: String,
 
@@ -880,19 +867,6 @@ pub struct RamAirTurbine {
     position: f64,
     max_displacement: f64,
 }
-
-impl SimulationElement for RamAirTurbine {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.wind_turbine.accept(visitor);
-
-        visitor.visit(self);
-    }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.position_id, self.position);
-    }
-}
-
 impl RamAirTurbine {
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3050.0, 3500.0,
@@ -928,7 +902,8 @@ impl RamAirTurbine {
     }
 
     pub fn update(&mut self, delta_time: &Duration, line: &HydLoop) {
-        self.pump.update(delta_time, line, self.wind_turbine.get_rpm());
+        self.pump
+            .update(delta_time, line, self.wind_turbine.get_rpm());
 
         // Now forcing min to max to force a true real time regulation.
         // TODO: handle this properly by calculating who produced what volume at end of hyd loop update
@@ -972,10 +947,20 @@ impl PressureSource for RamAirTurbine {
         self.pump.get_delta_vol_min()
     }
 }
+impl SimulationElement for RamAirTurbine {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.wind_turbine.accept(visitor);
+
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_f64(&self.position_id, self.position);
+    }
+}
 
 #[cfg(test)]
 mod tests {
-
     use crate::simulation::UpdateContext;
     use uom::si::{
         acceleration::foot_per_second_squared,

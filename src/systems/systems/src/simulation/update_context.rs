@@ -91,9 +91,9 @@ impl UpdateContext {
     }
 
     pub fn with_delta(&self, delta: Duration) -> Self {
-        let mut cloned: UpdateContext = (*self).clone();
-        cloned.delta = delta;
+        let mut copy: UpdateContext = *self;
+        copy.delta = delta;
 
-        cloned
+        copy
     }
 }
