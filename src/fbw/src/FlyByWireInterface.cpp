@@ -1151,13 +1151,13 @@ bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
   if (!flapsHandler->getIsInitialized()) {
     if (simData.flaps_handle_index == 0) {
       flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_0);
-    } else if (simData.flaps_handle_index == 1) {
+    } else if (simData.flaps_handle_index == 1 || simData.flaps_handle_index == 2) {
       flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_1);
-    } else if (simData.flaps_handle_index == 2) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_2);
     } else if (simData.flaps_handle_index == 3) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_3);
+      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_2);
     } else if (simData.flaps_handle_index == 4) {
+      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_3);
+    } else if (simData.flaps_handle_index == 5) {
       flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_4);
     }
   }

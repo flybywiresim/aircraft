@@ -30,7 +30,7 @@ class SpoilersHandler {
  private:
   static constexpr double POSITION_RETRACTED = 0.0;
   static constexpr double POSITION_PARTIAL = 0.25;
-  static constexpr double POSITION_LIMIT_AUTOPILOT = 1.0;  // -> 0.5 with new flight model
+  static constexpr double POSITION_LIMIT_AUTOPILOT = 0.5;
   static constexpr double POSITION_FULL = 1.0;
 
   static constexpr double MINIMUM_AIRBORNE_TIME = 5.0;

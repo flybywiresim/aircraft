@@ -2541,8 +2541,34 @@ var A320_Neo_UpperECAM;
             const slatsAngle = (SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
             const flapsAngle = Math.max(0, (SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5);
             const handleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-            const slatsTargetIndex = handleIndex;
-            let flapsTargetIndex = handleIndex;
+            let slatsTargetIndex = 0;
+            let flapsTargetIndex = 0;
+            switch (handleIndex) {
+                case 0:
+                    slatsTargetIndex = 0;
+                    flapsTargetIndex = 0;
+                    break;
+                case 1:
+                    slatsTargetIndex = 1;
+                    flapsTargetIndex = 0;
+                    break;
+                case 2:
+                    slatsTargetIndex = 1;
+                    flapsTargetIndex = 1;
+                    break;
+                case 3:
+                    slatsTargetIndex = 3;
+                    flapsTargetIndex = 2;
+                    break;
+                case 4:
+                    slatsTargetIndex = 3;
+                    flapsTargetIndex = 3;
+                    break;
+                case 5:
+                    slatsTargetIndex = 4;
+                    flapsTargetIndex = 4;
+                    break;
+            }
             const slatsAngleChanged = (this.currentSlatsAngle != slatsAngle);
             const flapsAngleChanged = (this.currentFlapsAngle != flapsAngle);
             if ((slatsAngleChanged || flapsAngleChanged) && ((this.cockpitSettings != null) && (this.cockpitSettings.FlapsLevels != null) && this.cockpitSettings.FlapsLevels.initialised)) {
@@ -2591,25 +2617,25 @@ var A320_Neo_UpperECAM;
                     switch (handleIndex) {
                         case 1:
                         {
-                            if (flapsAngle > 9.99) {
-                                this.currentStateText.textContent = "1+F";
-                            } else {
-                                this.currentStateText.textContent = "1";
-                                flapsTargetIndex = 0;
-                            }
+                            this.currentStateText.textContent = "1";
                             break;
                         }
                         case 2:
                         {
-                            this.currentStateText.textContent = "2";
+                            this.currentStateText.textContent = "1+F";
                             break;
                         }
                         case 3:
                         {
-                            this.currentStateText.textContent = "3";
+                            this.currentStateText.textContent = "2";
                             break;
                         }
                         case 4:
+                        {
+                            this.currentStateText.textContent = "3";
+                            break;
+                        }
+                        case 5:
                         {
                             this.currentStateText.textContent = "FULL";
                             break;
