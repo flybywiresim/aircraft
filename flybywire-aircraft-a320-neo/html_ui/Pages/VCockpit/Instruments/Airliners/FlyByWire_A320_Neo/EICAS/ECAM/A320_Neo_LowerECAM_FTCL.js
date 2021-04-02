@@ -219,7 +219,7 @@ let A320_Neo_LowerECAM_FTCL;
                 this.spoiler_arrow1_right.setAttribute("visibility", "hidden");
             } else {
                 // Update spoiler variables
-                const spoilersArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "boolean");
+                const spoilersArmed = SimVar.GetSimVarValue("L:A32NX_SPOILERS_ARMED", "boolean");
                 const leftSpoilerDeflectPct = SimVar.GetSimVarValue("SPOILERS LEFT POSITION", "percent over 100");
                 const rightSpoilerDeflectPct = SimVar.GetSimVarValue("SPOILERS RIGHT POSITION", "percent over 100");
                 const planeOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "boolean");

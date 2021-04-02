@@ -99,7 +99,7 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
 
     const clampedSpeed = Math.max(Math.min(airspeed, 660), 30);
 
-    const flapsHandleIndex = getSimVar('FLAPS HANDLE INDEX', 'Number');
+    const flapsHandleIndex = getSimVar('L:A32NX_FLAPS_HANDLE_INDEX', 'Number');
 
     let v1 = NaN;
     if (FWCFlightPhase <= 4) {

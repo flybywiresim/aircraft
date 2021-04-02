@@ -55,6 +55,7 @@ struct SimData {
   double gear_animation_pos_1;
   double gear_animation_pos_2;
   double flaps_handle_index;
+  double spoilers_handle_position;
   double spoilers_left_pos;
   double spoilers_right_pos;
   unsigned long long slew_on;
@@ -184,6 +185,14 @@ struct SimOutputThrottles {
   double throttleLeverPosition_2;
   double throttleManagedMode_1;
   double throttleManagedMode_2;
+};
+
+struct SimOutputFlaps {
+  double flapsHandleIndex;
+};
+
+struct SimOutputSpoilers {
+  double spoilersHandlePosition;
 };
 
 struct ClientDataAutopilotStateMachine {

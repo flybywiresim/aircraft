@@ -35,6 +35,10 @@ bool FlyByWireInterface::connect() {
   // setup local variables
   setupLocalVariables();
 
+  // setup handlers
+  flapsHandler = make_shared<FlapsHandler>();
+  spoilersHandler = make_shared<SpoilersHandler>();
+
   // initialize model
   autopilotStateMachine.initialize();
   autopilotLaws.initialize();
@@ -45,7 +49,8 @@ bool FlyByWireInterface::connect() {
   flightDataRecorder.initialize();
 
   // connect to sim connect
-  return simConnectInterface.connect(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis);
+  return simConnectInterface.connect(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis, flapsHandler,
+                                     spoilersHandler);
 }
 
 void FlyByWireInterface::disconnect() {
@@ -95,6 +100,9 @@ bool FlyByWireInterface::update(double sampleTime) {
 
   // update engine data
   result &= updateEngineData(sampleTime);
+
+  // update flaps and spoilers
+  result &= updateFlapsSpoilers(sampleTime);
 
   // update flight data recorder
   flightDataRecorder.update(&autopilotStateMachine, &autopilotLaws, &autoThrust, &flyByWire, engineData);
@@ -262,6 +270,12 @@ void FlyByWireInterface::setupLocalVariables() {
   engineEngineCycleTime = register_named_variable("A32NX_ENGINE_CYCLE_TIME");
   enginePreFlightPhase = register_named_variable("A32NX_FLIGHT_STATE_PREVIOUS");
   engineActualFlightPhase = register_named_variable("A32NX_FLIGHT_STATE_ACTUAL");
+
+  idFlapsHandleIndex = register_named_variable("A32NX_FLAPS_HANDLE_INDEX");
+  idFlapsHandlePercent = register_named_variable("A32NX_FLAPS_HANDLE_PERCENT");
+
+  idSpoilersArmed = register_named_variable("A32NX_SPOILERS_ARMED");
+  idSpoilersHandlePosition = register_named_variable("A32NX_SPOILERS_HANDLE_POSITION");
 }
 
 bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
@@ -1099,6 +1113,66 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   simConnectInterface.resetSimInputThrottles();
 
   // success
+  return true;
+}
+
+bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
+  // get sim data
+  auto simData = simConnectInterface.getSimData();
+
+  // falps ------------------------------------------------------------------------------------------------------------
+
+  // initialize position if needed
+  if (!flapsHandler->getIsInitialized()) {
+    if (simData.flaps_handle_index == 0) {
+      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_0);
+    } else if (simData.flaps_handle_index == 1) {
+      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_1);
+    } else if (simData.flaps_handle_index == 2) {
+      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_2);
+    } else if (simData.flaps_handle_index == 3) {
+      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_3);
+    } else if (simData.flaps_handle_index == 4) {
+      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_4);
+    }
+  }
+
+  // update airspeed on flaps logic
+  flapsHandler->setAirspeed(simData.V_ias_kn);
+
+  // determine if flaps setting has changed
+  if (flapsHandler->getSimPosition() != simData.flaps_handle_index) {
+    SimOutputFlaps out = {flapsHandler->getSimPosition()};
+    simConnectInterface.sendData(out);
+  }
+
+  // set 3D handle position
+  set_named_variable_value(idFlapsHandleIndex, flapsHandler->getHandlePosition());
+  set_named_variable_value(idFlapsHandlePercent, flapsHandler->getHandlePositionPercent());
+
+  // spoilers ---------------------------------------------------------------------------------------------------------
+
+  // initialize position if needed
+  if (!spoilersHandler->getIsInitialized()) {
+    spoilersHandler->setInitialPosition(simData.spoilers_handle_position);
+  }
+
+  // update simulation variables
+  spoilersHandler->setSimulationVariables(
+      simData.simulationTime, autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP1 == 1,
+      simData.V_ias_kn, throttleAxis[0]->getTLA(), throttleAxis[1]->getTLA(), simData.gear_animation_pos_1, simData.gear_animation_pos_2);
+
+  // check state of spoilers and adapt if necessary
+  if (spoilersHandler->getSimPosition() != simData.spoilers_handle_position) {
+    SimOutputSpoilers out = {spoilersHandler->getSimPosition()};
+    simConnectInterface.sendData(out);
+  }
+
+  // set 3D handle position
+  set_named_variable_value(idSpoilersArmed, spoilersHandler->getIsArmed() ? 1 : 0);
+  set_named_variable_value(idSpoilersHandlePosition, spoilersHandler->getHandlePosition());
+
+  // result
   return true;
 }
 

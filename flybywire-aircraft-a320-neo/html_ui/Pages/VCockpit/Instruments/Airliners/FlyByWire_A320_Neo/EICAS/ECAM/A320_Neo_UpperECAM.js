@@ -714,7 +714,7 @@ var A320_Neo_UpperECAM;
                                         message: "SPEED BRK",
                                         action: "FULL",
                                         isCompleted: () => {
-                                            return this.getCachedSimVar("SPOILERS HANDLE POSITION", "Position") > 0.95;
+                                            return this.getCachedSimVar("L:A32NX_SPOILERS_HANDLE_POSITION", "Position") > 0.95;
                                         }
                                     },
                                     {
@@ -1023,7 +1023,7 @@ var A320_Neo_UpperECAM;
                                         (
                                             (this.fwcFlightPhase === 2 && this.getCachedSimVar("L:A32NX_TO_CONFIG_NORMAL", "Bool") || this.fwcFlightPhase === 3) &&
                                             this.getCachedSimVar("L:A32NX_TO_CONFIG_FLAPS", "number") !== 0 &&
-                                            this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") !== this.getCachedSimVar("L:A32NX_TO_CONFIG_FLAPS", "number")
+                                            this.getCachedSimVar("L:A32NX_FLAPS_HANDLE_INDEX", "Enum") !== this.getCachedSimVar("L:A32NX_TO_CONFIG_FLAPS", "number")
                                         )
                                     )
                             }
@@ -1147,7 +1147,7 @@ var A320_Neo_UpperECAM;
                     },
                     {
                         message: "GND SPLRS ARMED",
-                        isActive: () => this.getCachedSimVar("SPOILERS ARMED", "Bool")
+                        isActive: () => this.getCachedSimVar("L:A32NX_SPOILERS_ARMED", "Bool")
                     },
                     {
                         message: "SEAT BELTS",
@@ -1248,7 +1248,7 @@ var A320_Neo_UpperECAM;
                                 this.fwcFlightPhase === 8 ||
                                 this.fwcFlightPhase === 9 ||
                                 this.fwcFlightPhase === 10
-                            ) && SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "position") > 0
+                            ) && SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "position") > 0
                         ),
                     },
                     {
@@ -1444,14 +1444,14 @@ var A320_Neo_UpperECAM;
                     "SPLRS",
                     "ARM",
                     "ARM",
-                    () => SimVar.GetSimVarValue("SPOILERS ARMED", "Bool")
+                    () => SimVar.GetSimVarValue("L:A32NX_SPOILERS_ARMED", "Bool")
                 ),
                 new A320_Neo_UpperECAM.MemoItem(
                     "to-memo-flaps",
                     "FLAPS",
                     "T.O",
                     "T.O",
-                    () => this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") >= 1 && this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") <= 3
+                    () => this.getCachedSimVar("L:A32NX_FLAPS_HANDLE_INDEX", "Enum") >= 1 && this.getCachedSimVar("L:A32NX_FLAPS_HANDLE_INDEX", "Enum") <= 3
                 ),
                 new A320_Neo_UpperECAM.MemoItem(
                     "to-memo-config",
@@ -1492,7 +1492,7 @@ var A320_Neo_UpperECAM;
                     "SPLRS",
                     "ARM",
                     "ARM",
-                    () => SimVar.GetSimVarValue("SPOILERS ARMED", "Bool")
+                    () => SimVar.GetSimVarValue("L:A32NX_SPOILERS_ARMED", "Bool")
                 ),
                 new A320_Neo_UpperECAM.MemoItem(
                     "ldg-memo-flaps",
@@ -1501,8 +1501,8 @@ var A320_Neo_UpperECAM;
                     () => this.getCachedSimVar("L:A32NX_GPWS_FLAPS3", "Bool") ? "CONF 3" : "FULL",
                     () => (
                         this.getCachedSimVar("L:A32NX_GPWS_FLAPS3", "Bool") ?
-                            this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") === 3 :
-                            this.getCachedSimVar("FLAPS HANDLE INDEX", "Enum") === 4
+                            this.getCachedSimVar("L:A32NX_FLAPS_HANDLE_INDEX", "Enum") === 3 :
+                            this.getCachedSimVar("L:A32NX_FLAPS_HANDLE_INDEX", "Enum") === 4
                     )
 
                 ),
@@ -1706,10 +1706,10 @@ var A320_Neo_UpperECAM;
             const slatsRight = SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees");
             const flapsLeft = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees");
             const flapsRight = SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees");
-            const flapsHandle = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum");
+            const flapsHandle = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Enum");
             const flapsMcdu = SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number");
             const flapsMcduEntered = SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS_ENTERED", "bool");
-            const speedBrake = SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "Position");
+            const speedBrake = SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "Position");
             const parkBrake = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
             const brakesHot = SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool");
             const v1Speed = SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots");
@@ -2564,9 +2564,9 @@ var A320_Neo_UpperECAM;
             super.update(_deltaTime);
             const slatsAngle = (SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
             const flapsAngle = Math.max(0, (SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5);
-            const handleIndex = Simplane.getFlapsHandleIndex(true);
+            const handleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
             const slatsTargetIndex = handleIndex;
-            let flapsTargetIndex = handleIndex;
+            const flapsTargetIndex = handleIndex;
             const slatsAngleChanged = (this.currentSlatsAngle != slatsAngle);
             const flapsAngleChanged = (this.currentFlapsAngle != flapsAngle);
             if ((slatsAngleChanged || flapsAngleChanged) && ((this.cockpitSettings != null) && (this.cockpitSettings.FlapsLevels != null) && this.cockpitSettings.FlapsLevels.initialised)) {

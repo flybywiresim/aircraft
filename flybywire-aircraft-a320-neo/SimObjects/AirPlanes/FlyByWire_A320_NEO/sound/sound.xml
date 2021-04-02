@@ -1331,26 +1331,26 @@
             <Range LowerBound="100" UpperBound="100" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="Spoiler0" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS HANDLE POSITION" Units="PERCENT" Index="1">
+        <Sound WwiseData="true" WwiseEvent="Spoiler0" NodeName="LEVER_SPEEDBRAKE" Continuous="false" Code="(L:A32NX_SPOILERS_HANDLE_POSITION)" Units="PERCENT" Index="1">
             <Range LowerBound="0" UpperBound="0" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
-            <Requires SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+            <Requires Code="(L:A32NX_SPOILERS_ARMED)" Units="BOOL" Index="1">
                 <Range UpperBound="0" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="Spoiler50" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS HANDLE POSITION" Units="PERCENT" Index="1">
+        <Sound WwiseData="true" WwiseEvent="Spoiler50" NodeName="LEVER_SPEEDBRAKE" Continuous="false" Code="(L:A32NX_SPOILERS_HANDLE_POSITION)" Units="PERCENT" Index="1">
             <Range LowerBound="49" UpperBound="51" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
-            <Requires SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+            <Requires Code="(L:A32NX_SPOILERS_ARMED)" Units="BOOL" Index="1">
                 <Range UpperBound="0" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="Spoiler100" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS HANDLE POSITION" Units="PERCENT" Index="1">
+        <Sound WwiseData="true" WwiseEvent="Spoiler100" NodeName="LEVER_SPEEDBRAKE" Continuous="false" Code="(L:A32NX_SPOILERS_HANDLE_POSITION)" Units="PERCENT" Index="1">
             <Range LowerBound="99" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
-            <Requires SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+            <Requires Code="(L:A32NX_SPOILERS_ARMED)" Units="BOOL" Index="1">
                 <Range UpperBound="0" />
             </Requires>
         </Sound>

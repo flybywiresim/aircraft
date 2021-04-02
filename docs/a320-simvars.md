@@ -768,6 +768,41 @@
     - Holds the FMGCs current flight phase
     - Use FMGC_FLIGHT_PHASES to check for phases (import NXFMGCFlightPhases from A32NX_Utils)
 
+- A32NX_FLAPS_HANDLE_INDEX
+    - Number
+    - Indicates the physical flaps handle position
+        Value | Meaning
+        --- | ---
+        0 | 0
+        1 | 1 / 1+F
+        2 | 2
+        3 | 3
+        4 | 4
+
+- A32NX_FLAPS_HANDLE_PERCENT
+    - Number
+    - Indicates the position of the flaps handler in percent
+        Value | Position
+        --- | ---
+        0 | Retracted
+        1 | Full extension
+
+- A32NX_SPOILERS_ARMED
+    - Bool
+    - Indicates if the ground spoilers are armed
+        Value | Meaning
+        --- | ---
+        0 | disarmed
+        1 | armed
+
+- A32NX_SPOILERS_HANDLE_POSITION
+    - Number
+    - Indicates the physical handler position without arm/disarm
+        Value | Position
+        --- | ---
+        0 | Retracted
+        1 | Full extension
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X
