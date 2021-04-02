@@ -2,7 +2,7 @@ use std::time::Duration;
 use uom::si::{f64::*, pressure::pascal, pressure::psi, velocity::knot, volume::gallon};
 
 use systems::engine::Engine;
-use systems::hydraulic::{ElectricPump, EngineDrivenPump, HydFluid, HydLoop, Ptu, RamAirTurbine};
+use systems::hydraulic::{ElectricPump, EngineDrivenPump, HydFluid, HydLoop, PowerTransferUnit, RamAirTurbine};
 use systems::overhead::{
     AutoOffFaultPushButton, AutoOnFaultPushButton, FirePushButton, OnOffFaultPushButton,
 };
@@ -22,7 +22,7 @@ pub struct A320Hydraulic {
     blue_electric_pump: ElectricPump,
     yellow_electric_pump: ElectricPump,
     ram_air_turbine: RamAirTurbine,
-    ptu: Ptu,
+    ptu: PowerTransferUnit,
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
     total_sim_time_elapsed: Duration,
@@ -81,8 +81,8 @@ impl A320Hydraulic {
             engine_driven_pump_2: EngineDrivenPump::new("YELLOW"),
             blue_electric_pump: ElectricPump::new("BLUE"),
             yellow_electric_pump: ElectricPump::new("YELLOW"),
-            ram_air_turbine: RamAirTurbine::new(""),
-            ptu: Ptu::new(""),
+            ram_air_turbine: RamAirTurbine::new(),
+            ptu: PowerTransferUnit::new(),
 
             braking_circuit_norm: BrakeCircuit::new(
                 "NORM",
