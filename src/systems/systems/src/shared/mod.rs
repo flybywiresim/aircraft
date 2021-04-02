@@ -276,7 +276,8 @@ mod delayed_false_logic_gate_tests {
 
     #[test]
     fn when_the_expression_is_false_initially_returns_false() {
-        let mut aircraft = TestAircraft::new(DelayedFalseLogicGate::new(Duration::from_millis(100)));
+        let mut aircraft =
+            TestAircraft::new(DelayedFalseLogicGate::new(Duration::from_millis(100)));
         let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_millis(1_000));
 
         test_bed.run_aircraft(&mut aircraft);
@@ -286,7 +287,8 @@ mod delayed_false_logic_gate_tests {
 
     #[test]
     fn when_the_expression_is_true_returns_true() {
-        let mut aircraft = TestAircraft::new(DelayedFalseLogicGate::new(Duration::from_millis(100)));
+        let mut aircraft =
+            TestAircraft::new(DelayedFalseLogicGate::new(Duration::from_millis(100)));
         let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_millis(1_000));
 
         aircraft.set_expression(true);
@@ -312,7 +314,8 @@ mod delayed_false_logic_gate_tests {
 
     #[test]
     fn when_the_expression_is_false_and_delay_has_passed_returns_false() {
-        let mut aircraft = TestAircraft::new(DelayedFalseLogicGate::new(Duration::from_millis(100)));
+        let mut aircraft =
+            TestAircraft::new(DelayedFalseLogicGate::new(Duration::from_millis(100)));
         let mut test_bed = SimulationTestBed::new_with_delta(Duration::from_millis(0));
 
         aircraft.set_expression(true);
