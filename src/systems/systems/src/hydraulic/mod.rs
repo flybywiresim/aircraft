@@ -433,7 +433,7 @@ impl HydLoop {
         delta_time: &Duration,
         electric_pumps: Vec<&ElectricPump>,
         engine_driven_pumps: Vec<&EngineDrivenPump>,
-        ram_air_pumps: Vec<&RatPump>,
+        ram_air_pumps: Vec<&RamAirTurbine>,
         ptus: Vec<&Ptu>,
     ) {
         let mut delta_vol_max = Volume::new::<gallon>(0.);
@@ -541,7 +541,8 @@ pub struct Pump {
     current_displacement: Volume,
     press_breakpoints: [f64; 9],
     displacement_carac: [f64; 9],
-    displacement_dynamic: f64, // Displacement low pass filter. [0:1], 0 frozen -> 1 instantaneous dynamic
+    // Displacement low pass filter. [0:1], 0 frozen -> 1 instantaneous dynamic
+    displacement_dynamic: f64,
     is_pressurised: bool,
 }
 impl Pump {
@@ -568,7 +569,7 @@ impl Pump {
     fn update(&mut self, delta_time: &Duration, line: &HydLoop, rpm: f64) {
         let theoretical_displacement = self.calculate_displacement(line.get_pressure());
 
-        //Actual displacement is the calculated one with a low pass filter applied to mimic displacement transients dynamic
+        // Actual displacement is the calculated one with a low pass filter applied to mimic displacement transients dynamic
         self.current_displacement = (1.0 - self.displacement_dynamic) * self.current_displacement
             + self.displacement_dynamic * theoretical_displacement;
 
@@ -768,31 +769,31 @@ impl PressureSource for EngineDrivenPump {
     }
 }
 
-pub struct RatPropeller {
-    _id: String,
+pub struct WindTurbine {
     rpm_id: String,
 
-    pos: f64,
+    position: f64,
     speed: f64,
-    acc: f64,
+    acceleration: f64,
     rpm: f64,
     torque_sum: f64,
 }
 
-impl Default for RatPropeller {
+impl Default for WindTurbine {
     fn default() -> Self {
-        RatPropeller::new("")
+        WindTurbine::new("")
     }
 }
 
-impl SimulationElement for RatPropeller {
+impl SimulationElement for WindTurbine {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_f64(&self.rpm_id, self.get_rpm());
     }
 }
 
-impl RatPropeller {
-    const LOW_SPEED_PHYSICS_ACTIVATION: f64 = 50.; //Low speed special calculation threshold. Under that value we compute resistant torque depending on pump angle and displacement
+impl WindTurbine {
+    // Low speed special calculation threshold. Under that value we compute resistant torque depending on pump angle and displacement.
+    const LOW_SPEED_PHYSICS_ACTIVATION: f64 = 50.;
     const STOWED_ANGLE: f64 = std::f64::consts::PI / 2.;
     const PROPELLER_INERTIA: f64 = 2.;
     const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
@@ -800,13 +801,12 @@ impl RatPropeller {
     ];
     const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 5., 1., 1.];
 
-    pub fn new(id: &str) -> RatPropeller {
-        RatPropeller {
-            _id: String::from(id).to_uppercase(),
+    pub fn new(id: &str) -> Self {
+        Self {
             rpm_id: format!("HYD_{}RAT_RPM", id),
-            pos: RatPropeller::STOWED_ANGLE,
+            position: Self::STOWED_ANGLE,
             speed: 0.,
-            acc: 0.,
+            acceleration: 0.,
             rpm: 0.,
             torque_sum: 0.,
         }
@@ -818,37 +818,42 @@ impl RatPropeller {
 
     fn update_generated_torque(&mut self, indicated_speed: &Velocity, stow_pos: f64) {
         let cur_aplha = interpolation(
-            &RatPropeller::RPM_GOVERNOR_BREAKPTS,
-            &RatPropeller::PROP_ALPHA_MAP,
+            &Self::RPM_GOVERNOR_BREAKPTS,
+            &Self::PROP_ALPHA_MAP,
             self.rpm,
         );
 
+        // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
         let air_speed_torque = cur_aplha.to_radians().sin()
             * (indicated_speed.get::<knot>() * indicated_speed.get::<knot>() / 100.)
             * 0.5
-            * (std::f64::consts::PI / 2. * stow_pos).sin(); //simple model. stow pos sin simulates the angle of the blades vs wind while deploying
+            * (std::f64::consts::PI / 2. * stow_pos).sin();
         self.torque_sum += air_speed_torque;
     }
 
     fn update_friction_torque(&mut self, displacement_ratio: f64) {
         let mut pump_torque = 0.;
-        if self.rpm < RatPropeller::LOW_SPEED_PHYSICS_ACTIVATION {
-            pump_torque += (self.pos * 4.).cos() * displacement_ratio.max(0.35) * 35.;
+        if self.rpm < Self::LOW_SPEED_PHYSICS_ACTIVATION {
+            pump_torque += (self.position * 4.).cos() * displacement_ratio.max(0.35) * 35.;
             pump_torque += -self.speed * 15.;
         } else {
             pump_torque += displacement_ratio.max(0.35) * 1. * -self.speed;
         }
         pump_torque -= self.speed * 0.05;
-        self.torque_sum += pump_torque; //Static air drag of the propeller
+        //Static air drag of the propeller
+        self.torque_sum += pump_torque;
     }
 
     fn update_physics(&mut self, delta_time: &Duration) {
-        self.acc = self.torque_sum / RatPropeller::PROPELLER_INERTIA;
-        self.speed += self.acc * delta_time.as_secs_f64();
-        self.pos += self.speed * delta_time.as_secs_f64();
+        self.acceleration = self.torque_sum / Self::PROPELLER_INERTIA;
+        self.speed += self.acceleration * delta_time.as_secs_f64();
+        self.position += self.speed * delta_time.as_secs_f64();
 
-        self.rpm = self.speed * 30. / std::f64::consts::PI; //rad/s to RPM
-        self.torque_sum = 0.; //Reset torque accumulator at end of update
+        // rad/s to RPM
+        self.rpm = self.speed * 30. / std::f64::consts::PI;
+
+        // Reset torque accumulator at end of update
+        self.torque_sum = 0.;
     }
 
     pub fn update(
@@ -859,113 +864,106 @@ impl RatPropeller {
         displacement_ratio: f64,
     ) {
         if stow_pos > 0.1 {
-            //Do not update anything on the propeller if still stowed
+            // Do not update anything on the propeller if still stowed
             self.update_generated_torque(indicated_speed, stow_pos);
             self.update_friction_torque(displacement_ratio);
             self.update_physics(delta_time);
         }
     }
 }
-pub struct RatPump {
-    _id: String,
-    stow_pos_id: String,
+pub struct RamAirTurbine {
+    position_id: String,
 
-    active: bool,
+    deployment_commanded: bool,
     pump: Pump,
-    pub prop: RatPropeller,
-    stowed_position: f64,
+    wind_turbine: WindTurbine,
+    position: f64,
     max_displacement: f64,
 }
 
-impl Default for RatPump {
-    fn default() -> Self {
-        RatPump::new("")
-    }
-}
-
-impl SimulationElement for RatPump {
+impl SimulationElement for RamAirTurbine {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.prop.accept(visitor);
+        self.wind_turbine.accept(visitor);
+
         visitor.visit(self);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.stow_pos_id, self.get_stow_position());
+        writer.write_f64(&self.position_id, self.position);
     }
 }
 
-impl RatPump {
+impl RamAirTurbine {
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3050.0, 3500.0,
     ];
     const DISPLACEMENT_MAP: [f64; 9] = [1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 0.5, 0.0, 0.0];
 
-    const DISPLACEMENT_DYNAMICS: f64 = 0.2; //1 == no filtering. !!Warning, this will be affected by a different delta time
+    // 1 == no filtering. !!Warning, this will be affected by a different delta time
+    const DISPLACEMENT_DYNAMICS: f64 = 0.2;
 
-    const STOWING_SPEED: f64 = 1.; //Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
+    //Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
+    const STOWING_SPEED: f64 = 1.;
 
-    pub fn new(id: &str) -> RatPump {
+    pub fn new(id: &str) -> Self {
         let mut max_disp = 0.;
-        for v in RatPump::DISPLACEMENT_MAP.iter() {
+        for v in Self::DISPLACEMENT_MAP.iter() {
             if v > &max_disp {
                 max_disp = *v;
             }
         }
 
-        RatPump {
-            _id: String::from(id).to_uppercase(),
-            stow_pos_id: format!("HYD_{}RAT_STOW_POSITION", id),
-            active: false,
+        Self {
+            position_id: format!("HYD_{}RAT_STOW_POSITION", id),
+            deployment_commanded: false,
             pump: Pump::new(
-                RatPump::DISPLACEMENT_BREAKPTS,
-                RatPump::DISPLACEMENT_MAP,
-                RatPump::DISPLACEMENT_DYNAMICS,
+                Self::DISPLACEMENT_BREAKPTS,
+                Self::DISPLACEMENT_MAP,
+                Self::DISPLACEMENT_DYNAMICS,
             ),
-            prop: RatPropeller::new(id),
-            stowed_position: 0.,
+            wind_turbine: WindTurbine::new(id),
+            position: 0.,
             max_displacement: max_disp,
         }
     }
 
     pub fn update(&mut self, delta_time: &Duration, line: &HydLoop) {
-        self.pump.update(delta_time, line, self.prop.get_rpm());
+        self.pump.update(delta_time, line, self.wind_turbine.get_rpm());
 
-        //Now forcing min to max to force a true real time regulation.
-        self.pump.delta_vol_min = self.pump.delta_vol_max; //TODO: handle this properly by calculating who produced what volume at end of hyd loop update
+        // Now forcing min to max to force a true real time regulation.
+        // TODO: handle this properly by calculating who produced what volume at end of hyd loop update
+        self.pump.delta_vol_min = self.pump.delta_vol_max;
     }
 
     pub fn update_physics(&mut self, delta_time: &Duration, indicated_airspeed: &Velocity) {
-        let displacement_ratio = self.get_delta_vol_max().get::<gallon>() / self.max_displacement; //Calculate the ratio of current displacement vs max displacement as an image of the load of the pump
-        self.prop.update(
+        // Calculate the ratio of current displacement vs max displacement as an image of the load of the pump
+        let displacement_ratio = self.get_delta_vol_max().get::<gallon>() / self.max_displacement;
+        self.wind_turbine.update(
             &delta_time,
             &indicated_airspeed,
-            self.stowed_position,
+            self.position,
             displacement_ratio,
         );
     }
 
-    pub fn update_stow_pos(&mut self, delta_time: &Duration) {
-        if self.active {
-            self.stowed_position += delta_time.as_secs_f64() * RatPump::STOWING_SPEED;
+    pub fn update_position(&mut self, delta_time: &Duration) {
+        if self.deployment_commanded {
+            self.position += delta_time.as_secs_f64() * Self::STOWING_SPEED;
 
-            //Finally limiting pos in [0:1] range
-            if self.stowed_position < 0. {
-                self.stowed_position = 0.;
-            } else if self.stowed_position > 1. {
-                self.stowed_position = 1.;
+            // Finally limiting pos in [0:1] range
+            if self.position < 0. {
+                self.position = 0.;
+            } else if self.position > 1. {
+                self.position = 1.;
             }
         }
     }
 
-    pub fn set_active(&mut self) {
-        self.active = true;
-    }
-
-    pub fn get_stow_position(&self) -> f64 {
-        self.stowed_position
+    pub fn deploy(&mut self) {
+        self.deployment_commanded = true;
     }
 }
-impl PressureSource for RatPump {
+impl PressureSource for RamAirTurbine {
     fn get_delta_vol_max(&self) -> Volume {
         self.pump.get_delta_vol_max()
     }
@@ -1148,7 +1146,7 @@ mod tests {
     #[test]
     //Runs electric pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn blue_loop_rat_deploy_simulation() {
-        let mut rat = RatPump::new("");
+        let mut rat = RamAirTurbine::new("");
         let mut blue_loop = hydraulic_loop("BLUE");
 
         let timestep = 0.05;
@@ -1157,30 +1155,30 @@ mod tests {
 
         let mut time = 0.0;
         for x in 0..1500 {
-            rat.update_stow_pos(&context.delta());
+            rat.update_position(&context.delta());
             if time >= 10. && time < 10. + timestep {
                 println!("ASSERT RAT STOWED");
                 assert!(blue_loop.loop_pressure <= Pressure::new::<psi>(50.0));
-                rat.active = false;
-                assert!(rat.stowed_position == 0.);
+                rat.deployment_commanded = false;
+                assert!(rat.position == 0.);
             }
 
             if time >= 20. && time < 20. + timestep {
                 println!("ASSERT RAT STOWED STILL NO PRESS");
                 assert!(blue_loop.loop_pressure <= Pressure::new::<psi>(50.0));
-                rat.set_active();
+                rat.deploy();
             }
 
             if time >= 30. && time < 30. + timestep {
                 println!("ASSERT RAT OUT AND SPINING");
                 assert!(blue_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
-                assert!(rat.stowed_position >= 0.999);
-                assert!(rat.prop.rpm >= 1000.);
+                assert!(rat.position >= 0.999);
+                assert!(rat.wind_turbine.rpm >= 1000.);
             }
             if time >= 60. && time < 60. + timestep {
                 println!("ASSERT RAT AT SPEED");
                 assert!(blue_loop.loop_pressure >= Pressure::new::<psi>(2500.0));
-                assert!(rat.prop.rpm >= 5000.);
+                assert!(rat.wind_turbine.rpm >= 5000.);
             }
 
             if time >= 70. && time < 70. + timestep {
@@ -1190,7 +1188,7 @@ mod tests {
 
             if time >= 120. && time < 120. + timestep {
                 println!("ASSERT RAT SLOWED DOWN");
-                assert!(rat.prop.rpm <= 2500.);
+                assert!(rat.wind_turbine.rpm <= 2500.);
             }
 
             rat.update_physics(&context.delta(), &indicated_airpseed);
@@ -1206,8 +1204,8 @@ mod tests {
                 println!("Iteration {} Time {}", x, time);
                 println!("-------------------------------------------");
                 println!("---PSI: {}", blue_loop.loop_pressure.get::<psi>());
-                println!("---RAT stow pos: {}", rat.stowed_position);
-                println!("---RAT RPM: {}", rat.prop.rpm);
+                println!("---RAT stow pos: {}", rat.position);
+                println!("---RAT RPM: {}", rat.wind_turbine.rpm);
                 println!("---RAT volMax: {}", rat.get_delta_vol_max().get::<gallon>());
                 println!(
                     "--------Reservoir Volume (g): {}",

@@ -2,7 +2,7 @@ use std::time::Duration;
 use uom::si::{f64::*, pressure::pascal, pressure::psi, velocity::knot, volume::gallon};
 
 use systems::engine::Engine;
-use systems::hydraulic::{ElectricPump, EngineDrivenPump, HydFluid, HydLoop, Ptu, RatPump};
+use systems::hydraulic::{ElectricPump, EngineDrivenPump, HydFluid, HydLoop, Ptu, RamAirTurbine};
 use systems::overhead::{
     AutoOffFaultPushButton, AutoOnFaultPushButton, FirePushButton, OnOffFaultPushButton,
 };
@@ -21,7 +21,7 @@ pub struct A320Hydraulic {
     engine_driven_pump_2: EngineDrivenPump,
     blue_electric_pump: ElectricPump,
     yellow_electric_pump: ElectricPump,
-    rat: RatPump,
+    ram_air_turbine: RamAirTurbine,
     ptu: Ptu,
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
@@ -81,7 +81,7 @@ impl A320Hydraulic {
             engine_driven_pump_2: EngineDrivenPump::new("YELLOW"),
             blue_electric_pump: ElectricPump::new("BLUE"),
             yellow_electric_pump: ElectricPump::new("YELLOW"),
-            rat: RatPump::new(""),
+            ram_air_turbine: RamAirTurbine::new(""),
             ptu: Ptu::new(""),
 
             braking_circuit_norm: BrakeCircuit::new(
@@ -165,11 +165,11 @@ impl A320Hydraulic {
             .set_yellow_pressurised(self.is_yellow_pressurised());
     }
 
-    fn update_hydraulics_logic_outputs(&mut self) {
+    fn update_hydraulics_logic_outputs(&mut self, context: &UpdateContext) {
         self.ptu.enabling(self.hyd_logic.ptu_ena_output());
 
-        if self.hyd_logic.rat_on_output() {
-            self.rat.set_active()
+        if self.hyd_logic.rat_should_be_deployed(context) {
+            self.ram_air_turbine.deploy();
         }
 
         if self.hyd_logic.blue_electric_pump_output() {
@@ -233,7 +233,7 @@ impl A320Hydraulic {
             time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
 
         // Updating rat stowed pos on all frames in case it's used for graphics
-        self.rat.update_stow_pos(&context.delta());
+        self.ram_air_turbine.update_position(&context.delta());
 
         if number_of_steps_floating_point < 1.0 {
             // Can't do a full time step
@@ -281,7 +281,7 @@ impl A320Hydraulic {
 
     // All the higher frequency updates like physics
     fn update_fast_rate(&mut self, context: &UpdateContext, delta_time_physics: &Duration) {
-        self.rat
+        self.ram_air_turbine
             .update_physics(&delta_time_physics, &context.indicated_airspeed());
     }
 
@@ -304,7 +304,7 @@ impl A320Hydraulic {
             engine_fire_overhead,
             &context.with_delta(min_hyd_loop_timestep),
         );
-        self.update_hydraulics_logic_outputs();
+        self.update_hydraulics_logic_outputs(&context.with_delta(min_hyd_loop_timestep));
 
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.hyd_brake_logic
@@ -324,7 +324,7 @@ impl A320Hydraulic {
         self.blue_electric_pump
             .update(&min_hyd_loop_timestep, &self.blue_loop);
 
-        self.rat.update(&min_hyd_loop_timestep, &self.blue_loop);
+        self.ram_air_turbine.update(&min_hyd_loop_timestep, &self.blue_loop);
         self.green_loop.update(
             &min_hyd_loop_timestep,
             Vec::new(),
@@ -343,7 +343,7 @@ impl A320Hydraulic {
             &min_hyd_loop_timestep,
             vec![&self.blue_electric_pump],
             Vec::new(),
-            vec![&self.rat],
+            vec![&self.ram_air_turbine],
             Vec::new(),
         );
 
@@ -362,7 +362,7 @@ impl SimulationElement for A320Hydraulic {
         self.blue_electric_pump.accept(visitor);
         self.engine_driven_pump_1.accept(visitor);
         self.engine_driven_pump_2.accept(visitor);
-        self.rat.accept(visitor);
+        self.ram_air_turbine.accept(visitor);
 
         self.ptu.accept(visitor);
 
@@ -571,7 +571,6 @@ pub struct A320HydraulicLogic {
     eng_2_master_on: bool,
 
     ptu_ena_output: bool,
-    rat_on_output: bool,
     blue_electric_pump_output: bool,
     yellow_electric_pump_output: bool,
     green_loop_fire_valve_output: bool,
@@ -614,7 +613,6 @@ impl A320HydraulicLogic {
             eng_2_master_on: false,
 
             ptu_ena_output: false,
-            rat_on_output: false,
             blue_electric_pump_output: false,
             yellow_electric_pump_output: false,
             green_loop_fire_valve_output: false,
@@ -632,8 +630,13 @@ impl A320HydraulicLogic {
         self.ptu_ena_output
     }
 
-    fn rat_on_output(&self) -> bool {
-        self.rat_on_output
+    fn rat_should_be_deployed(&self, context: &UpdateContext) -> bool {
+        // RAT Deployment
+        // Todo check all other needed conditions this is faked with engine master while it should check elec buses
+        !self.eng_1_master_on
+            && !self.eng_2_master_on
+            //Todo get speed from ADIRS
+            && context.indicated_airspeed() > Velocity::new::<knot>(100.)
     }
 
     fn blue_electric_pump_output(&self) -> bool {
@@ -726,8 +729,6 @@ impl A320HydraulicLogic {
         self.nose_wheel_steering_pin_inserted
             .update(context, self.pushback_tug.is_pushing());
 
-        self.update_rat_deploy(context);
-
         self.update_ed_pump_states(overhead_panel, engine_fire_overhead);
 
         self.update_e_pump_states(overhead_panel);
@@ -748,18 +749,6 @@ impl A320HydraulicLogic {
             self.ptu_ena_output = true;
         } else {
             self.ptu_ena_output = false;
-        }
-    }
-
-    fn update_rat_deploy(&mut self, context: &UpdateContext) {
-        // RAT Deployment
-        //Todo check all other needed conditions this is faked with engine master while it should check elec buses
-        if !self.eng_1_master_on
-            && !self.eng_2_master_on
-            && context.indicated_airspeed() > Velocity::new::<knot>(100.)
-        //Todo get speed from ADIRS
-        {
-            self.rat_on_output = true;
         }
     }
 
