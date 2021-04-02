@@ -18,7 +18,7 @@
 			<AXIS>Y</AXIS>
 			<Condition Check="USE_TRAJECTORY_DRAG_MODE">
 				<True>
-					<MAX_HANDLE_INDEX>(A:FLAPS NUM HANDLE POSITIONS:1, Number)</MAX_HANDLE_INDEX>
+					<MAX_HANDLE_INDEX>4</MAX_HANDLE_INDEX>
 					<MIN_DELTA>0.25</MIN_DELTA>
 				</True>
 				<False>
@@ -51,11 +51,11 @@
 				<CURSOR>Grab</CURSOR>
 				<HELPID>HELPID_GAUGE_FLAPS_SWITCH</HELPID>
 				<TOOLTIPID>TOOLTIPTEXT_FLAPS_SWITCH</TOOLTIPID>
-				<DRAG_SIMVAR>FLAPS HANDLE PERCENT</DRAG_SIMVAR>
-				<ANIM_CODE>(A:FLAPS HANDLE PERCENT, percent)</ANIM_CODE>
+				<DRAG_SIMVAR>L:A32NX_FLAPS_HANDLE_PERCENT</DRAG_SIMVAR>
+				<ANIM_CODE>(L:A32NX_FLAPS_HANDLE_PERCENT, number) 100 *</ANIM_CODE>
 				<DRAG_CODE>
 					(M:DragPercent) sp0
-					(A:FLAPS HANDLE INDEX, number) #MAX_HANDLE_INDEX# / sp1
+					(L:A32NX_FLAPS_HANDLE_INDEX, number) 4 / sp1
 					l0 l1 - sp2
 					l2 abs #MIN_DELTA# &gt; if{
 						l2 0 &gt; if{
@@ -91,6 +91,68 @@
 				<VISIBILITY_CODE>(L:XMLVAR_LeverFlapsHidden) !</VISIBILITY_CODE>
 			</UseTemplate>
 		</Component>
+	</Template>
+
+	<Template Name="FBW_HANDLING_Lever_Spoilers_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>HANDLING_Lever_Spoilers</ANIM_NAME>
+			<ANIM_TRIGGER_COUNT>3</ANIM_TRIGGER_COUNT>
+			<NODE_ID>HANDLING_Lever_Spoilers</NODE_ID>
+			<PART_ID>HANDLING_Lever_Spoilers</PART_ID>
+			<STEPS_NUMBER>2</STEPS_NUMBER>
+			<DRAG_SPEED>30</DRAG_SPEED>
+			<POSITION_TYPE>O</POSITION_TYPE>
+			<POSITION_VAR>Position</POSITION_VAR>
+			<EVENT_SPEED Process="True">16383 10 /</EVENT_SPEED>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.SPEEDBRAKE_LEVER</TOOLTIPID>
+		</DefaultTemplateParameters>
+		<OverrideTemplateParameters>
+            <ARMED_POSITION_INVERSION></ARMED_POSITION_INVERSION>
+            <RETRACT_POSITION>1</RETRACT_POSITION>
+            <ARMED_POSITION>0</ARMED_POSITION>
+		</OverrideTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Update">
+                <FREQUENCY>1</FREQUENCY>
+                <UPDATE_CODE>
+                    (L:A32NX_SPOILERS_ARMED, Bool) if{
+                        0 (&gt;#POSITION_TYPE#:#POSITION_VAR#)
+                    } els{
+                        1 (L:A32NX_SPOILERS_HANDLE_POSITION, Number) #STEPS_NUMBER# * + (&gt;#POSITION_TYPE#:#POSITION_VAR#)
+                    }
+                </UPDATE_CODE>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_Gates">
+                <USE_TRAJECTORY_DRAG_MODE>True</USE_TRAJECTORY_DRAG_MODE>
+                <GATE_DIRECTION>0</GATE_DIRECTION>
+                <WWISE_EVENT_1>lever_speedbrakes</WWISE_EVENT_1>
+                <WWISE_EVENT_2>lever_speedbrakes</WWISE_EVENT_2>
+                <DONT_SYNC_DRAG_TO_ANIM>True</DONT_SYNC_DRAG_TO_ANIM>
+                <DRAG_CODE>
+                    (#POSITION_TYPE#:#POSITION_VAR#) 1 &lt;= if{
+                        (M:DragPercent) (O:PrevDragPercent) - 0 &gt; sp0
+                        (M:DragPercent) 0 != (M:DragPercent) 0.33 &gt; (M:InputType) 0 == l0 or ? #ARMED_POSITION_INVERSION# if{
+                            #RETRACT_POSITION# (&gt;#POSITION_TYPE#:#POSITION_VAR#)
+                            (&gt;K:SPOILERS_ARM_OFF)
+                            0 (&gt;K:SPOILERS_SET)
+                        } els{
+                            (M:DragPercent) 0 == (M:DragPercent) 0.33 &lt; (M:InputType) 0 == l0 ! and ? #ARMED_POSITION_INVERSION# if{
+                                #ARMED_POSITION# (&gt;#POSITION_TYPE#:#POSITION_VAR#)
+                                (&gt;K:SPOILERS_ARM_ON)
+                                0 (&gt;K:SPOILERS_SET)
+                            }
+                        }
+                    } els{
+                        (#POSITION_TYPE#:#POSITION_VAR#) 1 - #STEPS_NUMBER# / 16384 * (&gt;K:SPOILERS_SET)
+                    }
+                </DRAG_CODE>
+                <STEPS_NUMBER Process="Int">#STEPS_NUMBER# 1 +</STEPS_NUMBER>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvents_Same">
+                <WWISE_EVENT>lever_speedbrakes</WWISE_EVENT>
+                <COUNT>#ANIM_TRIGGER_COUNT#</COUNT>
+            </UseTemplate>
+        </Component>
 	</Template>
 
 	<Template Name="FBW_LANDING_GEAR_Switch_ParkingBrake_Template">

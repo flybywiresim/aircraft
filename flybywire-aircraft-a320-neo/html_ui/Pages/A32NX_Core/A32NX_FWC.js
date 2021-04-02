@@ -351,7 +351,7 @@ class A32NX_FWC {
         // - Glide slope captured
         // - Landing locked down
 
-        const landingGearIsDown = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum") >= 1 && SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
+        const landingGearIsDown = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Enum") >= 1 && SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
         const verticalMode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "Number");
         const glideSlopeCaptured = verticalMode >= 30 && verticalMode <= 34;
         const landingGearIsLockedDown = SimVar.GetSimVarValue("GEAR POSITION:0", "Enum") > 0.9;

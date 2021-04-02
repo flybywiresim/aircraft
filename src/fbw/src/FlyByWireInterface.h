@@ -25,11 +25,13 @@
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
 #include "EngineData.h"
+#include "FlapsHandler.h"
 #include "FlightDataRecorder.h"
 #include "FlyByWire.h"
 #include "InterpolatingLookupTable.h"
 #include "RateLimiter.h"
 #include "SimConnectInterface.h"
+#include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
 
 class FlyByWireInterface {
@@ -191,6 +193,14 @@ class FlyByWireInterface {
   ID enginePreFlightPhase;
   ID engineActualFlightPhase;
 
+  ID idFlapsHandleIndex;
+  ID idFlapsHandlePercent;
+  std::shared_ptr<FlapsHandler> flapsHandler;
+
+  ID idSpoilersArmed;
+  ID idSpoilersHandlePosition;
+  std::shared_ptr<SpoilersHandler> spoilersHandler;
+
   void loadConfiguration();
   void setupLocalVariables();
 
@@ -202,6 +212,8 @@ class FlyByWireInterface {
   bool updateAutopilotLaws(double sampleTime);
   bool updateFlyByWire(double sampleTime);
   bool updateAutothrust(double sampleTime);
+
+  bool updateFlapsSpoilers(double sampleTime);
 
   double smoothFlightDirector(double sampleTime, double factor, double limit, double currentValue, double targetValue);
 

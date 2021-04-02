@@ -93,9 +93,11 @@ clang++ \
   "${DIR}/src/model/uMultiWord2Double.cpp" \
   -I "${DIR}/src/zlib" \
   "${DIR}/src/zlib/zfstream.cc" \
+  "${DIR}/src/FlapsHandler.cpp" \
   "${DIR}/src/FlyByWireInterface.cpp" \
   "${DIR}/src/FlightDataRecorder.cpp" \
   "${DIR}/src/InterpolatingLookupTable.cpp" \
+  "${DIR}/src/SpoilersHandler.cpp" \
   "${DIR}/src/ThrottleAxisMapping.cpp" \
   "${DIR}/src/main.cpp" \
   "${DIR}/obj/adler32.o" \

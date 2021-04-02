@@ -348,7 +348,7 @@
                     </UseTemplate>
                 </Component>
 
-                <UseTemplate Name="ASOBO_HANDLING_Lever_Spoilers_Template">
+                <UseTemplate Name="FBW_HANDLING_Lever_Spoilers_Template">
                     <ANIM_NAME>lever_speed_brake</ANIM_NAME>
                     <NODE_ID>LEVER_SPEEDBRAKE</NODE_ID>
                     <TYPE>AIRLINER</TYPE>

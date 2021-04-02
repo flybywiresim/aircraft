@@ -23,6 +23,8 @@
 #include <string>
 #include <vector>
 
+#include "../FlapsHandler.h"
+#include "../SpoilersHandler.h"
 #include "../ThrottleAxisMapping.h"
 #include "SimConnectData.h"
 
@@ -99,6 +101,24 @@ class SimConnectInterface {
     THROTTLE2_DECR_SMALL,
     THROTTLE_REVERSE_THRUST_TOGGLE,
     THROTTLE_REVERSE_THRUST_HOLD,
+    FLAPS_UP,
+    FLAPS_1,
+    FLAPS_2,
+    FLAPS_3,
+    FLAPS_DOWN,
+    FLAPS_INCR,
+    FLAPS_DECR,
+    FLAPS_SET,
+    AXIS_FLAPS_SET,
+    SPOILERS_ON,
+    SPOILERS_OFF,
+    SPOILERS_TOGGLE,
+    SPOILERS_SET,
+    AXIS_SPOILER_SET,
+    SPOILERS_ARM_ON,
+    SPOILERS_ARM_OFF,
+    SPOILERS_ARM_TOGGLE,
+    SPOILERS_ARM_SET,
   };
 
   SimConnectInterface() = default;
@@ -108,7 +128,9 @@ class SimConnectInterface {
   bool connect(bool autopilotStateMachineEnabled,
                bool autopilotLawsEnabled,
                bool flyByWireEnabled,
-               const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis);
+               const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
+               std::shared_ptr<FlapsHandler> flapsHandler,
+               std::shared_ptr<SpoilersHandler> spoilersHandler);
 
   void disconnect();
 
@@ -125,6 +147,10 @@ class SimConnectInterface {
   bool sendData(SimOutputZetaTrim output);
 
   bool sendData(SimOutputThrottles output);
+
+  bool sendData(SimOutputFlaps output);
+
+  bool sendData(SimOutputSpoilers output);
 
   bool sendEvent(Events eventId);
 
@@ -172,6 +198,9 @@ class SimConnectInterface {
 
   SimInputThrottles simInputThrottles = {};
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
+
+  std::shared_ptr<FlapsHandler> flapsHandler;
+  std::shared_ptr<SpoilersHandler> spoilersHandler;
 
   ClientDataAutopilotStateMachine clientDataAutopilotStateMachine = {};
   ClientDataAutopilotLaws clientDataAutopilotLaws = {};
