@@ -2,7 +2,7 @@
 <SimBase.Document Type="Checklist" version="1,0">
 	<Checklist.Checklist>
 		<IncludeCheckpointLibrary FileName="CheckpointsLibrary\\Asobo_DefaultCheckpointLibrary.xml"/>
-		<IncludeCheckpointLibrary FileName="SimObjects\\Airplanes\\Asobo_A320_NEO\\Checklist\\Library.xml"/>
+		<IncludeCheckpointLibrary FileName="SimObjects\\Airplanes\\FlyByWire_A320_NEO\\Checklist\\Library.xml"/>
 		<Step ChecklistStepId="PREFLIGHT_GATE">
 			<!-- Before starting engine -->
 			<Page SubjectTT="TT:PRELIMINARY COCKPIT PREP.">
@@ -581,7 +581,7 @@
 				</Block>
 				<Block SubjectTT="ON GROUND">
 					<Checkpoint ReferenceId="A320_EMERGENCY_DIFFERENTIAL_BRAKING"/>
-				</Block> 
+				</Block>
 			</Page>
 			<Page SubjectTT="TT:STABILIZER JAM (EMERGENCY)">
 				<Checkpoint ReferenceId="A320_EMERGENCY_AP"/>
@@ -589,7 +589,7 @@
 				<Block SubjectTT="APPR PROC">
 					<Checkpoint ReferenceId="A320_EMERGENCY_FOR_LDG"/>
 					<Checkpoint ReferenceId="A320_EMERGENCY_GPWS_LDG_FLAP"/>
-				</Block> 
+				</Block>
 			</Page>
 		</Step>
 		<Step ChecklistStepId="LANDING_TAXI_IN"/>
