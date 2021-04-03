@@ -207,7 +207,7 @@ void ThrottleAxisMapping::setCurrentValue(double value) {
 
   // ensure not in reverse when in flight
   if (inFlight) {
-    newTLA = fmax(TLA_IDLE, currentTLA);
+    newTLA = fmax(TLA_IDLE, newTLA);
   }
 
   // set values
