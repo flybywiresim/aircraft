@@ -1,4 +1,3 @@
-import { IconEdit, IconPlug } from '@tabler/icons';
 import React, { useEffect, useState } from 'react';
 import { NXDataStore, usePersistentProperty } from '../../../Common/persistence';
 
@@ -46,19 +45,19 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
     });
 
     return (
-        <div className="mb-4 w-80 justify-between items-center p-4 flex flex-row">
+        <div className="mb-2 w-full justify-between items-center p-2 flex flex-row">
 
             {props.barPosition === 'left'
             && (
-                <div className="mr-12">
+                <div className="mr-8 h-full">
                     <ProgressBar
                         height="350px"
                         width="50px"
                         isLabelVisible={false}
                         displayBar
                         borderRadius="0px"
-                        completedBar={(props.lowerBoundDetentGetter + 1) * 50}
-                        completedBar2={(props.upperBoundDetentGetter + 1) * 50}
+                        completedBarBegin={(props.lowerBoundDetentGetter + 1) * 50}
+                        completedBarEnd={(props.upperBoundDetentGetter + 1) * 50}
                         bgcolor="#3b82f6"
                         vertical
                         baseBgColor="rgba(55, 65, 81, var(--tw-bg-opacity))"
@@ -101,8 +100,8 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             value={!props.expertMode ? deadZone : props.upperBoundDetentGetter.toFixed(2)}
                             onChange={(deadZone) => {
                                 if (previousMode === props.expertMode) {
-                                    setAxisValue(props.throttlePosition.toFixed(2));
                                     const dz = Math.abs((Math.abs(props.upperBoundDetentGetter) - Math.abs(props.lowerBoundDetentGetter)));
+                                    setAxisValue(dz / 2);
                                     setDeadZone(dz.toFixed(2));
                                     NXDataStore.set(`THROTTLE_${props.throttleNumber}DETENT_${props.index}`, dz.toFixed(2));
                                     props.upperBoundDetentSetter.forEach((f) => f(parseFloat(deadZone)));
@@ -149,7 +148,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                     <h1 className="mt-4 text-red-600 text-xl">Please enter a valid deadzone (min. 0.1)</h1>
                 )}
 
-                {!showWarning && (
+                {/*        {!showWarning && (
                     <h1 className="text-white mt-4 text-xl ">
                         Lower Bound:
                         {' '}
@@ -160,19 +159,19 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         {' '}
                         {(props.upperBoundDetentGetter).toFixed(2) }
                     </h1>
-                )}
+                )} */}
             </div>
             {props.barPosition === 'right'
             && (
-                <div className="ml-12">
+                <div className="ml-8 h-full">
                     <ProgressBar
                         height="350px"
                         width="50px"
                         isLabelVisible={false}
                         displayBar
                         borderRadius="0px"
-                        completedBar={(props.lowerBoundDetentGetter + 1) * 50}
-                        completedBar2={(props.upperBoundDetentGetter + 1) * 50}
+                        completedBarBegin={(props.lowerBoundDetentGetter + 1) * 50}
+                        completedBarEnd={(props.upperBoundDetentGetter + 1) * 50}
                         bgcolor="#3b82f6"
                         vertical
                         baseBgColor="rgba(55, 65, 81, var(--tw-bg-opacity))"

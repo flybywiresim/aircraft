@@ -81,7 +81,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     }
 
     const navigationBar = (
-        <div className="h-80 flex flex-row mt-auto mb-auto ml-16">
+        <div className="h-80 flex flex-row">
             <VerticalSelectGroup>
                 <SelectItem onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
                 <SelectItem onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
@@ -136,6 +136,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
 
                 { parseInt(isDualAxis) === 1 && (
                     <div className="flex flex-row justify-center">
+                        <div className="ml-4" />
 
                         <BaseThrottleConfig
                             mappingsAxisOne={mappingsAxisOne}
@@ -144,7 +145,9 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                             throttleCount={parseInt(isDualAxis) === 0 ? 2 : 1}
                             activeIndex={selectedIndex}
                         />
-                        <div className="w-8" />
+                        <div className="mr-8 ml-8 mt-auto mb-auto">
+                            {navigationBar}
+                        </div>
                         <BaseThrottleConfig
                             mappingsAxisOne={mappingsAxis2}
                             disabled={false}
@@ -152,15 +155,13 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                             throttleCount={1}
                             activeIndex={selectedIndex}
                         />
-
-                        {navigationBar}
-
+                        <div className="mr-4" />
                     </div>
                 )}
 
                 { parseInt(isDualAxis) === 0
                     && (
-                        <div className="flex flex-row justify-center">
+                        <div className="flex flex-row ml-4 justify-center">
                             <BaseThrottleConfig
                                 mappingsAxisOne={mappingsAxisOne}
                                 mappingsAxisTwo={mappingsAxis2}
@@ -169,7 +170,9 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                                 throttleCount={2}
                                 activeIndex={selectedIndex}
                             />
-                            {navigationBar}
+                            <div className="ml-8 mt-auto mb-auto">
+                                {navigationBar}
+                            </div>
                         </div>
                     )}
             </div>

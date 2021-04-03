@@ -38,14 +38,14 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
     );
 
     return (
-        <div>
+        <div className="w-50">
             <h1 className="text-white mb-4 text-3xl ">
                 Axis
                 {' '}
                 {props.throttleNumber}
                 {' '}
             </h1>
-            <div className="bg-gray-800 rou px-4 pt-5 pb-4 sm:p-6 sm:pb-4 mt-4 mb-4 rounded-lg">
+            <div className="bg-gray-800 px-4 pt-5 mt-4 rounded-lg">
                 <div className="flex flew-row justify-center">
                     <h1 className="text-white mb-8 text-xl ">
                         Current Value:
@@ -58,7 +58,7 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
                 </div>
 
                 <div className="flex flex-row">
-                    <div className="justify-between items-center flex flex-col ">
+                    <div className="justify-between items-center flex flex-col">
                         {currentDetent}
                     </div>
                 </div>

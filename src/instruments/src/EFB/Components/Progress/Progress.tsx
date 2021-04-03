@@ -4,8 +4,8 @@ import './Progress.scss';
 export type ProgressBarProps = {
     completed: string | number;
     displayBar?: boolean;
-    completedBar?: number;
-    completedBar2?: number;
+    completedBarBegin?: number;
+    completedBarEnd?: number;
 
     bgcolor?: string;
     baseBgColor?: string;
@@ -25,8 +25,8 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     bgcolor,
     completed,
     displayBar,
-    completedBar2,
-    completedBar,
+    completedBarEnd,
+    completedBarBegin,
     baseBgColor,
     height,
     width,
@@ -111,17 +111,33 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     };
 
     return (
-        <>
-            <div className="progress-bar">
+
+        <div className="flex flex-row">
+
+            <div>
+                {vertical && (
+                    <div
+                        className="text-xl mr-2 text-white"
+                        style={vertical
+                            ? { marginTop: `${formatBar(completedBarBegin + 2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarBegin || 0)}` }}
+                    >
+                        {(completedBarBegin / 50).toFixed(2)}
+                    </div>
+                )}
+
+            </div>
+            <div className={`progress-bar ${!vertical ? 'mr-2' : ''}`}>
+
                 <div
-                    className={displayBar ? checkOrientation() : 'hidden'}
+                    className={`text-white ${displayBar ? checkOrientation() : 'hidden'}`}
                     style={vertical
-                        ? { marginTop: `${formatBar(completedBar || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBar || 0)}` }}
+                        ? { marginTop: `${formatBar(completedBarBegin || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarBegin || 0)}` }}
                 />
+
                 <div
-                    className={displayBar ? checkOrientation() : 'hidden'}
+                    className={`text-white ${displayBar ? checkOrientation() : 'hidden'}`}
                     style={vertical
-                        ? { marginTop: `${formatBar(completedBar2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBar2 || 0)}` }}
+                        ? { marginTop: `${formatBar(completedBarEnd || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarEnd || 0)}` }}
                 />
                 <div style={outsideStyles}>
                     <div style={containerStyles}>
@@ -140,7 +156,16 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
                     )}
                 </div>
             </div>
-        </>
+            {vertical && (
+                <div
+                    className="text-xl ml-2 text-white"
+                    style={vertical
+                        ? { marginTop: `${formatBar(completedBarEnd + 2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarEnd || 0)}` }}
+                >
+                    {(completedBarEnd !== 0 ? (completedBarEnd / 50) : 0.00).toFixed(2)}
+                </div>
+            )}
+        </div>
     );
 };
 
@@ -155,5 +180,5 @@ ProgressBar.defaultProps = {
     labelSize: '15px',
     isLabelVisible: true,
     displayBar: false,
-    completedBar: 0,
+    completedBarBegin: 0,
 };
