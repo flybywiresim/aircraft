@@ -213,10 +213,10 @@ double SpoilersHandler::getTimeSinceAirborne(double simulationTime, double timeA
 
 double SpoilersHandler::numberOfLandingGearsOnGround(double landingGearCompression_1, double landingGearCompression_2) {
   double numberOnGround = 0.0;
-  if (landingGearCompression_1 > 0.0) {
+  if (landingGearCompression_1 > 0.1) {
     numberOnGround += 1.0;
   }
-  if (landingGearCompression_2 > 0.0) {
+  if (landingGearCompression_2 > 0.1) {
     numberOnGround += 1.0;
   }
   return numberOnGround;
