@@ -2566,7 +2566,7 @@ var A320_Neo_UpperECAM;
             const flapsAngle = Math.max(0, (SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5);
             const handleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
             const slatsTargetIndex = handleIndex;
-            const flapsTargetIndex = handleIndex;
+            let flapsTargetIndex = handleIndex;
             const slatsAngleChanged = (this.currentSlatsAngle != slatsAngle);
             const flapsAngleChanged = (this.currentFlapsAngle != flapsAngle);
             if ((slatsAngleChanged || flapsAngleChanged) && ((this.cockpitSettings != null) && (this.cockpitSettings.FlapsLevels != null) && this.cockpitSettings.FlapsLevels.initialised)) {
