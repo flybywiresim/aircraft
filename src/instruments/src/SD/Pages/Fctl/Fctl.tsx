@@ -49,6 +49,7 @@ export const FctlPage = () => {
 
     const [rawPitchTrim, setRawPitchTrim] = useState(0);
     const [rudderAngle, setRudderAngle] = useState(0);
+    const [rudderTrimAngle, setRudderTrimAngle] = useState(0);
     const [maxAngleNorm, setMaxAngleNorm] = useState(1);
 
     useEffect(() => {
@@ -82,6 +83,14 @@ export const FctlPage = () => {
                 + 0.00047 * indicatedAirspeedState ** 2) / 25);
         }
     }, [indicatedAirspeedState]);
+
+    // Rudder trim
+
+    const [rudderTrimState] = useSimVar('RUDDER TRIM PCT', 'percent over 100', 50);
+
+    useEffect(() => {
+        setRudderTrimAngle(-rudderTrimState * 25);
+    }, [rudderTrimState]);
 
     // Check Hydraulics state
 
@@ -341,18 +350,18 @@ export const FctlPage = () => {
 
                     <text
                         id="pitchTrimLeadingDecimal"
-                        className={hydraulicGAvailable || hydraulicYAvailable ? 'Value' : 'Warning'}
-                        x="269"
+                        className={hydraulicGAvailable || hydraulicYAvailable ? 'Value Standard' : 'Warning Standard'}
+                        x="281"
                         y="318"
-                        textAnchor="middle"
+                        textAnchor="end"
                         alignmentBaseline="central"
                     >
                         {pitchValueArray[0]}
                     </text>
                     <text
                         id="pitchTrimDecimalPoint"
-                        className={hydraulicGAvailable || hydraulicYAvailable ? 'Value' : 'Warning'}
-                        x="281"
+                        className={hydraulicGAvailable || hydraulicYAvailable ? 'Value Standard' : 'Warning Standard'}
+                        x="285"
                         y="318"
                         textAnchor="middle"
                         alignmentBaseline="central"
@@ -361,31 +370,29 @@ export const FctlPage = () => {
                     </text>
                     <text
                         id="pitchTrimTrailingDecimal"
-                        className={hydraulicGAvailable || hydraulicYAvailable ? 'Value' : 'Warning'}
-                        x="292"
-                        y="318"
+                        className={hydraulicGAvailable || hydraulicYAvailable ? 'Value Small' : 'Warning Small'}
+                        x="294"
+                        y="320"
                         textAnchor="middle"
                         alignmentBaseline="central"
                     >
                         {pitchValueArray[1]}
                     </text>
-
-                    <circle
-                        id="pitchTrimDegreePoint"
-                        className="MainShape"
-                        cx="310"
-                        cy="313"
-                        r="3"
+                    <text
+                        id="pitchTrimDecimalPoint"
+                        className="ValueCyan Standard"
+                        x="308"
+                        y="318"
                         textAnchor="middle"
                         alignmentBaseline="central"
                     >
                         °
-                    </circle>
+                    </text>
                     <text
                         id="pitchTrimDirection"
-                        className={hydraulicGAvailable || hydraulicYAvailable ? 'Value' : 'Warning'}
-                        x="335"
-                        y="318"
+                        className={hydraulicGAvailable || hydraulicYAvailable ? 'Value Small' : 'Warning Small'}
+                        x="328"
+                        y="320"
                         textAnchor="middle"
                         alignmentBaseline="central"
                     >
@@ -420,19 +427,17 @@ export const FctlPage = () => {
                         RUD
                     </text>
                     <path id="rudderPath" className="MainShape" d="M 350 469 A 100 100 0 0 1 250 469" />
-                    <path id="rudderCenter" className="MainShape" d="m302 482-6e-3 6-4 0.01 0.05-6" />
-                    <path id="rudderRightBorder" className="MainShape" d="m343 472 2 5-7 3-2-5" />
-                    <path id="rudderLeftBorder" className="MainShape" d="m257 472-2 5 7 3 2-5" />
+                    <path id="rudderCenter" className="MainShape" d="m297 484 v 4 h 6 v-4" />
+                    <path id="rudderRightBorder" className="MainShape" d="m344 474 1 4 -7 3 -2 -4" />
+                    <path id="rudderLeftBorder" className="MainShape" d="m256 474 -1 4 7 3 2 -4" />
                 </g>
 
                 <g id="rudderLeftMaxAngle" transform={`rotate(${-26.4 * (1 - maxAngleNorm)} 300 385)`}>
-                    <path id="rudderLeftLimitGreen" className="GreenShape" d="m250 484 6 3" />
-                    <path id="rudderLeftLimitWhite" className="GreenShape" d="m257 472-7 13" />
+                    <path className="GreenShape" d="m255 473 -6 13 4 2" />
                 </g>
 
                 <g id="rudderRightMaxAngle" transform={`rotate(${26.4 * (1 - maxAngleNorm)} 300 385)`}>
-                    <path id="rudderRightLimitGreen" className="GreenShape" d="m350 484-6 3" />
-                    <path id="rudderRightLimitWhite" className="GreenShape" d="m343 472 7 13" />
+                    <path className="GreenShape" d="m345 473 6 13 -4 2" />
                 </g>
 
                 <g id="rudderCursor" transform={`rotate(${rudderAngle} 300 380)`}>
@@ -446,6 +451,9 @@ export const FctlPage = () => {
                         className={hydraulicGAvailable || hydraulicBAvailable || hydraulicYAvailable ? 'GreenShape' : 'WarningShape'}
                         d="M292,434 l8,48 l8,-48"
                     />
+                </g>
+                <g id="rudderTrimCursor" transform={`rotate(${rudderTrimAngle} 300 380)`}>
+                    <path id="rudderTrimCursor" className="RudderTrim" d="m300 490 v 8" />
                 </g>
             </svg>
         </>
@@ -533,13 +541,13 @@ type HydraulicIndicatorProps = {
 
 const HydraulicIndicator = ({ id, x, y, letter, hydAvail } : HydraulicIndicatorProps) => {
     const textPositionX = x + 9;
-    const textPositionY = y + 13;
+    const textPositionY = y + 11;
     return (
         <>
-            <rect className="HydBgShape" x={x} y={y} width="18" height="24" rx="2" />
+            <rect className="HydBgShape" x={x} y={y} width="18" height="24" rx="0" />
             <text
                 id={id}
-                className={hydAvail ? 'Value' : 'Warning'}
+                className={hydAvail ? 'Value Standard' : 'Warning Standard'}
                 x={textPositionX}
                 y={textPositionY}
                 textAnchor="middle"
@@ -568,7 +576,7 @@ const ElacSecShape = ({ id, x, y, number, on = true, fail = false } : ElacSecSha
             <path className={on && !fail ? 'MainShape' : 'MainShapeWarning'} d={`M${x},${y} l72,0 l0,-26 l-8,0`} />
             <text
                 id={id}
-                className={on && !fail ? 'Value' : 'ValueWarning'}
+                className={on && !fail ? 'Value Standard' : 'Warning Standard'}
                 x={textPositionX}
                 y={textPositionY}
                 textAnchor="middle"
@@ -746,7 +754,7 @@ const Spoiler = ({ index, leftorright, x, y, yw, hydAvail, speedbrake, spoilerpo
             <text
                 id={`num${index}_${leftorright}`}
                 visibility={hydraulicsAvailable ? 'hidden' : 'visible'}
-                className="Warning"
+                className="Warning Medium"
                 x={`${leftorright === 'left' ? x + 8 : x - 8}`}
                 y={`${yw}`}
                 textAnchor="middle"

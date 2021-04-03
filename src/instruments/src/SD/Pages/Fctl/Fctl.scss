@@ -1,6 +1,7 @@
 @import "../../../Common/definitions.scss";
 
 #ecam-fctl {
+
   .PageTitle {
     font-size: $font-size-title;
     text-decoration: underline;
@@ -25,6 +26,12 @@
     stroke-width: 2;
   }
 
+  .MainShapeCyan {
+    fill: transparent;
+    stroke: $display-cyan;
+    stroke-width: 2;
+  }
+
   .MainShapeWarning {
     fill: transparent;
     stroke: $display-amber;
@@ -35,6 +42,12 @@
     fill: transparent;
     stroke: $display-green;
     stroke-width: 4;
+  }
+
+  .RudderTrim {
+    fill: transparent;
+    stroke: $display-cyan;
+    stroke-width: 3;
   }
 
   .GreenShape {
@@ -55,18 +68,35 @@
   }
 
   .Warning {
-    font-size: $font-size-medium;
     fill: $display-amber;
   }
 
   .Value {
-    font-size: $font-size-larger;
     fill: $display-green;
   }
 
+  .ValueCyan {
+    fill: $display-cyan;
+  }
+
   .ValueWarning {
-    font-size: $font-size-larger;
     fill: $display-amber;
+  }
+
+  .Small {
+    font-size: $font-size-small !important;
+  }
+
+  .Medium {
+    font-size: $font-size-medium;
+  }
+
+  .Standard {
+    font-size: $font-size-larger;
+  }
+
+  .Large {
+    font-size: $font-size-xlarge;
   }
 
   .Note {
