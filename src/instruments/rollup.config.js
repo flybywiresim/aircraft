@@ -71,7 +71,7 @@ function getTemplatePlugin({ name, config, imports = [], isInstrument }) {
             getCssBundle() {
                 return fs.readFileSync(`${TMPDIR}/${name}-gen.css`).toString();
             },
-            outputDir: `${__dirname}/../../A32NX/html_ui/Pages/VCockpit/Instruments/generated`,
+            outputDir: `${__dirname}/../../flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/generated`,
         });
         // eslint-disable-next-line no-else-return
     } else {
@@ -80,7 +80,7 @@ function getTemplatePlugin({ name, config, imports = [], isInstrument }) {
             getCssBundle() {
                 return fs.readFileSync(`${TMPDIR}/${name}-gen.css`).toString();
             },
-            outputDir: `${__dirname}/../../A32NX/html_ui/Pages/VCockpit/Instruments/generated/EcamPages`,
+            outputDir: `${__dirname}/../../flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/generated/EcamPages`,
         });
     }
 }

@@ -46,7 +46,7 @@ jobs:
       - name: Generate ZIP file
         run: |
           mkdir ./${{ env.BUILD_DIR_NAME }}
-          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.ZIP_NAME }} ./A32NX/
+          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.ZIP_NAME }} ./flybywire-aircraft-a320-neo/
       - uses: actions/upload-artifact@v2
         with:
           name: A32NX
