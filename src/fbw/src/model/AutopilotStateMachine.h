@@ -164,6 +164,8 @@ class AutopilotStateMachineModelClass {
     real_T Delay_InitialCondition_n;
     real_T Constant_Value_l;
     real_T Delay1_InitialCondition_d;
+    real_T Saturation_UpperSat_k;
+    real_T Saturation_LowerSat_b;
     real_T Delay_InitialCondition_b;
     real_T Constant_Value_f;
     real_T Delay1_InitialCondition_j;

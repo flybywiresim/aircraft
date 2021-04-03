@@ -225,7 +225,9 @@ boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_OFF_TO_HDG(cons
 
 boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_OFF_TO_NAV(const ap_sm_output *BusAssignment)
 {
-  return BusAssignment->input.FD_active && BusAssignment->lateral.armed.NAV && BusAssignment->lateral.condition.NAV;
+  return (BusAssignment->input.FD_active || (BusAssignment->output.enabled_AP1 != 0.0) ||
+          (BusAssignment->output.enabled_AP2 != 0.0)) && BusAssignment->lateral.armed.NAV &&
+    BusAssignment->lateral.condition.NAV;
 }
 
 boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_OFF_TO_RWY(const ap_sm_output *BusAssignment)
@@ -265,17 +267,19 @@ boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_OFF_TO_RWY(cons
     R = -r;
   }
 
-  return (BusAssignment->data.V2_kn > 100.0) && (BusAssignment->data.flaps_handle_index >= 1.0) &&
-    (BusAssignment->data_computed.time_since_touchdown >= 30.0) && ((BusAssignment->data.throttle_lever_1_pos >= 35.0) ||
-    (BusAssignment->data.throttle_lever_2_pos >= 35.0)) && BusAssignment->data.nav_valid && ((std::abs
-    (BusAssignment->data.nav_loc_error_deg) <= 0.4) && (std::abs(R) <= 20.0));
+  return (BusAssignment->input.FD_active || (BusAssignment->output.enabled_AP1 != 0.0) ||
+          (BusAssignment->output.enabled_AP2 != 0.0)) && (BusAssignment->data.V2_kn > 100.0) &&
+    (BusAssignment->data.flaps_handle_index >= 1.0) && (BusAssignment->data_computed.time_since_touchdown >= 30.0) &&
+    ((BusAssignment->data.throttle_lever_1_pos >= 35.0) || (BusAssignment->data.throttle_lever_2_pos >= 35.0)) &&
+    BusAssignment->data.nav_valid && ((std::abs(BusAssignment->data.nav_loc_error_deg) <= 0.4) && (std::abs(R) <= 20.0));
 }
 
 boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_OFF_TO_RWY_TRK(const ap_sm_output *BusAssignment)
 {
-  return ((!BusAssignment->lateral.armed.NAV) || (BusAssignment->lateral.armed.NAV &&
-           (!BusAssignment->lateral.condition.NAV))) && (BusAssignment->data.H_radio_ft >= 30.0) &&
-    (BusAssignment->data.H_radio_ft < 100.0);
+  return (BusAssignment->input.FD_active || (BusAssignment->output.enabled_AP1 != 0.0) ||
+          (BusAssignment->output.enabled_AP2 != 0.0)) && ((!BusAssignment->lateral.armed.NAV) ||
+    (BusAssignment->lateral.armed.NAV && (!BusAssignment->lateral.condition.NAV))) && (BusAssignment->data.H_radio_ft >=
+    30.0) && (BusAssignment->data.H_radio_ft < 100.0);
 }
 
 void AutopilotStateMachineModelClass::AutopilotStateMachine_RWY_entry(void)
@@ -1829,6 +1833,7 @@ void AutopilotStateMachineModelClass::step()
   real_T rtb_DataTypeConversion2_f;
   real_T rtb_DataTypeConversion3_g;
   real_T rtb_DataTypeConversion_h;
+  real_T rtb_Gain2;
   real_T rtb_GainTheta;
   real_T rtb_GainTheta1;
   real_T rtb_Saturation;
@@ -1885,42 +1890,42 @@ void AutopilotStateMachineModelClass::step()
   rtb_GainTheta1 = AutopilotStateMachine_P.GainTheta1_Gain * AutopilotStateMachine_U.in.data.Phi_deg;
   rtb_Saturation = 0.017453292519943295 * rtb_GainTheta;
   rtb_Saturation1 = 0.017453292519943295 * rtb_GainTheta1;
-  rtb_DataTypeConversion3_g = std::tan(rtb_Saturation);
-  rtb_y_p = std::sin(rtb_Saturation1);
-  rtb_y_o = std::cos(rtb_Saturation1);
+  rtb_y_o = std::tan(rtb_Saturation);
+  rtb_Gain2 = std::sin(rtb_Saturation1);
+  rtb_y_p = std::cos(rtb_Saturation1);
   result_tmp[0] = 1.0;
-  result_tmp[3] = rtb_y_p * rtb_DataTypeConversion3_g;
-  result_tmp[6] = rtb_y_o * rtb_DataTypeConversion3_g;
+  result_tmp[3] = rtb_Gain2 * rtb_y_o;
+  result_tmp[6] = rtb_y_p * rtb_y_o;
   result_tmp[1] = 0.0;
-  result_tmp[4] = rtb_y_o;
-  result_tmp[7] = -rtb_y_p;
+  result_tmp[4] = rtb_y_p;
+  result_tmp[7] = -rtb_Gain2;
   result_tmp[2] = 0.0;
   rtb_DataTypeConversion3_g = 1.0 / std::cos(rtb_Saturation);
-  result_tmp[5] = rtb_DataTypeConversion3_g * rtb_y_p;
-  result_tmp[8] = rtb_DataTypeConversion3_g * rtb_y_o;
-  rtb_y_p = AutopilotStateMachine_P.Gain_Gain_k * AutopilotStateMachine_U.in.data.p_rad_s *
+  result_tmp[5] = rtb_DataTypeConversion3_g * rtb_Gain2;
+  result_tmp[8] = rtb_DataTypeConversion3_g * rtb_y_p;
+  rtb_Gain2 = AutopilotStateMachine_P.Gain_Gain_k * AutopilotStateMachine_U.in.data.p_rad_s *
     AutopilotStateMachine_P.Gainpk_Gain;
-  rtb_y_o = AutopilotStateMachine_P.Gain_Gain * AutopilotStateMachine_U.in.data.q_rad_s *
+  rtb_y_p = AutopilotStateMachine_P.Gain_Gain * AutopilotStateMachine_U.in.data.q_rad_s *
     AutopilotStateMachine_P.Gainqk_Gain;
-  rtb_DataTypeConversion3_g = AutopilotStateMachine_P.Gain_Gain_a * AutopilotStateMachine_U.in.data.r_rad_s;
+  rtb_y_o = AutopilotStateMachine_P.Gain_Gain_a * AutopilotStateMachine_U.in.data.r_rad_s;
   for (rtb_on_ground = 0; rtb_on_ground < 3; rtb_on_ground++) {
-    result[rtb_on_ground] = result_tmp[rtb_on_ground + 6] * rtb_DataTypeConversion3_g + (result_tmp[rtb_on_ground + 3] *
-      rtb_y_o + result_tmp[rtb_on_ground] * rtb_y_p);
+    result[rtb_on_ground] = result_tmp[rtb_on_ground + 6] * rtb_y_o + (result_tmp[rtb_on_ground + 3] * rtb_y_p +
+      result_tmp[rtb_on_ground] * rtb_Gain2);
   }
 
-  rtb_DataTypeConversion3_g = std::cos(rtb_Saturation);
-  rtb_y_p = std::sin(rtb_Saturation);
-  rtb_y_o = std::sin(rtb_Saturation1);
+  rtb_y_o = std::cos(rtb_Saturation);
+  rtb_Gain2 = std::sin(rtb_Saturation);
+  rtb_y_p = std::sin(rtb_Saturation1);
   rtb_Saturation = std::cos(rtb_Saturation1);
-  result_tmp[0] = rtb_DataTypeConversion3_g;
+  result_tmp[0] = rtb_y_o;
   result_tmp[3] = 0.0;
-  result_tmp[6] = -rtb_y_p;
-  result_tmp[1] = rtb_y_o * rtb_y_p;
+  result_tmp[6] = -rtb_Gain2;
+  result_tmp[1] = rtb_y_p * rtb_Gain2;
   result_tmp[4] = rtb_Saturation;
-  result_tmp[7] = rtb_DataTypeConversion3_g * rtb_y_o;
-  result_tmp[2] = rtb_Saturation * rtb_y_p;
-  result_tmp[5] = 0.0 - rtb_y_o;
-  result_tmp[8] = rtb_Saturation * rtb_DataTypeConversion3_g;
+  result_tmp[7] = rtb_y_o * rtb_y_p;
+  result_tmp[2] = rtb_Saturation * rtb_Gain2;
+  result_tmp[5] = 0.0 - rtb_y_p;
+  result_tmp[8] = rtb_Saturation * rtb_y_o;
   for (rtb_on_ground = 0; rtb_on_ground < 3; rtb_on_ground++) {
     result_0[rtb_on_ground] = result_tmp[rtb_on_ground + 6] * AutopilotStateMachine_U.in.data.bz_m_s2 +
       (result_tmp[rtb_on_ground + 3] * AutopilotStateMachine_U.in.data.by_m_s2 + result_tmp[rtb_on_ground] *
@@ -2057,21 +2062,28 @@ void AutopilotStateMachineModelClass::step()
   AutopilotStateMachine_DWork.Delay1_DSTATE_f = 1.0 / rtb_DataTypeConversion3_g *
     (AutopilotStateMachine_P.Constant_Value_l - rtb_DataTypeConversion_h) * AutopilotStateMachine_DWork.Delay1_DSTATE_f
     + (rtb_Switch_d - rtb_Saturation);
-  rtb_DataTypeConversion2_f = AutopilotStateMachine_U.in.time.dt * AutopilotStateMachine_P.LagFilter_C1_n;
-  rtb_DataTypeConversion_h = rtb_DataTypeConversion2_f + AutopilotStateMachine_P.Constant_Value_f;
-  AutopilotStateMachine_DWork.Delay1_DSTATE_i = 1.0 / rtb_DataTypeConversion_h *
-    (AutopilotStateMachine_P.Constant_Value_f - rtb_DataTypeConversion2_f) * AutopilotStateMachine_DWork.Delay1_DSTATE_i
-    + (AutopilotStateMachine_U.in.data.H_radio_ft + AutopilotStateMachine_DWork.Delay_DSTATE_a) *
-    (rtb_DataTypeConversion2_f / rtb_DataTypeConversion_h);
-  rtb_Saturation = (AutopilotStateMachine_DWork.Delay1_DSTATE_f + AutopilotStateMachine_DWork.Delay1_DSTATE_i) *
+  if (AutopilotStateMachine_U.in.data.H_radio_ft > AutopilotStateMachine_P.Saturation_UpperSat_k) {
+    rtb_Saturation = AutopilotStateMachine_P.Saturation_UpperSat_k;
+  } else if (AutopilotStateMachine_U.in.data.H_radio_ft < AutopilotStateMachine_P.Saturation_LowerSat_b) {
+    rtb_Saturation = AutopilotStateMachine_P.Saturation_LowerSat_b;
+  } else {
+    rtb_Saturation = AutopilotStateMachine_U.in.data.H_radio_ft;
+  }
+
+  rtb_Switch_d = AutopilotStateMachine_U.in.time.dt * AutopilotStateMachine_P.LagFilter_C1_n;
+  rtb_DataTypeConversion2_f = rtb_Switch_d + AutopilotStateMachine_P.Constant_Value_f;
+  AutopilotStateMachine_DWork.Delay1_DSTATE_i = 1.0 / rtb_DataTypeConversion2_f *
+    (AutopilotStateMachine_P.Constant_Value_f - rtb_Switch_d) * AutopilotStateMachine_DWork.Delay1_DSTATE_i +
+    (rtb_Saturation + AutopilotStateMachine_DWork.Delay_DSTATE_a) * (rtb_Switch_d / rtb_DataTypeConversion2_f);
+  rtb_Saturation1 = (AutopilotStateMachine_DWork.Delay1_DSTATE_f + AutopilotStateMachine_DWork.Delay1_DSTATE_i) *
     AutopilotStateMachine_P.DiscreteDerivativeVariableTs2_Gain;
-  rtb_Saturation1 = (rtb_Saturation - AutopilotStateMachine_DWork.Delay_DSTATE_o) / AutopilotStateMachine_U.in.time.dt *
+  rtb_Gain2 = (rtb_Saturation1 - AutopilotStateMachine_DWork.Delay_DSTATE_o) / AutopilotStateMachine_U.in.time.dt *
     AutopilotStateMachine_P.Gain2_Gain_d;
   rtb_Switch_d = AutopilotStateMachine_U.in.time.dt * AutopilotStateMachine_P.LagFilter3_C1;
   rtb_DataTypeConversion2_f = rtb_Switch_d + AutopilotStateMachine_P.Constant_Value_jm;
   AutopilotStateMachine_DWork.Delay1_DSTATE_h = 1.0 / rtb_DataTypeConversion2_f *
     (AutopilotStateMachine_P.Constant_Value_jm - rtb_Switch_d) * AutopilotStateMachine_DWork.Delay1_DSTATE_h +
-    (rtb_Saturation1 + AutopilotStateMachine_DWork.Delay_DSTATE_ov) * (rtb_Switch_d / rtb_DataTypeConversion2_f);
+    (rtb_Gain2 + AutopilotStateMachine_DWork.Delay_DSTATE_ov) * (rtb_Switch_d / rtb_DataTypeConversion2_f);
   rtb_DataTypeConversion2_f = AutopilotStateMachine_U.in.time.dt * AutopilotStateMachine_P.WashoutFilter1_C1;
   rtb_DataTypeConversion_h = rtb_DataTypeConversion2_f + AutopilotStateMachine_P.Constant_Value_n;
   rtb_DataTypeConversion3_g = AutopilotStateMachine_P.Constant_Value_n / rtb_DataTypeConversion_h;
@@ -2195,7 +2207,7 @@ void AutopilotStateMachineModelClass::step()
                 (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LAND)) &&
                ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_GS_TRACK) ||
                 (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_LAND)));
-  rtb_cFLARE = ((AutopilotStateMachine_U.in.data.H_radio_ft * 14.0 <= std::abs(rtb_DataTypeConversion_h)) &&
+  rtb_cFLARE = ((AutopilotStateMachine_U.in.data.H_radio_ft * 15.0 <= std::abs(rtb_DataTypeConversion_h)) &&
                 (((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LAND) ||
                   (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_FLARE)) &&
                  ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_LAND) ||
@@ -3217,9 +3229,9 @@ void AutopilotStateMachineModelClass::step()
   AutopilotStateMachine_DWork.Delay_DSTATE_l = AutopilotStateMachine_U.in.data.nav_gs_error_deg;
   AutopilotStateMachine_DWork.DelayInput1_DSTATE = AutopilotStateMachine_DWork.Delay1_DSTATE_b;
   AutopilotStateMachine_DWork.Delay_DSTATE_b = AutopilotStateMachine_U.in.data.H_ft;
-  AutopilotStateMachine_DWork.Delay_DSTATE_a = AutopilotStateMachine_U.in.data.H_radio_ft;
-  AutopilotStateMachine_DWork.Delay_DSTATE_o = rtb_Saturation;
-  AutopilotStateMachine_DWork.Delay_DSTATE_ov = rtb_Saturation1;
+  AutopilotStateMachine_DWork.Delay_DSTATE_a = rtb_Saturation;
+  AutopilotStateMachine_DWork.Delay_DSTATE_o = rtb_Saturation1;
+  AutopilotStateMachine_DWork.Delay_DSTATE_ov = rtb_Gain2;
   AutopilotStateMachine_DWork.Delay_DSTATE_c5 = AutopilotStateMachine_U.in.data.H_dot_ft_min;
   for (rtb_on_ground = 0; rtb_on_ground < 99; rtb_on_ground++) {
     AutopilotStateMachine_DWork.Delay_DSTATE_d[rtb_on_ground] = AutopilotStateMachine_DWork.Delay_DSTATE_d[rtb_on_ground
