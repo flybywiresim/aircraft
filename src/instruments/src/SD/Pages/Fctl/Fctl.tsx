@@ -86,7 +86,7 @@ export const FctlPage = () => {
 
     // Rudder trim
 
-    const [rudderTrimState] = useSimVar('RUDDER TRIM PCT', 'percent over 100', 50);
+    const [rudderTrimState] = useSimVar('RUDDER TRIM PCT', 'percent over 100', 500);
 
     useEffect(() => {
         setRudderTrimAngle(-rudderTrimState * 25);
