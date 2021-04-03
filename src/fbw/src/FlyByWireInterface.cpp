@@ -973,6 +973,15 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   // get sim data
   SimData simData = simConnectInterface.getSimData();
 
+  // set ground / flight for throttle handling
+  if (simData.gear_animation_pos_1 > 0.55 || simData.gear_animation_pos_1 > 0.55) {
+    throttleAxis[0]->setOnGround();
+    throttleAxis[1]->setOnGround();
+  } else if (simData.gear_animation_pos_1 <= 0.5 && simData.gear_animation_pos_1 <= 0.5) {
+    throttleAxis[0]->setInFlight();
+    throttleAxis[1]->setInFlight();
+  }
+
   // set position for 3D animation
   set_named_variable_value(idThrottlePosition3d_1, idThrottlePositionLookupTable3d.get(throttleAxis[0]->getTLA()));
   set_named_variable_value(idThrottlePosition3d_2, idThrottlePositionLookupTable3d.get(throttleAxis[1]->getTLA()));
