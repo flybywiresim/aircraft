@@ -1,4 +1,5 @@
-import React from 'react';
+import { IconEdit } from '@tabler/icons';
+import React, { useState } from 'react';
 import { useSimVar } from '../../../Common/simVars';
 import DetentConfig from './DetentConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
@@ -14,11 +15,13 @@ interface Props {
 
 const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
     const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${props.throttleNumber}`, 'number', 30);
+    const [expertMode, setExpertMode] = useState(false);
 
     const currentDetent = (
         <DetentConfig
             key={props.activeIndex}
             index={props.activeIndex}
+            barPosition={props.throttleNumber === 1 ? 'right' : 'left'}
             throttlePosition={throttlePosition}
             upperBoundDetentSetter={props.mappingsAxisTwo
                 ? [props.mappingsAxisOne[props.activeIndex].getHiSetter(), props.mappingsAxisTwo[props.activeIndex].getHiSetter()]
@@ -30,6 +33,7 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
             upperBoundDetentGetter={props.mappingsAxisOne[props.activeIndex].getHiGetter()}
             detentValue={props.mappingsAxisOne[props.activeIndex].getLowGetter()}
             throttleNumber={props.throttleNumber}
+            expertMode={expertMode}
         />
     );
 
@@ -42,11 +46,16 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
                 {' '}
             </h1>
             <div className="bg-gray-800 rou px-4 pt-5 pb-4 sm:p-6 sm:pb-4 mt-4 mb-4 rounded-lg">
-                <h1 className="text-white mb-8 text-xl ">
-                    Current Value:
-                    {' '}
-                    {throttlePosition.toFixed(2)}
-                </h1>
+                <div className="flex flew-row justify-center">
+                    <h1 className="text-white mb-8 text-xl ">
+                        Current Value:
+                        {' '}
+                        {throttlePosition.toFixed(2)}
+                        {' '}
+
+                    </h1>
+                    <div className="ml-2 mt-1 text-white"><IconEdit onMouseDown={() => setExpertMode(!expertMode)} size="1.125rem" stroke="1.5" /></div>
+                </div>
 
                 <div className="flex flex-row">
                     <div className="justify-between items-center flex flex-col ">

@@ -116,12 +116,12 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
                 <div
                     className={displayBar ? checkOrientation() : 'hidden'}
                     style={vertical
-                        ? { marginTop: `${formatBar(completedBar || 0)}` } : { marginLeft: `${formatBar(completedBar || 0)}` }}
+                        ? { marginTop: `${formatBar(completedBar || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBar || 0)}` }}
                 />
                 <div
                     className={displayBar ? checkOrientation() : 'hidden'}
                     style={vertical
-                        ? { marginTop: `${formatBar(completedBar2 || 0)}` } : { marginLeft: `${formatBar(completedBar2 || 0)}` }}
+                        ? { marginTop: `${formatBar(completedBar2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBar2 || 0)}` }}
                 />
                 <div style={outsideStyles}>
                     <div style={containerStyles}>

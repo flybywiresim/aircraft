@@ -73,12 +73,46 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
             for (let nextIndex = index + 1; nextIndex < mappingsAxisOne.length; nextIndex++) {
                 const nextElement = mappingsAxisOne[nextIndex];
                 if (element.getHiGetter() >= nextElement.getLowGetter() || element.getLowGetter() >= nextElement.getHiGetter()) {
-                    errors.push(`${element.readableName} (${element.getLowGetter()}) overlaps with ${nextElement.readableName} (${nextElement.getLowGetter()})`);
+                    errors.push(`${element.readableName} (${element.getLowGetter().toFixed(2)}) overlaps with ${nextElement.readableName} (${nextElement.getLowGetter().toFixed(2)})`);
                 }
             }
         }
         return errors;
     }
+
+    const navigationBar = (
+        <div className="h-80 flex flex-row mt-auto mb-auto ml-16">
+            <VerticalSelectGroup>
+                <SelectItem onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
+                <SelectItem onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
+                <SelectItem onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
+                <SelectItem onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
+                <SelectItem
+                    classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
+                    onSelect={() => {
+                        if (reverserOnAxis1) {
+                            switchDetent(1);
+                        }
+                    }}
+                    selected={selectedIndex === 1}
+                >
+                    Reverse Idle
+                </SelectItem>
+
+                <SelectItem
+                    classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
+                    onSelect={() => {
+                        if (reverserOnAxis1) {
+                            switchDetent(0);
+                        }
+                    }}
+                    selected={selectedIndex === 0}
+                >
+                    Reverse Full
+                </SelectItem>
+            </VerticalSelectGroup>
+        </div>
+    );
 
     return (
         <div className="flex flex-col pt-4 pb-20 text-center">
@@ -119,36 +153,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                             activeIndex={selectedIndex}
                         />
 
-                        <div className="h-70 flex flex-row mt-8 ml-16">
-                            <VerticalSelectGroup>
-                                <SelectItem
-                                    classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
-                                    onSelect={() => {
-                                        if (reverserOnAxis1) {
-                                            switchDetent(0);
-                                        }
-                                    }}
-                                    selected={selectedIndex === 0}
-                                >
-                                    Reverse Full
-                                </SelectItem>
-                                <SelectItem
-                                    classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
-                                    onSelect={() => {
-                                        if (reverserOnAxis1) {
-                                            switchDetent(1);
-                                        }
-                                    }}
-                                    selected={selectedIndex === 1}
-                                >
-                                    Reverse Idle
-                                </SelectItem>
-                                <SelectItem onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
-                                <SelectItem onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
-                                <SelectItem onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
-                                <SelectItem onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
-                            </VerticalSelectGroup>
-                        </div>
+                        {navigationBar}
 
                     </div>
                 )}
@@ -164,36 +169,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                                 throttleCount={2}
                                 activeIndex={selectedIndex}
                             />
-                            <div className="h-70 flex flex-row mt-8 ml-16">
-                                <VerticalSelectGroup>
-                                    <SelectItem
-                                        classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
-                                        onSelect={() => {
-                                            if (reverserOnAxis1) {
-                                                switchDetent(0);
-                                            }
-                                        }}
-                                        selected={selectedIndex === 0}
-                                    >
-                                        Reverse Full
-                                    </SelectItem>
-                                    <SelectItem
-                                        classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
-                                        onSelect={() => {
-                                            if (reverserOnAxis1) {
-                                                switchDetent(1);
-                                            }
-                                        }}
-                                        selected={selectedIndex === 1}
-                                    >
-                                        Reverse Idle
-                                    </SelectItem>
-                                    <SelectItem onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
-                                    <SelectItem onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
-                                    <SelectItem onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
-                                    <SelectItem onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
-                                </VerticalSelectGroup>
-                            </div>
+                            {navigationBar}
                         </div>
                     )}
             </div>
@@ -204,20 +180,21 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
 
                 <Button
                     text="Save & Apply"
-                    type={BUTTON_TYPE.NONE}
+                    type={BUTTON_TYPE.GREEN}
                     onClick={() => {
                         if (isConfigValid()) {
                             syncToDisk(1);
                             applyLocalVar(1);
                         }
                     }}
-                    className={`ml-2 mr-4 ${isConfigValid().length === 0 ? 'bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600' : 'bg-gray-500'}`}
+                    disabled={!isConfigValid}
+                    className={`ml-2 mr-4 ${isConfigValid().length === 0 ? 'bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600' : 'opacity-30'}`}
                 />
                 <Button
                     text="Apply"
                     type={BUTTON_TYPE.BLUE}
                     onClick={() => applyLocalVar(1)}
-                    className="ml-2 hover:bg-blue-600 hover:border-blue-600"
+                    className={`ml-2 ${isConfigValid().length === 0 ? 'bg-blue-500 border-blue-500 hover:bg-blue-600 hover:border-blue-600' : 'bg-gray-500 opacity-30'}`}
                 />
                 <Button
                     text="Reset"
