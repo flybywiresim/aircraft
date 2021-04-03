@@ -37,10 +37,9 @@ pub struct HydFluid {
     //temp : thermodynamic_temperature,
     current_bulk: Pressure,
 }
-
 impl HydFluid {
-    pub fn new(bulk: Pressure) -> HydFluid {
-        HydFluid {
+    pub fn new(bulk: Pressure) -> Self {
+        Self {
             //temp:temp,
             current_bulk: bulk,
         }
@@ -51,15 +50,8 @@ impl HydFluid {
     }
 }
 
-//Power Transfer Unit
 //TODO enhance simulation with RPM and variable displacement on one side?
-pub struct Ptu {
-    _id: String,
-    active_left_id: String,
-    active_right_id: String,
-    flow_id: String,
-    enabled_id: String,
-
+pub struct PowerTransferUnit {
     is_enabled: bool,
     is_active_right: bool,
     is_active_left: bool,
@@ -67,23 +59,7 @@ pub struct Ptu {
     flow_to_left: VolumeRate,
     last_flow: VolumeRate,
 }
-
-impl Default for Ptu {
-    fn default() -> Self {
-        Ptu::new("")
-    }
-}
-
-impl SimulationElement for Ptu {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.active_left_id, self.is_active_left);
-        writer.write_bool(&self.active_right_id, self.is_active_right);
-        writer.write_f64(&self.flow_id, self.get_flow().get::<gallon_per_second>());
-        writer.write_bool(&self.enabled_id, self.is_enabled());
-    }
-}
-
-impl Ptu {
+impl PowerTransferUnit {
     //Low pass filter to handle flow dynamic: avoids instantaneous flow transient,
     // simulating RPM dynamic of PTU
     const FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE: f64 = 0.2;
@@ -93,13 +69,8 @@ impl Ptu {
     // set to 0.5 PTU will only use half of the flow that all pumps are able to generate
     const AGRESSIVENESS_FACTOR: f64 = 0.8;
 
-    pub fn new(id: &str) -> Ptu {
-        Ptu {
-            _id: id.to_uppercase(),
-            active_left_id: format!("HYD_PTU{}_ACTIVE_L2R", id),
-            active_right_id: format!("HYD_PTU{}_ACTIVE_R2L", id),
-            flow_id: format!("HYD_PTU{}_MOTOR_FLOW", id),
-            enabled_id: format!("HYD_PTU{}_VALVE_OPENED", id),
+    pub fn new() -> Self {
+        Self {
             is_enabled: false,
             is_active_right: false,
             is_active_left: false,
@@ -143,12 +114,12 @@ impl Ptu {
             //Limiting available flow with maximum flow capacity of all pumps of the loop.
             //This is a workaround to limit PTU greed for flow
             vr = vr.min(
-                loop_left.current_max_flow.get::<gallon_per_second>() * Ptu::AGRESSIVENESS_FACTOR,
+                loop_left.current_max_flow.get::<gallon_per_second>() * Self::AGRESSIVENESS_FACTOR,
             );
 
             //Low pass on flow
-            vr = Ptu::FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE * vr
-                + (1.0 - Ptu::FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE)
+            vr = Self::FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE * vr
+                + (1.0 - Self::FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE)
                     * self.last_flow.get::<gallon_per_second>();
 
             self.flow_to_left = VolumeRate::new::<gallon_per_second>(-vr);
@@ -163,12 +134,12 @@ impl Ptu {
             //Limiting available flow with maximum flow capacity of all pumps of the loop.
             //This is a workaround to limit PTU greed for flow
             vr = vr.min(
-                loop_right.current_max_flow.get::<gallon_per_second>() * Ptu::AGRESSIVENESS_FACTOR,
+                loop_right.current_max_flow.get::<gallon_per_second>() * Self::AGRESSIVENESS_FACTOR,
             );
 
             //Low pass on flow
-            vr = Ptu::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE * vr
-                + (1.0 - Ptu::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE)
+            vr = Self::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE * vr
+                + (1.0 - Self::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE)
                     * self.last_flow.get::<gallon_per_second>();
 
             self.flow_to_left = VolumeRate::new::<gallon_per_second>(vr * 0.70);
@@ -193,13 +164,28 @@ impl Ptu {
         }
     }
 
-    pub fn enabling(&mut self, enable_flag: bool) {
-        self.is_enabled = enable_flag;
+    pub fn set_enabled(&mut self, enable: bool) {
+        self.is_enabled = enable;
+    }
+}
+impl SimulationElement for PowerTransferUnit {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool("HYD_PTU_ACTIVE_L2R", self.is_active_left);
+        writer.write_bool("HYD_PTU_ACTIVE_R2L", self.is_active_right);
+        writer.write_f64(
+            "HYD_PTU_MOTOR_FLOW",
+            self.get_flow().get::<gallon_per_second>(),
+        );
+        writer.write_bool("HYD_PTU_VALVE_OPENED", self.is_enabled());
+    }
+}
+impl Default for PowerTransferUnit {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
 pub struct HydLoop {
-    _color_id: String,
     pressure_id: String,
     reservoir_id: String,
     fire_valve_id: String,
@@ -223,20 +209,6 @@ pub struct HydLoop {
     fire_shutoff_valve_opened: bool,
     has_fire_valve: bool,
 }
-
-impl SimulationElement for HydLoop {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.pressure_id, self.get_pressure().get::<psi>());
-        writer.write_f64(
-            &self.reservoir_id,
-            self.get_reservoir_volume().get::<gallon>(),
-        );
-        if self.has_fire_valve {
-            writer.write_bool(&self.fire_valve_id, self.is_fire_shutoff_valve_opened());
-        }
-    }
-}
-
 impl HydLoop {
     const ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1885.0; // Nitrogen PSI
     const ACCUMULATOR_MAX_VOLUME: f64 = 0.264; // in gallons
@@ -260,15 +232,14 @@ impl HydLoop {
         reservoir_volume: Volume,
         fluid: HydFluid,
         has_fire_valve: bool,
-    ) -> HydLoop {
-        HydLoop {
-            _color_id: id.to_uppercase(),
+    ) -> Self {
+        Self {
             pressure_id: format!("HYD_{}_PRESSURE", id),
             reservoir_id: format!("HYD_{}_RESERVOIR", id),
             fire_valve_id: format!("HYD_{}_FIRE_VALVE_OPENED", id),
 
-            accumulator_gas_pressure: Pressure::new::<psi>(HydLoop::ACCUMULATOR_GAS_PRE_CHARGE),
-            accumulator_gas_volume: Volume::new::<gallon>(HydLoop::ACCUMULATOR_MAX_VOLUME),
+            accumulator_gas_pressure: Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE),
+            accumulator_gas_volume: Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME),
             accumulator_fluid_volume: Volume::new::<gallon>(0.),
             connected_to_ptu_left_side,
             connected_to_ptu_right_side,
@@ -281,8 +252,8 @@ impl HydLoop {
             fluid,
             current_delta_vol: Volume::new::<gallon>(0.),
             current_flow: VolumeRate::new::<gallon_per_second>(0.),
-            accumulator_press_breakpoints: HydLoop::ACCUMULATOR_PRESS_BREAKPTS,
-            accumulator_flow_carac: HydLoop::ACCUMULATOR_FLOW_CARAC,
+            accumulator_press_breakpoints: Self::ACCUMULATOR_PRESS_BREAKPTS,
+            accumulator_flow_carac: Self::ACCUMULATOR_FLOW_CARAC,
             current_max_flow: VolumeRate::new::<gallon_per_second>(0.),
             fire_shutoff_valve_opened: true,
             has_fire_valve,
@@ -367,16 +338,15 @@ impl HydLoop {
             *delta_vol -= volume_to_acc;
         }
 
-        self.accumulator_gas_pressure = (Pressure::new::<psi>(HydLoop::ACCUMULATOR_GAS_PRE_CHARGE)
-            * Volume::new::<gallon>(HydLoop::ACCUMULATOR_MAX_VOLUME))
-            / (Volume::new::<gallon>(HydLoop::ACCUMULATOR_MAX_VOLUME)
-                - self.accumulator_fluid_volume);
+        self.accumulator_gas_pressure = (Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE)
+            * Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME))
+            / (Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME) - self.accumulator_fluid_volume);
     }
 
     fn update_ptu_flows(
         &mut self,
         delta_time: &Duration,
-        ptus: Vec<&Ptu>,
+        ptus: Vec<&PowerTransferUnit>,
         delta_vol: &mut Volume,
         reservoir_return: &mut Volume,
     ) {
@@ -433,8 +403,8 @@ impl HydLoop {
         delta_time: &Duration,
         electric_pumps: Vec<&ElectricPump>,
         engine_driven_pumps: Vec<&EngineDrivenPump>,
-        ram_air_pumps: Vec<&RatPump>,
-        ptus: Vec<&Ptu>,
+        ram_air_pumps: Vec<&RamAirTurbine>,
+        ptus: Vec<&PowerTransferUnit>,
     ) {
         let mut delta_vol_max = Volume::new::<gallon>(0.);
         let mut delta_vol_min = Volume::new::<gallon>(0.);
@@ -463,7 +433,7 @@ impl HydLoop {
         //TODO: separate static leaks per zone of high pressure or actuator
         //TODO: Use external pressure and/or reservoir pressure instead of 14.7 psi default
         let static_leaks_vol = Volume::new::<gallon>(
-            HydLoop::STATIC_LEAK_FLOW
+            Self::STATIC_LEAK_FLOW
                 * delta_time.as_secs_f64()
                 * (self.loop_pressure.get::<psi>() - 14.7)
                 / 3000.0,
@@ -522,8 +492,8 @@ impl HydLoop {
         // Update Volumes
         self.loop_volume += delta_vol;
         // Low pass filter on final delta vol to help with stability and final flow noise
-        delta_vol = HydLoop::DELTA_VOL_LOW_PASS_FILTER * delta_vol
-            + (1. - HydLoop::DELTA_VOL_LOW_PASS_FILTER) * self.current_delta_vol;
+        delta_vol = Self::DELTA_VOL_LOW_PASS_FILTER * delta_vol
+            + (1. - Self::DELTA_VOL_LOW_PASS_FILTER) * self.current_delta_vol;
 
         // Loop Pressure update From Bulk modulus
         let press_delta = self.delta_pressure_from_delta_volume(delta_vol);
@@ -534,6 +504,28 @@ impl HydLoop {
         self.current_flow = delta_vol / Time::new::<second>(delta_time.as_secs_f64());
     }
 }
+impl SimulationElement for HydLoop {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_f64(&self.pressure_id, self.get_pressure().get::<psi>());
+        writer.write_f64(
+            &self.reservoir_id,
+            self.get_reservoir_volume().get::<gallon>(),
+        );
+        if self.has_fire_valve {
+            writer.write_bool(&self.fire_valve_id, self.is_fire_shutoff_valve_opened());
+        }
+    }
+}
+
+pub enum PumpPressurisationCommand {
+    Pressurise,
+    Depressurise,
+}
+impl PumpPressurisationCommand {
+    pub fn is_pressurise(&self) -> bool {
+        matches!(self, PumpPressurisationCommand::Pressurise)
+    }
+}
 
 pub struct Pump {
     delta_vol_max: Volume,
@@ -541,7 +533,8 @@ pub struct Pump {
     current_displacement: Volume,
     press_breakpoints: [f64; 9],
     displacement_carac: [f64; 9],
-    displacement_dynamic: f64, // Displacement low pass filter. [0:1], 0 frozen -> 1 instantaneous dynamic
+    // Displacement low pass filter. [0:1], 0 frozen -> 1 instantaneous dynamic
+    displacement_dynamic: f64,
     is_pressurised: bool,
 }
 impl Pump {
@@ -549,8 +542,8 @@ impl Pump {
         press_breakpoints: [f64; 9],
         displacement_carac: [f64; 9],
         displacement_dynamic: f64,
-    ) -> Pump {
-        Pump {
+    ) -> Self {
+        Self {
             delta_vol_max: Volume::new::<gallon>(0.),
             delta_vol_min: Volume::new::<gallon>(0.),
             current_displacement: Volume::new::<gallon>(0.),
@@ -561,18 +554,18 @@ impl Pump {
         }
     }
 
-    pub fn set_pressurised_state(&mut self, is_pressurised: bool) {
-        self.is_pressurised = is_pressurised;
+    fn command(&mut self, commanded_state: PumpPressurisationCommand) {
+        self.is_pressurised = commanded_state.is_pressurise();
     }
 
     fn update(&mut self, delta_time: &Duration, line: &HydLoop, rpm: f64) {
         let theoretical_displacement = self.calculate_displacement(line.get_pressure());
 
-        //Actual displacement is the calculated one with a low pass filter applied to mimic displacement transients dynamic
+        // Actual displacement is the calculated one with a low pass filter applied to mimic displacement transients dynamic
         self.current_displacement = (1.0 - self.displacement_dynamic) * self.current_displacement
             + self.displacement_dynamic * theoretical_displacement;
 
-        let flow = Pump::calculate_flow(rpm, self.current_displacement)
+        let flow = Self::calculate_flow(rpm, self.current_displacement)
             .max(VolumeRate::new::<gallon_per_second>(0.));
 
         self.delta_vol_max = flow * Time::new::<second>(delta_time.as_secs_f64());
@@ -605,26 +598,12 @@ impl PressureSource for Pump {
 }
 
 pub struct ElectricPump {
-    _id: String,
     active_id: String,
 
     active: bool,
     rpm: f64,
     pump: Pump,
 }
-
-impl Default for ElectricPump {
-    fn default() -> Self {
-        ElectricPump::new("DEFAULT")
-    }
-}
-
-impl SimulationElement for ElectricPump {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.active_id, self.is_active());
-    }
-}
-
 impl ElectricPump {
     const SPOOLUP_TIME: f64 = 4.0;
     const SPOOLDOWN_TIME: f64 = 4.0;
@@ -635,26 +614,21 @@ impl ElectricPump {
     const DISPLACEMENT_MAP: [f64; 9] = [0.263, 0.263, 0.263, 0.263, 0.263, 0.263, 0.163, 0.0, 0.0];
     const DISPLACEMENT_DYNAMICS: f64 = 1.0; //1 == No filtering
 
-    pub fn new(id: &str) -> ElectricPump {
-        ElectricPump {
-            _id: String::from(id).to_uppercase(),
+    pub fn new(id: &str) -> Self {
+        Self {
             active_id: format!("HYD_{}_EPUMP_ACTIVE", id),
             active: false,
             rpm: 0.,
             pump: Pump::new(
-                ElectricPump::DISPLACEMENT_BREAKPTS,
-                ElectricPump::DISPLACEMENT_MAP,
-                ElectricPump::DISPLACEMENT_DYNAMICS,
+                Self::DISPLACEMENT_BREAKPTS,
+                Self::DISPLACEMENT_MAP,
+                Self::DISPLACEMENT_DYNAMICS,
             ),
         }
     }
 
-    pub fn start(&mut self) {
-        self.active = true;
-    }
-
-    pub fn stop(&mut self) {
-        self.active = false;
+    pub fn command(&mut self, commanded_state: PumpPressurisationCommand) {
+        self.active = commanded_state.is_pressurise();
     }
 
     pub fn get_rpm(&self) -> f64 {
@@ -664,16 +638,14 @@ impl ElectricPump {
     pub fn update(&mut self, delta_time: &Duration, line: &HydLoop) {
         //TODO Simulate speed of pump depending on pump load (flow?/ current?)
         //Pump startup/shutdown process
-        if self.active && self.rpm < ElectricPump::NOMINAL_SPEED {
-            self.rpm += (ElectricPump::NOMINAL_SPEED / ElectricPump::SPOOLUP_TIME)
-                * delta_time.as_secs_f64();
+        if self.active && self.rpm < Self::NOMINAL_SPEED {
+            self.rpm += (Self::NOMINAL_SPEED / Self::SPOOLUP_TIME) * delta_time.as_secs_f64();
         } else if !self.active && self.rpm > 0.0 {
-            self.rpm -= (ElectricPump::NOMINAL_SPEED / ElectricPump::SPOOLDOWN_TIME)
-                * delta_time.as_secs_f64();
+            self.rpm -= (Self::NOMINAL_SPEED / Self::SPOOLDOWN_TIME) * delta_time.as_secs_f64();
         }
 
         //Limiting min and max speed
-        self.rpm = self.rpm.min(ElectricPump::NOMINAL_SPEED).max(0.0);
+        self.rpm = self.rpm.min(Self::NOMINAL_SPEED).max(0.0);
 
         self.pump.update(delta_time, line, self.rpm);
     }
@@ -690,27 +662,18 @@ impl PressureSource for ElectricPump {
         self.pump.get_delta_vol_min()
     }
 }
-
-pub struct EngineDrivenPump {
-    _id: String,
-    active_id: String,
-
-    active: bool,
-    pump: Pump,
-}
-
-impl Default for EngineDrivenPump {
-    fn default() -> Self {
-        EngineDrivenPump::new("DEFAULT")
-    }
-}
-
-impl SimulationElement for EngineDrivenPump {
+impl SimulationElement for ElectricPump {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_bool(&self.active_id, self.is_active());
     }
 }
 
+pub struct EngineDrivenPump {
+    active_id: String,
+
+    active: bool,
+    pump: Pump,
+}
 impl EngineDrivenPump {
     const LEAP_1A26_MAX_N2_RPM: f64 = 16645.0; //according to the Type Certificate Data Sheet of LEAP 1A26
                                                //max N2 rpm is 116.5% @ 19391 RPM
@@ -724,35 +687,28 @@ impl EngineDrivenPump {
 
     const DISPLACEMENT_DYNAMICS: f64 = 0.3; //0.1 == 90% filtering on max displacement transient
 
-    pub fn new(id: &str) -> EngineDrivenPump {
-        EngineDrivenPump {
-            _id: String::from(id).to_uppercase(),
+    pub fn new(id: &str) -> Self {
+        Self {
             active_id: format!("HYD_{}_EDPUMP_ACTIVE", id),
             active: false,
             pump: Pump::new(
-                EngineDrivenPump::DISPLACEMENT_BREAKPTS,
-                EngineDrivenPump::DISPLACEMENT_MAP,
-                EngineDrivenPump::DISPLACEMENT_DYNAMICS,
+                Self::DISPLACEMENT_BREAKPTS,
+                Self::DISPLACEMENT_MAP,
+                Self::DISPLACEMENT_DYNAMICS,
             ),
         }
     }
 
     pub fn update(&mut self, delta_time: &Duration, line: &HydLoop, engine: &Engine) {
-        let n2_rpm =
-            engine.corrected_n2().get::<percent>() * EngineDrivenPump::LEAP_1A26_MAX_N2_RPM / 100.;
-        let pump_rpm = n2_rpm * EngineDrivenPump::PUMP_N2_GEAR_RATIO;
+        let n2_rpm = engine.corrected_n2().get::<percent>() * Self::LEAP_1A26_MAX_N2_RPM / 100.;
+        let pump_rpm = n2_rpm * Self::PUMP_N2_GEAR_RATIO;
 
         self.pump.update(delta_time, line, pump_rpm);
     }
 
-    pub fn start(&mut self) {
-        self.active = true;
-        self.pump.set_pressurised_state(true);
-    }
-
-    pub fn stop(&mut self) {
-        self.active = false;
-        self.pump.set_pressurised_state(false);
+    pub fn command(&mut self, commanded_state: PumpPressurisationCommand) {
+        self.active = commanded_state.is_pressurise();
+        self.pump.command(commanded_state);
     }
 
     pub fn is_active(&self) -> bool {
@@ -767,32 +723,22 @@ impl PressureSource for EngineDrivenPump {
         self.pump.get_delta_vol_max()
     }
 }
+impl SimulationElement for EngineDrivenPump {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool(&self.active_id, self.is_active());
+    }
+}
 
-pub struct RatPropeller {
-    _id: String,
-    rpm_id: String,
-
-    pos: f64,
+pub struct WindTurbine {
+    position: f64,
     speed: f64,
-    acc: f64,
+    acceleration: f64,
     rpm: f64,
     torque_sum: f64,
 }
-
-impl Default for RatPropeller {
-    fn default() -> Self {
-        RatPropeller::new("")
-    }
-}
-
-impl SimulationElement for RatPropeller {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.rpm_id, self.get_rpm());
-    }
-}
-
-impl RatPropeller {
-    const LOW_SPEED_PHYSICS_ACTIVATION: f64 = 50.; //Low speed special calculation threshold. Under that value we compute resistant torque depending on pump angle and displacement
+impl WindTurbine {
+    // Low speed special calculation threshold. Under that value we compute resistant torque depending on pump angle and displacement.
+    const LOW_SPEED_PHYSICS_ACTIVATION: f64 = 50.;
     const STOWED_ANGLE: f64 = std::f64::consts::PI / 2.;
     const PROPELLER_INERTIA: f64 = 2.;
     const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
@@ -800,13 +746,11 @@ impl RatPropeller {
     ];
     const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 5., 1., 1.];
 
-    pub fn new(id: &str) -> RatPropeller {
-        RatPropeller {
-            _id: String::from(id).to_uppercase(),
-            rpm_id: format!("HYD_{}RAT_RPM", id),
-            pos: RatPropeller::STOWED_ANGLE,
+    pub fn new() -> Self {
+        Self {
+            position: Self::STOWED_ANGLE,
             speed: 0.,
-            acc: 0.,
+            acceleration: 0.,
             rpm: 0.,
             torque_sum: 0.,
         }
@@ -818,37 +762,42 @@ impl RatPropeller {
 
     fn update_generated_torque(&mut self, indicated_speed: &Velocity, stow_pos: f64) {
         let cur_aplha = interpolation(
-            &RatPropeller::RPM_GOVERNOR_BREAKPTS,
-            &RatPropeller::PROP_ALPHA_MAP,
+            &Self::RPM_GOVERNOR_BREAKPTS,
+            &Self::PROP_ALPHA_MAP,
             self.rpm,
         );
 
+        // Simple model. stow pos sin simulates the angle of the blades vs wind while deploying
         let air_speed_torque = cur_aplha.to_radians().sin()
             * (indicated_speed.get::<knot>() * indicated_speed.get::<knot>() / 100.)
             * 0.5
-            * (std::f64::consts::PI / 2. * stow_pos).sin(); //simple model. stow pos sin simulates the angle of the blades vs wind while deploying
+            * (std::f64::consts::PI / 2. * stow_pos).sin();
         self.torque_sum += air_speed_torque;
     }
 
     fn update_friction_torque(&mut self, displacement_ratio: f64) {
         let mut pump_torque = 0.;
-        if self.rpm < RatPropeller::LOW_SPEED_PHYSICS_ACTIVATION {
-            pump_torque += (self.pos * 4.).cos() * displacement_ratio.max(0.35) * 35.;
+        if self.rpm < Self::LOW_SPEED_PHYSICS_ACTIVATION {
+            pump_torque += (self.position * 4.).cos() * displacement_ratio.max(0.35) * 35.;
             pump_torque += -self.speed * 15.;
         } else {
             pump_torque += displacement_ratio.max(0.35) * 1. * -self.speed;
         }
         pump_torque -= self.speed * 0.05;
-        self.torque_sum += pump_torque; //Static air drag of the propeller
+        //Static air drag of the propeller
+        self.torque_sum += pump_torque;
     }
 
     fn update_physics(&mut self, delta_time: &Duration) {
-        self.acc = self.torque_sum / RatPropeller::PROPELLER_INERTIA;
-        self.speed += self.acc * delta_time.as_secs_f64();
-        self.pos += self.speed * delta_time.as_secs_f64();
+        self.acceleration = self.torque_sum / Self::PROPELLER_INERTIA;
+        self.speed += self.acceleration * delta_time.as_secs_f64();
+        self.position += self.speed * delta_time.as_secs_f64();
 
-        self.rpm = self.speed * 30. / std::f64::consts::PI; //rad/s to RPM
-        self.torque_sum = 0.; //Reset torque accumulator at end of update
+        // rad/s to RPM
+        self.rpm = self.speed * 30. / std::f64::consts::PI;
+
+        // Reset torque accumulator at end of update
+        self.torque_sum = 0.;
     }
 
     pub fn update(
@@ -859,113 +808,102 @@ impl RatPropeller {
         displacement_ratio: f64,
     ) {
         if stow_pos > 0.1 {
-            //Do not update anything on the propeller if still stowed
+            // Do not update anything on the propeller if still stowed
             self.update_generated_torque(indicated_speed, stow_pos);
             self.update_friction_torque(displacement_ratio);
             self.update_physics(delta_time);
         }
     }
 }
-pub struct RatPump {
-    _id: String,
-    stow_pos_id: String,
+impl SimulationElement for WindTurbine {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_f64("HYD_RAT_RPM", self.get_rpm());
+    }
+}
+impl Default for WindTurbine {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
-    active: bool,
+pub struct RamAirTurbine {
+    deployment_commanded: bool,
     pump: Pump,
-    pub prop: RatPropeller,
-    stowed_position: f64,
+    wind_turbine: WindTurbine,
+    position: f64,
     max_displacement: f64,
 }
-
-impl Default for RatPump {
-    fn default() -> Self {
-        RatPump::new("")
-    }
-}
-
-impl SimulationElement for RatPump {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.prop.accept(visitor);
-        visitor.visit(self);
-    }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.stow_pos_id, self.get_stow_position());
-    }
-}
-
-impl RatPump {
+impl RamAirTurbine {
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3050.0, 3500.0,
     ];
     const DISPLACEMENT_MAP: [f64; 9] = [1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 0.5, 0.0, 0.0];
 
-    const DISPLACEMENT_DYNAMICS: f64 = 0.2; //1 == no filtering. !!Warning, this will be affected by a different delta time
+    // 1 == no filtering. !!Warning, this will be affected by a different delta time
+    const DISPLACEMENT_DYNAMICS: f64 = 0.2;
 
-    const STOWING_SPEED: f64 = 1.; //Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
+    //Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
+    const STOWING_SPEED: f64 = 1.;
 
-    pub fn new(id: &str) -> RatPump {
+    pub fn new() -> Self {
         let mut max_disp = 0.;
-        for v in RatPump::DISPLACEMENT_MAP.iter() {
+        for v in Self::DISPLACEMENT_MAP.iter() {
             if v > &max_disp {
                 max_disp = *v;
             }
         }
 
-        RatPump {
-            _id: String::from(id).to_uppercase(),
-            stow_pos_id: format!("HYD_{}RAT_STOW_POSITION", id),
-            active: false,
+        Self {
+            deployment_commanded: false,
             pump: Pump::new(
-                RatPump::DISPLACEMENT_BREAKPTS,
-                RatPump::DISPLACEMENT_MAP,
-                RatPump::DISPLACEMENT_DYNAMICS,
+                Self::DISPLACEMENT_BREAKPTS,
+                Self::DISPLACEMENT_MAP,
+                Self::DISPLACEMENT_DYNAMICS,
             ),
-            prop: RatPropeller::new(id),
-            stowed_position: 0.,
+            wind_turbine: WindTurbine::new(),
+            position: 0.,
             max_displacement: max_disp,
         }
     }
 
     pub fn update(&mut self, delta_time: &Duration, line: &HydLoop) {
-        self.pump.update(delta_time, line, self.prop.get_rpm());
+        self.pump
+            .update(delta_time, line, self.wind_turbine.get_rpm());
 
-        //Now forcing min to max to force a true real time regulation.
-        self.pump.delta_vol_min = self.pump.delta_vol_max; //TODO: handle this properly by calculating who produced what volume at end of hyd loop update
+        // Now forcing min to max to force a true real time regulation.
+        // TODO: handle this properly by calculating who produced what volume at end of hyd loop update
+        self.pump.delta_vol_min = self.pump.delta_vol_max;
     }
 
     pub fn update_physics(&mut self, delta_time: &Duration, indicated_airspeed: &Velocity) {
-        let displacement_ratio = self.get_delta_vol_max().get::<gallon>() / self.max_displacement; //Calculate the ratio of current displacement vs max displacement as an image of the load of the pump
-        self.prop.update(
+        // Calculate the ratio of current displacement vs max displacement as an image of the load of the pump
+        let displacement_ratio = self.get_delta_vol_max().get::<gallon>() / self.max_displacement;
+        self.wind_turbine.update(
             &delta_time,
             &indicated_airspeed,
-            self.stowed_position,
+            self.position,
             displacement_ratio,
         );
     }
 
-    pub fn update_stow_pos(&mut self, delta_time: &Duration) {
-        if self.active {
-            self.stowed_position += delta_time.as_secs_f64() * RatPump::STOWING_SPEED;
+    pub fn update_position(&mut self, delta_time: &Duration) {
+        if self.deployment_commanded {
+            self.position += delta_time.as_secs_f64() * Self::STOWING_SPEED;
 
-            //Finally limiting pos in [0:1] range
-            if self.stowed_position < 0. {
-                self.stowed_position = 0.;
-            } else if self.stowed_position > 1. {
-                self.stowed_position = 1.;
+            // Finally limiting pos in [0:1] range
+            if self.position < 0. {
+                self.position = 0.;
+            } else if self.position > 1. {
+                self.position = 1.;
             }
         }
     }
 
-    pub fn set_active(&mut self) {
-        self.active = true;
-    }
-
-    pub fn get_stow_position(&self) -> f64 {
-        self.stowed_position
+    pub fn deploy(&mut self) {
+        self.deployment_commanded = true;
     }
 }
-impl PressureSource for RatPump {
+impl PressureSource for RamAirTurbine {
     fn get_delta_vol_max(&self) -> Volume {
         self.pump.get_delta_vol_max()
     }
@@ -974,10 +912,25 @@ impl PressureSource for RatPump {
         self.pump.get_delta_vol_min()
     }
 }
+impl SimulationElement for RamAirTurbine {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.wind_turbine.accept(visitor);
+
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_f64("HYD_RAT_STOW_POSITION", self.position);
+    }
+}
+impl Default for RamAirTurbine {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 #[cfg(test)]
 mod tests {
-
     use crate::simulation::UpdateContext;
     use uom::si::{
         acceleration::foot_per_second_squared,
@@ -1008,7 +961,7 @@ mod tests {
             }
             if x == 200 {
                 assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2850.0));
-                edp1.stop();
+                edp1.command(PumpPressurisationCommand::Depressurise);
             }
             if x >= 500 {
                 //Shutdown + 30s
@@ -1148,7 +1101,7 @@ mod tests {
     #[test]
     //Runs electric pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn blue_loop_rat_deploy_simulation() {
-        let mut rat = RatPump::new("");
+        let mut rat = RamAirTurbine::new();
         let mut blue_loop = hydraulic_loop("BLUE");
 
         let timestep = 0.05;
@@ -1157,30 +1110,30 @@ mod tests {
 
         let mut time = 0.0;
         for x in 0..1500 {
-            rat.update_stow_pos(&context.delta());
+            rat.update_position(&context.delta());
             if time >= 10. && time < 10. + timestep {
                 println!("ASSERT RAT STOWED");
                 assert!(blue_loop.loop_pressure <= Pressure::new::<psi>(50.0));
-                rat.active = false;
-                assert!(rat.stowed_position == 0.);
+                rat.deployment_commanded = false;
+                assert!(rat.position == 0.);
             }
 
             if time >= 20. && time < 20. + timestep {
                 println!("ASSERT RAT STOWED STILL NO PRESS");
                 assert!(blue_loop.loop_pressure <= Pressure::new::<psi>(50.0));
-                rat.set_active();
+                rat.deploy();
             }
 
             if time >= 30. && time < 30. + timestep {
                 println!("ASSERT RAT OUT AND SPINING");
                 assert!(blue_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
-                assert!(rat.stowed_position >= 0.999);
-                assert!(rat.prop.rpm >= 1000.);
+                assert!(rat.position >= 0.999);
+                assert!(rat.wind_turbine.rpm >= 1000.);
             }
             if time >= 60. && time < 60. + timestep {
                 println!("ASSERT RAT AT SPEED");
                 assert!(blue_loop.loop_pressure >= Pressure::new::<psi>(2500.0));
-                assert!(rat.prop.rpm >= 5000.);
+                assert!(rat.wind_turbine.rpm >= 5000.);
             }
 
             if time >= 70. && time < 70. + timestep {
@@ -1190,7 +1143,7 @@ mod tests {
 
             if time >= 120. && time < 120. + timestep {
                 println!("ASSERT RAT SLOWED DOWN");
-                assert!(rat.prop.rpm <= 2500.);
+                assert!(rat.wind_turbine.rpm <= 2500.);
             }
 
             rat.update_physics(&context.delta(), &indicated_airpseed);
@@ -1206,8 +1159,8 @@ mod tests {
                 println!("Iteration {} Time {}", x, time);
                 println!("-------------------------------------------");
                 println!("---PSI: {}", blue_loop.loop_pressure.get::<psi>());
-                println!("---RAT stow pos: {}", rat.stowed_position);
-                println!("---RAT RPM: {}", rat.prop.rpm);
+                println!("---RAT stow pos: {}", rat.position);
+                println!("---RAT RPM: {}", rat.wind_turbine.rpm);
                 println!("---RAT volMax: {}", rat.get_delta_vol_max().get::<gallon>());
                 println!(
                     "--------Reservoir Volume (g): {}",
@@ -1228,18 +1181,18 @@ mod tests {
     //shut yellow epump, check drop of pressure in both loops
     fn yellow_green_ptu_loop_simulation() {
         let mut epump = electric_pump();
-        epump.stop();
+        epump.command(PumpPressurisationCommand::Depressurise);
         let mut yellow_loop = hydraulic_loop("YELLOW");
 
         let mut edp1 = engine_driven_pump();
         assert!(!edp1.active); //Is off when created?
-        edp1.stop();
+        edp1.command(PumpPressurisationCommand::Depressurise);
 
         let mut engine1 = engine(Ratio::new::<percent>(0.0));
 
         let mut green_loop = hydraulic_loop("GREEN");
 
-        let mut ptu = Ptu::new("");
+        let mut ptu = PowerTransferUnit::new();
 
         let context = context(Duration::from_millis(100));
 
@@ -1257,7 +1210,7 @@ mod tests {
                 assert!(green_loop.loop_pressure <= Pressure::new::<psi>(50.0));
                 assert!(green_loop.reservoir_volume == green_res_at_start);
 
-                epump.start();
+                epump.command(PumpPressurisationCommand::Pressurise);
             }
 
             if x == 110 {
@@ -1269,7 +1222,7 @@ mod tests {
                 assert!(green_loop.loop_pressure <= Pressure::new::<psi>(50.0));
                 assert!(green_loop.reservoir_volume == green_res_at_start);
 
-                ptu.enabling(true);
+                ptu.set_enabled(true);
             }
 
             if x == 300 {
@@ -1284,7 +1237,7 @@ mod tests {
                 println!("------------GREEN  EDP1  ON------------");
                 assert!(yellow_loop.loop_pressure >= Pressure::new::<psi>(2600.0));
                 assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2000.0));
-                edp1.start();
+                edp1.command(PumpPressurisationCommand::Pressurise);
             }
 
             if (500..=600).contains(&x) {
@@ -1300,8 +1253,8 @@ mod tests {
                 println!("-------------ALL PUMPS OFF------------");
                 assert!(yellow_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
                 assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
-                edp1.stop();
-                epump.stop();
+                edp1.command(PumpPressurisationCommand::Depressurise);
+                epump.command(PumpPressurisationCommand::Depressurise);
             }
 
             if x == 800 {
@@ -1462,7 +1415,7 @@ mod tests {
             let dummy_update = Duration::from_secs(1);
             let mut line = hydraulic_loop("GREEN");
 
-            edp.start();
+            edp.command(PumpPressurisationCommand::Pressurise);
             line.loop_pressure = pressure;
             edp.update(&dummy_update, &line, &eng); //Update 10 times to stabilize displacement
 

@@ -1,15 +1,17 @@
 use std::time::Duration;
 use uom::si::{f64::*, pressure::pascal, pressure::psi, velocity::knot, volume::gallon};
 
-use systems::engine::Engine;
-use systems::hydraulic::brakecircuit::BrakeCircuit;
-use systems::hydraulic::{ElectricPump, EngineDrivenPump, HydFluid, HydLoop, Ptu, RatPump};
+use systems::hydraulic::{
+    ElectricPump, EngineDrivenPump, HydFluid, HydLoop, PowerTransferUnit, RamAirTurbine,
+};
 use systems::overhead::{
     AutoOffFaultPushButton, AutoOnFaultPushButton, FirePushButton, OnOffFaultPushButton,
 };
 use systems::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, UpdateContext,
 };
+use systems::{engine::Engine, hydraulic::PumpPressurisationCommand};
+use systems::{hydraulic::brakecircuit::BrakeCircuit, shared::DelayedFalseLogicGate};
 
 pub struct A320Hydraulic {
     hyd_logic: A320HydraulicLogic,
@@ -21,8 +23,8 @@ pub struct A320Hydraulic {
     engine_driven_pump_2: EngineDrivenPump,
     blue_electric_pump: ElectricPump,
     yellow_electric_pump: ElectricPump,
-    rat: RatPump,
-    ptu: Ptu,
+    ram_air_turbine: RamAirTurbine,
+    ptu: PowerTransferUnit,
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
     total_sim_time_elapsed: Duration,
@@ -81,8 +83,8 @@ impl A320Hydraulic {
             engine_driven_pump_2: EngineDrivenPump::new("YELLOW"),
             blue_electric_pump: ElectricPump::new("BLUE"),
             yellow_electric_pump: ElectricPump::new("YELLOW"),
-            rat: RatPump::new(""),
-            ptu: Ptu::new(""),
+            ram_air_turbine: RamAirTurbine::new(),
+            ptu: PowerTransferUnit::new(),
 
             braking_circuit_norm: BrakeCircuit::new(
                 "NORM",
@@ -165,40 +167,27 @@ impl A320Hydraulic {
             .set_yellow_pressurised(self.is_yellow_pressurised());
     }
 
-    fn update_hydraulics_logic_outputs(&mut self) {
-        self.ptu.enabling(self.hyd_logic.ptu_ena_output());
+    fn update_hydraulics_logic_outputs(&mut self, context: &UpdateContext) {
+        self.ptu.set_enabled(self.hyd_logic.ptu_should_be_enabled());
 
-        if self.hyd_logic.rat_on_output() {
-            self.rat.set_active()
+        if self.hyd_logic.rat_should_be_deployed(context) {
+            self.ram_air_turbine.deploy();
         }
 
-        if self.hyd_logic.blue_electric_pump_output() {
-            self.blue_electric_pump.start();
-        } else {
-            self.blue_electric_pump.stop();
-        }
-
-        if self.hyd_logic.yellow_electric_pump_output() {
-            self.yellow_electric_pump.start();
-        } else {
-            self.yellow_electric_pump.stop();
-        }
+        self.blue_electric_pump
+            .command(self.hyd_logic.blue_electric_pump_pressurisation_command());
+        self.yellow_electric_pump
+            .command(self.hyd_logic.yellow_electric_pump_pressurisation_command());
 
         self.yellow_loop
-            .set_fire_shutoff_valve_state(self.hyd_logic.yellow_loop_fire_valve_output());
+            .set_fire_shutoff_valve_state(self.hyd_logic.yellow_loop_fire_valve_should_be_open());
         self.green_loop
-            .set_fire_shutoff_valve_state(self.hyd_logic.green_loop_fire_valve_output());
+            .set_fire_shutoff_valve_state(self.hyd_logic.green_loop_fire_valve_should_be_open());
 
-        if self.hyd_logic.engine_driven_pump_1_output() {
-            self.engine_driven_pump_1.start();
-        } else {
-            self.engine_driven_pump_1.stop();
-        }
-        if self.hyd_logic.engine_driven_pump_2_output() {
-            self.engine_driven_pump_2.start();
-        } else {
-            self.engine_driven_pump_2.stop();
-        }
+        self.engine_driven_pump_1
+            .command(self.hyd_logic.engine_driven_pump_1_pressurisation_command());
+        self.engine_driven_pump_2
+            .command(self.hyd_logic.engine_driven_pump_2_pressurisation_command());
     }
 
     pub fn is_blue_pressurised(&self) -> bool {
@@ -233,7 +222,7 @@ impl A320Hydraulic {
             time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
 
         // Updating rat stowed pos on all frames in case it's used for graphics
-        self.rat.update_stow_pos(&context.delta());
+        self.ram_air_turbine.update_position(&context.delta());
 
         if number_of_steps_floating_point < 1.0 {
             // Can't do a full time step
@@ -263,7 +252,7 @@ impl A320Hydraulic {
                     engine2,
                     overhead_panel,
                     engine_fire_overhead,
-                    &min_hyd_loop_timestep,
+                    min_hyd_loop_timestep,
                 );
             }
 
@@ -281,7 +270,7 @@ impl A320Hydraulic {
 
     // All the higher frequency updates like physics
     fn update_fast_rate(&mut self, context: &UpdateContext, delta_time_physics: &Duration) {
-        self.rat
+        self.ram_air_turbine
             .update_physics(&delta_time_physics, &context.indicated_airspeed());
     }
 
@@ -293,19 +282,18 @@ impl A320Hydraulic {
         engine2: &Engine,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
-        min_hyd_loop_timestep: &Duration,
+        min_hyd_loop_timestep: Duration,
     ) {
         self.update_hyd_avail_states();
         self.set_hydraulics_logic_feedbacks();
 
         // Base logic update based on overhead Could be done only once (before that loop) but if so delta time should be set accordingly
         self.hyd_logic.update(
-            &min_hyd_loop_timestep,
             overhead_panel,
             engine_fire_overhead,
-            context,
+            &context.with_delta(min_hyd_loop_timestep),
         );
-        self.update_hydraulics_logic_outputs();
+        self.update_hydraulics_logic_outputs(&context.with_delta(min_hyd_loop_timestep));
 
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.hyd_brake_logic
@@ -325,7 +313,8 @@ impl A320Hydraulic {
         self.blue_electric_pump
             .update(&min_hyd_loop_timestep, &self.blue_loop);
 
-        self.rat.update(&min_hyd_loop_timestep, &self.blue_loop);
+        self.ram_air_turbine
+            .update(&min_hyd_loop_timestep, &self.blue_loop);
         self.green_loop.update(
             &min_hyd_loop_timestep,
             Vec::new(),
@@ -344,7 +333,7 @@ impl A320Hydraulic {
             &min_hyd_loop_timestep,
             vec![&self.blue_electric_pump],
             Vec::new(),
-            vec![&self.rat],
+            vec![&self.ram_air_turbine],
             Vec::new(),
         );
 
@@ -363,7 +352,7 @@ impl SimulationElement for A320Hydraulic {
         self.blue_electric_pump.accept(visitor);
         self.engine_driven_pump_1.accept(visitor);
         self.engine_driven_pump_2.accept(visitor);
-        self.rat.accept(visitor);
+        self.ram_air_turbine.accept(visitor);
 
         self.ptu.accept(visitor);
 
@@ -393,7 +382,6 @@ pub struct A320HydraulicBrakingLogic {
     anti_skid_activated: bool,
     autobrakes_setting: u8,
 }
-
 //Implements brakes computers logic
 impl A320HydraulicBrakingLogic {
     const PARK_BRAKE_DEMAND_DYNAMIC: f64 = 0.8; //Dynamic of the parking brake application/removal in (percent/100) per s
@@ -482,7 +470,6 @@ impl A320HydraulicBrakingLogic {
         altn.set_brake_demand_right(self.right_brake_yellow_output);
     }
 }
-
 impl SimulationElement for A320HydraulicBrakingLogic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);
@@ -498,84 +485,127 @@ impl SimulationElement for A320HydraulicBrakingLogic {
     }
 }
 
+struct Door {
+    exit_id: String,
+    position: f64,
+    previous_position: f64,
+}
+impl Door {
+    fn new(id: usize) -> Self {
+        Self {
+            exit_id: format!("EXIT OPEN {}", id),
+            position: 0.,
+            previous_position: 0.,
+        }
+    }
+
+    fn has_moved(&self) -> bool {
+        (self.position - self.previous_position).abs() > f64::EPSILON
+    }
+}
+impl SimulationElement for Door {
+    fn read(&mut self, state: &mut SimulatorReader) {
+        self.previous_position = self.position;
+        self.position = state.read_f64(&self.exit_id);
+    }
+}
+
+struct PushbackTug {
+    angle: f64,
+    previous_angle: f64,
+    // Type of pushback:
+    // 0 = Straight
+    // 1 = Left
+    // 2 = Right
+    // 3 = Assumed to be no pushback
+    state: f64,
+}
+impl PushbackTug {
+    const STATE_NO_PUSHBACK: f64 = 3.;
+
+    fn new() -> Self {
+        Self {
+            angle: 0.,
+            previous_angle: 0.,
+            state: 0.,
+        }
+    }
+
+    fn is_pushing(&self) -> bool {
+        // The angle keeps changing while pushing.
+        (self.angle - self.previous_angle).abs() > f64::EPSILON
+            && (self.state - PushbackTug::STATE_NO_PUSHBACK).abs() > f64::EPSILON
+    }
+}
+impl SimulationElement for PushbackTug {
+    fn read(&mut self, state: &mut SimulatorReader) {
+        self.previous_angle = self.angle;
+        self.angle = state.read_f64("PUSHBACK ANGLE");
+        self.state = state.read_f64("PUSHBACK STATE");
+    }
+}
+
 pub struct A320HydraulicLogic {
+    forward_cargo_door: Door,
+    aft_cargo_door: Door,
+    pushback_tug: PushbackTug,
+    should_activate_yellow_pump_for_cargo_door_operation: DelayedFalseLogicGate,
+    should_inhibit_ptu_after_cargo_door_operation: DelayedFalseLogicGate,
+    nose_wheel_steering_pin_inserted: DelayedFalseLogicGate,
+
     parking_brake_lever_pos: bool,
     weight_on_wheels: bool,
     eng_1_master_on: bool,
     eng_2_master_on: bool,
-    nws_tow_engaged_timer: Duration,
-    cargo_door_front_pos: f64,
-    cargo_door_back_pos: f64,
-    cargo_door_front_pos_prev: f64,
-    cargo_door_back_pos_prev: f64,
-    cargo_door_timer: Duration,
-    cargo_door_timer_ptu: Duration,
-    pushback_angle: f64,
-    pushback_angle_prev: f64,
-    pushback_state: f64,
-    yellow_epump_has_fault: bool,
-    blue_epump_has_fault: bool,
-    green_edp_has_fault: bool,
-    yellow_edp_has_fault: bool,
 
-    cargo_operated_ptu_cond: bool,
-    cargo_operated_ypump_cond: bool,
-    nsw_pin_inserted_cond: bool,
-
-    ptu_ena_output: bool,
-    rat_on_output: bool,
-    blue_electric_pump_output: bool,
-    yellow_electric_pump_output: bool,
-    green_loop_fire_valve_output: bool,
-    yellow_loop_fire_valve_output: bool,
-    engine_driven_pump_2_output: bool,
-    engine_driven_pump_1_output: bool,
+    ptu_should_be_enabled: bool,
+    blue_electric_pump_should_run: bool,
+    yellow_electric_pump_should_run: bool,
+    green_loop_fire_valve_should_be_open: bool,
+    yellow_loop_fire_valve_should_be_open: bool,
+    engine_driven_pump_2_should_run: bool,
+    engine_driven_pump_1_should_run: bool,
 
     green_loop_pressurised_feedback: bool,
     blue_loop_pressurised_feedback: bool,
     yellow_loop_pressurised_feedback: bool,
 }
-
 // Implements low level logic for all hydraulics commands
 // takes inputs from hydraulics and from plane systems, update outputs for pumps and all other hyd systems
 impl A320HydraulicLogic {
-    const CARGO_OPERATED_TIMEOUT_YPUMP: f64 = 20.0; //Timeout to shut off yellow epump after cargo operation
-    const CARGO_OPERATED_TIMEOUT_PTU: f64 = 40.0; //Timeout to keep ptu inhibited after cargo operation
-    const NWS_PIN_REMOVE_TIMEOUT: f64 = 15.0; //Time for ground crew to remove pin after tow
+    const DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
+        Duration::from_secs(20);
+    const DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION: Duration = Duration::from_secs(40);
+    const DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK: Duration =
+        Duration::from_secs(15);
 
     pub fn new() -> A320HydraulicLogic {
         A320HydraulicLogic {
+            forward_cargo_door: Door::new(5),
+            aft_cargo_door: Door::new(3),
+            pushback_tug: PushbackTug::new(),
+            should_activate_yellow_pump_for_cargo_door_operation: DelayedFalseLogicGate::new(
+                A320HydraulicLogic::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
+            ),
+            should_inhibit_ptu_after_cargo_door_operation: DelayedFalseLogicGate::new(
+                A320HydraulicLogic::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION,
+            ),
+            nose_wheel_steering_pin_inserted: DelayedFalseLogicGate::new(
+                A320HydraulicLogic::DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK,
+            ),
+
             parking_brake_lever_pos: true,
             weight_on_wheels: true,
             eng_1_master_on: false,
             eng_2_master_on: false,
-            nws_tow_engaged_timer: Duration::from_secs_f64(0.0),
-            cargo_door_front_pos: 0.0,
-            cargo_door_back_pos: 0.0,
-            cargo_door_front_pos_prev: 0.0,
-            cargo_door_back_pos_prev: 0.0,
-            cargo_door_timer: Duration::from_secs_f64(0.0),
-            cargo_door_timer_ptu: Duration::from_secs_f64(0.0),
-            pushback_angle: 0.0,
-            pushback_angle_prev: 0.0,
-            pushback_state: 0.0,
-            yellow_epump_has_fault: false,
-            blue_epump_has_fault: false,
-            green_edp_has_fault: false,
-            yellow_edp_has_fault: false,
 
-            cargo_operated_ptu_cond: false,
-            cargo_operated_ypump_cond: false,
-            nsw_pin_inserted_cond: false,
-
-            ptu_ena_output: false,
-            rat_on_output: false,
-            blue_electric_pump_output: false,
-            yellow_electric_pump_output: false,
-            green_loop_fire_valve_output: false,
-            yellow_loop_fire_valve_output: false,
-            engine_driven_pump_2_output: true,
-            engine_driven_pump_1_output: true,
+            ptu_should_be_enabled: false,
+            blue_electric_pump_should_run: false,
+            yellow_electric_pump_should_run: false,
+            green_loop_fire_valve_should_be_open: false,
+            yellow_loop_fire_valve_should_be_open: false,
+            engine_driven_pump_2_should_run: true,
+            engine_driven_pump_1_should_run: true,
 
             green_loop_pressurised_feedback: false,
             blue_loop_pressurised_feedback: false,
@@ -583,129 +613,134 @@ impl A320HydraulicLogic {
         }
     }
 
-    pub fn ptu_ena_output(&self) -> bool {
-        self.ptu_ena_output
-    }
-    pub fn rat_on_output(&self) -> bool {
-        self.rat_on_output
-    }
-    pub fn blue_electric_pump_output(&self) -> bool {
-        self.blue_electric_pump_output
-    }
-    pub fn yellow_electric_pump_output(&self) -> bool {
-        self.yellow_electric_pump_output
-    }
-    pub fn green_loop_fire_valve_output(&self) -> bool {
-        self.green_loop_fire_valve_output
-    }
-    pub fn yellow_loop_fire_valve_output(&self) -> bool {
-        self.yellow_loop_fire_valve_output
-    }
-    pub fn engine_driven_pump_2_output(&self) -> bool {
-        self.engine_driven_pump_2_output
-    }
-    pub fn engine_driven_pump_1_output(&self) -> bool {
-        self.engine_driven_pump_1_output
-    }
-    pub fn green_edp_has_fault(&self) -> bool {
-        self.green_edp_has_fault
-    }
-    pub fn yellow_edp_has_fault(&self) -> bool {
-        self.yellow_edp_has_fault
-    }
-    pub fn yellow_epump_has_fault(&self) -> bool {
-        self.yellow_epump_has_fault
-    }
-    pub fn blue_epump_has_fault(&self) -> bool {
-        self.blue_epump_has_fault
+    fn ptu_should_be_enabled(&self) -> bool {
+        self.ptu_should_be_enabled
     }
 
-    pub fn set_green_pressurised(&mut self, is_pressurised: bool) {
+    fn rat_should_be_deployed(&self, context: &UpdateContext) -> bool {
+        // RAT Deployment
+        // Todo check all other needed conditions this is faked with engine master while it should check elec buses
+        !self.eng_1_master_on
+            && !self.eng_2_master_on
+            //Todo get speed from ADIRS
+            && context.indicated_airspeed() > Velocity::new::<knot>(100.)
+    }
+
+    fn blue_electric_pump_pressurisation_command(&self) -> PumpPressurisationCommand {
+        if self.blue_electric_pump_should_run {
+            PumpPressurisationCommand::Pressurise
+        } else {
+            PumpPressurisationCommand::Depressurise
+        }
+    }
+
+    fn yellow_electric_pump_pressurisation_command(&self) -> PumpPressurisationCommand {
+        if self.yellow_electric_pump_should_run {
+            PumpPressurisationCommand::Pressurise
+        } else {
+            PumpPressurisationCommand::Depressurise
+        }
+    }
+
+    fn green_loop_fire_valve_should_be_open(&self) -> bool {
+        self.green_loop_fire_valve_should_be_open
+    }
+
+    fn yellow_loop_fire_valve_should_be_open(&self) -> bool {
+        self.yellow_loop_fire_valve_should_be_open
+    }
+
+    fn engine_driven_pump_1_pressurisation_command(&self) -> PumpPressurisationCommand {
+        if self.engine_driven_pump_1_should_run {
+            PumpPressurisationCommand::Pressurise
+        } else {
+            PumpPressurisationCommand::Depressurise
+        }
+    }
+
+    fn engine_driven_pump_2_pressurisation_command(&self) -> PumpPressurisationCommand {
+        if self.engine_driven_pump_2_should_run {
+            PumpPressurisationCommand::Pressurise
+        } else {
+            PumpPressurisationCommand::Depressurise
+        }
+    }
+
+    fn green_edp_has_fault(&self) -> bool {
+        // TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
+        // at current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
+        self.engine_driven_pump_1_pressurisation_command()
+            .is_pressurise()
+            && !self.green_loop_pressurised_feedback
+    }
+
+    fn yellow_edp_has_fault(&self) -> bool {
+        // TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
+        // at current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
+        self.engine_driven_pump_2_pressurisation_command()
+            .is_pressurise()
+            && !self.yellow_loop_pressurised_feedback
+    }
+
+    fn yellow_epump_has_fault(&self) -> bool {
+        // TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
+        // at current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
+        self.yellow_electric_pump_pressurisation_command()
+            .is_pressurise()
+            && !self.yellow_loop_pressurised_feedback
+    }
+
+    fn blue_epump_has_fault(&self) -> bool {
+        // TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
+        // at current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
+        self.blue_electric_pump_pressurisation_command()
+            .is_pressurise()
+            && !self.blue_loop_pressurised_feedback
+    }
+
+    fn set_green_pressurised(&mut self, is_pressurised: bool) {
         self.green_loop_pressurised_feedback = is_pressurised;
     }
 
-    pub fn set_blue_pressurised(&mut self, is_pressurised: bool) {
+    fn set_blue_pressurised(&mut self, is_pressurised: bool) {
         self.blue_loop_pressurised_feedback = is_pressurised;
     }
 
-    pub fn set_yellow_pressurised(&mut self, is_pressurised: bool) {
+    fn set_yellow_pressurised(&mut self, is_pressurised: bool) {
         self.yellow_loop_pressurised_feedback = is_pressurised;
     }
 
-    //Given a condition and associated timer and timeout value, returns if timeout is over after condition went to false
-    fn timeout_condition_update(
-        current_timer: &mut Duration,
-        condition: bool,
-        max_duration: f64,
-        delta_time: &Duration,
-    ) -> bool {
-        if condition {
-            *current_timer = Duration::from_secs_f64(max_duration);
-        } else if *current_timer > *delta_time {
-            *current_timer -= *delta_time;
-        } else {
-            *current_timer = Duration::from_secs(0);
-        }
-
-        *current_timer > Duration::from_secs_f64(0.0)
+    fn should_activate_yellow_pump_for_cargo_door_operation(&self) -> bool {
+        self.should_activate_yellow_pump_for_cargo_door_operation
+            .output()
     }
 
-    //Checks if yellow pump should be activated by the cargo door maintenance panel operation
-    pub fn is_cargo_operation_flag(&mut self, delta_time_update: &Duration) -> bool {
-        let cargo_door_moved = (self.cargo_door_back_pos - self.cargo_door_back_pos_prev).abs()
-            > f64::EPSILON
-            || (self.cargo_door_front_pos - self.cargo_door_front_pos_prev).abs() > f64::EPSILON;
-
-        A320HydraulicLogic::timeout_condition_update(
-            &mut self.cargo_door_timer,
-            cargo_door_moved,
-            A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_YPUMP,
-            delta_time_update,
-        )
+    fn should_inhibit_ptu_after_cargo_door_operation(&self) -> bool {
+        self.should_inhibit_ptu_after_cargo_door_operation.output()
     }
 
-    //Checks if ptu inhibit condition is still active after the cargo door operation
-    pub fn is_cargo_operation_ptu_flag(&mut self, delta_time_update: &Duration) -> bool {
-        let cargo_door_moved = (self.cargo_door_back_pos - self.cargo_door_back_pos_prev).abs()
-            > f64::EPSILON
-            || (self.cargo_door_front_pos - self.cargo_door_front_pos_prev).abs() > f64::EPSILON;
-
-        A320HydraulicLogic::timeout_condition_update(
-            &mut self.cargo_door_timer_ptu,
-            cargo_door_moved,
-            A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_PTU,
-            delta_time_update,
-        )
+    fn nose_wheel_steering_pin_is_inserted(&self) -> bool {
+        self.nose_wheel_steering_pin_inserted.output()
     }
 
-    //Checks if pin is removed by ground crew after a pushback operation
-    pub fn is_nsw_pin_inserted_flag(&mut self, delta_time_update: &Duration) -> bool {
-        let pushback_in_progress = (self.pushback_angle - self.pushback_angle_prev).abs()
-            > f64::EPSILON
-            && (self.pushback_state - 3.0).abs() > f64::EPSILON;
-
-        A320HydraulicLogic::timeout_condition_update(
-            &mut self.nws_tow_engaged_timer,
-            pushback_in_progress,
-            A320HydraulicLogic::NWS_PIN_REMOVE_TIMEOUT,
-            delta_time_update,
-        )
+    fn any_cargo_door_has_moved(&self) -> bool {
+        self.forward_cargo_door.has_moved() || self.aft_cargo_door.has_moved()
     }
 
     fn update(
         &mut self,
-        delta_time_update: &Duration,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
         context: &UpdateContext,
     ) {
-        self.update_external_cond(&delta_time_update);
+        self.should_activate_yellow_pump_for_cargo_door_operation
+            .update(context, self.any_cargo_door_has_moved());
+        self.should_inhibit_ptu_after_cargo_door_operation
+            .update(context, self.any_cargo_door_has_moved());
+        self.nose_wheel_steering_pin_inserted
+            .update(context, self.pushback_tug.is_pushing());
 
-        self.update_pump_faults();
-
-        self.update_rat_deploy(context);
-
-        self.update_ed_pump_states(overhead_panel, engine_fire_overhead);
+        self.update_engine_driven_pump_states(overhead_panel, engine_fire_overhead);
 
         self.update_e_pump_states(overhead_panel);
 
@@ -713,121 +748,83 @@ impl A320HydraulicLogic {
     }
 
     fn update_ptu_logic(&mut self, overhead_panel: &A320HydraulicOverheadPanel) {
-        let ptu_inhibit =
-            self.cargo_operated_ptu_cond && overhead_panel.yellow_epump_push_button.is_auto();
-        if overhead_panel.ptu_push_button.is_auto()
+        let ptu_inhibited = self.should_inhibit_ptu_after_cargo_door_operation()
+            && overhead_panel.yellow_epump_push_button_is_auto();
+
+        self.ptu_should_be_enabled = overhead_panel.ptu_push_button_is_auto()
             && (!self.weight_on_wheels
                 || self.eng_1_master_on && self.eng_2_master_on
                 || !self.eng_1_master_on && !self.eng_2_master_on
-                || (!self.parking_brake_lever_pos && !self.nsw_pin_inserted_cond))
-            && !ptu_inhibit
-        {
-            self.ptu_ena_output = true;
-        } else {
-            self.ptu_ena_output = false;
-        }
+                || (!self.parking_brake_lever_pos && !self.nose_wheel_steering_pin_is_inserted()))
+            && !ptu_inhibited;
     }
 
-    fn update_rat_deploy(&mut self, context: &UpdateContext) {
-        // RAT Deployment
-        //Todo check all other needed conditions this is faked with engine master while it should check elec buses
-        if !self.eng_1_master_on
-            && !self.eng_2_master_on
-            && context.indicated_airspeed() > Velocity::new::<knot>(100.)
-        //Todo get speed from ADIRS
-        {
-            self.rat_on_output = true;
-        }
-    }
-
-    fn update_external_cond(&mut self, delta_time_update: &Duration) {
-        // Only evaluate ground conditions if on ground, if superman needs to operate cargo door in flight feel free to update
-        if self.weight_on_wheels {
-            self.cargo_operated_ptu_cond = self.is_cargo_operation_ptu_flag(&delta_time_update);
-            self.cargo_operated_ypump_cond = self.is_cargo_operation_flag(&delta_time_update);
-            self.nsw_pin_inserted_cond = self.is_nsw_pin_inserted_flag(&delta_time_update);
-        }
-    }
-
-    fn update_pump_faults(&mut self) {
-        // Basic faults of pumps //TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
-        // at current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
-        self.yellow_epump_has_fault =
-            self.yellow_electric_pump_output && !self.yellow_loop_pressurised_feedback;
-
-        self.green_edp_has_fault =
-            self.engine_driven_pump_1_output && !self.green_loop_pressurised_feedback;
-
-        self.yellow_edp_has_fault =
-            self.engine_driven_pump_2_output && !self.yellow_loop_pressurised_feedback;
-
-        self.blue_epump_has_fault =
-            self.blue_electric_pump_output && !self.blue_loop_pressurised_feedback;
-    }
-
-    fn update_ed_pump_states(
+    fn update_engine_driven_pump_states(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
     ) {
-        if overhead_panel.edp1_push_button.is_auto()
+        if overhead_panel.edp1_push_button_is_auto()
             && self.eng_1_master_on
-            && !engine_fire_overhead.eng1_fire_pb.is_released()
+            && !engine_fire_overhead.engine_1_fire_push_button_is_released()
         {
-            self.engine_driven_pump_1_output = true;
-        } else if overhead_panel.edp1_push_button.is_off() {
-            self.engine_driven_pump_1_output = false;
+            self.engine_driven_pump_1_should_run = true;
+        } else if overhead_panel.edp1_push_button_is_off()
+            || engine_fire_overhead.engine_1_fire_push_button_is_released()
+        {
+            self.engine_driven_pump_1_should_run = false;
         }
 
-        //FIRE valves logic for EDP1
-        if engine_fire_overhead.eng1_fire_pb.is_released() {
-            self.engine_driven_pump_1_output = false;
-            self.green_loop_fire_valve_output = false;
+        // FIRE valves logic for EDP1
+        if engine_fire_overhead.engine_1_fire_push_button_is_released() {
+            self.green_loop_fire_valve_should_be_open = false;
         } else {
-            self.green_loop_fire_valve_output = true;
+            self.green_loop_fire_valve_should_be_open = true;
         }
 
-        if overhead_panel.edp2_push_button.is_auto()
+        if overhead_panel.edp2_push_button_is_auto()
             && self.eng_2_master_on
-            && !engine_fire_overhead.eng2_fire_pb.is_released()
+            && !engine_fire_overhead.engine_2_fire_push_button_is_released()
         {
-            self.engine_driven_pump_2_output = true;
-        } else if overhead_panel.edp2_push_button.is_off() {
-            self.engine_driven_pump_2_output = false;
+            self.engine_driven_pump_2_should_run = true;
+        } else if overhead_panel.edp2_push_button_is_off()
+            || engine_fire_overhead.engine_2_fire_push_button_is_released()
+        {
+            self.engine_driven_pump_2_should_run = false;
         }
 
-        //FIRE valves logic for EDP2
-        if engine_fire_overhead.eng2_fire_pb.is_released() {
-            self.engine_driven_pump_2_output = false;
-            self.yellow_loop_fire_valve_output = false;
+        // FIRE valves logic for EDP2
+        if engine_fire_overhead.engine_2_fire_push_button_is_released() {
+            self.yellow_loop_fire_valve_should_be_open = false;
         } else {
-            self.yellow_loop_fire_valve_output = true;
+            self.yellow_loop_fire_valve_should_be_open = true;
         }
     }
 
     fn update_e_pump_states(&mut self, overhead_panel: &A320HydraulicOverheadPanel) {
-        if overhead_panel.yellow_epump_push_button.is_on() || self.cargo_operated_ypump_cond {
-            self.yellow_electric_pump_output = true;
-        } else if overhead_panel.yellow_epump_push_button.is_auto() {
-            self.yellow_electric_pump_output = false;
-        }
+        self.yellow_electric_pump_should_run = overhead_panel.yellow_epump_push_button.is_on()
+            || self.should_activate_yellow_pump_for_cargo_door_operation();
+
         if overhead_panel.blue_epump_push_button.is_auto() {
             if self.eng_1_master_on
                 || self.eng_2_master_on
                 || overhead_panel.blue_epump_override_push_button.is_on()
             {
-                self.blue_electric_pump_output = true;
+                self.blue_electric_pump_should_run = true;
             } else {
-                self.blue_electric_pump_output = false;
+                self.blue_electric_pump_should_run = false;
             }
         } else if overhead_panel.blue_epump_push_button.is_off() {
-            self.blue_electric_pump_output = false;
+            self.blue_electric_pump_should_run = false;
         }
     }
 }
-
 impl SimulationElement for A320HydraulicLogic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.forward_cargo_door.accept(visitor);
+        self.aft_cargo_door.accept(visitor);
+        self.pushback_tug.accept(visitor);
+
         visitor.visit(self);
     }
 
@@ -836,48 +833,25 @@ impl SimulationElement for A320HydraulicLogic {
         self.eng_1_master_on = state.read_bool("GENERAL ENG1 STARTER ACTIVE");
         self.eng_2_master_on = state.read_bool("GENERAL ENG2 STARTER ACTIVE");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
-
-        //Handling here of the previous values of cargo doors
-        self.cargo_door_front_pos_prev = self.cargo_door_front_pos;
-        self.cargo_door_front_pos = state.read_f64("EXIT OPEN 5");
-        self.cargo_door_back_pos_prev = self.cargo_door_back_pos;
-        self.cargo_door_back_pos = state.read_f64("EXIT OPEN 3");
-
-        //Handling here of the previous values of pushback angle. Angle keeps moving while towed. Feel free to find better hack
-        self.pushback_angle_prev = self.pushback_angle;
-        self.pushback_angle = state.read_f64("PUSHBACK ANGLE");
-        self.pushback_state = state.read_f64("PUSHBACK STATE");
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool("HYD_GREEN_EDPUMP_LOW_PRESS", self.green_edp_has_fault);
-
-        writer.write_bool("HYD_BLUE_EPUMP_LOW_PRESS", self.blue_epump_has_fault);
-
-        writer.write_bool("HYD_YELLOW_EDPUMP_LOW_PRESS", self.yellow_edp_has_fault);
-
-        writer.write_bool("HYD_YELLOW_EPUMP_LOW_PRESS", self.yellow_epump_has_fault);
-
-        writer.write_bool("OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT", self.green_edp_has_fault);
-        writer.write_bool(
-            "OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT",
-            self.yellow_edp_has_fault,
-        );
-        writer.write_bool("OVHD_HYD_EPUMPB_PB_HAS_FAULT", self.blue_epump_has_fault);
-        writer.write_bool("OVHD_HYD_EPUMPY_PB_HAS_FAULT", self.yellow_epump_has_fault);
+        writer.write_bool("HYD_GREEN_EDPUMP_LOW_PRESS", self.green_edp_has_fault());
+        writer.write_bool("HYD_BLUE_EPUMP_LOW_PRESS", self.blue_epump_has_fault());
+        writer.write_bool("HYD_YELLOW_EDPUMP_LOW_PRESS", self.yellow_edp_has_fault());
+        writer.write_bool("HYD_YELLOW_EPUMP_LOW_PRESS", self.yellow_epump_has_fault());
     }
 }
 
 pub struct A320HydraulicOverheadPanel {
-    pub edp1_push_button: AutoOffFaultPushButton,
-    pub edp2_push_button: AutoOffFaultPushButton,
-    pub blue_epump_push_button: AutoOffFaultPushButton,
-    pub ptu_push_button: AutoOffFaultPushButton,
-    pub rat_push_button: AutoOffFaultPushButton,
-    pub yellow_epump_push_button: AutoOnFaultPushButton,
-    pub blue_epump_override_push_button: OnOffFaultPushButton,
+    edp1_push_button: AutoOffFaultPushButton,
+    edp2_push_button: AutoOffFaultPushButton,
+    blue_epump_push_button: AutoOffFaultPushButton,
+    ptu_push_button: AutoOffFaultPushButton,
+    rat_push_button: AutoOffFaultPushButton,
+    yellow_epump_push_button: AutoOnFaultPushButton,
+    blue_epump_override_push_button: OnOffFaultPushButton,
 }
-
 impl A320HydraulicOverheadPanel {
     pub fn new() -> A320HydraulicOverheadPanel {
         A320HydraulicOverheadPanel {
@@ -899,8 +873,31 @@ impl A320HydraulicOverheadPanel {
         self.yellow_epump_push_button
             .set_fault(hyd.yellow_epump_has_fault());
     }
-}
 
+    fn yellow_epump_push_button_is_auto(&self) -> bool {
+        self.yellow_epump_push_button.is_auto()
+    }
+
+    fn ptu_push_button_is_auto(&self) -> bool {
+        self.ptu_push_button.is_auto()
+    }
+
+    fn edp1_push_button_is_auto(&self) -> bool {
+        self.edp1_push_button.is_auto()
+    }
+
+    fn edp1_push_button_is_off(&self) -> bool {
+        self.edp1_push_button.is_off()
+    }
+
+    fn edp2_push_button_is_auto(&self) -> bool {
+        self.edp2_push_button.is_auto()
+    }
+
+    fn edp2_push_button_is_off(&self) -> bool {
+        self.edp2_push_button.is_off()
+    }
+}
 impl SimulationElement for A320HydraulicOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.edp1_push_button.accept(visitor);
@@ -916,19 +913,25 @@ impl SimulationElement for A320HydraulicOverheadPanel {
 }
 
 pub struct A320EngineFireOverheadPanel {
-    pub eng1_fire_pb: FirePushButton,
-    pub eng2_fire_pb: FirePushButton,
+    eng1_fire_pb: FirePushButton,
+    eng2_fire_pb: FirePushButton,
 }
-
 impl A320EngineFireOverheadPanel {
-    pub fn new() -> A320EngineFireOverheadPanel {
-        A320EngineFireOverheadPanel {
+    pub fn new() -> Self {
+        Self {
             eng1_fire_pb: FirePushButton::new("ENG1"),
             eng2_fire_pb: FirePushButton::new("ENG2"),
         }
     }
-}
 
+    fn engine_1_fire_push_button_is_released(&self) -> bool {
+        self.eng1_fire_pb.is_released()
+    }
+
+    fn engine_2_fire_push_button_is_released(&self) -> bool {
+        self.eng2_fire_pb.is_released()
+    }
+}
 impl SimulationElement for A320EngineFireOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.eng1_fire_pb.accept(visitor);
@@ -953,10 +956,6 @@ mod a320_hydraulic_simvars {
         assert!(test_bed.contains_key("HYD_BLUE_EPUMP_LOW_PRESS"));
         assert!(test_bed.contains_key("HYD_YELLOW_EDPUMP_LOW_PRESS"));
         assert!(test_bed.contains_key("HYD_YELLOW_EPUMP_LOW_PRESS"));
-        assert!(test_bed.contains_key("OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT"));
-        assert!(test_bed.contains_key("OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT"));
-        assert!(test_bed.contains_key("OVHD_HYD_EPUMPB_PB_HAS_FAULT"));
-        assert!(test_bed.contains_key("OVHD_HYD_EPUMPY_PB_HAS_FAULT"));
     }
 }
 
@@ -989,11 +988,15 @@ mod tests {
             }
 
             fn is_nws_pin_inserted(&self) -> bool {
-                self.hydraulics.hyd_logic.nsw_pin_inserted_cond
+                self.hydraulics
+                    .hyd_logic
+                    .nose_wheel_steering_pin_is_inserted()
             }
 
             fn is_cargo_powering_yellow_epump(&self) -> bool {
-                self.hydraulics.hyd_logic.cargo_operated_ypump_cond
+                self.hydraulics
+                    .hyd_logic
+                    .should_activate_yellow_pump_for_cargo_door_operation()
             }
 
             fn is_ptu_ena(&self) -> bool {
@@ -1401,9 +1404,9 @@ mod tests {
             assert!(!test_bed.is_ptu_enabled());
             test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
             assert!(!test_bed.is_ptu_enabled());
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(
-                A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_PTU,
-            )); //Should re enabled after 40s
+            test_bed = test_bed.run_waiting_for(
+                A320HydraulicLogic::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION,
+            ); //Should re enabled after 40s
             assert!(test_bed.is_ptu_enabled());
         }
 
@@ -1425,11 +1428,9 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(1));
             assert!(test_bed.aircraft.is_nws_pin_inserted());
 
-            test_bed = test_bed
-                .set_pushback_state(false)
-                .run_waiting_for(Duration::from_secs_f64(
-                    A320HydraulicLogic::NWS_PIN_REMOVE_TIMEOUT,
-                ));
+            test_bed = test_bed.set_pushback_state(false).run_waiting_for(
+                A320HydraulicLogic::DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK,
+            );
 
             assert!(!test_bed.aircraft.is_nws_pin_inserted());
         }
@@ -1450,9 +1451,9 @@ mod tests {
             test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
             assert!(test_bed.aircraft.is_cargo_powering_yellow_epump());
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(
-                A320HydraulicLogic::CARGO_OPERATED_TIMEOUT_YPUMP,
-            ));
+            test_bed = test_bed.run_waiting_for(
+                A320HydraulicLogic::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
+            );
 
             assert!(!test_bed.aircraft.is_cargo_powering_yellow_epump());
         }
