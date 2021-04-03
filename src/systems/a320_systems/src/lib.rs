@@ -112,7 +112,7 @@ impl Aircraft for A320 {
             &self.engine_fire_overhead,
         );
 
-        self.hydraulic_overhead.update_pb_faults(&self.hydraulic);
+        self.hydraulic_overhead.update(&self.hydraulic);
 
         self.power_consumption.update(context);
     }

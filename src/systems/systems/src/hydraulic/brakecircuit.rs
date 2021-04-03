@@ -1,5 +1,5 @@
 use crate::{
-    hydraulic::HydLoop,
+    hydraulic::HydraulicLoop,
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
 
@@ -137,7 +137,7 @@ impl BrakeCircuit {
         }
     }
 
-    pub fn update(&mut self, delta_time: &Duration, hyd_loop: &HydLoop) {
+    pub fn update(&mut self, delta_time: &Duration, hyd_loop: &HydraulicLoop) {
         let delta_vol = ((self.demanded_brake_position_left - self.current_brake_position_left)
             + (self.demanded_brake_position_right - self.current_brake_position_right))
             * self.total_displacement;
@@ -336,7 +336,7 @@ impl AutoBrakeController {
 mod tests {
     use super::*;
     use crate::{
-        hydraulic::{HydFluid, HydLoop},
+        hydraulic::{HydFluid, HydraulicLoop},
         simulation::UpdateContext,
     };
     use uom::si::{
@@ -487,9 +487,9 @@ mod tests {
         assert!(controller.get_brake_command() >= 0.0);
     }
 
-    fn hydraulic_loop(loop_color: &str) -> HydLoop {
+    fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
         match loop_color {
-            "GREEN" => HydLoop::new(
+            "GREEN" => HydraulicLoop::new(
                 loop_color,
                 false,
                 true,
@@ -500,7 +500,7 @@ mod tests {
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
             ),
-            "YELLOW" => HydLoop::new(
+            "YELLOW" => HydraulicLoop::new(
                 loop_color,
                 true,
                 false,
@@ -511,7 +511,7 @@ mod tests {
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
             ),
-            _ => HydLoop::new(
+            _ => HydraulicLoop::new(
                 loop_color,
                 false,
                 false,
