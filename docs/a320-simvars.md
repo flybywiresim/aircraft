@@ -767,6 +767,16 @@
     - Enum
     - Holds the FMGCs current flight phase
     - Use FMGC_FLIGHT_PHASES to check for phases (import NXFMGCFlightPhases from A32NX_Utils)
+        Value | Meaning
+        --- | ---
+        PREFLIGHT | 0
+        TAKEOFF   | 1
+        CLIMB     | 2
+        CRUISE    | 3
+        DESCENT   | 4
+        APPROACH  | 5
+        GOAROUND  | 6
+        DONE      | 7
 
 - A32NX_FLAPS_HANDLE_INDEX
     - Number
