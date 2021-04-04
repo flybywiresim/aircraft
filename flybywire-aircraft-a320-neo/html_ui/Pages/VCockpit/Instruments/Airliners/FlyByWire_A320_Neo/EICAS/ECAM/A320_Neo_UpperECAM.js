@@ -2071,16 +2071,16 @@ var A320_Neo_UpperECAM;
                 line.style.strokeWidth = "4";
                 _svgRoot.appendChild(line);
                 this.valueText = A320_Neo_UpperECAM.createSVGText("--.-", "Value", this.getValueTextX(), "88%", "bottom");
-                this.valueText2 = A320_Neo_UpperECAM.createSVGText("", "decimal", this.getValueTextX2(), "88%", "bottom");
-                this.valueTextpoint = A320_Neo_UpperECAM.createSVGText("", "decimalpoint", this.getValueTextXpoint(), "88%", "bottom");
                 //createRectangle(_class, _x, _y, _width, _height) {
                 this.N2Box = A320_Neo_UpperECAM.createRectangle("activeEngine", this.getBoxX(), "70", "150", "40");
                 _svgRoot.appendChild(this.N2Box);
                 _svgRoot.appendChild(this.valueText);
-                _svgRoot.appendChild(this.valueText2);
-                _svgRoot.appendChild(this.valueTextpoint);
             }
             this.refresh(false, 0, 0, true);
+        }
+        formatDecimalSvg(value, digits) {
+            const [num, dec] = value.toFixed(digits).split(".");
+            return `${num}.<tspan class="decimal">${dec}</tspan>`;
         }
         refresh(_active, _value, _valueDisplayPrecision, _force = false, _title = "", _displayEngine = "inactiveEngine") {
             if ((this.isActive != _active) || (this.currentValue != _value) || _force) {
@@ -2091,26 +2091,10 @@ var A320_Neo_UpperECAM;
                     const valueClass = this.isActive ? "Value" : "Inactive";
                     if (this.isActive) {
                         if (_valueDisplayPrecision > 0) {
-                            const dx = 0;
-                            if (this.currentValue.toFixed(_valueDisplayPrecision) >= 10) {
-                                this.valueText2.setAttribute("dx", "2%");
-                                this.valueTextpoint.setAttribute("dx", "2%");
-                            } else {
-                                this.valueText2.setAttribute("dx", "0%");
-                                this.valueTextpoint.setAttribute("dx", "0%");
-                            }
-                            const strArray = this.currentValue.toFixed(_valueDisplayPrecision).split(".");
-                            const wholeNumber = strArray[0];
-                            this.valueText.textContent = wholeNumber;
                             this.valueText.setAttribute("x", this.getValueTextX());
                             this.valueText.setAttribute("class", valueClass);
-                            const decimal = strArray[1];
-                            this.valueText2.textContent = decimal;
-                            this.valueText2.setAttribute("class", valueClass + " decimal");
-                            this.valueText2.setAttribute("y", "88%");
-                            this.valueTextpoint.textContent = ".";
-                            this.valueTextpoint.setAttribute("class", valueClass + " decimalpoint");
-
+                            this.valueText.style.letterSpacing = "-1.5px";
+                            this.valueText.innerHTML = this.formatDecimalSvg(this.currentValue, 1);
                         } else {
                             if (_title == "FF") {
                                 this.valueText.setAttribute("x", this.getValueTextXFF());
@@ -2121,10 +2105,7 @@ var A320_Neo_UpperECAM;
 
                     } else {
                         this.valueText.textContent = "XX";
-                        this.valueTextpoint.textContent = "";
-                        this.valueText2.textContent = "";
                         this.valueText.setAttribute("class", valueClass);
-                        this.valueText2.setAttribute("class", valueClass);
                         this.valueText.setAttribute("x", this.getValueTextX2());
                     }
                 }
@@ -2140,7 +2121,7 @@ var A320_Neo_UpperECAM;
             return "42%";
         }
         getValueTextX() {
-            return "14%";
+            return "16%";
         }
         getBoxX() {
             return "15";
@@ -2148,11 +2129,8 @@ var A320_Neo_UpperECAM;
         getValueTextX2() {
             return "20%";
         }
-        getValueTextXpoint() {
-            return "17%";
-        }
         getValueTextXFF() {
-            return "17%";
+            return "19%";
         }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Left = LinesStyleComponent_Left;
@@ -2164,7 +2142,7 @@ var A320_Neo_UpperECAM;
             return "58%";
         }
         getValueTextX() {
-            return "79%";
+            return "83%";
         }
         getBoxX() {
             return "538";
@@ -2172,11 +2150,8 @@ var A320_Neo_UpperECAM;
         getValueTextX2() {
             return "85%";
         }
-        getValueTextXpoint() {
-            return "82%";
-        }
         getValueTextXFF() {
-            return "82%";
+            return "86%";
         }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Right = LinesStyleComponent_Right;
@@ -2344,6 +2319,10 @@ var A320_Neo_UpperECAM;
          * @param _grounded {boolean}
          * @param _phase {FlightPhase}
          */
+        formatDecimalSvg(value, digits) {
+            const [num, dec] = value.toFixed(digits).split(".");
+            return `${num}.<span>${dec}</span>`;
+        }
         setThrottle(_active, _value = 0, _mode = 0, _grounded = true, _phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number")) {
             if (_active !== this.currentThrottleIsActive || _value !== this.currentThrottleValue || _mode !== this.currentThrottleMode || _grounded !== this.currentGrounded || this.currentStart || _phase !== this.currentPhase) {
                 this.currentThrottleIsActive = _active;
@@ -2399,10 +2378,7 @@ var A320_Neo_UpperECAM;
                         if (_value >= 0) {
                             this.throttleState.style.visibility = "visible";
                             this.throttleValue.style.visibility = "visible";
-                            const strArray = _value.toFixed(1).split(".");
-                            const wholeNumber = strArray[0];
-                            const decimal = strArray[1];
-                            this.throttleValue.innerHTML = wholeNumber + ".<span>" + decimal + "</span>";
+                            this.throttleValue.innerHTML = this.formatDecimalSvg(_value, 1);
                         } else {
                             this.throttleState.style.visibility = "hidden";
                             this.throttleValue.style.visibility = "hidden";
