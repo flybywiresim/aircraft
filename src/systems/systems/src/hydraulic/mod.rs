@@ -219,6 +219,9 @@ pub struct HydraulicLoop {
     current_max_flow: VolumeRate, //Current total max flow available from pressure sources
     fire_shutoff_valve_opened: bool,
     has_fire_valve: bool,
+    min_pressure_pressurised_lo_hyst: Pressure,
+    min_pressure_pressurised_hi_hyst: Pressure,
+    is_pressurised: bool,
 }
 impl HydraulicLoop {
     const ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1885.0; // Nitrogen PSI
@@ -243,6 +246,8 @@ impl HydraulicLoop {
         reservoir_volume: Volume,
         fluid: HydFluid,
         has_fire_valve: bool,
+        min_pressure_pressurised_lo_hyst: Pressure,
+        min_pressure_pressurised_hi_hyst: Pressure,
     ) -> Self {
         Self {
             pressure_id: format!("HYD_{}_PRESSURE", id),
@@ -268,6 +273,9 @@ impl HydraulicLoop {
             current_max_flow: VolumeRate::new::<gallon_per_second>(0.),
             fire_shutoff_valve_opened: true,
             has_fire_valve,
+            min_pressure_pressurised_lo_hyst,
+            min_pressure_pressurised_hi_hyst,
+            is_pressurised: false,
         }
     }
 
@@ -512,6 +520,16 @@ impl HydraulicLoop {
 
         self.current_delta_vol = delta_vol;
         self.current_flow = delta_vol / Time::new::<second>(delta_time.as_secs_f64());
+
+        if self.loop_pressure <= self.min_pressure_pressurised_lo_hyst {
+            self.is_pressurised = false;
+        } else if self.loop_pressure >= self.min_pressure_pressurised_hi_hyst {
+            self.is_pressurised = true;
+        }
+    }
+
+    pub fn is_pressurised(&self) -> bool {
+        self.is_pressurised
     }
 }
 impl SimulationElement for HydraulicLoop {
@@ -1478,6 +1496,8 @@ mod tests {
                 Volume::new::<gallon>(3.83),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
+                Pressure::new::<psi>(1450.0),
+                Pressure::new::<psi>(1750.0),
             ),
             "YELLOW" => HydraulicLoop::new(
                 loop_color,
@@ -1489,6 +1509,8 @@ mod tests {
                 Volume::new::<gallon>(3.3),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
+                Pressure::new::<psi>(1450.0),
+                Pressure::new::<psi>(1750.0),
             ),
             _ => HydraulicLoop::new(
                 loop_color,
@@ -1500,6 +1522,8 @@ mod tests {
                 Volume::new::<gallon>(1.5),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 false,
+                Pressure::new::<psi>(1450.0),
+                Pressure::new::<psi>(1750.0),
             ),
         }
     }
