@@ -57,6 +57,7 @@ class AutopilotLawsModelClass {
     real_T Delay_DSTATE_d;
     real_T Tau;
     real_T H_bias;
+    real_T limit;
     boolean_T Delay_DSTATE_lp[100];
     boolean_T Delay_DSTATE_h5[100];
     uint8_T icLoad;
@@ -65,6 +66,7 @@ class AutopilotLawsModelClass {
     uint8_T is_c5_AutopilotLaws;
     boolean_T wasActive;
     boolean_T wasActive_not_empty;
+    boolean_T limit_not_empty;
     rtDW_Chart_AutopilotLaws_h_T sf_Chart_b;
     rtDW_Chart_AutopilotLaws_T sf_Chart_o;
     rtDW_Chart_AutopilotLaws_T sf_Chart_j;
@@ -89,6 +91,7 @@ class AutopilotLawsModelClass {
     real_T ScheduledGain_BreakpointsForDimension1_d[6];
     real_T ScheduledGain_BreakpointsForDimension1_n[6];
     real_T ScheduledGain_BreakpointsForDimension1_dx[5];
+    real_T ScheduledGain1_BreakpointsForDimension1[4];
     real_T ScheduledGain_BreakpointsForDimension1_e[6];
     real_T ScheduledGain_BreakpointsForDimension1_ea[5];
     real_T ScheduledGain_BreakpointsForDimension1_k[6];
@@ -128,6 +131,7 @@ class AutopilotLawsModelClass {
     real_T ScheduledGain_Table_h[6];
     real_T ScheduledGain_Table_f[6];
     real_T ScheduledGain_Table_o[5];
+    real_T ScheduledGain1_Table[4];
     real_T ScheduledGain_Table_e[6];
     real_T ScheduledGain_Table_p[5];
     real_T ScheduledGain_Table_fw[6];
@@ -139,6 +143,7 @@ class AutopilotLawsModelClass {
     real_T CompareToConstant_const_k;
     real_T CompareToConstant5_const;
     real_T CompareToConstant4_const;
+    real_T CompareToConstant2_const;
     real_T CompareToConstant5_const_e;
     real_T CompareToConstant_const_n;
     real_T CompareToConstant7_const;
@@ -150,6 +155,8 @@ class AutopilotLawsModelClass {
     boolean_T CompareToConstant_const_e;
     real_T Gain1_Gain;
     real_T Gain_Gain;
+    real_T Gain1_Gain_p;
+    real_T Gain_Gain_p;
     real_T Gain_Gain_a;
     real_T Constant1_Value;
     real_T Constant3_Value;
@@ -216,7 +223,7 @@ class AutopilotLawsModelClass {
     real_T Constant3_Value_e;
     real_T Constant3_Value_m;
     real_T Gain1_Gain_f;
-    real_T Gain_Gain_p;
+    real_T Gain_Gain_py;
     real_T Constant1_Value_e;
     real_T ROLLLIM1_tableData[5];
     real_T ROLLLIM1_bp01Data[5];
@@ -235,14 +242,12 @@ class AutopilotLawsModelClass {
     real_T Constant_Value_c;
     real_T Constant3_Value_ne;
     real_T Constant3_Value_h5;
+    real_T Constant3_Value_ew;
     real_T Gain1_Gain_g;
     real_T Saturation_UpperSat_c;
     real_T Saturation_LowerSat_d;
-    real_T Saturation1_UpperSat_e;
-    real_T Saturation1_LowerSat_b;
     real_T Constant3_Value_a;
     real_T Constant3_Value_mz;
-    real_T Gain3_Gain_a;
     real_T Gain_Gain_ey;
     real_T Constant_Value_mr;
     real_T Constant3_Value_c5;
