@@ -69,25 +69,35 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
             <div>
                 {!props.expertMode
                 && (
-                    <Input
-                        key={props.index}
-                        label="Configure Range"
-                        type="number"
-                        className="dark-option"
-                        value={deadZone}
-                        onChange={(deadZone) => {
-                            if (parseFloat(deadZone) >= 0.01) {
-                                if (previousMode === props.expertMode) {
-                                    updateDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, parseFloat(deadZone));
-                                    NXDataStore.set(`THROTTLE_${props.throttleNumber}DETENT_${props.index}`, parseFloat(deadZone).toFixed(2));
-                                    setShowWarning(false);
-                                    setDeadZone(deadZone);
+                    <div className="flex flex-row">
+                        <Input
+                            key={props.index}
+                            label="Configure Range"
+                            type="number"
+                            className="dark-option"
+                            value={deadZone}
+                            onChange={(deadZone) => {
+                                if (parseFloat(deadZone) >= 0.01) {
+                                    if (previousMode === props.expertMode) {
+                                        updateDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, parseFloat(deadZone));
+                                        NXDataStore.set(`THROTTLE_${props.throttleNumber}DETENT_${props.index}`, parseFloat(deadZone).toFixed(2));
+                                        setShowWarning(false);
+                                        setDeadZone(deadZone);
+                                    }
+                                } else {
+                                    setShowWarning(true);
                                 }
-                            } else {
-                                setShowWarning(true);
-                            }
-                        }}
-                    />
+                            }}
+                        />
+                        <Button
+                            className="w-full border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 mt-4"
+                            text="Set From Throttle"
+                            onClick={() => {
+                                setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter);
+                            }}
+                            type={BUTTON_TYPE.NONE}
+                        />
+                    </div>
                 ) }
                 {props.expertMode
                 && (
@@ -132,17 +142,6 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                 && (
 
                 ) } */}
-                {!props.expertMode
-                && (
-                    <Button
-                        className="w-full border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 mt-4"
-                        text="Set From Throttle"
-                        onClick={() => {
-                            setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter);
-                        }}
-                        type={BUTTON_TYPE.NONE}
-                    />
-                )}
 
                 {showWarning && (
                     <h1 className="mt-4 text-red-600 text-xl">Please enter a valid deadzone (min. 0.1)</h1>
@@ -171,7 +170,9 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         displayBar
                         borderRadius="0px"
                         completedBarBegin={(props.lowerBoundDetentGetter + 1) * 50}
+                        completedBarBeginValue={props.lowerBoundDetentGetter.toFixed(2)}
                         completedBarEnd={(props.upperBoundDetentGetter + 1) * 50}
+                        completedBarEndValue={props.upperBoundDetentGetter.toFixed(2)}
                         bgcolor="#3b82f6"
                         vertical
                         baseBgColor="rgba(55, 65, 81, var(--tw-bg-opacity))"

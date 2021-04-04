@@ -5,7 +5,10 @@ export type ProgressBarProps = {
     completed: string | number;
     displayBar?: boolean;
     completedBarBegin?: number;
+    completedBarBeginValue?: string;
+
     completedBarEnd?: number;
+    completedBarEndValue?: string;
 
     bgcolor?: string;
     baseBgColor?: string;
@@ -27,6 +30,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     displayBar,
     completedBarEnd,
     completedBarBegin,
+    completedBarBeginValue,
     baseBgColor,
     height,
     width,
@@ -121,7 +125,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
                         style={vertical
                             ? { marginTop: `${formatBar(completedBarBegin + 2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarBegin || 0)}` }}
                     >
-                        {(completedBarBegin / 50).toFixed(2)}
+                        {completedBarBeginValue}
                     </div>
                 )}
 
@@ -162,7 +166,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
                     style={vertical
                         ? { marginTop: `${formatBar(completedBarEnd + 2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarEnd || 0)}` }}
                 >
-                    {(completedBarEnd !== 0 ? (completedBarEnd / 50) : 0.00).toFixed(2)}
+                    {(completedBarEnd !== 0 ? (completedBarEnd / 50 - 1) : 0.00).toFixed(2)}
                 </div>
             )}
         </div>
