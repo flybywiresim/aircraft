@@ -713,15 +713,18 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_VS_during(void)
 
 void AutopilotStateMachineModelClass::AutopilotStateMachine_ALT_entry(void)
 {
+  boolean_T isAltCruise;
   AutopilotStateMachine_B.out.mode = vertical_mode_ALT;
   AutopilotStateMachine_B.out.mode_autothrust = athr_requested_mode_SPEED;
   AutopilotStateMachine_B.out.law = vertical_law_ALT_HOLD;
   AutopilotStateMachine_B.out.H_c_ft = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft;
   AutopilotStateMachine_B.out.V_c_kn = AutopilotStateMachine_B.BusAssignment_g.input.V_fcu_kn;
-  AutopilotStateMachine_B.out.ALT_soft_mode_active = ((std::abs(AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft -
-    AutopilotStateMachine_B.BusAssignment_g.data.cruise_altitude) < 60.0) &&
-    (AutopilotStateMachine_B.BusAssignment_g.input.MACH_mode &&
-     AutopilotStateMachine_B.BusAssignment_g.input.ATHR_engaged));
+  isAltCruise = (std::abs(AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft -
+    AutopilotStateMachine_B.BusAssignment_g.data.cruise_altitude) < 60.0);
+  AutopilotStateMachine_B.out.ALT_cruise_mode_active = isAltCruise;
+  AutopilotStateMachine_B.out.ALT_soft_mode_active = (isAltCruise &&
+    AutopilotStateMachine_B.BusAssignment_g.input.MACH_mode &&
+    AutopilotStateMachine_B.BusAssignment_g.input.ATHR_engaged);
 }
 
 void AutopilotStateMachineModelClass::AutopilotStateMachine_VS(void)
@@ -777,6 +780,7 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_VS(void)
 
 void AutopilotStateMachineModelClass::AutopilotStateMachine_ALT_during(void)
 {
+  boolean_T isAltCruise;
   AutopilotStateMachine_B.out.V_c_kn = AutopilotStateMachine_B.BusAssignment_g.input.V_fcu_kn;
   if (AutopilotStateMachine_DWork.verticalSpeedCancelMode && (std::abs
        (AutopilotStateMachine_B.BusAssignment_g.data.H_dot_ft_min) <= 50.0)) {
@@ -802,14 +806,17 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_ALT_during(void)
     AutopilotStateMachine_B.out.H_c_ft = AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft;
   }
 
-  AutopilotStateMachine_B.out.ALT_soft_mode_active = ((std::abs(AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft -
-    AutopilotStateMachine_B.BusAssignment_g.data.cruise_altitude) < 60.0) &&
-    (AutopilotStateMachine_B.BusAssignment_g.input.MACH_mode &&
-     AutopilotStateMachine_B.BusAssignment_g.input.ATHR_engaged));
+  isAltCruise = (std::abs(AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft -
+    AutopilotStateMachine_B.BusAssignment_g.data.cruise_altitude) < 60.0);
+  AutopilotStateMachine_B.out.ALT_cruise_mode_active = isAltCruise;
+  AutopilotStateMachine_B.out.ALT_soft_mode_active = (isAltCruise &&
+    AutopilotStateMachine_B.BusAssignment_g.input.MACH_mode &&
+    AutopilotStateMachine_B.BusAssignment_g.input.ATHR_engaged);
 }
 
 void AutopilotStateMachineModelClass::AutopilotStateMachine_ALT_exit(void)
 {
+  AutopilotStateMachine_B.out.ALT_cruise_mode_active = false;
   AutopilotStateMachine_B.out.ALT_soft_mode_active = false;
 }
 
@@ -2660,6 +2667,8 @@ void AutopilotStateMachineModelClass::step()
     AutopilotStateMachine_P.ap_sm_output_MATLABStruct.output.V_c_kn;
   AutopilotStateMachine_B.BusAssignment_g.output.ALT_soft_mode_active =
     AutopilotStateMachine_P.ap_sm_output_MATLABStruct.output.ALT_soft_mode_active;
+  AutopilotStateMachine_B.BusAssignment_g.output.ALT_cruise_mode_active =
+    AutopilotStateMachine_P.ap_sm_output_MATLABStruct.output.ALT_cruise_mode_active;
   AutopilotStateMachine_B.BusAssignment_g.output.EXPED_mode_active =
     AutopilotStateMachine_P.ap_sm_output_MATLABStruct.output.EXPED_mode_active;
   AutopilotStateMachine_B.BusAssignment_g.output.FD_disconnect =
@@ -3211,6 +3220,7 @@ void AutopilotStateMachineModelClass::step()
   AutopilotStateMachine_Y.out.output.FPA_c_deg = AutopilotStateMachine_B.out.FPA_c_deg;
   AutopilotStateMachine_Y.out.output.V_c_kn = AutopilotStateMachine_B.out.V_c_kn;
   AutopilotStateMachine_Y.out.output.ALT_soft_mode_active = AutopilotStateMachine_B.out.ALT_soft_mode_active;
+  AutopilotStateMachine_Y.out.output.ALT_cruise_mode_active = AutopilotStateMachine_B.out.ALT_cruise_mode_active;
   AutopilotStateMachine_Y.out.output.EXPED_mode_active = AutopilotStateMachine_B.out.EXPED_mode_active;
   AutopilotStateMachine_Y.out.output.FD_disconnect = AutopilotStateMachine_B.out.FD_disconnect;
   AutopilotStateMachine_Y.out.output.FD_connect = AutopilotStateMachine_B.out.FD_connect;

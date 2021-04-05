@@ -107,6 +107,7 @@ class FlyByWireInterface {
   ID idFmaVerticalMode;
   ID idFmaVerticalArmed;
   ID idFmaSoftAltModeActive;
+  ID idFmaCruiseAltModeActive;
   ID idFmaExpediteModeActive;
   ID idFmaSpeedProtectionActive;
   ID idFmaApproachCapability;
