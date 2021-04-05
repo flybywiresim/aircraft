@@ -15,15 +15,15 @@
 
 ## About
 
-The A32NX Project is a community-driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. Our project aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
+The A32NX Project is a community-driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible.
 
 The following aircraft configuration is currently simulated:
 
  ```
- Model:      A320-251N
- Engine:     CFM LEAP 1A-26
- FMGS:       Honeywell Pegasus II
- FWC Std.:   H2F9C
+ Model       A320-251N
+ Engine      CFM LEAP 1A-26
+ FMGS        Honeywell Pegasus II
+ FWC Std.    H2F9C
  ```
 
 Please note that this configuration may change in the future as the A32NX project evolves and changes.
@@ -119,13 +119,10 @@ The original contents of this repository are licensed under the MIT license.
 
 A: Yes, see [downloads.](https://github.com/flybywiresim/a32nx#downloads)
 
-**Q: Where is the plane in-sim?**
+**Q: What liveries are available?**
 
-A: The mod is now separate from the base A320neo aircraft and will show up as a new aircraft under the name "FlyByWire Simulations A320neo (LEAP)". If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder (paths for all editions are above).
-
-**Q: What are the liveries available?**
-
-A: All liveries for the default A320 are compatible with the A32NX Mod. You can download some of your favourite liveries at [Flightsim.to](https://flightsim.to).
+A: Liveries for the A32NX mod can be found on [Flightsim.to](https://flightsim.to). 
+**However, default A320neo liveries are not compatible on the A32NX.**
 
 **Q: When will it be released?**
 
@@ -133,7 +130,7 @@ A: The project is an ongoing rolling release. See [Downloads](#Downloads).
 
 **Q: When is the next update?**
 
-A: We don't know, since it depends on many factors. We will announce each Stable build update via [Discord](https://discord.gg/flybywire) and our social media: [Facebook](https://www.facebook.com/FlyByWireSimulations), [Twitter](https://twitter.com/FlybywireSim).
+A: We don't know, since it depends on many factors. We will announce each Stable build update via [Discord](https://discord.gg/flybywire) and our [social media.](#Socials)
 
 **Q: How do I join the team?**
 
