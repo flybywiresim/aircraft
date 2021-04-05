@@ -117,7 +117,7 @@ The original contents of this repository are licensed under the MIT license.
 
 **Q: Can I download the aircraft in the current state?**
 
-A: Yes, see [downloads.(#Downloads)
+A: Yes, see [downloads.](https://github.com/flybywiresim/a32nx#downloads)
 
 **Q: Where is the plane in-sim?**
 
