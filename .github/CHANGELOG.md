@@ -3,6 +3,8 @@
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
+## 0.7.0
+1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
@@ -236,7 +238,8 @@
 1. [RMP] Fixed ACP CALL buttons emissive behavior - @ImenesFBW (Imenes)
 1. [TEXTURE] Fixed decal clipping issues on the overhead fuel panel - @ImenesFBW (Imenes)
 1. [TEXTURE] Updated glare shield leather, flyPad holder, tray table, overhead and push-button textures - @MoreRightRudder (Mike)
-1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
+1. [MCDU] Progress page shows current flight phase - @Username23-23 (NONAmr2433 #8777)
+1. [TEXTURE] Upscaled the external airframe decals to go nicely with the upscaled livery. @FoxinTale (Aubrey)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
