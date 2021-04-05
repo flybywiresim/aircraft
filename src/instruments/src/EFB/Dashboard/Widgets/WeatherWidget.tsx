@@ -156,7 +156,6 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
         return Metar.get(icao, source)
             .then((result) => {
                 const metarParse = metarParser(result.metar);
-                console.info(metarParse);
                 setMetar(metarParse);
             })
             .catch(() => {

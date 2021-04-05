@@ -123,10 +123,8 @@ class Efb extends React.Component<EfbProps, EfbState> {
             return;
         }
 
-        console.log('Fetching simbriefData');
         // eslint-disable-next-line react/no-access-state-in-setstate
         const simbriefData = await getSimbriefData(this.state.simbriefUsername);
-        console.info(simbriefData);
         this.setState({
             airline: simbriefData.airline,
             flightNum: simbriefData.flightNumber,
