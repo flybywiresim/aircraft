@@ -485,9 +485,8 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             return;
         }
 
-        // Use the constraint altitude if provided otherwise use selected altitude lock value
         const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
-        const targetAltitude = currentAltitudeConstraint && !this.hasAltitudeConstraint() ? currentAltitudeConstraint : this.hudAPAltitude;
+        const targetAltitude = currentAltitudeConstraint && !this.getAutopilotMode() ? currentAltitudeConstraint : this.hudAPAltitude;
 
         // Exit when selected altitude is being changed
         if (this.previousTargetAltitude !== targetAltitude) {
@@ -544,7 +543,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.STDpressureSVGShape.classList.remove("blink");
     }
 
-    _updateQNHAlert(indicatedAltitude, baroMode) {
+      _updateQNHAlert(indicatedAltitude, baroMode) {
         this._removeBlink(); //Reset Blink
 
         const transTakeoffAlt = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
