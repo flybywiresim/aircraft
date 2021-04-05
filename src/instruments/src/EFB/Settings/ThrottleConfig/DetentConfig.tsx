@@ -90,7 +90,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             }}
                         />
                         <Button
-                            className="w-full border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 mt-4"
+                            className="w-2/3 border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600"
                             text="Set From Throttle"
                             onClick={() => {
                                 setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter);
