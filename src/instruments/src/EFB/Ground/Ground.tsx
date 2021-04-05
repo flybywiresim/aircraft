@@ -110,10 +110,11 @@ export const Ground = ({
         const tugRequest = 'tug-request';
         if (activeButtons.map((b: StatefulButton) => b.id).includes(tugRequest) && event.currentTarget.id === tugRequest) {
             setActiveButtons([]);
-        } else {
+            callBack();
+        } else if (activeButtons.map((b: StatefulButton) => b.id).includes(tugRequest)) {
             setActiveButtons([{ id: event.currentTarget.id, state: STATE_ACTIVE }, { id: tugRequest, state: STATE_WAITING }]);
+            callBack();
         }
-        callBack();
     };
 
     const applySelected = (className: string, id?: string) => {
