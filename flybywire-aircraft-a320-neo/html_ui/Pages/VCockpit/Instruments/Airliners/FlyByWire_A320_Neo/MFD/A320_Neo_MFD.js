@@ -862,7 +862,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         const wa = this.ndInfo.querySelector("#Wind_Arrow");
         const wptg = this.ndInfo.querySelector("#Waypoint_Group");
         const wptPPOS = this.ndInfo.querySelector("#Waypoint_PPOS");
-        if (ADIRSState != 2 || trueAirSpeed < 60) {
+        if (ADIRSState !== 2 || trueAirSpeed < 60) {
             //TAS info Conditions
             tas.textContent = "---";
         }
