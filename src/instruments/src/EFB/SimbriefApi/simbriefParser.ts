@@ -17,9 +17,7 @@ export function getSimbriefData(simbriefUsername: string): Promise<ISimbriefData
     const simbriefData = fetch(simbriefApiUrl.toString(), getRequestData)
         .then((res) => res.json())
         .then(
-            (result: any) => {
-                return simbriefDataParser(result);
-            },
+            (result: any) => simbriefDataParser(result),
         );
     // @ts-ignore
     return simbriefData;
