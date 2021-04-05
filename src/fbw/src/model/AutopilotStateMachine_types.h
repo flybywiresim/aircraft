@@ -387,6 +387,7 @@ typedef struct {
   real_T FPA_c_deg;
   real_T V_c_kn;
   boolean_T ALT_soft_mode_active;
+  boolean_T ALT_cruise_mode_active;
   boolean_T EXPED_mode_active;
   boolean_T speed_protection_mode;
   boolean_T FD_disconnect;
@@ -429,6 +430,7 @@ typedef struct {
   real_T FPA_c_deg;
   real_T V_c_kn;
   boolean_T ALT_soft_mode_active;
+  boolean_T ALT_cruise_mode_active;
   boolean_T EXPED_mode_active;
   boolean_T FD_disconnect;
   boolean_T FD_connect;

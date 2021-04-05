@@ -290,7 +290,7 @@ const B1Cell = () => {
         }
         break;
     case 10:
-        if (getSimVar('L:A32NX_FMA_SOFT_ALT_MODE', 'Bool')) {
+        if (getSimVar('L:A32NX_FMA_CRUISE_ALT_MODE', 'Bool')) {
             text = 'ALT CRZ';
         } else {
             text = 'ALT';
