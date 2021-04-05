@@ -363,7 +363,7 @@ void AutothrustModelClass::step()
   }
 
   rtb_inReverse = ((Autothrust_U.in.input.flex_temperature_degC > Autothrust_U.in.data.TAT_degC) &&
-                   (Autothrust_U.in.input.flex_temperature_degC != 0.0));
+                   (Autothrust_U.in.input.flex_temperature_degC != 0.0) && (Autothrust_U.in.input.flight_phase < 3.0));
   Autothrust_DWork.latch = ((rtb_inReverse && (rtb_on_ground != 0) && (Autothrust_U.in.input.TLA_1_deg == 35.0) &&
     (Autothrust_U.in.input.TLA_2_deg == 35.0)) || Autothrust_DWork.latch);
   Autothrust_DWork.latch = (((!Autothrust_DWork.latch) || (((Autothrust_U.in.input.TLA_1_deg != 25.0) ||
@@ -425,6 +425,8 @@ void AutothrustModelClass::step()
   rtb_BusAssignment_n.input.thrust_reduction_altitude = Autothrust_U.in.input.thrust_reduction_altitude;
   rtb_BusAssignment_n.input.thrust_reduction_altitude_go_around =
     Autothrust_U.in.input.thrust_reduction_altitude_go_around;
+  rtb_BusAssignment_n.input.flight_phase = Autothrust_U.in.input.flight_phase;
+  rtb_BusAssignment_n.input.is_alt_soft_mode_active = Autothrust_U.in.input.is_alt_soft_mode_active;
   rtb_BusAssignment_n.input.is_anti_ice_wing_active = Autothrust_U.in.input.is_anti_ice_wing_active;
   rtb_BusAssignment_n.input.is_anti_ice_engine_1_active = Autothrust_U.in.input.is_anti_ice_engine_1_active;
   rtb_BusAssignment_n.input.is_anti_ice_engine_2_active = Autothrust_U.in.input.is_anti_ice_engine_2_active;
@@ -653,6 +655,7 @@ void AutothrustModelClass::step()
   rtb_y_i = rtb_Switch_d + Autothrust_P.Constant_Value_k;
   Autothrust_DWork.Delay1_DSTATE = 1.0 / rtb_y_i * (Autothrust_P.Constant_Value_k - rtb_Switch_d) *
     Autothrust_DWork.Delay1_DSTATE + (rtb_Divide + Autothrust_DWork.Delay_DSTATE_l) * (rtb_Switch_d / rtb_y_i);
+  rtb_Switch_d = std::abs(rtb_y_jh);
   if (Autothrust_U.in.input.mode_requested > Autothrust_P.Saturation_UpperSat_l) {
     rtb_y_i = Autothrust_P.Saturation_UpperSat_l;
   } else if (Autothrust_U.in.input.mode_requested < Autothrust_P.Saturation_LowerSat_i) {
@@ -667,12 +670,15 @@ void AutothrustModelClass::step()
     break;
 
    case 1:
-    rtb_Switch_d = (Autothrust_DWork.Delay1_DSTATE * look1_binlxpw(static_cast<real_T>
+    rtb_Switch_d = ((Autothrust_DWork.Delay1_DSTATE * look1_binlxpw(static_cast<real_T>
       (Autothrust_U.in.input.is_approach_mode_active), Autothrust_P.ScheduledGain1_BreakpointsForDimension1,
       Autothrust_P.ScheduledGain1_Table, 1U) + rtb_Sum2 * look1_binlxpw(static_cast<real_T>
       (Autothrust_U.in.input.is_approach_mode_active), Autothrust_P.ScheduledGain_BreakpointsForDimension1,
-      Autothrust_P.ScheduledGain_Table, 1U)) + rtb_y_jh * look1_binlxpw(std::abs(rtb_y_jh),
-      Autothrust_P.ScheduledGain3_BreakpointsForDimension1, Autothrust_P.ScheduledGain3_Table, 3U);
+      Autothrust_P.ScheduledGain_Table, 1U)) + rtb_y_jh * look1_binlxpw(rtb_Switch_d,
+      Autothrust_P.ScheduledGain3_BreakpointsForDimension1, Autothrust_P.ScheduledGain3_Table, 3U)) * look1_binlxpw(
+      static_cast<real_T>((rtb_Switch_d <= Autothrust_P.CompareToConstant_const_e) &&
+                          Autothrust_U.in.input.is_alt_soft_mode_active),
+      Autothrust_P.ScheduledGain4_BreakpointsForDimension1, Autothrust_P.ScheduledGain4_Table, 1U);
     break;
 
    case 2:
@@ -880,6 +886,8 @@ void AutothrustModelClass::step()
   Autothrust_Y.out.input.is_SRS_GA_mode_active = Autothrust_U.in.input.is_SRS_GA_mode_active;
   Autothrust_Y.out.input.thrust_reduction_altitude = Autothrust_U.in.input.thrust_reduction_altitude;
   Autothrust_Y.out.input.thrust_reduction_altitude_go_around = Autothrust_U.in.input.thrust_reduction_altitude_go_around;
+  Autothrust_Y.out.input.flight_phase = Autothrust_U.in.input.flight_phase;
+  Autothrust_Y.out.input.is_alt_soft_mode_active = Autothrust_U.in.input.is_alt_soft_mode_active;
   Autothrust_Y.out.input.is_anti_ice_wing_active = Autothrust_U.in.input.is_anti_ice_wing_active;
   Autothrust_Y.out.input.is_anti_ice_engine_1_active = Autothrust_U.in.input.is_anti_ice_engine_1_active;
   Autothrust_Y.out.input.is_anti_ice_engine_2_active = Autothrust_U.in.input.is_anti_ice_engine_2_active;

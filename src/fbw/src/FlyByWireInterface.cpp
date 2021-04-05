@@ -185,6 +185,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmaExpediteModeActive = register_named_variable("A32NX_FMA_EXPEDITE_MODE");
   idFmaSpeedProtectionActive = register_named_variable("A32NX_FMA_SPEED_PROTECTION_MODE");
   idFmaSoftAltModeActive = register_named_variable("A32NX_FMA_SOFT_ALT_MODE");
+  idFmaCruiseAltModeActive = register_named_variable("A32NX_FMA_CRUISE_ALT_MODE");
   idFmaApproachCapability = register_named_variable("A32NX_ApproachCapability");
 
   // register L variable for flight director
@@ -529,6 +530,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineOutput.FPA_c_deg = clientData.FPA_c_deg;
     autopilotStateMachineOutput.V_c_kn = clientData.V_c_kn;
     autopilotStateMachineOutput.ALT_soft_mode_active = clientData.ALT_soft_mode_active;
+    autopilotStateMachineOutput.ALT_cruise_mode_active = clientData.ALT_cruise_mode_active;
     autopilotStateMachineOutput.EXPED_mode_active = clientData.EXPED_mode_active;
     autopilotStateMachineOutput.FD_disconnect = clientData.FD_disconnect;
     autopilotStateMachineOutput.FD_connect = clientData.FD_connect;
@@ -596,6 +598,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
   set_named_variable_value(idFmaExpediteModeActive, autopilotStateMachineOutput.EXPED_mode_active);
   set_named_variable_value(idFmaSpeedProtectionActive, autopilotStateMachineOutput.speed_protection_mode);
   set_named_variable_value(idFmaSoftAltModeActive, autopilotStateMachineOutput.ALT_soft_mode_active);
+  set_named_variable_value(idFmaCruiseAltModeActive, autopilotStateMachineOutput.ALT_cruise_mode_active);
 
   // calculate and set approach capability
   // when no RA is available at all -> CAT1, at least one RA is needed to get into CAT2 or higher
@@ -792,6 +795,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
           autopilotStateMachineOutput.FPA_c_deg,
           autopilotStateMachineOutput.V_c_kn,
           autopilotStateMachineOutput.ALT_soft_mode_active,
+          autopilotStateMachineOutput.ALT_cruise_mode_active,
           autopilotStateMachineOutput.EXPED_mode_active,
           autopilotStateMachineOutput.FD_disconnect,
           autopilotStateMachineOutput.FD_connect,
@@ -1010,6 +1014,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         autopilotStateMachineOutput.vertical_mode == 41,
         get_named_variable_value(idFmgcThrustReductionAltitude),
         get_named_variable_value(idFmgcThrustReductionAltitudeGoAround),
+        get_named_variable_value(idFmgcFlightPhase),
+        autopilotStateMachineOutput.ALT_soft_mode_active,
     };
     simConnectInterface.setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust);
   }
@@ -1069,6 +1075,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.is_SRS_GA_mode_active = autopilotStateMachineOutput.vertical_mode == 41;
     autoThrustInput.in.input.thrust_reduction_altitude = get_named_variable_value(idFmgcThrustReductionAltitude);
     autoThrustInput.in.input.thrust_reduction_altitude_go_around = get_named_variable_value(idFmgcThrustReductionAltitudeGoAround);
+    autoThrustInput.in.input.flight_phase = get_named_variable_value(idFmgcFlightPhase);
+    autoThrustInput.in.input.is_alt_soft_mode_active = autopilotStateMachineOutput.ALT_soft_mode_active;
     autoThrustInput.in.input.is_anti_ice_wing_active = simData.wingAntiIce == 1;
     autoThrustInput.in.input.is_anti_ice_engine_1_active = simData.engineAntiIce_1 == 1;
     autoThrustInput.in.input.is_anti_ice_engine_2_active = simData.engineAntiIce_2 == 1;

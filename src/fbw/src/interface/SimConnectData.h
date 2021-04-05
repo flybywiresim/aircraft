@@ -215,6 +215,7 @@ struct ClientDataAutopilotStateMachine {
   double FPA_c_deg;
   double V_c_kn;
   double ALT_soft_mode_active;
+  double ALT_cruise_mode_active;
   double EXPED_mode_active;
   double FD_disconnect;
   double FD_connect;
@@ -290,4 +291,6 @@ struct ClientDataLocalVariablesAutothrust {
   double is_SRS_GA_mode_active;
   double thrust_reduction_altitude;
   double thrust_reduction_altitude_go_around;
+  double flight_phase;
+  double is_soft_alt_mode_active;
 };

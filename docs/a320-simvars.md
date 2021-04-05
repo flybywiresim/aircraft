@@ -912,6 +912,14 @@
         OFF | 0
         ON | 1
 
+- A32NX_FMA_CRUISE_ALT_MODE
+    - Boolean
+    - Indicates if CRUISE ALT mode is engaged (ALT on cruise altitude = ALT CRZ)
+        State | Value
+        --- | ---
+        OFF | 0
+        ON | 1
+
 - A32NX_FMA_SOFT_ALT_MODE
     - Boolean
     - Indicates if SOFT ALT mode is engaged (allows deviation of +/- 50 ft to reduce thrust variations in cruise)
