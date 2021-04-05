@@ -1,9 +1,13 @@
 # <img src="https://raw.githubusercontent.com/flybywiresim/fbw-branding/master/svg/FBW-Logo.svg" placeholder="FlyByWire" width="400"/>
 
 
-[![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU) 
+[![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU)
 
-[![Twitter](https://img.shields.io/twitter/follow/FlybywireSim?style=flat&logo=twitter)](https://twitter.com/FlybywireSim)
+#### Socials
+[![Twitter](https://img.shields.io/badge/-FlyByWireSim-e84393?label=&logo=twitter&logoColor=ffffff&color=6399AE&labelColor=00C2CB)](https://twitter.com/FlybywireSim)
+[![Instagram](https://img.shields.io/badge/-@FlyByWireSim-e84393?label=&logo=instagram&logoColor=ffffff&color=6399AE&labelColor=00C2CB)](https://instagram.com/flybywiresim)
+[![YouTube](https://img.shields.io/badge/-FlyByWireSimulations-e84393?label=&logo=youtube&logoColor=ffffff&color=6399AE&labelColor=00C2CB)](https://www.youtube.com/c/FlyByWire-Simulations)
+[![Facebook](https://img.shields.io/badge/-FlyByWireSimualtions-e84393?label=&logo=facebook&logoColor=ffffff&color=6399AE&labelColor=00C2CB)](https://www.facebook.com/FlyByWireSimulations/)
 
 [![GitHub latest release version](https://img.shields.io/github/v/release/flybywiresim/a32nx.svg?style=flat)](https://github.com/flybywiresim/a32nx/releases/latest)
 [![Github All Releases download count](https://img.shields.io/github/downloads/flybywiresim/a32nx/total.svg?style=flat)](https://github.com/flybywiresim/a32nx/releases/latest)
@@ -11,15 +15,15 @@
 
 ## About
 
-The A32NX Project is a community-driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. Our modification aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
+The A32NX Project is a community-driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. Our project aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
 
 The following aircraft configuration is currently simulated:
 
  ```
- Model      A320-251N
- Engine     LEAP 1A-26
- FMGS       Honeywell Pegasus II
- FWC Std.   H2F9C
+ Model:      A320-251N
+ Engine:     CFM LEAP 1A-26
+ FMGS:       Honeywell Pegasus II
+ FWC Std.:   H2F9C
  ```
 
 Please note that this configuration may change in the future as the A32NX project evolves and changes.
@@ -30,10 +34,11 @@ Please note that this configuration may change in the future as the A32NX projec
 Pilot ID can be found in the Optional Entries section of the Dispatch Options page.
 
 ## Downloads
+**Warning**: The development (master) and experimental versions have been forked as a separate package/aircraft in MSFS, and will appear separate from the default A320neo. Existing Asobo A320neo liveries will be incompatible with the new package.
 
 ### A32NX Installer
 
-Download the new A32NX installer where you can select either the Stable or Developer build, and download and install the mod directly into your community folder, [download here](https://api.flybywiresim.com/installer) ([source](https://github.com/flybywiresim/installer/)).
+Download the new A32NX installer where you can select either the Stable or Developer build, and install the mod directly into your community folder, [download here](https://api.flybywiresim.com/installer) ([source](https://github.com/flybywiresim/installer/)).
 
 ### Traditional Download Methods
 
@@ -43,7 +48,7 @@ This is the recommended stable release, as it has been thoroughly tested.
 
 [Download the stable release here.](https://github.com/flybywiresim/a32nx/releases/latest/download/flybywiresim-a32nx.zip)
 
-You can see the changelog on the releases page: [View Here.](https://github.com/flybywiresim/a32nx/releases)
+You can view the changelog on the [releases page.](https://github.com/flybywiresim/a32nx/releases)
 
 #### Unstable Master Branch Build
 
@@ -51,11 +56,11 @@ This has the latest features, but is much more unstable, use at your own risk.
 
 [Download developer build here.](https://github.com/flybywiresim/a32nx/releases/download/vmaster/A32NX-master.zip)
 
-[View info about the latest build here.](https://github.com/flybywiresim/a32nx/releases/tag/vmaster)
+[View information regarding the latest build here.](https://github.com/flybywiresim/a32nx/releases/tag/vmaster)
 
 #### Unstable Master Branch Build (with custom autopilot)
 
-This version is the same as the regular master/development version, but with the W.I.P. custom fly-by-wire, autopilot and autothrust system. Expect issues with autopilot, engines, autothrust and the PFD if you intend to use this version. No support will be provided via Discord.
+This version is the same as the regular master/development version. However, this version comes with the (work in progress) custom fly-by-wire, autopilot and autothrust system. **Expect issues with autopilot, engines, autothrust and the PFD if you intend to use this version.** No support will be provided via Discord.
 
 [Download custom autopilot development build here.](https://api.flybywiresim.com/api/v1/download?url=https://flybywiresim-packages.b-cdn.net/vmaster-cfbw-cap/A32NX-master-cfbw-cap.zip)
 
@@ -70,24 +75,24 @@ Open the zip that you downloaded from one of the links above, and drag the A32NX
 See below for the location of your Community folder:
 
 For the Microsoft Store edition AND/OR Gamepass edition:
-- Copy the "A32NX" folder into your community package folder. The folder is located in:
+- Copy the "A32NX" folder into your community package folder. The path is:
 `C:\Users\[YOUR USERNAME]\AppData\Local\Packages\Microsoft.FlightSimulator_<RANDOMLETTERS>\LocalCache\Packages\Community`.
 
 For the Steam edition:
-- Copy the "A32NX" folder into your community package folder. The folder is located in:
+- Copy the "A32NX" folder into your community package folder. The path is:
 `C:\Users\[YOUR USERNAME]\AppData\Roaming\Microsoft Flight Simulator\Packages\Community`.
 
 For the Boxed edition:
-- Copy the "A32NX" folder into your community package folder. The folder is located in:
+- Copy the "A32NX" folder into your community package folder. The path is:
 `C:\Users\[YOUR USERNAME]\AppData\Local\MSFSPackages\Community`.
 
 If the above methods do not work:
-- You can find your community folder by going into FS2020 general options and enabling developer mode. You will see a menu appear on top. Go to tools and virtual file system. Click on watch bases and your community folder will be listed in one of the folders.
-- Please make sure you're copying the "A32NX" folder into your community package folder, NOT the "flybywiresim-a32nx" folder.
+- You can find your community folder by going into FS2020 general options and enabling developer mode. Once enabled, you will notice a bar pop up at the top of your screen. Go to tools and virtual file system. Click on watch bases and your community folder will be listed in one of the folders.
+- Please make sure you're copying the "A32NX" folder into your community package folder, **NOT** the "flybywiresim-a32nx" folder.
 
 ## Contributing
 
-See [Contributing.md](.github/Contributing.md)
+If you would like to contribute to the project, see [Contributing.md](.github/Contributing.md)
 
 ## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the master branch)
 
@@ -116,11 +121,11 @@ Any other original works found to be not explicitly covered by the above definit
 
 **Q: Can I download the aircraft in the current state?**
 
-A: Yes, please seek [Downloads](#Downloads).
+A: Yes, see [downloads.(#Downloads)
 
 **Q: Where is the plane in-sim?**
 
-A: The mod is added on top of the default A320neo from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
+A: The mod is now separate from the base A320neo aircraft and will show up as a new aircraft under the name "FlyByWire Simulations A320neo (LEAP)". If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder (paths for all editions are above).
 
 **Q: What are the liveries available?**
 
@@ -144,8 +149,8 @@ A: No, it is a completely free aircraft, open-source.
 
 **Q: How do we report bugs?**
 
-A: You can report bugs to us via the [#help channel](https://discord.gg/snueqJjDUN). Addtionally, you can start/create a GitHub issue (please make sure your issue is not already known and the same as another user). 
+A: You can report bugs to us via the [#help channel](https://discord.gg/snueqJjDUN) in the Discord server. Addtionally, you can start/create a GitHub issue (please make sure your issue doesn't already exist). 
 
 **Q: Why is my version not the same as what I see others using?**
 
-A: We have two versions, the Stable and Developer (Master). The Stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The Developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time. If you find this to be the case, you can report these issues in [#help](https://discord.gg/snueqJjDUN) in Discord or via GitHub Issues (check there is not an existing issue of the same nature as yours).
+A: We have two versions, the Stable and Developer (Master). The Stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The Developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time. If you find this to be the case, you can report these issues in the [#help channel](https://discord.gg/snueqJjDUN) Discord or via GitHub Issues (check there is not an existing issue of the same nature as yours).
