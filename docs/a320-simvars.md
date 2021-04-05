@@ -1,8 +1,8 @@
 # A320neo Local SimVars
 
 - A32NX_NO_SMOKING_MEMO
-    - Boolean that determines whether the NO SMOKING annunciation should be visible on the ECAM memo
-    - Also is used for knowing when to play the NO SMOKING chime sound
+    - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM
+    - Also is used for knowing when to play the no smoking chime sound
 
 - A32NX_ADIRS_PFD_ALIGNED
     - Bool
@@ -29,20 +29,25 @@
 - A32NX_BRAKE_TEMPERATURE_{1,2,3,4}
     - celsius
     - represents the brake temperature of the rear wheels
+
 - A32NX_REPORTED_BRAKE_TEMPERATURE_{1,2,3,4}
     - celsius
     - represents the reported brake temperature of the rear wheels by the sensor.
-    - It can be different from the brake temperature when the brake fan has been used, because the brake fan will cool the sensor more than the brakes 
+    - It can be different from the brake temperature when the brake fan has been used, because the brake fan will cool the sensor more than the brakes
 	- (which have much more energy to dissipate) therefore giving potentially erroneous readings that the pilots must take into account
+
 - A32NX_BRAKE_FAN
 	- boolean
 	- whether or not the brake fan is running (brake fan button pressed AND left main landing gear down and locked)
+
 - A32NX_BRAKE_FAN_BTN_PRESSED
 	- boolean
 	- whether or not the brake fan button is pressed
+
 - A32NX_BRAKES_HOT
     - boolean
     - whether one of the brakes are hot (>300°C)
+
 - XMLVAR_Auto
     - Used in the `.flt` files to set a default value for the ATC 3 way switch on the TCAS panel
     - Maps to the `I:XMLVAR_Auto` variable which is the actual backing var for the switch
@@ -50,22 +55,6 @@
 - XMLVAR_ALT_MODE_REQUESTED
     - Used in the `.flt` files to set a default value for the ALT RPTG 2 way switch on the TCAS panel
     - Maps to the `I:XMLVAR_ALT_MODE_REQUESTED` variable which is the actual backing var for the switch
-
-- A32NX_ELEC_COMMERCIAL_TOGGLE
-    - Bool
-    - True if electrical commercial push button on
-
-- A32NX_ELEC_COMMERCIAL_FAULT
-    - Bool
-    - True if fault in electrical commercial system
-
-- A32NX_ELEC_GALYCAB_TOGGLE
-    - Bool
-    - True if electrical galy & cab push button on
-
-- A32NX_ELEC_GALYCAB_FAULT
-    - Bool
-    - True if fault in electrical galy & cab system
 
 - A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position
     - Position (0-2)
@@ -382,53 +371,9 @@
     - Percent
     - The APU's rotations per minute in percentage of the maximum RPM
 
-- A32NX_APU_MASTER_SW_ACTIVATED
-    - Bool
-    - True when the APU MASTER SW is activated
-
-- A32NX_APU_START_ACTIVATED
-    - Bool
-    - True when the APU START push button is activated
-
-- A32NX_APU_GEN_VOLTAGE:
-    - Volts
-    - The electric potential made available by the APU generator
-
-- A32NX_APU_GEN_VOLTAGE_NORMAL:
-    - Bool
-    - Indicates if the APU generator potential is within the normal range
-
-- A32NX_APU_GEN_AMPERAGE:
-    - Amperes
-    - The electric current made available by the APU generator
-
-- A32NX_APU_GEN_FREQ
-    - Hertz
-    - The alternating current frequency of the electric current made available by the APU generator
-
-- A32NX_APU_GEN_FREQ_NORMAL
-    - Bool
-    - Indicates if the APU generator output frequency is within the normal range
-
-- A32NX_APU_START_CONTACTOR_ENERGIZED
-    - Bool
-    - Indicates if the APU START contactor is energized
-
 - A32NX_APU_BLEED_AIR_VALVE_OPEN
     - Bool
     - Indicates if the APU bleed air valve is open
-
-- A32NX_APU_BLEED_FAULT
-    - Bool
-    - Indicates if the APU BLEED FAULT light should be illuminated
-
-- A32NX_APU_BLEED_ON
-    - Bool
-    - Indicates if the APU BLEED is ON
-
-- A32NX_APU_MASTER_FAULT
-    - Bool
-    - Indicates if the MASTER SW FAULT light should be illuminated
 
 - A32NX_APU_LOW_FUEL_PRESSURE_FAULT
     - Bool
@@ -450,13 +395,9 @@
     - Percent
     - Indicates the percentage the APU air intake flap is open
 
-- A32NX_APU_FLAP_ECAM_OPEN
-    - Bool
-    - Indicates if the APU air intake flap should be indicated as open on the APU ECAM
-
 - A32NX_FIRE_BUTTON_APU
     - Bool
-    - Indicates if the APU fire button is released
+    - Indicates if the APU fire button is RELEASED
 
  - A32NX_RMP_L_TOGGLE_SWITCH
     - Boolean
@@ -509,3 +450,321 @@
 - A32NX_ENG_OUT_ACC_ALT
     - feet
     - The engine out acceleration altitude, set in the PERF TAKE OFF page.
+
+- A32NX_SLIDES_ARMED
+    - Boolean
+    - Indicates whether the door slides are armed or not
+
+- A32NX_RAIN_REPELLENT_RIGHT_ON
+    -Bool
+    -True if rain repellent is activated on the right windshield.
+
+- A32NX_RAIN_REPELLENT_LEFT_ON
+    -Bool
+    -True if rain repellent is activated on the left windshield.
+
+- A32NX_RCDR_TEST
+    -Bool
+    -True if RCDR being tested.
+
+- A32NX_RADAR_MULTISCAN_AUTO
+    -Bool
+    -True if multiscan switch is set to AUTO.
+
+- A32NX_RADAR_GCS_AUTO
+    -Bool
+    -True if GCS switch is set to AUTO.
+
+-A32NX_OXYGEN_MASKS_DEPLOYED
+    -Bool
+    -True if cabin oxygen masks have been deployed.
+
+-A32NX_RCDR_GROUND_CONTROL_ON
+    -Bool
+    -True if ground control is on.
+
+-A32NX_EMERELECPWR_MAN_ON
+    -Bool
+    -True if Ram Air Turbine has been manually deployed.
+
+-A32NX_EMERELECPWR_GEN_TEST
+    -Bool
+    -True if emergency generator is being tested.
+
+-A32NX_OXYGEN_PASSENGER_LIGHT_ON
+    -Bool
+    -True if cabin oxygen mask doors open.
+
+-A32NX_OXYGEN_TMR_RESET
+    -Bool
+    -True if oxygen timer is being reset.
+
+-A32NX_OXYGEN_TMR_RESET_FAULT
+    -Bool
+    -True if fault with oxygen timer.
+
+-A32NX_APU_AUTOEXITING_RESET
+    -Bool
+    -True if APU autoexiting is being reset.
+
+-A32NX_ELT_TEST_RESET
+    -Bool
+    -True if ELT is being tested/reset.
+
+-A32NX_ELT_ON
+    -Bool
+    -True if ELT is on.
+
+-A32NX_DLS_ON
+    -Bool
+    -True if data loading selector is on.
+
+-A32NX_CREW_HEAD_SET
+    -Bool
+    -True if CVR crew head set is being pressed.
+
+-A32NX_SVGEINT_OVRD_ON
+    -Bool
+    -True if SVGE INT OVRD is on.
+
+-A32NX_AVIONICS_COMPLT_ON
+    -Bool
+    -True if avionics comp lt is on.
+
+-A32NX_CARGOSMOKE_FWD_DISCHARGED
+    -Bool
+    -True if cargosmoke one bottle is discharged
+
+-A32NX_CARGOSMOKE_AFT_DISCHARGED
+    -Bool
+    -True if cargosmoke two bottle is discharged
+
+-A32NX_AIDS_PRINT_ON
+    -Bool
+    -True if AIDS print is on.
+
+-A32NX_DFDR_EVENT_ON
+    -Bool
+    -True if DFDR event is on.
+
+-A32NX_APU_AUTOEXITING_TEST_ON
+    -Bool
+    -True if APU AUTOEXITING is being tested.
+
+-A32NX_APU_AUTOEXITING_TEST_OK
+    -Bool
+    -True if APU AUTOEXITING TEST returns OK.
+
+- A32NX_OVHD_{name}_PB_IS_AVAILABLE
+    - Bool
+    - True when the push button's AVAIL light should illuminate
+    - {name}
+        - APU_START
+
+- A32NX_OVHD_{name}_PB_HAS_FAULT
+    - Bool
+    - Indicates if the push button's FAULT light should illuminate
+    - {name}
+        - APU_MASTER_SW
+        - ELEC_BAT_10
+        - ELEC_BAT_11
+        - ELEC_IDG_1
+        - ELEC_IDG_2
+        - ELEC_ENG_GEN_1
+        - ELEC_ENG_GEN_2
+        - ELEC_AC_ESS_FEED
+        - ELEC_GALY_AND_CAB
+        - PNEU_APU_BLEED
+
+- A32NX_OVHD_{name}_PB_IS_AUTO
+    - Bool
+    - True when the push button is AUTO
+    - {name}
+        - ELEC_BAT_10
+        - ELEC_BAT_11
+        - ELEC_BUS_TIE_PB
+        - ELEC_GALY_AND_CAB
+
+- A32NX_OVHD_{name}_PB_IS_RELEASED
+    - Bool
+    - True when the push button is RELEASED
+    - {name}
+        - ELEC_IDG_1
+        - ELEC_IDG_2
+
+- A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL
+    - Bool
+    - True when the AC ESS FEED push button is NORMAL
+
+- A32NX_OVHD_{name}_PB_IS_ON
+    - Bool
+    - True when the push button is ON
+    - {name}
+        - APU_START
+        - APU_MASTER_SW
+        - ELEC_COMMERCIAL
+        - PNEU_APU_BLEED
+
+- A32NX_ELEC_CONTACTOR_{name}_IS_CLOSED
+    - Bool
+    - True when the contactor is CLOSED
+    - {name}
+        - 1PC1: DC BAT BUS feed contactor between DC BUS 1 and DC BAT BUS
+        - 1PC2: DC BAT BUS feed contactor between DC BUS 2 and DC BAT BUS
+        - 2XB1: Contactor between battery 1 and the static inverter
+        - 2XB2: Contactor between battery 2 and the DC ESS BUS
+        - 3XC1: AC ESS feed contactor between AC BUS 1 and AC ESS BUS
+        - 3XC2: AC ESS feed contactor between AC BUS 2 and AC ESS BUS
+        - 3PE: Transformer rectifier ESS contactor between TR ESS and DC ESS BUS
+        - 2XE: Emergency generator contactor
+        - 3XG: External power contactor
+        - 3XS: APU generator contactor
+        - 4PC: Contactor between DC BAT BUS and DC ESS BUS
+        - 5PU1: Transformer rectifier 1 contactor between TR1 and DC BUS 1
+        - 5PU2: Transformer rectifier 2 contactor between TR2 and DC BUS 2
+        - 6PB1: Battery 1 contactor
+        - 6PB2: Battery 2 contactor
+        - 8PH: DC ESS SHED contactor
+        - 8XH: AC ESS SHED contactor
+        - 9XU1: Engine generator line contactor 1
+        - 9XU2: Engine generator line contactor 2
+        - 11XU1: AC BUS tie 1 contactor
+        - 11XU2: AC BUS tie 2 contactor
+        - 15XE1: Contactor between AC ESS BUS and TR ESS + EMER GEN
+        - 15XE2: Contactor between the static inverter and AC ESS BUS
+        - 10KA_AND_5KA: The two contactors leading to the APU start motor
+
+- A32NX_ELEC_CONTACTOR_{name}_SHOW_ARROW_WHEN_CLOSED
+    - Bool
+    - True when the arrow from the battery to the battery bus or vice versa needs to be displayed
+      when the contactor is closed.
+    - {name}
+        - 6PB1: Battery 1 contactor
+        - 6PB2: Battery 2 contactor
+
+- A32NX_ELEC_{name}_BUS_IS_POWERED
+    - Bool
+    - True when the given bus is powered
+    - {name}
+        - AC_1
+        - AC_2
+        - AC_ESS
+        - AC_ESS_SHED
+        - AC_STAT_INV
+        - DC_1
+        - DC_2
+        - DC_ESS
+        - DC_ESS_SHED
+        - DC_BAT
+        - DC_HOT_1
+        - DC_HOT_2
+
+
+- A32NX_ELEC_{name}_POTENTIAL
+    - Volts
+    - The electric potential of the given element
+    - {name}
+        - APU_GEN_1
+        - ENG_GEN_1
+        - ENG_GEN_2
+        - EXT_PWR
+        - STAT_INV
+        - EMER_GEN
+        - TR_1
+        - TR_2
+        - TR_3: TR ESS
+        - BAT_10: Battery 1
+        - BAT_11: Battery 2
+
+- A32NX_ELEC_{name}_POTENTIAL_NORMAL
+    - Bool
+    - Indicates if the potential is within the normal range
+    - {name}
+        - APU_GEN_1
+        - ENG_GEN_1
+        - ENG_GEN_2
+        - EXT_PWR
+        - STAT_INV
+        - EMER_GEN
+        - TR_1
+        - TR_2
+        - TR_3: TR ESS
+        - BAT_10: Battery 1
+        - BAT_11: Battery 2
+
+- A32NX_ELEC_{name}_FREQUENCY:
+    - Hertz
+    - The frequency of the alternating current of the given element
+    - {name}
+        - APU_GEN_1
+        - ENG_GEN_1
+        - ENG_GEN_2
+        - EXT_PWR
+        - STAT_INV
+        - EMER_GEN
+
+- A32NX_ELEC_{name}_FREQUENCY_NORMAL
+    - Hertz
+    - Indicates if the frequency is within the normal range
+    - {name}
+        - APU_GEN_1
+        - ENG_GEN_1
+        - ENG_GEN_2
+        - EXT_PWR
+        - STAT_INV
+        - EMER_GEN
+
+- A32NX_ELEC_{name}_LOAD
+    - Percent
+    - The load the generator is providing compared to its maximum
+    - {name}
+        - APU_GEN_1
+        - ENG_GEN_1
+        - ENG_GEN_2
+
+- A32NX_ELEC_{name}_LOAD_NORMAL
+    - Percent
+    - Indicates if the load is within the normal range
+    - {name}
+        - APU_GEN_1
+        - ENG_GEN_1
+        - ENG_GEN_2
+
+- A32NX_ELEC_{name}_CURRENT
+    - Ampere
+    - The electric current flowing through the given element
+    - {name}
+        - TR_1
+        - TR_2
+        - TR_3: TR ESS
+        - BAT_10: Battery 1 (negative when discharging, positive when charging)
+        - BAT_11: Battery 2 (negative when discharging, positive when charging)
+
+- A32NX_ELEC_{name}_CURRENT_NORMAL
+    - Ampere
+    - Indicates if the current is within the normal range
+    - {name}
+        - TR_1
+        - TR_2
+        - TR_3: TR ESS
+        - BAT_10: Battery 1
+        - BAT_11: Battery 2
+
+- A32NX_ELEC_ENG_GEN_{number}_IDG_OIL_OUTLET_TEMPERATURE
+    - Celsius
+    - The integrated drive generator's oil outlet temperature
+    - {number}
+        - 1
+        - 2
+
+- A32NX_ELEC_ENG_GEN_{number}_IDG_IS_CONNECTED
+    - Bool
+    - Indicates if the given integrated drive generator is connected
+    - {number}
+        - 1
+        - 2
+
+- A32NX_FMGC_FLIGHT_PHASE
+    - Enum
+    - Holds the FMGCs current flight phase
+    - Use FMGC_FLIGHT_PHASES to check for phases (import NXFMGCFlightPhases from A32NX_Utils)

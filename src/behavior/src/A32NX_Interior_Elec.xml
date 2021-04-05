@@ -1,21 +1,3 @@
-<!--
-  ~ A32NX
-  ~ Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
-  ~
-  ~ This program is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  -->
-
 <ModelBehaviors>
     <Template Name="FBW_Airbus_APU_Generator_Switch">
         <DefaultTemplateParameters>
@@ -41,7 +23,7 @@
         <UseTemplate Name="FBW_Push_Toggle">
             <LEFT_SINGLE_CODE>(&gt;K:TOGGLE_ALTERNATOR#ID#)</LEFT_SINGLE_CODE>
 
-            <SEQ1_CODE>(A:GENERAL ENG MASTER ALTERNATOR:#ID#, bool) (A:GENERAL ENG PCT MAX RPM:#ID#, Percent) 1 &lt; and</SEQ1_CODE>
+            <SEQ1_CODE>(L:A32NX_OVHD_ELEC_ENG_GEN_#ID#_PB_HAS_FAULT, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(A:GENERAL ENG MASTER ALTERNATOR:#ID#, Bool) !</SEQ2_CODE>
 
             <DOWN_CODE>(A:GENERAL ENG MASTER ALTERNATOR:#ID#, Bool)</DOWN_CODE>
@@ -101,8 +83,16 @@
         </UseTemplate>
 
         <UseTemplate Name="FBW_Push_Toggle">
-            <LEFT_SINGLE_CODE>#BATTERY_BUS_ID# #HOT_BATTERY_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)</LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>
+                #BATTERY_BUS_ID# #HOT_BATTERY_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+                #BATTERY_STATE_CODE# ! if{
+                    0 (&gt;L:A32NX_OVHD_ELEC_BAT_#BATTERY_BUS_ID#_PB_IS_AUTO)
+                } els{
+                    1 (&gt;L:A32NX_OVHD_ELEC_BAT_#BATTERY_BUS_ID#_PB_IS_AUTO)
+                }
+            </LEFT_SINGLE_CODE>
 
+            <SEQ1_CODE>(L:A32NX_OVHD_ELEC_BAT_#BATTERY_BUS_ID#_PB_HAS_FAULT, Bool)</SEQ1_CODE>
             <SEQ2_CODE>#BATTERY_STATE_CODE# !</SEQ2_CODE>
 
             <DOWN_CODE>#BATTERY_STATE_CODE#</DOWN_CODE>

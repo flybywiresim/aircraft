@@ -287,7 +287,7 @@
                     (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
                         (&gt;H:A320_Neo_FCU_AP_INC_FPA)
                     } els{
-                        2 (&gt;K:AP_VS_VAR_INC)
+                        3 (&gt;K:AP_VS_VAR_INC)
                         (&gt;H:A320_Neo_FCU_VS_INC)
                     }
                 </CLOCKWISE_CODE>
@@ -295,7 +295,7 @@
                     (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
                         (&gt;H:A320_Neo_FCU_AP_DEC_FPA)
                     } els{
-                        2 (&gt;K:AP_VS_VAR_DEC)
+                        3 (&gt;K:AP_VS_VAR_DEC)
                         (&gt;H:A320_Neo_FCU_VS_DEC)
                     }
                 </ANTICLOCKWISE_CODE>

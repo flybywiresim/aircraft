@@ -1,0 +1,27 @@
+@font-face {
+  font-family: "AirbusChronometer";
+  src: url("/Fonts/AirbusChronometer.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+svg {
+  position: absolute;
+  width: 256px;
+  height: 256px;
+  background: rgba(5, 40, 80, 0.623);
+}
+
+text {
+  font-family: "AirbusChronometer";
+  fill: rgba(155, 148, 148, 0.911);
+  alignment-baseline: center;
+}
+
+.fontBig {
+  font-size: 65px;
+}
+
+.fontSmall {
+  font-size: 48px;
+}
