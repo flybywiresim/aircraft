@@ -59,11 +59,6 @@ class A32NX_Core {
                 updateInterval: 75,
             },
             {
-                name: 'GroundReference',
-                module: new A32NX_GroundReference(),
-                updateInterval: 50,
-            },
-            {
                 name: 'Speeds',
                 module: new A32NX_Speeds(),
                 updateInterval: 500,
