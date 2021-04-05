@@ -236,6 +236,7 @@
 1. [RMP] Fixed ACP CALL buttons emissive behavior - @ImenesFBW (Imenes)
 1. [TEXTURE] Fixed decal clipping issues on the overhead fuel panel - @ImenesFBW (Imenes)
 1. [TEXTURE] Updated glare shield leather, flyPad holder, tray table, overhead and push-button textures - @MoreRightRudder (Mike)
+1. [MCDU] Progress page shows current flight phase - @Username23-23 (NONAmr2433 #8777)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
