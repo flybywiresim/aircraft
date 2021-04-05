@@ -108,10 +108,15 @@ export const Ground = ({
      */
     const handlePushBackClick = (callBack: () => void, event: React.MouseEvent) => {
         const tugRequest = 'tug-request';
-        if (activeButtons.map((b: StatefulButton) => b.id).includes(tugRequest) && event.currentTarget.id === tugRequest) {
-            setActiveButtons([]);
-            callBack();
-        } else if (activeButtons.map((b: StatefulButton) => b.id).includes(tugRequest)) {
+        if (activeButtons.map((b: StatefulButton) => b.id).includes(tugRequest)) {
+            if (event.currentTarget.id === tugRequest) {
+                setActiveButtons([]);
+                callBack();
+            } else {
+                setActiveButtons([{ id: event.currentTarget.id, state: STATE_ACTIVE }, { id: tugRequest, state: STATE_WAITING }]);
+                callBack();
+            }
+        } else if (event.currentTarget.id === tugRequest) {
             setActiveButtons([{ id: event.currentTarget.id, state: STATE_ACTIVE }, { id: tugRequest, state: STATE_WAITING }]);
             callBack();
         }
