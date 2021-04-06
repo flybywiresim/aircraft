@@ -116,11 +116,11 @@ A: Yes, see [Downloads](#Downloads).
 
 **Q: Where is the plane in-sim?**
 
-A: The mod is added on top of the default A320neo from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
+A: The mod creates a new aircraft in the simulator, you have to select the FlyByWire Simulations - A320neo (LEAP) aircraft. If you want to delete it, you have to delete the folder flybywire-aircraft-a320-neo from your community folder.
 
 **Q: What are the liveries available?**
 
-A: All liveries for the default A320 are compatible with the A32NX Mod. You can download some of your favourite liveries at [Flightsim.to](https://flightsim.to).
+A: The default liveries for the A320 are incompatible with the A32NX mod so they will not work. You can download some compatible liveries from [Flightsim.to](https://flightsim.to) in the A32NX section.
 
 **Q: When will it be released?**
 
