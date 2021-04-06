@@ -860,18 +860,24 @@
                 <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                     <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
                     <ONLY_SEQ1/>
+                    <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                 </UseTemplate>
                 <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                     <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
                     <ONLY_SEQ1/>
+                    <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                 </UseTemplate>
                 <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                     <NODE_ID>PUSH_AUTOPILOT_AUTOLAND_L</NODE_ID>
                     <ONLY_SEQ1/>
+                    <!-- Note there is only a single emissive. Once two emissives are available SEQ1 should use AC ESS SHED, and SEQ 2 should use AC 2. -->
+                    <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                 </UseTemplate>
                 <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                     <NODE_ID>PUSH_AUTOPILOT_AUTOLAND_R</NODE_ID>
                     <ONLY_SEQ1/>
+                    <!-- Note there is only a single emissive. Once two emissives are available SEQ1 should use AC 2, and SEQ 2 should use AC ESS SHED. -->
+                    <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                 </UseTemplate>
             </Component>
 
