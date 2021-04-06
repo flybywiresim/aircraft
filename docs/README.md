@@ -32,16 +32,13 @@
 - ❌ NAV mode being armed might show dashes in the FCU instead of selected HDG
 - ❌ Engine out operations are not yet considered
 - ❌ AP performance when flying turbulence might not be satisfying in all cases
-- ❌ AP is not disconnected due to pilot input (sidestick, rudder) or turbulence
-- ❌ Flare Law has issues with fast raising ground before the runway
-- ❌ LOC* has rare issues capturing the LOC
+- ❌ AP is not disconnected due to turbulence
 
 ##### Engines
 
 - ❌ Realistic start-up procedure is missing
 - ❌ During start, no fuel flow is shown
-- ❌ EWD has issues in correctly displaying N2 > 100
-- ❌ Realistic Descent/ Approach Idle Parameters.
+- ❌ Realistic Descent/ Approach idle parameters / drag.
 
 ##### Autothrust
 
@@ -62,6 +59,8 @@
 - 🔸 Pause and slew detection should be ok now
 - 🔸 Fuel flow is currently always in KG
 - 🔸 Thrust limits are now corrected for air-conditioning and anti-ice yet
+- 🔸 LOC* has has been improved in capturing performance, might still need some tuning
+- 🔸 Flare Law has been improved to handle fast raising ground before the runway; when in 200 ft RA, the ground should in the area of the runway slope, otherwise issues are to be expected
 
 #### Considered solved
 
@@ -75,6 +74,8 @@
 - ✔️ Engagement of AP with FD off is incorrect
 - ✔️ Flight Director (FD) guidance in pitch is not fully satisfying yet
 - ✔️ Fuel used since start is not shown correctly on ECAM fuel page, it's basically 0
+- ✔️ AP is disconnected due to sidestick or rudder input
+- ✔️ EWD has been improved to correctly display N2 > 100
 
 
 ### Sensitivity, dead zones and throttle mapping
