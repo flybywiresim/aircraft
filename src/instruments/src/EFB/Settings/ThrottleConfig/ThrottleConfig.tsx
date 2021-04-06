@@ -41,17 +41,13 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     };
 
     return (
-        <div className="flex flex-row justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className=" rounded-xl py-6">
-                <div className=" flex flex-row w-full top-1/2">
-                    <div className="mb-4 flex flex-col right-0 w-1/2" />
-                </div>
-                <span />
+        <div className="flex flex-col pt-4 pb-20 text-center">
+            <div className="rounded-xl py-6">
+
                 <div className="flex justify-center bg-gray-800 mt-auto mb-8 p-4 w-100">
 
                     <span className="text-lg text-gray-300 mr-2">Reverser On Axis</span>
                     <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversOnAxis(value ? 1 : 0)} />
-                    <div className="flex flex-row-reverse divide-y ml-4 divide-gray-700" />
                     <span>
                         <span className="text-lg text-gray-300 mr-2 ml-2">Dual Axis</span>
                     </span>
@@ -101,7 +97,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                             </div>
                         </div>
                     )}
-                <div className="flex flex-row  " />
 
             </div>
 
