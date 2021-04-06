@@ -1,7 +1,7 @@
 #![cfg(any(target_arch = "wasm32", doc))]
 use a320_systems::A320;
 use msfs::{
-    legacy::{AircraftVariable, NamedVariable, execute_calculator_code},
+    legacy::{execute_calculator_code, AircraftVariable, NamedVariable},
     MSFSEvent,
 };
 use std::collections::HashMap;
@@ -197,7 +197,10 @@ impl ElectricalBusConnection {
     fn update(&mut self, value: f64) {
         let should_be_connected = (value - 1.).abs() < f64::EPSILON;
         if should_be_connected != self.connected {
-            execute_calculator_code::<()>(&format!("{} {} (>K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)", self.from, self.to));
+            execute_calculator_code::<()>(&format!(
+                "{} {} (>K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)",
+                self.from, self.to
+            ));
             self.connected = !self.connected;
         }
     }
