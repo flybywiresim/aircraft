@@ -49,22 +49,29 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 const cone = [Math.PI, 0.92 * Math.PI, 0.88 * Math.PI];
                 const count = [10, 22, 34];
                 const width = 14;
+                const height = 2;
                 this.arcs = [];
                 for (let r = 0; r < rads.length; r++) {
                     const rad = circleRadius * rads[r];
                     let radians = (Math.PI - cone[r]) * 0.5;
+                    const rangeArc = document.createElementNS(Avionics.SVG.NS, "g");
+                    rangeArc.setAttribute("id", `range-arc-${r}`);
                     for (let i = 0; i <= count[r]; i++) {
                         const line = document.createElementNS(Avionics.SVG.NS, "rect");
                         const degrees = (radians / Math.PI) * 180;
-                        line.setAttribute("x", "50");
-                        line.setAttribute("y", (50 + rad).toString());
+                        line.setAttribute("x", `${50 - width / 2}`);
+                        line.setAttribute("y", (50 + rad - height / 2).toString());
                         line.setAttribute("width", width.toString());
-                        line.setAttribute("height", "2");
+                        line.setAttribute("height", height.toString());
                         line.setAttribute("transform", "rotate(" + (-degrees - 90) + " 50 50)");
                         line.setAttribute("fill", "white");
                         this.arcs.push(line);
-                        this.arcRangeGroup.appendChild(line);
+                        rangeArc.appendChild(line);
                         radians += cone[r] / (count[r] + 0.5);
+                    }
+                    this.arcRangeGroup.appendChild(rangeArc);
+                    if (r === 0) {
+                        this.innerRangeArc = rangeArc;
                     }
                     const vec = new Vec2(1, 0.6);
                     vec.SetNorm(rad - 25);
@@ -78,6 +85,47 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 this.addMapRange(this.arcRangeGroup, 50 + vec.x, 50 - vec.y, "#00FFFF", "18", false, 1.0, true);
                 this.addMapRange(this.arcRangeGroup, 50 - vec.x, 50 - vec.y, "#00FFFF", "18", false, 1.0, true);
             }
+
+            {
+                const rads = [0.25, 0.125]; // ND range = 10 NM, 20 NM
+                const count = 5;
+                const height = 8;
+                const width = 2;
+                this.tcasRangeArcs = [];
+
+                for (let r = 0; r < rads.length; r++) {
+                    let angle = 120; // 10 o'clock
+                    const increment = 30; // 1 hour
+                    const rad = circleRadius * rads[r];
+                    const tcasRange = document.createElementNS(Avionics.SVG.NS, "g");
+                    tcasRange.setAttribute("id", `tcas-range-${r}`);
+                    for (let i = 0; i < count; i++) {
+                        const line = document.createElementNS(Avionics.SVG.NS, "rect");
+                        line.setAttribute("x", `${50 - width / 2}`);
+                        line.setAttribute("y", `${50 + rad - height / 2}`);
+                        line.setAttribute("width", width.toString());
+                        line.setAttribute("height", height.toString());
+                        line.setAttribute("transform", `rotate(${angle} 50 50)`);
+                        line.setAttribute("fill", "white");
+                        tcasRange.appendChild(line);
+                        angle += increment;
+                    }
+                    this.arcRangeGroup.appendChild(tcasRange);
+                    this.tcasRangeArcs.push(tcasRange);
+                }
+            }
+
+            /*for (let i = 0; i < 8; i++) {
+                    const line = document.createElementNS(Avionics.SVG.NS, "rect");
+                    line.setAttribute("x", "498");
+                    line.setAttribute("y", fastToFixed(500 + 166 - majorTickLength / 2, 0));
+                    line.setAttribute("width", "4");
+                    line.setAttribute("height", fastToFixed(majorTickLength, 0));
+                    line.setAttribute("transform", "rotate(" + fastToFixed(i * 45, 0) + " 500 500)");
+                    line.setAttribute("fill", "white");
+                    innerGroup.appendChild(line);
+                }*/
+
             this.rotatingCircle = document.createElementNS(Avionics.SVG.NS, "g");
             this.rotatingCircle.setAttribute("id", "RotatingCircle");
             viewBox.appendChild(this.rotatingCircle);
@@ -399,28 +447,57 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 this.addMapRange(this.root, 500 - vec.x, 500 + vec.y, "#00FFFF", "32", false, 0.5, true);
             }
             const innerGroup = document.createElementNS(Avionics.SVG.NS, "g");
-            innerGroup.setAttribute("id", "innerCircle");
+            innerGroup.setAttribute("id", "range-arc-0");
+            this.innerRangeArc = innerGroup;
             this.rotatingCircle.appendChild(innerGroup);
-            {
-                const innerCircle = document.createElementNS(Avionics.SVG.NS, "circle");
-                innerCircle.setAttribute("cx", "500");
-                innerCircle.setAttribute("cy", "500");
-                innerCircle.setAttribute("r", "166");
-                innerCircle.setAttribute("fill", "none");
-                innerCircle.setAttribute("stroke", "white");
-                innerCircle.setAttribute("stroke-width", "4");
-                innerCircle.setAttribute("stroke-dasharray", "8 8");
-                innerGroup.appendChild(innerCircle);
-                /*for (let i = 0; i < 8; i++) {
+            { // inner range marker dashed circle
+                const radius = 166; // px
+                const ticks = 43;
+                const increment = 360 / ticks; // deg
+                const lineSpaceRatio = 0.6;
+                // we cheat here and assume a right angle triangle rather than isosceles
+                const width = radius * Math.tan(increment / 180 * Math.PI) * lineSpaceRatio; // px
+                const height = 4; // px
+
+                let angle = 0;
+                for (let i = 0; i < ticks; i++) {
                     const line = document.createElementNS(Avionics.SVG.NS, "rect");
-                    line.setAttribute("x", "498");
-                    line.setAttribute("y", fastToFixed(500 + 166 - majorTickLength / 2, 0));
-                    line.setAttribute("width", "4");
-                    line.setAttribute("height", fastToFixed(majorTickLength, 0));
-                    line.setAttribute("transform", "rotate(" + fastToFixed(i * 45, 0) + " 500 500)");
+                    line.setAttribute("x", `${500 - width / 2}`);
+                    line.setAttribute("y", `${500 - radius - height / 2}`);
+                    line.setAttribute("width", width.toString());
+                    line.setAttribute("height", height.toString());
+                    line.setAttribute("transform", `rotate(${angle} 500 500)`)
                     line.setAttribute("fill", "white");
                     innerGroup.appendChild(line);
-                }*/
+                    angle += increment;
+                }
+            }
+            { // tcas range ticks
+                const ticks = 12;
+                const increment = 360 / ticks; // deg
+                const width = 4; // px
+                const height = 14; // px
+                const radii = [166, 83];
+                this.tcasRangeArcs = [];
+                for (let r = 0; r < radii.length; r++) {
+                    const radius = radii[r]; // px
+                    const tcasRangeArc = document.createElementNS(Avionics.SVG.NS, "g");
+                    tcasRangeArc.setAttribute("id", `tcas-range-${r}`);
+                    let angle = 0;
+                    for (let i = 0; i < ticks; i++) {
+                        const line = document.createElementNS(Avionics.SVG.NS, "rect");
+                        line.setAttribute("x", `${500 - width / 2}`);
+                        line.setAttribute("y", `${500 - radius - height / 2}`);
+                        line.setAttribute("width", width.toString());
+                        line.setAttribute("height", height.toString());
+                        line.setAttribute("transform", `rotate(${angle} 500 500)`)
+                        line.setAttribute("fill", "white");
+                        tcasRangeArc.appendChild(line);
+                        angle += increment;
+                    }
+                    innerGroup.appendChild(tcasRangeArc);
+                    this.tcasRangeArcs.push(tcasRangeArc);
+                }
             }
             {
                 this.failCircle2 = document.createElementNS(Avionics.SVG.NS, "g");
@@ -843,6 +920,38 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         }
     }
 
+    updateTcasRangeArcs() {
+        // TODO, cache TCAS for a bit?
+        const tcasOn = SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Position", "number") > 0;
+        if (!this.innerRangeArc || !this.tcasRangeArcs || (this._lastDisplayMode === this.displayMode && this._lastMapRange === this.mapRange && this._lastTcasOn === tcasOn && this._lastNavigationMode === this.navigationMode)) {
+            return;
+        }
+        this._lastDisplayMode = this.displayMode;
+        this._lastNavigationMode = this.navigationMode;
+        this._lastMapRange = this.mapRange;
+        this._lastTcasOn = tcasOn;
+
+        if (tcasOn) {
+            if (this.mapRange === 10) {
+                this.innerRangeArc.setAttribute("visibility", "hidden");
+                this.tcasRangeArcs[0].setAttribute("visibility", "visible");
+                this.tcasRangeArcs[1].setAttribute("visibility", "hidden");
+            } else if (this.mapRange === 20) {
+                this.innerRangeArc.setAttribute("visibility", "visible");
+                this.tcasRangeArcs[0].setAttribute("visibility", "hidden");
+                this.tcasRangeArcs[1].setAttribute("visibility", "visible");
+            } else {
+                this.innerRangeArc.setAttribute("visibility", "visible");
+                this.tcasRangeArcs[0].setAttribute("visibility", "hidden");
+                this.tcasRangeArcs[1].setAttribute("visibility", "hidden");
+            }
+        } else {
+            this.innerRangeArc.setAttribute("visibility", "visible");
+            this.tcasRangeArcs[0].setAttribute("visibility", "hidden");
+            this.tcasRangeArcs[1].setAttribute("visibility", "hidden");
+        }
+    }
+
     /**
      * Override `Jet_NDCompass.update` to add additonal update operations
      *
@@ -853,6 +962,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         super.update(_deltaTime);
 
         this.updateNavAid();
+
+        this.updateTcasRangeArcs();
 
         // Update fail last to overwrite every other updates
         this.updateFail();
