@@ -1,0 +1,95 @@
+﻿
+<link rel="stylesheet" href="./A320_Neo_LowerECAM_CRZ.css" />
+
+<script type="text/html" id="LowerECAMCRZTemplate">
+    <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+
+            <text class="PageTitle" x="300" y="20">CRUISE</text>
+
+            <text class="SubTitle" x="50" y="60">ENG</text>
+
+            <!-- ENG center labels -->
+            <text class="Description" x="300" y="70">F.USED</text>
+            <text class="Description SmallText" x="300" y="90">1+2</text>
+            <text id="FuelUsedTotal" class="CRZValue AlignCenter" x="300" y="110" text-anchor="middle">38180</text>
+            <text id="FuelUsedUnit" class="Unit" x="300" y="130">KG</text>
+
+            <path class="WingSym" d="M230 80 l20 -2"></path>
+            <path class="WingSym" d="M370 80 l-20 -2"></path>
+
+            <text class="Description" x="300" y="160">OIL</text>
+            <text class="Unit" x="300" y="180">QT</text>
+
+            <path class="WingSym" d="M230 170 l20 -2"></path>
+            <path class="WingSym" d="M370 170 l-20 -2"></path>
+
+            <text class="Description" x="300" y="220">VIB N1</text>
+            <text class="Description" x="320" y="240">N2</text>
+
+            <path class="WingSym" d="M230 220 l20 -2"></path>
+            <path class="WingSym" d="M370 220 l-20 -2"></path>
+
+            <path class="WingSym" d="M230 240 l20 -2"></path>
+            <path class="WingSym" d="M370 240 l-20 -2"></path>
+
+            <!-- ENG left values -->
+            <text id="FuelUsedLeft" class="CRZValue AlignRight" x="220" y="85">18810</text>
+
+            <text id="OilQuantityLeft" class="CRZValue AlignRight" x="200" y="173">17.</text>
+            <text id="OilQuantityLeftDecimal" class="CRZValueDecimal" x="208" y="174">0</text>
+
+            <text id="VibN1Left" class="CRZValue AlignRight" x="198" y="223">1.</text>
+            <text id="VibN1LeftDecimal" class="CRZValueDecimal" x="208" y="224">0</text>
+            <text id="VibN2Left" class="CRZValue AlignRight" x="198" y="243">0.</text>
+            <text id="VibN2LeftDecimal" class="CRZValueDecimal" x="208" y="244">0</text>
+
+            <!-- ENG right values -->
+            <text id="FuelUsedRight" class="CRZValue AlignLeft" x="380" y="85" text-anchor="start">19370</text>
+
+            <text id="OilQuantityRight" class="CRZValue AlignRight" x="430" y="173">18.</text>
+            <text id="OilQuantityRightDecimal" class="CRZValueDecimal" x="438" y="174">0</text>
+
+            <text id="VibN1Right" class="CRZValue AlignRight" x="430" y="223">0.</text>
+            <text id="VibN1RightDecimal" class="CRZValueDecimal" x="438" y="224">0</text>
+            <text id="VibN2Right" class="CRZValue AlignRight" x="430" y="243">0.</text>
+            <text id="VibN2RightDecimal" class="CRZValueDecimal" x="438" y="244">0</text>
+
+            <!-- AIR Section -->
+            <text class="SubTitle" x="50" y="330">AIR</text>
+
+            <text id="LandingElevationTitle" class="Description" x="330" y="335">LDG ELEV</text>
+            <text id="LandingElevationMode" class="CRZValue AlignRight" x="440" y="335">AUTO</text>
+
+            <text id="LandingElevation" class="CRZValue AlignRight" x="535" y="335">50</text>
+            <text id="LandingElevationUnit" class="Unit" x="560" y="335">FT</text>
+
+            <text class="Description" x="230" y="370">@P</text>
+            <text id="DeltaPressure" class="CRZValue AlignRight" x="300" y="370">8.</text>
+            <text id="DeltaPressureDecimal" class="CRZValueDecimal" x="310" y="370">0</text>
+            <text class="Unit" x="330" y="370">PSI</text>
+
+            <text class="Description" x="515" y="380">CAB V/S</text>
+            <text id="CabinVerticalSpeed" class="CRZValue AlignRight" x="510" y="400">0</text>
+            <text class="Unit" x="555" y="400">FT/MIN</text>
+
+            <text class="Description" x="515" y="450">CAB ALT</text>
+            <text id="CabinAltitude" class="CRZValue AlignRight" x="510" y="470">6850</text>
+            <text class="Unit" x="535" y="470">FT</text>
+
+            <!-- Cabin Temps -->
+            <path class="PlaneSym" d="M 300 410 a 70 70 0 0 0 -30 -5 l -180 0 m 30 0 l 0 50 l 85 0 l 0 -10 m 0 10 l 85 0 l 0 -48 m -170 48 l -30 0 c -60 0 -60 -20 -45 -25"></path>
+            <text class="Description SmallText" x="75" y="420">CKPT</text>
+            <text id="CockpitTemp" class="CRZValue SmallText AlignRight" x="90" y="440">-99</text>
+            <text class="Description SmallText" x="165" y="420">FWD</text>
+            <text id="ForwardTemp" class="CRZValue SmallText AlignCenter" x="165" y="440">-99</text>
+            <text class="Description SmallText" x="250" y="420">AFT</text>
+            <text id="AftTemp" class="CRZValue SmallText AlignCenter" x="250" y="440">-99</text>
+            <text class="Unit" x="320" y="450">°C</text>
+
+    </svg>
+    <div id="AGauges" style="position:absolute;left:10%;top:45%;display:flex">
+        <div id="APUGauges"></div>
+    </div>
+</script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_CRZ.js"></script>

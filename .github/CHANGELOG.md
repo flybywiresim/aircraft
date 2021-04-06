@@ -4,6 +4,9 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.7.0
+1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
+
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
@@ -98,9 +101,9 @@
 1. [MISC] Added custom BAT font - @tyler58546 (tyler58546)
 1. [LIGHTS] Fixed runway spawn position for dome light - @Awemeter (Awemeter#7919)
 1. [ENGINE] Ignition Switch should be on "MODE NORM" on the final phase - @Snapmatics (Harry [Z+2]#9872)
-1. [TEXTURE] Updated main landing gear textures - @Inexorable92 (Inexorable)
-1. [MISC] Added brake fan button (with on and hot label) - @Inexorable92 (Inexorable)
-1. [MISC] Better brake cooling simulation (with and without brake fan) - @Inexorable92 (Inexorable)
+1. [TEXTURE] Updated main landing gear textures - @Inexorable95 (Inexorable)
+1. [MISC] Added brake fan button (with on and hot label) - @Inexorable95 (Inexorable)
+1. [MISC] Better brake cooling simulation (with and without brake fan) - @Inexorable95 (Inexorable)
 1. [MISC] Added registration decal - @tyler58546(tyler58546), @DarkOfNova (DarkOfNova)
 1. [OVHD] Implement even more additional overhead button/switch functionality (MASK MAN ON, EMER ELEC PWR MAN ON, Cargo smoke DISCH, etc.) - @ErickSharp (Erick Torres)
 1. [CDU] Fix ILS frequencies not autofilling - @pareil6 (pareil6)
@@ -215,15 +218,30 @@
 1. [ELEC] The BCL opens the contactor when in EMER ELEC and over three minutes have passed with the APU MASTER SW in the ON position - @davidwalschots (David Walschots)
 1. [ELEC] When the battery push button is in the OFF position, the BCL is not powered. This means that any conditions which depend on external factors (such as APU start) or the timers for certain conditions are not remembered - @davidwalschots (David Walschots)
 1. [MISC] Added functionality to the console/floor light switch - @ImenesFBW (Imenes)
+1. [EFB] Added EFB fuel page and refuel logic - @Inexorable95 (Inexorable)
 1. [MCDU] Improved Message compatibility for future features - @MisterChocker (Leon)
 1. [MISC] Fixed default positions of RAM AIR, WX Mode, TCAS ALT RPTG and TCAS THRT switches - @tshomas (Shomas#2719)
 1. [MCDU] Fixed waypoint deletion not showing in TMPY flight plan after SU3 - @pareil6 (pareil6)
 1. [CORE] Fixed bug in altitude constraints calculation code - @SergeySoprykin (SergeyS)
+1. [ECAM] Fixed visual error on COND page when hot air pressure valve was off - @RichardPilbery (tricky_dicky#3571)
 1. [MISC] Fixed ecam page cycling when pressing the all button  - @Saschl (saschl)
 1. [XPDR] Reimplemented XPDR in react, correct the XPDR code entry behavior - @lukecologne (luke)
 1. [MISC] Reimplemented BAT, rudder trim and Clock in react, add elapsed time feature to clock - @lukecologne (luke)
 1. [ND] Add VOR/ADF needles on ARC display mode - @tracernz (Mike)
 1. [ECAM] Visual improvements on ECAM when cabin pressure MODE SEL is set to manual - @mjuhe (Miquel)
+1. [MCDU] Rework PERF APPR page to Honeywell Rev. 2 standard - @tracernz (Mike)
+1. [FLIGHTMDDEL] Minor improvements to flap drag - @donstim (donbikes#4084)
+1. [EFB] Set font of OFP to monospace - @chkgk (Chriskgk#4359)
+1. [SOUND] Added electrical system sounds - @hotshotp (Boris)
+1. [SOUND] General improvements to cockpit and cabin ambience - @hotshotp (Boris)
+1. [MISC] Added custom loading tips - @Armankir (Arman#5297)
+1. [MCDU] Revised Reserve Weight Calculation and Default weight rule-set added - @Lucky38i (Lucky38i)
+1. [RMP] Added integral illumination to RMP volume knobs - @ImenesFBW (Imenes)
+1. [RMP] Fixed ACP CALL buttons emissive behavior - @ImenesFBW (Imenes)
+1. [TEXTURE] Fixed decal clipping issues on the overhead fuel panel - @ImenesFBW (Imenes)
+1. [TEXTURE] Updated glare shield leather, flyPad holder, tray table, overhead and push-button textures - @MoreRightRudder (Mike)
+1. [MCDU] Progress page shows current flight phase - @Username23-23 (NONAmr2433 #8777)
+1. [TEXTURE] Upscaled the external airframe decals to go nicely with the upscaled livery. @FoxinTale (Aubrey)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
@@ -243,6 +261,7 @@
 1. [ECAM/CORE] Improved flap auto-retraction detection - @MisterChocker (Leon)
 1. [CDU] Error messages now print for invalid trip wind delims - @Lucky38i (Lucky38i)
 1. [TEXTURE] Fixed the overlapping text on the chronometer - @DarkOfNova (DarkOfNova)
+1. [SOUND] Made the altitude callouts louder - @hotshotp (Boris)
 
 ## 0.5.1
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 (pareil6)
