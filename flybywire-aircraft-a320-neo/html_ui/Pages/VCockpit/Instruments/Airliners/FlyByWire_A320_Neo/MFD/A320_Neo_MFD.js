@@ -873,6 +873,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
             wa.setAttribute("visibility", "hidden");
         } else {
             wa.setAttribute("visibility", "visible");
+            ws.textContent = (Math.round(windStrength)).toString().padStart(2, '0');
         }
         if (ADIRSState != 2) {
             gs.textContent = "---";
