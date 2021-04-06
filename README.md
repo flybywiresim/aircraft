@@ -70,25 +70,25 @@ This version is the same as the regular master/development version. However, thi
 
 ### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
 
-Open the zip that you downloaded from one of the links above, and drag the A32NX folder inside the zip into your Community folder.
+Open the zip that you downloaded from one of the links above, and drag the```flybywire-aircraft-a320-neo```folder inside the zip into your Community folder.
 
 See below for the location of your Community folder:
 
 For the Microsoft Store edition AND/OR Gamepass edition:
-- Copy the "A32NX" folder into your community package folder. The path is:
+- Copy the "flybywire-aircraft-a320-neo" folder into your community package folder. The path is:
 `C:\Users\[YOUR USERNAME]\AppData\Local\Packages\Microsoft.FlightSimulator_<RANDOMLETTERS>\LocalCache\Packages\Community`.
 
 For the Steam edition:
-- Copy the "A32NX" folder into your community package folder. The path is:
+- Copy the "flybywire-aircraft-a320-neo" folder into your community package folder. The path is:
 `C:\Users\[YOUR USERNAME]\AppData\Roaming\Microsoft Flight Simulator\Packages\Community`.
 
 For the Boxed edition:
-- Copy the "A32NX" folder into your community package folder. The path is:
+- Copy the "flybywire-aircraft-a320-neo" folder into your community package folder. The path is:
 `C:\Users\[YOUR USERNAME]\AppData\Local\MSFSPackages\Community`.
 
 If the above methods do not work:
 - You can find your community folder by going into FS2020 general options and enabling developer mode. Once enabled, you will notice a bar pop up at the top of your screen. Go to tools and virtual file system. Click on watch bases and your community folder will be listed in one of the folders.
-- Please make sure you're copying the "A32NX" folder into your community package folder, **NOT** the "flybywiresim-a32nx" folder.
+- Please make sure you're copying the "flybywire-aircraft-a320-neo" folder into your community package folder, **NOT** the "flybywiresim-a32nx" folder.
 
 ## Contributing
 
