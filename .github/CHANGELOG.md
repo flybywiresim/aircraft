@@ -6,6 +6,7 @@
 
 ## 0.7.0
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
+1. [MCDU] Add hard sign to temp field on PERF APPR, remove FLS/FINAL APP, adjust alignment - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
