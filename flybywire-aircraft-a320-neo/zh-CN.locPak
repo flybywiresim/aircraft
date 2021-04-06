@@ -2,19 +2,19 @@
   "LocalisationPackage": {
     "Language": "zh-CN",
     "Strings": {
-      "AIRCRAFT.DESCRIPTION": "Airbus launched their first A320 in March of 1984. Nearly 26 years later, in 2010, they announced the A320neo (\"new engine option\") as the newest member of the family, to revitalize and sustain their line of world-leading, narrow-body, twin-turbofan airliners.<\/br><\/br>After an extended development process, the A320neo officially entered service in early 2016 with Lufthansa, and quickly became the fastest-selling commercial aircraft ever, with more than 7,000 planes ordered by more than 115 airlines to date.<\/br><\/br>Continuing the tradition established by the original A320, which was the first airliner other than Concorde to use fly-by-wire control for normal operations, the A320neo shares over 95 percent airframe commonality with predecessor models. However, it's the introduction of two new-generation engine types, paired with the company's proprietary 'Sharklet' wing-tips, that really sets the neo apart.<\/br><\/br>Fuel savings, extended range, increased max payload and shortened landing distance; these key advances -- along with a dramatic reduction in noise and CO₂ emissions -- prove why the A320neo is a not only a commercial success, but also a significant step forward on aviation's path to greater environmental responsibility.",
-      "AIRCRAFT.UI_MANUFACTURER": "Airbus",
-      "AIRCRAFT.UI_MODEL": "A320neo",
+      "AIRCRAFT.DESCRIPTION": "空中客车公司（Airbus）于1984年3月推出了第一架A320。近26年后的2010年，他们宣布A320neo（“新发动机选件”）成为家族的最新成员，以振兴和维持其世界领先的产品线，在经过扩展的开发过程之后，A320neo于2016年初在汉莎航空正式服役，并迅速成为有史以来销售最快的商用飞机，迄今为止，已有115多家航空公司订购了7,000架飞机。延续了最初的A320建立的传统，A320是除协和飞机以外的第一架采用电传操纵进行正常运行的客机， A320neo与之前的机型共享95％以上的机身通用性。但是，正是引入了两种新一代发动机类型，再加上该公司专有的“ Sharklet”翼尖，才真正使Neo脱颖而出。有效载荷和缩短的着陆距离；这些重要的进步-以及噪音和CO 2排放量的大幅度减少-证明了A320neo不仅在商业上取得成功，而且在航空业对环境承担更大责任的道路上迈出了重要的一步。",
+      "AIRCRAFT.UI_MANUFACTURER": "FlyByWire Simulations",
+      "AIRCRAFT.UI_MODEL": "A320neo (LEAP)",
       "AIRCRAFT.UI_VARIATION": "Airbus",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "向左调整所选航向(%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "向右调整所选航向(%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU available",
       "A32NX.LOADING.TIPS.A320NEO_001": "FlyByWire A32NX是由数百名个人贡献者合作完成的。",
-      "A32NX.LOADING.TIPS.A320NEO_002": "你知道吗？A320的横风速度可达38节，尾风速度可达15节！A320可以以38节的速度降落。",
+      "A32NX.LOADING.TIPS.A320NEO_002": "你知道吗？A320的降落侧风速度可达38节，尾风速度可达15节!",
       "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire的名字来源于空客A320首次引入的飞线控制。",
       "A32NX.LOADING.TIPS.A320NEO_004": "A320家族飞机共生产9693架! 这几乎和图瓦卢的人口一样多!",
       "A32NX.LOADING.TIPS.A320NEO_005": "空客A320neo飞机的航程为3500NM或6500KM。这足以从纽约飞到巴黎!",
-      "A32NX.LOADING.TIPS.A320NEO_006": "你知道吗？A320家族有4个变种! A318 A319 A320和A321。"
+      "A32NX.LOADING.TIPS.A320NEO_006": "你知道吗？A320家族有4种型号! A318 A319 A320和A321。"
     }
   }
 }

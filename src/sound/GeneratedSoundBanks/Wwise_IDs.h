@@ -197,8 +197,6 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_REVERSER = 3122667437U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_REVERSEREXT = 4070683454U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_REVLEVER = 2646186528U;
-        static const AkUniqueID PLAY_ASOBO_A320_NEO_REVWINDL = 4076237830U;
-        static const AkUniqueID PLAY_ASOBO_A320_NEO_REVWINDR = 4076237848U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_RMPKNOB = 217150766U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_ROLLRATTLE = 276993210U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_ROLLRATTLE2 = 3079676156U;
