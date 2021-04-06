@@ -28,11 +28,11 @@
             "values": [
               {
                 "name": "CRUISE SPEED",
-                "valueStr": "Mach 0.82"
+                "valueStr": "Mach 0.78"
               },
               {
                 "name": "ENGINE",
-                "valueStr": "CFM International LEAP 1A-26"
+                "valueStr": "CFM International LEAP-1A26"
               },
               {
                 "name": "MAX ALTITUDE",
@@ -44,7 +44,7 @@
               },
               {
                 "name": "EMPTY WEIGHT",
-                "valueStr": "44,300 KG"
+                "valueStr": "41,005 KG"
               },
               {
                 "name": "MAX WEIGHT",
@@ -52,7 +52,7 @@
               },
               {
                 "name": "FUEL CAPACITY",
-                "valueStr": "36,730 Litres"
+                "valueStr": "23,723 Litres"
               },
               {
                 "name": "LENGTH",
