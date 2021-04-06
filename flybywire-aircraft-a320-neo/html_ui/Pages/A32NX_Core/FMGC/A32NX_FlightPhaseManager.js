@@ -104,8 +104,8 @@ class A32NX_FlightPhaseManager {
 
             // Try initiate early descent
             if (
-                !!dest && dest.liveDistanceTo > 200 &&
-                fl > 200 &&
+                !!dest && dest.liveDistanceTo >= 200 &&
+                fl > fcuSelFl &&
                 fcuSelFl < 200
             ) {
                 this.changeFlightPhase(FmgcFlightPhases.DESCENT);
