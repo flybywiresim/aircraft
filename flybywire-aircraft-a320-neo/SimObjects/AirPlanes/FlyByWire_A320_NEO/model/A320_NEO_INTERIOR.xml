@@ -3522,7 +3522,8 @@
         <Component ID="SAFETY">
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
                 <LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_WARNING)</LEFT_SINGLE_CODE>
-                <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+                <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
+                <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
                 <VAR_SCOPE>L</VAR_SCOPE>
                 <VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
@@ -3539,7 +3540,8 @@
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
                 <ID>Caution</ID>
                 <LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_CAUTION)</LEFT_SINGLE_CODE>
-                <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+                <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
+                <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
                 <VAR_SCOPE>L</VAR_SCOPE>
                 <VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
@@ -3555,7 +3557,8 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
                 <LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_WARNING)</LEFT_SINGLE_CODE>
-                <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+                <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
+                <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
                 <VAR_SCOPE>L</VAR_SCOPE>
                 <VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
@@ -3572,7 +3575,8 @@
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
                 <ID>Caution</ID>
                 <LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_CAUTION)</LEFT_SINGLE_CODE>
-                <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+                <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
+                <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
                 <VAR_SCOPE>L</VAR_SCOPE>
                 <VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>

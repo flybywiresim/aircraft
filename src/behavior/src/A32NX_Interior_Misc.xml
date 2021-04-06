@@ -482,6 +482,7 @@
             <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
             <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
 
+            <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
             <SEQ1_CODE>(L:A32NX_GPWS_Warning_Active, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(L:A32NX_GPWS_GS_Warning_Active, Bool)</SEQ2_CODE>
             <HOLD_SIMVAR>L:A32NX_GPWS_TEST</HOLD_SIMVAR>

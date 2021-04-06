@@ -381,10 +381,16 @@
             - HOLD_SIMVAR                       <no default>    SimVar to contain the held state
             - SEQ1_CODE                         Not present     Sequence 1 emissive code. If not present, the SEQ1 emissive will also not respond to the ANN LT TEST
             - SEQ2_CODE                         Not present     Sequence 2 emissive code. If not present, the SEQ2 emissive will also not respond to the ANN LT TEST
+            - SEQ_POWERED                       1               Whether SEQ1 and SEQ2 are powered. When unpowered, the emissive won't emit light
+                                                                even when SEQ1_CODE or SEQ2_CODE is true.
+            - SEQ1_POWERED                      1               Whether SEQ1 is powered. When unpowered, the emissive won't emit light
+                                                                even when SEQ1_CODE is true.
+            - SEQ2_POWERED                      1               Whether SEQ2 is powered. When unpowered, the emissive won't emit light
+                                                                even when SEQ2_CODE is true.
             - SEQ1_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ1 emissive drives the visibility of the SEQ1 text
             - SEQ2_EMISSIVE_DRIVES_VISIBILITY   True            If true, SEQ2 emissive drives the visibility of the SEQ2 text
             - INVERTED                          False           Whether or not the switch is OFF by default
-            - LEFT_SINGLE_CODE                  Not preseent    Overrides HOLD_SIMVAR, will execute the specified code when the button is pressed, and when it's released
+            - LEFT_SINGLE_CODE                  Not present    Overrides HOLD_SIMVAR, will execute the specified code when the button is pressed, and when it's released
     -->
     <Template Name="FBW_Push_Held">
         <DefaultTemplateParameters>
@@ -398,6 +404,10 @@
 
             <SEQ1_NODE_ID>#NODE_ID#_SEQ1</SEQ1_NODE_ID>
             <SEQ2_NODE_ID>#NODE_ID#_SEQ2</SEQ2_NODE_ID>
+
+            <SEQ_POWERED>1</SEQ_POWERED>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <SEQ2_POWERED>1</SEQ2_POWERED>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -419,7 +429,7 @@
             <True>
                 <Component ID="#SEQ1_NODE_ID#" Node="#SEQ1_NODE_ID#">
                     <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                        <EMISSIVE_CODE>#SEQ1_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+                        <EMISSIVE_CODE>#SEQ1_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ1_POWERED# and #SEQ_POWERED# and</EMISSIVE_CODE>
 
                         <Condition Valid="SEQ1_EMISSIVE_DRIVES_VISIBILITY">
                             <True>
@@ -435,7 +445,7 @@
             <True>
                 <Component ID="#SEQ2_NODE_ID#" Node="#SEQ2_NODE_ID#">
                     <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                        <EMISSIVE_CODE>#SEQ2_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+                        <EMISSIVE_CODE>#SEQ2_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ2_POWERED# and #SEQ_POWERED# and</EMISSIVE_CODE>
 
                         <Condition Valid="SEQ2_EMISSIVE_DRIVES_VISIBILITY">
                             <True>
