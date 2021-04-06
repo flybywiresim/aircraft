@@ -206,15 +206,25 @@
         </Component>
 
         <Component ID="Pedestal_Fwd">
-            <UseTemplate Name="FBW_Throttle_Lever_Template">
+            <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
                 <NODE_ID>LEVER_THROTTLE_1</NODE_ID>
                 <ANIM_NAME>throttle_lever_0</ANIM_NAME>
+                <ANIM_NAME_REVERSE_LOCK>LEVER_THROTTLE_1_LOCK</ANIM_NAME_REVERSE_LOCK>
                 <ID>1</ID>
+                <DRAG_SPEED>-10</DRAG_SPEED>
+                <POSITION_TYPE>L</POSITION_TYPE>
+                <POSITION_VAR>XMLVAR_Throttle1Position</POSITION_VAR>
+                <TOOLTIPID>TT:COCKPIT.TOOLTIPS.ENG1_THROTTLE_CONTROL</TOOLTIPID>
             </UseTemplate>
-            <UseTemplate Name="FBW_Throttle_Lever_Template">
+            <UseTemplate Name="FBW_ENGINE_Lever_Throttle_Template">
                 <NODE_ID>LEVER_THROTTLE_2</NODE_ID>
                 <ANIM_NAME>throttle_lever_1</ANIM_NAME>
+                <ANIM_NAME_REVERSE_LOCK>LEVER_THROTTLE_2_LOCK</ANIM_NAME_REVERSE_LOCK>
                 <ID>2</ID>
+                <DRAG_SPEED>-10</DRAG_SPEED>
+                <POSITION_TYPE>L</POSITION_TYPE>
+                <POSITION_VAR>XMLVAR_Throttle2Position</POSITION_VAR>
+                <TOOLTIPID>TT:COCKPIT.TOOLTIPS.ENG2_THROTTLE_CONTROL</TOOLTIPID>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
