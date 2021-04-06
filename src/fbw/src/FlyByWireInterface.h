@@ -159,6 +159,10 @@ class FlyByWireInterface {
   ID idAirConditioningPack_1;
   ID idAirConditioningPack_2;
 
+  double thrustLeverAngle_1 = 0.0;
+  double thrustLeverAngle_2 = 0.0;
+  ID idAutothrust_TLA_1;
+  ID idAutothrust_TLA_2;
   ID idAutothrustN1_TLA_1;
   ID idAutothrustN1_TLA_2;
   ID idAutothrustReverse_1;

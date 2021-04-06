@@ -101,7 +101,7 @@
             <EMISSIVE_CODE_ACTIVE>(L:A32NX_FMA_EXPEDITE_MODE, bool)</EMISSIVE_CODE_ACTIVE>
         </UseTemplate>
     </Template>
-    
+
  <Template Name="FBW_AUTOPILOT_Knob_SpeedMach_Template">
 		<DefaultTemplateParameters>
 			<ANIM_NAME>AUTOPILOT_Knob_SpeedMach</ANIM_NAME>
@@ -200,7 +200,8 @@
 
     <Template Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
         <UseTemplate Name="FBW_Push_Held">
-            <HOLD_SIMVAR>K:A32NX.ATHR_INSTINCTIVE_DISCONNECT</HOLD_SIMVAR>
+            <HOLD_SIMVAR>K:AUTO_THROTTLE_ARM</HOLD_SIMVAR>
+            <TOOLTIPID>Disc. A/THR</TOOLTIPID>
         </UseTemplate>
     </Template>
 

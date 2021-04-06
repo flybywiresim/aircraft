@@ -248,6 +248,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idAutothrustThrustLimitType = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE");
   idAutothrustThrustLimit = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT");
+  idAutothrust_TLA_1 = register_named_variable("A32NX_AUTOTHRUST_TLA:1");
+  idAutothrust_TLA_2 = register_named_variable("A32NX_AUTOTHRUST_TLA:2");
   idAutothrustN1_TLA_1 = register_named_variable("A32NX_AUTOTHRUST_TLA_N1:1");
   idAutothrustN1_TLA_2 = register_named_variable("A32NX_AUTOTHRUST_TLA_N1:2");
   idAutothrustReverse_1 = register_named_variable("A32NX_AUTOTHRUST_REVERSE:1");
@@ -344,6 +346,10 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          simData.speed_slot_index == 2};
     simConnectInterface.setClientDataLocalVariables(clientDataLocalVariables);
   }
+
+  // update thrust lever TLA (is done here for performance reasons)
+  thrustLeverAngle_1 = get_named_variable_value(idAutothrust_TLA_1);
+  thrustLeverAngle_2 = get_named_variable_value(idAutothrust_TLA_2);
 
   // detect pause
   if ((simData.simulationTime == previousSimulationTime) || (simData.simulationTime < 0.2)) {
@@ -464,8 +470,8 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.acceleration_altitude_go_around_engine_out =
         get_named_variable_value(idFmgcAccelerationAltitudeGoAroundEngineOut);
     autopilotStateMachineInput.in.data.cruise_altitude = get_named_variable_value(idFmgcCruiseAltitude);
-    autopilotStateMachineInput.in.data.throttle_lever_1_pos = throttleAxis[0]->getTLA();
-    autopilotStateMachineInput.in.data.throttle_lever_2_pos = throttleAxis[1]->getTLA();
+    autopilotStateMachineInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1;
+    autopilotStateMachineInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2;
     autopilotStateMachineInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
     autopilotStateMachineInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
     autopilotStateMachineInput.in.data.zeta_pos = simData.zeta_pos;
@@ -754,8 +760,8 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.acceleration_altitude_go_around = get_named_variable_value(idFmgcAccelerationAltitudeGoAround);
     autopilotLawsInput.in.data.acceleration_altitude_go_around_engine_out =
         get_named_variable_value(idFmgcAccelerationAltitudeGoAroundEngineOut);
-    autopilotLawsInput.in.data.throttle_lever_1_pos = throttleAxis[0]->getTLA();
-    autopilotLawsInput.in.data.throttle_lever_2_pos = throttleAxis[1]->getTLA();
+    autopilotLawsInput.in.data.throttle_lever_1_pos = thrustLeverAngle_1;
+    autopilotLawsInput.in.data.throttle_lever_2_pos = thrustLeverAngle_2;
     autopilotLawsInput.in.data.gear_strut_compression_1 = simData.gear_animation_pos_1;
     autopilotLawsInput.in.data.gear_strut_compression_2 = simData.gear_animation_pos_2;
     autopilotLawsInput.in.data.zeta_pos = simData.zeta_pos;
@@ -904,8 +910,8 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     flyByWireInput.in.data.longitude_deg = simData.longitude_deg;
     flyByWireInput.in.data.engine_1_thrust_lbf = simData.engine_1_thrust_lbf;
     flyByWireInput.in.data.engine_2_thrust_lbf = simData.engine_2_thrust_lbf;
-    flyByWireInput.in.data.thrust_lever_1_pos = throttleAxis[0]->getTLA();
-    flyByWireInput.in.data.thrust_lever_2_pos = throttleAxis[1]->getTLA();
+    flyByWireInput.in.data.thrust_lever_1_pos = thrustLeverAngle_1;
+    flyByWireInput.in.data.thrust_lever_2_pos = thrustLeverAngle_2;
     flyByWireInput.in.data.tailstrike_protection_on = tailstrikeProtectionEnabled;
 
     // process the sidestick handling ---------------------------------------------------------------------------------
@@ -987,15 +993,15 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   }
 
   // set position for 3D animation
-  set_named_variable_value(idThrottlePosition3d_1, idThrottlePositionLookupTable3d.get(throttleAxis[0]->getTLA()));
-  set_named_variable_value(idThrottlePosition3d_2, idThrottlePositionLookupTable3d.get(throttleAxis[1]->getTLA()));
+  set_named_variable_value(idThrottlePosition3d_1, idThrottlePositionLookupTable3d.get(thrustLeverAngle_1));
+  set_named_variable_value(idThrottlePosition3d_2, idThrottlePositionLookupTable3d.get(thrustLeverAngle_2));
 
   // set client data if needed
   if (!autoThrustEnabled || !autopilotStateMachineEnabled || !flyByWireEnabled) {
     ClientDataLocalVariablesAutothrust ClientDataLocalVariablesAutothrust = {
         simConnectInterface.getSimInputThrottles().ATHR_push,
-        throttleAxis[0]->getTLA(),
-        throttleAxis[1]->getTLA(),
+        thrustLeverAngle_1,
+        thrustLeverAngle_2,
         simData.ap_V_c_kn,
         get_named_variable_value(idFmgcV_LS),
         get_named_variable_value(idFmgcV_MAX),
@@ -1054,8 +1060,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.data.OAT_degC = simData.ambient_temperature_celsius;
 
     autoThrustInput.in.input.ATHR_push = simConnectInterface.getSimInputThrottles().ATHR_push;
-    autoThrustInput.in.input.TLA_1_deg = throttleAxis[0]->getTLA();
-    autoThrustInput.in.input.TLA_2_deg = throttleAxis[1]->getTLA();
+    autoThrustInput.in.input.TLA_1_deg = thrustLeverAngle_1;
+    autoThrustInput.in.input.TLA_2_deg = thrustLeverAngle_2;
     autoThrustInput.in.input.V_c_kn = simData.ap_V_c_kn;
     autoThrustInput.in.input.V_LS_kn = get_named_variable_value(idFmgcV_LS);
     autoThrustInput.in.input.V_MAX_kn = get_named_variable_value(idFmgcV_MAX);
@@ -1177,7 +1183,7 @@ bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
   // update simulation variables
   spoilersHandler->setSimulationVariables(
       simData.simulationTime, autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP1 == 1,
-      simData.V_ias_kn, throttleAxis[0]->getTLA(), throttleAxis[1]->getTLA(), simData.gear_animation_pos_1, simData.gear_animation_pos_2);
+      simData.V_ias_kn, thrustLeverAngle_1, thrustLeverAngle_2, simData.gear_animation_pos_1, simData.gear_animation_pos_2);
 
   // check state of spoilers and adapt if necessary
   if (spoilersHandler->getSimPosition() != simData.spoilers_handle_position) {
