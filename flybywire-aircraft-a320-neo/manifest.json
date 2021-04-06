@@ -1,0 +1,15 @@
+{
+  "dependencies": [],
+  "content_type": "AIRCRAFT",
+  "title": "A32NX",
+  "manufacturer": "Airbus",
+  "creator": "FlyByWire Simulations",
+  "package_version": "0.6.0",
+  "minimum_game_version": "1.14.6",
+  "release_notes": {
+    "neutral": {
+      "LastUpdate": "VERSION 0.6.0 RELEASED APRIL 6, 2021\\nInitial Release onto Marketplace",
+      "OlderHistory": ""
+    }
+  }
+}
