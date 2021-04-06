@@ -540,7 +540,7 @@ class FMCMainDisplay extends BaseAirliners {
                 case FmgcFlightPhases.DESCENT: {
                     let speed = this.managedSpeedDescend;
 
-                    if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
+                    if (Math.round(SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") / 10) * 10 < 20 * (speed - this.managedSpeedLimit) + 300 + this.managedSpeedLimitAlt) {
                         speed = Math.min(speed, this.managedSpeedLimit);
                     }
 
