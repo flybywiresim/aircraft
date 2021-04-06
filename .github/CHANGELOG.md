@@ -4,6 +4,9 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.7.0
+1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
+
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
