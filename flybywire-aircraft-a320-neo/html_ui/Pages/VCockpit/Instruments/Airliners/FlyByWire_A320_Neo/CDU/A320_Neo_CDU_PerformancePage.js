@@ -720,7 +720,7 @@ class CDUPerformancePage {
 
         let tempCell = "[\xa0]°[color]cyan";
         if (isFinite(mcdu.perfApprTemp)) {
-            tempCell = ("" + mcdu.perfApprTemp.toFixed(0)).padStart(3).replace(/ /g, "\xa0") + "°[color]cyan";
+            tempCell = (mcdu.perfApprTemp >= 0 ? "+" : "-") + ("" + Math.abs(mcdu.perfApprTemp).toFixed(0)).padStart(2).replace(/ /g, "\xa0") + "°[color]cyan";
         } else if (closeToDest) {
             tempCell = "___°[color]amber";
         }
@@ -819,16 +819,6 @@ class CDUPerformancePage {
             };
         }
 
-        let finalAppCell = "";
-        if (!isILS) {
-            finalAppCell = "{cyan}FINAL APP/{end}{small}{inop}FLS*{end}{end}";
-        }
-        mcdu.onRightInput[0] = () => {
-            if (!isILS) {
-                mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
-            }
-        };
-
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
         let titleColor = "white";
@@ -868,7 +858,7 @@ class CDUPerformancePage {
         mcdu.setTemplate([
             /* t  */[`{${titleColor}}APPR{end}${finalCell}`],
             /* 1l */["QNH"],
-            /* 1L */[qnhCell, finalAppCell],
+            /* 1L */[qnhCell],
             /* 2l */["TEMP", "BARO"],
             /* 2L */[tempCell, baroCell + "[color]cyan", "O=" + cleanCell],
             /* 3l */["MAG WIND", radioLabel],
