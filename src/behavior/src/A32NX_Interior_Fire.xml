@@ -37,6 +37,7 @@
             <LEFT_SINGLE_CODE/>
             <ANIM_DURATION>0.3</ANIM_DURATION>
             <TOGGLE_VAR>L:A32NX_FIRE_BUTTON_#TYPE##ID#</TOGGLE_VAR>
+            <EMISSIVE_POWERED>1</EMISSIVE_POWERED>
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
 
@@ -61,7 +62,7 @@
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                <EMISSIVE_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (A:ENG ON FIRE:#ID#, Bool) 1 == or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or </EMISSIVE_CODE>
+                <EMISSIVE_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (A:ENG ON FIRE:#ID#, Bool) 1 == or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #EMISSIVE_POWERED# and</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">

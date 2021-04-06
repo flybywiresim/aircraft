@@ -2392,6 +2392,12 @@
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG1</NODE_ID>
+                            <!--
+                                The real fire button contains many lights, these lights are powered by different buses.
+                                This is currently unsupported by our fire button implementation. Thus we'll turn on the lights
+                                if any of the buses is powered.
+                            -->
+                            <EMISSIVE_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or</EMISSIVE_POWERED>
                         </UseTemplate>
                     </Component>
 
@@ -2430,6 +2436,12 @@
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG2</NODE_ID>
+                            <!--
+                                The real fire button contains many lights, these lights are powered by different buses.
+                                This is currently unsupported by our fire button implementation. Thus we'll turn on the lights
+                                if any of the buses is powered.
+                            -->
+                            <EMISSIVE_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or</EMISSIVE_POWERED>
                         </UseTemplate>
                     </Component>
 
@@ -2454,6 +2466,12 @@
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                             <NODE_ID>PUSH_OVHD_FIRE_APU</NODE_ID>
+                            <!--
+                                The real fire button contains many lights, these lights are powered by different buses.
+                                This is currently unsupported by our fire button implementation. Thus we'll turn on the lights
+                                if any of the buses is powered.
+                            -->
+                            <EMISSIVE_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) or</EMISSIVE_POWERED>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_GUARD">
                             <NODE_ID>LOCK_OVHD_APU</NODE_ID>
