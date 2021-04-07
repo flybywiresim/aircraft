@@ -175,14 +175,14 @@
         </Component>
         <Component ID="#NODE_ID_HOT#" Node="#NODE_ID_HOT#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <EMISSIVE_CODE>(L:A32NX_BRAKES_HOT, Bool) 1 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(L:A32NX_BRAKES_HOT, Bool) 1 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) and</EMISSIVE_CODE>
                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
             </UseTemplate>
         </Component>
         <Component ID="#NODE_ID_ON#" Node="#NODE_ID_ON#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                (L:A32NX_BRAKE_FAN, Bool) 1 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                (L:A32NX_BRAKE_FAN, Bool) 1 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) and
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
