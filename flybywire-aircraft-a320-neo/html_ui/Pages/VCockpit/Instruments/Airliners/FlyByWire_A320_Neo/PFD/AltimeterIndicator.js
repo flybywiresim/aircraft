@@ -551,10 +551,10 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         const phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
 
         // Default TA is 18,000. Will removed with other PR
-        if (SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number") == 0) {
+        if (SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number") === 0) {
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
         }
-        if (SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number") == 0) {
+        if (SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number") === 0) {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
         }
 
