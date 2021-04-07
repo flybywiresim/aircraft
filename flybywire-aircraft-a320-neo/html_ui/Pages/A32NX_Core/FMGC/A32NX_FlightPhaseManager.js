@@ -95,7 +95,7 @@ class A32NX_FlightPhaseManager {
             const dest = this.fmc.flightPlanManager.getDestination();
             // Try initiate descent
             if (
-                (!!dest && dest.liveDistanceTo < 200 || !dest) &&
+                (!!dest && dest.liveDistanceTo <= 200 || !dest) &&
                 fcuSelFl < this.fmc.cruiseFlightLevel
             ) {
                 this.changeFlightPhase(FmgcFlightPhases.DESCENT);
