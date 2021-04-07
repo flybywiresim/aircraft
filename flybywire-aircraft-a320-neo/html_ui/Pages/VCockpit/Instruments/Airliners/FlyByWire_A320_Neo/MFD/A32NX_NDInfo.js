@@ -144,19 +144,6 @@ class Jet_MFD_NDInfo extends HTMLElement {
             }
             const smoothedAngle = Utils.SmoothSin(startAngle, endAngle, 0.25, this._dTime);
             this.currentWindAngle = smoothedAngle % 360;
-            if (this.windDirection != null) {
-                if (windStrongEnough) {
-                    this.windDirection.textContent = this.currentWindAngle.toFixed(0).padStart(3, "0");
-                } else {
-                    this.windDirection.textContent = "---";
-                }
-            }
-        }
-        if (refreshWindStrength) {
-            this.currentWindStrength = _windStrength;
-            if (this.windStrength != null) {
-                this.windStrength.textContent = this.currentWindStrength.toString().padStart(2, "0");
-            }
         }
         if (refreshWindArrow) {
             this.currentPlaneAngle = _planeAngle;
