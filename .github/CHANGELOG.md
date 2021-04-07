@@ -5,6 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.7.0
+1. [DISPLAYS] RMP backlight, ATC and RTPI font color and backlight - @github username (Marcman86)
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
 
 ## 0.6.0
