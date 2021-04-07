@@ -18,7 +18,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         return null;
     }
 
-    const dualAxis: string = NXDataStore.get('dualAxis', '0');
+    const dualAxis: string = NXDataStore.get('dualAxis', '0') | '0';
     const [isDualAxis, setDualAxis] = useState(dualAxis);
 
     const [selectedIndex, setSelectedIndex] = useState(0);
@@ -98,7 +98,6 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 >
                     Reverse Idle
                 </SelectItem>
-
                 <SelectItem
                     classNames={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
                     onSelect={() => {
@@ -115,10 +114,10 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
     );
 
     return (
-        <div className="flex flex-col pt-4 pb-20 text-center">
+        <div className="flex flex-col pt-4 pb-20 text-center ">
             <div className="rounded-xl py-6">
 
-                <div className="flex justify-center bg-gray-800 mt-auto mb-8 p-4 w-100">
+                <div className="flex flex-row justify-center bg-gray-800 mt-auto mb-8 p-4 w-full">
 
                     <span className="text-lg text-gray-300 mr-2">Reverser On Axis</span>
                     <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversOnAxis(value ? 1 : 0)} />
@@ -182,7 +181,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
             <div className="bg-gray-800 flex flex-row-reverse mt-12">
 
                 <Button
-                    text="Save & Apply"
+                    text="Save &amp; Apply"
                     type={BUTTON_TYPE.GREEN}
                     onClick={() => {
                         if (isConfigValid()) {

@@ -57,7 +57,9 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         displayBar
                         borderRadius="0px"
                         completedBarBegin={(props.lowerBoundDetentGetter + 1) * 50}
+                        completedBarBeginValue={props.lowerBoundDetentGetter.toFixed(2)}
                         completedBarEnd={(props.upperBoundDetentGetter + 1) * 50}
+                        completedBarEndValue={props.upperBoundDetentGetter.toFixed(2)}
                         bgcolor="#3b82f6"
                         vertical
                         baseBgColor="rgba(55, 65, 81, var(--tw-bg-opacity))"
@@ -69,12 +71,12 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
             <div>
                 {!props.expertMode
                 && (
-                    <div className="flex flex-row">
+                    <div className="flex flex-row w-full">
                         <Input
                             key={props.index}
-                            label="Configure Range"
+                            label="Range"
                             type="number"
-                            className="dark-option"
+                            className="dark-option w-24 mr-4"
                             value={deadZone}
                             onChange={(deadZone) => {
                                 if (parseFloat(deadZone) >= 0.01) {
@@ -90,7 +92,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             }}
                         />
                         <Button
-                            className="w-2/3 border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600"
+                            className="w-38 border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600"
                             text="Set From Throttle"
                             onClick={() => {
                                 setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter);
@@ -138,27 +140,10 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         />
                     </div>
                 ) }
-                {/*    {props.expertMode
-                && (
-
-                ) } */}
-
                 {showWarning && (
                     <h1 className="mt-4 text-red-600 text-xl">Please enter a valid deadzone (min. 0.1)</h1>
                 )}
 
-                {/*        {!showWarning && (
-                    <h1 className="text-white mt-4 text-xl ">
-                        Lower Bound:
-                        {' '}
-                        {(props.lowerBoundDetentGetter).toFixed(2) }
-                        <br />
-                        {' '}
-                        Upper Bound:
-                        {' '}
-                        {(props.upperBoundDetentGetter).toFixed(2) }
-                    </h1>
-                )} */}
             </div>
             {props.barPosition === 'right'
             && (
