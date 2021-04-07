@@ -225,6 +225,7 @@
 1. [XPDR] Reimplemented XPDR in react, correct the XPDR code entry behavior - @lukecologne (luke)
 1. [MISC] Reimplemented BAT, rudder trim and Clock in react, add elapsed time feature to clock - @lukecologne (luke)
 1. [ND] Add VOR/ADF needles on ARC display mode - @tracernz (Mike)
+1. [ECAM] Visual improvements on ECAM when cabin pressure MODE SEL is set to manual - @mjuhe (Miquel)
 1. [MCDU] Rework PERF APPR page to Honeywell Rev. 2 standard - @tracernz (Mike)
 1. [FLIGHTMDDEL] Minor improvements to flap drag - @donstim (donbikes#4084)
 1. [EFB] Set font of OFP to monospace - @chkgk (Chriskgk#4359)
