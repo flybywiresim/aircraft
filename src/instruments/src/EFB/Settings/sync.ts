@@ -9,7 +9,7 @@ function syncSetting(simVarName, simVarUnit, propertyName) {
     try {
         setSimVar(simVarName, Number.parseInt(propertyValue), 'number');
     } catch (_) {
-        // console.error(`Could not sync simvar '${simVarName}' because it was not of type number`);
+        console.error(`Could not sync simvar '${simVarName}' because it was not of type number`);
     }
 }
 
