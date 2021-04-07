@@ -8,16 +8,10 @@ import {
 } from '../util.js';
 import './style.scss';
 
-// TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
-    // These are inlined so they're only evaluated if prior conditions return false.
-    return (
-        Simplane.getEngineActive(0) === 1 || Simplane.getEngineActive(1) === 1
-    ) || (
-        getSimVar('L:APU_GEN_ONLINE')
-    ) || (
-        getSimVar('EXTERNAL POWER AVAILABLE:1') && getSimVar('EXTERNAL POWER ON')
-    );
+    // Each DCDU is powered by a different DC BUS. Sadly the cockpit only contains a single DCDU emissive.
+    // Once we have two DCDUs running, the capt. DCDU should be powered by DC 1, and F/O by DC 2.
+    return getSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool') || getSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool');
 }
 
 function SelfTest() {
