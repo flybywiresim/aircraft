@@ -563,8 +563,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 if (originTA <= indicatedAltitude && baroMode !== "STD") {
                     this._blinkQNH();
                 }
-            }
-            if (destinationTA !== 0) {
+            } else if (destinationTA !== 0) {
                 if (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH) {
                     if (destinationTA >= indicatedAltitude && baroMode === "STD") {
                         this._blinkSTD();
