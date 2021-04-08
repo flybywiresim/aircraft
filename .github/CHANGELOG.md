@@ -242,6 +242,7 @@
 1. [TEXTURE] Updated glare shield leather, flyPad holder, tray table, overhead and push-button textures - @MoreRightRudder (Mike)
 1. [MCDU] Progress page shows current flight phase - @Username23-23 (NONAmr2433 #8777)
 1. [TEXTURE] Upscaled the external airframe decals to go nicely with the upscaled livery. @FoxinTale (Aubrey)
+1. [MCDU] Scratchpad is now limited to 22 characters - @tyler58546 (tyler58546)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
