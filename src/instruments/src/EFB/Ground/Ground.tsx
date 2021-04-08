@@ -83,22 +83,24 @@ export const Ground = ({
     };
 
     const handleClick = (callBack: () => void, event: React.MouseEvent, disabledButton?: string) => {
-        if (!activeButtons.map((b: StatefulButton) => b.id).includes(event.currentTarget.id)) {
-            addActiveButton({ id: event.currentTarget.id, state: STATE_WAITING });
-            if (disabledButton) {
-                addDisabledButton(disabledButton);
+        if (!tugActive) {
+            if (!activeButtons.map((b: StatefulButton) => b.id).includes(event.currentTarget.id)) {
+                addActiveButton({ id: event.currentTarget.id, state: STATE_WAITING });
+                if (disabledButton) {
+                    addDisabledButton(disabledButton);
+                }
+                callBack();
+            } else {
+                const index = activeButtons.map((b: StatefulButton) => b.id).indexOf(event.currentTarget.id);
+                if (index > -1) {
+                    removeActiveButton(index);
+                }
+                if (disabledButton) {
+                    const disabledIndex = disabledButtons.indexOf(disabledButton);
+                    removeDisabledButton(disabledIndex);
+                }
+                callBack();
             }
-            callBack();
-        } else if (!tugActive) {
-            const index = activeButtons.map((b: StatefulButton) => b.id).indexOf(event.currentTarget.id);
-            if (index > -1) {
-                removeActiveButton(index);
-            }
-            if (disabledButton) {
-                const disabledIndex = disabledButtons.indexOf(disabledButton);
-                removeDisabledButton(disabledIndex);
-            }
-            callBack();
         }
     };
 
@@ -118,6 +120,9 @@ export const Ground = ({
             }
         } else if (event.currentTarget.id === tugRequest) {
             setActiveButtons([{ id: event.currentTarget.id, state: STATE_ACTIVE }, { id: tugRequest, state: STATE_WAITING }]);
+            disabledButtons.forEach((b, index) => {
+                removeDisabledButton(index);
+            });
             callBack();
         }
     };
@@ -178,7 +183,14 @@ export const Ground = ({
                 </div>
                 <div>
                     <h1 className="text-white font-medium text-xl text-center pb-1">Door Fwd</h1>
-                    <DoorToggle index={0} clickCallback={handleClick} selectionCallback={applySelectedWithSync} id="door-fwd-left" disabled={disabledButtons.includes('door-fwd-left')} />
+                    <DoorToggle
+                        index={0}
+                        tugActive={tugActive}
+                        clickCallback={handleClick}
+                        selectionCallback={applySelectedWithSync}
+                        id="door-fwd-left"
+                        disabled={disabledButtons.includes('door-fwd-left')}
+                    />
                 </div>
             </div>
 
@@ -223,7 +235,14 @@ export const Ground = ({
             <div className="right-1/4 grid grid-cols-2 control-grid absolute bottom-36">
                 <div>
                     <h1 className="text-white font-medium text-xl text-center pb-1">Door Aft</h1>
-                    <DoorToggle index={3} clickCallback={handleClick} selectionCallback={applySelectedWithSync} id="door-aft-right" disabled={disabledButtons.includes('door-aft-right')} />
+                    <DoorToggle
+                        tugActive={tugActive}
+                        index={3}
+                        clickCallback={handleClick}
+                        selectionCallback={applySelectedWithSync}
+                        id="door-aft-right"
+                        disabled={disabledButtons.includes('door-aft-right')}
+                    />
                 </div>
                 <div>
                     <h1 className="text-white font-medium text-xl text-center pb-1">Catering</h1>
