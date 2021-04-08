@@ -302,7 +302,7 @@ AutopilotLawsModelClass::Parameters_AutopilotLaws_T AutopilotLawsModelClass::Aut
 
   0.0,
 
-  -80.0,
+  -100.0,
 
   400.0,
 

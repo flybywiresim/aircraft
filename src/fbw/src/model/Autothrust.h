@@ -97,7 +97,6 @@ class AutothrustModelClass {
     real_T CompareToConstant_const;
     real_T CompareToConstant_const_k;
     real_T CompareToConstant2_const;
-    real_T CompareToConstant_const_e;
     real_T RateLimiterVariableTs_lo;
     real_T RateLimiterVariableTs_lo_g;
     real_T RateLimiterVariableTs_lo_n;

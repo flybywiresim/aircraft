@@ -655,7 +655,6 @@ void AutothrustModelClass::step()
   rtb_y_i = rtb_Switch_d + Autothrust_P.Constant_Value_k;
   Autothrust_DWork.Delay1_DSTATE = 1.0 / rtb_y_i * (Autothrust_P.Constant_Value_k - rtb_Switch_d) *
     Autothrust_DWork.Delay1_DSTATE + (rtb_Divide + Autothrust_DWork.Delay_DSTATE_l) * (rtb_Switch_d / rtb_y_i);
-  rtb_Switch_d = std::abs(rtb_y_jh);
   if (Autothrust_U.in.input.mode_requested > Autothrust_P.Saturation_UpperSat_l) {
     rtb_y_i = Autothrust_P.Saturation_UpperSat_l;
   } else if (Autothrust_U.in.input.mode_requested < Autothrust_P.Saturation_LowerSat_i) {
@@ -674,10 +673,9 @@ void AutothrustModelClass::step()
       (Autothrust_U.in.input.is_approach_mode_active), Autothrust_P.ScheduledGain1_BreakpointsForDimension1,
       Autothrust_P.ScheduledGain1_Table, 1U) + rtb_Sum2 * look1_binlxpw(static_cast<real_T>
       (Autothrust_U.in.input.is_approach_mode_active), Autothrust_P.ScheduledGain_BreakpointsForDimension1,
-      Autothrust_P.ScheduledGain_Table, 1U)) + rtb_y_jh * look1_binlxpw(rtb_Switch_d,
+      Autothrust_P.ScheduledGain_Table, 1U)) + rtb_y_jh * look1_binlxpw(std::abs(rtb_y_jh),
       Autothrust_P.ScheduledGain3_BreakpointsForDimension1, Autothrust_P.ScheduledGain3_Table, 3U)) * look1_binlxpw(
-      static_cast<real_T>((rtb_Switch_d <= Autothrust_P.CompareToConstant_const_e) &&
-                          Autothrust_U.in.input.is_alt_soft_mode_active),
+      static_cast<real_T>(Autothrust_U.in.input.is_alt_soft_mode_active),
       Autothrust_P.ScheduledGain4_BreakpointsForDimension1, Autothrust_P.ScheduledGain4_Table, 1U);
     break;
 

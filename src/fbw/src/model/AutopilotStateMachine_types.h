@@ -220,6 +220,7 @@ typedef struct {
   boolean_T gs_convergent_towards_beam;
   real_T H_dot_radio_fpm;
   boolean_T V_fcu_in_selection;
+  boolean_T ALT_soft_mode;
 } ap_sm_data_computed;
 
 #endif
