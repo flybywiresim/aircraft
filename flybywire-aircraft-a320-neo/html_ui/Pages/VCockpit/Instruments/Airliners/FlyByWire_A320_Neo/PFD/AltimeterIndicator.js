@@ -550,14 +550,6 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         const destinationTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
         const phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
 
-        // Default TA is 18,000. Will removed with other PR
-        if (originTA === 0) {
-            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
-        }
-        if (destinationTA === 0) {
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
-        }
-
         if (!Simplane.getIsGrounded()) {
             if (originTA !== 0 && phase >= FmgcFlightPhases.TAKEOFF && phase <= FmgcFlightPhases.CRUISE) {
                 if (originTA <= indicatedAltitude && baroMode !== "STD") {
