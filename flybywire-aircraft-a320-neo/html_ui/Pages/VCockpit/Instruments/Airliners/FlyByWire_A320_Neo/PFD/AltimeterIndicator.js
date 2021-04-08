@@ -553,6 +553,10 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         const destinationTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
         const phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
 
+        if (phase === FmgcFlightPhases.GOAROUND) {
+            this.goAround = true;
+        }
+
         if (!Simplane.getIsGrounded()) {
             if (!this.goAround) {
                 if (originTA !== 0 && phase >= FmgcFlightPhases.TAKEOFF && phase <= FmgcFlightPhases.CRUISE) {
@@ -565,26 +569,20 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                             this._blinkSTD();
                         }
                     } else if (phase === FmgcFlightPhases.GOAROUND) {
-                        this.goAround = true;
                         if (destinationTA <= indicatedAltitude && baroMode !== "STD") {
                             this._blinkQNH();
                         }
                     }
                 }
             } else if (this.goAround && destinationTA !== 0) {
-                if (phase >= FmgcFlightPhases.CLIMB && phase <= FmgcFlightPhases.CRUISE) {
-                    if (destinationTA <= indicatedAltitude && baroMode !== "STD") {
+                if (destinationTA <= indicatedAltitude && baroMode !== "STD") {
                         this._blinkQNH();
-                    }
-                } else if (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH) {
-                    if (destinationTA >= indicatedAltitude && baroMode === "STD") {
+                } else if (destinationTA >= indicatedAltitude && baroMode === "STD") {
                         this._blinkSTD();
-                    }
                 } else if (phase === FmgcFlightPhases.DONE) {
                     this.goAround = false;
                 }
             }
-
             // TODO : If change flightplan while go-around phase, PFD still recognize go-around.
         }
     }
