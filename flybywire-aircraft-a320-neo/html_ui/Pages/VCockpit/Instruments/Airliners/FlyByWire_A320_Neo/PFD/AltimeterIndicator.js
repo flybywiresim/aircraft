@@ -584,20 +584,8 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     this.goAround = false;
                 }
             }
-        }
 
-        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
-            if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                const originAirport = mcdu.flightPlanManager.getOrigin().ident;
-                const destinationAirport = mcdu.flightPlanManager.getDestination().ident;
-                if (this.currentOrigin !== originAirport) {
-                    this.currentOrigin = originAirport;
-                    this.goAround = false;
-                } else if (this.currentDestination !== destinationAirport) {
-                    this.currentDestination = destinationAirport;
-                    this.goAround = false;
-                }
-            }
+            // TODO : If change flightplan while go-around phase, PFD still recognize go-around.
         }
     }
 
