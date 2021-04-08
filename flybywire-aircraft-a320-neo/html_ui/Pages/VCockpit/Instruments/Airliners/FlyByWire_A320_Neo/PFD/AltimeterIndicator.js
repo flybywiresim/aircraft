@@ -546,34 +546,33 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     _updateQNHAlert(indicatedAltitude, baroMode) {
         this._removeBlink(); //Reset Blink
 
-        const transTakeoffAlt = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
-        const transApprAlt = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+        const originTA = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
+        const destinationTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
         const phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
 
         // Default TA is 18,000. Will removed with other PR
-        if (SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number") === 0) {
+        if (originTA === 0) {
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
         }
-        if (SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number") === 0) {
+        if (destinationTA === 0) {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
         }
 
-        if (transTakeoffAlt !== 0 && !Simplane.getIsGrounded()) {
-            if (phase >= 1 && phase <= 3) {
-                if (transTakeoffAlt <= indicatedAltitude && baroMode !== "STD") {
-                    this._blinkQNH();
+        if (!Simplane.getIsGrounded()) {
+            if (originTA !== 0 && phase >= FmgcFlightPhases.TAKEOFF && phase <= FmgcFlightPhases.CRUISE) {
+                if (originTA <= indicatedAltitude && baroMode !== "STD") {
+                   this._blinkQNH();
                 }
             }
-        }
-        if (transApprAlt !== 0 && !Simplane.getIsGrounded()) {
-            if (phase === 4 || phase === 5) {
-                if ((transApprAlt >= indicatedAltitude) && (baroMode === "STD")) {
-                    this._blinkSTD();
-                }
-            }
-            if (phase === 6) {
-                if (transApprAlt <= indicatedAltitude && baroMode !== "STD") {
-                    this._blinkQNH();
+            if (destinationTA !== 0) {
+                if (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH) {
+                    if (destinationTA >= indicatedAltitude && baroMode === "STD") {
+                        this._blinkSTD();
+                    }
+                } else if (phase === FmgcFlightPhases.GOAROUND) {
+                    if (destinationTA <= indicatedAltitude && baroMode !== "STD") {
+                        this._blinkQNH();
+                    }
                 }
             }
         }
