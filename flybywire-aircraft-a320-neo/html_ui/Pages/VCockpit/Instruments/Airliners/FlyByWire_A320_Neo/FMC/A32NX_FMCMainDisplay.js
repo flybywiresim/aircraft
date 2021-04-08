@@ -3392,6 +3392,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
                 const originAirport = this.flightPlanManager.getOrigin().ident;
                 const destinationAirport = this.flightPlanManager.getDestination().ident;
+                const transitionLevel = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_LEVEL", "Number");
                 if (!this.offlineTACore.offline) {
                     if ((this.currentOrigin !== originAirport) || this.apiRequestError || mode) {
                         try {
@@ -3414,6 +3415,13 @@ class FMCMainDisplay extends BaseAirliners {
                             setTimeout(this.apiRequestError = true, 3000);
                         }
                         this.currentDestination = destinationAirport;
+                    }
+                    if (isFinite(this.perfApprQNH) && isFinite(transitionLevel)) {
+                        if (mcdu.perfApprQNH < 500) {
+                            this.offlineTACore.transitionLevel(this.perfApprQNH.toFixed(2), "inhg");
+                        } else {
+                            this.offlineTACore.transitionLevel(this.perfApprQNH.toFixed(0), "hpa");
+                        }
                     }
                 } else {
                     if (this.currentOrigin !== originAirport) {

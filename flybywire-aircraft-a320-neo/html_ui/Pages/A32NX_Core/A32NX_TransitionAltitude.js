@@ -40,6 +40,24 @@ class A32NX_TransitionAltitude {
             }
         }
     }
+
+    transitionLevel(pressureValue, mode) {
+        const transitionAltitude = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+
+        /* formula
+        Transition altitude at standard pressure = Transition altitude at local QNH + 28 * (Standard pressure – Local QNH)
+        Transition altitude at standard pressure = Transition altitude + 28 * (1013 – Local QNH)
+        */
+
+        let equivalentLevel = 0;
+        if (mode === "inhg") {
+            equivalentLevel = transitionAltitude + (28 * (1013 - parseInt(pressureValue * 33.86)));
+        } else if (mode === "hpa") {
+            equivalentLevel = transitionAltitude + (28 * (1013 - pressureValue));
+        }
+        const transitionLevel = ((equivalentLevel + 20) / 10) * 1000
+        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LEVEL", "Number", transitionLevel);
+    }
 }
 
 // This list is built manually, and might contain errors
