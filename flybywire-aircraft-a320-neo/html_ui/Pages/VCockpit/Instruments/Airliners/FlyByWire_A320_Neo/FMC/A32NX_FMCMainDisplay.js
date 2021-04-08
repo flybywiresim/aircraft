@@ -3358,7 +3358,7 @@ class FMCMainDisplay extends BaseAirliners {
 }
 
 updateTransitionAltitude(icao, phase) {
-    NXApi.getAirport(icao)
+    NXApi.getAirportInfo(icao)
         .then((data) => {
             this.transitionAltitude = data.transAlt;
             if (this.transitionAltitude === -1) {
@@ -3411,6 +3411,13 @@ updateDepartArrive(mode) {
                     }
                     this.currentDestination = destinationAirport;
                 }
+                if (isFinite(this.perfApprQNH) && isFinite(transitionLevel)) {
+                    if (mcdu.perfApprQNH < 500) {
+                        this.offlineTACore.transitionLevel(this.perfApprQNH.toFixed(2), "inhg");
+                    } else {
+                        this.offlineTACore.transitionLevel(this.perfApprQNH.toFixed(0), "hpa");
+                    }
+                }
             } else {
                 if (this.currentOrigin !== originAirport) {
                     this.offlineTACore.updateOfflineTransitionAltitude(originAirport, "origin");
@@ -3419,6 +3426,13 @@ updateDepartArrive(mode) {
                 if (this.currentDestination !== destinationAirport) {
                     this.offlineTACore.updateOfflineTransitionAltitude(destinationAirport, "destination");
                     this.currentDestination = destinationAirport;
+                }
+                if (isFinite(this.perfApprQNH) && isFinite(transitionLevel)) {
+                    if (mcdu.perfApprQNH < 500) {
+                        this.offlineTACore.transitionLevel(this.perfApprQNH.toFixed(2), "inhg");
+                    } else {
+                        this.offlineTACore.transitionLevel(this.perfApprQNH.toFixed(0), "hpa");
+                    }
                 }
             }
         }
