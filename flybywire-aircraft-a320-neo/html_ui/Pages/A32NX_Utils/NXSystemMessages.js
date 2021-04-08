@@ -70,6 +70,6 @@ const NXFictionalMessages = {
     firstIndexNotFound:     new McduMessage("1ST INDEX NOT FOUND", false, false),
     noRefWpt:               new McduMessage("NO REF WAYPOINT", false, false),
     noWptInfos:             new McduMessage("NO WAYPOINT INFOS", false, false),
-    emptyMessage:           new McduMessage(),
+    emptyMessage:           new McduMessage(""),
     weightUnitChanged:      new McduMessage("UNIT CHANGED RELOAD A/C", true, true)
 };
