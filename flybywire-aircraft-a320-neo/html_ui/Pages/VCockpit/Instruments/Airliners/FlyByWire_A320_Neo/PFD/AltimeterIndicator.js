@@ -571,7 +571,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                         }
                     }
                 }
-            } else if (this.goAround && destinationTA !== 0){
+            } else if (this.goAround && destinationTA !== 0) {
                 if (phase >= FmgcFlightPhases.CLIMB && phase <= FmgcFlightPhases.CRUISE) {
                     if (destinationTA <= indicatedAltitude && baroMode !== "STD") {
                         this._blinkQNH();
