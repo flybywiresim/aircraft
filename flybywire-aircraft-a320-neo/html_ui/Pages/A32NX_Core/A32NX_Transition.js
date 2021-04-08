@@ -1,6 +1,6 @@
-class A32NX_Transition {
+class A32NX_TransitionAltitude {
     init() {
-        console.log('A32NX_Transition init');
+        console.log('A32NX_TransitionAltitude init');
         this.currentDeparture = "";
         this.currentArrival = "";
         this.offline = false;
@@ -41,17 +41,22 @@ class A32NX_Transition {
         }
     }
 
-    calculateTransitionLevel() {
-        // Use unrealistic value due to variuse value
-        const transitionLayer = 1000;
+    transitionLevel(pressureValue, mode) {
+        const transitionAltitude = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
 
-        if (mcdu.perfApprQNH < 500) {
-            const qnhInhg = mcdu.perfApprQNH.toFixed(2);
-        } else {
-            const qnhHpa = mcdu.perfApprQNH.toFixed(0);
+        /* formula
+        Transition altitude at standard pressure = Transition altitude at local QNH + 28 * (Standard pressure – Local QNH)
+        Transition altitude at standard pressure = Transition altitude + 28 * (1013 – Local QNH)
+        */
+
+        let equivalentLevel = 0;
+        if (mode === "inhg") {
+            equivalentLevel = transitionAltitude + (28 * (1013 - parseInt(pressureValue * 33.86)));
+        } else if (mode === "hpa") {
+            equivalentLevel = transitionAltitude + (28 * (1013 - pressureValue));
         }
-
-        // formular : (Local QNH – Standard_pressure) = (Transition altitude at local QNH – Transition altitude at standard pressure ) / 28
+        const transitionLevel = ((equivalentLevel + 20) / 10) * 1000
+        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_LEVEL", "Number", transitionLevel);
     }
 }
 
