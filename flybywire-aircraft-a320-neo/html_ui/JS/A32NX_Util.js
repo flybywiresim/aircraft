@@ -53,7 +53,7 @@ A32NX_Util.createMachine = (machineDef) => {
  * @returns magnetic heading
  */
 A32NX_Util.trueToMagnetic = (heading, magVar) => {
-    return (360 + heading + (magVar || SimVar.GetSimVarValue("MAGVAR", "degree"))) % 360;
+    return (360 + heading - (magVar || SimVar.GetSimVarValue("MAGVAR", "degree"))) % 360;
 };
 
 /**
@@ -63,7 +63,7 @@ A32NX_Util.trueToMagnetic = (heading, magVar) => {
  * @returns true heading
  */
 A32NX_Util.magneticToTrue = (heading, magVar) => {
-    return (360 + heading - (magVar || SimVar.GetSimVarValue("MAGVAR", "degree"))) % 360;
+    return (360 + heading + (magVar || SimVar.GetSimVarValue("MAGVAR", "degree"))) % 360;
 };
 
 /**
