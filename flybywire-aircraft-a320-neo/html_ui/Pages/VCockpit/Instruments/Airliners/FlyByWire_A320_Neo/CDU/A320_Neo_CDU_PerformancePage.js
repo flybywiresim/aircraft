@@ -718,11 +718,11 @@ class CDUPerformancePage {
             }
         };
 
-        let tempCell = "[\xa0]°[color]cyan";
+        let tempCell = "{cyan}[\xa0]°{end}";
         if (isFinite(mcdu.perfApprTemp)) {
-            tempCell = ("" + mcdu.perfApprTemp.toFixed(0)).padStart(3).replace(/ /g, "\xa0") + "°[color]cyan";
+            tempCell = "{cyan}" + (mcdu.perfApprTemp >= 0 ? "+" : "-") + ("" + Math.abs(mcdu.perfApprTemp).toFixed(0)).padStart(2).replace(/ /g, "\xa0") + "°{end}";
         } else if (closeToDest) {
-            tempCell = "___°[color]amber";
+            tempCell = "{amber}___°{end}";
         }
         mcdu.onLeftInput[1] = (value) => {
             if (mcdu.setPerfApprTemp(value)) {
@@ -745,11 +745,11 @@ class CDUPerformancePage {
             }
         };
 
-        let transAltCell = "[\xa0][color]cyan";
+        let transAltCell = "[\xa0]".padEnd(5, "\xa0");
         if (isFinite(mcdu.perfApprTransAlt)) {
-            transAltCell = mcdu.perfApprTransAlt.toFixed(0);
+            transAltCell = mcdu.perfApprTransAlt.toFixed(0).padEnd(5, "\xa0");
             if (!mcdu.perfApprTransAltPilotEntered) {
-                transAltCell += "[s-text]";
+                transAltCell = `{small}${transAltCell}{end}`;
             }
         }
         mcdu.onLeftInput[3] = (value) => {
@@ -764,14 +764,14 @@ class CDUPerformancePage {
         let sltRetrCell = "---";
         let cleanCell = "---";
         if (mcdu.approachSpeeds && mcdu.approachSpeeds.valid) {
-            vappCell = mcdu.approachSpeeds.vapp.toFixed(0) + "[s-text]";
+            vappCell = `{cyan}{small}${mcdu.approachSpeeds.vapp.toFixed(0)}{end}{end}`;
             vlsCell = `{green}${mcdu.approachSpeeds.vls.toFixed(0)}{end}`;
             flpRetrCell = `{green}${mcdu.approachSpeeds.f.toFixed(0)}{end}`;
             sltRetrCell = `{green}${mcdu.approachSpeeds.s.toFixed(0)}{end}`;
             cleanCell = `{green}${mcdu.approachSpeeds.gd.toFixed(0)}{end}`;
         }
         if (isFinite(mcdu.vApp)) { // pilot override
-            vappCell = mcdu.vApp.toFixed(0);
+            vappCell = `{cyan}${mcdu.vApp.toFixed(0).padStart(3, "\xa0")}{end}`;
         }
         mcdu.onLeftInput[4] = (value) => {
             if (mcdu.setPerfApprVApp(value)) {
@@ -784,12 +784,6 @@ class CDUPerformancePage {
             CDUPerformancePage.ShowAPPRPage(mcdu);
         };
 
-        let finalCell = "";
-        const approach = mcdu.flightPlanManager.getApproach();
-        if (approach && approach.name) {
-            finalCell = `\xa0{green}${Avionics.Utils.formatRunway(approach.name).replace(/ /g, "")}{end}\xa0\xa0\xa0\xa0\xa0`;
-        }
-
         let baroCell = "[\xa0\xa0\xa0]";
         if (isFinite(mcdu.perfApprMDA)) {
             baroCell = mcdu.perfApprMDA.toFixed(0);
@@ -800,6 +794,7 @@ class CDUPerformancePage {
             }
         };
 
+        const approach = mcdu.flightPlanManager.getApproach();
         const isILS = approach && approach.name && approach.name.indexOf("ILS") !== -1;
         let radioLabel = "";
         let radioCell = "";
@@ -818,16 +813,6 @@ class CDUPerformancePage {
                 }
             };
         }
-
-        let finalAppCell = "";
-        if (!isILS) {
-            finalAppCell = "{cyan}FINAL APP/{end}{small}{inop}FLS*{end}{end}";
-        }
-        mcdu.onRightInput[0] = () => {
-            if (!isILS) {
-                mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
-            }
-        };
 
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
@@ -865,18 +850,26 @@ class CDUPerformancePage {
             };
         }
 
+        let titleCell = `${"\xa0".repeat(5)}{${titleColor}}APPR{end}\xa0`;
+        if (approach && approach.name) {
+            const apprName = Avionics.Utils.formatRunway(approach.name).replace(/ /g, "");
+            titleCell += `{green}${apprName}{end}` + "\xa0".repeat(24 - 10 - apprName.length);
+        } else {
+            titleCell += "\xa0".repeat(24 - 10);
+        }
+
         mcdu.setTemplate([
-            /* t  */[`{${titleColor}}APPR{end}${finalCell}`],
+            /* t  */[titleCell],
             /* 1l */["QNH"],
-            /* 1L */[qnhCell, finalAppCell],
+            /* 1L */[qnhCell],
             /* 2l */["TEMP", "BARO"],
-            /* 2L */[tempCell, baroCell + "[color]cyan", "O=" + cleanCell],
+            /* 2L */[`${tempCell}${"\xa0".repeat(6)}O=${cleanCell}`, baroCell + "[color]cyan"],
             /* 3l */["MAG WIND", radioLabel],
-            /* 3L */[magWindHeadingCell + "°/" + magWindSpeedCell + "[color]cyan", radioCell + "[color]cyan", "S=" + sltRetrCell],
+            /* 3L */[`{cyan}${magWindHeadingCell}°/${magWindSpeedCell}{end}\xa0\xa0S=${sltRetrCell}`, radioCell + "[color]cyan"],
             /* 4l */["TRANS ALT"],
-            /* 4L */[transAltCell + "[color]cyan", "", "F=" + flpRetrCell],
-            /* 5l */["VAPP", "LDG CONF\xa0", "VLS\xa0\xa0\xa0\xa0\xa0\xa0"],
-            /* 5L */[vappCell + "[color]cyan", mcdu.perfApprFlaps3 ? "{cyan}CONF3/{end}{small}FULL*{end}" : "{cyan}FULL/{end}{small}CONF3*{end}", vlsCell + "\xa0\xa0\xa0\xa0\xa0\xa0"],
+            /* 4L */[`{cyan}${transAltCell}{end}${"\xa0".repeat(5)}F=${flpRetrCell}`],
+            /* 5l */["VAPP\xa0\xa0\xa0VLS", "LDG CONF\xa0"],
+            /* 5L */[`${vappCell}${"\xa0".repeat(4)}${vlsCell}`, mcdu.perfApprFlaps3 ? "{cyan}CONF3/{end}{small}FULL{end}*" : "{cyan}FULL/{end}{small}CONF3{end}*"],
             /* 6l */bottomRowLabels,
             /* 6L */bottomRowCells,
         ]);
