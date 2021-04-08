@@ -18,6 +18,8 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.isHud = false;
         this._aircraft = Aircraft.A320_NEO;
         this.goAround = false;
+        this.currentOrigin = "";
+        this.currentDestination = "";
     }
     static get observedAttributes() {
         return ["hud"];
@@ -579,6 +581,20 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                         this._blinkSTD();
                     }
                 } else if (phase === FmgcFlightPhases.DONE) {
+                    this.goAround = false;
+                }
+            }
+        }
+
+        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
+            if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
+                const originAirport = mcdu.flightPlanManager.getOrigin().ident;
+                const destinationAirport = mcdu.flightPlanManager.getDestination().ident;
+                if (this.currentOrigin !== originAirport) {
+                    this.currentOrigin = originAirport;
+                    this.goAround = false;
+                } else if (this.currentDestination !== destinationAirport) {
+                    this.currentDestination = destinationAirport;
                     this.goAround = false;
                 }
             }
