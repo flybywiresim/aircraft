@@ -50,17 +50,13 @@ pub(super) struct A320Hydraulic {
     braking_circuit_altn: BrakeCircuit,
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
-
-    is_green_pressurised: bool,
-    is_blue_pressurised: bool,
-    is_yellow_pressurised: bool,
 }
 impl A320Hydraulic {
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 1750.0;
 
-    const HYDRAULIC_SIM_TIME_STEP: u64 = 100; //refresh rate of hydraulic simulation in ms
-    const ACTUATORS_SIM_TIME_STEP_MULT: u32 = 2; //refresh rate of actuators as multiplier of hydraulics. 2 means double frequency update
+    const HYDRAULIC_SIM_TIME_STEP: u64 = 100; // Refresh rate of hydraulic simulation in ms
+    const ACTUATORS_SIM_TIME_STEP_MULT: u32 = 2; // Refresh rate of actuators as multiplier of hydraulics. 2 means double frequency update
 
     pub(super) fn new() -> A320Hydraulic {
         A320Hydraulic {
@@ -76,6 +72,8 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(1.56),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 false,
+                Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
+                Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             ),
             blue_loop_controller: A320HydraulicLoopController::new(None),
             green_loop: HydraulicLoop::new(
@@ -88,6 +86,8 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(3.6),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
+                Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
+                Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             ),
             green_loop_controller: A320HydraulicLoopController::new(Some(1)),
             yellow_loop: HydraulicLoop::new(
@@ -100,6 +100,8 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(3.15),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
+                Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
+                Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             ),
             yellow_loop_controller: A320HydraulicLoopController::new(Some(2)),
 
@@ -141,10 +143,6 @@ impl A320Hydraulic {
 
             total_sim_time_elapsed: Duration::new(0, 0),
             lag_time_accumulator: Duration::new(0, 0),
-
-            is_green_pressurised: false,
-            is_blue_pressurised: false,
-            is_yellow_pressurised: false,
         }
     }
 
@@ -216,25 +214,28 @@ impl A320Hydraulic {
     fn green_edp_has_fault(&self) -> bool {
         // TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
         // at current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
-        self.engine_driven_pump_1_controller.should_pressurise() && !self.is_green_pressurised
+        self.engine_driven_pump_1_controller.should_pressurise()
+            && !self.green_loop.is_pressurised()
     }
 
     fn yellow_epump_has_fault(&self) -> bool {
         // TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
         // at current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
-        self.yellow_electric_pump_controller.should_pressurise() && !self.is_yellow_pressurised
+        self.yellow_electric_pump_controller.should_pressurise()
+            && !self.yellow_loop.is_pressurised()
     }
 
     fn yellow_edp_has_fault(&self) -> bool {
         // TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
         // at current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
-        self.engine_driven_pump_2_controller.should_pressurise() && !self.is_yellow_pressurised
+        self.engine_driven_pump_2_controller.should_pressurise()
+            && !self.yellow_loop.is_pressurised()
     }
 
     fn blue_epump_has_fault(&self) -> bool {
         // TODO wrong logic: can fake it using pump flow == 0 until we implement check valve sections in each hyd loop
         // at current state, PTU activation is able to clear a pump fault by rising pressure, which is wrong
-        self.blue_electric_pump_controller.should_pressurise() && !self.is_blue_pressurised
+        self.blue_electric_pump_controller.should_pressurise() && !self.blue_loop.is_pressurised()
     }
 
     #[cfg(test)]
@@ -249,51 +250,18 @@ impl A320Hydraulic {
             .nose_wheel_steering_pin_is_inserted()
     }
 
-    // Updates pressure available state based on pressure switches
-    fn update_hyd_avail_states(&mut self) {
-        if self.green_loop.get_pressure()
-            <= Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST)
-        {
-            self.is_green_pressurised = false;
-        } else if self.green_loop.get_pressure()
-            >= Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST)
-        {
-            self.is_green_pressurised = true;
-        }
-
-        if self.blue_loop.get_pressure()
-            <= Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST)
-        {
-            self.is_blue_pressurised = false;
-        } else if self.blue_loop.get_pressure()
-            >= Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST)
-        {
-            self.is_blue_pressurised = true;
-        }
-
-        if self.yellow_loop.get_pressure()
-            <= Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST)
-        {
-            self.is_yellow_pressurised = false;
-        } else if self.yellow_loop.get_pressure()
-            >= Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST)
-        {
-            self.is_yellow_pressurised = true;
-        }
-    }
-
     pub(super) fn is_blue_pressurised(&self) -> bool {
-        self.is_blue_pressurised
+        self.blue_loop.is_pressurised()
     }
 
     #[cfg(test)]
     fn is_green_pressurised(&self) -> bool {
-        self.is_green_pressurised
+        self.green_loop.is_pressurised()
     }
 
     #[cfg(test)]
     fn is_yellow_pressurised(&self) -> bool {
-        self.is_yellow_pressurised
+        self.yellow_loop.is_pressurised()
     }
 
     // All the higher frequency updates like physics
@@ -312,8 +280,6 @@ impl A320Hydraulic {
         engine_fire_overhead: &A320EngineFireOverheadPanel,
         min_hyd_loop_timestep: Duration,
     ) {
-        self.update_hyd_avail_states();
-
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.hyd_brake_logic
             .update_brake_demands(&min_hyd_loop_timestep, &self.green_loop);

@@ -499,6 +499,8 @@ mod tests {
                 Volume::new::<gallon>(3.83),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
+                Pressure::new::<psi>(1450.0),
+                Pressure::new::<psi>(1750.0),
             ),
             "YELLOW" => HydraulicLoop::new(
                 loop_color,
@@ -510,6 +512,8 @@ mod tests {
                 Volume::new::<gallon>(3.3),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
+                Pressure::new::<psi>(1450.0),
+                Pressure::new::<psi>(1750.0),
             ),
             _ => HydraulicLoop::new(
                 loop_color,
@@ -521,6 +525,8 @@ mod tests {
                 Volume::new::<gallon>(1.5),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 false,
+                Pressure::new::<psi>(1450.0),
+                Pressure::new::<psi>(1750.0),
             ),
         }
     }
