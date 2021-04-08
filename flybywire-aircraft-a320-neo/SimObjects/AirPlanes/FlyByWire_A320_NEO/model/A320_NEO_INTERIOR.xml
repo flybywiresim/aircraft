@@ -71,6 +71,7 @@
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>LIGHTS_PEDESTAL</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
@@ -81,6 +82,7 @@
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>LIGHTS_MAINPANEL</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
             <!-- Front Glareshields -->
@@ -1475,6 +1477,7 @@
                     <NODE_ID>LIGHTS_OVHD</NODE_ID>
                     <SIMVAR_INDEX>4</SIMVAR_INDEX>
                     <POTENTIOMETER>86</POTENTIOMETER>
+                    <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Cabin_Template">
