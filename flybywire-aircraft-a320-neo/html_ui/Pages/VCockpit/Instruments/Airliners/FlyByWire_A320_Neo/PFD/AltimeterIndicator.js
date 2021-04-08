@@ -581,7 +581,6 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 } else if (phase === FmgcFlightPhases.DONE) {
                     this.goAround = false;
                 }
-
             }
         }
     }
