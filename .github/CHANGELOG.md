@@ -7,6 +7,7 @@
 ## 0.7.0
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
 1. [MCDU] Progress page only shows GPS Primary when it should - @Username23-23 (NONAmr2433 #8777) 
+1. [ND] Fix Behaviour of TAS and Wind Info displayed inflight and on Take-Off - @ChruutvoLuzi (ChruutvoLuzi#8902)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
@@ -244,7 +245,6 @@
 1. [MCDU] Progress page shows current flight phase - @Username23-23 (NONAmr2433 #8777)
 1. [TEXTURE] Upscaled the external airframe decals to go nicely with the upscaled livery. @FoxinTale (Aubrey)
 1. [MCDU] Scratchpad is now limited to 22 characters - @tyler58546 (tyler58546)
-1. [ND] Fix Behaviour of TAS and Wind Info displayed inflight and on Take-Off - @ChruutvoLuzi (ChruutvoLuzi#8902)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
