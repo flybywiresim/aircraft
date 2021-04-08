@@ -17,6 +17,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.hudAPAltitude = 0;
         this.isHud = false;
         this._aircraft = Aircraft.A320_NEO;
+        this.goAround = false;
     }
     static get observedAttributes() {
         return ["hud"];
@@ -551,20 +552,36 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         const phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
 
         if (!Simplane.getIsGrounded()) {
-            if (originTA !== 0 && phase >= FmgcFlightPhases.TAKEOFF && phase <= FmgcFlightPhases.CRUISE) {
-                if (originTA <= indicatedAltitude && baroMode !== "STD") {
-                    this._blinkQNH();
+            if (!this.goAround) {
+                if (originTA !== 0 && phase >= FmgcFlightPhases.TAKEOFF && phase <= FmgcFlightPhases.CRUISE) {
+                    if (originTA <= indicatedAltitude && baroMode !== "STD") {
+                        this._blinkQNH();
+                    }
+                } else if (destinationTA !== 0) {
+                    if (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH) {
+                        if (destinationTA >= indicatedAltitude && baroMode === "STD") {
+                            this._blinkSTD();
+                        }
+                    } else if (phase === FmgcFlightPhases.GOAROUND) {
+                        this.goAround = true;
+                        if (destinationTA <= indicatedAltitude && baroMode !== "STD") {
+                            this._blinkQNH();
+                        }
+                    }
                 }
-            } else if (destinationTA !== 0) {
-                if (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH) {
+            } else if (this.goAround && destinationTA !== 0){
+                if (phase >= FmgcFlightPhases.CLIMB && phase <= FmgcFlightPhases.CRUISE) {
+                    if (originTA <= indicatedAltitude && baroMode !== "STD") {
+                        this._blinkQNH();
+                    }
+                } else if (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH) {
                     if (destinationTA >= indicatedAltitude && baroMode === "STD") {
                         this._blinkSTD();
                     }
-                } else if (phase === FmgcFlightPhases.GOAROUND) {
-                    if (destinationTA <= indicatedAltitude && baroMode !== "STD") {
-                        this._blinkQNH();
-                    }
+                } else if (phase === FmgcFlightPhases.DONE) {
+                    this.goAround = false;
                 }
+
             }
         }
     }
