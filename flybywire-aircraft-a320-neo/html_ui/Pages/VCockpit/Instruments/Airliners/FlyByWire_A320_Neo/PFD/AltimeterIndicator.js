@@ -561,7 +561,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         if (!Simplane.getIsGrounded()) {
             if (originTA !== 0 && phase >= FmgcFlightPhases.TAKEOFF && phase <= FmgcFlightPhases.CRUISE) {
                 if (originTA <= indicatedAltitude && baroMode !== "STD") {
-                   this._blinkQNH();
+                    this._blinkQNH();
                 }
             }
             if (destinationTA !== 0) {
