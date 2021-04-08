@@ -1,4 +1,4 @@
-class A32NX_TransitionAltitude {
+class A32NX_Transition {
     init() {
         console.log('A32NX_TransitionAltitude init');
         this.currentDeparture = "";
