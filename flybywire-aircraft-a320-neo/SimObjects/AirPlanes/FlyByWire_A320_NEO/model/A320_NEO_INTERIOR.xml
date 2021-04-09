@@ -1684,6 +1684,7 @@
                             <LOCK_NODE_ID>LOCK_OVHD_EVAC_COMMAND</LOCK_NODE_ID>
 
                             <TOGGLE_SIMVAR>L:A32NX_EVAC_COMMAND_TOGGLE</TOGGLE_SIMVAR>
+                            <DOWN_CODE>(L:A32NX_EVAC_COMMAND_TOGGLE) !</DOWN_CODE>
 
                             <SEQ1_CODE>(L:A32NX_EVAC_COMMAND_FAULT, Bool)</SEQ1_CODE>
                             <SEQ2_CODE>(L:A32NX_EVAC_COMMAND_TOGGLE, Bool) !</SEQ2_CODE>
