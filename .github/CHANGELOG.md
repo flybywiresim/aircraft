@@ -6,7 +6,7 @@
 
 ## 0.7.0
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
-1. [MCDU] Progress page only shows GPS Primary when it should - @Username23-23 (NONAmr2433 #8777) 
+1. [MCDU] Progress page only shows GPS Primary when it should - @Username23-23 (NONAmr2433 #8777)
 1. [ND] Add VOR/ADF needles to ILS arc display - @tracernz (Mike)
 1. [MCDU] Add hard sign to temp field on PERF APPR, remove FLS/FINAL APP, adjust alignment - @tracernz (Mike)
 1. [ND] Fix Behaviour of TAS and Wind Info displayed inflight and on Take-Off - @ChruutvoLuzi (ChruutvoLuzi#8902)
