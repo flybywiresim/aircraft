@@ -21,9 +21,12 @@ $colour-main: hsl(31, 69%, 35%);
 }
 
 .rmp-wrapper svg {
-  background-color: rgba(32, 19, 2, 0.884);
   height: 25%;
   width: 100%;
+}
+
+.rmp-svg {
+  background-color: hsl(31, 69%, 6%);
 }
 
 text {
