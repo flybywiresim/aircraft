@@ -194,6 +194,7 @@ typedef struct {
 
 typedef struct {
   real_T ap_on;
+  real_T Phi_loc_c;
   ap_raw_output_command flight_director;
   ap_raw_output_command autopilot;
 } ap_raw_output;

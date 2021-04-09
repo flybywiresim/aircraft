@@ -108,7 +108,8 @@ AutopilotStateMachineModelClass::Parameters_AutopilotStateMachine_T AutopilotSta
       false,
       false,
       false,
-      false
+      false,
+      0.0
     },
 
     {

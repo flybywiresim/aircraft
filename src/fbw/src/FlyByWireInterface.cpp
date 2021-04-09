@@ -308,9 +308,7 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   } else {
     if (gpsCourseToSteerEnabled) {
       flightGuidanceCrossTrackError = 0;
-      flightGuidanceTrackAngleError = getHeadingAngleError(
-          simData.Psi_magnetic_track_deg,
-          getHeadingSum(simData.Psi_magnetic_track_deg, getHeadingAngleError(simData.Psi_magnetic_deg, simData.gpsCourseToSteer)));
+      flightGuidanceTrackAngleError = getHeadingAngleError(simData.Psi_magnetic_deg, simData.gpsCourseToSteer);
       flightGuidancePhiPreCommand = 0;
     } else {
       flightGuidanceCrossTrackError = simData.gpsWpCrossTrack;
@@ -343,7 +341,8 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          flightGuidanceCrossTrackError,
                                                          flightGuidanceTrackAngleError,
                                                          flightGuidancePhiPreCommand,
-                                                         simData.speed_slot_index == 2};
+                                                         simData.speed_slot_index == 2,
+                                                         autopilotLawsOutput.Phi_loc_c};
     simConnectInterface.setClientDataLocalVariables(clientDataLocalVariables);
   }
 
@@ -507,6 +506,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.input.ATHR_engaged = (autoThrustOutput.status == 2);
     autopilotStateMachineInput.in.input.is_SPEED_managed = (simData.speed_slot_index == 2);
     autopilotStateMachineInput.in.input.FDR_event = get_named_variable_value(idFdrEvent);
+    autopilotStateMachineInput.in.input.Phi_loc_c = autopilotLawsOutput.Phi_loc_c;
 
     // step the model -------------------------------------------------------------------------------------------------
     autopilotStateMachine.setExternalInputs(&autopilotStateMachineInput);
@@ -817,6 +817,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsOutput.autopilot.Phi_c_deg = clientDataLaws.autopilotPhi;
     autopilotLawsOutput.flight_director.Beta_c_deg = clientDataLaws.autopilotBeta;
     autopilotLawsOutput.autopilot.Beta_c_deg = clientDataLaws.autopilotBeta;
+    autopilotLawsOutput.Phi_loc_c = clientDataLaws.locPhiCommand;
   }
 
   // update flight director -------------------------------------------------------------------------------------------
@@ -1207,10 +1208,6 @@ double FlyByWireInterface::smoothFlightDirector(double sampleTime, double factor
     difference = fmax(-1.0 * limit, difference);
   }
   return currentValue + (difference * fmin(1.0, sampleTime * factor));
-}
-
-double FlyByWireInterface::getHeadingSum(double u1, double u2) {
-  return fmod(u1 + u2 + 360.0, 360.0);
 }
 
 double FlyByWireInterface::getHeadingAngleError(double u1, double u2) {
