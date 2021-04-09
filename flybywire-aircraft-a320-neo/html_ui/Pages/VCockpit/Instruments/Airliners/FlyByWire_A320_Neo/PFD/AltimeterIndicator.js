@@ -17,9 +17,6 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.hudAPAltitude = 0;
         this.isHud = false;
         this._aircraft = Aircraft.A320_NEO;
-        this.goAround = false;
-        this.currentOrigin = "";
-        this.currentDestination = "";
     }
     static get observedAttributes() {
         return ["hud"];
@@ -458,7 +455,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.updateBaroPressure(baroMode);
         this.updateMtrs(indicatedAltitude, selectedAltitude);
         this._updateAltitudeAlert(indicatedAltitude);
-        this._updateQNHAlert(indicatedAltitude, baroMode);
+        this.updateQNHAlert(indicatedAltitude, baroMode);
         this.updateFail();
     }
 
@@ -529,62 +526,53 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         }
     }
 
-    _blinkQNH() {
+    updateQNHAlert(indicatedAltitude, mode) {
+        if (this.shouldShowBarometricAlert(indicatedAltitude, mode)) {
+            this.showBarometricAlert(mode);
+        } else {
+            this.hideBarometricAlert();
+        }
+    }
+
+    shouldShowBarometricAlert(indicatedAltitude, mode) {
+        if (Simplane.getIsGrounded()) {
+            return false;
+        }
+
+        const phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
+        const transitionAltitudeSimVarName = phase <= FmgcFlightPhases.CRUISE ? "L:AIRLINER_TRANS_ALT" : "L:AIRLINER_APPR_TRANS_ALT";
+
+        const transitionAltitude = SimVar.GetSimVarValue(transitionAltitudeSimVarName, "Number");
+        return this.shouldShowBarometricAlertForTransitionAltitude(indicatedAltitude, mode, transitionAltitude);
+    }
+
+    shouldShowBarometricAlertForTransitionAltitude(indicatedAltitude, mode, transitionAltitude) {
+        return (transitionAltitude <= indicatedAltitude && mode !== "STD") || (transitionAltitude >= indicatedAltitude && mode === "STD");
+    }
+
+    showBarometricAlert(mode) {
+        if (mode === "STD") {
+            this.blinkSTD();
+        } else {
+            this.blinkQNH();
+        }
+    }
+
+    blinkQNH() {
         this.pressureSVGLegend.classList.add("blink");
         this.pressureSVG.classList.add("blink");
     }
 
-    _blinkSTD() {
+    blinkSTD() {
         this.STDpressureSVG.classList.add("blink");
         this.STDpressureSVGShape.classList.add("blink");
     }
 
-    _removeBlink() {
+    hideBarometricAlert() {
         this.pressureSVGLegend.classList.remove("blink");
         this.pressureSVG.classList.remove("blink");
         this.STDpressureSVG.classList.remove("blink");
         this.STDpressureSVGShape.classList.remove("blink");
-    }
-
-    _updateQNHAlert(indicatedAltitude, baroMode) {
-        this._removeBlink(); //Reset Blink
-
-        const originTA = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
-        const destinationTA = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
-        const phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
-
-        if (phase === FmgcFlightPhases.GOAROUND) {
-            this.goAround = true;
-        }
-
-        if (!Simplane.getIsGrounded()) {
-            if (!this.goAround) {
-                if (originTA !== 0 && phase >= FmgcFlightPhases.TAKEOFF && phase <= FmgcFlightPhases.CRUISE) {
-                    if (originTA <= indicatedAltitude && baroMode !== "STD") {
-                        this._blinkQNH();
-                    }
-                } else if (destinationTA !== 0) {
-                    if (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH) {
-                        if (destinationTA >= indicatedAltitude && baroMode === "STD") {
-                            this._blinkSTD();
-                        }
-                    } else if (phase === FmgcFlightPhases.GOAROUND) {
-                        if (destinationTA <= indicatedAltitude && baroMode !== "STD") {
-                            this._blinkQNH();
-                        }
-                    }
-                }
-            } else if (this.goAround && destinationTA !== 0) {
-                if (destinationTA <= indicatedAltitude && baroMode !== "STD") {
-                    this._blinkQNH();
-                } else if (destinationTA >= indicatedAltitude && baroMode === "STD") {
-                    this._blinkSTD();
-                } else if (phase === FmgcFlightPhases.DONE) {
-                    this.goAround = false;
-                }
-            }
-            // TODO : If change flightplan while go-around phase, PFD still recognize go-around.
-        }
     }
 
     updateMtrs(_altitude, _selected) {
