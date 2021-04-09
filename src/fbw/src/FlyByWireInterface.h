@@ -222,6 +222,5 @@ class FlyByWireInterface {
 
   double smoothFlightDirector(double sampleTime, double factor, double limit, double currentValue, double targetValue);
 
-  double getHeadingSum(double u1, double u2);
   double getHeadingAngleError(double u1, double u2);
 };

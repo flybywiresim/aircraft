@@ -419,6 +419,8 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::AUTOPILOT_LAWS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
 
   // request data to be updated when set
   result &= SimConnect_RequestClientData(hSimConnect, ClientData::AUTOPILOT_LAWS, ClientData::AUTOPILOT_LAWS, ClientData::AUTOPILOT_LAWS,
@@ -467,6 +469,8 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::LOCAL_VARIABLES, sizeof(ClientDataLocalVariables),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES, SIMCONNECT_CLIENTDATAOFFSET_AUTO,

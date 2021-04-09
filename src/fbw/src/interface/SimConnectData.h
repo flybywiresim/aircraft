@@ -228,6 +228,7 @@ struct ClientDataAutopilotLaws {
   double flightDirectorPhi;
   double autopilotPhi;
   double autopilotBeta;
+  double locPhiCommand;
 };
 
 struct ClientDataAutothrust {
@@ -267,6 +268,7 @@ struct ClientDataLocalVariables {
   double flightManagementTrackAngleError;
   double flightManagementPhiCommand;
   double is_SPEED_managed;
+  double locPhiCommand;
 };
 
 struct ClientDataLocalVariablesAutothrust {

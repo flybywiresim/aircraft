@@ -104,6 +104,7 @@ typedef struct {
   boolean_T ATHR_engaged;
   boolean_T is_SPEED_managed;
   boolean_T FDR_event;
+  real_T Phi_loc_c;
 } ap_raw_sm_input;
 
 #endif
