@@ -102,7 +102,11 @@ impl BatteryChargeLimiter {
                 contactor_id
             ),
             arrow: ArrowBetweenBatteryAndBatBus::new(),
-            observer: Some(Box::new(OpenContactorObserver::from_off())),
+            // We start in an open state, because electrical tests assume this to be the starting state.
+            // This state might not be correct for all starting situations (*.flt files) in the simulator.
+            // When an initialisation phase is added to the system code we can overwrite this starting state
+            // with the appropriate one for the given starting situation.
+            observer: Some(Box::new(OpenContactorObserver::for_initial_bcl_state())),
         }
     }
 
@@ -158,7 +162,7 @@ impl BatteryStateObserver for OffPushButtonObserver {
         arguments: &BatteryChargeLimiterArguments,
     ) -> Box<dyn BatteryStateObserver> {
         if arguments.battery_push_button_is_auto() {
-            Box::new(OpenContactorObserver::from_off())
+            Box::new(ClosedContactorObserver::from_off())
         } else {
             self
         }
@@ -193,7 +197,7 @@ impl OpenContactorObserver {
         }
     }
 
-    fn from_off() -> Self {
+    fn for_initial_bcl_state() -> Self {
         Self::new(EmergencyElec::new(), false, false)
     }
 
@@ -306,7 +310,7 @@ impl ClosedContactorObserver {
     const BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS: u64 = 15;
     const EMER_ELEC_APU_MASTER_MAXIMUM_CLOSED_SECONDS: u64 = 180;
 
-    fn from_open(emergency_elec: EmergencyElec) -> Self {
+    fn new(emergency_elec: EmergencyElec) -> Self {
         Self {
             below_4_ampere_charging_duration: Duration::from_secs(0),
             below_23_volt_duration: Duration::from_secs(0),
@@ -315,6 +319,14 @@ impl ClosedContactorObserver {
             emergency_elec,
             had_apu_start: false,
         }
+    }
+
+    fn from_open(emergency_elec: EmergencyElec) -> Self {
+        Self::new(emergency_elec)
+    }
+
+    fn from_off() -> Self {
+        Self::new(EmergencyElec::new())
     }
 
     fn update_state(&mut self, context: &UpdateContext, arguments: &BatteryChargeLimiterArguments) {
@@ -995,6 +1007,25 @@ mod tests {
         }
 
         #[test]
+        fn contactor_closed_when_battery_push_button_from_off_to_auto() {
+            let mut test_bed = test_bed_with()
+                .battery_push_button_off()
+                .run(Duration::from_secs(1));
+
+            assert!(
+                !test_bed.battery_contactor_is_closed(),
+                "Test precondition: battery contactor expected to be open at this point."
+            );
+
+            test_bed = test_bed
+                .then_continue_with()
+                .battery_push_button_auto()
+                .run(Duration::from_secs(0));
+
+            assert!(test_bed.battery_contactor_is_closed());
+        }
+
+        #[test]
         fn contactor_closed_when_battery_voltage_below_charge_threshold_and_battery_bus_above_threshold_for_greater_than_225ms(
         ) {
             let test_bed = test_bed_with()
@@ -1015,10 +1046,7 @@ mod tests {
                 .battery_push_button_off()
                 .run(Duration::from_millis(
                     OpenContactorObserver::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
-                ))
-                .then_continue_with()
-                .battery_push_button_auto()
-                .run(Duration::from_millis(0));
+                ));
 
             assert!(!test_bed.battery_contactor_is_closed());
         }
