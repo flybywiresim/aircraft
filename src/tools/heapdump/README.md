@@ -2,7 +2,7 @@
 
 This is a tool that allows us to either count the number of javascript objects or allows you to
 
-#Usage
+# Usage
 
 1. Enable dumping by including `A32NX_ObjectDumper.js` anywhere into your HTML:
 
@@ -12,11 +12,11 @@ This is a tool that allows us to either count the number of javascript objects o
 
 Tip: Add it to `VCockpit.html` to be included in all instruments.
 
-##Counting
+## Counting
 
 Launch MSFS and inspect the JS logs of the instruments by a tool of your choice.
 
-##Dumping
+## Dumping
 
 1. Start local webserver
 
