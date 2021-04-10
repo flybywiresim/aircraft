@@ -170,6 +170,9 @@ void FlyByWireInterface::loadConfiguration() {
 }
 
 void FlyByWireInterface::setupLocalVariables() {
+  // register L variable for external override
+  idExternalOverride = register_named_variable("A32NX_EXTERNAL_OVERRIDE");
+
   // register L variable for FDR event
   idFdrEvent = register_named_variable("A32NX_DFDR_EVENT_ON");
 
@@ -892,7 +895,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     flyByWireInput.in.data.autopilot_custom_Theta_c_deg = autopilotLawsOutput.autopilot.Theta_c_deg;
     flyByWireInput.in.data.autopilot_custom_Phi_c_deg = autopilotLawsOutput.autopilot.Phi_c_deg;
     flyByWireInput.in.data.autopilot_custom_Beta_c_deg = autopilotLawsOutput.autopilot.Beta_c_deg;
-    flyByWireInput.in.data.tracking_mode_on_override = 0;
+    flyByWireInput.in.data.tracking_mode_on_override = get_named_variable_value(idExternalOverride) == 1;
     flyByWireInput.in.data.simulation_rate = simData.simulation_rate;
     flyByWireInput.in.data.ice_structure_percent = simData.ice_structure_percent;
     flyByWireInput.in.data.linear_cl_alpha_per_deg = simData.linear_cl_alpha_per_deg;
