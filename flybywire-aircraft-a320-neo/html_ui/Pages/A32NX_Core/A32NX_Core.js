@@ -65,7 +65,7 @@ class A32NX_Core {
             },
             {
                 name: 'Transition',
-                moduel: new A32NX_Transition(),
+                module: new A32NX_Transition(),
                 updateInterval: 500,
             },
         ];
