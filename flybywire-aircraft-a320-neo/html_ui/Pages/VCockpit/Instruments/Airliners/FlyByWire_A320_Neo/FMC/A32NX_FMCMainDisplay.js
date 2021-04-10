@@ -85,9 +85,11 @@ class FMCMainDisplay extends BaseAirliners {
         this._routeTripTime = 0;
         this._defaultTaxiFuelWeight = 0.2;
         this._rteRsvPercentOOR = false;
-        this._rteReservedEntered = false;
+        this._rteReservedWeightEntered = false;
+        this._rteReservedPctEntered = false;
         this._rteFinalCoeffecient = 0;
-        this._rteFinalEntered = false;
+        this._rteFinalWeightEntered = false;
+        this._rteFinalTimeEntered = false;
         this._routeAltFuelEntered = false;
         this._minDestFob = 0;
         this._minDestFobEntered = false;
@@ -1297,7 +1299,12 @@ class FMCMainDisplay extends BaseAirliners {
             this._routeAltFuelEntered = false;
             return true;
         }
-        const value = parseFloat(altFuel) * this._conversionWeight;
+        if (!this.altDestination) {
+            this.addNewMessage(NXSystemMessages.notAllowed);
+            return false;
+        }
+
+        const value = parseFloat(altFuel) / this._conversionWeight;
         if (isFinite(value)) {
             if (this.isAltFuelInRange(value)) {
                 this._routeAltFuelEntered = true;
@@ -1318,7 +1325,12 @@ class FMCMainDisplay extends BaseAirliners {
             this._minDestFobEntered = false;
             return true;
         }
-        const value = parseFloat(fuel) * this._conversionWeight;
+        if (!this.representsDecimalNumber(fuel)) {
+            this.addNewMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        const value = parseFloat(fuel) / this._conversionWeight;
         if (isFinite(value)) {
             if (this.isMinDestFobInRange(value)) {
                 this._minDestFobEntered = true;
@@ -1329,6 +1341,7 @@ class FMCMainDisplay extends BaseAirliners {
                 return true;
             } else {
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                return false;
             }
         }
         this.addNewMessage(NXSystemMessages.formatError);
@@ -2086,12 +2099,12 @@ class FMCMainDisplay extends BaseAirliners {
             this._taxiEntered = false;
             return true;
         }
-        if (!/[0-9]+(\.[0-9][0-9]?)?/.test(s)) {
+        if (!this.representsDecimalNumber(s)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
-        const value = parseFloat(s) * this._conversionWeight;
-        if (isFinite(value) && value >= 0) {
+        const value = parseFloat(s) / this._conversionWeight;
+        if (isFinite(value)) {
             if (this.isTaxiFuelInRange(value)) {
                 this._taxiEntered = true;
                 this.taxiFuelWeight = value;
@@ -2125,11 +2138,22 @@ class FMCMainDisplay extends BaseAirliners {
         if (s) {
             if (s === FMCMainDisplay.clrValue) {
                 this._routeFinalFuelTime = this._routeFinalFuelTimeDefault;
+                this._rteFinalWeightEntered = false;
+                this._rteFinalTimeEntered = false;
                 return true;
             }
-            const rteFinalTime = s.split("/")[1];
-            if (rteFinalTime !== undefined) {
+            // Time entry must start with '/'
+            if (s.startsWith("/")) {
+                const rteFinalTime = s.slice(1);
+
+                if (!/^\d{1,4}$/.test(rteFinalTime)) {
+                    this.addNewMessage(NXSystemMessages.formatError);
+                    return false;
+                }
+
                 if (this.isFinalTimeInRange(rteFinalTime)) {
+                    this._rteFinalWeightEntered = false;
+                    this._rteFinalTimeEntered = true;
                     this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4,"0"));
                     return true;
                 } else {
@@ -2150,26 +2174,31 @@ class FMCMainDisplay extends BaseAirliners {
     async trySetRouteFinalFuel(s) {
         if (s === FMCMainDisplay.clrValue) {
             this._routeFinalFuelTime = this._routeFinalFuelTimeDefault;
-            this._rteFinalEntered = false;
+            this._rteFinalWeightEntered = false;
+            this._rteFinalTimeEntered = false;
             return true;
         }
         if (s) {
-            this._rteFinalEntered = true;
-            const rteFinalWeight = parseFloat(s.split("/")[0]) / this._conversionWeight;
-            const rteFinalTime = s.split("/")[1];
-            if (rteFinalTime === undefined) {
-                if (this.isFinalFuelInRange(rteFinalWeight)) {
-                    this._routeFinalFuelWeight = rteFinalWeight;
-                    this._routeFinalFuelTime = (rteFinalWeight * 1000) / this._rteFinalCoeffecient;
-                    return true;
-                } else {
-                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
+            // Time entry must start with '/'
+            if (s.startsWith("/")) {
+                return this.trySetRouteFinalTime(s);
+            } else {
+                // If not time, try to parse as weight
+                // Weight can be entered with optional trailing slash, if so remove it before parsing the value
+                const enteredValue = s.endsWith("/") ? s.slice(0, -1) : s;
+
+                if (!this.representsDecimalNumber(enteredValue)) {
+                    this.addNewMessage(NXSystemMessages.formatError);
                     return false;
                 }
-            } else {
-                if (this.isFinalTimeInRange(rteFinalTime)) {
-                    this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4,"0"));
-                    this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
+
+                const rteFinalWeight = parseFloat(enteredValue) / this._conversionWeight;
+
+                if (this.isFinalFuelInRange(rteFinalWeight)) {
+                    this._rteFinalWeightEntered = true;
+                    this._rteFinalTimeEntered = false;
+                    this._routeFinalFuelWeight = rteFinalWeight;
+                    this._routeFinalFuelTime = (rteFinalWeight * 1000) / this._rteFinalCoeffecient;
                     return true;
                 } else {
                     this.addNewMessage(NXSystemMessages.entryOutOfRange);
@@ -2182,7 +2211,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getRouteReservedWeight() {
-        if (!this._rteReservedEntered && (this._rteFinalCoeffecient !== 0)) {
+        if (!this.routeReservedEntered() && (this._rteFinalCoeffecient !== 0)) {
             const fivePercentWeight = this._routeReservedPercent * this._routeTripFuelWeight / 100;
             const fiveMinuteHoldingWeight = (5 * this._rteFinalCoeffecient) / 1000;
 
@@ -2205,25 +2234,39 @@ class FMCMainDisplay extends BaseAirliners {
     trySetRouteReservedPercent(s) {
         if (s) {
             if (s === FMCMainDisplay.clrValue) {
-                this._rteReservedEntered = false;
+                this._rteReservedWeightEntered = false;
+                this._rteReservedPctEntered = false;
                 this._routeReservedWeight = 0;
                 this._routeReservedPercent = 5;
+                this._rteRsvPercentOOR = false;
                 return true;
             }
-            const rteRsvPercent = parseFloat(s.split("/")[1]);
-            if (!this.isRteRsvPercentInRange(rteRsvPercent)) {
-                this._rteRsvPercentOOR = true;
-                this.addNewMessage(NXSystemMessages.notAllowed);
-                return false;
+            // Percentage entry must start with '/'
+            if (s.startsWith("/")) {
+                const enteredValue = s.slice(1);
+
+                if (!this.representsDecimalNumber(enteredValue)) {
+                    this.addNewMessage(NXSystemMessages.formatError);
+                    return false;
+                }
+
+                const rteRsvPercent = parseFloat(enteredValue);
+
+                if (!this.isRteRsvPercentInRange(rteRsvPercent)) {
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    return false;
+                }
+
+                this._rteRsvPercentOOR = false;
+                this._rteReservedPctEntered = true;
+                this._rteReservedWeightEntered = false;
+
+                if (isFinite(rteRsvPercent)) {
+                    this._routeReservedWeight = NaN;
+                    this._routeReservedPercent = rteRsvPercent;
+                    return true;
+                }
             }
-            this._rteRsvPercentOOR = false;
-            if (isFinite(rteRsvPercent)) {
-                this._routeReservedWeight = NaN;
-                this._routeReservedPercent = rteRsvPercent;
-                return true;
-            }
-            this.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
@@ -2297,34 +2340,46 @@ class FMCMainDisplay extends BaseAirliners {
     trySetRouteReservedFuel(s) {
         if (s) {
             if (s === FMCMainDisplay.clrValue) {
-                this._rteReservedEntered = false;
+                this._rteReservedWeightEntered = false;
+                this._rteReservedPctEntered = false;
                 this._routeReservedWeight = 0;
                 this._routeReservedPercent = 5;
                 this._rteRsvPercentOOR = false;
                 return true;
             }
-            const rteRsvWeight = parseFloat(s.split("/")[0]) / this._conversionWeight;
-            const rteRsvPercent = parseFloat(s.split("/")[1]);
-            if (!this.isRteRsvPercentInRange(rteRsvPercent)) {
-                this._rteRsvPercentOOR = true;
-                return true;
-            }
-            this._rteRsvPercentOOR = false;
-            this._rteReservedEntered = true;
-            if (isFinite(rteRsvWeight)) {
-                this._routeReservedWeight = rteRsvWeight;
-                this._routeReservedPercent = 0;
-                if (this.isRteRsvPercentInRange(this.getRouteReservedPercent())) { // Bit of a hacky method due previous tight coupling of weight and percentage calculations
-                    return true;
-                } else {
-                    this.trySetRouteReservedFuel(FMCMainDisplay.clrValue);
-                    this._rteRsvPercentOOR = true;
+            // Percentage entry must start with '/'
+            if (s.startsWith("/")) {
+                return this.trySetRouteReservedPercent(s);
+            } else {
+                // If not percentage, try to parse as weight
+                // Weight can be entered with optional trailing slash, if so remove it before parsing the value
+                const enteredValue = s.endsWith("/") ? s.slice(0, -1) : s;
+
+                if (!this.representsDecimalNumber(enteredValue)) {
+                    this.addNewMessage(NXSystemMessages.formatError);
                     return false;
                 }
-            } else if (isFinite(rteRsvPercent)) {
-                this._routeReservedWeight = NaN;
-                this._routeReservedPercent = rteRsvPercent;
-                return true;
+
+                const rteRsvWeight = parseFloat(enteredValue) / this._conversionWeight;
+
+                if (!this.isRteRsvFuelInRange(rteRsvWeight)) {
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    return false;
+                }
+
+                this._rteReservedWeightEntered = true;
+                this._rteReservedPctEntered = false;
+
+                if (isFinite(rteRsvWeight)) {
+                    this._routeReservedWeight = rteRsvWeight;
+                    this._routeReservedPercent = 0;
+
+                    if (!this.isRteRsvPercentInRange(this.getRouteReservedPercent())) { // Bit of a hacky method due previous tight coupling of weight and percentage calculations
+                        this._rteRsvPercentOOR = true;
+                    }
+
+                    return true;
+                }
             }
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
@@ -3154,6 +3209,14 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    routeReservedEntered() {
+        return this._rteReservedWeightEntered || this._rteReservedPctEntered;
+    }
+
+    routeFinalEntered() {
+        return this._rteFinalWeightEntered || this._rteFinalTimeEntered;
+    }
+
     /* END OF MCDU GET/SET METHODS */
     /* UNSORTED CODE BELOW */
 
@@ -3299,8 +3362,13 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     //TODO: Can this be util?
+    isRteRsvFuelInRange(fuel) {
+        return 0 <= fuel && fuel <= 10.0;
+    }
+
+    //TODO: Can this be util?
     isRteRsvPercentInRange(value) {
-        return value > 0 && value < 15;
+        return value >= 0 && value <= 15.0;
     }
 
     //TODO: Can this be util?
@@ -3354,6 +3422,18 @@ class FMCMainDisplay extends BaseAirliners {
     //TODO: make this util or local var?
     isAltitudeManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT ALTITUDE SLOT INDEX", "number") === 2;
+    }
+
+    /**
+     * Check if the given string represents a decimal number.
+     * This may be a whole number or a number with one or more decimals.
+     * If the leading digit is 0 and one or more decimals are given, the leading digit may be omitted.
+     * @param str {string} String to check
+     * @returns {bool} True if str represents a decimal value, otherwise false
+     */
+    //TODO: Can this be util?
+    representsDecimalNumber(str) {
+        return /^[+-]?\d*(?:\.\d+)?$/.test(str);
     }
 }
 
