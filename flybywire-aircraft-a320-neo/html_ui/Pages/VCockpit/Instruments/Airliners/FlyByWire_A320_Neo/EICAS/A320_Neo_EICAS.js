@@ -89,8 +89,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("DOOR", "BottomScreen", "a32nx-door-page-element"); // MODIFIED
         this.createLowerScreenPage("WHEEL", "BottomScreen", "a320-neo-lower-ecam-wheel"); // MODIFIED
         this.createLowerScreenPage("FTCL", "BottomScreen", "a320-neo-lower-ecam-ftcl"); // MODIFIED
-        this.createLowerScreenPage("STS", "BottomScreen", "a320-neo-lower-ecam-status"); // MODIFIED
-        this.createLowerScreenPage("CRZ", "BottomScreen", "a320-neo-lower-ecam-crz"); // MODIFIED
+        this.createLowerScreenPage("STS", "BottomScreen", "a32nx-status-page-element"); // MODIFIED
+        this.createLowerScreenPage("CRZ", "BottomScreen", "a32nx-crz-page-element"); // MODIFIED
     }
 
     getLowerScreenChangeEventNamePrefix() {
@@ -301,6 +301,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         } else if ((ToPowerSet || !Simplane.getIsGrounded()) && !crzCond && this.minPageIndexWhenUnselected <= 2) {
             this.pageNameWhenUnselected = "ENG";
         } else if (crzCond && !(isGearExtended && altitude < 16000)) {
+            console.log("CRUISE PAGE");
             this.pageNameWhenUnselected = "CRZ";
             this.minPageIndexWhenUnselected = 3;
         } else if (isGearExtended && (altitude < 16000)) {

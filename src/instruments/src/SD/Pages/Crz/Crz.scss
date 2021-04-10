@@ -1,0 +1,75 @@
+@import "../../Common/definitions";
+
+#crz-page {
+
+    text {
+        fill: $display-white;
+    }
+
+    .standard {
+        font-size: $font-size-large;
+    }
+
+    .medium {
+        font-size: $font-size-medium;
+    }
+
+    .large {
+        font-size: $font-size-huge;
+    }
+
+    .cyan {
+        fill: $display-cyan !important;
+    }
+
+    .white {
+        fill: $display-white;
+    }
+
+    .green {
+        fill: $display-green !important;
+    }
+
+    .amber {
+        fill: $display-amber;
+    }
+
+    .center {
+        text-anchor: middle !important;
+    }
+
+    .show {
+        display:block;
+    }
+
+    .hide {
+        display: none;
+    }
+
+    .Title {
+        font-size: $font-size-title;
+        fill: $display-white;
+        text-decoration: underline;
+        text-anchor: middle !important;
+    }
+
+    .SubTitle {
+        font-size: $font-size-huge;
+        fill: $display-white;
+        text-decoration: underline;
+        text-anchor: middle !important;
+    }
+
+    .Gauge {
+        stroke: $display-white;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .WingPlaneSym {
+        stroke: $display-grey;
+        stroke-width: 2;
+        fill: none;
+      }
+
+}

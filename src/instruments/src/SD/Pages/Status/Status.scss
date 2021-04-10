@@ -1,0 +1,83 @@
+@import "../../../Common/definitions.scss";
+
+#status-page {
+
+    #status-messages {
+        position: absolute;
+        left: 3%;
+        width: 55%;
+        top: 15%;
+        height: 30%;
+      }
+
+    #inop-systems {
+        position: absolute;
+        left: 67.5%;
+        width: 50%;
+        top: 15%;
+        height: 30%;
+      }
+    #status-messages div, #inop-systems div {
+        width: 100%;
+        height: 12%;
+        font-size: 40px;
+        text-align: left;
+      }
+
+    .InfoIndication {
+        color: var(--displayGreen);
+      }
+    .InfoCaution {
+        color: var(--displayAmber);
+      }
+    .InfoWarning {
+        color: var(--displayRed);
+      }
+    .InfoSpecial {
+        color: var(--displayMagenta);
+      }
+    .Action {
+        color: var(--displayCyan);
+      }
+
+    .Underline,.action-underline {
+        text-decoration: underline;
+      }
+
+    .Completed {
+        display: none;
+      }
+
+    text {
+        text-anchor: middle;
+        alignment-baseline: central;
+      }
+
+    #inop-sys {
+        position: absolute;
+        left: 67.5%;
+        width: 30%;
+        top: 68%;
+        height: 30%;
+      }
+
+    #inop-sys div {
+        width: 100%;
+        height: 12%;
+        font-size: 40px;
+        text-align: left;
+      }
+
+    .action,
+    .action-underline,
+    .cyan {
+        color: var(--displayCyan);
+      }
+
+    .Underline,
+    .action-underline {
+        text-decoration: underline;
+      }
+
+
+}

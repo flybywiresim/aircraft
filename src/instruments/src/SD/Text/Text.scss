@@ -2,7 +2,7 @@
 
 text.text-unit {
   fill: $display-cyan;
-  font-size: $font-size-large;
+  font-size: $font-size-large !important;
 }
 
 text.text-value {

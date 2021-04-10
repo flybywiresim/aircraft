@@ -213,6 +213,11 @@ class CDUFlightPlanPage {
                 if (approachRunway) {
                     apprElev = (approachRunway.elevation * 3.280).toFixed(0).toString();
                     apprColor = color;
+                    console.log("MCDU landing elevation " + approachRunway.elevation);
+                    SimVar.SetSimVarValue('L:A32NX_DCDU_APPROACH_RUNWAY_ELEVATION', 'Meters', approachRunway.elevation);
+
+                } else {
+                    SimVar.SetSimVarValue('L:A32NX_DCDU_APPROACH_RUNWAY_ELEVATION', 'Meters', -5000);
                 }
                 apprElev = apprElev.padStart(6,"\xa0");
                 if (mcdu.flightPlanManager.getDestination()) {
