@@ -30,6 +30,12 @@ const execute = async () => {
             }, {
                 name: 'Model',
                 sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/model'
+            }, {
+                name: 'Panels',
+                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/panel'
+            }, {
+                name: 'MarketplaceData',
+                sourceDir: './MarketplaceData'
             }]
         });
         console.log(result);
