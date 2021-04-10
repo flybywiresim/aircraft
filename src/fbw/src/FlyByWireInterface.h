@@ -97,6 +97,8 @@ class FlyByWireInterface {
 
   InterpolatingLookupTable throttleLookupTable;
 
+  ID idExternalOverride;
+
   ID idFdrEvent;
 
   ID idSideStickPositionX;
