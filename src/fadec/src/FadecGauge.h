@@ -31,54 +31,44 @@ using namespace std;
 
 class FadecGauge {
  private:
-  // SimVars* simVars;
   bool isConnected = false;
 
-  /// <summary>
-  /// Initializes the connection to SimConnect.
-  /// </summary>
-  /// <returns>True if successful, false otherwise.</returns>
+  // Initializes the connection to SimConnect.
   bool InitializeSimConnect() {
-    printf("Connecting to SimConnect...\r\n");
+    std::cout << "FADEC: Connecting to SimConnect..." << std::endl;
     if (SUCCEEDED(SimConnect_Open(&hSimConnect, "FadecGauge", nullptr, 0, 0, 0))) {
-      printf("SimConnect connected.\r\n");
+      std::cout << "FADEC: SimConnect connected." << std::endl;
 
       // SimConnect Tanker Definitions
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelControls, "FUEL TANK LEFT MAIN QUANTITY", "Gallons");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelControls, "FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelControls, "FUEL TANK CENTER QUANTITY", "Gallons");
 
-      printf("SimConnect registrations complete.\r\n");
+      std::cout << "FADEC: SimConnect registrations complete." << std::endl;
       return true;
     }
 
-    printf("SimConnect failed.\r\n");
+    std::cout << "FADEC: SimConnect failed." << std::endl;
 
     return false;
   }
 
  public:
-  /// <summary>
-  /// Initializes the FD.
-  /// </summary>
-  /// <returns>True if successful, false otherwise.</returns>
+  // Initializes the FADEC.
   bool InitializeFADEC() {
     if (!this->InitializeSimConnect()) {
-      printf("Init SimConnect failed");
+      std::cout << "FADEC: Init SimConnect failed." << std::endl;
       return false;
     }
 
     EngCntrlInst.initialize();
     isConnected = true;
-    /// SimConnect_CallDispatch(hSimConnect, HandleAxisEvent, this);
+    // SimConnect_CallDispatch(hSimConnect, HandleAxisEvent, this);
 
     return true;
   }
 
-  /// <summary>
-  /// A callback used to update the FD at each tick.
-  /// </summary>
-  /// <param name="deltaTime">The time since the previous update.</param>
-  /// <returns>True if successful, false otherwise.</returns>
+  // A callback used to update the FADEC at each tick (dt).
   bool OnUpdate(double deltaTime) {
     if (isConnected == true) {
       EngCntrlInst.update(deltaTime);
@@ -87,16 +77,13 @@ class FadecGauge {
     return true;
   }
 
-  /// <summary>
-  /// Kill.
-  /// </summary>
-  /// <returns>True if succesful, false otherwise.</returns>
+  // Kills the FADEC and unregisters all LVars
   bool KillFADEC() {
+    std::cout << "FADEC: Disconnecting ..." << std::endl;
     EngCntrlInst.terminate();
     isConnected = false;
-    // this->simVars->setPrePhase(-1);
-    // this->simVars->setActualPhase(-1);
     unregister_all_named_vars();
+    std::cout << "FADEC: Disconnected." << std::endl;
     return SUCCEEDED(SimConnect_Close(hSimConnect));
   }
 };

@@ -2,14 +2,10 @@
 
 class SimVars;
 
-/// <summary>
-/// The handle to the SimConnect instance.
-/// </summary>
+// The handle to the SimConnect instance.
 HANDLE hSimConnect;
 
-/// <summary>
-/// The environmental corrected ratios
-/// </summary>
+// Calculating environmental corrected ratios
 class Ratios {
  public:
   FLOAT64 theta(double altitude) {
@@ -54,6 +50,7 @@ class Timer {
   std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTimepoint;
 };
 
+// Padding function for the imbalance function
 template <typename T /*, typename = std::enable_if_t<std::is_integral_v<T>>*/>
 std::string to_string_with_zero_padding(const T& value, std::size_t total_length) {
   auto str = std::to_string(value);
@@ -62,6 +59,7 @@ std::string to_string_with_zero_padding(const T& value, std::size_t total_length
   return str;
 }
 
+// Imbalance decoder function
 double imbalance_extractor(double imbalance, int parameter) {
   double reg = 0;
 
