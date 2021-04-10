@@ -22,7 +22,7 @@
     "@babel/preset-typescript": "~7.12.7",
     "@flybywiresim/igniter": "^1.1.4",
     "@flybywiresim/eslint-config": "~0.1.0",
-    "@flybywiresim/fragmenter": "^0.1.5",
+    "@flybywiresim/fragmenter": "^0.5.1",
     "@flybywiresim/rnp": "^2.1.0",
     "@flybywiresim/rollup-plugin-msfs": "~0.1.4",
     "@rollup/plugin-babel": "^5.2.1",
