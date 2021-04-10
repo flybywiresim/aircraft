@@ -446,6 +446,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.bz_m_s2 = simData.bz_m_s2;
     autopilotStateMachineInput.in.data.nav_valid = (simData.nav_valid != 0);
     autopilotStateMachineInput.in.data.nav_loc_deg = simData.nav_loc_deg;
+    autopilotStateMachineInput.in.data.nav_gs_deg = simData.nav_gs_deg;
     autopilotStateMachineInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
     autopilotStateMachineInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
     autopilotStateMachineInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
@@ -739,6 +740,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.bz_m_s2 = simData.bz_m_s2;
     autopilotLawsInput.in.data.nav_valid = (simData.nav_valid != 0);
     autopilotLawsInput.in.data.nav_loc_deg = simData.nav_loc_deg;
+    autopilotLawsInput.in.data.nav_gs_deg = simData.nav_gs_deg;
     autopilotLawsInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
     autopilotLawsInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
     autopilotLawsInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);

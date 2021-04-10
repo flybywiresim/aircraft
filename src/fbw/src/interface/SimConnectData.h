@@ -87,6 +87,7 @@ struct SimData {
   double engine_2_thrust_lbf;
   unsigned long long nav_valid;
   double nav_loc_deg;
+  double nav_gs_deg;
   unsigned long long nav_dme_valid;
   double nav_dme_nmi;
   unsigned long long nav_loc_valid;

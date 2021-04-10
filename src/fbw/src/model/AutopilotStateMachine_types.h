@@ -38,6 +38,7 @@ typedef struct {
   real_T bz_m_s2;
   boolean_T nav_valid;
   real_T nav_loc_deg;
+  real_T nav_gs_deg;
   real_T nav_dme_valid;
   real_T nav_dme_nmi;
   boolean_T nav_loc_valid;
@@ -174,6 +175,7 @@ typedef struct {
   real_T bz_m_s2;
   boolean_T nav_valid;
   real_T nav_loc_deg;
+  real_T nav_gs_deg;
   real_T nav_dme_valid;
   real_T nav_dme_nmi;
   boolean_T nav_loc_valid;
