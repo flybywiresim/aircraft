@@ -6,6 +6,7 @@
 
 ## 0.7.0
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
+1. [ND] ND Waypoint Icon Size, Icon Outlines, Airplane Icon Color and Outline - @marcman86 (marcman86#4907)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
