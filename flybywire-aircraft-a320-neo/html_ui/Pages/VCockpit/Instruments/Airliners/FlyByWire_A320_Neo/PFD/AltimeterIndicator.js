@@ -547,7 +547,8 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     }
 
     shouldShowBarometricAlertForTransitionAltitude(indicatedAltitude, mode, transitionAltitude) {
-        return (transitionAltitude <= indicatedAltitude && mode !== "STD") || (transitionAltitude >= indicatedAltitude && mode === "STD");
+        return transitionAltitude &&
+            ((transitionAltitude <= indicatedAltitude && mode !== "STD") || (transitionAltitude >= indicatedAltitude && mode === "STD"));
     }
 
     showBarometricAlert(mode) {
