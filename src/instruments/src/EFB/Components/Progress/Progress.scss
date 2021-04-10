@@ -1,0 +1,11 @@
+.vertical-progress-bar {
+  @apply bg-gray-400;
+  position: absolute;
+  margin-top: -10px;
+  width: 5px;
+  height: 31px;
+}
+.progress-bar {
+  margin-top: 7px;
+  margin-right: 15px;
+}

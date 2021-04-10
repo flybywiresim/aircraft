@@ -1,27 +1,10 @@
-/*
- * A32NX
- * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 import React from 'react';
 
 import OverviewPage from './Pages/OverviewPage';
 import LoadsheetPage from './Pages/LoadsheetPage';
 import PayloadPage from './Pages/PayloadPage';
 import { Navbar } from '../Components/Navbar';
+import { FuelPage } from './Pages/FuelPage';
 
 type DispatchProps = {
     loadsheet: string,
@@ -72,7 +55,7 @@ type DispatchState = {
 class Dispatch extends React.Component<DispatchProps, DispatchState> {
     tabs = [
         'Overview',
-        'Loadsheet',
+        'OFP',
         'Fuel',
         'Payload',
     ];
@@ -89,7 +72,27 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
 
     currentPage() {
         switch (this.state.activeIndex) {
-        case 0:
+        case 1:
+            return (
+                <LoadsheetPage loadsheet={this.props.loadsheet} />
+            );
+        case 2:
+            return (
+                <FuelPage />
+            );
+        case 3:
+            return (
+                <div className="w-full h-full">
+                    <PayloadPage />
+                </div>
+            );
+        case 4:
+            return (
+                <div className="w-full h-full">
+                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
+                </div>
+            );
+        default:
             return (
                 <OverviewPage
                     weights={this.props.weights}
@@ -108,24 +111,6 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
                     taxiOutTime={this.props.taxiOutTime}
                 />
             );
-        case 1:
-            return (
-                <LoadsheetPage loadsheet={this.props.loadsheet} />
-            );
-        case 2:
-            return (
-                <div className="w-full h-full">
-                    <p className="text-white font-medium mt-6 ml-4 text-3xl">Inop.</p>
-                </div>
-            );
-        case 3:
-            return (
-                <div className="w-full h-full">
-                    <PayloadPage />
-                </div>
-            );
-        default:
-            return null;
         }
     }
 

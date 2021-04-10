@@ -1,21 +1,3 @@
-<!--
-  ~ A32NX
-  ~ Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
-  ~
-  ~ This program is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  -->
-
 <ModelBehaviors>
 
     <!--
@@ -303,6 +285,27 @@
         <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
             <LIGHT_TYPE>LANDING</LIGHT_TYPE>
             <KEY_ID>LANDING_LIGHTS_TOGGLE</KEY_ID>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for console light switches
+    -->
+    <Template Name="FBW_LIGHTING_Switch_Console_Template">
+        <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
+            <DIMMER/>
+            <ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+            <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
+            <ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
+            <ANIMTIP_0>Set CONSOLE/FLOOR OFF</ANIMTIP_0>
+            <ANIMTIP_1>Set CONSOLE/FLOOR DIM</ANIMTIP_1>
+            <ANIMTIP_2>Set CONSOLE/FLOOR BRT</ANIMTIP_2>
+            <ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
+            <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
+            <INVERT_ANIM>True</INVERT_ANIM>
+            <WWISE_EVENT>lswitch</WWISE_EVENT>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
         </UseTemplate>
     </Template>
 

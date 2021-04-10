@@ -1,7 +1,6 @@
 ---
 name: Feature request
 about: Suggest a new feature for the aircraft
-title: "[REQUEST] INSERT TITLE HERE"
 labels: Enhancement
 assignees: ''
 

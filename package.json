@@ -6,7 +6,6 @@
     "lint-fix": "npm run lint -- --fix",
     "prettier": "prettier --write **/*.json **/*.yml src/instruments/**/*.css",
     "build:instruments": "rollup -c src/instruments/rollup.config.js",
-    "postinstall": "husky install",
     "serve:efb": "cd src/instruments/src/EFB/ && rollup -wc ./rollup.development.config.js"
   },
   "lint-staged": {
@@ -21,8 +20,9 @@
     "@babel/preset-env": "^7.12.1",
     "@babel/preset-react": "^7.12.1",
     "@babel/preset-typescript": "~7.12.7",
+    "@flybywiresim/igniter": "^1.1.4",
     "@flybywiresim/eslint-config": "~0.1.0",
-    "@flybywiresim/fragmenter": "^0.1.5",
+    "@flybywiresim/fragmenter": "^0.5.1",
     "@flybywiresim/rnp": "^2.1.0",
     "@flybywiresim/rollup-plugin-msfs": "~0.1.4",
     "@rollup/plugin-babel": "^5.2.1",
@@ -41,7 +41,6 @@
     "css-loader": "^5.0.1",
     "eslint": "7.21.0",
     "file-loader": "^6.2.0",
-    "husky": "^5.0.4",
     "jsdom": "^16.4.0",
     "lint-staged": "10.4.0",
     "prettier": "2.1.2",

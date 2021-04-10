@@ -1,8 +1,8 @@
 # A320neo Local SimVars
 
 - A32NX_NO_SMOKING_MEMO
-    - Boolean that determines whether the NO SMOKING annunciation should be visible on the ECAM memo
-    - Also is used for knowing when to play the NO SMOKING chime sound
+    - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM
+    - Also is used for knowing when to play the no smoking chime sound
 
 - A32NX_ADIRS_PFD_ALIGNED
     - Bool
@@ -29,20 +29,25 @@
 - A32NX_BRAKE_TEMPERATURE_{1,2,3,4}
     - celsius
     - represents the brake temperature of the rear wheels
+
 - A32NX_REPORTED_BRAKE_TEMPERATURE_{1,2,3,4}
     - celsius
     - represents the reported brake temperature of the rear wheels by the sensor.
     - It can be different from the brake temperature when the brake fan has been used, because the brake fan will cool the sensor more than the brakes
 	- (which have much more energy to dissipate) therefore giving potentially erroneous readings that the pilots must take into account
+
 - A32NX_BRAKE_FAN
 	- boolean
 	- whether or not the brake fan is running (brake fan button pressed AND left main landing gear down and locked)
+
 - A32NX_BRAKE_FAN_BTN_PRESSED
 	- boolean
 	- whether or not the brake fan button is pressed
+
 - A32NX_BRAKES_HOT
     - boolean
     - whether one of the brakes are hot (>300°C)
+
 - XMLVAR_Auto
     - Used in the `.flt` files to set a default value for the ATC 3 way switch on the TCAS panel
     - Maps to the `I:XMLVAR_Auto` variable which is the actual backing var for the switch
@@ -366,10 +371,6 @@
     - Percent
     - The APU's rotations per minute in percentage of the maximum RPM
 
-- A32NX_APU_START_CONTACTOR_ENERGIZED
-    - Bool
-    - Indicates if the APU START contactor is energized
-
 - A32NX_APU_BLEED_AIR_VALVE_OPEN
     - Bool
     - Indicates if the APU bleed air valve is open
@@ -450,6 +451,9 @@
     - feet
     - The engine out acceleration altitude, set in the PERF TAKE OFF page.
 
+- A32NX_SLIDES_ARMED
+    - Boolean
+    - Indicates whether the door slides are armed or not
 
 - A32NX_RAIN_REPELLENT_RIGHT_ON
     -Bool
@@ -628,6 +632,15 @@
         - 11XU2: AC BUS tie 2 contactor
         - 15XE1: Contactor between AC ESS BUS and TR ESS + EMER GEN
         - 15XE2: Contactor between the static inverter and AC ESS BUS
+        - 10KA_AND_5KA: The two contactors leading to the APU start motor
+
+- A32NX_ELEC_CONTACTOR_{name}_SHOW_ARROW_WHEN_CLOSED
+    - Bool
+    - True when the arrow from the battery to the battery bus or vice versa needs to be displayed
+      when the contactor is closed.
+    - {name}
+        - 6PB1: Battery 1 contactor
+        - 6PB2: Battery 2 contactor
 
 - A32NX_ELEC_{name}_BUS_IS_POWERED
     - Bool
@@ -724,8 +737,8 @@
         - TR_1
         - TR_2
         - TR_3: TR ESS
-        - BAT_10: Battery 1
-        - BAT_11: Battery 2
+        - BAT_10: Battery 1 (negative when discharging, positive when charging)
+        - BAT_11: Battery 2 (negative when discharging, positive when charging)
 
 - A32NX_ELEC_{name}_CURRENT_NORMAL
     - Ampere

@@ -4,7 +4,7 @@ const fs = require('fs');
 const execute = async () => {
     try {
         const result = await fragmenter.pack({
-            baseDir: './A32NX',
+            baseDir: './flybywire-aircraft-a320-neo',
             outDir: './build-modules',
             modules: [{
                 name: 'effects',
@@ -20,16 +20,22 @@ const execute = async () => {
                 sourceDir: './ModelBehaviorDefs'
             }, {
                 name: 'Textures',
-                sourceDir: './SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE'
+                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE'
             }, {
                 name: 'Livery',
-                sourceDir: './SimObjects/AirPlanes/Asobo_A320_NEO-LIVERY'
+                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO-LIVERY'
             }, {
                 name: 'Sound',
-                sourceDir: './SimObjects/AirPlanes/Asobo_A320_NEO/sound'
+                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/sound'
             }, {
                 name: 'Model',
-                sourceDir: './SimObjects/AirPlanes/Asobo_A320_NEO/model'
+                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/model'
+            }, {
+                name: 'Panels',
+                sourceDir: './SimObjects/AirPlanes/FlyByWire_A320_NEO/panel'
+            }, {
+                name: 'MarketplaceData',
+                sourceDir: './MarketplaceData'
             }]
         });
         console.log(result);

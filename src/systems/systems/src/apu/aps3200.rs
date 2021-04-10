@@ -1,15 +1,16 @@
-use super::{ApuGenerator, Turbine, TurbineController, TurbineState};
+use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineController, TurbineState};
 use crate::{
     electrical::{
-        ElectricalStateWriter, Potential, PotentialSource, ProvideFrequency, ProvideLoad,
-        ProvidePotential,
+        consumption::{PowerConsumption, PowerConsumptionReport},
+        ElectricalStateWriter, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
+        ProvideFrequency, ProvideLoad, ProvidePotential,
     },
-    shared::{calculate_towards_target_temperature, random_number, TimedRandom},
+    shared::{calculate_towards_target_temperature, random_number},
     simulation::{SimulationElement, SimulatorWriter, UpdateContext},
 };
 use std::time::Duration;
 use uom::si::{
-    electric_current::ampere, electric_potential::volt, f64::*, frequency::hertz, ratio::percent,
+    electric_potential::volt, f64::*, frequency::hertz, power::watt, ratio::percent,
     temperature_interval, thermodynamic_temperature::degree_celsius,
 };
 
@@ -179,7 +180,7 @@ impl Turbine for Starting {
         _: bool,
         controller: &dyn TurbineController,
     ) -> Box<dyn Turbine> {
-        self.since += context.delta;
+        self.since += context.delta();
         self.n = self.calculate_n();
         self.egt = self.calculate_egt(context);
 
@@ -232,9 +233,9 @@ impl BleedAirUsageEgtDelta {
 
         if (self.current - self.target).abs() > f64::EPSILON {
             if self.current > self.target {
-                self.current -= self.delta_per_second() * context.delta.as_secs_f64();
+                self.current -= self.delta_per_second() * context.delta().as_secs_f64();
             } else {
-                self.current += self.delta_per_second() * context.delta.as_secs_f64();
+                self.current += self.delta_per_second() * context.delta().as_secs_f64();
             }
         }
 
@@ -294,11 +295,13 @@ impl ApuGenUsageEgtDelta {
 
     fn update(&mut self, context: &UpdateContext, apu_gen_is_used: bool) {
         self.time = if apu_gen_is_used {
-            (self.time + context.delta).min(Duration::from_secs(
+            (self.time + context.delta()).min(Duration::from_secs(
                 ApuGenUsageEgtDelta::SECONDS_TO_REACH_TARGET,
             ))
         } else {
-            Duration::from_secs_f64((self.time.as_secs_f64() - context.delta.as_secs_f64()).max(0.))
+            Duration::from_secs_f64(
+                (self.time.as_secs_f64() - context.delta().as_secs_f64()).max(0.),
+            )
         };
     }
 
@@ -341,7 +344,7 @@ impl Running {
     ) -> ThermodynamicTemperature {
         // Reduce the deviation by 1 per second to slowly creep back to normal temperatures
         self.base_egt_deviation -= TemperatureInterval::new::<temperature_interval::degree_celsius>(
-            (context.delta.as_secs_f64() * 1.).min(
+            (context.delta().as_secs_f64() * 1.).min(
                 self.base_egt_deviation
                     .get::<temperature_interval::degree_celsius>(),
             ),
@@ -390,6 +393,16 @@ impl Turbine for Running {
 struct Stopping {
     since: Duration,
     base_temperature: ThermodynamicTemperature,
+    // When the APU start is unsuccessful the stopping state
+    // is entered with N < 100%. This factor ensures that we damped
+    // the resulting N calculated by this state, to ensure N doesn't
+    // suddenly go from 30 to 100.
+    n_factor: f64,
+    // When the APU start is unsuccessful the stopping state
+    // is entered with N < 100%. As EGT in this state is a function of N,
+    // we need to adapt the EGT calculation to this. This ensures EGT
+    // doesn't just suddenly drop by e.g. 80 degrees due to the low N.
+    egt_delta_at_entry: TemperatureInterval,
     n: Ratio,
     egt: ThermodynamicTemperature,
 }
@@ -398,12 +411,14 @@ impl Stopping {
         Stopping {
             since: Duration::from_secs(0),
             base_temperature: egt,
+            n_factor: n.get::<percent>() / 100.,
+            egt_delta_at_entry: Stopping::calculate_egt_delta(n),
             n,
             egt,
         }
     }
 
-    fn calculate_egt_delta(&self) -> TemperatureInterval {
+    fn calculate_egt_delta(n: Ratio) -> TemperatureInterval {
         // Refer to APS3200.md for details on the values below and source data.
         const APU_N_TEMP_DELTA_CONST: f64 = -125.73137672208446;
         const APU_N_TEMP_DELTA_X: f64 = 2.7141683591219037;
@@ -419,7 +434,7 @@ impl Stopping {
         const APU_N_TEMP_DELTA_X11: f64 = -0.00000000000000253354;
         const APU_N_TEMP_DELTA_X12: f64 = 0.00000000000000000451;
 
-        let n = self.n.get::<percent>();
+        let n = n.get::<percent>();
         TemperatureInterval::new::<temperature_interval::degree_celsius>(
             APU_N_TEMP_DELTA_CONST
                 + (APU_N_TEMP_DELTA_X * n)
@@ -437,7 +452,7 @@ impl Stopping {
         )
     }
 
-    fn calculate_n(&self) -> Ratio {
+    fn calculate_n(since: Duration) -> Ratio {
         // Refer to APS3200.md for details on the values below and source data.
         const APU_N_CONST: f64 = 100.22975364965701;
         const APU_N_X: f64 = -24.692008355859773;
@@ -454,7 +469,7 @@ impl Stopping {
 
         // Protect against the formula returning increasing results after this value.
         const TIME_LIMIT: f64 = 49.411;
-        let since = self.since.as_secs_f64().min(TIME_LIMIT);
+        let since = since.as_secs_f64().min(TIME_LIMIT);
 
         let n = (APU_N_CONST
             + (APU_N_X * since)
@@ -482,9 +497,10 @@ impl Turbine for Stopping {
         _: bool,
         _: &dyn TurbineController,
     ) -> Box<dyn Turbine> {
-        self.since += context.delta;
-        self.n = self.calculate_n();
-        self.egt = self.base_temperature + self.calculate_egt_delta();
+        self.since += context.delta();
+        self.n = Stopping::calculate_n(self.since) * self.n_factor;
+        self.egt =
+            self.base_temperature + Stopping::calculate_egt_delta(self.n) - self.egt_delta_at_entry;
 
         if self.n.get::<percent>() == 0. {
             Box::new(ShutdownAps3200Turbine::new_with_egt(self.egt))
@@ -513,21 +529,21 @@ fn calculate_towards_ambient_egt(
     const APU_AMBIENT_COEFFICIENT: f64 = 1.;
     calculate_towards_target_temperature(
         current_egt,
-        context.ambient_temperature,
+        context.ambient_temperature(),
         APU_AMBIENT_COEFFICIENT,
-        context.delta,
+        context.delta(),
     )
 }
 
 /// APS3200 APU Generator
 pub struct Aps3200ApuGenerator {
     number: usize,
+    n: Ratio,
     writer: ElectricalStateWriter,
-    output: Potential,
-    random_voltage: TimedRandom<f64>,
-    current: ElectricCurrent,
-    potential: ElectricPotential,
-    frequency: Frequency,
+    output_frequency: Frequency,
+    output_potential: ElectricPotential,
+    load: Ratio,
+    is_emergency_shutdown: bool,
 }
 impl Aps3200ApuGenerator {
     const APU_GEN_POWERED_N: f64 = 84.;
@@ -535,15 +551,12 @@ impl Aps3200ApuGenerator {
     pub fn new(number: usize) -> Aps3200ApuGenerator {
         Aps3200ApuGenerator {
             number,
+            n: Ratio::new::<percent>(0.),
             writer: ElectricalStateWriter::new(&format!("APU_GEN_{}", number)),
-            output: Potential::None,
-            random_voltage: TimedRandom::new(
-                Duration::from_secs(1),
-                vec![114., 115., 115., 115., 115.],
-            ),
-            current: ElectricCurrent::new::<ampere>(0.),
-            potential: ElectricPotential::new::<volt>(0.),
-            frequency: Frequency::new::<hertz>(0.),
+            output_potential: ElectricPotential::new::<volt>(0.),
+            output_frequency: Frequency::new::<hertz>(0.),
+            load: Ratio::new::<percent>(0.),
+            is_emergency_shutdown: false,
         }
     }
 
@@ -555,7 +568,7 @@ impl Aps3200ApuGenerator {
         } else if n < 85. {
             ElectricPotential::new::<volt>(105.)
         } else {
-            ElectricPotential::new::<volt>(self.random_voltage.current_value())
+            ElectricPotential::new::<volt>(115.)
         }
     }
 
@@ -601,76 +614,126 @@ impl Aps3200ApuGenerator {
             Frequency::new::<hertz>(400.)
         }
     }
+
+    fn should_provide_output(&self) -> bool {
+        !self.is_emergency_shutdown
+            && self.n.get::<percent>() >= Aps3200ApuGenerator::APU_GEN_POWERED_N
+    }
 }
 impl ApuGenerator for Aps3200ApuGenerator {
-    fn update(&mut self, context: &UpdateContext, n: Ratio, is_emergency_shutdown: bool) {
-        self.random_voltage.update(context);
-        self.output = if is_emergency_shutdown
-            || n.get::<percent>() < Aps3200ApuGenerator::APU_GEN_POWERED_N
-        {
-            Potential::None
-        } else {
-            Potential::ApuGenerator(self.number)
-        };
+    fn update(&mut self, n: Ratio, is_emergency_shutdown: bool) {
+        self.n = n;
+        self.is_emergency_shutdown = is_emergency_shutdown;
+    }
 
-        self.current = if self.is_powered() {
-            // TODO: Once we actually know what to do with the amperes, we'll have to adapt this.
-            ElectricCurrent::new::<ampere>(782.60)
-        } else {
-            ElectricCurrent::new::<ampere>(0.)
-        };
-
-        self.potential = if self.is_powered() {
-            self.calculate_potential(n)
-        } else {
-            ElectricPotential::new::<volt>(0.)
-        };
-
-        self.frequency = if self.is_powered() {
-            self.calculate_frequency(n)
-        } else {
-            Frequency::new::<hertz>(0.)
-        };
+    /// Indicates if the provided electricity's potential and frequency
+    /// are within normal parameters. Use this to decide if the
+    /// generator contactor should close.
+    /// Load shouldn't be taken into account, as overloading causes an
+    /// overtemperature which over time will trigger a mechanical
+    /// disconnect of the generator.
+    fn output_within_normal_parameters(&self) -> bool {
+        self.should_provide_output() && self.potential_normal() && self.frequency_normal()
     }
 }
-impl ProvidePotential for Aps3200ApuGenerator {
-    fn potential(&self) -> ElectricPotential {
-        self.potential
-    }
-
-    fn potential_normal(&self) -> bool {
-        let volts = self.potential.get::<volt>();
-        (110.0..=120.0).contains(&volts)
-    }
-}
-impl ProvideFrequency for Aps3200ApuGenerator {
-    fn frequency(&self) -> Frequency {
-        self.frequency
-    }
-
-    fn frequency_normal(&self) -> bool {
-        let hz = self.frequency.get::<hertz>();
-        (390.0..=410.0).contains(&hz)
-    }
-}
-impl ProvideLoad for Aps3200ApuGenerator {
-    fn load(&self) -> Ratio {
-        // TODO: Replace with actual values once calculated.
-        Ratio::new::<percent>(0.)
-    }
-
-    fn load_normal(&self) -> bool {
-        true
-    }
-}
+provide_potential!(Aps3200ApuGenerator, (110.0..=120.0));
+provide_frequency!(Aps3200ApuGenerator, (390.0..=410.0));
+provide_load!(Aps3200ApuGenerator);
 impl PotentialSource for Aps3200ApuGenerator {
-    fn output_potential(&self) -> Potential {
-        self.output
+    fn output(&self) -> Potential {
+        if self.should_provide_output() {
+            Potential::single(
+                PotentialOrigin::ApuGenerator(self.number),
+                self.output_potential,
+            )
+        } else {
+            Potential::none()
+        }
     }
 }
 impl SimulationElement for Aps3200ApuGenerator {
     fn write(&self, writer: &mut SimulatorWriter) {
         self.writer.write_alternating_with_load(self, writer);
+    }
+
+    fn process_power_consumption_report<T: PowerConsumptionReport>(&mut self, report: &T) {
+        self.output_potential = if self.should_provide_output() {
+            self.calculate_potential(self.n)
+        } else {
+            ElectricPotential::new::<volt>(0.)
+        };
+
+        self.output_frequency = if self.should_provide_output() {
+            self.calculate_frequency(self.n)
+        } else {
+            Frequency::new::<hertz>(0.)
+        };
+
+        let power_consumption = report
+            .total_consumption_of(PotentialOrigin::ApuGenerator(self.number))
+            .get::<watt>();
+        let power_factor_correction = 0.8;
+        let maximum_load = 90000.;
+        self.load = Ratio::new::<percent>(
+            (power_consumption * power_factor_correction / maximum_load) * 100.,
+        );
+    }
+}
+
+pub struct Aps3200StartMotor {
+    input_potential: Potential,
+    powered_since: Duration,
+}
+impl Aps3200StartMotor {
+    pub fn new() -> Self {
+        Aps3200StartMotor {
+            input_potential: Potential::none(),
+            powered_since: Duration::from_secs(0),
+        }
+    }
+}
+impl ApuStartMotor for Aps3200StartMotor {}
+impl SimulationElement for Aps3200StartMotor {
+    fn consume_power(&mut self, consumption: &mut PowerConsumption) {
+        if self.input_potential.is_unpowered() {
+            self.powered_since = Duration::from_secs(0);
+        } else {
+            self.powered_since += consumption.delta();
+
+            const APU_W_CONST: f64 = 9933.453168671222;
+            const APU_W_X: f64 = -1319.1431831932327;
+            const APU_W_X2: f64 = 236.32171392861937;
+            const APU_W_X3: f64 = -34.01201082369166;
+            const APU_W_X4: f64 = 3.168505536233231;
+            const APU_W_X5: f64 = -0.17850758460976182;
+            const APU_W_X6: f64 = 0.005403593330801297;
+            const APU_W_X7: f64 = -0.0000663926018728314;
+
+            let since = self.powered_since.as_secs_f64();
+
+            let w = (APU_W_CONST
+                + (APU_W_X * since)
+                + (APU_W_X2 * since.powi(2))
+                + (APU_W_X3 * since.powi(3))
+                + (APU_W_X4 * since.powi(4))
+                + (APU_W_X5 * since.powi(5))
+                + (APU_W_X6 * since.powi(6))
+                + (APU_W_X7 * since.powi(7)))
+            .max(0.);
+
+            consumption.add(&self.input_potential, Power::new::<watt>(w));
+        }
+    }
+}
+potential_target!(Aps3200StartMotor);
+impl PotentialSource for Aps3200StartMotor {
+    fn output(&self) -> Potential {
+        self.input_potential
+    }
+}
+impl Default for Aps3200StartMotor {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -680,8 +743,8 @@ mod apu_generator_tests {
     use uom::si::frequency::hertz;
 
     use crate::{
-        apu::tests::{tester, tester_with},
-        simulation::{context, test::TestReaderWriter},
+        apu::tests::{test_bed, test_bed_with},
+        simulation::test::SimulationTestBed,
     };
 
     use super::*;
@@ -694,8 +757,9 @@ mod apu_generator_tests {
     #[test]
     fn when_apu_running_provides_output() {
         let mut generator = apu_generator();
-        update_below_threshold(&mut generator);
-        update_above_threshold(&mut generator);
+        let mut test_bed = SimulationTestBed::new();
+        update_below_threshold(&mut test_bed, &mut generator);
+        update_above_threshold(&mut test_bed, &mut generator);
 
         assert!(generator.is_powered());
     }
@@ -703,22 +767,23 @@ mod apu_generator_tests {
     #[test]
     fn when_apu_shutdown_provides_no_output() {
         let mut generator = apu_generator();
-        update_above_threshold(&mut generator);
-        update_below_threshold(&mut generator);
+        let mut test_bed = SimulationTestBed::new();
+        update_above_threshold(&mut test_bed, &mut generator);
+        update_below_threshold(&mut test_bed, &mut generator);
 
         assert!(generator.is_unpowered());
     }
 
     #[test]
     fn from_n_84_provides_voltage() {
-        let mut tester = tester_with().starting_apu();
+        let mut test_bed = test_bed_with().starting_apu();
 
         loop {
-            tester = tester.run(Duration::from_millis(50));
+            test_bed = test_bed.run(Duration::from_millis(50));
 
-            let n = tester.n().get::<percent>();
+            let n = test_bed.n().get::<percent>();
             if n > 84. {
-                assert!(tester.potential().get::<volt>() > 0.);
+                assert!(test_bed.potential().get::<volt>() > 0.);
             }
 
             if (n - 100.).abs() < f64::EPSILON {
@@ -729,14 +794,14 @@ mod apu_generator_tests {
 
     #[test]
     fn from_n_84_has_frequency() {
-        let mut tester = tester_with().starting_apu();
+        let mut test_bed = test_bed_with().starting_apu();
 
         loop {
-            tester = tester.run(Duration::from_millis(50));
+            test_bed = test_bed.run(Duration::from_millis(50));
 
-            let n = tester.n().get::<percent>();
+            let n = test_bed.n().get::<percent>();
             if n > 84. {
-                assert!(tester.frequency().get::<hertz>() > 0.);
+                assert!(test_bed.frequency().get::<hertz>() > 0.);
             }
 
             if (n - 100.).abs() < f64::EPSILON {
@@ -747,93 +812,151 @@ mod apu_generator_tests {
 
     #[test]
     fn in_normal_conditions_when_n_100_voltage_114_or_115() {
-        let mut tester = tester_with().running_apu();
+        let mut test_bed = test_bed_with().running_apu();
 
         for _ in 0..100 {
-            tester = tester.run(Duration::from_millis(50));
+            test_bed = test_bed.run(Duration::from_millis(50));
 
-            let voltage = tester.potential().get::<volt>();
+            let voltage = test_bed.potential().get::<volt>();
             assert!((114.0..=115.0).contains(&voltage))
         }
     }
 
     #[test]
     fn in_normal_conditions_when_n_100_frequency_400() {
-        let mut tester = tester_with().running_apu();
+        let mut test_bed = test_bed_with().running_apu();
 
         for _ in 0..100 {
-            tester = tester.run(Duration::from_millis(50));
+            test_bed = test_bed.run(Duration::from_millis(50));
 
-            let frequency = tester.frequency().get::<hertz>();
+            let frequency = test_bed.frequency().get::<hertz>();
             assert_about_eq!(frequency, 400.);
         }
     }
 
     #[test]
     fn when_shutdown_frequency_not_normal() {
-        let tester = tester().run(Duration::from_secs(1_000));
+        let mut test_bed = test_bed().run(Duration::from_secs(1_000));
 
-        assert!(!tester.generator_frequency_within_normal_range());
+        assert!(!test_bed.frequency_within_normal_range());
     }
 
     #[test]
     fn when_running_frequency_normal() {
-        let tester = tester_with().running_apu().run(Duration::from_secs(1_000));
+        let mut test_bed = test_bed_with()
+            .running_apu()
+            .run(Duration::from_secs(1_000));
 
-        assert!(tester.generator_frequency_within_normal_range());
+        assert!(test_bed.frequency_within_normal_range());
     }
 
     #[test]
     fn when_shutdown_potential_not_normal() {
-        let tester = tester().run(Duration::from_secs(1_000));
+        let mut test_bed = test_bed().run(Duration::from_secs(1_000));
 
-        assert!(!tester.generator_potential_within_normal_range());
+        assert!(!test_bed.potential_within_normal_range());
     }
 
     #[test]
     fn when_running_potential_normal() {
-        let tester = tester_with().running_apu().run(Duration::from_secs(1_000));
+        let mut test_bed = test_bed_with()
+            .running_apu()
+            .run(Duration::from_secs(1_000));
 
-        assert!(tester.generator_potential_within_normal_range());
+        assert!(test_bed.potential_within_normal_range());
+    }
+
+    #[test]
+    fn when_shutdown_has_no_load() {
+        let mut test_bed = test_bed().run(Duration::from_secs(1_000));
+
+        assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
+    }
+
+    #[test]
+    fn when_running_but_potential_unused_has_no_load() {
+        let mut test_bed = test_bed_with()
+            .running_apu()
+            .power_demand(Power::new::<watt>(0.))
+            .run(Duration::from_secs(1_000));
+
+        assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
+    }
+
+    #[test]
+    fn when_running_and_potential_used_has_load() {
+        let mut test_bed = test_bed_with()
+            .running_apu()
+            .power_demand(Power::new::<watt>(50000.))
+            .run(Duration::from_secs(1_000));
+
+        assert!(test_bed.load() > Ratio::new::<percent>(0.));
+    }
+
+    #[test]
+    fn when_load_below_maximum_it_is_normal() {
+        let mut test_bed = test_bed_with()
+            .running_apu()
+            .power_demand(Power::new::<watt>(90000. / 0.8))
+            .run(Duration::from_secs(1_000));
+
+        assert!(test_bed.load_within_normal_range());
+    }
+
+    #[test]
+    fn when_load_exceeds_maximum_not_normal() {
+        let mut test_bed = test_bed_with()
+            .running_apu()
+            .power_demand(Power::new::<watt>((90000. / 0.8) + 1.))
+            .run(Duration::from_secs(1_000));
+
+        assert!(!test_bed.load_within_normal_range());
     }
 
     #[test]
     fn when_apu_emergency_shutdown_provides_no_output() {
-        let tester = tester_with()
+        let test_bed = test_bed_with()
             .running_apu()
             .and()
             .released_apu_fire_pb()
             .run(Duration::from_secs(1));
 
-        assert!(tester.generator_output_potential().is_unpowered());
+        assert!(test_bed.generator_output().is_unpowered());
     }
 
     #[test]
     fn writes_its_state() {
-        let apu_gen = apu_generator();
-        let mut test_writer = TestReaderWriter::new();
-        let mut writer = SimulatorWriter::new(&mut test_writer);
+        let mut apu_gen = apu_generator();
+        let mut test_bed = SimulationTestBed::new();
+        test_bed.run_without_update(&mut apu_gen);
 
-        apu_gen.write(&mut writer);
-
-        assert!(test_writer.len_is(6));
-        assert!(test_writer.contains_f64("ELEC_APU_GEN_1_POTENTIAL", 0.));
-        assert!(test_writer.contains_bool("ELEC_APU_GEN_1_POTENTIAL_NORMAL", false));
-        assert!(test_writer.contains_f64("ELEC_APU_GEN_1_FREQUENCY", 0.));
-        assert!(test_writer.contains_bool("ELEC_APU_GEN_1_FREQUENCY_NORMAL", false));
-        assert!(test_writer.contains_f64("ELEC_APU_GEN_1_LOAD", 0.));
-        assert!(test_writer.contains_bool("ELEC_APU_GEN_1_LOAD_NORMAL", true));
+        assert!(test_bed.contains_key("ELEC_APU_GEN_1_POTENTIAL"));
+        assert!(test_bed.contains_key("ELEC_APU_GEN_1_POTENTIAL_NORMAL"));
+        assert!(test_bed.contains_key("ELEC_APU_GEN_1_FREQUENCY"));
+        assert!(test_bed.contains_key("ELEC_APU_GEN_1_FREQUENCY_NORMAL"));
+        assert!(test_bed.contains_key("ELEC_APU_GEN_1_LOAD"));
+        assert!(test_bed.contains_key("ELEC_APU_GEN_1_LOAD_NORMAL"));
     }
 
     fn apu_generator() -> Aps3200ApuGenerator {
         Aps3200ApuGenerator::new(1)
     }
 
-    fn update_above_threshold(generator: &mut Aps3200ApuGenerator) {
-        generator.update(&context(), Ratio::new::<percent>(100.), false);
+    fn update_above_threshold(
+        test_bed: &mut SimulationTestBed,
+        generator: &mut Aps3200ApuGenerator,
+    ) {
+        test_bed.run_before_power_distribution(generator, |gen, _| {
+            gen.update(Ratio::new::<percent>(100.), false);
+        });
     }
 
-    fn update_below_threshold(generator: &mut Aps3200ApuGenerator) {
-        generator.update(&context(), Ratio::new::<percent>(0.), false);
+    fn update_below_threshold(
+        test_bed: &mut SimulationTestBed,
+        generator: &mut Aps3200ApuGenerator,
+    ) {
+        test_bed.run_before_power_distribution(generator, |gen, _| {
+            gen.update(Ratio::new::<percent>(0.), false);
+        });
     }
 }

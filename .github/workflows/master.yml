@@ -22,13 +22,13 @@ jobs:
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
-          ./scripts/dev-env/run.sh ./scripts/build.sh
+          ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty
       - name: Build ZIP files
         run: |
           ./scripts/dev-env/run.sh node ./scripts/fragment.js
 
           mkdir ./${{ env.BUILD_DIR_NAME }}
-          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./A32NX/
+          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
       - name: Get and delete master pre-release zip asset
         run: |
           echo 'checking for first release asset...'
@@ -67,6 +67,7 @@ jobs:
       - name: Upload to Bunny CDN
         env:
           BUNNY_BUCKET_PASSWORD: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
+          BUNNY_SECRET_TOKEN: ${{ secrets.BUNNY_SECRET_TOKEN }}
           BUNNY_BUCKET_DESTINATION: addons/a32nx/master
         run: ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION
       - name: Upload to DigitalOcean CDN

@@ -56,7 +56,7 @@ If changes are made they should always be tested to make sure they work as inten
 
 ## Issue Tracking
 
-If you require **support** with the A32NX, please utilise the channels on our [Discord](https://discord.gg/flybywire). Issues regarding the features or bugs will not be handled on Discord. Please use GitHub issues to track new features or bugs.
+If you require **support** with the A32NX, please utilise the channels on our official [Discord](https://discord.gg/flybywire). Issues regarding the features or bugs will not be handled on Discord. Please use GitHub issues to track new features or bugs.
 
 When submitting an issue, there's a few guidelines we'd ask you to respect to make it easier to manage and for others to understand:
 * **Search the issue tracker** before you submit your issue - it may already be present.

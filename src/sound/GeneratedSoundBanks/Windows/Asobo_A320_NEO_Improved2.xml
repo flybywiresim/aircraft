@@ -185,7 +185,7 @@
 					<IncludedMemoryFiles>
 						<File Id="1051963411" Language="SFX">
 							<ShortName>brakefanext.wav</ShortName>
-							<Path>SFX\brakefanext_3F3144A6.wem</Path>
+							<Path>SFX\brakefanext_E37FE2F5.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
@@ -193,7 +193,23 @@
 					<IncludedMemoryFiles>
 						<File Id="363030259" Language="SFX">
 							<ShortName>brakefanext2.wav</ShortName>
-							<Path>SFX\brakefanext2_65829CC9.wem</Path>
+							<Path>SFX\brakefanext2_00555873.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="3737947071" Name="Play_Asobo_A320_NEO_brakefan2shut" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_brakefan2shut" GUID="{D7136647-DEFD-47B4-8260-2AC3674DF035}" MaxAttenuation="300.000000" DurationType="OneShot" DurationMin="2.251587" DurationMax="2.251587">
+					<IncludedMemoryFiles>
+						<File Id="988950461" Language="SFX">
+							<ShortName>brakefanext2shut.wav</ShortName>
+							<Path>SFX\brakefanext2shut_06782E00.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="583587207" Name="Play_Asobo_A320_NEO_brakefanshut" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_brakefanshut" GUID="{6AC79B20-A4F6-467F-BCF7-D1911DC8E190}" MaxAttenuation="300.000000" DurationType="OneShot" DurationMin="2.242517" DurationMax="2.242517">
+					<IncludedMemoryFiles>
+						<File Id="664142917" Language="SFX">
+							<ShortName>brakefanextshut.wav</ShortName>
+							<Path>SFX\brakefanextshut_F81DD9C6.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
@@ -213,7 +229,7 @@
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
-				<Event Id="3779303495" Name="Play_Asobo_A320_NEO_cabfans" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_cabfans" GUID="{D32BC09F-4CF1-46D8-BBFE-53EB227A1F28}" MaxAttenuation="17.000000" DurationType="Infinite">
+				<Event Id="3779303495" Name="Play_Asobo_A320_NEO_cabfans" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_cabfans" GUID="{D32BC09F-4CF1-46D8-BBFE-53EB227A1F28}" MaxAttenuation="35.000000" DurationType="Infinite">
 					<IncludedMemoryFiles>
 						<File Id="269761499" Language="SFX">
 							<ShortName>cabin_fans.wav</ShortName>
@@ -309,6 +325,22 @@
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
+				<Event Id="1266094213" Name="Play_Asobo_A320_NEO_fanwhine" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_fanwhine" GUID="{BCE1378E-A2D7-419E-8B55-72BBAB8B7AA3}" MaxAttenuation="20.000000" DurationType="Infinite">
+					<IncludedMemoryFiles>
+						<File Id="813571816" Language="SFX">
+							<ShortName>fanwhine.wav</ShortName>
+							<Path>SFX\fanwhine_49EE7EC7.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="894386857" Name="Play_Asobo_A320_NEO_fanwhinetest" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_fanwhinetest" GUID="{0ED8165F-CB89-47F0-B67E-321A7213A588}" MaxAttenuation="20.000000" DurationType="OneShot" DurationMin="13.044625" DurationMax="13.044625">
+					<IncludedMemoryFiles>
+						<File Id="87391" Language="SFX">
+							<ShortName>fanwhinetest.wav</ShortName>
+							<Path>SFX\fanwhinetest_F1E970B6.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
 				<Event Id="3221653625" Name="Play_Asobo_A320_NEO_flapcover" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_flapcover" GUID="{C2339C65-8D3B-403D-A7F0-F8D9006102CE}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.127125" DurationMax="0.127125">
 					<IncludedMemoryFiles>
 						<File Id="480592147" Language="SFX">
@@ -335,9 +367,13 @@
 				</Event>
 				<Event Id="906944676" Name="Play_Asobo_A320_NEO_flapsmovement" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_flapsmovement" GUID="{9D3C0780-4711-4624-ABE0-97CEA20D47B0}" MaxAttenuation="9.000000" DurationType="Infinite">
 					<IncludedMemoryFiles>
-						<File Id="177306390" Language="SFX">
+						<File Id="707514841" Language="SFX">
+							<ShortName>slats.wav</ShortName>
+							<Path>SFX\slats_1E930BB9.wem</Path>
+						</File>
+						<File Id="731612592" Language="SFX">
 							<ShortName>flaps1.wav</ShortName>
-							<Path>SFX\flaps1_10D08852.wem</Path>
+							<Path>SFX\flaps1_E6A393C0.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
@@ -397,18 +433,119 @@
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
-				<Event Id="1444282249" Name="Play_Asobo_A320_NEO_nosetouch" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_nosetouch" GUID="{4EFC5C32-FDA9-40BA-925A-73B71C73E6F7}" MaxAttenuation="5.000000" DurationType="OneShot" DurationMin="0.613991" DurationMax="0.981701">
+				<Event Id="419385431" Name="Play_Asobo_A320_NEO_new_10" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_10" GUID="{3449BBE6-2BCF-4CB4-977A-0A1CE1F94B18}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.480000" DurationMax="0.480000">
 					<IncludedMemoryFiles>
-						<File Id="360868195" Language="SFX">
-							<ShortName>nosetouchmid.wav</ShortName>
-							<Path>SFX\nosetouchmid_1E8ECBBC.wem</Path>
-						</File>
-						<File Id="701717158" Language="SFX">
-							<ShortName>noestouchsmooth.wav</ShortName>
-							<Path>SFX\noestouchsmooth_1E8ECBBC.wem</Path>
+						<File Id="39621390" Language="SFX">
+							<ShortName>10.wav</ShortName>
+							<Path>SFX\10_1E8ECBBC.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
+				<Event Id="2968221893" Name="Play_Asobo_A320_NEO_new_100" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_100" GUID="{EAA5BC3C-67D3-4277-B1FC-C9324123974E}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.600000" DurationMax="0.600000">
+					<IncludedMemoryFiles>
+						<File Id="985496845" Language="SFX">
+							<ShortName>100.wav</ShortName>
+							<Path>SFX\100_56665601.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="1202658863" Name="Play_Asobo_A320_NEO_new_1000" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_1000" GUID="{143CAA49-A083-4289-885E-D37AF72A204A}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.728503" DurationMax="0.728503">
+					<IncludedMemoryFiles>
+						<File Id="836654205" Language="SFX">
+							<ShortName>1000.wav</ShortName>
+							<Path>SFX\1000_1E8ECBBC.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="436163018" Name="Play_Asobo_A320_NEO_new_20" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_20" GUID="{C21AA409-8E4D-413B-A94C-FD983545EB06}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.432000" DurationMax="0.432000">
+					<IncludedMemoryFiles>
+						<File Id="339394976" Language="SFX">
+							<ShortName>20.wav</ShortName>
+							<Path>SFX\20_1E8ECBBC.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="3069034702" Name="Play_Asobo_A320_NEO_new_200" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_200" GUID="{48830812-6B9A-4C77-8D91-C34F302F96F3}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.672000" DurationMax="0.672000">
+					<IncludedMemoryFiles>
+						<File Id="837660188" Language="SFX">
+							<ShortName>200.wav</ShortName>
+							<Path>SFX\200_1E8ECBBC.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="3293793575" Name="Play_Asobo_A320_NEO_new_2500" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_2500" GUID="{1B88B35C-E082-4A24-89C7-BF4AFEB7AC7E}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="1.176000" DurationMax="1.176000">
+					<IncludedMemoryFiles>
+						<File Id="494198763" Language="SFX">
+							<ShortName>2500.wav</ShortName>
+							<Path>SFX\2500_1E8ECBBC.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="452940733" Name="Play_Asobo_A320_NEO_new_30" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_30" GUID="{4D98C414-E20A-418F-A40B-45C72F146F1D}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.384000" DurationMax="0.384000">
+					<IncludedMemoryFiles>
+						<File Id="305291545" Language="SFX">
+							<ShortName>30.wav</ShortName>
+							<Path>SFX\30_4D05A322.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="1022415543" Name="Play_Asobo_A320_NEO_new_300" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_300" GUID="{557B1586-9453-4830-994A-50CF12BD1231}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.696000" DurationMax="0.696000">
+					<IncludedMemoryFiles>
+						<File Id="352256555" Language="SFX">
+							<ShortName>300.wav</ShortName>
+							<Path>SFX\300_1E8ECBBC.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="335497400" Name="Play_Asobo_A320_NEO_new_40" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_40" GUID="{8B55C4EB-5875-4E7C-9F3A-2EB3FD38E4B9}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.432000" DurationMax="0.432000">
+					<IncludedMemoryFiles>
+						<File Id="440395670" Language="SFX">
+							<ShortName>40.wav</ShortName>
+							<Path>SFX\40_956F175C.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="853506456" Name="Play_Asobo_A320_NEO_new_400" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_400" GUID="{3CAEDB3F-7AAB-4805-BC53-51E253B4D3BB}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.672000" DurationMax="0.672000">
+					<IncludedMemoryFiles>
+						<File Id="486231318" Language="SFX">
+							<ShortName>400.wav</ShortName>
+							<Path>SFX\400_960CE4CB.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="1169492569" Name="Play_Asobo_A320_NEO_new_5" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_5" GUID="{FF2CBA7B-33A6-45D1-B4E7-96A3F071A91E}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.384000" DurationMax="0.384000">
+					<IncludedMemoryFiles>
+						<File Id="697953552" Language="SFX">
+							<ShortName>5.wav</ShortName>
+							<Path>SFX\5_4E3EC830.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="352274987" Name="Play_Asobo_A320_NEO_new_50" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_50" GUID="{D2FDD435-484D-4672-8A28-6D329AC837C2}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.384000" DurationMax="0.384000">
+					<IncludedMemoryFiles>
+						<File Id="782587711" Language="SFX">
+							<ShortName>50.wav</ShortName>
+							<Path>SFX\50_4E30C12F.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="954319233" Name="Play_Asobo_A320_NEO_new_500" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_500" GUID="{B335D30C-CDEB-4C86-B31C-30383199098E}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.576000" DurationMax="0.576000">
+					<IncludedMemoryFiles>
+						<File Id="172338316" Language="SFX">
+							<ShortName>500.wav</ShortName>
+							<Path>SFX\500_2D7BA553.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="2198791536" Name="Play_Asobo_A320_NEO_new_retard" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\RA Calls and warnings\Play_Asobo_A320_NEO_new_retard" GUID="{A0E8291B-6DA6-48E9-91DA-701F556B2B75}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.720000" DurationMax="0.720000">
+					<IncludedMemoryFiles>
+						<File Id="445448256" Language="SFX">
+							<ShortName>retard.wav</ShortName>
+							<Path>SFX\retard_1E8ECBBC.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="1444282249" Name="Play_Asobo_A320_NEO_nosetouch" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_nosetouch" GUID="{4EFC5C32-FDA9-40BA-925A-73B71C73E6F7}" MaxAttenuation="0.000000" DurationType="OneShot" DurationMin="0.000000" DurationMax="0.000000"/>
 				<Event Id="2537128944" Name="Play_Asobo_A320_NEO_overrideblower" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_overrideblower" GUID="{E4B7CC68-C72D-4AB0-BDE6-21450CAD50A3}" MaxAttenuation="4.000000" DurationType="Infinite">
 					<IncludedMemoryFiles>
 						<File Id="117304532" Language="SFX">
@@ -449,17 +586,17 @@
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
-				<Event Id="1776915663" Name="Play_Asobo_A320_NEO_packcabinshut" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_packcabinshut" GUID="{A01D57D0-162D-471F-82D0-6CEFA6157C73}" MaxAttenuation="34.000000" DurationType="OneShot" DurationMin="8.806833" DurationMax="8.806833">
+				<Event Id="1776915663" Name="Play_Asobo_A320_NEO_packcabinshut" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_packcabinshut" GUID="{A01D57D0-162D-471F-82D0-6CEFA6157C73}" MaxAttenuation="34.000000" DurationType="Infinite">
 					<IncludedMemoryFiles>
-						<File Id="559669064" Language="SFX">
-							<ShortName>packscabinshut.wav</ShortName>
-							<Path>SFX\packscabinshut_1E8ECBBC.wem</Path>
+						<File Id="922129606" Language="SFX">
+							<ShortName>packscabin.wav</ShortName>
+							<Path>SFX\packscabin_1BC63E68.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
 				<Event Id="857779028" Name="Play_Asobo_A320_NEO_packscabin" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_packscabin" GUID="{1836D8A3-8D23-430E-B294-957AA58692C1}" MaxAttenuation="34.000000" DurationType="Infinite">
 					<IncludedMemoryFiles>
-						<File Id="195325108" Language="SFX">
+						<File Id="922129606" Language="SFX">
 							<ShortName>packscabin.wav</ShortName>
 							<Path>SFX\packscabin_1BC63E68.wem</Path>
 						</File>
@@ -733,22 +870,6 @@
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
-				<Event Id="4076237830" Name="Play_Asobo_A320_NEO_RevWindL" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\LEAP1A\Play_Asobo_A320_NEO_RevWindL" GUID="{C34068FC-67EF-4188-921D-F09DA675074D}" MaxAttenuation="25.000000" DurationType="Infinite">
-					<IncludedMemoryFiles>
-						<File Id="449655708" Language="SFX">
-							<ShortName>RevWindL.wav</ShortName>
-							<Path>SFX\RevWindL_A69D9358.wem</Path>
-						</File>
-					</IncludedMemoryFiles>
-				</Event>
-				<Event Id="4076237848" Name="Play_Asobo_A320_NEO_RevWindR" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\LEAP1A\Play_Asobo_A320_NEO_RevWindR" GUID="{A11F3074-F520-48F7-8471-4D01182315C6}" MaxAttenuation="25.000000" DurationType="Infinite">
-					<IncludedMemoryFiles>
-						<File Id="105888033" Language="SFX">
-							<ShortName>RevWindR.wav</ShortName>
-							<Path>SFX\RevWindR_7A7B1C39.wem</Path>
-						</File>
-					</IncludedMemoryFiles>
-				</Event>
 				<Event Id="217150766" Name="Play_Asobo_A320_NEO_RMPknob" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_RMPknob" GUID="{5F7AE467-C38B-44FB-A554-67B841B40FC2}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="0.017021" DurationMax="0.039854">
 					<IncludedMemoryFiles>
 						<File Id="215938221" Language="SFX">
@@ -875,7 +996,7 @@
 				</Event>
 				<Event Id="183534372" Name="Play_Asobo_A320_NEO_tinnyroll" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_tinnyroll" GUID="{B2F89BAA-8194-41E6-BA58-B852EB4F3364}" MaxAttenuation="4.000000" DurationType="Infinite">
 					<IncludedMemoryFiles>
-						<File Id="347289441" Language="SFX">
+						<File Id="268396710" Language="SFX">
 							<ShortName>roll3.wav</ShortName>
 							<Path>SFX\roll3_AA7E1A88.wem</Path>
 						</File>
@@ -913,6 +1034,14 @@
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
+				<Event Id="1351287729" Name="Play_Asobo_A320_NEO_venttesttransfer" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_venttesttransfer" GUID="{0E4D987A-558B-4BCF-BE92-58C1632BE37A}" MaxAttenuation="13.000000" DurationType="OneShot" DurationMin="15.490297" DurationMax="15.490297">
+					<IncludedMemoryFiles>
+						<File Id="857084850" Language="SFX">
+							<ShortName>vent test transfer.wav</ShortName>
+							<Path>SFX\vent test transfer_E7A3AD0E.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
 				<Event Id="2990366680" Name="Play_Asobo_A320_NEO_WhaleL" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_WhaleL" GUID="{ECE418F0-D400-45CC-9114-6AEA91092C1E}" DurationType="Infinite">
 					<IncludedMemoryFiles>
 						<File Id="340879894" Language="SFX">
@@ -943,7 +1072,6 @@
 				<GameParameter Id="147346452" Name="SIMVAR_ROTATION_VELOCITY_BODY_Z" ObjectPath="\Game Parameters\simvar\physic\SIMVAR_ROTATION_VELOCITY_BODY_Z" GUID="{9970D6C2-20EF-4E4B-A40D-0181AB8EA25B}"/>
 				<GameParameter Id="147346454" Name="SIMVAR_ROTATION_VELOCITY_BODY_X" ObjectPath="\Game Parameters\simvar\physic\SIMVAR_ROTATION_VELOCITY_BODY_X" GUID="{8443ACC6-D722-4B5A-A546-1E9DEACEB8FD}"/>
 				<GameParameter Id="147346455" Name="SIMVAR_ROTATION_VELOCITY_BODY_Y" ObjectPath="\Game Parameters\simvar\physic\SIMVAR_ROTATION_VELOCITY_BODY_Y" GUID="{EF1B8C24-E1F2-49AC-9E6D-DCC302992296}"/>
-				<GameParameter Id="895650072" Name="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" ObjectPath="\Game Parameters\simvar\engine\turbine\SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" GUID="{4C2F9436-6A3B-44DC-A8CB-BEAD6D5C2D69}"/>
 				<GameParameter Id="953288096" Name="SIMVAR_APU_PCT_RPM_DERIVED" ObjectPath="\Game Parameters\simvar\apu\SIMVAR_APU_PCT_RPM_DERIVED" GUID="{D800237B-0729-4C0C-BA23-1AF1433A180C}"/>
 				<GameParameter Id="1394518213" Name="LOCALVAR_A32NX_INTERIOR_WIND_VOLUME" ObjectPath="\Game Parameters\simvar\miscelleneous\LOCALVAR_A32NX_INTERIOR_WIND_VOLUME" GUID="{99886ED2-70F1-4384-8C1E-79B2AACFDF28}"/>
 				<GameParameter Id="1649214721" Name="SIMVAR_GROUND_VELOCITY" ObjectPath="\Game Parameters\simvar\physic\SIMVAR_GROUND_VELOCITY" GUID="{8E7BB6E5-0182-456B-BE83-12F6B4244555}"/>
@@ -953,6 +1081,7 @@
 				<GameParameter Id="2750389324" Name="SIMVAR_TURB_ENG_N1" ObjectPath="\Game Parameters\simvar\engine\turbine\SIMVAR_TURB_ENG_N1" GUID="{23BAD005-E61B-45C7-9ADA-EB168F71B891}"/>
 				<GameParameter Id="2750389327" Name="SIMVAR_TURB_ENG_N2" ObjectPath="\Game Parameters\simvar\engine\turbine\SIMVAR_TURB_ENG_N2" GUID="{635265A1-4699-42D7-8E43-42E8870A38CA}"/>
 				<GameParameter Id="2848996843" Name="SIMVAR_AMBIENT_TEMPERATURE" ObjectPath="\Game Parameters\simvar\ambient\SIMVAR_AMBIENT_TEMPERATURE" GUID="{0821D3AA-067E-4542-A7C7-7A3646B44E92}"/>
+				<GameParameter Id="2919001772" Name="SIMVAR_AIRSPEED_TRUE" ObjectPath="\Game Parameters\simvar\physic\SIMVAR_AIRSPEED_TRUE" GUID="{23F33E5A-B0EE-4CD5-AE2C-178797545D5C}"/>
 				<GameParameter Id="3011087930" Name="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE" ObjectPath="\Game Parameters\simvar\instruments\SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE" GUID="{59790042-CFDF-4ED7-A9E9-D4A395EC7063}"/>
 				<GameParameter Id="3128954395" Name="SIMVAR_LEADING_EDGE_FLAPS_LEFT_PERCENT" ObjectPath="\Game Parameters\simvar\flight_control_surfaces\SIMVAR_LEADING_EDGE_FLAPS_LEFT_PERCENT" GUID="{5DD19AB1-30E5-4CBD-9AE0-87494EE9A6AF}"/>
 				<GameParameter Id="3779073172" Name="ENV_DOPPLERCENTS" ObjectPath="\Game Parameters\environment\common\ENV_DOPPLERCENTS" GUID="{05BB02CD-EBB3-47D1-9A4B-320AA5FE6C21}"/>
