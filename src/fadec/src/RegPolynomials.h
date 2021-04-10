@@ -1,11 +1,28 @@
+/*
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #pragma once
 
-/// <summary>
-/// A collection of ression polynomials for engine parameters
-/// </summary>
+/// A collection of multi-variate regression polynomials for engine parameters
 class Polynomial {
  public:
-  double egtNX(double cn1, double mach, double alt, double isa) {
+  double egtNX(double cn1, double mach, double alt, double ambientT, double stdT) {
+    double isa = ambientT - stdT;
     double egt_coef[36] = {439.19479303830013, 3.73886284e-04,  -6.19083094e+00, -3.68383912e+01, -2.07101387e-03, 3.06556157e+00,
                            1.10553060e-01,     3.22190024e+00,  5.45688444e-05,  -3.80054219e-02, -3.57648266e+02, -6.98940659e-04,
                            -3.29527354e-01,    -1.01903175e-07, 2.45101622e-05,  4.17337023e-03,  -1.38655994e-04, -2.47009187e-02,
@@ -14,7 +31,7 @@ class Polynomial {
                            -1.21408283e-05,    -9.09550414e-04, 1.35035872e-12,  2.32377898e-10,  -6.55154381e-08, -2.40873623e-05};
 
     // CFM56 to LEAP engine adaptation
-    double cfm2leap = (-0.00008970 * pow(cn1, 2)) + (0.00932649 * cn1) + 1.22207826;
+    double cfm2leap = (-0.02779 * pow(cn1, 2)) + (4.79938 * cn1) + 4.81815;
 
     double egt_est = egt_coef[0] + egt_coef[1] + (egt_coef[2] * cn1) + (egt_coef[3] * mach) + (egt_coef[4] * alt) + (egt_coef[5] * isa) +
                      (egt_coef[6] * pow(cn1, 2)) + (egt_coef[7] * cn1 * mach) + (egt_coef[8] * cn1 * alt) + (egt_coef[9] * cn1 * isa) +
@@ -29,13 +46,15 @@ class Polynomial {
                      (egt_coef[34] * alt * pow(isa, 2)) + (egt_coef[35] * pow(isa, 3));
 
     // Account for Taxi/ Takeoff phase non-linearities
-    if (cn1 <= 30.499) {
-      egt_est = egt_est * ((0.000445 * pow(cn1, 2)) - (0.02779 * cn1) + 1.433663);
+    if (cn1 <= 40) {
+      egt_est = (isa + (0.01956 * pow(cn1, 3)) + (-1.81965 * pow(cn1, 2)) + (53.82036 * cn1) + ambientT) + (cn1 * isa / 40);
+    } else {
+      egt_est = egt_est + cfm2leap;
     }
-    return egt_est * cfm2leap;
+    return egt_est;
   }
 
-  double flowNX(int idx, double cn1, double mach, double alt, double isa, double preFlightPhase, double actualFlightPhase) {
+  double flowNX(int idx, double cn1, double mach, double alt, double ambientT, double stdT, double preFlightPhase, double actualFlightPhase) {
     double flow_out = 0;
     double cfm2leap = 0;
     double flow_base = 0;
@@ -44,7 +63,7 @@ class Polynomial {
     double flow_clb = 0;
     double flow_dsc = 0;
     double actPhaseFF = 0;
-
+    double isa = ambientT - stdT;
     double flow_coef[36] = {-737.1844191320206, -3.80575101e-03, 7.08383000e+01,  1.42324185e+02,  -2.02956471e-02, -8.78129239e+00,
                             -1.34199619e+00,    1.06144644e+01,  4.12185469e-04,  4.26232094e-01,  -1.93471814e+03, -1.75585235e-02,
                             6.16437246e-01,     7.08825149e-07,  9.82113776e-05,  -2.19309423e-03, 1.27385754e-02,  -1.20066023e-01,

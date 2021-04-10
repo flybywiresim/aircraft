@@ -1,81 +1,65 @@
+/*
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #pragma once
 
-/// <summary>
-/// SimConnect data types for sending the sim updates.
-/// </summary>
+// SimConnect data types for sending the sim updates.
 enum DataTypesID {
-  /// <summary>
-  /// The data type ID to use when sending fuel controls data.
-  /// </summary>
   FuelControls,
 };
 
-/// <summary>
-/// Fuel controls.
-/// </summary>
+// Fuel controls.
 struct FuelControlData {
-  /// <summary>
-  /// Left Inner Wing Fuel Quantity in US Gallons.
-  /// </summary>
+  // Left Inner Wing Fuel Quantity in US Gallons.
   double FuelLeft;
 
-  /// <summary>
-  /// Right Inner Wing Fuel Quantity in US Gallons.
-  /// </summary>
+  // Right Inner Wing Fuel Quantity in US Gallons.
   double FuelRight;
+
+  // Center Fuel Quantity in US Gallons.
+  double FuelCenter;
 };
 
-/// <summary>
-/// A collection of SimVar unit enums.
-/// </summary>
+// A collection of SimVar unit enums.
 class Units {
  public:
-  /// <summary>
-  /// The Percent SimVar unit.
-  /// </summary>
   ENUM Percent = get_units_enum("Percent");
-
-  /// <summary>
-  /// The Pounds SimVar unit.
-  /// </summary>
   ENUM Pounds = get_units_enum("Pounds");
-
   ENUM Pph = get_units_enum("Pounds per hour");
-
   ENUM Gallons = get_units_enum("Gallons");
-
   ENUM Feet = get_units_enum("Feet");
-
-  /// <summary>
-  /// The Foot pounds SimVar unit.
-  /// </summary>
   ENUM FootPounds = get_units_enum("Foot pounds");
-
   ENUM FeetMin = get_units_enum("Feet per minute");
-
   ENUM Number = get_units_enum("Number");
-
   ENUM Mach = get_units_enum("Mach");
-
   ENUM SluggerSlugs = get_units_enum("Slug per cubic feet");
-
   ENUM Celsius = get_units_enum("Celsius");
-
   ENUM Bool = get_units_enum("Bool");
-
   ENUM Hours = get_units_enum("Hours");
-
   ENUM Seconds = get_units_enum("Seconds");
 };
 
-/// <summary>
-/// A collection of SimVar enums.
-/// </summary>
+// A collection of SimVar enums.
 class SimVars {
  public:
   Units* m_Units;
 
-  /// MSFS Simulation Variables
+  // Collection of MSFS Simulation Variables
   ENUM correctedN1 = get_aircraft_var_enum("TURB ENG CORRECTED N1");
   ENUM correctedFF = get_aircraft_var_enum("TURB ENG CORRECTED FF");
   ENUM PlaneAltitude = get_aircraft_var_enum("PLANE ALTITUDE");
@@ -87,14 +71,12 @@ class SimVars {
   ENUM SimOnGround = get_aircraft_var_enum("SIM ON GROUND");
   ENUM EngineTime = get_aircraft_var_enum("GENERAL ENG ELAPSED TIME");
 
-  // Fuel Tank Capacities
   ENUM TankLeftAuxCapacity = get_aircraft_var_enum("FUEL TANK LEFT AUX CAPACITY");
   ENUM TankRightAuxCapacity = get_aircraft_var_enum("FUEL TANK RIGHT AUX CAPACITY");
   ENUM TankLeftCapacity = get_aircraft_var_enum("FUEL TANK LEFT MAIN CAPACITY");
   ENUM TankRightCapacity = get_aircraft_var_enum("FUEL TANK RIGHT MAIN CAPACITY");
   ENUM TankCenterCapacity = get_aircraft_var_enum("FUEL TANK CENTER CAPACITY");
 
-  // Fuel Tank Quantities
   ENUM TankLeftAuxQuantity = get_aircraft_var_enum("FUEL TANK LEFT AUX QUANTITY");
   ENUM TankRightAuxQuantity = get_aircraft_var_enum("FUEL TANK RIGHT AUX QUANTITY");
   ENUM TankLeftQuantity = get_aircraft_var_enum("FUEL TANK LEFT MAIN QUANTITY");
@@ -103,9 +85,7 @@ class SimVars {
   ENUM FuelTotalQuantity = get_aircraft_var_enum("FUEL TOTAL QUANTITY");
   ENUM FuelWeightGallon = get_aircraft_var_enum("FUEL WEIGHT PER GALLON");
 
-  /// <summary>
-  /// The local variable for the bew EGT model.
-  /// </summary>
+  // Collection of local variables for the FADEC model.
   ID Engine1EGT;
   ID Engine2EGT;
   ID Engine1FF;
@@ -117,9 +97,13 @@ class SimVars {
   ID EngineImbalance;
   ID FuelUsedLeft;
   ID FuelUsedRight;
-  ID FuelQuantityPre;
   ID FuelLeftPre;
   ID FuelRightPre;
+  ID FuelAuxLeftPre;
+  ID FuelAuxRightPre;
+  ID FuelCenterPre;
+  ID FuelOverflowLeft;
+  ID FuelOverflowRight;
   ID preFlightPhase;
   ID actualFlightPhase;
 
@@ -136,9 +120,11 @@ class SimVars {
     EngineImbalance = register_named_variable("A32NX_ENGINE_IMBALANCE");
     FuelUsedLeft = register_named_variable("A32NX_FUEL_USED:1");
     FuelUsedRight = register_named_variable("A32NX_FUEL_USED:2");
-    FuelQuantityPre = register_named_variable("A32NX_FUEL_QUANTITY_PRE");
     FuelLeftPre = register_named_variable("A32NX_FUEL_LEFT_PRE");
     FuelRightPre = register_named_variable("A32NX_FUEL_RIGHT_PRE");
+    FuelAuxLeftPre = register_named_variable("A32NX_FUEL_AUX_LEFT_PRE");
+    FuelAuxRightPre = register_named_variable("A32NX_FUEL_AUX_RIGHT_PRE");
+    FuelCenterPre = register_named_variable("A32NX_FUEL_CENTER_PRE");
     EngineCrank = register_named_variable("A32NX_ENGINE_CRACK");
     EngineCycleTime = register_named_variable("A32NX_ENGINE_CYCLE_TIME");
     preFlightPhase = register_named_variable("A32NX_FLIGHT_STATE_PREVIOUS");
@@ -153,7 +139,11 @@ class SimVars {
     this->setEngineImbalance(0);
     this->setFuelUsedLeft(0);
     this->setFuelUsedRight(0);
-    this->setFuelQuantityPre(0);
+    this->setFuelLeftPre(0);
+    this->setFuelRightPre(0);
+    this->setFuelAuxLeftPre(0);
+    this->setFuelAuxRightPre(0);
+    this->setFuelCenterPre(0);
     this->setEngineCrank(0);
     this->setEngineCycleTime(0);
     this->setPrePhase(-1);
@@ -162,108 +152,65 @@ class SimVars {
     m_Units = new Units();
   }
 
+  // Collection of LVar 'set' Functions
   void setEngine1EGT(FLOAT64 value) { set_named_variable_value(Engine1EGT, value); }
-
   void setEngine2EGT(FLOAT64 value) { set_named_variable_value(Engine2EGT, value); }
-
   void setEngine1FF(FLOAT64 value) { set_named_variable_value(Engine1FF, value); }
-
   void setEngine2FF(FLOAT64 value) { set_named_variable_value(Engine2FF, value); }
-
   void setEngine1PreFF(FLOAT64 value) { set_named_variable_value(Engine1PreFF, value); }
-
   void setEngine2PreFF(FLOAT64 value) { set_named_variable_value(Engine2PreFF, value); }
-
   void setEngineImbalance(FLOAT64 value) { set_named_variable_value(EngineImbalance, value); }
-
   void setFuelUsedLeft(FLOAT64 value) { set_named_variable_value(FuelUsedLeft, value); }
-
   void setFuelUsedRight(FLOAT64 value) { set_named_variable_value(FuelUsedRight, value); }
-
-  void setFuelQuantityPre(FLOAT64 value) { set_named_variable_value(FuelQuantityPre, value); }
-
   void setFuelLeftPre(FLOAT64 value) { set_named_variable_value(FuelLeftPre, value); }
-
   void setFuelRightPre(FLOAT64 value) { set_named_variable_value(FuelRightPre, value); }
-
+  void setFuelAuxLeftPre(FLOAT64 value) { set_named_variable_value(FuelAuxLeftPre, value); }
+  void setFuelAuxRightPre(FLOAT64 value) { set_named_variable_value(FuelAuxRightPre, value); }
+  void setFuelCenterPre(FLOAT64 value) { set_named_variable_value(FuelCenterPre, value); }
   void setEngineCrank(FLOAT64 value) { set_named_variable_value(EngineCrank, value); }
-
   void setEngineCycleTime(FLOAT64 value) { set_named_variable_value(EngineCycleTime, value); }
 
-  /// <summary>
-  /// 0: Takeoff, 1: Climb, 2: Cruise, 3: Descent, 4: Landing
-  /// </summary>
+  // Flight phase coding for smooth variable transitions
+  // 0: Takeoff, 1: Climb, 2: Cruise, 3: Descent, 4: Landing
   void setPrePhase(FLOAT64 value) { set_named_variable_value(preFlightPhase, value); }
-
   void setActualPhase(FLOAT64 value) { set_named_variable_value(actualFlightPhase, value); }
 
+  // Collection of SimVar/LVar 'get' Functions
   FLOAT64 getPrePhase() { return get_named_variable_value(preFlightPhase); }
-
   FLOAT64 getActualPhase() { return get_named_variable_value(actualFlightPhase); }
-
   FLOAT64 getEngine1FF() { return get_named_variable_value(Engine1FF); }
-
   FLOAT64 getEngine2FF() { return get_named_variable_value(Engine2FF); }
-
   FLOAT64 getEngine1PreFF() { return get_named_variable_value(Engine1PreFF); }
-
   FLOAT64 getEngine2PreFF() { return get_named_variable_value(Engine2PreFF); }
-
   FLOAT64 getEngineImbalance() { return get_named_variable_value(EngineImbalance); }
-
   FLOAT64 getEngineCycleTime() { return get_named_variable_value(EngineCycleTime); }
-
   FLOAT64 getFuelUsedLeft() { return get_named_variable_value(FuelUsedLeft); }
-
   FLOAT64 getFuelUsedRight() { return get_named_variable_value(FuelUsedRight); }
-
-  FLOAT64 getFuelQuantityPre() { return get_named_variable_value(FuelQuantityPre); }
-
   FLOAT64 getFuelLeftPre() { return get_named_variable_value(FuelLeftPre); }
-
   FLOAT64 getFuelRightPre() { return get_named_variable_value(FuelRightPre); }
-
+  FLOAT64 getFuelAuxLeftPre() { return get_named_variable_value(FuelAuxLeftPre); }
+  FLOAT64 getFuelAuxRightPre() { return get_named_variable_value(FuelAuxRightPre); }
+  FLOAT64 getFuelCenterPre() { return get_named_variable_value(FuelCenterPre); }
   FLOAT64 getCN1(int index) { return aircraft_varget(correctedN1, m_Units->Percent, index); }
-
   FLOAT64 getFF(int index) { return aircraft_varget(correctedFF, m_Units->Pph, index); }
-
   FLOAT64 getMach() { return aircraft_varget(AirSpeedMach, m_Units->Mach, 0); }
-
   FLOAT64 getPlaneAltitude() { return aircraft_varget(PlaneAltitude, m_Units->Feet, 0); }
-
   FLOAT64 getPlaneAltitudeAGL() { return aircraft_varget(PlaneAltitudeAGL, m_Units->Feet, 0); }
-
   FLOAT64 getVerticalSpeed() { return aircraft_varget(VerticalSpeed, m_Units->FeetMin, 0); }
-
   FLOAT64 getAmbientTemperature() { return aircraft_varget(AmbientTemp, m_Units->Celsius, 0); }
-
   FLOAT64 getStdTemperature() { return aircraft_varget(StdTemp, m_Units->Celsius, 0); }
-
   FLOAT64 getSimOnGround() { return aircraft_varget(SimOnGround, m_Units->Bool, 0); }
-
   FLOAT64 getTankLeftAuxCapacity() { return aircraft_varget(TankLeftAuxCapacity, m_Units->Gallons, 0); }
-
   FLOAT64 getTankRightAuxCapacity() { return aircraft_varget(TankRightAuxCapacity, m_Units->Gallons, 0); }
-
   FLOAT64 getTankLeftCapacity() { return aircraft_varget(TankLeftCapacity, m_Units->Gallons, 0); }
-
   FLOAT64 getTankRightCapacity() { return aircraft_varget(TankRightCapacity, m_Units->Gallons, 0); }
-
   FLOAT64 getTankCenterCapacity() { return aircraft_varget(TankCenterCapacity, m_Units->Gallons, 0); }
-
   FLOAT64 getTankLeftAuxQuantity() { return aircraft_varget(TankLeftAuxQuantity, m_Units->Gallons, 0); }
-
   FLOAT64 getTankRightAuxQuantity() { return aircraft_varget(TankRightAuxQuantity, m_Units->Gallons, 0); }
-
   FLOAT64 getTankLeftQuantity() { return aircraft_varget(TankLeftQuantity, m_Units->Gallons, 0); }
-
   FLOAT64 getTankRightQuantity() { return aircraft_varget(TankRightQuantity, m_Units->Gallons, 0); }
-
   FLOAT64 getTankCenterQuantity() { return aircraft_varget(TankCenterQuantity, m_Units->Gallons, 0); }
-
   FLOAT64 getFuelTotalQuantity() { return aircraft_varget(FuelTotalQuantity, m_Units->Gallons, 0); }
-
   FLOAT64 getFuelWeightGallon() { return aircraft_varget(FuelWeightGallon, m_Units->Pounds, 0); }
-
   FLOAT64 getEngineTime(int index) { return aircraft_varget(EngineTime, m_Units->Seconds, index); }
 };
