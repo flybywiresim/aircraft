@@ -253,6 +253,8 @@ class FMCMainDisplay extends BaseAirliners {
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this, true, true);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
+        //TODO: replace this in the future with a database defined alt
+        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 10000);
 
         // Start the check routine for system health and status
         setInterval(() => {
@@ -1879,7 +1881,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (s === FMCMainDisplay.clrValue) {
             this.transitionAltitude = NaN;
             this.transitionAltitudeIsPilotEntered = false;
-            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
+            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 10000);
             return true;
         }
 
