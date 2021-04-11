@@ -1,21 +1,3 @@
-/*
- * A32NX
- * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 class ADIRS {
     constructor(num) {
         this.num = num;
@@ -68,7 +50,7 @@ class ADIRS {
                 this.timer = Math.max(this.timer - (deltaTime / 1000), 0);
             }
             if (this.onBatTimer === -1) {
-                this.onBatTimer = 5.5;
+                this.onBatTimer = 16;
             } else if (this.onBatTimer > 0) {
                 this.onBatTimer = Math.max(this.onBatTimer - (deltaTime / 1000), 0);
             }

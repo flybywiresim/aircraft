@@ -1,21 +1,3 @@
-/*
- * A32NX
- * Copyright (C) 2020 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 /** @type A320_Neo_LowerECAM_PRESS */
 var A320_Neo_LowerECAM_PRESS;
 (function (A320_Neo_LowerECAM_PRESS) {
@@ -59,6 +41,8 @@ var A320_Neo_LowerECAM_PRESS;
 
             this.htmlLdgElevText = this.querySelector("#ldg-elev-text");
             this.htmlLdgElevValue = this.querySelector("#ldg-elev-value");
+            this.htmlLdgElevTitle = this.querySelector("#ldg-elev-title");
+            this.htmlLdgElevValueUnit = this.querySelector("#ldg-elev-value-unit");
             this.htmlMANtext = this.querySelector("#lower-man-text");
             this.htmlSYS1text = this.querySelector("#sys1-text");
             this.htmlSYS2text = this.querySelector("#sys2-text");
@@ -87,6 +71,8 @@ var A320_Neo_LowerECAM_PRESS;
             this.oldLandingElevText = "AUTO";
             this.oldActiveSystemValue = 0;
             this.oldManModValue = 0;
+
+            this.manModeTime = 0;
 
             //set initial visibility
             this.htmlSYS1text.setAttribute("visibility", "visible");
@@ -294,9 +280,28 @@ var A320_Neo_LowerECAM_PRESS;
 
             if (manMode && !this.oldManModValue) {
                 this.htmlMANtext.setAttribute("visibility", "visible");
+                this.htmlLdgElevText.setAttribute("visibility", "hidden");
+                this.htmlLdgElevValue.setAttribute("visibility", "hidden");
+                this.htmlLdgElevTitle.setAttribute("visibility", "hidden");
+                this.htmlLdgElevValueUnit.setAttribute("visibility", "hidden");
+                this.htmlSYS1text.setAttribute("visibility", "hidden");
+                this.htmlSYS2text.setAttribute("visibility", "hidden");
+                this.manModeTime = Date.now();
                 this.oldManModValue = 1;
             } else if (!manMode && this.oldManModValue) {
                 this.htmlMANtext.setAttribute("visibility", "hidden");
+                this.htmlLdgElevText.setAttribute("visibility", "visible");
+                this.htmlLdgElevValue.setAttribute("visibility", "visible");
+                this.htmlLdgElevTitle.setAttribute("visibility", "visible");
+                this.htmlLdgElevValueUnit.setAttribute("visibility", "visible");
+                // The switch from one system to the other should only happen if there's at least 10s between presses - placeholder until PRESS system is fully simulated
+                if ((Date.now() - this.manModeTime) > 10000) {
+                    activeSystem === 1 ? SimVar.SetSimVarValue("L:CPC_SYS1", "Bool", 0) : SimVar.SetSimVarValue("L:CPC_SYS2", "Bool", 1);
+                    activeSystem === 2 ? SimVar.SetSimVarValue("L:CPC_SYS1", "Bool", 1) : SimVar.SetSimVarValue("L:CPC_SYS2", "Bool", 0);
+                } else {
+                    activeSystem === 1 ? this.htmlSYS1text.setAttribute("visibility", "visible") : this.htmlSYS2text.setAttribute("visibility", "visible");
+                }
+                this.manModeTime = 0;
                 this.oldManModValue = 0;
             }
 

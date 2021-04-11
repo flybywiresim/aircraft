@@ -1,21 +1,4 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!--
-  ~ A32NX
-  ~ Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
-  ~
-  ~ This program is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  -->
 
 <ModelInfo>
     <LODS>
@@ -3354,6 +3337,50 @@
                 <ANIMTIP_1>Set TCAS traffic to ALL</ANIMTIP_1>
                 <ANIMTIP_2>Set TCAS traffic to ABV</ANIMTIP_2>
                 <ANIMTIP_3>Set TCAS traffic to BLW</ANIMTIP_3>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="Airbus_BRK">
+            <Component ID="BRK_PRESS_ARC_L" Node="BRK_PRESS_ARC_L">
+                <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                    <ANIM_NAME>Press_Arc_L</ANIM_NAME>
+                    <ANIM_LENGTH>3</ANIM_LENGTH>
+                    <ANIM_DURATION>1</ANIM_DURATION>
+                    <ANIM_CODE>(A:BRAKE PARKING POSITION, Bool) 2 *</ANIM_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="BRK_PRESS_ARC_R" Node="BRK_PRESS_ARC_L">
+                <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                    <ANIM_NAME>Press_Arc_R</ANIM_NAME>
+                    <ANIM_LENGTH>3</ANIM_LENGTH>
+                    <ANIM_DURATION>1</ANIM_DURATION>
+                    <ANIM_CODE>(A:BRAKE PARKING POSITION, Bool) 2 *</ANIM_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="ACCU_PRESS" Node="BRK_ACCU_PRESS_ARC">
+                <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                    <ANIM_NAME>Accu_Press</ANIM_NAME>
+                    <ANIM_LENGTH>1</ANIM_LENGTH>
+                    <ANIM_DURATION>1</ANIM_DURATION>
+                    <ANIM_CODE>0.8</ANIM_CODE>
+                </UseTemplate>
+            </Component>
+
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>BRK_DECALS</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>BRK_ACCU_PRESS_IND</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>BRK_PRESS_IND_L</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>BRK_PRESS_IND_R</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
             </UseTemplate>
         </Component>
 

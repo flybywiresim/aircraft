@@ -207,7 +207,7 @@ export const CrzPage = () => {
                     <text className="standard cyan" x="530" y="335">FT</text>
                 </g>
                 <g id="ManualVSIndicator" className={manMode ? 'show' : 'hide'}>
-                    <GaugeComponent x={450} y={400} radius={50} startAngle={90} endAngle={-90} className="Gauge" />
+                    <GaugeComponent x={450} y={390} radius={40} startAngle={80} endAngle={170} className="Gauge" />
                 </g>
 
                 <text className="standard" x="218" y="370">@P</text>

@@ -1,5 +1,5 @@
-const REFUEL_FACTOR = 0.42;
-const CENTER_MODIFIER = 3;
+const WING_FUELRATE_GAL_SEC = 3.99;
+const CENTER_MODIFIER = 3.0198;
 
 class A32NX_Refuel {
     constructor() {}
@@ -28,10 +28,10 @@ class A32NX_Refuel {
     }
 
     defuelTank(multiplier) {
-        return -REFUEL_FACTOR * multiplier;
+        return -WING_FUELRATE_GAL_SEC * multiplier;
     }
     refuelTank(multiplier) {
-        return REFUEL_FACTOR * multiplier;
+        return WING_FUELRATE_GAL_SEC * multiplier;
     }
 
     update(_deltaTime) {
@@ -77,10 +77,11 @@ class A32NX_Refuel {
             SimVar.SetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons", ROutTarget);
             return;
         }
-        let multiplier = 1 * REFUEL_FACTOR;
+        let multiplier = 1;
         if (refuelRate == 1) {
-            multiplier = 5 * REFUEL_FACTOR;
+            multiplier = 5;
         }
+        multiplier *= _deltaTime / 1000;
         //DEFUELING (center tank first, then main, then aux)
         if (centerCurrent > centerTarget) {
             centerCurrent += this.defuelTank(multiplier) * CENTER_MODIFIER;

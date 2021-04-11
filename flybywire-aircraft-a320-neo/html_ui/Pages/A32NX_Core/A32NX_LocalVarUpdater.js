@@ -1,21 +1,3 @@
-/*
- * A32NX
- * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 // Use this to create and sync local simvars that are derived from other simvars.
 // To create and sync a new local simvar, you need to add a selector and an updater.
 // The selector calculates the new value based on other simvars and some logic.
@@ -28,9 +10,6 @@ class A32NX_LocalVarUpdater {
     constructor() {
         // Initial data for deltas
         this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
-        this.lastUpdatePackOne = NaN;
-        this.updatePackCooldown = 0;
-        this.isPacksOneSupplying = false;
         // track which compartment has gotten temperature initialization
         this.initializedCabinTemp = {
             "CKPT":false,
@@ -97,7 +76,7 @@ class A32NX_LocalVarUpdater {
                 varName: "L:32NX_PACKS_1_IS_SUPPLYING",
                 type: "Bool",
                 selector: this._isPacksOneSupplying.bind(this),
-                refreshInterval: 100,
+                refreshInterval: 1000,
             },
             {
                 varName: "L:A32NX_SLIDES_ARMED",
@@ -196,24 +175,12 @@ class A32NX_LocalVarUpdater {
         const currentFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
         const lastFlapsPosition = this.lastFlapsPosition;
 
-        this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+        this.lastFlapsPosition = currentFlapsPosition;
 
         return Math.abs(lastFlapsPosition - currentFlapsPosition) > FLAPS_IN_MOTION_MIN_DELTA;
     }
 
     _isPacksOneSupplying() {
-        const now = performance.now();
-        const dt = now - this.lastUpdatePackOne;
-        this.lastUpdatePackOne = now;
-        if (isFinite(dt)) {
-            this.updatePackCooldown -= dt;
-        }
-        if (this.updatePackCooldown > 0) {
-            return this.isPacksOneSupplying;
-        }
-
-        this.updatePackCooldown = 1000;
-
         const xBleedPos = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
         const engineModeSelector = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum");
 
@@ -230,9 +197,7 @@ class A32NX_LocalVarUpdater {
          */
         const packOneHasAir = engineModeSelector === 1 || (isEngineOneRunning && isEngineTwoRunning) ? isApuDelivering || isEngineOneDelivering || (isEngineTwoDelivering && isXBleedOpen) : false;
 
-        this.isPacksOneSupplying = packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool");
-
-        return this.isPacksOneSupplying;
+        return packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool");
     }
 
     _areSlidesArmed() {

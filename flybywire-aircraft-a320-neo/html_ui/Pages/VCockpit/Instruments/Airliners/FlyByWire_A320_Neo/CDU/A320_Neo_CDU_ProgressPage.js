@@ -1,30 +1,12 @@
-/*
- * A32NX
- * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 class CDUProgressPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ProgressPage;
         mcdu.activeSystem = 'FMGC';
-        const flightPhase = "CRZ";
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         const flMax = mcdu.getMaxFlCorrected();
-        const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
+        const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "{green}FL" + (Math.floor(flMax / 5) * 5).toString() + "{end}" : "-----";
+        const gpsPrimaryStatus = (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number") === 2) ? "{green}GPS PRIMARY{end}" : "";
         let flCrz = "-----";
         switch (mcdu.currentFlightPhase) {
             case FmgcFlightPhases.PREFLIGHT:
@@ -49,6 +31,32 @@ class CDUProgressPage {
                 break;
             }
         }
+        let flightPhase;
+        switch (mcdu.currentFlightPhase) {
+            case FmgcFlightPhases.PREFLIGHT:
+            case FmgcFlightPhases.TAKEOFF:
+                flightPhase = "TO";
+                break;
+            case FmgcFlightPhases.CLIMB:
+                flightPhase = "CLB";
+                break;
+            case FmgcFlightPhases.CRUISE:
+                flightPhase = "CRZ";
+                break;
+            case FmgcFlightPhases.DESCENT:
+                flightPhase = "DES";
+                break;
+            case FmgcFlightPhases.APPROACH:
+                flightPhase = "APPR";
+                break;
+            case FmgcFlightPhases.GOAROUND:
+                flightPhase = "GA";
+                break;
+            default:
+                flightPhase = "";
+                break;
+        }
+
         mcdu.onLeftInput[0] = (value) => {
             if (mcdu.trySetCruiseFlCheckInput(value)) {
                 CDUProgressPage.ShowPage(mcdu);
@@ -67,9 +75,9 @@ class CDUProgressPage {
             CDUProgressPage.ShowPredictiveGPSPage(mcdu);
         };
         mcdu.setTemplate([
-            ["{green}ECON " + flightPhase + "{end} " + flightNo],
-            ["\xa0" + flightPhase, "REC MAX\xa0", "OPT"],
-            [flCrz, "FL" + flMax.toString() + "\xa0[color]magenta", flOpt],
+            ["{green}" + flightPhase.padStart(15, "\xa0") + "{end}\xa0" + flightNo.padEnd(11, "\xa0")],
+            ["\xa0" + "CRZ\xa0", "OPT\xa0\xa0\xa0\xa0REC MAX"],
+            [flCrz, flOpt + "\xa0\xa0\xa0\xa0" + "{magenta}FL" + flMax.toString() + "\xa0{end}"],
             [""],
             ["<REPORT", ""],
             ["\xa0POSITION UPDATE AT"],
@@ -77,7 +85,7 @@ class CDUProgressPage {
             ["\xa0\xa0BRG / DIST"],
             ["{small}\xa0---°/----.-{end}", "{small}TO{end} {cyan}[{sp}{sp}{sp}{sp}{sp}]{end}"],
             ["\xa0PREDICTIVE"],
-            ["<GPS", "GPS PRIMARY[color]green"],
+            ["<GPS", gpsPrimaryStatus],
             ["REQUIRED", "ESTIMATED", "ACCUR{sp}"],
             ["{small}3.4NM{end}[color]cyan", "{small}0.07NM{end}[color]green", "HIGH[color]green"]
         ]);
