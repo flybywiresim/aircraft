@@ -82,7 +82,9 @@ export const DigitalAltitudeReadout = ({ altitude, MDA }) => {
         <g id="AltReadoutGroup">
             <g>
                 <svg x="117.754" y="76.3374" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
+                    {/* eslint-disable-next-line max-len */}
                     <Drum position={TenThousandsPosition} value={TenThousandsValue} color={color} showZero={false} elementFunction={TenThousandsDigit} valueSpacing={1} distanceSpacing={7} displayRange={1} />
+                    {/* eslint-disable-next-line max-len */}
                     <Drum position={ThousandsPosition} value={ThousandsValue} color={color} showZero={showThousandsZero} elementFunction={ThousandsDigit} valueSpacing={1} distanceSpacing={7} displayRange={1} />
                     <Drum position={HundredsPosition} value={HundredsValue} color={color} elementFunction={HundredsDigit} valueSpacing={1} distanceSpacing={7} displayRange={1} />
                 </svg>
@@ -104,9 +106,7 @@ export const DigitalAltitudeReadout = ({ altitude, MDA }) => {
     );
 };
 
-const Drum = ({
-    displayRange, valueSpacing, distanceSpacing, position, value, color, elementFunction, showZero = true,
-}) => {
+const Drum = ({ displayRange, valueSpacing, distanceSpacing, position, value, color, elementFunction, showZero = true }) => {
     const numTicks = Math.round(displayRange * 2 / valueSpacing);
 
     let highestPosition = Math.round((position + displayRange) / valueSpacing) * valueSpacing;

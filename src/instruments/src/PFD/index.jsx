@@ -12,6 +12,7 @@ import { getSimVar, setSimVar, renderTarget, createDeltaTimeCalculator } from '.
 import { SmoothSin, LagFilter, RateLimiter } from './PFDUtils.jsx';
 import './style.scss';
 
+/* eslint-disable max-len */
 // eslint-disable-next-line react/prefer-stateless-function
 class PFD extends Component {
     constructor(props) {
@@ -95,6 +96,7 @@ class PFD extends Component {
 
         const FlightPhase = getSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
 
+        // eslint-disable-next-line no-undef
         const pressureMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
 
         const clampedAirspeed = Math.max(getSimVar('AIRSPEED INDICATED', 'knots'), 30);
