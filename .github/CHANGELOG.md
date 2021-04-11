@@ -11,6 +11,7 @@
 1. [MCDU] Add hard sign to temp field on PERF APPR, remove FLS/FINAL APP, adjust alignment - @tracernz (Mike)
 1. [ADIRS] Add on delay for ON BAT light - @tracernz (Mike)
 1. [MISC] Added 3D brake gauge - @tyler58546 (tyler58546), @DarkOfNova (DarkOfNova)
+1. [ECAM] Refactor flight control page to use React - @RichardPilbery (tricky_dicky#3571)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
@@ -249,7 +250,6 @@
 1. [TEXTURE] Upscaled the external airframe decals to go nicely with the upscaled livery. @FoxinTale (Aubrey)
 1. [MCDU] Scratchpad is now limited to 22 characters - @tyler58546 (tyler58546)
 1. [MISC] Added Marketplace Data - @kiwi2021 (kiwi2022#0001)
-1. [ECAM] Refactor flight control page to use React - @RichardPilbery (tricky_dicky#3571)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
