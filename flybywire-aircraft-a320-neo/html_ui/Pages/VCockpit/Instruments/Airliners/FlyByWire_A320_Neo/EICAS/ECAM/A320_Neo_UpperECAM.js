@@ -2199,15 +2199,15 @@ var A320_Neo_UpperECAM;
         getValue(_engine) {
             const imbalance = SimVar.GetSimVarValue("L:A32NX_ENGINE_IMBALANCE", "number");
             if (parseInt(imbalance.toString().substr(0, 1)) == _engine) {
-                var n2_i = parseFloat(imbalance.toString().substr(5, 2)) / 100;
+                let n2_i = parseFloat(imbalance.toString().substr(5, 2)) / 100;
             } else {
-                var n2_i = parseFloat(0);
+                let n2_i = parseFloat(0);
             }
             const name = "ENG N2 RPM:" + _engine;
-            var percent = SimVar.GetSimVarValue(name, "percent") - n2_i;
-			if (percent < 0.0) {
-				percent = 0;
-			}
+            let percent = SimVar.GetSimVarValue(name, "percent") - n2_i;
+            if (percent < 0.0) {
+                percent = 0;
+            }
             return percent;
         }
         getDisplayActiveEngine(_engine) {
