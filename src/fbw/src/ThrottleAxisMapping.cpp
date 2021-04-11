@@ -30,21 +30,21 @@ ThrottleAxisMapping::ThrottleAxisMapping(unsigned int id) {
   LVAR_DETENT_TOGA_HIGH = LVAR_DETENT_TOGA_HIGH.append(stringId);
 
   // register local variables
-  idInputValue = register_named_variable(LVAR_INPUT_VALUE.c_str());
-  idThrustLeverAngle = register_named_variable(LVAR_THRUST_LEVER_ANGLE.c_str());
-  idUseReverseOnAxis = register_named_variable(LVAR_USE_REVERSE_ON_AXIS.c_str());
-  idDetentReverseLow = register_named_variable(LVAR_DETENT_REVERSE_LOW.c_str());
-  idDetentReverseHigh = register_named_variable(LVAR_DETENT_REVERSE_HIGH.c_str());
-  idDetentReverseIdleLow = register_named_variable(LVAR_DETENT_REVERSEIDLE_LOW.c_str());
-  idDetentReverseIdleHigh = register_named_variable(LVAR_DETENT_REVERSEIDLE_HIGH.c_str());
-  idDetentIdleLow = register_named_variable(LVAR_DETENT_IDLE_LOW.c_str());
-  idDetentIdleHigh = register_named_variable(LVAR_DETENT_IDLE_HIGH.c_str());
-  idDetentClimbLow = register_named_variable(LVAR_DETENT_CLIMB_LOW.c_str());
-  idDetentClimbHigh = register_named_variable(LVAR_DETENT_CLIMB_HIGH.c_str());
-  idDetentFlexMctLow = register_named_variable(LVAR_DETENT_FLEXMCT_LOW.c_str());
-  idDetentFlexMctHigh = register_named_variable(LVAR_DETENT_FLEXMCT_HIGH.c_str());
-  idDetentTogaLow = register_named_variable(LVAR_DETENT_TOGA_LOW.c_str());
-  idDetentTogaHigh = register_named_variable(LVAR_DETENT_TOGA_HIGH.c_str());
+  idInputValue = make_unique<LocalVariable>(LVAR_INPUT_VALUE.c_str());
+  idThrustLeverAngle = make_unique<LocalVariable>(LVAR_THRUST_LEVER_ANGLE.c_str());
+  idUseReverseOnAxis = make_unique<LocalVariable>(LVAR_USE_REVERSE_ON_AXIS.c_str());
+  idDetentReverseLow = make_unique<LocalVariable>(LVAR_DETENT_REVERSE_LOW.c_str());
+  idDetentReverseHigh = make_unique<LocalVariable>(LVAR_DETENT_REVERSE_HIGH.c_str());
+  idDetentReverseIdleLow = make_unique<LocalVariable>(LVAR_DETENT_REVERSEIDLE_LOW.c_str());
+  idDetentReverseIdleHigh = make_unique<LocalVariable>(LVAR_DETENT_REVERSEIDLE_HIGH.c_str());
+  idDetentIdleLow = make_unique<LocalVariable>(LVAR_DETENT_IDLE_LOW.c_str());
+  idDetentIdleHigh = make_unique<LocalVariable>(LVAR_DETENT_IDLE_HIGH.c_str());
+  idDetentClimbLow = make_unique<LocalVariable>(LVAR_DETENT_CLIMB_LOW.c_str());
+  idDetentClimbHigh = make_unique<LocalVariable>(LVAR_DETENT_CLIMB_HIGH.c_str());
+  idDetentFlexMctLow = make_unique<LocalVariable>(LVAR_DETENT_FLEXMCT_LOW.c_str());
+  idDetentFlexMctHigh = make_unique<LocalVariable>(LVAR_DETENT_FLEXMCT_HIGH.c_str());
+  idDetentTogaLow = make_unique<LocalVariable>(LVAR_DETENT_TOGA_LOW.c_str());
+  idDetentTogaHigh = make_unique<LocalVariable>(LVAR_DETENT_TOGA_HIGH.c_str());
 }
 
 void ThrottleAxisMapping::setInFlight() {
@@ -215,8 +215,8 @@ void ThrottleAxisMapping::setCurrentValue(double value) {
   currentTLA = newTLA;
 
   // update local variables
-  set_named_variable_value(idInputValue, currentValue);
-  set_named_variable_value(idThrustLeverAngle, currentTLA);
+  idInputValue->set(currentValue);
+  idThrustLeverAngle->set(currentTLA);
 }
 
 void ThrottleAxisMapping::increaseThrottleBy(double value) {
@@ -266,36 +266,33 @@ ThrottleAxisMapping::Configuration ThrottleAxisMapping::getDefaultConfiguration(
 }
 
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::loadConfigurationFromLocalVariables() {
-  return {get_named_variable_value(idUseReverseOnAxis) == 1, get_named_variable_value(idDetentReverseLow),
-          get_named_variable_value(idDetentReverseHigh),     get_named_variable_value(idDetentReverseIdleLow),
-          get_named_variable_value(idDetentReverseIdleHigh), get_named_variable_value(idDetentIdleLow),
-          get_named_variable_value(idDetentIdleHigh),        get_named_variable_value(idDetentClimbLow),
-          get_named_variable_value(idDetentClimbHigh),       get_named_variable_value(idDetentFlexMctLow),
-          get_named_variable_value(idDetentFlexMctHigh),     get_named_variable_value(idDetentTogaLow),
-          get_named_variable_value(idDetentTogaHigh)};
+  return {idUseReverseOnAxis->get() == 1, idDetentReverseLow->get(), idDetentReverseHigh->get(), idDetentReverseIdleLow->get(),
+          idDetentReverseIdleHigh->get(), idDetentIdleLow->get(),    idDetentIdleHigh->get(),    idDetentClimbLow->get(),
+          idDetentClimbHigh->get(),       idDetentFlexMctLow->get(), idDetentFlexMctHigh->get(), idDetentTogaLow->get(),
+          idDetentTogaHigh->get()};
 }
 
 void ThrottleAxisMapping::storeConfigurationInLocalVariables(const Configuration& configuration) {
-  set_named_variable_value(idUseReverseOnAxis, configuration.useReverseOnAxis);
+  idUseReverseOnAxis->set(configuration.useReverseOnAxis);
   if (configuration.useReverseOnAxis) {
-    set_named_variable_value(idDetentReverseLow, configuration.reverseLow);
-    set_named_variable_value(idDetentReverseHigh, configuration.reverseHigh);
-    set_named_variable_value(idDetentReverseIdleLow, configuration.reverseIdleLow);
-    set_named_variable_value(idDetentReverseIdleHigh, configuration.reverseIdleHigh);
+    idDetentReverseLow->set(configuration.reverseLow);
+    idDetentReverseHigh->set(configuration.reverseHigh);
+    idDetentReverseIdleLow->set(configuration.reverseIdleLow);
+    idDetentReverseIdleHigh->set(configuration.reverseIdleHigh);
   } else {
-    set_named_variable_value(idDetentReverseLow, 0.0);
-    set_named_variable_value(idDetentReverseHigh, 0.0);
-    set_named_variable_value(idDetentReverseIdleLow, 0.0);
-    set_named_variable_value(idDetentReverseIdleHigh, 0.0);
+    idDetentReverseLow->set(0.0);
+    idDetentReverseHigh->set(0.0);
+    idDetentReverseIdleLow->set(0.0);
+    idDetentReverseIdleHigh->set(0.0);
   }
-  set_named_variable_value(idDetentIdleLow, configuration.idleLow);
-  set_named_variable_value(idDetentIdleHigh, configuration.idleHigh);
-  set_named_variable_value(idDetentClimbLow, configuration.climbLow);
-  set_named_variable_value(idDetentClimbHigh, configuration.climbHigh);
-  set_named_variable_value(idDetentFlexMctLow, configuration.flxMctLow);
-  set_named_variable_value(idDetentFlexMctHigh, configuration.flxMctHigh);
-  set_named_variable_value(idDetentTogaLow, configuration.togaLow);
-  set_named_variable_value(idDetentTogaHigh, configuration.togaHigh);
+  idDetentIdleLow->set(configuration.idleLow);
+  idDetentIdleHigh->set(configuration.idleHigh);
+  idDetentClimbLow->set(configuration.climbLow);
+  idDetentClimbHigh->set(configuration.climbHigh);
+  idDetentFlexMctLow->set(configuration.flxMctLow);
+  idDetentFlexMctHigh->set(configuration.flxMctHigh);
+  idDetentTogaLow->set(configuration.togaLow);
+  idDetentTogaHigh->set(configuration.togaHigh);
 }
 
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::loadConfigurationFromIniStructure(const INIStructure& structure) {

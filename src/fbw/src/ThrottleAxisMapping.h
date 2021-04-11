@@ -6,9 +6,11 @@
 #include <ini.h>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <string>
 
 #include "InterpolatingLookupTable.h"
+#include "LocalVariable.h"
 
 class ThrottleAxisMapping {
  public:
@@ -91,22 +93,22 @@ class ThrottleAxisMapping {
 
   InterpolatingLookupTable thrustLeverAngleMapping;
 
-  ID idInputValue;
-  ID idThrustLeverAngle;
+  std::unique_ptr<LocalVariable> idInputValue;
+  std::unique_ptr<LocalVariable> idThrustLeverAngle;
 
-  ID idUseReverseOnAxis;
-  ID idDetentReverseLow;
-  ID idDetentReverseHigh;
-  ID idDetentReverseIdleLow;
-  ID idDetentReverseIdleHigh;
-  ID idDetentIdleLow;
-  ID idDetentIdleHigh;
-  ID idDetentClimbLow;
-  ID idDetentClimbHigh;
-  ID idDetentFlexMctLow;
-  ID idDetentFlexMctHigh;
-  ID idDetentTogaLow;
-  ID idDetentTogaHigh;
+  std::unique_ptr<LocalVariable> idUseReverseOnAxis;
+  std::unique_ptr<LocalVariable> idDetentReverseLow;
+  std::unique_ptr<LocalVariable> idDetentReverseHigh;
+  std::unique_ptr<LocalVariable> idDetentReverseIdleLow;
+  std::unique_ptr<LocalVariable> idDetentReverseIdleHigh;
+  std::unique_ptr<LocalVariable> idDetentIdleLow;
+  std::unique_ptr<LocalVariable> idDetentIdleHigh;
+  std::unique_ptr<LocalVariable> idDetentClimbLow;
+  std::unique_ptr<LocalVariable> idDetentClimbHigh;
+  std::unique_ptr<LocalVariable> idDetentFlexMctLow;
+  std::unique_ptr<LocalVariable> idDetentFlexMctHigh;
+  std::unique_ptr<LocalVariable> idDetentTogaLow;
+  std::unique_ptr<LocalVariable> idDetentTogaHigh;
 
   std::string LVAR_INPUT_VALUE = "A32NX_THROTTLE_MAPPING_INPUT:";
   std::string LVAR_THRUST_LEVER_ANGLE = "A32NX_AUTOTHRUST_TLA:";
