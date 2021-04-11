@@ -11,11 +11,11 @@
 #include "FlightDataRecorder.h"
 #include "FlyByWire.h"
 #include "InterpolatingLookupTable.h"
+#include "LocalVariable.h"
 #include "RateLimiter.h"
 #include "SimConnectInterface.h"
 #include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
-
 class FlyByWireInterface {
  public:
   bool connect();
@@ -83,117 +83,115 @@ class FlyByWireInterface {
 
   InterpolatingLookupTable throttleLookupTable;
 
-  ID idExternalOverride;
+  std::unique_ptr<LocalVariable> idExternalOverride;
 
-  ID idFdrEvent;
+  std::unique_ptr<LocalVariable> idFdrEvent;
 
-  ID idSideStickPositionX;
-  ID idSideStickPositionY;
+  std::unique_ptr<LocalVariable> idSideStickPositionX;
+  std::unique_ptr<LocalVariable> idSideStickPositionY;
 
-  ID idFmaLateralMode;
-  ID idFmaLateralArmed;
-  ID idFmaVerticalMode;
-  ID idFmaVerticalArmed;
-  ID idFmaSoftAltModeActive;
-  ID idFmaCruiseAltModeActive;
-  ID idFmaExpediteModeActive;
-  ID idFmaSpeedProtectionActive;
-  ID idFmaApproachCapability;
+  std::unique_ptr<LocalVariable> idFmaLateralMode;
+  std::unique_ptr<LocalVariable> idFmaLateralArmed;
+  std::unique_ptr<LocalVariable> idFmaVerticalMode;
+  std::unique_ptr<LocalVariable> idFmaVerticalArmed;
+  std::unique_ptr<LocalVariable> idFmaSoftAltModeActive;
+  std::unique_ptr<LocalVariable> idFmaCruiseAltModeActive;
+  std::unique_ptr<LocalVariable> idFmaExpediteModeActive;
+  std::unique_ptr<LocalVariable> idFmaSpeedProtectionActive;
+  std::unique_ptr<LocalVariable> idFmaApproachCapability;
 
-  ID idFlightDirectorBank;
-  ID idFlightDirectorPitch;
-  ID idFlightDirectorYaw;
+  std::unique_ptr<LocalVariable> idFlightDirectorBank;
+  std::unique_ptr<LocalVariable> idFlightDirectorPitch;
+  std::unique_ptr<LocalVariable> idFlightDirectorYaw;
 
-  ID idAutopilotAutolandWarning;
+  std::unique_ptr<LocalVariable> idAutopilotAutolandWarning;
 
-  ID idAutopilotActiveAny;
-  ID idAutopilotActive_1;
-  ID idAutopilotActive_2;
+  std::unique_ptr<LocalVariable> idAutopilotActiveAny;
+  std::unique_ptr<LocalVariable> idAutopilotActive_1;
+  std::unique_ptr<LocalVariable> idAutopilotActive_2;
 
-  ID idAutopilotAutothrustMode;
+  std::unique_ptr<LocalVariable> idAutopilotAutothrustMode;
 
-  ID idFcuTrkFpaModeActive;
-  ID idFcuSelectedFpa;
-  ID idFcuSelectedVs;
-  ID idFcuSelectedHeading;
+  std::unique_ptr<LocalVariable> idFcuTrkFpaModeActive;
+  std::unique_ptr<LocalVariable> idFcuSelectedFpa;
+  std::unique_ptr<LocalVariable> idFcuSelectedVs;
+  std::unique_ptr<LocalVariable> idFcuSelectedHeading;
 
-  ID idFcuLocModeActive;
-  ID idFcuApprModeActive;
-  ID idFcuModeReversionActive;
-  ID idFcuModeReversionTrkFpaActive;
+  std::unique_ptr<LocalVariable> idFcuLocModeActive;
+  std::unique_ptr<LocalVariable> idFcuApprModeActive;
+  std::unique_ptr<LocalVariable> idFcuModeReversionActive;
+  std::unique_ptr<LocalVariable> idFcuModeReversionTrkFpaActive;
 
-  ID idFlightGuidanceAvailable;
-  ID idFlightGuidanceCrossTrackError;
-  ID idFlightGuidanceTrackAngleError;
-  ID idFlightGuidancePhiCommand;
+  std::unique_ptr<LocalVariable> idFlightGuidanceAvailable;
+  std::unique_ptr<LocalVariable> idFlightGuidanceCrossTrackError;
+  std::unique_ptr<LocalVariable> idFlightGuidanceTrackAngleError;
+  std::unique_ptr<LocalVariable> idFlightGuidancePhiCommand;
 
-  ID idFwcFlightPhase;
-  ID idFmgcFlightPhase;
-  ID idFmgcV2;
-  ID idFmgcV_APP;
-  ID idFmgcV_LS;
-  ID idFmgcV_MAX;
-  ID idFmgcAltitudeConstraint;
-  ID idFmgcThrustReductionAltitude;
-  ID idFmgcThrustReductionAltitudeGoAround;
-  ID idFmgcAccelerationAltitude;
-  ID idFmgcAccelerationAltitudeEngineOut;
-  ID idFmgcAccelerationAltitudeGoAround;
-  ID idFmgcAccelerationAltitudeGoAroundEngineOut;
-  ID idFmgcCruiseAltitude;
-  ID idFmgcFlexTemperature;
-  ID idFmgcDirToTrigger;
+  std::unique_ptr<LocalVariable> idFwcFlightPhase;
+  std::unique_ptr<LocalVariable> idFmgcFlightPhase;
+  std::unique_ptr<LocalVariable> idFmgcV2;
+  std::unique_ptr<LocalVariable> idFmgcV_APP;
+  std::unique_ptr<LocalVariable> idFmgcV_LS;
+  std::unique_ptr<LocalVariable> idFmgcV_MAX;
+  std::unique_ptr<LocalVariable> idFmgcAltitudeConstraint;
+  std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitude;
+  std::unique_ptr<LocalVariable> idFmgcThrustReductionAltitudeGoAround;
+  std::unique_ptr<LocalVariable> idFmgcAccelerationAltitude;
+  std::unique_ptr<LocalVariable> idFmgcAccelerationAltitudeEngineOut;
+  std::unique_ptr<LocalVariable> idFmgcAccelerationAltitudeGoAround;
+  std::unique_ptr<LocalVariable> idFmgcAccelerationAltitudeGoAroundEngineOut;
+  std::unique_ptr<LocalVariable> idFmgcCruiseAltitude;
+  std::unique_ptr<LocalVariable> idFmgcFlexTemperature;
+  std::unique_ptr<LocalVariable> idFmgcDirToTrigger;
 
-  ID idAirConditioningPack_1;
-  ID idAirConditioningPack_2;
+  std::unique_ptr<LocalVariable> idAirConditioningPack_1;
+  std::unique_ptr<LocalVariable> idAirConditioningPack_2;
 
-  double thrustLeverAngle_1 = 0.0;
-  double thrustLeverAngle_2 = 0.0;
-  ID idAutothrust_TLA_1;
-  ID idAutothrust_TLA_2;
-  ID idAutothrustN1_TLA_1;
-  ID idAutothrustN1_TLA_2;
-  ID idAutothrustReverse_1;
-  ID idAutothrustReverse_2;
-  ID idAutothrustThrustLimitType;
-  ID idAutothrustThrustLimit;
-  ID idAutothrustN1_c_1;
-  ID idAutothrustN1_c_2;
-  ID idAutothrustStatus;
-  ID idAutothrustMode;
-  ID idAutothrustModeMessage;
-  ID idThrottlePosition3d_1;
-  ID idThrottlePosition3d_2;
+  std::unique_ptr<LocalVariable> thrustLeverAngle_1;
+  std::unique_ptr<LocalVariable> thrustLeverAngle_2;
+  std::unique_ptr<LocalVariable> idAutothrustN1_TLA_1;
+  std::unique_ptr<LocalVariable> idAutothrustN1_TLA_2;
+  std::unique_ptr<LocalVariable> idAutothrustReverse_1;
+  std::unique_ptr<LocalVariable> idAutothrustReverse_2;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimitType;
+  std::unique_ptr<LocalVariable> idAutothrustThrustLimit;
+  std::unique_ptr<LocalVariable> idAutothrustN1_c_1;
+  std::unique_ptr<LocalVariable> idAutothrustN1_c_2;
+  std::unique_ptr<LocalVariable> idAutothrustStatus;
+  std::unique_ptr<LocalVariable> idAutothrustMode;
+  std::unique_ptr<LocalVariable> idAutothrustModeMessage;
+  std::unique_ptr<LocalVariable> idThrottlePosition3d_1;
+  std::unique_ptr<LocalVariable> idThrottlePosition3d_2;
   InterpolatingLookupTable idThrottlePositionLookupTable3d;
 
   std::vector<std::shared_ptr<ThrottleAxisMapping>> throttleAxis;
 
   EngineData engineData = {};
-  ID engineEngine1EGT;
-  ID engineEngine2EGT;
-  ID engineEngine1FF;
-  ID engineEngine2FF;
-  ID engineEngine1PreFF;
-  ID engineEngine2PreFF;
-  ID engineEngineImbalance;
-  ID engineFuelUsedLeft;
-  ID engineFuelUsedRight;
-  ID engineFuelLeftPre;
-  ID engineFuelRightPre;
-  ID engineFuelAuxLeftPre;
-  ID engineFuelAuxRightPre;
-  ID engineFuelCenterPre;
-  ID engineEngineCrank;
-  ID engineEngineCycleTime;
-  ID enginePreFlightPhase;
-  ID engineActualFlightPhase;
+  std::unique_ptr<LocalVariable> engineEngine1EGT;
+  std::unique_ptr<LocalVariable> engineEngine2EGT;
+  std::unique_ptr<LocalVariable> engineEngine1FF;
+  std::unique_ptr<LocalVariable> engineEngine2FF;
+  std::unique_ptr<LocalVariable> engineEngine1PreFF;
+  std::unique_ptr<LocalVariable> engineEngine2PreFF;
+  std::unique_ptr<LocalVariable> engineEngineImbalance;
+  std::unique_ptr<LocalVariable> engineFuelUsedLeft;
+  std::unique_ptr<LocalVariable> engineFuelUsedRight;
+  std::unique_ptr<LocalVariable> engineFuelLeftPre;
+  std::unique_ptr<LocalVariable> engineFuelRightPre;
+  std::unique_ptr<LocalVariable> engineFuelAuxLeftPre;
+  std::unique_ptr<LocalVariable> engineFuelAuxRightPre;
+  std::unique_ptr<LocalVariable> engineFuelCenterPre;
+  std::unique_ptr<LocalVariable> engineEngineCrank;
+  std::unique_ptr<LocalVariable> engineEngineCycleTime;
+  std::unique_ptr<LocalVariable> enginePreFlightPhase;
+  std::unique_ptr<LocalVariable> engineActualFlightPhase;
 
-  ID idFlapsHandleIndex;
-  ID idFlapsHandlePercent;
+  std::unique_ptr<LocalVariable> idFlapsHandleIndex;
+  std::unique_ptr<LocalVariable> idFlapsHandlePercent;
   std::shared_ptr<FlapsHandler> flapsHandler;
 
-  ID idSpoilersArmed;
-  ID idSpoilersHandlePosition;
+  std::unique_ptr<LocalVariable> idSpoilersArmed;
+  std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
 
   void loadConfiguration();

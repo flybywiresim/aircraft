@@ -96,6 +96,7 @@ clang++ \
   "${DIR}/src/FlapsHandler.cpp" \
   "${DIR}/src/FlyByWireInterface.cpp" \
   "${DIR}/src/FlightDataRecorder.cpp" \
+  "${DIR}/src/LocalVariable.cpp" \
   "${DIR}/src/InterpolatingLookupTable.cpp" \
   "${DIR}/src/SpoilersHandler.cpp" \
   "${DIR}/src/ThrottleAxisMapping.cpp" \
