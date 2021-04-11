@@ -680,18 +680,6 @@
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
-        <Sound WwiseEvent="RevWindL" NodeName="SOUND_ENGINE_LEFT" FadeOutType="2" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="1" Continuous="true">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
-        </Sound>
-
-        <Sound WwiseEvent="RevWindR" NodeName="SOUND_ENGINE_RIGHT" FadeOutType="2" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" Continuous="true">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
-        </Sound>
-
         <Sound WwiseEvent="StartL" NodeName="SOUND_ENGINE_LEFT" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />

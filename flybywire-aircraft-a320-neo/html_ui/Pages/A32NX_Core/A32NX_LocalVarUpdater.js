@@ -10,9 +10,6 @@ class A32NX_LocalVarUpdater {
     constructor() {
         // Initial data for deltas
         this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
-        this.lastUpdatePackOne = NaN;
-        this.updatePackCooldown = 0;
-        this.isPacksOneSupplying = false;
         // track which compartment has gotten temperature initialization
         this.initializedCabinTemp = {
             "CKPT":false,
@@ -79,7 +76,7 @@ class A32NX_LocalVarUpdater {
                 varName: "L:32NX_PACKS_1_IS_SUPPLYING",
                 type: "Bool",
                 selector: this._isPacksOneSupplying.bind(this),
-                refreshInterval: 100,
+                refreshInterval: 1000,
             },
             {
                 varName: "L:A32NX_SLIDES_ARMED",
@@ -178,24 +175,12 @@ class A32NX_LocalVarUpdater {
         const currentFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
         const lastFlapsPosition = this.lastFlapsPosition;
 
-        this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+        this.lastFlapsPosition = currentFlapsPosition;
 
         return Math.abs(lastFlapsPosition - currentFlapsPosition) > FLAPS_IN_MOTION_MIN_DELTA;
     }
 
     _isPacksOneSupplying() {
-        const now = performance.now();
-        const dt = now - this.lastUpdatePackOne;
-        this.lastUpdatePackOne = now;
-        if (isFinite(dt)) {
-            this.updatePackCooldown -= dt;
-        }
-        if (this.updatePackCooldown > 0) {
-            return this.isPacksOneSupplying;
-        }
-
-        this.updatePackCooldown = 1000;
-
         const xBleedPos = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
         const engineModeSelector = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum");
 
@@ -212,9 +197,7 @@ class A32NX_LocalVarUpdater {
          */
         const packOneHasAir = engineModeSelector === 1 || (isEngineOneRunning && isEngineTwoRunning) ? isApuDelivering || isEngineOneDelivering || (isEngineTwoDelivering && isXBleedOpen) : false;
 
-        this.isPacksOneSupplying = packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool");
-
-        return this.isPacksOneSupplying;
+        return packOneHasAir && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "Bool");
     }
 
     _areSlidesArmed() {

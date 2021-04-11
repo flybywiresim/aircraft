@@ -50,7 +50,7 @@ class ADIRS {
                 this.timer = Math.max(this.timer - (deltaTime / 1000), 0);
             }
             if (this.onBatTimer === -1) {
-                this.onBatTimer = 5.5;
+                this.onBatTimer = 16;
             } else if (this.onBatTimer > 0) {
                 this.onBatTimer = Math.max(this.onBatTimer - (deltaTime / 1000), 0);
             }
