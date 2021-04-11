@@ -29,7 +29,10 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
                                   bool flyByWireEnabled,
                                   const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                                   std::shared_ptr<FlapsHandler> flapsHandler,
-                                  std::shared_ptr<SpoilersHandler> spoilersHandler) {
+                                  std::shared_ptr<SpoilersHandler> spoilersHandler,
+                                  double keyChangeAileron,
+                                  double keyChangeElevator,
+                                  double keyChangeRudder) {
   // info message
   cout << "WASM: Connecting..." << endl;
 
@@ -46,6 +49,10 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
     this->flapsHandler = flapsHandler;
     // store spoilers handler
     this->spoilersHandler = spoilersHandler;
+    // store key change value for each axis
+    flightControlsKeyChangeAileron = keyChangeAileron;
+    flightControlsKeyChangeElevator = keyChangeElevator;
+    flightControlsKeyChangeRudder = keyChangeRudder;
     // add data to definition
     bool prepareResult = prepareSimDataSimConnectDataDefinitions();
     prepareResult &= prepareSimInputSimConnectDataDefinitions(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled);
@@ -817,7 +824,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
 
     case Events::RUDDER_LEFT:
-      simInput.inputs[AXIS_RUDDER_SET] = fmin(1.0, simInput.inputs[AXIS_RUDDER_SET] + 0.02);
+      simInput.inputs[AXIS_RUDDER_SET] = fmin(1.0, simInput.inputs[AXIS_RUDDER_SET] + flightControlsKeyChangeRudder);
       break;
 
     case Events::RUDDER_CENTER:
@@ -825,7 +832,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
 
     case Events::RUDDER_RIGHT:
-      simInput.inputs[AXIS_RUDDER_SET] = fmax(-1.0, simInput.inputs[AXIS_RUDDER_SET] - 0.02);
+      simInput.inputs[AXIS_RUDDER_SET] = fmax(-1.0, simInput.inputs[AXIS_RUDDER_SET] - flightControlsKeyChangeRudder);
       break;
 
     case Events::RUDDER_AXIS_MINUS:
@@ -841,11 +848,11 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
 
     case Events::AILERONS_LEFT:
-      simInput.inputs[AXIS_AILERONS_SET] = fmin(1.0, simInput.inputs[AXIS_AILERONS_SET] + 0.02);
+      simInput.inputs[AXIS_AILERONS_SET] = fmin(1.0, simInput.inputs[AXIS_AILERONS_SET] + flightControlsKeyChangeAileron);
       break;
 
     case Events::AILERONS_RIGHT:
-      simInput.inputs[AXIS_AILERONS_SET] = fmax(-1.0, simInput.inputs[AXIS_AILERONS_SET] - 0.02);
+      simInput.inputs[AXIS_AILERONS_SET] = fmax(-1.0, simInput.inputs[AXIS_AILERONS_SET] - flightControlsKeyChangeAileron);
       break;
 
     case Events::CENTER_AILER_RUDDER:
@@ -858,11 +865,11 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
 
     case Events::ELEV_DOWN:
-      simInput.inputs[AXIS_ELEVATOR_SET] = fmin(1.0, simInput.inputs[AXIS_ELEVATOR_SET] + 0.02);
+      simInput.inputs[AXIS_ELEVATOR_SET] = fmin(1.0, simInput.inputs[AXIS_ELEVATOR_SET] + flightControlsKeyChangeElevator);
       break;
 
     case Events::ELEV_UP:
-      simInput.inputs[AXIS_ELEVATOR_SET] = fmax(-1.0, simInput.inputs[AXIS_ELEVATOR_SET] - 0.02);
+      simInput.inputs[AXIS_ELEVATOR_SET] = fmax(-1.0, simInput.inputs[AXIS_ELEVATOR_SET] - flightControlsKeyChangeElevator);
       break;
 
     case Events::AUTOPILOT_OFF: {

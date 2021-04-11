@@ -130,7 +130,10 @@ class SimConnectInterface {
                bool flyByWireEnabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                std::shared_ptr<FlapsHandler> flapsHandler,
-               std::shared_ptr<SpoilersHandler> spoilersHandler);
+               std::shared_ptr<SpoilersHandler> spoilersHandler,
+               double keyChangeAileron,
+               double keyChangeElevator,
+               double keyChangeRudder);
 
   void disconnect();
 
@@ -205,6 +208,10 @@ class SimConnectInterface {
   ClientDataAutopilotStateMachine clientDataAutopilotStateMachine = {};
   ClientDataAutopilotLaws clientDataAutopilotLaws = {};
   ClientDataAutothrust clientDataAutothrust = {};
+
+  double flightControlsKeyChangeAileron = 0.0;
+  double flightControlsKeyChangeElevator = 0.0;
+  double flightControlsKeyChangeRudder = 0.0;
 
   bool prepareSimDataSimConnectDataDefinitions();
 

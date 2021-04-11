@@ -76,6 +76,10 @@ class FlyByWireInterface {
   double flightGuidanceTrackAngleError = 0.0;
   double flightGuidancePhiPreCommand = 0.0;
 
+  double flightControlsKeyChangeAileron = 0.0;
+  double flightControlsKeyChangeElevator = 0.0;
+  double flightControlsKeyChangeRudder = 0.0;
+
   FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;
