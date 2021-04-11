@@ -50,6 +50,34 @@ impl HydFluid {
     }
 }
 
+pub struct PressureSwitch {
+    state_is_pressurised: bool,
+    high_hysteresis_threshold: Pressure,
+    low_hysteresis_threshold: Pressure,
+}
+
+impl PressureSwitch {
+    pub fn new(high_threshold: Pressure, low_threshold: Pressure) -> Self {
+        Self {
+            state_is_pressurised: false,
+            high_hysteresis_threshold: high_threshold,
+            low_hysteresis_threshold: low_threshold,
+        }
+    }
+
+    pub fn update(&mut self, current_pressure: Pressure) {
+        if current_pressure <= self.low_hysteresis_threshold {
+            self.state_is_pressurised = false;
+        } else if current_pressure >= self.high_hysteresis_threshold {
+            self.state_is_pressurised = true;
+        }
+    }
+
+    pub fn is_pressurised(&self) -> bool {
+        self.state_is_pressurised
+    }
+}
+
 pub trait PowerTransferUnitController {
     fn should_enable(&self) -> bool;
 }
@@ -196,16 +224,105 @@ pub trait HydraulicLoopController {
     fn should_open_fire_shutoff_valve(&self) -> bool;
 }
 
+struct HydraulicAccumulator {
+    total_volume: Volume,
+    gas_init_precharge: Pressure,
+    gas_pressure: Pressure,
+    gas_volume: Volume,
+    fluid_volume: Volume,
+    press_breakpoints: [f64; 9],
+    flow_carac: [f64; 9],
+    has_control_valve: bool,
+}
+
+impl HydraulicAccumulator {
+    pub fn new(
+        gas_precharge: Pressure,
+        total_volume: Volume,
+        fluid_vol_at_init: Volume,
+        press_breakpoints: [f64; 9],
+        flow_carac: [f64; 9],
+        has_control_valve: bool,
+    ) -> Self {
+        // Taking care of case where init volume is maxed at accumulator capacity: we can't exceed max_volume minus a margin for gas to compress
+        let limited_volume = fluid_vol_at_init.min(total_volume * 0.9);
+
+        //If we don't start with empty accumulator we need to init pressure too
+        let gas_press_at_init = gas_precharge * total_volume / (total_volume - limited_volume);
+
+        Self {
+            total_volume,
+            gas_init_precharge: gas_precharge,
+            gas_pressure: gas_press_at_init,
+            gas_volume: (total_volume - limited_volume),
+            fluid_volume: limited_volume,
+            press_breakpoints,
+            flow_carac,
+            has_control_valve,
+        }
+    }
+
+    fn update(&mut self, delta_time: &Duration, delta_vol: &mut Volume, loop_pressure: Pressure) {
+        let accumulator_delta_press = self.gas_pressure - loop_pressure;
+        let flow_variation = VolumeRate::new::<gallon_per_second>(interpolation(
+            &self.press_breakpoints,
+            &self.flow_carac,
+            accumulator_delta_press.get::<psi>().abs(),
+        ));
+
+        // TODO HANDLE OR CHECK IF RESERVOIR AVAILABILITY is OK
+        // TODO check if accumulator can be used as a min/max flow producer to
+        // avoid it being a consumer that might unsettle pressure
+        if accumulator_delta_press.get::<psi>() > 0.0 && !self.has_control_valve {
+            let volume_from_acc = self
+                .fluid_volume
+                .min(flow_variation * Time::new::<second>(delta_time.as_secs_f64()));
+            self.fluid_volume -= volume_from_acc;
+            self.gas_volume += volume_from_acc;
+            *delta_vol += volume_from_acc;
+        } else if accumulator_delta_press.get::<psi>() < 0.0 {
+            let volume_to_acc = delta_vol
+                .max(Volume::new::<gallon>(0.0))
+                .max(flow_variation * Time::new::<second>(delta_time.as_secs_f64()));
+            self.fluid_volume += volume_to_acc;
+            self.gas_volume -= volume_to_acc;
+            *delta_vol -= volume_to_acc;
+        }
+
+        self.gas_pressure =
+            (self.gas_init_precharge * self.total_volume) / (self.total_volume - self.fluid_volume);
+    }
+
+    pub fn get_delta_vol(&mut self, required_delta_vol: Volume) -> Volume {
+        let mut volume_from_acc = Volume::new::<gallon>(0.0);
+        if required_delta_vol > Volume::new::<gallon>(0.0) {
+            volume_from_acc = self.fluid_volume.min(required_delta_vol);
+            if volume_from_acc != Volume::new::<gallon>(0.0) {
+                self.fluid_volume -= volume_from_acc;
+                self.gas_volume += volume_from_acc;
+
+                self.gas_pressure = self.gas_init_precharge * self.total_volume
+                    / (self.total_volume - self.fluid_volume);
+            }
+        }
+
+        volume_from_acc
+    }
+
+    pub fn get_fluid_volume(&self) -> Volume {
+        self.fluid_volume
+    }
+
+    pub fn get_raw_gas_press(&self) -> Pressure {
+        self.gas_pressure
+    }
+}
 pub struct HydraulicLoop {
     pressure_id: String,
     reservoir_id: String,
     fire_valve_id: String,
     fluid: HydFluid,
-    accumulator_gas_pressure: Pressure,
-    accumulator_gas_volume: Volume,
-    accumulator_fluid_volume: Volume,
-    accumulator_press_breakpoints: [f64; 9],
-    accumulator_flow_carac: [f64; 9],
+    accumulator: HydraulicAccumulator,
     connected_to_ptu_left_side: bool,
     connected_to_ptu_right_side: bool,
     loop_pressure: Pressure,
@@ -254,9 +371,6 @@ impl HydraulicLoop {
             reservoir_id: format!("HYD_{}_RESERVOIR", id),
             fire_valve_id: format!("HYD_{}_FIRE_VALVE_OPENED", id),
 
-            accumulator_gas_pressure: Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE),
-            accumulator_gas_volume: Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME),
-            accumulator_fluid_volume: Volume::new::<gallon>(0.),
             connected_to_ptu_left_side,
             connected_to_ptu_right_side,
             loop_pressure: Pressure::new::<psi>(14.7),
@@ -266,10 +380,16 @@ impl HydraulicLoop {
             ptu_active: false,
             reservoir_volume,
             fluid,
+            accumulator: HydraulicAccumulator::new(
+                Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE),
+                Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME),
+                Volume::new::<gallon>(0.),
+                Self::ACCUMULATOR_PRESS_BREAKPTS,
+                Self::ACCUMULATOR_FLOW_CARAC,
+                false,
+            ),
             current_delta_vol: Volume::new::<gallon>(0.),
             current_flow: VolumeRate::new::<gallon_per_second>(0.),
-            accumulator_press_breakpoints: Self::ACCUMULATOR_PRESS_BREAKPTS,
-            accumulator_flow_carac: Self::ACCUMULATOR_FLOW_CARAC,
             current_max_flow: VolumeRate::new::<gallon_per_second>(0.),
             fire_shutoff_valve_opened: true,
             has_fire_valve,
@@ -324,38 +444,6 @@ impl HydraulicLoop {
 
     pub fn is_fire_shutoff_valve_opened(&self) -> bool {
         self.fire_shutoff_valve_opened
-    }
-
-    fn update_accumulator(&mut self, delta_time: &Duration, delta_vol: &mut Volume) {
-        let accumulator_delta_press = self.accumulator_gas_pressure - self.loop_pressure;
-        let flow_variation = VolumeRate::new::<gallon_per_second>(interpolation(
-            &self.accumulator_press_breakpoints,
-            &self.accumulator_flow_carac,
-            accumulator_delta_press.get::<psi>().abs(),
-        ));
-
-        // TODO HANDLE OR CHECK IF RESERVOIR AVAILABILITY is OK
-        // TODO check if accumulator can be used as a min/max flow producer to
-        // avoid it being a consumer that might unsettle pressure
-        if accumulator_delta_press.get::<psi>() > 0.0 {
-            let volume_from_acc = self
-                .accumulator_fluid_volume
-                .min(flow_variation * Time::new::<second>(delta_time.as_secs_f64()));
-            self.accumulator_fluid_volume -= volume_from_acc;
-            self.accumulator_gas_volume += volume_from_acc;
-            *delta_vol += volume_from_acc;
-        } else {
-            let volume_to_acc = delta_vol
-                .max(Volume::new::<gallon>(0.0))
-                .max(flow_variation * Time::new::<second>(delta_time.as_secs_f64()));
-            self.accumulator_fluid_volume += volume_to_acc;
-            self.accumulator_gas_volume -= volume_to_acc;
-            *delta_vol -= volume_to_acc;
-        }
-
-        self.accumulator_gas_pressure = (Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE)
-            * Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME))
-            / (Volume::new::<gallon>(Self::ACCUMULATOR_MAX_VOLUME) - self.accumulator_fluid_volume);
     }
 
     fn update_ptu_flows(
@@ -465,7 +553,8 @@ impl HydraulicLoop {
         self.update_ptu_flows(delta_time, ptus, &mut delta_vol, &mut reservoir_return);
 
         // Updates current accumulator state and updates loop delta_vol
-        self.update_accumulator(delta_time, &mut delta_vol);
+        self.accumulator
+            .update(delta_time, &mut delta_vol, self.loop_pressure);
 
         // Priming the loop if not filled in yet
         //TODO bug, ptu can't prime the loop as it is not providing flow through delta_vol_max
@@ -1139,15 +1228,15 @@ mod tests {
                 );
                 println!(
                     "--------Acc Fluid Volume (L): {}",
-                    green_loop.accumulator_fluid_volume.get::<liter>()
+                    green_loop.accumulator.get_fluid_volume().get::<liter>()
                 );
                 println!(
                     "--------Acc Gas Volume (L): {}",
-                    green_loop.accumulator_gas_volume.get::<liter>()
+                    green_loop.accumulator.gas_volume.get::<liter>()
                 );
                 println!(
                     "--------Acc Gas Pressure (psi): {}",
-                    green_loop.accumulator_gas_pressure.get::<psi>()
+                    green_loop.accumulator.get_raw_gas_press().get::<psi>()
                 );
             }
         }
@@ -1197,7 +1286,7 @@ mod tests {
                 );
                 println!(
                     "--------Acc Volume (g): {}",
-                    yellow_loop.accumulator_gas_volume.get::<gallon>()
+                    yellow_loop.accumulator.gas_volume.get::<gallon>()
                 );
             }
         }
@@ -1247,7 +1336,7 @@ mod tests {
                 );
                 println!(
                     "--------Acc Volume (g): {}",
-                    blue_loop.accumulator_gas_volume.get::<gallon>()
+                    blue_loop.accumulator.gas_volume.get::<gallon>()
                 );
             }
         }
