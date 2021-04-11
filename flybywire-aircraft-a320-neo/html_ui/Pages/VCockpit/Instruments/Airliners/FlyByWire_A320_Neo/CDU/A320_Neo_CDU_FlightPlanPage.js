@@ -12,7 +12,8 @@ class CDUFlightPlanPage {
                 CDUFlightPlanPage.ShowPage(mcdu, offset);
             }
         };
-        const isFlying = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE:1", "Enum") === 5;
+        const flightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
+        const isFlying = flightPhase >= 5 && flightPhase <= 7;
         let originIdentCell = "----";
         let runway = null;
         let showFrom = false;
