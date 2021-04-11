@@ -17,32 +17,70 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { IconBox, IconMan, IconLifebuoy, IconFriends, IconScale } from '@tabler/icons';
-import { Slider } from '@flybywiresim/react-components';
+import { IconBox, IconMan, IconLifebuoy, IconFriends, IconScale, IconPlayerPlay, IconHandStop } from '@tabler/icons';
+import { round } from 'lodash';
+import { Slider } from '../../Components/Form/Slider';
 import nose from '../../Assets/320neo-outline-nose.svg';
 import Fuselage from './Fuselage';
 import { RootState } from '../../Store';
+import { SelectGroup, SelectItem } from '../../Components/Form/Select';
+import { useSimVarSyncedPersistentProperty } from '../../../Common/persistence';
+import { ProgressBar } from '../../Components/Progress/Progress';
+import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import '../Styles/Fuel.scss';
+import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
+import { useSimVar } from '../../../Common/simVars';
 
 const MAX_SEAT_AVAILABLE = 174;
 const PAX_WEIGHT = 84;
 const BAG_WEIGHT = 20;
 
 const PayloadPage = () => {
+    const [boardingStartedByUser, setBoardingStartedByUser] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool');
+    const [boardingRate, setBoardingRate] = useSimVarSyncedPersistentProperty('L:A32NX_BOARDING_RATE_SETTING', 'Number', 'BOARDING_RATE_SETTING');
+    const [busDC2] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool', 1_000);
+    const [busDCHot1] = useSimVar('L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED', 'Bool', 1_000);
+    const [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 1_000);
+    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 1_000);
+    const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 1_000);
+    const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 1_000);
+    const [paxTarget, setPaxTarget] = useSimVar('L:A32NX_PAX_TOTAL_DESIRED', 'Number');
+
     const dispatch = useDispatch();
 
     const payload = useSelector((state: RootState) => state.payload);
 
     const zfwcg = getZfwcg().toFixed(2);
+
     const totalPax = Object.values(payload).map((station) => station.pax).reduce((acc, cur) => acc + cur);
+    const totalPaxTarget = Object.values(payload).map((station) => station.paxTarget).reduce((acc, cur) => acc + cur);
+
+    const [usingMetrics, setUsingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
+    const currentUnit = () => {
+        if (usingMetrics === 1) {
+            return 'KG';
+        }
+        return 'LB';
+    };
+    const convertUnit = () => {
+        if (usingMetrics === 1) {
+            return 1;
+        }
+        return 2.20462;
+    };
 
     function setPax(numberOfPax) {
+        console.log('setPax', numberOfPax);
+        // setPaxTarget(Number(numberOfPax));
+
         let paxRemaining = parseInt(numberOfPax);
 
         function fillStation(stationKey, paxToFill) {
             const pax = Math.min(paxToFill, payload[stationKey].seats);
-            changeStationPax(pax, stationKey);
+            // changeStationPax(pax, stationKey);
+            changeStationPaxTarget(pax, stationKey);
             paxRemaining -= pax;
         }
 
@@ -54,6 +92,14 @@ const PayloadPage = () => {
         fillStation('rows7_13', paxRemaining);
 
         // setPayload(numberOfPax);
+    }
+
+    function getPayload() {
+        const weightPerPax = PAX_WEIGHT + BAG_WEIGHT;
+
+        const payload = weightPerPax * totalPax;
+
+        return payload;
     }
 
     function setSeatColors() {
@@ -87,7 +133,71 @@ const PayloadPage = () => {
         });
     }
 
-    setSeatColors();
+    function airplaneCanRefuel() {
+        // TODO : REMOVE THIS IF WHENEVER PERSISTANCE IS IMPLEMENTED
+        if (usingMetrics !== 1) {
+            setUsingMetrics(1);
+        }
+        if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
+            return false;
+        }
+        return true;
+    }
+
+    function totalCurrentPax() {
+        return totalPax;
+    }
+
+    function formatBoardingStatusClass(baseClass:string, text:boolean) {
+        let suffix = '';
+        if (text) {
+            suffix = '-text';
+        }
+        if (airplaneCanRefuel()) {
+            if (totalPaxTarget === totalCurrentPax() || !boardingStartedByUser) {
+                if (boardingStartedByUser) {
+                    setBoardingStartedByUser(false);
+                }
+                return `${baseClass} completed${suffix}`;
+            }
+            return ((totalPaxTarget) > (totalCurrentPax())) ? `${baseClass} refuel${suffix}` : `${baseClass} defuel${suffix}`;
+        }
+        return `${baseClass} disabled${suffix}`;
+    }
+
+    function formatBoardingStatusLabel() {
+        if (airplaneCanRefuel()) {
+            if (round(totalPaxTarget) === totalCurrentPax()) {
+                return '(Completed)';
+            }
+            if (boardingStartedByUser) {
+                return ((totalPaxTarget) > (totalCurrentPax())) ? '(Boarding...)' : '(Disembarking...)';
+            }
+            return '(Ready to start)';
+        }
+        if (boardingStartedByUser) {
+            setBoardingStartedByUser(false);
+        }
+        return '(Unavailable)';
+    }
+
+    function toggleBoardingState() {
+        if (airplaneCanRefuel()) {
+            setBoardingStartedByUser(!boardingStartedByUser);
+        }
+    }
+
+    function calculateEta() {
+        if (round(totalPaxTarget) === totalCurrentPax() || boardingRate === 2) {
+            return ' 0';
+        }
+        const estimatedTimeSeconds = 0;
+        return ` ${Math.round(estimatedTimeSeconds / 60)}`;
+    }
+
+    // useEffect(() => {
+    //     setSeatColors();
+    // }, []);
 
     /**
      * Calculate %MAC ZWFCG of all stations
@@ -125,6 +235,13 @@ const PayloadPage = () => {
         });
     }, [dispatch]);
 
+    const changeStationPaxTarget = useCallback((value: number, stationKey: string) => {
+        dispatch({
+            type: 'PAYLOAD_SET_STATION_PAX_TARGET',
+            payload: { value, stationKey },
+        });
+    }, [dispatch]);
+
     function renderStations() {
         return Object.entries(payload).map(([stationKey, station], index) => (
             <div id={`${stationKey}-slider`}>
@@ -134,7 +251,7 @@ const PayloadPage = () => {
                     {station.name}
                 </h3>
                 <p className="mt-2 text-lg">
-                    {station.pax}
+                    {station.paxTarget}
                     {' '}
                     /
                     {' '}
@@ -144,102 +261,85 @@ const PayloadPage = () => {
                     <Slider
                         min={0}
                         max={station.seats}
-                        value={station.pax}
+                        value={station.paxTarget}
                         onInput={(value) => changeStationPax(value, stationKey)}
+                        className="w-48"
                     />
+                    <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(station.pax / station.seats) * 100} />
                 </span>
             </div>
         ));
     }
 
     return (
-        <div className="px-6">
-            <div className="flex w-full">
-                <div className="w-1/2 bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden">
-                    <h2 className="text-2xl font-medium">Airbus A320neo</h2>
-                    <span>FlyByWire Simulations</span>
-                    <img className="flip-vertical mt-6 h-24 -ml-24" src={nose} />
-                    <div className="flex mt-8">
-                        <div className="w-1/2">
-                            {renderStations()}
+        <div className="flex mt-8">
+            <div className="w-1/2">
+
+                <div className="text-white px-6">
+                    <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden">
+
+                        <div className="text-white px-6">
+                            <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info refuel-info">
+                                <h2 className="text-2xl font-medium">Boarding</h2>
+                                <label htmlFor="fuel-label" className={formatBoardingStatusClass('fuel-truck-avail', true)}>{formatBoardingStatusLabel()}</label>
+                                <div className="flex mt-n5">
+                                    <div className="fuel-progress">
+                                        <Slider
+                                            min={0}
+                                            max={MAX_SEAT_AVAILABLE}
+                                            value={totalPaxTarget}
+                                            onInput={(value) => {
+                                                setPax(value);
+                                            }}
+                                            className="w-48"
+                                        />
+
+                                    </div>
+                                    <div className="fuel-label pad15">
+                                        <p className="mt-2 text-lg">
+                                            {totalPaxTarget}
+                                            {' '}
+                                            /
+                                            {' '}
+                                            {MAX_SEAT_AVAILABLE}
+                                        </p>
+                                    </div>
+                                    <div className="separation-line-refuel" />
+                                    <div className="manage-refuel">
+                                        <div className={formatBoardingStatusClass('refuel-icon', false)}>
+                                            <Button className="refuel-button" onClick={() => toggleBoardingState()} type={BUTTON_TYPE.NONE}>
+                                                <IconPlayerPlay className={boardingStartedByUser ? 'hidden' : ''} />
+                                                <IconHandStop className={boardingStartedByUser ? '' : 'hidden'} />
+                                            </Button>
+                                        </div>
+                                        <span className="eta-label">
+                                            Est:
+                                            {calculateEta()}
+                                            min
+                                        </span>
+                                    </div>
+                                </div>
+                                <span className="fuel-content-label">Current passengers :</span>
+                                <div className="flex mt-n5 current-fuel-line">
+                                    <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(totalPax / MAX_SEAT_AVAILABLE) * 100} />
+                                    <div className="fuel-label">
+                                        <label className="fuel-content-label" htmlFor="fuel-label">
+                                            {totalPax}
+                                            {' '}
+                                            /
+                                            {' '}
+                                            {MAX_SEAT_AVAILABLE}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="w-1/2">
-                            <h3 className="text-xl font-medium flex items-center">
-                                <IconFriends className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                PAX NO
-                            </h3>
-                            <p className="mt-2 text-lg">
-                                {totalPax}
-                                {' '}
-                                /
-                                {' '}
-                                {MAX_SEAT_AVAILABLE}
-                            </p>
-                            <span className="mt-2 text-lg">
-                                <Slider
-                                    min="0"
-                                    max={MAX_SEAT_AVAILABLE}
-                                    value={totalPax}
-                                    className="slider"
-                                    id="pax-no-slider"
-                                    onInput={(value) => {
-                                        setPax(value);
-                                    }}
-                                />
-                            </span>
 
-                            <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconMan className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                PAX Weight
-                            </h3>
-                            <p className="mt-2 text-lg">
-                                {PAX_WEIGHT}
-                                {' '}
-                            </p>
-                            <span className="mt-2 text-lg">
-                                <Slider
-                                    min="0"
-                                    max={150}
-                                    value={PAX_WEIGHT}
-                                    className="slider"
-                                    id="pax-weight-slider"
-                                    onInput={() => {}}
-                                />
-                            </span>
+                        {renderStations()}
 
-                            <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconBox className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                Baggage Weight
-                            </h3>
-                            <span className="mt-2 text-lg">
-                                {BAG_WEIGHT}
-                                {' '}
-                                [kg]
-                            </span>
-
-                            <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconLifebuoy className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                ZFWCG %MAC
-                            </h3>
-                            <span className="mt-2 text-lg">{zfwcg}</span>
-
-                            <h3 className="text-xl font-medium flex items-center mt-6">
-                                <IconScale className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                                {' '}
-                                ZFW
-                            </h3>
-                            <span className="mt-2 text-lg">40900 [kg]</span>
-                        </div>
                     </div>
                 </div>
-                <div className="w-1/2 text-white" style={{ position: 'relative' }}>
-                    <Fuselage />
-                    <div className="gradient-overlay" />
-                </div>
+
             </div>
         </div>
     );

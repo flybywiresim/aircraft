@@ -23,9 +23,10 @@ interface Station {
     seats: number;
     weight: number;
     pax: number;
-    stationIndex: number,
-    position: number,
-    seatsRange: Array<number>,
+    paxTarget: number;
+    stationIndex: number;
+    position: number;
+    seatsRange: Array<number>;
 }
 
 // station_load.0 = 185, 42.36, 0, 0, PILOT, 1
@@ -45,6 +46,7 @@ const paxStations: {[index: string]: Station} = {
         seats: 36,
         weight: 3024,
         pax: 0,
+        paxTarget: 0,
         stationIndex: 2 + 1,
         position: 21.98,
         seatsRange: [1, 36],
@@ -54,6 +56,7 @@ const paxStations: {[index: string]: Station} = {
         seats: 42,
         weight: 3530,
         pax: 0,
+        paxTarget: 0,
         stationIndex: 3 + 1,
         position: 2.86,
         seatsRange: [37, 78],
@@ -63,6 +66,7 @@ const paxStations: {[index: string]: Station} = {
         seats: 48,
         weight: 4032,
         pax: 0,
+        paxTarget: 0,
         stationIndex: 4 + 1,
         position: -15.34,
         seatsRange: [79, 126],
@@ -72,6 +76,7 @@ const paxStations: {[index: string]: Station} = {
         seats: 48,
         weight: 4032,
         pax: 0,
+        paxTarget: 0,
         stationIndex: 5 + 1,
         position: -32.81,
         seatsRange: [127, 174],
@@ -83,6 +88,7 @@ type PayloadState = {[index: string]: Station};
 const initialState: PayloadState = paxStations;
 
 const PAYLOAD_SET_STATION_PAX = 'PAYLOAD_SET_STATION_PAX';
+const PAYLOAD_SET_STATION_PAX_TARGET = 'PAYLOAD_SET_STATION_PAX_TARGET';
 
 export default typeToReducer(
     {
@@ -90,6 +96,16 @@ export default typeToReducer(
             const { value, stationKey } = payload;
             const station = { ...state[stationKey] };
             station.pax = value;
+
+            return {
+                ...state,
+                [stationKey]: station,
+            };
+        },
+        [PAYLOAD_SET_STATION_PAX_TARGET]: (state, { payload }) => {
+            const { value, stationKey } = payload;
+            const station = { ...state[stationKey] };
+            station.paxTarget = value;
 
             return {
                 ...state,
