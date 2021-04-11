@@ -2204,7 +2204,10 @@ var A320_Neo_UpperECAM;
                 var n2_i = parseFloat(0);
             }
             const name = "ENG N2 RPM:" + _engine;
-            const percent = SimVar.GetSimVarValue(name, "percent") - n2_i;
+            var percent = SimVar.GetSimVarValue(name, "percent") - n2_i;
+			if (percent < 0.0) {
+				percent = 0;
+			}
             return percent;
         }
         getDisplayActiveEngine(_engine) {
