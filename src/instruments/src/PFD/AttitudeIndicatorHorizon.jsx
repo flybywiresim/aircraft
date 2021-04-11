@@ -7,6 +7,8 @@ import {
 } from './PFDUtils.jsx';
 import { getSimVar } from '../util.js';
 
+/* eslint-disable max-len */
+
 const DisplayRange = 35;
 const DistanceSpacing = 15;
 const ValueSpacing = 10;

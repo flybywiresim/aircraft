@@ -53,7 +53,7 @@ const LandingSystemInfo = ({ displayed }) => {
         if (dist < 20) {
             const distSplit = dist.toString().split('.');
 
-            distLeading = distSplit[0];
+            [distLeading] = distSplit;
             distTrailing = `.${distSplit.length > 1 ? distSplit[1] : '0'}`;
         } else {
             distLeading = Math.round(dist).toString();
@@ -125,6 +125,7 @@ const GlideslopeIndicator = ({ deltaTime }) => {
         } else if (dots < -2) {
             diamond = <path id="GlideSlopeDiamondUpper" className="NormalStroke Magenta" d="m107.19 50.585 2.5184-3.7798 2.5184 3.7798" />;
         } else {
+            // eslint-disable-next-line max-len
             diamond = <path id="GlideSlopeDiamond" className="NormalStroke Magenta" transform={`translate(0 ${dots * 30.238 / 2})`} d="m109.7 77.043-2.5184 3.7798 2.5184 3.7798 2.5184-3.7798z" />;
         }
     } else {

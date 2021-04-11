@@ -65,6 +65,7 @@ export const AltitudeIndicator = ({ altitude, FWCFlightPhase }) => {
         <g>
             <AltTapeBackground />
             <LandingElevationIndicator altitude={altitude} FWCFlightPhase={FWCFlightPhase} />
+            {/* eslint-disable-next-line max-len */}
             <VerticalTape tapeValue={altitude} graduationElementFunction={GraduationElement} bugs={bugs} displayRange={DisplayRange + 30} valueSpacing={ValueSpacing} distanceSpacing={DistanceSpacing} lowerLimit={-1500} upperLimit={50000} />
         </g>
     );
