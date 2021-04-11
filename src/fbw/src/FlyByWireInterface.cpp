@@ -266,7 +266,7 @@ void FlyByWireInterface::setupLocalVariables() {
   engineFuelRightPre = register_named_variable("A32NX_FUEL_RIGHT_PRE");
   engineFuelAuxLeftPre = register_named_variable("A32NX_FUEL_AUX_LEFT_PRE");
   engineFuelAuxRightPre = register_named_variable("A32NX_FUEL_AUX_RIGHT_PRE");
-  engineCenterPre = register_named_variable("A32NX_FUEL_CENTER_PRE");	
+  engineFuelCenterPre = register_named_variable("A32NX_FUEL_CENTER_PRE");
   engineEngineCrank = register_named_variable("A32NX_ENGINE_CRACK");
   engineEngineCycleTime = register_named_variable("A32NX_ENGINE_CYCLE_TIME");
   enginePreFlightPhase = register_named_variable("A32NX_FLIGHT_STATE_PREVIOUS");
@@ -392,7 +392,7 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
   engineData.engineFuelRightPre = get_named_variable_value(engineFuelRightPre);
   engineData.engineFuelAuxLeftPre = get_named_variable_value(engineFuelAuxLeftPre);
   engineData.engineFuelAuxRightPre = get_named_variable_value(engineFuelAuxRightPre);
-  engineData.engineFuelCenterPre = get_named_variable_value(engineCenterPre);
+  engineData.engineFuelCenterPre = get_named_variable_value(engineFuelCenterPre);
   engineData.engineEngineCrank = get_named_variable_value(engineEngineCrank);
   engineData.engineEngineCycleTime = get_named_variable_value(engineEngineCycleTime);
   engineData.enginePreFlightPhase = get_named_variable_value(enginePreFlightPhase);
