@@ -262,9 +262,11 @@ void FlyByWireInterface::setupLocalVariables() {
   engineEngineImbalance = register_named_variable("A32NX_ENGINE_IMBALANCE");
   engineFuelUsedLeft = register_named_variable("A32NX_FUEL_USED:1");
   engineFuelUsedRight = register_named_variable("A32NX_FUEL_USED:2");
-  engineFuelQuantityPre = register_named_variable("A32NX_FUEL_QUANTITY_PRE");
   engineFuelLeftPre = register_named_variable("A32NX_FUEL_LEFT_PRE");
   engineFuelRightPre = register_named_variable("A32NX_FUEL_RIGHT_PRE");
+  engineFuelAuxLeftPre = register_named_variable("A32NX_FUEL_AUX_LEFT_PRE");
+  engineFuelAuxRightPre = register_named_variable("A32NX_FUEL_AUX_RIGHT_PRE");
+  engineCenterPre = register_named_variable("A32NX_FUEL_CENTER_PRE");	
   engineEngineCrank = register_named_variable("A32NX_ENGINE_CRACK");
   engineEngineCycleTime = register_named_variable("A32NX_ENGINE_CYCLE_TIME");
   enginePreFlightPhase = register_named_variable("A32NX_FLIGHT_STATE_PREVIOUS");
@@ -386,9 +388,11 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
   engineData.engineEngineImbalance = get_named_variable_value(engineEngineImbalance);
   engineData.engineFuelUsedLeft = get_named_variable_value(engineFuelUsedLeft);
   engineData.engineFuelUsedRight = get_named_variable_value(engineFuelUsedRight);
-  engineData.engineFuelQuantityPre = get_named_variable_value(engineFuelQuantityPre);
   engineData.engineFuelLeftPre = get_named_variable_value(engineFuelLeftPre);
   engineData.engineFuelRightPre = get_named_variable_value(engineFuelRightPre);
+  engineData.engineFuelAuxLeftPre = get_named_variable_value(engineFuelAuxLeftPre);
+  engineData.engineFuelAuxRightPre = get_named_variable_value(engineFuelAuxRightPre);
+  engineData.engineFuelCenterPre = get_named_variable_value(engineCenterPre);
   engineData.engineEngineCrank = get_named_variable_value(engineEngineCrank);
   engineData.engineEngineCycleTime = get_named_variable_value(engineEngineCycleTime);
   engineData.enginePreFlightPhase = get_named_variable_value(enginePreFlightPhase);

@@ -178,9 +178,11 @@ class FlyByWireInterface {
   ID engineEngineImbalance;
   ID engineFuelUsedLeft;
   ID engineFuelUsedRight;
-  ID engineFuelQuantityPre;
   ID engineFuelLeftPre;
   ID engineFuelRightPre;
+  ID engineFuelAuxLeftPre;
+  ID engineFuelAuxRightPre;
+  ID engineFuelCenterPre;
   ID engineEngineCrank;
   ID engineEngineCycleTime;
   ID enginePreFlightPhase;
