@@ -2004,12 +2004,13 @@ var A320_Neo_UpperECAM;
         getEGTGaugeValue() {
             const engineId = this.index + 1;
             const imbalance = SimVar.GetSimVarValue("L:A32NX_ENGINE_IMBALANCE", "number");
+            let egtImbalance = 0;
             if (parseInt(imbalance.toString().substr(0, 1)) == engineId) {
-                var egt_i = parseInt(imbalance.toString().substr(1, 2));
+                egtImbalance = parseInt(imbalance.toString().substr(1, 2));
             } else {
-                var egt_i = parseInt(0);
+                egtImbalance = parseInt(0);
             }
-            const value = SimVar.GetSimVarValue("L:A32NX_ENGINE_EGT:" + engineId, "celsius") - egt_i;
+            const value = SimVar.GetSimVarValue("L:A32NX_ENGINE_EGT:" + engineId, "celsius") - egtImbalance;
             return value;
         }
         getN1GaugeValue() {
@@ -2198,14 +2199,14 @@ var A320_Neo_UpperECAM;
         }
         getValue(_engine) {
             const imbalance = SimVar.GetSimVarValue("L:A32NX_ENGINE_IMBALANCE", "number");
-            let n2_i = 0;
+            let n2Imbalance = 0;
             if (parseInt(imbalance.toString().substr(0, 1)) == _engine) {
-                n2_i = parseFloat(imbalance.toString().substr(5, 2)) / 100;
+                n2Imbalance = parseFloat(imbalance.toString().substr(5, 2)) / 100;
             } else {
-                n2_i = parseFloat(0);
+                n2Imbalance = parseFloat(0);
             }
             const name = "ENG N2 RPM:" + _engine;
-            let percent = SimVar.GetSimVarValue(name, "percent") - n2_i;
+            let percent = SimVar.GetSimVarValue(name, "percent") - n2Imbalance;
             if (percent < 0.0) {
                 percent = 0;
             }
