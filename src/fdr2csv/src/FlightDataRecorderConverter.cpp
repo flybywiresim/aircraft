@@ -427,9 +427,11 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "engine.engineEngineImbalance" << delimiter;
   out << "engine.engineFuelUsedLeft" << delimiter;
   out << "engine.engineFuelUsedRight" << delimiter;
-  out << "engine.engineFuelQuantityPre" << delimiter;
   out << "engine.engineFuelLeftPre" << delimiter;
   out << "engine.engineFuelRightPre" << delimiter;
+  out << "engine.engineFuelAuxLeftPre" << delimiter;
+  out << "engine.engineFuelAuxRightPre" << delimiter;
+  out << "engine.engineFuelCenterPre" << delimiter;
   out << "engine.engineEngineCrank" << delimiter;
   out << "engine.engineEngineCycleTime" << delimiter;
   out << "engine.enginePreFlightPhase" << delimiter;
@@ -868,9 +870,11 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << engine.engineEngineImbalance << delimiter;
   out << engine.engineFuelUsedLeft << delimiter;
   out << engine.engineFuelUsedRight << delimiter;
-  out << engine.engineFuelQuantityPre << delimiter;
   out << engine.engineFuelLeftPre << delimiter;
   out << engine.engineFuelRightPre << delimiter;
+  out << engine.engineFuelAuxLeftPre << delimiter;
+  out << engine.engineFuelAuxRightPre << delimiter;
+  out << engine.engineFuelCenterPre << delimiter;
   out << engine.engineEngineCrank << delimiter;
   out << engine.engineEngineCycleTime << delimiter;
   out << engine.enginePreFlightPhase << delimiter;
