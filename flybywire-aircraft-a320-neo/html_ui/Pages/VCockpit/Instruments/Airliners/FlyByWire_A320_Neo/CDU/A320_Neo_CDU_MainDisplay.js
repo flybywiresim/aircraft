@@ -769,7 +769,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     set inOut(v) {
-        this.setInOut(v);
+        if (v.length < 23) {
+            this.setInOut(v);
+        }
     }
 
     setInOut(content) {
