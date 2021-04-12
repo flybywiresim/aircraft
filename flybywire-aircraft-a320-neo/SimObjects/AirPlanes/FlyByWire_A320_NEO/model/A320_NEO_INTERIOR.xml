@@ -3483,7 +3483,13 @@
                     <ANIM_NAME>Press_Arc_L</ANIM_NAME>
                     <ANIM_LENGTH>3</ANIM_LENGTH>
                     <ANIM_DURATION>1</ANIM_DURATION>
-                    <ANIM_CODE>(A:BRAKE PARKING POSITION, Bool) 2 *</ANIM_CODE>
+                    <ANIM_CODE>
+                        (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) if{
+                            (A:BRAKE PARKING POSITION, Bool) 2 *
+                        } els{
+                            0
+                        }
+                    </ANIM_CODE>
                 </UseTemplate>
             </Component>
             <Component ID="BRK_PRESS_ARC_R" Node="BRK_PRESS_ARC_L">
@@ -3491,7 +3497,13 @@
                     <ANIM_NAME>Press_Arc_R</ANIM_NAME>
                     <ANIM_LENGTH>3</ANIM_LENGTH>
                     <ANIM_DURATION>1</ANIM_DURATION>
-                    <ANIM_CODE>(A:BRAKE PARKING POSITION, Bool) 2 *</ANIM_CODE>
+                    <ANIM_CODE>
+                        (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) if{
+                            (A:BRAKE PARKING POSITION, Bool) 2 *
+                        } els{
+                            0
+                        }
+                    </ANIM_CODE>
                 </UseTemplate>
             </Component>
             <Component ID="ACCU_PRESS" Node="BRK_ACCU_PRESS_ARC">
@@ -3499,7 +3511,13 @@
                     <ANIM_NAME>Accu_Press</ANIM_NAME>
                     <ANIM_LENGTH>1</ANIM_LENGTH>
                     <ANIM_DURATION>1</ANIM_DURATION>
-                    <ANIM_CODE>0.8</ANIM_CODE>
+                    <ANIM_CODE>
+                        (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) if{
+                            0.8
+                        } els{
+                            0
+                        }
+                    </ANIM_CODE>
                 </UseTemplate>
             </Component>
 
