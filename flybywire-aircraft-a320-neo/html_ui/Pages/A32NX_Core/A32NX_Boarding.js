@@ -1,8 +1,4 @@
-const WING_FUELRATE_GAL_SEC = 3.99;
-const CENTER_MODIFIER = 3.0198;
-const PAX_WEIGHT = 84;
-
-function airplaneCanRefuel() {
+function airplaneCanBoard() {
     const busDC2 = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_2_BUS_IS_POWERED", "Bool");
     const busDCHot1 = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED", "Bool");
     const gs = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
@@ -18,6 +14,7 @@ function airplaneCanRefuel() {
 
 class A32NX_Boarding {
     constructor() {
+        this.time = 0;
         this.paxStations = {
             rows1_6: {
                 name: 'ECONOMY ROWS 1-6',
@@ -66,37 +63,50 @@ class A32NX_Boarding {
         console.log('A32NX_Boarding init');
 
         // Set default pax (150)
-        this.setPax(150);
+        this.setPax(0);
         this.loadPayload();
     }
 
     async setPax(numberOfPax) {
         console.log('setPax', numberOfPax);
         // setPaxTarget(Number(numberOfPax));
+        await SimVar.SetSimVarValue("L:A32NX_PAX_TOTAL", "Number", parseInt(numberOfPax));
+        console.log('SetSimVarValue');
 
         let paxRemaining = parseInt(numberOfPax);
 
-        function fillStation(stationKey, paxToFill) {
-            const pax = Math.min(paxToFill, payload[stationKey].seats);
+        function fillStation(station, paxToFill) {
+            console.log('fillStation', station.name, paxToFill);
+            const pax = Math.min(paxToFill, station.seats);
+            station.pax = pax;
             // changeStationPax(pax, stationKey);
-            changeStationPaxTarget(pax, stationKey);
+            // changeStationPaxTarget(pax, stationKey);
             paxRemaining -= pax;
         }
 
-        fillStation('rows21_27', paxRemaining);
-        fillStation('rows14_20', paxRemaining);
+        fillStation(this.paxStations['rows21_27'], paxRemaining);
+        fillStation(this.paxStations['rows14_20'], paxRemaining);
 
         const remainingByTwo = Math.trunc(paxRemaining / 2);
-        fillStation('rows1_6', remainingByTwo);
-        fillStation('rows7_13', paxRemaining);
+        fillStation(this.paxStations['rows1_6'], remainingByTwo);
+        fillStation(this.paxStations['rows7_13'], paxRemaining);
 
         // setPayload(numberOfPax);
+
+        return;
     }
 
     async loadPayload() {
-        const currentPaxWeight = this.aocWeight.paxWeight || this.simbrief.paxWeight || PAX_WEIGHT;
+        console.log('loadPayload');
+        const PAX_WEIGHT = 84;
+
+        const currentPaxWeight = PAX_WEIGHT;
 
         for (const station of Object.values(this.paxStations)) {
+            console.log('===');
+            console.log(station.name);
+            console.log(station.stationIndex);
+            console.log(station.pax * currentPaxWeight);
             await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "kilograms", station.pax * currentPaxWeight);
         }
 
@@ -107,7 +117,42 @@ class A32NX_Boarding {
         return;
     }
 
-    update(_deltaTime) {
+    async update(_deltaTime) {
+        // console.log('_deltaTime', this.time);
+        this.time += _deltaTime;
 
+        const boardingStartedByUser = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool");
+        if (!boardingStartedByUser) {
+            return;
+        }
+
+        if (!airplaneCanBoard()) {
+            return;
+        }
+
+        const currentPax = SimVar.GetSimVarValue("L:A32NX_PAX_TOTAL", "Number");
+        const paxTarget = SimVar.GetSimVarValue("L:A32NX_PAX_TOTAL_DESIRED", "Number");
+        const boardingRate = SimVar.GetSimVarValue("L:A32NX_BOARDING_RATE_SETTING", "Number");
+
+        if (currentPax >= paxTarget) {
+            // Finish boarding
+            await SimVar.SetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool", false);
+        }
+
+        if (boardingRate == 2) {
+            // Instant
+        }
+
+        let multiplier = 1;
+        if (boardingRate == 1) {
+            multiplier = 5;
+        }
+        multiplier *= _deltaTime / 1000;
+
+        if (this.time > 1000) {
+            this.time = 0;
+            await this.setPax(currentPax + 1);
+            await this.loadPayload();
+        }
     }
 }

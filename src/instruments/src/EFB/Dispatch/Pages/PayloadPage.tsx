@@ -41,6 +41,7 @@ const PayloadPage = () => {
     const [boardingStartedByUser, setBoardingStartedByUser] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool');
     const [boardingRate, setBoardingRate] = useSimVarSyncedPersistentProperty('L:A32NX_BOARDING_RATE_SETTING', 'Number', 'BOARDING_RATE_SETTING');
     const [paxTarget, setPaxTarget] = useSimVar('L:A32NX_PAX_TOTAL_DESIRED', 'Number');
+    const [paxTotal, setPaxTotal] = useSimVar('L:A32NX_PAX_TOTAL', 'Number');
     const [busDC2] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool', 1_000);
     const [busDCHot1] = useSimVar('L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED', 'Bool', 1_000);
     const [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 1_000);
@@ -54,7 +55,7 @@ const PayloadPage = () => {
 
     const zfwcg = getZfwcg().toFixed(2);
 
-    const totalPax = Object.values(payload).map((station) => station.pax).reduce((acc, cur) => acc + cur);
+    // const totalPax = Object.values(payload).map((station) => station.pax).reduce((acc, cur) => acc + cur);
     const totalPaxTarget = Object.values(payload).map((station) => station.paxTarget).reduce((acc, cur) => acc + cur);
 
     const [usingMetrics, setUsingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
@@ -97,7 +98,7 @@ const PayloadPage = () => {
     function getPayload() {
         const weightPerPax = PAX_WEIGHT + BAG_WEIGHT;
 
-        const payload = weightPerPax * totalPax;
+        const payload = weightPerPax * paxTotal;
 
         return payload;
     }
@@ -145,7 +146,7 @@ const PayloadPage = () => {
     }
 
     function totalCurrentPax() {
-        return totalPax;
+        return paxTotal;
     }
 
     function formatBoardingStatusClass(baseClass:string, text:boolean) {
@@ -321,10 +322,10 @@ const PayloadPage = () => {
                                 </div>
                                 <span className="fuel-content-label">Current passengers :</span>
                                 <div className="flex mt-n5 current-fuel-line">
-                                    <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(totalPax / MAX_SEAT_AVAILABLE) * 100} />
+                                    <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(paxTotal / MAX_SEAT_AVAILABLE) * 100} />
                                     <div className="fuel-label">
                                         <label className="fuel-content-label" htmlFor="fuel-label">
-                                            {totalPax}
+                                            {paxTotal}
                                             {' '}
                                             /
                                             {' '}
