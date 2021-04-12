@@ -1426,6 +1426,7 @@
                     (O:_ShouldBeConnectedToPowerGrid) sp0
                     2 (&gt;A:BUS LOOKUP INDEX, Number)
                     (A:CIRCUIT CONNECTION ON:29, Bool) l0 != if{ 29 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+                    3 (&gt;A:BUS LOOKUP INDEX, Number)
                     (A:CIRCUIT CONNECTION ON:30, Bool) l0 != if{ 30 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
                     </UPDATE_CODE>
                 </UseTemplate>
@@ -1454,8 +1455,9 @@
                     (O:_ShouldBeConnectedToPowerGrid) sp0
                     2 (&gt;A:BUS LOOKUP INDEX, Number)
                     (A:CIRCUIT CONNECTION ON:17, Bool) l0 != if{ 17 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
-                    (A:CIRCUIT CONNECTION ON:20, Bool) l0 != if{ 20 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
                     (A:CIRCUIT CONNECTION ON:21, Bool) l0 != if{ 21 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+                    3 (&gt;A:BUS LOOKUP INDEX, Number)
+                    (A:CIRCUIT CONNECTION ON:20, Bool) l0 != if{ 20 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
                     (A:CIRCUIT CONNECTION ON:22, Bool) l0 != if{ 22 3 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
                     </UPDATE_CODE>
                 </UseTemplate>
