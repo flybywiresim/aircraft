@@ -173,11 +173,14 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         if (mapDeltaTime != -1) {
             this.updateMap(mapDeltaTime);
         }
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
-        if (_deltaTime === -1 && !KnobChanged) {
+
+        const knobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime, knobChanged);
+        if (_deltaTime === -1) {
             return;
         }
+
         this.updateNDInfo(_deltaTime);
 
         //TCAS
@@ -233,7 +236,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
 
-        if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
+        if ((knobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
             this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
             this.selfTestTimerStarted = true;
@@ -644,14 +647,12 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         if (Math.abs(heading - this.lastHeading) > this.headingDiffForceUpdateThreshold) {
             forceUpdate = true;
         }
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (!forceUpdate && _deltaTime === -1) {
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime, forceUpdate);
+        if (_deltaTime === -1) {
             return;
         }
         this.lastHeading = heading;
-        if (forceUpdate) {
-            this.updateThrottler.notifyForceUpdated();
-        }
+
         super.onUpdate(_deltaTime);
     }
 
