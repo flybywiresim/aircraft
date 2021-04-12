@@ -1208,7 +1208,7 @@ double FlyByWireInterface::smoothFlightDirector(double sampleTime, double factor
 }
 
 double FlyByWireInterface::getHeadingAngleError(double u1, double u2) {
-  double dPsi_1 = fmod(u1 - (u2 + 360.0) + 360.0, 360.0);
+  double dPsi_1 = fmod(u1 - u2 + 360.0, 360.0);
   double dPsi_2 = fmod(360.0 - dPsi_1, 360.0);
   if (dPsi_1 < dPsi_2) {
     return -dPsi_1;
