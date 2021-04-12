@@ -9,6 +9,9 @@
 1. [MCDU] Progress page only shows GPS Primary when it should - @Username23-23 (NONAmr2433 #8777)
 1. [ND] Add VOR/ADF needles to ILS arc display - @tracernz (Mike)
 1. [MCDU] Add hard sign to temp field on PERF APPR, remove FLS/FINAL APP, adjust alignment - @tracernz (Mike)
+1. [ADIRS] Add on delay for ON BAT light - @tracernz (Mike)
+1. [MISC] Added 3D brake gauge - @tyler58546 (tyler58546), @DarkOfNova (DarkOfNova)
+1. [ELEC] The BCL commands the BAT contactor be closed when the BAT push button is moved from OFF to AUTO - @davidwalschots (David Walschots)
 1. [DISPLAYS] RMP backlight, ATC and RTPI font color and backlight - @marcman86 (marcman86#4907)
 
 ## 0.6.0
