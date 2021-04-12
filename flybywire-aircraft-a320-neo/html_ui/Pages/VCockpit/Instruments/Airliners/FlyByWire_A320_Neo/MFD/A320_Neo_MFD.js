@@ -171,9 +171,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.updateMap(mapDeltaTime);
         }
 
-        this.displayUnit.updateBeforeThrottle();
-
-        deltaTime = this.updateThrottler.canUpdate(deltaTime, this.displayUnit.isTurnedOnDuringThisUpdate());
+        deltaTime = this.updateThrottler.canUpdate(deltaTime, this.displayUnit.isJustNowTurnedOn());
         if (deltaTime === -1) {
             return;
         }

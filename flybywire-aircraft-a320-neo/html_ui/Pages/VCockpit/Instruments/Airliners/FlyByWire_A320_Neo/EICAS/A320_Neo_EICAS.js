@@ -142,11 +142,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         let deltaTime = this.getDeltaTime();
         super.onUpdate(deltaTime);
 
-        this.displayUnit.updateBeforeThrottle();
-
         const ecamAllButtonBeingPushed = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
 
-        deltaTime = this.updateThrottler.canUpdate(deltaTime, this.displayUnit.isTurnedOnDuringThisUpdate() || ecamAllButtonBeingPushed);
+        deltaTime = this.updateThrottler.canUpdate(deltaTime, this.displayUnit.isJustNowTurnedOn() || ecamAllButtonBeingPushed);
         if (deltaTime === -1) {
             return;
         }

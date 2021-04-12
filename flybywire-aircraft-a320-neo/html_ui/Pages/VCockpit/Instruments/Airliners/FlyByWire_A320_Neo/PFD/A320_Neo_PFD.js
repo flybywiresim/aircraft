@@ -112,8 +112,6 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         let deltaTime = this.getDeltaTime();
         super.onUpdate(deltaTime);
 
-        this.displayUnit.updateBeforeThrottle();
-
         if (!this.hasInitialized) {
             return;
         }
@@ -126,7 +124,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.groundCursor.style.top = YokeYPosition.toString() + "%";
         }
 
-        deltaTime = this.updateThrottler.canUpdate(deltaTime, this.displayUnit.isTurnedOnDuringThisUpdate());
+        deltaTime = this.updateThrottler.canUpdate(deltaTime, this.displayUnit.isJustNowTurnedOn());
         if (deltaTime === -1) {
             return;
         }
