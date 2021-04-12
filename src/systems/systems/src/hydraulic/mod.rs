@@ -14,7 +14,9 @@ use uom::si::{
 use crate::engine::Engine;
 use crate::shared::interpolation;
 use crate::simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter};
+
 pub mod brakecircuit;
+use crate::hydraulic::brakecircuit::ActuatorHydInterface;
 
 // Trait common to all hydraulic pumps
 // Max gives maximum available volume at that time as if it is a variable displacement
@@ -339,6 +341,8 @@ pub struct HydraulicLoop {
     min_pressure_pressurised_lo_hyst: Pressure,
     min_pressure_pressurised_hi_hyst: Pressure,
     is_pressurised: bool,
+    total_actuators_consumed_volume: Volume,
+    total_actuators_returned_volume: Volume,
 }
 impl HydraulicLoop {
     const ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1885.0; // Nitrogen PSI
@@ -396,6 +400,8 @@ impl HydraulicLoop {
             min_pressure_pressurised_lo_hyst,
             min_pressure_pressurised_hi_hyst,
             is_pressurised: false,
+            total_actuators_consumed_volume: Volume::new::<gallon>(0.),
+            total_actuators_returned_volume: Volume::new::<gallon>(0.),
         }
     }
 
@@ -417,6 +423,11 @@ impl HydraulicLoop {
             drawn = self.reservoir_volume;
         }
         drawn
+    }
+
+    pub fn update_actuator_volumes<T: ActuatorHydInterface>(&mut self, actuator: &T) {
+        self.total_actuators_consumed_volume += actuator.get_used_volume();
+        self.total_actuators_returned_volume += actuator.get_reservoir_return();
     }
 
     // Returns the max flow that can be output from reservoir in dt time
@@ -567,17 +578,11 @@ impl HydraulicLoop {
             self.reservoir_volume -= delta_loop_vol;
         }
 
-        //Actuators to update here, we get their accumulated consumptions and returns, then reset them for next iteration
-        let used_fluid_qty = Volume::new::<gallon>(0.);
-        //foreach actuator pseudocode
-        //used_fluidQty =used_fluidQty+aileron.volumeToActuatorAccumulated
-        //reservoirReturn=reservoirReturn+aileron.volumeToResAccumulated
-        //actuator.resetVolumes()
-        //actuator.set_available_pressure(self.loop_pressure)
-        //end foreach
-        //end actuator
-
-        delta_vol -= used_fluid_qty;
+        //Actuators effect is updated here, we get their accumulated consumptions and returns, then reset local accumulators for next iteration
+        reservoir_return += self.total_actuators_returned_volume;
+        delta_vol -= self.total_actuators_consumed_volume.abs();
+        self.total_actuators_consumed_volume = Volume::new::<gallon>(0.);
+        self.total_actuators_returned_volume = Volume::new::<gallon>(0.);
 
         // How much we need to reach target of 3000?
         let mut volume_needed_to_reach_pressure_target =

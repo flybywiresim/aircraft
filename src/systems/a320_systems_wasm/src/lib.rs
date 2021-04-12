@@ -88,8 +88,8 @@ impl A320SimulatorReaderWriter {
             parking_brake_demand: AircraftVariable::from("BRAKE PARKING INDICATOR", "Bool", 0)?,
             master_eng_1: AircraftVariable::from("GENERAL ENG STARTER ACTIVE", "Bool", 1)?,
             master_eng_2: AircraftVariable::from("GENERAL ENG STARTER ACTIVE", "Bool", 2)?,
-            cargo_door_forward_pos: AircraftVariable::from("EXIT OPEN", "Percent", 5)?,
-            cargo_door_aft_pos: AircraftVariable::from("EXIT OPEN", "Percent", 3)?, //TODO It is the catering door for now
+            cargo_door_front_pos: AircraftVariable::from("EXIT OPEN", "Percent", 5)?,
+            cargo_door_back_pos: AircraftVariable::from("EXIT OPEN", "Percent", 3)?, //TODO It is the catering door for now
             pushback_angle: AircraftVariable::from("PUSHBACK ANGLE", "Radian", 0)?,
             pushback_state: AircraftVariable::from("PUSHBACK STATE", "Enum", 0)?,
             anti_skid_activated: AircraftVariable::from("ANTISKID BRAKES ACTIVE", "Bool", 0)?,
@@ -124,8 +124,8 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
             "GENERAL ENG STARTER ACTIVE:1" => self.master_eng_1.get(),
             "GENERAL ENG STARTER ACTIVE:2" => self.master_eng_2.get(),
             "BRAKE PARKING INDICATOR" => self.parking_brake_demand.get(),
-            "EXIT OPEN:5" => self.cargo_door_forward_pos.get(),
-            "EXIT OPEN:3" => self.cargo_door_aft_pos.get(),
+            "EXIT OPEN:5" => self.cargo_door_front_pos.get(),
+            "EXIT OPEN:3" => self.cargo_door_back_pos.get(),
             "PUSHBACK ANGLE" => self.pushback_angle.get(),
             "PUSHBACK STATE" => self.pushback_state.get(),
             "ANTISKID BRAKES ACTIVE" => self.anti_skid_activated.get(),

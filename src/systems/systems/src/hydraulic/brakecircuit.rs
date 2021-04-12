@@ -128,34 +128,35 @@ impl BrakeCircuit {
             * self.total_displacement;
 
         if self.has_accumulator {
+            let mut volume_into_accumulator = Volume::new::<gallon>(0.);
             self.accumulator.update(
                 delta_time,
-                &mut self.volume_to_actuator_accumulator,
+                &mut volume_into_accumulator,
                 hyd_loop.loop_pressure,
             );
 
-            if delta_vol > Volume::new::<gallon>(0.0) {
+            // Volume that just came into accumulator is taken from hydraulic loop through olume_to_actuator interface
+            self.volume_to_actuator_accumulator += volume_into_accumulator.abs();
+
+            if delta_vol > Volume::new::<gallon>(0.) {
                 let volume_from_acc = self.accumulator.get_delta_vol(delta_vol);
-                if volume_from_acc == Volume::new::<gallon>(0.0) {
+                if volume_from_acc <= Volume::new::<gallon>(0.0000001) {
                     self.demanded_brake_position_left = self.current_brake_position_left;
                     self.demanded_brake_position_right = self.current_brake_position_right;
                 }
             } else {
-                self.volume_to_res_accumulator +=
-                    delta_vol.abs().min(self.accumulator.get_fluid_volume());
+                self.volume_to_res_accumulator += delta_vol.abs();
             }
         } else {
             //Else case if no accumulator: we just take deltavol needed or return it back to res
-            if delta_vol > Volume::new::<gallon>(0.0)
-                && hyd_loop.get_pressure() >= Pressure::new::<psi>(100.)
-            {
+            if delta_vol > Volume::new::<gallon>(0.) {
                 self.volume_to_actuator_accumulator += delta_vol;
             } else {
                 self.volume_to_res_accumulator += delta_vol.abs();
             }
         }
 
-        if self.accumulator.get_fluid_volume() > Volume::new::<gallon>(0.0) {
+        if self.accumulator.get_fluid_volume() > Volume::new::<gallon>(0.) {
             self.pressure_applied_left =
                 self.accumulator.get_raw_gas_press() * self.demanded_brake_position_left;
             self.pressure_applied_right =

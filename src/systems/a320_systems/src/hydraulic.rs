@@ -188,8 +188,12 @@ impl A320Hydraulic {
                     * min_hyd_loop_timestep.as_secs_f64(),
             ); // Keep track of time left after all fixed loop are done
 
-            // This is main update loop at base fixed step
+            // Then run fixed update loop for main hydraulics
             for _ in 0..num_of_update_loops {
+                // First update what is currently consumed and given back by each actuator
+                // Todo: might have to split the actuator volumes by expected number of loops
+                self.update_actuators_volume();
+
                 self.update_fixed_step(
                     context,
                     engine1,
@@ -269,6 +273,29 @@ impl A320Hydraulic {
         self.ram_air_turbine
             .update_physics(&delta_time_physics, &context.indicated_airspeed());
     }
+
+    // For each hydraulic loop retrieves volumes from and to each actuator and pass it to the loops
+    fn update_actuators_volume(&mut self) {
+        self.update_green_actuators_volume();
+        self.update_yellow_actuators_volume();
+        self.update_blue_actuators_volume();
+    }
+
+    fn update_green_actuators_volume(&mut self) {
+        // Actuator interaction given as example here needs extensive tests in another PR
+        // self.green_loop
+        //     .update_actuator_volumes(&self.braking_circuit_norm);
+        // self.braking_circuit_norm.reset_accumulators();
+    }
+
+    fn update_yellow_actuators_volume(&mut self) {
+        // Actuator interaction given as example here needs extensive tests in another PR
+        // self.yellow_loop
+        //     .update_actuator_volumes(&self.braking_circuit_altn);
+        // self.braking_circuit_altn.reset_accumulators();
+    }
+
+    fn update_blue_actuators_volume(&mut self) {}
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
     fn update_fixed_step(
@@ -380,8 +407,6 @@ impl A320Hydraulic {
             .update(&min_hyd_loop_timestep, &self.green_loop);
         self.braking_circuit_altn
             .update(&min_hyd_loop_timestep, &self.yellow_loop);
-        self.braking_circuit_norm.reset_accumulators();
-        self.braking_circuit_altn.reset_accumulators();
     }
 }
 impl SimulationElement for A320Hydraulic {
@@ -1500,20 +1525,25 @@ mod tests {
             //Enabled on cold start
             assert!(test_bed.is_ptu_enabled());
 
-            //Yellow epump ON / Waiting 10s
+            //Yellow epump ON / Waiting 25s
             test_bed = test_bed
                 .set_yellow_e_pump(false)
-                .run_waiting_for(Duration::from_secs(10));
+                .run_waiting_for(Duration::from_secs(25));
 
             assert!(test_bed.is_ptu_enabled());
 
             //Now we should have pressure in yellow and green
             assert!(test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(3500.));
+
             assert!(!test_bed.is_blue_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.blue_pressure() > Pressure::new::<psi>(-50.));
+
             assert!(test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
 
             //Ptu push button disables PTU / green press should fall
             test_bed = test_bed
@@ -1676,13 +1706,13 @@ mod tests {
             assert!(!test_bed.is_fire_valve_eng1_closed());
             assert!(!test_bed.is_fire_valve_eng2_closed());
 
-            //Starting eng 1
+            // Starting eng 1
             test_bed = test_bed
                 .start_eng2(Ratio::new::<percent>(50.))
                 .start_eng1(Ratio::new::<percent>(50.))
                 .run_waiting_for(Duration::from_secs(5));
 
-            //Waiting for 5s pressure hsould be at 3000 psi
+            // Waiting for 5s pressure should be at 3000 psi
             assert!(test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
             assert!(test_bed.is_blue_pressurised());
@@ -1693,7 +1723,7 @@ mod tests {
             assert!(!test_bed.is_fire_valve_eng1_closed());
             assert!(!test_bed.is_fire_valve_eng2_closed());
 
-            //Green shutoff valve
+            // Green shutoff valve
             test_bed = test_bed
                 .set_eng1_fire_button(true)
                 .run_waiting_for(Duration::from_secs(20));
@@ -1708,7 +1738,7 @@ mod tests {
             assert!(test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
 
-            //Yellow shutoff valve
+            // Yellow shutoff valve
             test_bed = test_bed
                 .set_eng2_fire_button(true)
                 .run_waiting_for(Duration::from_secs(20));
@@ -1758,9 +1788,12 @@ mod tests {
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .set_park_brake(false)
                 .set_yellow_e_pump(false)
-                .run_waiting_for(Duration::from_secs(15));
+                .run_waiting_for(Duration::from_secs(30));
 
             assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
+
             assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
@@ -1771,7 +1804,7 @@ mod tests {
             //Park brake on, loaded accumulator, we expect brakes on yellow side only
             test_bed = test_bed
                 .set_park_brake(true)
-                .run_waiting_for(Duration::from_secs(2));
+                .run_waiting_for(Duration::from_secs(3));
 
             assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
@@ -1821,7 +1854,9 @@ mod tests {
                 .run_waiting_for(Duration::from_secs(1));
 
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(3500.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(3500.));
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
 
@@ -1833,7 +1868,9 @@ mod tests {
             assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(950.));
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(3500.));
             assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(950.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(3500.));
         }
 
         #[test]
