@@ -29,6 +29,11 @@ class A32NX_Core {
                 updateInterval: 150,
             },
             {
+                name: 'Boarding',
+                module: new A32NX_Boarding(),
+                updateInterval: 150,
+            },
+            {
                 name: 'Electricity',
                 module: new A32NX_Electricity(),
                 updateInterval: 100,
