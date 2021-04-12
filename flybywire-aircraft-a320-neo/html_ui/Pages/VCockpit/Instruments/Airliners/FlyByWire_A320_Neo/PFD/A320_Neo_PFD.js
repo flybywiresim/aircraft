@@ -68,7 +68,6 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
         const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
         this.disp_index = parseInt(url.substring(url.length - 1));
-        this.pot_index = this.disp_index == 1 ? 88 : 90;
 
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         this.showILS = SimVar.GetSimVarValue(`L:BTN_LS_${this.disp_index}_FILTER_ACTIVE`, "bool");
@@ -96,32 +95,30 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
         this.hasInitialized = true;
 
-        //SELF TEST
-        this.selfTestDiv = document.querySelector('#SelfTestDiv');
-        this.selfTestTimerStarted = false;
-        this.selfTestTimer = -1;
-        this.selfTestLastKnobValueFO = 1;
-        this.selfTestLastKnobValueCAP = 1;
-
         //ENGINEERING TEST
         this.engTestDiv = document.querySelector('#PfdEngTest');
         this.engMaintDiv = document.querySelector('#PfdMaintMode');
 
         this.electricity = document.querySelector('#Electricity');
+
+        this.displayUnit = new DisplayUnit(
+            () => SimVar.GetSimVarValue("L:ACPowerAvailable","Bool"),
+            () => parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15")),
+            this.disp_index == 1 ? 88 : 90,
+            document.querySelector('#SelfTestDiv')
+        );
     }
     onUpdate() {
-        let _deltaTime = this.getDeltaTime();
-        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
-        if (currentKnobValue <= 0.0) {
-            this.selfTestLastKnobValue = currentKnobValue;
-            return;
-        }
-        super.onUpdate(_deltaTime);
+        let deltaTime = this.getDeltaTime();
+        super.onUpdate(deltaTime);
+
+        this.displayUnit.updateBeforeThrottle();
+
         if (!this.hasInitialized) {
             return;
         }
 
-        if (this.yokePositionThrottler.canUpdate(_deltaTime) != -1) {
+        if (this.yokePositionThrottler.canUpdate(deltaTime) != -1) {
             const YokeXPosition = 40.45 + (18.4 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
             const YokeYPosition = 47.95 - (14.45 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
 
@@ -129,13 +126,14 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.groundCursor.style.top = YokeYPosition.toString() + "%";
         }
 
-        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
-
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        if (_deltaTime === -1 && !KnobChanged) {
+        deltaTime = this.updateThrottler.canUpdate(deltaTime, this.displayUnit.isTurnedOnDuringThisUpdate());
+        if (deltaTime === -1) {
             return;
         }
-        this.flashTimer -= _deltaTime / 1000;
+
+        this.displayUnit.update(deltaTime);
+
+        this.flashTimer -= deltaTime / 1000;
         if (this.flashTimer <= 0) {
             this.flashTimer = 1;
             this.flashState = !this.flashState;
@@ -146,7 +144,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.spdFlash.setAttribute("visibility", "visible");
             this.altFlash.setAttribute("visibility", "visible");
             this.vsFlash.setAttribute("visibility", "visible");
-        } else if (this.selfTestTimer > -5) {
+        } else {
             this.attFlash.setAttribute("visibility", "hidden");
             this.hdgFlash.setAttribute("visibility", "hidden");
             this.spdFlash.setAttribute("visibility", "hidden");
@@ -186,30 +184,12 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.headingFail.setAttribute("style", "");
         }
 
-        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
-        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
-
-        if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
-            this.selfTestDiv.style.display = "block";
-            this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
-            this.selfTestTimerStarted = true;
-        }
-
-        if (this.selfTestTimer >= 0) {
-            this.selfTestTimer -= _deltaTime / 1000;
-            if (this.selfTestTimer <= 0) {
-                this.selfTestDiv.style.display = "none";
-                this.selfTestTimerStarted = false;
-            }
-        }
-
         if (this.disp_index == 1) {
             updateDisplayDMC("PFD1", this.engTestDiv, this.engMaintDiv);
         } else {
             updateDisplayDMC("PFD2", this.engTestDiv, this.engMaintDiv);
         }
 
-        this.selfTestLastKnobValue = currentKnobValue;
         this.updateScreenState();
     }
     onEvent(_event) {
