@@ -3341,6 +3341,50 @@
             </UseTemplate>
         </Component>
 
+        <Component ID="Airbus_BRK">
+            <Component ID="BRK_PRESS_ARC_L" Node="BRK_PRESS_ARC_L">
+                <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                    <ANIM_NAME>Press_Arc_L</ANIM_NAME>
+                    <ANIM_LENGTH>3</ANIM_LENGTH>
+                    <ANIM_DURATION>1</ANIM_DURATION>
+                    <ANIM_CODE>(A:BRAKE PARKING POSITION, Bool) 2 *</ANIM_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="BRK_PRESS_ARC_R" Node="BRK_PRESS_ARC_L">
+                <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                    <ANIM_NAME>Press_Arc_R</ANIM_NAME>
+                    <ANIM_LENGTH>3</ANIM_LENGTH>
+                    <ANIM_DURATION>1</ANIM_DURATION>
+                    <ANIM_CODE>(A:BRAKE PARKING POSITION, Bool) 2 *</ANIM_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="ACCU_PRESS" Node="BRK_ACCU_PRESS_ARC">
+                <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                    <ANIM_NAME>Accu_Press</ANIM_NAME>
+                    <ANIM_LENGTH>1</ANIM_LENGTH>
+                    <ANIM_DURATION>1</ANIM_DURATION>
+                    <ANIM_CODE>0.8</ANIM_CODE>
+                </UseTemplate>
+            </Component>
+
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>BRK_DECALS</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>BRK_ACCU_PRESS_IND</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>BRK_PRESS_IND_L</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>BRK_PRESS_IND_R</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+            </UseTemplate>
+        </Component>
+
         <Component ID="Airbus_Pedestal_Radios">
             <Component ID="Switching_Panel">
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">

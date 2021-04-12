@@ -148,9 +148,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         const ecamAllButtonBeingPushed = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
 
-        if (!knobChanged && !ecamAllButtonBeingPushed) {
-            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        }
+        _deltaTime = this.updateThrottler.canUpdate(_deltaTime, knobChanged || ecamAllButtonBeingPushed);
         if (_deltaTime === -1) {
             return;
         }
