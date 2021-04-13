@@ -117,13 +117,14 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.text_chrono_suffix = document.querySelector("#text_chrono_suffix");
         this.IsChronoDisplayed = 0;
 
-        this.electricity = this.gps.getChildById("Electricity");
-
         this.mapUpdateThrottler = new UpdateThrottler(this.screenIndex == 1 ? 100 : 400);
         this.updateThrottler = new UpdateThrottler(this.screenIndex == 1 ? 300 : 500);
 
         this.displayUnit = new DisplayUnit(
-            () => this.isPowered(),
+            this.gps.getChildById("Electricity"),
+            () => {
+                return SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isCaptainMfd() ? "AC_ESS_SHED" : "AC_2"}_BUS_IS_POWERED`, "Bool");
+            },
             () => parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15")),
             this.screenIndex == 1 ? 89 : 91,
             document.querySelector("#SelfTestDiv")
@@ -278,20 +279,10 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         } else {
             updateDisplayDMC("MFD2", this.engTestDiv, this.engMaintDiv);
         }
-
-        this.turnScreenOnOrOffDependingOnPowerState();
     }
 
     isCaptainMfd() {
         return this.screenIndex == 1;
-    }
-
-    isPowered() {
-        return SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isCaptainMfd() ? "AC_ESS_SHED" : "AC_2"}_BUS_IS_POWERED`, "Bool");
-    }
-
-    turnScreenOnOrOffDependingOnPowerState() {
-        this.electricity.style.display = this.isPowered() ? "block" : "none";
     }
 
     _updateNDFiltersStatuses() {

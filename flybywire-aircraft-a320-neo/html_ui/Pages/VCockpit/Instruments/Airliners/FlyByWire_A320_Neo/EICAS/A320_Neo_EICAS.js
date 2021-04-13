@@ -111,7 +111,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         // Using ternary in case the LVar is undefined
         this.poweredDuringPreviousUpdate = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") ? 0 : 1;
 
-        this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
         this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
 
@@ -131,7 +130,10 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.updateThrottler = new UpdateThrottler(500);
 
         this.displayUnit = new DisplayUnit(
-            () => this.isPowered(),
+            this.querySelector("#Electricity"),
+            () => {
+                return SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isTopScreen ? "AC_ESS" : "AC_2"}_BUS_IS_POWERED`, "Bool");
+            },
             () => parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15")),
             this.isTopScreen ? 92 : 93,
             this.querySelector(`#${this.isTopScreen ? "Top" : "Bottom"}SelfTest`)
@@ -154,7 +156,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.updateDoorVideoState();
 
         this.updateAnnunciations();
-        this.turnScreenOnOrOffDependingOnPowerState();
 
         // TODO Move anything dependent on ac power change to A32NX_Core
         const engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
@@ -204,7 +205,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             }
 
             this.pageNameWhenUnselected = "APU";
-        } else if (isPowered && !engineOn && Simplane.getIsGrounded()) {
+        } else if (!engineOn && Simplane.getIsGrounded()) {
             // reset minIndex and cruise timer after shutdown
             this.minPageIndexWhenUnselected = 0;
             this.CrzCondTimer = 60;
@@ -264,10 +265,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.PrevFailPage = sFailPage;
     }
 
-    isPowered() {
-        return SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isTopScreen ? "AC_ESS" : "AC_2"}_BUS_IS_POWERED`, "Bool");
-    }
-
     updateDoorVideoState() {
         const doorVideoPressedNow = SimVar.GetSimVarValue("L:PUSH_DOORPANEL_VIDEO", "Bool") === 1;
         const doorVideoEnabledNow = SimVar.GetSimVarValue("L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE", "Bool") === 1;
@@ -281,10 +278,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
     setDoorVideo() {
         this.doorVideoWrapper.style.visibility = this.doorVideoPressed ? "visible" : "hidden";
-    }
-
-    turnScreenOnOrOffDependingOnPowerState() {
-        this.electricity.style.display = this.isPowered() ? "block" : "none";
     }
 
     updateAnnunciations() {
