@@ -44,7 +44,7 @@ class A320_Neo_CDU_SelectWptPage {
                 const latString = (w.infos.coordinates.lat.toFixed(0) >= 0) ? `${w.infos.coordinates.lat.toFixed(0).toString().padStart(2, "0")}N` : `${Math.abs(w.infos.coordinates.lat.toFixed(0)).toString().padStart(2, "0")}S`;
                 const longString = (w.infos.coordinates.long.toFixed(0) >= 0) ? `${w.infos.coordinates.long.toFixed(0).toString().padStart(3, "0")}E` : `${Math.abs(w.infos.coordinates.long.toFixed(0)).toString().padStart(3, "0")}W`;
 
-                const dist = calculateDistance(w);
+                const dist = Math.min(calculateDistance(w), 9999);
 
                 rows[2 * i].splice(0, 1, "{green}" + dist.toFixed(0) + "{end}NM");
                 rows[2 * i + 1] = ["*" + w.ident + "[color]cyan", freq + "[color]green", `${latString}/${longString}[color]green`];
@@ -55,12 +55,12 @@ class A320_Neo_CDU_SelectWptPage {
                     callback(w);
                 };
                 mcdu.onLeftInput[5] = () => {
-                    CDUFlightPlanPage.ShowPage(mcdu, 0);
+                    mcdu.returnCallback(mcdu);
                 };
             }
         }
         mcdu.setTemplate([
-            ["DUPLICATE NAMES", (page + 1).toFixed(0), (orderedWaypoints.length / 5).toFixed(0)],
+            ["DUPLICATE NAMES", (page + 1).toFixed(0), Math.ceil(orderedWaypoints.length / 5).toFixed(0)],
             ...rows,
             [""]
         ]);

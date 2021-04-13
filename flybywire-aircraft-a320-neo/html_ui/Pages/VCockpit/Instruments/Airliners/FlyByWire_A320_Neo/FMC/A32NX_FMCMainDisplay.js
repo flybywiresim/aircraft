@@ -166,6 +166,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._activeCruiseFlightLevel = undefined;
         this._activeCruiseFlightLevelDefaulToFcu = false;
         this.fmsUpdateThrottler = new UpdateThrottler(250);
+        this._progBrgDist = undefined;
+        this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
     }
 
     Init() {
@@ -292,6 +294,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.A32NXCore.update();
 
         this.updateAutopilot();
+
+        if (this._progBrgDistUpdateThrottler.canUpdate(_deltaTime) !== -1) {
+            this.updateProgDistance();
+        }
     }
 
     /**
@@ -3211,6 +3217,296 @@ class FMCMainDisplay extends BaseAirliners {
 
     routeFinalEntered() {
         return this._rteFinalWeightEntered || this._rteFinalTimeEntered;
+    }
+
+    /**
+     * LatLongAltCallback
+     *
+     * @callback LatLongAltCallback
+     * @param {LatLongAlt} result
+     * @param {number=} magVar magnetic variation if available
+     */
+    /**
+     * McduMessageCallback
+     *
+     * @callback McduMessageCallback
+     * @param {McduMessage} message
+     */
+
+    /**
+     * Check if a place is the correct format for a runway
+     * @param {string} s
+     * @returns true if valid runway format
+     */
+    isRunwayFormat(s) {
+        return s.match(/^([A-Z]{4})([0-9]{2}[RCL]?)$/) !== null;
+    }
+
+    /**
+     * Parse a runway string and return the location of the threshold
+     * Returns undefined if invalid format or not in database
+     * @param {string} place
+     * @param {LatLongAltCallback} onSuccess location of runway threshold
+     * @param {McduMessageCallback} onError suggested error message
+     */
+    parseRunway(place, onSuccess, onError) {
+        const rwy = place.match(/^([A-Z]{4})([0-9]{2}[RCL]?)$/);
+        if (rwy !== null) {
+            this.dataManager.GetAirportByIdent(rwy[1]).then((airport) => {
+                if (airport) {
+                    for (let i = 0; i < airport.infos.oneWayRunways.length; i++) {
+                        if (Avionics.Utils.formatRunway(airport.infos.oneWayRunways[i].designation) === rwy[2]) {
+                            const runway = airport.infos.oneWayRunways[i];
+                            // this should be to the treshold but we don't have that, so we just use half the length
+                            const adjustedCoordinates = Avionics.Utils.bearingDistanceToCoordinates(
+                                (runway.direction + 180) % 360,
+                                runway.length / 2 / 1852, // TODO unit conversion lib
+                                runway.latitude, runway.longitude
+                            );
+                            return onSuccess(adjustedCoordinates);
+                        }
+                    }
+                    return onError(NXSystemMessages.notInDatabase);
+                }
+            });
+        } else {
+            return onError(NXSystemMessages.notInDatabase);
+        }
+    }
+
+    /**
+     * Check if a place is the correct format for a latitude/longitude
+     * @param {string} s
+     * @returns true if valid lat/lon format
+     */
+    isLatLonFormat(s) {
+        return s.match(/^(N|S)?([0-9]{2,4}\.[0-9])(N|S)?\/(E|W)?([0-9]{2,5}\.[0-9])(E|W)?$/) !== null;
+    }
+
+    /**
+     * Parse a lat/lon string into a position
+     * @param {string} place
+     * @param {LatLongAltCallback} onSuccess location
+     * @param {McduMessageCallback} onError suggested error message
+     */
+    parseLatLon(place, onSuccess, onError) {
+        const latlon = place.match(/^(N|S)?([0-9]{2,4}\.[0-9])(N|S)?\/(E|W)?([0-9]{2,5}\.[0-9])(E|W)?$/);
+        if (latlon !== null) {
+            const latB = latlon[1] || "" + latlon[3] || "";
+            const lonB = latlon[4] || "" + latlon[6] || "";
+            const latD = latlon[2].length == 4 ? parseInt(latlon[2].substring(0, 1)) : parseInt(latlon[2].substring(0, 2));
+            const latM = latlon[2].length == 4 ? parseFloat(latlon[2].substring(1)) : parseFloat(latlon[2].substring(2));
+            const lonD = latlon[5].length == 4 ? parseInt(latlon[5].substring(0, 1)) : latlon[5].length == 5 ? parseInt(latlon[5].substring(0, 2)) : parseInt(latlon[5].substring(0, 3));
+            const lonM = latlon[5].length == 4 ? parseFloat(latlon[5].substring(1)) : latlon[5].length == 5 ? parseFloat(latlon[5].substring(2)) : parseFloat(latlon[5].substring(3));
+            if (latB.length == 0 || lonB.length == 0 || !isFinite(latM) || !isFinite(lonM)) {
+                return onError(NXSystemMessages.formatError);
+            }
+            if (latD > 90 || latM > 59.9 || lonD > 180 || lonM > 59.9) {
+                return onError(NXSystemMessages.entryOutOfRange);
+            }
+            const lat = (latD + latM / 60) * (latB === "S" ? -1 : 1);
+            const lon = (lonD + lonM / 60) * (lonB === "W" ? -1 : 1);
+            return onSuccess(new LatLongAlt(lat, lon));
+        }
+        return onError(NXSystemMessages.formatError);
+    }
+
+    /**
+     * Check if a place is the correct format
+     * @param {string} s
+     * @returns true if valid place format
+     */
+    isPlaceFormat(s) {
+        return s.match(/^[A-Z0-9]{2,6}$/) !== null || this.isRunwayFormat(s);
+    }
+
+    /**
+     * Parse a place string into a position
+     * @param {string} place
+     * @param {LatLongAltCallback} onSuccess location
+     * @param {McduMessageCallback} onError suggested error message
+     */
+    parsePlace(place, onSuccess, onError) {
+        if (this.isRunwayFormat(place)) {
+            this.parseRunway(place, onSuccess, onError);
+        } else {
+            this.getOrSelectWaypointByIdent(place, (waypoint) => {
+                if (waypoint) {
+                    return onSuccess(waypoint.infos.coordinates, waypoint.infos.magneticVariation);
+                } else {
+                    return onError(NXSystemMessages.notInDatabase);
+                }
+            });
+        }
+    }
+
+    /**
+     * Check if a string is a valid place-bearing/place-bearing format
+     * @param {string} s
+     * @returns true if valid place format
+     */
+    isPbPbFormat(s) {
+        const pbpb = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
+        return pbpb !== null && this.isPlaceFormat(pbpb[1]) && this.isPlaceFormat(pbpb[3]);
+    }
+
+    /**
+     * Parse a p-b/p-b string into a position
+     * @param {string} s place-bearing/place-bearing
+     * @param {LatLongAltCallback} onSuccess location
+     * @param {McduMessageCallback} onError suggested error message
+     */
+    parsePbPb(s, onSuccess, onError) {
+        const pbpb = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
+        if (pbpb === null) {
+            return onError(NXSystemMessages.formatError);
+        }
+        const brg1 = parseInt(pbpb[2]);
+        const brg2 = parseInt(pbpb[4]);
+        if (brg1 > 360 || brg2 > 360) {
+            return onError(NXSystemMessages.entryOutOfRange);
+        }
+        this.parsePlace(pbpb[1], (loc1, magVar1) => {
+            this.parsePlace(pbpb[3], (loc2, magVar2) => {
+                onSuccess(A32NX_Util.greatCircleIntersection(loc1, A32NX_Util.magneticToTrue(brg1, magVar1), loc2, A32NX_Util.magneticToTrue(brg2, magVar2)));
+            }, (err2) => {
+                onError(err2);
+            });
+        }, (err1) => {
+            onError(err1);
+        });
+    }
+
+    /**
+     * Check if string is in place/bearing/distance format
+     * @param {String} s
+     * @returns true if pbd
+     */
+    isPbdFormat(s) {
+        const pbd = s.match(/^([^\/]+)\/([0-9]{1,3})\/([0-9]{1,3}(\.[0-9])?)$/);
+        return pbd !== null && this.isPlaceFormat(pbd[1]);
+    }
+
+    /**
+     * Split PBD format into components
+     * @param {String} s PBD format string
+     * @returns [{string} place, {number} bearing, {number} distance]
+     */
+    splitPbd(s) {
+        let [place, brg, dist] = s.split("/");
+        brg = parseInt(brg);
+        dist = parseInt(dist);
+        return [place, brg, dist];
+    }
+
+    /**
+     * Set the progress page bearing/dist location
+     * @param {string} ident ident of the waypoint or runway, will be replaced by "ENTRY" if brg/dist offset are specified
+     * @param {LatLongAlt} coordinates co-ordinates of the waypoint/navaid/runway, without brg/dist offset
+     * @param {(number|undefined)} brg undefined or (true) bearing for offset
+     * @param {(number|undefined)} dist undefined or dist for offset
+     */
+    _setProgLocation(ident, coordinates, brg, dist) {
+        console.log(`progLocation: ${ident} ${coordinates} ${brg} ${dist}`);
+        const displayIdent = (brg !== undefined && dist !== undefined) ? "ENTRY" : ident;
+        let adjustedCoordinates = coordinates;
+        if (brg !== undefined && dist !== undefined) {
+            adjustedCoordinates = Avionics.Utils.bearingDistanceToCoordinates(brg % 360, dist, coordinates.lat, coordinates.long);
+        }
+        this._progBrgDist = {
+            ident: displayIdent,
+            coordinates: adjustedCoordinates,
+            bearing: -1,
+            distance: -1
+        };
+
+        this.updateProgDistance();
+    }
+
+    /**
+     * Try to set the progress page bearing/dist waypoint/location
+     * @param {String} s scratchpad entry
+     * @param {Function} callback callback taking boolean arg for success/failure
+     */
+    trySetProgWaypoint(s, callback = EmptyCallback.Boolean) {
+        if (s === FMCMainDisplay.clrValue) {
+            this._progBrgDist = undefined;
+            return callback(true);
+        }
+
+        if (this.isLatLonFormat(s)) {
+            this.parseLatLon(s, (loc) => {
+                this._setProgLocation("ENTRY", loc);
+                return callback(true);
+            }, (err) => {
+                this.addNewMessage(err);
+                return callback(false);
+            });
+        } else if (this.isPbPbFormat(s)) {
+            this.parsePbPb(s, (loc) => {
+                this._setProgLocation("ENTRY", loc);
+                return callback(true);
+            }, (err) => {
+                this.addNewMessage(err);
+                return callback(false);
+            });
+        } else { // place or PBD
+            let place, brg, dist;
+            if (this.isPbdFormat(s)) {
+                [place, brg, dist] = this.splitPbd(s);
+                if (brg > 360 || dist > 999.9) {
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    return callback(false);
+                }
+            } else {
+                place = s;
+            }
+            if (this.isPlaceFormat(place)) {
+                this.parsePlace(place, (loc, magVar) => {
+                    this._setProgLocation(place, loc, brg ? A32NX_Util.magneticToTrue(brg, magVar) : undefined, dist);
+                    return callback(true);
+                }, (err) => {
+                    this.addNewMessage(err);
+                    return callback(false);
+                });
+            } else {
+                this.addNewMessage(NXSystemMessages.formatError);
+                return callback(false);
+            }
+        }
+    }
+
+    /**
+     * Recalculate the bearing and distance for progress page
+     */
+    updateProgDistance() {
+        if (!this._progBrgDist) {
+            return;
+        }
+        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") !== 2) { // 2 == aligned
+            this._progBrgDist.distance = -1;
+            this._progBrgDist.bearing = -1;
+            return;
+        }
+        const planeLla = new LatLongAlt(
+            SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"),
+            SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude")
+        );
+        const magVar = SimVar.GetSimVarValue("MAGVAR", "degree");
+        this._progBrgDist.distance = Avionics.Utils.computeGreatCircleDistance(planeLla, this._progBrgDist.coordinates);
+        this._progBrgDist.bearing = A32NX_Util.trueToMagnetic(Avionics.Utils.computeGreatCircleHeading(planeLla, this._progBrgDist.coordinates));
+    }
+
+    get progBearing() {
+        return this._progBrgDist ? this._progBrgDist.bearing : -1;
+    }
+
+    get progDistance() {
+        return this._progBrgDist ? this._progBrgDist.distance : -1;
+    }
+
+    get progWaypointIdent() {
+        return this._progBrgDist ? this._progBrgDist.ident : undefined;
     }
 
     /* END OF MCDU GET/SET METHODS */
