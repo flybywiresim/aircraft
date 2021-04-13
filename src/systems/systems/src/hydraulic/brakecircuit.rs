@@ -16,19 +16,20 @@ pub trait ActuatorHydInterface {
     fn get_reservoir_return(&self) -> Volume;
 }
 
-//Brakes implementation. This tries to do a simple model with a possibility to have an accumulator (or not)
-//Brake model is simplified as we just move brake position from 0 to 1 and take conrresponding fluid volume (vol = max_displacement * brake_position).
+// Brakes implementation. This tries to do a simple model with a possibility to have an accumulator (or not)
+// Brake model is simplified as we just move brake position from 0 to 1 and take conrresponding fluid volume (vol = max_displacement * brake_position).
 // So it's fairly simplified as we just end up with brake pressure = hyd_pressure * current_position
 pub struct BrakeCircuit {
     _id: String,
     id_left_press: String,
     id_right_press: String,
     id_acc_press: String,
-    //Total volume used when at max braking position.
-    //Simple model for now we assume at max braking we have max brake displacement
+
+    // Total volume used when at max braking position.
+    // Simple model for now we assume at max braking we have max brake displacement
     total_displacement: Volume,
 
-    //actuator position //TODO make this more dynamic with a per wheel basis instead of left/right?
+    // Actuator position //TODO make this more dynamic with a per wheel basis instead of left/right?
     current_brake_position_left: f64,
     demanded_brake_position_left: f64,
     pressure_applied_left: Pressure,
@@ -36,22 +37,17 @@ pub struct BrakeCircuit {
     demanded_brake_position_right: f64,
     pressure_applied_right: Pressure,
 
-    //Brake accumulator variables. Accumulator can have 0 volume if no accumulator
+    // Brake accumulator variables. Accumulator can have 0 volume if no accumulator
     has_accumulator: bool,
     accumulator: HydraulicAccumulator,
-    // accumulator_total_volume: Volume,
-    // accumulator_gas_pressure: Pressure,
-    // accumulator_gas_volume: Volume,
-    // accumulator_fluid_volume: Volume,
-    // accumulator_press_breakpoints: [f64; 9],
-    // accumulator_flow_carac: [f64; 9],
 
-    //Common vars to all actuators: will be used by the calling loop to know what is used
-    //and what comes back to  reservoir at each iteration
+    // Common vars to all actuators: will be used by the calling loop to know what is used
+    // and what comes back to  reservoir at each iteration
     volume_to_actuator_accumulator: Volume,
     volume_to_res_accumulator: Volume,
 
-    accumulator_fluid_pressure_sensor_filtered: Pressure, //Fluid pressure in brake circuit filtered for cockpit gauges
+    // Fluid pressure in brake circuit filtered for cockpit gauges
+    accumulator_fluid_pressure_sensor_filtered: Pressure,
 }
 
 impl SimulationElement for BrakeCircuit {
@@ -80,7 +76,7 @@ impl BrakeCircuit {
         [0.0, 5.0, 10.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 10000.0];
     const ACCUMULATOR_FLOW_CARAC: [f64; 9] = [0.0, 0.01, 0.016, 0.02, 0.04, 0.1, 0.15, 0.35, 0.5];
 
-    //Filtered using time constant low pass: new_val = old_val + (new_val - old_val)* (1 - e^(-dt/TCONST))
+    // Filtered using time constant low pass: new_val = old_val + (new_val - old_val)* (1 - e^(-dt/TCONST))
     const ACC_PRESSURE_SENSOR_FILTER_TIMECONST: f64 = 0.1; //Time constant of the filter used to measure brake circuit pressure
 
     pub fn new(
@@ -118,7 +114,9 @@ impl BrakeCircuit {
             ),
             volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
             volume_to_res_accumulator: Volume::new::<gallon>(0.),
-            accumulator_fluid_pressure_sensor_filtered: Pressure::new::<psi>(0.0), //Pressure measured after accumulator in brake circuit
+
+            // Pressure measured after accumulator in brake circuit
+            accumulator_fluid_pressure_sensor_filtered: Pressure::new::<psi>(0.0),
         }
     }
 
@@ -148,7 +146,7 @@ impl BrakeCircuit {
                 self.volume_to_res_accumulator += delta_vol.abs();
             }
         } else {
-            //Else case if no accumulator: we just take deltavol needed or return it back to res
+            // Else case if no accumulator: we just take deltavol needed or return it back to res
             if delta_vol > Volume::new::<gallon>(0.) {
                 self.volume_to_actuator_accumulator += delta_vol;
             } else {
@@ -233,7 +231,9 @@ pub struct AutoBrakeController {
     pub current_accel_error: Acceleration,
     accel_error_prev: Acceleration,
     current_integral_term: f64,
-    current_brake_dmnd: f64, //Controller brake demand to satisfy autobrake mode [0:1]
+
+    // Controller brake demand to satisfy autobrake mode [0:1]
+    current_brake_dmnd: f64,
 
     is_enabled: bool,
 }
@@ -319,7 +319,7 @@ mod tests {
     };
 
     #[test]
-    //Runs engine driven pump, checks pressure OK, shut it down, check drop of pressure after 20s
+    // Runs engine driven pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn brake_state_at_init() {
         let init_max_vol = Volume::new::<gallon>(1.5);
         let brake_circuit_unprimed = BrakeCircuit::new(
