@@ -1,0 +1,299 @@
+<link rel="stylesheet" href="./A320_Neo_LowerECAM_WHEEL.css?v=00700011110" />
+<script type="text/html" id="LowerECAMWHEELTemplate">
+    <svg version="1.1" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <text id="PageTitle" x="60" y="115" text-decoration="underline">WHEEL</text>
+
+        <!-- Speedbrakes -->
+
+        <g id="speedbrakes">
+            <path class="shape color-green" d="m 103 84 l 15 0"></path>
+            <path class="shape color-green" d="m 142 79 l 15 0"></path>
+            <path class="shape color-green" d="m 180 74 l 15 0"></path>
+            <path class="shape color-green" d="m 219 69 l 15 0"></path>
+            <path class="shape color-green" d="m 257 64 l 15 0"></path>
+
+            <path class="shape color-green" d="m 497 84 l -15 0"></path>
+            <path class="shape color-green" d="m 458 79 l -15 0"></path>
+            <path class="shape color-green" d="m 420 74 l -15 0"></path>
+            <path class="shape color-green" d="m 381 69 l -15 0"></path>
+            <path class="shape color-green" d="m 343 64 l -15 0"></path>
+        </g>
+
+        <g id="speedbrake_arrows">
+            <path id="arrow5_left" class="shape color-green" d="M 111 84 l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0"></path>
+            <path id="arrow4_left" class="shape color-green" d="M 150 79 l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0"></path>
+            <path id="arrow3_left" class="shape color-green" d="M 188 74 l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0"></path>
+            <path id="arrow2_left" class="shape color-green" d="M 227 69 l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0"></path>
+            <path id="arrow1_left" class="shape color-green" d="M 265 64 l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0"></path>
+
+            <path id="arrow5_right" class="shape color-green" d="M 489 84 l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0"></path>
+            <path id="arrow4_right" class="shape color-green" d="M 450 79 l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0"></path>
+            <path id="arrow3_right" class="shape color-green" d="M 412 74 l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0"></path>
+            <path id="arrow2_right" class="shape color-green" d="M 373 69 l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0"></path>
+            <path id="arrow1_right" class="shape color-green" d="M 335 64 l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0"></path>
+        </g>
+
+        <g id="speedbrake_text">
+            <text class="big-text color-amber" x="111" y="75" visibility="hidden">5</text>
+            <text class="big-text color-amber" x="150" y="70" visibility="hidden">4</text>
+            <text class="big-text color-amber" x="188" y="65" visibility="hidden">3</text>
+            <text class="big-text color-amber" x="227" y="60" visibility="hidden">2</text>
+            <text class="big-text color-amber" x="265" y="55" visibility="hidden">1</text>
+
+            <text class="big-text color-amber" x="489" y="75" visibility="hidden">5</text>
+            <text class="big-text color-amber" x="450" y="70" visibility="hidden">4</text>
+            <text class="big-text color-amber" x="412" y="65" visibility="hidden">3</text>
+            <text class="big-text color-amber" x="373" y="60" visibility="hidden">2</text>
+            <text class="big-text color-amber" x="335" y="55" visibility="hidden">1</text>
+        </g>
+
+        <!-- Center info panel-->
+
+        <g id="center-nw-steering" visibility="hidden">
+            <!-- Hyd -->
+            <rect class="hyd-background" x="211" y="200" width="18" height="20"></rect>
+            <text class="medium-text color-amber" x="220" y="210" text-anchor="middle" alignment-baseline="central">Y</text>
+
+            <!-- Text -->
+            <text x="240" y="210" class="big-text align-left color-amber">N/W STEERING</text>
+        </g>
+
+        <text id="center-lg-ctl" x="246" y="234" visibility="hidden" class="big-text align-left color-amber">L/G CTL</text>
+
+        <g id="center-anti-skid" visibility="hidden">
+            <!-- Text -->
+            <text x="300" y="312" class="big-text color-amber">ANTI SKID</text>
+
+            <!-- BSCUs -->
+            <path class="shape color-gray" d="m 378 323 h 20 v -22"/>
+            <text class="big-text color-green" x="386" y="312">1</text>
+
+            <path class="shape color-gray" d="m 404 323 h 20 v -22"/>
+            <text class="big-text color-green" x="413" y="312">2</text>
+        </g>
+
+        <g id="center-norm-brk" visibility="hidden">
+            <!-- Hyd -->
+            <rect class="hyd-background" x="220" y="328" width="18" height="20"></rect>
+            <text class="medium-text color-amber" x="229" y="338" text-anchor="middle" alignment-baseline="central">G</text>
+
+            <!-- Text -->
+            <text x="306" y="340" class="big-text color-amber">NORM BRK</text>
+        </g>
+
+        <g id="center-altn-brk" visibility="hidden">
+            <!--  Hyd -->
+            <rect class="hyd-background" x="220" y="356" width="18" height="20"></rect>
+            <text class="medium-text color-amber" x="229" y="366" text-anchor="middle" alignment-baseline="central">Y</text>
+
+            <!-- Text -->
+            <text x="306" y="368" class="big-text color-green">ALTN BRK</text>
+        </g>
+
+        <g id="center-accu-only" class="shape color-green" visibility="hidden">
+            <!-- Arrow -->
+            <polygon points="268,386 276,386 272,380"/>
+            <path d="m 272 386 v 9 h 12"/>
+
+            <!-- Text -->
+            <text x="352" y="396" class="big-text color-green">ACCU ONLY</text>
+        </g>
+
+        <!-- LG indicators -->
+
+        <!-- Left gear -->
+        <g id="gear-left" class="blinking-gear">
+            <path class="gear-door-side-line" d="m 62.06 271.07 h 17.91"/>
+            <path class="gear-door-side-line" d="m 167.47 271.07 h 17.91"/>
+
+            <line id="gear-door-left" class="gear-door-line" x1="85.067" x2="161.71" y1="271.07" y2="271.07"/>
+            <line id="gear-door-in-transit-left" class="gear-door-in-transit-line" x1="165.07" x2="175.71" y1="274.07" y2="341.07"/>
+
+            <ellipse class="gear-door-joint" cx="165.07" cy="271.07" rx="2.6" ry="2.6"/>
+
+            <!-- LGCIUs -->
+            <g id="gear-lgcius-left" class="gear-lgcius">
+                <!-- LGCIU 1 -->
+                <g id="gear-lgciu-1-left" class="shape gear-lgciu-1">
+                    <polygon points="97.067,278.07 119.067,278.07 119.067,307.07"/>
+                    <path d="m 103 278.07 v 8"/>
+                    <path d="m 108 278.07 v 14"/>
+                    <path d="m 113.5 278.07 v 22"/>
+                </g>
+
+                <!-- LGCIU 2 -->
+                <g id="gear-lgciu-2-left" class="shape gear-lgciu-2">
+                    <polygon points="127.067,278.07 149.067,278.07 127.067,307.07"/>
+                    <path d="m 133 278.07 v 22"/>
+                    <path d="m 138 278.07 v 14"/>
+                    <path d="m 143 278.07 v 8"/>
+                </g>
+
+                <g class="shape gear-failed-lgicu-1" visibility="hidden">
+                    <path d="m 97.067 278.07 h 22"></path>
+
+                    <text class="gear-failed-lgciu-xx" x="110" y="294" font-size="17">XX</text>
+                </g>
+
+                <g class="shape gear-failed-lgicu-2" visibility="hidden">
+                    <path d="m 127.067 278.07 h 22"></path>
+
+                    <text class="gear-failed-lgciu-xx" x="136" y="294" font-size="17">XX</text>
+                </g>
+            </g>
+        </g>
+
+        <!-- Center gear -->
+        <g id="gear-center" class="blinking-gear">
+            <path class="gear-door-side-line" d="m 232.38 133.91 h 13.91"/>
+            <path class="gear-door-side-line" d="m 343.69 133.91 h 13.91"/>
+
+            <g id="gear-door-center">
+                <line class="gear-door-line" x1="251.86" x2="280.5" y1="133.77" y2="133.77"/>
+                <line class="gear-door-line" x1="305.96" x2="336.6" y1="133.86" y2="133.86"/>
+            </g>
+
+            <g id="gear-door-in-transit-center">
+                <line class="gear-door-in-transit-line" x1="248.11" x2="242.11" y1="135.5" y2="161.07"/>
+                <line class="gear-door-in-transit-line" x1="340.42" x2="346.42" y1="135.5" y2="161.07"/>
+            </g>
+
+            <ellipse class="gear-door-joint" cx="248.11" cy="133.5" rx="2.6" ry="2.6"/>
+            <ellipse class="gear-door-joint" cx="340.42" cy="133.5" rx="2.6" ry="2.6"/>
+
+            <g id="gear-lgcius-center" class="gear-lgcius" style="transform: translate(170px, -138px)">
+                <!-- LGCIU 1 -->
+                <g id="gear-lgciu-1-center" class="shape gear-lgciu-1">
+                    <polygon points="97.067,278.07 119.067,278.07 119.067,307.07"/>
+                    <path d="m 103 278.07 v 8"/>
+                    <path d="m 108 278.07 v 14"/>
+                    <path d="m 113.5 278.07 v 22"/>
+                </g>
+
+                <!-- LGCIU 2 -->
+                <g id="gear-lgciu-2-center" class="shape gear-lgciu-2">
+                    <polygon points="127.067,278.07 149.067,278.07 127.067,307.07"/>
+                    <path d="m 133 278.07 v 22"/>
+                    <path d="m 138 278.07 v 14"/>
+                    <path d="m 143 278.07 v 8"/>
+                </g>
+
+                <g class="shape gear-failed-lgicu-1" visibility="hidden">
+                    <path d="m 97.067 278.07 h 22"></path>
+
+                    <text class="gear-failed-lgciu-xx" x="110" y="294" font-size="17">XX</text>
+                </g>
+
+                <g class="shape gear-failed-lgicu-2" visibility="hidden">
+                    <path d="m 127.067 278.07 h 22"></path>
+
+                    <text class="gear-failed-lgciu-xx" x="136" y="294" font-size="17">XX</text>
+                </g>
+            </g>
+
+            <g id="center-brake-arches">
+                <path class="wheel-set-brake-arch" stroke-width="2" d="m352.97 10.47c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.3921 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.815 3.4005z"/>
+                <path class="wheel-set-brake-arch" stroke-width="2" d="m249.97 10.47c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.392 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.814 3.4005z"/>
+            </g>
+        </g>
+
+        <!-- Right gear -->
+        <g id="gear-right" class="blinking-gear">
+            <path class="gear-door-side-line" d="m410.24 271.07h17.91"/>
+            <path class="gear-door-side-line" d="m517.7 271.07h17.91"/>
+
+            <line id="gear-door-right" class="gear-door-line" x1="433.93" x2="512.79" y1="271.07" y2="271.07"/>
+            <line id="gear-door-in-transit-right" class="gear-door-in-transit-line" x1="431.93" x2="423.93" y1="274.07" y2="341.07"/>
+
+            <ellipse class="gear-door-joint" cx="431.37" cy="271.07" rx="2.6" ry="2.6"/>
+
+            <!-- LGCIUs -->
+            <g id="gear-lgcius-right" class="gear-lgcius" style="transform: translateX(348px)">
+                <!-- LGCIU 1 -->
+                <g id="gear-lgciu-1-right" class="shape gear-lgciu-1">
+                    <polygon points="97.067,278.07 119.067,278.07 119.067,307.07"/>
+                    <path d="m 103 278.07 v 8"/>
+                    <path d="m 108 278.07 v 14"/>
+                    <path d="m 113.5 278.07 v 22"/>
+                </g>
+
+                <!-- LGCIU 2 -->
+                <g id="gear-lgciu-2-right" class="shape gear-lgciu-2">
+                    <polygon points="127.067,278.07 149.067,278.07 127.067,307.07"/>
+                    <path d="m 133 278.07 v 22"/>
+                    <path d="m 138 278.07 v 14"/>
+                    <path d="m 143 278.07 v 8"/>
+                </g>
+
+                <g class="shape gear-failed-lgicu-1" visibility="hidden">
+                    <path d="m 97.067 278.07 h 22"></path>
+
+                    <text class="gear-failed-lgciu-xx" x="110" y="294" font-size="17">XX</text>
+                </g>
+
+                <g class="shape gear-failed-lgicu-2" visibility="hidden">
+                    <path d="m 127.067 278.07 h 22"></path>
+
+                    <text class="gear-failed-lgciu-xx" x="136" y="294" font-size="17">XX</text>
+                </g>
+            </g>
+        </g>
+
+        <!-- Brake temperatures -->
+
+        <!-- Wheel set #1 -->
+        <g id="wheel-set-brake-left">
+            <!-- Arches -->
+            <path id="indicator-arch-1" class="wheel-set-brake-arch" stroke-linecap="round" d="m12.25 372.69c-5.6511 0.0126-11.216 1.6606-15.547 4.4688-3.4807 2.2398-5.759 5.205-6.3809 8.4629l1.4258 0.27149c0.52976-2.7753 2.5075-5.4347 5.7422-7.5156v-2e-3h2e-3c4.0708-2.6394 9.3921-4.2224 14.762-4.2344 5.3729-0.0113 10.936 1.5183 15.041 4.0859 3.2313 2.0193 5.2676 4.6167 5.8984 7.3418l1.4121-0.32617c-0.73917-3.193-3.0677-6.0756-6.541-8.2461v2e-3c-4.382-2.741-10.167-4.3204-15.815-4.3086z"/>
+            <path id="indicator-arch-2" class="wheel-set-brake-arch" stroke-linecap="round" d="m110 372.69c-5.6511 0.0126-11.216 1.6606-15.547 4.4688-3.4807 2.2398-5.759 5.205-6.3809 8.4629l1.4258 0.27149c0.52976-2.7753 2.5075-5.4347 5.7422-7.5156v-2e-3h2e-3c4.0708-2.6394 9.3921-4.2224 14.762-4.2344 5.3729-0.0113 10.936 1.5183 15.041 4.0859 3.2313 2.0193 5.2676 4.6167 5.8984 7.3418l1.4121-0.32617c-0.73917-3.193-3.0677-6.0756-6.541-8.2461v2e-3c-4.382-2.741-10.167-4.3205-15.814-4.3086z"/>
+
+            <path class="wheel-set-brake-arch" stroke="#dadadf" stroke-linecap="round" d="m12.25 540.47c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.3921 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.815 3.4005z"/>
+            <path class="wheel-set-brake-arch" stroke="#dadadf" stroke-linecap="round" d="m110 540.47c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.392 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.814 3.4005z"/>
+
+            <!-- Markers -->
+            <text class="wheel-set-brake-celsius-marker" x="85" y="397">°C</text>
+            <text class="wheel-set-brake-rel-marker" x="89" y="420">REL</text>
+
+            <!-- Temperatures -->
+            <text id="wheel-brake-temp-1" class="wheel-set-brake-temp" x="65" y="398">xx</text>
+            <text id="wheel-brake-temp-2" class="wheel-set-brake-temp" x="147" y="398">xx</text>
+
+            <!-- wheel numbers -->
+            <text class="wheel-set-brake-number" x="45" y="420">1</text>
+            <text class="wheel-set-brake-number" x="128" y="420">2</text>
+        </g>
+
+        <!-- Wheel set #2 -->
+        <g id="wheel-set-brake-right">
+            <!-- Arches -->
+            <path id="indicator-arch-3" class="wheel-set-brake-arch" stroke-linecap="round" d="m510.13 372.69c-5.6511 0.0126-11.216 1.6606-15.547 4.4688-3.4807 2.2398-5.759 5.205-6.3809 8.4629l1.4258 0.27149c0.52976-2.7753 2.5075-5.4347 5.7422-7.5156v-2e-3h2e-3c4.0708-2.6394 9.3921-4.2224 14.762-4.2344 5.3729-0.0113 10.936 1.5183 15.041 4.0859 3.2313 2.0193 5.2676 4.6167 5.8984 7.3418l1.4121-0.32617c-0.73917-3.193-3.0677-6.0756-6.541-8.2461v2e-3c-4.382-2.741-10.167-4.3205-15.814-4.3086z"/>
+            <path id="indicator-arch-4" class="wheel-set-brake-arch" stroke-linecap="round" d="m608.43 372.69c-5.6511 0.0126-11.216 1.6606-15.547 4.4688-3.4807 2.2398-5.759 5.205-6.3809 8.4629l1.4258 0.27149c0.52976-2.7753 2.5075-5.4347 5.7422-7.5156v-2e-3h2e-3c4.0708-2.6394 9.3921-4.2224 14.762-4.2344 5.3729-0.0113 10.936 1.5183 15.041 4.0859 3.2313 2.0193 5.2676 4.6167 5.8984 7.3418l1.4121-0.32617c-0.73917-3.193-3.0677-6.0756-6.541-8.2461v2e-3c-4.382-2.741-10.167-4.3205-15.814-4.3086z"/>
+
+            <path class="wheel-set-brake-arch" stroke="#dadadf" stroke-linecap="round" d="m510.13 540.47c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.392 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.814 3.4005z"/>
+            <path class="wheel-set-brake-arch" stroke="#dadadf" stroke-linecap="round" d="m608.43 540.47c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.392 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.814 3.4005z"/>
+
+            <!-- Markers -->
+            <text class="wheel-set-brake-celsius-marker" x="510" y="397">°C</text>
+            <text class="wheel-set-brake-rel-marker" x="515" y="420">REL</text>
+
+            <!-- Temperatures -->
+            <text id="wheel-brake-temp-3" class="wheel-set-brake-temp" x="488" y="398">xx</text>
+            <text id="wheel-brake-temp-4" class="wheel-set-brake-temp" x="572" y="398">xx</text>
+
+            <!-- Wheel numbers -->
+            <text class="wheel-set-brake-number" x="470" y="420">3</text>
+            <text class="wheel-set-brake-number" x="555" y="420">4</text>
+        </g>
+
+        <!-- Autobrake -->
+
+        <g id="autobrake-element" visibility="hidden">
+            <text id="autobrake-title" class="big-text color-green">AUTO BRK </text>
+
+            <text id="autobrake-quantity-min" class="big-text color-green autobrake-mode" visibility="hidden">LO</text>
+            <text id="autobrake-quantity-med" class="big-text color-green autobrake-mode" visibility="hidden">MED</text>
+            <text id="autobrake-quantity-max" class="big-text color-green autobrake-mode" visibility="hidden">MAX</text>
+        </g>
+    </svg>
+</script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_WHEEL.js"></script>

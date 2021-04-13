@@ -8,7 +8,7 @@ use super::SimulatorReader;
 
 /// Provides data unowned by any system in the aircraft system simulation
 /// for the purpose of handling a simulation tick.
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct UpdateContext {
     delta: Duration,
     indicated_airspeed: Velocity,
@@ -88,5 +88,12 @@ impl UpdateContext {
 
     pub fn long_accel(&self) -> Acceleration {
         self.longitudinal_acceleration
+    }
+
+    pub fn with_delta(&self, delta: Duration) -> Self {
+        let mut copy: UpdateContext = *self;
+        copy.delta = delta;
+
+        copy
     }
 }

@@ -1,5 +1,5 @@
 use crate::{
-    hydraulic::HydLoop,
+    hydraulic::HydraulicLoop,
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
 
@@ -7,10 +7,9 @@ use std::f64::consts::E;
 use std::string::String;
 use std::time::Duration;
 
-use uom::si::{
-    acceleration::foot_per_second_squared, f64::*, pressure::psi, time::second, volume::gallon,
-    volume_rate::gallon_per_second,
-};
+use uom::si::{acceleration::foot_per_second_squared, f64::*, pressure::psi, volume::gallon};
+
+use super::HydraulicAccumulator;
 
 pub trait ActuatorHydInterface {
     fn get_used_volume(&self) -> Volume;
@@ -39,12 +38,13 @@ pub struct BrakeCircuit {
 
     //Brake accumulator variables. Accumulator can have 0 volume if no accumulator
     has_accumulator: bool,
-    accumulator_total_volume: Volume,
-    accumulator_gas_pressure: Pressure,
-    accumulator_gas_volume: Volume,
-    accumulator_fluid_volume: Volume,
-    accumulator_press_breakpoints: [f64; 9],
-    accumulator_flow_carac: [f64; 9],
+    accumulator: HydraulicAccumulator,
+    // accumulator_total_volume: Volume,
+    // accumulator_gas_pressure: Pressure,
+    // accumulator_gas_volume: Volume,
+    // accumulator_fluid_volume: Volume,
+    // accumulator_press_breakpoints: [f64; 9],
+    // accumulator_flow_carac: [f64; 9],
 
     //Common vars to all actuators: will be used by the calling loop to know what is used
     //and what comes back to  reservoir at each iteration
@@ -94,23 +94,6 @@ impl BrakeCircuit {
             has_accu = false;
         }
 
-        //taking care init volume is maxed at accumulator capacity: we can't exceed max_volume minus a margin for gas to compress
-        let limited_volume = accumulator_fluid_volume_at_init.min(accumulator_volume * 0.9);
-
-        //If we don't start with empty accumulator we need to init pressure too
-        let mut gas_press_at_init = Pressure::new::<psi>(0.);
-        if has_accu {
-            gas_press_at_init = (Pressure::new::<psi>(BrakeCircuit::ACCUMULATOR_GAS_PRE_CHARGE)
-                * accumulator_volume)
-                / (accumulator_volume - limited_volume);
-        }
-
-        //Fluid pressure measure is equal to gas volume in accumulator only if there is fluid in the accumulator
-        let mut acc_fluid_press_init = Pressure::new::<psi>(0.);
-        if limited_volume > Volume::new::<gallon>(0.) {
-            acc_fluid_press_init = gas_press_at_init;
-        }
-
         BrakeCircuit {
             _id: String::from(id).to_uppercase(),
             id_left_press: format!("HYD_BRAKE_{}_LEFT_PRESS", id),
@@ -125,77 +108,64 @@ impl BrakeCircuit {
             demanded_brake_position_right: 0.0,
             pressure_applied_right: Pressure::new::<psi>(0.0),
             has_accumulator: has_accu,
-            accumulator_total_volume: accumulator_volume,
-            accumulator_gas_pressure: gas_press_at_init,
-            accumulator_gas_volume: accumulator_volume - limited_volume,
-            accumulator_fluid_volume: limited_volume,
-            accumulator_press_breakpoints: BrakeCircuit::ACCUMULATOR_PRESS_BREAKPTS,
-            accumulator_flow_carac: BrakeCircuit::ACCUMULATOR_FLOW_CARAC,
+            accumulator: HydraulicAccumulator::new(
+                Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE),
+                accumulator_volume,
+                accumulator_fluid_volume_at_init,
+                Self::ACCUMULATOR_PRESS_BREAKPTS,
+                Self::ACCUMULATOR_FLOW_CARAC,
+                true,
+            ),
             volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
             volume_to_res_accumulator: Volume::new::<gallon>(0.),
-            accumulator_fluid_pressure_sensor_filtered: acc_fluid_press_init, //Pressure measured after accumulator in brake circuit
+            accumulator_fluid_pressure_sensor_filtered: Pressure::new::<psi>(0.0), //Pressure measured after accumulator in brake circuit
         }
     }
 
-    pub fn update(&mut self, delta_time: &Duration, hyd_loop: &HydLoop) {
+    pub fn update(&mut self, delta_time: &Duration, hyd_loop: &HydraulicLoop) {
         let delta_vol = ((self.demanded_brake_position_left - self.current_brake_position_left)
             + (self.demanded_brake_position_right - self.current_brake_position_right))
             * self.total_displacement;
 
-        //TODO this is a duplicate of an accumulator: refactor an accumulator object usable in all hydraulics code
         if self.has_accumulator {
-            let accumulator_delta_press = self.accumulator_gas_pressure - hyd_loop.get_pressure();
-            let flow_variation = VolumeRate::new::<gallon_per_second>(super::interpolation(
-                &self.accumulator_press_breakpoints,
-                &self.accumulator_flow_carac,
-                accumulator_delta_press.get::<psi>().abs(),
-            ));
+            let mut volume_into_accumulator = Volume::new::<gallon>(0.);
+            self.accumulator.update(
+                delta_time,
+                &mut volume_into_accumulator,
+                hyd_loop.loop_pressure,
+            );
 
-            if accumulator_delta_press.get::<psi>() < 0.0 {
-                let volume_to_acc = flow_variation * Time::new::<second>(delta_time.as_secs_f64());
-                self.accumulator_fluid_volume += volume_to_acc;
-                self.accumulator_gas_volume -= volume_to_acc;
-                self.volume_to_actuator_accumulator += volume_to_acc;
-            }
+            // Volume that just came into accumulator is taken from hydraulic loop through olume_to_actuator interface
+            self.volume_to_actuator_accumulator += volume_into_accumulator.abs();
 
-            if delta_vol > Volume::new::<gallon>(0.0) {
-                let volume_from_acc = self.accumulator_fluid_volume.min(delta_vol);
-                if volume_from_acc != Volume::new::<gallon>(0.0) {
-                    self.accumulator_fluid_volume -= volume_from_acc;
-                    self.accumulator_gas_volume += volume_from_acc;
-                } else {
+            if delta_vol > Volume::new::<gallon>(0.) {
+                let volume_from_acc = self.accumulator.get_delta_vol(delta_vol);
+                if volume_from_acc <= Volume::new::<gallon>(0.0000001) {
                     self.demanded_brake_position_left = self.current_brake_position_left;
                     self.demanded_brake_position_right = self.current_brake_position_right;
                 }
             } else {
-                self.volume_to_res_accumulator +=
-                    delta_vol.abs().min(self.accumulator_fluid_volume);
+                self.volume_to_res_accumulator += delta_vol.abs();
             }
-
-            self.accumulator_gas_pressure =
-                (Pressure::new::<psi>(BrakeCircuit::ACCUMULATOR_GAS_PRE_CHARGE)
-                    * self.accumulator_total_volume)
-                    / (self.accumulator_total_volume - self.accumulator_fluid_volume);
         } else {
             //Else case if no accumulator: we just take deltavol needed or return it back to res
-            if delta_vol > Volume::new::<gallon>(0.0)
-                && hyd_loop.get_pressure() >= Pressure::new::<psi>(100.)
-            {
+            if delta_vol > Volume::new::<gallon>(0.) {
                 self.volume_to_actuator_accumulator += delta_vol;
             } else {
                 self.volume_to_res_accumulator += delta_vol.abs();
             }
         }
 
-        if self.accumulator_fluid_volume > Volume::new::<gallon>(0.0) {
+        if self.accumulator.get_fluid_volume() > Volume::new::<gallon>(0.) {
             self.pressure_applied_left =
-                self.accumulator_gas_pressure * self.demanded_brake_position_left;
+                self.accumulator.get_raw_gas_press() * self.demanded_brake_position_left;
             self.pressure_applied_right =
-                self.accumulator_gas_pressure * self.demanded_brake_position_right;
+                self.accumulator.get_raw_gas_press() * self.demanded_brake_position_right;
 
             self.accumulator_fluid_pressure_sensor_filtered = self
                 .accumulator_fluid_pressure_sensor_filtered
-                + (self.accumulator_gas_pressure - self.accumulator_fluid_pressure_sensor_filtered)
+                + (self.accumulator.get_raw_gas_press()
+                    - self.accumulator_fluid_pressure_sensor_filtered)
                     * (1.
                         - E.powf(
                             -delta_time.as_secs_f64()
@@ -336,7 +306,7 @@ impl AutoBrakeController {
 mod tests {
     use super::*;
     use crate::{
-        hydraulic::{HydFluid, HydLoop},
+        hydraulic::{HydFluid, HydraulicLoop},
         simulation::UpdateContext,
     };
     use uom::si::{
@@ -364,9 +334,11 @@ mod tests {
                 + brake_circuit_unprimed.get_brake_pressure_right()
                 < Pressure::new::<psi>(10.0)
         );
-        assert!(brake_circuit_unprimed.accumulator_total_volume == init_max_vol);
-        assert!(brake_circuit_unprimed.accumulator_fluid_volume == Volume::new::<gallon>(0.0));
-        assert!(brake_circuit_unprimed.accumulator_gas_volume == init_max_vol);
+        assert!(brake_circuit_unprimed.accumulator.total_volume == init_max_vol);
+        assert!(
+            brake_circuit_unprimed.accumulator.get_fluid_volume() == Volume::new::<gallon>(0.0)
+        );
+        assert!(brake_circuit_unprimed.accumulator.gas_volume == init_max_vol);
 
         let brake_circuit_primed = BrakeCircuit::new(
             "altn",
@@ -380,9 +352,9 @@ mod tests {
                 + brake_circuit_unprimed.get_brake_pressure_right()
                 < Pressure::new::<psi>(10.0)
         );
-        assert!(brake_circuit_primed.accumulator_total_volume == init_max_vol);
-        assert!(brake_circuit_primed.accumulator_fluid_volume == init_max_vol / 2.0);
-        assert!(brake_circuit_primed.accumulator_gas_volume < init_max_vol);
+        assert!(brake_circuit_primed.accumulator.total_volume == init_max_vol);
+        assert!(brake_circuit_primed.accumulator.get_fluid_volume() == init_max_vol / 2.0);
+        assert!(brake_circuit_primed.accumulator.gas_volume < init_max_vol);
     }
 
     #[test]
@@ -417,14 +389,14 @@ mod tests {
 
         assert!(brake_circuit_primed.get_brake_pressure_left() >= Pressure::new::<psi>(1000.));
         assert!(brake_circuit_primed.get_brake_pressure_right() <= Pressure::new::<psi>(50.));
-        assert!(brake_circuit_primed.accumulator_fluid_volume >= Volume::new::<gallon>(0.1));
+        assert!(brake_circuit_primed.accumulator.get_fluid_volume() >= Volume::new::<gallon>(0.1));
 
         brake_circuit_primed.set_brake_demand_left(0.0);
         brake_circuit_primed.set_brake_demand_right(1.0);
         brake_circuit_primed.update(&Duration::from_secs_f64(0.1), &hyd_loop);
         assert!(brake_circuit_primed.get_brake_pressure_right() >= Pressure::new::<psi>(1000.));
         assert!(brake_circuit_primed.get_brake_pressure_left() <= Pressure::new::<psi>(50.));
-        assert!(brake_circuit_primed.accumulator_fluid_volume >= Volume::new::<gallon>(0.1));
+        assert!(brake_circuit_primed.accumulator.get_fluid_volume() >= Volume::new::<gallon>(0.1));
     }
 
     #[test]
@@ -465,7 +437,7 @@ mod tests {
         brake_circuit_primed.update(&Duration::from_secs_f64(0.1), &hyd_loop);
         assert!(brake_circuit_primed.get_brake_pressure_right() >= Pressure::new::<psi>(2500.));
         assert!(brake_circuit_primed.get_brake_pressure_left() <= Pressure::new::<psi>(50.));
-        assert!(brake_circuit_primed.accumulator_fluid_volume == Volume::new::<gallon>(0.0));
+        assert!(brake_circuit_primed.accumulator.get_fluid_volume() == Volume::new::<gallon>(0.0));
     }
 
     #[test]
@@ -487,9 +459,9 @@ mod tests {
         assert!(controller.get_brake_command() >= 0.0);
     }
 
-    fn hydraulic_loop(loop_color: &str) -> HydLoop {
+    fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
         match loop_color {
-            "GREEN" => HydLoop::new(
+            "GREEN" => HydraulicLoop::new(
                 loop_color,
                 false,
                 true,
@@ -499,8 +471,10 @@ mod tests {
                 Volume::new::<gallon>(3.83),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
+                Pressure::new::<psi>(1450.0),
+                Pressure::new::<psi>(1750.0),
             ),
-            "YELLOW" => HydLoop::new(
+            "YELLOW" => HydraulicLoop::new(
                 loop_color,
                 true,
                 false,
@@ -510,8 +484,10 @@ mod tests {
                 Volume::new::<gallon>(3.3),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
+                Pressure::new::<psi>(1450.0),
+                Pressure::new::<psi>(1750.0),
             ),
-            _ => HydLoop::new(
+            _ => HydraulicLoop::new(
                 loop_color,
                 false,
                 false,
@@ -521,6 +497,8 @@ mod tests {
                 Volume::new::<gallon>(1.5),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 false,
+                Pressure::new::<psi>(1450.0),
+                Pressure::new::<psi>(1750.0),
             ),
         }
     }
