@@ -98,18 +98,12 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         // 1 is captain, 2 is first officer
         this.screenIndex = parseInt(url.substring(url.length - 1));
-        this.potIndex = this.screenIndex == 1 ? 89 : 91;
         this.isCaptainsND = this.screenIndex === 1;
         this.isFirstOfficersND = this.screenIndex === 1;
         this.side = this.isCaptainsND ? 'L' : 'R';
         this.showILS = SimVar.GetSimVarValue(`L:BTN_LS_${this.screenIndex}_FILTER_ACTIVE`, "bool");
         this.compass.showILS(this.showILS);
         this.info.showILS(this.showILS);
-
-        //SELF TEST
-        this.selfTestDiv = document.querySelector("#SelfTestDiv");
-        this.selfTestTimerStarted = false;
-        this.selfTestTimer = -1;
 
         //ENGINEERING TEST
         this.engTestDiv = document.querySelector("#MfdEngTest");
@@ -127,6 +121,13 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 
         this.mapUpdateThrottler = new UpdateThrottler(this.screenIndex == 1 ? 100 : 400);
         this.updateThrottler = new UpdateThrottler(this.screenIndex == 1 ? 300 : 500);
+
+        this.displayUnit = new DisplayUnit(
+            () => this.isPowered(),
+            () => parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15")),
+            this.screenIndex == 1 ? 89 : 91,
+            document.querySelector("#SelfTestDiv")
+        );
     }
     displayChronoTime() {
         const totalSeconds = this.getTotalChronoSeconds();
@@ -163,29 +164,25 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     }
 
     onUpdate() {
-        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
-        if (currentKnobValue <= 0.0) {
-            this.selfTestLastKnobValue = currentKnobValue;
-            return;
-        }
-        let _deltaTime = this.getDeltaTime();
-        super.onUpdate(_deltaTime);
-        const mapDeltaTime = this.mapUpdateThrottler.canUpdate(_deltaTime);
+        let deltaTime = this.getDeltaTime();
+        super.onUpdate(deltaTime);
+
+        const mapDeltaTime = this.mapUpdateThrottler.canUpdate(deltaTime);
         if (mapDeltaTime != -1) {
             this.updateMap(mapDeltaTime);
         }
 
-        const knobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
-
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime, knobChanged);
-        if (_deltaTime === -1) {
+        deltaTime = this.updateThrottler.canUpdate(deltaTime, this.displayUnit.isJustNowTurnedOn());
+        if (deltaTime === -1) {
             return;
         }
 
-        this.updateNDInfo(_deltaTime);
+        this.displayUnit.update(deltaTime);
+
+        this.updateNDInfo(deltaTime);
 
         //TCAS
-        this.map.instrument.TCASManager.update(_deltaTime);
+        this.map.instrument.TCASManager.update(deltaTime);
 
         const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
 
@@ -234,23 +231,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.map.instrument.airplaneIconElement._image.setAttribute("visibility", ADIRSState != 2 ? "hidden" : "visible");
         }
 
-        const isPowered = this.isPowered();
-        const powerStateChanged = isPowered != this.poweredDuringPreviousUpdate;
-        this.poweredDuringPreviousUpdate = isPowered;
-        if ((knobChanged || powerStateChanged) && isPowered && !this.selfTestTimerStarted) {
-            this.selfTestDiv.style.display = "block";
-            this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
-            this.selfTestTimerStarted = true;
-        }
-
-        if (this.selfTestTimer >= 0) {
-            this.selfTestTimer -= _deltaTime / 1000;
-            if (this.selfTestTimer <= 0) {
-                this.selfTestDiv.style.display = "none";
-                this.selfTestTimerStarted = false;
-            }
-        }
-
         // ND Chrono Logic
         // Copied the base logic from the Clock functionality.
         // Chrono button on the FCU panel works a bit different to the Chrono is the clock. For e.g.
@@ -264,42 +244,32 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         // 0 Off
         // 1 Running
         // 2 Stopped
-        if (isPowered) {
-            // If Chrono button is pushed on
-            if (AP_ChronoBtnState) {
-                if (AP_IsChronoState === 2) {
-                    // Hide & Clear the chrono if it is already stopped.
-                    this.chronoDiv.setAttribute("style", "display:none");
-                    SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 0);
-                    SimVar.SetSimVarValue(`L:PUSH_AUTOPILOT_CHRONO_${this.side}`, "bool", 0);
-                    this.chronoStart = 0;
-                    this.chronoAcc = 0;
-                    this.IsChronoDisplayed = 0;
-                } else {
-                    // Display and start the timer.
-                    this.chronoDiv.setAttribute("style", "display:block");
-                    this.IsChronoDisplayed = 1;
-                    SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 1);
-                    if (this.chronoStart === 0) {
-                        this.chronoStart = SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds");
-                    }
-                    this.displayChronoTime();
-                }
-            } else {
-                // Chrono button is pushed OFF
-                if (AP_IsChronoState !== 0 && this.IsChronoDisplayed) {
-                    // Will stop the timer ONLY if it is visible on screen
-                    SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 2);
-                }
-            }
-        } else {
-            if (AP_ChronoBtnState !== 0 || AP_IsChronoState !== 0) {
-                SimVar.SetSimVarValue(`L:PUSH_AUTOPILOT_CHRONO_${this.side}`, "bool", 0);
-                SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 0);
+
+        // If Chrono button is pushed on
+        if (AP_ChronoBtnState) {
+            if (AP_IsChronoState === 2) {
+                // Hide & Clear the chrono if it is already stopped.
                 this.chronoDiv.setAttribute("style", "display:none");
+                SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 0);
+                SimVar.SetSimVarValue(`L:PUSH_AUTOPILOT_CHRONO_${this.side}`, "bool", 0);
                 this.chronoStart = 0;
                 this.chronoAcc = 0;
                 this.IsChronoDisplayed = 0;
+            } else {
+                // Display and start the timer.
+                this.chronoDiv.setAttribute("style", "display:block");
+                this.IsChronoDisplayed = 1;
+                SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 1);
+                if (this.chronoStart === 0) {
+                    this.chronoStart = SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds");
+                }
+                this.displayChronoTime();
+            }
+        } else {
+            // Chrono button is pushed OFF
+            if (AP_IsChronoState !== 0 && this.IsChronoDisplayed) {
+                // Will stop the timer ONLY if it is visible on screen
+                SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 2);
             }
         }
 
@@ -309,7 +279,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             updateDisplayDMC("MFD2", this.engTestDiv, this.engMaintDiv);
         }
 
-        this.selfTestLastKnobValue = currentKnobValue;
         this.turnScreenOnOrOffDependingOnPowerState();
     }
 

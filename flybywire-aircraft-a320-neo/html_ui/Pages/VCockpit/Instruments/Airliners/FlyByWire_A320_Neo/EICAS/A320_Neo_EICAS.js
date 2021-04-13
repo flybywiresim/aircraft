@@ -1,5 +1,4 @@
 class A320_Neo_EICAS extends Airliners.BaseEICAS {
-
     get templateID() {
         return "A320_Neo_EICAS";
     }
@@ -100,14 +99,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.CrzCondTimer = 60;
         this.PrevFailPage = -1;
 
-        this.topSelfTestDiv = this.querySelector("#TopSelfTest");
-        this.selfTestTimer = -1;
-        this.selfTestTimerStarted = false;
-        this.selfTestLastKnobValue = 1;
-
         this.doorVideoWrapper = this.querySelector("#door-video-wrapper");
-
-        this.bottomSelfTestDiv = this.querySelector("#BottomSelfTest");
 
         this.upperEngTestDiv = this.querySelector("#Eicas1EngTest");
         this.lowerEngTestDiv = this.querySelector("#Eicas2EngTest");
@@ -137,21 +129,27 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         this.ecamAllButtonPrevState = false;
         this.updateThrottler = new UpdateThrottler(500);
+
+        this.displayUnit = new DisplayUnit(
+            () => this.isPowered(),
+            () => parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15")),
+            this.isTopScreen ? 92 : 93,
+            this.querySelector(`#${this.isTopScreen ? "Top" : "Bottom"}SelfTest`)
+        );
     }
 
     onUpdate() {
-        let _deltaTime = this.getDeltaTime();
-        super.onUpdate(_deltaTime);
-
-        const selfTestCurrentKnobValue = SimVar.GetSimVarValue(this.isTopScreen ? "LIGHT POTENTIOMETER:92" : "LIGHT POTENTIOMETER:93", "number");
-        const knobChanged = (selfTestCurrentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+        let deltaTime = this.getDeltaTime();
+        super.onUpdate(deltaTime);
 
         const ecamAllButtonBeingPushed = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
 
-        _deltaTime = this.updateThrottler.canUpdate(_deltaTime, knobChanged || ecamAllButtonBeingPushed);
-        if (_deltaTime === -1) {
+        deltaTime = this.updateThrottler.canUpdate(deltaTime, this.displayUnit.isJustNowTurnedOn() || ecamAllButtonBeingPushed);
+        if (deltaTime === -1) {
             return;
         }
+
+        this.displayUnit.update(deltaTime);
 
         this.updateDoorVideoState();
 
@@ -164,37 +162,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         // Engineering self-tests
         updateDisplayDMC("EICAS1", this.upperEngTestDiv, this.upperEngMaintDiv);
         updateDisplayDMC("EICAS2", this.lowerEngTestDiv, this.lowerEngMaintDiv);
-
-        /**
-         * Self test on ECAM screen
-         **/
-
-        const isPowered = this.isPowered();
-        const powerStateChanged = isPowered != this.poweredDuringPreviousUpdate;
-        this.poweredDuringPreviousUpdate = isPowered;
-        if ((knobChanged || powerStateChanged) && isPowered && !this.selfTestTimerStarted) {
-            if (this.isTopScreen) {
-                this.topSelfTestDiv.style.visibility = "visible";
-            } else {
-                this.bottomSelfTestDiv.style.visibility = "visible";
-            }
-            this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
-            this.selfTestTimerStarted = true;
-        }
-
-        if (this.selfTestTimer >= 0) {
-            this.selfTestTimer -= _deltaTime / 1000;
-            if (this.selfTestTimer <= 0) {
-                if (this.isTopScreen) {
-                    this.topSelfTestDiv.style.visibility = "hidden";
-                } else {
-                    this.bottomSelfTestDiv.style.visibility = "hidden";
-                }
-                this.selfTestTimerStarted = false;
-            }
-        }
-
-        this.selfTestLastKnobValue = selfTestCurrentKnobValue;
 
         // modification start here
         const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
@@ -218,14 +185,14 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         if ((currFlightPhase != FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) || (!spoilerOrFlapsDeployed && !ToPowerSet) && this.CrzCondTimer >= 0) {
             this.CrzCondTimer = 60;
         } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) && this.CrzCondTimer >= 0) {
-            this.CrzCondTimer -= _deltaTime / 1000;
+            this.CrzCondTimer -= deltaTime / 1000;
         }
 
         if (EngModeSel == 2 || EngModeSel == 0 || this.MainEngineStarterOffTimer >= 0) {
             if (EngModeSel == 0 || EngModeSel == 2) {
                 this.MainEngineStarterOffTimer = 10;
             } else if (this.MainEngineStarterOffTimer >= 0) {
-                this.MainEngineStarterOffTimer -= _deltaTime / 1000;
+                this.MainEngineStarterOffTimer -= deltaTime / 1000;
             }
             this.pageNameWhenUnselected = "ENG";
         } else if (currentAPUMasterState && (!apuAvailable || this.ApuAboveThresholdTimer >= 0)) {
@@ -233,7 +200,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             if (this.ApuAboveThresholdTimer <= 0 && !apuAvailable) {
                 this.ApuAboveThresholdTimer = 10;
             } else if (apuAvailable) {
-                this.ApuAboveThresholdTimer -= _deltaTime / 1000;
+                this.ApuAboveThresholdTimer -= deltaTime / 1000;
             }
 
             this.pageNameWhenUnselected = "APU";
@@ -255,7 +222,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 this.ecamFCTLTimer = 20;
             } else if (this.ecamFCTLTimer >= 0) {
                 this.pageNameWhenUnselected = "FTCL";
-                this.ecamFCTLTimer -= _deltaTime / 1000;
+                this.ecamFCTLTimer -= deltaTime / 1000;
             }
         } else if ((ToPowerSet || !Simplane.getIsGrounded()) && !crzCond && this.minPageIndexWhenUnselected <= 2) {
             this.pageNameWhenUnselected = "ENG";
