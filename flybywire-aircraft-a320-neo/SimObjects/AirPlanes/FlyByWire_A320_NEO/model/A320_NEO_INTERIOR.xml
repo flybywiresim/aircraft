@@ -166,6 +166,7 @@
                 <NODE_ID>LIGHTS_AUTOPILOT</NODE_ID>
                 <SIMVAR_INDEX>2</SIMVAR_INDEX>
                 <POTENTIOMETER>84</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
@@ -2922,7 +2923,7 @@
                 <AIRLINER_TYPE>A320</AIRLINER_TYPE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Push_FlightDirector_Template">
+            <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
                 <NODE_ID>PUSH_AUTOPILOT_FD_L</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_FD_L</ANIM_NAME>
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_FD_L_SEQ1</ACTIVE_NODE_ID>
@@ -2931,7 +2932,7 @@
                 <ID>1</ID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Push_FlightDirector_Template">
+            <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
                 <NODE_ID>PUSH_AUTOPILOT_FD_R</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_FD_R</ANIM_NAME>
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_FD_R_SEQ1</ACTIVE_NODE_ID>
@@ -3109,7 +3110,7 @@
                 <TOOLTIPID>%((L:XMLVAR_Autopilot_2_Status, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Push_AutoThrottle_Template">
+            <UseTemplate Name="FBW_AUTOPILOT_Push_AutoThrottle_Template">
                 <NODE_ID>PUSH_AUTOPILOT_ATHR</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_ATHR</ANIM_NAME>
                 <POTENTIOMETER>84</POTENTIOMETER>
@@ -3134,7 +3135,7 @@
                 <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_APPR_SEQ2</EMISSIVE_NODE_ID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AIRBUS_Push_Expedite_Template">
+            <UseTemplate Name="FBW_AIRBUS_Push_Expedite_Template">
                 <NODE_ID>PUSH_AUTOPILOT_EXPED</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_EXPED</ANIM_NAME>
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_EXPED_SEQ1</ACTIVE_NODE_ID>

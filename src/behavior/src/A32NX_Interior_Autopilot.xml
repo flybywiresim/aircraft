@@ -39,7 +39,7 @@
                 </UseTemplate>
             </True>
         </Condition>
-        <UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
+        <UseTemplate Name="A32NX_AUTOPILOT_Push_Template">
             <LEFT_SINGLE_CODE>
 
                 (L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool) if{
@@ -70,6 +70,8 @@
 
             </LEFT_SINGLE_CODE>
             <EMISSIVE_CODE_ACTIVE>#APPR_CONDITION# (A:AUTOPILOT MASTER, Bool) (L:XMLVAR_Autopilot_#ID#_Status) and or</EMISSIVE_CODE_ACTIVE>
+            <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
         </UseTemplate>
     </Template>
 
@@ -85,7 +87,7 @@
             <TOOLTIPID>%(L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool)%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LOC_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LOC_OFF%{end}</TOOLTIPID>
         </DefaultTemplateParameters>
 
-        <UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
+        <UseTemplate Name="A32NX_AUTOPILOT_Push_Template">
             <LEFT_SINGLE_CODE>
 
                 (L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool) if{
@@ -100,6 +102,8 @@
 
             </LEFT_SINGLE_CODE>
             <EMISSIVE_CODE_ACTIVE>(L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool)</EMISSIVE_CODE_ACTIVE>
+            <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
         </UseTemplate>
     </Template>
 
@@ -115,7 +119,7 @@
             <TOOLTIPID>%((L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_APR_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_APR_OFF%{end}</TOOLTIPID>
         </DefaultTemplateParameters>
 
-        <UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
+        <UseTemplate Name="A32NX_AUTOPILOT_Push_Template">
             <LEFT_SINGLE_CODE>
 
                 (L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool) if{
@@ -130,10 +134,26 @@
 
             </LEFT_SINGLE_CODE>
             <EMISSIVE_CODE_ACTIVE>(L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool)</EMISSIVE_CODE_ACTIVE>
+            <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
         </UseTemplate>
     </Template>
-    
- <Template Name="FBW_AUTOPILOT_Knob_SpeedMach_Template">
+
+	<Template Name="FBW_AIRBUS_Push_Expedite_Template">
+		<DefaultTemplateParameters>
+			<DEFAULT_NAME>Expedite</DEFAULT_NAME>
+			<PLANE_PREFIX></PLANE_PREFIX>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="A32NX_AUTOPILOT_Push_Template">
+			<LEFT_SINGLE_CODE>(&gt;H:A320_Neo_EXPEDITE_MODE)</LEFT_SINGLE_CODE>
+			<EMISSIVE_CODE_ACTIVE>(A:AUTOPILOT SPEED SLOT INDEX, Number) 3 ==</EMISSIVE_CODE_ACTIVE>
+            <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+		</UseTemplate>
+	</Template>
+
+    <Template Name="FBW_AUTOPILOT_Knob_SpeedMach_Template">
 		<DefaultTemplateParameters>
 			<ANIM_NAME>AUTOPILOT_Knob_SpeedMach</ANIM_NAME>
 			<ANIM_NAME_PUSH>AUTOPILOT_Knob_SpeedMach_Push</ANIM_NAME_PUSH>
@@ -311,18 +331,118 @@
 				<ANTICLOCKWISE_CODE>0 (&gt;L:XMLVAR_SpeedIsManuallySet)</ANTICLOCKWISE_CODE>
 				<CLOCKWISE_CODE>
 					1 (&gt;L:XMLVAR_SpeedIsManuallySet)
-					(A:FLAPS HANDLE INDEX, Number) 0 &gt; if{ 
-						(A:DESIGN SPEED VS0, knots) sp1 
+					(A:FLAPS HANDLE INDEX, Number) 0 &gt; if{
+						(A:DESIGN SPEED VS0, knots) sp1
 					} els{
-						(A:DESIGN SPEED VS1, knots) sp1 
+						(A:DESIGN SPEED VS1, knots) sp1
 					}
 					l1 1.3 * (A:AIRSPEED INDICATED, knots) max (&gt;K:AP_SPD_VAR_SET)
 				</CLOCKWISE_CODE>
 				<WWISE_EVENT>autopilot_speed_mode_knob</WWISE_EVENT>
 				<COUNT>1</COUNT>
-				
+
 			</UseTemplate>
 		</Component>
+	</Template>
+
+    <Template Name="FBW_AUTOPILOT_Push_AutoThrottle_Template">
+		<DefaultTemplateParameters>
+			<Condition Valid="ID">
+				<True>
+					<SIMVAR_ID_SUFFIX>:#ID#</SIMVAR_ID_SUFFIX>
+				</True>
+				<False>
+					<SIMVAR_ID_SUFFIX></SIMVAR_ID_SUFFIX>
+					<ID>0</ID>
+				</False>
+			</Condition>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="FBW_AUTOPILOT_Push_AutoThrottle_SubTemplate">
+		</UseTemplate>
+	</Template>
+
+	<Template Name="FBW_AUTOPILOT_Push_AutoThrottle_SubTemplate">
+		<DefaultTemplateParameters>
+			<DEFAULT_NAME>AutoThrottle</DEFAULT_NAME>
+			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_OFF</ANIMTIP_0>
+			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_ARMED</ANIMTIP_1>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddOptions>
+				<TOGGLEABLE/>
+			</AddOptions>
+		</EditableTemplateParameters>
+		<OverrideTemplateParameters>
+			<Switch Param="TYPE">
+				<Case Value="B747">
+					<LEFT_SINGLE_CODE>
+						(L:XMLVAR_AUTO_THROTTLE_ARM_#ID#_STATE) ! (&gt;L:XMLVAR_AUTO_THROTTLE_ARM_#ID#_STATE)
+						(L:XMLVAR_AUTO_THROTTLE_ARM_#ID#_STATE) (A:AUTOPILOT THROTTLE ARM#SIMVAR_ID_SUFFIX#, Bool) != if{
+							#ID# (&gt;K:AUTO_THROTTLE_ARM)
+						}
+					</LEFT_SINGLE_CODE>
+					<TOGGLEABLE/>
+					<ANIM_CODE>(L:XMLVAR_AUTO_THROTTLE_ARM_#ID#_STATE) 100 *</ANIM_CODE>
+					<NO_INDICATOR>True</NO_INDICATOR>
+					<NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
+				</Case>
+				<Case Value="AS01B">
+					<LEFT_SINGLE_CODE>
+						(L:AS01B_AUTO_THROTTLE_ARM_STATE) ! (&gt;L:AS01B_AUTO_THROTTLE_ARM_STATE)
+						(L:AS01B_AUTO_THROTTLE_ARM_STATE) (A:AUTOPILOT THROTTLE ARM, Bool) != if{
+							(&gt;K:AUTO_THROTTLE_ARM)
+						}
+					</LEFT_SINGLE_CODE>
+					<TOGGLEABLE/>
+					<ANIM_CODE>(L:AS01B_AUTO_THROTTLE_ARM_STATE) 100 *</ANIM_CODE>
+					<NO_INDICATOR>True</NO_INDICATOR>
+					<NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
+				</Case>
+				<Default>
+					<LEFT_SINGLE_CODE>
+						#ID# (&gt;K:AUTO_THROTTLE_ARM)
+						(A:FLAPS HANDLE INDEX, Number) 0 &gt; if{
+							(A:DESIGN SPEED VS0, knots) sp1
+						} els{
+							(A:DESIGN SPEED VS1, knots) sp1
+						}
+						l1 1.3 * (A:AUTOPILOT AIRSPEED HOLD VAR:0, knots) max (&gt;K:AP_SPD_VAR_SET)
+					</LEFT_SINGLE_CODE>
+					<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT THROTTLE ARM#SIMVAR_ID_SUFFIX#</EMISSIVE_SIMVAR_ACTIVE>
+					<Condition Check="TOGGLEABLE">
+						<True>
+							<ANIM_CODE>(A:AUTOPILOT THROTTLE ARM#SIMVAR_ID_SUFFIX#, Bool) 100 *</ANIM_CODE>
+						</True>
+					</Condition>
+				</Default>
+			</Switch>
+		</OverrideTemplateParameters>
+
+		<Switch Param="TYPE">
+			<Case Value="B747">
+				<UseTemplate Name="ASOBO_GT_Update">
+					<!-- Load Initial State - then states are not linked -->
+					<UPDATE_CODE>
+						(A:AUTOPILOT THROTTLE ARM#SIMVAR_ID_SUFFIX#, Bool) (&gt;L:XMLVAR_AUTO_THROTTLE_ARM_#ID#_STATE)
+					</UPDATE_CODE>
+					<UPDATE_ONCE>True</UPDATE_ONCE>
+				</UseTemplate>
+			</Case>
+			<Case Value="AS01B">
+				<UseTemplate Name="ASOBO_GT_Update">
+					<!-- Load Initial State - then states are not linked -->
+					<UPDATE_CODE>
+						(A:AUTOPILOT THROTTLE ARM, Bool) (&gt;L:AS01B_AUTO_THROTTLE_ARM_STATE)
+					</UPDATE_CODE>
+					<UPDATE_ONCE>True</UPDATE_ONCE>
+				</UseTemplate>
+			</Case>
+		</Switch>
+
+		<UseTemplate Name="A32NX_AUTOPILOT_Push_Template">
+            <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+		</UseTemplate>
 	</Template>
 
 </ModelBehaviors>

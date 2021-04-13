@@ -75,11 +75,17 @@
 				<True>
 					<SEQ1_EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #BLOCK_SEQ1# ! and #SEQ1_POWERED# and #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
 				</True>
+                <False>
+                    <SEQ1_EMISSIVE_CODE>#BLOCK_SEQ1# ! #SEQ1_POWERED# and #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
+                </False>
 			</Condition>
 			<Condition Check="SEQ2_EMISSIVE_CODE">
 				<True>
 					<SEQ2_EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #BLOCK_SEQ2# ! and #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
 				</True>
+                <False>
+                    <SEQ2_EMISSIVE_CODE>#BLOCK_SEQ2# ! #SEQ2_POWERED# and #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
+                </False>
 			</Condition>
 		</UseTemplate>
 	</Template>
