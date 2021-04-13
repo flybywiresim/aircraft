@@ -54,6 +54,8 @@ class CDUNavRadioPage {
                             mcdu.requestCall(() => {
                                 CDUNavRadioPage.ShowPage(mcdu);
                             });
+                        } else {
+                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                         }
                     });
                 } else if (isFinite(numValue)) {
@@ -143,14 +145,18 @@ class CDUNavRadioPage {
                 const numValue = parseFloat(value);
                 if (!isFinite(numValue) && value.length >= 2 && value.length <= 3) {
                     mcdu.getOrSelectNDBsByIdent(value, (navaids) => {
-                        mcdu.adf1FreqIsPilotEntered = false;
-                        mcdu.adf1IdIsPilotEntered = true;
-                        mcdu.adf1IdPilotValue = value;
-                        mcdu.adf1Frequency = navaids.infos.frequencyMHz;
-                        mcdu.radioNav.setADFActiveFrequency(1, mcdu.adf1Frequency);
-                        mcdu.requestCall(() => {
-                            CDUNavRadioPage.ShowPage(mcdu);
-                        });
+                        if (navaids) {
+                            mcdu.adf1FreqIsPilotEntered = false;
+                            mcdu.adf1IdIsPilotEntered = true;
+                            mcdu.adf1IdPilotValue = value;
+                            mcdu.adf1Frequency = navaids.infos.frequencyMHz;
+                            mcdu.radioNav.setADFActiveFrequency(1, mcdu.adf1Frequency);
+                            mcdu.requestCall(() => {
+                                CDUNavRadioPage.ShowPage(mcdu);
+                            });
+                        } else {
+                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                        }
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3,4}(\.\d{1})?$/.test(value)) {
@@ -211,6 +217,8 @@ class CDUNavRadioPage {
                             mcdu.requestCall(() => {
                                 CDUNavRadioPage.ShowPage(mcdu);
                             });
+                        } else {
+                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                         }
                     });
                 } else if (isFinite(numValue)) {
@@ -280,11 +288,15 @@ class CDUNavRadioPage {
                     mcdu.adf2IdIsPilotEntered = true;
                     mcdu.adf2IdPilotValue = value;
                     mcdu.getOrSelectNDBsByIdent(value, (navaids) => {
-                        mcdu.adf2Frequency = navaids.infos.frequencyMHz;
-                        mcdu.radioNav.setADFActiveFrequency(2, mcdu.adf2Frequency);
-                        mcdu.requestCall(() => {
-                            CDUNavRadioPage.ShowPage(mcdu);
-                        });
+                        if (navaids) {
+                            mcdu.adf2Frequency = navaids.infos.frequencyMHz;
+                            mcdu.radioNav.setADFActiveFrequency(2, mcdu.adf2Frequency);
+                            mcdu.requestCall(() => {
+                                CDUNavRadioPage.ShowPage(mcdu);
+                            });
+                        } else {
+                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                        }
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3,4}(\.\d{1})?$/.test(value)) {
