@@ -5,7 +5,7 @@ class CDUFlightPlanPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.FlightPlanPage;
         mcdu.returnPageCallback = () => {
-            CDUFlightPlanPage.ShowPage(mcdu);
+            CDUFlightPlanPage.ShowPage(mcdu, offset);
         };
         mcdu.activeSystem = 'FMGC';
         CDUFlightPlanPage._timer = 0;
