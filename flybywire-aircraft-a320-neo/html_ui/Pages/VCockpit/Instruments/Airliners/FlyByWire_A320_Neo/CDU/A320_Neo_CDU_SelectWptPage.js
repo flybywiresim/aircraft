@@ -53,7 +53,11 @@ class A320_Neo_CDU_SelectWptPage {
                     callback(w);
                 };
                 mcdu.onLeftInput[5] = () => {
-                    mcdu.returnCallback(mcdu);
+                    if (mcdu.returnPageCallback) {
+                        mcdu.returnPageCallback();
+                    } else {
+                        console.error("No returnPageCallback!");
+                    }
                 };
             }
         }

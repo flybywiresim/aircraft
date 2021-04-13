@@ -6,6 +6,9 @@ class CDUNavRadioPage {
         mcdu.refreshPageCallback = () => {
             CDUNavRadioPage.ShowPage(mcdu);
         };
+        mcdu.returnPageCallback = () => {
+            CDUNavRadioPage.ShowPage(mcdu);
+        };
         const radioOn = mcdu.isRadioNavActive();
         let vor1FrequencyCell = "";
         let vor1CourseCell = "";

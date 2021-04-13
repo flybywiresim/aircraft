@@ -2,7 +2,9 @@ class CDUProgressPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ProgressPage;
-        mcdu.returnCallback = CDUProgressPage.ShowPage;
+        mcdu.returnPageCallback = () => {
+            CDUProgressPage.ShowPage(mcdu);
+        };
         mcdu.activeSystem = 'FMGC';
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         const flMax = mcdu.getMaxFlCorrected();
