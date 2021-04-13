@@ -139,29 +139,22 @@ class UpdateThrottler {
      * Checks whether the instrument should be updated in the current frame according to the
      * configured update interval.
      *
-     * @param {*} deltaTime
+     * @param {number} deltaTime
+     * @param {boolean} [forceUpdate = false] - True if you want to force an update during this frame.
      * @returns -1 if the instrument should not update, or the time elapsed since the last
      *          update in milliseconds
      */
-    canUpdate(deltaTime) {
+    canUpdate(deltaTime, forceUpdate = false) {
         this.currentTime += deltaTime;
         const number = Math.floor((this.currentTime + this.refreshOffset) / this.intervalMs);
         const update = number > this.refreshNumber;
         this.refreshNumber = number;
-        if (update) {
+        if (update || forceUpdate) {
             const accumulatedDelta = this.currentTime - this.lastUpdateTime;
             this.lastUpdateTime = this.currentTime;
             return accumulatedDelta;
         } else {
             return -1;
         }
-    }
-
-    /**
-     * Notifies the throttler that we just force updated the instrument and that it can wait for a
-     * full interval to update again.
-     */
-    notifyForceUpdated() {
-        this.currentTime = (this.refreshNumber - 1) * this.intervalMs - this.refreshOffset;
     }
 }

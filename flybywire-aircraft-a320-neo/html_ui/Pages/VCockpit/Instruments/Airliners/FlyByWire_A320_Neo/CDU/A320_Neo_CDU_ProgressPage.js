@@ -7,6 +7,7 @@ class CDUProgressPage {
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         const flMax = mcdu.getMaxFlCorrected();
         const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "{green}FL" + (Math.floor(flMax / 5) * 5).toString() + "{end}" : "-----";
+        const gpsPrimaryStatus = (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number") === 2) ? "{green}GPS PRIMARY{end}" : "";
         let flCrz = "-----";
         switch (mcdu.currentFlightPhase) {
             case FmgcFlightPhases.PREFLIGHT:
@@ -100,7 +101,7 @@ class CDUProgressPage {
             ["\xa0\xa0BRG / DIST"],
             [progBearingDist, `{small}{white}TO{end}{end}\xa0{cyan}${progWaypoint}{end}`],
             ["\xa0PREDICTIVE"],
-            ["<GPS", "GPS PRIMARY[color]green"],
+            ["<GPS", gpsPrimaryStatus],
             ["REQUIRED", "ESTIMATED", "ACCUR{sp}"],
             ["{small}3.4NM{end}[color]cyan", "{small}0.07NM{end}[color]green", "HIGH[color]green"]
         ]);

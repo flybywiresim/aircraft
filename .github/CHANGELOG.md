@@ -6,6 +6,12 @@
 
 ## 0.7.0
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
+1. [MCDU] Progress page only shows GPS Primary when it should - @Username23-23 (NONAmr2433 #8777)
+1. [ND] Add VOR/ADF needles to ILS arc display - @tracernz (Mike)
+1. [MCDU] Add hard sign to temp field on PERF APPR, remove FLS/FINAL APP, adjust alignment - @tracernz (Mike)
+1. [ADIRS] Add on delay for ON BAT light - @tracernz (Mike)
+1. [MISC] Added 3D brake gauge - @tyler58546 (tyler58546), @DarkOfNova (DarkOfNova)
+1. [ELEC] The BCL commands the BAT contactor be closed when the BAT push button is moved from OFF to AUTO - @davidwalschots (David Walschots)
 1. [MCDU] Implement BRG/DIST function on PROG page - @tracernz (Mike)
 1. [MCDU] Fix max page number on duplicate waypoint selection - @tracernz (Mike)
 1. [MCDU] Show max distance of 9999 NM on duplicate waypoint selection - @tracernz (Mike)
@@ -246,6 +252,7 @@
 1. [MCDU] Progress page shows current flight phase - @Username23-23 (NONAmr2433 #8777)
 1. [TEXTURE] Upscaled the external airframe decals to go nicely with the upscaled livery. @FoxinTale (Aubrey)
 1. [MCDU] Scratchpad is now limited to 22 characters - @tyler58546 (tyler58546)
+1. [MISC] Added Marketplace Data - @kiwi2021 (kiwi2022#0001)
 
 ## 0.5.2
 1. [CDU] Changing CRZ/DES speed to acknowledge any speed restriction - @Watsi01 (RogePete)
