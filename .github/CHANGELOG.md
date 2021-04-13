@@ -39,6 +39,7 @@
 1. [FLIGHTMODEL] Added separated flaps position for 1 and 1+F - @donstim (donbikes#4084), @aguther (Andreas Guther)
 1. [FLIGHTMODEL] Custom spoiler logic and realistic impact on flight model - @donstim (donbikes#4084), @aguther (Andreas Guther)
 1. [EFB] Added throttle calibration for autothrust system - @Saschl (saschl#9432)
+1. [MCDU] Do not show duplicate names page with 1 option, fix return key - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
