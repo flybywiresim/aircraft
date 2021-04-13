@@ -1155,6 +1155,10 @@ mod tests {
                 Pressure::new::<psi>(self.simulation_test_bed.read_f64("HYD_YELLOW_PRESSURE"))
             }
 
+            fn get_yellow_reservoir_volume(&mut self) -> Volume {
+                Volume::new::<gallon>(self.simulation_test_bed.read_f64("HYD_YELLOW_RESERVOIR"))
+            }
+
             fn get_brake_left_yellow_pressure(&mut self) -> Pressure {
                 Pressure::new::<psi>(
                     self.simulation_test_bed
@@ -1692,6 +1696,78 @@ mod tests {
         }
 
         #[test]
+        // Checks numerical stability of reservoir level: level should remain after multiple pressure cycles
+        fn yellow_loop_reservoir_coherency_test() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Starting epump wait for pressure rise to make sure system is primed including brake accumulator
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs(20));
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
+
+            // Shutdown and wait for pressure stabilisation
+            test_bed = test_bed
+                .set_yellow_e_pump(true)
+                .run_waiting_for(Duration::from_secs(50));
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(-50.));
+
+            let reservoir_level_after_priming = test_bed.get_yellow_reservoir_volume();
+
+            // Now doing cycles of pressurisation on EDP and ePump
+            for _ in 1..51 {
+                test_bed = test_bed
+                    .start_eng2(Ratio::new::<percent>(50.))
+                    .run_waiting_for(Duration::from_secs(50));
+
+                assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
+                assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
+
+                let mut current_res_level = test_bed.get_yellow_reservoir_volume();
+                assert!(current_res_level < reservoir_level_after_priming);
+
+                test_bed = test_bed
+                    .stop_eng2()
+                    .run_waiting_for(Duration::from_secs(50));
+                assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+                assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(-50.));
+
+                current_res_level = test_bed.get_yellow_reservoir_volume();
+                let mut reservoir_difference = reservoir_level_after_priming - current_res_level;
+                //println!("---Reservoir deviation: {}", reservoir_difference.get::<gallon>());
+
+                // Make sure no more deviation than 0.001 gallon is lost after full pressure and unpressurized states
+                assert!(reservoir_difference.get::<gallon>().abs() < 0.001);
+
+                test_bed = test_bed
+                    .set_yellow_e_pump(false)
+                    .run_waiting_for(Duration::from_secs(50));
+
+                assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
+                assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
+
+                test_bed = test_bed
+                    .set_yellow_e_pump(true)
+                    .run_waiting_for(Duration::from_secs(50));
+                assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+                assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(-50.));
+
+                current_res_level = test_bed.get_yellow_reservoir_volume();
+                reservoir_difference = reservoir_level_after_priming - current_res_level;
+                //println!("---Reservoir deviation: {}", reservoir_difference.get::<gallon>());
+                assert!(reservoir_difference.get::<gallon>().abs() < 0.001);
+            }
+        }
+
+        #[test]
         fn yellow_green_edp_firevalve_test() {
             let mut test_bed = test_bed_with()
                 .engines_off()
@@ -1762,15 +1838,15 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            //Accumulator empty on cold start
+            // Accumulator empty on cold start
             assert!(test_bed.get_brake_yellow_accumulator_pressure() < Pressure::new::<psi>(50.));
-            //No brakes
+            // No brakes
             assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
 
-            //No brakes even if we brake
+            // No brakes even if we brake
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(100.))
                 .set_right_brake(Ratio::new::<percent>(100.))
@@ -1782,7 +1858,7 @@ mod tests {
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_yellow_accumulator_pressure() < Pressure::new::<psi>(50.));
 
-            //Park brake off, loading accumulator, we expect no brake pressure but accumulator loaded
+            // Park brake off, loading accumulator, we expect no brake pressure but accumulator loaded
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(0.))
                 .set_right_brake(Ratio::new::<percent>(0.))
@@ -1801,7 +1877,7 @@ mod tests {
 
             assert!(test_bed.get_brake_yellow_accumulator_pressure() > Pressure::new::<psi>(2500.));
 
-            //Park brake on, loaded accumulator, we expect brakes on yellow side only
+            // Park brake on, loaded accumulator, we expect brakes on yellow side only
             test_bed = test_bed
                 .set_park_brake(true)
                 .run_waiting_for(Duration::from_secs(3));
@@ -1822,7 +1898,7 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            //No brakes
+            // No brakes
             assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
@@ -1836,7 +1912,7 @@ mod tests {
 
             assert!(test_bed.is_green_pressurised());
             assert!(test_bed.is_yellow_pressurised());
-            //No brakes if we don't brake
+            // No brakes if we don't brake
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(0.))
                 .set_right_brake(Ratio::new::<percent>(0.))
@@ -1847,7 +1923,7 @@ mod tests {
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
 
-            //Braking cause green braking system to rise
+            // Braking cause green braking system to rise
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(100.))
                 .set_right_brake(Ratio::new::<percent>(100.))
@@ -1860,7 +1936,7 @@ mod tests {
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
 
-            //Disabling Askid causes alternate braking to work and release green brakes
+            // Disabling Askid causes alternate braking to work and release green brakes
             test_bed = test_bed
                 .set_anti_skid(false)
                 .run_waiting_for(Duration::from_secs(2));
@@ -1889,7 +1965,7 @@ mod tests {
 
             assert!(test_bed.is_green_pressurised());
             assert!(test_bed.is_yellow_pressurised());
-            //Braking left
+            // Braking left
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(100.))
                 .set_right_brake(Ratio::new::<percent>(0.))
@@ -1900,7 +1976,7 @@ mod tests {
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
 
-            //Braking right
+            // Braking right
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(0.))
                 .set_right_brake(Ratio::new::<percent>(100.))
@@ -1911,7 +1987,7 @@ mod tests {
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
 
-            //Disabling Askid causes alternate braking to work and release green brakes
+            // Disabling Askid causes alternate braking to work and release green brakes
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(0.))
                 .set_right_brake(Ratio::new::<percent>(100.))
