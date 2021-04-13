@@ -316,7 +316,7 @@ impl A320Hydraulic {
         );
 
         self.power_transfer_unit_controller.update(
-            context,
+            &context.with_delta(min_hyd_loop_timestep),
             overhead_panel,
             &self.forward_cargo_door,
             &self.aft_cargo_door,
@@ -354,7 +354,7 @@ impl A320Hydraulic {
         );
 
         self.yellow_electric_pump_controller.update(
-            context,
+            &context.with_delta(min_hyd_loop_timestep),
             overhead_panel,
             &self.forward_cargo_door,
             &self.aft_cargo_door,

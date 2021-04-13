@@ -5,6 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.7.0
+1. [HYD] First hydraulics systems integration - @crocket63 (crocket)
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
 1. [MCDU] Progress page only shows GPS Primary when it should - @Username23-23 (NONAmr2433 #8777)
 1. [ND] Add VOR/ADF needles to ILS arc display - @tracernz (Mike)
@@ -17,7 +18,6 @@
 1. [MCDU] Show max distance of 9999 NM on duplicate waypoint selection - @tracernz (Mike)
 
 ## 0.6.0
-1. [HYD] First hydraulics systems integration - @crocket63 (crocket)
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
 1. [SOUND] Added new vent test and ext pwr relay random sounds - @hotshotp (Boris#9134)
