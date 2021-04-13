@@ -5,6 +5,9 @@ class DisplayUnit {
         this.potentiometerId = potentiometerId;
 
         this.previouslyOff = false;
+        // Start with a state where turning on the display unit within 10 seconds after starting the flight
+        // will trigger the self test.
+        this.offDurationInMilliseconds = DisplayUnitSelfTest.RequiredAfterBeingOffForMilliseconds;
     }
 
     isJustNowTurnedOn() {
@@ -18,11 +21,17 @@ class DisplayUnit {
 
     update(deltaTime) {
         if (this.isJustNowTurnedOn()) {
-            this.selfTest.execute();
+            this.selfTest.execute(this.offDurationInMilliseconds);
         }
 
+        this.selfTest.update(deltaTime);
+
         const isOn = this.isOn();
-        this.selfTest.update(deltaTime, isOn);
+        if (isOn) {
+            this.offDurationInMilliseconds = 0;
+        } else {
+            this.offDurationInMilliseconds += deltaTime;
+        }
 
         this.previouslyOff = !isOn;
     }
@@ -34,34 +43,24 @@ class DisplayUnitSelfTest {
         this.getSelfTestTimeInSeconds = getSelfTestTimeInSecondsFn;
 
         this.remainingTestDurationInMilliseconds = 0;
-
-        // Start with a state where turning on the display unit within 10 seconds after starting the flight
-        // will trigger the self test.
-        this.offDurationInMilliseconds = DisplayUnitSelfTest.RequiredAfterBeingOffForMilliseconds;
     }
 
     static get RequiredAfterBeingOffForMilliseconds() {
         return 10000;
     }
 
-    isRequired() {
-        return this.offDurationInMilliseconds >= DisplayUnitSelfTest.RequiredAfterBeingOffForMilliseconds;
+    isRequired(offDurationInMilliseconds) {
+        return offDurationInMilliseconds >= DisplayUnitSelfTest.RequiredAfterBeingOffForMilliseconds;
     }
 
-    execute() {
-        if (this.isRequired()) {
+    execute(offDurationInMilliseconds) {
+        if (this.isRequired(offDurationInMilliseconds)) {
             this.remainingTestDurationInMilliseconds = this.getSelfTestTimeInSeconds() * 1000;
         }
     }
 
-    update(deltaTime, displayUnitIsOn) {
+    update(deltaTime) {
         this.remainingTestDurationInMilliseconds -= deltaTime;
         this.element.style.visibility = this.remainingTestDurationInMilliseconds > 0 ? "visible" : "hidden";
-
-        if (displayUnitIsOn) {
-            this.offDurationInMilliseconds = 0;
-        } else {
-            this.offDurationInMilliseconds += deltaTime;
-        }
     }
 }
