@@ -282,8 +282,13 @@ impl BrakeCircuit {
     pub fn get_brake_pressure_right(&self) -> Pressure {
         self.pressure_applied_right
     }
+
     pub fn get_acc_pressure(&self) -> Pressure {
         self.accumulator_fluid_pressure_sensor_filtered
+    }
+
+    pub fn get_acc_fluid_volume(&self) -> Volume {
+        self.accumulator.fluid_volume
     }
 
     pub fn reset_accumulators(&mut self) {
