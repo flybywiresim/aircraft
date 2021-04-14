@@ -2,6 +2,7 @@
     <Template Name="FBW_MULTI_FUNCTION_CONTROL_DISPLAY_UNIT_Template">
         <DefaultTemplateParameters>
             <POTENTIOMETER>85</POTENTIOMETER>
+            <BUTTON_LIGHTS_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</BUTTON_LIGHTS_POWERED>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="FBW_MCDU_SCREEN_Template" />
@@ -323,6 +324,7 @@
                 <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                 <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 <DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
+                <SEQ1_EMISSIVE_CODE>#BUTTON_LIGHTS_POWERED#</SEQ1_EMISSIVE_CODE>
                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                 <LEFT_SINGLE_CODE>(&gt;H:A320_Neo_CDU_#SIDE_NUMERIC#_BTN_#LEFT_SINGLE_CODE_BTN_NAME#)</LEFT_SINGLE_CODE>
             </UseTemplate>
@@ -369,13 +371,13 @@
 
         <Component ID="#NODE_ID_BRT_DIM_SEQ1#" Node="#NODE_ID_BRT_DIM_SEQ1#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #BUTTON_LIGHTS_POWERED# *</EMISSIVE_CODE>
             </UseTemplate>
         </Component>
 
         <Component ID="#NODE_ID_BRT_DIM_SEQ2#" Node="#NODE_ID_BRT_DIM_SEQ2#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #BUTTON_LIGHTS_POWERED# *</EMISSIVE_CODE>
             </UseTemplate>
         </Component>
     </Template>
@@ -391,7 +393,7 @@
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <DONT_OVERRIDE_BASE_EMISSIVE>False</DONT_OVERRIDE_BASE_EMISSIVE>
                 <EMISSIVE_CODE>
-                    #ELEC_BUS# sp0
+                    #DISPLAY_POWERED# sp0
                     l0 if{
                         (L:A32NX_MCDU_#SIDE#_BRIGHTNESS, number)
                     } els{
