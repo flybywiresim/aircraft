@@ -77,6 +77,7 @@
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>LEVER_ELEVATORTRIM_DECAL</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
@@ -287,11 +288,13 @@
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>DECAL_THROTTLE_01</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>DECAL_THROTTLE_02</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
             <CameraTitle>PedestalFwd</CameraTitle>
@@ -500,6 +503,7 @@
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>YOKE_DECAL</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
             <!-- NYI
