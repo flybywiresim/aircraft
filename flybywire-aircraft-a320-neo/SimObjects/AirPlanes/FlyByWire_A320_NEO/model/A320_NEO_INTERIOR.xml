@@ -3532,18 +3532,22 @@
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>BRK_DECALS</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>BRK_ACCU_PRESS_IND</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>BRK_PRESS_IND_L</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
             <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                 <NODE_ID>BRK_PRESS_IND_R</NODE_ID>
                 <POTENTIOMETER>85</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
         </Component>
 
