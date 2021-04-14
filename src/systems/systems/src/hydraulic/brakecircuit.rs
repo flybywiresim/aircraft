@@ -26,14 +26,12 @@ pub struct BrakeActuator {
 
     volume_to_actuator_accumulator: Volume,
     volume_to_res_accumulator: Volume,
-
-    pressure_received: Pressure,
 }
 
 impl BrakeActuator {
     const ACTUATOR_BASE_SPEED: f64 = 1.; // movement in percent/100 per second. 1 means 0 to 1 in 1s
-    const MIN_PRESSURE_ALLOWED_TO_MOVE_ACTUATOR_PSI: f64 = 100.;
-    const NOMINAL_PRESSURE_FOR_NORMAL_BRAKE_OPERATION_PSI: f64 = 1000.;
+    const MIN_PRESSURE_ALLOWED_TO_MOVE_ACTUATOR_PSI: f64 = 50.;
+    const PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI: f64 = 3100.;
 
     pub fn new(total_displacement: Volume) -> Self {
         Self {
@@ -43,7 +41,6 @@ impl BrakeActuator {
             required_position: 0.,
             volume_to_actuator_accumulator: Volume::new::<gallon>(0.),
             volume_to_res_accumulator: Volume::new::<gallon>(0.),
-            pressure_received: Pressure::new::<psi>(0.),
         }
     }
 
@@ -51,12 +48,21 @@ impl BrakeActuator {
         self.required_position = required_position;
     }
 
+    fn get_max_position_reachable(&self, received_pressure: Pressure) -> f64 {
+        if received_pressure.get::<psi>() > Self::MIN_PRESSURE_ALLOWED_TO_MOVE_ACTUATOR_PSI {
+            (received_pressure.get::<psi>() / Self::PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI)
+                .min(1.)
+                .max(0.)
+        } else {
+            0.
+        }
+    }
+
     pub fn get_applied_brake_pressure(&self) -> Pressure {
-        self.pressure_received * self.current_position
+        Pressure::new::<psi>(Self::PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI) * self.current_position
     }
 
     pub fn update(&mut self, delta_time: &Duration, received_pressure: Pressure) {
-        self.pressure_received = received_pressure;
         let final_delta_position = self.update_position(delta_time, received_pressure);
 
         if final_delta_position > 0. {
@@ -72,16 +78,15 @@ impl BrakeActuator {
     }
 
     fn update_position(&mut self, delta_time: &Duration, loop_pressure: Pressure) -> f64 {
-        let delta_position_required = self.required_position - self.current_position;
+        // Final required position for actuator is the required one unless we can't reach it due to pressure
+        let final_required_position = self
+            .required_position
+            .min(self.get_max_position_reachable(loop_pressure));
+        let delta_position_required = final_required_position - self.current_position;
 
         let mut new_position = self.current_position;
         if delta_position_required > 0.001 {
-            let mut speed_modifier = (loop_pressure.get::<psi>()
-                - Self::MIN_PRESSURE_ALLOWED_TO_MOVE_ACTUATOR_PSI)
-                / Self::NOMINAL_PRESSURE_FOR_NORMAL_BRAKE_OPERATION_PSI;
-            speed_modifier = speed_modifier.min(1.).max(0.);
-            new_position =
-                self.current_position + delta_time.as_secs_f64() * self.base_speed * speed_modifier;
+            new_position = self.current_position + delta_time.as_secs_f64() * self.base_speed;
             new_position = new_position.min(self.current_position + delta_position_required);
         } else if delta_position_required < -0.001 {
             new_position = self.current_position - delta_time.as_secs_f64() * self.base_speed;
@@ -405,7 +410,6 @@ mod tests {
     };
 
     #[test]
-    // Runs engine driven pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn brake_actuator_movement() {
         let mut brake_actuator = BrakeActuator::new(Volume::new::<gallon>(0.04));
 
@@ -415,7 +419,10 @@ mod tests {
         brake_actuator.set_position_demand(1.2);
 
         for loop_idx in 0..15 {
-            brake_actuator.update(&Duration::from_secs_f64(0.1), Pressure::new::<psi>(3000.));
+            brake_actuator.update(
+                &Duration::from_secs_f64(0.1),
+                Pressure::new::<psi>(BrakeActuator::PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI),
+            );
             println!(
                 "Loop {}, position: {}",
                 loop_idx, brake_actuator.current_position
@@ -461,7 +468,43 @@ mod tests {
     }
 
     #[test]
-    // Runs engine driven pump, checks pressure OK, shut it down, check drop of pressure after 20s
+    fn brake_actuator_movement_medium_pressure() {
+        let mut brake_actuator = BrakeActuator::new(Volume::new::<gallon>(0.04));
+
+        brake_actuator.set_position_demand(1.2);
+
+        let medium_pressure = Pressure::new::<psi>(1500.);
+        //Update position with 1500psi only: should not reach max displacement
+        for loop_idx in 0..15 {
+            brake_actuator.update(&Duration::from_secs_f64(0.1), medium_pressure);
+            println!(
+                "Loop {}, position: {}",
+                loop_idx, brake_actuator.current_position
+            );
+        }
+
+        assert!(
+            brake_actuator.current_position
+                <= brake_actuator.get_max_position_reachable(medium_pressure)
+        );
+
+        // Now same max demand but pressure so low so actuator should get back to 0
+        brake_actuator.reset_accumulators();
+        brake_actuator.set_position_demand(1.2);
+
+        for _loop_idx in 0..15 {
+            brake_actuator.update(&Duration::from_secs_f64(0.1), Pressure::new::<psi>(20.));
+            println!(
+                "Loop {}, Low pressure: position: {}",
+                _loop_idx, brake_actuator.current_position
+            );
+        }
+
+        // We should have actuator back to 0
+        assert!(brake_actuator.current_position <= 0.1);
+    }
+
+    #[test]
     fn brake_state_at_init() {
         let init_max_vol = Volume::new::<gallon>(1.5);
         let brake_circuit_unprimed = BrakeCircuit::new(
