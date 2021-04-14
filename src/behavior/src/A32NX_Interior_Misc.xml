@@ -50,7 +50,7 @@
 
         <Component ID="SWITCH_MP#DCDU_SIDE#_DIM_SEQ1" Node="SWITCH_MP#DCDU_SIDE#_DIM_SEQ1">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, Percent over 100)</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, Percent over 100) (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) *</EMISSIVE_CODE>
             </UseTemplate>
         </Component>
     </Template>
@@ -78,7 +78,7 @@
 
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
-            <SEQ1_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, percent) 100 /</SEQ1_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, percent) 100 / (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) *</SEQ1_EMISSIVE_CODE>
             <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
 
             <LEFT_SINGLE_CODE>(&gt;H:#PLANE_NAME#_DCDU_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
