@@ -830,6 +830,7 @@
                     <DefaultTemplateParameters>
                         <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
                         <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                        <SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_EMISSIVE_CODE>
                     </DefaultTemplateParameters>
 
                     <UseTemplate Name="A32NX_Push_BARO_Template">
