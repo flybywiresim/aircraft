@@ -216,16 +216,14 @@ impl BrakeCircuit {
     }
 
     pub fn update(&mut self, delta_time: &Duration, hyd_loop: &HydraulicLoop) {
-
         // The pressure available in brakes is the one of accumulator only if accumulator has fluid
-        let mut actual_pressure_available = Pressure::new::<psi>(0.);
+        let actual_pressure_available: Pressure;
         if self.accumulator.get_fluid_volume() > Volume::new::<gallon>(0.) {
             actual_pressure_available = self.accumulator.get_raw_gas_press();
         } else {
             actual_pressure_available = hyd_loop.get_pressure();
         }
 
-        // Moving brake actuators from pressure available
         self.update_brake_actuators(delta_time, actual_pressure_available);
 
         let delta_vol = self.left_brake_actuator.get_used_volume()
@@ -252,10 +250,8 @@ impl BrakeCircuit {
             self.volume_to_actuator_accumulator += delta_vol;
         }
 
-        self.volume_to_res_accumulator +=
-            self.left_brake_actuator.get_reservoir_return();
-        self.volume_to_res_accumulator +=
-            self.right_brake_actuator.get_reservoir_return();
+        self.volume_to_res_accumulator += self.left_brake_actuator.get_reservoir_return();
+        self.volume_to_res_accumulator += self.right_brake_actuator.get_reservoir_return();
 
         self.left_brake_actuator.reset_accumulators();
         self.right_brake_actuator.reset_accumulators();
@@ -433,7 +429,7 @@ mod tests {
         brake_actuator.reset_accumulators();
 
         brake_actuator.set_position_demand(-2.);
-        for loop_idx in 0..15 {
+        for _ in 0..15 {
             brake_actuator.update(&Duration::from_secs_f64(0.1), Pressure::new::<psi>(3000.));
         }
 
@@ -448,7 +444,7 @@ mod tests {
         brake_actuator.reset_accumulators();
         brake_actuator.set_position_demand(1.2);
 
-        for loop_idx in 0..15 {
+        for _ in 0..15 {
             brake_actuator.update(&Duration::from_secs_f64(0.1), Pressure::new::<psi>(20.));
         }
 
