@@ -282,17 +282,15 @@ impl A320Hydraulic {
     }
 
     fn update_green_actuators_volume(&mut self) {
-        // Actuator interaction given as example here needs extensive tests in another PR
-        // self.green_loop
-        //     .update_actuator_volumes(&self.braking_circuit_norm);
-        // self.braking_circuit_norm.reset_accumulators();
+        self.green_loop
+            .update_actuator_volumes(&self.braking_circuit_norm);
+        self.braking_circuit_norm.reset_accumulators();
     }
 
     fn update_yellow_actuators_volume(&mut self) {
-        // Actuator interaction given as example here needs extensive tests in another PR
-        // self.yellow_loop
-        //     .update_actuator_volumes(&self.braking_circuit_altn);
-        // self.braking_circuit_altn.reset_accumulators();
+        self.yellow_loop
+            .update_actuator_volumes(&self.braking_circuit_altn);
+        self.braking_circuit_altn.reset_accumulators();
     }
 
     fn update_blue_actuators_volume(&mut self) {}
@@ -1046,6 +1044,10 @@ mod tests {
                 }
             }
 
+            fn get_yellow_brake_accumulator_fluid_volume(&self) -> Volume {
+                self.hydraulics.braking_circuit_altn.get_acc_fluid_volume()
+            }
+
             fn is_nws_pin_inserted(&self) -> bool {
                 self.hydraulics.nose_wheel_steering_pin_is_inserted()
             }
@@ -1173,6 +1175,14 @@ mod tests {
                 )
             }
 
+            fn get_green_reservoir_volume(&mut self) -> Volume {
+                Volume::new::<gallon>(self.simulation_test_bed.read_f64("HYD_GREEN_RESERVOIR"))
+            }
+
+            fn get_blue_reservoir_volume(&mut self) -> Volume {
+                Volume::new::<gallon>(self.simulation_test_bed.read_f64("HYD_BLUE_RESERVOIR"))
+            }
+
             fn get_brake_left_green_pressure(&mut self) -> Pressure {
                 Pressure::new::<psi>(
                     self.simulation_test_bed
@@ -1192,6 +1202,10 @@ mod tests {
                     self.simulation_test_bed
                         .read_f64("HYD_BRAKE_ALTN_ACC_PRESS"),
                 )
+            }
+
+            fn get_brake_yellow_accumulator_fluid_volume(&mut self) -> Volume {
+                self.aircraft.get_yellow_brake_accumulator_fluid_volume()
             }
 
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
@@ -1702,6 +1716,8 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
+                .set_ptu_state(false)
+                .set_park_brake(false) // Park brake off to not use fluid in brakes
                 .run_one_tick();
 
             // Starting epump wait for pressure rise to make sure system is primed including brake accumulator
@@ -1722,6 +1738,9 @@ mod tests {
 
             let reservoir_level_after_priming = test_bed.get_yellow_reservoir_volume();
 
+            let total_fluid_res_plus_accumulator_before_loops = reservoir_level_after_priming
+                + test_bed.get_brake_yellow_accumulator_fluid_volume();
+
             // Now doing cycles of pressurisation on EDP and ePump
             for _ in 1..51 {
                 test_bed = test_bed
@@ -1740,13 +1759,6 @@ mod tests {
                 assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
                 assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(-50.));
 
-                current_res_level = test_bed.get_yellow_reservoir_volume();
-                let mut reservoir_difference = reservoir_level_after_priming - current_res_level;
-                //println!("---Reservoir deviation: {}", reservoir_difference.get::<gallon>());
-
-                // Make sure no more deviation than 0.001 gallon is lost after full pressure and unpressurized states
-                assert!(reservoir_difference.get::<gallon>().abs() < 0.001);
-
                 test_bed = test_bed
                     .set_yellow_e_pump(false)
                     .run_waiting_for(Duration::from_secs(50));
@@ -1754,17 +1766,148 @@ mod tests {
                 assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
                 assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
 
+                current_res_level = test_bed.get_yellow_reservoir_volume();
+                assert!(current_res_level < reservoir_level_after_priming);
+
                 test_bed = test_bed
                     .set_yellow_e_pump(true)
                     .run_waiting_for(Duration::from_secs(50));
                 assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
                 assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(-50.));
-
-                current_res_level = test_bed.get_yellow_reservoir_volume();
-                reservoir_difference = reservoir_level_after_priming - current_res_level;
-                //println!("---Reservoir deviation: {}", reservoir_difference.get::<gallon>());
-                assert!(reservoir_difference.get::<gallon>().abs() < 0.001);
             }
+            let total_fluid_res_plus_accumulator_after_loops = test_bed
+                .get_yellow_reservoir_volume()
+                + test_bed.get_brake_yellow_accumulator_fluid_volume();
+
+            let total_fluid_difference = total_fluid_res_plus_accumulator_before_loops
+                - total_fluid_res_plus_accumulator_after_loops;
+
+            // Make sure no more deviation than 0.001 gallon is lost after full pressure and unpressurized states
+            assert!(total_fluid_difference.get::<gallon>().abs() < 0.001);
+        }
+
+        #[test]
+        // Checks numerical stability of reservoir level: level should remain after multiple pressure cycles
+        fn green_loop_reservoir_coherency_test() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_ptu_state(false)
+                .run_one_tick();
+
+            // Starting EDP wait for pressure rise to make sure system is primed
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(50.))
+                .run_waiting_for(Duration::from_secs(20));
+            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(3500.));
+            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2500.));
+
+            // Shutdown and wait for pressure stabilisation
+            test_bed = test_bed
+                .stop_eng1()
+                .run_waiting_for(Duration::from_secs(50));
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.green_pressure() > Pressure::new::<psi>(-50.));
+
+            let reservoir_level_after_priming = test_bed.get_green_reservoir_volume();
+
+            // Now doing cycles of pressurisation on EDP
+            for _ in 1..101 {
+                test_bed = test_bed
+                    .start_eng1(Ratio::new::<percent>(50.))
+                    .run_waiting_for(Duration::from_secs(50));
+
+                assert!(test_bed.green_pressure() < Pressure::new::<psi>(3500.));
+                assert!(test_bed.green_pressure() > Pressure::new::<psi>(2500.));
+
+                let current_res_level = test_bed.get_green_reservoir_volume();
+                assert!(current_res_level < reservoir_level_after_priming);
+
+                test_bed = test_bed
+                    .stop_eng1()
+                    .run_waiting_for(Duration::from_secs(50));
+                assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
+                assert!(test_bed.green_pressure() > Pressure::new::<psi>(-50.));
+            }
+
+            let total_fluid_difference =
+                reservoir_level_after_priming - test_bed.get_green_reservoir_volume();
+
+            // Make sure no more deviation than 0.001 gallon is lost after full pressure and unpressurized states
+            assert!(total_fluid_difference.get::<gallon>().abs() < 0.001);
+        }
+
+        #[test]
+        // Checks numerical stability of reservoir level: level should remain after multiple pressure cycles
+        fn blue_loop_reservoir_coherency_test() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Starting blue_epump wait for pressure rise to make sure system is primed
+            test_bed = test_bed
+                .set_blue_e_pump_ovrd(true)
+                .run_waiting_for(Duration::from_secs(20));
+            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(3500.));
+            assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
+
+            // Shutdown and wait for pressure stabilisation
+            test_bed = test_bed
+                .set_blue_e_pump_ovrd(false)
+                .run_waiting_for(Duration::from_secs(50));
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.blue_pressure() > Pressure::new::<psi>(-50.));
+
+            let reservoir_level_after_priming = test_bed.get_blue_reservoir_volume();
+
+            // Now doing cycles of pressurisation on epump relying on auto run of epump when eng is on
+            for _ in 1..51 {
+                test_bed = test_bed
+                    .start_eng1(Ratio::new::<percent>(50.))
+                    .run_waiting_for(Duration::from_secs(50));
+
+                assert!(test_bed.blue_pressure() < Pressure::new::<psi>(3500.));
+                assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
+
+                let current_res_level = test_bed.get_blue_reservoir_volume();
+                assert!(current_res_level < reservoir_level_after_priming);
+
+                test_bed = test_bed
+                    .stop_eng1()
+                    .run_waiting_for(Duration::from_secs(50));
+                assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
+                assert!(test_bed.blue_pressure() > Pressure::new::<psi>(-50.));
+
+                // Now engine 2 is used
+                test_bed = test_bed
+                    .start_eng2(Ratio::new::<percent>(50.))
+                    .run_waiting_for(Duration::from_secs(50));
+
+                assert!(test_bed.blue_pressure() < Pressure::new::<psi>(3500.));
+                assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2500.));
+
+                let current_res_level = test_bed.get_blue_reservoir_volume();
+                assert!(current_res_level < reservoir_level_after_priming);
+
+                test_bed = test_bed
+                    .stop_eng2()
+                    .run_waiting_for(Duration::from_secs(50));
+                assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
+                assert!(test_bed.blue_pressure() > Pressure::new::<psi>(-50.));
+            }
+
+            let total_fluid_difference =
+                reservoir_level_after_priming - test_bed.get_blue_reservoir_volume();
+
+            // Make sure no more deviation than 0.001 gallon is lost after full pressure and unpressurized states
+            assert!(total_fluid_difference.get::<gallon>().abs() < 0.001);
         }
 
         #[test]
