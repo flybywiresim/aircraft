@@ -271,7 +271,7 @@
 				#GROUP_INDEX# -1 &gt; if{
 					(L:#CURRENT_BUTTON_VAR_NAME#) #GROUP_INDEX# ==
 				}
-				(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+				(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) and
 				</EMISSIVE_CODE>
 			</UseTemplate>
 		</Component>
@@ -280,6 +280,7 @@
 			<True>
 				<Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
 					<UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
+                        <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
 					</UseTemplate>
 				</Component>
 			</True>
@@ -322,6 +323,7 @@
 			<True>
 				<Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
 					<UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
+                        <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
 					</UseTemplate>
 				</Component>
 			</True>
@@ -366,6 +368,7 @@
 				<EMISSIVE_CODE>
                 (L:A32NX_ECAM_SFAIL) -1 &gt;
                 (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) and
 				</EMISSIVE_CODE>
 			</UseTemplate>
 		</Component>
@@ -374,6 +377,7 @@
 			<True>
 				<Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
 					<UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
+                        <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
 					</UseTemplate>
 				</Component>
 			</True>
@@ -403,6 +407,7 @@
 			<True>
 				<Component ID="#BACKLIGHT_NODE_ID#" Node="#BACKLIGHT_NODE_ID#">
 					<UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
+                        <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
 					</UseTemplate>
 				</Component>
 			</True>
