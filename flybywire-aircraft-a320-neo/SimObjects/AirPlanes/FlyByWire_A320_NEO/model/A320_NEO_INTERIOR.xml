@@ -2721,9 +2721,10 @@
                     </UseTemplate>
 
                     <!-- Left light -->
-                    <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                    <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                         <NODE_ID>LIGHT_OVHD_READINGLLT</NODE_ID>
                         <POTENTIOMETER>96</POTENTIOMETER>
+                        <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                     </UseTemplate>
 
                     <!-- Right knob -->
@@ -2736,9 +2737,10 @@
                     </UseTemplate>
 
                     <!-- Right light -->
-                    <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                    <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                         <NODE_ID>LIGHT_OVHD_READINGLTR</NODE_ID>
                         <POTENTIOMETER>97</POTENTIOMETER>
+                        <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                     </UseTemplate>
                 </Component>
 
