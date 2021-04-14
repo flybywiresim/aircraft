@@ -43,15 +43,15 @@ const GreenDotBugElement = (offset) => (
 
 const FlapRetractBugElement = (offset) => (
     <g id="FlapsSlatsBug" transform={`translate(0 ${offset})`}>
-        <path className="NormalStroke Green" d="m19.031 75.81h3.8279" />
-        <text className="FontLarge MiddleAlign Green" x="27.236509" y="78.32">F</text>
+        <path className="NormalStroke Green" d="m19.031 80.82h3.8279" />
+        <text className="FontLarge MiddleAlign Green" x="27.236509" y="83.327988">F</text>
     </g>
 );
 
 const SlatRetractBugElement = (offset) => (
     <g id="FlapsSlatsBug" transform={`translate(0 ${offset})`}>
-        <path className="NormalStroke Green" d="m19.031 75.81h3.8279" />
-        <text className="FontLarge MiddleAlign Green" x="27.236509" y="78.32">S</text>
+        <path className="NormalStroke Green" d="m19.031 80.82h3.8279" />
+        <text className="FontLarge MiddleAlign Green" x="27.236509" y="83.327988">S</text>
     </g>
 );
 
