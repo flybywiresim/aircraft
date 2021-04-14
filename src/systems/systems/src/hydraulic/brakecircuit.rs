@@ -249,15 +249,13 @@ impl BrakeCircuit {
             }
         } else {
             // Else case if no accumulator: we just take deltavol needed or return it back to res
-            if delta_vol > Volume::new::<gallon>(0.) {
-                self.volume_to_actuator_accumulator += delta_vol;
-            } else {
-                self.volume_to_res_accumulator +=
-                    self.left_brake_actuator.get_reservoir_return();
-                self.volume_to_res_accumulator +=
-                    self.right_brake_actuator.get_reservoir_return();
-            }
+            self.volume_to_actuator_accumulator += delta_vol;
         }
+
+        self.volume_to_res_accumulator +=
+            self.left_brake_actuator.get_reservoir_return();
+        self.volume_to_res_accumulator +=
+            self.right_brake_actuator.get_reservoir_return();
 
         self.left_brake_actuator.reset_accumulators();
         self.right_brake_actuator.reset_accumulators();
@@ -437,10 +435,6 @@ mod tests {
         brake_actuator.set_position_demand(-2.);
         for loop_idx in 0..15 {
             brake_actuator.update(&Duration::from_secs_f64(0.1), Pressure::new::<psi>(3000.));
-            println!(
-                "Loop {}, position: {}",
-                loop_idx, brake_actuator.current_position
-            );
         }
 
         assert!(brake_actuator.current_position <= 0.01);
@@ -456,10 +450,6 @@ mod tests {
 
         for loop_idx in 0..15 {
             brake_actuator.update(&Duration::from_secs_f64(0.1), Pressure::new::<psi>(20.));
-            println!(
-                "Loop {}, position: {}",
-                loop_idx, brake_actuator.current_position
-            );
         }
 
         // We should not be able to move actuator
@@ -536,7 +526,7 @@ mod tests {
         );
 
         brake_circuit_primed.set_brake_demand_left(1.0);
-        brake_circuit_primed.update(&Duration::from_secs_f64(0.1), &hyd_loop);
+        brake_circuit_primed.update(&Duration::from_secs_f64(1.), &hyd_loop);
 
         assert!(brake_circuit_primed.get_brake_pressure_left() >= Pressure::new::<psi>(1000.));
         assert!(brake_circuit_primed.get_brake_pressure_right() <= Pressure::new::<psi>(50.));
@@ -544,7 +534,7 @@ mod tests {
 
         brake_circuit_primed.set_brake_demand_left(0.0);
         brake_circuit_primed.set_brake_demand_right(1.0);
-        brake_circuit_primed.update(&Duration::from_secs_f64(0.1), &hyd_loop);
+        brake_circuit_primed.update(&Duration::from_secs_f64(1.), &hyd_loop);
         assert!(brake_circuit_primed.get_brake_pressure_right() >= Pressure::new::<psi>(1000.));
         assert!(brake_circuit_primed.get_brake_pressure_left() <= Pressure::new::<psi>(50.));
         assert!(brake_circuit_primed.accumulator.get_fluid_volume() >= Volume::new::<gallon>(0.1));
@@ -578,14 +568,14 @@ mod tests {
         );
 
         brake_circuit_primed.set_brake_demand_left(1.0);
-        brake_circuit_primed.update(&Duration::from_secs_f64(0.1), &hyd_loop);
+        brake_circuit_primed.update(&Duration::from_secs_f64(1.5), &hyd_loop);
 
         assert!(brake_circuit_primed.get_brake_pressure_left() >= Pressure::new::<psi>(2500.));
         assert!(brake_circuit_primed.get_brake_pressure_right() <= Pressure::new::<psi>(50.));
 
         brake_circuit_primed.set_brake_demand_left(0.0);
         brake_circuit_primed.set_brake_demand_right(1.0);
-        brake_circuit_primed.update(&Duration::from_secs_f64(0.1), &hyd_loop);
+        brake_circuit_primed.update(&Duration::from_secs_f64(1.5), &hyd_loop);
         assert!(brake_circuit_primed.get_brake_pressure_right() >= Pressure::new::<psi>(2500.));
         assert!(brake_circuit_primed.get_brake_pressure_left() <= Pressure::new::<psi>(50.));
         assert!(brake_circuit_primed.accumulator.get_fluid_volume() == Volume::new::<gallon>(0.0));
