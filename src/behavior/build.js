@@ -7,7 +7,7 @@ const path = require('path');
 const { pathToFileURL } = require('url');
 
 const SRC = path.resolve(__dirname, 'src');
-const OUT = path.resolve(__dirname, '..', '..', 'A32NX/ModelBehaviorDefs/A32NX/generated');
+const OUT = path.resolve(__dirname, '..', '..', 'flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated');
 
 fs.mkdirSync(OUT, { recursive: true });
 

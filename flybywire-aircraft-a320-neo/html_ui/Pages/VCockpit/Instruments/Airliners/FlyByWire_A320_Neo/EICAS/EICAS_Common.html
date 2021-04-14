@@ -1,0 +1,45 @@
+﻿<link rel="stylesheet" href="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EICAS/EICAS_Common.css" />
+<link rel="stylesheet" href="/CSS/A32NX_Display_Common.css" />
+
+
+<script type="text/html" id="EICASCommonDisplayTemplate">
+    <svg viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
+        <g id="grid">
+            <line x1="0" y1="40" x2="600" y2="40" />
+            <line x1="200" y1="40" x2="200" y2="125" />
+            <line x1="400" y1="40" x2="400" y2="125" />
+        </g>
+
+        <g id="TAT">
+            <text class="Title" x="74" y="63" text-anchor="end">TAT</text>
+            <text id="TATValue" x="112" y="63" text-anchor="middle" class="Warning">XX</text>
+            <text class="Unit" x="150" y="62" text-anchor="start">&#176;C</text>
+        </g>
+
+        <g id="SAT">
+            <text class="Title" x="74" y="87" text-anchor="end">SAT</text>
+            <text id="SATValue" x="112" y="87" text-anchor="middle" class="Warning">XX</text>
+            <text class="Unit" x="150" y="87" text-anchor="start">&#176;C</text>
+        </g>
+
+        <g id="LoadFactor">
+            <text class="Warning" x="207" y="64" text-anchor="start">G LOAD</text>
+            <text id="LoadFactorValue" class="Warning" x="392" y="64" text-anchor="end">XXXX</text>
+        </g>
+
+        <g id="Clock">
+            <text id="HoursValue" class="Value" x="287" y="87" text-anchor="end">--</text>
+            <text class="Unit" x="300" y="87" text-anchor="middle">H</text>
+            <text id="MinutesValue" class="Value Small" x="317" y="87" text-anchor="start">--</text>
+        </g>
+
+        <g id="GW">
+            <text class="Title" x="445" y="63" text-anchor="end">GW</text>
+
+            <text id="GWValue" class="Value" x="542" y="63" text-anchor="end">--</text>
+            <text id="GWUnit" class="Unit" x="562" y="61" text-anchor="start">KG</text>
+        </g>
+    </svg>
+</script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/EICAS/EICAS_Common.js"></script> <!-- MODIFIED -->

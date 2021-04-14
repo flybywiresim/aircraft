@@ -1,0 +1,64 @@
+﻿@import url("/CSS/A32NX_Display_Common.css");
+
+:root {
+  --bodyHeightScale: 1;
+}
+
+@keyframes TemporaryShow {
+  0%,
+  100% {
+    visibility: visible;
+  }
+}
+@keyframes TemporaryHide {
+  0%,
+  100% {
+    visibility: hidden;
+  }
+}
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+}
+#Electricity {
+  width: 100%;
+  height: 100%;
+}
+#Electricity[state="off"] {
+  display: none;
+}
+
+eicas-common-display {
+  display: block;
+  position: absolute;
+  bottom: 0%;
+  left: 0%;
+  width: 100%;
+  height: 25%;
+}
+eicas-common-display line {
+  stroke: var(--displayWhite) !important;
+  stroke-width: 3;
+}
+eicas-common-display text {
+  font-size: 20px;
+  font-family: "ECAMFontRegular";
+}
+eicas-common-display text.Title {
+  fill: var(--displayWhite) !important;
+}
+eicas-common-display text.Value {
+  fill: var(--displayGreen) !important;
+}
+eicas-common-display text.Unit {
+  fill: var(--displayCyan) !important;
+}
+eicas-common-display text.Warning {
+  fill: var(--displayAmber) !important;
+}
+eicas-common-display text.Small {
+  font-size: 18px !important;
+}

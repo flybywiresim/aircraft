@@ -24,7 +24,7 @@ First, be sure to remove any existing install of the mod from the game.
 Then in `cmd`, run the command below. Be sure to replace each path with the proper respective file path.
 
 ```cmd
-mklink /J "C:\users\<user>\AppData\Microsoft Flight Simulator\Packages\Community\A32NX" "C:\path\to\cloned\repo\A32NX"
+mklink /J "C:\users\<user>\AppData\Microsoft Flight Simulator\Packages\Community\flybywire-aircraft-a320-neo" "C:\path\to\cloned\repo\flybywire-aircraft-a320-neo"
 ```
 
 And you're done! Be sure to run `npm run build` (or the build task in VSCode) when ever new files are added, **but don't commit the result!**

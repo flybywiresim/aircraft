@@ -620,6 +620,16 @@
 										</Reference>
 									</ReferenceList>
 								</Action>
+								<Action Name="" ID="{7C18B06A-A6F8-4F27-A428-00473A889260}" ShortID="527290582">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="FFlowLEXT" ID="{1329F184-33D8-42A7-BA98-9C6E6F858D04}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
 							</ChildrenList>
 						</Event>
 						<Event Name="Play_Asobo_A320_NEO_FFlowLEXT" ID="{57C23534-3531-4263-B58F-DF65BC20459C}">
@@ -631,6 +641,16 @@
 									<ReferenceList>
 										<Reference Name="Target">
 											<ObjectRef Name="FFlowLEXT" ID="{1329F184-33D8-42A7-BA98-9C6E6F858D04}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+								<Action Name="" ID="{F0A3DCAB-F578-4F3F-858F-BAC81A22B074}" ShortID="349127246">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="FflowREXT" ID="{F17918DE-5478-4570-834E-0AAE3815DF3C}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 										</Reference>
 									</ReferenceList>
 								</Action>
@@ -1092,6 +1112,16 @@
 										</Reference>
 									</ReferenceList>
 								</Action>
+								<Action Name="" ID="{C6CB5AC5-A813-4788-8A4B-ABC0E4138272}" ShortID="356268760">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="WhaleCallL" ID="{6B72E75A-0F91-4E3D-A141-2DB7D02513DA}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
 							</ChildrenList>
 						</Event>
 						<Event Name="Play_Asobo_A320_NEO_ISPoolREXT" ID="{F840E7F7-E12A-4FB8-BC13-416AEB3A6E30}">
@@ -1133,6 +1163,16 @@
 									<ReferenceList>
 										<Reference Name="Target">
 											<ObjectRef Name="SPool1REXT" ID="{C1CEAF2A-FA05-48D7-BEA1-DE4AF5951C12}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+								<Action Name="" ID="{D92AE596-E6F2-47F2-9C4F-CF7A00696A8A}" ShortID="382044880">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="WhaleCallR" ID="{866883B4-C071-4051-9677-888EC7AA67FB}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 										</Reference>
 									</ReferenceList>
 								</Action>
@@ -1248,6 +1288,16 @@
 										</Reference>
 									</ReferenceList>
 								</Action>
+								<Action Name="" ID="{F7A7EDC7-A6BA-4E09-8577-5C3C223B38D3}" ShortID="754120796">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="RevWindL" ID="{AD7A93C7-CA38-4A7E-8BC1-F64980704B31}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
 							</ChildrenList>
 						</Event>
 						<Event Name="Play_Asobo_A320_NEO_ReverseREXT" ID="{9CB8DF06-8D35-445E-A5B1-935299294EE8}">
@@ -1273,6 +1323,16 @@
 									<ReferenceList>
 										<Reference Name="Target">
 											<ObjectRef Name="ReverseR" ID="{D33A31DC-4D4E-49A4-B3D9-B20844FC1F49}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+								<Action Name="" ID="{B08D87C0-90E4-4BF3-8BC8-03F233B7609A}" ShortID="135535162">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="RevWindR" ID="{E8B9214E-0C8D-49C3-A4F3-4BAADC328537}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 										</Reference>
 									</ReferenceList>
 								</Action>
@@ -1581,34 +1641,6 @@
 									<ReferenceList>
 										<Reference Name="Target">
 											<ObjectRef Name="RShutEXT" ID="{F2C54CE3-FE94-41F2-9E80-27D5F9CB250D}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
-										</Reference>
-									</ReferenceList>
-								</Action>
-							</ChildrenList>
-						</Event>
-						<Event Name="Play_Asobo_A320_NEO_RevWindL" ID="{C34068FC-67EF-4188-921D-F09DA675074D}">
-							<ChildrenList>
-								<Action Name="" ID="{FAE9460B-4663-4FE0-A0C2-9A81445EF057}" ShortID="689446029">
-									<PropertyList>
-										<Property Name="ActionType" Type="int16" Value="1"/>
-									</PropertyList>
-									<ReferenceList>
-										<Reference Name="Target">
-											<ObjectRef Name="RevWindL" ID="{AD7A93C7-CA38-4A7E-8BC1-F64980704B31}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
-										</Reference>
-									</ReferenceList>
-								</Action>
-							</ChildrenList>
-						</Event>
-						<Event Name="Play_Asobo_A320_NEO_RevWindR" ID="{A11F3074-F520-48F7-8471-4D01182315C6}">
-							<ChildrenList>
-								<Action Name="" ID="{E6B570F3-0F74-4A41-868A-3FBD88579228}" ShortID="124657344">
-									<PropertyList>
-										<Property Name="ActionType" Type="int16" Value="1"/>
-									</PropertyList>
-									<ReferenceList>
-										<Reference Name="Target">
-											<ObjectRef Name="RevWindR" ID="{E8B9214E-0C8D-49C3-A4F3-4BAADC328537}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 										</Reference>
 									</ReferenceList>
 								</Action>

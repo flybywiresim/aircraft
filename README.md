@@ -36,6 +36,8 @@ Pilot ID can be found in the Optional Entries section of the Dispatch Options pa
 ## Downloads
 **Warning**: The development (master) and experimental versions have been forked as a separate package/aircraft in MSFS, and will appear separate from the default A320neo. Existing Asobo A320neo liveries will be incompatible with the new package.
 
+**Warning:** The development (master) and experimental versions have been forked as a separate package/aircraft in MSFS, and will appear separate from the default A320neo. Existing Asobo A320neo liveries will be incompatible with the new package.
+
 ### A32NX Installer
 
 Download the new A32NX installer where you can select either the Stable or Developer build, and install the mod directly into your community folder, [download here](https://api.flybywiresim.com/installer) ([source](https://github.com/flybywiresim/installer/)).
