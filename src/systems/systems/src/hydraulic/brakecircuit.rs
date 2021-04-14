@@ -33,7 +33,7 @@ pub struct BrakeActuator {
 impl BrakeActuator {
     const ACTUATOR_BASE_SPEED: f64 = 1.; // movement in percent/100 per second. 1 means 0 to 1 in 1s
     const MIN_PRESSURE_ALLOWED_TO_MOVE_ACTUATOR_PSI: f64 = 100.;
-    const NOMINAL_PRESSURE_FOR_NORMAL_BRAKE_OPERATION_PSI: f64 = 2800.;
+    const NOMINAL_PRESSURE_FOR_NORMAL_BRAKE_OPERATION_PSI: f64 = 1000.;
 
     pub fn new(total_displacement: Volume) -> Self {
         Self {

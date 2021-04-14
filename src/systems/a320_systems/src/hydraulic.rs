@@ -97,7 +97,7 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(19.75),
                 Volume::new::<gallon>(19.81),
                 Volume::new::<gallon>(10.0),
-                Volume::new::<gallon>(3.15),
+                Volume::new::<gallon>(3.25),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
                 Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
@@ -131,14 +131,14 @@ impl A320Hydraulic {
                 "NORM",
                 Volume::new::<gallon>(0.),
                 Volume::new::<gallon>(0.),
-                Volume::new::<gallon>(0.08),
+                Volume::new::<gallon>(0.13),
             ),
 
             braking_circuit_altn: BrakeCircuit::new(
                 "ALTN",
                 Volume::new::<gallon>(1.5),
                 Volume::new::<gallon>(0.0),
-                Volume::new::<gallon>(0.08),
+                Volume::new::<gallon>(0.13),
             ),
 
             total_sim_time_elapsed: Duration::new(0, 0),
