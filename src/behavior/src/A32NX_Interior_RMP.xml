@@ -128,7 +128,7 @@
                     alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
                     alias selectedModeLeft = (L:A32NX_RMP_L_SELECTED_MODE, number);
                     alias selectedModeRight = (L:A32NX_RMP_R_SELECTED_MODE, number);
-					alias annunciatorLight = (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position, number);
+                    alias annunciatorLight = (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position, number);
                     // @todo abnormal defined differently with NAV modes available.
                     let rmpLeftAbnormal = selectedModeLeft != 1;
                     let rmpRightAbnormal = selectedModeRight != 2;
