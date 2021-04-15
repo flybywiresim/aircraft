@@ -94,10 +94,10 @@ impl A320Hydraulic {
                 "YELLOW",
                 false,
                 true,
-                Volume::new::<gallon>(19.75),
+                Volume::new::<gallon>(19.81),
                 Volume::new::<gallon>(19.81),
                 Volume::new::<gallon>(10.0),
-                Volume::new::<gallon>(3.25),
+                Volume::new::<gallon>(3.6),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
                 Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
@@ -137,7 +137,7 @@ impl A320Hydraulic {
             braking_circuit_altn: BrakeCircuit::new(
                 "ALTN",
                 Volume::new::<gallon>(1.5),
-                Volume::new::<gallon>(0.0),
+                Volume::new::<gallon>(0.5),
                 Volume::new::<gallon>(0.13),
             ),
 
@@ -1986,25 +1986,43 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            // Accumulator empty on cold start
-            assert!(test_bed.get_brake_yellow_accumulator_pressure() < Pressure::new::<psi>(50.));
-            // No brakes
+            // Getting accumulator pressure on cold start
+            let mut accumulator_pressure = test_bed.get_brake_yellow_accumulator_pressure();
+
+            // No brakes on green, no more pressure than in accumulator on yellow
             assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(
+                test_bed.get_brake_left_yellow_pressure()
+                    < accumulator_pressure + Pressure::new::<psi>(50.)
+            );
+            assert!(
+                test_bed.get_brake_right_yellow_pressure()
+                    < accumulator_pressure + Pressure::new::<psi>(50.)
+            );
 
-            // No brakes even if we brake
+            // No brakes even if we brake on green, no more than accumulator pressure on yellow
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(100.))
                 .set_right_brake(Ratio::new::<percent>(100.))
-                .run_waiting_for(Duration::from_secs(1));
+                .run_waiting_for(Duration::from_secs(5));
+
+            accumulator_pressure = test_bed.get_brake_yellow_accumulator_pressure();
 
             assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_yellow_accumulator_pressure() < Pressure::new::<psi>(50.));
+            assert!(
+                test_bed.get_brake_left_yellow_pressure()
+                    < accumulator_pressure + Pressure::new::<psi>(50.)
+            );
+            assert!(
+                test_bed.get_brake_right_yellow_pressure()
+                    < accumulator_pressure + Pressure::new::<psi>(50.)
+            );
+            assert!(
+                test_bed.get_brake_yellow_accumulator_pressure()
+                    < accumulator_pressure + Pressure::new::<psi>(50.)
+            );
 
             // Park brake off, loading accumulator, we expect no brake pressure but accumulator loaded
             test_bed = test_bed
@@ -2046,11 +2064,20 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
+            // Getting accumulator pressure on cold start
+            let accumulator_pressure = test_bed.get_brake_yellow_accumulator_pressure();
+
             // No brakes
             assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(
+                test_bed.get_brake_left_yellow_pressure()
+                    < accumulator_pressure + Pressure::new::<psi>(50.)
+            );
+            assert!(
+                test_bed.get_brake_right_yellow_pressure()
+                    < accumulator_pressure + Pressure::new::<psi>(50.)
+            );
 
             test_bed = test_bed
                 .start_eng1(Ratio::new::<percent>(100.))
