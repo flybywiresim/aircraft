@@ -1,10 +1,12 @@
-import { getSimVar } from '../util.js';
+import React from 'react';
+import { useSimVar } from '../Common/simVars';
 
 export const AttitudeIndicatorFixedUpper = () => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_ATT', 'Bool')) {
+    const [attAligned] = useSimVar('L:A32NX_ADIRS_PFD_ALIGNED_ATT', 'Bool');
+
+    if (!attAligned) {
         return null;
     }
-
     return (
         <g id="AttitudeUpperInfoGroup">
             <g id="RollProtGroup" className="NormalStroke Green">
@@ -31,17 +33,18 @@ export const AttitudeIndicatorFixedUpper = () => {
     );
 };
 
-export const AttitudeIndicatorFixedCenter = ({ isOnGround, FDActive, isAttExcessive }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_ATT', 'Bool')) {
+export const AttitudeIndicatorFixedCenter = ({ FDActive, isAttExcessive }) => {
+    const [attAligned] = useSimVar('L:A32NX_ADIRS_PFD_ALIGNED_ATT', 'Bool');
+
+    if (!attAligned) {
         return (
             <text id="AttFailText" className="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
         );
     }
-
     return (
         <g id="AttitudeSymbolsGroup">
             <path className="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
-            <SidestickIndicator isOnGround={isOnGround} />
+            <SidestickIndicator />
             <path className="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
             {!isAttExcessive && (
                 <>
@@ -64,27 +67,27 @@ export const AttitudeIndicatorFixedCenter = ({ isOnGround, FDActive, isAttExcess
 };
 
 const FDYawBar = ({ FDActive }) => {
-    const lateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+    const [lateralMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+
+    const [FDYawCommand] = useSimVar('L:A32NX_FLIGHT_DIRECTOR_YAW', 'number');
+    const offset = -Math.max(Math.min(FDYawCommand, 45), -45) * 0.44;
 
     if (!FDActive || !(lateralMode === 40 || lateralMode === 33 || lateralMode === 34)) {
         return null;
     }
-
-    const FDYawCommand = getSimVar('L:A32NX_FLIGHT_DIRECTOR_YAW', 'number');
-    const offset = -Math.max(Math.min(FDYawCommand, 45), -45) * 0.44;
-
     return (
         <path id="GroundYawSymbol" className="NormalStroke Green" transform={`translate(${offset} 0)`} d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z" />
     );
 };
 
 const FlightDirector = ({ FDActive }) => {
-    if (!FDActive || getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
-        return null;
-    }
-
-    const lateralAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
-    const verticalAPMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+    const [TrkFpaActive] = useSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool');
+    const [lateralAPMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+    const [verticalAPMode] = useSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+    const [FDRollOrder] = useSimVar('L:A32NX_FLIGHT_DIRECTOR_BANK', 'number');
+    const [currentRoll] = useSimVar('PLANE BANK DEGREES', 'degrees');
+    const [FDPitchOrder] = useSimVar('L:A32NX_FLIGHT_DIRECTOR_PITCH', 'number');
+    const [currentPitch] = useSimVar('PLANE PITCH DEGREES', 'degrees');
 
     const showLateralFD = lateralAPMode !== 0 && lateralAPMode !== 34 && lateralAPMode !== 40;
     const showVerticalFD = verticalAPMode !== 0 && verticalAPMode !== 34;
@@ -93,17 +96,16 @@ const FlightDirector = ({ FDActive }) => {
     let FDPitchOffset;
 
     if (showLateralFD) {
-        const FDRollOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_BANK', 'number');
-        const currentRoll = getSimVar('PLANE BANK DEGREES', 'degrees');
         FDRollOffset = Math.min(Math.max(currentRoll - FDRollOrder, -45), 45) * 0.44;
     }
 
     if (showVerticalFD) {
-        const FDPitchOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_PITCH', 'number');
-        const currentPitch = -getSimVar('PLANE PITCH DEGREES', 'degrees');
-        FDPitchOffset = Math.min(Math.max(FDPitchOrder + currentPitch, -22.5), 22.5) * 0.89;
+        FDPitchOffset = Math.min(Math.max(FDPitchOrder - currentPitch, -22.5), 22.5) * 0.89;
     }
 
+    if (!FDActive || TrkFpaActive) {
+        return null;
+    }
     return (
         <>
             <g className="ThickOutline">
@@ -122,20 +124,26 @@ const FlightDirector = ({ FDActive }) => {
     );
 };
 
-const SidestickIndicator = ({ isOnGround }) => {
-    const oneEngineRunning = getSimVar('GENERAL ENG COMBUSTION:1', 'bool') || getSimVar('GENERAL ENG COMBUSTION:2', 'bool');
+const SidestickIndicator = () => {
+    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool');
+    const [eng1Comb] = useSimVar('GENERAL ENG COMBUSTION:1', 'bool');
+    const [eng2Comb] = useSimVar('GENERAL ENG COMBUSTION:2', 'bool');
+
+    const [SidestickPosX] = useSimVar('L:A32NX_SIDESTICK_POSITION_X', 'number');
+    const [SidestickPosY] = useSimVar('L:A32NX_SIDESTICK_POSITION_Y', 'number');
+
+    const oneEngineRunning = eng1Comb || eng2Comb;
     if (!isOnGround || !oneEngineRunning) {
         return null;
     }
-
-    const SidestickPosX = getSimVar('L:A32NX_SIDESTICK_POSITION_X', 'number') * 29.56;
-    const SidestickPosY = -getSimVar('L:A32NX_SIDESTICK_POSITION_Y', 'number') * 23.02;
-
     return (
         <g id="GroundCursorGroup" className="NormalStroke White">
             <path id="GroundCursorBorders" d="m92.327 103.75h6.0441v-6.0476m-58.93 0v6.0476h6.0441m46.842-45.861h6.0441v6.0476m-58.93 0v-6.0476h6.0441" />
-            {/* eslint-disable-next-line max-len */}
-            <path id="GroundCursorCrosshair" transform={`translate(${SidestickPosX} ${SidestickPosY})`} d="m73.994 81.579h-4.3316v4.3341m-5.8426-4.3341h4.3316v4.3341m5.8426-5.846h-4.3316v-4.3341m-5.8426 4.3341h4.3316v-4.3341" />
+            <path
+                id="GroundCursorCrosshair"
+                transform={`translate(${SidestickPosX * 29.56} ${-SidestickPosY * 23.02})`}
+                d="m73.994 81.579h-4.3316v4.3341m-5.8426-4.3341h4.3316v4.3341m5.8426-5.846h-4.3316v-4.3341m-5.8426 4.3341h4.3316v-4.3341"
+            />
         </g>
     );
 };

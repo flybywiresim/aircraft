@@ -1,5 +1,6 @@
-import { HorizontalTape, getSmallestAngle } from './PFDUtils.jsx';
-import { getSimVar } from '../util.js';
+import React from 'react';
+import { HorizontalTape, getSmallestAngle } from './PFDUtils';
+import { useSimVar } from '../Common/simVars';
 
 const DisplayRange = 24;
 const DistanceSpacing = 7.555;
@@ -37,24 +38,34 @@ const GraduationElement = (heading, offset) => {
     );
 };
 
-export const HeadingTape = ({ heading }) => {
-    if (getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum') !== 2) {
-        return null;
-    }
+export const HeadingTape = () => {
+    const [adirsState] = useSimVar('L:A320_Neo_ADIRS_STATE', 'Enum');
+    const [heading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
 
     const bugs = [];
 
+    if (adirsState !== 2) {
+        return null;
+    }
     return (
         <g>
             <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" className="TapeBackground" />
-            {/* eslint-disable-next-line max-len */}
-            <HorizontalTape heading={heading} graduationElementFunction={GraduationElement} bugs={bugs} displayRange={DisplayRange + 3} valueSpacing={ValueSpacing} distanceSpacing={DistanceSpacing} />
+            <HorizontalTape
+                heading={heading}
+                graduationElementFunction={GraduationElement}
+                bugs={bugs}
+                displayRange={DisplayRange + 3}
+                valueSpacing={ValueSpacing}
+                distanceSpacing={DistanceSpacing}
+            />
         </g>
     );
 };
 
-export const HeadingOfftape = ({ selectedHeading, heading, ILSCourse, groundTrack }) => {
-    if (getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum') !== 2) {
+export const HeadingOfftape = ({ selectedHeading, ILSCourse }) => {
+    const [adirsState] = useSimVar('L:A320_Neo_ADIRS_STATE', 'Enum');
+
+    if (adirsState !== 2) {
         return (
             <>
                 <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" className="TapeBackground" />
@@ -63,19 +74,20 @@ export const HeadingOfftape = ({ selectedHeading, heading, ILSCourse, groundTrac
             </>
         );
     }
-
     return (
         <g id="HeadingOfftapeGroup">
             <path id="HeadingTapeOutline" className="NormalStroke White" d="m32.138 156.23v-10.886h73.536v10.886" />
-            <SelectedHeading heading={heading} selectedHeading={selectedHeading} />
-            <QFUIndicator heading={heading} ILSCourse={ILSCourse} />
+            <SelectedHeading selectedHeading={selectedHeading} />
+            <QFUIndicator ILSCourse={ILSCourse} />
             <path className="Fill Yellow" d="m69.61 147.31h-1.5119v-8.0635h1.5119z" />
-            <GroundTrackBug groundTrack={groundTrack} heading={heading} />
+            <GroundTrackBug />
         </g>
     );
 };
 
-const SelectedHeading = ({ selectedHeading, heading }) => {
+const SelectedHeading = ({ selectedHeading }) => {
+    const [heading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
+
     if (Number.isNaN(selectedHeading)) {
         return null;
     }
@@ -98,7 +110,10 @@ const SelectedHeading = ({ selectedHeading, heading }) => {
     );
 };
 
-const GroundTrackBug = ({ heading, groundTrack }) => {
+const GroundTrackBug = () => {
+    const [heading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
+    const [groundTrack] = useSimVar('GPS GROUND MAGNETIC TRACK', 'degrees');
+
     const offset = getSmallestAngle(groundTrack, heading) * DistanceSpacing / ValueSpacing;
     return (
         <g id="ActualTrackIndicator" transform={`translate(${offset} 0)`}>
@@ -108,11 +123,13 @@ const GroundTrackBug = ({ heading, groundTrack }) => {
     );
 };
 
-const QFUIndicator = ({ ILSCourse, heading }) => {
-    if (Number.isNaN(ILSCourse) || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {
+const QFUIndicator = ({ ILSCourse }) => {
+    const [hasLocalizer] = useSimVar('NAV HAS LOCALIZER:3', 'Bool');
+    const [heading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
+
+    if (Number.isNaN(ILSCourse) || !hasLocalizer) {
         return null;
     }
-
     const delta = getSmallestAngle(ILSCourse, heading);
     const text = Math.round(ILSCourse).toString().padStart(3, '0');
     if (Math.abs(delta) > DisplayRange) {
@@ -131,7 +148,6 @@ const QFUIndicator = ({ ILSCourse, heading }) => {
             </g>
         );
     }
-
     const offset = getSmallestAngle(ILSCourse, heading) * DistanceSpacing / ValueSpacing;
     return (
         <g id="ILSCoursePointer" transform={`translate(${offset} 0)`}>

@@ -1,4 +1,7 @@
-const TensDigits = (value, offset, color) => {
+import React from 'react';
+import { useSimVar } from '../Common/simVars';
+
+const TensDigits = (value: number, offset: number, color: string) => {
     let text;
     if (value < 0) {
         text = (value + 100).toString();
@@ -13,7 +16,7 @@ const TensDigits = (value, offset, color) => {
     );
 };
 
-const HundredsDigit = (value, offset, color) => {
+const HundredsDigit = (value: number, offset: number, color: string) => {
     let text;
     if (value < 0) {
         text = (value + 1).toString();
@@ -27,7 +30,7 @@ const HundredsDigit = (value, offset, color) => {
         <text transform={`translate(0 ${offset})`} className={`FontLargest MiddleAlign ${color}`} x="11.431" y="7.1">{text}</text>
     );
 };
-const ThousandsDigit = (value, offset, color) => {
+const ThousandsDigit = (value: number, offset: number, color: string) => {
     let text;
     if (!Number.isNaN(value)) {
         text = (value % 10).toString();
@@ -38,7 +41,7 @@ const ThousandsDigit = (value, offset, color) => {
         <text transform={`translate(0 ${offset})`} className={`FontLargest MiddleAlign ${color}`} x="6.98" y="7.1">{text}</text>
     );
 };
-const TenThousandsDigit = (value, offset, color) => {
+const TenThousandsDigit = (value: number, offset: number, color: string) => {
     let text;
     if (!Number.isNaN(value)) {
         text = value.toString();
@@ -50,7 +53,10 @@ const TenThousandsDigit = (value, offset, color) => {
     );
 };
 
-export const DigitalAltitudeReadout = ({ altitude, MDA }) => {
+export const DigitalAltitudeReadout = () => {
+    const [altitude] = useSimVar('INDICATED ALTITUDE', 'feet');
+    const [MDA] = useSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
+
     const isNegative = altitude < 0;
 
     const color = (MDA !== 0 && altitude < MDA) ? 'Amber' : 'Green';
@@ -82,10 +88,26 @@ export const DigitalAltitudeReadout = ({ altitude, MDA }) => {
         <g id="AltReadoutGroup">
             <g>
                 <svg x="117.754" y="76.3374" width="13.5" height="8.9706" viewBox="0 0 13.5 8.9706">
-                    {/* eslint-disable-next-line max-len */}
-                    <Drum position={TenThousandsPosition} value={TenThousandsValue} color={color} showZero={false} elementFunction={TenThousandsDigit} valueSpacing={1} distanceSpacing={7} displayRange={1} />
-                    {/* eslint-disable-next-line max-len */}
-                    <Drum position={ThousandsPosition} value={ThousandsValue} color={color} showZero={showThousandsZero} elementFunction={ThousandsDigit} valueSpacing={1} distanceSpacing={7} displayRange={1} />
+                    <Drum
+                        position={TenThousandsPosition}
+                        value={TenThousandsValue}
+                        color={color}
+                        showZero={false}
+                        elementFunction={TenThousandsDigit}
+                        valueSpacing={1}
+                        distanceSpacing={7}
+                        displayRange={1}
+                    />
+                    <Drum
+                        position={ThousandsPosition}
+                        value={ThousandsValue}
+                        color={color}
+                        showZero={showThousandsZero}
+                        elementFunction={ThousandsDigit}
+                        valueSpacing={1}
+                        distanceSpacing={7}
+                        displayRange={1}
+                    />
                     <Drum position={HundredsPosition} value={HundredsValue} color={color} elementFunction={HundredsDigit} valueSpacing={1} distanceSpacing={7} displayRange={1} />
                 </svg>
                 <svg x="130.85" y="73.6664" width="8.8647" height="14.313" viewBox="0 0 8.8647 14.313">
@@ -119,7 +141,7 @@ const Drum = ({ displayRange, valueSpacing, distanceSpacing, position, value, co
         highestValue -= valueSpacing;
     }
 
-    const graduationElements = [];
+    const graduationElements: (() => any)[] = [];
 
     for (let i = 0; i < numTicks; i++) {
         const elementPosition = highestPosition - i * valueSpacing;

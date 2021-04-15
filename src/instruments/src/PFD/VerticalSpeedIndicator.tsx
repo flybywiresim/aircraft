@@ -1,21 +1,13 @@
-import { getSimVar } from '../util.js';
+import React from 'react';
+import { useSimVar } from '../Common/simVars';
 
-export const VerticalSpeedIndicator = ({ radioAlt }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
-        return (
-            <>
-                <path className="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />
-                <g id="VSpeedFailText">
-                    <text className="Blink9Seconds FontLargest Red EndAlign" x="153.13206" y="77.501472">V</text>
-                    <text className="Blink9Seconds FontLargest Red EndAlign" x="153.13406" y="83.211388">/</text>
-                    <text className="Blink9Seconds FontLargest Red EndAlign" x="152.99374" y="88.870819">S</text>
-                </g>
-            </>
-        );
-    }
+export const VerticalSpeedIndicator = () => {
+    const [alignedFirst] = useSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool');
 
     // This represents inertial vertical speed
-    const verticalSpeed = getSimVar('VELOCITY WORLD Y', 'feet per minute');
+    const [verticalSpeed] = useSimVar('VELOCITY WORLD Y', 'feet per minute');
+
+    const [radioAlt] = useSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet');
 
     let isAmber = false;
     if ((Math.abs(verticalSpeed) > 6000 || (radioAlt < 2500 && radioAlt > 1000 && verticalSpeed < -2000) || (radioAlt < 1000 && verticalSpeed < -1200))) {
@@ -37,6 +29,18 @@ export const VerticalSpeedIndicator = ({ radioAlt }) => {
         yOffset = sign * -47.37;
     }
 
+    if (!alignedFirst) {
+        return (
+            <>
+                <path className="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />
+                <g id="VSpeedFailText">
+                    <text className="Blink9Seconds FontLargest Red EndAlign" x="153.13206" y="77.501472">V</text>
+                    <text className="Blink9Seconds FontLargest Red EndAlign" x="153.13406" y="83.211388">/</text>
+                    <text className="Blink9Seconds FontLargest Red EndAlign" x="152.99374" y="88.870819">S</text>
+                </g>
+            </>
+        );
+    }
     return (
         <g>
             <path className="TapeBackground" d="m151.84 131.72 4.1301-15.623v-70.556l-4.1301-15.623h-5.5404v101.8z" />

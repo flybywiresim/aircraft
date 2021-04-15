@@ -1,6 +1,7 @@
-import { VerticalTape } from './PFDUtils.jsx';
-import { DigitalAltitudeReadout } from './DigitalAltitudeReadout.jsx';
-import { getSimVar } from '../util.js';
+import React from 'react';
+import { VerticalTape } from './PFDUtils';
+import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
+import { useSimVar } from '../Common/simVars';
 
 const DisplayRange = 570;
 const ValueSpacing = 100;
@@ -24,12 +25,15 @@ const GraduationElement = (alt, offset) => {
     );
 };
 
-const LandingElevationIndicator = ({ altitude, FWCFlightPhase }) => {
+const LandingElevationIndicator = () => {
+    const [altitude] = useSimVar('INDICATED ALTITUDE', 'feet');
+    const [landingElevation] = useSimVar('C:fs9gps:FlightPlanDestinationAltitude', 'feet');
+    const [FWCFlightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
+
     if (FWCFlightPhase !== 7 && FWCFlightPhase !== 8) {
         return null;
     }
 
-    const landingElevation = getSimVar('C:fs9gps:FlightPlanDestinationAltitude', 'feet');
     const delta = altitude - landingElevation;
     if (delta > DisplayRange) {
         return null;
@@ -41,7 +45,8 @@ const LandingElevationIndicator = ({ altitude, FWCFlightPhase }) => {
     );
 };
 
-const RadioAltIndicator = ({ radioAlt }) => {
+const RadioAltIndicator = () => {
+    const [radioAlt] = useSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet');
     if (radioAlt > DisplayRange) {
         return null;
     }
@@ -52,27 +57,39 @@ const RadioAltIndicator = ({ radioAlt }) => {
     );
 };
 
-export const AltitudeIndicator = ({ altitude, FWCFlightPhase }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+export const AltitudeIndicator = () => {
+    const [alignedFirst] = useSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool');
+    const [altitude] = useSimVar('INDICATED ALTITUDE', 'feet');
+
+    const bugs = [];
+
+    if (!alignedFirst) {
         return (
             <AltTapeBackground />
         );
     }
-
-    const bugs = [];
-
     return (
         <g>
             <AltTapeBackground />
-            <LandingElevationIndicator altitude={altitude} FWCFlightPhase={FWCFlightPhase} />
-            {/* eslint-disable-next-line max-len */}
-            <VerticalTape tapeValue={altitude} graduationElementFunction={GraduationElement} bugs={bugs} displayRange={DisplayRange + 30} valueSpacing={ValueSpacing} distanceSpacing={DistanceSpacing} lowerLimit={-1500} upperLimit={50000} />
+            <LandingElevationIndicator />
+            <VerticalTape
+                tapeValue={altitude}
+                graduationElementFunction={GraduationElement}
+                bugs={bugs}
+                displayRange={DisplayRange + 30}
+                valueSpacing={ValueSpacing}
+                distanceSpacing={DistanceSpacing}
+                lowerLimit={-1500}
+                upperLimit={50000}
+            />
         </g>
     );
 };
 
-export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManaged, mode, radioAlt }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+export const AltitudeIndicatorOfftape = ({ targetAlt, altIsManaged }) => {
+    const [alignedFirst] = useSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool');
+
+    if (!alignedFirst) {
         return (
             <>
                 <path id="AltTapeOutline" className="NormalStroke Red" d="m117.75 123.56h13.096v-85.473h-13.096" />
@@ -81,17 +98,16 @@ export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManage
             </>
         );
     }
-
     return (
         <g>
             <path id="AltTapeOutline" className="NormalStroke White" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />
-            <LinearDeviationIndicator alt={altitude} linearDeviation={NaN} />
-            <SelectedAltIndicator currentAlt={altitude} targetAlt={targetAlt} altIsManaged={altIsManaged} mode={mode} />
-            <AltimeterIndicator mode={mode} />
-            <MetricAltIndicator altitude={altitude} MDA={MDA} targetAlt={targetAlt} altIsManaged={altIsManaged} />
+            <LinearDeviationIndicator />
+            <SelectedAltIndicator targetAlt={targetAlt} altIsManaged={altIsManaged} />
+            <AltimeterIndicator />
+            <MetricAltIndicator targetAlt={targetAlt} altIsManaged={altIsManaged} />
             <path id="AltReadoutBackground" className="BlackFill" d="m130.85 85.308h-13.13v-8.9706h13.13v-2.671h8.8647v14.313h-8.8647z" />
-            <RadioAltIndicator radioAlt={radioAlt} />
-            <DigitalAltitudeReadout altitude={altitude} MDA={MDA} />
+            <RadioAltIndicator />
+            <DigitalAltitudeReadout />
         </g>
     );
 };
@@ -100,10 +116,13 @@ const AltTapeBackground = () => (
     <path id="AltTapeBackground" d="m130.85 123.56h-13.096v-85.473h13.096z" className="TapeBackground" />
 );
 
-const SelectedAltIndicator = ({ currentAlt, targetAlt, altIsManaged, mode }) => {
+const SelectedAltIndicator = ({ targetAlt, altIsManaged }) => {
+    const [currentAlt] = useSimVar('INDICATED ALTITUDE', 'feet');
+    const [mode] = useSimVar('L:XMLVAR_Baro1_Mode', 'number');
+
     const color = altIsManaged ? 'Magenta' : 'Cyan';
 
-    const isSTD = mode === 'STD';
+    const isSTD = mode === 3;
     let boxLength = 19.14;
     let text = '';
     if (isSTD) {
@@ -141,7 +160,10 @@ const SelectedAltIndicator = ({ currentAlt, targetAlt, altIsManaged, mode }) => 
     );
 };
 
-const LinearDeviationIndicator = ({ linearDeviation, alt }) => {
+const LinearDeviationIndicator = () => {
+    const linearDeviation = NaN;
+    const [alt] = useSimVar('INDICATED ALTITUDE', 'feet');
+
     if (Number.isNaN(linearDeviation)) {
         return null;
     }
@@ -162,8 +184,12 @@ const LinearDeviationIndicator = ({ linearDeviation, alt }) => {
     );
 };
 
-const AltimeterIndicator = ({ mode }) => {
-    if (mode === 'STD') {
+const AltimeterIndicator = () => {
+    const [mode] = useSimVar('L:XMLVAR_Baro1_Mode', 'number');
+    const [unitHpa] = useSimVar('L:XMLVAR_Baro_Selector_HPA_1', 'Bool');
+    const [pressure] = useSimVar('KOHLSMAN SETTING HG', unitHpa ? 'millibar' : 'inches of mercury');
+
+    if (mode === 3) {
         return (
             <g id="STDAltimeterModeGroup">
                 <path className="NormalStroke Yellow" d="m124.79 131.74h13.096v7.0556h-13.096z" />
@@ -172,10 +198,17 @@ const AltimeterIndicator = ({ mode }) => {
         );
     }
 
-    const units = Simplane.getPressureSelectedUnits();
-    const pressure = Simplane.getPressureValue(units);
+    let modeText;
+    if (mode === 0) {
+        modeText = 'QFE';
+    } else if (mode === 1) {
+        modeText = 'QNH';
+    } else {
+        modeText = 'STD';
+    }
+
     let text;
-    if (units === 'millibar') {
+    if (unitHpa) {
         text = Math.round(pressure).toString();
     } else {
         text = pressure.toFixed(2);
@@ -183,15 +216,19 @@ const AltimeterIndicator = ({ mode }) => {
 
     return (
         <g id="AltimeterGroup">
-            {mode === 'QFE'
+            {mode === 0
             && <path className="NormalStroke White" d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z" />}
-            <text id="AltimeterModeText" className="FontMedium White" x="118.29047" y="138.03368">{mode}</text>
+            <text id="AltimeterModeText" className="FontMedium White" x="118.29047" y="138.03368">{modeText}</text>
             <text id="AltimeterSettingText" className="FontMedium MiddleAlign Cyan" x="140.86115" y="138.03368">{text}</text>
         </g>
     );
 };
 
-const MetricAltIndicator = ({ altitude, MDA, targetAlt, altIsManaged }) => {
+const MetricAltIndicator = ({ targetAlt, altIsManaged }) => {
+    const [showMetricAlt] = useSimVar('L:A32NX_METRIC_ALT_TOGGLE', 'bool');
+    const [MDA] = useSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
+    const [altitude] = useSimVar('INDICATED ALTITUDE', 'feet');
+
     const currentMetricAlt = Math.round(altitude * 0.3048 / 10) * 10;
 
     const targetMetric = Math.round(targetAlt * 0.3048 / 10) * 10;
@@ -199,7 +236,6 @@ const MetricAltIndicator = ({ altitude, MDA, targetAlt, altIsManaged }) => {
 
     const currentMetricAltColor = altitude > MDA ? 'Green' : 'Amber';
 
-    const showMetricAlt = getSimVar('L:A32NX_METRIC_ALT_TOGGLE', 'bool');
     if (!showMetricAlt) {
         return null;
     }

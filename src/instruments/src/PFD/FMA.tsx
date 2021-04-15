@@ -1,13 +1,16 @@
-import { Component } from 'react';
-import { createDeltaTimeCalculator, getSimVar, renderTarget } from '../util.js';
+import React, { Component } from 'react';
+import { useSimVar } from '../Common/simVars';
+// @ts-ignore
+import { createDeltaTimeCalculator, renderTarget } from '../util.js';
 
 export const FMA = ({ isAttExcessive }) => {
-    const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+    const [activeLateralMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
     const sharedModeActive = activeLateralMode === 32 || activeLateralMode === 33 || activeLateralMode === 34;
-    const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
-    const BC3Message = getSimVar('L:A32NX_BC3Message', 'enum');
-    const AB3Message = (getSimVar('L:A32NX_MachPreselVal', 'mach') !== -1
-        || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && BC3Message === 0 && engineMessage === 0;
+    const [engineMessage] = useSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
+    const [BC3Message] = useSimVar('L:A32NX_BC3Message', 'enum');
+    const [MachPresel] = useSimVar('L:A32NX_MachPreselVal', 'mach');
+    const [SpeedPresel] = useSimVar('L:A32NX_SpeedPreselVal', 'knots');
+    const AB3Message = (MachPresel !== -1 || SpeedPresel !== -1) && BC3Message === 0 && engineMessage === 0;
 
     let secondBorder;
     if (sharedModeActive && !isAttExcessive) {
@@ -79,7 +82,8 @@ const Row3 = ({ isAttExcessive }) => (
 );
 
 const A1A2Cell = () => {
-    const AThrMode = getSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum');
+    const [AThrMode] = useSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum');
+    const [FlexTemp] = useSimVar('L:AIRLINER_TO_FLEX_TEMP', 'number');
 
     let text;
 
@@ -101,8 +105,8 @@ const A1A2Cell = () => {
             </g>
         );
     case 3: {
-        const FlexTemp = Math.round(getSimVar('L:AIRLINER_TO_FLEX_TEMP', 'number'));
-        const FlexText = FlexTemp >= 0 ? (`+${FlexTemp}`) : FlexTemp.toString();
+        const FlexTemp2 = Math.round(FlexTemp);
+        const FlexText = FlexTemp2 >= 0 ? (`+${FlexTemp2}`) : FlexTemp2.toString();
         return (
             <g>
                 <path className="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
@@ -185,7 +189,7 @@ const A1A2Cell = () => {
 };
 
 const A3Cell = () => {
-    const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
+    const [engineMessage] = useSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
 
     let text;
     let className;
@@ -220,17 +224,19 @@ const A3Cell = () => {
 };
 
 const AB3Cell = () => {
-    if (getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum') !== 0) {
+    const [engineMessage] = useSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
+    const [machPresel] = useSimVar('L:A32NX_MachPreselVal', 'mach');
+    const [spdPresel] = useSimVar('L:A32NX_SpeedPreselVal', 'knots');
+
+    if (engineMessage !== 0) {
         return null;
     }
-    const machPresel = getSimVar('L:A32NX_MachPreselVal', 'mach');
     if (machPresel !== -1) {
         const text = machPresel.toFixed(2);
         return (
             <text className="FontMedium MiddleAlign Cyan" x="35.275196" y="21.616354">{`MACH SEL ${text}`}</text>
         );
     }
-    const spdPresel = getSimVar('L:A32NX_SpeedPreselVal', 'knots');
     if (spdPresel !== -1) {
         const text = Math.round(spdPresel);
         return (
@@ -241,10 +247,14 @@ const AB3Cell = () => {
 };
 
 const B1Cell = () => {
-    const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+    const [activeVerticalMode] = useSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+    const [altCrzMode] = useSimVar('L:A32NX_FMA_CRUISE_ALT_MODE', 'Bool');
+    const [FPATarget] = useSimVar('L:A32NX_AUTOPILOT_FPA_SELECTED', 'Degree');
+    const [VSTarget] = useSimVar('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
+    const [expedMode] = useSimVar('L:A32NX_FMA_EXPEDITE_MODE', 'bool');
+    const [inProtection] = useSimVar('L:A32NX_FMA_SPEED_PROTECTION_MODE', 'bool');
 
     let text;
-    let inProtection = false;
 
     switch (activeVerticalMode) {
     case 31:
@@ -273,7 +283,7 @@ const B1Cell = () => {
         text = 'DES';
         break;
     case 13:
-        if (getSimVar('L:A32NX_FMA_EXPEDITE_MODE', 'bool')) {
+        if (expedMode) {
             text = 'EXP DES';
         } else {
             text = 'OP DES';
@@ -283,14 +293,14 @@ const B1Cell = () => {
         text = 'CLB';
         break;
     case 12:
-        if (getSimVar('L:A32NX_FMA_EXPEDITE_MODE', 'bool')) {
+        if (expedMode) {
             text = 'EXP CLB';
         } else {
             text = 'OP CLB';
         }
         break;
     case 10:
-        if (getSimVar('L:A32NX_FMA_CRUISE_ALT_MODE', 'Bool')) {
+        if (altCrzMode) {
             text = 'ALT CRZ';
         } else {
             text = 'ALT';
@@ -309,22 +319,18 @@ const B1Cell = () => {
     //     text = 'ALT CRZ';
     //     break;
     case 15: {
-        const FPA = getSimVar('L:A32NX_AUTOPILOT_FPA_SELECTED', 'Degree');
-        inProtection = getSimVar('L:A32NX_FMA_SPEED_PROTECTION_MODE', 'bool');
-        const FPAText = `${(FPA >= 0 ? '+' : '')}${(Math.round(FPA * 10) / 10).toFixed(1)}°`;
+        const FPAText = `${(FPATarget >= 0 ? '+' : '')}${(Math.round(FPATarget * 10) / 10).toFixed(1)}°`;
 
         text = (
             <>
                 <tspan>FPA</tspan>
-                <tspan className={`${inProtection ? 'PulseCyanFill' : 'Cyan'}`} xmlSpace="preserve">{FPAText}</tspan>
+                <tspan className={`${inProtection ? 'PulseCyanFill' : 'Cyan'}`}>{FPAText}</tspan>
             </>
         );
         break;
     }
     case 14: {
-        const VS = getSimVar('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
-        inProtection = getSimVar('L:A32NX_FMA_SPEED_PROTECTION_MODE', 'bool');
-        const VSText = `${(VS >= 0 ? '+' : '')}${Math.round(VS).toString()}`.padStart(5, ' ');
+        const VSText = `${(VSTarget >= 0 ? '+' : '')}${Math.round(VSTarget).toString()}`.padStart(5, ' ');
 
         text = (
             <>
@@ -351,7 +357,7 @@ const B1Cell = () => {
 };
 
 const B2Cell = () => {
-    const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
+    const [armedVerticalBitmask] = useSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
 
     const altArmed = (armedVerticalBitmask >> 0) & 1;
     const altCstArmed = (armedVerticalBitmask >> 1) & 1;
@@ -398,7 +404,7 @@ const B2Cell = () => {
 };
 
 const C1Cell = () => {
-    const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+    const [activeLateralMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
 
     let text;
     switch (activeLateralMode) {
@@ -456,7 +462,7 @@ const C1Cell = () => {
 };
 
 const C2Cell = () => {
-    const armedLateralBitmask = getSimVar('L:A32NX_FMA_LATERAL_ARMED', 'number');
+    const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'number');
 
     const navArmed = (armedLateralBitmask >> 0) & 1;
     const locArmed = (armedLateralBitmask >> 1) & 1;
@@ -485,7 +491,7 @@ const C2Cell = () => {
 };
 
 const BC1Cell = () => {
-    const SharedAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
+    const [SharedAPMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
 
     let text;
     switch (SharedAPMode) {
@@ -516,10 +522,10 @@ const BC1Cell = () => {
 };
 
 const D1D2Cell = () => {
-    const approachCapability = getSimVar('L:A32NX_ApproachCapability', 'enum');
+    const [approachCapability] = useSimVar('L:A32NX_ApproachCapability', 'enum');
 
     let text1;
-    let text2 = null;
+    let text2: string | null = null;
     switch (approachCapability) {
     case 1:
         text1 = 'CAT1';
@@ -570,8 +576,9 @@ const D1D2Cell = () => {
 };
 
 const D3Cell = () => {
-    const MDA = getSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
-    let text = null;
+    const [MDA] = useSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
+    const [DH] = useSimVar('L:AIRLINER_DECISION_HEIGHT', 'feet');
+    let text;
     let fontSize = 'FontSmallest';
     if (MDA !== 0) {
         const MDAText = Math.round(MDA).toString().padStart(6, ' ');
@@ -581,20 +588,17 @@ const D3Cell = () => {
                 <tspan className="Cyan" xmlSpace="preserve">{MDAText}</tspan>
             </>
         );
-    } else {
-        const DH = getSimVar('L:AIRLINER_DECISION_HEIGHT', 'feet');
-        if (DH !== -1 && DH !== -2) {
-            const DHText = Math.round(DH).toString().padStart(4, ' ');
-            text = (
-                <>
-                    <tspan>RADIO</tspan>
-                    <tspan className="Cyan" xmlSpace="preserve">{DHText}</tspan>
-                </>
-            );
-        } else if (DH === -2) {
-            text = 'NO DH';
-            fontSize = 'FontMedium';
-        }
+    } else if (DH !== -1 && DH !== -2) {
+        const DHText = Math.round(DH).toString().padStart(4, ' ');
+        text = (
+            <>
+                <tspan>RADIO</tspan>
+                <tspan className="Cyan" xmlSpace="preserve">{DHText}</tspan>
+            </>
+        );
+    } else if (DH === -2) {
+        text = 'NO DH';
+        fontSize = 'FontMedium';
     }
 
     return (
@@ -603,8 +607,8 @@ const D3Cell = () => {
 };
 
 const E1Cell = () => {
-    const AP1Engaged = getSimVar('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool');
-    const AP2Engaged = getSimVar('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool');
+    const [AP1Engaged] = useSimVar('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool');
+    const [AP2Engaged] = useSimVar('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool');
 
     let text;
     let id = 0;
@@ -632,10 +636,12 @@ const E1Cell = () => {
 };
 
 const E2Cell = () => {
-    const FD1Active = getSimVar('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', 'bool');
-    const FD2Active = getSimVar('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', 'bool');
+    const [FD1Active] = useSimVar('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', 'bool');
+    const [FD2Active] = useSimVar('AUTOPILOT FLIGHT DIRECTOR ACTIVE:2', 'bool');
+    const [AP1Engaged] = useSimVar('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool');
+    const [AP2Engaged] = useSimVar('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool');
 
-    if (!FD1Active && !FD2Active && !getSimVar('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool') && !getSimVar('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool')) {
+    if (!FD1Active && !FD2Active && !AP1Engaged && !AP2Engaged) {
         return null;
     }
 
@@ -646,7 +652,7 @@ const E2Cell = () => {
 };
 
 const E3Cell = () => {
-    const status = getSimVar('L:A32NX_AUTOTHRUST_STATUS', 'enum');
+    const [status] = useSimVar('L:A32NX_AUTOTHRUST_STATUS', 'enum');
 
     let color;
     let id = 0;
@@ -673,20 +679,35 @@ const E3Cell = () => {
     );
 };
 
-class ShowForSeconds extends Component {
-    constructor(props) {
+interface Props {
+    timer: number,
+    id: number
+}
+
+interface State {
+    Timer: number
+}
+
+class ShowForSeconds extends Component<Props, State> {
+    PrevID: number;
+
+    GetDeltaTime: () => any;
+
+    Update: () => any;
+
+    constructor(props: Props) {
         super(props);
 
-        this.Timer = this.props.timer || 10;
+        this.state = { Timer: (props.timer || 10) };
         this.PrevID = NaN;
 
         this.GetDeltaTime = createDeltaTimeCalculator();
         const updateFunction = () => {
             const deltaTime = this.GetDeltaTime();
-            if (this.Timer > 0) {
-                this.Timer -= deltaTime / 1000;
+            const timer = this.state.Timer;
+            if (timer > 0) {
+                this.setState({ Timer: timer - deltaTime / 1000 });
             }
-            this.forceUpdate();
         };
         this.Update = updateFunction.bind(this);
     }
@@ -695,11 +716,12 @@ class ShowForSeconds extends Component {
         renderTarget.parentElement.addEventListener('update', this.Update);
     }
 
-    shouldComponentUpdate(nextProps, _nextState, _nextContext) {
+    shouldComponentUpdate(nextProps: Props, _nextState: any, _nextContext: any): boolean {
         if (this.PrevID !== nextProps.id) {
             this.PrevID = nextProps.id;
-            this.Timer = nextProps.timer || 10;
+            this.setState({ Timer: (nextProps.timer || 10) });
         }
+        return true;
     }
 
     componentWillUnmount() {
@@ -707,7 +729,7 @@ class ShowForSeconds extends Component {
     }
 
     render() {
-        if (this.Timer > 0) {
+        if (this.state.Timer > 0) {
             return (
                 this.props.children
             );

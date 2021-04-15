@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { VerticalTape, BarberpoleIndicator } from './PFDUtils.jsx';
-import { getSimVar } from '../util.js';
+import React, { useEffect, useState } from 'react';
+import { VerticalTape, BarberpoleIndicator, SmoothSin } from './PFDUtils';
+import { useSimVar } from '../Common/simVars';
+import { useUpdate } from '../Common/hooks';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
@@ -74,21 +75,47 @@ const VProtBug = (offset) => (
     </g>
 );
 
-export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude, VLs, VMax, showBars }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
-        return (
-            <>
-                <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
-                <text id="SpeedFailText" className="Blink9Seconds FontLargest EndAlign Red" x="17.756115" y="83.386398">SPD</text>
-                <SpeedTapeOutline airspeed={100} isRed />
-            </>
-        );
-    }
+const VlsSmoother = new SmoothSin(0.5);
 
-    const ValphaProtection = getSimVar('L:A32NX_SPEEDS_ALPHA_PROTECTION', 'number');
-    const ValphaMax = getSimVar('L:A32NX_SPEEDS_ALPHA_MAX', 'number');
+export const AirspeedIndicator = ({ airspeed, airspeedAcc }) => {
+    const [alignedFirst] = useSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool');
+    const [FWCFlightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
+    const [altitude] = useSimVar('INDICATED ALTITUDE', 'feet');
+    const [flapsHandleIndex] = useSimVar('L:A32NX_FLAPS_HANDLE_INDEX', 'Number');
+    const [v1Speed] = useSimVar('L:AIRLINER_V1_SPEED', 'knots');
+    const [vrSpeed] = useSimVar('L:AIRLINER_VR_SPEED', 'knots');
+    const [greenDotSpeed] = useSimVar('L:A32NX_SPEEDS_GD', 'number');
+    const [sSpeed] = useSimVar('L:A32NX_SPEEDS_S', 'number');
+    const [fSpeed] = useSimVar('L:A32NX_SPEEDS_F', 'number');
+    const [vFeNext] = useSimVar('L:A32NX_SPEEDS_VFEN', 'number');
+    const [VMax] = useSimVar('L:A32NX_SPEEDS_VMAX', 'number');
+    const [ValphaMax] = useSimVar('L:A32NX_SPEEDS_ALPHA_MAX', 'number');
+    const [ValphaProtection] = useSimVar('L:A32NX_SPEEDS_ALPHA_PROTECTION', 'number');
+    const [VLs] = useSimVar('L:A32NX_SPEEDS_VLS', 'number');
+    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool');
 
-    const bugs = [];
+    const [showBarsTimer, setShowBarsTimer] = useState(-1);
+
+    const [smoothedVls, setVls] = useState(0);
+
+    useUpdate((deltaTime) => {
+        if (showBarsTimer > 0 && !isOnGround) {
+            setShowBarsTimer(showBarsTimer - deltaTime / 1000);
+        } else if (showBarsTimer < 0) {
+            setShowBarsTimer(-1);
+        }
+        setVls(VlsSmoother.step(VLs, deltaTime / 1000));
+    });
+
+    useEffect(() => {
+        if (isOnGround) {
+            setShowBarsTimer(10);
+        }
+    }, [isOnGround]);
+
+    const showBars = showBarsTimer === -1;
+
+    const bugs: ([(arg0: any) => any, number])[] = [];
 
     if (showBars) {
         bugs.push(...BarberpoleIndicator(airspeed, ValphaProtection, false, DisplayRange, VAlphaProtBar, 2.923));
@@ -102,49 +129,59 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
 
     const clampedSpeed = Math.max(Math.min(airspeed, 660), 30);
 
-    const flapsHandleIndex = getSimVar('L:A32NX_FLAPS_HANDLE_INDEX', 'Number');
-
     let v1 = NaN;
     if (FWCFlightPhase <= 4) {
-        v1 = getSimVar('L:AIRLINER_V1_SPEED', 'knots');
+        v1 = v1Speed;
         if (v1 !== 0) {
             bugs.push([V1BugElement, Math.max(Math.min(v1, 660), 30)]);
         }
-        const vr = getSimVar('L:AIRLINER_VR_SPEED', 'knots');
-        if (vr !== 0) {
-            bugs.push([VRBugElement, Math.max(Math.min(vr, 660), 30)]);
+        if (vrSpeed !== 0) {
+            bugs.push([VRBugElement, Math.max(Math.min(vrSpeed, 660), 30)]);
         }
     }
 
     if (flapsHandleIndex === 0) {
-        const GreenDotSpeed = getSimVar('L:A32NX_SPEEDS_GD', 'number');
-        bugs.push([GreenDotBugElement, GreenDotSpeed]);
+        bugs.push([GreenDotBugElement, greenDotSpeed]);
     } else if (flapsHandleIndex === 1) {
-        const SlatRetractSpeed = getSimVar('L:A32NX_SPEEDS_S', 'number');
-        bugs.push([SlatRetractBugElement, SlatRetractSpeed]);
+        bugs.push([SlatRetractBugElement, sSpeed]);
     } else if (flapsHandleIndex === 2 || flapsHandleIndex === 3) {
-        const FlapRetractSpeed = getSimVar('L:A32NX_SPEEDS_F', 'number');
-        bugs.push([FlapRetractBugElement, FlapRetractSpeed]);
+        bugs.push([FlapRetractBugElement, fSpeed]);
     }
 
     if (altitude < 15000 && flapsHandleIndex < 4) {
-        const VFENext = getSimVar('L:A32NX_SPEEDS_VFEN', 'number');
-        bugs.push([VFENextBugElement, VFENext]);
+        bugs.push([VFENextBugElement, vFeNext]);
     }
 
+    if (!alignedFirst) {
+        return (
+            <>
+                <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
+                <text id="SpeedFailText" className="Blink9Seconds FontLargest EndAlign Red" x="17.756115" y="83.386398">SPD</text>
+                <SpeedTapeOutline airspeed={100} isRed />
+            </>
+        );
+    }
     return (
         <g id="SpeedTapeElementsGroup">
             <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
             <SpeedTapeOutline airspeed={airspeed} />
-            {/* eslint-disable-next-line max-len */}
-            <VerticalTape tapeValue={clampedSpeed} bugs={bugs} graduationElementFunction={GraduationElement} lowerLimit={30} upperLimit={660} valueSpacing={ValueSpacing} displayRange={DisplayRange + 6} distanceSpacing={DistanceSpacing} />
+            <VerticalTape
+                tapeValue={clampedSpeed}
+                bugs={bugs}
+                graduationElementFunction={GraduationElement}
+                lowerLimit={30}
+                upperLimit={660}
+                valueSpacing={ValueSpacing}
+                displayRange={DisplayRange + 6}
+                distanceSpacing={DistanceSpacing}
+            />
             <SpeedTrendArrow airspeedAcc={airspeedAcc} />
             {FWCFlightPhase <= 4
             && <V1Offtape airspeed={clampedSpeed} v1={v1} />}
             {showBars
                 && (
                     <>
-                        <VLsBar airspeed={airspeed} VLs={VLs} VAlphaProt={ValphaProtection} />
+                        <VLsBar airspeed={airspeed} VLs={smoothedVls} VAlphaProt={ValphaProtection} />
                         <VAlphaLimBar airspeed={airspeed} VAlphalim={ValphaMax} />
                     </>
                 )}
@@ -178,8 +215,10 @@ const VLsBar = ({ VAlphaProt, VLs, airspeed }) => {
     );
 };
 
-export const AirspeedIndicatorOfftape = ({ airspeed, mach, airspeedAcc, targetSpeed, speedIsManaged }) => {
-    if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
+export const AirspeedIndicatorOfftape = ({ airspeed, airspeedAcc, targetSpeed, speedIsManaged }) => {
+    const [alignedFirst] = useSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool');
+
+    if (!alignedFirst) {
         return (
             <>
                 <path id="SpeedTapeOutlineUpper" className="NormalStroke Red" d="m1.9058 38.086h21.859" />
@@ -187,7 +226,6 @@ export const AirspeedIndicatorOfftape = ({ airspeed, mach, airspeedAcc, targetSp
             </>
         );
     }
-
     const clampedSpeed = Math.max(Math.min(airspeed, 660), 30);
     const clampedTargetSpeed = Math.max(Math.min(targetSpeed, 660), 30);
     return (
@@ -197,12 +235,15 @@ export const AirspeedIndicatorOfftape = ({ airspeed, mach, airspeedAcc, targetSp
             <SpeedTarget airspeed={clampedSpeed} targetSpeed={clampedTargetSpeed} isManaged={speedIsManaged} />
             <path className="Fill Yellow SmallOutline" d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z" />
             <path className="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
-            <MachNumber mach={mach} airspeedAcc={airspeedAcc} />
+            <MachNumber airspeedAcc={airspeedAcc} />
         </g>
     );
 };
 
 const SpeedTarget = ({ airspeed, targetSpeed, isManaged }) => {
+    if (targetSpeed === 0) {
+        return null;
+    }
     const color = isManaged ? 'Magenta' : 'Cyan';
     const text = Math.round(targetSpeed).toString().padStart(3, '0');
     if (airspeed - targetSpeed > DisplayRange) {
@@ -229,11 +270,12 @@ const SpeedTapeOutline = ({ airspeed, isRed = false }) => {
     );
 };
 
-const MachNumber = ({ mach, airspeedAcc }) => {
+const MachNumber = ({ airspeedAcc }) => {
+    const [mach] = useSimVar('AIRSPEED MACH', 'mach');
+
     if ((airspeedAcc >= 0 && mach < 0.5) || (airspeedAcc < 0 && mach <= 0.45)) {
         return null;
     }
-
     return (
         <text id="CurrentMachText" className="FontLargest StartAlign Green" x="5.4257932" y="136.88908">{`.${Math.round(mach * 1000)}`}</text>
     );
@@ -248,7 +290,6 @@ const V1Offtape = ({ airspeed, v1 }) => {
     return null;
 };
 
-// Needs filtering, not going to use until then
 const SpeedTrendArrow = ({ airspeedAcc }) => {
     const targetSpeed = airspeedAcc * 10;
     const sign = Math.sign(airspeedAcc);

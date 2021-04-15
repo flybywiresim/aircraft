@@ -1,4 +1,7 @@
-/* eslint-disable max-classes-per-file */
+// eslint-disable-next-line max-classes-per-file
+import React from 'react';
+
+// eslint-disable-next-line max-classes-per-file
 export const calculateHorizonOffsetFromPitch = (pitch) => {
     if (pitch > -5 && pitch <= 20) {
         return pitch * 1.8;
@@ -45,8 +48,8 @@ export const HorizontalTape = ({ displayRange, valueSpacing, distanceSpacing, gr
         leftmostHeading += valueSpacing;
     }
 
-    const graduationElements = [];
-    const bugElements = [];
+    const graduationElements: (() => any)[] = [];
+    const bugElements: (() => any)[] = [];
 
     for (let i = 0; i < numTicks; i++) {
         const elementHeading = leftmostHeading + i * valueSpacing;
@@ -91,8 +94,8 @@ export const VerticalTape = ({
         lowestValue += valueSpacing;
     }
 
-    const graduationElements = [];
-    const bugElements = [];
+    const graduationElements: (() => any)[] = [];
+    const bugElements: (() => any)[] = [];
 
     for (let i = 0; i < numTicks; i++) {
         const elementValue = lowestValue + i * valueSpacing;
@@ -120,7 +123,7 @@ export const VerticalTape = ({
 export const BarberpoleIndicator = (
     tapeValue, border, isLowerBorder, displayRange, element, elementSize,
 ) => {
-    const Elements = [];
+    const Elements: ([() => any, number])[] = [];
 
     const sign = isLowerBorder ? 1 : -1;
     const isInRange = isLowerBorder ? border <= tapeValue + displayRange : border >= tapeValue - displayRange;
@@ -136,22 +139,37 @@ export const BarberpoleIndicator = (
     return Elements;
 };
 
-export const SmoothSin = (origin, destination, smoothFactor, dTime) => {
-    if (origin === undefined) {
-        return destination;
+export class SmoothSin {
+    origin: number
+
+    SmoothFactor: number
+
+    constructor(smoothFactor) {
+        this.origin = 0;
+        this.SmoothFactor = smoothFactor;
     }
-    if (Math.abs(destination - origin) < Number.EPSILON) {
-        return destination;
+
+    step(destination, deltaTime) {
+        if (Math.abs(destination - this.origin) < Number.EPSILON) {
+            return destination;
+        }
+        const delta = destination - this.origin;
+        let result = this.origin + delta * Math.sin(Math.min(this.SmoothFactor * deltaTime, 1.0) * Math.PI / 2.0);
+        if ((this.origin < destination && result > destination) || (this.origin > destination && result < destination)) {
+            result = destination;
+        }
+        this.origin = result;
+        return result;
     }
-    const delta = destination - origin;
-    let result = origin + delta * Math.sin(Math.min(smoothFactor * dTime, 1.0) * Math.PI / 2.0);
-    if ((origin < destination && result > destination) || (origin > destination && result < destination)) {
-        result = destination;
-    }
-    return result;
-};
+}
 
 export class LagFilter {
+    PreviousInput: number
+
+    PreviousOutput: number
+
+    TimeConstant: number
+
     constructor(timeConstant) {
         this.PreviousInput = 0;
         this.PreviousOutput = 0;
@@ -187,6 +205,12 @@ export class LagFilter {
 }
 
 export class RateLimiter {
+    PreviousOutput: number
+
+    RisingRate: number
+
+    FallingRate: number
+
     constructor(risingRate, fallingRate) {
         this.PreviousOutput = 0;
 

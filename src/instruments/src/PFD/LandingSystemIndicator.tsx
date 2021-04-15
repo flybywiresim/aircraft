@@ -1,14 +1,19 @@
-import { getSimVar } from '../util.js';
-import { LagFilter } from './PFDUtils.jsx';
+import React, { useState } from 'react';
+import { LagFilter } from './PFDUtils';
+import { useSimVar } from '../Common/simVars';
+import { useUpdate } from '../Common/hooks';
 
 const filterLocalizerIndicator = new LagFilter(1.5);
 const filterGlideslopeIndicator = new LagFilter(1.5);
 
-export function LandingSystem({ LSButtonPressed, deltaTime }) {
+export function LandingSystem({ LSButtonPressed }) {
+    const [approachLoaded] = useSimVar('GPS IS APPROACH LOADED', 'bool');
+    const [approachType] = useSimVar('GPS APPROACH APPROACH TYPE', 'Enum');
+
     let showVDev = false;
 
     if (!LSButtonPressed) {
-        showVDev = Simplane.getAutoPilotApproachLoaded() && Simplane.getAutoPilotApproachType() === 10;
+        showVDev = approachLoaded && approachType === 10;
     }
 
     return (
@@ -16,8 +21,8 @@ export function LandingSystem({ LSButtonPressed, deltaTime }) {
             <LandingSystemInfo displayed={LSButtonPressed} />
             {LSButtonPressed && (
                 <g id="LSGroup">
-                    <LocalizerIndicator deltaTime={deltaTime} />
-                    <GlideslopeIndicator deltaTime={deltaTime} />
+                    <LocalizerIndicator />
+                    <GlideslopeIndicator />
                     <MarkerBeaconIndicator />
                 </g>
             )}
@@ -32,23 +37,25 @@ export function LandingSystem({ LSButtonPressed, deltaTime }) {
 }
 
 const LandingSystemInfo = ({ displayed }) => {
-    if (!displayed || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {
+    const [hasLocalizer] = useSimVar('NAV HAS LOCALIZER:3', 'Bool');
+    const [ident] = useSimVar('NAV IDENT:3', 'string');
+    const [freq] = useSimVar('NAV FREQUENCY:3', 'MHz');
+    const [hasDME] = useSimVar('NAV HAS DME:3', 'Bool');
+    const [DME] = useSimVar('NAV DME:3', 'nautical miles');
+
+    if (!displayed || !hasLocalizer) {
         return null;
     }
 
     // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
-    const identText = getSimVar('NAV IDENT:3', 'string');
-
-    const freqTextSplit = (Math.round(getSimVar('NAV FREQUENCY:3', 'MHz') * 1000) / 1000).toString().split('.');
+    const freqTextSplit = (Math.round(freq * 1000) / 1000).toString().split('.');
     const freqTextLeading = freqTextSplit[0];
     const freqTextTrailing = freqTextSplit[1].padEnd(2, '0');
-
-    const hasDME = getSimVar('NAV HAS DME:3', 'Bool');
 
     let distLeading = '';
     let distTrailing = '';
     if (hasDME) {
-        const dist = Math.round(getSimVar('NAV DME:3', 'nautical miles') * 10) / 10;
+        const dist = Math.round(DME * 10) / 10;
 
         if (dist < 20) {
             const distSplit = dist.toString().split('.');
@@ -63,7 +70,7 @@ const LandingSystemInfo = ({ displayed }) => {
 
     return (
         <g id="LSInfoGroup">
-            <text id="ILSIdent" className="Magenta FontLarge AlignLeft" x="1.5204413" y="145.11539">{identText}</text>
+            <text id="ILSIdent" className="Magenta FontLarge AlignLeft" x="1.5204413" y="145.11539">{ident}</text>
             <text id="ILSFreqLeading" className="Magenta FontLarge AlignLeft" x="1.0791086" y="151.14395">{freqTextLeading}</text>
             <text id="ILSFreqTrailing" className="Magenta FontSmallest AlignLeft" x="14.297637" y="151.26903">{`.${freqTextTrailing}`}</text>
             {hasDME && (
@@ -79,13 +86,18 @@ const LandingSystemInfo = ({ displayed }) => {
     );
 };
 
-const LocalizerIndicator = ({ deltaTime }) => {
-    const hasLoc = getSimVar('NAV HAS LOCALIZER:3', 'Bool');
+const LocalizerIndicator = () => {
+    const [hasLoc] = useSimVar('NAV HAS LOCALIZER:3', 'Bool');
+    const [radialError] = useSimVar('NAV RADIAL ERROR:3', 'degrees');
+    const [deviation, setDeviation] = useState(0);
 
-    let diamond = null;
+    useUpdate((deltaTime) => {
+        setDeviation(filterLocalizerIndicator.step(radialError, deltaTime / 1000));
+    });
+
+    let diamond;
 
     if (hasLoc) {
-        const deviation = filterLocalizerIndicator.step(getSimVar('NAV RADIAL ERROR:3', 'degrees'), deltaTime / 1000);
         const dots = deviation / 0.8;
 
         if (dots > 2) {
@@ -111,13 +123,18 @@ const LocalizerIndicator = ({ deltaTime }) => {
     );
 };
 
-const GlideslopeIndicator = ({ deltaTime }) => {
-    const hasGlideslope = getSimVar('NAV HAS GLIDE SLOPE:3', 'Bool');
+const GlideslopeIndicator = () => {
+    const [hasGlideslope] = useSimVar('NAV HAS GLIDE SLOPE:3', 'Bool');
+    const [glideSlopeError] = useSimVar('NAV GLIDE SLOPE ERROR:3', 'degrees');
+    const [deviation, setDeviation] = useState(0);
 
-    let diamond = null;
+    let diamond;
+
+    useUpdate((deltaTime) => {
+        setDeviation(filterGlideslopeIndicator.step(glideSlopeError, deltaTime / 1000));
+    });
 
     if (hasGlideslope) {
-        const deviation = filterGlideslopeIndicator.step(getSimVar('NAV GLIDE SLOPE ERROR:3', 'degrees'), deltaTime / 1000);
         const dots = deviation / 0.4;
 
         if (dots > 2) {
@@ -125,8 +142,14 @@ const GlideslopeIndicator = ({ deltaTime }) => {
         } else if (dots < -2) {
             diamond = <path id="GlideSlopeDiamondUpper" className="NormalStroke Magenta" d="m107.19 50.585 2.5184-3.7798 2.5184 3.7798" />;
         } else {
-            // eslint-disable-next-line max-len
-            diamond = <path id="GlideSlopeDiamond" className="NormalStroke Magenta" transform={`translate(0 ${dots * 30.238 / 2})`} d="m109.7 77.043-2.5184 3.7798 2.5184 3.7798 2.5184-3.7798z" />;
+            diamond = (
+                <path
+                    id="GlideSlopeDiamond"
+                    className="NormalStroke Magenta"
+                    transform={`translate(0 ${dots * 30.238 / 2})`}
+                    d="m109.7 77.043-2.5184 3.7798 2.5184 3.7798 2.5184-3.7798z"
+                />
+            );
         }
     } else {
         filterGlideslopeIndicator.reset();
@@ -144,7 +167,7 @@ const GlideslopeIndicator = ({ deltaTime }) => {
 };
 
 const VDevIndicator = () => {
-    const deviation = getSimVar('GPS VERTICAL ERROR', 'feet');
+    const [deviation] = useSimVar('GPS VERTICAL ERROR', 'feet');
     const dots = deviation / 100;
 
     let diamond;
@@ -184,7 +207,7 @@ const LDevIndicator = () => (
 );
 
 const MarkerBeaconIndicator = () => {
-    const markerState = getSimVar('MARKER BEACON STATE', 'Enum');
+    const [markerState] = useSimVar('MARKER BEACON STATE', 'Enum');
 
     let classNames = '';
     let markerText = '';
