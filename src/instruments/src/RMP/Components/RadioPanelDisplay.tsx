@@ -27,7 +27,7 @@ export function RadioPanelDisplay(props: Props) {
     const value = typeof props.value === 'number' ? formatFrequency(props.value) : props.value;
 
     return (
-        <svg>
+        <svg className="rmp-svg">
             <text x="100%" y="52%">
                 {lightsTest ? '8.8.8.8.8.8' : value}
             </text>
