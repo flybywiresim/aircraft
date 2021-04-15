@@ -387,7 +387,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     outerCircle.setAttribute("stroke-width", "4");
                     circleGroup.appendChild(outerCircle);
                     const vec = new Vec2(1, 1);
-                    vec.SetNorm(333 - 45);
+                    vec.SetNorm(circleRadius / 2 - 45);
+                    this.addMapRange(circleGroup, 500 - vec.x, 500 + vec.y, "#00FFFF", "32", false, 0.25, true);
+                    vec.SetNorm(circleRadius - 45);
                     this.addMapRange(circleGroup, 500 - vec.x, 500 + vec.y, "#00FFFF", "32", false, 0.5, true);
                 }
             }
@@ -443,6 +445,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 outerCircle.setAttribute("stroke-width", "4");
                 outerGroup.appendChild(outerCircle);
                 const vec = new Vec2(1, 1);
+                vec.SetNorm(circleRadius / 2 - 45);
+                this.addMapRange(this.root, 500 - vec.x, 500 + vec.y, "#00FFFF", "32", false, 0.25, true);
                 vec.SetNorm(circleRadius - 45);
                 this.addMapRange(this.root, 500 - vec.x, 500 + vec.y, "#00FFFF", "32", false, 0.5, true);
             }
