@@ -87,70 +87,66 @@
             </UseTemplate>
 
             <!-- Front Glareshields -->
-            <UseTemplate Name="ASOBO_LIGHTING_Knob_Glareshield_Template">
-                <ID>1</ID>
+            <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
+                <NODE_ID>LIGHTING_Knob_Glareshield_1</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Glareshield_1</ANIM_NAME>
                 <PART_ID>Lighting_Knob_Glareshield_Pilot_0</PART_ID>
-                <SIMVAR_INDEX>1</SIMVAR_INDEX>
                 <POTENTIOMETER>10</POTENTIOMETER>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_INCREASE</ANIMTIP_1>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
+            <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                 <NODE_ID>LIGHTS_Glareshield_Front_1</NODE_ID>
-                <SIMVAR_INDEX>1</SIMVAR_INDEX>
                 <POTENTIOMETER>10</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LIGHTING_Knob_Glareshield_Template">
+            <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
                 <NODE_ID>LIGHTING_Knob_Glareshield_4</NODE_ID>
                 <ANIM_NAME>LIGHTING_Knob_Glareshield_4</ANIM_NAME>
                 <PART_ID>Lighting_Knob_Glareshield_Copilot_0</PART_ID>
-                <ID>2</ID>
-                <SIMVAR_INDEX>2</SIMVAR_INDEX>
                 <POTENTIOMETER>11</POTENTIOMETER>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_INCREASE</ANIMTIP_1>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
+            <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                 <NODE_ID>LIGHTS_Glareshield_Front_2</NODE_ID>
-                <SIMVAR_INDEX>2</SIMVAR_INDEX>
                 <POTENTIOMETER>11</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
             <!-- Triangle Glareshields -->
-            <UseTemplate Name="ASOBO_LIGHTING_Knob_Glareshield_Template">
+            <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
                 <NODE_ID>LIGHTING_Knob_Glareshield</NODE_ID>
                 <ANIM_NAME>LIGHTING_Knob_Glareshield</ANIM_NAME>
                 <PART_ID>Lighting_Knob_Glareshield_1</PART_ID>
-                <ID>3</ID>
-                <SIMVAR_INDEX>3</SIMVAR_INDEX>
                 <POTENTIOMETER>83</POTENTIOMETER>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
+            <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                 <NODE_ID>LIGHTS_Glareshield_1</NODE_ID>
-                <SIMVAR_INDEX>3</SIMVAR_INDEX>
                 <POTENTIOMETER>83</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
+            <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                 <NODE_ID>LIGHTS_Glareshield_2</NODE_ID>
-                <SIMVAR_INDEX>3</SIMVAR_INDEX>
                 <POTENTIOMETER>83</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
+            <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                 <NODE_ID>LIGHTS_Glareshield_3</NODE_ID>
-                <SIMVAR_INDEX>3</SIMVAR_INDEX>
                 <POTENTIOMETER>83</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
+            <UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
                 <NODE_ID>LIGHTS_Glareshield_4</NODE_ID>
-                <SIMVAR_INDEX>3</SIMVAR_INDEX>
                 <POTENTIOMETER>83</POTENTIOMETER>
+                <EMISSIVE_CODE>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
             </UseTemplate>
 
             <!-- Panel Lights -->
