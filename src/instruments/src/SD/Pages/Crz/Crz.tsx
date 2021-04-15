@@ -75,26 +75,28 @@ export const CrzPage = () => {
     const [ambPressure] = useSimVar('AMBIENT PRESSURE', 'inHg', 1000);
     const [deltaPsi] = useSimVar('DELTA_PRESSURE', 'PSI', 500);
 
-    const deltaPSI = function (cabinVs, ambPressure) {
+    const deltaPSI = function (cabinVs, cabinAlt, ambPressure) {
         const feetToMeters = 0.3048;
         const seaLevelPressurePascal = 101325;
         const barometricPressureFactor = -0.00011857591;
         const pascalToPSI = 0.000145038;
         const inHgToPSI = 0.491154;
 
-        const cabinAltMeters = cabinVs * feetToMeters;
+        const cabinAltMeters = cabinAlt * feetToMeters;
         const cabinPressurePascal = seaLevelPressurePascal * Math.exp(barometricPressureFactor * cabinAltMeters); // Barometric formula
         const cabinPressurePSI = cabinPressurePascal * pascalToPSI;
         const outsidePressurePSI = ambPressure * inHgToPSI;
         let pressureDiff = cabinPressurePSI - outsidePressurePSI;
-        pressureDiff = (pressureDiff > -0.05) && (pressureDiff < 0.15) ? 0.0 : pressureDiff;
+        pressureDiff = (pressureDiff > -0.05) && (pressureDiff < 0.0) ? 0.0 : pressureDiff;
+        pressureDiff = pressureDiff > 8.6 ? 8.6 : pressureDiff; // DeltaPSI will not go above 8.6psi normally
         return (pressureDiff);
     };
 
-    const [deltaPress, setDeltaPress] = useState(splitDecimals(deltaPSI(cabinVs, ambPressure), ''));
+    const [deltaPress, setDeltaPress] = useState(splitDecimals(deltaPSI(cabinVs, cabinAlt, ambPressure), ''));
 
     useEffect(() => {
-        const pressChange = splitDecimals(deltaPSI(cabinVs, ambPressure), '');
+        console.log(`Delta PSI from SimVar is ${deltaPsi}`);
+        const pressChange = splitDecimals(deltaPSI(cabinVs, cabinAlt, ambPressure), '');
         setDeltaPress(pressChange);
     }, [cabinVs, ambPressure]);
 
@@ -207,7 +209,7 @@ export const CrzPage = () => {
                     <text className="standard cyan" x="530" y="335">FT</text>
                 </g>
                 <g id="ManualVSIndicator" className={manMode ? 'show' : 'hide'}>
-                    <GaugeComponent x={450} y={390} radius={40} startAngle={80} endAngle={170} className="Gauge" />
+                    <GaugeComponent x={460} y={380} radius={45} startAngle={-10} endAngle={190} className="Gauge" />
                 </g>
 
                 <text className="standard" x="218" y="370">@P</text>
@@ -216,14 +218,14 @@ export const CrzPage = () => {
                     .
                 </text>
                 <text id="standard green" className="standard green" x="290" y="370">{deltaPress[1]}</text>
-                <text className="standard cyan" x="335" y="370">PSI</text>
+                <text className="standard cyan" x="320" y="370">PSI</text>
 
                 <text className="standard" x="480" y="380">CAB V/S</text>
-                <text id="CabinVerticalSpeed" className="large green" x="515" y="405" textAnchor="end">{Math.round(cabinVs / 50) * 50}</text>
+                <text id="CabinVerticalSpeed" className="large green" x="515" y="405" textAnchor="end">{Math.round((cabinVs * 60) / 50) * 50}</text>
                 <text className="medium cyan" x="525" y="405">FT/MIN</text>
 
                 <text className="standard" x="480" y="450">CAB ALT</text>
-                <text id="CabinAltitude" className="large green" x="515" y="475" textAnchor="end">{Math.round(cabinAlt / 50) * 50}</text>
+                <text id="CabinAltitude" className="large green" x="515" y="475" textAnchor="end">{Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 : 0}</text>
                 <text className="medium cyan" x="525" y="475">FT</text>
 
                 <path className="WingPlaneSym" d="M 300 410 a 70 70 0 0 0 -30 -5 l -180 0 m 30 0 l 0 50 l 85 0 l 0 -10 m 0 10 l 85 0 l 0 -48 m -170 48 l -30 0 c -60 0 -60 -20 -45 -25" />
@@ -252,15 +254,15 @@ type GaugeComponentType = {
 
 const GaugeComponent = ({ x, y, radius, startAngle, endAngle, className } : GaugeComponentType) => {
     const polarToCartesian = function (centerX, centerY, radius, angleInDegrees) {
-        const angleInRadians = angleInDegrees * (Math.PI / 180.0);
+        const angleInRadians = (angleInDegrees - 90) * (Math.PI / 180.0);
         return ({
             x: centerX + (radius * Math.cos(angleInRadians)),
             y: centerY + (radius * Math.sin(angleInRadians)),
         });
     };
 
-    const startPos = polarToCartesian(x, y, radius, endAngle);
-    const endPos = polarToCartesian(x, y, radius, startAngle);
+    const startPos = polarToCartesian(x, y, radius, startAngle);
+    const endPos = polarToCartesian(x, y, radius, endAngle);
     const largeArcFlag = ((endAngle - startAngle) <= 180) ? '0' : '1';
     const d = ['M', startPos.x, startPos.y, 'A', radius, radius, 0, largeArcFlag, 0, endPos.x, endPos.y].join(' ');
 
