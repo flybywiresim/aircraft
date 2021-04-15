@@ -126,6 +126,9 @@ pub struct BrakeCircuit {
     demanded_brake_position_right: f64,
     pressure_applied_right: Pressure,
 
+    pressure_limitation: Pressure,
+    pressure_limitation_active: bool,
+
     // Brake accumulator variables. Accumulator can have 0 volume if no accumulator
     has_accumulator: bool,
     accumulator: HydraulicAccumulator,
@@ -193,6 +196,8 @@ impl BrakeCircuit {
             pressure_applied_left: Pressure::new::<psi>(0.0),
             demanded_brake_position_right: 0.0,
             pressure_applied_right: Pressure::new::<psi>(0.0),
+            pressure_limitation: Pressure::new::<psi>(0.0),
+            pressure_limitation_active: false,
             has_accumulator: has_accu,
             accumulator: HydraulicAccumulator::new(
                 Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE),
@@ -210,14 +215,31 @@ impl BrakeCircuit {
         }
     }
 
+    pub fn set_brake_press_limit(&mut self, pressure_limit: Pressure) {
+        self.pressure_limitation = pressure_limit;
+    }
+
+    pub fn set_brake_limit_ena(&mut self, is_pressure_limit_active: bool) {
+        self.pressure_limitation_active = is_pressure_limit_active;
+    }
+
     fn update_brake_actuators(&mut self, delta_time: &Duration, hyd_pressure: Pressure) {
         self.left_brake_actuator
             .set_position_demand(self.demanded_brake_position_left);
         self.right_brake_actuator
             .set_position_demand(self.demanded_brake_position_right);
 
-        self.left_brake_actuator.update(delta_time, hyd_pressure);
-        self.right_brake_actuator.update(delta_time, hyd_pressure);
+        let actual_max_allowed_pressure: Pressure;
+        if self.pressure_limitation_active {
+            actual_max_allowed_pressure = hyd_pressure.min(self.pressure_limitation);
+        } else {
+            actual_max_allowed_pressure = hyd_pressure;
+        }
+
+        self.left_brake_actuator
+            .update(delta_time, actual_max_allowed_pressure);
+        self.right_brake_actuator
+            .update(delta_time, actual_max_allowed_pressure);
     }
 
     pub fn update(&mut self, delta_time: &Duration, hyd_loop: &HydraulicLoop) {
@@ -623,6 +645,54 @@ mod tests {
         assert!(brake_circuit_primed.get_brake_pressure_right() >= Pressure::new::<psi>(2500.));
         assert!(brake_circuit_primed.get_brake_pressure_left() <= Pressure::new::<psi>(50.));
         assert!(brake_circuit_primed.accumulator.get_fluid_volume() == Volume::new::<gallon>(0.0));
+    }
+
+    #[test]
+    fn brake_pressure_limitation() {
+        let init_max_vol = Volume::new::<gallon>(0.0);
+        let mut hyd_loop = hydraulic_loop("GREEN");
+        hyd_loop.loop_pressure = Pressure::new::<psi>(3100.0);
+
+        let mut brake_circuit_primed = BrakeCircuit::new(
+            "norm",
+            init_max_vol,
+            init_max_vol / 2.0,
+            Volume::new::<gallon>(0.1),
+        );
+
+        brake_circuit_primed.update(&Duration::from_secs_f64(5.), &hyd_loop);
+
+        assert!(
+            brake_circuit_primed.get_brake_pressure_left()
+                + brake_circuit_primed.get_brake_pressure_right()
+                < Pressure::new::<psi>(1.0)
+        );
+
+        brake_circuit_primed.set_brake_demand_left(1.0);
+        brake_circuit_primed.set_brake_demand_right(1.0);
+        brake_circuit_primed.update(&Duration::from_secs_f64(1.5), &hyd_loop);
+
+        assert!(brake_circuit_primed.get_brake_pressure_left() >= Pressure::new::<psi>(2900.));
+        assert!(brake_circuit_primed.get_brake_pressure_right() >= Pressure::new::<psi>(2900.));
+
+        let pressure_limit = Pressure::new::<psi>(1200.);
+        brake_circuit_primed.set_brake_press_limit(pressure_limit);
+        brake_circuit_primed.update(&Duration::from_secs_f64(1.5), &hyd_loop);
+        assert!(brake_circuit_primed.get_brake_pressure_left() >= Pressure::new::<psi>(2900.));
+        assert!(brake_circuit_primed.get_brake_pressure_right() >= Pressure::new::<psi>(2900.));
+
+        brake_circuit_primed.set_brake_limit_ena(true);
+        brake_circuit_primed.update(&Duration::from_secs_f64(0.1), &hyd_loop);
+
+        // Now we limit to 1200 but pressure shouldn't drop instantly
+        assert!(brake_circuit_primed.get_brake_pressure_left() >= Pressure::new::<psi>(2500.));
+        assert!(brake_circuit_primed.get_brake_pressure_right() >= Pressure::new::<psi>(2500.));
+
+        brake_circuit_primed.update(&Duration::from_secs_f64(1.), &hyd_loop);
+
+        // After one second it should have reached the lower limit
+        assert!(brake_circuit_primed.get_brake_pressure_left() <= pressure_limit);
+        assert!(brake_circuit_primed.get_brake_pressure_right() <= pressure_limit);
     }
 
     #[test]
