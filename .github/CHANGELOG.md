@@ -12,6 +12,12 @@
 1. [ADIRS] Add on delay for ON BAT light - @tracernz (Mike)
 1. [MISC] Added 3D brake gauge - @tyler58546 (tyler58546), @DarkOfNova (DarkOfNova)
 1. [ECAM] Refactor flight control page to use React - @RichardPilbery (tricky_dicky#3571)
+1. [ELEC] The BCL commands the BAT contactor be closed when the BAT push button is moved from OFF to AUTO - @davidwalschots (David Walschots)
+1. [MCDU] Implement BRG/DIST function on PROG page - @tracernz (Mike)
+1. [MCDU] Fix max page number on duplicate waypoint selection - @tracernz (Mike)
+1. [MCDU] Show max distance of 9999 NM on duplicate waypoint selection - @tracernz (Mike)
+1. [DU] Display units only run their self-test when unpowered over 10 seconds - @davidwalschots (David Walschots)
+1. [DISPLAYS] RMP backlight, ATC and RTPI font color and backlight - @marcman86 (marcman86#4907)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
