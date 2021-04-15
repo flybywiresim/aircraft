@@ -32,15 +32,10 @@ void FlightDataRecorder::initialize() {
   maximumSampleCounter = INITypeConversion::getInteger(iniStructure, "FLIGHT_DATA_RECORDER", "MAXIMUM_NUMBER_OF_ENTRIES_PER_FILE", 864000);
 
   // print configuration
-  cout << "WASM: Flight Data Recorder Configuration : Enabled                  "
-          "      = "
-       << isEnabled << endl;
-  cout << "WASM: Flight Data Recorder Configuration : MaximumNumberOfFiles     "
-          "      = "
-       << maximumFileCount << endl;
-  cout << "WASM: Flight Data Recorder Configuration : "
-          "MaximumNumberOfEntriesPerFile  = "
-       << maximumSampleCounter << endl;
+  cout << "WASM: Flight Data Recorder Configuration : Enabled                        = " << isEnabled << endl;
+  cout << "WASM: Flight Data Recorder Configuration : MaximumNumberOfFiles           = " << maximumFileCount << endl;
+  cout << "WASM: Flight Data Recorder Configuration : MaximumNumberOfEntriesPerFile  = " << maximumSampleCounter << endl;
+  cout << "WASM: Flight Data Recorder Configuration : Interface Version              = " << INTERFACE_VERSION << endl;
 }
 
 void FlightDataRecorder::update(AutopilotStateMachineModelClass* autopilotStateMachine,
@@ -89,6 +84,8 @@ void FlightDataRecorder::manageFlightDataRecorderFiles() {
   if (!fileStream) {
     // create new file
     fileStream = make_shared<gzofstream>(getFlightDataRecorderFilename().c_str());
+    // write version to file
+    fileStream->write((char*)&INTERFACE_VERSION, sizeof(INTERFACE_VERSION));
     // clean up directory
     cleanUpFlightDataRecorderFiles();
   }
