@@ -1,4 +1,3 @@
-import ReactDOM from 'react-dom';
 import { Component } from 'react';
 import { Horizon } from './AttitudeIndicatorHorizon.jsx';
 import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed.jsx';
@@ -10,6 +9,8 @@ import { AirspeedIndicatorOfftape, AirspeedIndicator } from './SpeedIndicator.js
 import { FMA } from './FMA.jsx';
 import { getSimVar, setSimVar, renderTarget, createDeltaTimeCalculator } from '../util.js';
 import { SmoothSin, LagFilter, RateLimiter } from './PFDUtils.jsx';
+import { DisplayUnit } from '../Common/displayUnit';
+import { render } from '../Common';
 import './style.scss';
 
 /* eslint-disable max-len */
@@ -154,32 +155,34 @@ class PFD extends Component {
         }
 
         return (
-            <svg className="pfd-svg" version="1.1" viewBox="0 0 158.75 158.75" xmlns="http://www.w3.org/2000/svg">
-                <Horizon pitch={pitch} roll={roll} heading={heading} FDActive={FDActive} selectedHeading={selectedHeading} isOnGround={isOnGround} radioAlt={radioAlt} decisionHeight={decisionHeight} isAttExcessive={this.isAttExcessive} deltaTime={this.deltaTime} />
-                <path
-                    id="Mask1"
-                    className="BackgroundFill"
-                    d="m32.138 101.25c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66z"
-                />
-                <HeadingTape heading={heading} ILSCourse={ILSCourse} />
-                <AltitudeIndicator altitude={baroAlt} FWCFlightPhase={FlightPhase} />
-                <AirspeedIndicator airspeed={clampedAirspeed} airspeedAcc={filteredAirspeedAcc} FWCFlightPhase={FlightPhase} altitude={baroAlt} VAlphaLim={this.VAlphaLim} VAlphaProt={this.VAlphaProt} VLs={this.VLs} VMax={VMax} showBars={showSpeedBars} />
-                <path
-                    id="Mask2"
-                    className="BackgroundFill"
-                    d="m32.138 145.34h73.536v10.382h-73.536zm0-44.092c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66zm115.14-35.191v-85.473h15.609v85.473zm-113.33 0v-85.473h27.548v85.473z"
-                />
-                <LandingSystem LSButtonPressed={this.LSButtonPressed} deltaTime={this.deltaTime} />
-                <AttitudeIndicatorFixedUpper />
-                <AttitudeIndicatorFixedCenter isOnGround={isOnGround} FDActive={FDActive} isAttExcessive={this.isAttExcessive} />
-                <VerticalSpeedIndicator radioAlt={radioAlt} />
-                <HeadingOfftape ILSCourse={ILSCourse} groundTrack={groundTrack} heading={heading} selectedHeading={selectedHeading} />
-                <AltitudeIndicatorOfftape altitude={baroAlt} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
-                <AirspeedIndicatorOfftape airspeed={clampedAirspeed} mach={mach} airspeedAcc={filteredAirspeedAcc} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
-                <FMA isAttExcessive={this.isAttExcessive} />
-            </svg>
+            <DisplayUnit electricitySimvar="L:ACPowerAvailable" potentiometerIndex={this.dispIndex === 1 ? 88 : 90}>
+                <svg className="pfd-svg" version="1.1" viewBox="0 0 158.75 158.75" xmlns="http://www.w3.org/2000/svg">
+                    <Horizon pitch={pitch} roll={roll} heading={heading} FDActive={FDActive} selectedHeading={selectedHeading} isOnGround={isOnGround} radioAlt={radioAlt} decisionHeight={decisionHeight} isAttExcessive={this.isAttExcessive} deltaTime={this.deltaTime} />
+                    <path
+                        id="Mask1"
+                        className="BackgroundFill"
+                        d="m32.138 101.25c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66z"
+                    />
+                    <HeadingTape heading={heading} ILSCourse={ILSCourse} />
+                    <AltitudeIndicator altitude={baroAlt} FWCFlightPhase={FlightPhase} />
+                    <AirspeedIndicator airspeed={clampedAirspeed} airspeedAcc={filteredAirspeedAcc} FWCFlightPhase={FlightPhase} altitude={baroAlt} VAlphaLim={this.VAlphaLim} VAlphaProt={this.VAlphaProt} VLs={this.VLs} VMax={VMax} showBars={showSpeedBars} />
+                    <path
+                        id="Mask2"
+                        className="BackgroundFill"
+                        d="m32.138 145.34h73.536v10.382h-73.536zm0-44.092c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66zm115.14-35.191v-85.473h15.609v85.473zm-113.33 0v-85.473h27.548v85.473z"
+                    />
+                    <LandingSystem LSButtonPressed={this.LSButtonPressed} deltaTime={this.deltaTime} />
+                    <AttitudeIndicatorFixedUpper />
+                    <AttitudeIndicatorFixedCenter isOnGround={isOnGround} FDActive={FDActive} isAttExcessive={this.isAttExcessive} />
+                    <VerticalSpeedIndicator radioAlt={radioAlt} />
+                    <HeadingOfftape ILSCourse={ILSCourse} groundTrack={groundTrack} heading={heading} selectedHeading={selectedHeading} />
+                    <AltitudeIndicatorOfftape altitude={baroAlt} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
+                    <AirspeedIndicatorOfftape airspeed={clampedAirspeed} mach={mach} airspeedAcc={filteredAirspeedAcc} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
+                    <FMA isAttExcessive={this.isAttExcessive} />
+                </svg>
+            </DisplayUnit>
         );
     }
 }
 
-ReactDOM.render(<PFD />, renderTarget);
+render(<PFD />);
