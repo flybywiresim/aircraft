@@ -1463,7 +1463,11 @@
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
-                    <NODE_ID>LIGHTS_Overhead</NODE_ID>
+                    <NODE_ID>LIGHTS_Overhead_L</NODE_ID>
+                    <POTENTIOMETER>7</POTENTIOMETER>
+                </UseTemplate>
+                <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
+                    <NODE_ID>LIGHTS_Overhead_R</NODE_ID>
                     <POTENTIOMETER>7</POTENTIOMETER>
                 </UseTemplate>
             </Component>
