@@ -3247,7 +3247,8 @@
             <Component ID="Radio_Left">
                 <UseTemplate Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
                     <SIDE>L</SIDE>
-                    <ELEC_BUS>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</ELEC_BUS>
+                    <BACKLIGHTS_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</BACKLIGHTS_POWERED>
+                    <INDICATORS_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Left">
@@ -3354,6 +3355,8 @@
             <Component ID="Radio_Right">
                 <UseTemplate Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
                     <SIDE>R</SIDE>
+                    <BACKLIGHTS_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</BACKLIGHTS_POWERED>
+                    <INDICATORS_POWERED>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Right">
