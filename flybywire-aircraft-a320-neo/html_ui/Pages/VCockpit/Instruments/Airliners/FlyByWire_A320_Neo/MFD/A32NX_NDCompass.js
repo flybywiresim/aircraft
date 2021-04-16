@@ -394,6 +394,19 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 }
             }
         }
+        // xtrk error
+        this.xTrkErrLeft = document.createElementNS(Avionics.SVG.NS, "text");
+        this.xTrkErrRight = document.createElementNS(Avionics.SVG.NS, "text");
+        [this.xTrkErrLeft, this.xTrkErrRight].forEach((ele) => {
+            ele.setAttribute("x", "130");
+            ele.setAttribute("y", "924");
+            ele.setAttribute("text-anchor", "end");
+            ele.setAttribute("visibility", "hidden");
+            ele.setAttribute("fill", "lime"); // TODO colour?
+            ele.setAttribute("font-size", "28");
+            ele.setAttribute("alignment-baseline", "top");
+            this.root.appendChild(ele);
+        });
     }
     constructRose() {
         super.constructRose();
