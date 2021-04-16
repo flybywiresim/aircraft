@@ -1,3 +1,5 @@
+$colour-main: hsl(31, 69%, 35%);
+
 @font-face {
   src: url("/Fonts/AirbusRMP.ttf") format("truetype");
   font-family: "Digital";
@@ -6,7 +8,7 @@
 }
 
 .atc-svg {
-  background-color: rgba(39, 10, 43, 0.55);
+  background-color: hsl(31, 69%, 6%);
   height: 100%;
   width: 100%;
   left: 0;
@@ -15,7 +17,7 @@
 text {
   alignment-baseline: central;
   font-family: Digital;
-  fill: #5f482e;
+  fill: $colour-main;
   font-size: 100px;
   text-anchor: start;
 }
