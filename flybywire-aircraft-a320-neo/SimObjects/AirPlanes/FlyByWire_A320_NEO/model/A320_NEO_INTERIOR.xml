@@ -255,15 +255,13 @@
                 <NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_HANDLING_Wheel_ElevatorTrim_Template">
+            <UseTemplate Name="FBW_HANDLING_Wheel_ElevatorTrim_Template">
                 <ANIM_NAME>lever_trimtab_elevator_key_pct</ANIM_NAME>
                 <NODE_ID>LEVER_ELEVATORTRIM_1</NODE_ID>
                 <NODE_ID2>LEVER_ELEVATORTRIM_2</NODE_ID2>
-                <DOUBLE_WHEEL/>
                 <REPEAT_ANIM>5</REPEAT_ANIM>
                 <DRAG_AXIS_SCALE>20</DRAG_AXIS_SCALE>
                 <DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE>                <!-- Limit to -4.5 deg -->
-
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_HANDLING_Indicator_ElevatorTrim_Template">
