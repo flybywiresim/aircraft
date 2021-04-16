@@ -998,6 +998,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   if (!autoThrustEnabled || !autopilotStateMachineEnabled || !flyByWireEnabled) {
     ClientDataLocalVariablesAutothrust ClientDataLocalVariablesAutothrust = {
         simConnectInterface.getSimInputThrottles().ATHR_push,
+        simConnectInterface.getSimInputThrottles().ATHR_disconnect,
         thrustLeverAngle_1->get(),
         thrustLeverAngle_2->get(),
         simData.ap_V_c_kn,
@@ -1016,6 +1017,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34,
         autopilotStateMachineOutput.vertical_mode == 40,
         autopilotStateMachineOutput.vertical_mode == 41,
+        autopilotStateMachineOutput.vertical_mode == 32,
         idFmgcThrustReductionAltitude->get(),
         idFmgcThrustReductionAltitudeGoAround->get(),
         idFmgcFlightPhase->get(),
@@ -1058,6 +1060,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.data.OAT_degC = simData.ambient_temperature_celsius;
 
     autoThrustInput.in.input.ATHR_push = simConnectInterface.getSimInputThrottles().ATHR_push;
+    autoThrustInput.in.input.ATHR_disconnect = simConnectInterface.getSimInputThrottles().ATHR_disconnect;
     autoThrustInput.in.input.TLA_1_deg = thrustLeverAngle_1->get();
     autoThrustInput.in.input.TLA_2_deg = thrustLeverAngle_2->get();
     autoThrustInput.in.input.V_c_kn = simData.ap_V_c_kn;
@@ -1077,6 +1080,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34;
     autoThrustInput.in.input.is_SRS_TO_mode_active = autopilotStateMachineOutput.vertical_mode == 40;
     autoThrustInput.in.input.is_SRS_GA_mode_active = autopilotStateMachineOutput.vertical_mode == 41;
+    autoThrustInput.in.input.is_LAND_mode_active = autopilotStateMachineOutput.vertical_mode == 32;
     autoThrustInput.in.input.thrust_reduction_altitude = idFmgcThrustReductionAltitude->get();
     autoThrustInput.in.input.thrust_reduction_altitude_go_around = idFmgcThrustReductionAltitudeGoAround->get();
     autoThrustInput.in.input.flight_phase = idFmgcFlightPhase->get();

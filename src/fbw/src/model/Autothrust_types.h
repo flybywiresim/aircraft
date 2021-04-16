@@ -64,6 +64,7 @@ typedef struct {
 
 typedef struct {
   boolean_T ATHR_push;
+  boolean_T ATHR_disconnect;
   real_T TLA_1_deg;
   real_T TLA_2_deg;
   real_T V_c_kn;
@@ -82,6 +83,7 @@ typedef struct {
   boolean_T is_approach_mode_active;
   boolean_T is_SRS_TO_mode_active;
   boolean_T is_SRS_GA_mode_active;
+  boolean_T is_LAND_mode_active;
   real_T thrust_reduction_altitude;
   real_T thrust_reduction_altitude_go_around;
   real_T flight_phase;

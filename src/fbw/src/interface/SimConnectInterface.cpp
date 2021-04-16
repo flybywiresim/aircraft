@@ -230,6 +230,7 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_DIR_TO_TRIGGER, "A32NX.FMGC_DIR_TO_TRIGGER", false);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_ARM, "AUTO_THROTTLE_ARM", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AUTO_THROTTLE_DISCONNECT, "AUTO_THROTTLE_DISCONNECT", true);
 
   result &=
       addInputDataDefinition(hSimConnect, 0, Events::A32NX_THROTTLE_MAPPING_LOAD_FROM_FILE, "A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE", false);
@@ -561,6 +562,10 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::LOCAL_VARIABLES_AUTOTHRUST, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
 
   // ------------------------------------------------------------------------------------------------------------------
 
@@ -722,6 +727,7 @@ void SimConnectInterface::resetSimInputAutopilot() {
 
 void SimConnectInterface::resetSimInputThrottles() {
   simInputThrottles.ATHR_push = 0;
+  simInputThrottles.ATHR_disconnect = 0;
 }
 
 bool SimConnectInterface::setClientDataAutopilotLaws(ClientDataAutopilotLaws output) {
@@ -943,6 +949,12 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::AUTO_THROTTLE_ARM: {
       simInputThrottles.ATHR_push = 1;
       cout << "WASM: event triggered: AUTO_THROTTLE_ARM" << endl;
+      break;
+    }
+
+    case Events::AUTO_THROTTLE_DISCONNECT: {
+      simInputThrottles.ATHR_disconnect = 1;
+      cout << "WASM: event triggered: AUTO_THROTTLE_DISCONNECT" << endl;
       break;
     }
 

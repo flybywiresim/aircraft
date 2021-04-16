@@ -200,7 +200,7 @@
 
     <Template Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
         <UseTemplate Name="FBW_Push_Held">
-            <HOLD_SIMVAR>K:AUTO_THROTTLE_ARM</HOLD_SIMVAR>
+            <HOLD_SIMVAR>K:AUTO_THROTTLE_DISCONNECT</HOLD_SIMVAR>
             <TOOLTIPID>Disc. A/THR</TOOLTIPID>
         </UseTemplate>
     </Template>
