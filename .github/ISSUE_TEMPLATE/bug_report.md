@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve the mod
+about: Create a report to help us improve the aircraft
 labels: Bug
 assignees: ''
 
