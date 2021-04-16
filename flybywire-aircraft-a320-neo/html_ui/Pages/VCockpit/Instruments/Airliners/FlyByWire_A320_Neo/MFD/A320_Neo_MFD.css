@@ -378,3 +378,6 @@ a320-neo-mfd-element #Mainframe #Electricity #Wind_Separator {
 a320-neo-mfd-element #Mainframe #Electricity #Wind_Strength {
   font-size: var(--windLabelFontSize);
 }
+a320-neo-mfd-element #Mainframe .xtrkError {
+  fill: var(--displayGreen);
+}

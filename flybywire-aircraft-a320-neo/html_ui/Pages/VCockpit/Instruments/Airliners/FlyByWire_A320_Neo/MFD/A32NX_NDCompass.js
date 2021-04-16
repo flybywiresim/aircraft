@@ -326,7 +326,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             [this.xTrkErrLeft, this.xTrkErrRight].forEach((ele) => {
                 ele.setAttribute("y", "65");
                 ele.setAttribute("visibility", "hidden");
-                ele.setAttribute("fill", "lime"); // TODO colour?
+                ele.setAttribute("class", "xtrkError");
                 ele.setAttribute("font-size", "16");
                 ele.setAttribute("alignment-baseline", "top");
                 trsGroup.appendChild(ele);
@@ -402,7 +402,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             ele.setAttribute("y", "924");
             ele.setAttribute("text-anchor", "end");
             ele.setAttribute("visibility", "hidden");
-            ele.setAttribute("fill", "lime"); // TODO colour?
+            ele.setAttribute("class", "xtrkError");
             ele.setAttribute("font-size", "28");
             ele.setAttribute("alignment-baseline", "top");
             this.root.appendChild(ele);
@@ -805,7 +805,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         [this.xTrkErrLeft, this.xTrkErrRight].forEach((ele) => {
             ele.setAttribute("y", "538");
             ele.setAttribute("visibility", "hidden");
-            ele.setAttribute("fill", "lime"); // TODO colour
+            ele.setAttribute("class", "xtrkError");
             ele.setAttribute("font-size", "24");
             ele.setAttribute("alignment-baseline", "top");
             this.root.appendChild(ele);
