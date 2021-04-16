@@ -542,7 +542,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             case 4:
                 this.compass.svg.setMode(Jet_NDCompass_Display.PLAN, Jet_NDCompass_Navigation.NAV);
                 this.map.setMode(Jet_NDCompass_Display.PLAN);
-                this.info.setMode(Jet_NDCompass_Navigation.NAV);
+                this.info.setMode(Jet_NDCompass_Navigation.NAV, Jet_NDCompass_Display.PLAN);
                 this.setFlightPlanVisibility(true);
                 break;
         }
@@ -863,9 +863,9 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
     }
     onEvent(_event) {
     }
-    setMode(display) {
+    setMode(navMode, displayMode) {
         if (this.ndInfo) {
-            this.ndInfo.setMode(display, 0);
+            this.ndInfo.setMode(navMode, 0, displayMode);
         }
     }
     showILS(_val) {

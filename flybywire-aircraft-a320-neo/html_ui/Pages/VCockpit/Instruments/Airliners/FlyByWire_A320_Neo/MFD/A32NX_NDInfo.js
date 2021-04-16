@@ -3,6 +3,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
         super(...arguments);
         this._navMode = Jet_NDCompass_Navigation.NAV;
         this._navSource = 0;
+        this._displayMode = Jet_NDCompass_Display.ARC;
         this._showILS = false;
         this._showET = false;
         this._dTime = 0;
@@ -45,7 +46,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
         this.setTrueAirSpeed(0, true);
         this.setWind(0, 0, 0, true);
         this.setWaypoint("", 0, 0, 0, true);
-        this.setMode(this._navMode, this._navSource, true);
+        this.setMode(this._navMode, this._navSource, this._displayMode, true);
     }
     update(_dTime) {
         this._dTime = _dTime / 1000;
@@ -72,7 +73,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
     showILS(_val) {
         this._showILS = _val;
     }
-    setMode(_navMode, _navSource, _force = false) {
+    setMode(_navMode, _navSource, displayMode, _force = false) {
         if (this._navMode != _navMode || this._navSource != _navSource || _force) {
             this._navMode = _navMode;
             this._navSource = _navSource;
@@ -100,6 +101,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
                 }
             }
         }
+        this._displayMode = displayMode;
     }
     updateSpeeds() {
         this.setGroundSpeed(Math.round(Simplane.getGroundSpeed()));
@@ -280,10 +282,10 @@ class Jet_MFD_NDInfo extends HTMLElement {
     }
     updateVOR() {
         if (this.VORLeft != null) {
-            this.VORLeft.update(this.gps, this.aircraft);
+            this.VORLeft.update(this.gps, this.aircraft, this._displayMode);
         }
         if (this.VORRight != null) {
-            this.VORRight.update(this.gps, this.aircraft);
+            this.VORRight.update(this.gps, this.aircraft, this._displayMode);
         }
     }
 
@@ -452,17 +454,14 @@ class VORDMENavAid {
         this.setMode(NAV_AID_MODE.NONE, true);
         this.setDistanceValue(0, true);
     }
-    update(_gps, _aircraft) {
+    update(_gps, _aircraft, displayMode) {
         this.gps = _gps;
         this.aircraft = _aircraft;
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         const index = parseInt(url.substring(url.length - 1));
         let state = Simplane.getAutoPilotNavAidState(_aircraft, index, this.index);
-        if (_aircraft == Aircraft.B747_8) {
-            state--;
-            if (state < 0) {
-                state = 2;
-            }
+        if (displayMode === Jet_NDCompass_Display.PLAN) {
+            state = NAV_AID_STATE.OFF;
         }
         this.setState(state);
         if (this.currentState != NAV_AID_STATE.OFF) {
