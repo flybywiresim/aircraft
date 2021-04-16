@@ -17,6 +17,7 @@
 1. [MCDU] Show max distance of 9999 NM on duplicate waypoint selection - @tracernz (Mike)
 1. [DU] Display units only run their self-test when unpowered over 10 seconds - @davidwalschots (David Walschots)
 1. [DISPLAYS] RMP backlight, ATC and RTPI font color and backlight - @marcman86 (marcman86#4907)
+1. [RMP] Enabled LED indicators when testing ANN lights - @ImenesFBW (Imenes)
 1. [EFB] Fix fuel tank capacity values - @donstim (donbikes#4084)
 
 ## 0.6.0
