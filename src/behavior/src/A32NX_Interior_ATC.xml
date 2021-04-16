@@ -50,6 +50,7 @@
                         <Switch>
                             <Case Check="POTENTIOMETER">
                                 <UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
+                                    <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                                 </UseTemplate>
                             </Case>
                             <Case Check="SIMVAR_POWER_SETTING">
@@ -164,7 +165,7 @@
             </UseTemplate>
             <Component ID="#KNOB_XPNDR_ON_OFF_NODE_ID#" Node="#KNOB_XPNDR_ON_OFF_NODE_ID#">
                 <Update Once="True">
-                        (L:XMLVAR_ALT_MODE_REQUESTED) (&gt;I:XMLVAR_ALT_MODE_REQUESTED) 
+                        (L:XMLVAR_ALT_MODE_REQUESTED) (&gt;I:XMLVAR_ALT_MODE_REQUESTED)
                         #UPDATE_AUTO_TRANSPONDER_STATE#
                 </Update>
                 <UseTemplate Name="ASOBO_GT_Switch_Code">

@@ -3561,7 +3561,7 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>PUSH_ATC_FAIL_SEQ2</NODE_ID>
-                <EMISSIVE_CODE>(L:XMLVAR_LTS_Test)</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(L:XMLVAR_LTS_Test) (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) and</EMISSIVE_CODE>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_ATC_Panel_TARA">
                 <Node_ID>KNOB_ATC_TARA</Node_ID>
