@@ -709,19 +709,16 @@
         </Component>
 
         <Component ID="Front_Middle">
-            <Component ID="Brake_Fan_Imported">
-                <UseTemplate Name="FBW_Push_BrkFan_Toggle">
-                    <NODE_ID>PUSH_BKRFAN_IMPORTED</NODE_ID>
-                    <PART_ID>BRKFAN</PART_ID>
-                    <ANIM_NAME>PUSH_BKRFAN_IMPORTED</ANIM_NAME>
-                    <NODE_ID_ON>PUSH_BKRFAN_IMPORTED_SEQ2</NODE_ID_ON>
-                    <NODE_ID_HOT>PUSH_BKRFAN_IMPORTED_SEQ1</NODE_ID_HOT>
-                    <TOGGLE_SIMVAR>L:A32NX_BRAKE_FAN_BTN_PRESSED</TOGGLE_SIMVAR>
-                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                    <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Turn OFF brake fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
-                </UseTemplate>
-            </Component>
+            <UseTemplate Name="FBW_Push_Toggle">
+                <NODE_ID>PUSH_BKRFAN_IMPORTED</NODE_ID>
+                <PART_ID>BRKFAN</PART_ID>
+                <TOGGLE_SIMVAR>L:A32NX_BRAKE_FAN_BTN_PRESSED</TOGGLE_SIMVAR>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ1_CODE>(L:A32NX_BRAKES_HOT, Bool)</SEQ1_CODE>
+                <SEQ2_CODE>(L:A32NX_BRAKE_FAN, Bool)</SEQ2_CODE>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Turn OFF brake fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
+            </UseTemplate>
 
             <UseTemplate Name="ASOBO_LANDING_GEAR_Lever_Gear_Template">
                 <ANIM_NAME>lever_landing_gear</ANIM_NAME>
