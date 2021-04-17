@@ -4,7 +4,7 @@
 
 * Use modern flight model (legacy flight model is not supported)
 * It's crucial for the Autothrust system to have properly setup detents. Ensure that you have enough dead zone around the detents.
-* Typical issues when this is not done properly: constantly flashing "LVR CLB", FLX / TOGA not engaging or ATHR not holding speed correctly (the latter can also happen when in CLB/OP CLB or DES/OP DES and flying manually -> in that case you need to take care of holding speed with pitch) 
+* Typical issues when this is not done properly: constantly flashing "LVR CLB", FLX / TOGA not engaging or ATHR not holding speed correctly (the latter can also happen when in CLB/OP CLB or DES/OP DES and flying manually -> in that case you need to take care of holding speed with pitch)
 
 ## Custom Autopilot and Autothrust System incl. new Engine model
 
@@ -78,6 +78,47 @@
 - ✔️ AP is disconnected due to sidestick or rudder input
 - ✔️ EWD has been improved to correctly display N2 > 100
 
+### Mapping of events to control autopilot / autothrust
+
+⚠️ Not all events are working and it's also difficult to map all default events because there is no 100% match.
+
+The recommendation is to use a combination of default events and the custom events to trigger the FCU. This has been tested with the Honeycomb Bravo Throttle and SPAD.next and works well.
+
+Default events:
+Event | Function
+--- | ---
+AP_MASTER | Toggles AP 1 master
+AUTOPILOT_OFF | Disconnect AP (like red button on sidestick)
+AUTOPILOT_DISENGAGE_TOGGLE | Same as AP_MASTER
+AP_SPD_VAR_INC | Clockwise dial Speed knob on FCU
+AP_SPD_VAR_DEC | Anti-clockwise dial Speed knob on FCU
+HEADING_BUG_INC | Clockwise dial Heading knob on FCU
+HEADING_BUG_DEC | Anti-clockwise dial Heading knob on FCU
+AP_VS_VAR_INC | Clockwise dial V/S knob on FCU
+AP_VS_VAR_DEC | Anti-clockwise dial V/S knob on FCU
+AP_APR_HOLD | Push APPR button on FCU
+AP_LOC_HOLD | Push LOC button on FCU
+AUTO_THROTTLE_ARM | Push ATHR button on FCU
+AUTO_THROTTLE_DISCONNECT | Disconnect ATHR (like red button on throttle levers)
+AUTO_THROTTLE_TO_GA | Apply TOGA thrust
+
+Custom events:
+Event | Function
+--- | ---
+A32NX.FCU_AP_1_PUSH | Push AP1 on FCU
+A32NX.FCU_AP_2_PUSH | Push AP2 on FCU
+A32NX.FCU_SPD_PUSH | Push Speed knob on FCU
+A32NX.FCU_SPD_PULL | Pull Speed knob on FCU
+A32NX.FCU_SPD_MACH_TOGGLE_PUSH | Push SPD/MACH toggle on FCU
+A32NX.FCU_HDG_PUSH | Push Heading knob on FCU
+A32NX.FCU_HDG_PULL | Pull Heading knob on FCU
+A32NX.FCU_ALT_PUSH | Push Altitude knob on FCU
+A32NX.FCU_ALT_PULL | Pull Altitude knob on FCU
+A32NX.FCU_VS_PUSH | Push V/S knob on FCU
+A32NX.FCU_VS_PULL | Pull V/S knob on FCU
+A32NX.FCU_LOC_PUSH | Push LOC button on FCU
+A32NX.FCU_APPR_PUSH | Push APPR button on FCU
+A32NX.FCU_EXPED_PUSH | Push EXPED button on FCU
 
 ### Sensitivity, dead zones and throttle mapping
 
