@@ -31,7 +31,7 @@ class SpoilersHandler {
  private:
   static constexpr double POSITION_RETRACTED = 0.0;
   static constexpr double POSITION_PARTIAL = 0.25;
-  static constexpr double POSITION_LIMIT_AUTOPILOT = 1.0;  // -> 0.5 with new flight model
+  static constexpr double POSITION_LIMIT_AUTOPILOT = 0.5;
   static constexpr double POSITION_FULL = 1.0;
 
   static constexpr double MINIMUM_AIRBORNE_TIME = 5.0;
@@ -42,7 +42,7 @@ class SpoilersHandler {
   static constexpr double TLA_MCT = 35.0;
   static constexpr double TLA_CONDITION_TOUCH_GO = 20.0;
 
-  static constexpr double FLAPS_HANDLE_INDEX_FULL = 4;
+  static constexpr double FLAPS_HANDLE_INDEX_FULL = 5;
   static constexpr double INHIBIT_COOLDOWN_TIME = 10.0;
 
   bool isInitialized = false;
