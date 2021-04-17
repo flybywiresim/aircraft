@@ -1,6 +1,9 @@
-﻿@font-face {
+﻿@import url("/CSS/A32NX_Display_Common.css");
+
+@font-face {
   font-family: "ECAMFontRegular";
   src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
+  fill: var(--displayMagenta);
   font-weight: normal;
   font-style: normal;
 }
