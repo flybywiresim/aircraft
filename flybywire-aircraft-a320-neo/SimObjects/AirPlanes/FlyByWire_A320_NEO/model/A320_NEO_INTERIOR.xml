@@ -14,7 +14,7 @@
 
     <Behaviors>
         <Include ModelBehaviorFile="A32NX\Interior\A32NX_Interior_Includes.xml"/>
-        <Include ModelBehaviorFile="A32NX\A32NX_Interior_Generics.xml"/>
+        <Include ModelBehaviorFile="A32NX\generated\A32NX_Interior_Generics.xml"/>
         <Include ModelBehaviorFile="Asobo\Common.xml"/>
         <Include ModelBehaviorFile="Asobo\Airliner\GlassCockpit.xml"/>
 
