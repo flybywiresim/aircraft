@@ -112,20 +112,7 @@ export const FctlPage = () => {
     const [rightSpoilerState] = useSimVar('SPOILERS RIGHT POSITION', 'percent over 100', 50);
     const [spoilerHandleState] = useSimVar('SPOILERS HANDLE POSITION', 'percent over 100', 100);
 
-    const [groundSpeedState] = useSimVar('SURFACE RELATIVE GROUND SPEED', 'feet_per_second', 50);
-
     const [spoilersArmedState] = useSimVar('SPOILERS ARMED', 'boolean', 500);
-
-    const [onGroundState] = useSimVar('SIM ON GROUND', 'boolean', 500);
-
-    const [engine1ModeState] = useSimVar('GENERAL ENG THROTTLE MANAGED MODE:1', 'number', 1000);
-    const [engine2ModeState] = useSimVar('GENERAL ENG THROTTLE MANAGED MODE:2', 'number', 1000);
-
-    const spoilersArmed = !!(spoilersArmedState
-        && onGroundState
-        && groundSpeedState > 25
-        && engine1ModeState <= 2
-        && engine2ModeState <= 2);
 
     const speedBrakeY = 104;
     const leftSpeedBrakeX = 103;
@@ -148,7 +135,7 @@ export const FctlPage = () => {
             speedbrake={spoilerHandleState}
             spoilerpos={leftSpoilerState}
             ailpos={aileronLeftDeflectionState}
-            spoilersArmed={spoilersArmed}
+            spoilerArmedState={spoilersArmedState}
         />);
         spoilers.push(<Spoiler
             leftorright="right"
@@ -160,7 +147,7 @@ export const FctlPage = () => {
             speedbrake={spoilerHandleState}
             spoilerpos={rightSpoilerState}
             ailpos={aileronRightDeflectionState}
-            spoilersArmed={spoilersArmed}
+            spoilerArmedState={spoilersArmedState}
         />);
     }
 
@@ -696,20 +683,22 @@ type SpoilerProps = {
     speedbrake: number,
     spoilerpos: number,
     ailpos: number,
-    spoilersArmed: boolean
+    spoilerArmedState: boolean,
 }
 
-const Spoiler = ({ index, leftorright, x, y, yw, hydAvail, speedbrake, spoilerpos, ailpos, spoilersArmed } : SpoilerProps) => {
+const Spoiler = ({ index, leftorright, x, y, yw, hydAvail, speedbrake, spoilerpos, ailpos, spoilerArmedState } : SpoilerProps) => {
     let showspoiler = false;
     let hydraulicsAvailable = false;
     if (index === 1) {
-        showspoiler = !!(spoilersArmed && spoilerpos > 0.07);
+        showspoiler = !!(spoilerArmedState && spoilerpos > 0.1);
     } else if (index === 5) {
-        showspoiler = speedbrake <= 0.01 && spoilerpos > 0.05 ? true : showspoiler;
-        showspoiler = speedbrake > 0.01 && ((leftorright === 'left' && ailpos < -0.05) || (leftorright === 'right' && ailpos > 0.05)) ? true : showspoiler;
+        console.log(`Speed brake is ${speedbrake}`);
+        console.log(`Spoiler position is ${spoilerpos}`);
+        showspoiler = spoilerArmedState && spoilerpos > 0.1 ? true : showspoiler;
+        showspoiler = ((leftorright === 'left' && ailpos < -0.5) || (leftorright === 'right' && ailpos > 0.5)) ? true : showspoiler;
     } else {
-        showspoiler = spoilerpos > 0.05 ? true : showspoiler;
-        showspoiler = speedbrake > 0.01 ? true : showspoiler;
+        showspoiler = spoilerpos > 0.1 ? true : showspoiler;
+        showspoiler = speedbrake > 0.1 ? true : showspoiler;
     }
 
     // hydraulics
