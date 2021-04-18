@@ -144,8 +144,8 @@ A: No, it is a completely free aircraft, open-source.
 
 **Q: How do we report bugs?**
 
-A: You can report bugs to us via the [#help channel](https://discord.gg/snueqJjDUN) in the Discord server. Addtionally, you can start/create a GitHub issue (please make sure your issue doesn't already exist). 
+A: You can report bugs to us via the [#support channel](https://discord.gg/snueqJjDUN) in the Discord server. Addtionally, you can start/create a GitHub issue (please make sure your issue doesn't already exist). 
 
 **Q: Why is my version not the same as what I see others using?**
 
-A: We have two versions, the Stable and Developer (Master). The Stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The Developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time. If you find this to be the case, you can report these issues in the [#help channel](https://discord.gg/snueqJjDUN) Discord or via GitHub Issues (check there is not an existing issue of the same nature as yours).
+A: We have two versions, the Stable and Developer (Master). The Stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The Developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time. If you find this to be the case, you can report these issues in the [#support channel](https://discord.gg/snueqJjDUN) Discord or via GitHub issues (check there is not an existing issue of the same nature as yours).
