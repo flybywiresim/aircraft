@@ -1,7 +1,12 @@
 'use strict';
 
 module.exports = {
-    purge: ['./**/*.{js,jsx,ts,tsx}'],
+    purge: {
+        enabled: true,
+        content: [
+            './**/*.{jsx,tsx}',
+        ],
+    },
     darkMode: false, // or 'media' or 'class'
     theme: {
         extend: {
