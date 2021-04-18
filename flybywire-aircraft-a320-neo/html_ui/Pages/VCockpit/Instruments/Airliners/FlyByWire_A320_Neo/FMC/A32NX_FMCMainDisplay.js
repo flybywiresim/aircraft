@@ -2545,7 +2545,7 @@ class FMCMainDisplay extends BaseAirliners {
         const HPA_REGEX = /^[01]?[0-9]{3}$/;
         const INHG_REGEX = /^[23][0-9]\.?[0-9]{2}$/;
 
-        if (HPA_REGEX.test(value)) {
+        if (HPA_REGEX.test(s)) {
             if (value >= 745 && value <= 1050) {
                 this.perfApprQNH = value;
                 return true;
@@ -2553,7 +2553,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.addNewMessage(NXSystemMessages.entryOutOfRange);
                 return false;
             }
-        } else if (INHG_REGEX.test(value)) {
+        } else if (INHG_REGEX.test(s)) {
             if (value >= 2200 && value <= 3100) {
                 this.perfApprQNH = value / 100;
                 return true;
