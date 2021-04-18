@@ -255,15 +255,13 @@
                 <NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_HANDLING_Wheel_ElevatorTrim_Template">
+            <UseTemplate Name="FBW_HANDLING_Wheel_ElevatorTrim_Template">
                 <ANIM_NAME>lever_trimtab_elevator_key_pct</ANIM_NAME>
                 <NODE_ID>LEVER_ELEVATORTRIM_1</NODE_ID>
                 <NODE_ID2>LEVER_ELEVATORTRIM_2</NODE_ID2>
-                <DOUBLE_WHEEL/>
                 <REPEAT_ANIM>5</REPEAT_ANIM>
                 <DRAG_AXIS_SCALE>20</DRAG_AXIS_SCALE>
                 <DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE>                <!-- Limit to -4.5 deg -->
-
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_HANDLING_Indicator_ElevatorTrim_Template">
@@ -3337,6 +3335,50 @@
                 <ANIMTIP_1>Set TCAS traffic to ALL</ANIMTIP_1>
                 <ANIMTIP_2>Set TCAS traffic to ABV</ANIMTIP_2>
                 <ANIMTIP_3>Set TCAS traffic to BLW</ANIMTIP_3>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="Airbus_BRK">
+            <Component ID="BRK_PRESS_ARC_L" Node="BRK_PRESS_ARC_L">
+                <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                    <ANIM_NAME>Press_Arc_L</ANIM_NAME>
+                    <ANIM_LENGTH>3</ANIM_LENGTH>
+                    <ANIM_DURATION>1</ANIM_DURATION>
+                    <ANIM_CODE>(A:BRAKE PARKING POSITION, Bool) 2 *</ANIM_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="BRK_PRESS_ARC_R" Node="BRK_PRESS_ARC_L">
+                <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                    <ANIM_NAME>Press_Arc_R</ANIM_NAME>
+                    <ANIM_LENGTH>3</ANIM_LENGTH>
+                    <ANIM_DURATION>1</ANIM_DURATION>
+                    <ANIM_CODE>(A:BRAKE PARKING POSITION, Bool) 2 *</ANIM_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="ACCU_PRESS" Node="BRK_ACCU_PRESS_ARC">
+                <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                    <ANIM_NAME>Accu_Press</ANIM_NAME>
+                    <ANIM_LENGTH>1</ANIM_LENGTH>
+                    <ANIM_DURATION>1</ANIM_DURATION>
+                    <ANIM_CODE>0.8</ANIM_CODE>
+                </UseTemplate>
+            </Component>
+
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>BRK_DECALS</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>BRK_ACCU_PRESS_IND</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>BRK_PRESS_IND_L</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                <NODE_ID>BRK_PRESS_IND_R</NODE_ID>
+                <POTENTIOMETER>85</POTENTIOMETER>
             </UseTemplate>
         </Component>
 
