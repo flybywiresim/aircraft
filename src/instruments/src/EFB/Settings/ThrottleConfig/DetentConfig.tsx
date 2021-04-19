@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NXDataStore, usePersistentProperty } from '../../../Common/persistence';
+import { usePersistentProperty, usePersistentPropertyWithDefault } from '../../../Common/persistence';
 
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import Input from '../../Components/Form/Input/Input';
@@ -21,9 +21,10 @@ interface Props {
 const DetentConfig: React.FC<Props> = (props: Props) => {
     const [showWarning, setShowWarning] = useState(false);
 
-    const [deadZone, setDeadZone] = useState(NXDataStore.get(`THROTTLE_${props.throttleNumber}DETENT_${props.index}`, '0.05'));
+    const [deadZone, setDeadZone] = usePersistentPropertyWithDefault(`THROTTLE_${props.throttleNumber}DETENT_${props.index}_RANGE`, '0.05');
+
     const [previousMode, setPreviousMode] = useState(props.expertMode);
-    const [axisValue, setAxisValue] = usePersistentProperty(`THROTTLE_${props.throttleNumber}DETENT_RAW_${props.index}`);
+    const [axisValue, setAxisValue] = usePersistentProperty(`THROTTLE_${props.throttleNumber}AXIS_${props.index}_VALUE`);
 
     const setFromTo = (throttle1Position, settingLower, settingUpper, overrideValue?: string) => {
         const newSetting = overrideValue || throttle1Position;
@@ -35,7 +36,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
         }
     };
 
-    const updateDeadzone = (settingLower, settingUpper, deadZone: number) => {
+    const applyDeadzone = (settingLower, settingUpper, deadZone: number) => {
         settingLower.forEach((f) => f(parseFloat(axisValue) - deadZone < -1 ? -1 : parseFloat(axisValue) - deadZone));
         settingUpper.forEach((f) => f(parseFloat(axisValue) + deadZone > 1 ? 1 : parseFloat(axisValue) + deadZone));
     };
@@ -45,7 +46,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
     });
 
     return (
-        <div className="mb-2 w-full justify-between items-center p-2 flex flex-row">
+        <div className="mb-2 w-full h-96 justify-between items-center p-2 flex flex-row flex-shrink-0">
 
             {props.barPosition === 'left'
             && (
@@ -81,10 +82,9 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             onChange={(deadZone) => {
                                 if (parseFloat(deadZone) >= 0.01) {
                                     if (previousMode === props.expertMode) {
-                                        updateDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, parseFloat(deadZone));
-                                        NXDataStore.set(`THROTTLE_${props.throttleNumber}DETENT_${props.index}`, parseFloat(deadZone).toFixed(2));
+                                        applyDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, parseFloat(deadZone));
                                         setShowWarning(false);
-                                        setDeadZone(deadZone);
+                                        setDeadZone(parseFloat(deadZone).toFixed(2));
                                     }
                                 } else {
                                     setShowWarning(true);
@@ -108,14 +108,13 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             key={props.index}
                             label="Configure End"
                             type="number"
-                            className="dark-option"
+                            className="dark-option w-36 mr-0"
                             value={!props.expertMode ? deadZone : props.upperBoundDetentGetter.toFixed(2)}
                             onChange={(deadZone) => {
                                 if (previousMode === props.expertMode) {
                                     const dz = Math.abs((Math.abs(props.upperBoundDetentGetter) - Math.abs(props.lowerBoundDetentGetter)));
                                     setAxisValue(dz / 2);
                                     setDeadZone(dz.toFixed(2));
-                                    NXDataStore.set(`THROTTLE_${props.throttleNumber}DETENT_${props.index}`, dz.toFixed(2));
                                     props.upperBoundDetentSetter.forEach((f) => f(parseFloat(deadZone)));
                                     setShowWarning(false);
                                 }
@@ -125,14 +124,13 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             key={props.index}
                             label={props.expertMode ? 'Configure Start' : 'Configure Range'}
                             type="number"
-                            className="dark-option mt-2"
+                            className="dark-option mt-2 w-36"
                             value={!props.expertMode ? deadZone : props.lowerBoundDetentGetter.toFixed(2)}
                             onChange={(deadZone) => {
                                 if (previousMode === props.expertMode) {
                                     const dz = Math.abs((Math.abs(props.upperBoundDetentGetter) - Math.abs(props.lowerBoundDetentGetter)));
                                     setAxisValue(dz / 2);
                                     setDeadZone(dz.toFixed(2));
-                                    NXDataStore.set(`THROTTLE_${props.throttleNumber}DETENT_${props.index}`, dz.toFixed(2));
                                     props.lowerBoundDetentSetter.forEach((f) => f(parseFloat(deadZone)));
                                     setShowWarning(false);
                                 }

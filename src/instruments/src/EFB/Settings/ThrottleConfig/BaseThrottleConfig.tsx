@@ -54,7 +54,7 @@ const BaseThrottleConfig: React.FC<Props> = (props: Props) => {
                         {' '}
 
                     </h1>
-                    <div className="ml-2 mt-1 text-white"><IconEdit onMouseDown={() => setExpertMode(!expertMode)} size="1.125rem" stroke="1.5" /></div>
+                    <div className="ml-2 text-blue-500"><IconEdit onMouseDown={() => setExpertMode(!expertMode)} size="1.5rem" stroke="1.5" /></div>
                 </div>
 
                 <div className="flex flex-row">
