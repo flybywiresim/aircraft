@@ -72,7 +72,8 @@ This version is the same as the regular master/development version. However, thi
 
 ### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
 
-Open the zip that you downloaded from one of the links above, and drag the```flybywire-aircraft-a320-neo```folder inside the zip into your Community folder.
+Open the zip that you downloaded from one of the links above, and drag the `flybywire-aircraft-a320-neo` folder inside the zip into your `Community` folder.
+
 
 See below for the location of your Community folder:
 
