@@ -70,6 +70,10 @@
       {
         "gltf": "./brk/brk.gltf",
         "bin": "./brk/brk.bin"
+      },
+      {
+        "gltf": "./light/light.gltf",
+        "bin": "./light/light.bin"
       }
     ],
     "modifications": [

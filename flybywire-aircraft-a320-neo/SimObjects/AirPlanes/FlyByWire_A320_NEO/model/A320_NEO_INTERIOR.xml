@@ -257,15 +257,13 @@
                 <NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_HANDLING_Wheel_ElevatorTrim_Template">
+            <UseTemplate Name="FBW_HANDLING_Wheel_ElevatorTrim_Template">
                 <ANIM_NAME>lever_trimtab_elevator_key_pct</ANIM_NAME>
                 <NODE_ID>LEVER_ELEVATORTRIM_1</NODE_ID>
                 <NODE_ID2>LEVER_ELEVATORTRIM_2</NODE_ID2>
-                <DOUBLE_WHEEL/>
                 <REPEAT_ANIM>5</REPEAT_ANIM>
                 <DRAG_AXIS_SCALE>20</DRAG_AXIS_SCALE>
                 <DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE>                <!-- Limit to -4.5 deg -->
-
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_HANDLING_Indicator_ElevatorTrim_Template">
@@ -1500,8 +1498,19 @@
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
+                <!-- Hide the original light -->
+                <Component ID="LIGHTS_Overhead" Node="LIGHTS_Overhead">
+                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                    </UseTemplate>
+                </Component>
+
                 <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
-                    <NODE_ID>LIGHTS_Overhead</NODE_ID>
+                    <NODE_ID>LIGHTS_Overhead_L</NODE_ID>
+                    <POTENTIOMETER>7</POTENTIOMETER>
+                </UseTemplate>
+                <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
+                    <NODE_ID>LIGHTS_Overhead_R</NODE_ID>
                     <POTENTIOMETER>7</POTENTIOMETER>
                 </UseTemplate>
             </Component>
@@ -1750,6 +1759,7 @@
                             <LOCK_NODE_ID>LOCK_OVHD_EVAC_COMMAND</LOCK_NODE_ID>
 
                             <TOGGLE_SIMVAR>L:A32NX_EVAC_COMMAND_TOGGLE</TOGGLE_SIMVAR>
+                            <INVERTED_ANIMATION/>
 
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                             <SEQ1_CODE>(L:A32NX_EVAC_COMMAND_FAULT, Bool)</SEQ1_CODE>

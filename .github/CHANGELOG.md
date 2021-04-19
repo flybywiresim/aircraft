@@ -18,6 +18,8 @@
 1. [DU] Display units only run their self-test when unpowered over 10 seconds - @davidwalschots (David Walschots)
 1. [DISPLAYS] RMP backlight, ATC and RTPI font color and backlight - @marcman86 (marcman86#4907)
 1. [RMP] Enabled LED indicators when testing ANN lights - @ImenesFBW (Imenes)
+1. [EFB] Fix fuel tank capacity values - @donstim (donbikes#4084)
+1. [MISC] Fixed EVAC button animation - @tyler58546 (tyler58546)
 1. [ELEC] Replace the default electrical system - @davidwalschots (David Walschots)
 
 ## 0.6.0

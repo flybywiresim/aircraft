@@ -212,6 +212,7 @@
             - DISABLE_SEQ1          Not present     If present, the SEQ1 emissive is disabled
             - DISABLE_SEQ2          Not present     If present, the SEQ2 emissive is disabled
             - DUMMY_BUTTON          Not present     If true, the button will be a dummy button (not pressable, only emissive)
+            - INVERTED_ANIMATION    Not present     If true, the buttons animation will be inverted
 
     Authors: Benjamin Dupont (@Benjozork), lukecologne 12/10/20; David Walschots (@davidwalschots)
     -->
@@ -284,7 +285,14 @@
                                     <DOWN_STATE_CODE>#DOWN_CODE#</DOWN_STATE_CODE>
                                 </True>
                                 <False>
-                                    <DOWN_STATE_CODE>(#TOGGLE_SIMVAR#)</DOWN_STATE_CODE>
+                                    <Condition Check="INVERTED_ANIMATION">
+                                        <True>
+                                            <DOWN_STATE_CODE>(#TOGGLE_SIMVAR#) !</DOWN_STATE_CODE>
+                                        </True>
+                                        <False>
+                                            <DOWN_STATE_CODE>(#TOGGLE_SIMVAR#)</DOWN_STATE_CODE>
+                                        </False>
+                                    </Condition>
                                 </False>
                             </Condition>
                         </False>
