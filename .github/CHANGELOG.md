@@ -8,6 +8,7 @@
 1. [DISPLAYS] RMP backlight, ATC and RTPI font color and backlight - @marcman86 (marcman86#4907)
 1. [EFB] Fix fuel tank capacity values - @donstim (donbikes#4084)
 1. [MISC] Fixed EVAC button animation - @tyler58546 (tyler58546)
+1. [EFB] Reduced bundle size for better performance
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
