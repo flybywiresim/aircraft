@@ -3,7 +3,7 @@
         {
             "bufferView": 0,
             "componentType": 5126,
-            "count": 76,
+            "count": 82,
             "min": [
                 0.4780317544937134,
                 -0.18142367899417877,
@@ -21,7 +21,7 @@
             "bufferView": 0,
             "byteOffset": 12,
             "componentType": 5120,
-            "count": 76,
+            "count": 82,
             "type": "VEC4",
             "name": "x0_LIGHTS_Overhead.001_vertices#0_TANGENT"
         },
@@ -29,7 +29,7 @@
             "bufferView": 0,
             "byteOffset": 16,
             "componentType": 5120,
-            "count": 76,
+            "count": 82,
             "type": "VEC4",
             "name": "x0_LIGHTS_Overhead.001_vertices#0_NORMAL"
         },
@@ -37,7 +37,7 @@
             "bufferView": 0,
             "byteOffset": 20,
             "componentType": 5122,
-            "count": 76,
+            "count": 82,
             "type": "VEC2",
             "name": "x0_LIGHTS_Overhead.001_vertices#0_TEXCOORD_0"
         },
@@ -45,7 +45,7 @@
             "bufferView": 0,
             "byteOffset": 24,
             "componentType": 5122,
-            "count": 76,
+            "count": 82,
             "type": "VEC2",
             "name": "x0_LIGHTS_Overhead.001_vertices#0_TEXCOORD_1"
         },
@@ -53,29 +53,29 @@
             "bufferView": 0,
             "byteOffset": 28,
             "componentType": 5123,
-            "count": 76,
+            "count": 82,
             "type": "VEC4",
             "name": "x0_LIGHTS_Overhead.001_vertices#0_COLOR_0"
         },
         {
             "bufferView": 1,
             "componentType": 5123,
-            "count": 396,
+            "count": 402,
             "type": "SCALAR",
             "name": "x0_LIGHTS_Overhead.001_indices#0"
         },
         {
             "bufferView": 0,
-            "byteOffset": 2736,
+            "byteOffset": 2952,
             "componentType": 5126,
-            "count": 88,
+            "count": 82,
             "min": [
                 -0.6290826797485352,
                 -0.18142367899417877,
                 -0.1332007795572281
             ],
             "max": [
-                0.6059945821762085,
+                -0.47803187370300293,
                 0.21694722771644592,
                 0.0726054385304451
             ],
@@ -84,49 +84,49 @@
         },
         {
             "bufferView": 0,
-            "byteOffset": 2748,
+            "byteOffset": 2964,
             "componentType": 5120,
-            "count": 88,
+            "count": 82,
             "type": "VEC4",
             "name": "x0_LIGHTS_Overhead_vertices#0_TANGENT"
         },
         {
             "bufferView": 0,
-            "byteOffset": 2752,
+            "byteOffset": 2968,
             "componentType": 5120,
-            "count": 88,
+            "count": 82,
             "type": "VEC4",
             "name": "x0_LIGHTS_Overhead_vertices#0_NORMAL"
         },
         {
             "bufferView": 0,
-            "byteOffset": 2756,
+            "byteOffset": 2972,
             "componentType": 5122,
-            "count": 88,
+            "count": 82,
             "type": "VEC2",
             "name": "x0_LIGHTS_Overhead_vertices#0_TEXCOORD_0"
         },
         {
             "bufferView": 0,
-            "byteOffset": 2760,
+            "byteOffset": 2976,
             "componentType": 5122,
-            "count": 88,
+            "count": 82,
             "type": "VEC2",
             "name": "x0_LIGHTS_Overhead_vertices#0_TEXCOORD_1"
         },
         {
             "bufferView": 0,
-            "byteOffset": 2764,
+            "byteOffset": 2980,
             "componentType": 5123,
-            "count": 88,
+            "count": 82,
             "type": "VEC4",
             "name": "x0_LIGHTS_Overhead_vertices#0_COLOR_0"
         },
         {
             "bufferView": 1,
-            "byteOffset": 792,
+            "byteOffset": 804,
             "componentType": 5123,
-            "count": 408,
+            "count": 402,
             "type": "SCALAR",
             "name": "x0_LIGHTS_Overhead_indices#0"
         }
@@ -192,7 +192,7 @@
                     "mode": 4,
                     "extras": {
                         "ASOBO_primitive": {
-                            "PrimitiveCount": 132,
+                            "PrimitiveCount": 134,
                             "VertexType": "VTX",
                             "VertexVersion": 2
                         }
@@ -217,7 +217,7 @@
                     "mode": 4,
                     "extras": {
                         "ASOBO_primitive": {
-                            "PrimitiveCount": 136,
+                            "PrimitiveCount": 134,
                             "VertexType": "VTX",
                             "VertexVersion": 2
                         }
