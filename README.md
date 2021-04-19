@@ -120,7 +120,7 @@ The original contents of this repository are licensed under the MIT license.
 
 **Q: Can I download the aircraft in the current state?**
 
-A: Yes, see [downloads.](https://github.com/flybywiresim/a32nx#downloads)
+A: Yes, see [downloads.](#downloads)
 
 **Q: What liveries are available?**
 
