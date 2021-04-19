@@ -1462,8 +1462,19 @@
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
+                <!-- Hide the original light -->
+                <Component ID="LIGHTS_Overhead" Node="LIGHTS_Overhead">
+                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                    </UseTemplate>
+                </Component>
+
                 <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
-                    <NODE_ID>LIGHTS_Overhead</NODE_ID>
+                    <NODE_ID>LIGHTS_Overhead_L</NODE_ID>
+                    <POTENTIOMETER>7</POTENTIOMETER>
+                </UseTemplate>
+                <UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
+                    <NODE_ID>LIGHTS_Overhead_R</NODE_ID>
                     <POTENTIOMETER>7</POTENTIOMETER>
                 </UseTemplate>
             </Component>
@@ -1684,6 +1695,7 @@
                             <LOCK_NODE_ID>LOCK_OVHD_EVAC_COMMAND</LOCK_NODE_ID>
 
                             <TOGGLE_SIMVAR>L:A32NX_EVAC_COMMAND_TOGGLE</TOGGLE_SIMVAR>
+                            <INVERTED_ANIMATION/>
 
                             <SEQ1_CODE>(L:A32NX_EVAC_COMMAND_FAULT, Bool)</SEQ1_CODE>
                             <SEQ2_CODE>(L:A32NX_EVAC_COMMAND_TOGGLE, Bool) !</SEQ2_CODE>

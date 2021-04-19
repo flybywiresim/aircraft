@@ -19,7 +19,9 @@
 1. [DISPLAYS] RMP backlight, ATC and RTPI font color and backlight - @marcman86 (marcman86#4907)
 1. [RMP] Enabled LED indicators when testing ANN lights - @ImenesFBW (Imenes)
 1. [EFB] Fix fuel tank capacity values - @donstim (donbikes#4084)
+1. [MISC] Fixed EVAC button animation - @tyler58546 (tyler58546)
 1. [ND] ND Waypoint Icon Size, Icon Outlines, Airplane Icon Color and Outline - @marcman86 (marcman86#4907)
+
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)

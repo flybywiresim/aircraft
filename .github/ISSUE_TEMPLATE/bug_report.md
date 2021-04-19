@@ -10,7 +10,7 @@ assignees: ''
 <!-- Issues that do not use the issue template are likely to be ignored and closed. -->
 
 
-**Mod Version**
+**Aircraft Version**
 <!-- Please paste the contents from the build_info.json (located inside main aircraft folder) into the field (code block) below -->
 ```json
 
