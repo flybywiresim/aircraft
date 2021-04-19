@@ -34,7 +34,7 @@ Please note that this configuration may change in the future as the A32NX projec
 Pilot ID can be found in the Optional Entries section of the Dispatch Options page.
 
 ## Downloads
-**Warning**: The development (master) and experimental versions have been forked as a separate package/aircraft in MSFS, and will appear separate from the default A320neo. Existing Asobo A320neo liveries will be incompatible with the new package.
+**Warning**: All versions have been forked as a separate package/aircraft in MSFS. Existing Asobo A320neo liveries will be incompatible with the new package.
 
 **Warning:** The development (master) and experimental versions have been forked as a separate package/aircraft in MSFS, and will appear separate from the default A320neo. Existing Asobo A320neo liveries will be incompatible with the new package.
 
