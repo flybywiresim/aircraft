@@ -9,8 +9,6 @@
             - ANIM_SIMVAR_MIN       Default: 0          The lower bound of the position
             - ANIM_SIMVAR_MAX       Default: 100        The upper bound of the position
             - INCREMENT             Default: 1          The increment for each click / hold update
-
-    Authors: Benjamin Dupont (@Benjozork) 10/10/20
     -->
     <Template Name="FBW_Continuous_Knob_Finite_From_Simvar">
         <DefaultTemplateParameters>
@@ -213,8 +211,6 @@
             - DISABLE_SEQ2          Not present     If present, the SEQ2 emissive is disabled
             - DUMMY_BUTTON          Not present     If true, the button will be a dummy button (not pressable, only emissive)
             - INVERTED_ANIMATION    Not present     If true, the buttons animation will be inverted
-
-    Authors: Benjamin Dupont (@Benjozork), lukecologne 12/10/20; David Walschots (@davidwalschots)
     -->
     <Template Name="FBW_Push_Toggle">
         <DefaultTemplateParameters>
@@ -365,8 +361,6 @@
            - DISABLE_SEQ1       Not present     If present, SEQ1 emissive is disabled
            - DISABLE_SEQ2       Not present     If present, SEQ2 emissive is disabled
            - DUMMY_BUTTON       Not present     If true, the button will be a dummy button (not pressable, only emissive)
-
-    Authors: Benjamin Dupont (@Benjozork) 11/10/20
     -->
     <Template Name="FBW_Covered_Push_Toggle">
         <UseTemplate Name="ASOBO_GT_Switch_Dummy">
@@ -474,8 +468,6 @@
             - NODE_ID           <no default>    The knob node ID
             - ANIM_NAME         <no default>    The knob animation name
             - POTENTIOMETER     <no default>    The potentiometer index
-
-    Authors: Benjamin Dupont (@Benjozork) 12/10/20
     -->
     <Template Name="FBW_Lighting_Knob_With_Potentiometer">
         <DefaultTemplateParameters>

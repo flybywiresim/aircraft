@@ -7,8 +7,6 @@
             - DCDU_SIDE         <no default>    Either L or R
             - PLANE_NAME        <no default>    Plane project name
             - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
-
-    Authors: Benjamin Dupont (@Benjozork) 10/10/20
     -->
     <Template Name="FBW_Airbus_DCDU_Brightness_Switch">
         <DefaultTemplateParameters>
@@ -64,8 +62,6 @@
             - PLANE_NAME        <no default>    Plane project name
             - HTML_EVENT_ID     <no default>    HTML-Event that will be fired when the button is pushed
             - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
-
-    Authors: Benjamin Dupont (@Benjozork) 10/10/20
     -->
     <Template Name="FBW_Airbus_DCDU_Generic_Switch">
         <DefaultTemplateParameters>
@@ -94,8 +90,6 @@
             - NODE_ID           <no default>    Name of the button
             - PLANE_NAME        <no default>    Plane project name
             - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
-
-    Authors: Benjamin Dupont (@Benjozork) 11/10/20
     -->
     <Template Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
         <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
@@ -110,8 +104,6 @@
     Clone of Asobo template to fix broken logic
 
     Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position.
-
-    Authors: Asobo / Markus Ullmann (@jokey2k) 18/10/20
     -->
     <Template Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
         <DefaultTemplateParameters>
@@ -484,7 +476,7 @@
         <UseTemplate Name="FBW_Push_Held">
             <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
             <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-            
+
             <SEQ1_CODE>(L:A32NX_GPWS_Warning_Active, Bool)</SEQ1_CODE>
             <SEQ2_CODE>(L:A32NX_GPWS_GS_Warning_Active, Bool)</SEQ2_CODE>
             <HOLD_SIMVAR>L:A32NX_GPWS_TEST</HOLD_SIMVAR>
