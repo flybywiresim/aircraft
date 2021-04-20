@@ -13,6 +13,8 @@
             <AP_COUNT>1</AP_COUNT>
             <ID>1</ID>
             <ON_AP_MASTER_SWITCH></ON_AP_MASTER_SWITCH>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <SEQ2_POWERED>1</SEQ2_POWERED>
         </DefaultTemplateParameters>
         <OverrideTemplateParameters>
             <RESET_CODE>
@@ -39,7 +41,7 @@
                 </UseTemplate>
             </True>
         </Condition>
-        <UseTemplate Name="A32NX_AUTOPILOT_Push_Template">
+        <UseTemplate Name="FBW_AUTOPILOT_Push_Template">
             <LEFT_SINGLE_CODE>
 
                 (L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool) if{
@@ -70,8 +72,6 @@
 
             </LEFT_SINGLE_CODE>
             <EMISSIVE_CODE_ACTIVE>#APPR_CONDITION# (A:AUTOPILOT MASTER, Bool) (L:XMLVAR_Autopilot_#ID#_Status) and or</EMISSIVE_CODE_ACTIVE>
-            <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
         </UseTemplate>
     </Template>
 
@@ -85,9 +85,11 @@
             <DEFAULT_NAME>Localizer</DEFAULT_NAME>
             <HELPID>HELPID_AUTOPILOT_NAV_HOLD</HELPID>
             <TOOLTIPID>%(L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool)%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LOC_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LOC_OFF%{end}</TOOLTIPID>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <SEQ2_POWERED>1</SEQ2_POWERED>
         </DefaultTemplateParameters>
 
-        <UseTemplate Name="A32NX_AUTOPILOT_Push_Template">
+        <UseTemplate Name="FBW_AUTOPILOT_Push_Template">
             <LEFT_SINGLE_CODE>
 
                 (L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool) if{
@@ -102,8 +104,6 @@
 
             </LEFT_SINGLE_CODE>
             <EMISSIVE_CODE_ACTIVE>(L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool)</EMISSIVE_CODE_ACTIVE>
-            <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
         </UseTemplate>
     </Template>
 
@@ -117,9 +117,11 @@
             <DEFAULT_NAME>Approach</DEFAULT_NAME>
             <HELPID>HELPID_AUTOPILOT_APP_HOLD</HELPID>
             <TOOLTIPID>%((L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_APR_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_APR_OFF%{end}</TOOLTIPID>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <SEQ2_POWERED>1</SEQ2_POWERED>
         </DefaultTemplateParameters>
 
-        <UseTemplate Name="A32NX_AUTOPILOT_Push_Template">
+        <UseTemplate Name="FBW_AUTOPILOT_Push_Template">
             <LEFT_SINGLE_CODE>
 
                 (L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool) if{
@@ -134,8 +136,6 @@
 
             </LEFT_SINGLE_CODE>
             <EMISSIVE_CODE_ACTIVE>(L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool)</EMISSIVE_CODE_ACTIVE>
-            <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
         </UseTemplate>
     </Template>
 
@@ -144,12 +144,12 @@
 			<DEFAULT_NAME>Expedite</DEFAULT_NAME>
 			<PLANE_PREFIX></PLANE_PREFIX>
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <SEQ2_POWERED>1</SEQ2_POWERED>
 		</DefaultTemplateParameters>
-		<UseTemplate Name="A32NX_AUTOPILOT_Push_Template">
+		<UseTemplate Name="FBW_AUTOPILOT_Push_Template">
 			<LEFT_SINGLE_CODE>(&gt;H:A320_Neo_EXPEDITE_MODE)</LEFT_SINGLE_CODE>
 			<EMISSIVE_CODE_ACTIVE>(A:AUTOPILOT SPEED SLOT INDEX, Number) 3 ==</EMISSIVE_CODE_ACTIVE>
-            <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
 		</UseTemplate>
 	</Template>
 
@@ -356,6 +356,8 @@
 					<ID>0</ID>
 				</False>
 			</Condition>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <SEQ2_POWERED>1</SEQ2_POWERED>
 		</DefaultTemplateParameters>
 		<UseTemplate Name="FBW_AUTOPILOT_Push_AutoThrottle_SubTemplate">
 		</UseTemplate>
@@ -439,9 +441,7 @@
 			</Case>
 		</Switch>
 
-		<UseTemplate Name="A32NX_AUTOPILOT_Push_Template">
-            <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-            <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+		<UseTemplate Name="FBW_AUTOPILOT_Push_Template">
 		</UseTemplate>
 	</Template>
 

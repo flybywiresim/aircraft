@@ -532,6 +532,7 @@
                 <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
                     <NODE_ID>PUSH_EFIS_CS_GPWS</NODE_ID>
                     <ANIM_NAME>PUSH_EFIS_CS_GPWS</ANIM_NAME>
+                    <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_AIRBUS_Push_TERRONND_Template">
@@ -669,6 +670,7 @@
                 <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
                     <NODE_ID>PUSH_EFIS_FO_GPWS</NODE_ID>
                     <ANIM_NAME>PUSH_EFIS_FO_GPWS</ANIM_NAME>
+                    <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
@@ -742,16 +744,19 @@
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
                 <ID>1</ID>
                 <GEAR_ID>1</GEAR_ID>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_2</NODE_ID>
                 <ID>2</ID>
                 <GEAR_ID>0</GEAR_ID>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_3</NODE_ID>
                 <ID>3</ID>
                 <GEAR_ID>2</GEAR_ID>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
             </UseTemplate>
             <UseTemplate Name="ASOBO_LANDING_GEAR_Warning_Template">
                 <ANIM_NAME>DECAL_LANDING_INDICATOR</ANIM_NAME>
@@ -928,42 +933,52 @@
                     <!-- Brightness -->
                     <UseTemplate Name="FBW_Airbus_DCDU_Brightness_Switch">
                         <DCDU_SIDE>L</DCDU_SIDE>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_MS0MINUS</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_MS0PLUS</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_L1</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_L2</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_PRINT</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_POEMINUS</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_POEPLUS</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_R1</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_R2</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
                 </Component>
 
@@ -976,42 +991,52 @@
                     <!-- Brightness -->
                     <UseTemplate Name="FBW_Airbus_DCDU_Brightness_Switch">
                         <DCDU_SIDE>R</DCDU_SIDE>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_MS0MINUS</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_MS0PLUS</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_L1</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_L2</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_PRINT</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_POEMINUS</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_POEPLUS</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_R1</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_R2</NODE_ID>
+                        <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     </UseTemplate>
                 </Component>
 
@@ -1309,6 +1334,7 @@
                     <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                    <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                 </UseTemplate>
 
                 <UseTemplate Name="A32NX_GT_Switch_Dummy">
@@ -2986,6 +3012,8 @@
                 <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_FD_L_SEQ2</EMISSIVE_NODE_ID>
                 <POTENTIOMETER>84</POTENTIOMETER>
                 <ID>1</ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="A32NX_AUTOPILOT_Push_FlightDirector_Template">
@@ -2995,6 +3023,8 @@
                 <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_FD_R_SEQ2</EMISSIVE_NODE_ID>
                 <POTENTIOMETER>84</POTENTIOMETER>
                 <ID>2</ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_ILS_Template">
@@ -3002,6 +3032,8 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_LS_L</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <ID>1</ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_ILS_Template">
@@ -3009,6 +3041,8 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_LS_R</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <ID>2</ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
@@ -3044,6 +3078,8 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_CSTR_L</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <BTN_ID>CSTR_1</BTN_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_VORD_Template">
@@ -3051,6 +3087,8 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_VORD_L</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <BTN_ID>VORD_1</BTN_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_WPT_Template">
@@ -3058,6 +3096,8 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_WPT_L</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <BTN_ID>WPT_1</BTN_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_NDB_Template">
@@ -3065,6 +3105,8 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_NDB_L</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <BTN_ID>NDB_1</BTN_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_ARPT_Template">
@@ -3072,6 +3114,8 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_ARPT_L</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <BTN_ID>ARPT_1</BTN_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_CSTR_Template">
@@ -3079,6 +3123,8 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_CSTR_R</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <BTN_ID>CSTR_2</BTN_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_VORD_Template">
@@ -3086,6 +3132,8 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_VORD_R</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <BTN_ID>VORD_2</BTN_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_WPT_Template">
@@ -3093,6 +3141,8 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_WPT_R</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <BTN_ID>WPT_2</BTN_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_NDB_Template">
@@ -3100,6 +3150,8 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_NDB_R</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <BTN_ID>NDB_2</BTN_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_ARPT_Template">
@@ -3107,6 +3159,8 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_ARPT_R</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <BTN_ID>ARPT_2</BTN_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_AUTOPILOT_Push_SpeedToggle_Template">
@@ -3151,6 +3205,8 @@
                 <AP_COUNT>2</AP_COUNT>
                 <TYPE>EXCLUSIVE_AP</TYPE>
                 <TOOLTIPID>%((L:XMLVAR_Autopilot_1_Status, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_Airbus_Autopilot_Master">
@@ -3164,6 +3220,8 @@
                 <AP_COUNT>2</AP_COUNT>
                 <TYPE>EXCLUSIVE_AP</TYPE>
                 <TOOLTIPID>%((L:XMLVAR_Autopilot_2_Status, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AUTOPILOT_Push_AutoThrottle_Template">
@@ -3173,6 +3231,8 @@
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_ATHR_SEQ1</ACTIVE_NODE_ID>
                 <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_ATHR_SEQ2</EMISSIVE_NODE_ID>
                 <TOOLTIPID>%((A:AUTOPILOT THROTTLE ARM,Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_ARMED%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_OFF%{end}</TOOLTIPID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_Airbus_Autopilot_Push_Localiser">
@@ -3181,6 +3241,8 @@
                 <POTENTIOMETER>84</POTENTIOMETER>
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_LOC_SEQ1</ACTIVE_NODE_ID>
                 <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_LOC_SEQ2</EMISSIVE_NODE_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_Airbus_Autopilot_Push_Approach">
@@ -3189,6 +3251,8 @@
                 <POTENTIOMETER>84</POTENTIOMETER>
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_APPR_SEQ1</ACTIVE_NODE_ID>
                 <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_APPR_SEQ2</EMISSIVE_NODE_ID>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_Expedite_Template">
@@ -3197,6 +3261,8 @@
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_EXPED_SEQ1</ACTIVE_NODE_ID>
                 <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_EXPED_SEQ2</EMISSIVE_NODE_ID>
                 <POTENTIOMETER>84</POTENTIOMETER>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_Metric_Alt_Template">
@@ -3284,6 +3350,8 @@
 
             <UseTemplate Name="FBW_ECAM_PAGE_SELECTION_Template">
                 <POTENTIOMETER>85</POTENTIOMETER>
+                <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
 
             <CameraTitle>ECAM</CameraTitle>
@@ -3574,6 +3642,7 @@
                 <TYPE>AIRBUS</TYPE>
                 <PUSH_BTN_PREFIX>PUSH_ATC_</PUSH_BTN_PREFIX>
                 <POTENTIOMETER>85</POTENTIOMETER>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>PUSH_ATC_FAIL_SEQ2</NODE_ID>
@@ -3814,6 +3883,8 @@
             <UseTemplate Name="A32NX_PUSH_DOORPANEL_OPEN">
                 <NODE_ID>PUSH_DOORPANEL_OPEN</NODE_ID>
                 <ANIM_NAME>PUSH_DOORPANEL_OPEN</ANIM_NAME>
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
             </UseTemplate>
         </Component>
 
