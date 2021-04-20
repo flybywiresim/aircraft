@@ -692,8 +692,6 @@ const Spoiler = ({ index, leftorright, x, y, yw, hydAvail, speedbrake, spoilerpo
     if (index === 1) {
         showspoiler = !!(spoilerArmedState && spoilerpos > 0.1);
     } else if (index === 5) {
-        console.log(`Speed brake is ${speedbrake}`);
-        console.log(`Spoiler position is ${spoilerpos}`);
         showspoiler = spoilerArmedState && spoilerpos > 0.1 ? true : showspoiler;
         showspoiler = ((leftorright === 'left' && ailpos < -0.5) || (leftorright === 'right' && ailpos > 0.5)) ? true : showspoiler;
     } else {
