@@ -211,7 +211,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                     className={`ml-2 ${isConfigValid().length === 0 ? 'bg-blue-500 border-blue-500 hover:bg-blue-600 hover:border-blue-600' : 'bg-gray-500 opacity-30'}`}
                 />
                 <Button
-                    text="Reset"
+                    text="Load From File"
                     type={BUTTON_TYPE.BLUE}
                     onClick={() => syncToThrottle(1)}
                     className="ml-2 hover:bg-blue-600 hover:border-blue-600"

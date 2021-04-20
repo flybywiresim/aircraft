@@ -26,19 +26,19 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
     const [previousMode, setPreviousMode] = useState(props.expertMode);
     const [axisValue, setAxisValue] = usePersistentProperty(`THROTTLE_${props.throttleNumber}AXIS_${props.index}_VALUE`);
 
-    const setFromTo = (throttle1Position, settingLower, settingUpper, overrideValue?: string) => {
+    const setFromTo = (throttle1Position, settingLower, settingUpper, deadZone: number, overrideValue?: string) => {
         const newSetting = overrideValue || throttle1Position;
 
         setAxisValue(throttle1Position.toFixed(2));
         if (deadZone) {
-            settingLower.forEach((f) => f(newSetting - parseFloat(deadZone) < -1 ? -1 : newSetting - parseFloat(deadZone)));
-            settingUpper.forEach((f) => f(newSetting + parseFloat(deadZone) > 1 ? 1 : newSetting + parseFloat(deadZone)));
+            settingLower.forEach((f) => f(newSetting - deadZone < -1 ? -1 : newSetting - deadZone));
+            settingUpper.forEach((f) => f(newSetting + deadZone > 1 ? 1 : newSetting + deadZone));
         }
     };
 
-    const applyDeadzone = (settingLower, settingUpper, deadZone: number) => {
-        settingLower.forEach((f) => f(parseFloat(axisValue) - deadZone < -1 ? -1 : parseFloat(axisValue) - deadZone));
-        settingUpper.forEach((f) => f(parseFloat(axisValue) + deadZone > 1 ? 1 : parseFloat(axisValue) + deadZone));
+    const applyDeadzone = (settingLower, settingUpper, axisValue: number, deadZone: number) => {
+        settingLower.forEach((f) => f(axisValue - deadZone < -1 ? -1 : axisValue - deadZone));
+        settingUpper.forEach((f) => f(axisValue + deadZone > 1 ? 1 : axisValue + deadZone));
     };
 
     useEffect(() => {
@@ -82,7 +82,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             onChange={(deadZone) => {
                                 if (parseFloat(deadZone) >= 0.01) {
                                     if (previousMode === props.expertMode) {
-                                        applyDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, parseFloat(deadZone));
+                                        applyDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, parseFloat(axisValue), parseFloat(deadZone));
                                         setShowWarning(false);
                                         setDeadZone(parseFloat(deadZone).toFixed(2));
                                     }
@@ -95,7 +95,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             className="w-38 border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600"
                             text="Set From Throttle"
                             onClick={() => {
-                                setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter);
+                                setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter, parseFloat(deadZone));
                             }}
                             type={BUTTON_TYPE.NONE}
                         />
