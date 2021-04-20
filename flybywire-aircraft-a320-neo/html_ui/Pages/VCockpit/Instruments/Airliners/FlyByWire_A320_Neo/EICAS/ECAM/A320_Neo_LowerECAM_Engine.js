@@ -42,12 +42,12 @@ var A320_Neo_LowerECAM_Engine;
             this.updateThrottler = new UpdateThrottler(200);
             this.isInitialised = true;
         }
-        update(_deltaTime) {
+        update(deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
-            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-            if (_deltaTime === -1) {
+            deltaTime = this.updateThrottler.canUpdate(deltaTime);
+            if (deltaTime === -1) {
                 return;
             }
             const unitConversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
@@ -56,10 +56,10 @@ var A320_Neo_LowerECAM_Engine;
                 this.querySelector("#FuelUsedUnit").textContent = this.unitConversion === 1 ? "KG" : "LBS";
             }
             if (this.engineLeft != null) {
-                this.engineLeft.update(_deltaTime, this.unitConversion);
+                this.engineLeft.update(deltaTime, this.unitConversion);
             }
             if (this.engineRight != null) {
-                this.engineRight.update(_deltaTime, this.unitConversion);
+                this.engineRight.update(deltaTime, this.unitConversion);
             }
             this.updateIGN();
         }
@@ -82,16 +82,14 @@ var A320_Neo_LowerECAM_Engine;
                 this.engineRight.setEngineBleedValveState(false, false);
             }
 
-            if ((this.igniterLeft.titleUpdateRequired || this.igniterRight.titleUpdateRequired) && (this.ignTitleText != null)) {
-                if ((this.igniterLeft.currentState != A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE) || (this.igniterRight.currentState != A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE)) {
-                    this.ignTitleText.textContent = "IGN";
-                } else {
-                    this.ignTitleText.textContent = "";
-                }
+            if (this.igniterLeft.isIgniting() || this.igniterRight.isIgniting()) {
+                this.ignTitleText.textContent = "IGN";
+            } else {
+                this.ignTitleText.textContent = "";
             }
         }
-        onEvent(_event) {
-            super.onEvent(_event);
+        onEvent(event) {
+            super.onEvent(event);
         }
     }
     A320_Neo_LowerECAM_Engine.Page = Page;
@@ -111,8 +109,8 @@ var A320_Neo_LowerECAM_Engine;
             gaugeDef.startAngle = -180;
             gaugeDef.arcSize = 180;
             gaugeDef.currentValuePrecision = 0;
-            gaugeDef.minValue = A320_Neo_LowerECAM_Engine.Definitions.MIN_GAUGE_OIL;
-            gaugeDef.maxValue = A320_Neo_LowerECAM_Engine.Definitions.MAX_GAUGE_OIL;
+            gaugeDef.minValue = Definitions.MIN_GAUGE_OIL;
+            gaugeDef.maxValue = Definitions.MAX_GAUGE_OIL;
             gaugeDef.currentValueFunction = this.getOilQuantity.bind(this);
             this.oilQuantityGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.oilQuantityGauge.id = "OIL_Gauge";
@@ -120,14 +118,14 @@ var A320_Neo_LowerECAM_Engine;
             this.oilQuantityGauge.addGraduation(0, true, "0");
             this.oilQuantityGauge.addGraduation(12.5, true);
             this.oilQuantityGauge.addGraduation(25, true, "25");
-            gaugeDef.minValue = A320_Neo_LowerECAM_Engine.Definitions.MIN_GAUGE_PSI;
-            gaugeDef.maxValue = A320_Neo_LowerECAM_Engine.Definitions.MAX_GAUGE_PSI;
-            gaugeDef.minRedValue = A320_Neo_LowerECAM_Engine.Definitions.MIN_GAUGE_PSI_RED;
-            gaugeDef.maxRedValue = A320_Neo_LowerECAM_Engine.Definitions.MAX_GAUGE_PSI_RED;
-            gaugeDef.warningRange[0] = A320_Neo_LowerECAM_Engine.Definitions.MAX_GAUGE_PSI_RED;
-            gaugeDef.warningRange[1] = A320_Neo_LowerECAM_Engine.Definitions.MAX_GAUGE_PSI_WARNING;
-            gaugeDef.dangerRange[0] = A320_Neo_LowerECAM_Engine.Definitions.MIN_GAUGE_PSI_RED;
-            gaugeDef.dangerRange[1] = A320_Neo_LowerECAM_Engine.Definitions.MAX_GAUGE_PSI_RED;
+            gaugeDef.minValue = Definitions.MIN_GAUGE_PSI;
+            gaugeDef.maxValue = Definitions.MAX_GAUGE_PSI;
+            gaugeDef.minRedValue = Definitions.MIN_GAUGE_PSI_RED;
+            gaugeDef.maxRedValue = Definitions.MAX_GAUGE_PSI_RED;
+            gaugeDef.warningRange[0] = Definitions.MAX_GAUGE_PSI_RED;
+            gaugeDef.warningRange[1] = Definitions.MAX_GAUGE_PSI_WARNING;
+            gaugeDef.dangerRange[0] = Definitions.MIN_GAUGE_PSI_RED;
+            gaugeDef.dangerRange[1] = Definitions.MAX_GAUGE_PSI_RED;
             gaugeDef.currentValueFunction = this.getOilPressure.bind(this);
             this.oilPressureGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.oilPressureGauge.id = "PSI_Gauge";
@@ -145,7 +143,7 @@ var A320_Neo_LowerECAM_Engine;
             this.setN1VibrationValue(0, true);
             this.setN2VibrationValue(0, true);
         }
-        update(_deltaTime) {
+        update(deltaTime) {
             this.setFuelUsedValue(SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + this.engineIndex, "kg") * this.unitConversion);
             this.setOilTemperatureValue(SimVar.GetSimVarValue("GENERAL ENG OIL TEMPERATURE:" + this.engineIndex, "celsius"));
 
@@ -160,35 +158,35 @@ var A320_Neo_LowerECAM_Engine;
             this.setN2VibrationValue(SimVar.GetSimVarValue("TURB ENG VIBRATION:" + this.engineIndex, "Number")); // TODO: should have a different value than N1, currently API limited
 
             if (this.oilQuantityGauge != null) {
-                this.oilQuantityGauge.update(_deltaTime);
+                this.oilQuantityGauge.update(deltaTime);
             }
             if (this.oilPressureGauge != null) {
-                this.oilPressureGauge.update(_deltaTime);
+                this.oilPressureGauge.update(deltaTime);
             }
         }
         getOilQuantity() {
             let value = SimVar.GetSimVarValue("ENG OIL QUANTITY:" + this.engineIndex, "percent") * 0.01;
-            value *= A320_Neo_LowerECAM_Engine.Definitions.MAX_GAUGE_OIL;
+            value *= Definitions.MAX_GAUGE_OIL;
             return value;
         }
         getOilPressure() {
             const value = SimVar.GetSimVarValue("ENG OIL PRESSURE:" + this.engineIndex, "psi");
             return value;
         }
-        setFuelUsedValue(_value, _force = false) {
-            if ((_value !== this.fuelUsedValue) || _force) {
-                this.fuelUsedValue = _value;
+        setFuelUsedValue(value, force = false) {
+            if ((value !== this.fuelUsedValue) || force) {
+                this.fuelUsedValue = value;
                 if (this.fuelUsedValueText != null) {
                     this.fuelUsedValueText.textContent = fastToFixed(this.fuelUsedValue, 0);
                 }
             }
         }
-        setOilTemperatureValue(_value, _force = false) {
-            if ((_value != this.oilTemperatureValue) || _force) {
-                this.oilTemperatureValue = _value;
+        setOilTemperatureValue(value, force = false) {
+            if ((value != this.oilTemperatureValue) || force) {
+                this.oilTemperatureValue = value;
                 if (this.oilTemperatureValueText != null) {
                     this.oilTemperatureValueText.textContent = fastToFixed(this.oilTemperatureValue, 0);
-                    if (this.oilTemperatureValue >= A320_Neo_LowerECAM_Engine.Definitions.MIN_OIL_TEMP_WARNING) {
+                    if (this.oilTemperatureValue >= Definitions.MIN_OIL_TEMP_WARNING) {
                         this.oilTemperatureValueText.setAttribute("class", "Warning");
                     } else {
                         this.oilTemperatureValueText.setAttribute("class", "Value");
@@ -196,17 +194,17 @@ var A320_Neo_LowerECAM_Engine;
                 }
             }
         }
-        setEngineBleedPressureValue(_value, _force = false) {
-            if ((_value != this.engineBleedPressureValue) || _force) {
-                this.engineBleedPressureValue = _value;
+        setEngineBleedPressureValue(value, force = false) {
+            if ((value != this.engineBleedPressureValue) || force) {
+                this.engineBleedPressureValue = value;
                 if (this.engineBleedPressureValueText != null) {
                     this.engineBleedPressureValueText.textContent = fastToFixed(this.engineBleedPressureValue, 0);
                 }
             }
         }
-        setEngineBleedValveState(_open, _force = false) {
-            if ((_open != this.engineBleedValveIsOpen) || _force) {
-                this.engineBleedValveIsOpen = _open;
+        setEngineBleedValveState(open, force = false) {
+            if ((open != this.engineBleedValveIsOpen) || force) {
+                this.engineBleedValveIsOpen = open;
                 if (this.engineBleedValveOpenLine != null) {
                     this.engineBleedValveOpenLine.style.display = this.engineBleedValveIsOpen ? "block" : "none";
                 }
@@ -215,17 +213,17 @@ var A320_Neo_LowerECAM_Engine;
                 }
             }
         }
-        setN1VibrationValue(_value, _force = false) {
-            if ((_value != this.N1VibrationValue) || _force) {
-                this.N1VibrationValue = _value;
+        setN1VibrationValue(value, force = false) {
+            if ((value != this.N1VibrationValue) || force) {
+                this.N1VibrationValue = value;
                 if (this.N1VibrationValueText != null) {
                     this.N1VibrationValueText.textContent = fastToFixed(this.N1VibrationValue, 1);
                 }
             }
         }
-        setN2VibrationValue(_value, _force = false) {
-            if ((_value != this.N2VibrationValue) || _force) {
-                this.N2VibrationValue = _value;
+        setN2VibrationValue(value, force = false) {
+            if ((value != this.N2VibrationValue) || force) {
+                this.N2VibrationValue = value;
                 if (this.N2VibrationValueText != null) {
                     this.N2VibrationValueText.textContent = fastToFixed(this.N2VibrationValue, 1);
                 }
@@ -234,62 +232,56 @@ var A320_Neo_LowerECAM_Engine;
     }
     A320_Neo_LowerECAM_Engine.EngineInfo = EngineInfo;
     class EngineIgniter {
-        constructor(_ignValueText) {
-            this.currentState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
-            this.titleUpdateRequired = false;
-            this._ignValueText = _ignValueText;
-            this._lastUsedIgniter = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
+        constructor(textElement) {
+            this.currentState = Definitions.IGN_STATE.NONE;
+            this._textElement = textElement;
+            this._lastUsedIgniter = Definitions.IGN_STATE.NONE;
+            this._isIgniting = false;
         }
-        updateStatus(_engineStarting, _n2Igniting, _n2Percent) {
-            const targetState = this.getTargetState(_engineStarting, _n2Igniting, _n2Percent);
-            if (this.currentState != A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE && targetState != A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE) {
+        updateStatus(engineStarting, n2Igniting, n2Percent) {
+            const targetState = this.getTargetState(engineStarting, n2Igniting, n2Percent);
+            if (this.currentState !== Definitions.IGN_STATE.NONE && targetState !== Definitions.IGN_STATE.NONE) {
                 this._lastUsedIgniter = this.currentState;
+                this._isIgniting = true;
             } else {
-                if (targetState != this.currentState) {
-                    this.currentState = targetState;
-                    if (this._ignValueText != null) {
-                        this._ignValueText.textContent = this.getIGNStringFromState(targetState);
-                        this.titleUpdateRequired = true;
+                if (targetState !== this.currentState) {
+                    if (targetState === Definitions.IGN_STATE.NONE) {
+                        this._isIgniting = false;
                     }
-                } else {
-                    this.titleUpdateRequired = false;
+                    this.currentState = targetState;
+                    if (this._textElement !== null) {
+                        this._textElement.textContent = this.getIGNStringFromState(targetState);
+                    }
                 }
             }
         }
-        getTargetState(_engineStarting, _n2Igniting, _n2Percent) {
-            let targetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
-            if (_engineStarting && _n2Igniting && _n2Percent > 18 && _n2Percent < 55) {
-                if (this._lastUsedIgniter === A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE) {
-                    targetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A;
-                } else if (this._lastUsedIgniter === A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A) {
-                    targetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.B;
-                } else if (this._lastUsedIgniter === A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.B) {
-                    targetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A;
+        getTargetState(engineStarting, n2Igniting, n2Percent) {
+            if (engineStarting && n2Igniting && n2Percent > 18 && n2Percent < 55) {
+                if (this._lastUsedIgniter === Definitions.IGN_STATE.NONE
+                    ||
+                    this._lastUsedIgniter === Definitions.IGN_STATE.B) {
+                    return Definitions.IGN_STATE.A;
+                } else if (this._lastUsedIgniter === Definitions.IGN_STATE.A) {
+                    return Definitions.IGN_STATE.B;
                 }
             }
-            return targetState;
+            return Definitions.IGN_STATE.NONE;
         }
-        getIGNStringFromState(_state) {
-            switch (_state) {
-                case A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A:
-                {
+        getIGNStringFromState(state) {
+            switch (state) {
+                case Definitions.IGN_STATE.A:
                     return "A";
-                }
-                case A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.B:
-                {
+                case Definitions.IGN_STATE.B:
                     return "B";
-                }
-                case A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.AB:
-                {
+                case Definitions.IGN_STATE.AB:
                     return "AB";
-                }
                 default:
-                {
                     return "";
-                }
             }
+        }
+        isIgniting() {
+            return this._isIgniting;
         }
     }
-    A320_Neo_LowerECAM_Engine.EngineIgniter = EngineIgniter;
 })(A320_Neo_LowerECAM_Engine || (A320_Neo_LowerECAM_Engine = {}));
 customElements.define("a320-neo-lower-ecam-engine", A320_Neo_LowerECAM_Engine.Page);
