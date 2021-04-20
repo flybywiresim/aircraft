@@ -164,6 +164,7 @@
 			</Page>
 			<!-- ENGINE STARTUP -->
 			<Page SubjectTT="TT:Engine Startup">
+				<Checkpoint ReferenceId="A320_EngineStartup_FUEL_PUMPS"/>
 				<Checkpoint ReferenceId="A320_EngineStartup_ENG_MODE_SEL"/>
 				<Checkpoint ReferenceId="A320_EngineStartup_ENG_START2_ANNOUNCE"/>
 				<Checkpoint ReferenceId="A320_EngineStartup_ENG_MASTER_2"/>

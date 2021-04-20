@@ -21,6 +21,7 @@
 1. [EFB] Fix fuel tank capacity values - @donstim (donbikes#4084)
 1. [MISC] Fixed EVAC button animation - @tyler58546 (tyler58546)
 1. [TEXTURE] Upscaled the existing FBW livery to 8K - @FoxinTale (Aubrey)
+1. [CHECKLISTS] Added missing Fuel Pumps checkpoint - @sidnov (sidnov#8337)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)

@@ -721,6 +721,15 @@
          <Instrument Id="LANDING_GEAR_Switch_ParkingBrake" />
       </Checkpoint>
       <!-- Engine Startup -->
+      <Checkpoint Id="A320_EngineStartup_FUEL_PUMPS">
+         <CheckpointDesc SubjectTT="TT:Fuel Pumps" ExpectationTT="TT:ON" />
+         <Instrument Id="OVHD_FUEL_LTKPUMPS1"/>
+         <Instrument Id="OVHD_FUEL_LTKPUMPS2"/>
+         <Instrument Id="OVHD_FUEL_PUMP1"/>
+         <Instrument Id="OVHD_FUEL_PUMP2"/>
+         <Instrument Id="OVHD_FUEL_RTKPUMPS1"/>
+         <Instrument Id="OVHD_FUEL_RTKPUMPS2"/>
+      </Checkpoint>
       <Checkpoint Id="A320_EngineStartup_ENG_MODE_SEL">
          <CheckpointDesc SubjectTT="TT:Engine Mode Selector" ExpectationTT="TT:IGN/START" />
          <Instrument Id="ENGINE_Switch_Engine_Mode" />
