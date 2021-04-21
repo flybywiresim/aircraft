@@ -21,6 +21,7 @@
 1. [RMP] Enabled LED indicators when testing ANN lights - @ImenesFBW (Imenes)
 1. [EFB] Fix fuel tank capacity values - @donstim (donbikes#4084)
 1. [MISC] Fixed EVAC button animation - @tyler58546 (tyler58546)
+1. [ECAM] Improved alternating of igniters - @joseph-tobin (joseph#1001)
 1. [TEXTURE] Upscaled the existing FBW livery to 8K - @FoxinTale (Aubrey)
 
 ## 0.6.0
