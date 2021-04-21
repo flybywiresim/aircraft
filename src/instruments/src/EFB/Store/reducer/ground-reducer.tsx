@@ -36,7 +36,7 @@ type ButtonSelectionState = {
 const initialState: ButtonSelectionState = {
     activeButtons: [],
     disabledButtons: [],
-    tugRequestOnly: true,
+    tugRequestOnly: false,
 };
 
 export const buttonsReducer = typeToReducer(
