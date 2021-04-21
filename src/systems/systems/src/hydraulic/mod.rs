@@ -96,12 +96,15 @@ pub struct PowerTransferUnit {
 impl PowerTransferUnit {
     //Low pass filter to handle flow dynamic: avoids instantaneous flow transient,
     // simulating RPM dynamic of PTU
-    const FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE: f64 = 0.2;
-    const FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE: f64 = 0.2;
+    const FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE: f64 = 0.3;
+    const FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE: f64 = 0.3;
+
+    const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.81;
+    const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.70;
 
     //Part of the max total pump capacity PTU model is allowed to take. Set to 1 all capacity used
     // set to 0.5 PTU will only use half of the flow that all pumps are able to generate
-    const AGRESSIVENESS_FACTOR: f64 = 0.8;
+    const AGRESSIVENESS_FACTOR: f64 = 0.72;
 
     pub fn new() -> Self {
         Self {
@@ -144,11 +147,17 @@ impl PowerTransferUnit {
 
         let delta_p = loop_left.get_pressure() - loop_right.get_pressure();
 
-        //TODO: use maped characteristics for PTU?
-        //TODO Use variable displacement available on one side?
-        //TODO Handle RPM of ptu so transient are bit slower?
-        //TODO Handle it as a min/max flow producer using PressureSource trait?
-        if self.is_active_left || (!self.is_active_right && delta_p.get::<psi>() > 500.0) {
+        if !self.is_enabled
+            || self.is_active_right && delta_p.get::<psi>() > -5.
+            || self.is_active_left && delta_p.get::<psi>() < 5.
+        {
+            self.flow_to_left = VolumeRate::new::<gallon_per_second>(0.0);
+            self.flow_to_right = VolumeRate::new::<gallon_per_second>(0.0);
+            self.is_active_right = false;
+            self.is_active_left = false;
+            self.last_flow = VolumeRate::new::<gallon_per_second>(0.0);
+        } else if delta_p.get::<psi>() > 500. || (self.is_active_left && delta_p.get::<psi>() > 5.)
+        {
             //Left sends flow to right
             let mut vr = 16.0f64.min(loop_left.loop_pressure.get::<psi>() * 0.0058) / 60.0;
 
@@ -164,11 +173,14 @@ impl PowerTransferUnit {
                     * self.last_flow.get::<gallon_per_second>();
 
             self.flow_to_left = VolumeRate::new::<gallon_per_second>(-vr);
-            self.flow_to_right = VolumeRate::new::<gallon_per_second>(vr * 0.81);
+            self.flow_to_right =
+                VolumeRate::new::<gallon_per_second>(vr * Self::EFFICIENCY_LEFT_TO_RIGHT);
             self.last_flow = VolumeRate::new::<gallon_per_second>(vr);
 
             self.is_active_left = true;
-        } else if self.is_active_right || (!self.is_active_left && delta_p.get::<psi>() < -500.0) {
+        } else if delta_p.get::<psi>() < -500.
+            || (self.is_active_right && delta_p.get::<psi>() < -5.)
+        {
             //Right sends flow to left
             let mut vr = 34.0f64.min(loop_right.loop_pressure.get::<psi>() * 0.0125) / 60.0;
 
@@ -183,25 +195,12 @@ impl PowerTransferUnit {
                 + (1.0 - Self::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE)
                     * self.last_flow.get::<gallon_per_second>();
 
-            self.flow_to_left = VolumeRate::new::<gallon_per_second>(vr * 0.70);
+            self.flow_to_left =
+                VolumeRate::new::<gallon_per_second>(vr * Self::EFFICIENCY_RIGHT_TO_LEFT);
             self.flow_to_right = VolumeRate::new::<gallon_per_second>(-vr);
             self.last_flow = VolumeRate::new::<gallon_per_second>(vr);
 
             self.is_active_right = true;
-        }
-
-        //TODO REVIEW DEACTICATION LOGIC
-        if !self.is_enabled
-            || self.is_active_right && loop_left.loop_pressure.get::<psi>() > 2950.0
-            || self.is_active_left && loop_right.loop_pressure.get::<psi>() > 2950.0
-            || self.is_active_right && loop_right.loop_pressure.get::<psi>() < 500.0
-            || self.is_active_left && loop_left.loop_pressure.get::<psi>() < 500.0
-        {
-            self.flow_to_left = VolumeRate::new::<gallon_per_second>(0.0);
-            self.flow_to_right = VolumeRate::new::<gallon_per_second>(0.0);
-            self.is_active_right = false;
-            self.is_active_left = false;
-            self.last_flow = VolumeRate::new::<gallon_per_second>(0.0);
         }
     }
 }
