@@ -1998,7 +1998,12 @@
       </Checkpoint>
       <Checkpoint Id="A320_PARKING_FUEL_PUMPS">
          <CheckpointDesc SubjectTT="TT:Fuel Pumps" ExpectationTT="TT:OFF" />
-         <Instrument Id="FUEL_Push_Pump" />
+         <Instrument Id="OVHD_FUEL_LTKPUMPS1"/>
+         <Instrument Id="OVHD_FUEL_LTKPUMPS2"/>
+         <Instrument Id="OVHD_FUEL_PUMP1"/>
+         <Instrument Id="OVHD_FUEL_PUMP2"/>
+         <Instrument Id="OVHD_FUEL_RTKPUMPS1"/>
+         <Instrument Id="OVHD_FUEL_RTKPUMPS2"/>
       </Checkpoint>
       <Checkpoint Id="A320_PARKING_IRS_PERF_FUEL_QUANT">
          <CheckpointDesc SubjectTT="TT:IRS Performance and Fuel Quantity" ExpectationTT="TT:CHECK" />
