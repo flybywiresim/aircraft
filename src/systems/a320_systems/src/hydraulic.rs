@@ -1595,15 +1595,16 @@ mod tests {
             test_bed = test_bed
                 .start_eng1(Ratio::new::<percent>(50.))
                 .run_one_tick();
-            //ALMOST No pressure
+
+            // ALMOST No pressure
             assert!(!test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
             assert!(!test_bed.is_blue_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(500.)); //Blue is auto run
             assert!(!test_bed.is_yellow_pressurised());
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
 
-            //Waiting for 5s pressure hsould be at 3000 psi
+            // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed
                 .start_eng1(Ratio::new::<percent>(50.))
                 .run_waiting_for(Duration::from_secs(5));
@@ -1615,7 +1616,7 @@ mod tests {
             assert!(!test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(50.));
 
-            //Stoping engine, pressure should fall in 20s
+            // Stoping engine, pressure should fall in 20s
             test_bed = test_bed
                 .stop_eng1()
                 .run_waiting_for(Duration::from_secs(20));
@@ -1637,22 +1638,23 @@ mod tests {
                 .set_ptu_state(false)
                 .run_one_tick();
 
-            //Starting eng 1
+            // Starting eng 1
             test_bed = test_bed
                 .start_eng1(Ratio::new::<percent>(50.))
                 .start_eng2(Ratio::new::<percent>(50.))
                 .run_one_tick();
-            //ALMOST No pressure
+
+            // ALMOST No pressure
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
 
-            //Waiting for 5s pressure should be at 3000 psi
+            // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed.run_waiting_for(Duration::from_secs(5));
 
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
 
-            //Stoping edp1, pressure should fall in 20s
+            // Stoping edp1, pressure should fall in 20s
             test_bed = test_bed
                 .set_green_ed_pump(false)
                 .run_waiting_for(Duration::from_secs(20));
@@ -1660,7 +1662,7 @@ mod tests {
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
 
-            //Stoping edp2, pressure should fall in 20s
+            // Stoping edp2, pressure should fall in 20s
             test_bed = test_bed
                 .set_yellow_ed_pump(false)
                 .run_waiting_for(Duration::from_secs(20));
@@ -1677,11 +1679,11 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            //Starting eng 1
+            // Starting eng 1
             test_bed = test_bed
                 .start_eng2(Ratio::new::<percent>(50.))
                 .run_one_tick();
-            //ALMOST No pressure
+            // ALMOST No pressure
             assert!(!test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
             assert!(!test_bed.is_blue_pressurised());
@@ -1689,7 +1691,7 @@ mod tests {
             assert!(!test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
 
-            //Waiting for 5s pressure hsould be at 3000 psi
+            // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed
                 .start_eng2(Ratio::new::<percent>(50.))
                 .run_waiting_for(Duration::from_secs(5));
@@ -1701,7 +1703,7 @@ mod tests {
             assert!(test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
 
-            //Stoping engine, pressure should fall in 20s
+            // Stoping engine, pressure should fall in 20s
             test_bed = test_bed
                 .stop_eng2()
                 .run_waiting_for(Duration::from_secs(20));

@@ -164,9 +164,11 @@ impl SimulationElement for BrakeCircuit {
 
 impl BrakeCircuit {
     const ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1000.0; // Nitrogen PSI
-    const ACCUMULATOR_PRESS_BREAKPTS: [f64; 9] =
-        [0.0, 5.0, 10.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 10000.0];
-    const ACCUMULATOR_FLOW_CARAC: [f64; 9] = [0.0, 0.01, 0.016, 0.02, 0.04, 0.1, 0.15, 0.35, 0.5];
+    const ACCUMULATOR_PRESS_BREAKPTS: [f64; 10] = [
+        0.0, 5.0, 25.0, 40.0, 100.0, 200.0, 500.0, 1000.0, 3000., 10000.0,
+    ];
+    const ACCUMULATOR_FLOW_CARAC: [f64; 10] =
+        [0.0, 0.001, 0.004, 0.006, 0.02, 0.05, 0.15, 0.35, 0.5, 0.5];
 
     // Filtered using time constant low pass: new_val = old_val + (new_val - old_val)* (1 - e^(-dt/TCONST))
     const ACC_PRESSURE_SENSOR_FILTER_TIMECONST: f64 = 0.1; //Time constant of the filter used to measure brake circuit pressure
