@@ -96,12 +96,15 @@ pub struct PowerTransferUnit {
 impl PowerTransferUnit {
     //Low pass filter to handle flow dynamic: avoids instantaneous flow transient,
     // simulating RPM dynamic of PTU
-    const FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE: f64 = 0.2;
-    const FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE: f64 = 0.2;
+    const FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE: f64 = 0.3;
+    const FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE: f64 = 0.3;
+
+    const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.81;
+    const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.70;
 
     //Part of the max total pump capacity PTU model is allowed to take. Set to 1 all capacity used
     // set to 0.5 PTU will only use half of the flow that all pumps are able to generate
-    const AGRESSIVENESS_FACTOR: f64 = 0.8;
+    const AGRESSIVENESS_FACTOR: f64 = 0.72;
 
     pub fn new() -> Self {
         Self {
@@ -144,11 +147,17 @@ impl PowerTransferUnit {
 
         let delta_p = loop_left.get_pressure() - loop_right.get_pressure();
 
-        //TODO: use maped characteristics for PTU?
-        //TODO Use variable displacement available on one side?
-        //TODO Handle RPM of ptu so transient are bit slower?
-        //TODO Handle it as a min/max flow producer using PressureSource trait?
-        if self.is_active_left || (!self.is_active_right && delta_p.get::<psi>() > 500.0) {
+        if !self.is_enabled
+            || self.is_active_right && delta_p.get::<psi>() > -5.
+            || self.is_active_left && delta_p.get::<psi>() < 5.
+        {
+            self.flow_to_left = VolumeRate::new::<gallon_per_second>(0.0);
+            self.flow_to_right = VolumeRate::new::<gallon_per_second>(0.0);
+            self.is_active_right = false;
+            self.is_active_left = false;
+            self.last_flow = VolumeRate::new::<gallon_per_second>(0.0);
+        } else if delta_p.get::<psi>() > 500. || (self.is_active_left && delta_p.get::<psi>() > 5.)
+        {
             //Left sends flow to right
             let mut vr = 16.0f64.min(loop_left.loop_pressure.get::<psi>() * 0.0058) / 60.0;
 
@@ -164,11 +173,14 @@ impl PowerTransferUnit {
                     * self.last_flow.get::<gallon_per_second>();
 
             self.flow_to_left = VolumeRate::new::<gallon_per_second>(-vr);
-            self.flow_to_right = VolumeRate::new::<gallon_per_second>(vr * 0.81);
+            self.flow_to_right =
+                VolumeRate::new::<gallon_per_second>(vr * Self::EFFICIENCY_LEFT_TO_RIGHT);
             self.last_flow = VolumeRate::new::<gallon_per_second>(vr);
 
             self.is_active_left = true;
-        } else if self.is_active_right || (!self.is_active_left && delta_p.get::<psi>() < -500.0) {
+        } else if delta_p.get::<psi>() < -500.
+            || (self.is_active_right && delta_p.get::<psi>() < -5.)
+        {
             //Right sends flow to left
             let mut vr = 34.0f64.min(loop_right.loop_pressure.get::<psi>() * 0.0125) / 60.0;
 
@@ -183,25 +195,12 @@ impl PowerTransferUnit {
                 + (1.0 - Self::FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE)
                     * self.last_flow.get::<gallon_per_second>();
 
-            self.flow_to_left = VolumeRate::new::<gallon_per_second>(vr * 0.70);
+            self.flow_to_left =
+                VolumeRate::new::<gallon_per_second>(vr * Self::EFFICIENCY_RIGHT_TO_LEFT);
             self.flow_to_right = VolumeRate::new::<gallon_per_second>(-vr);
             self.last_flow = VolumeRate::new::<gallon_per_second>(vr);
 
             self.is_active_right = true;
-        }
-
-        //TODO REVIEW DEACTICATION LOGIC
-        if !self.is_enabled
-            || self.is_active_right && loop_left.loop_pressure.get::<psi>() > 2950.0
-            || self.is_active_left && loop_right.loop_pressure.get::<psi>() > 2950.0
-            || self.is_active_right && loop_right.loop_pressure.get::<psi>() < 500.0
-            || self.is_active_left && loop_left.loop_pressure.get::<psi>() < 500.0
-        {
-            self.flow_to_left = VolumeRate::new::<gallon_per_second>(0.0);
-            self.flow_to_right = VolumeRate::new::<gallon_per_second>(0.0);
-            self.is_active_right = false;
-            self.is_active_left = false;
-            self.last_flow = VolumeRate::new::<gallon_per_second>(0.0);
         }
     }
 }
@@ -232,18 +231,22 @@ struct HydraulicAccumulator {
     gas_pressure: Pressure,
     gas_volume: Volume,
     fluid_volume: Volume,
-    press_breakpoints: [f64; 9],
-    flow_carac: [f64; 9],
+    current_flow: VolumeRate,
+    current_delta_vol: Volume,
+    press_breakpoints: [f64; 10],
+    flow_carac: [f64; 10],
     has_control_valve: bool,
 }
 
 impl HydraulicAccumulator {
+    const FLOW_DYNAMIC_LOW_PASS: f64 = 0.7;
+
     pub fn new(
         gas_precharge: Pressure,
         total_volume: Volume,
         fluid_vol_at_init: Volume,
-        press_breakpoints: [f64; 9],
-        flow_carac: [f64; 9],
+        press_breakpoints: [f64; 10],
+        flow_carac: [f64; 10],
         has_control_valve: bool,
     ) -> Self {
         // Taking care of case where init volume is maxed at accumulator capacity: we can't exceed max_volume minus a margin for gas to compress
@@ -258,6 +261,8 @@ impl HydraulicAccumulator {
             gas_pressure: gas_press_at_init,
             gas_volume: (total_volume - limited_volume),
             fluid_volume: limited_volume,
+            current_flow: VolumeRate::new::<gallon_per_second>(0.),
+            current_delta_vol: Volume::new::<gallon>(0.),
             press_breakpoints,
             flow_carac,
             has_control_valve,
@@ -266,11 +271,13 @@ impl HydraulicAccumulator {
 
     fn update(&mut self, delta_time: &Duration, delta_vol: &mut Volume, loop_pressure: Pressure) {
         let accumulator_delta_press = self.gas_pressure - loop_pressure;
-        let flow_variation = VolumeRate::new::<gallon_per_second>(interpolation(
+        let mut flow_variation = VolumeRate::new::<gallon_per_second>(interpolation(
             &self.press_breakpoints,
             &self.flow_carac,
             accumulator_delta_press.get::<psi>().abs(),
         ));
+        flow_variation = flow_variation * Self::FLOW_DYNAMIC_LOW_PASS
+            + (1. - Self::FLOW_DYNAMIC_LOW_PASS) * self.current_flow;
 
         // TODO HANDLE OR CHECK IF RESERVOIR AVAILABILITY is OK
         // TODO check if accumulator can be used as a min/max flow producer to
@@ -281,6 +288,8 @@ impl HydraulicAccumulator {
                 .min(flow_variation * Time::new::<second>(delta_time.as_secs_f64()));
             self.fluid_volume -= volume_from_acc;
             self.gas_volume += volume_from_acc;
+            self.current_delta_vol = -volume_from_acc;
+
             *delta_vol += volume_from_acc;
         } else if accumulator_delta_press.get::<psi>() < 0.0 {
             let volume_to_acc = delta_vol
@@ -288,9 +297,12 @@ impl HydraulicAccumulator {
                 .max(flow_variation * Time::new::<second>(delta_time.as_secs_f64()));
             self.fluid_volume += volume_to_acc;
             self.gas_volume -= volume_to_acc;
+            self.current_delta_vol = volume_to_acc;
+
             *delta_vol -= volume_to_acc;
         }
 
+        self.current_flow = self.current_delta_vol / Time::new::<second>(delta_time.as_secs_f64());
         self.gas_pressure =
             (self.gas_init_precharge * self.total_volume) / (self.total_volume - self.fluid_volume);
     }
@@ -352,9 +364,11 @@ impl HydraulicLoop {
 
     const DELTA_VOL_LOW_PASS_FILTER: f64 = 0.4;
 
-    const ACCUMULATOR_PRESS_BREAKPTS: [f64; 9] =
-        [0.0, 5.0, 10.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 10000.0];
-    const ACCUMULATOR_FLOW_CARAC: [f64; 9] = [0.0, 0.005, 0.008, 0.01, 0.02, 0.08, 0.15, 0.35, 0.5];
+    const ACCUMULATOR_PRESS_BREAKPTS: [f64; 10] = [
+        0.0, 1., 5.0, 50.0, 100., 200.0, 500.0, 1000., 2000.0, 10000.0,
+    ];
+    const ACCUMULATOR_FLOW_CARAC: [f64; 10] =
+        [0.0, 0.001, 0.005, 0.05, 0.08, 0.15, 0.25, 0.35, 0.5, 0.5];
 
     #[allow(clippy::too_many_arguments)]
     pub fn new(
