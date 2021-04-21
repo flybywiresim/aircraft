@@ -857,24 +857,24 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
             this.lastwindDirection = windDirection;
             this.lastwindStrength = windStrength;
             if (ADIRSState !== 2 || trueAirSpeed < 100 || windStrength < 2) {
-            //Wind Arrow info Conditions
-            wd.textContent = "---";
-            ws.textContent = "---";
-            wa.setAttribute("visibility", "hidden");
+                //Wind Arrow info Conditions
+                wd.textContent = "---";
+                ws.textContent = "---";
+                wa.setAttribute("visibility", "hidden");
             } else {
-            wd.textContent = (Math.round(windDirection)).toString().padStart(3, '0');
-            ws.textContent = (Math.round(windStrength)).toString().padStart(2, '0');
-            wa.setAttribute("visibility", "visible");
+                wd.textContent = (Math.round(windDirection)).toString().padStart(3, '0');
+                ws.textContent = (Math.round(windStrength)).toString().padStart(2, '0');
+                wa.setAttribute("visibility", "visible");
             }
         }
         if (ADIRSState !== this.lastADIRSState || groundSpeed !== this.lastgroundSpeed) {
             this.lastADIRSState = ADIRSState;
             this.lastgroundSpeed = groundSpeed;
             if (ADIRSState != 2) {
-            //GS info Conditions
-            gs.textContent = "---";
+                //GS info Conditions
+                gs.textContent = "---";
             } else {
-            gs.textContent = groundSpeed.toString().padStart(3);
+                gs.textContent = groundSpeed.toString().padStart(3);
             }
         }
         // Show/Hide waypoint group when ADIRS not aligned
