@@ -1105,7 +1105,6 @@
                     <NODE_ID>PUSH_OVHD_ELEC_EXTPWR</NODE_ID>
                     <PART_ID>ELECTRICAL_Switch_ExternalPower</PART_ID>
                     <ID>1</ID>
-                    <FAILURE_CIRCUIT>76</FAILURE_CIRCUIT>
                     <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
