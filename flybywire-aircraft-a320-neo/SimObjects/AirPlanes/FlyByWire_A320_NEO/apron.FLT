@@ -96,7 +96,7 @@ Pump.8=True
 Pump.9=True
 
 [Systems.0]
-BatterySwitch=False
+BatterySwitch=True
 StructuralDeiceSwitch=False
 PropDeiceSwitch=False
 Autobrakes=1
