@@ -12,10 +12,10 @@ import { useSimVar } from '../../../Common/simVars';
 import { useSimVarSyncedPersistentProperty } from '../../../Common/persistence';
 
 export const FuelPage = () => {
-    const totalFuelGallons = 6243;
-    const outerCellGallon = 227;
-    const innerCellGallon = 1809;
-    const centerTankGallon = 2173;
+    const totalFuelGallons = 6267;
+    const outerCellGallon = 228;
+    const innerCellGallon = 1816;
+    const centerTankGallon = 2179;
     const wingTotalRefuelTimeSeconds = 1020;
     const CenterTotalRefuelTimeSeconds = 180;
     const [usingMetrics, setUsingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
@@ -29,7 +29,7 @@ export const FuelPage = () => {
         if (usingMetrics === 1) {
             return 1;
         }
-        return 2.20462;
+        return 2.204617615;
     };
     const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 1_000);
     const outerCell = () => outerCellGallon * galToKg * convertUnit();
