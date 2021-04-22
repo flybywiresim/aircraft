@@ -1,8 +1,8 @@
 # A320neo Local SimVars
 
 - A32NX_NO_SMOKING_MEMO
-    - Boolean that determines whether the NO SMOKING annunciation should be visible on the ECAM memo
-    - Also is used for knowing when to play the NO SMOKING chime sound
+    - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM
+    - Also is used for knowing when to play the no smoking chime sound
 
 - A32NX_ADIRS_PFD_ALIGNED
     - Bool

@@ -1,21 +1,3 @@
-/*
- * A32NX
- * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 import React from 'react';
 import { round } from 'lodash';
 import { IconPlayerPlay, IconHandStop } from '@tabler/icons';
@@ -30,10 +12,10 @@ import { useSimVar } from '../../../Common/simVars';
 import { useSimVarSyncedPersistentProperty } from '../../../Common/persistence';
 
 export const FuelPage = () => {
-    const totalFuelGallons = 6243;
-    const outerCellGallon = 227;
-    const innerCellGallon = 1809;
-    const centerTankGallon = 2173;
+    const totalFuelGallons = 6267;
+    const outerCellGallon = 228;
+    const innerCellGallon = 1816;
+    const centerTankGallon = 2179;
     const wingTotalRefuelTimeSeconds = 1020;
     const CenterTotalRefuelTimeSeconds = 180;
     const [usingMetrics, setUsingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
@@ -47,7 +29,7 @@ export const FuelPage = () => {
         if (usingMetrics === 1) {
             return 1;
         }
-        return 2.20462;
+        return 2.204617615;
     };
     const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 1_000);
     const outerCell = () => outerCellGallon * galToKg * convertUnit();

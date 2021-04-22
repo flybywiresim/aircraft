@@ -1,0 +1,6 @@
+Event	ID	Name			Wwise Object Path	Notes
+	2967374719	Play_Asobo_B787_10_flapssound			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_B787_10_Improved\Play_Asobo_B787_10_flapssound	
+
+In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
+	598224222	78flaps	H:\sound\.cache\Windows\SFX\78flaps_FB120A44.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_B787_10_Improved\78flaps		306326
+

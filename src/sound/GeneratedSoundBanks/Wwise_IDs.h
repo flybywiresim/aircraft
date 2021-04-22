@@ -146,6 +146,20 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_MEDTOUCH = 2969911886U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_MPB1OFF = 3243997212U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_MPB1ON = 179984854U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_5 = 1169492569U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_10 = 419385431U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_20 = 436163018U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_30 = 452940733U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_40 = 335497400U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_50 = 352274987U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_100 = 2968221893U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_200 = 3069034702U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_300 = 1022415543U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_400 = 853506456U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_500 = 954319233U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_1000 = 1202658863U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_2500 = 3293793575U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_NEW_RETARD = 2198791536U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_NOSETOUCH = 1444282249U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_NWHEELSPINABOVEGROUND = 886207320U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_OVERRIDEBLOWER = 2537128944U;
@@ -183,8 +197,6 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_REVERSER = 3122667437U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_REVERSEREXT = 4070683454U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_REVLEVER = 2646186528U;
-        static const AkUniqueID PLAY_ASOBO_A320_NEO_REVWINDL = 4076237830U;
-        static const AkUniqueID PLAY_ASOBO_A320_NEO_REVWINDR = 4076237848U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_RMPKNOB = 217150766U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_ROLLRATTLE = 276993210U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_ROLLRATTLE2 = 3079676156U;
@@ -788,6 +800,7 @@ namespace AK
         static const AkUniqueID HEADPHONE_FILTER = 2920878614U;
         static const AkUniqueID HEADPHONE_IN_COCKPIT = 806364695U;
         static const AkUniqueID HEADPHONE_SWITCH = 4173551700U;
+        static const AkUniqueID LOCALVAR_A32NX_COLD_START = 3193646480U;
         static const AkUniqueID LOCALVAR_A32NX_EXTERIOR_VOLUME = 2518329374U;
         static const AkUniqueID LOCALVAR_A32NX_INTERIOR_ENG_VOLUME = 2508093411U;
         static const AkUniqueID LOCALVAR_A32NX_INTERIOR_WIND_VOLUME = 1394518213U;

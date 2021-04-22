@@ -43,11 +43,16 @@ impl EmergencyGenerator {
         self.starting_or_started = true;
     }
 
+    #[cfg(test)]
+    pub fn stop(&mut self) {
+        self.starting_or_started = false;
+    }
+
     /// Indicates if the provided electricity's potential and frequency
     /// are within normal parameters. Use this to decide if the
     /// generator contactor should close.
     pub fn output_within_normal_parameters(&self) -> bool {
-        self.frequency_normal() && self.potential_normal()
+        self.should_provide_output() && self.frequency_normal() && self.potential_normal()
     }
 
     fn should_provide_output(&self) -> bool {
@@ -124,12 +129,14 @@ mod emergency_generator_tests {
     struct TestAircraft {
         emer_gen: EmergencyGenerator,
         is_blue_pressurised: bool,
+        generator_output_within_normal_parameters_before_processing_power_consumption_report: bool,
     }
     impl TestAircraft {
         fn new() -> Self {
             Self {
                 emer_gen: EmergencyGenerator::new(),
                 is_blue_pressurised: true,
+                generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }
         }
 
@@ -141,17 +148,31 @@ mod emergency_generator_tests {
             self.emer_gen.start();
         }
 
+        fn stop_emer_gen(&mut self) {
+            self.emer_gen.stop();
+        }
+
         fn set_blue_pressurisation(&mut self, pressurised: bool) {
             self.is_blue_pressurised = pressurised;
         }
 
-        fn generator_output_within_normal_parameters(&self) -> bool {
+        fn generator_output_within_normal_parameters_before_processing_power_consumption_report(
+            &self,
+        ) -> bool {
+            self.generator_output_within_normal_parameters_before_processing_power_consumption_report
+        }
+
+        fn generator_output_within_normal_parameters_after_processing_power_consumption_report(
+            &self,
+        ) -> bool {
             self.emer_gen.output_within_normal_parameters()
         }
     }
     impl Aircraft for TestAircraft {
         fn update_before_power_distribution(&mut self, context: &UpdateContext) {
             self.emer_gen.update(context, self.is_blue_pressurised);
+
+            self.generator_output_within_normal_parameters_before_processing_power_consumption_report = self.emer_gen.output_within_normal_parameters();
         }
     }
     impl SimulationElement for TestAircraft {
@@ -244,7 +265,8 @@ mod emergency_generator_tests {
 
         test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
 
-        assert!(!aircraft.generator_output_within_normal_parameters());
+        assert!(!aircraft
+            .generator_output_within_normal_parameters_after_processing_power_consumption_report());
     }
 
     #[test]
@@ -255,7 +277,31 @@ mod emergency_generator_tests {
         aircraft.attempt_emer_gen_start();
         test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
 
-        assert!(aircraft.generator_output_within_normal_parameters());
+        assert!(aircraft
+            .generator_output_within_normal_parameters_after_processing_power_consumption_report());
+    }
+
+    #[test]
+    fn output_within_normal_parameters_adapts_to_no_longer_supplying_emer_gen_instantaneously() {
+        // The frequency and potential of the generator are only known at the end of a tick,
+        // due to them being directly related to the power consumption (large changes can cause
+        // spikes and dips). However, the decision if a generator can supply power is made much
+        // earlier in the tick. This is especially of great consequence when the generator no longer
+        // supplies potential but the previous tick's frequency and potential are still normal.
+        // With this test we ensure that a generator which is no longer supplying power is
+        // immediately noticed.
+        let mut aircraft = TestAircraft::new();
+        let mut test_bed = EmergencyGeneratorTestBed::new();
+
+        aircraft.attempt_emer_gen_start();
+        test_bed.run_aircraft(&mut aircraft, Duration::from_secs(100));
+
+        aircraft.stop_emer_gen();
+        test_bed.run_aircraft(&mut aircraft, Duration::from_secs(0));
+
+        assert!(!aircraft
+            .generator_output_within_normal_parameters_before_processing_power_consumption_report(
+            ));
     }
 
     #[test]

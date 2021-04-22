@@ -28,7 +28,7 @@ impl ExternalPowerSource {
     /// are within normal parameters. Use this to decide if the
     /// external power contactor should close.
     pub fn output_within_normal_parameters(&self) -> bool {
-        self.potential_normal() && self.frequency_normal()
+        self.should_provide_output() && self.potential_normal() && self.frequency_normal()
     }
 
     fn should_provide_output(&self) -> bool {
@@ -94,14 +94,18 @@ mod external_power_source_tests {
         }
 
         fn with_disconnected_external_power(mut self) -> Self {
-            self.test_bed
-                .write_bool("EXTERNAL POWER AVAILABLE:1", false);
+            self.disconnect_external_power();
             self
         }
 
         fn with_connected_external_power(mut self) -> Self {
             self.test_bed.write_bool("EXTERNAL POWER AVAILABLE:1", true);
             self
+        }
+
+        fn disconnect_external_power(&mut self) {
+            self.test_bed
+                .write_bool("EXTERNAL POWER AVAILABLE:1", false);
         }
 
         fn run_aircraft<T: Aircraft>(&mut self, aircraft: &mut T) {
@@ -119,11 +123,13 @@ mod external_power_source_tests {
 
     struct TestAircraft {
         ext_pwr: ExternalPowerSource,
+        ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report: bool,
     }
     impl TestAircraft {
         fn new() -> Self {
             Self {
                 ext_pwr: ExternalPowerSource::new(),
+                ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report: false,
             }
         }
 
@@ -131,11 +137,23 @@ mod external_power_source_tests {
             self.ext_pwr.is_powered()
         }
 
-        fn ext_pwr_output_within_normal_parameters(&self) -> bool {
+        fn ext_pwr_output_within_normal_parameters_after_processing_power_consumption_report(
+            &self,
+        ) -> bool {
             self.ext_pwr.output_within_normal_parameters()
         }
+
+        fn ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report(
+            &self,
+        ) -> bool {
+            self.ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report
+        }
     }
-    impl Aircraft for TestAircraft {}
+    impl Aircraft for TestAircraft {
+        fn update_before_power_distribution(&mut self, _context: &UpdateContext) {
+            self.ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report = self.ext_pwr.output_within_normal_parameters();
+        }
+    }
     impl SimulationElement for TestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
             self.ext_pwr.accept(visitor);
@@ -210,7 +228,8 @@ mod external_power_source_tests {
 
         test_bed.run_aircraft(&mut aircraft);
 
-        assert!(!aircraft.ext_pwr_output_within_normal_parameters());
+        assert!(!aircraft
+            .ext_pwr_output_within_normal_parameters_after_processing_power_consumption_report());
     }
 
     #[test]
@@ -220,7 +239,28 @@ mod external_power_source_tests {
 
         test_bed.run_aircraft(&mut aircraft);
 
-        assert!(aircraft.ext_pwr_output_within_normal_parameters());
+        assert!(aircraft
+            .ext_pwr_output_within_normal_parameters_after_processing_power_consumption_report());
+    }
+
+    #[test]
+    fn output_within_normal_parameters_adapts_to_no_longer_supplying_ext_pwr_instantaneously() {
+        // The frequency and potential of the external power source are only known at the end of a tick,
+        // due to them being directly related to the power consumption (large changes can cause
+        // spikes and dips). However, the decision if EXT PWR source can supply power is made much
+        // earlier in the tick. This is especially of great consequence when EXT PWR source no longer
+        // supplies potential but the previous tick's frequency and potential are still normal.
+        // With this test we ensure that an EXT PWR source which is no longer supplying power is
+        // immediately noticed.
+        let mut aircraft = TestAircraft::new();
+        let mut test_bed = ExternalPowerTestBed::new().with_connected_external_power();
+        test_bed.run_aircraft(&mut aircraft);
+
+        test_bed.disconnect_external_power();
+        test_bed.run_aircraft(&mut aircraft);
+
+        assert!(!aircraft
+            .ext_pwr_output_within_normal_parameters_before_processing_power_consumption_report());
     }
 
     #[test]

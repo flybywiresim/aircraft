@@ -1,14 +1,15 @@
 name: release
-# Trigger on release creation
 on:
-  release:
-    types:
-      - created
+  push:
+    tags:
+      - 'v*'
+      - '!v*-rc*'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      A32NX_PRODUCTION_BUILD: 1
       RELEASE_ZIP_NAME: A32NX-stable.zip
       BUILD_DIR_NAME: stable
     steps:
@@ -20,14 +21,26 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty
       - name: Build ZIP file
         run: |
+          ./scripts/dev-env/run.sh node ./scripts/fragment.js
+
           mkdir ./${{ env.BUILD_DIR_NAME }}
-          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./A32NX/
+          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
       - name: Upload release asset
         uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }}
           asset_name: ${{ env.RELEASE_ZIP_NAME }}
           asset_content_type: application/zip

@@ -1444,6 +1444,12 @@ Unit : Percent</Comment>
 								<Property Name="Min" Type="Real64" Value="-50"/>
 							</PropertyList>
 						</GameParameter>
+						<GameParameter Name="LOCALVAR_A32NX_COLD_START" ID="{E6FEAC7C-30B6-4FA7-B684-FA4AD28E6700}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
 					</ChildrenList>
 				</Folder>
 			</ChildrenList>
