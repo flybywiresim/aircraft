@@ -2543,7 +2543,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         const value = parseFloat(s);
         const HPA_REGEX = /^[01]?[0-9]{3}$/;
-        const INHG_REGEX = /^[23][0-9]\.?[0-9]{2}$/;
+        const INHG_REGEX = /^([23][0-9]|[0-9]{2}\.)[0-9]{2}$/;
 
         if (HPA_REGEX.test(s)) {
             if (value >= 745 && value <= 1050) {
