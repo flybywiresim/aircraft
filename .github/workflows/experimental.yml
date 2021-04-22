@@ -10,6 +10,7 @@ jobs:
     if: github.repository_owner == 'flybywiresim'
     runs-on: ubuntu-latest
     env:
+      A32NX_PRODUCTION_BUILD: 1
       MASTER_ZIP_NAME: A32NX-experimental.zip
       BUILD_DIR_NAME: experimental
     steps:
