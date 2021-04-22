@@ -29,7 +29,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
     const setFromTo = (throttle1Position, settingLower, settingUpper, deadZone: number, overrideValue?: string) => {
         const newSetting = overrideValue || throttle1Position;
 
-        setAxisValue(throttle1Position.toFixed(2));
+        setAxisValue(newSetting.toFixed(2));
         if (deadZone) {
             settingLower.forEach((f) => f(newSetting - deadZone < -1 ? -1 : newSetting - deadZone));
             settingUpper.forEach((f) => f(newSetting + deadZone > 1 ? 1 : newSetting + deadZone));
@@ -42,6 +42,16 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
     };
 
     useEffect(() => {
+        // initialize persistent values from previous configurations
+        if (!axisValue) {
+            const axisValue = (props.lowerBoundDetentGetter + props.upperBoundDetentGetter) / 2;
+            const dz = Math.abs((Math.abs(props.upperBoundDetentGetter) - Math.abs(props.lowerBoundDetentGetter))) / 2;
+            setAxisValue(axisValue.toFixed(2));
+            if (dz > 0) {
+                setDeadZone(dz.toFixed(2));
+            }
+            applyDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, axisValue, parseFloat(deadZone));
+        }
         setPreviousMode(props.expertMode);
     });
 
@@ -76,7 +86,6 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         <Input
                             key={props.index}
                             label="Range"
-                            type="number"
                             className="dark-option w-24 mr-4"
                             value={deadZone}
                             onChange={(deadZone) => {
@@ -107,11 +116,10 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         <Input
                             key={props.index}
                             label="Configure End"
-                            type="number"
                             className="dark-option w-36 mr-0"
                             value={!props.expertMode ? deadZone : props.upperBoundDetentGetter.toFixed(2)}
                             onChange={(deadZone) => {
-                                if (previousMode === props.expertMode) {
+                                if (previousMode === props.expertMode && deadZone.length > 1 && !Number.isNaN(Number(deadZone))) {
                                     const dz = Math.abs((Math.abs(props.upperBoundDetentGetter) - Math.abs(props.lowerBoundDetentGetter)));
                                     setAxisValue(dz / 2);
                                     setDeadZone(dz.toFixed(2));
@@ -123,11 +131,10 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         <Input
                             key={props.index}
                             label={props.expertMode ? 'Configure Start' : 'Configure Range'}
-                            type="number"
                             className="dark-option mt-2 w-36"
                             value={!props.expertMode ? deadZone : props.lowerBoundDetentGetter.toFixed(2)}
                             onChange={(deadZone) => {
-                                if (previousMode === props.expertMode) {
+                                if (previousMode === props.expertMode && deadZone.length > 1 && !Number.isNaN(Number(deadZone))) {
                                     const dz = Math.abs((Math.abs(props.upperBoundDetentGetter) - Math.abs(props.lowerBoundDetentGetter)));
                                     setAxisValue(dz / 2);
                                     setDeadZone(dz.toFixed(2));
