@@ -22,6 +22,7 @@
 1. [MISC] Fixed EVAC button animation - @tyler58546 (tyler58546)
 1. [ECAM] Improved alternating of igniters - @joseph-tobin (joseph#1001)
 1. [TEXTURE] Upscaled the existing FBW livery to 8K - @FoxinTale (Aubrey)
+1. [MCDU] Fixed entry of in.Hg baro settings ending in zero - @tracernz(Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
