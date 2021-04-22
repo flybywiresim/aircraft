@@ -62,6 +62,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         const dispIndex = parseInt(url.substring(url.length - 1));
         this.updateThrottler = new UpdateThrottler(dispIndex == 1 ? 300 : 1000);
         this.yokePositionThrottler = new UpdateThrottler(dispIndex == 1 ? 33 : 66);
+        this.poweredDuringPreviousUpdate = false;
     }
     init() {
         super.init();
@@ -99,10 +100,11 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.engTestDiv = document.querySelector('#PfdEngTest');
         this.engMaintDiv = document.querySelector('#PfdMaintMode');
 
-        this.electricity = document.querySelector('#Electricity');
-
         this.displayUnit = new DisplayUnit(
-            () => SimVar.GetSimVarValue("L:ACPowerAvailable","Bool"),
+            document.querySelector('#Electricity'),
+            () => {
+                return SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isCaptainPfd() ? "AC_ESS" : "AC_2"}_BUS_IS_POWERED`, "Bool");
+            },
             () => parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15")),
             this.disp_index == 1 ? 88 : 90,
             document.querySelector('#SelfTestDiv')
@@ -187,8 +189,6 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         } else {
             updateDisplayDMC("PFD2", this.engTestDiv, this.engMaintDiv);
         }
-
-        this.updateScreenState();
     }
     onEvent(_event) {
         switch (_event) {
@@ -202,14 +202,9 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         }
     }
 
-    updateScreenState() {
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
-            this.electricity.style.display = "block";
-        } else {
-            this.electricity.style.display = "none";
-        }
+    isCaptainPfd() {
+        return this.disp_index == 1;
     }
-
 }
 class A320_Neo_PFD_VSpeed extends NavSystemElement {
     init(root) {

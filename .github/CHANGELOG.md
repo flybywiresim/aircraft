@@ -22,6 +22,11 @@
 1. [MISC] Fixed EVAC button animation - @tyler58546 (tyler58546)
 1. [ECAM] Improved alternating of igniters - @joseph-tobin (joseph#1001)
 1. [TEXTURE] Upscaled the existing FBW livery to 8K - @FoxinTale (Aubrey)
+1. [ELEC] All external and internal lights are powered by the correct electrical bus. - @davidwalschots (David Walschots)
+1. [ELEC] Equipment such as wipers and display units are powered by the correct electrical bus - @davidwalschots (David Walschots)
+1. [ELEC] Button and indication lights are powered by the correct electrical bus - @davidwalschots (David Walschots)
+1. [ELEC] Engines keep running when electrical systems are lost - @davidwalschots (David Walschots)
+1. [ELEC] When turning the BAT pb to AUTO, the battery charge limiter has a 1 second startup delay - @davidwalschots (David Walschots)
 1. [ND] Fix Behaviour of TAS and Wind Info displayed inflight and on Take-Off - @ChruutvoLuzi (ChruutvoLuzi#8902)
 
 ## 0.6.0
