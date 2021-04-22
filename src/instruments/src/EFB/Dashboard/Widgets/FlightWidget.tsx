@@ -79,6 +79,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
                 >
                     FROM SIMBRIEF
                 </button>
+                {/*This is a div because the 'disabled' attribute does not work with Coherent and a button would be clickable*/}
                 <div
                     className="w-full text-lg text-white font-medium bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none opacity-25"
                 >
