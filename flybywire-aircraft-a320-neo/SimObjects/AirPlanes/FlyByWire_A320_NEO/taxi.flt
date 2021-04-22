@@ -245,9 +245,12 @@ StrobeLights=True
 TaxiLights=True
 WingLights=True
 CabinLights=True
-GlareshieldLights=False
+GlareshieldLights=True
 PedestalLights=False
 Potentiometer.16=0.5
+Potentiometer.10=0
+Potentiometer.11=0
+Potentiometer.83=0
 
 [AutoPilot.0]
 MasterSwitch=False
