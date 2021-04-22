@@ -22,11 +22,13 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
 
     const [selectedIndex, setSelectedIndex] = useState(0);
 
+    const [initialize, setInitialize] = useState(false);
+
     const [reverserOnAxis1, setReverserOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
     const [, setReverserOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:2', 'number', 1000);
 
     const [, syncToDisk] = useSimVar('K:A32NX.THROTTLE_MAPPING_SAVE_TO_FILE', 'number', 1000);
-    const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 1000);
+    const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 100);
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
 
     const mappingsAxisOne: Array<ThrottleSimvar> = [
@@ -37,7 +39,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         new ThrottleSimvar('Flex', 'L:A32NX_THROTTLE_MAPPING_FLEXMCT_', 1),
         new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 1),
     ];
-    const mappingsAxis2: Array<ThrottleSimvar> = [
+    const mappingsAxisTwo: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 2),
         new ThrottleSimvar('Reverse Idle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_', 2),
         new ThrottleSimvar('Idle', 'L:A32NX_THROTTLE_MAPPING_IDLE_', 2),
@@ -52,7 +54,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         }
     });
 
-    const setReversOnAxis = (reverserOnAxis: number) => {
+    const setReversersOnAxis = (reverserOnAxis: number) => {
         setReverserOnAxis1(reverserOnAxis);
         setReverserOnAxis2(reverserOnAxis);
         if (reverserOnAxis === 0 && selectedIndex < 2) {
@@ -77,10 +79,10 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 }
             }
         }
-        for (let index = reverserOnAxis1 ? 0 : 2; index < mappingsAxis2.length; index++) {
-            const element = mappingsAxis2[index];
-            for (let nextIndex = index + 1; nextIndex < mappingsAxis2.length; nextIndex++) {
-                const nextElement = mappingsAxis2[nextIndex];
+        for (let index = reverserOnAxis1 ? 0 : 2; index < mappingsAxisTwo.length; index++) {
+            const element = mappingsAxisTwo[index];
+            for (let nextIndex = index + 1; nextIndex < mappingsAxisTwo.length; nextIndex++) {
+                const nextElement = mappingsAxisTwo[nextIndex];
                 if (element.getHiGetter() >= nextElement.getLowGetter() || element.getLowGetter() >= nextElement.getHiGetter()) {
                     errors.push(`${element.readableName} (${element.getLowGetter().toFixed(2)}) overlaps with ${nextElement.readableName} (${nextElement.getLowGetter().toFixed(2)})`);
                 }
@@ -129,7 +131,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 <div className="flex flex-row justify-center bg-gray-800 mt-auto mb-8 p-4 w-full divide divide-x-2 divide-gray-500">
                     <div className="flex flex-row mr-2">
                         <span className="text-lg text-gray-300 mr-2">Reverser On Axis</span>
-                        <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversOnAxis(value ? 1 : 0)} />
+                        <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversersOnAxis(value ? 1 : 0)} />
 
                     </div>
                     <div className="flex flex-row">
@@ -155,16 +157,20 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                             throttleNumber={1}
                             throttleCount={parseInt(isDualAxis) === 0 ? 2 : 1}
                             activeIndex={selectedIndex}
+                            initialize={initialize}
+                            setInitialize={setInitialize}
                         />
                         <div className="mr-8 ml-8 mt-auto mb-auto">
                             {navigationBar}
                         </div>
                         <BaseThrottleConfig
-                            mappingsAxisOne={mappingsAxis2}
+                            mappingsAxisOne={mappingsAxisTwo}
                             disabled={false}
                             throttleNumber={2}
                             throttleCount={1}
                             activeIndex={selectedIndex}
+                            initialize={initialize}
+                            setInitialize={setInitialize}
                         />
                         <div className="mr-4" />
                     </div>
@@ -175,11 +181,13 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                         <div className="flex flex-row ml-4 justify-center">
                             <BaseThrottleConfig
                                 mappingsAxisOne={mappingsAxisOne}
-                                mappingsAxisTwo={mappingsAxis2}
+                                mappingsAxisTwo={mappingsAxisTwo}
                                 disabled={false}
                                 throttleNumber={1}
                                 throttleCount={2}
                                 activeIndex={selectedIndex}
+                                initialize={initialize}
+                                setInitialize={setInitialize}
                             />
                             <div className="ml-8 mt-auto mb-auto">
                                 {navigationBar}
@@ -213,7 +221,12 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                 <Button
                     text="Load From File"
                     type={BUTTON_TYPE.BLUE}
-                    onClick={() => syncToThrottle(1)}
+                    onClick={() => {
+                        syncToThrottle(1);
+                        setTimeout(() => {
+                            setInitialize(true);
+                        }, 1000);
+                    }}
                     className="ml-2 hover:bg-blue-600 hover:border-blue-600"
                 />
                 <Button
