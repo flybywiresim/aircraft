@@ -134,7 +134,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                     </div>
                     <div className="flex flex-row">
                         <span>
-                            <span className="text-lg text-gray-300 mr-2 ml-2">Dual Axis</span>
+                            <span className="text-lg text-gray-300 mr-2 ml-2">Independent Axis</span>
                         </span>
                         <Toggle
                             value={!!parseInt(isDualAxis)}
