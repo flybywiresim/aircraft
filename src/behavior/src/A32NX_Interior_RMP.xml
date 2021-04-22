@@ -1,9 +1,5 @@
 <ModelBehaviors>
     <Template Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
-        <DefaultTemplateParameters>
-            <ELEC_BUS>(L:ACPowerAvailable, boolean)</ELEC_BUS>
-        </DefaultTemplateParameters>
-
         <UseTemplate Name="FBW_RMP_CONTROLS_Template" />
         <UseTemplate Name="FBW_RMP_COMMS_MODE_SELECTION_Template" />
         <UseTemplate Name="FBW_RMP_NAV_MODE_SELECTION_Template" />
@@ -124,7 +120,7 @@
         <Component ID="PUSH_RADIO#SIDE#_SEL_SEQ2" Node="PUSH_RADIO#SIDE#_SEL_SEQ2">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE type="rnp" return="boolean">
-                    let elecBus = #ELEC_BUS, bool#;
+                    let indicatorsPowered = #INDICATORS_POWERED, bool#;
                     alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
                     alias selectedModeLeft = (L:A32NX_RMP_L_SELECTED_MODE, number);
                     alias selectedModeRight = (L:A32NX_RMP_R_SELECTED_MODE, number);
@@ -132,7 +128,7 @@
                     // @todo abnormal defined differently with NAV modes available.
                     let rmpLeftAbnormal = selectedModeLeft != 1;
                     let rmpRightAbnormal = selectedModeRight != 2;
-                    elecBus and toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or (annunciatorLight == 0)
+                    (toggleSwitch and (rmpLeftAbnormal or rmpRightAbnormal) or (annunciatorLight == 0)) and indicatorsPowered
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
@@ -234,12 +230,12 @@
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE type="rnp" return="boolean">
                     let inop = #INOP, boolean#;
-                    let elecBus = #ELEC_BUS, bool#;
+                    let indicatorsPowered = #INDICATORS_POWERED, bool#;
                     let modeId = (#MODE_ID, number#);
                     alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
                     alias selectedMode = (L:A32NX_RMP_#SIDE#_SELECTED_MODE, number);
                     alias annunciatorLight = (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position, number);
-                    (!inop and elecBus and toggleSwitch and (selectedMode == modeId)) or (annunciatorLight == 0)
+                    ((!inop and toggleSwitch and (selectedMode == modeId)) or (annunciatorLight == 0)) and indicatorsPowered
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
@@ -253,7 +249,7 @@
         <Component ID="#BACKLIGHT_NAME#" Node="#BACKLIGHT_NAME#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                   (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)
+                   (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #BACKLIGHTS_POWERED# *
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
