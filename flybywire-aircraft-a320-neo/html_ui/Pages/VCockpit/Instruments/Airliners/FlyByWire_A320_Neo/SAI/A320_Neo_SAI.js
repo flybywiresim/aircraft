@@ -1200,14 +1200,12 @@ class A320_Neo_SAI_BrightnessBox extends HTMLElement {
 customElements.define('a320-neo-sai-brightness', A320_Neo_SAI_BrightnessBox);
 
 class A320_Neo_SAI_SelfTest extends NavSystemElement {
-    init(root) {
+    init() {
         this.selfTestElement = this.gps.getChildById("SelfTest");
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
         const interval = 5;
         this.getFrameCounter = A32NX_Util.createFrameCounter(interval);
         const cold_dark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
-        const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
-        const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
         this.state = A32NX_Util.createMachine(sai_state_machine);
 
         if (!cold_dark) {
@@ -1217,11 +1215,7 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
             this.state.setState("off");
             this.selfTestElement.offDisplay();
         }
-        /*
-        if ((!ac_pwr && !dc_pwr)) {
-            this.selfTestElement.offDisplay();
-        }
-        */
+
         this.updateThrottler = new UpdateThrottler(500);
     }
     onEnter() {
@@ -1231,10 +1225,7 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
     }
 
     checkShutdown() {
-        const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
-        const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
-
-        if (ac_pwr || dc_pwr) {
+        if (this.isPowered()) {
             return;
         } else {
             const _updateF = this.getFrameCounter();
@@ -1248,19 +1239,17 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
             }
         }
     }
-    onUpdate(_deltaTime) {
-        if (this.updateThrottler.canUpdate(_deltaTime) === -1) {
+    onUpdate(deltaTime) {
+        if (this.updateThrottler.canUpdate(deltaTime) === -1) {
             return;
         }
-        const _dTime = this.getDeltaTime();
+        deltaTime = this.getDeltaTime();
 
         const complete = this.selfTestElement.complete;
-        const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
-        const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
 
         switch (this.state.value) {
             case "off":
-                if ((ac_pwr || dc_pwr)) {
+                if (this.isPowered()) {
                     this.selfTestElement.onDisplay();
                     this.state.action("next");
                 }
@@ -1268,7 +1257,7 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
             case "test":
                 this.checkShutdown();
                 if (!complete) {
-                    this.selfTestElement.update(_dTime);
+                    this.selfTestElement.update(deltaTime);
                 } else if (complete) {
                     this.state.action("next");
                 }
@@ -1277,13 +1266,18 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
                 this.checkShutdown();
                 break;
             case "spawn":
-                if (ac_pwr || dc_pwr) {
+                if (this.isPowered()) {
                     this.state.action("next");
                 }
                 break;
         }
     }
     onEvent(_event) {
+    }
+
+    isPowered() {
+        return SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool") ||
+            (SimVar.GetSimVarValue("A:AIRSPEED INDICATED", "Knots") >= 50 && SimVar.GetSimVarValue("L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED", "Bool"));
     }
 }
 
