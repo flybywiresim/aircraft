@@ -2,6 +2,7 @@ class A320_Neo_FCU extends BaseAirliners {
     constructor() {
         super();
         this.initDuration = 3000;
+        this.electricity = document.querySelector('#Electricity');
     }
     get templateID() {
         return "A320_Neo_FCU";
@@ -29,6 +30,9 @@ class A320_Neo_FCU extends BaseAirliners {
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateMachTransition();
+
+        this.electricity.style.display = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool") ||
+            SimVar.GetSimVarValue("L:A32NX_ELEC_DC_2_BUS_IS_POWERED", "Bool") ? "block" : "none";
     }
     onEvent(_event) {
     }

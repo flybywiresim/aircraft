@@ -260,30 +260,66 @@
          <CheckpointDesc SubjectTT="TT:PACK Flow" ExpectationTT="TT:AS REQUIRED" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ECAM_ELEC">
-         <CheckpointDesc SubjectTT="TT:ECAM ELEC Page (INOP)" ExpectationTT="TT:CALL" />
-         <Instrument Id=""/>
+        <CheckpointDesc SubjectTT="TT:ECAM ELEC Page" ExpectationTT="TT:CALL" />
+        <Test>
+            <TestValue>
+                <Operator OpType="EQUAL">
+                    <Val Code="(L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX, Number)"/>
+                    <Val Value="3"/>
+                </Operator>
+            </TestValue>
+            <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="(&gt;H:A320_Neo_EICAS_2_ECAM_CHANGE_PAGE_ELEC) 3" />
+            <Instrument Id="ECAM_ELEC"/>
+        </Test>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_BATTERY">
          <CheckpointDesc SubjectTT="TT:Battery 1 and 2" ExpectationTT="TT:OFF THEN ON" />
-         <Instrument Id="ELECTRICAL_Switch_Battery_Master" />
          <Sequence SeqType="Parallel">
             <Test>
                <TestValue>
-                  <Val Code="6 (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:10, Bool)" />
+                  <Val Code="(L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO, Bool)" />
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="6 10 (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)" />
-               <Instrument Id="ELECTRICAL_Switch_Battery_Master" />
-               <Instrument Id="knob_electric_master" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO, Bool)" />
+               <Instrument Id="BATTERY_MASTER_SWITCH_1" />
             </Test>
             <Test>
                <TestValue>
-                  <Val Code="6 (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:11, Bool)" />
+                  <Val Code="(L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO, Bool)" />
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="6 11 (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)" />
-               <Instrument Id="ELECTRICAL_Switch_Battery_Master" />
-               <Instrument Id="knob_electric_master" />
+                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO, Bool)" />
+               <Instrument Id="BATTERY_MASTER_SWITCH_2" />
             </Test>
          </Sequence>
+      </Checkpoint>
+      <Checkpoint Id="A320_APU_MASTER_SWITCH_ON">
+        <CheckpointDesc SubjectTT="TT:APU Master Switch" ExpectationTT="TT:ON" />
+        <Test>
+            <TestValue>
+                <Val Code="(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)" />
+            </TestValue>
+            <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)" />
+            <Instrument Id="ELECTRICAL_Switch_APU_Master" />
+        </Test>
+      </Checkpoint>
+      <Checkpoint Id="A320_APU_START_ON">
+          <CheckpointDesc SubjectTT="TT:APU Start Switch" ExpectationTT="TT:ON" />
+          <Test>
+              <TestValue>
+                  <Val Code="(L:A32NX_OVHD_APU_START_PB_IS_ON, Bool)" />
+              </TestValue>
+              <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_APU_START_PB_IS_ON, Bool)" />
+              <Instrument Id="ELECTRICAL_Switch_APU_Starter" />
+          </Test>
+      </Checkpoint>
+      <Checkpoint Id="A320_APU_BLEED_ON">
+          <CheckpointDesc SubjectTT="TT:APU Bleed Switch" ExpectationTT="TT:ON" />
+          <Test>
+              <TestValue>
+                  <Val Code="(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON, Bool)" />
+              </TestValue>
+              <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON, Bool)" />
+              <Instrument Id="ELECTRICAL_Switch_APU_Bleed" />
+          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_FUEL_MODE">
          <CheckpointDesc SubjectTT="TT:Fuel Mode Selector" ExpectationTT="TT:MANUAL" />
@@ -2057,22 +2093,20 @@
       <Checkpoint Id="A320_SECURE_EXT_LIGHTS">
          <CheckpointDesc SubjectTT="TT:Exterior Lights" ExpectationTT="TT:OFF" />
       </Checkpoint>
-      <Checkpoint Id="A320_SECURE_APU_BLEED">
+      <Checkpoint Id="A320_APU_BLEED_OFF">
          <CheckpointDesc SubjectTT="TT:APU Bleed" ExpectationTT="TT:OFF" />
-         <Instrument Id="ELECTRICAL_Switch_APU_Bleed" />
-         <Test>
-            <TestValue>
-               <Operator OpType="NOT">
-                  <Val SimVarName="bleed air APU" Units="Boolean"/>
-               </Operator>
-            </TestValue>
-            <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="APU_BLEED_AIR_SOURCE_TOGGLE"/>
-            <Instrument Id="ELECTRICAL_Switch_APU_Bleed"/>
-         </Test>
+          <Test>
+              <TestValue>
+                <Operator OpType="NOT">
+                  <Val Code="(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON, Bool)" />
+                </Operator>
+              </TestValue>
+              <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="0 (&gt;L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON, Bool)" />
+              <Instrument Id="ELECTRICAL_Switch_APU_Bleed" />
+          </Test>
       </Checkpoint>
-      <Checkpoint Id="A320_SECURE_APU_MASTER">
+      <Checkpoint Id="A320_APU_MASTER_SWITCH_OFF">
          <CheckpointDesc SubjectTT="TT:APU Master Switch" ExpectationTT="TT:OFF" />
-         <Instrument Id="ELECTRICAL_Switch_APU_Generator" />
          <Test>
             <TestValue>
                <Operator OpType="EQUAL">
@@ -2080,7 +2114,8 @@
                   <Val Value="0"/>
                </Operator>
             </TestValue>
-            <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_TOGGLE" EventParam="8"/>
+            <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="0 (&gt;L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON, Bool)" />
+            <Instrument Id="ELECTRICAL_Switch_APU_Generator" />
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_SECURE_EMERGENCY_EXIT_LIGHTS">
@@ -2113,25 +2148,26 @@
       </Checkpoint>
       <Checkpoint Id="A320_SECURE_BATTERY">
          <CheckpointDesc SubjectTT="TT:Battery 1 and 2" ExpectationTT="TT:OFF" />
-         <Instrument Id="ELECTRICAL_Switch_Battery_Master" />
-         <Test>
-            <TestValue>
-               <Operator OpType="NOT">
-                  <Val SimVarName="ELECTRICAL MASTER BATTERY:1" Units="Boolean"/>
-               </Operator>
-            </TestValue>
-            <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="TOGGLE_MASTER_BATTERY" EventParam="1"/>
-            <Instrument Id="ELECTRICAL_Switch_Battery_Master"/>
-         </Test>
-         <Test>
-            <TestValue>
-               <Operator OpType="NOT">
-                  <Val SimVarName="ELECTRICAL MASTER BATTERY:2" Units="Boolean"/>
-               </Operator>
-            </TestValue>
-            <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="TOGGLE_MASTER_BATTERY" EventParam="2"/>
-            <Instrument Id="ELECTRICAL_Switch_Battery_Master"/>
-         </Test>
+         <Sequence SeqType="Parallel">
+            <Test>
+                <TestValue>
+                    <Operator OpType="NOT">
+                        <Val Code="(L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO, Bool)" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="0 (&gt;L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO, Bool)" />
+                <Instrument Id="BATTERY_MASTER_SWITCH_1" />
+            </Test>
+            <Test>
+                <TestValue>
+                    <Operator OpType="NOT">
+                        <Val Code="(L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO, Bool)" />
+                    </Operator>
+                </TestValue>
+                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="0 (&gt;L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO, Bool)" />
+                <Instrument Id="BATTERY_MASTER_SWITCH_2" />
+            </Test>
+         </Sequence>
       </Checkpoint>
       <!-- GO AROUND -->
       <Checkpoint Id="A320_GOAROUND_THRUST_TOGA">
@@ -2273,19 +2309,19 @@
       <Checkpoint Id="A320_Battery_Switches_On_2">
          <Clue name="TT:CLUE.BATTERY_SWITCHES_ON_2" />
          <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_BATTERY_SWITCHES" ExpectationTT="TT:GAME.CHECKLIST_ON" />
-         <Sequence SeqType="Parallel">
+        <Sequence SeqType="Parallel">
             <Test>
                <TestValue>
-                  <Val Code="6 (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:10, Bool)" />
+                  <Val Code="(L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO, Bool)" />
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="6 10 (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO, Bool)" />
                <Instrument Id="BATTERY_MASTER_SWITCH_1" />
             </Test>
             <Test>
                <TestValue>
-                  <Val Code="6 (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:11, Bool)" />
+                  <Val Code="(L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO, Bool)" />
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="6 11 (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)" />
+                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO, Bool)" />
                <Instrument Id="BATTERY_MASTER_SWITCH_2" />
             </Test>
          </Sequence>
