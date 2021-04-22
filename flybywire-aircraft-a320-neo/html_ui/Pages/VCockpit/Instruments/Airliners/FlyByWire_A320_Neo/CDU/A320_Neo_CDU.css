@@ -59,16 +59,7 @@
 #Mainframe {
   width: 100%;
   height: 100%;
-}
-
-#Electricity {
-  width: 100%;
-  height: 100%;
   background-color: rgb(4, 4, 5);
-}
-
-#Electricity[state="off"] {
-  display: none;
 }
 
 span:empty:before {
