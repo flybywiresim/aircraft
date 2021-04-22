@@ -29,11 +29,6 @@ class A32NX_Core {
                 updateInterval: 150,
             },
             {
-                name: 'Electricity',
-                module: new A32NX_Electricity(),
-                updateInterval: 100,
-            },
-            {
                 name: 'LocalVars',
                 module: new A32NX_LocalVarUpdater(),
                 updateInterval: 50,
