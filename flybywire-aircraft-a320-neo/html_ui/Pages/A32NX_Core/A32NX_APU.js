@@ -26,12 +26,6 @@ class A32NX_APU {
             SimVar.SetSimVarValue("K:FUELSYSTEM_VALVE_TOGGLE", "Number", 8);
         }
 
-        const apuGenActive = SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool");
-
-        // This logic is consistently faulty in the JavaScript code: of course it should also take into
-        // account if engine generators are supplying electricity. We'll fix this when we create the electrical system.
-        SimVar.SetSimVarValue("L:APU_GEN_ONLINE", "Bool", available && apuGenActive ? 1 : 0);
-
         const apuBleedOn = SimVar.GetSimVarValue("L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON", "Bool");
         if (apuBleedOn !== this.lastAPUBleedState) {
             this.lastAPUBleedState = apuBleedOn;

@@ -36,7 +36,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     Init() {
         super.Init();
 
-        let mainFrame = this.getChildById("Electricity");
+        let mainFrame = this.getChildById("Mainframe");
         if (mainFrame == null) {
             mainFrame = this;
         }
@@ -217,7 +217,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.flightPhaseManager.changeFlightPhase(initialFlightPhase);
         }
 
-        this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
         this.initB = false;
 
@@ -295,8 +294,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.updateMCDU();
 
-        this.updateScreenState();
-
         // If legacy SimBrief username variable is in the DataStore, convert it to a user ID and remove it.
         const simbriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "");
         if (simbriefUsername) {
@@ -323,14 +320,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         } else {
             this.initB = false;
-        }
-    }
-
-    updateScreenState() {
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
-            this.electricity.style.display = "block";
-        } else {
-            this.electricity.style.display = "none";
         }
     }
 
