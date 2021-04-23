@@ -28,6 +28,7 @@
 1. [ELEC] Button and indication lights are powered by the correct electrical bus - @davidwalschots (David Walschots)
 1. [ELEC] Engines keep running when electrical systems are lost - @davidwalschots (David Walschots)
 1. [ELEC] When turning the BAT pb to AUTO, the battery charge limiter has a 1 second startup delay - @davidwalschots (David Walschots)
+1. [MCDU] Fixed entry of in.Hg baro settings ending in zero - @tracernz(Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
