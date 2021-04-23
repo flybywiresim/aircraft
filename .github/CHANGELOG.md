@@ -30,6 +30,7 @@
 1. [ELEC] Engines keep running when electrical systems are lost - @davidwalschots (David Walschots)
 1. [ELEC] When turning the BAT pb to AUTO, the battery charge limiter has a 1 second startup delay - @davidwalschots (David Walschots)
 1. [MCDU] Fixed entry of in.Hg baro settings ending in zero - @tracernz(Mike)
+1. [EFB] Disabled LINK MCDU button on dashboard page - @ExampleWasTaken (ExampleWasTaken#0886)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
