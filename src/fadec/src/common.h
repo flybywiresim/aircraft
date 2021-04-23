@@ -8,23 +8,23 @@ HANDLE hSimConnect;
 // Calculating environmental corrected ratios
 class Ratios {
  public:
-  FLOAT64 theta(double altitude) {
-    double t = (288.15 - (1.98 * altitude / 1000)) / 288.15;
+  FLOAT64 theta(double ambientTemp) {
+    double t = (273.15 + ambientTemp) / 288.15;
     return t;
   }
 
-  FLOAT64 delta(double altitude) {
-    double d = pow(this->theta(altitude), 5.256);
+  FLOAT64 delta(double ambientTemp) {
+    double d = pow(this->theta(ambientTemp), 5.256);
     return d;
   }
 
-  FLOAT64 theta2(double mach, double altitude) {
-    double t2 = this->theta(altitude) * (1 + 0.2 * pow(mach, 2));
+  FLOAT64 theta2(double mach, double ambientTemp) {
+    double t2 = this->theta(ambientTemp) * (1 + 0.2 * pow(mach, 2));
     return t2;
   }
 
-  FLOAT64 delta2(double mach, double altitude) {
-    double d2 = this->delta(altitude) * pow((1 + 0.2 * pow(mach, 2)), 3.5);
+  FLOAT64 delta2(double mach, double ambientTemp) {
+    double d2 = this->delta(ambientTemp) * pow((1 + 0.2 * pow(mach, 2)), 3.5);
     return d2;
   }
 };

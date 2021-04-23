@@ -75,7 +75,6 @@ class SimVars {
   ID Engine1PreFF;
   ID Engine2PreFF;
   ID EngineCycleTime;
-  ID EngineCrank;
   ID EngineImbalance;
   ID FuelUsedLeft;
   ID FuelUsedRight;
@@ -86,8 +85,6 @@ class SimVars {
   ID FuelCenterPre;
   ID FuelOverflowLeft;
   ID FuelOverflowRight;
-  ID preFlightPhase;
-  ID actualFlightPhase;
 
   SimVars() { this->initializeVars(); }
 
@@ -107,10 +104,7 @@ class SimVars {
     FuelAuxLeftPre = register_named_variable("A32NX_FUEL_AUX_LEFT_PRE");
     FuelAuxRightPre = register_named_variable("A32NX_FUEL_AUX_RIGHT_PRE");
     FuelCenterPre = register_named_variable("A32NX_FUEL_CENTER_PRE");
-    EngineCrank = register_named_variable("A32NX_ENGINE_CRACK");
     EngineCycleTime = register_named_variable("A32NX_ENGINE_CYCLE_TIME");
-    preFlightPhase = register_named_variable("A32NX_FLIGHT_STATE_PREVIOUS");
-    actualFlightPhase = register_named_variable("A32NX_FLIGHT_STATE_ACTUAL");
 
     this->setEngine1EGT(0);
     this->setEngine2EGT(0);
@@ -126,10 +120,7 @@ class SimVars {
     this->setFuelAuxLeftPre(0);
     this->setFuelAuxRightPre(0);
     this->setFuelCenterPre(0);
-    this->setEngineCrank(0);
     this->setEngineCycleTime(0);
-    this->setPrePhase(-1);
-    this->setActualPhase(-1);
 
     m_Units = new Units();
   }
@@ -149,17 +140,9 @@ class SimVars {
   void setFuelAuxLeftPre(FLOAT64 value) { set_named_variable_value(FuelAuxLeftPre, value); }
   void setFuelAuxRightPre(FLOAT64 value) { set_named_variable_value(FuelAuxRightPre, value); }
   void setFuelCenterPre(FLOAT64 value) { set_named_variable_value(FuelCenterPre, value); }
-  void setEngineCrank(FLOAT64 value) { set_named_variable_value(EngineCrank, value); }
   void setEngineCycleTime(FLOAT64 value) { set_named_variable_value(EngineCycleTime, value); }
 
-  // Flight phase coding for smooth variable transitions
-  // 0: Takeoff, 1: Climb, 2: Cruise, 3: Descent, 4: Landing
-  void setPrePhase(FLOAT64 value) { set_named_variable_value(preFlightPhase, value); }
-  void setActualPhase(FLOAT64 value) { set_named_variable_value(actualFlightPhase, value); }
-
   // Collection of SimVar/LVar 'get' Functions
-  FLOAT64 getPrePhase() { return get_named_variable_value(preFlightPhase); }
-  FLOAT64 getActualPhase() { return get_named_variable_value(actualFlightPhase); }
   FLOAT64 getEngine1FF() { return get_named_variable_value(Engine1FF); }
   FLOAT64 getEngine2FF() { return get_named_variable_value(Engine2FF); }
   FLOAT64 getEngine1PreFF() { return get_named_variable_value(Engine1PreFF); }

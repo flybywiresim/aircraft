@@ -15,8 +15,7 @@ class EngineControl {
   double simOnGround;
   double altitudeAGL;
   double verticalSpeed;
-  double actualFlightPhase;
-  double preFlightPhase;
+  double ambientTemp;
 
   int idx;
   int engine;
@@ -28,8 +27,6 @@ class EngineControl {
   double cn1;
   double mach;
   double altitude;
-  double ambientTemp;
-  double stdTemp;
   double egtNX;
   double flowNX;
   double Imbalance;
@@ -74,47 +71,6 @@ class EngineControl {
   double FuelTotalActual;
   double FuelTotalPre;
 
-  // Defines Flight Phases (Actual and Previous)
-  // Flight phases being used to control engine TSFC and Fuel Flow
-  void flightPhase(double simOnGround, double altitudeAGL, double verticalSpeed, double actualFlightPhase, double preFlightPhase) {
-    // Checking aircraft initial state
-    if (preFlightPhase == -1) {
-      if (simOnGround == 1) {
-        preFlightPhase = 0;
-        actualFlightPhase = 0;
-      } else {
-        preFlightPhase = 2;
-        actualFlightPhase = 2;
-      }
-      simVars->setPrePhase(preFlightPhase);
-    } else {
-      // Taxi/ Takeoff Phase
-      if (simOnGround == 1 && preFlightPhase == 0) {
-        actualFlightPhase = 0;
-      } else if (simOnGround == 0 && preFlightPhase == 0 && altitudeAGL <= 500) {
-        actualFlightPhase = 0;
-      }
-      // Climb Phase
-      else if (simOnGround == 0 && verticalSpeed >= 300 && altitudeAGL > 500) {
-        actualFlightPhase = 1;
-      }
-      // Descent Phase
-      else if (simOnGround == 0 && verticalSpeed < -1200 && altitudeAGL > 500) {
-        actualFlightPhase = 3;
-      }
-      // Landing Phase
-      else if (simOnGround == 1 && preFlightPhase != 0) {
-        actualFlightPhase = 4;
-      } else if (simOnGround == 0 && preFlightPhase != 0 && altitudeAGL <= 500) {
-        actualFlightPhase = 4;
-      } else {
-        actualFlightPhase = 2;
-      }
-    }
-
-    simVars->setActualPhase(actualFlightPhase);
-  }
-
   // Engine Imbalance Coded Digital Word:
   // 00 - Engine, 00 - N2, 00 - FuelFlow, 00 - EGT
   // Generates a random engine imbalance. Next steps: make realistic imbalance due to wear
@@ -147,55 +103,27 @@ class EngineControl {
 
   // FBW Exhaust Gas Temperature (in º Celsius)
   // Updates EGT with realistic values visualized in the ECAM
-  void updateEGT(int idx, double cn1, double mach, double altitude, double ambientTemp, double stdTemp) {
-    egtNX = poly->egtNX(cn1, mach, altitude, ambientTemp, stdTemp);
+  void updateEGT(int idx, double cn1, double cff, double mach, double altitude, double ambientTemp) {
+    egtNX = poly->egtNX(cn1, cff, mach, altitude);
 
     if (idx == 1) {
-      simVars->setEngine1EGT(egtNX * ratios->theta2(mach, altitude));
+      simVars->setEngine1EGT(egtNX * ratios->theta2(mach, ambientTemp));
     } else {
-      simVars->setEngine2EGT(egtNX * ratios->theta2(mach, altitude));
+      simVars->setEngine2EGT(egtNX * ratios->theta2(mach, ambientTemp));
     }
   }
 
   // FBW Fuel FLow (in Kg/h)
   // Updates Fuel Flow with realistic values
-  void updateFF(int idx,
-                double cn1,
-                double cff,
-                double mach,
-                double altitude,
-                double ambientTemp,
-                double stdTemp,
-                double actualFlightPhase,
-                double preFlightPhase) {
-    prevFuelFlow = 0;
+  double updateFF(int idx, double cn1, double mach, double altitude, double ambientTemp) {
     flow_out = 0;
-    delta = 0;
 
     // Engine Imbalance
     Imbalance = simVars->getEngineImbalance();
     EngineImbalanced = imbalance_extractor(Imbalance, 0);
     FFImbalanced = imbalance_extractor(Imbalance, 2);
 
-    if (idx == 1) {
-      prevFuelFlow = simVars->getEngine1FF();  // in Kgs/hr
-    } else {
-      prevFuelFlow = simVars->getEngine2FF();  // in Kgs/hr
-    }
-
-    flowNX = poly->flowNX(idx, cn1, mach, altitude, ambientTemp, stdTemp, preFlightPhase, actualFlightPhase) *
-                    0.453592;  // in Kgs/hr. preFlightPhase for DEBUG
-
-    if (preFlightPhase == actualFlightPhase) {
-      flow_out = flowNX * ratios->delta2(mach, altitude) * sqrt(ratios->theta2(mach, altitude));
-    } else {
-      flowNX = flowNX * ratios->delta2(mach, altitude) * sqrt(ratios->theta2(mach, altitude));
-      delta = (prevFuelFlow - flowNX) * 0.995;
-      flow_out = flowNX + delta;
-      if (abs(delta) <= 20) {
-        simVars->setPrePhase(actualFlightPhase);
-      }
-    }
+    flowNX = poly->flowNX(idx, cn1, mach, altitude);  // in Kgs/hr.
 
     // Checking engine imbalance
     if (EngineImbalanced != idx || cff < 1) {
@@ -206,7 +134,7 @@ class EngineControl {
     if (cff < 1) {
       flow_out = 0;
     } else {
-      flow_out = flow_out - FFImbalanced;
+      flow_out = (flowNX * 0.453592 * ratios->delta2(mach, ambientTemp) * sqrt(ratios->theta2(mach, ambientTemp))) - FFImbalanced;
     }
 
     if (idx == 1) {
@@ -214,6 +142,8 @@ class EngineControl {
     } else {
       simVars->setEngine2FF(flow_out);
     }
+
+    return flowNX;
   }
 
   // FBW Fuel Consumption and Tankering
@@ -337,27 +267,6 @@ class EngineControl {
       simVars->setFuelAuxRightPre(rightAuxQuantity);  // in LBS
       simVars->setFuelCenterPre(centerQuantity);      // in LBS
     }
-    /*
-    std::cout << "FBW: Test= " << test
-              << " dt= " << deltaTime * 3600
-              << " FuelUsedLeft = " << FuelUsedLeft
-              << " FuelUsedRight = " << FuelUsedRight << " FuelLeftPre = " << FuelLeftPre << " FuelRightPre = " << FuelRightPre
-              << " FuelAuxLeftPre = " << FuelAuxLeftPre << " FuelAuxRightPre = " << FuelAuxRightPre << " FuelCenterPre = " << FuelCenterPre
-              << " leftQuantity = " << leftQuantity << " rightQuantity = " << rightQuantity << " leftAuxQuantity = " << leftAuxQuantity
-              << " rightAuxQuantity = " << rightAuxQuantity << " centerQuantity = " << centerQuantity << " FuelLeft = " << FuelLeft
-              << " FuelRight = " << FuelRight << " xfrCenter = " << xfrCenter << " xfrAuxLeft = " << xfrAuxLeft
-              << " xfrAuxRight = " << xfrAuxRight << " FuelTotalActual = " << FuelTotalActual << " FuelTotalPre = " << FuelTotalPre
-              << std::flush;*/
-  }
-
-  void updateCrank() {
-    double temperature = simVars->getAmbientTemperature();
-
-    if (temperature <= 288) {
-      simVars->setEngineCrank(0);
-    } else {
-      simVars->setEngineCrank(1);
-    }
   }
 
  public:
@@ -375,30 +284,25 @@ class EngineControl {
   }
 
   void update(double deltaTime) {
+    // Per cycle Initial Conditions
     idx = 2;
     simOnGround = simVars->getSimOnGround();
     altitudeAGL = simVars->getPlaneAltitudeAGL();
     verticalSpeed = simVars->getVerticalSpeed();
-    actualFlightPhase = simVars->getActualPhase();
-    preFlightPhase = simVars->getPrePhase();
     mach = simVars->getMach();
     altitude = simVars->getPlaneAltitude();
     ambientTemp = simVars->getAmbientTemperature();
-    stdTemp = simVars->getStdTemperature();
 
     // Timer timer;
-    flightPhase(simOnGround, altitudeAGL, verticalSpeed, actualFlightPhase, preFlightPhase);
 
     while (idx != 0) {
       cn1 = simVars->getCN1(idx);
-      cff = simVars->getFF(idx);
-      updateEGT(idx, cn1, mach, altitude, ambientTemp, stdTemp);
-      updateFF(idx, cn1, cff, mach, altitude, ambientTemp, stdTemp, actualFlightPhase, preFlightPhase);
+      cff = updateFF(idx, cn1, mach, altitude, ambientTemp);
+      updateEGT(idx, cn1, cff, mach, altitude, ambientTemp);
       idx--;
     }
 
     updateFuel(deltaTime);
-    updateCrank();
     // timer.Stop();
   }
 
