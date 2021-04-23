@@ -16,6 +16,8 @@ interface Props {
     index,
     barPosition: string,
     expertMode: boolean,
+    initialize: boolean,
+    setInitialize,
 }
 
 const DetentConfig: React.FC<Props> = (props: Props) => {
@@ -43,7 +45,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
 
     useEffect(() => {
         // initialize persistent values from previous configurations
-        if (!axisValue) {
+        if (!axisValue || props.initialize) {
             const axisValue = (props.lowerBoundDetentGetter + props.upperBoundDetentGetter) / 2;
             const dz = Math.abs((Math.abs(props.upperBoundDetentGetter) - Math.abs(props.lowerBoundDetentGetter))) / 2;
             setAxisValue(axisValue.toFixed(2));
@@ -51,6 +53,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                 setDeadZone(dz.toFixed(2));
             }
             applyDeadzone(props.lowerBoundDetentSetter, props.upperBoundDetentSetter, axisValue, parseFloat(deadZone));
+            props.setInitialize(false);
         }
         setPreviousMode(props.expertMode);
     });
