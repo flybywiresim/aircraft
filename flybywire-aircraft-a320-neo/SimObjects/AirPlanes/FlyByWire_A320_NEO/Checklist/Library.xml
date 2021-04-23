@@ -324,6 +324,15 @@
       <Checkpoint Id="A320_CPREP1_FUEL_MODE">
          <CheckpointDesc SubjectTT="TT:Fuel Mode Selector" ExpectationTT="TT:MANUAL" />
       </Checkpoint>
+      <Checkpoint Id="A320_CPREP1_FUEL_PUMPS">
+         <CheckpointDesc SubjectTT="TT:Fuel Pumps" ExpectationTT="TT:CHECK" />
+         <Instrument Id="OVHD_FUEL_LTKPUMPS1"/>
+         <Instrument Id="OVHD_FUEL_LTKPUMPS2"/>
+         <Instrument Id="OVHD_FUEL_PUMP1"/>
+         <Instrument Id="OVHD_FUEL_PUMP2"/>
+         <Instrument Id="OVHD_FUEL_RTKPUMPS1"/>
+         <Instrument Id="OVHD_FUEL_RTKPUMPS2"/>
+      </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ENGINE_FIRE_TEST">
          <CheckpointDesc SubjectTT="TT:Engine 1 and 2 Fire Test" ExpectationTT="TT:PERFORM" />
          <Instrument Id="Fire_test_eng1"/>
@@ -2025,7 +2034,12 @@
       </Checkpoint>
       <Checkpoint Id="A320_PARKING_FUEL_PUMPS">
          <CheckpointDesc SubjectTT="TT:Fuel Pumps" ExpectationTT="TT:OFF" />
-         <Instrument Id="FUEL_Push_Pump" />
+         <Instrument Id="OVHD_FUEL_LTKPUMPS1"/>
+         <Instrument Id="OVHD_FUEL_LTKPUMPS2"/>
+         <Instrument Id="OVHD_FUEL_PUMP1"/>
+         <Instrument Id="OVHD_FUEL_PUMP2"/>
+         <Instrument Id="OVHD_FUEL_RTKPUMPS1"/>
+         <Instrument Id="OVHD_FUEL_RTKPUMPS2"/>
       </Checkpoint>
       <Checkpoint Id="A320_PARKING_IRS_PERF_FUEL_QUANT">
          <CheckpointDesc SubjectTT="TT:IRS Performance and Fuel Quantity" ExpectationTT="TT:CHECK" />

@@ -1561,6 +1561,7 @@
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_LTKPUMPS1</NODE_ID>
+                    <PART_ID>OVHD_FUEL_LTKPUMPS1</PART_ID>
                     <ID>2</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -1571,6 +1572,7 @@
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_LTKPUMPS2</NODE_ID>
+                    <PART_ID>OVHD_FUEL_LTKPUMPS2</PART_ID>
                     <ID>5</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -1581,6 +1583,7 @@
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_PUMP1</NODE_ID>
+                    <PART_ID>OVHD_FUEL_PUMP1</PART_ID>
                     <ID>1</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -1591,6 +1594,7 @@
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_PUMP2</NODE_ID>
+                    <PART_ID>OVHD_FUEL_PUMP2</PART_ID>
                     <ID>4</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -1601,6 +1605,7 @@
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_RTKPUMPS1</NODE_ID>
+                    <PART_ID>OVHD_FUEL_RTKPUMPS1</PART_ID>
                     <ID>3</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -1611,6 +1616,7 @@
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Pump">
                     <NODE_ID>PUSH_OVHD_FUEL_RTKPUMPS2</NODE_ID>
+                    <PART_ID>OVHD_FUEL_RTKPUMPS2</PART_ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_OFF</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.ENG_2_R_TK_PUMP2_ON</ON_TOOLTIP>
                     <ID>6</ID>
