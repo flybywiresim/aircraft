@@ -52,6 +52,7 @@
 					<Checkpoint ReferenceId="A320_CPREP1_ECAM_ELEC"/>
 					<Checkpoint ReferenceId="A320_CPREP1_BATTERY"/>
 					<Checkpoint ReferenceId="A320_CPREP1_FUEL_MODE"/>
+					<Checkpoint ReferenceId="A320_CPREP1_FUEL_PUMPS"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ENGINE_FIRE_TEST"/>
 					<Checkpoint ReferenceId="A320_CPREP1_AUDIO_SWITCHING"/>
 					<Checkpoint ReferenceId="A320_CPREP1_PA_RECEPTION"/>

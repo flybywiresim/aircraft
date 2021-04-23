@@ -22,6 +22,7 @@
 1. [MISC] Fixed EVAC button animation - @tyler58546 (tyler58546)
 1. [ECAM] Improved alternating of igniters - @joseph-tobin (joseph#1001)
 1. [TEXTURE] Upscaled the existing FBW livery to 8K - @FoxinTale (Aubrey)
+1. [CHECKLISTS] Added missing Fuel Pumps checkpoint - @sidnov (sidnov#8337)
 1. [ELEC] All external and internal lights are powered by the correct electrical bus. - @davidwalschots (David Walschots)
 1. [ELEC] Equipment such as wipers and display units are powered by the correct electrical bus - @davidwalschots (David Walschots)
 1. [ELEC] Button and indication lights are powered by the correct electrical bus - @davidwalschots (David Walschots)
