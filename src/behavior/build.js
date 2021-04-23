@@ -20,7 +20,7 @@ function translate(filename) {
 
     Array.from(dom.window.document.querySelectorAll('[type="rnp"]'))
         .forEach((e) => {
-            const { messages, output } = rnp.translate(e.innerHTML, {
+            const { messages, output } = rnp.translate(e.textContent.replace(/&lt;/g, '<'), {
                 specifier: '(inline)',
                 returnType: rnp.Type[(e.getAttribute('return') || 'void').toUpperCase()] || rnp.Type.VOID,
             });
@@ -33,7 +33,7 @@ function translate(filename) {
 
             e.removeAttribute('type');
             e.removeAttribute('return');
-            e.innerHTML = `${leading}${output.replace(/\n/g, leading)}${trailing}`;
+            e.innerHTML = `${leading}${output.replace(/\n/g, leading)}${trailing}`.replace(/</g, '&lt;');
         });
 
     return dom.serialize();
