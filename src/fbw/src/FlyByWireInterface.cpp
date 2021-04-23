@@ -287,10 +287,7 @@ void FlyByWireInterface::setupLocalVariables() {
   engineFuelAuxLeftPre = make_unique<LocalVariable>("A32NX_FUEL_AUX_LEFT_PRE");
   engineFuelAuxRightPre = make_unique<LocalVariable>("A32NX_FUEL_AUX_RIGHT_PRE");
   engineFuelCenterPre = make_unique<LocalVariable>("A32NX_FUEL_CENTER_PRE");
-  engineEngineCrank = make_unique<LocalVariable>("A32NX_ENGINE_CRACK");
   engineEngineCycleTime = make_unique<LocalVariable>("A32NX_ENGINE_CYCLE_TIME");
-  enginePreFlightPhase = make_unique<LocalVariable>("A32NX_FLIGHT_STATE_PREVIOUS");
-  engineActualFlightPhase = make_unique<LocalVariable>("A32NX_FLIGHT_STATE_ACTUAL");
 
   idFlapsHandleIndex = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_INDEX");
   idFlapsHandlePercent = make_unique<LocalVariable>("A32NX_FLAPS_HANDLE_PERCENT");
@@ -412,10 +409,7 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
   engineData.engineFuelAuxLeftPre = engineFuelAuxLeftPre->get();
   engineData.engineFuelAuxRightPre = engineFuelAuxRightPre->get();
   engineData.engineFuelCenterPre = engineFuelCenterPre->get();
-  engineData.engineEngineCrank = engineEngineCrank->get();
   engineData.engineEngineCycleTime = engineEngineCycleTime->get();
-  engineData.enginePreFlightPhase = enginePreFlightPhase->get();
-  engineData.engineActualFlightPhase = engineActualFlightPhase->get();
 
   return true;
 }

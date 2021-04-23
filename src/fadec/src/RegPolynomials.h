@@ -3,88 +3,52 @@
 /// A collection of multi-variate regression polynomials for engine parameters
 class Polynomial {
  public:
-  double egtNX(double cn1, double mach, double alt, double ambientT, double stdT) {
-    double isa = ambientT - stdT;
-    double egt_coef[36] = {439.19479303830013, 3.73886284e-04,  -6.19083094e+00, -3.68383912e+01, -2.07101387e-03, 3.06556157e+00,
-                           1.10553060e-01,     3.22190024e+00,  5.45688444e-05,  -3.80054219e-02, -3.57648266e+02, -6.98940659e-04,
-                           -3.29527354e-01,    -1.01903175e-07, 2.45101622e-05,  4.17337023e-03,  -1.38655994e-04, -2.47009187e-02,
-                           -4.08249001e-07,    2.34142713e-04,  1.57511073e+00,  1.19845109e-05,  5.68528831e-03,  2.05944783e-10,
-                           -1.56299935e-07,    -6.68231253e-05, 1.56793944e+02,  7.70969551e-04,  -4.07722666e-01, -4.71683265e-09,
-                           -1.21408283e-05,    -9.09550414e-04, 1.35035872e-12,  2.32377898e-10,  -6.55154381e-08, -2.40873623e-05};
+  double egtNX(double cn1, double cff, double mach, double alt) {
+    double egt_out = 0;
 
-    // CFM56 to LEAP engine adaptation
-    double cfm2leap = (-0.02779 * pow(cn1, 2)) + (4.79938 * cn1) + 4.81815;
+    double egt_coef[16] = {
+        443.3145034,    0.0000000e+00,  3.0141710e+00,  3.9132758e-02,
+        -4.8488279e+02, -1.2890964e-03, -2.2332050e-02, 8.3849683e-05,
+        6.0478647e+00,  6.9171710e-05,  -6.5369271e-07, -8.1438322e-03,
+        -5.1229403e-07, 7.4657497e+01,  -4.6016728e-03, 2.8637860e-08};
 
-    double egt_est = egt_coef[0] + egt_coef[1] + (egt_coef[2] * cn1) + (egt_coef[3] * mach) + (egt_coef[4] * alt) + (egt_coef[5] * isa) +
-                     (egt_coef[6] * pow(cn1, 2)) + (egt_coef[7] * cn1 * mach) + (egt_coef[8] * cn1 * alt) + (egt_coef[9] * cn1 * isa) +
-                     (egt_coef[10] * pow(mach, 2)) + (egt_coef[11] * mach * alt) + (egt_coef[12] * mach * isa) +
-                     (egt_coef[13] * pow(alt, 2)) + (egt_coef[14] * alt * isa) + (egt_coef[15] * pow(isa, 2)) +
-                     (egt_coef[16] * pow(cn1, 3)) + (egt_coef[17] * pow(cn1, 2) * mach) + (egt_coef[18] * pow(cn1, 2) * alt) +
-                     (egt_coef[19] * pow(cn1, 2) * isa) + (egt_coef[20] * cn1 * pow(mach, 2)) + (egt_coef[21] * cn1 * mach * alt) +
-                     (egt_coef[22] * cn1 * mach * isa) + (egt_coef[23] * cn1 * pow(alt, 2)) + (egt_coef[24] * cn1 * alt * isa) +
-                     (egt_coef[25] * cn1 * pow(isa, 2)) + (egt_coef[26] * pow(mach, 3)) + (egt_coef[27] * pow(mach, 2) * alt) +
-                     (egt_coef[28] * pow(mach, 2) * isa) + (egt_coef[29] * mach * pow(alt, 2)) + (egt_coef[30] * mach * alt * isa) +
-                     (egt_coef[31] * mach * pow(isa, 2)) + (egt_coef[32] * pow(alt, 3)) + (egt_coef[33] * pow(alt, 2) * isa) +
-                     (egt_coef[34] * alt * pow(isa, 2)) + (egt_coef[35] * pow(isa, 3));
+    egt_out = egt_coef[0] + egt_coef[1] + (egt_coef[2] * cn1) +
+                     (egt_coef[3] * cff) + (egt_coef[4] * mach) +
+                     (egt_coef[5] * alt) + (egt_coef[6] * pow(cn1, 2)) +
+                     (egt_coef[7] * cn1 * cff) + (egt_coef[8] * cn1 * mach) +
+                     (egt_coef[9] * cn1 * alt) + (egt_coef[10] * pow(cff, 2)) +
+                     (egt_coef[11] * mach * cff) + (egt_coef[12] * cff * alt) +
+                     (egt_coef[13] * pow(mach, 2)) +
+                     (egt_coef[14] * mach * alt) + (egt_coef[15] * pow(alt, 2));
 
-    // Account for Taxi/ Takeoff phase non-linearities
-    if (cn1 <= 40) {
-      egt_est = (isa + (0.01956 * pow(cn1, 3)) + (-1.81965 * pow(cn1, 2)) + (53.82036 * cn1) + ambientT) + (cn1 * isa / 40);
-    } else {
-      egt_est = egt_est + cfm2leap;
-    }
-    return egt_est;
+    return egt_out;
   }
 
-  double flowNX(int idx, double cn1, double mach, double alt, double ambientT, double stdT, double preFlightPhase, double actualFlightPhase) {
+  double flowNX(int idx, double cn1, double mach, double alt) {
     double flow_out = 0;
-    double cfm2leap = 0;
-    double flow_base = 0;
-    double flow_crz = 0;
-    double flow_to = 0;
-    double flow_clb = 0;
-    double flow_dsc = 0;
-    double actPhaseFF = 0;
-    double isa = ambientT - stdT;
-    double flow_coef[36] = {-737.1844191320206, -3.80575101e-03, 7.08383000e+01,  1.42324185e+02,  -2.02956471e-02, -8.78129239e+00,
-                            -1.34199619e+00,    1.06144644e+01,  4.12185469e-04,  4.26232094e-01,  -1.93471814e+03, -1.75585235e-02,
-                            6.16437246e-01,     7.08825149e-07,  9.82113776e-05,  -2.19309423e-03, 1.27385754e-02,  -1.20066023e-01,
-                            -1.41696561e-06,    -5.24660662e-03, -2.77203489e+00, 2.31986945e-04,  6.16611336e-04,  -5.59973454e-09,
-                            -2.91651216e-06,    4.37402125e-04,  1.29567507e+03,  3.13286787e-03,  1.36270072e-01,  5.89039214e-08,
-                            -1.16421205e-04,    -7.44491647e-03, -8.05264069e-12, 2.19677475e-09,  -1.90705995e-07, -1.45941170e-04};
 
-    // CFM56 to LEAP engine adaptation
-    cfm2leap = (-0.00017641 * pow(cn1, 2)) + (0.01910298 * cn1) + 1.69322334;
+    double flow_coef[21] = {
+        -639.6602981, 0.00000e+00, 1.03705e+02,  -2.23264e+03, 5.70316e-03,
+        -2.29404e+00, 1.08230e+02, 2.77667e-04,  -6.17180e+02, -7.20713e-02,
+        2.19013e-07,  2.49418e-02, -7.31662e-01, -1.00003e-05, -3.79466e+01,
+        1.34552e-03,  5.72612e-09, -2.71950e+02, 8.58469e-02,  -2.72912e-06,
+        2.02928e-11};
 
     // CRZ fuel flow
-    flow_base = flow_coef[0] + flow_coef[1] + (flow_coef[2] * cn1) + (flow_coef[3] * mach) + (flow_coef[4] * alt) + (flow_coef[5] * isa) +
-                (flow_coef[6] * pow(cn1, 2)) + (flow_coef[7] * cn1 * mach) + (flow_coef[8] * cn1 * alt) + (flow_coef[9] * cn1 * isa) +
-                (flow_coef[10] * pow(mach, 2)) + (flow_coef[11] * mach * alt) + (flow_coef[12] * mach * isa) +
-                (flow_coef[13] * pow(alt, 2)) + (flow_coef[14] * alt * isa) + (flow_coef[15] * pow(isa, 2)) +
-                (flow_coef[16] * pow(cn1, 3)) + (flow_coef[17] * pow(cn1, 2) * mach) + (flow_coef[18] * pow(cn1, 2) * alt) +
-                (flow_coef[19] * pow(cn1, 2) * isa) + (flow_coef[20] * cn1 * pow(mach, 2)) + (flow_coef[21] * cn1 * mach * alt) +
-                (flow_coef[22] * cn1 * mach * isa) + (flow_coef[23] * cn1 * pow(alt, 2)) + (flow_coef[24] * cn1 * alt * isa) +
-                (flow_coef[25] * cn1 * pow(isa, 2)) + (flow_coef[26] * pow(mach, 3)) + (flow_coef[27] * pow(mach, 2) * alt) +
-                (flow_coef[28] * pow(mach, 2) * isa) + (flow_coef[29] * mach * pow(alt, 2)) + (flow_coef[30] * mach * alt * isa) +
-                (flow_coef[31] * mach * pow(isa, 2)) + (flow_coef[32] * pow(alt, 3)) + (flow_coef[33] * pow(alt, 2) * isa) +
-                (flow_coef[34] * alt * pow(isa, 2)) + (flow_coef[35] * pow(isa, 3));
+    flow_out =
+        flow_coef[0] + flow_coef[1] + (flow_coef[2] * cn1) +
+        (flow_coef[3] * mach) + (flow_coef[4] * alt) +
+        (flow_coef[5] * pow(cn1, 2)) + (flow_coef[6] * cn1 * mach) +
+        (flow_coef[7] * cn1 * alt) + (flow_coef[8] * pow(mach, 2)) +
+        (flow_coef[9] * mach * alt) + (flow_coef[10] * pow(alt, 2)) +
+        (flow_coef[11] * pow(cn1, 3)) + (flow_coef[12] * pow(cn1, 2) * mach) +
+        (flow_coef[13] * pow(cn1, 2) * alt) +
+        (flow_coef[14] * cn1 * pow(mach, 2)) +
+        (flow_coef[15] * cn1 * mach * alt) +
+        (flow_coef[16] * cn1 * pow(alt, 2)) + (flow_coef[17] * pow(mach, 3)) +
+        (flow_coef[18] * pow(mach, 2) * alt) +
+        (flow_coef[19] * mach * pow(alt, 2)) + (flow_coef[20] * pow(alt, 3));
 
-    // TO fuel flow
-    flow_to = flow_base * cfm2leap * ((0.00000929 * pow(cn1, 3)) - (0.00169479 * pow(cn1, 2)) + (0.08443855 * cn1) + 0.42353721);
-
-    // CLB fuel flow
-    flow_clb = flow_base * cfm2leap * 1.033873582;
-
-    // CRZ fuel flow
-    flow_crz = flow_base * cfm2leap * 0.9989733865;
-
-    // DSC fuel flow
-    flow_dsc = flow_base * cfm2leap * ((0.00003731 * pow(cn1, 2)) - (0.01212914 * cn1) + 1.65688177);
-
-    // Fuel Flow Logic and Smoothing functions
-    double flow_array[4] = {flow_to, flow_clb, flow_crz, flow_dsc};
-    actPhaseFF = flow_array[int(actualFlightPhase)];
-
-    return actPhaseFF;
+    return flow_out;
   }
 };

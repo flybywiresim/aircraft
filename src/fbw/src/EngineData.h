@@ -33,8 +33,5 @@ struct EngineData {
   double engineFuelAuxLeftPre;
   double engineFuelAuxRightPre;
   double engineFuelCenterPre;
-  double engineEngineCrank;
   double engineEngineCycleTime;
-  double enginePreFlightPhase;
-  double engineActualFlightPhase;
 };

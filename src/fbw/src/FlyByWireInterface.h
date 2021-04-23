@@ -188,10 +188,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> engineFuelAuxLeftPre;
   std::unique_ptr<LocalVariable> engineFuelAuxRightPre;
   std::unique_ptr<LocalVariable> engineFuelCenterPre;
-  std::unique_ptr<LocalVariable> engineEngineCrank;
   std::unique_ptr<LocalVariable> engineEngineCycleTime;
-  std::unique_ptr<LocalVariable> enginePreFlightPhase;
-  std::unique_ptr<LocalVariable> engineActualFlightPhase;
 
   std::unique_ptr<LocalVariable> idFlapsHandleIndex;
   std::unique_ptr<LocalVariable> idFlapsHandlePercent;
