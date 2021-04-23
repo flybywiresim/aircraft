@@ -10,16 +10,8 @@ import './style.scss';
 import { PagesContainer } from './PagesContainer.jsx';
 import { StatusArea } from './StatusArea/StatusArea.jsx';
 
-// TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
-    // These are inlined so they're only evaluated if prior conditions return false.
-    return (
-        Simplane.getEngineActive(0) === 1 || Simplane.getEngineActive(1) === 1
-    ) || (
-        getSimVar('L:APU_GEN_ONLINE')
-    ) || (
-        getSimVar('EXTERNAL POWER AVAILABLE:1') && getSimVar('EXTERNAL POWER ON')
-    );
+    return getSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'Bool');
 }
 
 function SelfTest() {

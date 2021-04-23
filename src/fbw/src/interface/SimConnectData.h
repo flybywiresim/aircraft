@@ -138,6 +138,7 @@ struct SimInputAutopilot {
 
 struct SimInputThrottles {
   double ATHR_push;
+  double ATHR_disconnect;
 };
 
 struct SimOutput {
@@ -256,6 +257,7 @@ struct ClientDataLocalVariables {
 
 struct ClientDataLocalVariablesAutothrust {
   double ATHR_push;
+  double ATHR_disconnect;
   double TLA_1;
   double TLA_2;
   double V_c_kn;
@@ -274,6 +276,7 @@ struct ClientDataLocalVariablesAutothrust {
   double is_approach_mode_active;
   double is_SRS_TO_mode_active;
   double is_SRS_GA_mode_active;
+  double is_LAND_mode_active;
   double thrust_reduction_altitude;
   double thrust_reduction_altitude_go_around;
   double flight_phase;

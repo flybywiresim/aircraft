@@ -6,11 +6,15 @@
 #include "Autothrust_types.h"
 #include "CommandLine.hpp"
 #include "EngineData.h"
+#include "FlightDataRecorder.h"
 #include "FlightDataRecorderConverter.h"
 #include "FlyByWire_types.h"
 #include "zfstream.h"
 
 using namespace std;
+
+// IMPORTANT: this constant needs to increased with every interface change
+const uint64_t INTERFACE_VERSION = 2;
 
 int main(int argc, char* argv[]) {
   // variables for command line parameters
@@ -64,24 +68,6 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  // print information on convert
-  cout << "Convert from '" << inFilePath;
-  cout << "' to '" << outFilePath;
-  cout << "' using delimiter '" << delimiter << "'" << endl;
-
-  // output stream
-  ofstream out;
-  // open the output file
-  out.open(outFilePath, ios::out | ios::trunc);
-  // check if file is open
-  if (!out.is_open()) {
-    cout << "Failed to create output file!" << endl;
-    return 1;
-  }
-
-  // write header
-  FlightDataRecorderConverter::writeHeader(out, delimiter);
-
   // create input stream
   istream* in;
   if (!noCompression) {
@@ -95,6 +81,36 @@ int main(int argc, char* argv[]) {
     cout << "Failed to open input file!" << endl;
     return 1;
   }
+
+  // read file version
+  uint64_t fileFormatVersion = {};
+  in->read(reinterpret_cast<char*>(&fileFormatVersion), sizeof(INTERFACE_VERSION));
+  // check versions
+  if (INTERFACE_VERSION != fileFormatVersion) {
+    cout << "ERROR: mismatch between converter and file version ( ";
+    cout << INTERFACE_VERSION;
+    cout << " <> " << fileFormatVersion << " )" << endl;
+    return 1;
+  }
+
+  // print information on convert
+  cout << "Convert from '" << inFilePath;
+  cout << "' to '" << outFilePath;
+  cout << "' using interface version '" << fileFormatVersion << "'";
+  cout << " and delimiter '" << delimiter << "'" << endl;
+
+  // output stream
+  ofstream out;
+  // open the output file
+  out.open(outFilePath, ios::out | ios::trunc);
+  // check if file is open
+  if (!out.is_open()) {
+    cout << "Failed to create output file!" << endl;
+    return 1;
+  }
+
+  // write header
+  FlightDataRecorderConverter::writeHeader(out, delimiter);
 
   // calculate number of entries
   auto counter = 0;

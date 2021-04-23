@@ -312,6 +312,7 @@
     <Template Name="FBW_Airbus_Autoland_Warning">
         <DefaultTemplateParameters>
             <NODE_ID>PUSH_AUTOPILOT_AUTOLAND_#SIDE#</NODE_ID>
+            <SEQ_POWERED>1</SEQ_POWERED>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="FBW_Push_Held">

@@ -813,6 +813,14 @@
         0 | Retracted
         1 | Full extension
 
+- A32NX_PERFORMANCE_WARNING_ACTIVE
+    - Bool
+    - Indicates if performance warning is active
+        Value | Meaning
+        --- | ---
+        0 | inactive
+        1 | active
+
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X

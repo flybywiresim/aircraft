@@ -11,6 +11,9 @@
 
 class FlightDataRecorder {
  public:
+  // IMPORTANT: this constant needs to increased with every interface change
+  const uint64_t INTERFACE_VERSION = 2;
+
   void initialize();
 
   void update(AutopilotStateMachineModelClass* autopilotStateMachine,

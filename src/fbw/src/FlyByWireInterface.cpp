@@ -58,6 +58,23 @@ void FlyByWireInterface::disconnect() {
 bool FlyByWireInterface::update(double sampleTime) {
   bool result = true;
 
+  // check delta time for performance issues
+  if (sampleTime > MAX_ACCEPTABLE_SAMPLE_TIME && lowPerformanceCycleCounter < LOW_PERFORMANCE_CYCLE_MAX) {
+    lowPerformanceCycleCounter++;
+  } else if (lowPerformanceCycleCounter > 0) {
+    lowPerformanceCycleCounter--;
+  }
+  if (lowPerformanceCycleCounter >= LOW_PERFORMANCE_CYCLE_THRESHOLD) {
+    if (idPerformanceWarningActive->get() <= 0) {
+      idPerformanceWarningActive->set(1);
+    }
+    cout << "WASM: WARNING Performance issues detected, at least stable 17 fps or more are needed!" << endl;
+  } else {
+    if (idPerformanceWarningActive > 0) {
+      idPerformanceWarningActive->set(0);
+    }
+  }
+
   // get data & inputs
   result &= readDataAndLocalVariables(sampleTime);
 
@@ -163,6 +180,9 @@ void FlyByWireInterface::loadConfiguration() {
 }
 
 void FlyByWireInterface::setupLocalVariables() {
+  // register L variable for performance warning
+  idPerformanceWarningActive = make_unique<LocalVariable>("A32NX_PERFORMANCE_WARNING_ACTIVE");
+
   // register L variable for external override
   idExternalOverride = make_unique<LocalVariable>("A32NX_EXTERNAL_OVERRIDE");
 
@@ -998,6 +1018,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
   if (!autoThrustEnabled || !autopilotStateMachineEnabled || !flyByWireEnabled) {
     ClientDataLocalVariablesAutothrust ClientDataLocalVariablesAutothrust = {
         simConnectInterface.getSimInputThrottles().ATHR_push,
+        simConnectInterface.getSimInputThrottles().ATHR_disconnect,
         thrustLeverAngle_1->get(),
         thrustLeverAngle_2->get(),
         simData.ap_V_c_kn,
@@ -1016,6 +1037,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34,
         autopilotStateMachineOutput.vertical_mode == 40,
         autopilotStateMachineOutput.vertical_mode == 41,
+        autopilotStateMachineOutput.vertical_mode == 32,
         idFmgcThrustReductionAltitude->get(),
         idFmgcThrustReductionAltitudeGoAround->get(),
         idFmgcFlightPhase->get(),
@@ -1058,6 +1080,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.data.OAT_degC = simData.ambient_temperature_celsius;
 
     autoThrustInput.in.input.ATHR_push = simConnectInterface.getSimInputThrottles().ATHR_push;
+    autoThrustInput.in.input.ATHR_disconnect = simConnectInterface.getSimInputThrottles().ATHR_disconnect;
     autoThrustInput.in.input.TLA_1_deg = thrustLeverAngle_1->get();
     autoThrustInput.in.input.TLA_2_deg = thrustLeverAngle_2->get();
     autoThrustInput.in.input.V_c_kn = simData.ap_V_c_kn;
@@ -1077,6 +1100,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         autopilotStateMachineOutput.vertical_mode >= 30 && autopilotStateMachineOutput.vertical_mode <= 34;
     autoThrustInput.in.input.is_SRS_TO_mode_active = autopilotStateMachineOutput.vertical_mode == 40;
     autoThrustInput.in.input.is_SRS_GA_mode_active = autopilotStateMachineOutput.vertical_mode == 41;
+    autoThrustInput.in.input.is_LAND_mode_active = autopilotStateMachineOutput.vertical_mode == 32;
     autoThrustInput.in.input.thrust_reduction_altitude = idFmgcThrustReductionAltitude->get();
     autoThrustInput.in.input.thrust_reduction_altitude_go_around = idFmgcThrustReductionAltitudeGoAround->get();
     autoThrustInput.in.input.flight_phase = idFmgcFlightPhase->get();
@@ -1147,13 +1171,13 @@ bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
   if (!flapsHandler->getIsInitialized()) {
     if (simData.flaps_handle_index == 0) {
       flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_0);
-    } else if (simData.flaps_handle_index == 1) {
+    } else if (simData.flaps_handle_index == 1 || simData.flaps_handle_index == 2) {
       flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_1);
-    } else if (simData.flaps_handle_index == 2) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_2);
     } else if (simData.flaps_handle_index == 3) {
-      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_3);
+      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_2);
     } else if (simData.flaps_handle_index == 4) {
+      flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_3);
+    } else if (simData.flaps_handle_index == 5) {
       flapsHandler->setInitialPosition(FlapsHandler::HANDLE_POSITION_FLAPS_4);
     }
   }
@@ -1179,9 +1203,10 @@ bool FlyByWireInterface::updateFlapsSpoilers(double sampleTime) {
   }
 
   // update simulation variables
-  spoilersHandler->setSimulationVariables(
-      simData.simulationTime, autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP1 == 1,
-      simData.V_ias_kn, thrustLeverAngle_1->get(), thrustLeverAngle_2->get(), simData.gear_animation_pos_1, simData.gear_animation_pos_2);
+  spoilersHandler->setSimulationVariables(simData.simulationTime,
+                                          autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP1 == 1,
+                                          simData.V_ias_kn, thrustLeverAngle_1->get(), thrustLeverAngle_2->get(),
+                                          simData.gear_animation_pos_1, simData.gear_animation_pos_2, simData.flaps_handle_index);
 
   // check state of spoilers and adapt if necessary
   if (spoilersHandler->getSimPosition() != simData.spoilers_handle_position) {
@@ -1208,7 +1233,7 @@ double FlyByWireInterface::smoothFlightDirector(double sampleTime, double factor
 }
 
 double FlyByWireInterface::getHeadingAngleError(double u1, double u2) {
-  double dPsi_1 = fmod(u1 - (u2 + 360.0) + 360.0, 360.0);
+  double dPsi_1 = fmod(u1 - u2 + 360.0, 360.0);
   double dPsi_2 = fmod(360.0 - dPsi_1, 360.0);
   if (dPsi_1 < dPsi_2) {
     return -dPsi_1;

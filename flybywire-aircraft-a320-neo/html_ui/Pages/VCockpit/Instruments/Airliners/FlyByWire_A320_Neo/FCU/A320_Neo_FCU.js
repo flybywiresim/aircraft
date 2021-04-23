@@ -2,6 +2,7 @@ class A320_Neo_FCU extends BaseAirliners {
     constructor() {
         super();
         this.initDuration = 3000;
+        this.electricity = document.querySelector('#Electricity');
     }
     get templateID() {
         return "A320_Neo_FCU";
@@ -28,6 +29,9 @@ class A320_Neo_FCU extends BaseAirliners {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
+
+        this.electricity.style.display = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool") ||
+            SimVar.GetSimVarValue("L:A32NX_ELEC_DC_2_BUS_IS_POWERED", "Bool") ? "block" : "none";
     }
     onEvent(_event) {
     }
@@ -533,7 +537,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         clearTimeout(this._resetSelectionTimeout);
         this.isPreselectionModeActive = false;
         this.inSelection = false;
-        SimVar.SetSimVarValue("K:A32NX.FCU_HDG_PUSH", "number", 0);
+        SimVar.SetSimVarValue("K:A32NX.FCU_TO_AP_HDG_PUSH", "number", 0);
         SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 2);
     }
 
@@ -550,7 +554,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.inSelection = false;
         this.isSelectedValueActive = true;
         this.isPreselectionModeActive = false;
-        SimVar.SetSimVarValue("K:A32NX.FCU_HDG_PULL", "number", 0);
+        SimVar.SetSimVarValue("K:A32NX.FCU_TO_AP_HDG_PULL", "number", 0);
         SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 1);
     }
 
@@ -880,7 +884,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         this.selectedVs = 0;
         this.selectedFpa = 0;
 
-        SimVar.SetSimVarValue("K:A32NX.FCU_VS_PUSH", "number", 0);
+        SimVar.SetSimVarValue("K:A32NX.FCU_TO_AP_VS_PUSH", "number", 0);
     }
 
     onRotate() {
@@ -919,7 +923,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             }
         }
 
-        SimVar.SetSimVarValue("K:A32NX.FCU_VS_PULL", "number", 0);
+        SimVar.SetSimVarValue("K:A32NX.FCU_TO_AP_VS_PULL", "number", 0);
     }
 
     getCurrentFlightPathAngle() {

@@ -96,7 +96,7 @@ Pump.8=True
 Pump.9=True
 
 [Systems.0]
-BatterySwitch=False
+BatterySwitch=True
 StructuralDeiceSwitch=False
 PropDeiceSwitch=False
 Autobrakes=1
@@ -273,11 +273,14 @@ StrobeLights=False
 TaxiLights=False
 WingLights=False
 CabinLights=False
-GlareshieldLights=False
+GlareshieldLights=True
 PedestalLights=False
 Potentiometer.7=0
 Potentiometer.8=0
 Potentiometer.9=0
+Potentiometer.10=0
+Potentiometer.11=0
+Potentiometer.83=0
 Potentiometer.84=0
 Potentiometer.85=0
 Potentiometer.86=0

@@ -38,14 +38,5 @@
     "editor.defaultFormatter": "xaver.clang-format",
     "editor.formatOnSave": true,
     "editor.formatOnPaste": false
-  },
-  "files.associations": {
-    "iostream": "cpp",
-    "string": "cpp",
-    "filesystem": "cpp",
-    "iosfwd": "cpp",
-    "xstring": "cpp",
-    "ostream": "cpp",
-    "vector": "cpp"
-  },
+  }
 }
