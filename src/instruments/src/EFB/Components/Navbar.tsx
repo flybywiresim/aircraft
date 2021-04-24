@@ -7,7 +7,7 @@ export type NavbarProps = {
 
 const c = {
     active: 'flex items-center px-4 py-2 text-white bg-white bg-opacity-5 rounded-lg mr-2',
-    inactive: 'flex items-center px-4 py-2 text-white hover:bg-white hover:bg-opacity-5 transition duration-300 rounded-lg mr-2'
+    inactive: 'flex items-center px-4 py-2 text-white hover:bg-white hover:bg-opacity-5 transition duration-300 rounded-lg mr-2',
 };
 
 export const Navbar = (props: NavbarProps) => {
