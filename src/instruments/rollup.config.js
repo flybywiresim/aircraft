@@ -102,7 +102,7 @@ module.exports = getInstrumentsToCompile()
                     extensions,
                 }),
                 replace({
-                    preventAssignment: true,
+                    'preventAssignment': true,
                     'process.env.NODE_ENV': JSON.stringify('production'),
                     'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),
                     'process.env.CLIENT_SECRET': JSON.stringify(process.env.CLIENT_SECRET),

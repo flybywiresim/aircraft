@@ -55,7 +55,7 @@ class Dispatch extends React.Component<DispatchProps, DispatchState> {
     tabs = [
         'Overview',
         'OFP',
-        'Fuel'
+        'Fuel',
     ];
 
     constructor(props: DispatchProps) {

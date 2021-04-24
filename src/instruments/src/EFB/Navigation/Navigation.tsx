@@ -59,16 +59,17 @@ type ChartDisplay = {
 }
 
 const Loading = () => {
-    const [refreshToken, setRefreshToken] = usePersistentProperty('NAVIGRAPH_REFRESH_TOKEN', '');
+    const [, setRefreshToken] = usePersistentProperty('NAVIGRAPH_REFRESH_TOKEN', '');
 
     return (
         <div className="flex flex-col items-center justify-center">
             <p className="text-white text-xl">Loading...</p>
             <button
+                type="button"
                 className="w-48 mt-6 text-white bg-teal-light p-2 flex items-center justify-center rounded-lg focus:outline-none"
                 onClick={() => setRefreshToken('')}
             >
-            Reset Refresh Token
+                Reset Refresh Token
             </button>
         </div>
     );
