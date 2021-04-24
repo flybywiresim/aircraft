@@ -40,7 +40,7 @@ Pilot ID can be found in the Optional Entries section of the Dispatch Options pa
 
 ### A32NX Installer
 
-Download the new A32NX installer where you can select either the Stable or Developer build, and install the mod directly into your community folder, [download here](https://api.flybywiresim.com/installer) ([source](https://github.com/flybywiresim/installer/)).
+Download the new A32NX installer where you can select either the Stable, or Development build, and install the mod directly into your community folder, [download here](https://api.flybywiresim.com/installer) ([source](https://github.com/flybywiresim/installer/)).
 
 ### Traditional Download Methods
 
@@ -56,7 +56,7 @@ You can view the changelog on the [releases page.](https://github.com/flybywires
 
 This has the latest features, but is much more unstable, use at your own risk.
 
-[Download developer build here.](https://github.com/flybywiresim/a32nx/releases/download/vmaster/A32NX-master.zip)
+[Download development build here.](https://github.com/flybywiresim/a32nx/releases/download/vmaster/A32NX-master.zip)
 
 [View information regarding the latest build here.](https://github.com/flybywiresim/a32nx/releases/tag/vmaster)
 
@@ -149,4 +149,4 @@ A: You can report bugs to us via the [#support channel](https://discord.gg/snueq
 
 **Q: Why is my version not the same as what I see others using?**
 
-A: We have two versions, the Stable and Developer (Master). The Stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The Developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time. If you find this to be the case, you can report these issues in the [#support channel](https://discord.gg/snueqJjDUN) Discord or via GitHub issues (check there is not an existing issue of the same nature as yours).
+A: We have two versions, the Stable and Development (Master). The Stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The Developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time. If you find this to be the case, you can report these issues in the [#support channel](https://discord.gg/snueqJjDUN) Discord or via GitHub issues (check there is not an existing issue of the same nature as yours).
