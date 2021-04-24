@@ -207,7 +207,7 @@ export const CrzPage = () => {
                     <text className="standard cyan" x="530" y="335">FT</text>
                 </g>
                 <g id="ManualVSIndicator" className={manMode ? 'show' : 'hide'}>
-                    <GaugeComponent x={460} y={380} radius={45} startAngle={0} endAngle={180} className="Gauge" />
+                    <GaugeComponent x={440} y={385} radius={50} startAngle={10} endAngle={-190} verticalSpeed={cabinVs * 60 / 1000} className="Gauge" />
                 </g>
 
                 <text className="standard" x="218" y="370">@P</text>
@@ -247,10 +247,11 @@ type GaugeComponentType = {
     radius: number,
     startAngle: number,
     endAngle: number,
+    verticalSpeed: number,
     className: string
 }
 
-const GaugeComponent = ({ x, y, radius, startAngle, endAngle, className } : GaugeComponentType) => {
+const GaugeComponent = ({ x, y, radius, startAngle, endAngle, verticalSpeed, className } : GaugeComponentType) => {
     const polarToCartesian = function (centerX, centerY, radius, angleInDegrees) {
         const angleInRadians = (angleInDegrees - 90) * (Math.PI / 180.0);
         return ({
@@ -261,15 +262,20 @@ const GaugeComponent = ({ x, y, radius, startAngle, endAngle, className } : Gaug
 
     const startPos = polarToCartesian(x, y, radius, startAngle);
     const endPos = polarToCartesian(x, y, radius, endAngle);
-    const largeArcFlag = ((endAngle - startAngle) <= 180) ? '0' : '1';
+    const largeArcFlag = ((startAngle - endAngle) <= 180) ? '0' : '1';
     const d = ['M', startPos.x, startPos.y, 'A', radius, radius, 0, largeArcFlag, 0, endPos.x, endPos.y].join(' ');
 
     return (
         <>
             <path d={d} className={className} />
-            <GaugeMarkerComponent value={2} x={x} y={y} min={-2} max={2} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText" />
-            <GaugeMarkerComponent value={0} x={x} y={y} min={-2} max={2} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText" />
-            <GaugeMarkerComponent value={-2} x={x} y={y} min={-2} max={2} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText" />
+            <GaugeMarkerComponent value={2} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
+            <GaugeMarkerComponent value={1} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue={false} indicator={false} />
+            <GaugeMarkerComponent value={0} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
+            <GaugeMarkerComponent value={-1} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue={false} indicator={false} />
+            <GaugeMarkerComponent value={-2} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeText" showValue indicator={false} />
+
+            <GaugeMarkerComponent value={verticalSpeed} x={x} y={y} min={-2} max={2} radius={radius} startAngle={0} endAngle={180} className="GaugeIndicator" showValue={false} indicator />
+
         </>
     );
 };
@@ -283,10 +289,12 @@ type GaugeMarkerComponentType = {
     radius: number,
     startAngle: number,
     endAngle: number,
-    className: string
+    className: string,
+    showValue: boolean,
+    indicator: boolean
 };
 
-const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle, endAngle, className } : GaugeMarkerComponentType) => {
+const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle, endAngle, className, showValue, indicator } : GaugeMarkerComponentType) => {
     const valueRadianAngleConverter = function (value, min, max, endAngle, startAngle) {
         const valuePercentage = (value - min) / (max - min);
         let angle = (startAngle + 90 + (valuePercentage * (endAngle - startAngle)));
@@ -297,30 +305,46 @@ const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle, endAn
         });
     };
 
+    let textValue = value.toString();
+
     const dir = valueRadianAngleConverter(value, min, max, endAngle, startAngle);
 
-    const start = {
+    let start = {
+        x: x + (dir.x * radius * 0.9),
+        y: y + (dir.y * radius * 0.9),
+    };
+    let end = {
         x: x + (dir.x * radius),
         y: y + (dir.y * radius),
     };
-    const end = {
-        x: x + (dir.x * (radius * 1.2)),
-        y: y + (dir.y * (radius * 1.2)),
-    };
 
-    console.log(`Start coords ${start.x} ${start.y} and end ${end.x} ${end.y}`);
+    if (indicator) {
+        start = {
+            x,
+            y,
+        };
+
+        end = {
+            x: x + (dir.x * radius * 1.1),
+            y: y + (dir.y * radius * 1.1),
+        };
+    }
+
+    console.log(`Value is ${value} and x is ${x} and y is ${y} Start coords ${start.x} ${start.y} and end ${end.x} ${end.y}`);
 
     // Text
 
     const pos = {
-        x: x + (dir.x * (radius * 1.2)),
-        y: y + (dir.y * (radius * 1.2)),
+        x: x + (dir.x * (radius * 0.7)),
+        y: y + (dir.y * (radius * 0.7)),
     };
+
+    textValue = !showValue ? '' : Math.abs(value).toString();
 
     return (
         <>
             <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} className={className} />
-            <text x={pos.x} y={pos.y} className={className}>{value}</text>
+            <text x={pos.x} y={pos.y} className={className} alignmentBaseline="central" textAnchor="middle">{textValue}</text>
         </>
     );
 };

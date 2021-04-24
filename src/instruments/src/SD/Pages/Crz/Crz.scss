@@ -7,15 +7,15 @@
     }
 
     .standard {
-        font-size: $font-size-large;
+        font-size: 17px;
     }
 
     .medium {
-        font-size: $font-size-medium;
+        font-size: 16px;
     }
 
     .large {
-        font-size: $font-size-huge;
+        font-size: 20px;
     }
 
     .cyan {
@@ -65,9 +65,16 @@
         stroke-width: 2;
         fill: none;
     }
+
     .GaugeText {
         stroke: $display-white;
-        font-size: $font-size-large;
+        font-size: 17px;
+    }
+
+    .GaugeIndicator {
+        stroke: $display-green;
+        stroke-width: 2;
+        fill: none;
     }
 
     .WingPlaneSym {
