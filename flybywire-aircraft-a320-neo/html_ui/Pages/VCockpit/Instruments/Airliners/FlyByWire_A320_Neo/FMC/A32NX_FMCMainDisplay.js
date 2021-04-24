@@ -168,6 +168,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.fmsUpdateThrottler = new UpdateThrottler(250);
         this._progBrgDist = undefined;
         this._progBrgDistUpdateThrottler = new UpdateThrottler(2000);
+        this.preSelectedClbSpeed = undefined;
+        this.preSelectedCrzSpeed = undefined;
+        this.preSelectedDesSpeed = undefined;
         this.managedSpeedTarget = NaN;
         this.managedSpeedTargetIsMach = false;
         this.managedSpeedLimit = 250;
@@ -362,10 +365,11 @@ class FMCMainDisplay extends BaseAirliners {
                     CDUProgressPage.ShowPage(this);
                 }
 
-                let preSelectedClbSpeed = this.preSelectedClbSpeed;
+                const preSelectedSpeed = _lastFlightPhase === FmgcFlightPhases.GOAROUND ? this.computedVgd : this.preSelectedClbSpeed;
 
-                if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
-                    preSelectedClbSpeed = this.computedVgd;
+                if (preSelectedSpeed) {
+                    SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
+                    Coherent.call("AP_SPD_VAR_SET", 0, preSelectedSpeed);
                 }
 
                 SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 0);
@@ -383,6 +387,11 @@ class FMCMainDisplay extends BaseAirliners {
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
                 Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
 
+                if (this.preSelectedCrzSpeed) {
+                    SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
+                    Coherent.call("AP_SPD_VAR_SET", 0, this.preSelectedCrzSpeed);
+                }
+
                 break;
             }
 
@@ -396,6 +405,11 @@ class FMCMainDisplay extends BaseAirliners {
                 this.checkDestData();
 
                 Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+
+                if (this.preSelectedDesSpeed) {
+                    SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
+                    Coherent.call("AP_SPD_VAR_SET", 0, this.preSelectedDesSpeed);
+                }
 
                 break;
             }
