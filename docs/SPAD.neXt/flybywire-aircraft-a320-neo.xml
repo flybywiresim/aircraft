@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.fsgs.com/SPAD">
+  <Devices />
+  <Options />
+  <CustomClientEvents>
+    <CustomClientEvent Name="FCU AP1 PUSH" EventID="A32NX.FCU_AP_1_PUSH" SubCategory="A32NX FCU">Push AP1 on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU AP2 PUSH" EventID="A32NX.FCU_AP_2_PUSH" SubCategory="A32NX FCU">Push AP2 on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU SPD PUSH" EventID="A32NX.FCU_SPD_PUSH" SubCategory="A32NX FCU">Push Speed knob on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU SPD PULL" EventID="A32NX.FCU_SPD_PULL" SubCategory="A32NX FCU">Pull Speed knob on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU SPD MACH TOGGLE PUSH" EventID="A32NX.FCU_SPD_MACH_TOGGLE_PUSH" SubCategory="A32NX FCU">Push SPD/MACH toggle on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU HDG PUSH" EventID="A32NX.FCU_HDG_PUSH" SubCategory="A32NX FCU">Push Heading knob on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU HDG PULL" EventID="A32NX.FCU_HDG_PULL" SubCategory="A32NX FCU">Pull Heading knob on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU TRK FPA TOGGLE PUSH" EventID="A32NX.FCU_TRK_FPA_TOGGLE_PUSH" SubCategory="A32NX FCU">Push TRK/FPA toggle on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU ALT PUSH" EventID="A32NX.FCU_ALT_PUSH" SubCategory="A32NX FCU">Push Altitude knob on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU ALT PULL" EventID="A32NX.FCU_ALT_PULL" SubCategory="A32NX FCU">Pull Altitude knob on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU VS PUSH" EventID="A32NX.FCU_VS_PUSH" SubCategory="A32NX FCU">Push V/S knob on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU VS PULL" EventID="A32NX.FCU_VS_PULL" SubCategory="A32NX FCU">Pull V/S knob on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU LOC PUSH" EventID="A32NX.FCU_LOC_PUSH" SubCategory="A32NX FCU">Push LOC button on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU APPR PUSH" EventID="A32NX.FCU_APPR_PUSH" SubCategory="A32NX FCU">Push APPR button on FCU</CustomClientEvent>
+    <CustomClientEvent Name="FCU EXPED PUSH" EventID="A32NX.FCU_EXPED_PUSH" SubCategory="A32NX FCU">Push EXPED button on FCU</CustomClientEvent>
+  </CustomClientEvents>
+  <ProfileInformation ProfileID="2279f29a-4655-4987-ad26-9c866cd2a576" Version="1.0" />
+</Profile>
