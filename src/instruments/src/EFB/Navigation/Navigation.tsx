@@ -379,7 +379,7 @@ const ChartsUi = (props: ChartsUiProps) => {
                                         )
                                         : (
                                             <span
-                                                className="flex items-center px-4 py-2 text-white hover:bg-white hover:bg-opacity-5 transition duration-500 rounded-lg mr-2"
+                                                className="flex items-center px-4 py-2 text-white hover:bg-white hover:bg-opacity-5 transition duration-300 rounded-lg mr-2"
                                                 onClick={() => setSelectedTab(organizedChart)}
                                                 key={organizedChart.name}
                                             >
