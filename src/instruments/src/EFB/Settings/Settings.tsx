@@ -318,10 +318,10 @@ const SoundSettings = () => {
 };
 
 const ControlSettings = ({ setShowSettings }) => (
-    <div className="bg-gray-800 divide-y divide-gray-700 flex flex-col rounded-xl px-6 py-4 shadow-lg">
+    <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-2xl p-6 shadow-lg">
         <div className="flex flex-row justify-between items-center">
             <span className="text-lg text-gray-300">Detents</span>
-            <Button text="Calibrate" onClick={() => setShowSettings(true)} />
+            <Button className="bg-teal-light-contrast border-teal-light-contrast" text="Calibrate" onClick={() => setShowSettings(true)} />
         </div>
 
     </div>
@@ -341,7 +341,7 @@ const FlyPadSettings = () => {
 };
 
 const IntegrationSettings = (props: {simbriefUsername, setSimbriefUsername}) => (
-    <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-2xl p-6 shadow-lg">
+    <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-2xl p-6 shadow-lg mb-6">
         <div className="flex flex-row justify-between items-center">
             <span className="text-lg text-gray-300">Simbrief Username</span>
             <input
