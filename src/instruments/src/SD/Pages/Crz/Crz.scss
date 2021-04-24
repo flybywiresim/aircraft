@@ -65,6 +65,10 @@
         stroke-width: 2;
         fill: none;
     }
+    .GaugeText {
+        stroke: $display-white;
+        font-size: $font-size-large;
+    }
 
     .WingPlaneSym {
         stroke: $display-grey;

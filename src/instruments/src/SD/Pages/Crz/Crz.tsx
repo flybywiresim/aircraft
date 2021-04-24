@@ -95,7 +95,6 @@ export const CrzPage = () => {
     const [deltaPress, setDeltaPress] = useState(splitDecimals(deltaPSI(cabinVs, cabinAlt, ambPressure), ''));
 
     useEffect(() => {
-        console.log(`Delta PSI from SimVar is ${deltaPsi}`);
         const pressChange = splitDecimals(deltaPSI(cabinVs, cabinAlt, ambPressure), '');
         setDeltaPress(pressChange);
     }, [cabinVs, ambPressure]);
@@ -110,7 +109,6 @@ export const CrzPage = () => {
     const [landingElev] = useSimVar('L:A32NX_LANDING_ELEVATION', 'feet', 100);
 
     useEffect(() => {
-        console.log('PING');
         setLdgElevMode(landingElevDialPosition === 0 ? 'AUTO' : 'MAN');
         if (landingElevDialPosition === 0) {
             // On Auto
@@ -209,7 +207,7 @@ export const CrzPage = () => {
                     <text className="standard cyan" x="530" y="335">FT</text>
                 </g>
                 <g id="ManualVSIndicator" className={manMode ? 'show' : 'hide'}>
-                    <GaugeComponent x={460} y={380} radius={45} startAngle={-10} endAngle={190} className="Gauge" />
+                    <GaugeComponent x={460} y={380} radius={45} startAngle={0} endAngle={180} className="Gauge" />
                 </g>
 
                 <text className="standard" x="218" y="370">@P</text>
@@ -267,7 +265,63 @@ const GaugeComponent = ({ x, y, radius, startAngle, endAngle, className } : Gaug
     const d = ['M', startPos.x, startPos.y, 'A', radius, radius, 0, largeArcFlag, 0, endPos.x, endPos.y].join(' ');
 
     return (
-        <path d={d} className={className} />
+        <>
+            <path d={d} className={className} />
+            <GaugeMarkerComponent value={2} x={x} y={y} min={-2} max={2} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText" />
+            <GaugeMarkerComponent value={0} x={x} y={y} min={-2} max={2} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText" />
+            <GaugeMarkerComponent value={-2} x={x} y={y} min={-2} max={2} radius={radius} startAngle={startAngle} endAngle={endAngle} className="GaugeText" />
+        </>
+    );
+};
+
+type GaugeMarkerComponentType = {
+    value: number,
+    x: number,
+    y: number,
+    min: number,
+    max: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    className: string
+};
+
+const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle, endAngle, className } : GaugeMarkerComponentType) => {
+    const valueRadianAngleConverter = function (value, min, max, endAngle, startAngle) {
+        const valuePercentage = (value - min) / (max - min);
+        let angle = (startAngle + 90 + (valuePercentage * (endAngle - startAngle)));
+        angle *= (Math.PI / 180.0);
+        return ({
+            x: Math.cos(angle),
+            y: Math.sin(angle),
+        });
+    };
+
+    const dir = valueRadianAngleConverter(value, min, max, endAngle, startAngle);
+
+    const start = {
+        x: x + (dir.x * radius),
+        y: y + (dir.y * radius),
+    };
+    const end = {
+        x: x + (dir.x * (radius * 1.2)),
+        y: y + (dir.y * (radius * 1.2)),
+    };
+
+    console.log(`Start coords ${start.x} ${start.y} and end ${end.x} ${end.y}`);
+
+    // Text
+
+    const pos = {
+        x: x + (dir.x * (radius * 1.2)),
+        y: y + (dir.y * (radius * 1.2)),
+    };
+
+    return (
+        <>
+            <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} className={className} />
+            <text x={pos.x} y={pos.y} className={className}>{value}</text>
+        </>
     );
 };
 
