@@ -12,7 +12,7 @@ type ToolbarState = {
 
 const c = {
     active: 'py-4 bg-white bg-opacity-5 py-4 mx-5 rounded-lg mt-2',
-    inactive: 'hover:bg-white hover:bg-opacity-5 transition duration-500 py-4 mx-5 rounded-lg mt-2',
+    inactive: 'hover:bg-white hover:bg-opacity-5 transition duration-300 py-4 mx-5 rounded-lg mt-2',
 };
 
 class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
