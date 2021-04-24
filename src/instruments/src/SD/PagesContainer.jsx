@@ -10,7 +10,7 @@ import { ApuPage } from './Pages/Apu.jsx';
 import { CondPage } from './Pages/Cond/Cond.tsx';
 import { DoorPage } from './Pages/Door/Door.tsx';
 import { WheelPage } from './Pages/Wheel.jsx';
-import { FctlPage } from './Pages/Fctl.jsx';
+import { FctlPage } from './Pages/Fctl/Fctl.tsx';
 import { StatusPage } from './Pages/Status/Status.tsx';
 import { CrzPage } from './Pages/Crz/Crz.tsx';
 

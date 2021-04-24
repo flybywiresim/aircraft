@@ -31,6 +31,10 @@ const extraInstruments = [
         path: 'SD/Pages/Status',
     },
     {
+        name: 'fctl-page',
+        path: 'SD/Pages/Fctl',
+    },
+    {
         name: 'crz-page',
         path: 'SD/Pages/Crz',
     },
