@@ -158,6 +158,10 @@ impl A320Electrical {
         self.alternating_current.ac_stat_inv_bus()
     }
 
+    fn ac_gnd_flt_service_bus(&self) -> &ElectricalBus {
+        self.alternating_current.ac_gnd_flt_service_bus()
+    }
+
     fn dc_bus_1(&self) -> &ElectricalBus {
         self.direct_current.dc_bus_1()
     }
@@ -184,6 +188,10 @@ impl A320Electrical {
 
     fn hot_bus_2(&self) -> &ElectricalBus {
         self.direct_current.hot_bus_2()
+    }
+
+    fn dc_gnd_flt_service_bus(&self) -> &ElectricalBus {
+        self.direct_current.dc_gnd_flt_service_bus()
     }
 
     fn galley_is_shed(&self) -> bool {
@@ -261,6 +269,7 @@ impl ElectricalSystem for A320Electrical {
         state.add_bus(self.ac_ess_bus());
         state.add_bus(self.ac_ess_shed_bus());
         state.add_bus(self.ac_stat_inv_bus());
+        state.add_bus(self.ac_gnd_flt_service_bus());
         state.add_bus(self.dc_bus_1());
         state.add_bus(self.dc_bus_2());
         state.add_bus(self.dc_ess_bus());
@@ -268,6 +277,7 @@ impl ElectricalSystem for A320Electrical {
         state.add_bus(self.dc_bat_bus());
         state.add_bus(self.hot_bus_1());
         state.add_bus(self.hot_bus_2());
+        state.add_bus(self.dc_gnd_flt_service_bus());
 
         state
     }
@@ -290,6 +300,7 @@ trait DirectCurrentState {
 
 trait AlternatingCurrentState {
     fn ac_bus_1_and_2_unpowered(&self) -> bool;
+    fn ac_bus_2_powered(&self) -> bool;
     fn tr_1_and_2_available(&self) -> bool;
     fn ac_1_and_2_and_emergency_gen_unpowered(&self) -> bool;
     fn ac_1_and_2_and_emergency_gen_unpowered_and_velocity_equal_to_or_greater_than_50_knots(
@@ -468,6 +479,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.ac_ess_shed_bus_output().is_unpowered());
         assert!(test_bed.static_inverter_input().is_unpowered());
         assert!(test_bed.ac_stat_inv_bus_output().is_unpowered());
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed.tr_1_input().is_unpowered());
         assert!(test_bed.tr_2_input().is_unpowered());
         assert!(test_bed.tr_ess_input().is_unpowered());
@@ -478,6 +490,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.dc_ess_shed_bus_output().is_unpowered());
         assert!(test_bed.hot_bus_1_output().is_unpowered());
         assert!(test_bed.hot_bus_2_output().is_unpowered());
+        assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
     #[test]
@@ -495,6 +508,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.ac_ess_shed_bus_output().is_unpowered());
         assert!(test_bed.static_inverter_input().is_unpowered());
         assert!(test_bed.ac_stat_inv_bus_output().is_unpowered());
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed.tr_1_input().is_unpowered());
         assert!(test_bed.tr_2_input().is_unpowered());
         assert!(test_bed.tr_ess_input().is_unpowered());
@@ -509,6 +523,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_single(PotentialOrigin::Battery(11)));
+        assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
     /// # Source
@@ -532,6 +547,9 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.static_inverter_input().is_unpowered());
         assert!(test_bed.ac_stat_inv_bus_output().is_unpowered());
         assert!(test_bed
+            .ac_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::EngineGenerator(2)));
+        assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(1)));
         assert!(test_bed
@@ -559,6 +577,9 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_single(PotentialOrigin::Battery(11)));
+        assert!(test_bed
+            .dc_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
     }
 
     /// # Source
@@ -582,6 +603,9 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.static_inverter_input().is_unpowered());
         assert!(test_bed.ac_stat_inv_bus_output().is_unpowered());
         assert!(test_bed
+            .ac_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::EngineGenerator(1)));
+        assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(1)));
         assert!(test_bed
@@ -609,6 +633,9 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_single(PotentialOrigin::Battery(11)));
+        assert!(test_bed
+            .dc_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
     }
 
     /// # Source
@@ -632,6 +659,9 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.static_inverter_input().is_unpowered());
         assert!(test_bed.ac_stat_inv_bus_output().is_unpowered());
         assert!(test_bed
+            .ac_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::EngineGenerator(2)));
+        assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(2)));
         assert!(test_bed
@@ -659,6 +689,9 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_single(PotentialOrigin::Battery(11)));
+        assert!(test_bed
+            .dc_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
     }
 
     /// # Source
@@ -682,6 +715,9 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.static_inverter_input().is_unpowered());
         assert!(test_bed.ac_stat_inv_bus_output().is_unpowered());
         assert!(test_bed
+            .ac_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::ApuGenerator(1)));
+        assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::ApuGenerator(1)));
         assert!(test_bed
@@ -709,15 +745,20 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_single(PotentialOrigin::Battery(11)));
+        assert!(test_bed
+            .dc_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
     }
 
     /// # Source
     /// Derived from A320 manual electrical distribution table
     /// (doesn't list external power, but we'll assume it's the same as other generators).
     #[test]
-    fn distribution_table_only_external_power_available() {
+    fn distribution_table_only_external_power_available_and_on() {
         let mut test_bed = test_bed_with()
             .connected_external_power()
+            .airspeed(Velocity::new::<knot>(0.))
+            .on_the_ground()
             .and()
             .ext_pwr_on()
             .run();
@@ -736,6 +777,9 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::External));
         assert!(test_bed.static_inverter_input().is_unpowered());
         assert!(test_bed.ac_stat_inv_bus_output().is_unpowered());
+        assert!(test_bed
+            .ac_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::External));
         assert!(test_bed.tr_1_input().is_single(PotentialOrigin::External));
         assert!(test_bed.tr_2_input().is_single(PotentialOrigin::External));
         assert!(test_bed.tr_ess_input().is_unpowered());
@@ -760,6 +804,9 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_single(PotentialOrigin::Battery(11)));
+        assert!(test_bed
+            .dc_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
     }
 
     /// # Source
@@ -780,6 +827,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .ac_ess_bus_output()
             .is_single(PotentialOrigin::StaticInverter));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed.tr_1_input().is_unpowered());
         assert!(test_bed.tr_2_input().is_unpowered());
         assert!(test_bed.tr_ess_input().is_unpowered());
@@ -796,6 +844,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_single(PotentialOrigin::Battery(11)));
+        assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
     /// # Source
@@ -812,6 +861,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .ac_ess_shed_bus_output()
             .is_single(PotentialOrigin::EmergencyGenerator));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed.tr_1_input().is_unpowered());
         assert!(test_bed.tr_2_input().is_unpowered());
         assert!(test_bed
@@ -834,6 +884,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_single(PotentialOrigin::Battery(11)));
+        assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
     /// # Source
@@ -857,6 +908,9 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.static_inverter_input().is_unpowered());
         assert!(test_bed.ac_stat_inv_bus_output().is_unpowered());
         assert!(test_bed
+            .ac_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::EngineGenerator(2)));
+        assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(1)));
         assert!(test_bed
@@ -886,6 +940,9 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_single(PotentialOrigin::Battery(11)));
+        assert!(test_bed
+            .dc_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
     }
 
     /// # Source
@@ -908,12 +965,11 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::EngineGenerator(1)));
         assert!(test_bed.static_inverter_input().is_unpowered());
         assert!(test_bed.ac_stat_inv_bus_output().is_unpowered());
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(1)));
-        assert!(test_bed
-            .tr_2_input()
-            .is_single(PotentialOrigin::EngineGenerator(2)));
+        assert!(test_bed.tr_2_input().is_unpowered());
         assert!(test_bed
             .tr_ess_input()
             .is_single(PotentialOrigin::EngineGenerator(1)));
@@ -938,6 +994,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_single(PotentialOrigin::Battery(11)));
+        assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
     /// # Source
@@ -965,12 +1022,11 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::EngineGenerator(1)));
         assert!(test_bed.static_inverter_input().is_unpowered());
         assert!(test_bed.ac_stat_inv_bus_output().is_unpowered());
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .tr_1_input()
             .is_single(PotentialOrigin::EngineGenerator(1)));
-        assert!(test_bed
-            .tr_2_input()
-            .is_single(PotentialOrigin::EngineGenerator(2)));
+        assert!(test_bed.tr_2_input().is_unpowered());
         assert!(test_bed
             .tr_ess_input()
             .is_single(PotentialOrigin::EngineGenerator(1)));
@@ -989,6 +1045,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_single(PotentialOrigin::Battery(11)));
+        assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
     /// # Source
@@ -1010,6 +1067,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .ac_ess_shed_bus_output()
             .is_single(PotentialOrigin::EmergencyGenerator));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed.static_inverter_input().is_unpowered());
         assert!(test_bed.ac_stat_inv_bus_output().is_unpowered());
         assert!(test_bed.tr_1_input().is_unpowered());
@@ -1032,6 +1090,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_single(PotentialOrigin::Battery(11)));
+        assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
     /// # Source
@@ -1051,6 +1110,7 @@ mod a320_electrical_circuit_tests {
             .ac_ess_bus_output()
             .is_single(PotentialOrigin::StaticInverter));
         assert!(test_bed.ac_ess_shed_bus_output().is_unpowered());
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .static_inverter_input()
             .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
@@ -1075,6 +1135,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+        assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
     /// # Source
@@ -1101,6 +1162,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .ac_stat_inv_bus_output()
             .is_single(PotentialOrigin::StaticInverter));
+        assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed.tr_1_input().is_unpowered());
         assert!(test_bed.tr_2_input().is_unpowered());
         assert!(test_bed.tr_ess_input().is_unpowered());
@@ -1119,6 +1181,52 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed
             .hot_bus_2_output()
             .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+        assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
+    }
+
+    #[test]
+    fn distribution_table_only_external_power_available_and_off() {
+        let mut test_bed = test_bed_with()
+            .connected_external_power()
+            .airspeed(Velocity::new::<knot>(0.))
+            .and()
+            .on_the_ground()
+            .run();
+
+        assert!(test_bed.ac_bus_1_output().is_unpowered());
+        assert!(test_bed.ac_bus_2_output().is_unpowered());
+        assert!(test_bed.ac_ess_bus_output().is_unpowered());
+        assert!(test_bed.ac_ess_shed_bus_output().is_unpowered());
+        assert!(test_bed
+            .static_inverter_input()
+            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+        assert!(test_bed
+            .ac_stat_inv_bus_output()
+            .is_single(PotentialOrigin::StaticInverter));
+        assert!(test_bed
+            .ac_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::External));
+        assert!(test_bed.tr_1_input().is_unpowered());
+        assert!(test_bed.tr_2_input().is_single(PotentialOrigin::External));
+        assert!(test_bed.tr_ess_input().is_unpowered());
+        assert!(test_bed.dc_bus_1_output().is_unpowered());
+        assert!(test_bed.dc_bus_2_output().is_unpowered());
+        assert!(test_bed
+            .dc_bat_bus_output()
+            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+        assert!(test_bed
+            .dc_ess_bus_output()
+            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+        assert!(test_bed.dc_ess_shed_bus_output().is_unpowered());
+        assert!(test_bed
+            .hot_bus_1_output()
+            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+        assert!(test_bed
+            .hot_bus_2_output()
+            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+        assert!(test_bed
+            .dc_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
     }
 
     #[test]
@@ -1132,6 +1240,7 @@ mod a320_electrical_circuit_tests {
         assert!(power_supply.is_powered(&ElectricalBusType::AlternatingCurrentEssentialShed));
         assert!(!power_supply.is_powered(&ElectricalBusType::AlternatingCurrentStaticInverter));
         assert!(!power_supply.is_powered(&ElectricalBusType::AlternatingCurrentStaticInverter));
+        assert!(power_supply.is_powered(&ElectricalBusType::AlternatingCurrentGndFltService));
         assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrent(1)));
         assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrent(2)));
         assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrentBattery));
@@ -1139,6 +1248,7 @@ mod a320_electrical_circuit_tests {
         assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrentEssentialShed));
         assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrentHot(1)));
         assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrentHot(2)));
+        assert!(power_supply.is_powered(&ElectricalBusType::DirectCurrentGndFltService));
     }
 
     #[test]
@@ -1836,6 +1946,36 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.ac_bus_1_output().is_powered());
     }
 
+    #[test]
+    fn when_ac_2_bus_is_powered_it_has_priority_over_ext_pwr_gnd_flt_circuit() {
+        let mut test_bed = test_bed_with()
+            .running_engine_2()
+            .and()
+            .connected_external_power()
+            .run();
+
+        assert!(test_bed
+            .ac_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::EngineGenerator(2)));
+    }
+
+    #[test]
+    fn when_ac_2_bus_is_unpowered_and_ac_1_is_powered_ext_pwr_powers_gnd_flt_buses() {
+        let mut test_bed = test_bed_with()
+            .running_engine_1()
+            .bus_tie_off()
+            .and()
+            .connected_external_power()
+            .run();
+
+        assert!(test_bed
+            .ac_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::External));
+        assert!(test_bed
+            .dc_gnd_flt_service_bus_output()
+            .is_single(PotentialOrigin::TransformerRectifier(2)));
+    }
+
     fn test_bed_with() -> A320ElectricalTestBed {
         test_bed()
     }
@@ -2085,7 +2225,7 @@ mod a320_electrical_circuit_tests {
         fn connected_external_power(mut self) -> Self {
             self.simulation_test_bed
                 .write_bool("EXTERNAL POWER AVAILABLE:1", true);
-            self
+            self.run()
         }
 
         fn empty_battery_1(mut self) -> Self {
@@ -2280,6 +2420,12 @@ mod a320_electrical_circuit_tests {
                 .source_for(&ElectricalBusType::AlternatingCurrentStaticInverter)
         }
 
+        fn ac_gnd_flt_service_bus_output(&mut self) -> Potential {
+            self.aircraft
+                .get_supplied_power()
+                .source_for(&ElectricalBusType::AlternatingCurrentGndFltService)
+        }
+
         fn static_inverter_input(&self) -> Potential {
             self.aircraft.static_inverter_input()
         }
@@ -2344,6 +2490,12 @@ mod a320_electrical_circuit_tests {
             self.aircraft
                 .get_supplied_power()
                 .source_for(&ElectricalBusType::DirectCurrentHot(2))
+        }
+
+        fn dc_gnd_flt_service_bus_output(&mut self) -> Potential {
+            self.aircraft
+                .get_supplied_power()
+                .source_for(&ElectricalBusType::DirectCurrentGndFltService)
         }
 
         fn ac_ess_feed_has_fault(&mut self) -> bool {
