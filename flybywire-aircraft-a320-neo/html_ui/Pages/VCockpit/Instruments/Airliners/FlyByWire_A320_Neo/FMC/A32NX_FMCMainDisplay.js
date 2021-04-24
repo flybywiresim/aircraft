@@ -1621,15 +1621,13 @@ class FMCMainDisplay extends BaseAirliners {
 
     _getOrSelectWaypoints(getter, ident, callback) {
         getter(ident).then((waypoints) => {
-            console.log(waypoints);
-            if (!waypoints || waypoints.length === 0) {
+            if (waypoints.length === 0) {
                 return callback(undefined);
             }
-            const filtered = waypoints.filter((wp, idx, wps) => wps.map((v) => v.icao).indexOf(wp.icao) === idx);
-            if (filtered.length === 1) {
-                return callback(filtered[0]);
+            if (waypoints.length === 1) {
+                return callback(waypoints[0]);
             }
-            A320_Neo_CDU_SelectWptPage.ShowPage(this, filtered, callback);
+            A320_Neo_CDU_SelectWptPage.ShowPage(this, waypoints, callback);
         });
     }
 

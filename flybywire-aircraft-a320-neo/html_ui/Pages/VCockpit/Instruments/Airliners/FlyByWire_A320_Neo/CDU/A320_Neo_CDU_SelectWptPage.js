@@ -56,7 +56,7 @@ class A320_Neo_CDU_SelectWptPage {
                     if (mcdu.returnPageCallback) {
                         mcdu.returnPageCallback();
                     } else {
-                        console.error("No returnPageCallback!");
+                        console.error("A return page callback was expected but not declared. Add a returnPageCallback to page: " + mcdu.page.Current);
                     }
                 };
             }
