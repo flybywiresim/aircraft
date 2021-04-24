@@ -72,7 +72,8 @@
       <Checkpoint Id="A320_PREP_WIPERS">
          <ForceCamera name="OverheadLower" />
          <CheckpointDesc SubjectTT="TT:Wipers" ExpectationTT="TT:OFF" />
-         <Instrument Id="HANDLING_Switch_Wipers" />
+         <Instrument Id="HANDLING_Switch_Wipers_left" />
+         <Instrument Id="HANDLING_Switch_Wipers_right" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_APU_FIRE_TEST">
          <CheckpointDesc SubjectTT="TT:APU Fire Test" ExpectationTT="TT:PERFORM" />
@@ -85,6 +86,12 @@
          <Instrument ID="Lighting_Knob_Glareshield_1" />
          <Instrument ID="Lighting_Knob_Glareshield_2" />
          <Instrument ID="Lighting_Knob_Glareshield_3" />
+         <Instrument ID="SWITCH_OVHD_INTLT_DOME" />
+         <Instrument ID="KNOB_OVHD_INTLT_BRT" />
+         <Instrument ID="SWITCH_EFIS_FO_CONSOLE" />
+         <Instrument ID="SWITCH_EFIS_CS_CONSOLE" />
+         <Instrument ID="LIGHTING_Knob_Pedestal" />
+         <Instrument ID="LIGHTING_Knob_Panel" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_PARKING_BRAKE">
          <CheckpointDesc SubjectTT="TT:Parking Brake" ExpectationTT="TT:ON" />
@@ -98,6 +105,7 @@
       </Checkpoint>
       <Checkpoint Id="A320_PREP_ACCU_BRAKES_PRESS">
          <CheckpointDesc SubjectTT="TT:Accu Press and Brakes Pressure" ExpectationTT="TT:CHECK" />
+         <Instrument ID="Accu_Press" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_FLAPS">
          <CheckpointDesc SubjectTT="TT:FLAPS" ExpectationTT="TT:UP" />
@@ -185,12 +193,15 @@
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_REC_GROUND_CONTROL">
          <CheckpointDesc SubjectTT="TT:Recorder Ground Control (INOP)" ExpectationTT="TT:ON" />
+         <Instrument Id="PUSH_OVHD_RCDR_GNDCTL"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_CVR_TEST">
          <CheckpointDesc SubjectTT="TT:CVR Test (INOP)" ExpectationTT="TT:PRESS AND RELEASE" />
+         <Instrument Id="PUSH_OVHD_RCDR_TEST"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_EVAC_CPT">
          <CheckpointDesc SubjectTT="TT:EVAC CAPT and PURS/CAPT" ExpectationTT="TT:AS REQUIRED" />
+         <Instrument Id="SWITCH_OVHD_EVAC_CAPT"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ADIRS">
          <CheckpointDesc SubjectTT="TT:ADIRS" ExpectationTT="TT:NAV" />
@@ -255,9 +266,11 @@
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_LANDING_ELEVATION">
          <CheckpointDesc SubjectTT="TT:Landing Elevation" ExpectationTT="TT:AUTO" />
+         <Instrument Id="KNOB_OVHD_CABINPRESS_LDGELEV"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_PACK_FLOW">
          <CheckpointDesc SubjectTT="TT:PACK Flow" ExpectationTT="TT:AS REQUIRED" />
+         <Instrument Id="KNOB_OVHD_AIRCOND_PACKFLOW"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ECAM_ELEC">
         <CheckpointDesc SubjectTT="TT:ECAM ELEC Page" ExpectationTT="TT:CALL" />
@@ -340,6 +353,7 @@
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_AUDIO_SWITCHING">
          <CheckpointDesc SubjectTT="TT:Audio Switching Panel" ExpectationTT="TT:NORMAL" />
+         <Instrument Id="KNOB_OVHD_AUDIOSWITCH"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_PA_RECEPTION">
          <CheckpointDesc SubjectTT="TT:PA Reception Knob (INOP)" ExpectationTT="TT:SET" />
@@ -433,6 +447,8 @@
          <CheckpointDesc SubjectTT="TT:Glareshield Integral Light and Flood Light" ExpectationTT="TT:SET" />
          <Instrument Id="Lighting_Knob_Glareshield_2"/>
          <Instrument Id="Lighting_Knob_Glareshield_3"/>
+         <Instrument Id="Lighting_Knob_Glareshield_Pilot_0"/>
+         <Instrument Id="Lighting_Knob_Glareshield_Copilot_0"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_GLARESHIELD_BARO_REF">
          <CheckpointDesc SubjectTT="TT:Barometric Reference" ExpectationTT="TT:SET" />
@@ -452,8 +468,10 @@
          <CheckpointDesc SubjectTT="TT:EFIS" ExpectationTT="TT:" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ND_MODE">
-         <CheckpointDesc SubjectTT="TT:ND Mode % Range" ExpectationTT="TT:AS REQUIRED" />
+         <CheckpointDesc SubjectTT="TT:ND Mode and Range" ExpectationTT="TT:AS REQUIRED" />
          <Instrument Id="AIRLINER_Knob_Autopilot_ND_Range"/>
+         <Instrument Id="KNOB_AUTOPILOT_ROSE_L"/>
+         <Instrument Id="KNOB_AUTOPILOT_ROSE_R"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_VOR_ADF_SEL">
          <CheckpointDesc SubjectTT="TT:VOR/ADF Selector" ExpectationTT="TT:AS NEEDED" />
@@ -464,6 +482,7 @@
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_SPEED_MACH_WIN">
          <CheckpointDesc SubjectTT="TT:Speed Mach Window" ExpectationTT="TT:DASHED" />
+         <Instrument Id="Speed_knob"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_HDG_VS_TRK_FPA">
          <CheckpointDesc SubjectTT="TT:HDG VS / TRK FPA" ExpectationTT="TT:HDG V/S" />
@@ -471,6 +490,7 @@
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ALT_WIN">
          <CheckpointDesc SubjectTT="TT:ALT Window" ExpectationTT="TT:INIT CLIMB CLEARANCE ALTITUDE" />
+         <Instrument Id="KNOB_AUTOPILOT_KNOB_ALT"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_LATERAL_CONSOLE_SPACER">
          <CheckpointDesc SubjectTT="TT:Lateral Console" ExpectationTT="TT:" />
@@ -559,15 +579,22 @@
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_WXR_MODE">
          <CheckpointDesc SubjectTT="TT:WXR: Mode" ExpectationTT="TT:AS REQUIRED" />
+         <Instrument Id="KNOB_RADAR_MODE"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_SWITCHING_PANEL">
          <CheckpointDesc SubjectTT="TT:Switching Panel" ExpectationTT="TT:CHECK" />
+         <Instrument Id="KNOB_SWITCHING_1"/>
+         <Instrument Id="KNOB_SWITCHING_2"/>
+         <Instrument Id="KNOB_SWITCHING_3"/>
+         <Instrument Id="KNOB_SWITCHING_4"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_STS">
          <CheckpointDesc SubjectTT="TT:STS" ExpectationTT="TT:PRESS" />
+         <Instrument Id="STS"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_PRESS">
          <CheckpointDesc SubjectTT="TT:PRESS" ExpectationTT="TT:PRESS" />
+         <Instrument Id="ECAM_PRESS"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_THRUST_LEVERS">
          <CheckpointDesc SubjectTT="TT:Thrust Levers" ExpectationTT="TT:IDLE" />
@@ -663,9 +690,11 @@
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ALT_REPORT">
          <CheckpointDesc SubjectTT="TT:Altitude Reporting" ExpectationTT="TT:ON" />
+         <Instrument Id="knob_atc_alt" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_WXR_SYS_SEL">
          <CheckpointDesc SubjectTT="TT:WXR: SYS 1" ExpectationTT="TT:SELECT" />
+         <Instrument Id="KNOB_RADAR_MODE" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_FMGS_AIRFIELD_DATA_IRS">
          <CheckpointDesc SubjectTT="TT:FMGS: Airfield Data and IRS Aligned" ExpectationTT="TT:CONFIRM" />
@@ -759,7 +788,7 @@
       </Checkpoint>
       <Checkpoint Id="A320_BeforeStart_PARKING_BRAKE_ACCU_PRESS">
          <CheckpointDesc SubjectTT="TT:Parking Brake ACCU Pressure" ExpectationTT="TT:CHECK" />
-         <Instrument Id="ECAM_PRESS"/>
+         <Instrument Id="Accu_Press"/>
       </Checkpoint>
       <Checkpoint Id="A320_BeforeStart_PARKING_BRAKE">
          <CheckpointDesc SubjectTT="TT:Parking Brake" ExpectationTT="TT:AS REQUIRED" />
@@ -800,7 +829,7 @@
       </Checkpoint>
       <Checkpoint Id="A320_EngineStartup_ENG_MASTER_1">
          <CheckpointDesc SubjectTT="TT:Master Switch 1" ExpectationTT="TT:ON" />
-         <Instrument Id="ENGINE_Switch_Master" />
+         <Instrument Id="SWITCH_ENGINES_ENG1" />
          <Test>
             <TestValue>
                <Val SimVarName="GENERAL ENG STARTER:2" Units="boolean" />

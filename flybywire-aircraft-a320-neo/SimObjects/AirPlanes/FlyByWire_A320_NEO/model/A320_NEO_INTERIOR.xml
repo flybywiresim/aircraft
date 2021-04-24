@@ -50,6 +50,7 @@
         <Component ID="LIGHTING">
             <UseTemplate Name="ASOBO_LIGHTING_Knob_Pedestal_Template">
                 <NODE_ID>LIGHTING_Knob_Pedestal</NODE_ID>
+                <PART_ID>LIGHTING_Knob_Pedestal</PART_ID>
                 <ANIM_NAME>LIGHTING_Knob_Pedestal</ANIM_NAME>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_INCREASE</ANIMTIP_1>
@@ -64,6 +65,7 @@
                 <POTENTIOMETER>85</POTENTIOMETER>
                 <SIMVAR_INDEX>1</SIMVAR_INDEX>
                 <NODE_ID>LIGHTING_Knob_Panel</NODE_ID>
+                <PART_ID>LIGHTING_Knob_Panel</PART_ID>
                 <ANIM_NAME>LIGHTING_Knob_Panel</ANIM_NAME>
             </UseTemplate>
 
@@ -185,12 +187,14 @@
             <UseTemplate Name="FBW_LIGHTING_Switch_Console_Template">
                 <POTENTIOMETER>8</POTENTIOMETER>
                 <NODE_ID>SWITCH_EFIS_CS_CONSOLE</NODE_ID>
+                <PART_ID>SWITCH_EFIS_CS_CONSOLE</PART_ID>
                 <ANIM_NAME>SWITCH_EFIS_CS_CONSOLE</ANIM_NAME>
             </UseTemplate>
 
             <UseTemplate Name="FBW_LIGHTING_Switch_Console_Template">
                 <POTENTIOMETER>9</POTENTIOMETER>
                 <NODE_ID>SWITCH_EFIS_FO_CONSOLE</NODE_ID>
+                <PART_ID>SWITCH_EFIS_FO_CONSOLE</PART_ID>
                 <ANIM_NAME>SWITCH_EFIS_FO_CONSOLE</ANIM_NAME>
             </UseTemplate>
         </Component>
@@ -279,6 +283,7 @@
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>SWITCH_ENGINES_ENG1</ANIM_NAME>
                     <NODE_ID>SWITCH_ENGINES_ENG1</NODE_ID>
+                    <PART_ID>SWITCH_ENGINES_ENG1</PART_ID>
                     <ID>1</ID>
                     <VALVE_ID>1</VALVE_ID>
                     <!-- This makes it not light up -->
@@ -372,6 +377,7 @@
             <Component ID="WeatherRadar">
                 <UseTemplate Name="FBW_AIRBUS_WeatherRadar_Template">
                     <NODE_ID_MODE_KNOB>KNOB_RADAR_MODE</NODE_ID_MODE_KNOB>
+                    <PART_ID>KNOB_RADAR_MODE</PART_ID>
                     <ANIM_NAME_MODE_KNOB>KNOB_RADAR_MODE</ANIM_NAME_MODE_KNOB>
                     <NODE_ID_ONOFF_SWITCH>SWITCH_RADAR_SYS</NODE_ID_ONOFF_SWITCH>
                     <ANIM_NAME_ONOFF_SWITCH>SWITCH_RADAR_SYS</ANIM_NAME_ONOFF_SWITCH>
@@ -1222,6 +1228,7 @@
 
                 <UseTemplate Name="A32NX_AIRBUS_PACK_SELECTOR_TEMPLATE">
                     <Node_ID>KNOB_OVHD_AIRCOND_PACKFLOW</Node_ID>
+                    <PART_ID>KNOB_OVHD_AIRCOND_PACKFLOW</PART_ID>
                     <ANIM_NAME>KNOB_OVHD_AIRCOND_PACKFLOW</ANIM_NAME>
                     <ANIM_CODE>50</ANIM_CODE>
                     <ANIMTIP_0>Set pack flow to LO</ANIMTIP_0>
@@ -1457,6 +1464,7 @@
 
                 <UseTemplate Name="ASOBO_LIGHTING_Knob_Panel_Template">
                     <NODE_ID>KNOB_OVHD_INTLT_BRT</NODE_ID>
+                    <PART_ID>KNOB_OVHD_INTLT_BRT</PART_ID>
                     <ANIM_NAME>KNOB_OVHD_INTLT_BRT</ANIM_NAME>
                     <WWISE_EVENT></WWISE_EVENT>
                     <ID>4</ID>
@@ -1479,6 +1487,7 @@
                     <POTENTIOMETER>7</POTENTIOMETER>
                     <DIMMER/>
                     <NODE_ID>SWITCH_OVHD_INTLT_DOME</NODE_ID>
+                    <PART_ID>SWITCH_OVHD_INTLT_DOME</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_DOME</ANIM_NAME>
                     <ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
                     <ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
@@ -1783,6 +1792,7 @@
                         <!-- CAPT & PURS / CAPT -->
                         <UseTemplate Name="ASOBO_GT_Switch_Dummy">
                             <NODE_ID>SWITCH_OVHD_EVAC_CAPT</NODE_ID>
+                            <PART_ID>SWITCH_OVHD_EVAC_CAPT</PART_ID>
                             <ANIM_NAME>SWITCH_OVHD_EVAC_CAPT</ANIM_NAME>
                             <ANIM_CODE>100</ANIM_CODE>
                             <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
@@ -1993,6 +2003,7 @@
 
                     <UseTemplate Name="ASOBO_GT_Switch_Dummy">
                         <Node_ID>KNOB_OVHD_AUDIOSWITCH</Node_ID>
+                        <PART_ID>KNOB_OVHD_AUDIOSWITCH</PART_ID>
                         <ANIM_NAME>KNOB_OVHD_AUDIOSWITCH</ANIM_NAME>
                         <NUM_STATES>3</NUM_STATES>
                         <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
@@ -2408,7 +2419,7 @@
                         <NODE_ID>HANDLING_Switch_Wiper_left</NODE_ID>
                         <ANIM_NAME>HANDLING_Switch_Wiper_left</ANIM_NAME>
                         <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
-                        <PART_ID>HANDLING_Switch_Wipers</PART_ID>
+                        <PART_ID>HANDLING_Switch_Wipers_left</PART_ID>
                         <ANIMTIP_0>Set left wiper to OFF</ANIMTIP_0>
                         <ANIMTIP_1>Set left wiper to SLOW</ANIMTIP_1>
                         <ANIMTIP_2>Set left wiper to FAST</ANIMTIP_2>
@@ -2417,6 +2428,7 @@
                         <NODE_ID>HANDLING_Switch_Wiper_right</NODE_ID>
                         <ANIM_NAME>HANDLING_Switch_Wiper_right</ANIM_NAME>
                         <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
+                        <PART_ID>HANDLING_Switch_Wipers_right</PART_ID>
                         <ANIMTIP_0>Set right wiper to OFF</ANIMTIP_0>
                         <ANIMTIP_1>Set right wiper to SLOW</ANIMTIP_1>
                         <ANIMTIP_2>Set right wiper to FAST</ANIMTIP_2>
@@ -2654,6 +2666,7 @@
                         <Component ID="RCDR">
                             <UseTemplate Name="FBW_Push_Toggle">
                                 <NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
+                                <PART_ID>PUSH_OVHD_RCDR_GNDCTL</PART_ID>
                                 <TOGGLE_SIMVAR>L:A32NX_RCDR_GROUND_CONTROL_ON</TOGGLE_SIMVAR>
                                 <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                                 <SEQ2_CODE>(L:A32NX_RCDR_GROUND_CONTROL_ON, Bool)</SEQ2_CODE>
@@ -2669,6 +2682,7 @@
                             </UseTemplate>
                             <UseTemplate Name="FBW_Push_Held">
                                 <NODE_ID>PUSH_OVHD_RCDR_TEST</NODE_ID>
+                                <PART_ID>PUSH_OVHD_RCDR_TEST</PART_ID>
                                 <HOLD_SIMVAR>L:A32NX_RCDR_TEST</HOLD_SIMVAR>
                                 <TOOLTIPID>Test CVR (Inop.)</TOOLTIPID>
                             </UseTemplate>
@@ -2905,6 +2919,7 @@
                     <Component ID="KNOB_OVHD_CABINPRESS_LDGELEV" Node="KNOB_OVHD_CABINPRESS_LDGELEV">
                         <UseTemplate Name="FBW_Continuous_Knob_Limited_From_Simvar">
                             <NODE_ID>KNOB_OVHD_CABINPRESS_LDGELEV</NODE_ID>
+                            <PART_ID>KNOB_OVHD_CABINPRESS_LDGELEV</PART_ID>
                             <ANIM_NAME>KNOB_OVHD_CABINPRESS_LDGELEV</ANIM_NAME>
                             <LOCAL_SIMVAR>L:A32NX_LANDING_ELEVATION</LOCAL_SIMVAR>
                             <LOCAL_SIMVAR_UNITS>feet</LOCAL_SIMVAR_UNITS>
@@ -3031,6 +3046,7 @@
             <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
                 <TYPE>AIRBUS</TYPE>
                 <NODE_ID>KNOB_AUTOPILOT_ROSE_L</NODE_ID>
+                <PART_ID>KNOB_AUTOPILOT_ROSE_L</PART_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_ROSE_L_</ANIM_NAME>
                 <KNOB_POSITION_VAR>A320_Neo_MFD_NAV_MODE_1</KNOB_POSITION_VAR>
             </UseTemplate>
@@ -3045,6 +3061,7 @@
             <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
                 <TYPE>AIRBUS</TYPE>
                 <NODE_ID>KNOB_AUTOPILOT_ROSE_R</NODE_ID>
+                <PART_ID>KNOB_AUTOPILOT_ROSE_R</PART_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_ROSE_R</ANIM_NAME>
                 <KNOB_POSITION_VAR>A320_Neo_MFD_NAV_MODE_2</KNOB_POSITION_VAR>
             </UseTemplate>
@@ -3269,6 +3286,7 @@
 
             <UseTemplate Name="FBW_Airbus_FCU_Altitude_Knob">
                 <NODE_ID>KNOB_AUTOPILOT_KNOB_ALT</NODE_ID>
+                <PART_ID>KNOB_AUTOPILOT_KNOB_ALT</PART_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_ALT</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_ALT</ANIM_NAME_PUSHPULL>
                 <ANIMREF_ID>-1</ANIMREF_ID>
@@ -3631,6 +3649,9 @@
                 <NODE_ID>PUSH_ATC_FAIL_SEQ2</NODE_ID>
                 <EMISSIVE_CODE>(L:XMLVAR_LTS_Test) (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) and</EMISSIVE_CODE>
             </UseTemplate>
+            <UseTemplate Name="FBW_Airbus_ATC_Panel_ALT">
+                <Node_ID>Knob_ATC_ALT</Node_ID>
+            </UseTemplate>
             <UseTemplate Name="FBW_Airbus_ATC_Panel_TARA">
                 <Node_ID>KNOB_ATC_TARA</Node_ID>
                 <ANIMTIP_0>Set TCAS to STBY</ANIMTIP_0>
@@ -3678,6 +3699,7 @@
             <Component ID="ACCU_PRESS" Node="BRK_ACCU_PRESS_ARC">
                 <UseTemplate Name = "ASOBO_GT_Anim_Code">
                     <ANIM_NAME>Accu_Press</ANIM_NAME>
+                    <PART_ID>Accu_Press</PART_ID>
                     <ANIM_LENGTH>1</ANIM_LENGTH>
                     <ANIM_DURATION>1</ANIM_DURATION>
                     <ANIM_CODE>
@@ -3716,6 +3738,7 @@
             <Component ID="Switching_Panel">
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
                     <Node_ID>KNOB_SWITCHING_1</Node_ID>
+                    <PART_ID>KNOB_SWITCHING_1</PART_ID>
                     <ANIM_NAME>KNOB_SWITCHING_1</ANIM_NAME>
                     <ANIM_CODE>50</ANIM_CODE>
                     <ANIMTIP_0>Set ATT HDG to CAPT</ANIMTIP_0>
@@ -3724,6 +3747,7 @@
                 </UseTemplate>
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
                     <Node_ID>KNOB_SWITCHING_2</Node_ID>
+                    <PART_ID>KNOB_SWITCHING_2</PART_ID>
                     <ANIM_NAME>KNOB_SWITCHING_2</ANIM_NAME>
                     <ANIM_CODE>50</ANIM_CODE>
                     <ANIMTIP_0>Set AIR DATA to CAPT</ANIMTIP_0>
@@ -3732,6 +3756,7 @@
                 </UseTemplate>
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
                     <Node_ID>KNOB_SWITCHING_3</Node_ID>
+                    <PART_ID>KNOB_SWITCHING_3</PART_ID>
                     <ANIM_NAME>KNOB_SWITCHING_3</ANIM_NAME>
                     <ANIM_CODE>50</ANIM_CODE>
                     <ANIMTIP_0>Set EIS DMC to CAPT</ANIMTIP_0>
@@ -3740,6 +3765,7 @@
                 </UseTemplate>
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
                     <Node_ID>KNOB_SWITCHING_4</Node_ID>
+                    <PART_ID>KNOB_SWITCHING_4</PART_ID>
                     <ANIM_NAME>KNOB_SWITCHING_4</ANIM_NAME>
                     <ANIM_CODE>50</ANIM_CODE>
                     <ANIMTIP_0>Set ECAM/ND XFR to CAPT</ANIMTIP_0>
