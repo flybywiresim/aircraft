@@ -2214,7 +2214,7 @@
          <Instrument Id="ECAM_FUEL" />
       </Checkpoint>
       <Checkpoint Id="A320_PARKING_ECAM_STATUS">
-         <CheckpointDesc SubjectTT="TT:ECAM Status" ExpectationTT="TT:CHECK" />
+         <CheckpointDesc SubjectTT="TT:ECAM Status Page" ExpectationTT="TT:CHECK" />
          <Instrument Id="STS" />
       </Checkpoint>
       <Checkpoint Id="A320_PARKING_BRAKE_FAN">
