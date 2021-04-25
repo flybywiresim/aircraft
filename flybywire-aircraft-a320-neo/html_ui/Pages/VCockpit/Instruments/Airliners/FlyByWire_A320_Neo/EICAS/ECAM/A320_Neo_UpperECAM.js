@@ -1108,7 +1108,7 @@ var A320_Neo_UpperECAM;
                 normal: [
                     {
                         message: "REFUELG",
-                        isActive: () => this.getCachedSimVar("INTERACTIVE POINT OPEN:9", "percent") == 100
+                        isActive: () => this.getCachedSimVar("INTERACTIVE POINT OPEN:9", "percent") == 100 || this.getCachedSimVar("L:A32NX_REFUEL_STARTED_BY_USR", "bool")
                     },
                     {
                         message: "IR IN ALIGN > 7 MN",
