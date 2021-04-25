@@ -41,6 +41,11 @@
     transform-origin: 0%;
   }
 
+  button:active {
+    @apply transform;
+    @apply translate-y-1;
+  }
+
   @keyframes loading {
     0% {
       transform: scaleX(0);
