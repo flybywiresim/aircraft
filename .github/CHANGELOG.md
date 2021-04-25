@@ -40,6 +40,7 @@
 1. [FLIGHTMODEL] Custom spoiler logic and realistic impact on flight model - @donstim (donbikes#4084), @aguther (Andreas Guther)
 1. [EFB] Added throttle calibration for autothrust system - @Saschl (saschl#9432)
 1. [ECAM] Add REFUELG message to upper ECAM when refuelling via fuel page on EFB - @sidnov (sidnov#8337)
+1. [EFB] Disabled LINK MCDU button on dashboard page - @ExampleWasTaken (ExampleWasTaken#0886)
 1. [ND] Fix Behaviour of TAS and Wind Info displayed inflight and on Take-Off - @ChruutvoLuzi (ChruutvoLuzi#8902)
 
 ## 0.6.0
