@@ -1,21 +1,3 @@
-/*
- * A32NX
- * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 class SvgFlightPlanElement extends SvgMapElement {
     constructor() {
         super(...arguments);
@@ -30,9 +12,11 @@ class SvgFlightPlanElement extends SvgMapElement {
         this._highlightedLegIndex = -1;
         this._isDashed = false;
     }
+
     id(map) {
         return "flight-plan-" + this.flightPlanIndex + "-map-" + map.index;
     }
+
     createDraw(map) {
         const container = document.createElementNS(Avionics.SVG.NS, "svg");
         container.id = this.id(map);
@@ -97,6 +81,7 @@ class SvgFlightPlanElement extends SvgMapElement {
         this.points = [];
 
         const geometry = this.source.getMultipleLegGeometry();
+
         const paths = geometry ? [this.makePathFromGeometry(geometry, map)] : [];
         paths.forEach((path, index) => this.makeOrUpdatePathElement(path, index, map));
         this.removeTrailingPathElements(paths.length);
@@ -113,13 +98,15 @@ class SvgFlightPlanElement extends SvgMapElement {
         let x = null;
         let y = null;
 
+        const firstLeg = geometry.legs.get(1);
+
         // initial transition
         if (geometry.transitions.has(1)) {
             // draw the initial transition fully
             const transition = geometry.transitions.get(1);
             const [inbound, outbound] = transition.getTurningPoints();
 
-            const { x: inbndX, y: inbndY } = map.coordinatesToXY(inbound);
+            const {x: inbndX, y: inbndY} = map.coordinatesToXY(inbound);
             x = fastToFixed(inbndX, 1);
             y = fastToFixed(inbndY, 1);
 
@@ -136,30 +123,41 @@ class SvgFlightPlanElement extends SvgMapElement {
 
             path.push(`A ${r} ${r} 0 0 ${cw ? 1 : 0} ${x} ${y}`);
         } else if (geometry.legs.has(1)) {
-            // move to the starting point of the first leg
-            const { x: toX, y: toY } = map.coordinatesToXY(geometry.legs.get(1).from.infos.coordinates);
+            // Move to the starting point of the first leg
+            const { x: toX, y: toY } = map.coordinatesToXY(firstLeg.from.infos.coordinates);
             x = fastToFixed(toX, 1);
             y = fastToFixed(toY, 1);
+
             path.push(`M ${x} ${y}`);
+
+            // If the "to" waypoint ends in a discontinuity, we won't draw a line there later, so do it now
+            if (firstLeg.to.endsInDiscontinuity) {
+                const { x: toX, y: toY } = map.coordinatesToXY(firstLeg.to.infos.coordinates);
+
+                x = fastToFixed(toX, 1);
+                y = fastToFixed(toY, 1);
+
+                path.push(`L ${x} ${y}`);
+            }
         }
 
-        let finalLeg = geometry.legs.get(1);
+        let finalLeg = firstLeg;
         for (let i = 2; i <= geometry.legs.size; i++) {
-            const leg = geometry.legs.get(i);
+            const [prevLeg, leg] = [geometry.legs.get(i - 1), geometry.legs.get(i)];
             const transition = geometry.transitions.get(i);
 
             if (transition) {
                 // draw line to start of transition
                 const [inbound, outbound] = transition.getTurningPoints();
 
-                const { x: inbndX, y: inbndY } = map.coordinatesToXY(inbound);
+                const {x: inbndX, y: inbndY} = map.coordinatesToXY(inbound);
                 x = fastToFixed(inbndX, 1);
                 y = fastToFixed(inbndY, 1);
                 path.push(`${path.length ? "L" : "M"} ${x} ${y}`);
 
                 // draw transition itself to end of transition
                 const r = fastToFixed(transition.radius * map.NMToPixels(1), 0);
-                const { x: outbndX, y: outbndY } = map.coordinatesToXY(outbound);
+                const {x: outbndX, y: outbndY} = map.coordinatesToXY(outbound);
 
                 x = fastToFixed(outbndX, 1);
                 y = fastToFixed(outbndY, 1);
@@ -175,7 +173,16 @@ class SvgFlightPlanElement extends SvgMapElement {
                 const { x: fromX, y: fromY } = map.coordinatesToXY(leg.from.infos.coordinates);
                 x = fastToFixed(fromX, 1);
                 y = fastToFixed(fromY, 1);
-                path.push(`${path.length ? "L" : "M"} ${x} ${y}`);
+
+                // If the previous leg ended in a discontinuity OR this is the fist leg, we use an M command
+                let lineCommand;
+                if (prevLeg && prevLeg.to.endsInDiscontinuity) {
+                    lineCommand = 'M';
+                } else {
+                    lineCommand = path.length > 0 ? 'L' : 'M';
+                }
+
+                path.push(`${lineCommand} ${x} ${y}`);
             }
 
             finalLeg = leg;
@@ -183,7 +190,7 @@ class SvgFlightPlanElement extends SvgMapElement {
 
         // draw to final leg
         if (finalLeg) {
-            const {x: fromX, y: fromY} = map.coordinatesToXY(finalLeg.to.infos.coordinates);
+            const { x: fromX, y: fromY } = map.coordinatesToXY(finalLeg.to.infos.coordinates);
             x = fastToFixed(fromX, 1);
             y = fastToFixed(fromY, 1);
             path.push(`${path.length ? "L" : "M"} ${x} ${y}`);
@@ -261,6 +268,7 @@ class SvgFlightPlanElement extends SvgMapElement {
         }
     }
 }
+
 class SvgBackOnTrackElement extends SvgMapElement {
     constructor(overrideColor = "") {
         super();
@@ -268,10 +276,12 @@ class SvgBackOnTrackElement extends SvgMapElement {
         this._id = "back-on-track-" + SvgBackOnTrackElement.ID;
         SvgBackOnTrackElement.ID++;
     }
+
     id(map) {
         return this._id + "-map-" + map.index;
-        ;
+
     }
+
     createDraw(map) {
         const container = document.createElementNS(Avionics.SVG.NS, "svg");
         container.id = this.id(map);
@@ -292,6 +302,7 @@ class SvgBackOnTrackElement extends SvgMapElement {
         container.appendChild(this._colorLine);
         return container;
     }
+
     updateDraw(map) {
         const p1 = map.coordinatesToXY(this.llaRequested);
         let p2;
@@ -321,7 +332,9 @@ class SvgBackOnTrackElement extends SvgMapElement {
         }
     }
 }
+
 SvgBackOnTrackElement.ID = 0;
+
 class SvgDirectToElement extends SvgMapElement {
     constructor(overrideColor = "") {
         super();
@@ -329,10 +342,12 @@ class SvgDirectToElement extends SvgMapElement {
         this._id = "direct-to-" + SvgDirectToElement.ID;
         SvgDirectToElement.ID++;
     }
+
     id(map) {
         return this._id + "-map-" + map.index;
-        ;
+
     }
+
     createDraw(map) {
         const container = document.createElementNS(Avionics.SVG.NS, "svg");
         container.id = this.id(map);
@@ -353,6 +368,7 @@ class SvgDirectToElement extends SvgMapElement {
         container.appendChild(this._colorLine);
         return container;
     }
+
     updateDraw(map) {
         const p1 = map.coordinatesToXY(this.llaRequested);
         let p2;
@@ -392,16 +408,20 @@ class SvgDirectToElement extends SvgMapElement {
         }
     }
 }
+
 SvgDirectToElement.ID = 0;
+
 class SvgApproachFlightPlanDebugElement extends SvgMapElement {
     constructor() {
         super(...arguments);
         this.flightPlanIndex = NaN;
     }
+
     id(map) {
         return "flight-plan-" + this.flightPlanIndex + "-map-" + map.index;
-        ;
+
     }
+
     createDraw(map) {
         const container = document.createElementNS(Avionics.SVG.NS, "svg");
         container.id = this.id(map);
@@ -413,6 +433,7 @@ class SvgApproachFlightPlanDebugElement extends SvgMapElement {
         container.appendChild(this._path);
         return container;
     }
+
     updateDraw(map) {
         if (this.source && this.source.waypoints) {
             let d = "";
@@ -439,4 +460,5 @@ class SvgApproachFlightPlanDebugElement extends SvgMapElement {
         }
     }
 }
+
 //# sourceMappingURL=SvgFlightPlanElement.js.map
