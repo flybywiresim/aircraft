@@ -712,6 +712,7 @@
             <Component ID="Brake_Fan_Imported">
                 <UseTemplate Name="FBW_Push_BrkFan_Toggle">
                     <NODE_ID>PUSH_BKRFAN_IMPORTED</NODE_ID>
+                    <PART_ID>BRKFAN</PART_ID>
                     <ANIM_NAME>PUSH_BKRFAN_IMPORTED</ANIM_NAME>
                     <NODE_ID_ON>PUSH_BKRFAN_IMPORTED_SEQ2</NODE_ID_ON>
                     <NODE_ID_HOT>PUSH_BKRFAN_IMPORTED_SEQ1</NODE_ID_HOT>
@@ -1241,6 +1242,7 @@
                 <!-- Lights -->
                 <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Strobe_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_STROBE</NODE_ID>
+                    <PART_ID>EXTLT_STROBE</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_STROBE</ANIM_NAME>
                     <HAS_AUTO>True</HAS_AUTO>
                     <INVERT_ANIM>True</INVERT_ANIM>
@@ -1358,6 +1360,7 @@
                 <!-- RWY TURN OFF -->
                 <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Taxi_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_RWY</NODE_ID>
+                    <PART_ID>EXTLT_RWY</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_RWY</ANIM_NAME>
                     <ID>1</ID>
                     <SIMVAR_INDEX>2</SIMVAR_INDEX>
@@ -1400,6 +1403,7 @@
                 <!-- WING -->
                 <UseTemplate Name="FBW_Airbus_LIGHTING_Switch_Light_Wing_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_WING</NODE_ID>
+                    <PART_ID>EXTLT_WING</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_WING</ANIM_NAME>
 
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
@@ -1409,6 +1413,7 @@
 
                 <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Navigation_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_NAVLOGO</NODE_ID>
+                    <PART_ID>SWITCH_OVHD_EXTLT_NAVLOGO</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_NAVLOGO</ANIM_NAME>
                     <SIMVAR_INDEX>0</SIMVAR_INDEX>
                     <SIMVAR_INDEX_2>0</SIMVAR_INDEX_2>
@@ -1931,6 +1936,7 @@
                     <!-- PACK 1 -->
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_AIRCOND_PACK1</NODE_ID>
+                        <PART_ID>AIRCOND_PACK1</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AIRCOND_PACK1_TOGGLE</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ1_CODE>(L:A32NX_AIRCOND_PACK1_FAULT, Bool)</SEQ1_CODE>
@@ -1944,6 +1950,7 @@
                     <!-- PACK 2 -->
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_AIRCOND_PACK2</NODE_ID>
+                        <PART_ID>AIRCOND_PACK2</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_AIRCOND_PACK2_TOGGLE</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                         <SEQ1_CODE>(L:A32NX_AIRCOND_PACK2_FAULT, Bool)</SEQ1_CODE>
@@ -2373,6 +2380,7 @@
                 <Component ID="OverHead_AntiIce">
                     <UseTemplate Name="FBW_Airbus_AntiIce_Engine">
                         <NODE_ID>PUSH_OVHD_ANTIICE_ENG1</NODE_ID>
+                        <PART_ID>ANTIICE_ENG1</PART_ID>
                         <ID>1</ID>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2381,6 +2389,7 @@
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_AntiIce_Engine">
                         <NODE_ID>PUSH_OVHD_ANTIICE_ENG2</NODE_ID>
+                        <PART_ID>ANTIICE_ENG2</PART_ID>
                         <ID>2</ID>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2389,6 +2398,7 @@
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_AntiIce_Wing">
                         <NODE_ID>PUSH_OVHD_ANTIICE_WING</NODE_ID>
+                        <PART_ID>ANTIICE_WING</PART_ID>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2448,6 +2458,7 @@
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT1</NODE_ID>
+                            <PART_ID>FIRE_ENG1_AGENT1</PART_ID>
                             <AGENT_ID>1</AGENT_ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2456,6 +2467,7 @@
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT2</NODE_ID>
+                            <PART_ID>FIRE_ENG1_AGENT2</PART_ID>
                             <AGENT_ID>2</AGENT_ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2467,9 +2479,11 @@
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_GUARD">
                             <NODE_ID>LOCK_OVHD_ENG1</NODE_ID>
+                            <PART_ID>LOCK_OVHD_ENG1</PART_ID>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG1</NODE_ID>
+                            <PART_ID>FIRE_ENG1</PART_ID>
                             <!--
                                 The real fire button contains many lights, these lights are powered by different buses.
                                 This is currently unsupported by our fire button implementation. Thus we'll turn on the lights
@@ -2492,6 +2506,7 @@
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
+                            <PART_ID>FIRE_ENG2_AGENT1</PART_ID>
                             <AGENT_ID>1</AGENT_ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2500,6 +2515,7 @@
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT2</NODE_ID>
+                            <PART_ID>FIRE_ENG2_AGENT2</PART_ID>
                             <AGENT_ID>2</AGENT_ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2511,9 +2527,11 @@
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_GUARD">
                             <NODE_ID>LOCK_OVHD_ENG2</NODE_ID>
+                            <PART_ID>LOCK_OVHD_ENG2</PART_ID>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG2</NODE_ID>
+                            <PART_ID>FIRE_ENG2</PART_ID>
                             <!--
                                 The real fire button contains many lights, these lights are powered by different buses.
                                 This is currently unsupported by our fire button implementation. Thus we'll turn on the lights
@@ -2536,6 +2554,7 @@
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
+                            <PART_ID>PUSH_OVHD_FIRE_AGENT</PART_ID>
                             <AGENT_ID>1</AGENT_ID>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2544,6 +2563,7 @@
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                             <NODE_ID>PUSH_OVHD_FIRE_APU</NODE_ID>
+                            <PART_ID>PUSH_OVHD_FIRE_APU</PART_ID>
                             <!--
                                 The real fire button contains many lights, these lights are powered by different buses.
                                 This is currently unsupported by our fire button implementation. Thus we'll turn on the lights
@@ -2553,6 +2573,7 @@
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_GUARD">
                             <NODE_ID>LOCK_OVHD_APU</NODE_ID>
+                            <PART_ID>LOCK_OVHD_APU</PART_ID>
                         </UseTemplate>
                     </Component>
 
@@ -2732,6 +2753,7 @@
                             </UseTemplate>
                             <UseTemplate Name="FBW_Push_Held">
                                 <NODE_ID>PUSH_OVHD_CALLS_ALL</NODE_ID>
+                                <PART_ID>PUSH_OVHD_CALLS_ALL</Part_ID>
                                 <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_ALL</HOLD_SIMVAR>
                             </UseTemplate>
                             <UseTemplate Name="FBW_Push_Held">
@@ -3111,6 +3133,7 @@
 
             <UseTemplate Name="FBW_AIRBUS_Push_ARPT_Template">
                 <NODE_ID>PUSH_AUTOPILOT_ARPT_L</NODE_ID>
+                <PART_ID>ARPT_L</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_ARPT_L</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <BTN_ID>ARPT_1</BTN_ID>
@@ -3156,6 +3179,7 @@
 
             <UseTemplate Name="FBW_AIRBUS_Push_ARPT_Template">
                 <NODE_ID>PUSH_AUTOPILOT_ARPT_R</NODE_ID>
+                <PART_ID>ARPT_R</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_ARPT_R</ANIM_NAME>
                 <POTENTIOMETER_SEQ2>84</POTENTIOMETER_SEQ2>
                 <BTN_ID>ARPT_2</BTN_ID>
@@ -3226,6 +3250,7 @@
 
             <UseTemplate Name="FBW_Airbus_Autopilot_Push_Autothrust">
                 <NODE_ID>PUSH_AUTOPILOT_ATHR</NODE_ID>
+                <PART_ID>PUSH_AUTOPILOT_ATHR</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_ATHR</ANIM_NAME>
                 <POTENTIOMETER>84</POTENTIOMETER>
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_ATHR_SEQ1</ACTIVE_NODE_ID>
@@ -3247,6 +3272,7 @@
 
             <UseTemplate Name="FBW_Airbus_Autopilot_Push_Approach">
                 <NODE_ID>PUSH_AUTOPILOT_APPR</NODE_ID>
+                <PART_ID>PUSH_AUTOPILOT_APPR</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_APPR</ANIM_NAME>
                 <POTENTIOMETER>84</POTENTIOMETER>
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_APPR_SEQ1</ACTIVE_NODE_ID>
@@ -3302,6 +3328,7 @@
 
             <UseTemplate Name="FBW_Airbus_Autopilot_Knob_VerticalSpeed_Template">
                 <NODE_ID>KNOB_AUTOPILOT_UPDN</NODE_ID>
+                <PART_ID>KNOB_AUTOPILOT_UPDN</PART_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_UPDN</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_UPDN</ANIM_NAME_PUSHPULL>
                 <ANIMREF_ID>0</ANIMREF_ID>
@@ -3651,6 +3678,7 @@
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_ATC_Panel_ALT">
                 <Node_ID>Knob_ATC_ALT</Node_ID>
+                <PART_ID>Knob_ATC_ALT</PART_ID>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_ATC_Panel_TARA">
                 <Node_ID>KNOB_ATC_TARA</Node_ID>
@@ -3671,6 +3699,7 @@
             <Component ID="BRK_PRESS_ARC_L" Node="BRK_PRESS_ARC_L">
                 <UseTemplate Name = "ASOBO_GT_Anim_Code">
                     <ANIM_NAME>Press_Arc_L</ANIM_NAME>
+                    <PART_ID>Press_Arc_L</PART_ID>
                     <ANIM_LENGTH>3</ANIM_LENGTH>
                     <ANIM_DURATION>1</ANIM_DURATION>
                     <ANIM_CODE>
@@ -3685,6 +3714,7 @@
             <Component ID="BRK_PRESS_ARC_R" Node="BRK_PRESS_ARC_L">
                 <UseTemplate Name = "ASOBO_GT_Anim_Code">
                     <ANIM_NAME>Press_Arc_R</ANIM_NAME>
+                    <PART_ID>Press_Arc_R</PART_ID>
                     <ANIM_LENGTH>3</ANIM_LENGTH>
                     <ANIM_DURATION>1</ANIM_DURATION>
                     <ANIM_CODE>

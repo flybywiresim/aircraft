@@ -37,6 +37,7 @@
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
             <BASE_NAME>L6</BASE_NAME>
+            <PART_ID>L6</PART_ID>
         </UseTemplate>
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
@@ -61,6 +62,7 @@
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
             <BASE_NAME>R6</BASE_NAME>
+            <PART_ID>R6</PART_ID>
         </UseTemplate>
     </Template>
 
@@ -71,10 +73,12 @@
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
             <BASE_NAME>PROG</BASE_NAME>
+            <PART_ID>PROG</PART_ID>
         </UseTemplate>
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
             <BASE_NAME>PERF</BASE_NAME>
+            <PART_ID>PERF</PART_ID>
         </UseTemplate>
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
@@ -83,14 +87,17 @@
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
             <BASE_NAME>DATA</BASE_NAME>
+            <PART_ID>DATA</PART_ID>
         </UseTemplate>
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
             <BASE_NAME>FPLN</BASE_NAME>
+            <PART_ID>FPLN</PART_ID>
         </UseTemplate>
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
             <BASE_NAME>RAD</BASE_NAME>
+            <PART_ID>RAD</PART_ID>
         </UseTemplate>
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
@@ -99,6 +106,7 @@
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
             <BASE_NAME>SEC</BASE_NAME>
+            <PART_ID>SEC</PART_ID>
         </UseTemplate>
 
         <UseTemplate Name="FBW_MCDU_BUTTON_Template">
