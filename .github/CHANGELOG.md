@@ -41,6 +41,7 @@
 1. [EFB] Added throttle calibration for autothrust system - @Saschl (saschl#9432)
 1. [ECAM] Add REFUELG message to upper ECAM when refuelling via fuel page on EFB - @sidnov (sidnov#8337)
 1. [EFB] Disabled LINK MCDU button on dashboard page - @ExampleWasTaken (ExampleWasTaken#0886)
+1. [MCDU] Do not show duplicate names page with 1 option, fix return key - @tracernz (Mike)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
