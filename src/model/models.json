@@ -66,6 +66,14 @@
       {
         "gltf": "./registration/registration.gltf",
         "bin": "./registration/registration.bin"
+      },
+      {
+        "gltf": "./brk/brk.gltf",
+        "bin": "./brk/brk.bin"
+      },
+      {
+        "gltf": "./light/light.gltf",
+        "bin": "./light/light.bin"
       }
     ],
     "modifications": [

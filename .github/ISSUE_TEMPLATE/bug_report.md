@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve the mod
+about: Create a report to help us improve the aircraft
 labels: Bug
 assignees: ''
 
@@ -10,10 +10,11 @@ assignees: ''
 <!-- Issues that do not use the issue template are likely to be ignored and closed. -->
 
 
-**Mod Version**
-<!-- Either a release version or "master" for the latest master branch. -->
-<!-- If you used the A32NX-master.zip, or the Dev version from the installer, paste the contents from the build_info.json here -->
+**Aircraft Version**
+<!-- Please paste the contents from the build_info.json (located inside main aircraft folder) into the field (code block) below -->
+```json
 
+```
 
 **Describe the bug**
 <!-- A clear and concise description of what the bug is. -->

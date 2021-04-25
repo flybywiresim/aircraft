@@ -190,7 +190,7 @@ fn read(&mut self, name: &str) -> f64 {
 ```
 Note that the string used here is the name by which you should refer to the variable in the part of the code that is unaware of the simulator.
 
-## 3. Guarantee consistent state
+### 3. Guarantee consistent state
 
 Achieving a consistent state requires that any dependencies between calculations are clearly visible. For example, to determine if the APU start motor is powered, we first need to determine the state of the electrical system. The state of the electrical system also requires the APU state to be known, thus creating a circular dependency. We make these dependencies clear as follows:
 
@@ -220,21 +220,21 @@ impl Aircraft for A320 {
 
 By passing around information instead of holding "global" references we can guarantee consistent state.
 
-### Module dependencies
+#### Module dependencies
 
 The APU and electrical system are defined in separate modules. To ensure ease of testing we try to reduce the number of dependencies of a module. In the above example, the APU gets passed to `A320ElectricalUpdateArguments` which in fact doesn't expect an actual APU instance, but an instance implementing the `AuxiliaryPowerUnitElectrical` trait. That trait can be found in `systems/shared`. As a result the A320 electrical system can be tested without pulling in the full APU implementation.
 
-## 4. Observable state
+### 4. Observable state
 
 My first thought on this was to introduce some form of publish/subscribe which would expose changes made within the model to the outside as events. However, this would introduce another concept and could also increases the number of responsibilities we give to the model itself. I mentioned in the introduction that "the amount of concepts should be limited". Therefore, we should use the visitor pattern for this purpose as well.
 
 Thus far this has worked out fine.
 
-## 5. Reuse in multiple Airbus aircraft types
+### 5. Reuse in multiple Airbus aircraft types
 
 By adhering to requirement 1 and 2, we can already try to implement parts of the A380 by composing types we created for the A320 in different ways. Certain minor differences, such as the cooling coefficient of an engine generator which might differ per type of engine can be implemented by providing them as input to the `new` (constructor) function.
 
-## 6. Starting state for different phases of flight
+### 6. Starting state for different phases of flight
 
 At the moment the various `.flt` files are used to start in the correct system state. Should these not be enough, the visitor pattern mentioned earlier can be used to apply different starting states to the model:
 
@@ -253,7 +253,7 @@ fn main() {
 }
 ```
 
-## 7. Unit tests
+### 7. Unit tests
 
 **Unit tests are mandatory. Contributions without a complete unit test suite are not approved.**
 
@@ -279,6 +279,6 @@ fn contactor_opens_after_three_minutes_of_being_closed_for_apu_start_in_emergenc
 
 Refer to e.g. `battery_charge_limiter.rs` for a full implementation example.
 
-## 8. No confusion about units
+### 8. No confusion about units
 
 We use the [uom](https://github.com/iliekturtles/uom) crate for handling units.

@@ -11,13 +11,13 @@
 				<Checkpoint ReferenceId="A320_PREP_LANDING_GEAR_LEVER"/>
 				<Checkpoint ReferenceId="A320_PREP_WIPERS"/>
 				<Checkpoint ReferenceId="A320_Battery_Switches_On_2">
-					<CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_BATTERY_SWITCHES" ExpectationTT="TT:ON (Check Annotation)"/>
+					<CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_BATTERY_SWITCHES" ExpectationTT="TT:ON"/>
 				</Checkpoint>
 				<Checkpoint ReferenceId="External_Power_On_If_Avail"/>
 				<Checkpoint ReferenceId="A320_PREP_APU_FIRE_TEST"/>
 				<Block SubjectTT="TT:APU START">
-					<Checkpoint ReferenceId="APU_MASTER_SWITCH_ON"/>
-					<Checkpoint ReferenceId="APU_START_ON"/>
+					<Checkpoint ReferenceId="A320_APU_MASTER_SWITCH_ON"/>
+					<Checkpoint ReferenceId="A320_APU_START_ON"/>
 				</Block>
 				<Checkpoint ReferenceId="A320_PREP_COCKPIT_LIGHTS"/>
 				<Checkpoint ReferenceId="A320_PREP_PARKING_BRAKE"/>
@@ -25,7 +25,7 @@
 				<Checkpoint ReferenceId="A320_PREP_FLAPS"/>
 				<Checkpoint ReferenceId="A320_PREP_SPEED_BRAKE_LEVERS"/>
 				<Checkpoint ReferenceId="A320_PREP_PROBEHEAT"/>
-				<Checkpoint ReferenceId="APU_Bleed_On"/>
+				<Checkpoint ReferenceId="A320_APU_BLEED_ON"/>
 				<Checkpoint ReferenceId="A320_PREP_CHECK_OVRHEAD"/>
 				<Checkpoint ReferenceId="A320_PREP_XBLEED"/>
 				<Checkpoint ReferenceId="A320_PREP_CARGOHEAT"/>
@@ -52,6 +52,7 @@
 					<Checkpoint ReferenceId="A320_CPREP1_ECAM_ELEC"/>
 					<Checkpoint ReferenceId="A320_CPREP1_BATTERY"/>
 					<Checkpoint ReferenceId="A320_CPREP1_FUEL_MODE"/>
+					<Checkpoint ReferenceId="A320_CPREP1_FUEL_PUMPS"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ENGINE_FIRE_TEST"/>
 					<Checkpoint ReferenceId="A320_CPREP1_AUDIO_SWITCHING"/>
 					<Checkpoint ReferenceId="A320_CPREP1_PA_RECEPTION"/>
@@ -175,14 +176,14 @@
 			<!-- After Engine Startup -->
 			<Page SubjectTT="TT:After Engine Startup">
 				<Checkpoint ReferenceId="A320_AfterEngineStartup_ENG_MODE_SEL"/>
-				<Checkpoint ReferenceId="APU_Bleed_Off"/>
+				<Checkpoint ReferenceId="A320_APU_BLEED_OFF"/>
 				<Checkpoint ReferenceId="A320_AfterEngineStartup_GROUND_SPOILERS"/>
 				<Checkpoint ReferenceId="A320_AfterEngineStartup_RUDDER_TRIM"/>
 				<Checkpoint ReferenceId="A320_AfterEngineStartup_FLAP_LEVERS"/>
 				<Checkpoint ReferenceId="A320_AfterEngineStartup_PITCH_TRIM"/>
 				<Checkpoint ReferenceId="A320_AfterEngineStartup_ECAM_STATUS"/>
 				<Checkpoint ReferenceId="A320_AfterEngineStartup_ENG_WING_ANTI_ICE"/>
-				<Checkpoint ReferenceId="APU_MASTER_SWITCH_OFF"/>
+				<Checkpoint ReferenceId="A320_APU_MASTER_SWITCH_OFF"/>
 				<Checkpoint ReferenceId="A320_AfterEngineStartup_ECAM_DOOR_PAGE"/>
 				<Checkpoint ReferenceId="A320_AfterEngineStartup_ANNOUNCE_DISC"/>
 			</Page>
@@ -451,8 +452,8 @@
 				<Checkpoint ReferenceId="A320_AFTERLANDING_ENG_MODE_SEL"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_ATC"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_TCAS_MODE_SEL"/>
-				<Checkpoint ReferenceId="APU_MASTER_SWITCH_ON"/>
-				<Checkpoint ReferenceId="APU_START_ON"/>
+				<Checkpoint ReferenceId="A320_APU_MASTER_SWITCH_ON"/>
+				<Checkpoint ReferenceId="A320_APU_START_ON"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_RADAR"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_WXR_PWS"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_BRAKE_TEMP"/>
@@ -464,7 +465,7 @@
 				<Checkpoint ReferenceId="A320_PARKING_PARKING_BRAKE_ACCU_PRESS"/>
 				<Checkpoint ReferenceId="A320_PARKING_PARKING_BRAKE"/>
 				<Checkpoint ReferenceId="A320_PARKING_ANTI_ICE"/>
-				<Checkpoint ReferenceId="APU_Bleed_On"/>
+				<Checkpoint ReferenceId="A320_APU_BLEED_ON"/>
 				<Checkpoint ReferenceId="A320_PARKING_ENGINE_MASTER"/>
 				<Checkpoint ReferenceId="A320_PARKING_GRND_CONTACT"/>
 				<Checkpoint ReferenceId="A320_PARKING_SLIDE"/>
@@ -483,8 +484,8 @@
 				<Checkpoint ReferenceId="A320_SECURE_OXYGEN_CREW"/>
 				<Checkpoint ReferenceId="A320_SECURE_ADIRS"/>
 				<Checkpoint ReferenceId="A320_SECURE_EXT_LIGHTS"/>
-				<Checkpoint ReferenceId="A320_SECURE_APU_BLEED"/>
-				<Checkpoint ReferenceId="A320_SECURE_APU_MASTER"/>
+				<Checkpoint ReferenceId="A320_APU_BLEED_OFF"/>
+				<Checkpoint ReferenceId="A320_APU_MASTER_OFF"/>
 				<Checkpoint ReferenceId="A320_SECURE_EMERGENCY_EXIT_LIGHTS"/>
 				<Checkpoint ReferenceId="A320_SECURE_NO_SMOKING"/>
 				<Checkpoint ReferenceId="A320_SECURE_EXT_POWER"/>
@@ -529,10 +530,10 @@
 					<CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_ENGINE_GENERATORS" ExpectationTT="TT:GAME.CHECKLIST_ON_FAULT"/>
 				</Checkpoint>
 				<Checkpoint ReferenceId="ENGINE_BLEED_AIR_SWITCHES_ON"/>
-				<Checkpoint ReferenceId="APU_MASTER_SWITCH_ON"/>
-				<Checkpoint ReferenceId="APU_START_ON"/>
+				<Checkpoint ReferenceId="A320_APU_MASTER_SWITCH_ON"/>
+				<Checkpoint ReferenceId="A320_APU_START_ON"/>
 				<Checkpoint ReferenceId="APU_START_AVAIL_LIT"/>
-				<Checkpoint ReferenceId="APU_Bleed_On"/>
+				<Checkpoint ReferenceId="A320_APU_BLEED_ON"/>
 				<Checkpoint ReferenceId="EXTERNAL_POWER_OFF"/>
 				<Checkpoint ReferenceId="FUEL_PUMPS_AIRLINER_2_ENGINES"/>
 				<Checkpoint ReferenceId="Beacon_Light_On"/>
@@ -556,8 +557,8 @@
 			</Page>
 			<!-- After starting engine 1/2 LEGACY -->
 			<Page SubjectTT="TT:After Starting Engine (LEGACY)">
-				<Checkpoint ReferenceId="APU_Bleed_Off"/>
-				<Checkpoint ReferenceId="APU_MASTER_SWITCH_OFF"/>
+				<Checkpoint ReferenceId="A320_APU_BLEED_OFF"/>
+				<Checkpoint ReferenceId="A320_APU_MASTER_SWITCH_OFF"/>
 				<Checkpoint ReferenceId="ENGINE_MODE_SELECTOR_NORMAL"/>
 			</Page>
 		</Step>

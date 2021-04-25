@@ -13,10 +13,12 @@ export const BUTTON_STATE_REDUCER = 'buttonsReducer';
 export const rootReducer = combineReducers({
     [TOD_CALCULATOR_REDUCER]: todCalculatorReducer,
     [BUTTON_STATE_REDUCER]: buttonsReducer,
-    payload: payloadReducer
+    payload: payloadReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>
+
+export const DEADZONE_REDUCER = 'deadZoneReducer';
 
 export default createStore(
     (state: any, action) => {

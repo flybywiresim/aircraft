@@ -1,0 +1,1089 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 2,
+            "min": [
+                0.041666666666666664
+            ],
+            "max": [
+                0.08333333333333333
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 2,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 2,
+            "componentType": 5126,
+            "count": 7,
+            "min": [
+                0.041666666666666664
+            ],
+            "max": [
+                0.2916666666666667
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 3,
+            "componentType": 5126,
+            "count": 7,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 4,
+            "componentType": 5126,
+            "count": 7,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 5,
+            "componentType": 5126,
+            "count": 136,
+            "min": [
+                -0.004450823180377483,
+                -0.004360802937299013,
+                -0.00154731550719589
+            ],
+            "max": [
+                0.004450823646038771,
+                0.004360802937299013,
+                0.00154731550719589
+            ],
+            "type": "VEC3",
+            "name": "x0_BRK_ACCU_PRESS_ARC_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 136,
+            "type": "VEC4",
+            "name": "x0_BRK_ACCU_PRESS_ARC_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 136,
+            "type": "VEC4",
+            "name": "x0_BRK_ACCU_PRESS_ARC_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 136,
+            "type": "VEC2",
+            "name": "x0_BRK_ACCU_PRESS_ARC_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 136,
+            "type": "VEC2",
+            "name": "x0_BRK_ACCU_PRESS_ARC_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 136,
+            "type": "VEC4",
+            "name": "x0_BRK_ACCU_PRESS_ARC_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 6,
+            "componentType": 5123,
+            "count": 372,
+            "type": "SCALAR",
+            "name": "x0_BRK_ACCU_PRESS_ARC_indices#0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 4896,
+            "componentType": 5126,
+            "count": 6,
+            "min": [
+                -0.004816805012524128,
+                -0.004755481146275997,
+                -0.0013865507207810879
+            ],
+            "max": [
+                0.002096234355121851,
+                0.0020235625561326742,
+                0.0005900059477426112
+            ],
+            "type": "VEC3",
+            "name": "x0_BRK_ACCU_PRESS_IND_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 4908,
+            "componentType": 5120,
+            "count": 6,
+            "type": "VEC4",
+            "name": "x0_BRK_ACCU_PRESS_IND_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 4912,
+            "componentType": 5120,
+            "count": 6,
+            "type": "VEC4",
+            "name": "x0_BRK_ACCU_PRESS_IND_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 4916,
+            "componentType": 5122,
+            "count": 6,
+            "type": "VEC2",
+            "name": "x0_BRK_ACCU_PRESS_IND_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 4920,
+            "componentType": 5122,
+            "count": 6,
+            "type": "VEC2",
+            "name": "x0_BRK_ACCU_PRESS_IND_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 4924,
+            "componentType": 5123,
+            "count": 6,
+            "type": "VEC4",
+            "name": "x0_BRK_ACCU_PRESS_IND_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 6,
+            "byteOffset": 744,
+            "componentType": 5123,
+            "count": 12,
+            "type": "SCALAR",
+            "name": "x0_BRK_ACCU_PRESS_IND_indices#0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 5112,
+            "componentType": 5126,
+            "count": 591,
+            "min": [
+                -0.02589268423616886,
+                -0.017116451635956764,
+                -0.005307248327881098
+            ],
+            "max": [
+                0.025817448273301125,
+                0.03311888501048088,
+                0.011521348729729652
+            ],
+            "type": "VEC3",
+            "name": "x0_BRK_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 5124,
+            "componentType": 5120,
+            "count": 591,
+            "type": "VEC4",
+            "name": "x0_BRK_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 5128,
+            "componentType": 5120,
+            "count": 591,
+            "type": "VEC4",
+            "name": "x0_BRK_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 5132,
+            "componentType": 5122,
+            "count": 591,
+            "type": "VEC2",
+            "name": "x0_BRK_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 5136,
+            "componentType": 5122,
+            "count": 591,
+            "type": "VEC2",
+            "name": "x0_BRK_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 5140,
+            "componentType": 5123,
+            "count": 591,
+            "type": "VEC4",
+            "name": "x0_BRK_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 6,
+            "byteOffset": 768,
+            "componentType": 5123,
+            "count": 1623,
+            "type": "SCALAR",
+            "name": "x0_BRK_indices#0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 26388,
+            "componentType": 5126,
+            "count": 207,
+            "min": [
+                -0.018796807155013084,
+                -0.013721294701099396,
+                -0.00464240089058876
+            ],
+            "max": [
+                0.01879781484603882,
+                0.023816751316189766,
+                0.006302391178905964
+            ],
+            "type": "VEC3",
+            "name": "x0_BRK_DECALS_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 26400,
+            "componentType": 5120,
+            "count": 207,
+            "type": "VEC4",
+            "name": "x0_BRK_DECALS_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 26404,
+            "componentType": 5120,
+            "count": 207,
+            "type": "VEC4",
+            "name": "x0_BRK_DECALS_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 26408,
+            "componentType": 5122,
+            "count": 207,
+            "type": "VEC2",
+            "name": "x0_BRK_DECALS_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 26412,
+            "componentType": 5122,
+            "count": 207,
+            "type": "VEC2",
+            "name": "x0_BRK_DECALS_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 26416,
+            "componentType": 5123,
+            "count": 207,
+            "type": "VEC4",
+            "name": "x0_BRK_DECALS_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 6,
+            "byteOffset": 4014,
+            "componentType": 5123,
+            "count": 315,
+            "type": "SCALAR",
+            "name": "x0_BRK_DECALS_indices#0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 33840,
+            "componentType": 5126,
+            "count": 136,
+            "min": [
+                -0.004463679157197475,
+                -0.004373147152364254,
+                -0.001550902146846056
+            ],
+            "max": [
+                0.004463679157197475,
+                0.004373148083686829,
+                0.0015509023796766996
+            ],
+            "type": "VEC3",
+            "name": "x0_BRK_PRESS_ARC_L_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 33852,
+            "componentType": 5120,
+            "count": 136,
+            "type": "VEC4",
+            "name": "x0_BRK_PRESS_ARC_L_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 33856,
+            "componentType": 5120,
+            "count": 136,
+            "type": "VEC4",
+            "name": "x0_BRK_PRESS_ARC_L_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 33860,
+            "componentType": 5122,
+            "count": 136,
+            "type": "VEC2",
+            "name": "x0_BRK_PRESS_ARC_L_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 33864,
+            "componentType": 5122,
+            "count": 136,
+            "type": "VEC2",
+            "name": "x0_BRK_PRESS_ARC_L_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 33868,
+            "componentType": 5123,
+            "count": 136,
+            "type": "VEC4",
+            "name": "x0_BRK_PRESS_ARC_L_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 6,
+            "byteOffset": 4644,
+            "componentType": 5123,
+            "count": 372,
+            "type": "SCALAR",
+            "name": "x0_BRK_PRESS_ARC_L_indices#0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 38736,
+            "componentType": 5126,
+            "count": 6,
+            "min": [
+                -0.0010062684305012226,
+                -0.0016019941540434957,
+                -0.0004670844355132431
+            ],
+            "max": [
+                0.0014320322079584002,
+                0.006487898528575897,
+                0.001891645253635943
+            ],
+            "type": "VEC3",
+            "name": "x0_BRK_PRESS_IND_L_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 38748,
+            "componentType": 5120,
+            "count": 6,
+            "type": "VEC4",
+            "name": "x0_BRK_PRESS_IND_L_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 38752,
+            "componentType": 5120,
+            "count": 6,
+            "type": "VEC4",
+            "name": "x0_BRK_PRESS_IND_L_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 38756,
+            "componentType": 5122,
+            "count": 6,
+            "type": "VEC2",
+            "name": "x0_BRK_PRESS_IND_L_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 38760,
+            "componentType": 5122,
+            "count": 6,
+            "type": "VEC2",
+            "name": "x0_BRK_PRESS_IND_L_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 38764,
+            "componentType": 5123,
+            "count": 6,
+            "type": "VEC4",
+            "name": "x0_BRK_PRESS_IND_L_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 6,
+            "byteOffset": 5388,
+            "componentType": 5123,
+            "count": 12,
+            "type": "SCALAR",
+            "name": "x0_BRK_PRESS_IND_L_indices#0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 38952,
+            "componentType": 5126,
+            "count": 136,
+            "min": [
+                -0.004463679157197475,
+                -0.004373148549348116,
+                -0.001550896791741252
+            ],
+            "max": [
+                0.004463679157197475,
+                0.004373149015009403,
+                0.0015508970245718956
+            ],
+            "type": "VEC3",
+            "name": "x0_BRK_PRESS_ARC_R_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 38964,
+            "componentType": 5120,
+            "count": 136,
+            "type": "VEC4",
+            "name": "x0_BRK_PRESS_ARC_R_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 38968,
+            "componentType": 5120,
+            "count": 136,
+            "type": "VEC4",
+            "name": "x0_BRK_PRESS_ARC_R_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 38972,
+            "componentType": 5122,
+            "count": 136,
+            "type": "VEC2",
+            "name": "x0_BRK_PRESS_ARC_R_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 38976,
+            "componentType": 5122,
+            "count": 136,
+            "type": "VEC2",
+            "name": "x0_BRK_PRESS_ARC_R_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 38980,
+            "componentType": 5123,
+            "count": 136,
+            "type": "VEC4",
+            "name": "x0_BRK_PRESS_ARC_R_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 6,
+            "byteOffset": 5412,
+            "componentType": 5123,
+            "count": 372,
+            "type": "SCALAR",
+            "name": "x0_BRK_PRESS_ARC_R_indices#0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 43848,
+            "componentType": 5126,
+            "count": 6,
+            "min": [
+                -0.0010062680812552571,
+                -0.0016019941540434957,
+                -0.0004670826019719243
+            ],
+            "max": [
+                0.0014320315094664693,
+                0.006487899925559759,
+                0.0018916367553174496
+            ],
+            "type": "VEC3",
+            "name": "x0_BRK_PRESS_IND_R_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 43860,
+            "componentType": 5120,
+            "count": 6,
+            "type": "VEC4",
+            "name": "x0_BRK_PRESS_IND_R_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 43864,
+            "componentType": 5120,
+            "count": 6,
+            "type": "VEC4",
+            "name": "x0_BRK_PRESS_IND_R_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 43868,
+            "componentType": 5122,
+            "count": 6,
+            "type": "VEC2",
+            "name": "x0_BRK_PRESS_IND_R_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 43872,
+            "componentType": 5122,
+            "count": 6,
+            "type": "VEC2",
+            "name": "x0_BRK_PRESS_IND_R_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 43876,
+            "componentType": 5123,
+            "count": 6,
+            "type": "VEC4",
+            "name": "x0_BRK_PRESS_IND_R_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 6,
+            "byteOffset": 6156,
+            "componentType": 5123,
+            "count": 12,
+            "type": "SCALAR",
+            "name": "x0_BRK_PRESS_IND_R_indices#0"
+        }
+    ],
+    "animations": [
+        {
+            "name": "Accu_Press",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 1,
+                        "path": "rotation"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 0,
+                    "output": 1,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        },
+        {
+            "name": "Press_Arc_L",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 5,
+                        "path": "rotation"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 2,
+                    "output": 3,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        },
+        {
+            "name": "Press_Arc_R",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 7,
+                        "path": "rotation"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 2,
+                    "output": 4,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        }
+    ],
+    "asset": {
+        "generator": "Extended Khronos glTF Blender I/O v1.0.0",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.025817448273301125,
+                    0.03311888501048088,
+                    0.011521348729729652
+                ],
+                "BoundingBoxMin": [
+                    -0.02589268423616886,
+                    -0.017116451635956764,
+                    -0.005307248327881098
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 2
+            },
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 8
+        },
+        {
+            "buffer": 0,
+            "byteLength": 32,
+            "byteOffset": 8
+        },
+        {
+            "buffer": 0,
+            "byteLength": 28,
+            "byteOffset": 40
+        },
+        {
+            "buffer": 0,
+            "byteLength": 112,
+            "byteOffset": 68
+        },
+        {
+            "buffer": 0,
+            "byteLength": 112,
+            "byteOffset": 180
+        },
+        {
+            "buffer": 0,
+            "byteLength": 44064,
+            "byteStride": 36,
+            "byteOffset": 292,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 6180,
+            "byteOffset": 44356,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_normal_map_convention",
+        "ASOBO_material_shadow_options",
+        "MSFT_texture_dds",
+        "ASOBO_asset_optimized"
+    ],
+    "extensionsRequired": [
+        "MSFT_texture_dds"
+    ],
+    "materials": [
+        {
+            "name": "Decals2_FBW.001",
+            "alphaMode": "BLEND",
+            "emissiveTexture": {
+                "index": 0
+            },
+            "pbrMetallicRoughness": {
+                "metallicFactor": 0,
+                "roughnessFactor": 0.5,
+                "baseColorTexture": {
+                    "index": 1
+                }
+            },
+            "extensions": {
+                "ASOBO_material_shadow_options": {
+                    "noCastShadow": true
+                },
+                "ASOBO_material_blend_gbuffer": {}
+            }
+        },
+        {
+            "name": "BRKBase",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.02,
+                    0.02,
+                    0.02,
+                    1
+                ],
+                "metallicFactor": 0,
+                "roughnessFactor": 0.7
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 17,
+                        "NORMAL": 14,
+                        "POSITION": 12,
+                        "TANGENT": 13,
+                        "TEXCOORD_0": 15,
+                        "TEXCOORD_1": 16
+                    },
+                    "indices": 18,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 4,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_BRK_ACCU_PRESS_IND"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 10,
+                        "NORMAL": 7,
+                        "POSITION": 5,
+                        "TANGENT": 6,
+                        "TEXCOORD_0": 8,
+                        "TEXCOORD_1": 9
+                    },
+                    "indices": 11,
+                    "material": 1,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 124,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_BRK_ACCU_PRESS_ARC"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 24,
+                        "NORMAL": 21,
+                        "POSITION": 19,
+                        "TANGENT": 20,
+                        "TEXCOORD_0": 22,
+                        "TEXCOORD_1": 23
+                    },
+                    "indices": 25,
+                    "material": 1,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 541,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_BRK"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 31,
+                        "NORMAL": 28,
+                        "POSITION": 26,
+                        "TANGENT": 27,
+                        "TEXCOORD_0": 29,
+                        "TEXCOORD_1": 30
+                    },
+                    "indices": 32,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 105,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_BRK_DECALS"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 45,
+                        "NORMAL": 42,
+                        "POSITION": 40,
+                        "TANGENT": 41,
+                        "TEXCOORD_0": 43,
+                        "TEXCOORD_1": 44
+                    },
+                    "indices": 46,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 4,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_BRK_PRESS_IND_L"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 38,
+                        "NORMAL": 35,
+                        "POSITION": 33,
+                        "TANGENT": 34,
+                        "TEXCOORD_0": 36,
+                        "TEXCOORD_1": 37
+                    },
+                    "indices": 39,
+                    "material": 1,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 124,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_BRK_PRESS_ARC_L"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 59,
+                        "NORMAL": 56,
+                        "POSITION": 54,
+                        "TANGENT": 55,
+                        "TEXCOORD_0": 57,
+                        "TEXCOORD_1": 58
+                    },
+                    "indices": 60,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 4,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_BRK_PRESS_IND_R"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 52,
+                        "NORMAL": 49,
+                        "POSITION": 47,
+                        "TANGENT": 48,
+                        "TEXCOORD_0": 50,
+                        "TEXCOORD_1": 51
+                    },
+                    "indices": 53,
+                    "material": 1,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 124,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_BRK_PRESS_ARC_R"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                -0.004008293151855469,
+                -0.003654241561889648,
+                -0.001522064208984375
+            ],
+            "mesh": 0,
+            "name": "BRK_ACCU_PRESS_IND"
+        },
+        {
+            "translation": [
+                -0.24084588885307312,
+                1.4934422969818115,
+                11.838196754455566
+            ],
+            "rotation": [
+                0,
+                -0.19792647659778595,
+                0.6788409948348999,
+                0.7071068286895752
+            ],
+            "mesh": 1,
+            "name": "BRK_ACCU_PRESS_ARC",
+            "children": [
+                0
+            ]
+        },
+        {
+            "translation": [
+                -0.2408090382814407,
+                1.469853162765503,
+                11.831539154052734
+            ],
+            "mesh": 2,
+            "name": "BRK"
+        },
+        {
+            "translation": [
+                -0.2408090382814407,
+                1.469853162765503,
+                11.831539154052734
+            ],
+            "mesh": 3,
+            "name": "BRK_DECALS"
+        },
+        {
+            "translation": [
+                -0.0001430511474609375,
+                0.005346536636352539,
+                0.0011014938354492188
+            ],
+            "mesh": 4,
+            "name": "BRK_PRESS_IND_L"
+        },
+        {
+            "translation": [
+                -0.22535191476345065,
+                1.4673597812652588,
+                11.830592155456545
+            ],
+            "rotation": [
+                0,
+                -0.19792647659778595,
+                0.6788409948348999,
+                0.7071068286895752
+            ],
+            "mesh": 5,
+            "name": "BRK_PRESS_ARC_L",
+            "children": [
+                4
+            ]
+        },
+        {
+            "translation": [
+                -0.0001437664031982422,
+                0.005345344543457031,
+                0.001102447509765625
+            ],
+            "mesh": 6,
+            "name": "BRK_PRESS_IND_R"
+        },
+        {
+            "translation": [
+                -0.2562921941280365,
+                1.4673597812652588,
+                11.830592155456545
+            ],
+            "rotation": [
+                0,
+                0.19792647659778595,
+                -0.6788409948348999,
+                0.7071067690849304
+            ],
+            "mesh": 7,
+            "name": "BRK_PRESS_ARC_R",
+            "children": [
+                6
+            ]
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [
+                1,
+                2,
+                3,
+                5,
+                7
+            ],
+            "name": "Scene"
+        }
+    ],
+    "textures": [
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 0
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 1
+                }
+            }
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 50536,
+            "uri": "brk.bin"
+        }
+    ],
+    "images": [
+        {
+            "uri": "DECALS2_FBW_EMISS.PNG.DDS",
+            "name": "DECALS2_FBW_EMISS",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "DECALS2_FBW.PNG.DDS",
+            "name": "DECALS2_FBW",
+            "extras": "ASOBO_image_converted_meta"
+        }
+    ]
+}

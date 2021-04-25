@@ -1,5 +1,4 @@
 class A320_Neo_EICAS extends Airliners.BaseEICAS {
-
     get templateID() {
         return "A320_Neo_EICAS";
     }
@@ -70,7 +69,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("COND", "BottomScreen", "a32nx-cond-page-element"); // MODIFIED
         this.createLowerScreenPage("DOOR", "BottomScreen", "a32nx-door-page-element"); // MODIFIED
         this.createLowerScreenPage("WHEEL", "BottomScreen", "a320-neo-lower-ecam-wheel"); // MODIFIED
-        this.createLowerScreenPage("FTCL", "BottomScreen", "a320-neo-lower-ecam-ftcl"); // MODIFIED
+        this.createLowerScreenPage("FTCL", "BottomScreen", "a32nx-fctl-page-element"); // MODIFIED
         this.createLowerScreenPage("STS", "BottomScreen", "a320-neo-lower-ecam-status"); // MODIFIED
         this.createLowerScreenPage("CRZ", "BottomScreen", "a320-neo-lower-ecam-crz"); // MODIFIED
     }
@@ -100,14 +99,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.CrzCondTimer = 60;
         this.PrevFailPage = -1;
 
-        this.topSelfTestDiv = this.querySelector("#TopSelfTest");
-        this.selfTestTimer = -1;
-        this.selfTestTimerStarted = false;
-        this.selfTestLastKnobValue = 1;
-
         this.doorVideoWrapper = this.querySelector("#door-video-wrapper");
-
-        this.bottomSelfTestDiv = this.querySelector("#BottomSelfTest");
 
         this.upperEngTestDiv = this.querySelector("#Eicas1EngTest");
         this.lowerEngTestDiv = this.querySelector("#Eicas2EngTest");
@@ -117,9 +109,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.doorVideoPressed = false;
 
         // Using ternary in case the LVar is undefined
-        this.ACPowerLastState = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") ? 0 : 1;
+        this.poweredDuringPreviousUpdate = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") ? 0 : 1;
 
-        this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
         this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
 
@@ -137,87 +128,41 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         this.ecamAllButtonPrevState = false;
         this.updateThrottler = new UpdateThrottler(500);
+
+        this.displayUnit = new DisplayUnit(
+            this.querySelector("#Electricity"),
+            () => {
+                return SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isTopScreen ? "AC_ESS" : "AC_2"}_BUS_IS_POWERED`, "Bool");
+            },
+            () => parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15")),
+            this.isTopScreen ? 92 : 93,
+            this.querySelector(`#${this.isTopScreen ? "Top" : "Bottom"}SelfTest`)
+        );
     }
 
     onUpdate() {
-        let _deltaTime = this.getDeltaTime();
-        super.onUpdate(_deltaTime);
-
-        const selfTestCurrentKnobValue = SimVar.GetSimVarValue(this.isTopScreen ? "LIGHT POTENTIOMETER:92" : "LIGHT POTENTIOMETER:93", "number");
-        const knobChanged = (selfTestCurrentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+        let deltaTime = this.getDeltaTime();
+        super.onUpdate(deltaTime);
 
         const ecamAllButtonBeingPushed = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
 
-        if (!knobChanged && !ecamAllButtonBeingPushed) {
-            _deltaTime = this.updateThrottler.canUpdate(_deltaTime);
-        }
-        if (_deltaTime === -1) {
+        deltaTime = this.updateThrottler.canUpdate(deltaTime, this.displayUnit.isJustNowTurnedOn() || ecamAllButtonBeingPushed);
+        if (deltaTime === -1) {
             return;
         }
+
+        this.displayUnit.update(deltaTime);
 
         this.updateDoorVideoState();
 
         this.updateAnnunciations();
-        this.updateScreenState();
 
         // TODO Move anything dependent on ac power change to A32NX_Core
         const engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
-        const externalPowerOn = SimVar.GetSimVarValue("EXTERNAL POWER AVAILABLE:1", "Bool") === 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 1;
-        const apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
-        const isACPowerAvailable = engineOn || apuOn || externalPowerOn;
-        let DCBus = false;
-
-        const ACPowerStateChange = (isACPowerAvailable != this.ACPowerLastState);
-        SimVar.SetSimVarValue("L:ACPowerStateChange", "Bool", ACPowerStateChange);
-
-        if (SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE", "Volts") >= 20) {
-            DCBus = true;
-        }
-        const isDCPowerAvailable = isACPowerAvailable || DCBus;
-        if (isDCPowerAvailable) {
-            SimVar.SetSimVarValue("L:DCPowerAvailable", "bool", 1); //True if any AC|DC bus is online
-        } else {
-            SimVar.SetSimVarValue("L:DCPowerAvailable", "bool", 0);
-        }
-        if (isACPowerAvailable) {
-            SimVar.SetSimVarValue("L:ACPowerAvailable", "bool", 1); //True if any AC bus is online
-        } else {
-            SimVar.SetSimVarValue("L:ACPowerAvailable", "bool", 0);
-        }
 
         // Engineering self-tests
         updateDisplayDMC("EICAS1", this.upperEngTestDiv, this.upperEngMaintDiv);
         updateDisplayDMC("EICAS2", this.lowerEngTestDiv, this.lowerEngMaintDiv);
-
-        /**
-         * Self test on ECAM screen
-         **/
-
-        if ((knobChanged || ACPowerStateChange) && isACPowerAvailable && !this.selfTestTimerStarted) {
-            if (this.isTopScreen) {
-                this.topSelfTestDiv.style.visibility = "visible";
-            } else {
-                this.bottomSelfTestDiv.style.visibility = "visible";
-            }
-            this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
-            this.selfTestTimerStarted = true;
-        }
-
-        if (this.selfTestTimer >= 0) {
-            this.selfTestTimer -= _deltaTime / 1000;
-            if (this.selfTestTimer <= 0) {
-                if (this.isTopScreen) {
-                    this.topSelfTestDiv.style.visibility = "hidden";
-                } else {
-                    this.bottomSelfTestDiv.style.visibility = "hidden";
-                }
-                this.selfTestTimerStarted = false;
-            }
-        }
-
-        this.selfTestLastKnobValue = selfTestCurrentKnobValue;
-
-        this.ACPowerLastState = isACPowerAvailable;
 
         // modification start here
         const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
@@ -228,27 +173,24 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const altitude = Simplane.getAltitude();
         const isGearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95;
         const currFlightPhase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number");
-        const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
-        const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
-        const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
-        const ToPowerSet = (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
+        const ToPowerSet = Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
         const apuAvailable = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool");
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
-        const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number") != 0 || SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "percent") != 0;
+        const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number") != 0 || SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "percent") != 0;
 
         const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) && this.CrzCondTimer <= 0) || (currFlightPhase == FmgcFlightPhases.CLIMB && !spoilerOrFlapsDeployed && !ToPowerSet);
 
         if ((currFlightPhase != FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) || (!spoilerOrFlapsDeployed && !ToPowerSet) && this.CrzCondTimer >= 0) {
             this.CrzCondTimer = 60;
         } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) && this.CrzCondTimer >= 0) {
-            this.CrzCondTimer -= _deltaTime / 1000;
+            this.CrzCondTimer -= deltaTime / 1000;
         }
 
         if (EngModeSel == 2 || EngModeSel == 0 || this.MainEngineStarterOffTimer >= 0) {
             if (EngModeSel == 0 || EngModeSel == 2) {
                 this.MainEngineStarterOffTimer = 10;
             } else if (this.MainEngineStarterOffTimer >= 0) {
-                this.MainEngineStarterOffTimer -= _deltaTime / 1000;
+                this.MainEngineStarterOffTimer -= deltaTime / 1000;
             }
             this.pageNameWhenUnselected = "ENG";
         } else if (currentAPUMasterState && (!apuAvailable || this.ApuAboveThresholdTimer >= 0)) {
@@ -256,18 +198,18 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             if (this.ApuAboveThresholdTimer <= 0 && !apuAvailable) {
                 this.ApuAboveThresholdTimer = 10;
             } else if (apuAvailable) {
-                this.ApuAboveThresholdTimer -= _deltaTime / 1000;
+                this.ApuAboveThresholdTimer -= deltaTime / 1000;
             }
 
             this.pageNameWhenUnselected = "APU";
-        } else if (isACPowerAvailable && !engineOn && Simplane.getIsGrounded()) {
+        } else if (!engineOn && Simplane.getIsGrounded()) {
             // reset minIndex and cruise timer after shutdown
             this.minPageIndexWhenUnselected = 0;
             this.CrzCondTimer = 60;
             this.pageNameWhenUnselected = "DOOR";
         } else if (engineOn && !ToPowerSet && Simplane.getIsGrounded() && this.minPageIndexWhenUnselected <= 1) {
-            const sidestickPosX = SimVar.GetSimVarValue("YOKE X POSITION", "Position");
-            const sidestickPosY = SimVar.GetSimVarValue("YOKE Y POSITION", "Position");
+            const sidestickPosX = SimVar.GetSimVarValue("L:A32NX_SIDESTICK_POSITION_X", "Number");
+            const sidestickPosY = SimVar.GetSimVarValue("L:A32NX_SIDESTICK_POSITION_Y", "Number");
             const rudderPos = SimVar.GetSimVarValue("RUDDER PEDAL POSITION", "Position");
             const controlsMoved = Math.abs(sidestickPosX) > 0.05 || Math.abs(sidestickPosY) > 0.05 || Math.abs(rudderPos) > 0.2;
 
@@ -278,7 +220,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 this.ecamFCTLTimer = 20;
             } else if (this.ecamFCTLTimer >= 0) {
                 this.pageNameWhenUnselected = "FTCL";
-                this.ecamFCTLTimer -= _deltaTime / 1000;
+                this.ecamFCTLTimer -= deltaTime / 1000;
             }
         } else if ((ToPowerSet || !Simplane.getIsGrounded()) && !crzCond && this.minPageIndexWhenUnselected <= 2) {
             this.pageNameWhenUnselected = "ENG";
@@ -335,14 +277,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.doorVideoWrapper.style.visibility = this.doorVideoPressed ? "visible" : "hidden";
     }
 
-    updateScreenState() {
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable", "bool")) {
-            this.electricity.style.display = "block";
-        } else {
-            this.electricity.style.display = "none";
-        }
-    }
-
     updateAnnunciations() {
         const infoPanelManager = this.upperTopScreen.getInfoPanelManager();
         if (infoPanelManager) {
@@ -351,8 +285,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             const autoBrkValue = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Number");
             const starterOne = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool");
             const starterTwo = SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
-            const splrsArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "Bool");
-            const flapsPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+            const splrsArmed = SimVar.GetSimVarValue("L:A32NX_SPOILERS_ARMED", "Bool");
+            const flapsPosition = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number");
             // ----------- MODIFIED END --------------------//
 
             infoPanelManager.clearScreen(Airliners.EICAS_INFO_PANEL_ID.PRIMARY);
