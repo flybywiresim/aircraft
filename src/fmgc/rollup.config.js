@@ -33,7 +33,7 @@ const copy = require('rollup-plugin-copy');
 const extensions = ['.js', '.ts'];
 
 module.exports = {
-    input: `${__dirname}/src/wtsdk.ts`,
+    input: `${__dirname}/src/index.ts`,
     plugins: [
         copy({
             targets: [
@@ -59,6 +59,6 @@ module.exports = {
         file: `${__dirname}/../../flybywire-aircraft-a320-neo/html_ui/JS/fmgc/bundle.js`,
         globals: { WorkingTitle: 'WorkingTitle' },
         format: 'umd',
-        name: 'fpm',
+        name: 'Fmgc',
     },
 };
