@@ -821,6 +821,7 @@ export class FlightPlanManager {
 
   /**
    * Gets all non-approach waypoints from a flight plan.
+   *
    * @param flightPlanIndex The index of the flight plan to get the waypoints from. If omitted, will get from the current flight plan.
    */
   public getWaypoints(flightPlanIndex = NaN): WayPoint[] {
@@ -829,6 +830,29 @@ export class FlightPlanManager {
       }
 
       return this._flightPlans[flightPlanIndex].nonApproachWaypoints;
+  }
+
+  /**
+   * Gets all the waypoints that are currently visible and part of the routing.
+   *
+   * This is used to obtain the list of waypoints to display after a DIRECT TO.
+   *
+   * @param flightPlanIndex The index of the flight plan to get the waypoints from. If omitted, will get from the current flight plan.
+   */
+  public getAllVisibleWaypoints(flightPlanIndex = NaN): WayPoint[] {
+      if (isNaN(flightPlanIndex)) {
+          flightPlanIndex = this._currentFlightPlanIndex;
+      }
+
+      const allWaypoints = this._flightPlans[flightPlanIndex].waypoints;
+
+      if (this._flightPlans[flightPlanIndex].directTo.isActive) {
+          const directToWaypointIndex = this._flightPlans[flightPlanIndex].directTo.planWaypointIndex;
+
+          return allWaypoints.slice(directToWaypointIndex, allWaypoints.length - 1);
+      }
+
+      return allWaypoints;
   }
 
   /**
@@ -1368,6 +1392,7 @@ export class FlightPlanManager {
 
   /**
    * Activates direct-to an ICAO designated fix.
+   *
    * @param icao The ICAO designation for the fix to fly direct-to.
    * @param callback A callback to call when the operation completes.
    */
