@@ -96,8 +96,11 @@ export class GuidanceManager {
 
     /**
      * The full leg path geometry, used for the ND and predictions on the F-PLN page.
+     *
+     * @param onlyFirstContinuousSegment if set to `true`, only the first segment before any discontinuities will be returned. If set to `false`,
+     *                                   all segments will be return, regardless of discontinuities
      */
-    getMultipleLegGeometry(): Geometry | null {
+    getMultipleLegGeometry(onlyFirstContinuousSegment = true): Geometry | null {
         const activeLeg = this.getActiveLeg();
         const nextLeg = this.getNextLeg();
 
@@ -147,7 +150,11 @@ export class GuidanceManager {
             }
 
             if (from.endsInDiscontinuity) {
-                break;
+                if (onlyFirstContinuousSegment) {
+                    break;
+                } else {
+                    continue;
+                }
             }
 
             legs.set(legs.size + 1, new TFLeg(from, to));
