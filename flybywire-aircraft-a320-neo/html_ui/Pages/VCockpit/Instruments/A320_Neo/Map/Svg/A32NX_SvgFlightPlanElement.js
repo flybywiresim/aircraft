@@ -80,7 +80,7 @@ class SvgFlightPlanElement extends SvgMapElement {
         this._highlightedLegIndex = SimVar.GetSimVarValue("L:MAP_FLIGHTPLAN_HIGHLIT_WAYPOINT", "number");
         this.points = [];
 
-        const geometry = this.source.getMultipleLegGeometry();
+        const geometry = this.source.getMultipleLegGeometry(false);
 
         const paths = geometry ? [this.makePathFromGeometry(geometry, map)] : [];
         paths.forEach((path, index) => this.makeOrUpdatePathElement(path, index, map));
@@ -168,7 +168,10 @@ class SvgFlightPlanElement extends SvgMapElement {
                 /*const { x: cX, y: cY } = map.coordinatesToXY(transition.center);
                 const pcx = fastToFixed(cX, 1);
                 const pcy = fastToFixed(cY, 1);*/
-            } else if (leg) {
+            }
+
+            // If there was no transition but the leg exists, we M or L to the from waypoint
+            if (!transition && leg) {
                 // draw line to start of next leg
                 const { x: fromX, y: fromY } = map.coordinatesToXY(leg.from.infos.coordinates);
                 x = fastToFixed(fromX, 1);
@@ -183,6 +186,16 @@ class SvgFlightPlanElement extends SvgMapElement {
                 }
 
                 path.push(`${lineCommand} ${x} ${y}`);
+            }
+
+            // If the to waypoint ends in a discontinuity, we will not L to it for the next leg - do that now
+            if (leg && leg.to.endsInDiscontinuity) {
+                // draw line to end of leg
+                const { x: fromX, y: fromY } = map.coordinatesToXY(leg.to.infos.coordinates);
+                x = fastToFixed(fromX, 1);
+                y = fastToFixed(fromY, 1);
+
+                path.push(`L ${x} ${y}`);
             }
 
             finalLeg = leg;
