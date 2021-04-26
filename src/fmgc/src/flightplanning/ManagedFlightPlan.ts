@@ -548,6 +548,7 @@ export class ManagedFlightPlan {
 
   /**
    * Goes direct to the specified waypoint index in the flight plan.
+   *
    * @param index The waypoint index to go direct to.
    */
   public addDirectTo(index: number): void {
@@ -559,6 +560,12 @@ export class ManagedFlightPlan {
       const _deleteCount = index - this.activeWaypointIndex;
       this.addWaypoint(turningPoint, index);
       this.activeWaypointIndex = index;
+
+      this.directTo.isActive = true;
+      this.directTo.planWaypointIndex = index;
+      // This causes cyclical data. don't do for now. maybe even not that useful
+      // this.directTo.waypoint = this.getWaypoint(index);
+      this.directTo.interceptPoints = [];
 
       // TODO remove waypoints
   }
