@@ -4,5 +4,5 @@ members = [
     "src/systems/a320_systems",
     "src/systems/a320_systems_wasm",
     "src/systems/systems",
-  #  "src/systems/a320_hydraulic_simulation_graphs"
+    "src/systems/a320_hydraulic_simulation_graphs",
 ]

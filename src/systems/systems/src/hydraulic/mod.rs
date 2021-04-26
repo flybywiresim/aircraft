@@ -84,7 +84,6 @@ pub trait PowerTransferUnitController {
     fn should_enable(&self) -> bool;
 }
 
-//TODO enhance simulation with RPM and variable displacement on one side?
 pub struct PowerTransferUnit {
     is_enabled: bool,
     is_active_right: bool,
@@ -419,6 +418,22 @@ impl HydraulicLoop {
         }
     }
 
+    pub fn get_current_flow(&self) -> VolumeRate {
+        self.current_flow
+    }
+
+    pub fn get_current_delta_vol(&self) -> Volume {
+        self.current_delta_vol
+    }
+
+    pub fn get_accumulator_gas_pressure(&self) -> Pressure {
+        self.accumulator.gas_pressure
+    }
+
+    pub fn get_accumulator_fluid_volume(&self) -> Volume {
+        self.accumulator.fluid_volume
+    }
+
     pub fn get_pressure(&self) -> Pressure {
         self.loop_pressure
     }
@@ -429,6 +444,14 @@ impl HydraulicLoop {
 
     pub fn get_loop_fluid_volume(&self) -> Volume {
         self.loop_volume
+    }
+
+    pub fn get_max_volume(&self) -> Volume {
+        self.max_loop_volume
+    }
+
+    pub fn get_accumulator_gas_volume(&self) -> Volume {
+        self.accumulator.gas_volume
     }
 
     pub fn get_usable_reservoir_fluid(&self, amount: Volume) -> Volume {

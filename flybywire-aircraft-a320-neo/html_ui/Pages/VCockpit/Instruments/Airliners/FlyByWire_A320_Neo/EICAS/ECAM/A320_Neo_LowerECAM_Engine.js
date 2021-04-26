@@ -149,9 +149,8 @@ var A320_Neo_LowerECAM_Engine;
             this.setN1VibrationValue(0, true);
             this.setN2VibrationValue(0, true);
         }
-
         update(deltaTime) {
-            this.setFuelUsedValue(SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + this.engineIndex, "kg") * this.unitConversion);
+            this.setFuelUsedValue(SimVar.GetSimVarValue("L:A32NX_FUEL_USED:" + this.engineIndex, "number") * this.unitConversion);
             this.setOilTemperatureValue(SimVar.GetSimVarValue("GENERAL ENG OIL TEMPERATURE:" + this.engineIndex, "celsius"));
 
             let bleedPressure = 0;
