@@ -356,9 +356,9 @@ class MapInstrument extends ISvgMapRootElement {
         if (this._flightPlanManager) {
             this.instrument.addEventListener("FlightStart", this.onFlightStart.bind(this));
         } else {
-            this._flightPlanManager = new fpm.FlightPlanManager(this.instrument);
+            this._flightPlanManager = new Fmgc.FlightPlanManager(this.instrument);
         }
-        this._guidanceManager = new fpm.GuidanceManager(this._flightPlanManager);
+        this._guidanceManager = new Fmgc.GuidanceManager(this._flightPlanManager);
         let bingMapId = this.bingId;
         if (this.instrument.urlConfig.index) {
             bingMapId += "_GPS" + this.instrument.urlConfig.index;
