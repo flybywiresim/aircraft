@@ -752,40 +752,57 @@ class MapInstrument extends ISvgMapRootElement {
                     }
                 }
                 if (this.flightPlanManager && this.bIsFlightPlanVisible) {
-                    const l = this.flightPlanManager.getWaypointsCount();
-                    if (l > 1) {
-                        if (SimVar.GetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number") === 1) {
-                            this.navMap.mapElements.push(this.tmpFlightPlanElement);
-                            const lTmpFlightPlan = this.flightPlanManager.getWaypointsCount(1);
-                            if (lTmpFlightPlan > 1) {
-                                for (let i = 0; i < lTmpFlightPlan; i++) {
-                                    const waypoint = this.flightPlanManager.getWaypoint(i, 1);
-                                    if (waypoint && waypoint.ident !== "" && waypoint.ident !== "USER") {
-                                        if (waypoint.getSvgElement(this.navMap.index)) {
-                                            if (!this.navMap.mapElements.find(w => {
-                                                return (w instanceof SvgWaypointElement) && w.source.ident === waypoint.ident;
-                                            })) {
-                                                this.navMap.mapElements.push(waypoint.getSvgElement(this.navMap.index));
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    const waypoints = this.flightPlanManager.getAllVisibleWaypoints();
+
+                    if (waypoints.length > 1) {
                         this.navMap.mapElements.push(this.flightPlanElement);
-                        for (let i = 0; i < l; i++) {
-                            const waypoint = this.flightPlanManager.getWaypoint(i);
-                            if (waypoint && waypoint.ident !== "" && waypoint.ident !== "USER") {
-                                if (waypoint.getSvgElement(this.navMap.index)) {
-                                    if (!this.navMap.mapElements.find(w => {
-                                        return (w instanceof SvgWaypointElement) && w.source.ident === waypoint.ident;
-                                    })) {
-                                        this.navMap.mapElements.push(waypoint.getSvgElement(this.navMap.index));
-                                    }
+                    }
+
+                    for (const waypoint of waypoints) {
+                        if (waypoint && waypoint.ident !== "" && waypoint.ident !== "USER") {
+                            if (waypoint.getSvgElement(this.navMap.index)) {
+                                if (!this.navMap.mapElements.find(w => {
+                                    return (w instanceof SvgWaypointElement) && w.source.ident === waypoint.ident;
+                                })) {
+                                    this.navMap.mapElements.push(waypoint.getSvgElement(this.navMap.index));
                                 }
                             }
                         }
                     }
+                    // const l = this.flightPlanManager.getWaypointsCount();
+                    // if (l > 1) {
+                    //     if (SimVar.GetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number") === 1) {
+                    //         this.navMap.mapElements.push(this.tmpFlightPlanElement);
+                    //         const lTmpFlightPlan = this.flightPlanManager.getWaypointsCount(1);
+                    //         if (lTmpFlightPlan > 1) {
+                    //             for (let i = 0; i < lTmpFlightPlan; i++) {
+                    //                 const waypoint = this.flightPlanManager.getWaypoint(i, 1);
+                    //                 if (waypoint && waypoint.ident !== "" && waypoint.ident !== "USER") {
+                    //                     if (waypoint.getSvgElement(this.navMap.index)) {
+                    //                         if (!this.navMap.mapElements.find(w => {
+                    //                             return (w instanceof SvgWaypointElement) && w.source.ident === waypoint.ident;
+                    //                         })) {
+                    //                             this.navMap.mapElements.push(waypoint.getSvgElement(this.navMap.index));
+                    //                         }
+                    //                     }
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    //     this.navMap.mapElements.push(this.flightPlanElement);
+                    //     for (let i = 0; i < l; i++) {
+                    //         const waypoint = this.flightPlanManager.getWaypoint(i);
+                    //         if (waypoint && waypoint.ident !== "" && waypoint.ident !== "USER") {
+                    //             if (waypoint.getSvgElement(this.navMap.index)) {
+                    //                 if (!this.navMap.mapElements.find(w => {
+                    //                     return (w instanceof SvgWaypointElement) && w.source.ident === waypoint.ident;
+                    //                 })) {
+                    //                     this.navMap.mapElements.push(waypoint.getSvgElement(this.navMap.index));
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    // }
                     /*const approachWaypoints = this.flightPlanManager.getApproachWaypoints();
                     const lAppr = approachWaypoints.length;
                     for (let i = 0; i < lAppr; i++) {
