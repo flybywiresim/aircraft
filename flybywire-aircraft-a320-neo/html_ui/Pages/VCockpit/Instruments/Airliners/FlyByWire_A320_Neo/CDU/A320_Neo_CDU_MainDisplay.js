@@ -243,7 +243,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             });
 
         // TODO make this not suck
-        fpm.FlightPlanAsoboSync.LoadFromGame(this.flightPlanManager);
+        Fmgc.FlightPlanAsoboSync.LoadFromGame(this.flightPlanManager);
 
         this.onDir = () => {
             CDUDirectToPage.ShowPage(this);
