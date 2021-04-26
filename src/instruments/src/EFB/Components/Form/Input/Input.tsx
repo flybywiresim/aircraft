@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { isNumber, toNumber } from 'lodash';
 
@@ -17,6 +17,14 @@ type InputProps = {
     disabled?: boolean
 };
 
+function usePrevious(value) {
+    const ref = useRef();
+    useEffect(() => {
+        ref.current = value;
+    });
+    return ref.current;
+}
+
 const Input = ({
     type,
     value: propsValue,
@@ -32,6 +40,7 @@ const Input = ({
 }: InputProps) => {
     const [focusActive, setFocusActive] = useState(false);
     const [value, setValue] = useState(propsValue);
+    const previousValue = usePrevious(value);
 
     const onChange = (value) => {
         if (type === 'number' && value !== '') {
@@ -46,7 +55,9 @@ const Input = ({
     };
 
     useEffect(() => {
-        onChange(propsValue);
+        if (previousValue !== propsValue) {
+            onChange(propsValue);
+        }
     }, [propsValue]);
 
     const emptyValue = value === '' || (isNumber(value) && Number.isNaN(value));

@@ -30,6 +30,10 @@ const extraInstruments = [
         name: 'hyd-page',
         path: 'SD/Pages/Hyd',
     },
+    {
+        name: 'fctl-page',
+        path: 'SD/Pages/Fctl',
+    },
 ];
 
 function makePostcssPluginList(instrumentPath) {

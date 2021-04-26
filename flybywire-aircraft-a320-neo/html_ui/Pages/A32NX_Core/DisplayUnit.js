@@ -1,5 +1,6 @@
 class DisplayUnit {
-    constructor(isPoweredFn, getSelfTestTimeInSecondsFn, potentiometerId, selfTestElement) {
+    constructor(rootElement, isPoweredFn, getSelfTestTimeInSecondsFn, potentiometerId, selfTestElement) {
+        this.rootElement = rootElement;
         this.selfTest = new DisplayUnitSelfTest(selfTestElement, getSelfTestTimeInSecondsFn);
         this.isPowered = isPoweredFn;
         this.potentiometerId = potentiometerId;
@@ -32,6 +33,8 @@ class DisplayUnit {
         } else {
             this.offDurationInMilliseconds += deltaTime;
         }
+
+        this.rootElement.style.display = isOn ? "block" : "none";
 
         this.previouslyOff = !isOn;
     }

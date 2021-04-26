@@ -29,7 +29,7 @@ pub struct BrakeActuator {
 }
 
 impl BrakeActuator {
-    const ACTUATOR_BASE_SPEED: f64 = 1.; // movement in percent/100 per second. 1 means 0 to 1 in 1s
+    const ACTUATOR_BASE_SPEED: f64 = 1.5; // movement in percent/100 per second. 1 means 0 to 1 in 1s
     const MIN_PRESSURE_ALLOWED_TO_MOVE_ACTUATOR_PSI: f64 = 50.;
     const PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI: f64 = 3100.;
 

@@ -1528,6 +1528,7 @@ class FlightPlanManager {
         Coherent.call("ACTIVATE_DIRECT_TO", icao).then(() => {
             this._incrementFlightPlanVersion();
             this.updateFlightPlan(callback);
+            SimVar.SetSimVarValue("K:A32NX.FMGC_DIR_TO_TRIGGER", "number", 1);
         });
     }
     cancelDirectTo(callback = EmptyCallback.Void) {
