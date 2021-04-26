@@ -69,7 +69,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("COND", "BottomScreen", "a32nx-cond-page-element"); // MODIFIED
         this.createLowerScreenPage("DOOR", "BottomScreen", "a32nx-door-page-element"); // MODIFIED
         this.createLowerScreenPage("WHEEL", "BottomScreen", "a320-neo-lower-ecam-wheel"); // MODIFIED
-        this.createLowerScreenPage("FTCL", "BottomScreen", "a320-neo-lower-ecam-ftcl"); // MODIFIED
+        this.createLowerScreenPage("FTCL", "BottomScreen", "a32nx-fctl-page-element"); // MODIFIED
         this.createLowerScreenPage("STS", "BottomScreen", "a320-neo-lower-ecam-status"); // MODIFIED
         this.createLowerScreenPage("CRZ", "BottomScreen", "a320-neo-lower-ecam-crz"); // MODIFIED
     }
@@ -109,9 +109,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.doorVideoPressed = false;
 
         // Using ternary in case the LVar is undefined
-        this.ACPowerLastState = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") ? 0 : 1;
+        this.poweredDuringPreviousUpdate = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") ? 0 : 1;
 
-        this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
         this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
 
@@ -131,7 +130,10 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.updateThrottler = new UpdateThrottler(500);
 
         this.displayUnit = new DisplayUnit(
-            () => this.isPowered(),
+            this.querySelector("#Electricity"),
+            () => {
+                return SimVar.GetSimVarValue(`L:A32NX_ELEC_${this.isTopScreen ? "AC_ESS" : "AC_2"}_BUS_IS_POWERED`, "Bool");
+            },
             () => parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15")),
             this.isTopScreen ? 92 : 93,
             this.querySelector(`#${this.isTopScreen ? "Top" : "Bottom"}SelfTest`)
@@ -154,36 +156,13 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.updateDoorVideoState();
 
         this.updateAnnunciations();
-        this.updateScreenState();
 
         // TODO Move anything dependent on ac power change to A32NX_Core
         const engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
-        const isPowered = this.isPowered();
-        let DCBus = false;
-
-        const ACPowerStateChange = (isPowered != this.ACPowerLastState);
-        SimVar.SetSimVarValue("L:ACPowerStateChange", "Bool", ACPowerStateChange);
-
-        if (SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE", "Volts") >= 20) {
-            DCBus = true;
-        }
-        const isDCPowerAvailable = isPowered || DCBus;
-        if (isDCPowerAvailable) {
-            SimVar.SetSimVarValue("L:DCPowerAvailable", "bool", 1); //True if any AC|DC bus is online
-        } else {
-            SimVar.SetSimVarValue("L:DCPowerAvailable", "bool", 0);
-        }
-        if (isPowered) {
-            SimVar.SetSimVarValue("L:ACPowerAvailable", "bool", 1); //True if any AC bus is online
-        } else {
-            SimVar.SetSimVarValue("L:ACPowerAvailable", "bool", 0);
-        }
 
         // Engineering self-tests
         updateDisplayDMC("EICAS1", this.upperEngTestDiv, this.upperEngMaintDiv);
         updateDisplayDMC("EICAS2", this.lowerEngTestDiv, this.lowerEngMaintDiv);
-
-        this.ACPowerLastState = isPowered;
 
         // modification start here
         const currentAPUMasterState = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON", "Bool");
@@ -194,13 +173,10 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const altitude = Simplane.getAltitude();
         const isGearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95;
         const currFlightPhase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "number");
-        const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
-        const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
-        const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
-        const ToPowerSet = (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
+        const ToPowerSet = Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
         const apuAvailable = SimVar.GetSimVarValue("L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE", "Bool");
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
-        const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number") != 0 || SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "percent") != 0;
+        const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number") != 0 || SimVar.GetSimVarValue("L:A32NX_SPOILERS_HANDLE_POSITION", "percent") != 0;
 
         const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FmgcFlightPhases.CLIMB || currFlightPhase == FmgcFlightPhases.CRUISE) && this.CrzCondTimer <= 0) || (currFlightPhase == FmgcFlightPhases.CLIMB && !spoilerOrFlapsDeployed && !ToPowerSet);
 
@@ -226,14 +202,14 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             }
 
             this.pageNameWhenUnselected = "APU";
-        } else if (isPowered && !engineOn && Simplane.getIsGrounded()) {
+        } else if (!engineOn && Simplane.getIsGrounded()) {
             // reset minIndex and cruise timer after shutdown
             this.minPageIndexWhenUnselected = 0;
             this.CrzCondTimer = 60;
             this.pageNameWhenUnselected = "DOOR";
         } else if (engineOn && !ToPowerSet && Simplane.getIsGrounded() && this.minPageIndexWhenUnselected <= 1) {
-            const sidestickPosX = SimVar.GetSimVarValue("YOKE X POSITION", "Position");
-            const sidestickPosY = SimVar.GetSimVarValue("YOKE Y POSITION", "Position");
+            const sidestickPosX = SimVar.GetSimVarValue("L:A32NX_SIDESTICK_POSITION_X", "Number");
+            const sidestickPosY = SimVar.GetSimVarValue("L:A32NX_SIDESTICK_POSITION_Y", "Number");
             const rudderPos = SimVar.GetSimVarValue("RUDDER PEDAL POSITION", "Position");
             const controlsMoved = Math.abs(sidestickPosX) > 0.05 || Math.abs(sidestickPosY) > 0.05 || Math.abs(rudderPos) > 0.2;
 
@@ -286,14 +262,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.PrevFailPage = sFailPage;
     }
 
-    isPowered() {
-        const engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
-        const externalPowerOn = SimVar.GetSimVarValue("EXTERNAL POWER AVAILABLE:1", "Bool") === 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 1;
-        const apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
-
-        return engineOn || apuOn || externalPowerOn;
-    }
-
     updateDoorVideoState() {
         const doorVideoPressedNow = SimVar.GetSimVarValue("L:PUSH_DOORPANEL_VIDEO", "Bool") === 1;
         const doorVideoEnabledNow = SimVar.GetSimVarValue("L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE", "Bool") === 1;
@@ -309,14 +277,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.doorVideoWrapper.style.visibility = this.doorVideoPressed ? "visible" : "hidden";
     }
 
-    updateScreenState() {
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable", "bool")) {
-            this.electricity.style.display = "block";
-        } else {
-            this.electricity.style.display = "none";
-        }
-    }
-
     updateAnnunciations() {
         const infoPanelManager = this.upperTopScreen.getInfoPanelManager();
         if (infoPanelManager) {
@@ -325,8 +285,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             const autoBrkValue = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Number");
             const starterOne = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool");
             const starterTwo = SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
-            const splrsArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "Bool");
-            const flapsPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+            const splrsArmed = SimVar.GetSimVarValue("L:A32NX_SPOILERS_ARMED", "Bool");
+            const flapsPosition = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number");
             // ----------- MODIFIED END --------------------//
 
             infoPanelManager.clearScreen(Airliners.EICAS_INFO_PANEL_ID.PRIMARY);
