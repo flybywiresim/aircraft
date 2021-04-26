@@ -14,8 +14,10 @@ export const CrzPage = () => {
 
     /* FUEL */
 
-    const [leftConsumption] = useSimVar('GENERAL ENG FUEL USED SINCE START:1', 'kg', 1000);
-    const [rightConsumption] = useSimVar('GENERAL ENG FUEL USED SINCE START:2', 'kg', 1000);
+    const [leftConsumption] = useSimVar('L:A32NX_FUEL_USED:1', 'number', 1000);
+    const [rightConsumption] = useSimVar('L:A32NX_FUEL_USED:2', 'number', 1000);
+
+    console.log(`left consumption is ${leftConsumption}`);
 
     const fuelConsumptionForDisplay = function (fuelConsumption, unitsC) {
         return parseInt(((fuelConsumption * unitsC) - (fuelConsumption % 10)).toFixed(0));
@@ -26,8 +28,11 @@ export const CrzPage = () => {
     const [totalFuel, setTotalFuel] = useState(leftFuel + rightFuel);
 
     useEffect(() => {
+        console.log('Fuel consumed');
+        console.log(`Left fuel is ${leftConsumption}`);
         setLeftFuel(fuelConsumptionForDisplay(leftConsumption, unitConversion));
         setRightFuel(fuelConsumptionForDisplay(rightConsumption, unitConversion));
+        console.log(`Fuel after function is ${fuelConsumptionForDisplay(leftConsumption, unitConversion)}`);
         setTotalFuel(leftFuel + rightFuel);
     }, [leftConsumption, rightConsumption]);
 
@@ -142,7 +147,7 @@ export const CrzPage = () => {
                 <text id="FuelUsedLeft" className="large green" x="210" y="95" textAnchor="end">{leftFuel}</text>
                 <text id="FuelUsedRight" className="large green" x="455" y="95" textAnchor="end">{rightFuel}</text>
                 <text id="FuelUsedTotal" className="large green center" x="300" y="112">{totalFuel}</text>
-                <text id="FuelUsedUnit" className="standard cyan center" x="300" y="132">KG</text>
+                <text id="FuelUsedUnit" className="standard cyan center" x="300" y="132">{unitConversion === 1 ? 'KG' : 'LBS'}</text>
                 <path className="WingPlaneSym" d="M230 80 l20 -2" />
                 <path className="WingPlaneSym" d="M370 80 l-20 -2" />
 
@@ -219,12 +224,17 @@ export const CrzPage = () => {
                 <text className="standard cyan" x="320" y="370">PSI</text>
 
                 <text className="standard" x="480" y="380">CAB V/S</text>
-                <text id="CabinVerticalSpeed" className="large green" x="515" y="405" textAnchor="end">{Math.round((cabinVs * 60) / 50) * 50}</text>
+                <text id="CabinVerticalSpeed" className="large green" x="515" y="405" textAnchor="end">{Math.abs(Math.round((cabinVs * 60) / 50) * 50)}</text>
                 <text className="medium cyan" x="525" y="405">FT/MIN</text>
 
                 <text className="standard" x="480" y="450">CAB ALT</text>
                 <text id="CabinAltitude" className="large green" x="515" y="475" textAnchor="end">{Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 : 0}</text>
                 <text className="medium cyan" x="525" y="475">FT</text>
+
+                <g id="vsArrow">
+                    <path d="M440,405 h7 L455,395" className="VsIndicator" strokeLinejoin="miter" />
+                    <polygon points="456,384 452,394 462,394" transform="rotate(38,455,395)" className="VsIndicator" />
+                </g>
 
                 <path className="WingPlaneSym" d="M 300 410 a 70 70 0 0 0 -30 -5 l -180 0 m 30 0 l 0 50 l 85 0 l 0 -10 m 0 10 l 85 0 l 0 -48 m -170 48 l -30 0 c -60 0 -60 -20 -45 -25" />
 
@@ -330,7 +340,7 @@ const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle, endAn
         };
     }
 
-    console.log(`Value is ${value} and x is ${x} and y is ${y} Start coords ${start.x} ${start.y} and end ${end.x} ${end.y}`);
+    // console.log(`Value is ${value} and x is ${x} and y is ${y} Start coords ${start.x} ${start.y} and end ${end.x} ${end.y}`);
 
     // Text
 
