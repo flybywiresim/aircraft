@@ -306,7 +306,8 @@ impl A320Hydraulic {
         min_hyd_loop_timestep: Duration,
     ) {
         // Process brake logic (which circuit brakes) and send brake demands (how much)
-        self.hyd_brake_logic.update_brake_demands(&self.green_loop, &self.braking_circuit_altn);
+        self.hyd_brake_logic
+            .update_brake_demands(&self.green_loop, &self.braking_circuit_altn);
         self.hyd_brake_logic.update_brake_pressure_limitation(
             &mut self.braking_circuit_norm,
             &mut self.braking_circuit_altn,
