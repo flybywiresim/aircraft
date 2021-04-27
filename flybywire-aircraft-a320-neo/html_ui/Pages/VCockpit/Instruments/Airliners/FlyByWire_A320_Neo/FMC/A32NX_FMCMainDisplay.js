@@ -1619,34 +1619,9 @@ class FMCMainDisplay extends BaseAirliners {
         return this._routeTripFuelWeight;
     }
 
-    getOrSelectVORsByIdent(ident, callback) {
-        this.dataManager.GetVORsByIdent(ident).then((navaids) => {
-            if (!navaids || navaids.length === 0) {
-                this.addNewMessage(NXSystemMessages.notInDatabase);
-                return callback(undefined);
-            }
-            if (navaids.length === 1) {
-                return callback(navaids[0]);
-            }
-            A320_Neo_CDU_SelectWptPage.ShowPage(this, navaids, callback);
-        });
-    }
-    getOrSelectNDBsByIdent(ident, callback) {
-        this.dataManager.GetNDBsByIdent(ident).then((navaids) => {
-            if (!navaids || navaids.length === 0) {
-                this.addNewMessage(NXSystemMessages.notInDatabase);
-                return callback(undefined);
-            }
-            if (navaids.length === 1) {
-                return callback(navaids[0]);
-            }
-            A320_Neo_CDU_SelectWptPage.ShowPage(this, navaids, callback);
-        });
-    }
-
-    getOrSelectWaypointByIdent(ident, callback) {
-        this.dataManager.GetWaypointsByIdent(ident).then((waypoints) => {
-            if (!waypoints || waypoints.length === 0) {
+    _getOrSelectWaypoints(getter, ident, callback) {
+        getter(ident).then((waypoints) => {
+            if (waypoints.length === 0) {
                 return callback(undefined);
             }
             if (waypoints.length === 1) {
@@ -1654,6 +1629,17 @@ class FMCMainDisplay extends BaseAirliners {
             }
             A320_Neo_CDU_SelectWptPage.ShowPage(this, waypoints, callback);
         });
+    }
+
+    getOrSelectVORsByIdent(ident, callback) {
+        this._getOrSelectWaypoints(this.dataManager.GetVORsByIdent.bind(this.dataManager), ident, callback);
+    }
+    getOrSelectNDBsByIdent(ident, callback) {
+        this._getOrSelectWaypoints(this.dataManager.GetNDBsByIdent.bind(this.dataManager), ident, callback);
+    }
+
+    getOrSelectWaypointByIdent(ident, callback) {
+        this._getOrSelectWaypoints(this.dataManager.GetWaypointsByIdent.bind(this.dataManager), ident, callback);
     }
 
     insertWaypoint(newWaypointTo, index, callback = EmptyCallback.Boolean) {
