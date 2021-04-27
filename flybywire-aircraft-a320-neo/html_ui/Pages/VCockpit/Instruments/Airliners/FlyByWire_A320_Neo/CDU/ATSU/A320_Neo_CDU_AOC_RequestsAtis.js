@@ -121,6 +121,10 @@ class CDUAocRequestsAtis {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = async () => {
+            if (store["arpt1"] === "" && store["arrIcao"] === "") {
+                mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                return;
+            }
             store["sendStatus"] = "QUEUED";
             updateView();
             const icao = store["arpt1"] || store["arrIcao"];
