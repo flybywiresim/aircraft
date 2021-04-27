@@ -98,12 +98,12 @@ impl PowerTransferUnit {
     const FLOW_DYNAMIC_LOW_PASS_LEFT_SIDE: f64 = 0.3;
     const FLOW_DYNAMIC_LOW_PASS_RIGHT_SIDE: f64 = 0.3;
 
-    const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.81;
-    const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.70;
+    const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.98;
+    const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.98;
 
     //Part of the max total pump capacity PTU model is allowed to take. Set to 1 all capacity used
     // set to 0.5 PTU will only use half of the flow that all pumps are able to generate
-    const AGRESSIVENESS_FACTOR: f64 = 0.72;
+    const AGRESSIVENESS_FACTOR: f64 = 0.8;
 
     pub fn new() -> Self {
         Self {

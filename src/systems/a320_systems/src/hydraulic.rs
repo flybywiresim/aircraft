@@ -306,7 +306,7 @@ impl A320Hydraulic {
         min_hyd_loop_timestep: Duration,
     ) {
         // Process brake logic (which circuit brakes) and send brake demands (how much)
-        self.hyd_brake_logic.update_brake_demands(&self.green_loop);
+        self.hyd_brake_logic.update_brake_demands(&self.green_loop, &self.braking_circuit_altn);
         self.hyd_brake_logic.update_brake_pressure_limitation(
             &mut self.braking_circuit_norm,
             &mut self.braking_circuit_altn,
@@ -743,16 +743,24 @@ pub struct A320HydraulicBrakingLogic {
     left_brake_yellow_output: f64,
     right_brake_green_output: f64,
     right_brake_yellow_output: f64,
+    normal_brakes_available: bool,
     anti_skid_activated: bool,
     autobrakes_setting: u8,
 }
-//Implements brakes computers logic
+// Implements brakes computers logic
 impl A320HydraulicBrakingLogic {
-    const MIN_PRESSURE_BRAKE_ALTN: f64 = 2000.; //Minimum pressure until main switched on ALTN brakes
+    // Minimum pressure hysteresis on green until main switched on ALTN brakes
+    // Feedback by Cpt. Chaos — 25/04/2021 #pilot-feedback
+    const MIN_PRESSURE_BRAKE_ALTN_HYST_LO: f64 = 1305.;
+    const MIN_PRESSURE_BRAKE_ALTN_HYST_HI: f64 = 2176.;
+
+    // Min pressure when parking brake enabled. Lower normal braking is allowed to use pilot input as emergency braking
+    // Feedback by avteknisyan — 25/04/2021 #pilot-feedback
+    const MIN_PRESSURE_PARK_BRAKE_EMERGENCY: f64 = 507.;
 
     pub fn new() -> A320HydraulicBrakingLogic {
         A320HydraulicBrakingLogic {
-            parking_brake_demand: true, //Position of parking brake lever
+            parking_brake_demand: true, // Position of parking brake lever
             weight_on_wheels: true,
             left_brake_pilot_input: 0.0,
             right_brake_pilot_input: 0.0,
@@ -760,8 +768,20 @@ impl A320HydraulicBrakingLogic {
             left_brake_yellow_output: 1.0, // Actual command sent to left yellow circuit. Init 1 as considering park brake on on init
             right_brake_green_output: 0.0, // Actual command sent to right green circuit
             right_brake_yellow_output: 1.0, // Actual command sent to right yellow circuit. Init 1 as considering park brake on on init
+            normal_brakes_available: false,
             anti_skid_activated: true,
             autobrakes_setting: 0,
+        }
+    }
+
+    fn update_normal_braking_availability(&mut self, normal_braking_loop_pressure: &Pressure) {
+        if normal_braking_loop_pressure.get::<psi>() > Self::MIN_PRESSURE_BRAKE_ALTN_HYST_HI
+            && (self.left_brake_pilot_input < 0.2 && self.right_brake_pilot_input < 0.2)
+        {
+            self.normal_brakes_available = true;
+        } else if normal_braking_loop_pressure.get::<psi>() < Self::MIN_PRESSURE_BRAKE_ALTN_HYST_LO
+        {
+            self.normal_brakes_available = false;
         }
     }
 
@@ -799,12 +819,15 @@ impl A320HydraulicBrakingLogic {
     }
 
     // Updates final brake demands per hydraulic loop based on pilot pedal demands
-    //TODO: think about where to build those brake demands from autobrake if not from brake pedals
-    pub fn update_brake_demands(&mut self, green_loop: &HydraulicLoop) {
-        let green_used_for_brakes = green_loop.get_pressure() //TODO Check this logic
-            > Pressure::new::<psi>(A320HydraulicBrakingLogic::MIN_PRESSURE_BRAKE_ALTN )
-            && self.anti_skid_activated
-            && !self.parking_brake_demand;
+    pub fn update_brake_demands(
+        &mut self,
+        green_loop: &HydraulicLoop,
+        alternate_circuit: &BrakeCircuit,
+    ) {
+        self.update_normal_braking_availability(&green_loop.get_pressure());
+
+        let green_used_for_brakes =
+            self.normal_brakes_available && self.anti_skid_activated && !self.parking_brake_demand;
 
         if green_used_for_brakes {
             self.left_brake_green_output = self.left_brake_pilot_input;
@@ -815,13 +838,23 @@ impl A320HydraulicBrakingLogic {
             self.left_brake_green_output = 0.;
             self.right_brake_green_output = 0.;
             if !self.parking_brake_demand {
-                //Normal braking but using alternate circuit
+                // Normal braking but using alternate circuit
                 self.left_brake_yellow_output = self.left_brake_pilot_input;
                 self.right_brake_yellow_output = self.right_brake_pilot_input;
             } else {
-                //Else we just use parking brake
+                // Else we just use parking brake
                 self.left_brake_yellow_output = 1.;
                 self.right_brake_yellow_output = 1.;
+
+                // Special case: parking brake on but yellow can't provide enough brakes: green are allowed to brake for emergency
+                if alternate_circuit.get_brake_pressure_left().get::<psi>()
+                    < Self::MIN_PRESSURE_PARK_BRAKE_EMERGENCY
+                    || alternate_circuit.get_brake_pressure_right().get::<psi>()
+                        < Self::MIN_PRESSURE_PARK_BRAKE_EMERGENCY
+                {
+                    self.left_brake_green_output = self.left_brake_pilot_input;
+                    self.right_brake_green_output = self.right_brake_pilot_input;
+                }
             }
         }
 
