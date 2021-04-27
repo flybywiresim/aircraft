@@ -19,7 +19,7 @@ class CDU_OPTIONS_TELEX {
                 telexToggleText = "ENABLE*[color]cyan";
         }
 
-        // Due to ',' missing in the font this template does not contain commas.
+        // Due to the ',' missing in the font this template does not contain commas.
         mcdu.setTemplate([
             ["A32NX OPTIONS AOC"],
             ["", "", "ONLINE FEATURES"],
