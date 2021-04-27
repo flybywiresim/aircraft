@@ -110,6 +110,7 @@ impl Aircraft for A320 {
             &self.engine_2,
             &self.hydraulic_overhead,
             &self.engine_fire_overhead,
+            &self.landing_gear,
         );
 
         self.hydraulic_overhead.update(&self.hydraulic);
