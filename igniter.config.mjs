@@ -11,10 +11,10 @@ export default new TaskOfTasks('a32nx', [
         ]),
         new ExecTask('systems-autopilot', [
             'src/fbw/build.sh'
-        ]),
+        ], ['src/fbw', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm']),
         new ExecTask('systems-fadec', [
             'src/fadec/build.sh'
-        ]),
+        ], ['src/fadec', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm']),
     ], true),
 
     new TaskOfTasks('dist', [
