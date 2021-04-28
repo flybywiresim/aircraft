@@ -1,7 +1,6 @@
 use std::time::Duration;
 use uom::si::{f64::*, pressure::pascal, pressure::psi, velocity::knot, volume::gallon};
 
-use systems::engine::Engine;
 use systems::hydraulic::{
     ElectricPump, EngineDrivenPump, HydFluid, HydraulicLoop, HydraulicLoopController,
     PowerTransferUnit, PowerTransferUnitController, PumpController, RamAirTurbine,
@@ -13,7 +12,11 @@ use systems::overhead::{
 use systems::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, UpdateContext,
 };
-use systems::{hydraulic::brakecircuit::BrakeCircuit, shared::DelayedFalseLogicGate};
+use systems::{engine::Engine, landing_gear::LandingGear};
+use systems::{
+    hydraulic::brakecircuit::BrakeCircuit, shared::DelayedFalseLogicGate,
+    shared::DelayedTrueLogicGate,
+};
 
 pub(super) struct A320Hydraulic {
     hyd_brake_logic: A320HydraulicBrakingLogic,
@@ -153,6 +156,7 @@ impl A320Hydraulic {
         engine2: &Engine,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
+        landing_gear: &LandingGear,
     ) {
         let min_hyd_loop_timestep = Duration::from_millis(Self::HYDRAULIC_SIM_TIME_STEP); //Hyd Sim rate = 10 Hz
 
@@ -165,8 +169,8 @@ impl A320Hydraulic {
         let number_of_steps_floating_point =
             time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
 
-        // Updating rat stowed pos on all frames in case it's used for graphics
-        self.ram_air_turbine.update_position(&context.delta());
+        // Here we update everything requiring same refresh as the sim calls us, more likely visual stuff
+        self.update_at_every_frames(&context);
 
         if number_of_steps_floating_point < 1.0 {
             // Can't do a full time step
@@ -200,6 +204,7 @@ impl A320Hydraulic {
                     engine2,
                     overhead_panel,
                     engine_fire_overhead,
+                    landing_gear,
                     min_hyd_loop_timestep,
                 );
             }
@@ -268,6 +273,15 @@ impl A320Hydraulic {
         self.yellow_loop.is_pressurised()
     }
 
+    // Update with same refresh rate as the sim
+    fn update_at_every_frames(&mut self, context: &UpdateContext) {
+        // Updating rat stowed pos on all frames in case it's used for graphics
+        self.ram_air_turbine.update_position(&context.delta());
+
+        // Tug has its angle changing on each frame and we'd like to detect this
+        self.pushback_tug.update();
+    }
+
     // All the higher frequency updates like physics
     fn update_fast_rate(&mut self, context: &UpdateContext, delta_time_physics: &Duration) {
         self.ram_air_turbine
@@ -296,6 +310,7 @@ impl A320Hydraulic {
     fn update_blue_actuators_volume(&mut self) {}
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
+    #[allow(clippy::too_many_arguments)]
     fn update_fixed_step(
         &mut self,
         context: &UpdateContext,
@@ -303,10 +318,16 @@ impl A320Hydraulic {
         engine2: &Engine,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
+        landing_gear: &LandingGear,
         min_hyd_loop_timestep: Duration,
     ) {
         // Process brake logic (which circuit brakes) and send brake demands (how much)
-        self.hyd_brake_logic.update_brake_demands(&self.green_loop);
+        self.hyd_brake_logic.update_brake_demands(
+            &context.with_delta(min_hyd_loop_timestep),
+            &self.green_loop,
+            &self.braking_circuit_altn,
+            &landing_gear,
+        );
         self.hyd_brake_logic.update_brake_pressure_limitation(
             &mut self.braking_circuit_norm,
             &mut self.braking_circuit_altn,
@@ -666,7 +687,7 @@ impl A320PowerTransferUnitController {
             forward_cargo_door.has_moved() || aft_cargo_door.has_moved(),
         );
         self.nose_wheel_steering_pin_inserted
-            .update(context, pushback_tug.is_pushing());
+            .update(context, pushback_tug.is_connected());
 
         let ptu_inhibited = self.should_inhibit_ptu_after_cargo_door_operation.output()
             && overhead_panel.yellow_epump_push_button_is_auto();
@@ -737,31 +758,59 @@ impl SimulationElement for A320RamAirTurbineController {
 pub struct A320HydraulicBrakingLogic {
     parking_brake_demand: bool,
     weight_on_wheels: bool,
+    is_gear_lever_down: bool,
     left_brake_pilot_input: f64,
     right_brake_pilot_input: f64,
     left_brake_green_output: f64,
     left_brake_yellow_output: f64,
     right_brake_green_output: f64,
     right_brake_yellow_output: f64,
+    normal_brakes_available: bool,
+    should_disable_auto_brake_when_retracting: DelayedTrueLogicGate,
     anti_skid_activated: bool,
     autobrakes_setting: u8,
 }
-//Implements brakes computers logic
+// Implements brakes computers logic
 impl A320HydraulicBrakingLogic {
-    const MIN_PRESSURE_BRAKE_ALTN: f64 = 2000.; //Minimum pressure until main switched on ALTN brakes
+    // Minimum pressure hysteresis on green until main switched on ALTN brakes
+    // Feedback by Cpt. Chaos — 25/04/2021 #pilot-feedback
+    const MIN_PRESSURE_BRAKE_ALTN_HYST_LO: f64 = 1305.;
+    const MIN_PRESSURE_BRAKE_ALTN_HYST_HI: f64 = 2176.;
+
+    // Min pressure when parking brake enabled. Lower normal braking is allowed to use pilot input as emergency braking
+    // Feedback by avteknisyan — 25/04/2021 #pilot-feedback
+    const MIN_PRESSURE_PARK_BRAKE_EMERGENCY: f64 = 507.;
+
+    const AUTOBRAKE_GEAR_RETRACTION_DURATION_S: f64 = 3.;
 
     pub fn new() -> A320HydraulicBrakingLogic {
         A320HydraulicBrakingLogic {
-            parking_brake_demand: true, //Position of parking brake lever
+            parking_brake_demand: true, // Position of parking brake lever
             weight_on_wheels: true,
+            is_gear_lever_down: true,
             left_brake_pilot_input: 0.0,
             right_brake_pilot_input: 0.0,
             left_brake_green_output: 0.0, // Actual command sent to left green circuit
             left_brake_yellow_output: 1.0, // Actual command sent to left yellow circuit. Init 1 as considering park brake on on init
             right_brake_green_output: 0.0, // Actual command sent to right green circuit
             right_brake_yellow_output: 1.0, // Actual command sent to right yellow circuit. Init 1 as considering park brake on on init
+            normal_brakes_available: false,
+            should_disable_auto_brake_when_retracting: DelayedTrueLogicGate::new(
+                Duration::from_secs_f64(Self::AUTOBRAKE_GEAR_RETRACTION_DURATION_S),
+            ),
             anti_skid_activated: true,
             autobrakes_setting: 0,
+        }
+    }
+
+    fn update_normal_braking_availability(&mut self, normal_braking_loop_pressure: &Pressure) {
+        if normal_braking_loop_pressure.get::<psi>() > Self::MIN_PRESSURE_BRAKE_ALTN_HYST_HI
+            && (self.left_brake_pilot_input < 0.2 && self.right_brake_pilot_input < 0.2)
+        {
+            self.normal_brakes_available = true;
+        } else if normal_braking_loop_pressure.get::<psi>() < Self::MIN_PRESSURE_BRAKE_ALTN_HYST_LO
+        {
+            self.normal_brakes_available = false;
         }
     }
 
@@ -799,29 +848,63 @@ impl A320HydraulicBrakingLogic {
     }
 
     // Updates final brake demands per hydraulic loop based on pilot pedal demands
-    //TODO: think about where to build those brake demands from autobrake if not from brake pedals
-    pub fn update_brake_demands(&mut self, green_loop: &HydraulicLoop) {
-        let green_used_for_brakes = green_loop.get_pressure() //TODO Check this logic
-            > Pressure::new::<psi>(A320HydraulicBrakingLogic::MIN_PRESSURE_BRAKE_ALTN )
-            && self.anti_skid_activated
-            && !self.parking_brake_demand;
+    pub fn update_brake_demands(
+        &mut self,
+        context: &UpdateContext,
+        green_loop: &HydraulicLoop,
+        alternate_circuit: &BrakeCircuit,
+        landing_gear: &LandingGear,
+    ) {
+        self.update_normal_braking_availability(&green_loop.get_pressure());
 
-        if green_used_for_brakes {
-            self.left_brake_green_output = self.left_brake_pilot_input;
-            self.right_brake_green_output = self.right_brake_pilot_input;
-            self.left_brake_yellow_output = 0.;
-            self.right_brake_yellow_output = 0.;
-        } else {
-            self.left_brake_green_output = 0.;
-            self.right_brake_green_output = 0.;
-            if !self.parking_brake_demand {
-                //Normal braking but using alternate circuit
-                self.left_brake_yellow_output = self.left_brake_pilot_input;
-                self.right_brake_yellow_output = self.right_brake_pilot_input;
+        let is_in_flight_gear_lever_up = !self.weight_on_wheels && !self.is_gear_lever_down;
+        self.should_disable_auto_brake_when_retracting.update(
+            context,
+            !landing_gear.is_down_and_locked() && !self.is_gear_lever_down,
+        );
+
+        if is_in_flight_gear_lever_up {
+            if self.should_disable_auto_brake_when_retracting.output() {
+                self.left_brake_green_output = 0.;
+                self.right_brake_green_output = 0.;
+                self.left_brake_yellow_output = 0.;
+                self.right_brake_yellow_output = 0.;
             } else {
-                //Else we just use parking brake
-                self.left_brake_yellow_output = 1.;
-                self.right_brake_yellow_output = 1.;
+                self.left_brake_green_output = 0.2; // Slight brake pressure to stop the spinning wheels
+                self.right_brake_green_output = 0.2; // Slight brake pressure to stop the spinning wheels
+            }
+        } else {
+            let green_used_for_brakes = self.normal_brakes_available
+                && self.anti_skid_activated
+                && !self.parking_brake_demand;
+
+            if green_used_for_brakes {
+                self.left_brake_green_output = self.left_brake_pilot_input;
+                self.right_brake_green_output = self.right_brake_pilot_input;
+                self.left_brake_yellow_output = 0.;
+                self.right_brake_yellow_output = 0.;
+            } else {
+                self.left_brake_green_output = 0.;
+                self.right_brake_green_output = 0.;
+                if !self.parking_brake_demand {
+                    // Normal braking but using alternate circuit
+                    self.left_brake_yellow_output = self.left_brake_pilot_input;
+                    self.right_brake_yellow_output = self.right_brake_pilot_input;
+                } else {
+                    // Else we just use parking brake
+                    self.left_brake_yellow_output = 1.;
+                    self.right_brake_yellow_output = 1.;
+
+                    // Special case: parking brake on but yellow can't provide enough brakes: green are allowed to brake for emergency
+                    if alternate_circuit.get_brake_pressure_left().get::<psi>()
+                        < Self::MIN_PRESSURE_PARK_BRAKE_EMERGENCY
+                        || alternate_circuit.get_brake_pressure_right().get::<psi>()
+                            < Self::MIN_PRESSURE_PARK_BRAKE_EMERGENCY
+                    {
+                        self.left_brake_green_output = self.left_brake_pilot_input;
+                        self.right_brake_green_output = self.right_brake_pilot_input;
+                    }
+                }
             }
         }
 
@@ -848,6 +931,7 @@ impl SimulationElement for A320HydraulicBrakingLogic {
     fn read(&mut self, state: &mut SimulatorReader) {
         self.parking_brake_demand = state.read_bool("BRAKE PARKING INDICATOR");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
+        self.is_gear_lever_down = state.read_bool("GEAR HANDLE POSITION");
         self.anti_skid_activated = state.read_bool("ANTISKID BRAKES ACTIVE");
         self.left_brake_pilot_input = state.read_f64("BRAKE LEFT POSITION") / 100.0;
         self.right_brake_pilot_input = state.read_f64("BRAKE RIGHT POSITION") / 100.0;
@@ -888,7 +972,9 @@ struct PushbackTug {
     // 1 = Left
     // 2 = Right
     // 3 = Assumed to be no pushback
+    // 4 = might be finishing pushback, to confirm
     state: f64,
+    is_connected_to_nose_gear: bool,
 }
 impl PushbackTug {
     const STATE_NO_PUSHBACK: f64 = 3.;
@@ -897,12 +983,25 @@ impl PushbackTug {
         Self {
             angle: 0.,
             previous_angle: 0.,
-            state: 0.,
+            state: Self::STATE_NO_PUSHBACK,
+            is_connected_to_nose_gear: false,
         }
     }
 
+    pub fn update(&mut self) {
+        if self.is_pushing() {
+            self.is_connected_to_nose_gear = true;
+        } else if (self.state - PushbackTug::STATE_NO_PUSHBACK).abs() <= f64::EPSILON {
+            self.is_connected_to_nose_gear = false;
+        }
+    }
+
+    fn is_connected(&self) -> bool {
+        self.is_connected_to_nose_gear
+    }
+
     fn is_pushing(&self) -> bool {
-        // The angle keeps changing while pushing.
+        // The angle keeps changing while pushing or is frozen high on high angle manoeuvering.
         (self.angle - self.previous_angle).abs() > f64::EPSILON
             && (self.state - PushbackTug::STATE_NO_PUSHBACK).abs() > f64::EPSILON
     }
@@ -1037,6 +1136,7 @@ mod tests {
             hydraulics: A320Hydraulic,
             overhead: A320HydraulicOverheadPanel,
             engine_fire_overhead: A320EngineFireOverheadPanel,
+            landing_gear: LandingGear,
         }
         impl A320HydraulicsTestAircraft {
             fn new() -> Self {
@@ -1046,6 +1146,7 @@ mod tests {
                     hydraulics: A320Hydraulic::new(),
                     overhead: A320HydraulicOverheadPanel::new(),
                     engine_fire_overhead: A320EngineFireOverheadPanel::new(),
+                    landing_gear: LandingGear::new(),
                 }
             }
 
@@ -1094,6 +1195,7 @@ mod tests {
                     &self.engine_2,
                     &self.overhead,
                     &self.engine_fire_overhead,
+                    &self.landing_gear,
                 );
 
                 self.overhead.update(&self.hydraulics);
@@ -1104,6 +1206,7 @@ mod tests {
                 self.hydraulics.accept(visitor);
                 self.overhead.accept(visitor);
                 self.engine_fire_overhead.accept(visitor);
+                self.landing_gear.accept(visitor);
 
                 visitor.visit(self);
             }
@@ -1248,6 +1351,18 @@ mod tests {
                 self
             }
 
+            fn in_flight(mut self) -> Self {
+                self.simulation_test_bed.set_on_ground(false);
+                self.simulation_test_bed
+                    .set_indicated_altitude(Length::new::<foot>(2500.));
+                self.simulation_test_bed
+                    .set_indicated_airspeed(Velocity::new::<knot>(180.));
+                self.start_eng1(Ratio::new::<percent>(60.))
+                    .start_eng2(Ratio::new::<percent>(60.))
+                    .set_gear_up()
+                    .set_park_brake(false)
+            }
+
             fn set_gear_compressed_switch(mut self, is_compressed: bool) -> Self {
                 self.simulation_test_bed.set_on_ground(is_compressed);
                 self
@@ -1321,6 +1436,24 @@ mod tests {
                 self
             }
 
+            fn set_gear_up(mut self) -> Self {
+                self.simulation_test_bed
+                    .write_f64("GEAR CENTER POSITION", 0.);
+                self.simulation_test_bed
+                    .write_bool("GEAR HANDLE POSITION", false);
+
+                self
+            }
+
+            fn set_gear_down(mut self) -> Self {
+                self.simulation_test_bed
+                    .write_f64("GEAR CENTER POSITION", 100.);
+                self.simulation_test_bed
+                    .write_bool("GEAR HANDLE POSITION", true);
+
+                self
+            }
+
             fn set_anti_skid(mut self, is_set: bool) -> Self {
                 self.simulation_test_bed
                     .write_bool("ANTISKID BRAKES ACTIVE", is_set);
@@ -1377,6 +1510,7 @@ mod tests {
                     .set_cargo_door_state(0.)
                     .set_left_brake(Ratio::new::<percent>(0.))
                     .set_right_brake(Ratio::new::<percent>(0.))
+                    .set_gear_down()
             }
 
             fn set_left_brake(mut self, position_percent: Ratio) -> Self {
@@ -2184,6 +2318,105 @@ mod tests {
             assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(950.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn check_auto_brake_at_gear_retraction_test() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .set_park_brake(false)
+                .run_waiting_for(Duration::from_secs(15));
+
+            // No brake inputs
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+
+            // Positive climb, gear up
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(1));
+
+            // Check auto brake is active
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(1500.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(1500.));
+
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+
+            // Check no more autobrakes after 3s
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(3));
+
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn check_brakes_inactive_in_flight_test() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(10));
+
+            // No brake inputs
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(0.))
+                .set_right_brake(Ratio::new::<percent>(0.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+
+            // Now full brakes
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(100.))
+                .set_right_brake(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            // Check no action on brakes
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+
+            // Now full brakes gear down
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(100.))
+                .set_right_brake(Ratio::new::<percent>(100.))
+                .set_gear_down()
+                .run_waiting_for(Duration::from_secs(1));
+
+            // Brakes should work normally
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(50.));
+
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
         }
 
