@@ -438,28 +438,28 @@
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <Update Frequency="5">
-						(* This Update Ensures that the state of some simvars that are linked to the same button is consistent. *)
-						(A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) sp1
-						(A:GENERAL ENG STARTER:#ID#, Bool) l1 != if{
-							(&gt;K:TOGGLE_STARTER#ID#)
-						}
+                        (* This Update Ensures that the state of some simvars that are linked to the same button is consistent. *)
+                        (A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) sp1
+                        (A:GENERAL ENG STARTER:#ID#, Bool) l1 != if{
+                            (&gt;K:TOGGLE_STARTER#ID#)
+                        }
             </Update>
             <UseTemplate Name="ASOBO_GT_Switch_Code">
                 <ANIM_CODE>
-							(A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) 100 *
+                            (A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) 100 *
                 </ANIM_CODE>
                 <LEFT_SINGLE_CODE>
-						(A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) if{
-								#VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_CLOSE)
-								(A:GENERAL ENG STARTER:#ID#, Bool) if{
-									(&gt;K:TOGGLE_STARTER#ID#)
-								}
-							} els{
-								#VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_OPEN)
-								(A:GENERAL ENG STARTER:#ID#, Bool) ! if{
-									(&gt;K:TOGGLE_STARTER#ID#)
-								}
-							}
+                        (A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) if{
+                                #VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_CLOSE)
+                                (A:GENERAL ENG STARTER:#ID#, Bool) if{
+                                    (&gt;K:TOGGLE_STARTER#ID#)
+                                }
+                            } els{
+                                #VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_OPEN)
+                                (A:GENERAL ENG STARTER:#ID#, Bool) ! if{
+                                    (&gt;K:TOGGLE_STARTER#ID#)
+                                }
+                            }
                 </LEFT_SINGLE_CODE>
             </UseTemplate>
         </Component>
