@@ -19,18 +19,19 @@ class CDU_OPTIONS_TELEX {
                 telexToggleText = "ENABLE*[color]cyan";
         }
 
+        // Due to the ',' missing in the font this template does not contain commas.
         mcdu.setTemplate([
             ["A32NX OPTIONS AOC"],
             ["", "", "ONLINE FEATURES"],
             ["WARNING:[color]amber"],
-            ["[b-text]ENABLES FREE TEXT AND LIVE"],
-            ["[s-text]MAP. IF ENABLED,"],
-            ["[b-text]AIRCRAFT POSITION DATA WILL"],
-            ["[s-text]BE PUBLISHED FOR THE"],
-            ["[b-text]DURATION OF THE FLIGHT."],
-            ["[s-text]MSGS ARE PUBLIC, NOT MODERATED."],
-            [""],
-            ["[s-text]USE AT YOUR OWN RISK.[color]amber"],
+            ["{small}ENABLES FREE TEXT AND{end}"],
+            ["{small}LIVE MAP. IF ENABLED{end}"],
+            ["{small}AIRCRAFT POSITION DATA{end}"],
+            ["{small}IS PUBLISHED FOR THE{end}"],
+            ["{small}DURATION OF THE FLIGHT.{end}"],
+            ["{small}MSGS ARE PUBLIC AND{end}"],
+            ["{small}NOT MODERATED.{end}"],
+            ["{small}USE AT YOUR OWN RISK.{end}[color]amber"],
             ["", "CONFIRM[color]cyan"],
             firstTime ? ["<LATER[color]cyan", telexToggleText] : ["<RETURN", telexToggleText]
         ]);
