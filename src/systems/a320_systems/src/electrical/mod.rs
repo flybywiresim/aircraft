@@ -115,10 +115,11 @@ impl A320Electrical {
         context: &UpdateContext,
         ext_pwr: &ExternalPowerSource,
         overhead: &A320ElectricalOverheadPanel,
+        emergency_overhead: &A320EmergencyElectricalOverheadPanel,
         arguments: &mut A320ElectricalUpdateArguments<'a>,
     ) {
         self.alternating_current
-            .update(context, ext_pwr, overhead, arguments);
+            .update(context, ext_pwr, overhead, emergency_overhead, arguments);
 
         self.direct_current.update_with_alternating_current_state(
             context,
@@ -414,6 +415,29 @@ impl SimulationElement for A320ElectricalOverheadPanel {
         self.galy_and_cab.accept(visitor);
         self.ext_pwr.accept(visitor);
         self.commercial.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+pub(super) struct A320EmergencyElectricalOverheadPanel {
+    // The GEN 1 line fault represents the SMOKE light illumination state.
+    gen_1_line: OnOffFaultPushButton,
+}
+impl A320EmergencyElectricalOverheadPanel {
+    pub fn new() -> Self {
+        Self {
+            gen_1_line: OnOffFaultPushButton::new_on("EMER_ELEC_GEN_1_LINE"),
+        }
+    }
+
+    fn generator_1_line_is_on(&self) -> bool {
+        self.gen_1_line.is_on()
+    }
+}
+impl SimulationElement for A320EmergencyElectricalOverheadPanel {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.gen_1_line.accept(visitor);
 
         visitor.visit(self);
     }
@@ -1836,6 +1860,29 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.ac_bus_1_output().is_powered());
     }
 
+    #[test]
+    fn when_gen_1_line_off_and_only_engine_1_running_nothing_powers_ac_buses() {
+        let mut test_bed = test_bed_with()
+            .running_engine_1()
+            .and()
+            .gen_1_line_off()
+            .run();
+
+        assert!(test_bed.ac_bus_1_output().is_unpowered());
+        assert!(test_bed.ac_bus_2_output().is_unpowered());
+    }
+
+    #[test]
+    fn when_gen_1_contactor_open_due_to_gen_1_line_being_off_gen_1_push_button_has_fault() {
+        let mut test_bed = test_bed_with()
+            .running_engine_1()
+            .and()
+            .gen_1_line_off()
+            .run();
+
+        assert!(test_bed.gen_1_has_fault());
+    }
+
     fn test_bed_with() -> A320ElectricalTestBed {
         test_bed()
     }
@@ -1907,6 +1954,7 @@ mod a320_electrical_circuit_tests {
         ext_pwr: ExternalPowerSource,
         elec: A320Electrical,
         overhead: A320ElectricalOverheadPanel,
+        emergency_overhead: A320EmergencyElectricalOverheadPanel,
         apu_master_sw_pb_on: bool,
         apu_start_pb_on: bool,
         apu: TestApu,
@@ -1920,6 +1968,7 @@ mod a320_electrical_circuit_tests {
                 ext_pwr: ExternalPowerSource::new(),
                 elec: A320Electrical::new(),
                 overhead: A320ElectricalOverheadPanel::new(),
+                emergency_overhead: A320EmergencyElectricalOverheadPanel::new(),
                 apu_master_sw_pb_on: false,
                 apu_start_pb_on: false,
                 apu: TestApu::new(),
@@ -2008,6 +2057,7 @@ mod a320_electrical_circuit_tests {
                 context,
                 &self.ext_pwr,
                 &self.overhead,
+                &self.emergency_overhead,
                 &mut A320ElectricalUpdateArguments::new(
                     [
                         Ratio::new::<percent>(if self.engine_1_running { 80. } else { 0. }),
@@ -2036,6 +2086,7 @@ mod a320_electrical_circuit_tests {
             self.ext_pwr.accept(visitor);
             self.elec.accept(visitor);
             self.overhead.accept(visitor);
+            self.emergency_overhead.accept(visitor);
 
             visitor.visit(self);
         }
@@ -2145,6 +2196,12 @@ mod a320_electrical_circuit_tests {
         fn gen_1_off(mut self) -> Self {
             self.simulation_test_bed
                 .write_bool("OVHD_ELEC_ENG_GEN_1_PB_IS_ON", false);
+            self
+        }
+
+        fn gen_1_line_off(mut self) -> Self {
+            self.simulation_test_bed
+                .write_bool("OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON", false);
             self
         }
 

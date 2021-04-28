@@ -1,6 +1,6 @@
 use super::{
-    A320ElectricalOverheadPanel, A320ElectricalUpdateArguments, AlternatingCurrentState,
-    DirectCurrentState,
+    A320ElectricalOverheadPanel, A320ElectricalUpdateArguments,
+    A320EmergencyElectricalOverheadPanel, AlternatingCurrentState, DirectCurrentState,
 };
 use std::time::Duration;
 use systems::{
@@ -59,6 +59,7 @@ impl A320AlternatingCurrentElectrical {
         context: &UpdateContext,
         ext_pwr: &ExternalPowerSource,
         overhead: &A320ElectricalOverheadPanel,
+        emergency_overhead: &A320EmergencyElectricalOverheadPanel,
         arguments: &mut A320ElectricalUpdateArguments<'a>,
     ) {
         self.emergency_gen.update(
@@ -68,7 +69,7 @@ impl A320AlternatingCurrentElectrical {
         );
 
         self.main_power_sources
-            .update(context, ext_pwr, overhead, arguments);
+            .update(context, ext_pwr, overhead, emergency_overhead, arguments);
 
         if self.main_ac_buses_unpowered()
             && context.indicated_airspeed() > Velocity::new::<knot>(100.)
@@ -342,13 +343,15 @@ impl A320MainPowerSources {
         context: &UpdateContext,
         ext_pwr: &ExternalPowerSource,
         overhead: &A320ElectricalOverheadPanel,
+        emergency_overhead: &A320EmergencyElectricalOverheadPanel,
         arguments: &mut A320ElectricalUpdateArguments<'a>,
     ) {
         self.engine_1_gen.update(context, arguments);
         self.engine_2_gen.update(context, arguments);
 
-        let gen_1_provides_power =
-            overhead.generator_1_is_on() && self.engine_1_gen.output_within_normal_parameters();
+        let gen_1_provides_power = overhead.generator_1_is_on()
+            && emergency_overhead.generator_1_line_is_on()
+            && self.engine_1_gen.output_within_normal_parameters();
         let gen_2_provides_power =
             overhead.generator_2_is_on() && self.engine_2_gen.output_within_normal_parameters();
         let only_one_engine_gen_is_powered = gen_1_provides_power ^ gen_2_provides_power;

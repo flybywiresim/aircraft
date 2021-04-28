@@ -176,14 +176,6 @@
     - Bool
     - True if pitot heating auto
 
-- A32NX_EMERELECPWR_GEN1_FAULT
-    - Bool
-    - True if generator 1 line fault
-
-- A32NX_EMERELECPWR_GEN1_TOGGLE
-    - Bool
-    - True if generator 1 line is off
-
 - A32NX_EMERELECPWR_RAT_FAULT
     - Bool
     - True if RAT elec power fault
@@ -574,6 +566,7 @@
         - ELEC_AC_ESS_FEED
         - ELEC_GALY_AND_CAB
         - PNEU_APU_BLEED
+        - EMER_ELEC_GEN_1_LINE: a FAULT indicates SMOKE should illuminate.
 
 - A32NX_OVHD_{name}_PB_IS_AUTO
     - Bool
@@ -603,6 +596,7 @@
         - APU_MASTER_SW
         - ELEC_COMMERCIAL
         - PNEU_APU_BLEED
+        - EMER_ELEC_GEN_1_LINE
 
 - A32NX_ELEC_CONTACTOR_{name}_IS_CLOSED
     - Bool
