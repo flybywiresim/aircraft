@@ -79,12 +79,13 @@ const FlightWidget = (props: FlightWidgetProps) => {
                 >
                     FROM SIMBRIEF
                 </button>
-                <button
-                    type="button"
-                    className="w-full text-lg text-white font-medium bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none"
+                {/* This button is converted to a div, because the 'disabled' attribute is not recognized by Coherent. */}
+                <div
+                    // type="button"
+                    className="w-full text-lg text-white font-medium bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none opacity-25"
                 >
                     LINK MCDU
-                </button>
+                </div>
             </div>
         </div>
     );
