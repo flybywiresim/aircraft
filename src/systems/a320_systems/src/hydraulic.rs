@@ -169,8 +169,8 @@ impl A320Hydraulic {
         let number_of_steps_floating_point =
             time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
 
-        // Updating rat stowed pos on all frames in case it's used for graphics
-        self.ram_air_turbine.update_position(&context.delta());
+        // Here we update everything requiring same refresh as the sim calls us, more likely visual stuff
+        self.update_at_every_frames(&context);
 
         if number_of_steps_floating_point < 1.0 {
             // Can't do a full time step
@@ -271,6 +271,15 @@ impl A320Hydraulic {
     #[cfg(test)]
     fn is_yellow_pressurised(&self) -> bool {
         self.yellow_loop.is_pressurised()
+    }
+
+    // Update with same refresh rate as the sim
+    fn update_at_every_frames(&mut self, context: &UpdateContext) {
+        // Updating rat stowed pos on all frames in case it's used for graphics
+        self.ram_air_turbine.update_position(&context.delta());
+
+        // Tug has its angle changing on each frame and we'd like to detect this
+        self.pushback_tug.update();
     }
 
     // All the higher frequency updates like physics
@@ -678,7 +687,7 @@ impl A320PowerTransferUnitController {
             forward_cargo_door.has_moved() || aft_cargo_door.has_moved(),
         );
         self.nose_wheel_steering_pin_inserted
-            .update(context, pushback_tug.is_pushing());
+            .update(context, pushback_tug.is_connected());
 
         let ptu_inhibited = self.should_inhibit_ptu_after_cargo_door_operation.output()
             && overhead_panel.yellow_epump_push_button_is_auto();
@@ -963,7 +972,9 @@ struct PushbackTug {
     // 1 = Left
     // 2 = Right
     // 3 = Assumed to be no pushback
+    // 4 = might be finishing pushback, to confirm
     state: f64,
+    is_connected_to_nose_gear: bool,
 }
 impl PushbackTug {
     const STATE_NO_PUSHBACK: f64 = 3.;
@@ -972,12 +983,25 @@ impl PushbackTug {
         Self {
             angle: 0.,
             previous_angle: 0.,
-            state: 0.,
+            state: Self::STATE_NO_PUSHBACK,
+            is_connected_to_nose_gear: false,
         }
     }
 
+    pub fn update(&mut self) {
+        if self.is_pushing() {
+            self.is_connected_to_nose_gear = true;
+        } else if (self.state - PushbackTug::STATE_NO_PUSHBACK).abs() <= f64::EPSILON {
+            self.is_connected_to_nose_gear = false;
+        }
+    }
+
+    fn is_connected(&self) -> bool {
+        self.is_connected_to_nose_gear
+    }
+
     fn is_pushing(&self) -> bool {
-        // The angle keeps changing while pushing.
+        // The angle keeps changing while pushing or is frozen high on high angle manoeuvering.
         (self.angle - self.previous_angle).abs() > f64::EPSILON
             && (self.state - PushbackTug::STATE_NO_PUSHBACK).abs() > f64::EPSILON
     }
@@ -987,12 +1011,6 @@ impl SimulationElement for PushbackTug {
         self.previous_angle = self.angle;
         self.angle = state.read_f64("PUSHBACK ANGLE");
         self.state = state.read_f64("PUSHBACK STATE");
-        // println!(
-        //     "TUGstate={}, TUGangle={}, isPushing={}",
-        //     self.state,
-        //     self.angle,
-        //     self.is_pushing()
-        // );
     }
 }
 
