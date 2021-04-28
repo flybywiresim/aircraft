@@ -182,6 +182,15 @@
                             let autoBrakeSwitch = (A:AUTO BRAKE SWITCH CB, number);
                             let level = #AUTOBRAKE_LEVEL, number#;
 
+
+                            if onGround and autoBrakeSwitch == 0 {
+                                if autobrakesLevel == 0 {
+                                    autobrakesLevel = level;
+                                }
+                            } else if onGround or autoBrakeSwitch &lt; 4 {
+                                autobrakesLevel = autoBrakeSwitch - 1;
+                            }
+
                             if autobrakesLevel != 0 {
                                 if disarmAutobrakesOnLgRetract and !(A:GEAR HANDLE POSITION, bool) {
                                     if lgUpWaitCounter == 30 {
@@ -195,12 +204,6 @@
 
                                 if onGround {
                                     disarmAutobrakesOnLgRetract = true;
-
-                                    if autoBrakeSwitch == 0 and autobrakesLevel == 0 {
-                                        autobrakesLevel = level;
-                                    } else {
-                                        autobrakesLevel = autoBrakeSwitch - 1;
-                                    }
 
                                     if groundSpeed &lt; 10 {
                                       autobrakeControl = 0;
@@ -220,9 +223,6 @@
                                     }
                                 } else {
                                     onGroundWaitCounter = 0;
-                                    if(autoBrakeSwitch < 4) {
-                                        autobrakesLevel = autoBrakeSwitch - 1;
-                                    }
                                 }
                             }
                         </UPDATE_CODE>
