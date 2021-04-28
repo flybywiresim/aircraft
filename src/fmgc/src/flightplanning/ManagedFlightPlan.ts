@@ -204,13 +204,21 @@ export class ManagedFlightPlan {
 
   /**
    * Adds a waypoint to the flight plan.
-   * @param waypoint The waypoint to add.
-   * @param index The index to add the waypoint at. If ommitted the waypoint will
-   * be appended to the end of the flight plan.
-   * @param segmentType The type of segment to add the waypoint to.
+   *
+   * @param waypoint    The waypoint to add
+   *
+   * @param index       The index to add the waypoint at. If omitted the waypoint will
+   *                    be appended to the end of the flight plan.
+   *
+   * @param segmentType The type of segment to add the waypoint to
    */
-  public addWaypoint(waypoint: WayPoint | any, index?: number | undefined, segmentType?: SegmentType): void {
+  public addWaypoint(
+      waypoint: WayPoint | any,
+      index?: number | undefined,
+      segmentType?: SegmentType,
+  ): void {
       const mappedWaypoint: WayPoint = (waypoint instanceof WayPoint) ? waypoint : RawDataMapper.toWaypoint(waypoint, this._parentInstrument);
+
       if (mappedWaypoint.type === 'A' && index === 0) {
           this.originAirfield = mappedWaypoint;
 
@@ -266,14 +274,22 @@ export class ManagedFlightPlan {
               this.reflowSegments();
               this.reflowDistances();
 
-              // transfer a potential discontinuity backwards
               const finalIndex = this.waypoints.indexOf(mappedWaypoint);
               const previousWp = finalIndex > 0 ? this.waypoints[finalIndex - 1] : undefined;
+
+              // Transfer discontinuity forwards if previous waypoint has one and it can be cleared
               if (previousWp && previousWp.endsInDiscontinuity) {
-                  previousWp.endsInDiscontinuity = false;
-                  previousWp.discontinuityCanBeCleared = undefined;
-                  mappedWaypoint.endsInDiscontinuity = true;
-                  mappedWaypoint.discontinuityCanBeCleared = true;
+                  if (previousWp.discontinuityCanBeCleared === undefined || previousWp.discontinuityCanBeCleared) {
+                      previousWp.endsInDiscontinuity = false;
+                      previousWp.discontinuityCanBeCleared = undefined;
+
+                      // Don't mark the mapped waypoint's discontinuity as clearable if this is a MANUAL
+                      // TODO maybe extract this logic since we also use it when building a LegsProcedure
+                      mappedWaypoint.endsInDiscontinuity = true;
+                      if (!mappedWaypoint.isVectors) {
+                          mappedWaypoint.discontinuityCanBeCleared = true;
+                      }
+                  }
               }
 
               if (this.activeWaypointIndex === 0 && this.length > 1) {
