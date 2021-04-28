@@ -89,7 +89,7 @@
             <!-- Front Glareshields -->
             <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
                 <NODE_ID>LIGHTING_Knob_Glareshield_1</NODE_ID>
-				<ANIM_NAME>LIGHTING_Knob_Glareshield_1</ANIM_NAME>
+                <ANIM_NAME>LIGHTING_Knob_Glareshield_1</ANIM_NAME>
                 <PART_ID>Lighting_Knob_Glareshield_Pilot_0</PART_ID>
                 <POTENTIOMETER>10</POTENTIOMETER>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_DECREASE</ANIMTIP_0>
