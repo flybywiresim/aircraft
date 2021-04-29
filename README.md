@@ -1,4 +1,4 @@
-# <img src="https://github.com/flybywiresim/fbw-branding/blob/master/svg/FBW-A32NX-Logo.svg" placeholder="FlyByWire" width="400"/>
+# <img src="https://raw.githubusercontent.com/flybywiresim/fbw-branding/master/svg/FBW-Logo.svg" placeholder="FlyByWire" width="400"/>
 
 
 [![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU)
