@@ -161,6 +161,7 @@ Default events:
 Event | Function
 --- | ---
 AP_MASTER | Toggles AP 1 master
+AUTOPILOT_ON | Engage AP1 (add AP2 when LAND mode is armed or engaged)
 AUTOPILOT_OFF | Disconnect AP (like red button on sidestick)
 AUTOPILOT_DISENGAGE_TOGGLE | Same as AP_MASTER
 AP_SPD_VAR_INC | Clockwise dial Speed knob on FCU

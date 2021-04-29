@@ -8,7 +8,7 @@ export default new TaskOfTasks('a32nx', [
         new ExecTask('systems', [
             'cargo build --target wasm32-wasi --release',
             'cp -u target/wasm32-wasi/release/systems.wasm flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/'
-        ]),
+        ], ['src/systems', 'Cargo.lock', 'Cargo.toml', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/systems.wasm']),
         new ExecTask('systems-autopilot', [
             'src/fbw/build.sh'
         ], ['src/fbw', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm']),
