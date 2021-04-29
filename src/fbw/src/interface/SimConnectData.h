@@ -121,6 +121,7 @@ struct SimInput {
 };
 
 struct SimInputAutopilot {
+  double AP_engage;
   double AP_1_push;
   double AP_2_push;
   double AP_disconnect;
