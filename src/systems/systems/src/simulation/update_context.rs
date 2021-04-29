@@ -1,7 +1,7 @@
 use std::time::Duration;
 use uom::si::{
     acceleration::foot_per_second_squared, f64::*, length::foot,
-    thermodynamic_temperature::degree_celsius, velocity::knot,
+    thermodynamic_temperature::degree_celsius, time::second, velocity::knot,
 };
 
 use super::SimulatorReader;
@@ -68,6 +68,14 @@ impl UpdateContext {
 
     pub fn delta(&self) -> Duration {
         self.delta
+    }
+
+    pub fn delta_as_secs_f64(&self) -> f64 {
+        self.delta.as_secs_f64()
+    }
+
+    pub fn delta_as_time(&self) -> Time {
+        Time::new::<second>(self.delta.as_secs_f64())
     }
 
     pub fn indicated_airspeed(&self) -> Velocity {
