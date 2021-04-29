@@ -1,4 +1,4 @@
-# <img src="https://raw.githubusercontent.com/flybywiresim/fbw-branding/master/svg/FBW-Logo.svg" placeholder="FlyByWire" width="400"/>
+# <img src="https://github.com/flybywiresim/fbw-branding/blob/master/svg/FBW-A32NX-Logo.svg" placeholder="FlyByWire" width="400"/>
 
 
 [![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU)
@@ -34,8 +34,6 @@ Please note that this configuration may change in the future as the A32NX projec
 Pilot ID can be found in the Optional Entries section of the Dispatch Options page.
 
 ## Downloads
-**Warning**: All versions have been forked as a separate package/aircraft in MSFS. Existing Asobo A320neo liveries will be incompatible with the new package.
-
 **Warning:** The development (master) and experimental versions have been forked as a separate package/aircraft in MSFS, and will appear separate from the default A320neo. Existing Asobo A320neo liveries will be incompatible with the new package.
 
 ### A32NX Installer
