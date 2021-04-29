@@ -3,7 +3,7 @@
         <DefaultTemplateParameters>
             <ID>1</ID>
         </DefaultTemplateParameters>
-        
+
         <UseTemplate Name="A32NX_Sidestick_SubTemplate">
         </UseTemplate>
     </Template>
