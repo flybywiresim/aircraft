@@ -93,7 +93,7 @@ class CDUAocRequestsWeather {
         mcdu.onRightInput[5] = async () => {
             const icaos = [store["arpt1"], store["arpt2"], store["arpt3"], store["arpt4"]];
             if (icaos[0] == "" && icaos[1] == "" && icaos[2] == "" && icaos[3] == "") {
-                // mcdu.addNewMessage(NXFictionalMessages.noAiportSpecified);
+                mcdu.addNewMessage(NXFictionalMessages.noAiportSpecified);
                 return;
             }
             store["sendStatus"] = "QUEUED";
