@@ -17,8 +17,6 @@ export const CrzPage = () => {
     const [leftConsumption] = useSimVar('L:A32NX_FUEL_USED:1', 'number', 1000);
     const [rightConsumption] = useSimVar('L:A32NX_FUEL_USED:2', 'number', 1000);
 
-    console.log(`left consumption is ${leftConsumption}`);
-
     const fuelConsumptionForDisplay = function (fuelConsumption, unitsC) {
         return parseInt(((fuelConsumption * unitsC) - (fuelConsumption % 10)).toFixed(0));
     };
@@ -28,11 +26,8 @@ export const CrzPage = () => {
     const [totalFuel, setTotalFuel] = useState(leftFuel + rightFuel);
 
     useEffect(() => {
-        console.log('Fuel consumed');
-        console.log(`Left fuel is ${leftConsumption}`);
         setLeftFuel(fuelConsumptionForDisplay(leftConsumption, unitConversion));
         setRightFuel(fuelConsumptionForDisplay(rightConsumption, unitConversion));
-        console.log(`Fuel after function is ${fuelConsumptionForDisplay(leftConsumption, unitConversion)}`);
         setTotalFuel(leftFuel + rightFuel);
     }, [leftConsumption, rightConsumption]);
 
@@ -231,9 +226,13 @@ export const CrzPage = () => {
                 <text id="CabinAltitude" className="large green" x="515" y="475" textAnchor="end">{Math.round(cabinAlt / 50) * 50 > 0 ? Math.round(cabinAlt / 50) * 50 : 0}</text>
                 <text className="medium cyan" x="525" y="475">FT</text>
 
-                <g id="vsArrow">
-                    <path d="M440,405 h7 L455,395" className="VsIndicator" strokeLinejoin="miter" />
-                    <polygon points="456,384 452,394 462,394" transform="rotate(38,455,395)" className="VsIndicator" />
+                <g
+                    id="vsArrow"
+                    className={(cabinVs * 60 <= -50 || cabinVs * 60 >= 50) && !manMode ? '' : 'hide'}
+                    transform={cabinVs * 60 <= -50 ? 'translate(0, 795) scale(1, -1)' : 'scale(1, 1)'}
+                >
+                    <path d="M433,405 h7 L446,395" className="VsIndicator" strokeLinejoin="miter" />
+                    <polygon points="452,388 447,396 457,396" transform="rotate(38,452,388)" className="VsIndicator" />
                 </g>
 
                 <path className="WingPlaneSym" d="M 300 410 a 70 70 0 0 0 -30 -5 l -180 0 m 30 0 l 0 50 l 85 0 l 0 -10 m 0 10 l 85 0 l 0 -48 m -170 48 l -30 0 c -60 0 -60 -20 -45 -25" />
@@ -339,8 +338,6 @@ const GaugeMarkerComponent = ({ value, x, y, min, max, radius, startAngle, endAn
             y: y + (dir.y * radius * 1.1),
         };
     }
-
-    // console.log(`Value is ${value} and x is ${x} and y is ${y} Start coords ${start.x} ${start.y} and end ${end.x} ${end.y}`);
 
     // Text
 
