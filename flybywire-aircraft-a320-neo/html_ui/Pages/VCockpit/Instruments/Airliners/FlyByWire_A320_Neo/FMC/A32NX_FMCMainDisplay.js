@@ -366,7 +366,7 @@ class FMCMainDisplay extends BaseAirliners {
 
                 this._destDataChecked = false;
 
-                if (this.canShowNextPerfPage(_lastFlightPhase)) {
+                if (this.canShowNextPerfPage(_lastFlightPhase) || this.canShowNextPerfPage(_curFlightPhase)) {
                     CDUPerformancePage.ShowCLBPage(this);
                 } else if (this.page.Current === this.page.ProgressPage) {
                     CDUProgressPage.ShowPage(this);
@@ -386,7 +386,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
 
             case FmgcFlightPhases.CRUISE: {
-                if (this.canShowNextPerfPage(_lastFlightPhase)) {
+                if (this.canShowNextPerfPage(_lastFlightPhase) || this.canShowNextPerfPage(_curFlightPhase)) {
                     CDUPerformancePage.ShowCRZPage(this);
                 } else if (this.page.Current === this.page.ProgressPage) {
                     CDUProgressPage.ShowPage(this);
@@ -407,7 +407,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
 
             case FmgcFlightPhases.DESCENT: {
-                if (this.canShowNextPerfPage(_lastFlightPhase)) {
+                if (this.canShowNextPerfPage(_lastFlightPhase) || this.canShowNextPerfPage(_curFlightPhase)) {
                     CDUPerformancePage.ShowDESPage(this);
                 } else if (this.page.Current === this.page.ProgressPage) {
                     CDUProgressPage.ShowPage(this);
@@ -429,7 +429,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
 
             case FmgcFlightPhases.APPROACH: {
-                if (this.canShowNextPerfPage(_lastFlightPhase)) {
+                if (this.canShowNextPerfPage(_lastFlightPhase) || this.canShowNextPerfPage(_curFlightPhase)) {
                     CDUPerformancePage.ShowAPPRPage(this);
                 } else if (this.page.Current === this.page.ProgressPage) {
                     CDUProgressPage.ShowPage(this);
@@ -471,7 +471,7 @@ class FMCMainDisplay extends BaseAirliners {
                 const currentHeading = Simplane.getHeadingMagnetic();
                 Coherent.call("HEADING_BUG_SET", 1, currentHeading);
 
-                if (this.canShowNextPerfPage(_lastFlightPhase)) {
+                if (this.canShowNextPerfPage(_lastFlightPhase) || this.canShowNextPerfPage(_curFlightPhase)) {
                     CDUPerformancePage.ShowGOAROUNDPage(this);
                 } else if (this.page.Current === this.page.ProgressPage) {
                     CDUProgressPage.ShowPage(this);

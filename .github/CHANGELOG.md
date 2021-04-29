@@ -106,6 +106,7 @@
 1. [FCU] Init FCU with SPD 100 kn, HDG = 0° and ALT 100 ft - @aguther (Andreas Guther)
 1. [FBW] Inhibit alpha floor and protection law for 10 s after flight start / plane reload - @aguther (Andreas Guther)
 1. [ATHR/FADEC] Fixed potential engagement of reverse thrust in flight - @aguther (Andreas Guther)
+1. [MCDU] Fixed performance page refresh on flight phase transition - @MisterChocker (Leon)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
