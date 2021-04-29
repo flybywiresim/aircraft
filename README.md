@@ -62,9 +62,6 @@ This has the latest features, but is much more unstable, use at your own risk.
 
 This version is the same as the regular master/development version. However, this version comes with the (work in progress) LNAV and flight plan manager. **Expect issues with navigation and flight planning.** No support will be provided via Discord.
 
-[Download custom autopilot development build here.](https://api.flybywiresim.com/api/v1/download?url=https://flybywiresim-packages.b-cdn.net/vmaster-cfbw-cap/A32NX-master-cfbw-cap.zip)
-
-[**IMPORTANT:** view warnings and info for the custom autopilot build here.](https://github.com/flybywiresim/a32nx/tree/autopilot/docs)
 
 ## Installation
 
