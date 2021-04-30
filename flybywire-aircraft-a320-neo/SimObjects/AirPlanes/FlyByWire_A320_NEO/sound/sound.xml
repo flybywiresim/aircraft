@@ -1502,7 +1502,6 @@
             </Requires>
         </Sound>
 
-
         <!-- RAIN ========================================================================================== -->
 
         <Sound WwiseData="true" WwiseEvent="rain_sound" SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0">
