@@ -5,7 +5,6 @@ use uom::si::{
     f64::*,
     pressure::psi,
     ratio::percent,
-    time::second,
     velocity::knot,
     volume::{cubic_inch, gallon},
     volume_rate::gallon_per_second,
@@ -1121,7 +1120,6 @@ mod tests {
         length::foot,
         pressure::{pascal, psi},
         thermodynamic_temperature::degree_celsius,
-        time::second,
         volume::{gallon, liter},
     };
 
