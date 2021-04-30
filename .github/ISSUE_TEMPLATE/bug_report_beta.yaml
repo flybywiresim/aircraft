@@ -1,6 +1,6 @@
-name: Aircraft Bug Report Form
+name: Bug Report
 description: File a bug report
-title: "[Bug]: "
+title: "Title goes here..."
 labels: [Bug]
 body:
 - type: markdown
