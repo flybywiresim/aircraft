@@ -47,8 +47,10 @@ var A320_Neo_LowerECAM_CRZ;
             this.VibN2Right = this.querySelector("#VibN2Right");
             this.VibN2RightDecimal = this.querySelector("#VibN2RightDecimal");
 
+            this.LandingElevationTitle = this.querySelector("#LandingElevationTitle");
             this.LandingElevationMode = this.querySelector("#LandingElevationMode");
             this.LandingElevation = this.querySelector("#LandingElevation");
+            this.LandingElevationUnit = this.querySelector("#LandingElevationUnit");
 
             this.DeltaPressure = this.querySelector("#DeltaPressure");
             this.DeltaPressureDecimal = this.querySelector("#DeltaPressureDecimal");
@@ -105,6 +107,8 @@ var A320_Neo_LowerECAM_CRZ;
             this.CabinAltitudeDisplayed = -1;
             this.OutsidePressureDisplayed = -1;
 
+            this.oldManMode = 0;
+
             this.updateThrottler = new UpdateThrottler(500);
 
             this.isInitialised = true;
@@ -117,8 +121,8 @@ var A320_Neo_LowerECAM_CRZ;
                 return;
             }
             // Fuel
-            const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "KG") * this.unitConversion;
-            const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "KG") * this.unitConversion;
+            const leftConsumption = SimVar.GetSimVarValue("L:A32NX_FUEL_USED:1", "number") * this.unitConversion;
+            const rightConsumption = SimVar.GetSimVarValue("L:A32NX_FUEL_USED:2", "number") * this.unitConversion;
 
             const leftConsumptionShown = fastToFixed(leftConsumption - (leftConsumption % 10), 0);
             const rightConsumptionShown = fastToFixed(rightConsumption - (rightConsumption % 10), 0);
@@ -179,6 +183,23 @@ var A320_Neo_LowerECAM_CRZ;
                 this.VibN2Right.textContent = decimalSplit[0] + "."; // Same here
                 this.VibN2RightDecimal.textContent = decimalSplit[1];
                 this.VibN1RightDisplayed = valueShown;
+            }
+
+            // Landing elevation
+            const manMode = SimVar.GetSimVarValue("L:A32NX_CAB_PRESS_MODE_MAN", "Bool");
+
+            if (manMode && !this.oldManMode) {
+                this.LandingElevationTitle.setAttribute("visibility", "hidden");
+                this.LandingElevationMode.setAttribute("visibility", "hidden");
+                this.LandingElevation.setAttribute("visibility", "hidden");
+                this.LandingElevationUnit.setAttribute("visibility", "hidden");
+                this.oldManMode = 1;
+            } else if (!manMode && this.oldManMode) {
+                this.LandingElevationTitle.setAttribute("visibility", "visible");
+                this.LandingElevationMode.setAttribute("visibility", "visible");
+                this.LandingElevation.setAttribute("visibility", "visible");
+                this.LandingElevationUnit.setAttribute("visibility", "visible");
+                this.oldManMode = 0;
             }
 
             // Cabin pressure

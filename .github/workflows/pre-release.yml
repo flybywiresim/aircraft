@@ -8,6 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      A32NX_PRODUCTION_BUILD: 1
       RELEASE_ZIP_NAME: A32NX-stable.zip
       BUILD_DIR_NAME: stable
     steps:
@@ -20,7 +21,7 @@ jobs:
       - name: Build ZIP file
         run: |
           mkdir ./${{ env.BUILD_DIR_NAME }}
-          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./A32NX/
+          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

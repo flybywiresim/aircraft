@@ -7,8 +7,6 @@
             - DCDU_SIDE         <no default>    Either L or R
             - PLANE_NAME        <no default>    Plane project name
             - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
-
-    Authors: Benjamin Dupont (@Benjozork) 10/10/20
     -->
     <Template Name="FBW_Airbus_DCDU_Brightness_Switch">
         <DefaultTemplateParameters>
@@ -18,6 +16,7 @@
             <WWISE_EVENT>fmc_push_button_on</WWISE_EVENT>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
         </DefaultTemplateParameters>
 
         <Component ID="SWITCH_MP#DCDU_SIDE#_DIM" Node="SWITCH_MP#DCDU_SIDE#_DIM">
@@ -50,7 +49,7 @@
 
         <Component ID="SWITCH_MP#DCDU_SIDE#_DIM_SEQ1" Node="SWITCH_MP#DCDU_SIDE#_DIM_SEQ1">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, Percent over 100)</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, Percent over 100) #SEQ1_POWERED# *</EMISSIVE_CODE>
             </UseTemplate>
         </Component>
     </Template>
@@ -63,8 +62,6 @@
             - PLANE_NAME        <no default>    Plane project name
             - HTML_EVENT_ID     <no default>    HTML-Event that will be fired when the button is pushed
             - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
-
-    Authors: Benjamin Dupont (@Benjozork) 10/10/20
     -->
     <Template Name="FBW_Airbus_DCDU_Generic_Switch">
         <DefaultTemplateParameters>
@@ -74,11 +71,12 @@
             <WWISE_EVENT_2>fmc_push_button_off</WWISE_EVENT_2>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
-            <SEQ1_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, percent) 100 /</SEQ1_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, percent) 100 / #SEQ1_POWERED# *</SEQ1_EMISSIVE_CODE>
             <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
 
             <LEFT_SINGLE_CODE>(&gt;H:#PLANE_NAME#_DCDU_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
@@ -92,8 +90,6 @@
             - NODE_ID           <no default>    Name of the button
             - PLANE_NAME        <no default>    Plane project name
             - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
-
-    Authors: Benjamin Dupont (@Benjozork) 11/10/20
     -->
     <Template Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
         <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
@@ -108,8 +104,6 @@
     Clone of Asobo template to fix broken logic
 
     Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position.
-
-    Authors: Asobo / Markus Ullmann (@jokey2k) 18/10/20
     -->
     <Template Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
         <DefaultTemplateParameters>
@@ -224,14 +218,14 @@
         </Component>
         <Component ID="#NODE_ID_DECEL#" Node="#NODE_ID_DECEL#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <EMISSIVE_CODE>(A:AUTO BRAKE SWITCH CB, Enum) 1 != (A:ACCELERATION BODY Z, feet per second squared) #REF_DECEL_FPSS# &lt;= and (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(A:AUTO BRAKE SWITCH CB, Enum) 1 != (A:ACCELERATION BODY Z, feet per second squared) #REF_DECEL_FPSS# &lt;= and (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and</EMISSIVE_CODE>
                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
             </UseTemplate>
         </Component>
         <Component ID="#NODE_ID_ON#" Node="#NODE_ID_ON#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
@@ -317,11 +311,12 @@
             <NODE_ID>LANDING_GEAR_Light_#ID#</NODE_ID>
             <PART_ID>LANDING_GEAR_Light</PART_ID>
             <SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
+            <SEQ_POWERED>1</SEQ_POWERED>
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <DUMMY_BUTTON>True</DUMMY_BUTTON>
-            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ_POWERED# and</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or #SEQ_POWERED# and</SEQ2_EMISSIVE_CODE>
         </UseTemplate>
     </Template>
 
@@ -443,28 +438,28 @@
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <Update Frequency="5">
-						(* This Update Ensures that the state of some simvars that are linked to the same button is consistent. *)
-						(A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) sp1
-						(A:GENERAL ENG STARTER:#ID#, Bool) l1 != if{
-							(&gt;K:TOGGLE_STARTER#ID#)
-						}
+                (* This Update Ensures that the state of some simvars that are linked to the same button is consistent. *)
+                (A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) sp1
+                (A:GENERAL ENG STARTER:#ID#, Bool) l1 != if{
+                    (&gt;K:TOGGLE_STARTER#ID#)
+                }
             </Update>
             <UseTemplate Name="ASOBO_GT_Switch_Code">
                 <ANIM_CODE>
-							(A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) 100 *
+                    (A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) 100 *
                 </ANIM_CODE>
                 <LEFT_SINGLE_CODE>
-						(A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) if{
-								#VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_CLOSE)
-								(A:GENERAL ENG STARTER:#ID#, Bool) if{
-									(&gt;K:TOGGLE_STARTER#ID#)
-								}
-							} els{
-								#VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_OPEN)
-								(A:GENERAL ENG STARTER:#ID#, Bool) ! if{
-									(&gt;K:TOGGLE_STARTER#ID#)
-								}
-							}
+                    (A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) if{
+                        #VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_CLOSE)
+                        (A:GENERAL ENG STARTER:#ID#, Bool) if{
+                            (&gt;K:TOGGLE_STARTER#ID#)
+                        }
+                    } els{
+                        #VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_OPEN)
+                        (A:GENERAL ENG STARTER:#ID#, Bool) ! if{
+                            (&gt;K:TOGGLE_STARTER#ID#)
+                        }
+                    }
                 </LEFT_SINGLE_CODE>
             </UseTemplate>
         </Component>
@@ -498,14 +493,14 @@
             <WWISE_EVENT_2>yoke_push_button_off</WWISE_EVENT_2>
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
             <ID>1</ID>
-            <TOOLTIPID>%((A:AUTOPILOT MASTER, Bool))%{if}Disc. Autopilot%{else}Take priority%{end}</TOOLTIPID>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button_Held">
+                <TOOLTIPID>%((L:A32NX_AUTOPILOT_ACTIVE, Bool))%{if}Disc. Autopilot%{else}Take priority%{end}</TOOLTIPID>
                 <LEFT_SINGLE_CODE>
-                    (A:AUTOPILOT MASTER, Bool) if{
-                        (&gt;K:AP_MASTER)
+                    (L:A32NX_AUTOPILOT_ACTIVE, Bool) if{
+                        (&gt;K:AUTOPILOT_OFF)
                     } els{
                         1 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)
                     }

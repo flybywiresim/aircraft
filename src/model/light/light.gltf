@@ -1,0 +1,278 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 82,
+            "min": [
+                0.4780317544937134,
+                -0.18142367899417877,
+                -0.1332007795572281
+            ],
+            "max": [
+                0.6290825605392456,
+                0.21694722771644592,
+                0.0726054385304451
+            ],
+            "type": "VEC3",
+            "name": "x0_LIGHTS_Overhead.001_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 82,
+            "type": "VEC4",
+            "name": "x0_LIGHTS_Overhead.001_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 82,
+            "type": "VEC4",
+            "name": "x0_LIGHTS_Overhead.001_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 82,
+            "type": "VEC2",
+            "name": "x0_LIGHTS_Overhead.001_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 82,
+            "type": "VEC2",
+            "name": "x0_LIGHTS_Overhead.001_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 82,
+            "type": "VEC4",
+            "name": "x0_LIGHTS_Overhead.001_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5123,
+            "count": 402,
+            "type": "SCALAR",
+            "name": "x0_LIGHTS_Overhead.001_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2952,
+            "componentType": 5126,
+            "count": 82,
+            "min": [
+                -0.6290826797485352,
+                -0.18142367899417877,
+                -0.1332007795572281
+            ],
+            "max": [
+                -0.47803187370300293,
+                0.21694722771644592,
+                0.0726054385304451
+            ],
+            "type": "VEC3",
+            "name": "x0_LIGHTS_Overhead_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2964,
+            "componentType": 5120,
+            "count": 82,
+            "type": "VEC4",
+            "name": "x0_LIGHTS_Overhead_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2968,
+            "componentType": 5120,
+            "count": 82,
+            "type": "VEC4",
+            "name": "x0_LIGHTS_Overhead_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2972,
+            "componentType": 5122,
+            "count": 82,
+            "type": "VEC2",
+            "name": "x0_LIGHTS_Overhead_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2976,
+            "componentType": 5122,
+            "count": 82,
+            "type": "VEC2",
+            "name": "x0_LIGHTS_Overhead_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 2980,
+            "componentType": 5123,
+            "count": 82,
+            "type": "VEC4",
+            "name": "x0_LIGHTS_Overhead_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 804,
+            "componentType": 5123,
+            "count": 402,
+            "type": "SCALAR",
+            "name": "x0_LIGHTS_Overhead_indices#0"
+        }
+    ],
+    "asset": {
+        "generator": "Extended Khronos glTF Blender I/O v1.0.0",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.6290825605392456,
+                    0.21694722771644592,
+                    0.0726054385304451
+                ],
+                "BoundingBoxMin": [
+                    -0.6290826797485352,
+                    -0.18142367899417877,
+                    -0.1332007795572281
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 2
+            },
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 5904,
+            "byteStride": 36,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1608,
+            "byteOffset": 5904,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_normal_map_convention",
+        "ASOBO_asset_optimized"
+    ],
+    "materials": [],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 5,
+                        "NORMAL": 2,
+                        "POSITION": 0,
+                        "TANGENT": 1,
+                        "TEXCOORD_0": 3,
+                        "TEXCOORD_1": 4
+                    },
+                    "indices": 6,
+                    "material": "LIGHTS",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 134,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_LIGHTS_Overhead.001"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 12,
+                        "NORMAL": 9,
+                        "POSITION": 7,
+                        "TANGENT": 8,
+                        "TEXCOORD_0": 10,
+                        "TEXCOORD_1": 11
+                    },
+                    "indices": 13,
+                    "material": "LIGHTS",
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 134,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "x0_LIGHTS_Overhead"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                0,
+                2.681762456893921,
+                10.60022258758545
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0,
+                0,
+                0.7071067094802856
+            ],
+            "mesh": 0,
+            "name": "LIGHTS_Overhead_L"
+        },
+        {
+            "translation": [
+                0,
+                2.681762456893921,
+                10.60022258758545
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0,
+                0,
+                0.7071067094802856
+            ],
+            "mesh": 1,
+            "name": "LIGHTS_Overhead_R"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [
+                0,
+                1
+            ],
+            "name": "Scene"
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 7512,
+            "uri": "light.bin"
+        }
+    ]
+}

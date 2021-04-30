@@ -49,6 +49,17 @@ export const usePersistentProperty = (propertyName: string): [string, (string) =
     return [propertyValue, propertySetter];
 };
 
+export const usePersistentPropertyWithDefault = (propertyName: string, defaultValue: string): [string, (string) => void] => {
+    const [propertyValue, rawPropertySetter] = useState(() => NXDataStore.get(propertyName, defaultValue));
+
+    const propertySetter = (value: string) => {
+        NXDataStore.set(propertyName, value);
+        rawPropertySetter(value);
+    };
+
+    return [propertyValue, propertySetter];
+};
+
 type SimVarSyncedPersistentPropertyType = (simVarName: string, simVarUnit: string, propertyName: string) => [number, (value: number) => void];
 
 /**

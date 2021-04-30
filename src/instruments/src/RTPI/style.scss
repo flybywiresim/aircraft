@@ -1,3 +1,5 @@
+$colour-main: hsl(32, 100%, 69%);
+
 @font-face {
   font-family: "Digital";
   src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf") format("truetype");
@@ -6,7 +8,7 @@
 }
 
 .rtpi-svg {
-  background-color: rgba(32, 19, 2, 0.884);
+  background-color: hsl(53, 82%, 6%);
   position: absolute;
   width: 105%;
   height: 100%;
@@ -15,7 +17,7 @@
 text {
   font-family: Digital;
   font-size: 150px;
-  fill: #5f482e;
+  fill: $colour-main;
   letter-spacing: -5px;
 }
 .direction {

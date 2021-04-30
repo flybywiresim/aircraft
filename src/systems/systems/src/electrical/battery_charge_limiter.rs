@@ -102,7 +102,11 @@ impl BatteryChargeLimiter {
                 contactor_id
             ),
             arrow: ArrowBetweenBatteryAndBatBus::new(),
-            observer: Some(Box::new(OpenContactorObserver::from_off())),
+            // We start in an open state, because electrical tests assume this to be the starting state.
+            // This state might not be correct for all starting situations (*.flt files) in the simulator.
+            // When an initialisation phase is added to the system code we can overwrite this starting state
+            // with the appropriate one for the given starting situation.
+            observer: Some(Box::new(OpenContactorObserver::for_initial_bcl_state())),
         }
     }
 
@@ -141,10 +145,18 @@ trait BatteryStateObserver {
 /// The BCL is not powered when the BAT push button is in the OFF
 /// position. This observer simply watches for the BAT push button to
 /// move to the AUTO position.
-struct OffPushButtonObserver {}
+struct OffPushButtonObserver {
+    bcl_startup_delay: DelayedTrueLogicGate,
+}
 impl OffPushButtonObserver {
+    const STARTUP_DELAY_IN_SECONDS: u64 = 1;
+
     fn new() -> Self {
-        Self {}
+        Self {
+            bcl_startup_delay: DelayedTrueLogicGate::new(Duration::from_secs(
+                Self::STARTUP_DELAY_IN_SECONDS,
+            )),
+        }
     }
 }
 impl BatteryStateObserver for OffPushButtonObserver {
@@ -153,12 +165,15 @@ impl BatteryStateObserver for OffPushButtonObserver {
     }
 
     fn update(
-        self: Box<Self>,
-        _: &UpdateContext,
+        mut self: Box<Self>,
+        context: &UpdateContext,
         arguments: &BatteryChargeLimiterArguments,
     ) -> Box<dyn BatteryStateObserver> {
-        if arguments.battery_push_button_is_auto() {
-            Box::new(OpenContactorObserver::from_off())
+        self.bcl_startup_delay
+            .update(context, arguments.battery_push_button_is_auto());
+
+        if self.bcl_startup_delay.output() {
+            Box::new(ClosedContactorObserver::from_off())
         } else {
             self
         }
@@ -193,7 +208,7 @@ impl OpenContactorObserver {
         }
     }
 
-    fn from_off() -> Self {
+    fn for_initial_bcl_state() -> Self {
         Self::new(EmergencyElec::new(), false, false)
     }
 
@@ -306,7 +321,7 @@ impl ClosedContactorObserver {
     const BATTERY_DISCHARGE_PROTECTION_DELAY_SECONDS: u64 = 15;
     const EMER_ELEC_APU_MASTER_MAXIMUM_CLOSED_SECONDS: u64 = 180;
 
-    fn from_open(emergency_elec: EmergencyElec) -> Self {
+    fn new(emergency_elec: EmergencyElec) -> Self {
         Self {
             below_4_ampere_charging_duration: Duration::from_secs(0),
             below_23_volt_duration: Duration::from_secs(0),
@@ -315,6 +330,14 @@ impl ClosedContactorObserver {
             emergency_elec,
             had_apu_start: false,
         }
+    }
+
+    fn from_open(emergency_elec: EmergencyElec) -> Self {
+        Self::new(emergency_elec)
+    }
+
+    fn from_off() -> Self {
+        Self::new(EmergencyElec::new())
     }
 
     fn update_state(&mut self, context: &UpdateContext, arguments: &BatteryChargeLimiterArguments) {
@@ -589,6 +612,10 @@ mod tests {
                 self
             }
 
+            fn wait_for_bcl_startup(self) -> Self {
+                self.run(Duration::from_secs(1))
+            }
+
             fn wait_for_emergency_elec_apu_no_longer_inhibited(mut self) -> Self {
                 self = self.emergency_elec().run(Duration::from_secs(
                     EmergencyElec::APU_START_INHIBIT_DELAY_SECONDS,
@@ -607,6 +634,18 @@ mod tests {
                     .nearly_empty_battery_charge()
                     .and()
                     .no_power_outside_of_battery();
+
+                self
+            }
+
+            fn ground_bat_only_state(mut self, ias: Velocity) -> Self {
+                self = self
+                    .full_battery_charge()
+                    .on_the_ground()
+                    .indicated_airspeed_of(ias)
+                    .and()
+                    .no_power_outside_of_battery()
+                    .run(Duration::from_millis(1));
 
                 self
             }
@@ -1015,10 +1054,7 @@ mod tests {
                 .battery_push_button_off()
                 .run(Duration::from_millis(
                     OpenContactorObserver::BATTERY_CHARGING_CLOSE_DELAY_MILLISECONDS,
-                ))
-                .then_continue_with()
-                .battery_push_button_auto()
-                .run(Duration::from_millis(0));
+                ));
 
             assert!(!test_bed.battery_contactor_is_closed());
         }
@@ -1058,27 +1094,59 @@ mod tests {
         }
 
         #[test]
-        fn contactor_closed_when_bat_only_on_ground_at_or_below_100_knots() {
-            let test_bed = test_bed_with()
-                .full_battery_charge()
-                .on_the_ground()
-                .indicated_airspeed_of(Velocity::new::<knot>(99.9))
+        fn when_bcl_is_turned_on_contactor_closed_after_startup_delay_has_passed() {
+            let mut test_bed = test_bed_with()
+                .ground_bat_only_state(Velocity::new::<knot>(99.9))
+                .battery_push_button_off();
+
+            assert!(
+                !test_bed.battery_contactor_is_closed(),
+                "A precondition is that the battery contactor isn't closed at this point."
+            );
+
+            test_bed = test_bed
+                .battery_push_button_auto()
+                .run(Duration::from_secs(
+                    OffPushButtonObserver::STARTUP_DELAY_IN_SECONDS,
+                ))
+                .run(Duration::from_secs(0));
+
+            assert!(test_bed.battery_contactor_is_closed());
+        }
+
+        #[test]
+        fn when_bcl_is_turned_on_contactor_not_closed_before_startup_delay_has_passed() {
+            let mut test_bed = test_bed_with()
+                .ground_bat_only_state(Velocity::new::<knot>(99.9))
                 .and()
-                .no_power_outside_of_battery()
-                .run(Duration::from_millis(1));
+                .battery_push_button_off();
+
+            assert!(
+                !test_bed.battery_contactor_is_closed(),
+                "A precondition is that the battery contactor isn't closed at this point."
+            );
+
+            test_bed = test_bed
+                .then_continue_with()
+                .battery_push_button_auto()
+                .run(Duration::from_secs_f64(
+                    OffPushButtonObserver::STARTUP_DELAY_IN_SECONDS as f64 - 0.0001,
+                ))
+                .run(Duration::from_secs(0));
+
+            assert!(!test_bed.battery_contactor_is_closed());
+        }
+
+        #[test]
+        fn contactor_closed_when_bat_only_on_ground_at_or_below_100_knots() {
+            let test_bed = test_bed_with().ground_bat_only_state(Velocity::new::<knot>(99.9));
 
             assert!(test_bed.battery_contactor_is_closed());
         }
 
         #[test]
         fn contactor_open_when_bat_only_on_ground_at_or_above_100_knots() {
-            let test_bed = test_bed_with()
-                .full_battery_charge()
-                .on_the_ground()
-                .indicated_airspeed_of(Velocity::new::<knot>(100.))
-                .and()
-                .no_power_outside_of_battery()
-                .run(Duration::from_millis(1));
+            let test_bed = test_bed_with().ground_bat_only_state(Velocity::new::<knot>(100.));
 
             assert!(!test_bed.battery_contactor_is_closed());
         }
@@ -1296,6 +1364,7 @@ mod tests {
                 .then_continue_with()
                 .cycle_battery_push_button()
                 .and()
+                .wait_for_bcl_startup()
                 .wait_for_closed_contactor(false);
 
             assert!(test_bed.battery_contactor_is_closed());
