@@ -38,8 +38,7 @@ node_modules
 /target
 /src/instruments/src/EFB/web/
 /src/systems/target/
-/src/systems/systems/*.png
-.vscode/settings.json
+/src/systems/a320_hydraulic_simulation_graphs/*.png
 !igniter.config.mjs
 .igniter
 /src/fdr2csv/*.exe

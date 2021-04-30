@@ -92,9 +92,10 @@ impl PowerTransferUnitController for TestPowerTransferUnitController {
 
 fn main() {
     println!("Launching hyd simulation...");
+    let path = "./src/systems/a320_hydraulic_simulation_graphs/";
 
-    green_loop_edp_simulation();
-    yellow_green_ptu_loop_simulation();
+    green_loop_edp_simulation(path);
+    yellow_green_ptu_loop_simulation(path);
 }
 
 fn make_figure(h: &History) -> Figure {
@@ -190,7 +191,7 @@ impl History {
     }
 
     //builds a graph using matplotlib python backend. PYTHON REQUIRED AS WELL AS MATPLOTLIB PACKAGE
-    pub fn show_matplotlib(&self, figure_title: &str) {
+    pub fn show_matplotlib(&self, figure_title: &str, path: &str) {
         let fig = make_figure(&self);
 
         use rustplotlib::backend::Matplotlib;
@@ -200,14 +201,17 @@ impl History {
 
         fig.apply(&mut mpl).unwrap();
 
-        let _result = mpl.savefig(figure_title);
+        let mut final_filename: String = path.to_owned();
+        final_filename.push_str(figure_title);
+
+        let _result = mpl.savefig(&final_filename);
 
         mpl.wait().unwrap();
     }
 }
 
 //Runs engine driven pump, checks pressure OK, shut it down, check drop of pressure after 20s
-fn green_loop_edp_simulation() {
+fn green_loop_edp_simulation(path : & str) {
     let green_loop_var_names = vec![
         "Loop Pressure".to_string(),
         "Loop Volume".to_string(),
@@ -338,12 +342,12 @@ fn green_loop_edp_simulation() {
         );
     }
 
-    green_loop_history.show_matplotlib("green_loop_edp_simulation_press");
-    edp1_history.show_matplotlib("green_loop_edp_simulation_EDP1 data");
-    accu_green_history.show_matplotlib("green_loop_edp_simulation_Green Accum data");
+    green_loop_history.show_matplotlib("green_loop_edp_simulation_press" , &path);
+    edp1_history.show_matplotlib("green_loop_edp_simulation_EDP1 data", &path);
+    accu_green_history.show_matplotlib("green_loop_edp_simulation_Green Accum data", &path);
 }
 
-fn yellow_green_ptu_loop_simulation() {
+fn yellow_green_ptu_loop_simulation(path : & str) {
     let loop_var_names = vec![
         "GREEN Loop Pressure".to_string(),
         "YELLOW Loop Pressure".to_string(),
@@ -592,11 +596,11 @@ fn yellow_green_ptu_loop_simulation() {
         }
     }
 
-    loop_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Loop_press");
-    ptu_history.show_matplotlib("yellow_green_ptu_loop_simulation()_PTU");
+    loop_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Loop_press" , &path);
+    ptu_history.show_matplotlib("yellow_green_ptu_loop_simulation()_PTU", &path);
 
-    accu_green_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Green_acc");
-    accu_yellow_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Yellow_acc");
+    accu_green_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Green_acc", &path);
+    accu_yellow_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Yellow_acc", &path);
 }
 
 fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
