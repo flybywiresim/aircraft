@@ -62,13 +62,6 @@
   </Instrument>
 
   <Instrument>
-    <Name>A320_Neo_BRK</Name>
-    <Electric>
-      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
-    </Electric>
-  </Instrument>
-
-  <Instrument>
     <Name>A320_Neo_BAT</Name>
     <Electric>
       <Simvar name="CIRCUIT ON:52" unit="Boolean"/>

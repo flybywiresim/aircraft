@@ -161,17 +161,17 @@ var A320_Neo_LowerECAM_Fuel;
             }
         }
         updateFuelFlow() {
-            const totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "gallons per hour") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "gallons per hour"))
-            * this.gallonToKG * this.conversionWeight / 60;
+            const totalFuelFlow = (SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:1", "number") + SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:2", "number")) * this.conversionWeight / 60;
             this.fuelFlowValue.textContent = fastToFixed(totalFuelFlow, 0);
         }
         updateFuelConsumption() {
             if (this.fuelLevels) {
-                const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "kg") * this.conversionWeight;
-                const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "kg") * this.conversionWeight;
+                const leftConsumption = SimVar.GetSimVarValue("L:A32NX_FUEL_USED:" + 1, "number") * this.conversionWeight;
+                const rightConsumption = SimVar.GetSimVarValue("L:A32NX_FUEL_USED:" + 2, "number") * this.conversionWeight;
 
-                const leftConsumptionShown = leftConsumption - (leftConsumption % 10);
-                const rightConsumptionShown = rightConsumption - (rightConsumption % 10);
+                const leftConsumptionShown = leftConsumption - (leftConsumption % (10 * Math.round(this.conversionWeight)));
+                const rightConsumptionShown = rightConsumption - (rightConsumption % (10 * Math.round(this.conversionWeight)));
+
                 const totalConsumptionShown = leftConsumptionShown + rightConsumptionShown;
 
                 this.leftValveValue.textContent = fastToFixed(leftConsumptionShown, 0);

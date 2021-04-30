@@ -10,6 +10,7 @@ jobs:
     if: github.repository_owner == 'flybywiresim'
     runs-on: ubuntu-latest
     env:
+      A32NX_PRODUCTION_BUILD: 1
       MASTER_PRE_RELEASE_ID: 32243965
       MASTER_PRE_RELEASE_TAG: vmaster
       MASTER_ZIP_NAME: A32NX-master.zip

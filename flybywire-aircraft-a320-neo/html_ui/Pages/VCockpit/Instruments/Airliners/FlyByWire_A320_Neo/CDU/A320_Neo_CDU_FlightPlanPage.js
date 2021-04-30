@@ -4,6 +4,9 @@ class CDUFlightPlanPage {
         mcdu.flightPlanManager.updateWaypointDistances(true /* approach */);
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.FlightPlanPage;
+        mcdu.returnPageCallback = () => {
+            CDUFlightPlanPage.ShowPage(mcdu, offset);
+        };
         mcdu.activeSystem = 'FMGC';
         CDUFlightPlanPage._timer = 0;
         mcdu.pageUpdate = () => {
@@ -12,8 +15,8 @@ class CDUFlightPlanPage {
                 CDUFlightPlanPage.ShowPage(mcdu, offset);
             }
         };
-        const isFlying = Simplane.getAltitudeAboveGround() > 10 ||
-            Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT && Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT;
+        const flightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
+        const isFlying = flightPhase >= 5 && flightPhase <= 7;
         let originIdentCell = "----";
         let runway = null;
         let showFrom = false;

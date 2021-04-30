@@ -30,11 +30,11 @@ class CDUAocRequestsAtis {
         }
 
         if (store.reqID == 0) {
-            arrivalText = "~ARRIVAL[color]cyan";
+            arrivalText = "ARRIVAL[color]cyan";
         } else if (store.reqID == 1) {
-            departureText = "~DEPARTURE[color]cyan";
+            departureText = "DEPARTURE[color]cyan";
         } else {
-            enrouteText = "ENROUTE~[color]cyan";
+            enrouteText = "ENROUTE[color]cyan";
         }
 
         let arrText;

@@ -50,6 +50,11 @@ class FMCDataManager {
         const airportWaypoint = await this.fmc.facilityLoader.getAirport(icao);
         return airportWaypoint;
     }
+
+    _filterDuplicateWaypoints(waypoints) {
+        return waypoints.filter((wp, idx, wps) => wps.map((v) => v.icao).indexOf(wp.icao) === idx);
+    }
+
     async GetWaypointsByIdent(ident) {
         const waypoints = [];
         const intersections = await this.GetWaypointsByIdentAndType(ident, "W");
@@ -60,7 +65,7 @@ class FMCDataManager {
         waypoints.push(...ndbs);
         const airports = await this.GetWaypointsByIdentAndType(ident, "A");
         waypoints.push(...airports);
-        return waypoints;
+        return this._filterDuplicateWaypoints(waypoints);
     }
     async GetVORsByIdent(ident) {
         const navaids = [];

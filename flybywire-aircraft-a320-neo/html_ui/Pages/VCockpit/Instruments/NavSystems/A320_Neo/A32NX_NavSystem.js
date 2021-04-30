@@ -283,7 +283,7 @@ class NavSystem extends BaseInstrument {
         return null;
     }
     onInteractionEvent(_args) {
-        if (this.isElectricityAvailable() || SimVar.GetSimVarValue("L:DCPowerAvailable", "Bool") == 1) {
+        if (this.isElectricityAvailable() || SimVar.GetSimVarValue("L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED", "Bool")) {
             let event = this.DecomposeEventFromPrefix(_args);
             if (event) {
                 if (event == "ElementSetAttribute" && _args.length >= 4) {
@@ -2818,8 +2818,8 @@ class Warnings extends NavSystemElement {
     }
     landingGearCallback() {
         const gear = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
-        const throttle = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "percent");
-        const flaps = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number");
+        const throttle = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number");
+        const flaps = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "number");
         return !gear && (flaps > 1 || (throttle == 0));
     }
     stallCallback() {
