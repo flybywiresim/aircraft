@@ -321,10 +321,6 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.guidanceController) {
             this.guidanceController.update(_deltaTime);
         }
-
-        if (this.ilsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
-            this.updateIls();
-        }
     }
 
     /**

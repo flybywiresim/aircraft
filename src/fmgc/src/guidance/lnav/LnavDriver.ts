@@ -1,4 +1,3 @@
-import { LateralMode, VerticalMode } from '@shared/autopilot';
 import { GuidanceComponent } from '../GuidanceComponent';
 import { ControlLaw } from '../ControlLaws';
 import { Leg, TFLeg } from '../Geometry';
@@ -9,20 +8,15 @@ export class LnavDriver implements GuidanceComponent {
 
     private lastAvail: boolean;
 
-    private lastLaw: ControlLaw;
-
     private lastXTE: number;
 
     private lastTAE: number;
 
     private lastPhi: number;
 
-    private ppos: LatLongAlt = new LatLongAlt();
-
     constructor(guidanceController: GuidanceController) {
         this.guidanceController = guidanceController;
         this.lastAvail = null;
-        this.lastLaw = null;
         this.lastXTE = null;
         this.lastTAE = null;
         this.lastPhi = null;
@@ -38,18 +32,15 @@ export class LnavDriver implements GuidanceComponent {
         const geometry = this.guidanceController.guidanceManager.getActiveLegPathGeometry();
 
         if (geometry !== null) {
-            this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
-            this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+            const ppos = new LatLongAlt(
+                SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
+                SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
+                0,
+            );
 
             const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
-            const params = geometry.getGuidanceParameters(this.ppos, trueTrack);
-
-            if (this.lastLaw !== params.law) {
-                this.lastLaw = params.law;
-
-                SimVar.SetSimVarValue('L:A32NX_FG_CURRENT_LATERAL_LAW', 'number', params.law);
-            }
+            const params = geometry.getGuidanceParameters(ppos, trueTrack);
 
             if (params) {
                 switch (params.law) {
@@ -75,6 +66,9 @@ export class LnavDriver implements GuidanceComponent {
                         SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', phiCommand);
                         this.lastPhi = phiCommand;
                     }
+                    /* console.log(
+                                `XTE=${crossTrackError} TAE=${trackAngleError} phi=${phiCommand}`
+                            ); */
                     break;
                 default:
                     throw new Error(`Invalid control law: ${params.law}`);
@@ -83,7 +77,7 @@ export class LnavDriver implements GuidanceComponent {
                 available = true;
             }
 
-            if (geometry.shouldSequenceLeg(this.ppos)) {
+            if (geometry.shouldSequenceLeg(ppos)) {
                 const currentLeg = geometry.legs.get(1);
 
                 if (currentLeg instanceof TFLeg && currentLeg.to.endsInDiscontinuity) {
@@ -117,26 +111,12 @@ export class LnavDriver implements GuidanceComponent {
     sequenceDiscontinuity(_leg?: Leg): void {
         console.log('[FMGC/Guidance] LNAV - sequencing discontinuity');
 
-        // Lateral mode is NAV
-        const lateralModel = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Enum');
-        const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Enum');
+        // TODO make this actually handle discontinuities properly
 
-        if (lateralModel === LateralMode.NAV) {
-            // Set HDG (current heading)
-            SimVar.SetSimVarValue('H:A320_Neo_FCU_HDG_PULL', 'number', 0);
-            SimVar.SetSimVarValue('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'number', Simplane.getHeadingMagnetic());
+        if (_leg instanceof TFLeg) {
+            _leg.to.endsInDiscontinuity = false;
+            _leg.to.discontinuityCanBeCleared = undefined;
         }
-
-        // Vertical mode is DES, OP DES, CLB or OP CLB
-        if (verticalMode === VerticalMode.DES || verticalMode === VerticalMode.OP_DES
-            || verticalMode === VerticalMode.CLB || verticalMode === VerticalMode.OP_CLB
-        ) {
-            // Set V/S
-            SimVar.SetSimVarValue('H:A320_Neo_FCU_VS_PULL', 'number', 0);
-        }
-
-        // Triple click
-        Coherent.call('PLAY_INSTRUMENT_SOUND', '3click');
 
         this.sequenceLeg(_leg);
     }
