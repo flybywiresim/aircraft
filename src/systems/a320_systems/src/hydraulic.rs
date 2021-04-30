@@ -199,13 +199,12 @@ impl A320Hydraulic {
                 self.update_actuators_volume();
 
                 self.update_fixed_step(
-                    context,
+                    &context.with_delta(min_hyd_loop_timestep),
                     engine1,
                     engine2,
                     overhead_panel,
                     engine_fire_overhead,
                     landing_gear,
-                    min_hyd_loop_timestep,
                 );
             }
 
@@ -310,7 +309,6 @@ impl A320Hydraulic {
     fn update_blue_actuators_volume(&mut self) {}
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
-    #[allow(clippy::too_many_arguments)]
     fn update_fixed_step(
         &mut self,
         context: &UpdateContext,
@@ -319,11 +317,10 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
         landing_gear: &LandingGear,
-        min_hyd_loop_timestep: Duration,
     ) {
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.hyd_brake_logic.update_brake_demands(
-            &context.with_delta(min_hyd_loop_timestep),
+            context,
             &self.green_loop,
             &self.braking_circuit_altn,
             &landing_gear,
@@ -338,7 +335,7 @@ impl A320Hydraulic {
         );
 
         self.power_transfer_unit_controller.update(
-            &context.with_delta(min_hyd_loop_timestep),
+            context,
             overhead_panel,
             &self.forward_cargo_door,
             &self.aft_cargo_door,
@@ -353,7 +350,7 @@ impl A320Hydraulic {
         self.engine_driven_pump_1_controller
             .update(overhead_panel, engine_fire_overhead);
         self.engine_driven_pump_1.update(
-            &min_hyd_loop_timestep,
+            context,
             &self.green_loop,
             &engine1,
             &self.engine_driven_pump_1_controller,
@@ -362,7 +359,7 @@ impl A320Hydraulic {
         self.engine_driven_pump_2_controller
             .update(overhead_panel, engine_fire_overhead);
         self.engine_driven_pump_2.update(
-            &min_hyd_loop_timestep,
+            context,
             &self.yellow_loop,
             &engine2,
             &self.engine_driven_pump_2_controller,
@@ -370,34 +367,30 @@ impl A320Hydraulic {
 
         self.blue_electric_pump_controller.update(overhead_panel);
         self.blue_electric_pump.update(
-            &min_hyd_loop_timestep,
+            context,
             &self.blue_loop,
             &self.blue_electric_pump_controller,
         );
 
         self.yellow_electric_pump_controller.update(
-            &context.with_delta(min_hyd_loop_timestep),
+            context,
             overhead_panel,
             &self.forward_cargo_door,
             &self.aft_cargo_door,
         );
         self.yellow_electric_pump.update(
-            &min_hyd_loop_timestep,
+            context,
             &self.yellow_loop,
             &self.yellow_electric_pump_controller,
         );
 
-        self.ram_air_turbine_controller
-            .update(&context.with_delta(min_hyd_loop_timestep));
-        self.ram_air_turbine.update(
-            &min_hyd_loop_timestep,
-            &self.blue_loop,
-            &self.ram_air_turbine_controller,
-        );
+        self.ram_air_turbine_controller.update(context);
+        self.ram_air_turbine
+            .update(context, &self.blue_loop, &self.ram_air_turbine_controller);
 
         self.green_loop_controller.update(engine_fire_overhead);
         self.green_loop.update(
-            &min_hyd_loop_timestep,
+            context,
             Vec::new(),
             vec![&self.engine_driven_pump_1],
             Vec::new(),
@@ -407,7 +400,7 @@ impl A320Hydraulic {
 
         self.yellow_loop_controller.update(engine_fire_overhead);
         self.yellow_loop.update(
-            &min_hyd_loop_timestep,
+            context,
             vec![&self.yellow_electric_pump],
             vec![&self.engine_driven_pump_2],
             Vec::new(),
@@ -417,7 +410,7 @@ impl A320Hydraulic {
 
         self.blue_loop_controller.update(engine_fire_overhead);
         self.blue_loop.update(
-            &min_hyd_loop_timestep,
+            context,
             vec![&self.blue_electric_pump],
             Vec::new(),
             vec![&self.ram_air_turbine],
@@ -425,10 +418,8 @@ impl A320Hydraulic {
             &self.blue_loop_controller,
         );
 
-        self.braking_circuit_norm
-            .update(&min_hyd_loop_timestep, &self.green_loop);
-        self.braking_circuit_altn
-            .update(&min_hyd_loop_timestep, &self.yellow_loop);
+        self.braking_circuit_norm.update(context, &self.green_loop);
+        self.braking_circuit_altn.update(context, &self.yellow_loop);
     }
 }
 impl SimulationElement for A320Hydraulic {
