@@ -211,7 +211,7 @@ impl History {
 }
 
 //Runs engine driven pump, checks pressure OK, shut it down, check drop of pressure after 20s
-fn green_loop_edp_simulation(path : & str) {
+fn green_loop_edp_simulation(path: &str) {
     let green_loop_var_names = vec![
         "Loop Pressure".to_string(),
         "Loop Volume".to_string(),
@@ -342,12 +342,12 @@ fn green_loop_edp_simulation(path : & str) {
         );
     }
 
-    green_loop_history.show_matplotlib("green_loop_edp_simulation_press" , &path);
+    green_loop_history.show_matplotlib("green_loop_edp_simulation_press", &path);
     edp1_history.show_matplotlib("green_loop_edp_simulation_EDP1 data", &path);
     accu_green_history.show_matplotlib("green_loop_edp_simulation_Green Accum data", &path);
 }
 
-fn yellow_green_ptu_loop_simulation(path : & str) {
+fn yellow_green_ptu_loop_simulation(path: &str) {
     let loop_var_names = vec![
         "GREEN Loop Pressure".to_string(),
         "YELLOW Loop Pressure".to_string(),
@@ -596,7 +596,7 @@ fn yellow_green_ptu_loop_simulation(path : & str) {
         }
     }
 
-    loop_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Loop_press" , &path);
+    loop_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Loop_press", &path);
     ptu_history.show_matplotlib("yellow_green_ptu_loop_simulation()_PTU", &path);
 
     accu_green_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Green_acc", &path);

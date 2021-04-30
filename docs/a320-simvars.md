@@ -104,29 +104,33 @@
     - Bool
     - True if pedestal door video button is being held
 
-- A32NX_OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT
+- A32NX_OVHD_HYD_{name}_PUMP_PB_HAS_FAULT
     - Bool
-    - True if engine 1 hyd pump fault
+    - True if engine {name} hyd pump fault
+    - {name}
+        - ENG_1
+        - ENG_2
 
-- A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO
+- A32NX_OVHD_HYD_{name}_PUMP_PB_IS_AUTO
     - Bool
-    - True if engine 1 hyd pump is on
+    - True if {name} hyd pump is on
+    - {name}
+        - ENG_1
+        - ENG_2
 
-- A32NX_OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT
+- A32NX_OVHD_HYD_{name}_PB_HAS_FAULT
     - Bool
-    - True if engine 2 hyd pump fault
+    - True if elec {name} hyd pump fault
+    - {name}
+        - EPUMPB
+        - EPUMPY
 
-- A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO
+- A32NX_OVHD_HYD_{name}_PB_IS_AUTO
     - Bool
-    - True if engine 2 hyd pump is on
-
-- A32NX_OVHD_HYD_EPUMPB_PB_HAS_FAULT
-    - Bool
-    - True if elec hyd pump fault
-
-- A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO
-    - Bool
-    - True if elec hyd pump is on/auto
+    - True if elec {name} hyd pump is on/auto
+    - {name}
+        - EPUMPB
+        - EPUMPY
 
 - A32NX_OVHD_HYD_PTU_PB_HAS_FAULT
     - Bool
@@ -135,14 +139,6 @@
 - A32NX_OVHD_HYD_PTU_PB_IS_AUTO
     - Bool
     - True if PTU system on/auto
-
-- A32NX_OVHD_HYD_EPUMPY_PB_HAS_FAULT
-    - Bool
-    - True if yellow elec hyd pump fault
-
-- A32NX_OVHD_HYD_EPUMPY_PB_IS_AUTO
-    - Bool
-    - True if yellow elec hyd pump is on/auto
 
 - A32NX_ENGMANSTART1_TOGGLE
     - Bool
