@@ -3652,7 +3652,13 @@
                     <ANIM_NAME>Press_Arc_L</ANIM_NAME>
                     <ANIM_LENGTH>3</ANIM_LENGTH>
                     <ANIM_DURATION>1</ANIM_DURATION>
-                    <ANIM_CODE>(L:A32NX_HYD_BRAKE_ALTN_LEFT_PRESS, number) 1000 /</ANIM_CODE>
+                     <ANIM_CODE>
+                        (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) if{
+                            (L:A32NX_HYD_BRAKE_ALTN_LEFT_PRESS, number) 1000 /
+                        } els{
+                            0
+                        }
+                    </ANIM_CODE>
                 </UseTemplate>
             </Component>
             <Component ID="BRK_PRESS_ARC_R" Node="BRK_PRESS_ARC_L">
@@ -3660,7 +3666,13 @@
                     <ANIM_NAME>Press_Arc_R</ANIM_NAME>
                     <ANIM_LENGTH>3</ANIM_LENGTH>
                     <ANIM_DURATION>1</ANIM_DURATION>
-                    <ANIM_CODE>(L:A32NX_HYD_BRAKE_ALTN_RIGHT_PRESS, number) 1000 /</ANIM_CODE>
+                    <ANIM_CODE>
+                        (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) if{
+                            (L:A32NX_HYD_BRAKE_ALTN_RIGHT_PRESS, number) 1000 /
+                        } els{
+                            0
+                        }
+                    </ANIM_CODE>
                 </UseTemplate>
             </Component>
             <Component ID="ACCU_PRESS" Node="BRK_ACCU_PRESS_ARC">
@@ -3668,7 +3680,13 @@
                     <ANIM_NAME>Accu_Press</ANIM_NAME>
                     <ANIM_LENGTH>1</ANIM_LENGTH>
                     <ANIM_DURATION>1</ANIM_DURATION>
-                    <ANIM_CODE>(L:A32NX_HYD_BRAKE_ALTN_ACC_PRESS, number) 4000 /</ANIM_CODE>
+                    <ANIM_CODE>
+                        (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) if{
+                            (L:A32NX_HYD_BRAKE_ALTN_ACC_PRESS, number) 4000 /
+                        } els{
+                            0
+                        }
+                    </ANIM_CODE>
                 </UseTemplate>
             </Component>
 
