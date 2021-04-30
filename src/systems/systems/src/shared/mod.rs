@@ -124,7 +124,6 @@ pub(crate) fn interpolation(xs: &[f64], ys: &[f64], intermediate_x: f64) -> f64 
     debug_assert!(xs.len() == ys.len());
     debug_assert!(xs.len() >= 2);
     debug_assert!(ys.len() >= 2);
-    // The function also assumes xs are ordered from small to large. Consider adding a debug_assert! for that as well.
 
     if intermediate_x <= xs[0] {
         *ys.first().unwrap()
