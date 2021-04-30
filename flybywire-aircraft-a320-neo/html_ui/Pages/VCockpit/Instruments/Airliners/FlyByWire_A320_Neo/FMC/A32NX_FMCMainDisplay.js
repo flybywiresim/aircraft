@@ -187,7 +187,9 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
         this.guidanceManager = new Fmgc.GuidanceManager(this.flightPlanManager);
-        this._flightGuidance = new NXFlightGuidance(this);
+        this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager);
+
+        this.guidanceController.init();
 
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
@@ -535,8 +537,8 @@ class FMCMainDisplay extends BaseAirliners {
             this.updateProgDistance();
         }
 
-        if (this._flightGuidance) {
-            this._flightGuidance.update(_deltaTime);
+        if (this.guidanceController) {
+            this.guidanceController.update(_deltaTime);
         }
 
         if (this.ilsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
