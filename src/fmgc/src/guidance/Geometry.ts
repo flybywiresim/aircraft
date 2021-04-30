@@ -323,7 +323,7 @@ export class Geometry {
 
         const activeLeg = this.legs.get(1);
         if (activeLeg) {
-            return activeLeg.getDistanceToGo(ppos) < 0.001;
+            return Math.abs(activeLeg.getDistanceToGo(ppos)) < 0.005;
         }
 
         return false;
