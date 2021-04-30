@@ -903,9 +903,9 @@ impl WindTurbine {
     const STOWED_ANGLE: f64 = std::f64::consts::PI / 2.;
     const PROPELLER_INERTIA: f64 = 2.;
     const RPM_GOVERNOR_BREAKPTS: [f64; 9] = [
-        0.0, 4000., 5000.0, 5500.0, 6000.0, 7500.0, 8000.0, 9000.0, 15000.0,
+        0.0, 1000., 3000.0, 4000.0, 4800.0, 5800.0, 6250.0, 9000.0, 15000.0,
     ];
-    const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 5., 1., 1.];
+    const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 1., 1., 1.];
 
     pub fn new() -> Self {
         Self {
@@ -1018,9 +1018,9 @@ pub struct RamAirTurbine {
 }
 impl RamAirTurbine {
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3050.0, 3500.0,
+        0.0, 500.0, 1000.0, 1500.0, 2100.0, 2300.0, 2600.0, 3050.0, 3500.0,
     ];
-    const DISPLACEMENT_MAP: [f64; 9] = [1.15, 1.15, 1.15, 1.15, 1.15, 1.15, 0.5, 0.0, 0.0];
+    const DISPLACEMENT_MAP: [f64; 9] = [1.15, 1.15, 1.15, 1.15, 1.15, 0.5, 0.0, 0.0, 0.0];
 
     // 1 == no filtering. !!Warning, this will be affected by a different delta time
     const DISPLACEMENT_DYNAMICS: f64 = 0.2;
