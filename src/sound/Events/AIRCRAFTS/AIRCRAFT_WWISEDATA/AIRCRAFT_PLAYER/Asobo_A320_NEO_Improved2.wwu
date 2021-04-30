@@ -101,20 +101,6 @@
 						</Action>
 					</ChildrenList>
 				</Event>
-				<Event Name="Play_Asobo_A320_NEO_nosetouch" ID="{4EFC5C32-FDA9-40BA-925A-73B71C73E6F7}">
-					<ChildrenList>
-						<Action Name="" ID="{1E85CEF9-35F3-404F-BF39-107F29E56542}" ShortID="195745488">
-							<PropertyList>
-								<Property Name="ActionType" Type="int16" Value="1"/>
-							</PropertyList>
-							<ReferenceList>
-								<Reference Name="Target">
-									<ObjectRef Name="nosetouch" ID="{88AB9FC1-30E2-4F13-BC03-7FFE47FD8614}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
-								</Reference>
-							</ReferenceList>
-						</Action>
-					</ChildrenList>
-				</Event>
 				<Event Name="Play_Asobo_A320_NEO_startcontactors" ID="{60C2F47F-CD59-471A-BABA-0DD7A926F43D}">
 					<ChildrenList>
 						<Action Name="" ID="{2B3B36C7-9970-4C55-965C-902220DA5C00}" ShortID="802580582">
@@ -152,6 +138,16 @@
 							<ReferenceList>
 								<Reference Name="Target">
 									<ObjectRef Name="flaps1" ID="{E34955C5-FDED-418C-B95B-78031758F865}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+						<Action Name="" ID="{5C8DBE62-B7C9-4BC5-8544-BFD682A62C65}" ShortID="37363728">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="slats" ID="{B2916A05-3EC1-43E5-A147-2FD3F9EC6ACD}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
@@ -1501,7 +1497,7 @@
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Target">
-											<ObjectRef Name="minimum" ID="{60E8369F-7ABE-40C9-8746-7A7BA27D49B5}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+											<ObjectRef Name="minimum" ID="{60E8369F-7ABE-40C9-8746-7A7BA27D49B5}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
 										</Reference>
 									</ReferenceList>
 								</Action>
@@ -1515,7 +1511,7 @@
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Target">
-											<ObjectRef Name="100-above" ID="{ECB43B82-B568-41AF-97D2-189EE59BA179}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+											<ObjectRef Name="100-above" ID="{ECB43B82-B568-41AF-97D2-189EE59BA179}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
 										</Reference>
 									</ReferenceList>
 								</Action>
@@ -1579,15 +1575,15 @@
 						</Action>
 					</ChildrenList>
 				</Event>
-				<Event Name="Play_Asobo_A320_NEO_fanwhinetest" ID="{0ED8165F-CB89-47F0-B67E-321A7213A588}">
+				<Event Name="Play_Asobo_A320_NEO_cvr_test" ID="{E71F2AF3-315E-40B1-95C4-F13828102E12}">
 					<ChildrenList>
-						<Action Name="" ID="{97A471C2-44B7-43A7-94C1-6FA4A1DD3F1C}" ShortID="753612649">
+						<Action Name="" ID="{4649CE2A-A5DA-41C1-81D6-E07DDE7BD59A}" ShortID="569101950">
 							<PropertyList>
 								<Property Name="ActionType" Type="int16" Value="1"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
-									<ObjectRef Name="fanwhinetest" ID="{42586AF9-9C6D-4DAA-BAB5-3E51AD91D7F6}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+									<ObjectRef Name="cvr_test" ID="{EA7EF7B4-27D7-4187-AB5C-A9BBA5808638}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
