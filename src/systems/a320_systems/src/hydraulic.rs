@@ -1874,7 +1874,7 @@ mod tests {
                 + test_bed.get_brake_yellow_accumulator_fluid_volume();
 
             // Now doing cycles of pressurisation on EDP and ePump
-            for _ in 1..51 {
+            for _ in 1..6 {
                 test_bed = test_bed
                     .start_eng2(Ratio::new::<percent>(50.))
                     .run_waiting_for(Duration::from_secs(50));
@@ -1947,7 +1947,7 @@ mod tests {
             let reservoir_level_after_priming = test_bed.get_green_reservoir_volume();
 
             // Now doing cycles of pressurisation on EDP
-            for _ in 1..101 {
+            for _ in 1..6 {
                 test_bed = test_bed
                     .start_eng1(Ratio::new::<percent>(50.))
                     .run_waiting_for(Duration::from_secs(50));
@@ -2000,7 +2000,7 @@ mod tests {
             let reservoir_level_after_priming = test_bed.get_blue_reservoir_volume();
 
             // Now doing cycles of pressurisation on epump relying on auto run of epump when eng is on
-            for _ in 1..51 {
+            for _ in 1..6 {
                 test_bed = test_bed
                     .start_eng1(Ratio::new::<percent>(50.))
                     .run_waiting_for(Duration::from_secs(50));
