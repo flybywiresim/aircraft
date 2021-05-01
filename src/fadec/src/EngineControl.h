@@ -209,11 +209,11 @@ private:
 		deltaTime = deltaTime / 3600;
 
 		if (Eng1Time + Eng2Time > EngineCycleTime && abs(FuelTotalActual - FuelTotalPre) < 1) {
-
+			test = 1;
 			//--------------------------------------------
 			// Left Engine and Wing routine
 			//--------------------------------------------
-			if (FuelLeftPre > 1.75) {
+			if (FuelLeftPre > 0.2) {
 				// Cycle Fuel Burn for Engine 1
 				m = (Engine1FF - Engine1PreFF) / deltaTime;
 				b = Engine1PreFF;
@@ -227,15 +227,19 @@ private:
 					xfrAuxLeft = FuelAuxLeftPre - leftAuxQuantity;
 				}
 			}
-			else {
+			else if (FuelLeftPre <= 0) {
 				FuelBurn1 = 0;
 				FuelLeftPre = 0;
+			}
+			else {
+				FuelBurn1 = 0;
+				FuelLeftPre = -10;
 			}
 
 			//--------------------------------------------
 			// Right Engine and Wing routine
 			//--------------------------------------------
-			if (FuelRightPre > 1.75) {
+			if (FuelRightPre > 0.2) {
 				// Cycle Fuel Burn for Engine 2
 				m = (Engine2FF - Engine2PreFF) / deltaTime;
 				b = Engine2PreFF;
@@ -249,9 +253,13 @@ private:
 					xfrAuxRight = FuelAuxRightPre - rightAuxQuantity;
 				}
 			}
-			else {
+			else if (FuelRightPre <= 0) {
 				FuelBurn2 = 0;
 				FuelRightPre = 0;
+			}
+			else {
+				FuelBurn2 = 0;
+				FuelRightPre = -10;
 			}
 
 			//--------------------------------------------
@@ -308,8 +316,8 @@ private:
 
 		}
 		else {
-			simVars->setFuelLeftPre(leftQuantity);          // in LBS
-			simVars->setFuelRightPre(rightQuantity);        // in LBS
+			simVars->setFuelLeftPre(leftQuantity);		// in LBS
+			simVars->setFuelRightPre(rightQuantity);		// in LBS
 			simVars->setFuelAuxLeftPre(leftAuxQuantity);    // in LBS
 			simVars->setFuelAuxRightPre(rightAuxQuantity);  // in LBS
 			simVars->setFuelCenterPre(centerQuantity);      // in LBS
@@ -364,7 +372,6 @@ public:
 			cn2 = simVars->getCN2(idx);
 
 			// Are we starting the engine?
-			/*
 			if (idx == 1) {
 				EngineState = simVars->getEngine1State();
 				if (engineStarter && engineIgniter && cn2 > 0 && EngineState != 1) {
@@ -376,8 +383,7 @@ public:
 				if (engineStarter && engineIgniter && cn2 > 0 && EngineState != 1) {
 					simVars->setEngine2State(2);
 				}
-			}*/
-			EngineState = 0;
+			}
 
 			switch (int(EngineState)) {
 			case 2:
