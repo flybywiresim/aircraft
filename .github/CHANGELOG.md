@@ -46,6 +46,7 @@
 1. [SOUND] Improved engine, ground roll, and ambience sounds - @hotshotp (Boris)
 1. [SOUND] Added CVR test sound - @hotshotp (Boris)
 1. [FLIGHTMODEL] Fixed excessive weathervaning stability - @donstim (donbikes#4084)
+1. [AUTOPILOT] Improved ROLL OUT and G/S laws - @aguther (Andreas Guther)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
