@@ -21,6 +21,14 @@ body:
   id: build-info
   attributes:
     label: Build info
+    placeholder: |
+      {
+        "built": "2021-04-15T22:57:32+00:00"
+        "ref": "v0.6.0",
+        "sha": "981b2e4b0e89998d21a70fe26de54a2f10066f6e",
+        "actor": "Benjozork",
+        "event_name": "manual"
+      }
     description: Please paste the contents from the build_info.json (located inside main aircraft folder) into the field.
     render: json
   validations:
