@@ -79,6 +79,7 @@ typedef struct {
 
 typedef struct {
   boolean_T FD_active;
+  boolean_T AP_ENGAGE_push;
   boolean_T AP_1_push;
   boolean_T AP_2_push;
   boolean_T AP_DISCONNECT_push;

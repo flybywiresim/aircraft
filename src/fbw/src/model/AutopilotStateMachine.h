@@ -51,6 +51,7 @@ class AutopilotStateMachineModelClass {
     real_T eventTime_c;
     real_T newFcuAltitudeSelected;
     real_T newFcuAltitudeSelected_b;
+    boolean_T DelayInput1_DSTATE_a;
     boolean_T DelayInput1_DSTATE_p;
     boolean_T DelayInput1_DSTATE_b;
     boolean_T DelayInput1_DSTATE_d;
@@ -59,7 +60,7 @@ class AutopilotStateMachineModelClass {
     boolean_T DelayInput1_DSTATE_f;
     boolean_T DelayInput1_DSTATE_i;
     boolean_T DelayInput1_DSTATE_bd;
-    boolean_T DelayInput1_DSTATE_a;
+    boolean_T DelayInput1_DSTATE_ah;
     boolean_T DelayInput1_DSTATE_fn;
     boolean_T DelayInput1_DSTATE_h;
     boolean_T DelayInput1_DSTATE_o;
@@ -132,6 +133,7 @@ class AutopilotStateMachineModelClass {
     real_T CompareToConstant_const_j;
     real_T CompareToConstant_const_da;
     real_T DetectDecrease_vinit;
+    boolean_T DetectIncrease12_vinit;
     boolean_T DetectIncrease_vinit;
     boolean_T DetectIncrease1_vinit;
     boolean_T DetectIncrease2_vinit;
