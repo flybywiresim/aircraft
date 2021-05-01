@@ -43,12 +43,12 @@ body:
   id: reproduce
   attributes:
     label: Steps to reproduce
-    description: We need to know how you encountered the bug to properly troubleshoot the issue.
-    value: |
+    placeholder: |
       1.
       2.
       3.
       ...
+    description: We need to know how you encountered the bug to properly troubleshoot the issue.
   validations:
     required: true
 - type: textarea
