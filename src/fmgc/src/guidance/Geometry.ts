@@ -1,5 +1,6 @@
 import { ControlLaw, GuidanceParameters } from './ControlLaws';
 import { Degrees, NauticalMiles } from '../../../../typings/types';
+import { MathUtils } from '../flightplanning/MathUtils';
 
 export const EARTH_RADIUS_NM = 3440.1;
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
@@ -65,8 +66,26 @@ export class TFLeg extends Leg {
     }
 
     getDistanceToGo(ppos) {
+        const aircraftToTerminationBearing = Avionics.Utils.computeGreatCircleHeading(ppos, this.to.infos.coordinates);
+
+        let aircraftLegBearing;
+        if (aircraftToTerminationBearing < 180) {
+            aircraftLegBearing = aircraftToTerminationBearing + 180;
+        } else {
+            const bearingCompositeAngle = 360 - aircraftToTerminationBearing;
+            const bearingComplementaryAngle = 180 - bearingCompositeAngle;
+
+            aircraftLegBearing = mod((bearingComplementaryAngle + this.bearing) + 90, 360);
+        }
+
+        const absDtg = Avionics.Utils.computeGreatCircleDistance(ppos, this.to.infos.coordinates);
+
         // @todo should be abeam distance
-        return Avionics.Utils.computeGreatCircleDistance(ppos, this.to.infos.coordinates);
+        if (aircraftLegBearing >= 90 && aircraftLegBearing <= 270) {
+            return absDtg;
+        }
+
+        return -absDtg;
     }
 
     get distance(): NauticalMiles {
@@ -323,7 +342,7 @@ export class Geometry {
 
         const activeLeg = this.legs.get(1);
         if (activeLeg) {
-            return Math.abs(activeLeg.getDistanceToGo(ppos)) < 0.005;
+            return activeLeg.getDistanceToGo(ppos) < 0.001;
         }
 
         return false;
