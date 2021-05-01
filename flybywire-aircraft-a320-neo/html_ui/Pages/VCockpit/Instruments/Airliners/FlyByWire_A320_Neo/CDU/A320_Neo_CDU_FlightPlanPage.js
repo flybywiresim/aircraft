@@ -4,7 +4,9 @@ class CDUFlightPlanPage {
         mcdu.flightPlanManager.updateWaypointDistances(true /* approach */);
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.FlightPlanPage;
-        mcdu.returnCallback = CDUFlightPlanPage.ShowPage;
+        mcdu.returnPageCallback = () => {
+            CDUFlightPlanPage.ShowPage(mcdu, offset);
+        };
         mcdu.activeSystem = 'FMGC';
         CDUFlightPlanPage._timer = 0;
         mcdu.pageUpdate = () => {

@@ -21,9 +21,7 @@ class A320_Neo_CDU_SelectWptPage {
             return Avionics.Utils.computeGreatCircleDistance(planeLla, w.infos.coordinates);
         }
 
-        const orderedWaypoints = [...waypoints].filter((v, i, a) => a.map((e) => e.infos.coordinates.toDegreeString()).indexOf(v.infos.coordinates.toDegreeString()) === i).sort((a, b) => {
-            return calculateDistance(a) - calculateDistance(b);
-        });
+        const orderedWaypoints = [...waypoints].sort((a, b) => calculateDistance(a) - calculateDistance(b));
 
         for (let i = 0; i < 5; i++) {
             const w = orderedWaypoints[i + 5 * page];
@@ -55,7 +53,11 @@ class A320_Neo_CDU_SelectWptPage {
                     callback(w);
                 };
                 mcdu.onLeftInput[5] = () => {
-                    mcdu.returnCallback(mcdu);
+                    if (mcdu.returnPageCallback) {
+                        mcdu.returnPageCallback();
+                    } else {
+                        console.error("A return page callback was expected but not declared. Add a returnPageCallback to page: " + mcdu.page.Current);
+                    }
                 };
             }
         }
