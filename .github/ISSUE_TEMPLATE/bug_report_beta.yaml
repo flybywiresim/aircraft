@@ -73,11 +73,3 @@ body:
     placeholder: ex. username#1234
   validations:
     required: false
-- type: checkboxes
-  id: last-check
-  attributes:
-    label: Duplicate Issue Check
-    description: By submitting this issue, I acknowledge that I have searched existing issues for duplicates to the best of my ability, and I am not submitting a duplicate issue.
-    options:
-    - label: I agree
-      required: true
