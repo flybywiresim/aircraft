@@ -1,6 +1,5 @@
 name: Feature Request
 description: Suggest a new feature for the aircraft
-title: "Title goes here..."
 labels: [Enhancement]
 body:
 - type: markdown
