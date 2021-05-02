@@ -1999,7 +1999,8 @@ mod a320_electrical_circuit_tests {
             .dc_gnd_flt_service_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
     }
-  
+
+    #[test]
     fn when_gen_1_line_off_and_only_engine_1_running_nothing_powers_ac_buses() {
         let mut test_bed = test_bed_with()
             .running_engine_1()
