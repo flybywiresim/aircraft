@@ -277,8 +277,9 @@ export class ManagedFlightPlan {
                 const finalIndex = this.waypoints.indexOf(mappedWaypoint);
                 const previousWp = finalIndex > 0 ? this.waypoints[finalIndex - 1] : undefined;
 
-                // Transfer discontinuity forwards if previous waypoint has one and it can be cleared
-                if (previousWp && previousWp.endsInDiscontinuity) {
+                // Transfer discontinuity forwards if previous waypoint has one and it can be cleared,
+                // AND the new waypoint isn't the T-P of a direct to
+                if (previousWp && previousWp.endsInDiscontinuity && !mappedWaypoint.isTurningPoint) {
                     if (previousWp.discontinuityCanBeCleared === undefined || previousWp.discontinuityCanBeCleared) {
                         previousWp.endsInDiscontinuity = false;
                         previousWp.discontinuityCanBeCleared = undefined;
@@ -572,10 +573,11 @@ export class ManagedFlightPlan {
         const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
         const turningPoint = WaypointBuilder.fromCoordinates('T-P', new LatLongAlt(lat, long), this._parentInstrument);
+        turningPoint.isTurningPoint = true;
 
         const _deleteCount = index - this.activeWaypointIndex;
         this.addWaypoint(turningPoint, index);
-        this.activeWaypointIndex = index;
+        this.activeWaypointIndex = index + 1;
 
         this.directTo.isActive = true;
         this.directTo.planWaypointIndex = index;
