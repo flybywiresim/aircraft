@@ -1405,14 +1405,14 @@ mod tests {
 
             if time >= 30. && time < 30. + timestep {
                 println!("ASSERT RAT OUT AND SPINING");
-                assert!(blue_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
+                assert!(blue_loop.loop_pressure >= Pressure::new::<psi>(2000.0));
                 assert!(rat.position >= 0.999);
                 assert!(rat.wind_turbine.rpm >= 1000.);
             }
             if time >= 60. && time < 60. + timestep {
                 println!("ASSERT RAT AT SPEED");
-                assert!(blue_loop.loop_pressure >= Pressure::new::<psi>(2500.0));
-                assert!(rat.wind_turbine.rpm >= 5000.);
+                assert!(blue_loop.loop_pressure >= Pressure::new::<psi>(2000.0));
+                assert!(rat.wind_turbine.rpm >= 4500.);
             }
 
             if time >= 70. && time < 70. + timestep {
