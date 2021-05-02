@@ -1519,7 +1519,7 @@ mod tests {
                 self
             }
 
-            fn empty_brake_accumulator(mut self) -> Self {
+            fn empty_brake_accumulator_using_park_brake(mut self) -> Self {
                 self = self
                     .set_park_brake(true)
                     .run_waiting_for(Duration::from_secs(1));
@@ -1543,6 +1543,35 @@ mod tests {
                     .set_park_brake(false)
                     .run_waiting_for(Duration::from_secs(1))
                     .set_park_brake(true)
+                    .run_waiting_for(Duration::from_secs(1));
+
+                self
+            }
+
+            fn empty_brake_accumulator_using_pedal_brake(mut self) -> Self {
+                let mut number_of_loops = 0;
+                while self
+                    .get_brake_yellow_accumulator_fluid_volume()
+                    .get::<gallon>()
+                    > 0.001
+                {
+                    self = self
+                        .set_left_brake(Ratio::new::<percent>(100.))
+                        .set_right_brake(Ratio::new::<percent>(100.))
+                        .run_waiting_for(Duration::from_secs(1))
+                        .set_left_brake(Ratio::new::<percent>(0.))
+                        .set_right_brake(Ratio::new::<percent>(0.))
+                        .run_waiting_for(Duration::from_secs(1));
+                    number_of_loops += 1;
+                    assert!(number_of_loops < 50);
+                }
+
+                self = self
+                    .set_left_brake(Ratio::new::<percent>(100.))
+                    .set_right_brake(Ratio::new::<percent>(100.))
+                    .run_waiting_for(Duration::from_secs(1))
+                    .set_left_brake(Ratio::new::<percent>(0.))
+                    .set_right_brake(Ratio::new::<percent>(0.))
                     .run_waiting_for(Duration::from_secs(1));
 
                 self
@@ -1601,16 +1630,16 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            //Enabled on cold start
+            // Enabled on cold start
             assert!(test_bed.is_ptu_enabled());
 
-            //Ptu push button disables PTU accordingly
+            // Ptu push button disables PTU accordingly
             test_bed = test_bed.set_ptu_state(false).run_one_tick();
             assert!(!test_bed.is_ptu_enabled());
             test_bed = test_bed.set_ptu_state(true).run_one_tick();
             assert!(test_bed.is_ptu_enabled());
 
-            //Not all engines on or off should disable ptu if on ground and park brake on
+            // Not all engines on or off should disable ptu if on ground and park brake on
             test_bed = test_bed
                 .start_eng2(Ratio::new::<percent>(50.))
                 .run_one_tick();
@@ -1632,17 +1661,17 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            //Enabled on cold start
+            // Enabled on cold start
             assert!(test_bed.is_ptu_enabled());
 
-            //Ptu push button disables PTU accordingly
+            // Ptu push button disables PTU accordingly
             test_bed = test_bed.set_cargo_door_state(1.).run_one_tick();
             assert!(!test_bed.is_ptu_enabled());
             test_bed = test_bed.run_waiting_for(Duration::from_secs(1));
             assert!(!test_bed.is_ptu_enabled());
             test_bed = test_bed.run_waiting_for(
                 A320PowerTransferUnitController::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION,
-            ); //Should re enabled after 40s
+            ); // Should re enabled after 40s
             assert!(test_bed.is_ptu_enabled());
         }
 
@@ -1702,17 +1731,17 @@ mod tests {
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            //Enabled on cold start
+            // Enabled on cold start
             assert!(test_bed.is_ptu_enabled());
 
-            //Yellow epump ON / Waiting 25s
+            // Yellow epump ON / Waiting 25s
             test_bed = test_bed
                 .set_yellow_e_pump(false)
                 .run_waiting_for(Duration::from_secs(25));
 
             assert!(test_bed.is_ptu_enabled());
 
-            //Now we should have pressure in yellow and green
+            // Now we should have pressure in yellow and green
             assert!(test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2000.));
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(3500.));
@@ -1725,13 +1754,13 @@ mod tests {
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2000.));
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
 
-            //Ptu push button disables PTU / green press should fall
+            // Ptu push button disables PTU / green press should fall
             test_bed = test_bed
                 .set_ptu_state(false)
                 .run_waiting_for(Duration::from_secs(20));
             assert!(!test_bed.is_ptu_enabled());
 
-            //Now we should have pressure in yellow only
+            // Now we should have pressure in yellow only
             assert!(!test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
             assert!(!test_bed.is_blue_pressurised());
@@ -1741,14 +1770,14 @@ mod tests {
         }
 
         #[test]
-        fn green_edp_buildup_test() {
+        fn green_edp_buildup() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            //Starting eng 1
+            // Starting eng 1
             test_bed = test_bed
                 .start_eng1(Ratio::new::<percent>(50.))
                 .run_one_tick();
@@ -1756,8 +1785,10 @@ mod tests {
             // ALMOST No pressure
             assert!(!test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
+
+            // Blue is auto run from engine master switches logic
             assert!(!test_bed.is_blue_pressurised());
-            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(500.)); //Blue is auto run
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(500.));
             assert!(!test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
 
@@ -1787,7 +1818,7 @@ mod tests {
         }
 
         #[test]
-        fn edp_deactivation_test() {
+        fn edp_deactivation() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -1829,7 +1860,7 @@ mod tests {
         }
 
         #[test]
-        fn yellow_edp_buildup_test() {
+        fn yellow_edp_buildup() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -1844,7 +1875,9 @@ mod tests {
             assert!(!test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(50.));
             assert!(!test_bed.is_blue_pressurised());
-            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(500.)); //Blue is auto run
+
+            //Blue is auto run
+            assert!(test_bed.blue_pressure() < Pressure::new::<psi>(500.));
             assert!(!test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
 
@@ -1875,13 +1908,14 @@ mod tests {
 
         #[test]
         // Checks numerical stability of reservoir level: level should remain after multiple pressure cycles
-        fn yellow_loop_reservoir_coherency_test() {
+        fn yellow_loop_reservoir_coherency() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .set_ptu_state(false)
-                .set_park_brake(false) // Park brake off to not use fluid in brakes
+                // Park brake off to not use fluid in brakes
+                .set_park_brake(false)
                 .run_one_tick();
 
             // Starting epump wait for pressure rise to make sure system is primed including brake accumulator
@@ -1952,7 +1986,7 @@ mod tests {
 
         #[test]
         // Checks numerical stability of reservoir level: level should remain after multiple pressure cycles
-        fn green_loop_reservoir_coherency_test() {
+        fn green_loop_reservoir_coherency() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -2006,7 +2040,7 @@ mod tests {
 
         #[test]
         // Checks numerical stability of reservoir level: level should remain after multiple pressure cycles
-        fn blue_loop_reservoir_coherency_test() {
+        fn blue_loop_reservoir_coherency() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -2075,14 +2109,14 @@ mod tests {
         }
 
         #[test]
-        fn yellow_green_edp_firevalve_test() {
+        fn yellow_green_edp_firevalve() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .run_one_tick();
 
-            //PTU would mess up the test
+            // PTU would mess up the test
             test_bed = test_bed.set_ptu_state(false).run_one_tick();
             assert!(!test_bed.is_ptu_enabled());
 
@@ -2138,7 +2172,7 @@ mod tests {
         }
 
         #[test]
-        fn yellow_brake_accumulator_test() {
+        fn yellow_brake_accumulator() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -2216,7 +2250,7 @@ mod tests {
         }
 
         #[test]
-        fn norm_brake_vs_altn_brake_test() {
+        fn norm_brake_vs_altn_brake() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -2284,7 +2318,7 @@ mod tests {
         }
 
         #[test]
-        fn check_brake_inversion_test() {
+        fn no_brake_inversion() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -2345,7 +2379,7 @@ mod tests {
         }
 
         #[test]
-        fn check_auto_brake_at_gear_retraction_test() {
+        fn auto_brake_at_gear_retraction() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -2397,7 +2431,87 @@ mod tests {
         }
 
         #[test]
-        fn check_brakes_inactive_in_flight_test() {
+        fn alternate_brake_accumulator_is_emptying_while_braking() {
+            let mut test_bed = test_bed_with()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .set_park_brake(false)
+                .run_waiting_for(Duration::from_secs(15));
+
+            // Check we got yellow pressure and brake accumulator loaded
+            assert!(test_bed.yellow_pressure() >= Pressure::new::<psi>(2500.));
+            assert!(
+                test_bed.get_brake_yellow_accumulator_pressure() >= Pressure::new::<psi>(2500.)
+            );
+
+            // Disabling green and yellow side so accumulator stop being able to reload
+            test_bed = test_bed
+                .set_ptu_state(false)
+                .set_yellow_ed_pump(false)
+                .set_green_ed_pump(false)
+                .set_yellow_e_pump(true)
+                .run_waiting_for(Duration::from_secs(30));
+
+            assert!(test_bed.yellow_pressure() <= Pressure::new::<psi>(100.));
+            assert!(test_bed.green_pressure() <= Pressure::new::<psi>(100.));
+            assert!(
+                test_bed.get_brake_yellow_accumulator_pressure() >= Pressure::new::<psi>(2500.)
+            );
+
+            // Now using brakes and check accumulator gets empty
+            test_bed = test_bed
+                .empty_brake_accumulator_using_pedal_brake()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(
+                test_bed.get_brake_yellow_accumulator_pressure() <= Pressure::new::<psi>(1000.)
+            );
+            assert!(
+                test_bed.get_brake_yellow_accumulator_fluid_volume() <= Volume::new::<gallon>(0.01)
+            );
+
+            // // No brake inputs
+            // test_bed = test_bed
+            //     .set_left_brake(Ratio::new::<percent>(0.))
+            //     .set_right_brake(Ratio::new::<percent>(0.))
+            //     .run_waiting_for(Duration::from_secs(1));
+
+            // assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            // assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            // assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            // assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+
+            // // Positive climb, gear up
+            // test_bed = test_bed
+            //     .set_left_brake(Ratio::new::<percent>(0.))
+            //     .set_right_brake(Ratio::new::<percent>(0.))
+            //     .in_flight()
+            //     .set_gear_up()
+            //     .run_waiting_for(Duration::from_secs(1));
+
+            // // Check auto brake is active
+            // assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(50.));
+            // assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(50.));
+            // assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(1500.));
+            // assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(1500.));
+
+            // assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            // assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+
+            // // Check no more autobrakes after 3s
+            // test_bed = test_bed.run_waiting_for(Duration::from_secs(3));
+
+            // assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            // assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+
+            // assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            // assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn brakes_inactive_in_flight() {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
@@ -2427,6 +2541,15 @@ mod tests {
 
             assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
+        fn brakes_norm_active_in_flight_gear_down() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(10));
 
             // Now full brakes gear down
             test_bed = test_bed
@@ -2435,7 +2558,7 @@ mod tests {
                 .set_gear_down()
                 .run_waiting_for(Duration::from_secs(1));
 
-            // Brakes should work normally
+            // Brakes norm should work normally
             assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(50.));
             assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(50.));
 
@@ -2444,7 +2567,31 @@ mod tests {
         }
 
         #[test]
-        fn controller_blue_epump_test() {
+        fn brakes_alternate_active_in_flight_gear_down() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(10));
+
+            // Now full brakes gear down
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(100.))
+                .set_right_brake(Ratio::new::<percent>(100.))
+                .set_gear_down()
+                .set_anti_skid(false)
+                .run_waiting_for(Duration::from_secs(1));
+
+            // Brakes norm should work normally
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+
+            assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(900.));
+            assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(900.));
+        }
+
+        #[test]
+        fn controller_blue_epump() {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             overhead_panel.blue_epump_override_push_button.push_off();
 
@@ -2493,7 +2640,7 @@ mod tests {
         }
 
         #[test]
-        fn controller_yellow_epump_test() {
+        fn controller_yellow_epump() {
             let mut fwd_door = Door::new(1);
             let mut aft_door = Door::new(2);
             let context = context(Duration::from_millis(100));
@@ -2532,7 +2679,7 @@ mod tests {
         }
 
         #[test]
-        fn controller_engine_driven_pump1_test() {
+        fn controller_engine_driven_pump1() {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             let mut fire_overhead_panel = A320EngineFireOverheadPanel::new();
             overhead_panel.edp1_push_button.push_auto();
@@ -2554,7 +2701,7 @@ mod tests {
         }
 
         #[test]
-        fn controller_engine_driven_pump2_test() {
+        fn controller_engine_driven_pump2() {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             let mut fire_overhead_panel = A320EngineFireOverheadPanel::new();
             overhead_panel.edp2_push_button.push_auto();
@@ -2576,7 +2723,7 @@ mod tests {
         }
 
         #[test]
-        fn controller_ptu_on_off_cargo_door_test() {
+        fn controller_ptu_on_off_cargo_door() {
             let tug = PushbackTug::new();
             let context = context(Duration::from_millis(100));
 
@@ -2622,7 +2769,7 @@ mod tests {
         }
 
         #[test]
-        fn controller_ptu_tug_test() {
+        fn controller_ptu_tug() {
             let fwd_door = Door::new(1);
             let aft_door = Door::new(2);
             let mut tug = PushbackTug::new();
@@ -2656,7 +2803,7 @@ mod tests {
 
         #[test]
         // Testing that green for brakes is only available if park brake is on while altn pressure is at too low level
-        fn brake_logic_green_backup_emergency_test() {
+        fn brake_logic_green_backup_emergency() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -2687,7 +2834,7 @@ mod tests {
 
             // With no more fluid in yellow accumulator, green should work as emergency
             test_bed = test_bed
-                .empty_brake_accumulator()
+                .empty_brake_accumulator_using_park_brake()
                 .set_left_brake(Ratio::new::<percent>(100.))
                 .set_right_brake(Ratio::new::<percent>(100.))
                 .run_waiting_for(Duration::from_secs(1));
