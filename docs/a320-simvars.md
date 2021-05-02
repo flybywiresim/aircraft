@@ -172,14 +172,6 @@
     - Bool
     - True if pitot heating auto
 
-- A32NX_EMERELECPWR_GEN1_FAULT
-    - Bool
-    - True if generator 1 line fault
-
-- A32NX_EMERELECPWR_GEN1_TOGGLE
-    - Bool
-    - True if generator 1 line is off
-
 - A32NX_EMERELECPWR_RAT_FAULT
     - Bool
     - True if RAT elec power fault
@@ -276,6 +268,7 @@
 - A32NX_FWC_FLIGHT_PHASE
     - Enum
     - Contains the numeric flight phase as determined by the FWC
+    - Input for: systems.wasm
 
 - A32NX_FWC_SKIP_STARTUP
     - Bool
@@ -570,6 +563,7 @@
         - ELEC_AC_ESS_FEED
         - ELEC_GALY_AND_CAB
         - PNEU_APU_BLEED
+        - EMER_ELEC_GEN_1_LINE: a FAULT indicates SMOKE should illuminate.
 
 - A32NX_OVHD_{name}_PB_IS_AUTO
     - Bool
@@ -599,6 +593,7 @@
         - APU_MASTER_SW
         - ELEC_COMMERCIAL
         - PNEU_APU_BLEED
+        - EMER_ELEC_GEN_1_LINE
 
 - A32NX_ELEC_CONTACTOR_{name}_IS_CLOSED
     - Bool
@@ -628,6 +623,10 @@
         - 15XE1: Contactor between AC ESS BUS and TR ESS + EMER GEN
         - 15XE2: Contactor between the static inverter and AC ESS BUS
         - 10KA_AND_5KA: The two contactors leading to the APU start motor
+        - 14PU: Contactor from AC BUS 2 to TR2 and AC GND/FLT SVC BUS.
+        - 12XN: Contactor from EXT PWR to TR2 and AC GND/FLT SVC BUS.
+        - 3PX: Contactor from TR2 to DC GND/FLT SVC BUS.
+        - 8PN: Contactor from DC BUS 2 to DC GND/FLT SVC BUS.
 
 - A32NX_ELEC_CONTACTOR_{name}_SHOW_ARROW_WHEN_CLOSED
     - Bool
@@ -646,6 +645,7 @@
         - AC_ESS
         - AC_ESS_SHED
         - AC_STAT_INV
+        - AC_GND_FLT_SVC
         - DC_1
         - DC_2
         - DC_ESS
@@ -653,6 +653,7 @@
         - DC_BAT
         - DC_HOT_1
         - DC_HOT_2
+        - DC_GND_FLT_SVC
 
 
 - A32NX_ELEC_{name}_POTENTIAL
