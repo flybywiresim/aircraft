@@ -1,6 +1,6 @@
 use super::{
-    A320ElectricalOverheadPanel, A320ElectricalUpdateArguments, AlternatingCurrentState,
-    DirectCurrentState,
+    A320ElectricalOverheadPanel, A320ElectricalUpdateArguments,
+    A320EmergencyElectricalOverheadPanel, AlternatingCurrentState, DirectCurrentState,
 };
 use std::time::Duration;
 use systems::{
@@ -24,12 +24,15 @@ pub(super) struct A320AlternatingCurrentElectrical {
     ac_ess_shed_contactor: Contactor,
     tr_1: TransformerRectifier,
     tr_2: TransformerRectifier,
+    ac_bus_2_to_tr_2_contactor: Contactor,
     tr_ess: TransformerRectifier,
     ac_ess_to_tr_ess_contactor: Contactor,
     emergency_gen: EmergencyGenerator,
     emergency_gen_contactor: Contactor,
     static_inv_to_ac_ess_bus_contactor: Contactor,
     ac_stat_inv_bus: ElectricalBus,
+    ac_gnd_flt_service_bus: ElectricalBus,
+    ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor: Contactor,
 }
 impl A320AlternatingCurrentElectrical {
     pub fn new() -> Self {
@@ -43,6 +46,7 @@ impl A320AlternatingCurrentElectrical {
             ac_ess_shed_contactor: Contactor::new("8XH"),
             tr_1: TransformerRectifier::new(1),
             tr_2: TransformerRectifier::new(2),
+            ac_bus_2_to_tr_2_contactor: Contactor::new("14PU"),
             tr_ess: TransformerRectifier::new(3),
             ac_ess_to_tr_ess_contactor: Contactor::new("15XE1"),
             emergency_gen: EmergencyGenerator::new(),
@@ -51,6 +55,10 @@ impl A320AlternatingCurrentElectrical {
             ac_stat_inv_bus: ElectricalBus::new(
                 ElectricalBusType::AlternatingCurrentStaticInverter,
             ),
+            ac_gnd_flt_service_bus: ElectricalBus::new(
+                ElectricalBusType::AlternatingCurrentGndFltService,
+            ),
+            ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor: Contactor::new("12XN"),
         }
     }
 
@@ -59,6 +67,7 @@ impl A320AlternatingCurrentElectrical {
         context: &UpdateContext,
         ext_pwr: &ExternalPowerSource,
         overhead: &A320ElectricalOverheadPanel,
+        emergency_overhead: &A320EmergencyElectricalOverheadPanel,
         arguments: &mut A320ElectricalUpdateArguments<'a>,
     ) {
         self.emergency_gen.update(
@@ -68,7 +77,7 @@ impl A320AlternatingCurrentElectrical {
         );
 
         self.main_power_sources
-            .update(context, ext_pwr, overhead, arguments);
+            .update(context, ext_pwr, overhead, emergency_overhead, arguments);
 
         if self.main_ac_buses_unpowered()
             && context.indicated_airspeed() > Velocity::new::<knot>(100.)
@@ -81,8 +90,28 @@ impl A320AlternatingCurrentElectrical {
         self.ac_bus_2
             .powered_by(&self.main_power_sources.ac_bus_2_electric_sources());
 
+        self.ac_bus_2_to_tr_2_contactor.powered_by(&self.ac_bus_2);
+        self.ac_bus_2_to_tr_2_contactor
+            .close_when(self.ac_bus_2.is_powered() && !self.tr_2.failed());
+
+        self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor
+            .powered_by(ext_pwr);
+
+        // On the real aircraft there is a button inside the galley which is taken into
+        // account when determining whether to close this contactor or not.
+        // As we're not building a galley simulator, for now we assume the button is ON.
+        self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor
+            .close_when(!self.ac_bus_2.is_powered() && !self.tr_2.failed() && ext_pwr.is_powered());
+
+        self.ac_gnd_flt_service_bus
+            .powered_by(&self.ac_bus_2_to_tr_2_contactor);
+        self.ac_gnd_flt_service_bus
+            .or_powered_by(&self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor);
+
         self.tr_1.powered_by(&self.ac_bus_1);
-        self.tr_2.powered_by(&self.ac_bus_2);
+        self.tr_2.powered_by(&self.ac_bus_2_to_tr_2_contactor);
+        self.tr_2
+            .or_powered_by(&self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor);
 
         self.ac_ess_feed_contactors
             .update(context, &self.ac_bus_1, &self.ac_bus_2, overhead);
@@ -229,6 +258,10 @@ impl A320AlternatingCurrentElectrical {
         &self.ac_stat_inv_bus
     }
 
+    pub fn ac_gnd_flt_service_bus(&self) -> &ElectricalBus {
+        &self.ac_gnd_flt_service_bus
+    }
+
     #[cfg(test)]
     pub fn fail_tr_1(&mut self) {
         self.tr_1.fail();
@@ -255,6 +288,10 @@ impl A320AlternatingCurrentElectrical {
 impl AlternatingCurrentState for A320AlternatingCurrentElectrical {
     fn ac_bus_1_and_2_unpowered(&self) -> bool {
         self.ac_bus_1.is_unpowered() && self.ac_bus_2.is_unpowered()
+    }
+
+    fn ac_bus_2_powered(&self) -> bool {
+        self.ac_bus_2.is_powered()
     }
 
     fn tr_1_and_2_available(&self) -> bool {
@@ -296,6 +333,7 @@ impl SimulationElement for A320AlternatingCurrentElectrical {
         self.ac_ess_feed_contactors.accept(visitor);
         self.tr_1.accept(visitor);
         self.tr_2.accept(visitor);
+        self.ac_bus_2_to_tr_2_contactor.accept(visitor);
         self.tr_ess.accept(visitor);
 
         self.ac_ess_shed_contactor.accept(visitor);
@@ -308,6 +346,10 @@ impl SimulationElement for A320AlternatingCurrentElectrical {
         self.ac_ess_bus.accept(visitor);
         self.ac_ess_shed_bus.accept(visitor);
         self.ac_stat_inv_bus.accept(visitor);
+
+        self.ac_gnd_flt_service_bus.accept(visitor);
+        self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor
+            .accept(visitor);
 
         visitor.visit(self);
     }
@@ -342,13 +384,15 @@ impl A320MainPowerSources {
         context: &UpdateContext,
         ext_pwr: &ExternalPowerSource,
         overhead: &A320ElectricalOverheadPanel,
+        emergency_overhead: &A320EmergencyElectricalOverheadPanel,
         arguments: &mut A320ElectricalUpdateArguments<'a>,
     ) {
         self.engine_1_gen.update(context, arguments);
         self.engine_2_gen.update(context, arguments);
 
-        let gen_1_provides_power =
-            overhead.generator_1_is_on() && self.engine_1_gen.output_within_normal_parameters();
+        let gen_1_provides_power = overhead.generator_1_is_on()
+            && emergency_overhead.generator_1_line_is_on()
+            && self.engine_1_gen.output_within_normal_parameters();
         let gen_2_provides_power =
             overhead.generator_2_is_on() && self.engine_2_gen.output_within_normal_parameters();
         let only_one_engine_gen_is_powered = gen_1_provides_power ^ gen_2_provides_power;
