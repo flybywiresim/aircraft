@@ -17,6 +17,11 @@ class AutopilotLawsModelClass {
   } rtDW_Chart_AutopilotLaws_c_T;
 
   typedef struct {
+    real_T storage;
+    boolean_T storage_not_empty;
+  } rtDW_MATLABFunction1_AutopilotLaws_T;
+
+  typedef struct {
     real_T u;
   } BlockIO_AutopilotLaws_T;
 
@@ -67,8 +72,10 @@ class AutopilotLawsModelClass {
     boolean_T wasActive;
     boolean_T wasActive_not_empty;
     boolean_T limit_not_empty;
+    rtDW_MATLABFunction1_AutopilotLaws_T sf_MATLABFunction1_m;
     rtDW_Chart_AutopilotLaws_T sf_Chart_b;
     rtDW_Chart_AutopilotLaws_c_T sf_Chart_o;
+    rtDW_MATLABFunction1_AutopilotLaws_T sf_MATLABFunction1;
     rtDW_Chart_AutopilotLaws_c_T sf_Chart_j;
     rtDW_Chart_AutopilotLaws_T sf_Chart;
   } D_Work_AutopilotLaws_T;
@@ -93,7 +100,7 @@ class AutopilotLawsModelClass {
     real_T ScheduledGain2_BreakpointsForDimension1_k[6];
     real_T ScheduledGain_BreakpointsForDimension1_e[5];
     real_T ScheduledGain2_BreakpointsForDimension1_j[6];
-    real_T ScheduledGain_BreakpointsForDimension1_h[5];
+    real_T ScheduledGain_BreakpointsForDimension1_h[6];
     real_T LagFilter_C1;
     real_T LagFilter_C1_l;
     real_T LagFilter1_C1;
@@ -134,7 +141,7 @@ class AutopilotLawsModelClass {
     real_T ScheduledGain2_Table_g[6];
     real_T ScheduledGain_Table_pf[5];
     real_T ScheduledGain2_Table_h[6];
-    real_T ScheduledGain_Table_ir[5];
+    real_T ScheduledGain_Table_ir[6];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T Subsystem_Value;
     real_T Subsystem_Value_n;
@@ -145,6 +152,7 @@ class AutopilotLawsModelClass {
     real_T CompareToConstant_const_d;
     real_T CompareToConstant5_const_e;
     real_T CompareToConstant_const_n;
+    real_T CompareToConstant6_const;
     real_T CompareToConstant7_const;
     real_T RateLimiterVariableTs_lo;
     real_T RateLimiterVariableTs_lo_o;
@@ -396,6 +404,8 @@ class AutopilotLawsModelClass {
     rtDW_Chart_AutopilotLaws_T *localDW);
   static void AutopilotLaws_Chart_j(real_T rtu_right, real_T rtu_left, real_T rtu_use_short_path, real_T *rty_out,
     rtDW_Chart_AutopilotLaws_c_T *localDW);
+  static void AutopilotLaws_MATLABFunction1(boolean_T rtu_active, real_T rtu_u, real_T *rty_y,
+    rtDW_MATLABFunction1_AutopilotLaws_T *localDW);
   static void AutopilotLaws_Voter1(real_T rtu_u1, real_T rtu_u2, real_T rtu_u3, real_T *rty_Y);
 };
 
