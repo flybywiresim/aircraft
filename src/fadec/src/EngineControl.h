@@ -375,13 +375,13 @@ public:
 			if (idx == 1) {
 				EngineState = simVars->getEngine1State();
 				if (engineStarter && engineIgniter && cn2 > 0 && EngineState != 1) {
-					simVars->setEngine1State(2);
+					simVars->setEngine1State(0);
 				}
 			}
 			else {
 				EngineState = simVars->getEngine2State();
 				if (engineStarter && engineIgniter && cn2 > 0 && EngineState != 1) {
-					simVars->setEngine2State(2);
+					simVars->setEngine2State(0);
 				}
 			}
 
