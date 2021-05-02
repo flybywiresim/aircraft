@@ -370,7 +370,9 @@ class FMCMainDisplay extends BaseAirliners {
 
                 /** Activate pre selected speed/mach */
                 // this.activatePreSelSpeedMach(_lastFlightPhase === FmgcFlightPhases.GOAROUND ? ... : this.preSelectedClbSpeed);
-                this.activatePreSelSpeedMach(this.preSelectedClbSpeed);
+                if (_lastFlightPhase === FmgcFlightPhases.TAKEOFF) {
+                    this.activatePreSelSpeedMach(this.preSelectedClbSpeed);
+                }
 
                 SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 0);
 
@@ -391,7 +393,9 @@ class FMCMainDisplay extends BaseAirliners {
                 Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
 
                 /** Activate pre selected speed/mach */
-                this.activatePreSelSpeedMach(this.preSelectedCrzSpeed);
+                if (_lastFlightPhase === FmgcFlightPhases.CLIMB) {
+                    this.activatePreSelSpeedMach(this.preSelectedCrzSpeed);
+                }
 
                 /** Arm preselected speed/mach for next flight phase */
                 this.updatePreSelSpeedMach(this.preSelectedDesSpeed);
@@ -411,7 +415,9 @@ class FMCMainDisplay extends BaseAirliners {
                 Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
 
                 /** Activate pre selected speed/mach */
-                this.activatePreSelSpeedMach(this.preSelectedDesSpeed);
+                if (_lastFlightPhase === FmgcFlightPhases.CRUISE) {
+                    this.activatePreSelSpeedMach(this.preSelectedDesSpeed);
+                }
 
                 /** Clear pre selected speed/mach */
                 this.updatePreSelSpeedMach(undefined);
@@ -645,14 +651,14 @@ class FMCMainDisplay extends BaseAirliners {
         if (preSel) {
             if (preSel > 1) {
                 SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", preSel);
-                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "knots", -1);
+                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
             } else {
                 SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
-                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "knots", preSel);
+                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", preSel);
             }
         } else {
             SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
-            SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "knots", -1);
+            SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
         }
     }
 
@@ -2547,7 +2553,7 @@ class FMCMainDisplay extends BaseAirliners {
             } else {
                 this.preSelectedClbSpeed = Math.round(v);
                 if (isNextPhase) {
-                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", this.preSelectedCrzSpeed);
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", this.preSelectedClbSpeed);
                     SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
                 }
             }
@@ -2611,7 +2617,7 @@ class FMCMainDisplay extends BaseAirliners {
             } else {
                 this.preSelectedDesSpeed = Math.round(v);
                 if (isNextPhase) {
-                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", this.preSelectedCrzSpeed);
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", this.preSelectedDesSpeed);
                     SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
                 }
             }
