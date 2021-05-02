@@ -449,6 +449,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.isTargetManaged = false;
             this.isMachActive = false;
             this.selectedValue = SimVar.GetSimVarValue("L:A32NX_SpeedPreselVal", "knots");
+            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
         } else if (_event === "USE_PRE_SEL_MACH") {
             clearTimeout(this._resetSelectionTimeout);
             SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
@@ -457,6 +458,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.isTargetManaged = false;
             this.isMachActive = true;
             this.selectedValue = SimVar.GetSimVarValue("L:A32NX_MachPreselVal", "mach");
+            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
         }
     }
 }

@@ -648,18 +648,21 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     updatePreSelSpeedMach(preSel) {
-        if (preSel) {
-            if (preSel > 1) {
-                SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", preSel);
-                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+        // The timeout is required to create a delay for the current value to be read and the new one to be set
+        setTimeout(() => {
+            if (preSel) {
+                if (preSel > 1) {
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", preSel);
+                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+                } else {
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", preSel);
+                }
             } else {
                 SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
-                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", preSel);
+                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
             }
-        } else {
-            SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
-            SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
-        }
+        }, 200);
     }
 
     updateRadioNavState() {
