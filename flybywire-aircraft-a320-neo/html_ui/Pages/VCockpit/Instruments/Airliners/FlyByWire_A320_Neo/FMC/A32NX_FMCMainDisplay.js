@@ -1108,13 +1108,16 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     _onStepClimbDescent() {
-        if (this.currentFlightPhase !== FmgcFlightPhases.CRUISE) {
+        if (!(this.currentFlightPhase === FmgcFlightPhases.CLIMB || this.currentFlightPhase === FmgcFlightPhases.CRUISE)) {
             return;
         }
 
         const _targetFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
 
-        if (_targetFl !== this.cruiseFlightLevel) {
+        if (
+            (this.currentFlightPhase === FmgcFlightPhases.CLIMB && _targetFl >= this.cruiseFlightLevel) ||
+            (this.currentFlightPhase === FmgcFlightPhases.CRUISE && _targetFl !== this.cruiseFlightLevel)
+        ) {
             this.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(_targetFl * 100));
         }
         this.cruiseFlightLevel = _targetFl;
