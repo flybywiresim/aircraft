@@ -122,14 +122,17 @@ class A32NX_FlightPhaseManager {
     }
 
     handleFcuVSKnob() {
-        if ((this.fmc.currentFlightPhase === FmgcFlightPhases.CLIMB || this.fmc.currentFlightPhase === FmgcFlightPhases.CRUISE) && canInitiateDes(this.fmc)) {
+        if (this.fmc.currentFlightPhase === FmgcFlightPhases.CLIMB || this.fmc.currentFlightPhase === FmgcFlightPhases.CRUISE) {
             /** a timeout of 100ms is required in order to receive the updated autopilot vertical mode */
             setTimeout(() => {
                 const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
                 const VS = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
-                console.log("AVM: " + activeVerticalMode + " VS: " + VS);
-                if (activeVerticalMode === 14 && VS < 0 && canInitiateDes(this.fmc)) {
-                    this.changeFlightPhase(FmgcFlightPhases.DESCENT);
+                if (activeVerticalMode === 14 && VS < 0) {
+                    if (canInitiateDes(this.fmc)) {
+                        this.changeFlightPhase(FmgcFlightPhases.DESCENT);
+                    } else {
+                        this.fmc._onStepClimbDescent();
+                    }
                 }
             }, 100);
         }
