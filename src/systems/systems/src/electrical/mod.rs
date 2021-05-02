@@ -291,11 +291,13 @@ pub enum ElectricalBusType {
     AlternatingCurrentEssential,
     AlternatingCurrentEssentialShed,
     AlternatingCurrentStaticInverter,
+    AlternatingCurrentGndFltService,
     DirectCurrent(u8),
     DirectCurrentEssential,
     DirectCurrentEssentialShed,
     DirectCurrentBattery,
     DirectCurrentHot(u8),
+    DirectCurrentGndFltService,
 }
 impl Display for ElectricalBusType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -304,11 +306,13 @@ impl Display for ElectricalBusType {
             ElectricalBusType::AlternatingCurrentEssential => write!(f, "AC_ESS"),
             ElectricalBusType::AlternatingCurrentEssentialShed => write!(f, "AC_ESS_SHED"),
             ElectricalBusType::AlternatingCurrentStaticInverter => write!(f, "AC_STAT_INV"),
+            ElectricalBusType::AlternatingCurrentGndFltService => write!(f, "AC_GND_FLT_SVC"),
             ElectricalBusType::DirectCurrent(number) => write!(f, "DC_{}", number),
             ElectricalBusType::DirectCurrentEssential => write!(f, "DC_ESS"),
             ElectricalBusType::DirectCurrentEssentialShed => write!(f, "DC_ESS_SHED"),
             ElectricalBusType::DirectCurrentBattery => write!(f, "DC_BAT"),
             ElectricalBusType::DirectCurrentHot(number) => write!(f, "DC_HOT_{}", number),
+            ElectricalBusType::DirectCurrentGndFltService => write!(f, "DC_GND_FLT_SVC"),
         }
     }
 }
