@@ -45,6 +45,8 @@
 1. [MCDU] Removed invalid chars from- and updated AOC TELEX warning message - @ExampleWasTaken (ExampleWasTaken#0886)
 1. [SOUND] Improved engine, ground roll, and ambience sounds - @hotshotp (Boris)
 1. [SOUND] Added CVR test sound - @hotshotp (Boris)
+1. [ELEC] Pushing the GEN 1 LINE push button to OFF opens the GEN 1 contactor - @davidwalschots (David Walschots)
+1. [ELEC] Add ground service electrical buses - @davidwalschots (David Walschots)
 1. [FMGC] Added VS descent phase initiation - @MisterChocker (Leon)
 
 ## 0.6.0
