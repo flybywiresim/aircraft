@@ -233,6 +233,10 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", 0);
 
+        SimVar.SetSimVarValue("L:A32NX_PRE_SEL_SPEED_CLB", "knots", 0);
+        SimVar.SetSimVarValue("L:A32NX_PRE_SEL_SPEED_CRZ", "knots", 0);
+        SimVar.SetSimVarValue("L:A32NX_PRE_SEL_SPEED_DES", "knots", 0);
+
         this.flightPlanManager.onCurrentGameFlightLoaded(() => {
             this.flightPlanManager.updateFlightPlan(() => {
                 this.flightPlanManager.updateCurrentApproach(() => {
@@ -2500,6 +2504,7 @@ class FMCMainDisplay extends BaseAirliners {
         const v = parseFloat(s);
         if (isFinite(v)) {
             this.preSelectedClbSpeed = v;
+            SimVar.SetSimVarValue("L:A32NX_PRE_SEL_SPEED_CLB", "knots", v);
             return true;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
@@ -2511,6 +2516,7 @@ class FMCMainDisplay extends BaseAirliners {
         const v = parseFloat(s);
         if (isFinite(v)) {
             this.preSelectedCrzSpeed = v;
+            SimVar.SetSimVarValue("L:A32NX_PRE_SEL_SPEED_CRZ", "knots", v);
             return true;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
@@ -2522,6 +2528,7 @@ class FMCMainDisplay extends BaseAirliners {
         const v = parseFloat(s);
         if (isFinite(v)) {
             this.preSelectedDesSpeed = v;
+            SimVar.SetSimVarValue("L:A32NX_PRE_SEL_SPEED_DES", "knots", v);
             return true;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
