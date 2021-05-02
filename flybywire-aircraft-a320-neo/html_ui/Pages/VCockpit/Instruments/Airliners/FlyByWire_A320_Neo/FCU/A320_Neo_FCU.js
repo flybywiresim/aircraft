@@ -441,6 +441,14 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.onRotate();
         } else if (_event === "SPEED_TOGGLE_SPEED_MACH") {
             this.onSwitchSpeedMach();
+        } else if (_event === "USE_PRE_SEL_SPEED") {
+            this.onPull();
+            this.isMachActive = false;
+            this.selectedValue = SimVar.GetSimVarValue("L:A32NX_SpeedPreselVal", "knots");
+        } else if (_event === "USE_PRE_SEL_MACH") {
+            this.onPull();
+            this.isMachActive = true;
+            this.selectedValue = SimVar.GetSimVarValue("L:A32NX_MachPreselVal", "mach");
         }
     }
 }

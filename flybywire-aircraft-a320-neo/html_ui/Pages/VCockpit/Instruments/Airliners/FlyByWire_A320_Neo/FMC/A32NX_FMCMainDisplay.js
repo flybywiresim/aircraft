@@ -233,10 +233,6 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", 0);
 
-        SimVar.SetSimVarValue("L:A32NX_PRE_SEL_SPEED_CLB", "knots", 0);
-        SimVar.SetSimVarValue("L:A32NX_PRE_SEL_SPEED_CRZ", "knots", 0);
-        SimVar.SetSimVarValue("L:A32NX_PRE_SEL_SPEED_DES", "knots", 0);
-
         this.flightPlanManager.onCurrentGameFlightLoaded(() => {
             this.flightPlanManager.updateFlightPlan(() => {
                 this.flightPlanManager.updateCurrentApproach(() => {
@@ -352,6 +348,16 @@ class FMCMainDisplay extends BaseAirliners {
                     CDUProgressPage.ShowPage(this);
                 }
 
+                if (this.preSelectedClbSpeed) {
+                    if (this.preSelectedClbSpeed > 1) {
+                        SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", this.preSelectedClbSpeed);
+                        SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "knots", -1);
+                    } else {
+                        SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+                        SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "knots", this.preSelectedClbSpeed);
+                    }
+                }
+
                 break;
             }
 
@@ -374,9 +380,20 @@ class FMCMainDisplay extends BaseAirliners {
                 if (preSelectedSpeed) {
                     SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
                     Coherent.call("AP_SPD_VAR_SET", 0, preSelectedSpeed);
+                    SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_USE_PRE_SEL", "number", 1);
                 }
 
                 SimVar.SetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool", 0);
+
+                if (this.preSelectedCrzSpeed) {
+                    if (this.preSelectedCrzSpeed > 1) {
+                        SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", this.preSelectedCrzSpeed);
+                        SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "knots", -1);
+                    } else {
+                        SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+                        SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "knots", this.preSelectedCrzSpeed);
+                    }
+                }
 
                 break;
             }
@@ -394,6 +411,17 @@ class FMCMainDisplay extends BaseAirliners {
                 if (this.preSelectedCrzSpeed) {
                     SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
                     Coherent.call("AP_SPD_VAR_SET", 0, this.preSelectedCrzSpeed);
+                    SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_USE_PRE_SEL", "number", 1);
+                }
+
+                if (this.preSelectedDesSpeed) {
+                    if (this.preSelectedDesSpeed > 1) {
+                        SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", this.preSelectedDesSpeed);
+                        SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "knots", -1);
+                    } else {
+                        SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+                        SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "knots", this.preSelectedDesSpeed);
+                    }
                 }
 
                 break;
@@ -413,6 +441,7 @@ class FMCMainDisplay extends BaseAirliners {
                 if (this.preSelectedDesSpeed) {
                     SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
                     Coherent.call("AP_SPD_VAR_SET", 0, this.preSelectedDesSpeed);
+                    SimVar.SetSimVarValue("H:A320_Neo_FCU_SPEED_USE_PRE_SEL", "number", 1);
                 }
 
                 break;
@@ -2501,10 +2530,28 @@ class FMCMainDisplay extends BaseAirliners {
 
     //TODO: fix this functionality
     trySetPreSelectedClimbSpeed(s) {
+        const isNextPhase = this.currentFlightPhase === FmgcFlightPhases.TAKEOFF;
+        if (s === FMCMainDisplay.clrValue) {
+            this.preSelectedClbSpeed = undefined;
+            if (isNextPhase) {
+                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+                SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+            }
+            return true;
+        }
         const v = parseFloat(s);
         if (isFinite(v)) {
-            this.preSelectedClbSpeed = v;
-            SimVar.SetSimVarValue("L:A32NX_PRE_SEL_SPEED_CLB", "knots", v);
+            if (v < 1) {
+                this.preSelectedClbSpeed = v;
+                if (isNextPhase) {
+                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", v);
+                }
+            } else {
+                this.preSelectedClbSpeed = Math.round(v);
+                if (isNextPhase) {
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", v);
+                }
+            }
             return true;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
@@ -2513,10 +2560,28 @@ class FMCMainDisplay extends BaseAirliners {
 
     //TODO: fix this functionality
     trySetPreSelectedCruiseSpeed(s) {
+        const isNextPhase = this.currentFlightPhase === FmgcFlightPhases.CLIMB;
+        if (s === FMCMainDisplay.clrValue) {
+            this.preSelectedCrzSpeed = undefined;
+            if (isNextPhase) {
+                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+                SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+            }
+            return true;
+        }
         const v = parseFloat(s);
         if (isFinite(v)) {
-            this.preSelectedCrzSpeed = v;
-            SimVar.SetSimVarValue("L:A32NX_PRE_SEL_SPEED_CRZ", "knots", v);
+            if (v < 1) {
+                this.preSelectedCrzSpeed = v;
+                if (isNextPhase) {
+                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", v);
+                }
+            } else {
+                this.preSelectedCrzSpeed = Math.round(v);
+                if (isNextPhase) {
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", v);
+                }
+            }
             return true;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
@@ -2525,10 +2590,28 @@ class FMCMainDisplay extends BaseAirliners {
 
     //TODO: fix this functionality
     trySetPreSelectedDescentSpeed(s) {
+        const isNextPhase = this.currentFlightPhase === FmgcFlightPhases.CRUISE;
+        if (s === FMCMainDisplay.clrValue) {
+            this.preSelectedDesSpeed = undefined;
+            if (isNextPhase) {
+                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
+                SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+            }
+            return true;
+        }
         const v = parseFloat(s);
         if (isFinite(v)) {
-            this.preSelectedDesSpeed = v;
-            SimVar.SetSimVarValue("L:A32NX_PRE_SEL_SPEED_DES", "knots", v);
+            if (v < 1) {
+                this.preSelectedDesSpeed = v;
+                if (isNextPhase) {
+                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", v);
+                }
+            } else {
+                this.preSelectedDesSpeed = Math.round(v);
+                if (isNextPhase) {
+                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", v);
+                }
+            }
             return true;
         }
         this.addNewMessage(NXSystemMessages.notAllowed);
