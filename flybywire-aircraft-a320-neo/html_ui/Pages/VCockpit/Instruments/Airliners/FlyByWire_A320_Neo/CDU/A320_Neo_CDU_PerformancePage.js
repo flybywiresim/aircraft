@@ -420,7 +420,7 @@ class CDUPerformancePage {
         }
         let selectedSpeedCell = "";
         if (isFinite(mcdu.preSelectedClbSpeed)) {
-            selectedSpeedCell = mcdu.preSelectedClbSpeed.toFixed(0);
+            selectedSpeedCell = "" + mcdu.preSelectedClbSpeed;
         } else {
             selectedSpeedCell = "[]";
         }
@@ -521,7 +521,7 @@ class CDUPerformancePage {
         }
         let selectedSpeedCell = "";
         if (isFinite(mcdu.preSelectedCrzSpeed)) {
-            selectedSpeedCell = mcdu.preSelectedCrzSpeed.toFixed(0);
+            selectedSpeedCell = "" + mcdu.preSelectedCrzSpeed;
         } else {
             selectedSpeedCell = "[]";
         }
@@ -622,7 +622,7 @@ class CDUPerformancePage {
         }
         let selectedSpeedCell = "";
         if (isFinite(mcdu.preSelectedDesSpeed)) {
-            selectedSpeedCell = mcdu.preSelectedDesSpeed.toFixed(0);
+            selectedSpeedCell = "" + mcdu.preSelectedDesSpeed;
         } else {
             selectedSpeedCell = "[]";
         }
