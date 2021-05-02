@@ -37,6 +37,8 @@ declare class WayPoint {
 
     isRunway?: boolean;
 
+    isTurningPoint?: boolean;
+
     infos: WayPointInfo;
 
     type: string;
