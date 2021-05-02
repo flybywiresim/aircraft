@@ -17,11 +17,9 @@ function canInitiateTO(_fmc) {
     );
 }
 
-function canInitiateDes(
-    _fmc,
-    fl = Math.round(Simplane.getAltitude() / 100),
-    fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100
-) {
+function canInitiateDes(_fmc) {
+    const fl = Math.round(Simplane.getAltitude() / 100);
+    const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
     const dest = _fmc.flightPlanManager.getDestination();
     // Can initiate descent? OR Can initiate early descent?
     return ((!!dest && dest.liveDistanceTo < 200 || !dest) && fcuSelFl < _fmc.cruiseFlightLevel)
