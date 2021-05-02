@@ -92,9 +92,10 @@ impl PowerTransferUnitController for TestPowerTransferUnitController {
 
 fn main() {
     println!("Launching hyd simulation...");
+    let path = "./src/systems/a320_hydraulic_simulation_graphs/";
 
-    green_loop_edp_simulation();
-    yellow_green_ptu_loop_simulation();
+    green_loop_edp_simulation(path);
+    yellow_green_ptu_loop_simulation(path);
 }
 
 fn make_figure(h: &History) -> Figure {
@@ -190,7 +191,7 @@ impl History {
     }
 
     //builds a graph using matplotlib python backend. PYTHON REQUIRED AS WELL AS MATPLOTLIB PACKAGE
-    pub fn show_matplotlib(&self, figure_title: &str) {
+    pub fn show_matplotlib(&self, figure_title: &str, path: &str) {
         let fig = make_figure(&self);
 
         use rustplotlib::backend::Matplotlib;
@@ -200,14 +201,17 @@ impl History {
 
         fig.apply(&mut mpl).unwrap();
 
-        let _result = mpl.savefig(figure_title);
+        let mut final_filename: String = path.to_owned();
+        final_filename.push_str(figure_title);
+
+        let _result = mpl.savefig(&final_filename);
 
         mpl.wait().unwrap();
     }
 }
 
 //Runs engine driven pump, checks pressure OK, shut it down, check drop of pressure after 20s
-fn green_loop_edp_simulation() {
+fn green_loop_edp_simulation(path: &str) {
     let green_loop_var_names = vec![
         "Loop Pressure".to_string(),
         "Loop Volume".to_string(),
@@ -276,9 +280,9 @@ fn green_loop_edp_simulation() {
             assert!(green_loop.get_pressure() <= Pressure::new::<psi>(250.0));
         }
 
-        edp1.update(&context.delta(), &green_loop, &engine1, &edp1_controller);
+        edp1.update(&context, &green_loop, &engine1, &edp1_controller);
         green_loop.update(
-            &context.delta(),
+            &context,
             Vec::new(),
             vec![&edp1],
             Vec::new(),
@@ -312,7 +316,7 @@ fn green_loop_edp_simulation() {
         }
 
         green_loop_history.update(
-            context.delta().as_secs_f64(),
+            context.delta_as_secs_f64(),
             vec![
                 green_loop.get_pressure().get::<psi>(),
                 green_loop.get_loop_fluid_volume().get::<gallon>(),
@@ -321,14 +325,14 @@ fn green_loop_edp_simulation() {
             ],
         );
         edp1_history.update(
-            context.delta().as_secs_f64(),
+            context.delta_as_secs_f64(),
             vec![
                 edp1.get_delta_vol_max().get::<liter>(),
                 engine1.corrected_n2.get::<percent>() as f64,
             ],
         );
         accu_green_history.update(
-            context.delta().as_secs_f64(),
+            context.delta_as_secs_f64(),
             vec![
                 green_loop.get_pressure().get::<psi>(),
                 green_loop.get_accumulator_gas_pressure().get::<psi>(),
@@ -338,12 +342,12 @@ fn green_loop_edp_simulation() {
         );
     }
 
-    green_loop_history.show_matplotlib("green_loop_edp_simulation_press");
-    edp1_history.show_matplotlib("green_loop_edp_simulation_EDP1 data");
-    accu_green_history.show_matplotlib("green_loop_edp_simulation_Green Accum data");
+    green_loop_history.show_matplotlib("green_loop_edp_simulation_press", &path);
+    edp1_history.show_matplotlib("green_loop_edp_simulation_EDP1 data", &path);
+    accu_green_history.show_matplotlib("green_loop_edp_simulation_Green Accum data", &path);
 }
 
-fn yellow_green_ptu_loop_simulation() {
+fn yellow_green_ptu_loop_simulation(path: &str) {
     let loop_var_names = vec![
         "GREEN Loop Pressure".to_string(),
         "YELLOW Loop Pressure".to_string(),
@@ -512,11 +516,11 @@ fn yellow_green_ptu_loop_simulation() {
         }
 
         ptu.update(&green_loop, &yellow_loop, &ptu_controller);
-        edp1.update(&context.delta(), &green_loop, &engine1, &edp1_controller);
-        epump.update(&context.delta(), &yellow_loop, &epump_controller);
+        edp1.update(&context, &green_loop, &engine1, &edp1_controller);
+        epump.update(&context, &yellow_loop, &epump_controller);
 
         yellow_loop.update(
-            &context.delta(),
+            &context,
             vec![&epump],
             Vec::new(),
             Vec::new(),
@@ -524,7 +528,7 @@ fn yellow_green_ptu_loop_simulation() {
             &loop_controller,
         );
         green_loop.update(
-            &context.delta(),
+            &context,
             Vec::new(),
             vec![&edp1],
             Vec::new(),
@@ -533,7 +537,7 @@ fn yellow_green_ptu_loop_simulation() {
         );
 
         loop_history.update(
-            context.delta().as_secs_f64(),
+            context.delta_as_secs_f64(),
             vec![
                 green_loop.get_pressure().get::<psi>(),
                 yellow_loop.get_pressure().get::<psi>(),
@@ -544,7 +548,7 @@ fn yellow_green_ptu_loop_simulation() {
             ],
         );
         ptu_history.update(
-            context.delta().as_secs_f64(),
+            context.delta_as_secs_f64(),
             vec![
                 ptu.get_flow().get::<gallon_per_second>(),
                 green_loop.get_pressure().get::<psi>() - yellow_loop.get_pressure().get::<psi>(),
@@ -554,7 +558,7 @@ fn yellow_green_ptu_loop_simulation() {
         );
 
         accu_green_history.update(
-            context.delta().as_secs_f64(),
+            context.delta_as_secs_f64(),
             vec![
                 green_loop.get_pressure().get::<psi>(),
                 green_loop.get_accumulator_gas_pressure().get::<psi>(),
@@ -563,7 +567,7 @@ fn yellow_green_ptu_loop_simulation() {
             ],
         );
         accu_yellow_history.update(
-            context.delta().as_secs_f64(),
+            context.delta_as_secs_f64(),
             vec![
                 yellow_loop.get_pressure().get::<psi>(),
                 yellow_loop.get_accumulator_gas_pressure().get::<psi>(),
@@ -592,11 +596,11 @@ fn yellow_green_ptu_loop_simulation() {
         }
     }
 
-    loop_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Loop_press");
-    ptu_history.show_matplotlib("yellow_green_ptu_loop_simulation()_PTU");
+    loop_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Loop_press", &path);
+    ptu_history.show_matplotlib("yellow_green_ptu_loop_simulation()_PTU", &path);
 
-    accu_green_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Green_acc");
-    accu_yellow_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Yellow_acc");
+    accu_green_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Green_acc", &path);
+    accu_yellow_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Yellow_acc", &path);
 }
 
 fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {

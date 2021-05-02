@@ -233,9 +233,9 @@ impl BleedAirUsageEgtDelta {
 
         if (self.current - self.target).abs() > f64::EPSILON {
             if self.current > self.target {
-                self.current -= self.delta_per_second() * context.delta().as_secs_f64();
+                self.current -= self.delta_per_second() * context.delta_as_secs_f64();
             } else {
-                self.current += self.delta_per_second() * context.delta().as_secs_f64();
+                self.current += self.delta_per_second() * context.delta_as_secs_f64();
             }
         }
 
@@ -299,9 +299,7 @@ impl ApuGenUsageEgtDelta {
                 ApuGenUsageEgtDelta::SECONDS_TO_REACH_TARGET,
             ))
         } else {
-            Duration::from_secs_f64(
-                (self.time.as_secs_f64() - context.delta().as_secs_f64()).max(0.),
-            )
+            Duration::from_secs_f64((self.time.as_secs_f64() - context.delta_as_secs_f64()).max(0.))
         };
     }
 
@@ -344,7 +342,7 @@ impl Running {
     ) -> ThermodynamicTemperature {
         // Reduce the deviation by 1 per second to slowly creep back to normal temperatures
         self.base_egt_deviation -= TemperatureInterval::new::<temperature_interval::degree_celsius>(
-            (context.delta().as_secs_f64() * 1.).min(
+            (context.delta_as_secs_f64() * 1.).min(
                 self.base_egt_deviation
                     .get::<temperature_interval::degree_celsius>(),
             ),

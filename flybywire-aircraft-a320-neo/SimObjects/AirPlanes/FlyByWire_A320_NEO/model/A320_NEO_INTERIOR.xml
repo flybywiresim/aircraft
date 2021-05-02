@@ -1808,14 +1808,14 @@
                         <!-- GEN 1 LINE -->
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_EMERELECPWR_GEN1</NODE_ID>
-                            <TOGGLE_SIMVAR>L:A32NX_EMERELECPWR_GEN1_TOGGLE</TOGGLE_SIMVAR>
+                            <TOGGLE_SIMVAR>L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON</TOGGLE_SIMVAR>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                            <SEQ1_CODE>(L:A32NX_EMERELECPWR_GEN1_FAULT, Bool)</SEQ1_CODE>
-                            <SEQ2_CODE>(L:A32NX_EMERELECPWR_GEN1_TOGGLE, Bool) !</SEQ2_CODE>
+                            <SEQ1_CODE>(L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+                            <SEQ2_CODE>(L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON, Bool) !</SEQ2_CODE>
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                            <TOOLTIPID>%((L:A32NX_EMERELECPWR_GEN1_TOGGLE, Bool))%{if}Turn OFF gen 1 line%{else}Turn ON gen 1 line%{end}</TOOLTIPID>
+                            <TOOLTIPID>%((L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON, Bool))%{if}Turn OFF gen 1 line%{else}Turn ON gen 1 line%{end}</TOOLTIPID>
                         </UseTemplate>
 
                         <!-- RAT & EMER GEN -->
@@ -3652,7 +3652,13 @@
                     <ANIM_NAME>Press_Arc_L</ANIM_NAME>
                     <ANIM_LENGTH>3</ANIM_LENGTH>
                     <ANIM_DURATION>1</ANIM_DURATION>
-                    <ANIM_CODE>(L:A32NX_HYD_BRAKE_ALTN_LEFT_PRESS, number) 1000 /</ANIM_CODE>
+                     <ANIM_CODE>
+                        (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) if{
+                            (L:A32NX_HYD_BRAKE_ALTN_LEFT_PRESS, number) 1000 /
+                        } els{
+                            0
+                        }
+                    </ANIM_CODE>
                 </UseTemplate>
             </Component>
             <Component ID="BRK_PRESS_ARC_R" Node="BRK_PRESS_ARC_L">
@@ -3660,7 +3666,13 @@
                     <ANIM_NAME>Press_Arc_R</ANIM_NAME>
                     <ANIM_LENGTH>3</ANIM_LENGTH>
                     <ANIM_DURATION>1</ANIM_DURATION>
-                    <ANIM_CODE>(L:A32NX_HYD_BRAKE_ALTN_RIGHT_PRESS, number) 1000 /</ANIM_CODE>
+                    <ANIM_CODE>
+                        (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) if{
+                            (L:A32NX_HYD_BRAKE_ALTN_RIGHT_PRESS, number) 1000 /
+                        } els{
+                            0
+                        }
+                    </ANIM_CODE>
                 </UseTemplate>
             </Component>
             <Component ID="ACCU_PRESS" Node="BRK_ACCU_PRESS_ARC">
@@ -3668,7 +3680,13 @@
                     <ANIM_NAME>Accu_Press</ANIM_NAME>
                     <ANIM_LENGTH>1</ANIM_LENGTH>
                     <ANIM_DURATION>1</ANIM_DURATION>
-                    <ANIM_CODE>(L:A32NX_HYD_BRAKE_ALTN_ACC_PRESS, number) 4000 /</ANIM_CODE>
+                    <ANIM_CODE>
+                        (L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) if{
+                            (L:A32NX_HYD_BRAKE_ALTN_ACC_PRESS, number) 4000 /
+                        } els{
+                            0
+                        }
+                    </ANIM_CODE>
                 </UseTemplate>
             </Component>
 
