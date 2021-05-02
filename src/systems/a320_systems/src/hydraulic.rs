@@ -2554,7 +2554,7 @@ mod tests {
         }
 
         #[test]
-        fn controller_blue_epump() {
+        fn controller_blue_epump_split_master_switch() {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             overhead_panel.blue_epump_override_push_button.push_off();
 
@@ -2572,11 +2572,30 @@ mod tests {
             blue_epump_controller.engine_2_master_on = true;
             blue_epump_controller.update(&overhead_panel);
             assert!(blue_epump_controller.should_pressurise());
+        }
+
+        #[test]
+        fn controller_blue_epump_on_off_master_switch() {
+            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+            overhead_panel.blue_epump_override_push_button.push_off();
+
+            let mut blue_epump_controller = A320BlueElectricPumpController::new();
 
             blue_epump_controller.engine_1_master_on = true;
             blue_epump_controller.engine_2_master_on = true;
             blue_epump_controller.update(&overhead_panel);
             assert!(blue_epump_controller.should_pressurise());
+
+            blue_epump_controller.engine_1_master_on = false;
+            blue_epump_controller.engine_2_master_on = false;
+            blue_epump_controller.update(&overhead_panel);
+            assert!(!blue_epump_controller.should_pressurise());
+        }
+
+        #[test]
+        fn controller_blue_epump_override() {
+            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+            let mut blue_epump_controller = A320BlueElectricPumpController::new();
 
             blue_epump_controller.engine_1_master_on = false;
             blue_epump_controller.engine_2_master_on = false;

@@ -80,6 +80,12 @@ impl TestPowerTransferUnitController {
         }
     }
 
+    fn commanding_enabled() -> Self {
+        Self {
+            should_enable: true,
+        }
+    }
+
     fn command_enable(&mut self) {
         self.should_enable = true;
     }
@@ -96,6 +102,7 @@ fn main() {
 
     green_loop_edp_simulation(path);
     yellow_green_ptu_loop_simulation(path);
+    yellow_epump_plus_edp2_with_ptu(path);
 }
 
 fn make_figure(h: &History) -> Figure {
@@ -601,6 +608,182 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
 
     accu_green_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Green_acc", &path);
     accu_yellow_history.show_matplotlib("yellow_green_ptu_loop_simulation()_Yellow_acc", &path);
+}
+
+fn yellow_epump_plus_edp2_with_ptu(path: &str) {
+    let loop_var_names = vec![
+        "GREEN Loop Pressure".to_string(),
+        "YELLOW Loop Pressure".to_string(),
+        "GREEN Loop reservoir".to_string(),
+        "YELLOW Loop reservoir".to_string(),
+        "GREEN Loop delta vol".to_string(),
+        "YELLOW Loop delta vol".to_string(),
+    ];
+    let mut loop_history = History::new(loop_var_names);
+
+    let ptu_var_names = vec![
+        "Current flow".to_string(),
+        "Press delta".to_string(),
+        "PTU active GREEN".to_string(),
+        "PTU active YELLOW".to_string(),
+    ];
+    let mut ptu_history = History::new(ptu_var_names);
+
+    let green_acc_var_names = vec![
+        "Loop Pressure".to_string(),
+        "Acc gas press".to_string(),
+        "Acc fluid vol".to_string(),
+        "Acc gas vol".to_string(),
+    ];
+    let mut accu_green_history = History::new(green_acc_var_names);
+
+    let yellow_acc_var_names = vec![
+        "Loop Pressure".to_string(),
+        "Acc gas press".to_string(),
+        "Acc fluid vol".to_string(),
+        "Acc gas vol".to_string(),
+    ];
+    let mut accu_yellow_history = History::new(yellow_acc_var_names);
+
+    let mut epump = electric_pump();
+    let mut epump_controller = TestPumpController::commanding_depressurise();
+    let mut yellow_loop = hydraulic_loop("YELLOW");
+
+    let mut edp2 = engine_driven_pump();
+    let mut edp2_controller = TestPumpController::commanding_depressurise();
+
+    let mut engine2 = engine(Ratio::new::<percent>(75.0));
+
+    let mut green_loop = hydraulic_loop("GREEN");
+
+    let loop_controller = TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
+
+    let mut ptu = PowerTransferUnit::new();
+    let ptu_controller = TestPowerTransferUnitController::commanding_enabled();
+
+    let context = context(Duration::from_millis(100));
+
+    loop_history.init(
+        0.0,
+        vec![
+            green_loop.get_pressure().get::<psi>(),
+            yellow_loop.get_pressure().get::<psi>(),
+            green_loop.get_reservoir_volume().get::<gallon>(),
+            yellow_loop.get_reservoir_volume().get::<gallon>(),
+            green_loop.get_current_delta_vol().get::<gallon>(),
+            yellow_loop.get_current_delta_vol().get::<gallon>(),
+        ],
+    );
+    ptu_history.init(
+        0.0,
+        vec![
+            ptu.get_flow().get::<gallon_per_second>(),
+            green_loop.get_pressure().get::<psi>() - yellow_loop.get_pressure().get::<psi>(),
+            ptu.get_is_active_left_to_right() as i8 as f64,
+            ptu.get_is_active_right_to_left() as i8 as f64,
+        ],
+    );
+    accu_green_history.init(
+        0.0,
+        vec![
+            green_loop.get_pressure().get::<psi>(),
+            green_loop.get_accumulator_gas_pressure().get::<psi>(),
+            green_loop.get_accumulator_fluid_volume().get::<gallon>(),
+            green_loop.get_accumulator_gas_volume().get::<gallon>(),
+        ],
+    );
+    accu_yellow_history.init(
+        0.0,
+        vec![
+            yellow_loop.get_pressure().get::<psi>(),
+            yellow_loop.get_accumulator_gas_pressure().get::<psi>(),
+            yellow_loop.get_accumulator_fluid_volume().get::<gallon>(),
+            yellow_loop.get_accumulator_gas_volume().get::<gallon>(),
+        ],
+    );
+
+    engine2.corrected_n2 = Ratio::new::<percent>(100.0);
+    for x in 0..800 {
+        if x == 10 {
+            //After 1s powering electric pump
+            epump_controller.command_pressurise();
+        }
+
+        if x == 110 {
+            //10s later enabling edp2
+            edp2_controller.command_pressurise();
+        }
+
+        if x >= 400 {
+            println!("Gpress={}", green_loop.get_pressure().get::<psi>());
+        }
+        ptu.update(&green_loop, &yellow_loop, &ptu_controller);
+        edp2.update(&context, &yellow_loop, &engine2, &edp2_controller);
+        epump.update(&context, &yellow_loop, &epump_controller);
+
+        yellow_loop.update(
+            &context,
+            vec![&epump],
+            vec![&edp2],
+            Vec::new(),
+            vec![&ptu],
+            &loop_controller,
+        );
+        green_loop.update(
+            &context,
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            vec![&ptu],
+            &loop_controller,
+        );
+
+        loop_history.update(
+            context.delta_as_secs_f64(),
+            vec![
+                green_loop.get_pressure().get::<psi>(),
+                yellow_loop.get_pressure().get::<psi>(),
+                green_loop.get_reservoir_volume().get::<gallon>(),
+                yellow_loop.get_reservoir_volume().get::<gallon>(),
+                green_loop.get_current_delta_vol().get::<gallon>(),
+                yellow_loop.get_current_delta_vol().get::<gallon>(),
+            ],
+        );
+        ptu_history.update(
+            context.delta_as_secs_f64(),
+            vec![
+                ptu.get_flow().get::<gallon_per_second>(),
+                green_loop.get_pressure().get::<psi>() - yellow_loop.get_pressure().get::<psi>(),
+                ptu.get_is_active_left_to_right() as i8 as f64,
+                ptu.get_is_active_right_to_left() as i8 as f64,
+            ],
+        );
+
+        accu_green_history.update(
+            context.delta_as_secs_f64(),
+            vec![
+                green_loop.get_pressure().get::<psi>(),
+                green_loop.get_accumulator_gas_pressure().get::<psi>(),
+                green_loop.get_accumulator_fluid_volume().get::<gallon>(),
+                green_loop.get_accumulator_gas_volume().get::<gallon>(),
+            ],
+        );
+        accu_yellow_history.update(
+            context.delta_as_secs_f64(),
+            vec![
+                yellow_loop.get_pressure().get::<psi>(),
+                yellow_loop.get_accumulator_gas_pressure().get::<psi>(),
+                yellow_loop.get_accumulator_fluid_volume().get::<gallon>(),
+                yellow_loop.get_accumulator_gas_volume().get::<gallon>(),
+            ],
+        );
+    }
+
+    loop_history.show_matplotlib("yellow_epump_plus_edp2_with_ptu()_Loop_press", &path);
+    ptu_history.show_matplotlib("yellow_epump_plus_edp2_with_ptu()_PTU", &path);
+
+    accu_green_history.show_matplotlib("yellow_epump_plus_edp2_with_ptu()_Green_acc", &path);
+    accu_yellow_history.show_matplotlib("yellow_epump_plus_edp2_with_ptu()_Yellow_acc", &path);
 }
 
 fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {

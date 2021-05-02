@@ -835,7 +835,7 @@ impl EngineDrivenPump {
     ];
     const DISPLACEMENT_MAP: [f64; 9] = [2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 2.0, 0.0, 0.0];
 
-    const DISPLACEMENT_DYNAMICS: f64 = 0.3; //0.1 == 90% filtering on max displacement transient
+    const DISPLACEMENT_DYNAMICS: f64 = 0.9; //0.1 == 90% filtering on max displacement transient
 
     pub fn new(id: &str) -> Self {
         Self {
