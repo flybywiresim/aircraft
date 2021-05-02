@@ -652,7 +652,7 @@ fn yellow_epump_plus_edp2_with_ptu(path: &str) {
     let mut edp2 = engine_driven_pump();
     let mut edp2_controller = TestPumpController::commanding_depressurise();
 
-    let mut engine2 = engine(Ratio::new::<percent>(75.0));
+    let mut engine2 = engine(Ratio::new::<percent>(100.0));
 
     let mut green_loop = hydraulic_loop("GREEN");
 

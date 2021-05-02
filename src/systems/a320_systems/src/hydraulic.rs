@@ -1744,7 +1744,7 @@ mod tests {
             // Now we should have pressure in yellow and green
             assert!(test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2000.));
-            assert!(test_bed.green_pressure() < Pressure::new::<psi>(3500.));
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(3100.));
 
             assert!(!test_bed.is_blue_pressurised());
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
@@ -1752,7 +1752,7 @@ mod tests {
 
             assert!(test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2000.));
-            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3100.));
 
             // Ptu push button disables PTU / green press should fall
             test_bed = test_bed
@@ -1767,6 +1767,29 @@ mod tests {
             assert!(test_bed.blue_pressure() < Pressure::new::<psi>(50.));
             assert!(test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2000.));
+        }
+
+        #[test]
+        fn ptu_pressurise_green_from_yellow_epump_and_edp2() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .start_eng2(Ratio::new::<percent>(100.))
+                .set_park_brake(false)
+                .set_yellow_e_pump(false)
+                .set_yellow_ed_pump(true) // Else Ptu inhibited by parking brake
+                .run_waiting_for(Duration::from_secs(25));
+
+            assert!(test_bed.is_ptu_enabled());
+
+            // Now we should have pressure in yellow and green
+            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(3100.));
+
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2000.));
+            assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3100.));
         }
 
         #[test]
@@ -1945,7 +1968,7 @@ mod tests {
                     .start_eng2(Ratio::new::<percent>(50.))
                     .run_waiting_for(Duration::from_secs(50));
 
-                assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3500.));
+                assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3100.));
                 assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
 
                 let mut current_res_level = test_bed.get_yellow_reservoir_volume();

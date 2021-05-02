@@ -831,9 +831,9 @@ impl EngineDrivenPump {
     const PUMP_N2_GEAR_RATIO: f64 = 0.211;
 
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3050.0, 3500.0,
+        0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3020.0, 3500.0,
     ];
-    const DISPLACEMENT_MAP: [f64; 9] = [2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 2.0, 0.0, 0.0];
+    const DISPLACEMENT_MAP: [f64; 9] = [2.4, 2.4, 2.4, 2.4, 2.4, 2.0, 0.9, 0.0, 0.0];
 
     const DISPLACEMENT_DYNAMICS: f64 = 0.9; //0.1 == 90% filtering on max displacement transient
 
