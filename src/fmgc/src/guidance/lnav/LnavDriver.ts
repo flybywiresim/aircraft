@@ -2,6 +2,7 @@ import { GuidanceComponent } from '../GuidanceComponent';
 import { ControlLaw } from '../ControlLaws';
 import { Leg, TFLeg } from '../Geometry';
 import { GuidanceController } from '../GuidanceController';
+import { LateralMode, VerticalMode } from '../../utils/Enums';
 
 export class LnavDriver implements GuidanceComponent {
     private guidanceController: GuidanceController;
@@ -111,12 +112,27 @@ export class LnavDriver implements GuidanceComponent {
     sequenceDiscontinuity(_leg?: Leg): void {
         console.log('[FMGC/Guidance] LNAV - sequencing discontinuity');
 
-        // TODO make this actually handle discontinuities properly
+        // Lateral mode is NAV
+        const lateralModel = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Enum');
+        const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Enum');
 
-        if (_leg instanceof TFLeg) {
-            _leg.to.endsInDiscontinuity = false;
-            _leg.to.discontinuityCanBeCleared = undefined;
+        // Lateral mode is NAV
+        if (lateralModel === LateralMode.NAV) {
+            // Set HDG (current heading)
+            SimVar.SetSimVarValue('H:A320_Neo_FCU_HDG_PULL', 'number', 0);
+            SimVar.SetSimVarValue('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'number', Simplane.getHeadingMagnetic());
         }
+
+        // Vertical mode is DES, OP DES, CLB or OP CLB
+        if (verticalMode === VerticalMode.DES || verticalMode === VerticalMode.OP_DES
+            || verticalMode === VerticalMode.CLB || verticalMode === VerticalMode.OP_CLB
+        ) {
+            // Set V/S
+            SimVar.SetSimVarValue('H:A320_Neo_FCU_VS_PULL', 'number', 0);
+        }
+
+        // Triple click
+        Coherent.call('PLAY_INSTRUMENT_SOUND', '3click');
 
         this.sequenceLeg(_leg);
     }
