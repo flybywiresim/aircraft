@@ -38,6 +38,9 @@ pub(super) struct A320DirectCurrentElectrical {
     tr_2_contactor: Contactor,
     tr_ess_contactor: Contactor,
     apu_start_contactors: Contactor,
+    dc_gnd_flt_service_bus: ElectricalBus,
+    tr_2_to_dc_gnd_flt_service_bus_contactor: Contactor,
+    dc_bus_2_to_dc_gnd_flt_service_bus_contactor: Contactor,
 }
 impl A320DirectCurrentElectrical {
     pub fn new() -> Self {
@@ -66,6 +69,11 @@ impl A320DirectCurrentElectrical {
             tr_2_contactor: Contactor::new("5PU2"),
             tr_ess_contactor: Contactor::new("3PE"),
             apu_start_contactors: Contactor::new("10KA_AND_5KA"),
+            dc_gnd_flt_service_bus: ElectricalBus::new(
+                ElectricalBusType::DirectCurrentGndFltService,
+            ),
+            tr_2_to_dc_gnd_flt_service_bus_contactor: Contactor::new("3PX"),
+            dc_bus_2_to_dc_gnd_flt_service_bus_contactor: Contactor::new("8PN"),
         }
     }
 
@@ -79,8 +87,14 @@ impl A320DirectCurrentElectrical {
         self.tr_1_contactor.close_when(ac_state.tr_1().is_powered());
         self.tr_1_contactor.powered_by(ac_state.tr_1());
 
-        self.tr_2_contactor.close_when(ac_state.tr_2().is_powered());
+        self.tr_2_contactor
+            .close_when(ac_state.tr_2().is_powered() && ac_state.ac_bus_2_powered());
         self.tr_2_contactor.powered_by(ac_state.tr_2());
+
+        self.tr_2_to_dc_gnd_flt_service_bus_contactor
+            .close_when(ac_state.tr_2().is_powered() && !ac_state.ac_bus_2_powered());
+        self.tr_2_to_dc_gnd_flt_service_bus_contactor
+            .powered_by(ac_state.tr_2());
 
         self.tr_ess_contactor
             .close_when(!ac_state.tr_1_and_2_available() && ac_state.tr_ess().is_powered());
@@ -88,6 +102,16 @@ impl A320DirectCurrentElectrical {
 
         self.dc_bus_1.powered_by(&self.tr_1_contactor);
         self.dc_bus_2.powered_by(&self.tr_2_contactor);
+
+        self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
+            .close_when(ac_state.tr_2().is_powered() && ac_state.ac_bus_2_powered());
+        self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
+            .powered_by(&self.dc_bus_2);
+
+        self.dc_gnd_flt_service_bus
+            .powered_by(&self.tr_2_to_dc_gnd_flt_service_bus_contactor);
+        self.dc_gnd_flt_service_bus
+            .or_powered_by(&self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor);
 
         self.dc_bus_1_tie_contactor.powered_by(&self.dc_bus_1);
         self.dc_bus_2_tie_contactor.powered_by(&self.dc_bus_2);
@@ -283,6 +307,10 @@ impl A320DirectCurrentElectrical {
         &self.hot_bus_2
     }
 
+    pub fn dc_gnd_flt_service_bus(&self) -> &ElectricalBus {
+        &self.dc_gnd_flt_service_bus
+    }
+
     #[cfg(test)]
     pub fn battery_1_input_potential(&self) -> Potential {
         self.battery_1.input_potential()
@@ -337,6 +365,12 @@ impl SimulationElement for A320DirectCurrentElectrical {
         self.hot_bus_2.accept(visitor);
 
         self.apu_start_contactors.accept(visitor);
+
+        self.dc_gnd_flt_service_bus.accept(visitor);
+        self.tr_2_to_dc_gnd_flt_service_bus_contactor
+            .accept(visitor);
+        self.dc_bus_2_to_dc_gnd_flt_service_bus_contactor
+            .accept(visitor);
 
         visitor.visit(self);
     }

@@ -134,6 +134,7 @@ struct ElectricalBusConnections {
     ac_ess_bus: ElectricalBusConnection,
     ac_ess_shed_bus: ElectricalBusConnection,
     ac_stat_inv_bus: ElectricalBusConnection,
+    ac_gnd_flt_svc_bus: ElectricalBusConnection,
     dc_bus_1: ElectricalBusConnection,
     dc_bus_2: ElectricalBusConnection,
     dc_ess_bus: ElectricalBusConnection,
@@ -141,6 +142,7 @@ struct ElectricalBusConnections {
     dc_bat_bus: ElectricalBusConnection,
     dc_hot_bus_1: ElectricalBusConnection,
     dc_hot_bus_2: ElectricalBusConnection,
+    dc_gnd_flt_svc_bus: ElectricalBusConnection,
 }
 impl ElectricalBusConnections {
     fn new() -> Self {
@@ -151,6 +153,7 @@ impl ElectricalBusConnections {
             ac_ess_bus: ElectricalBusConnection::new(1, 4),
             ac_ess_shed_bus: ElectricalBusConnection::new(1, 5),
             ac_stat_inv_bus: ElectricalBusConnection::new(1, 6),
+            ac_gnd_flt_svc_bus: ElectricalBusConnection::new(1, 14),
             dc_bus_1: ElectricalBusConnection::new(1, 7),
             dc_bus_2: ElectricalBusConnection::new(1, 8),
             dc_ess_bus: ElectricalBusConnection::new(1, 9),
@@ -158,6 +161,7 @@ impl ElectricalBusConnections {
             dc_bat_bus: ElectricalBusConnection::new(1, 11),
             dc_hot_bus_1: ElectricalBusConnection::new(1, 12),
             dc_hot_bus_2: ElectricalBusConnection::new(1, 13),
+            dc_gnd_flt_svc_bus: ElectricalBusConnection::new(1, 15),
         }
     }
 
@@ -168,6 +172,7 @@ impl ElectricalBusConnections {
             "ELEC_AC_ESS_BUS_IS_POWERED" => self.ac_ess_bus.update(value),
             "ELEC_AC_ESS_SHED_BUS_IS_POWERED" => self.ac_ess_shed_bus.update(value),
             "ELEC_AC_STAT_INV_BUS_IS_POWERED" => self.ac_stat_inv_bus.update(value),
+            "ELEC_AC_GND_FLT_SVC_BUS_IS_POWERED" => self.ac_gnd_flt_svc_bus.update(value),
             "ELEC_DC_1_BUS_IS_POWERED" => self.dc_bus_1.update(value),
             "ELEC_DC_2_BUS_IS_POWERED" => self.dc_bus_2.update(value),
             "ELEC_DC_ESS_BUS_IS_POWERED" => self.dc_ess_bus.update(value),
@@ -175,6 +180,7 @@ impl ElectricalBusConnections {
             "ELEC_DC_BAT_BUS_IS_POWERED" => self.dc_bat_bus.update(value),
             "ELEC_DC_HOT_1_BUS_IS_POWERED" => self.dc_hot_bus_1.update(value),
             "ELEC_DC_HOT_2_BUS_IS_POWERED" => self.dc_hot_bus_2.update(value),
+            "ELEC_DC_GND_FLT_SVC_BUS_IS_POWERED" => self.dc_gnd_flt_svc_bus.update(value),
             _ => panic!("No known connection for electrical bus '{}'.", name),
         }
     }
