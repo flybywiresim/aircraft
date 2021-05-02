@@ -490,7 +490,7 @@
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
-        
+
         <Sound WwiseEvent="LowRumbleL"  NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" ConeHeading="180" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
@@ -1420,13 +1420,13 @@
         <!-- Miscellaneous ==========================================================================================  -->
 
         <!-- Play sound whenever the seat belts switch position changes -->
-        
-        <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" ViewPoint="Inside" Continuous="false">
+
+        <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="CABIN SEATBELTS ALERT SWITCH" ViewPoint="Inside" Continuous="false">
             <Range UpperBound="0" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" ViewPoint="Inside" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" SimVar="CABIN SEATBELTS ALERT SWITCH" ViewPoint="Inside" Continuous="false">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE" />
         </Sound>
@@ -1494,7 +1494,7 @@
                 <Range LowerBound="6" UpperBound="6" />
             </Requires>
         </Sound>
-        
+
         <Sound WwiseData="true" WwiseEvent="cvr_test" NodeName="PEDALS_LEFT" LocalVar="A32NX_RCDR_TEST" Continuous="true">
             <Range LowerBound="1" />
             <Requires LocalVar="A32NX_RCDR_GROUND_CONTROL_ON" Units="Bool" Index="1">
