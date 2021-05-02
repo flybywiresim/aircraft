@@ -735,6 +735,7 @@ SimInputThrottles SimConnectInterface::getSimInputThrottles() {
 }
 
 void SimConnectInterface::resetSimInputAutopilot() {
+  simInputAutopilot.AP_engage = 0;
   simInputAutopilot.AP_1_push = 0;
   simInputAutopilot.AP_2_push = 0;
   simInputAutopilot.AP_disconnect = 0;
@@ -892,7 +893,8 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     }
 
     case Events::AUTOPILOT_ON: {
-      cout << "WASM: event triggered: AUTOPILOT_ON (currently inop)" << endl;
+      simInputAutopilot.AP_engage = 1;
+      cout << "WASM: event triggered: AUTOPILOT_ON" << endl;
       break;
     }
 

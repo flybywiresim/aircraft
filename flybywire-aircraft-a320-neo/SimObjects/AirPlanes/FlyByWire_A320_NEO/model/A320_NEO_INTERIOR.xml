@@ -89,7 +89,7 @@
             <!-- Front Glareshields -->
             <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
                 <NODE_ID>LIGHTING_Knob_Glareshield_1</NODE_ID>
-				<ANIM_NAME>LIGHTING_Knob_Glareshield_1</ANIM_NAME>
+                <ANIM_NAME>LIGHTING_Knob_Glareshield_1</ANIM_NAME>
                 <PART_ID>Lighting_Knob_Glareshield_Pilot_0</PART_ID>
                 <POTENTIOMETER>10</POTENTIOMETER>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_DECREASE</ANIMTIP_0>
@@ -1808,14 +1808,14 @@
                         <!-- GEN 1 LINE -->
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_EMERELECPWR_GEN1</NODE_ID>
-                            <TOGGLE_SIMVAR>L:A32NX_EMERELECPWR_GEN1_TOGGLE</TOGGLE_SIMVAR>
+                            <TOGGLE_SIMVAR>L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON</TOGGLE_SIMVAR>
                             <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                            <SEQ1_CODE>(L:A32NX_EMERELECPWR_GEN1_FAULT, Bool)</SEQ1_CODE>
-                            <SEQ2_CODE>(L:A32NX_EMERELECPWR_GEN1_TOGGLE, Bool) !</SEQ2_CODE>
+                            <SEQ1_CODE>(L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_HAS_FAULT, Bool)</SEQ1_CODE>
+                            <SEQ2_CODE>(L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON, Bool) !</SEQ2_CODE>
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                            <TOOLTIPID>%((L:A32NX_EMERELECPWR_GEN1_TOGGLE, Bool))%{if}Turn OFF gen 1 line%{else}Turn ON gen 1 line%{end}</TOOLTIPID>
+                            <TOOLTIPID>%((L:A32NX_OVHD_EMER_ELEC_GEN_1_LINE_PB_IS_ON, Bool))%{if}Turn OFF gen 1 line%{else}Turn ON gen 1 line%{end}</TOOLTIPID>
                         </UseTemplate>
 
                         <!-- RAT & EMER GEN -->
