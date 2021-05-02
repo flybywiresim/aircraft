@@ -1,0 +1,163 @@
+﻿<link rel="stylesheet" href="A320_Neo_CDU.css" />
+
+<script type="text/html" id="A320_Neo_CDU">
+    <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
+    <div id="Mainframe">
+    </div>
+</script>
+
+<script type="text/html" import-script="/JS/SimPlane.js" import-async="false"></script>
+<script type="text/html" import-script="/JS/A32NX_Util.js"></script>
+<script type="text/html" import-script="/JS/dataStorage.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/NXDataStore.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/NXFMGCFlightPhases.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/NXApi.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/NXLogic.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/NXSpeeds.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/NXSystemMessages.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/SimBriefApi.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/Runway.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/FlightElements/Waypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/Approach.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/FlightElements/WaypointLoader.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/FlightPlan.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/LogicElements/A32NX_FlightPlanManager.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/GeoCalc.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/FlightElements/NearestWaypoint.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/A320_Neo/A32NX_NavSystem.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/A32NX_BaseAirliners.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/FMC/A32NX_FMCMainDisplay.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/FMC/A32NX_FMCDataManager.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_Field.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_DataIndexPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_PositionMonitorPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_ProgressPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_IdentPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_AvailableFlightPlanPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_FlightPlanPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_FuelPredPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_AvailableDeparturesPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_AvailableArrivalsPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_LateralRevisionPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_AirwaysFromWaypointPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_NavRadioPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_DirectToPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_SelectWptPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_MenuPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_WindPage.js"></script>
+
+<!-- AIDS Pages -->
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/AIDS/A320_Neo_CDU_AIDS_Menu.js"></script>
+
+<!-- ATSU/AOC Pages -->
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_ATSU_Menu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_AOC_Menu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_AOC_MessagesReceived.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_AOC_MessagesSent.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_AOC_MessageSentDetail.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_AOC_RequestsWeather.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_AOC_RequestsMessage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_AOC_FreeText.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_AOC_RequestsAtis.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_Menu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_Connection.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_ConnectionNotification.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_ConnectionStatus.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_DepartReq.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_Emergency.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_MessagesRecord.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_PositionReport.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_Reports.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_Request.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_Comm_Menu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_ATSU_DatalinkStatus.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_AOC_Init.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/ATSU/A320_Neo_CDU_AOC_OFPData.js"></script>
+
+<!-- CFDS Pages -->
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/A320_Neo_CDU_CFDS_Menu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/A320_Neo_CDU_CFDS_Test_Menu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/A320_Neo_CDU_CFDS_Avionics_Menu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/COMMON/A320_Neo_CDU_CFDS_Common_GroundScanning.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/COMMON/A320_Neo_CDU_CFDS_Common_PowerUpTestRes.js"></script>
+<!-- CFDS Test Pages -->
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_AIRCOND/A320_Neo_CDU_CFDS_Test_Aircond.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_COM/A320_Neo_CDU_CFDS_Test_Com.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_ELEC/A320_Neo_CDU_CFDS_Test_Elec.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_ENG/A320_Neo_CDU_CFDS_Test_Eng.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_FCTL/A320_Neo_CDU_CFDS_Test_Fctl.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_FIRE/A320_Neo_CDU_CFDS_Test_Fire.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_FUEL/A320_Neo_CDU_CFDS_Test_Fuel.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_ICE/A320_Neo_CDU_CFDS_Test_Ice.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_INFO/A320_Neo_CDU_CFDS_Test_Info.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_LG/A320_Neo_CDU_CFDS_Test_LG.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_NAV/A320_Neo_CDU_CFDS_Test_Nav.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_PNEU/A320_Neo_CDU_CFDS_Test_Pneu.js"></script>
+<!-- CFDS Instrument Test Pages -->
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_INST/A320_Neo_CDU_CFDS_Test_Inst.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_INST/CFDIU/A320_Neo_CDU_CFDS_Test_Inst_CFDIU_Menu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_INST/DFDRS/A320_Neo_CDU_CFDS_Test_Inst_DFDRS_Menu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_INST/ECAM/A320_Neo_CDU_CFDS_Test_Inst_ECAM_Menu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_INST/EIS/A320_Neo_CDU_CFDS_Test_Inst_EIS_Menu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_INST/EIS/A320_Neo_CDU_CFDS_Test_Inst_EIS_Tests.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/CFDS/TEST_INST/EIS/A320_Neo_CDU_CFDS_Test_Inst_EIS_Tests_Display.js"></script>
+
+<!-- OPTIONS Pages -->
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/OPTIONS/A320_Neo_CDU_OPTIONS_Menu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/OPTIONS/A320_Neo_CDU_OPTIONS_ADIRS.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/OPTIONS/A320_Neo_CDU_OPTIONS_AOC.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/OPTIONS/A320_Neo_CDU_OPTIONS_AOC_METAR.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/OPTIONS/A320_Neo_CDU_OPTIONS_AOC_ATIS.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/OPTIONS/A320_Neo_CDU_OPTIONS_AOC_TAF.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/OPTIONS/A320_Neo_CDU_OPTIONS_CIDS.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/OPTIONS/A320_Neo_CDU_OPTIONS_FMGC.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/OPTIONS/A320_Neo_CDU_OPTIONS_REALISM.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/OPTIONS/A320_Neo_CDU_OPTIONS_TELEX.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/OPTIONS/A320_Neo_CDU_OPTIONS_AOC_SIMBRIEF.js"></script>
+
+<!-- MODIFIED BELOW -->
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_MenuPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_IRSMonitor.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_IRSStatus.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_IRSStatusFrozen.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_InitPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_IRSInit.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_PerformancePage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_PositionFrozen.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_SelectedNavaids.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_GPSMonitor.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_AirportsMonitor.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_WaypointPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_NavaidPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_NewWaypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_PilotsWaypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_VerticalRevisionPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_HoldAtPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_SecFplnMain.js"></script>
+
+<script type="text/html" import-script="/Pages/A32NX_Core/math.js"></script>
+
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_Speeds.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_SoundManager.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_BaroSelector.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_ADIRS.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_APU.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_BrakeTemp.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_Refuel.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_DMC.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_LocalVarUpdater.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_FADEC.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_GPWS.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_FWC.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_Core.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_ATSU.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_FuelPred.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/FMGC/A32NX_ConstraintManager.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/FMGC/A32NX_FlightPhaseManager.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/FlyByWire_A320_Neo/CDU/A320_Neo_CDU_MainDisplay.js"></script>

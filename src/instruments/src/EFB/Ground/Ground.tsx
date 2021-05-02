@@ -1,20 +1,3 @@
-/*
- * A32NX
- * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 import { connect } from 'react-redux';
 import React, { useEffect, useState } from 'react';
 import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir } from '@tabler/icons';
@@ -100,22 +83,24 @@ export const Ground = ({
     };
 
     const handleClick = (callBack: () => void, event: React.MouseEvent, disabledButton?: string) => {
-        if (!activeButtons.map((b: StatefulButton) => b.id).includes(event.currentTarget.id)) {
-            addActiveButton({ id: event.currentTarget.id, state: STATE_WAITING });
-            if (disabledButton) {
-                addDisabledButton(disabledButton);
+        if (!tugActive) {
+            if (!activeButtons.map((b: StatefulButton) => b.id).includes(event.currentTarget.id)) {
+                addActiveButton({ id: event.currentTarget.id, state: STATE_WAITING });
+                if (disabledButton) {
+                    addDisabledButton(disabledButton);
+                }
+                callBack();
+            } else {
+                const index = activeButtons.map((b: StatefulButton) => b.id).indexOf(event.currentTarget.id);
+                if (index > -1) {
+                    removeActiveButton(index);
+                }
+                if (disabledButton) {
+                    const disabledIndex = disabledButtons.indexOf(disabledButton);
+                    removeDisabledButton(disabledIndex);
+                }
+                callBack();
             }
-            callBack();
-        } else if (!tugActive) {
-            const index = activeButtons.map((b: StatefulButton) => b.id).indexOf(event.currentTarget.id);
-            if (index > -1) {
-                removeActiveButton(index);
-            }
-            if (disabledButton) {
-                const disabledIndex = disabledButtons.indexOf(disabledButton);
-                removeDisabledButton(disabledIndex);
-            }
-            callBack();
         }
     };
 
@@ -125,12 +110,21 @@ export const Ground = ({
      */
     const handlePushBackClick = (callBack: () => void, event: React.MouseEvent) => {
         const tugRequest = 'tug-request';
-        if (activeButtons.map((b: StatefulButton) => b.id).includes(tugRequest) && event.currentTarget.id === tugRequest) {
-            setActiveButtons([]);
-        } else {
+        if (activeButtons.map((b: StatefulButton) => b.id).includes(tugRequest)) {
+            if (event.currentTarget.id === tugRequest) {
+                setActiveButtons([]);
+                callBack();
+            } else {
+                setActiveButtons([{ id: event.currentTarget.id, state: STATE_ACTIVE }, { id: tugRequest, state: STATE_WAITING }]);
+                callBack();
+            }
+        } else if (event.currentTarget.id === tugRequest) {
             setActiveButtons([{ id: event.currentTarget.id, state: STATE_ACTIVE }, { id: tugRequest, state: STATE_WAITING }]);
+            disabledButtons.forEach((b, index) => {
+                removeDisabledButton(index);
+            });
+            callBack();
         }
-        callBack();
     };
 
     const applySelected = (className: string, id?: string) => {
@@ -145,9 +139,10 @@ export const Ground = ({
      * Applies highlighting of an activated service based on SimVars
      * This ensures the displayed state is in sync with the active services
      */
-    const applySelectedWithSync = (className: string, id: string, gameSync) => {
+    const applySelectedWithSync = (className: string, id: string, gameSync, disabledId?: string) => {
         const index = activeButtons.map((b: StatefulButton) => b.id).indexOf(id);
-        const disabledIndex = disabledButtons.indexOf(id);
+        const disabledIndex = disabledButtons.indexOf(disabledId);
+
         if (gameSync > 0.5 && (index !== -1 || disabledIndex !== -1)) {
             const button: StatefulButton = activeButtons[index];
             if (button && button.state === STATE_WAITING) {
@@ -168,9 +163,12 @@ export const Ground = ({
     };
 
     return (
-        <div className="wrapper flex-grow flex flex-col">
-            <img className="airplane w-full" src={fuselage} />
-            <div className="left-1/4 grid grid-cols-2 control-grid absolute top-12">
+        <div className="relative h-full flex-grow flex flex-col">
+            <div className="flex">
+                <h1 className="mt-6 text-3xl text-white">Ground</h1>
+            </div>
+            <img className="airplane w-full" src={fuselage} alt="fuselage" />
+            <div className="left-72 grid grid-cols-2 control-grid absolute top-16">
 
                 <div>
                     <h1 className="text-white font-medium text-xl text-center pb-1">Pax</h1>
@@ -179,7 +177,7 @@ export const Ground = ({
                             setJetWayActive(1);
                             setRampActive(1);
                         }, e, 'door-fwd-left')}
-                        className={applySelectedWithSync('w-32 ', 'jetway', jetWayActive)}
+                        className={applySelectedWithSync('w-32 ', 'jetway', jetWayActive, 'door-fwd-left')}
                         type={BUTTON_TYPE.NONE}
                         id="jetway"
                     >
@@ -188,11 +186,18 @@ export const Ground = ({
                 </div>
                 <div>
                     <h1 className="text-white font-medium text-xl text-center pb-1">Door Fwd</h1>
-                    <DoorToggle index={0} clickCallback={handleClick} selectionCallback={applySelectedWithSync} id="door-fwd-left" disabled={disabledButtons.includes('door-fwd-left')} />
+                    <DoorToggle
+                        index={0}
+                        tugActive={tugActive}
+                        clickCallback={handleClick}
+                        selectionCallback={applySelectedWithSync}
+                        id="door-fwd-left"
+                        disabled={disabledButtons.includes('door-fwd-left')}
+                    />
                 </div>
             </div>
 
-            <div className="left-1/4 grid grid-cols-1 control-grid absolute top-48">
+            <div className="left-72 grid grid-cols-1 control-grid absolute top-48">
                 <div>
                     <h1 className="text-white font-medium text-xl text-center pb-1">Fuel</h1>
                     <Button
@@ -206,7 +211,7 @@ export const Ground = ({
                 </div>
             </div>
 
-            <div className="right-1/4 grid grid-cols-2 control-grid absolute top-12">
+            <div className="right-72 grid grid-cols-2 control-grid absolute top-16">
                 <div>
                     <h1 className="text-white font-medium text-xl text-center pb-1">Baggage</h1>
                     <Button
@@ -230,16 +235,23 @@ export const Ground = ({
                     </Button>
                 </div>
             </div>
-            <div className="right-1/4 grid grid-cols-2 control-grid absolute bottom-36">
+            <div className="right-72 grid grid-cols-2 control-grid absolute bottom-36">
                 <div>
                     <h1 className="text-white font-medium text-xl text-center pb-1">Door Aft</h1>
-                    <DoorToggle index={3} clickCallback={handleClick} selectionCallback={applySelectedWithSync} id="door-aft-right" disabled={disabledButtons.includes('door-aft-right')} />
+                    <DoorToggle
+                        tugActive={tugActive}
+                        index={3}
+                        clickCallback={handleClick}
+                        selectionCallback={applySelectedWithSync}
+                        id="door-aft-right"
+                        disabled={disabledButtons.includes('door-aft-right')}
+                    />
                 </div>
                 <div>
                     <h1 className="text-white font-medium text-xl text-center pb-1">Catering</h1>
                     <Button
                         onClick={(e) => handleClick(() => setCateringActive(1), e, 'door-aft-right')}
-                        className={applySelectedWithSync('w-32', 'catering', cateringActive)}
+                        className={applySelectedWithSync('w-32', 'catering', cateringActive, 'door-aft-right')}
                         type={BUTTON_TYPE.NONE}
                         id="catering"
                     >
@@ -248,9 +260,9 @@ export const Ground = ({
                 </div>
             </div>
 
-            <div className="left-0 ml-4 grid grid-cols-3 absolute bottom-16 control-grid">
+            <div className="left-0 ml-4 grid grid-cols-3 absolute bottom-2 control-grid">
                 <div>
-                    <h1 className="text-white font-medium text-xl text-center">Call Tug</h1>
+                    <h1 className="text-white font-medium text-xl text-center pb-1">Call Tug</h1>
                     <Button
                         id="tug-request"
                         onClick={(e) => handlePushBackClick(() => togglePushback(true), e)}
@@ -262,7 +274,7 @@ export const Ground = ({
                 </div>
 
                 <div className="stop">
-                    <h1 className="text-white font-medium text-xl text-center">Pushback</h1>
+                    <h1 className="text-white font-medium text-xl text-center pb-1">Pushback</h1>
                     <Button
                         id="stop"
                         onClick={(e) => handlePushBackClick(() => {

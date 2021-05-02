@@ -16,8 +16,6 @@ impl A320Fuel {
         }
     }
 
-    pub fn update(&mut self) {}
-
     pub fn left_inner_tank_has_fuel_remaining(&self) -> bool {
         self.unlimited_fuel || self.left_inner_tank_fuel_quantity > Mass::new::<kilogram>(0.)
     }

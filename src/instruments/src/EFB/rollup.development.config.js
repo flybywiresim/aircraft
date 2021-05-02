@@ -1,22 +1,6 @@
-/*
- * A32NX
- * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 'use strict';
+
+require('dotenv').config();
 
 const image = require('@rollup/plugin-image');
 const babel = require('@rollup/plugin-babel').default;
@@ -50,7 +34,14 @@ module.exports = {
             babelHelpers: 'runtime',
             extensions,
         }),
-        replace({ 'process.env.NODE_ENV': JSON.stringify('production') }),
+        replace({
+            'preventAssignment': true,
+            'process.env.NODE_ENV': JSON.stringify('development'),
+            'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),
+            'process.env.CLIENT_SECRET': JSON.stringify(process.env.CLIENT_SECRET),
+            'process.env.CHARTFOX_SECRET': JSON.stringify(process.env.CHARTFOX_SECRET),
+            'process.env.SIMVAR_DISABLE': 'true',
+        }),
         postcss({
             use: { sass: {} },
             plugins: [tailwindcss(`${__dirname}/tailwind.config.js`)],

@@ -1,21 +1,3 @@
-/*
- * A32NX
- * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 import React, { useState, useEffect } from 'react';
 import { IconAlignRight, IconBox, IconPlane, IconSwitchHorizontal, IconUsers, IconBolt } from '@tabler/icons';
 import nose from '../../Assets/320neo-outline-nose.svg';
@@ -74,12 +56,12 @@ const OverviewPage = (props: OverviewPageProps) => {
     }, [props.units]);
 
     return (
-        <div className="px-6">
-            <div className="flex w-full">
-                <div className="w-1/2 bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden">
+        <div className="flex mt-6">
+            <div className="w-1/2">
+                <div className="text-white overflow-hidden bg-navy-lighter rounded-2xl shadow-lg p-6 h-efb-nav">
                     <h2 className="text-2xl font-medium">Airbus A320neo</h2>
                     <span>FlyByWire Simulations</span>
-                    <img className="flip-vertical mt-6 h-24 -ml-24" src={nose} />
+                    <img className="flip-vertical mt-6 h-48 -ml-48" src={nose} />
                     <div className="flex mt-8">
                         <div className="w-1/2">
                             <h3 className="text-xl font-medium flex items-center">
@@ -155,9 +137,9 @@ const OverviewPage = (props: OverviewPageProps) => {
                         </div>
                     </div>
                 </div>
-                <div className="w-1/2 text-white overflow-hidden">
-                    <img className="-ml-6 transform rotate-45" src={fuselage} />
-                </div>
+            </div>
+            <div className="w-1/2 flex items-center justify-center overflow-hidden">
+                <img className="transform rotate-45" src={fuselage} />
             </div>
         </div>
     );

@@ -105,12 +105,12 @@ export const LandingWidget = () => {
 	const syncValues = async (): Promise<void> => {
 		if (!isValidIcao()) return;
         const metarResult = await Metar.get(icao);
-        const parsedMetar: MetarParserType = metarParser(metarResult.metar);
+		const parsedMetar: MetarParserType = metarParser(metarResult.metar);
 
         const weightKgs = Math.round(totalWeight * poundsToKgs);
 
         setWeight(weightKgs);
-        setWindDirection(90);
+        setWindDirection(parsedMetar.wind.degrees);
         setWindMagnitude(parsedMetar.wind.speed_kts);
         setTemperature(parsedMetar.temperature.celsius);
         setPressure(parsedMetar.barometer.mb);

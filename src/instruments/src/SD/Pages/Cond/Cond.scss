@@ -1,5 +1,6 @@
 @import "../../Common/definitions";
 
+<<<<<<< HEAD
 #titleAndWarnings {
   text {
     font-size: $font-size-xlarge;
@@ -82,4 +83,97 @@
   .Hide {
     display: none;
   }
+=======
+#cond-page {
+
+    .st5 {
+        fill: none;
+        stroke: $display-green;
+        stroke-width: 2;
+    }
+
+    .pump-off {
+        fill: none;
+        stroke: $display-amber;
+        stroke-width: 2;
+    }
+
+    #titleAndWarnings {
+
+        text {
+            font-size: $font-size-xlarge;
+            fill: $display-white;
+        }
+
+        .PageTitle {
+            font-size: $font-size-title;
+            text-decoration: underline;
+            fill: $display-white;
+        }
+
+        .TempText {
+            font-size: $font-size-xlarge;
+            fill: $display-white;
+        }
+
+        .UnitText {
+            font-size: $font-size-large;
+            fill: $display-cyan;
+        }
+    }
+
+
+    .CondPlane {
+        stroke: $display-light-grey;
+        stroke-width: 1;
+        fill: none;
+    }
+
+    .Cond {
+
+        text-anchor: middle !important;
+
+        .title {
+            font-size: $font-size-larger;
+            fill: $display-white;
+        }
+
+        .valueText {
+            font-size: $font-size-medium;
+            fill: $display-green;
+        }
+
+        .DuctStatus {
+            fill: $display-white;
+            font-weight: bold;
+            font-size: $font-size-huge;
+        }
+
+        .Gauge {
+            fill: none;
+            stroke: $display-white;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+        }
+
+    }
+
+    #ValveAndTubes {
+
+        .valve-moving > .st5 {
+            stroke: $display-amber;
+        }
+
+        .DuctStatus {
+            fill: $display-white;
+            font-weight: bold;
+            font-size: $font-size-huge;
+        }
+
+        .Hide {
+            display:none;
+        }
+
+    }
+>>>>>>> 69a4733f3c82792f5e871d8349e32235a396ea3b
 }

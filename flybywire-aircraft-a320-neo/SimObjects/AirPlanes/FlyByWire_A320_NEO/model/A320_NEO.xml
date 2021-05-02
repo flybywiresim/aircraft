@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ModelInfo>
+    <LODS>
+        <!-- Highest LOD -->
+        <!-- minimum display size in % (should be bounding sphere vertical screen size, sphere will often be slightly larger than you expect) -->
+        <!-- default minSize is 0 -->
+        <LOD minSize="80" ModelFile="A320_NEO_LOD00.gltf"/>
+        <LOD minSize="60" ModelFile="A320_NEO_LOD01.gltf"/>
+        <LOD minSize="40" ModelFile="A320_NEO_LOD02.gltf"/>
+        <LOD minSize="18" ModelFile="A320_NEO_LOD03.gltf"/>
+        <LOD minSize="10" ModelFile="A320_NEO_LOD04.gltf"/>
+        <LOD minSize="4" ModelFile="A320_NEO_LOD05.gltf"/>
+        <LOD minSize="1" ModelFile="A320_NEO_LOD06.gltf"/>
+    </LODS>
+    <!-- Custom animation definition. -->
+    <!-- This can be used when node movement depends on the simvars in a more complex way. -->
+    <!-- >>>>> CURRENTLY HARDCODED FOR WINGFLEX <<<<< -->
+    <NodeAnimation type="WingFlex">
+        <!-- Nice to have: script simulation variables to do rotation/translation (type="Custom") -->
+        <!-- Alternatively we could script the angles for the wingflex -->
+        <!-- Just define some nodes/bones to move for now (this configuration will likely change at some point) -->
+        <!-- 	order	:	node 															-->
+        <!-- 	--------------------------------------------------------------------------- -->
+        <!-- 	0	:	the left wing bone closest to the center 							-->
+        <!-- 	1	:	in between 															-->
+        <!-- 	2	:	in between 															-->
+        <!-- 	3	:	the left wing bone furthest from the center 						-->
+        <!-- 	4	:	the right wing bone closest to the center 							-->
+        <!-- 	5	:	in between 															-->
+        <!-- 	6	:	in between 															-->
+        <!-- 	7	:	the right wing bone furthest from the center 						-->
+        <!-- 	8	:	the left wing engine pivot node closest to the center 				-->
+        <!-- 	9	:	the left wing engine pivot node furthest from the center 			-->
+        <!-- 	10	:	the right wing engine pivot node closest to the center 				-->
+        <!-- 	11	:	the right wing engine pivot node furthest from the center 			-->
+        <Node>WING_BONE_LEFT_01</Node> <!-- the left wing bone closest to the center 		-->
+        <Node>WING_BONE_LEFT_02</Node> <!-- in between -->
+        <Node>WING_BONE_LEFT_03</Node> <!-- in between -->
+        <Node>WING_BONE_LEFT_04</Node> <!-- the left wing bone furthest from the center -->
+        <Node>WING_BONE_RIGHT_01</Node> <!-- the right wing bone closest to the center -->
+        <Node>WING_BONE_RIGHT_02</Node> <!-- in between -->
+        <Node>WING_BONE_RIGHT_03</Node> <!-- in between -->
+        <Node>WING_BONE_RIGHT_04</Node> <!-- the right wing bone furthest from the center -->
+        <Node>Engine_PIVOT_LEFT_1</Node> <!-- the left wing engine pivot node closest to the center -->
+        <Node>Engine_PIVOT_LEFT_2</Node> <!-- the left wing engine pivot node furthest from the center -->
+        <Node>Engine_PIVOT_RIGHT_1</Node> <!-- the right wing engine pivot node closest to the center -->
+        <Node>Engine_PIVOT_RIGHT_2</Node> <!-- the right wing engine pivot node furthest from the center -->
+    </NodeAnimation>
+    <Behaviors>
+        <Include ModelBehaviorFile="Asobo\Exterior.xml"/>
+        <Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
+        <Include Path="A32NX\A32NX_Exterior.xml"/>
+        <Component ID="LIGHTING">
+            <UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
+                <LIGHT_TYPE>LANDING</LIGHT_TYPE>
+                <ID>1</ID>
+                <ANIM_NAME>opening_landing_light</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
+                <LIGHT_TYPE>LANDING</LIGHT_TYPE>
+                <ID>2</ID>
+                <ANIM_NAME>opening_landing_light</ANIM_NAME>
+            </UseTemplate>
+        </Component>
+        <Component ID="HANDLING">
+            <UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
+                <ANIM_NAME>elevator_percent_key</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_HANDLING_Slats_Template">
+                <ANIM_NAME_LEFT>l_slat_percent_key</ANIM_NAME_LEFT>
+                <ANIM_NAME_RIGHT>r_slat_percent_key</ANIM_NAME_RIGHT>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
+                <TRIM_ONLY>True</TRIM_ONLY>
+                <ANIM_NAME_TRIM>trimtab_elevator_key</ANIM_NAME_TRIM>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_HANDLING_Aileron_Template">
+                <ANIM_NAME_LEFT>l_aileron_percent_key</ANIM_NAME_LEFT>
+                <ANIM_NAME_RIGHT>r_aileron_percent_key</ANIM_NAME_RIGHT>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_HANDLING_Rudder_Template">
+                <ANIM_NAME>rudder_percent_key</ANIM_NAME>
+                <USE_INTEGRATED_TRIM>True</USE_INTEGRATED_TRIM>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_HANDLING_Spoilers_Template">
+                <ANIM_NAME_LEFT>l_spoiler_key</ANIM_NAME_LEFT>
+                <ANIM_NAME_RIGHT>r_spoiler_key</ANIM_NAME_RIGHT>
+                <!-- ANIM_EVENTS -->
+                <ANIM_EVENT_EFFECT_NAME>CAM_SPOILERS</ANIM_EVENT_EFFECT_NAME>
+                <NORMALIZED_TIME>0.5</NORMALIZED_TIME>
+                <DIRECTION>Both</DIRECTION>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_HANDLING_Flaps_Template">
+                <ANIM_NAME_LEFT>l_flap_percent_key</ANIM_NAME_LEFT>
+                <ANIM_NAME_RIGHT>r_flap_percent_key</ANIM_NAME_RIGHT>
+                <!-- ANIM_EVENTS -->
+                <ANIM_EVENT_EFFECT_NAME_1>CAM_FLAPS01</ANIM_EVENT_EFFECT_NAME_1>
+                <NORMALIZED_TIME_1>0.01</NORMALIZED_TIME_1>
+                <DIRECTION_1>Both</DIRECTION_1>
+                <ANIM_EVENT_EFFECT_NAME_2>CAM_FLAPS02</ANIM_EVENT_EFFECT_NAME_2>
+                <NORMALIZED_TIME_2>0.15</NORMALIZED_TIME_2>
+                <DIRECTION_2>Both</DIRECTION_2>
+                <ANIM_EVENT_EFFECT_NAME_3>CAM_FLAPS03</ANIM_EVENT_EFFECT_NAME_3>
+                <NORMALIZED_TIME_3>0.29</NORMALIZED_TIME_3>
+                <DIRECTION_3>Both</DIRECTION_3>
+                <ANIM_EVENT_EFFECT_NAME_4>CAM_FLAPS04</ANIM_EVENT_EFFECT_NAME_4>
+                <NORMALIZED_TIME_4>0.43</NORMALIZED_TIME_4>
+                <DIRECTION_4>Both</DIRECTION_4>
+                <ANIM_EVENT_EFFECT_NAME_5>CAM_FLAPS05</ANIM_EVENT_EFFECT_NAME_5>
+                <NORMALIZED_TIME_5>0.58</NORMALIZED_TIME_5>
+                <DIRECTION_5>Both</DIRECTION_5>
+            </UseTemplate>
+            <Component ID="WipersLeft">
+                <UseTemplate Name="FBW_Airbus_Wiper">
+                    <ANIM_NAME>HANDLING_Wiper_left</ANIM_NAME>
+                    <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
+                </UseTemplate>
+            </Component>
+            <Component ID="WipersRight">
+                <UseTemplate Name="FBW_Airbus_Wiper">
+                    <ANIM_NAME>HANDLING_Wiper_right</ANIM_NAME>
+                    <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
+                </UseTemplate>
+            </Component>
+        </Component>
+        <Component ID="GEARS">
+            <UseTemplate Name="ASOBO_GEAR_Center_Template">
+                <ANIM_NAME>c_gear</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GEAR_Left_Template">
+                <ANIM_NAME>l_gear</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GEAR_Right_Template">
+                <ANIM_NAME>r_gear</ANIM_NAME>
+                <!-- ANIM EVENTS -->
+                <ANIM_EVENT_EFFECT_NAME>CAM_LANDINGGEARS</ANIM_EVENT_EFFECT_NAME>
+                <NORMALIZED_TIME>0.5</NORMALIZED_TIME>
+                <DIRECTION>Both</DIRECTION>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GEAR_Center_Tire_Template">
+                <ANIM_NAME>c_tire_anim</ANIM_NAME>
+                <NODE_ID_STILL>WHEELS_C</NODE_ID_STILL>
+                <NODE_ID_BLURRED>C_WHEELS_BLURRED</NODE_ID_BLURRED>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GEAR_Left_Tire_Template">
+                <ANIM_NAME>l_tire_anim</ANIM_NAME>
+                <NODE_ID_STILL>WHEEL_LEFT</NODE_ID_STILL>
+                <NODE_ID_BLURRED>WHEEL_LEFT_BLURRED</NODE_ID_BLURRED>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GEAR_Right_Tire_Template">
+                <ANIM_NAME>r_tire_anim</ANIM_NAME>
+                <NODE_ID_STILL>WHEEL_RIGHT</NODE_ID_STILL>
+                <NODE_ID_BLURRED>WHEEL_RIGHT_BLURRED</NODE_ID_BLURRED>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GEAR_Steering_Template">
+                <ANIM_NAME>c_wheel</ANIM_NAME>
+            </UseTemplate>
+        </Component>
+        <Component ID="ENGINE">
+            <UseTemplate Name="A32NX_ENGINE_Turbine_Template">
+                <ID>1</ID>
+                <ANIM_NODE_ID>N1_1_anim</ANIM_NODE_ID>
+                <ANIM_NAME>N1_1_anim</ANIM_NAME>
+                <STILL_NODE_ID>PROP_STILL_LEFT</STILL_NODE_ID>
+                <SLOW_NODE_ID>PROP_SLOW_LEFT</SLOW_NODE_ID>
+                <BLURRED_NODE_ID>PROP_BLURRED_LEFT</BLURRED_NODE_ID>
+                <BLURRED_SPINNER_NODE_ID>PROP_BLURRED_CONE_LEFT</BLURRED_SPINNER_NODE_ID>
+            </UseTemplate>
+            <UseTemplate Name="A32NX_ENGINE_Turbine_Template">
+                <ID>2</ID>
+                <ANIM_NODE_ID>N1_2_anim</ANIM_NODE_ID>
+                <ANIM_NAME>N1_2_anim</ANIM_NAME>
+                <STILL_NODE_ID>PROP_STILL_RIGHT</STILL_NODE_ID>
+                <SLOW_NODE_ID>PROP_SLOW_RIGHT</SLOW_NODE_ID>
+                <BLURRED_NODE_ID>PROP_BLURRED_RIGHT</BLURRED_NODE_ID>
+                <BLURRED_SPINNER_NODE_ID>PROP_BLURRED_CONE_RIGHT</BLURRED_SPINNER_NODE_ID>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_ENGINE_Turbine_ReverseThrust_Template">
+                <ID>1</ID>
+                <ANIM_NAME>thrust_rev_1</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_ENGINE_Turbine_ReverseThrust_Template">
+                <ID>2</ID>
+                <ANIM_NAME>thrust_rev_2</ANIM_NAME>
+            </UseTemplate>
+        </Component>
+        <Component ID="INTERACTIVE_POINTS">
+            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+                <ID>5</ID>
+                <ANIM_NAME>door_cargo</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+                <ID>0</ID>
+                <ANIM_NAME>door_passenger</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+                <ID>3</ID>
+                <ANIM_NAME>door_rear</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_FuelHose_InteractivePoint_Template">
+                <ID>9</ID>
+                <NODE_ID>GROUND_FUELPIPE</NODE_ID>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_FuelHose_InteractivePoint_Template">
+                <ID>8</ID>
+                <NODE_ID>GROUND_GPUPIPE</NODE_ID>
+            </UseTemplate>
+        </Component>
+        <Component ID="FX_TIRE_CONTACT">
+            <DefaultTemplateParameters>
+                <FX_DURATION>5</FX_DURATION>
+                <FX_OFFSET_X>0</FX_OFFSET_X>
+                <FX_OFFSET_Y>0</FX_OFFSET_Y>
+                <FX_OFFSET_Z>0</FX_OFFSET_Z>
+                <FX_GUID>{7E68323C-E75D-4F5B-988E-65DD4956F6BA}</FX_GUID>
+                <FX_NAME>SMOKE_ON_TIRE_CONTACT</FX_NAME>
+            </DefaultTemplateParameters>
+            <Component ID="FX_TIRE_CONTACT_left_in" Node="fx_tire_contactPoint_left_in">
+                <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:GEAR IS SKIDDING:1, Keyframe) 0 &gt; (A:VELOCITY BODY Y, feet per second) 0 &lt;= and</FX_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="FX_TIRE_CONTACT_left_out" Node="fx_tire_contactPoint_left_out">
+                <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:GEAR IS SKIDDING:1, Keyframe) 0 &gt; (A:VELOCITY BODY Y, feet per second) 0 &lt;= and</FX_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="FX_TIRE_CONTACT_right_in" Node="fx_tire_contactPoint_right_in">
+                <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:GEAR IS SKIDDING:2, Keyframe) 0 &gt; (A:VELOCITY BODY Y, feet per second) 0 &lt;= and</FX_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="FX_TIRE_CONTACT_right_out" Node="fx_tire_contactPoint_right_out">
+                <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:GEAR IS SKIDDING:2, Keyframe) 0 &gt; (A:VELOCITY BODY Y, feet per second) 0 &lt;= and</FX_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="FX_TIRE_CONTACT_center_left" Node="fx_tire_contactPoint_center_left">
+                <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:GEAR IS SKIDDING:0, Keyframe) 0 &gt; (A:VELOCITY BODY Y, feet per second) 0 &lt;= and</FX_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="FX_TIRE_CONTACT_center_right" Node="fx_tire_contactPoint_center_right">
+                <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:GEAR IS SKIDDING:0, Keyframe) 0 &gt; (A:VELOCITY BODY Y, feet per second) 0 &lt;= and</FX_CODE>
+                </UseTemplate>
+            </Component>
+        </Component>
+        <Component ID="FX_CONTRAIL_QUAD">
+            <OverrideTemplateParameters>
+                <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Keyframe) 0 &gt;</FX_CODE>
+                <FX_OFFSET_X>0</FX_OFFSET_X>
+                <FX_OFFSET_Y>0</FX_OFFSET_Y>
+                <FX_OFFSET_Z>0</FX_OFFSET_Z>
+                <FX_GUID>{F42CE638-11EB-4FC8-B9B0-111A220D681F}</FX_GUID>
+                <FX_NAME>FX_CONTRAILS</FX_NAME>
+            </OverrideTemplateParameters>
+            <Component ID="FX_CONTRAIL_QUAD_LEFT_IN" Node="fx_exhaust_left">
+                <UseTemplate Name="ASOBO_GT_FX">
+                </UseTemplate>
+            </Component>
+            <Component ID="FX_CONTRAIL_QUAD_LEFT_OUT" Node="fx_exhaust_right">
+                <UseTemplate Name="ASOBO_GT_FX">
+                </UseTemplate>
+            </Component>
+        </Component>
+        <Component ID="FX_CONTRAIL_RIBBON">
+            <OverrideTemplateParameters>
+                <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Keyframe) 0 &gt;</FX_CODE>
+                <FX_OFFSET_X>0</FX_OFFSET_X>
+                <FX_OFFSET_Y>0</FX_OFFSET_Y>
+                <FX_OFFSET_Z>0</FX_OFFSET_Z>
+                <FX_GUID>{904EC2CE-F8DD-4480-99E7-B33F7CF6E114}</FX_GUID>
+                <FX_NAME>FX_CONTRAILS_RIBBON</FX_NAME>
+            </OverrideTemplateParameters>
+            <Component ID="FX_CONTRAIL_RIBBON_LEFT_OUT" Node="fx_exhaust_left">
+                <UseTemplate Name="ASOBO_GT_FX">
+                </UseTemplate>
+            </Component>
+            <Component ID="FX_CONTRAIL_RIBBON_RIGHT_OUT" Node="fx_exhaust_right">
+                <UseTemplate Name="ASOBO_GT_FX">
+                </UseTemplate>
+            </Component>
+        </Component>
+    </Behaviors>
+</ModelInfo>

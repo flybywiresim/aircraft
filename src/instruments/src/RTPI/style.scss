@@ -1,0 +1,28 @@
+$colour-main: hsl(32, 100%, 69%);
+
+@font-face {
+  font-family: "Digital";
+  src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
+
+.rtpi-svg {
+  background-color: hsl(53, 82%, 6%);
+  position: absolute;
+  width: 105%;
+  height: 100%;
+}
+
+text {
+  font-family: Digital;
+  font-size: 150px;
+  fill: $colour-main;
+  letter-spacing: -5px;
+}
+.direction {
+  text-anchor: start;
+}
+.value {
+  text-anchor: end;
+}

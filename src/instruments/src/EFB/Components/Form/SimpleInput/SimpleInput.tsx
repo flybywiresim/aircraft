@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 
 type SimpleInputProps = {
-    label: string,
+    label?: string,
     placeholder?: string,
     value?: any,
     onChange?: (value: string) => void,
     min?: number,
     max?: number,
 	number?: boolean,
+	noLeftMargin?: boolean,
 	padding?: number,
 	decimalPrecision?: number,
     reverse?: boolean, // Flip label/input order,
@@ -85,7 +85,7 @@ const SimpleInput: FC<SimpleInputProps> = (props) => {
 
 	return (
 		<div className={`flex ${props.className} ${props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
-			<div className={`flex flex-grow m-2.5 items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
+			<div className={`flex flex-grow ${props.noLeftMargin ? '' : 'm-2.5'} items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
 			<div className="flex items-center">
 				<input
 					className="w-28 text-lg bg-gray-900 px-3 py-1.5 rounded"

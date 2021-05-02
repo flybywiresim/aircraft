@@ -341,7 +341,7 @@ impl SimulationElement for FirePushButton {
 
 #[cfg(test)]
 mod on_off_fault_push_button_tests {
-    use crate::simulation::test::TestReaderWriter;
+    use crate::simulation::test::SimulationTestBed;
 
     use super::*;
 
@@ -357,21 +357,19 @@ mod on_off_fault_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let button = OnOffFaultPushButton::new_on("ELEC_GEN_1");
-        let mut test_writer = TestReaderWriter::new();
-        let mut writer = SimulatorWriter::new(&mut test_writer);
+        let mut button = OnOffFaultPushButton::new_on("ELEC_GEN_1");
+        let mut test_bed = SimulationTestBed::new();
 
-        button.write(&mut writer);
+        test_bed.run_without_update(&mut button);
 
-        assert!(test_writer.len_is(2));
-        assert!(test_writer.contains_bool("OVHD_ELEC_GEN_1_PB_IS_ON", true));
-        assert!(test_writer.contains_bool("OVHD_ELEC_GEN_1_PB_HAS_FAULT", false));
+        assert!(test_bed.contains_key("OVHD_ELEC_GEN_1_PB_IS_ON"));
+        assert!(test_bed.contains_key("OVHD_ELEC_GEN_1_PB_HAS_FAULT"));
     }
 }
 
 #[cfg(test)]
 mod on_off_available_push_button_tests {
-    use crate::simulation::test::TestReaderWriter;
+    use crate::simulation::test::SimulationTestBed;
 
     use super::*;
 
@@ -387,21 +385,19 @@ mod on_off_available_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let button = OnOffAvailablePushButton::new_on("ELEC_EXT_PWR");
-        let mut test_writer = TestReaderWriter::new();
-        let mut writer = SimulatorWriter::new(&mut test_writer);
+        let mut button = OnOffAvailablePushButton::new_on("ELEC_EXT_PWR");
+        let mut test_bed = SimulationTestBed::new();
 
-        button.write(&mut writer);
+        test_bed.run_without_update(&mut button);
 
-        assert!(test_writer.len_is(2));
-        assert!(test_writer.contains_bool("OVHD_ELEC_EXT_PWR_PB_IS_ON", true));
-        assert!(test_writer.contains_bool("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE", false));
+        assert!(test_bed.contains_key("OVHD_ELEC_EXT_PWR_PB_IS_ON"));
+        assert!(test_bed.contains_key("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"));
     }
 }
 
 #[cfg(test)]
 mod normal_altn_fault_push_button_tests {
-    use crate::simulation::test::TestReaderWriter;
+    use crate::simulation::test::SimulationTestBed;
 
     use super::*;
 
@@ -417,21 +413,19 @@ mod normal_altn_fault_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let button = NormalAltnFaultPushButton::new_normal("ELEC_AC_ESS_FEED");
-        let mut test_writer = TestReaderWriter::new();
-        let mut writer = SimulatorWriter::new(&mut test_writer);
+        let mut button = NormalAltnFaultPushButton::new_normal("ELEC_AC_ESS_FEED");
+        let mut test_bed = SimulationTestBed::new();
 
-        button.write(&mut writer);
+        test_bed.run_without_update(&mut button);
 
-        assert!(test_writer.len_is(2));
-        assert!(test_writer.contains_bool("OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL", true));
-        assert!(test_writer.contains_bool("OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT", false));
+        assert!(test_bed.contains_key("OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL"));
+        assert!(test_bed.contains_key("OVHD_ELEC_AC_ESS_FEED_PB_HAS_FAULT"));
     }
 }
 
 #[cfg(test)]
 mod auto_off_fault_push_button_tests {
-    use crate::simulation::test::TestReaderWriter;
+    use crate::simulation::test::SimulationTestBed;
 
     use super::*;
 
@@ -447,21 +441,19 @@ mod auto_off_fault_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let button = AutoOffFaultPushButton::new_auto("ELEC_BUS_TIE");
-        let mut test_writer = TestReaderWriter::new();
-        let mut writer = SimulatorWriter::new(&mut test_writer);
+        let mut button = AutoOffFaultPushButton::new_auto("ELEC_BUS_TIE");
+        let mut test_bed = SimulationTestBed::new();
 
-        button.write(&mut writer);
+        test_bed.run_without_update(&mut button);
 
-        assert!(test_writer.len_is(2));
-        assert!(test_writer.contains_bool("OVHD_ELEC_BUS_TIE_PB_IS_AUTO", true));
-        assert!(test_writer.contains_bool("OVHD_ELEC_BUS_TIE_PB_HAS_FAULT", false));
+        assert!(test_bed.contains_key("OVHD_ELEC_BUS_TIE_PB_IS_AUTO"));
+        assert!(test_bed.contains_key("OVHD_ELEC_BUS_TIE_PB_HAS_FAULT"));
     }
 }
 
 #[cfg(test)]
 mod fault_release_push_button_tests {
-    use crate::simulation::test::TestReaderWriter;
+    use crate::simulation::test::SimulationTestBed;
 
     use super::*;
 
@@ -498,21 +490,19 @@ mod fault_release_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let button = FaultReleasePushButton::new_in("IDG_1");
-        let mut test_writer = TestReaderWriter::new();
-        let mut writer = SimulatorWriter::new(&mut test_writer);
+        let mut button = FaultReleasePushButton::new_in("IDG_1");
+        let mut test_bed = SimulationTestBed::new();
 
-        button.write(&mut writer);
+        test_bed.run_without_update(&mut button);
 
-        assert!(test_writer.len_is(2));
-        assert!(test_writer.contains_bool("OVHD_IDG_1_PB_IS_RELEASED", false));
-        assert!(test_writer.contains_bool("OVHD_IDG_1_PB_HAS_FAULT", false));
+        assert!(test_bed.contains_key("OVHD_IDG_1_PB_IS_RELEASED"));
+        assert!(test_bed.contains_key("OVHD_IDG_1_PB_HAS_FAULT"));
     }
 }
 
 #[cfg(test)]
 mod fire_push_button_tests {
-    use crate::simulation::test::TestReaderWriter;
+    use crate::simulation::test::SimulationTestBed;
 
     use super::*;
 
@@ -542,13 +532,11 @@ mod fire_push_button_tests {
 
     #[test]
     fn writes_its_state() {
-        let button = FirePushButton::new("APU");
-        let mut test_writer = TestReaderWriter::new();
-        let mut writer = SimulatorWriter::new(&mut test_writer);
+        let mut button = FirePushButton::new("APU");
+        let mut test_bed = SimulationTestBed::new();
 
-        button.write(&mut writer);
+        test_bed.run_without_update(&mut button);
 
-        assert!(test_writer.len_is(1));
-        assert!(test_writer.contains_bool("FIRE_BUTTON_APU", false));
+        assert!(test_bed.contains_key("FIRE_BUTTON_APU"));
     }
 }

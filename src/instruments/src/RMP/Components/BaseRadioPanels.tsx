@@ -1,21 +1,3 @@
-/*
- * A32NX
- * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 import React from 'react';
 import { VhfRadioPanel } from './VhfRadioPanel';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
@@ -37,7 +19,8 @@ interface Props {
 export const RootRadioPanel = (props: Props) => {
     const toggleSwitchName = `A32NX_RMP_${props.side}_TOGGLE_SWITCH`;
     const [panelSwitch] = useInteractionSimVar(`L:${toggleSwitchName}`, 'Boolean', toggleSwitchName);
-    const [powerAvailable] = useSimVar(`L:${props.side === 'L' ? 'D' : 'A'}CPowerAvailable`, 'Boolean', 250);
+    // On the A320 the captain's RMP is powered by the DC ESS BUS. The F/O's RMP by the DC 2 BUS.
+    const [powerAvailable] = useSimVar(`L:A32NX_ELEC_${props.side === 'L' ? 'DC_ESS' : 'DC_2'}_BUS_IS_POWERED`, 'Boolean', 250);
     const powered = powerAvailable && panelSwitch;
 
     if (!powered) return <UnpoweredRadioPanel />;

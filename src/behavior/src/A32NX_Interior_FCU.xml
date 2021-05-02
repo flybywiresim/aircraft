@@ -1,21 +1,3 @@
-<!--
-  ~ A32NX
-  ~ Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
-  ~
-  ~ This program is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  -->
-
 <ModelBehaviors>
     <Template Name="FBW_Airbus_FCU_Baro_Knob">
         <DefaultTemplateParameters>
@@ -157,9 +139,11 @@
                 </CLOCKWISE_CODE>
 
                 <PULL_CODE>
+                    (&gt;H:A320_Neo_FCU_ALT_PULL)
                     (&gt;H:A320_Neo_CDU_MODE_SELECTED_ALTITUDE)
                 </PULL_CODE>
                 <PUSH_CODE>
+                    (&gt;H:A320_Neo_FCU_ALT_PUSH)
                     (&gt;H:A320_Neo_CDU_MODE_MANAGED_ALTITUDE)
                 </PUSH_CODE> <!-- TODO - Change - Should be managed climb/descent (comment from Asobo) -->
 
@@ -235,26 +219,23 @@
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
                 <CLOCKWISE_CODE>
                     (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
-                        (&gt;H:A320_Neo_FCU_AP_INC_TRACK)
+                        (&gt;H:A320_Neo_FCU_HDG_INC_TRACK)
                     } els{
-                        1 (&gt;K:HEADING_BUG_INC)
-                        (&gt;H:A320_Neo_CDU_AP_INC_HEADING)
+                        (&gt;H:A320_Neo_FCU_HDG_INC_HEADING)
                     }
                 </CLOCKWISE_CODE>
                 <ANTICLOCKWISE_CODE>
                     (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
-                        (&gt;H:A320_Neo_FCU_AP_DEC_TRACK)
+                        (&gt;H:A320_Neo_FCU_HDG_DEC_TRACK)
                     } els{
-                        1 (&gt;K:HEADING_BUG_DEC)
-                        (&gt;H:A320_Neo_CDU_AP_DEC_HEADING)
+                        (&gt;H:A320_Neo_FCU_HDG_DEC_HEADING)
                     }
                 </ANTICLOCKWISE_CODE>
                 <PULL_CODE>
-                    (&gt;H:A320_Neo_CDU_MODE_SELECTED_HEADING)
+                    (&gt;H:A320_Neo_FCU_HDG_PULL)
                 </PULL_CODE>
                 <PUSH_CODE>
-                    (&gt;H:A320_Neo_CDU_MODE_MANAGED_HEADING)
-                    (&gt;H:A320_Neo_FCU_MODE_MANAGED_HEADING)
+                    (&gt;H:A320_Neo_FCU_HDG_PUSH)
                 </PUSH_CODE>
                 <CENTER_RADIUS>0</CENTER_RADIUS>
                 <WWISE_EVENT_1>QNHknob</WWISE_EVENT_1>
@@ -303,30 +284,42 @@
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
                 <CLOCKWISE_CODE>
                     (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
-                        (&gt;H:A320_Neo_FCU_AP_INC_FPA)
+                        (&gt;H:A320_Neo_FCU_VS_INC_FPA)
                     } els{
-                        3 (&gt;K:AP_VS_VAR_INC)
-                        (&gt;H:A320_Neo_FCU_VS_INC)
+                        (&gt;H:A320_Neo_FCU_VS_INC_VS)
                     }
                 </CLOCKWISE_CODE>
                 <ANTICLOCKWISE_CODE>
                     (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
-                        (&gt;H:A320_Neo_FCU_AP_DEC_FPA)
+                        (&gt;H:A320_Neo_FCU_VS_DEC_FPA)
                     } els{
-                        3 (&gt;K:AP_VS_VAR_DEC)
-                        (&gt;H:A320_Neo_FCU_VS_DEC)
+                        (&gt;H:A320_Neo_FCU_VS_DEC_VS)
                     }
                 </ANTICLOCKWISE_CODE>
                 <PULL_CODE>
-                    (&gt;H:A320_Neo_FCU_VS_HOLD)
+                    (&gt;H:A320_Neo_FCU_VS_PULL)
                 </PULL_CODE>
                 <PUSH_CODE>
-                    (&gt;H:A320_Neo_FCU_VS_ZERO)
+                    (&gt;H:A320_Neo_FCU_VS_PUSH)
                 </PUSH_CODE>
                 <CENTER_RADIUS>0</CENTER_RADIUS>
                 <WWISE_EVENT_1>QNHknob</WWISE_EVENT_1>
                 <WWISE_EVENT_2>QNHknob</WWISE_EVENT_2>
             </UseTemplate>
         </Component>
+    </Template>
+
+    <Template Name="FBW_Airbus_Autoland_Warning">
+        <DefaultTemplateParameters>
+            <NODE_ID>PUSH_AUTOPILOT_AUTOLAND_#SIDE#</NODE_ID>
+            <SEQ_POWERED>1</SEQ_POWERED>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Held">
+            <SEQ1_CODE>(L:A32NX_AUTOPILOT_AUTOLAND_WARNING, bool)</SEQ1_CODE>
+            <SEQ2_CODE />
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <LEFT_SINGLE_CODE />
+        </UseTemplate>
     </Template>
 </ModelBehaviors>

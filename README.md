@@ -22,10 +22,14 @@ The following aircraft configuration is currently simulated:
 
 Please note that this configuration may change in the future as the A32NX project evolves and changes.
 
-### SimBrief Airframe with the correct weights
+### SimBrief Integration
 ✈[SimBrief Airframe with the correct weights](https://www.simbrief.com/system/dispatch.php?sharefleet=eyJ0cyI6IjE2MDU4MjAwNzg5NDYiLCJiYXNldHlwZSI6IkEzMjAiLCJjb21tZW50cyI6IkZMWSBCWSBXSVJFIiwiaWNhbyI6IkEyME4iLCJuYW1lIjoiQTMyME5FTyBGQlciLCJlbmdpbmVzIjoiTEVBUC0xQTI2IiwicmVnIjoiQTIwTiIsImZpbiI6IiIsInNlbGNhbCI6IiIsImhleGNvZGUiOiIiLCJjYXQiOiJNIiwicGVyIjoiQyIsImVxdWlwIjoiU0RFM0ZHSElSV1kiLCJ0cmFuc3BvbmRlciI6IkxCMSIsInBibiI6IkExQjFDMUQxTzFTMSIsImV4dHJhcm1rIjoiIiwibWF4cGF4IjoiMTgwIiwid2d0dW5pdHMiOiJLR1MiLCJvZXciOiI0MTAwMCIsIm16ZnciOiI2MjUwMCIsIm10b3ciOiI3OTAwMCIsIm1sdyI6IjY2MDAwIiwibWF4ZnVlbCI6IjIxMjczIiwicGF4d2d0IjoiMTA0IiwiZGVmYXVsdGNpIjoiIiwiZnVlbGZhY3RvciI6IlAwMCIsImNydWlzZW9mZnNldCI6IlAwMDAwIn0-) Credits: [@viniciusfont](https://github.com/viniciusfont)
 
+Pilot ID can be found in the Optional Entries section of the Dispatch Options page.
+
 ## Downloads
+
+**Warning:** The development (master) and experimental versions have been forked as a separate package/aircraft in MSFS, and will appear separate from the default A320neo. Existing Asobo A320neo liveries will be incompatible with the new package.
 
 ### A32NX Installer
 
@@ -49,37 +53,37 @@ This has the latest features, but is much more unstable, use at your own risk.
 
 [View info about the latest build here.](https://github.com/flybywiresim/a32nx/releases/tag/vmaster)
 
-#### Unstable Master Branch Build (with custom FBW)
+#### Unstable Master Branch Build (with custom autopilot)
 
-This version is the same as the regular master/development version, but with the WIP custom fly-by-wire system. Expect issues with flight directors/autopilot if you intend to use this version. No support will be provided via Discord.
+This version is the same as the regular master/development version, but with the WIP custom fly-by-wire, autopilot and autothrust system. Expect issues with autopilot, engines, autothrust and the PFD if you intend to use this version. No support will be provided via Discord.
 
-[Download custom FBW development build here.](https://api.flybywiresim.com/api/v1/download?url=https://flybywiresim-packages.b-cdn.net/vmaster-cfbw/A32NX-master-cfbw.zip)
+[Download custom autopilot development build here.](https://api.flybywiresim.com/api/v1/download?url=https://flybywiresim-packages.b-cdn.net/vmaster-cfbw-cap/A32NX-master-cfbw-cap.zip)
 
-[**IMPORTANT:** view warnings and info for the custom FBW build here.](https://github.com/flybywiresim/a32nx/tree/fbw/docs)
+[**IMPORTANT:** view warnings and info for the custom autopilot build here.](https://github.com/flybywiresim/a32nx/tree/autopilot/docs)
 
 ## Installation
 
 ### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
 
-Open the zip that you downloaded from one of the links above, and drag the A32NX folder inside the zip into your Community folder.
+Open the zip that you downloaded from one of the links above, and drag the flybywire-aircraft-a320-neo folder inside the zip into your Community folder.
 
 See below for the location of your Community folder:
 
 For the Microsoft Store edition AND/OR Gamepass edition:
-- Copy the "A32NX" folder into your community package folder. It is located in:
+- Copy the "flybywire-aircraft-a320-neo" folder into your community package folder. It is located in:
 `C:\Users\[YOUR USERNAME]\AppData\Local\Packages\Microsoft.FlightSimulator_<RANDOMLETTERS>\LocalCache\Packages\Community`.
 
 For the Steam edition:
-- Copy the "A32NX" folder into your community package folder. It is located in:
+- Copy the "flybywire-aircraft-a320-neo" folder into your community package folder. It is located in:
 `C:\Users\[YOUR USERNAME]\AppData\Roaming\Microsoft Flight Simulator\Packages\Community`.
 
 For the Boxed edition:
-- Copy the "A32NX" folder into your community package folder. It is located in:
+- Copy the "flybywire-aircraft-a320-neo" folder into your community package folder. It is located in:
 `C:\Users\[YOUR USERNAME]\AppData\Local\MSFSPackages\Community`.
 
 If the above methods do not work:
 - You can find your community folder by going into FS2020 general options and enabling developer mode. You will see a menu appear on top. Go to tools and virtual file system. Click on watch bases and your community folder will be listed in one of the folders.
-- Please make sure you're copying the "A32NX" folder into your community package folder, NOT the "flybywiresim-a32nx" folder.
+- Please make sure you're copying the "flybywire-aircraft-a320-neo" folder into your community package folder, NOT the "flybywiresim-a32nx" folder.
 
 ## Contributing
 
@@ -90,21 +94,17 @@ See [Contributing.md](.github/Contributing.md)
 - Captain's PFD may occasionally turn off during flight
 - No Smoking switch doesn't use a full range of motion.
 - Automatic ECAM page switching has minor bugs.
-- AP not following the flight plan (leaking input values affect, but don't disconnect the AP) [Workaround: Set dead-zones for your input device higher] 
+- AP not following the flight plan (leaking input values affect, but don't disconnect the AP) [Workaround: Set dead-zones for your input device higher]
 - Autopilot goes direct to RWY on APP (same with the default A320) [Workaround: Use DIR to a waypoint or selected heading]
 - Upper ECAM displays wrong THR levers position / N1 rating.
-- Newly added ASOBO A320 liveries are incompatible with the A32NX mod. 
+- Newly added ASOBO A320 liveries are incompatible with the A32NX mod.
 - Ruder keybindings not working (you have to set your keybinding to rudder axis right and left)
 - Wing dips on landing (due to bad transition to direct law in flare, same with the default A320)  [Workaround use minimal aileron input on landing]
 - Black screens / unable to start (conflict with another mod/livery or incorrect installation of the A32NX mod, use the [installer](https://api.flybywiresim.com/installer))
 
 ## License
 
-The original contents of this repository are DUAL LICENSED.
-
-Original textual-form source code in this repository is licensed under the GNU General Public License version 3. Artistic assets (including but not limited to images, sound banks, 3D models, and textures) are licensed under [Creative Commons CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
-
-Any other original works found to be not explicitly covered by the above definitions are all rights reserved to avoid ambiguities at the moment, but we are very permissive about their use if you contact us.
+The original contents of this repository are licensed under the MIT license.
 
 **Microsoft Flight Simulator © Microsoft Corporation. The FlyByWire Simulations A32NX was created under Microsoft's "Game Content Usage Rules" using assets from Microsoft Flight Simulator, and it is not endorsed by or affiliated with Microsoft.**
 

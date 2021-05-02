@@ -1,21 +1,3 @@
-/*
- * A32NX
- * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 import * as React from 'react';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { useInteractionEvents, useUpdate } from './hooks';
@@ -228,7 +210,8 @@ const SimVarProvider: React.FC = ({ children }) => {
         } else {
             // ...otherwise, filter out the first occurence of this value
             const index = listeners.current[key].indexOf(maxStaleness || 0);
-            listeners.current[key] = listeners.current[key].splice(index, 1);
+            // splice removes in-place, so an assignment would be wrong here as the return value is the removed element
+            listeners.current[key].splice(index, 1);
         }
     };
 
@@ -286,6 +269,10 @@ export const useSimVar = (
     maxStaleness: number = 0,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
+    if (process.env.SIMVAR_DISABLE) {
+        return [0, () => {}];
+    }
+
     const value = useSimVarValue(name, unit, maxStaleness);
     const setter = useSimVarSetter(name, unit);
     return [value, setter];
@@ -423,6 +410,10 @@ export const useSplitSimVar = (
     maxStaleness: number = 0,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
+    if (process.env.SIMVAR_DISABLE) {
+        return [0, () => {}];
+    }
+
     const value = useSimVarValue(readName, readUnit, maxStaleness);
     const setter = useSimVarSetter(readName, writeUnit || readUnit, writeName);
     return [value, setter];

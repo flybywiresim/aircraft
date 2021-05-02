@@ -1,15 +1,14 @@
-use crate::hydraulic::A320Hydraulic;
-
-use super::{A320ElectricalOverheadPanel, AlternatingCurrentState, DirectCurrentState};
+use super::{
+    A320ElectricalOverheadPanel, A320ElectricalUpdateArguments, AlternatingCurrentState,
+    DirectCurrentState,
+};
 use std::time::Duration;
 use systems::{
-    apu::{ApuGenerator, AuxiliaryPowerUnit},
     electrical::{
-        combine_potential_sources, CombinedPotentialSource, Contactor, ElectricalBus,
-        ElectricalBusType, EmergencyGenerator, EngineGenerator, ExternalPowerSource, Potential,
-        PotentialSource, PotentialTarget, TransformerRectifier,
+        Contactor, ElectricalBus, ElectricalBusType, EmergencyGenerator, EngineGenerator,
+        ExternalPowerSource, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
+        TransformerRectifier,
     },
-    engine::Engine,
     shared::DelayedTrueLogicGate,
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -55,26 +54,27 @@ impl A320AlternatingCurrentElectrical {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
-    pub fn update<T: ApuGenerator>(
+    pub fn update<'a>(
         &mut self,
         context: &UpdateContext,
-        engine1: &Engine,
-        engine2: &Engine,
-        apu: &AuxiliaryPowerUnit<T>,
         ext_pwr: &ExternalPowerSource,
-        hydraulic: &A320Hydraulic,
         overhead: &A320ElectricalOverheadPanel,
+        arguments: &mut A320ElectricalUpdateArguments<'a>,
     ) {
         self.emergency_gen.update(
-            // ON GROUND BAT ONLY SPEED <= 100 kts scenario. We'll probably need to move this logic into
-            // the ram air turbine, emergency generator and hydraulic implementation.
-            hydraulic.is_blue_pressurised()
-                && context.indicated_airspeed > Velocity::new::<knot>(100.),
+            context,
+            arguments.is_blue_hydraulic_circuit_pressurised()
+                && context.indicated_airspeed() > Velocity::new::<knot>(100.),
         );
 
         self.main_power_sources
-            .update(context, engine1, engine2, apu, ext_pwr, overhead);
+            .update(context, ext_pwr, overhead, arguments);
+
+        if self.main_ac_buses_unpowered()
+            && context.indicated_airspeed() > Velocity::new::<knot>(100.)
+        {
+            self.emergency_gen.start();
+        }
 
         self.ac_bus_1
             .powered_by(&self.main_power_sources.ac_bus_1_electric_sources());
@@ -91,9 +91,7 @@ impl A320AlternatingCurrentElectrical {
             .powered_by(&self.ac_ess_feed_contactors.electric_sources());
 
         self.emergency_gen_contactor.close_when(
-            self.ac_bus_1.is_unpowered()
-                && self.ac_bus_2.is_unpowered()
-                && self.emergency_gen.is_powered(),
+            self.main_ac_buses_unpowered() && self.emergency_gen.output_within_normal_parameters(),
         );
         self.emergency_gen_contactor.powered_by(&self.emergency_gen);
 
@@ -145,31 +143,48 @@ impl A320AlternatingCurrentElectrical {
     /// generator exclusively. Also returns true when one of the buses is
     /// unpowered and the other bus is powered by an engine generator.
     pub fn main_ac_buses_powered_by_single_engine_generator_only(&self) -> bool {
-        matches!(
-            (
-                self.ac_bus_1.output_potential(),
-                self.ac_bus_2.output_potential(),
-            ),
-            (Potential::None, Potential::EngineGenerator(_))
-                | (Potential::EngineGenerator(_), Potential::None)
-                | (Potential::EngineGenerator(1), Potential::EngineGenerator(1))
-                | (Potential::EngineGenerator(2), Potential::EngineGenerator(2))
-        )
+        (self.ac_bus_1.is_unpowered() && self.ac_bus_2.output().is_single_engine_generator())
+            || (self.ac_bus_1.output().is_single_engine_generator() && self.ac_bus_2.is_unpowered())
+            || (self
+                .ac_bus_1
+                .output()
+                .is_single(PotentialOrigin::EngineGenerator(1))
+                && self
+                    .ac_bus_2
+                    .output()
+                    .is_single(PotentialOrigin::EngineGenerator(1)))
+            || (self
+                .ac_bus_1
+                .output()
+                .is_single(PotentialOrigin::EngineGenerator(2))
+                && self
+                    .ac_bus_2
+                    .output()
+                    .is_single(PotentialOrigin::EngineGenerator(2)))
     }
 
     /// Whether or not AC BUS 1 and AC BUS 2 are powered by the APU generator
     /// exclusively. Also returns true when one of the buses is unpowered and
     /// the other bus is powered by the APU generator.
     pub fn main_ac_buses_powered_by_apu_generator_only(&self) -> bool {
-        matches!(
-            (
-                self.ac_bus_1.output_potential(),
-                self.ac_bus_2.output_potential(),
-            ),
-            (Potential::None, Potential::ApuGenerator(1))
-                | (Potential::ApuGenerator(1), Potential::None)
-                | (Potential::ApuGenerator(1), Potential::ApuGenerator(1))
-        )
+        (self.ac_bus_1.is_unpowered()
+            && self
+                .ac_bus_2
+                .output()
+                .is_single(PotentialOrigin::ApuGenerator(1)))
+            || (self
+                .ac_bus_1
+                .output()
+                .is_single(PotentialOrigin::ApuGenerator(1))
+                && self.ac_bus_2.is_unpowered())
+            || (self
+                .ac_bus_1
+                .output()
+                .is_single(PotentialOrigin::ApuGenerator(1))
+                && self
+                    .ac_bus_2
+                    .output()
+                    .is_single(PotentialOrigin::ApuGenerator(1)))
     }
 
     /// Whether or not both AC BUS 1 and AC BUS 2 are unpowered.
@@ -194,12 +209,10 @@ impl A320AlternatingCurrentElectrical {
             && self.ac_ess_to_tr_ess_contactor.is_closed())
     }
 
-    #[cfg(test)]
     pub fn ac_bus_1(&self) -> &ElectricalBus {
         &self.ac_bus_1
     }
 
-    #[cfg(test)]
     pub fn ac_bus_2(&self) -> &ElectricalBus {
         &self.ac_bus_2
     }
@@ -208,25 +221,12 @@ impl A320AlternatingCurrentElectrical {
         &self.ac_ess_bus
     }
 
-    #[cfg(test)]
     pub fn ac_ess_shed_bus(&self) -> &ElectricalBus {
         &self.ac_ess_shed_bus
     }
 
-    #[cfg(test)]
     pub fn ac_stat_inv_bus(&self) -> &ElectricalBus {
         &self.ac_stat_inv_bus
-    }
-
-    #[cfg(test)]
-    pub fn both_ac_ess_feed_contactors_are_open(&self) -> bool {
-        self.ac_ess_feed_contactors
-            .ac_ess_feed_contactor_1
-            .is_open()
-            && self
-                .ac_ess_feed_contactors
-                .ac_ess_feed_contactor_2
-                .is_open()
     }
 
     #[cfg(test)]
@@ -241,7 +241,7 @@ impl A320AlternatingCurrentElectrical {
 
     #[cfg(test)]
     pub fn attempt_emergency_gen_start(&mut self) {
-        self.emergency_gen.attempt_start();
+        self.emergency_gen.start();
     }
 
     pub fn gen_1_contactor_open(&self) -> bool {
@@ -270,7 +270,7 @@ impl AlternatingCurrentState for A320AlternatingCurrentElectrical {
         context: &UpdateContext,
     ) -> bool {
         self.ac_1_and_2_and_emergency_gen_unpowered()
-            && context.indicated_airspeed >= Velocity::new::<knot>(50.)
+            && context.indicated_airspeed() >= Velocity::new::<knot>(50.)
     }
 
     fn tr_1(&self) -> &TransformerRectifier {
@@ -283,6 +283,10 @@ impl AlternatingCurrentState for A320AlternatingCurrentElectrical {
 
     fn tr_ess(&self) -> &TransformerRectifier {
         &self.tr_ess
+    }
+
+    fn emergency_generator_available(&self) -> bool {
+        self.emergency_gen.is_powered()
     }
 }
 impl SimulationElement for A320AlternatingCurrentElectrical {
@@ -333,27 +337,27 @@ impl A320MainPowerSources {
         }
     }
 
-    fn update<T: ApuGenerator>(
+    fn update<'a>(
         &mut self,
         context: &UpdateContext,
-        engine1: &Engine,
-        engine2: &Engine,
-        apu: &AuxiliaryPowerUnit<T>,
         ext_pwr: &ExternalPowerSource,
         overhead: &A320ElectricalOverheadPanel,
+        arguments: &mut A320ElectricalUpdateArguments<'a>,
     ) {
-        self.engine_1_gen.update(context, engine1, &overhead.idg_1);
-        self.engine_2_gen.update(context, engine2, &overhead.idg_2);
+        self.engine_1_gen.update(context, arguments);
+        self.engine_2_gen.update(context, arguments);
 
-        let gen_1_provides_power = overhead.generator_1_is_on() && self.engine_1_gen.is_powered();
-        let gen_2_provides_power = overhead.generator_2_is_on() && self.engine_2_gen.is_powered();
+        let gen_1_provides_power =
+            overhead.generator_1_is_on() && self.engine_1_gen.output_within_normal_parameters();
+        let gen_2_provides_power =
+            overhead.generator_2_is_on() && self.engine_2_gen.output_within_normal_parameters();
         let only_one_engine_gen_is_powered = gen_1_provides_power ^ gen_2_provides_power;
         let both_engine_gens_provide_power = gen_1_provides_power && gen_2_provides_power;
         let ext_pwr_provides_power = overhead.external_power_is_on()
-            && ext_pwr.is_powered()
+            && ext_pwr.output_within_normal_parameters()
             && !both_engine_gens_provide_power;
         let apu_gen_provides_power = overhead.apu_generator_is_on()
-            && apu.is_powered()
+            && arguments.apu().output_within_normal_parameters()
             && !ext_pwr_provides_power
             && !both_engine_gens_provide_power;
 
@@ -374,7 +378,7 @@ impl A320MainPowerSources {
                     || (apu_or_ext_pwr_provides_power && !gen_2_provides_power)),
         );
 
-        self.apu_gen_contactor.powered_by(apu);
+        self.apu_gen_contactor.powered_by(arguments.apu());
         self.ext_pwr_contactor.powered_by(ext_pwr);
 
         self.engine_1_gen_contactor.powered_by(&self.engine_1_gen);
@@ -399,18 +403,16 @@ impl A320MainPowerSources {
             .or_powered_by(&self.bus_tie_1_contactor);
     }
 
-    fn ac_bus_1_electric_sources(&self) -> CombinedPotentialSource {
-        combine_potential_sources(vec![
-            &self.engine_1_gen_contactor,
-            &self.bus_tie_1_contactor,
-        ])
+    fn ac_bus_1_electric_sources(&self) -> Potential {
+        self.engine_1_gen_contactor
+            .output()
+            .merge(&self.bus_tie_1_contactor.output())
     }
 
-    fn ac_bus_2_electric_sources(&self) -> CombinedPotentialSource {
-        combine_potential_sources(vec![
-            &self.engine_2_gen_contactor,
-            &self.bus_tie_2_contactor,
-        ])
+    fn ac_bus_2_electric_sources(&self) -> Potential {
+        self.engine_2_gen_contactor
+            .output()
+            .merge(&self.bus_tie_2_contactor.output())
     }
 
     pub fn gen_1_contactor_open(&self) -> bool {
@@ -480,15 +482,14 @@ impl A320AcEssFeedContactors {
         self.ac_ess_feed_contactor_2.powered_by(ac_bus_2);
     }
 
-    fn electric_sources(&self) -> CombinedPotentialSource {
-        combine_potential_sources(vec![
-            &self.ac_ess_feed_contactor_1,
-            &self.ac_ess_feed_contactor_2,
-        ])
+    fn electric_sources(&self) -> Potential {
+        self.ac_ess_feed_contactor_1
+            .output()
+            .merge(&self.ac_ess_feed_contactor_2.output())
     }
 
     fn provides_power(&self) -> bool {
-        self.electric_sources().output_potential().is_powered()
+        self.electric_sources().output().is_powered()
     }
 }
 impl SimulationElement for A320AcEssFeedContactors {
