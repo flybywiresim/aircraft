@@ -42,7 +42,7 @@ export const LandingWidget = () => {
     const [weight, setWeight] = useState<number>();
     const [runwayHeading, setRunwayHeading] = useState<number>();
     const [approachSpeed, setApproachSpeed] = useState<number>();
-    const [flaps, setFlaps] = useState<LandingFlapsConfig>();
+    const [flaps, setFlaps] = useState(LandingFlapsConfig.Full);
     const [runwayCondition, setRunwayCondition] = useState(LandingRunwayConditions.Dry);
     const [reverseThrust, setReverseThrust] = useState(false);
     const [altitude, setAltitude] = useState<number>();
@@ -58,7 +58,8 @@ export const LandingWidget = () => {
     const [runwayNumber, setRunwayNumber] = useState<number>();
     const [displayedRunwayLength, setDisplayedRunwayLength] = useState<number>(0);
 
-    const calculateLanding = (): void => {
+	const calculateLanding = (): void => {
+		if (!areInputsValid()) return;
         const landingDistances = calculator.calculateLandingDistances(
             weight ?? 0,
             flaps ?? LandingFlapsConfig.Full,
@@ -101,18 +102,23 @@ export const LandingWidget = () => {
         setDisplayedRunwayLength(runwayLength ?? 0);
     };
 
-    const syncValues = async (): Promise<void> => {
+	const syncValues = async (): Promise<void> => {
+		if (!isValidIcao()) return;
         const metarResult = await Metar.get(icao);
         const parsedMetar: MetarParserType = metarParser(metarResult.metar);
 
         const weightKgs = Math.round(totalWeight * poundsToKgs);
 
         setWeight(weightKgs);
-        setWindDirection(parsedMetar.wind.degrees);
+        setWindDirection(90);
         setWindMagnitude(parsedMetar.wind.speed_kts);
         setTemperature(parsedMetar.temperature.celsius);
         setPressure(parsedMetar.barometer.mb);
-    };
+	};
+
+	const isValidIcao = (): boolean => {
+		return icao.length === 4;
+	}
 
     const handleWindDirectionChange = (value: string): void => {
         let direction: number | undefined = parseInt(value);
@@ -244,31 +250,59 @@ export const LandingWidget = () => {
         }
 
         setPressure(pressure);
-    };
+	};
+
+	const clearInputs = (): void => {
+		setIcao('');
+		setWindDirection(undefined);
+		setWindMagnitude(undefined);
+		setWeight(undefined)
+		setRunwayHeading(undefined);
+		setApproachSpeed(undefined);
+		setAltitude(undefined);
+		setSlope(undefined);
+		setTemperature(undefined);
+		setPressure(undefined);
+		setRunwayLength(undefined)
+	}
+
+	const areInputsValid = (): boolean => {
+		return windDirection !== undefined
+			&& windMagnitude !== undefined
+			&& weight !== undefined
+			&& runwayHeading !== undefined
+			&& approachSpeed !== undefined
+			&& altitude !== undefined
+			&& slope !== undefined
+			&& temperature !== undefined
+			&& pressure !== undefined
+			&& runwayLength !== undefined;
+	}
 
     return (
         <div className="flex flex-grow">
             <Card className="w-1/2 mr-4">
                 <div className="w-full">
-                    <div className="text-center mb-6">
+                    <div className="text-center mb-4">
                         <div className="flex mx-2 flex-1 justify-center">
-                            <SimpleInput label="ICAO" onChange={(value) => setIcao(value)} />
+							<SimpleInput label="Airport ICAO" value={icao} onChange={(value) => setIcao(value)}/>
                             <button
                                 onClick={syncValues}
-                                className="mx-2 font-medium bg-blue-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
-                                type="button"
+								className={`mx-2 font-medium p-2 bg-blue-500 text-white flex items-center justify-center rounded-lg focus:outline-none ${isValidIcao() ? '' : 'disabled'}`}
+								type="button"
+								disabled={!isValidIcao()}
                             >
                                 Auto-fill
                             </button>
                         </div>
                         <div className="flex">
                             <div className="flex-1 m-2.5 column-left">
-                                <SimpleInput label="Wind Direction" value={windDirection} min={0} max={360} onChange={handleWindDirectionChange} className="py-2" number />
-                                <SimpleInput label="Wind Magnitude" value={windMagnitude} placeholder="KTS" min={0} onChange={handleWindMagnitudeChange} className="py-2" number />
-                                <SimpleInput label="Temperature" value={temperature} placeholder="°C" min={-50} max={55} onChange={handleTemperatureChange} className="py-2" number />
-                                <SimpleInput label="QNH" value={pressure} placeholder="mb" min={800} max={1200} onChange={handlePressureChange} className="py-2" number />
-                                <SimpleInput label="Rwy Altitude" value={altitude} placeholder='" ASL' min={-2000} max={20000} onChange={handleAltitudeChange} className="py-2" number />
-                                <SimpleInput label="Rwy Heading" value={runwayHeading} min={0} max={360} onChange={handleRunwayHeadingChange} className="py-2" number />
+								<SimpleInput label="Wind Direction" value={windDirection} min={0} max={360} padding={3} decimalPrecision={0} onChange={handleWindDirectionChange} className="py-2" number />
+                                <SimpleInput label="Wind Magnitude" value={windMagnitude} placeholder="KTS" min={0} decimalPrecision={1} onChange={handleWindMagnitudeChange} className="py-2" number />
+                                <SimpleInput label="Temperature" value={temperature} placeholder="°C" min={-50} max={55} decimalPrecision={1} onChange={handleTemperatureChange} className="py-2" number />
+                                <SimpleInput label="QNH" value={pressure} placeholder="mb" min={800} max={1200} decimalPrecision={2} onChange={handlePressureChange} className="py-2" number />
+                                <SimpleInput label="Rwy Altitude" value={altitude} placeholder='" ASL' min={-2000} max={20000} decimalPrecision={0} onChange={handleAltitudeChange} className="py-2" number />
+                                <SimpleInput label="Rwy Heading" value={runwayHeading} min={0} max={360} padding={3} decimalPrecision={0} onChange={handleRunwayHeadingChange} className="py-2" number />
                                 <SelectInput
                                     label="Rwy Condition"
                                     defaultValue={0}
@@ -286,9 +320,9 @@ export const LandingWidget = () => {
                                 />
                             </div>
                             <div className="flex-1 m-2.5 column-right">
-                                <SimpleInput label="Rwy Slope" value={slope} placeholder="%" min={-2} max={2} onChange={handleRunwaySlopeChange} className="py-2" number reverse />
+                                <SimpleInput label="Rwy Slope" value={slope} placeholder="%" min={-2} max={2} decimalPrecision={1} onChange={handleRunwaySlopeChange} className="py-2" number reverse />
                                 <div className="flex justify-start items-center">
-                                    <SimpleInput label="Rwy LDA" value={runwayLength} placeholder="m" min={0} max={6000} onChange={handleRunwayLengthChange} className="py-2" number reverse />
+                                    <SimpleInput label="Rwy LDA" value={runwayLength} placeholder="m" min={0} max={6000} decimalPrecision={0} onChange={handleRunwayLengthChange} className="py-2" number reverse />
                                     <Help title="Landing Distance Available (LDA)">
                                         The distance available on the runway which is suitable for the ground run of the landing.
                                     </Help>
@@ -298,13 +332,14 @@ export const LandingWidget = () => {
                                     value={approachSpeed}
                                     placeholder="KTS"
                                     min={90}
-                                    max={350}
+									max={350}
+									decimalPrecision={0}
                                     onChange={handleApproachSpeedChange}
                                     className="py-2"
                                     number
                                     reverse
                                 />
-                                <SimpleInput label="Weight" value={weight} placeholder="KG" min={41000} max={100000} onChange={handleWeightChange} className="py-2" number reverse />
+                                <SimpleInput label="Weight" value={weight} placeholder="KG" min={41000} max={100000} decimalPrecision={0} onChange={handleWeightChange} className="py-2" number reverse />
                                 <SelectInput
                                     label="Flaps"
                                     defaultValue={1}
@@ -340,13 +375,22 @@ export const LandingWidget = () => {
                                 />
                             </div>
                         </div>
-                        <button
-                            onClick={calculateLanding}
-                            className="my-3 mx-2 w-full font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
-                            type="button"
-                        >
-                            Calculate
-                        </button>
+                        <div className="flex">
+							<button
+								onClick={calculateLanding}
+								className={`my-3 mx-2 w-1/2 font-medium bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none ${areInputsValid() ? '' : 'disabled'}`}
+								type="button"
+							>
+								Calculate
+							</button>
+							<button
+								onClick={clearInputs}
+								className="my-3 mx-2 w-1/2 font-medium bg-blue-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none"
+								type="button"
+							>
+								Clear
+							</button>
+						</div>
                     </div>
                     <div className="border-t border-white pt-3">
                         <div className="flex flex-col items-center m-3">
