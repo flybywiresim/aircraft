@@ -2471,43 +2471,6 @@ mod tests {
             assert!(
                 test_bed.get_brake_yellow_accumulator_fluid_volume() <= Volume::new::<gallon>(0.01)
             );
-
-            // // No brake inputs
-            // test_bed = test_bed
-            //     .set_left_brake(Ratio::new::<percent>(0.))
-            //     .set_right_brake(Ratio::new::<percent>(0.))
-            //     .run_waiting_for(Duration::from_secs(1));
-
-            // assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            // assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            // assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            // assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-
-            // // Positive climb, gear up
-            // test_bed = test_bed
-            //     .set_left_brake(Ratio::new::<percent>(0.))
-            //     .set_right_brake(Ratio::new::<percent>(0.))
-            //     .in_flight()
-            //     .set_gear_up()
-            //     .run_waiting_for(Duration::from_secs(1));
-
-            // // Check auto brake is active
-            // assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(50.));
-            // assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(50.));
-            // assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(1500.));
-            // assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(1500.));
-
-            // assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            // assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-
-            // // Check no more autobrakes after 3s
-            // test_bed = test_bed.run_waiting_for(Duration::from_secs(3));
-
-            // assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            // assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-
-            // assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            // assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
         }
 
         #[test]
