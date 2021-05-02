@@ -1034,7 +1034,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._onModeManagedHeading();
         }
         if (_event === "MODE_SELECTED_ALTITUDE") {
-            this.flightPhaseManager.handleFcuInput();
+            this.flightPhaseManager.handleFcuAltKnobPushPull();
             this._onModeSelectedAltitude();
 
             if (this.currentFlightPhase === FmgcFlightPhases.CRUISE) {
@@ -1042,7 +1042,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
         if (_event === "MODE_MANAGED_ALTITUDE") {
-            this.flightPhaseManager.handleFcuInput();
+            this.flightPhaseManager.handleFcuAltKnobPushPull();
             this._onModeManagedAltitude();
 
             if (this.currentFlightPhase === FmgcFlightPhases.CRUISE) {
@@ -1066,6 +1066,9 @@ class FMCMainDisplay extends BaseAirliners {
                 Coherent.call("HEADING_BUG_SET", 1, currentHeading);
             }
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
+        }
+        if (_event === "VS") {
+            this.flightPhaseManager.handleFcuVSKnob();
         }
     }
 
