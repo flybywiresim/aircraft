@@ -29,9 +29,10 @@ import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 import { useSimVarSyncedPersistentProperty } from '../../../Common/persistence';
 import { ProgressBar } from '../../Components/Progress/Progress';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
-import '../Styles/Fuel.scss';
+import '../Styles/Payload.scss';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import { useSimVar } from '../../../Common/simVars';
+import TargetSelector from './TargetSelector';
 
 const MAX_SEAT_AVAILABLE = 174;
 const PAX_WEIGHT = 84;
@@ -40,8 +41,73 @@ const BAG_WEIGHT = 20;
 const PayloadPage = () => {
     const [boardingStartedByUser, setBoardingStartedByUser] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool');
     const [boardingRate, setBoardingRate] = useSimVarSyncedPersistentProperty('L:A32NX_BOARDING_RATE_SETTING', 'Number', 'BOARDING_RATE_SETTING');
+
     const [paxTarget, setPaxTarget] = useSimVar('L:A32NX_PAX_TOTAL_DESIRED', 'Number');
     const [paxTotal, setPaxTotal] = useSimVar('L:A32NX_PAX_TOTAL', 'Number');
+
+    const [paxTargetRows1_6, setPaxTargetRows1_6] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6_DESIRED', 'Number');
+    const [paxTotalRows1_6, setPaxTotalRows1_6] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6', 'Number');
+
+    const [paxTargetRows7_13, setPaxTargetRows7_13] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13_DESIRED', 'Number');
+    const [paxTotalRows7_13, setPaxTotalRows7_13] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13', 'Number');
+
+    const [paxTargetRows14_20, setPaxTargetRows14_20] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_20_DESIRED', 'Number');
+    const [paxTotalRows14_20, setPaxTotalRows14_20] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_20', 'Number');
+
+    const [paxTargetRows21_27, setPaxTargetRows21_27] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_21_27_DESIRED', 'Number');
+    const [paxTotalRows21_27, setPaxTotalRows21_27] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_21_27', 'Number');
+
+    const paxStations: {[index: string]: Station} = {
+        rows1_6: {
+            name: 'ECONOMY ROWS 1-6',
+            seats: 36,
+            weight: 3024,
+            pax: 0,
+            paxTarget: 0,
+            stationIndex: 2 + 1,
+            position: 21.98,
+            seatsRange: [1, 36],
+            paxTotalRows: paxTotalRows1_6,
+            paxTargetRows: paxTargetRows1_6,
+        },
+        rows7_13: {
+            name: 'ECONOMY ROWS 7-13',
+            seats: 42,
+            weight: 3530,
+            pax: 0,
+            paxTarget: 0,
+            stationIndex: 3 + 1,
+            position: 2.86,
+            seatsRange: [37, 78],
+            paxTotalRows: paxTotalRows7_13,
+            paxTargetRows: paxTargetRows7_13,
+        },
+        rows14_20: {
+            name: 'ECONOMY ROWS 14-20',
+            seats: 48,
+            weight: 4032,
+            pax: 0,
+            paxTarget: 0,
+            stationIndex: 4 + 1,
+            position: -15.34,
+            seatsRange: [79, 126],
+            paxTotalRows: paxTotalRows14_20,
+            paxTargetRows: paxTargetRows14_20,
+        },
+        rows21_27: {
+            name: 'ECONOMY ROWS 21-27',
+            seats: 48,
+            weight: 4032,
+            pax: 0,
+            paxTarget: 0,
+            stationIndex: 5 + 1,
+            position: -32.81,
+            seatsRange: [127, 174],
+            paxTotalRows: paxTotalRows21_27,
+            paxTargetRows: paxTargetRows21_27,
+        },
+    };
+
     const [busDC2] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool', 1_000);
     const [busDCHot1] = useSimVar('L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED', 'Bool', 1_000);
     const [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 1_000);
@@ -78,19 +144,22 @@ const PayloadPage = () => {
 
         let paxRemaining = parseInt(numberOfPax);
 
-        function fillStation(stationKey, paxToFill) {
+        function fillStation(stationKey, paxToFill, setPaxTargetRows) {
             const pax = Math.min(paxToFill, payload[stationKey].seats);
             // changeStationPax(pax, stationKey);
+
+            setPaxTargetRows(pax);
+
             changeStationPaxTarget(pax, stationKey);
             paxRemaining -= pax;
         }
 
-        fillStation('rows21_27', paxRemaining);
-        fillStation('rows14_20', paxRemaining);
+        fillStation('rows21_27', paxRemaining, setPaxTargetRows21_27);
+        fillStation('rows14_20', paxRemaining, setPaxTargetRows14_20);
 
         const remainingByTwo = Math.trunc(paxRemaining / 2);
-        fillStation('rows1_6', remainingByTwo);
-        fillStation('rows7_13', paxRemaining);
+        fillStation('rows1_6', remainingByTwo, setPaxTargetRows1_6);
+        fillStation('rows7_13', paxRemaining, setPaxTargetRows7_13);
 
         // setPayload(numberOfPax);
     }
@@ -244,7 +313,7 @@ const PayloadPage = () => {
     }, [dispatch]);
 
     function renderStations() {
-        return Object.entries(payload).map(([stationKey, station], index) => (
+        return Object.entries(paxStations).map(([stationKey, station], index) => (
             <div id={`${stationKey}-slider`}>
                 <h3 className={`text-xl font-medium flex items-center ${index !== 0 && 'mt-6'}`}>
                     <IconFriends className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
@@ -252,7 +321,7 @@ const PayloadPage = () => {
                     {station.name}
                 </h3>
                 <p className="mt-2 text-lg">
-                    {station.paxTarget}
+                    {station.paxTargetRows}
                     {' '}
                     /
                     {' '}
@@ -262,13 +331,33 @@ const PayloadPage = () => {
                     <Slider
                         min={0}
                         max={station.seats}
-                        value={station.paxTarget}
+                        value={station.paxTargetRows}
                         onInput={(value) => changeStationPax(value, stationKey)}
                         className="w-48"
                     />
-                    <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(station.pax / station.seats) * 100} />
+                    <span className="fuel-content-label">Current passengers :</span>
+                    <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(station.paxTotalRows / station.seats) * 100} />
                 </span>
             </div>
+        ));
+    }
+
+    function renderPaxStations() {
+        return Object.entries(paxStations).map(([stationKey, station]) => (
+            <>
+                <TargetSelector
+                    key={stationKey}
+                    name={station.name}
+                    placeholder={station.totalPaxTarget}
+                    max={station.seats}
+                    value={station.paxTargetRows}
+                    completed={(100 / station.seats) * 100}
+                    onChange={(value) => {
+                        setPax(value);
+                    }}
+                />
+                <div className="station-separation-line" />
+            </>
         ));
     }
 
@@ -281,66 +370,44 @@ const PayloadPage = () => {
 
                         <div className="text-white px-6">
                             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info refuel-info">
-                                <h2 className="text-2xl font-medium">Boarding</h2>
-                                <label htmlFor="fuel-label" className={formatBoardingStatusClass('fuel-truck-avail', true)}>{formatBoardingStatusLabel()}</label>
-                                <div className="flex mt-n5">
-                                    <div className="fuel-progress">
-                                        <Slider
-                                            min={0}
-                                            max={MAX_SEAT_AVAILABLE}
-                                            value={totalPaxTarget}
-                                            onInput={(value) => {
-                                                setPax(value);
-                                            }}
-                                            className="w-48"
-                                        />
-
+                                <TargetSelector
+                                    key="boarding"
+                                    name="Boarding"
+                                    placeholder=""
+                                    max={MAX_SEAT_AVAILABLE}
+                                    value={totalPaxTarget.toString()}
+                                    completed={(paxTotal / MAX_SEAT_AVAILABLE) * 100}
+                                    onChange={(value) => {
+                                        setPax(value);
+                                    }}
+                                />
+                                <div className="separation-line-refuel" />
+                                <div className="manage-refuel">
+                                    <div className={formatBoardingStatusClass('refuel-icon', false)}>
+                                        <Button className="refuel-button" onClick={() => toggleBoardingState()} type={BUTTON_TYPE.NONE}>
+                                            <IconPlayerPlay className={boardingStartedByUser ? 'hidden' : ''} />
+                                            <IconHandStop className={boardingStartedByUser ? '' : 'hidden'} />
+                                        </Button>
                                     </div>
-                                    <div className="fuel-label pad15">
-                                        <p className="mt-2 text-lg">
-                                            {totalPaxTarget}
-                                            {' '}
-                                            /
-                                            {' '}
-                                            {MAX_SEAT_AVAILABLE}
-                                        </p>
-                                    </div>
-                                    <div className="separation-line-refuel" />
-                                    <div className="manage-refuel">
-                                        <div className={formatBoardingStatusClass('refuel-icon', false)}>
-                                            <Button className="refuel-button" onClick={() => toggleBoardingState()} type={BUTTON_TYPE.NONE}>
-                                                <IconPlayerPlay className={boardingStartedByUser ? 'hidden' : ''} />
-                                                <IconHandStop className={boardingStartedByUser ? '' : 'hidden'} />
-                                            </Button>
-                                        </div>
-                                        <span className="eta-label">
-                                            Est:
-                                            {calculateEta()}
-                                            min
-                                        </span>
-                                    </div>
-                                </div>
-                                <span className="fuel-content-label">Current passengers :</span>
-                                <div className="flex mt-n5 current-fuel-line">
-                                    <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(paxTotal / MAX_SEAT_AVAILABLE) * 100} />
-                                    <div className="fuel-label">
-                                        <label className="fuel-content-label" htmlFor="fuel-label">
-                                            {paxTotal}
-                                            {' '}
-                                            /
-                                            {' '}
-                                            {MAX_SEAT_AVAILABLE}
-                                        </label>
-                                    </div>
+                                    <span className="eta-label">
+                                        Est:
+                                        {calculateEta()}
+                                        min
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        {renderStations()}
+                        {renderPaxStations()}
 
                     </div>
                 </div>
 
+            </div>
+            <div className="w-1/2">
+                <div className="text-white px-6">
+                    <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden" />
+                </div>
             </div>
         </div>
     );

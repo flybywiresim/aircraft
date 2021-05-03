@@ -58,7 +58,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
         this.fetchSimbriefData = this.fetchSimbriefData.bind(this);
 
         this.state = {
-            currentPageIndex: 0,
+            currentPageIndex: 1,
             airline: '---',
             flightNum: '----',
             departingAirport: '----',

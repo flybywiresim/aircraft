@@ -75,21 +75,24 @@ class A32NX_Boarding {
 
         let paxRemaining = parseInt(numberOfPax);
 
-        function fillStation(station, paxToFill) {
+        async function fillStation(station, paxToFill, paxTotalRows) {
             console.log('fillStation', station.name, paxToFill);
             const pax = Math.min(paxToFill, station.seats);
             station.pax = pax;
+
+            await SimVar.SetSimVarValue(`L:${paxTotalRows}`, "Number", parseInt(pax));
+
             // changeStationPax(pax, stationKey);
             // changeStationPaxTarget(pax, stationKey);
             paxRemaining -= pax;
         }
 
-        fillStation(this.paxStations['rows21_27'], paxRemaining);
-        fillStation(this.paxStations['rows14_20'], paxRemaining);
+        await fillStation(this.paxStations['rows21_27'], paxRemaining, "A32NX_PAX_TOTAL_ROWS_21_27");
+        await fillStation(this.paxStations['rows14_20'], paxRemaining, "A32NX_PAX_TOTAL_ROWS_14_20");
 
         const remainingByTwo = Math.trunc(paxRemaining / 2);
-        fillStation(this.paxStations['rows1_6'], remainingByTwo);
-        fillStation(this.paxStations['rows7_13'], paxRemaining);
+        await fillStation(this.paxStations['rows1_6'], remainingByTwo, "A32NX_PAX_TOTAL_ROWS_1_6");
+        await fillStation(this.paxStations['rows7_13'], paxRemaining, "A32NX_PAX_TOTAL_ROWS_7_13");
 
         // setPayload(numberOfPax);
 
