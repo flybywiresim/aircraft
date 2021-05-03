@@ -1,0 +1,42 @@
+@import "../../../Common/definitions";
+
+.box {
+  stroke: #EEEEEE;
+  fill: none;
+  stroke-width: 2.5px;
+}
+
+text {
+  fill: #EEEEEE;
+  font-family: 'Roboto Mono', monospace;
+  line-height: 4.6875;
+  white-space: pre;
+  word-spacing: 0px;
+  font-size: 18.75px;
+  font-weight: 400;
+}
+
+text.left {
+  text-anchor: start;
+  text-align: start;
+}
+
+text.right {
+  text-anchor: end;
+  text-align: end;
+}
+
+text.middle {
+  text-anchor: middle;
+  text-align: middle;
+}
+
+text.green {
+  fill: $display-green;
+}
+text.amber {
+  fill: $display-amber;
+}
+text.cyan {
+  fill: $display-cyan;
+}
