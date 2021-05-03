@@ -23,7 +23,7 @@ function canInitiateDes(_fmc, _ignoreAlt = false) {
     const dest = _fmc.flightPlanManager.getDestination();
     // Can initiate descent? OR Can initiate early descent?
     return ((!!dest && dest.liveDistanceTo < 200 || !dest) && (fcuSelFl < _fmc.cruiseFlightLevel || (_ignoreAlt && fcuSelFl < fl)))
-        || (!!dest && dest.liveDistanceTo >= 200 && fl > 200 && fcuSelFl < 200);
+        || (!!dest && dest.liveDistanceTo >= 200 && fl > 200 && fcuSelFl <= 200);
 }
 
 /**
