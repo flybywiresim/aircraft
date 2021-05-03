@@ -7,6 +7,32 @@
 * It's crucial for the Autothrust system to have properly setup detents. Ensure that you have enough dead zone around the detents.
 * Typical issues when this is not done properly: constantly flashing "LVR CLB", FLX / TOGA not engaging or ATHR not holding speed correctly (the latter can also happen when in CLB/OP CLB or DES/OP DES and flying manually -> in that case you need to take care of holding speed with pitch)
 
+## Contents
+
+1. [Custom Autopilot and Autothrust System incl. new Engine model](#custom-autopilot-and-autothrust-system-incl-new-engine-model)
+    1. [Typical issues and how to solve them](#typical-issues-and-how-to-solve-them)
+        1. [FMA keeps blinking with message `LVR CLB`](#fma-keeps-blinking-with-message-lvr-clb)
+        1. [Autothrust does not hold target speed in manual flight](#autothrust-does-not-hold-target-speed-in-manual-flight)
+        1. [`SRS` does not engage on take-off](#srs-does-not-engage-on-take-off)
+        1. [`RWY` does not engage on take-off](#rwy-does-not-engage-on-take-off)
+        1. [`LVR CLB` flashes immediately after lift-off](#lvr-clb-flashes-immediately-after-lift-off)
+        1. [`LAND` mode does not engage](#land-mode-does-not-engage)
+        1. [Autoland does not perform as expected](#autoland-does-not-perform-as-expected)
+    1. [Known issues](#known-issues)
+        1. [Not solved or missing (this list is not conclusive)](#not-solved-or-missing-this-list-is-not-conclusive)
+            1. [Flight Management](#flight-management)
+            1. [Autopilot](#autopilot)
+            1. [Engines](#engines)
+            1. [Autothrust](#autothrust)
+        1. [First implementation available](#first-implementation-available)
+        1. [Considered solved](#considered-solved)
+    1. [Mapping of events to control autopilot / autothrust](#mapping-of-events-to-control-autopilot--autothrust)
+    1. [Sensitivity, dead zones and throttle mapping](#sensitivity-dead-zones-and-throttle-mapping)
+1. [Custom Fly-By-Wire System](#custom-fly-by-wire-system)
+    1. [Known issues](#known-issues-1)
+        1. [Not solved or missing](#not-solved-or-missing)
+        1. [Considered solved](#considered-solved-1)
+
 ## Custom Autopilot and Autothrust System incl. new Engine model
 
 ⚠️ This is work in progress, there are still issues, see section Known issues below!
