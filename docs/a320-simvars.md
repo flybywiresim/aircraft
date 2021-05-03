@@ -458,24 +458,24 @@
     - Indicates whether the door slides are armed or not
 
 - A32NX_RAIN_REPELLENT_RIGHT_ON
-  -Bool
-  -True if rain repellent is activated on the right windshield.
+  - Bool
+  - True if rain repellent is activated on the right windshield.
 
 - A32NX_RAIN_REPELLENT_LEFT_ON
-  -Bool
-  -True if rain repellent is activated on the left windshield.
+  - Bool
+  - True if rain repellent is activated on the left windshield.
 
 - A32NX_RCDR_TEST
-  -Bool
-  -True if RCDR being tested.
+  - Bool
+  - True if RCDR being tested.
 
 - A32NX_RADAR_MULTISCAN_AUTO
-  -Bool
-  -True if multiscan switch is set to AUTO.
+  - Bool
+  - True if multiscan switch is set to AUTO.
 
 - A32NX_RADAR_GCS_AUTO
-  -Bool
-  -True if GCS switch is set to AUTO.
+  - Bool
+  - True if GCS switch is set to AUTO.
 
 - A32NX_OXYGEN_MASKS_DEPLOYED
     - Bool
