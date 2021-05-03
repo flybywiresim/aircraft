@@ -7,6 +7,9 @@ class CDUWaypointPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.WaypointPage;
+        mcdu.returnPageCallback = () => {
+            CDUWaypointPage.ShowPage(mcdu);
+        };
 
         mcdu.setTemplate([
             ["WAYPOINT"],
