@@ -45,6 +45,7 @@
 1. [EFB] Disabled LINK MCDU button on dashboard page - @ExampleWasTaken (ExampleWasTaken#0886)
 1. [MCDU] Do not show duplicate names page with 1 option, fix return key - @tracernz (Mike)
 1. [MCDU] Removed invalid chars from- and updated AOC TELEX warning message - @ExampleWasTaken (ExampleWasTaken#0886)
+1. [ND] Fix Behaviour of TAS and Wind Info displayed inflight and on Take-Off - @ChruutvoLuzi (ChruutvoLuzi#8902)
 1. [SOUND] Improved engine, ground roll, and ambience sounds - @hotshotp (Boris)
 1. [SOUND] Added CVR test sound - @hotshotp (Boris)
 1. [ELEC] Pushing the GEN 1 LINE push button to OFF opens the GEN 1 contactor - @davidwalschots (David Walschots)
