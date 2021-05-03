@@ -128,7 +128,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
         <div className="flex flex-col pt-4 text-center">
             <div className="rounded-xl py-6">
 
-                <div className="flex flex-row rounded-xl justify-center bg-gray-800 mt-auto mb-8 p-4 w-full divide divide-x-2 divide-gray-500">
+                <div className="flex flex-row rounded-2xl justify-center bg-navy-lighter mt-auto mb-8 p-4 w-full divide divide-x-2 divide-gray-500">
                     <div className="flex flex-row mr-2">
                         <span className="text-lg text-gray-300 mr-2">Reverser On Axis</span>
                         <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversersOnAxis(value ? 1 : 0)} />
@@ -197,7 +197,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
             </div>
 
             <div className="text-xl text-red-600">{isConfigValid().length > 0 ? isConfigValid()[0] : ''}</div>
-            <div className="bg-gray-800 flex flex-row-reverse h-16 p-2 w-full mt-40 mb-2 rounded-xl">
+            <div className="bg-navy-lighter flex flex-row-reverse h-16 p-2 w-full mt-40 mb-2 rounded-2xl">
 
                 <Button
                     text="Save &amp; Apply"

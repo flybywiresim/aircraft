@@ -26,7 +26,7 @@ export const SelectGroup: React.FC = (props) => (
 );
 
 export const VerticalSelectGroup: React.FC = (props) => (
-    <div className="bg-gray-800 flex flex-col justify-between rounded-lg">
+    <div className="bg-navy-lighter flex flex-col justify-between rounded-2xl">
         {props.children}
     </div>
 );
