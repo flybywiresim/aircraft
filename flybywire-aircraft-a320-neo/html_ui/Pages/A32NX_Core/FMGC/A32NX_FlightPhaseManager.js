@@ -17,12 +17,12 @@ function canInitiateTO(_fmc) {
     );
 }
 
-function canInitiateDes(_fmc) {
+function canInitiateDes(_fmc, _ignoreAlt = false) {
     const fl = Math.round(Simplane.getAltitude() / 100);
     const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
     const dest = _fmc.flightPlanManager.getDestination();
     // Can initiate descent? OR Can initiate early descent?
-    return ((!!dest && dest.liveDistanceTo < 200 || !dest) && fcuSelFl < _fmc.cruiseFlightLevel)
+    return ((!!dest && dest.liveDistanceTo < 200 || !dest) && (fcuSelFl < _fmc.cruiseFlightLevel || (_ignoreAlt && fcuSelFl < fl)))
         || (!!dest && dest.liveDistanceTo >= 200 && fl > 200 && fcuSelFl < 200);
 }
 
@@ -121,6 +121,15 @@ class A32NX_FlightPhaseManager {
         }
     }
 
+    handleFcuAltKnobTurn() {
+        if (this.fmc.currentFlightPhase === FmgcFlightPhases.CRUISE) {
+            const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+            if (canInitiateDes(this.fmc, true) && (activeVerticalMode === 13 || activeVerticalMode === 14 || activeVerticalMode === 15 || activeVerticalMode === 23)) {
+                this.fmc.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.DESCENT);
+            }
+        }
+    }
+
     handleFcuVSKnob() {
         if (this.fmc.currentFlightPhase === FmgcFlightPhases.CLIMB || this.fmc.currentFlightPhase === FmgcFlightPhases.CRUISE) {
             /** a timeout of 100ms is required in order to receive the updated autopilot vertical mode */
@@ -128,7 +137,7 @@ class A32NX_FlightPhaseManager {
                 const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
                 const VS = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
                 if (activeVerticalMode === 14 && VS < 0) {
-                    if (canInitiateDes(this.fmc)) {
+                    if (canInitiateDes(this.fmc, true)) {
                         this.changeFlightPhase(FmgcFlightPhases.DESCENT);
                     } else {
                         this.fmc._onStepClimbDescent();

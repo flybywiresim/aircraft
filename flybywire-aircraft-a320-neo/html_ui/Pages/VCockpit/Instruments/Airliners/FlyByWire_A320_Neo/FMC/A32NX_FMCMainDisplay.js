@@ -1044,6 +1044,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._onStepClimbDescent();
         }
         if (_event === "AP_DEC_ALT" || _event === "AP_INC_ALT") {
+            this.flightPhaseManager.handleFcuAltKnobTurn();
             if (this.currentFlightPhase === FmgcFlightPhases.CLIMB) {
                 const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
                 if (this._activeCruiseFlightLevelDefaulToFcu || fcuFl >= this._cruiseFlightLevel) {
