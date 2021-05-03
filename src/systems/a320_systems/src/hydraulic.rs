@@ -502,7 +502,7 @@ impl A320EngineDrivenPumpController {
             engine_number,
             engine_master_on_id: format!("GENERAL ENG STARTER ACTIVE:{}", engine_number),
             engine_master_on: false,
-            should_pressurise: true,
+            should_pressurise: false,
         }
     }
 
@@ -2577,6 +2577,50 @@ mod tests {
         }
 
         #[test]
+        // Testing that green for brakes is only available if park brake is on while altn pressure is at too low level
+        fn brake_logic_green_backup_emergency() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Setting on ground with yellow side hydraulics off
+            // This should prevent yellow accumulator to fill
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .set_park_brake(true)
+                .set_ptu_state(false)
+                .set_yellow_e_pump(true)
+                .set_yellow_ed_pump(false)
+                .run_waiting_for(Duration::from_secs(15));
+
+            // Braking but park is on: no output on green brakes expected
+            test_bed = test_bed
+                .set_left_brake(Ratio::new::<percent>(100.))
+                .set_right_brake(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(500.));
+            assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(500.));
+
+            // With no more fluid in yellow accumulator, green should work as emergency
+            test_bed = test_bed
+                .empty_brake_accumulator_using_park_brake()
+                .set_left_brake(Ratio::new::<percent>(100.))
+                .set_right_brake(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
+            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
+            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
+        }
+
+        #[test]
         fn controller_blue_epump_split_master_switch() {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             overhead_panel.blue_epump_override_push_button.push_off();
@@ -2633,21 +2677,10 @@ mod tests {
             assert!(!blue_epump_controller.should_pressurise());
         }
 
-        fn context(delta_time: Duration) -> UpdateContext {
-            UpdateContext::new(
-                delta_time,
-                Velocity::new::<knot>(250.),
-                Length::new::<foot>(5000.),
-                ThermodynamicTemperature::new::<degree_celsius>(25.0),
-                true,
-                Acceleration::new::<foot_per_second_squared>(0.),
-            )
-        }
-
         #[test]
-        fn controller_yellow_epump() {
-            let mut fwd_door = Door::new(1);
-            let mut aft_door = Door::new(2);
+        fn controller_yellow_epump_overhead_button_logic() {
+            let fwd_door = Door::new(1);
+            let aft_door = Door::new(2);
             let context = context(Duration::from_millis(100));
 
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
@@ -2665,32 +2698,45 @@ mod tests {
             overhead_panel.yellow_epump_push_button.push_auto();
             yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door);
             assert!(!yellow_epump_controller.should_pressurise());
+        }
 
-            fwd_door = moving_door(1);
+        #[test]
+        fn controller_yellow_epump_cargo_doors_starts_pump_for_timeout_delay() {
+            let context = context(Duration::from_millis(100));
+
+            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+
+            let mut yellow_epump_controller = A320YellowElectricPumpController::new();
+
+            overhead_panel.yellow_epump_push_button.push_auto();
+            assert!(!yellow_epump_controller.should_pressurise());
+
+            let aft_door = non_moving_door(2);
+            let fwd_door = moving_door(1);
             yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door);
             assert!(yellow_epump_controller.should_pressurise());
-            fwd_door = non_moving_door(1);
+            let fwd_door = non_moving_door(1);
 
             yellow_epump_controller.update(&context.with_delta(Duration::from_secs(1) + A320YellowElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION), &overhead_panel,&fwd_door,&aft_door);
             assert!(!yellow_epump_controller.should_pressurise());
 
-            aft_door = moving_door(2);
+            let aft_door = moving_door(2);
             yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door);
             assert!(yellow_epump_controller.should_pressurise());
-            aft_door = non_moving_door(2);
+            let aft_door = non_moving_door(2);
 
             yellow_epump_controller.update(&context.with_delta(Duration::from_secs(1) + A320YellowElectricPumpController::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION), &overhead_panel,&fwd_door,&aft_door);
             assert!(!yellow_epump_controller.should_pressurise());
         }
 
         #[test]
-        fn controller_engine_driven_pump1() {
+        fn controller_engine_driven_pump1_overhead_button_logic_with_eng_on() {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
-            let mut fire_overhead_panel = A320EngineFireOverheadPanel::new();
+            let fire_overhead_panel = A320EngineFireOverheadPanel::new();
             overhead_panel.edp1_push_button.push_auto();
-            fire_overhead_panel.eng1_fire_pb.set(false);
 
             let mut edp1_controller = A320EngineDrivenPumpController::new(1);
+            edp1_controller.engine_master_on = true;
 
             edp1_controller.update(&overhead_panel, &fire_overhead_panel);
             assert!(edp1_controller.should_pressurise());
@@ -2700,29 +2746,63 @@ mod tests {
             assert!(!edp1_controller.should_pressurise());
 
             overhead_panel.edp1_push_button.push_auto();
+            edp1_controller.update(&overhead_panel, &fire_overhead_panel);
+            assert!(edp1_controller.should_pressurise());
+        }
+
+        #[test]
+        fn controller_engine_driven_pump1_fire_overhead_released_stops_pump() {
+            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+            let mut fire_overhead_panel = A320EngineFireOverheadPanel::new();
+            overhead_panel.edp1_push_button.push_auto();
+            fire_overhead_panel.eng1_fire_pb.set(false);
+
+            let mut edp1_controller = A320EngineDrivenPumpController::new(1);
+            edp1_controller.engine_master_on = true;
+
+            edp1_controller.update(&overhead_panel, &fire_overhead_panel);
+            assert!(edp1_controller.should_pressurise());
+
             fire_overhead_panel.eng1_fire_pb.set(true);
             edp1_controller.update(&overhead_panel, &fire_overhead_panel);
             assert!(!edp1_controller.should_pressurise());
         }
 
         #[test]
-        fn controller_engine_driven_pump2() {
+        fn controller_engine_driven_pump2_overhead_button_logic_with_eng_on() {
+            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+            let fire_overhead_panel = A320EngineFireOverheadPanel::new();
+            overhead_panel.edp2_push_button.push_auto();
+
+            let mut edp2_controller = A320EngineDrivenPumpController::new(2);
+            edp2_controller.engine_master_on = true;
+
+            edp2_controller.update(&overhead_panel, &fire_overhead_panel);
+            assert!(edp2_controller.should_pressurise());
+
+            overhead_panel.edp2_push_button.push_off();
+            edp2_controller.update(&overhead_panel, &fire_overhead_panel);
+            assert!(!edp2_controller.should_pressurise());
+
+            overhead_panel.edp2_push_button.push_auto();
+            edp2_controller.update(&overhead_panel, &fire_overhead_panel);
+            assert!(edp2_controller.should_pressurise());
+        }
+
+        #[test]
+        fn controller_engine_driven_pump2_fire_overhead_released_stops_pump() {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             let mut fire_overhead_panel = A320EngineFireOverheadPanel::new();
             overhead_panel.edp2_push_button.push_auto();
             fire_overhead_panel.eng2_fire_pb.set(false);
 
-            let mut edp2_controller = A320EngineDrivenPumpController::new(1);
+            let mut edp2_controller = A320EngineDrivenPumpController::new(2);
+            edp2_controller.engine_master_on = true;
 
             edp2_controller.update(&overhead_panel, &fire_overhead_panel);
             assert!(edp2_controller.should_pressurise());
 
-            overhead_panel.edp1_push_button.push_off();
-            edp2_controller.update(&overhead_panel, &fire_overhead_panel);
-            assert!(!edp2_controller.should_pressurise());
-
-            overhead_panel.edp1_push_button.push_auto();
-            fire_overhead_panel.eng1_fire_pb.set(true);
+            fire_overhead_panel.eng2_fire_pb.set(true);
             edp2_controller.update(&overhead_panel, &fire_overhead_panel);
             assert!(!edp2_controller.should_pressurise());
         }
@@ -2807,50 +2887,6 @@ mod tests {
         }
 
         #[test]
-        // Testing that green for brakes is only available if park brake is on while altn pressure is at too low level
-        fn brake_logic_green_backup_emergency() {
-            let mut test_bed = test_bed_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .run_one_tick();
-
-            // Setting on ground with yellow side hydraulics off
-            // This should prevent yellow accumulator to fill
-            test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(100.))
-                .start_eng2(Ratio::new::<percent>(100.))
-                .set_park_brake(true)
-                .set_ptu_state(false)
-                .set_yellow_e_pump(true)
-                .set_yellow_ed_pump(false)
-                .run_waiting_for(Duration::from_secs(15));
-
-            // Braking but park is on: no output on green brakes expected
-            test_bed = test_bed
-                .set_left_brake(Ratio::new::<percent>(100.))
-                .set_right_brake(Ratio::new::<percent>(100.))
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.get_brake_left_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_green_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_left_yellow_pressure() > Pressure::new::<psi>(500.));
-            assert!(test_bed.get_brake_right_yellow_pressure() > Pressure::new::<psi>(500.));
-
-            // With no more fluid in yellow accumulator, green should work as emergency
-            test_bed = test_bed
-                .empty_brake_accumulator_using_park_brake()
-                .set_left_brake(Ratio::new::<percent>(100.))
-                .set_right_brake(Ratio::new::<percent>(100.))
-                .run_waiting_for(Duration::from_secs(1));
-
-            assert!(test_bed.get_brake_left_green_pressure() > Pressure::new::<psi>(1000.));
-            assert!(test_bed.get_brake_right_green_pressure() > Pressure::new::<psi>(1000.));
-            assert!(test_bed.get_brake_left_yellow_pressure() < Pressure::new::<psi>(50.));
-            assert!(test_bed.get_brake_right_yellow_pressure() < Pressure::new::<psi>(50.));
-        }
-
-        #[test]
         fn writes_its_state() {
             let mut hyd_logic = A320Hydraulic::new();
             let mut test_bed = SimulationTestBed::new();
@@ -2860,6 +2896,17 @@ mod tests {
             assert!(test_bed.contains_key("HYD_BLUE_EPUMP_LOW_PRESS"));
             assert!(test_bed.contains_key("HYD_YELLOW_EDPUMP_LOW_PRESS"));
             assert!(test_bed.contains_key("HYD_YELLOW_EPUMP_LOW_PRESS"));
+        }
+
+        fn context(delta_time: Duration) -> UpdateContext {
+            UpdateContext::new(
+                delta_time,
+                Velocity::new::<knot>(250.),
+                Length::new::<foot>(5000.),
+                ThermodynamicTemperature::new::<degree_celsius>(25.0),
+                true,
+                Acceleration::new::<foot_per_second_squared>(0.),
+            )
         }
 
         fn moving_door(id: usize) -> Door {
