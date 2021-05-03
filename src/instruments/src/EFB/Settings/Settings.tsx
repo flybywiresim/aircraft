@@ -331,7 +331,7 @@ const FlyPadSettings = () => {
     const [brightness, setBrightness] = useSimVarSyncedPersistentProperty('L:A32NX_EFB_BRIGHTNESS', 'number', 'EFB_BRIGHTNESS');
 
     return (
-        <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-xl p-6 shadow-lg mb-6">
+        <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-2xl p-6 shadow-lg mb-6">
             <div className="flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Brightness</span>
                 <Slider className="w-60" value={brightness} onInput={(value) => setBrightness(value)} />
@@ -379,7 +379,7 @@ const Settings = (props: {simbriefUsername, setSimbriefUsername}) => {
 
                                 <ControlSettings setShowSettings={setShowThrottleSettings} />
 
-                                <h1 className="text-4xl text-center text-gray-400 mt-28">flyPadOS</h1>
+                                <h1 className="text-4xl text-center text-gray-400 mt-14">flyPadOS</h1>
                                 <h1 className="text-xl text-center text-gray-500 my-2">v2.0.1-alpha</h1>
                                 <h1 className="text-md text-center text-gray-500 my-2">
                                     Copyright 2020-2021, FlyByWire
