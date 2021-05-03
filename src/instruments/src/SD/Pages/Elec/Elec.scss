@@ -1,42 +1,41 @@
-@import "../../../Common/definitions";
+@import "../../Common/definitions";
 
-.box {
-  stroke: #EEEEEE;
-  fill: none;
-  stroke-width: 2.5px;
-}
+#main-elec {
+  .Box {
+    stroke: #EEEEEE;
+    fill: none;
+    stroke-width: 2.5px;
+  }
 
-text {
-  fill: #EEEEEE;
-  font-family: 'Roboto Mono', monospace;
-  line-height: 4.6875;
-  white-space: pre;
-  word-spacing: 0px;
-  font-size: 18.75px;
-  font-weight: 400;
-}
+  text {
+    fill: #EEEEEE;
+    font-family: 'Roboto Mono', monospace;
+    line-height: 4.6875;
+    white-space: pre;
+    word-spacing: 0px;
+    font-size: 18.75px;
+    font-weight: 400;
 
-text.left {
-  text-anchor: start;
-  text-align: start;
-}
+    &.Middle {
+      text-anchor: middle;
+      text-align: middle;
+    }
 
-text.right {
-  text-anchor: end;
-  text-align: end;
-}
+    &.Right {
+      text-anchor: end;
+      text-align: end;
+    }
 
-text.middle {
-  text-anchor: middle;
-  text-align: middle;
-}
+    &.Green {
+      fill: $display-green;
+    }
 
-text.green {
-  fill: $display-green;
-}
-text.amber {
-  fill: $display-amber;
-}
-text.cyan {
-  fill: $display-cyan;
+    &.Amber {
+      fill: $display-amber;
+    }
+
+    &.Cyan {
+      fill: $display-cyan;
+    }
+  }
 }

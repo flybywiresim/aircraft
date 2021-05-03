@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { PageTitle } from '../../Common/PageTitle';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 
@@ -9,12 +10,11 @@ setIsEcamPage('elec_page');
 
 // 3.75
 export const ElecPage = () => (
-    <>
-        <svg id="main-elec" version="1.1" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
-            <Battery number={1} x={108.75} y={15} />
-            <Battery number={2} x={405} y={15} />
-        </svg>
-    </>
+    <EcamPage name="main-elec">
+        <PageTitle x={6} y={18} text="ELEC" />
+        <Battery number={1} x={108.75} y={10} />
+        <Battery number={2} x={405} y={10} />
+    </EcamPage>
 );
 
 export const Battery = ({ number, x, y }) => {
@@ -30,21 +30,38 @@ export const Battery = ({ number, x, y }) => {
     const allParametersWithinNormalRange = potentialWithinNormalRange && currentWithinNormalRange;
 
     return (
-        <>
-            <rect className="box" x={x} y={y} width="86.25" height="71.25" />
-            <text className={`right ${!allParametersWithinNormalRange && isAuto ? 'amber' : ''}`} x={x + 52.5} y={y + 21.625}>BAT</text>
-            <text className={`left ${!allParametersWithinNormalRange && isAuto ? 'amber' : ''}`} x={x + 56.25} y={y + 21.625}>{number}</text>
+        <SvgGroup x={x} y={y}>
+            <Box width={86.25} height={71.25} />
+            <text className={`Right ${!allParametersWithinNormalRange && isAuto ? 'Amber' : ''}`} x={52.5} y={21.625}>BAT</text>
+            <text className={`${!allParametersWithinNormalRange && isAuto ? 'Amber' : ''}`} x={56.25} y={21.625}>{number}</text>
             { isAuto
                 ? (
                     <>
-                        <text className={`right ${potentialWithinNormalRange ? 'green' : 'amber'}`} x={x + 52.5} y={y + 43.125}>{Math.round(potential)}</text>
-                        <text className="cyan left" x={x + 56.25} y={y + 43.125}>V</text>
-                        <text className={`right ${currentWithinNormalRange ? 'green' : 'amber'}`} x={x + 52.5} y={y + 65.625}>{Math.abs(Math.round(current))}</text>
-                        <text className="cyan left" x={x + 56.25} y={y + 65.625}>A</text>
+                        <ElectricalProperty x={52.5} y={43.125} value={Math.round(potential)} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
+                        <ElectricalProperty x={52.5} y={65.625} value={Math.abs(Math.round(current))} unit="A" isWithinNormalRange={currentWithinNormalRange} />
                     </>
-                ) : (<text className="middle" dominantBaseline="middle" x={x + 43.125} y={y + 41.25}>OFF</text>) }
-        </>
+                ) : (<text className="Middle" dominantBaseline="middle" x={43.125} y={41.25}>OFF</text>) }
+        </SvgGroup>
     );
 };
+
+const EcamPage = ({ name, children }) => (
+    <svg id={name} version="1.1" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
+        {children}
+    </svg>
+);
+
+const SvgGroup = ({ x, y, children }) => <g transform={`translate(${x},${y})`}>{children}</g>;
+
+const ElectricalProperty = ({ x, y, value, unit, isWithinNormalRange }) => (
+    <SvgGroup x={x} y={y}>
+        <text className={`Right ${isWithinNormalRange ? 'Green' : 'Amber'}`}>{value}</text>
+        <text className="Cyan" x={3.75}>{unit}</text>
+    </SvgGroup>
+);
+
+const Box = ({ width, height }) => (
+    <rect className="Box" width={width} height={height} />
+);
 
 ReactDOM.render(<SimVarProvider><ElecPage /></SimVarProvider>, getRenderTarget());
