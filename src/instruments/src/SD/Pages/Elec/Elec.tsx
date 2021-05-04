@@ -8,15 +8,17 @@ import './Elec.scss';
 
 setIsEcamPage('elec_page');
 
+const maxStaleness = 300;
+
 export const ElecPage = () => {
-    const [dc1IsPowered] = useSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool', 1000);
-    const [dc2IsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool', 1000);
-    const [dcEssIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'Bool', 1000);
-    const [dcEssShedBusIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED', 'Bool', 1000);
-    const [ac1IsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'Bool', 1000);
-    const [ac2IsPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'Bool', 1000);
-    const [acEssIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'Bool', 1000);
-    const [acEssShedBusIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED', 'Bool', 1000);
+    const [dc1IsPowered] = useSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool', maxStaleness);
+    const [dc2IsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool', maxStaleness);
+    const [dcEssIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'Bool', maxStaleness);
+    const [dcEssShedBusIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED', 'Bool', maxStaleness);
+    const [ac1IsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'Bool', maxStaleness);
+    const [ac2IsPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'Bool', maxStaleness);
+    const [acEssIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'Bool', maxStaleness);
+    const [acEssShedBusIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED', 'Bool', maxStaleness);
 
     return (
         <EcamPage name="main-elec">
@@ -30,13 +32,15 @@ export const ElecPage = () => {
             <Bus name="AC" number={1} isNormal={ac1IsPowered} x={6} y={266.25} width={135} />
             <Bus name="AC" number={2} isNormal={ac2IsPowered} x={459} y={266.25} width={135} />
             <Bus name="AC ESS" isNormal={acEssIsPowered} isShed={!acEssShedBusIsPowered} x={232.5} y={266.25} width={135} />
+            <EngineGenerator number={1} x={13.125} y={345} />
+            <EngineGenerator number={2} x={493.125} y={345} />
         </EcamPage>
     );
 };
 
 export const Battery = ({ number, x, y }) => {
     const simVarNumber = 9 + number;
-    const [isAuto] = useSimVar(`L:A32NX_OVHD_ELEC_BAT_${simVarNumber}_PB_IS_AUTO`, 'Bool', 1000);
+    const [isAuto] = useSimVar(`L:A32NX_OVHD_ELEC_BAT_${simVarNumber}_PB_IS_AUTO`, 'Bool', maxStaleness);
 
     const [potential] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_POTENTIAL`, 'Volts');
     const [potentialWithinNormalRange] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_POTENTIAL_NORMAL`, 'Bool');
@@ -50,7 +54,7 @@ export const Battery = ({ number, x, y }) => {
         <SvgGroup x={x} y={y}>
             <Box width={86.25} height={71.25} />
             <text className={`Right ${!allParametersWithinNormalRange && isAuto ? 'Amber' : ''}`} x={52.5} y={21.625}>BAT</text>
-            <text className={`${!allParametersWithinNormalRange && isAuto ? 'Amber' : ''}`} x={56.25} y={21.625}>{number}</text>
+            <text className={`Big ${!allParametersWithinNormalRange && isAuto ? 'Amber' : ''}`} x={56.25} y={21.625}>{number}</text>
             { isAuto
                 ? (
                     <>
@@ -95,15 +99,15 @@ const Bus = ({ x, y, width, name, number, isNormal, isShed } : BusProps) => {
     return (
         <SvgGroup x={x} y={y}>
             <rect className="Bus" width={width} height={busHeight} />
-            <text className={`Bus ${number ? 'Right' : 'Middle'} ${isNormal ? 'Green' : 'Amber'}`} dominantBaseline="middle" x={width / 2} y="11.25">{name}</text>
-            {number ? <text className={`Bus Big ${isNormal ? 'Green' : 'Amber'}`} x={(width / 2) + 3.75} y="22">{number}</text> : null}
+            <text className={`Big ${number ? 'Right' : 'Middle'} ${isNormal ? 'Green' : 'Amber'}`} dominantBaseline="middle" x={width / 2} y="10.5">{name}</text>
+            {number ? <text className={`Bigger ${isNormal ? 'Green' : 'Amber'}`} x={(width / 2) + 3.75} y="22">{number}</text> : null}
             {isShed ? <text className="Middle Tiny Amber" dominantBaseline="middle" x={(width / 2)} y={busHeight + 8.25}>SHED</text> : null}
         </SvgGroup>
     );
 };
 
 const BatteryBus = ({ x, y, width }) => {
-    const [isPowered] = useSimVar('L:A32NX_ELEC_DC_BAT_BUS_IS_POWERED', 'Bool', 1000);
+    const [isPowered] = useSimVar('L:A32NX_ELEC_DC_BAT_BUS_IS_POWERED', 'Bool', maxStaleness);
 
     const [bat1IsAuto] = useSimVar('L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO', 'Bool');
     const [bat2IsAuto] = useSimVar('L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO', 'Bool');
@@ -113,6 +117,38 @@ const BatteryBus = ({ x, y, width }) => {
 
     const name = atLeastOneBatteryIsAuto ? 'DC BAT' : 'XX';
     return (<Bus x={x} y={y} width={width} name={name} isNormal={isPowered && potentialIsWithinNormalRange && atLeastOneBatteryIsAuto} />);
+};
+
+const EngineGenerator = ({ number, x, y }) => {
+    const [isOn] = useSimVar(`GENERAL ENG MASTER ALTERNATOR:${number}`, 'Bool', maxStaleness);
+
+    const [load] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_LOAD`, 'Percent', maxStaleness);
+    const [loadWithinNormalRange] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_LOAD_NORMAL`, 'Bool', maxStaleness);
+
+    const [potential] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_POTENTIAL`, 'Volts', maxStaleness);
+    const [potentialWithinNormalRange] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_POTENTIAL_NORMAL`, 'Bool', maxStaleness);
+
+    const [frequency] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_FREQUENCY`, 'Hertz', maxStaleness);
+    const [frequencyWithinNormalRange] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_FREQUENCY_NORMAL`, 'Bool', maxStaleness);
+
+    const allParametersWithinNormalRange = loadWithinNormalRange && potentialWithinNormalRange && frequencyWithinNormalRange;
+    return (
+        <SvgGroup x={x} y={y}>
+            <Box width={86.25} height={93.75} />
+
+            <text className={`Right ${!isOn || !allParametersWithinNormalRange ? 'Amber' : ''}`} x={54.375} y={22.5}>GEN</text>
+            <text className={`Big ${!isOn || !allParametersWithinNormalRange ? 'Amber' : ''}`} x={54.375 + 3.75} y={22.5}>{number}</text>
+            { isOn
+                ? (
+                    <>
+                        <ElectricalProperty x={54.375} y={45} value={Math.round(load)} unit="%" isWithinNormalRange={loadWithinNormalRange} />
+                        <ElectricalProperty x={54.375} y={67.5} value={Math.round(potential)} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
+                        <ElectricalProperty x={54.375} y={90} value={Math.round(frequency)} unit="HZ" isWithinNormalRange={frequencyWithinNormalRange} />
+                    </>
+                )
+                : <text className="Middle" dominantBaseline="middle" x={43.125} y={54.375}>OFF</text>}
+        </SvgGroup>
+    );
 };
 
 ReactDOM.render(<SimVarProvider><ElecPage /></SimVarProvider>, getRenderTarget());
