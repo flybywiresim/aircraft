@@ -58,12 +58,9 @@ This has the latest features, but is much more unstable, use at your own risk.
 
 [View information regarding the latest build here.](https://github.com/flybywiresim/a32nx/releases/tag/vmaster)
 
-#### Unstable Master Branch Build (with custom autopilot)
-
 #### Experimental Branch Build
 
 This branch is used from time-to-time for experimental features under heavy development. It's content will vary over time, and doesn't necessarily include everything in the master branch. No support will be provided via Discord, although users of the branch are advised to keep themselves updated with development progress via Discord.
-
 
 ## Installation
 
@@ -71,24 +68,23 @@ This branch is used from time-to-time for experimental features under heavy deve
 
 Open the zip that you downloaded from one of the links above, and drag the `flybywire-aircraft-a320-neo` folder inside the zip into your `Community` folder.
 
-
-See below for the location of your Community folder:
+See below for the location of your `Community` folder:
 
 For the Microsoft Store edition AND/OR Gamepass edition:
-- Copy the "flybywire-aircraft-a320-neo" folder into your community package folder. The path is:
+- Copy the `flybywire-aircraft-a320-neo` folder into your community package folder. The path is:
 `C:\Users\[YOUR USERNAME]\AppData\Local\Packages\Microsoft.FlightSimulator_<RANDOMLETTERS>\LocalCache\Packages\Community`.
 
 For the Steam edition:
-- Copy the "flybywire-aircraft-a320-neo" folder into your community package folder. The path is:
+- Copy the `flybywire-aircraft-a320-neo` folder into your community package folder. The path is:
 `C:\Users\[YOUR USERNAME]\AppData\Roaming\Microsoft Flight Simulator\Packages\Community`.
 
 For the Boxed edition:
-- Copy the "flybywire-aircraft-a320-neo" folder into your community package folder. The path is:
+- Copy the `flybywire-aircraft-a320-neo` folder into your community package folder. The path is:
 `C:\Users\[YOUR USERNAME]\AppData\Local\MSFSPackages\Community`.
 
 If the above methods do not work:
-- You can find your community folder by going into FS2020 general options and enabling developer mode. Once enabled, you will notice a bar pop up at the top of your screen. Go to tools and virtual file system. Click on watch bases and your community folder will be listed in one of the folders.
-- Please make sure you're copying the "flybywire-aircraft-a320-neo" folder into your community package folder, **NOT** the "flybywiresim-a32nx" folder.
+- You can find your `Community` folder by going into MSFS general options and enabling developer mode. Once enabled, you will notice a bar pop up at the top of your screen. Go to tools and virtual file system. Click on watch bases and your `Community` folder will be listed in one of the folders.
+- Please make sure you're copying the `flybywire-aircraft-a320-neo` folder into your `Community` package folder, **NOT** the `flybywiresim-a32nx` folder.
 
 ## Contributing
 
