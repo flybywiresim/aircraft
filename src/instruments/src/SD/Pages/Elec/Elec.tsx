@@ -23,6 +23,7 @@ export const ElecPage = () => {
     const [staticInverterInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_15XE2_IS_CLOSED', 'Bool', maxStaleness);
     const [trEssInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_3PE_IS_CLOSED', 'Bool', maxStaleness);
     const [emergencyGeneratorInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_2XE_IS_CLOSED', 'Bool', maxStaleness);
+    const [galleyIsShed] = useSimVar('L:A32NX_ELEC_GALLEY_IS_SHED', 'Bool', maxStaleness);
 
     return (
         <EcamPage name="main-elec">
@@ -45,6 +46,7 @@ export const ElecPage = () => {
             <TransformerRectifier number={2} x={493.125} y={161.25} />
             <TransformerRectifier number={3} x={213.75} y={161.25} titleOnly={!trEssInUse} />
             <EmergencyGenerator titleOnly={!emergencyGeneratorInUse} x={330} y={161.25} />
+            { galleyIsShed ? <GalleyShed x={300} y={483.75} /> : null }
         </EcamPage>
     );
 };
@@ -306,12 +308,12 @@ const EmergencyGenerator = ({ titleOnly, x, y }) => {
     return (
         <SvgGroup x={x} y={y}>
             {
-                titleOnly ? <text id="EMERGEN_OFFLINE" className="Medium" dominantBaseline="middle" x={0.9375} y={45}>EMER GEN</text>
+                titleOnly ? <text className="Medium" dominantBaseline="middle" x={0.9375} y={45}>EMER GEN</text>
                     : (
                         <>
                             <Box width={103.125} height={75} />
 
-                            <text id="EMERGEN_TITLE" className={`Middle ${!allParametersWithinNormalRange ? 'Amber' : ''}`} x={51.5625} y={24.375}>EMER GEN</text>
+                            <text className={`Middle ${!allParametersWithinNormalRange ? 'Amber' : ''}`} x={51.5625} y={24.375}>EMER GEN</text>
                             <ElectricalProperty x={63.75} y={46.875} value={potential} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
                             <ElectricalProperty x={63.75} y={69.375} value={frequency} unit="HZ" isWithinNormalRange={frequencyWithinNormalRange} />
                         </>
@@ -320,5 +322,12 @@ const EmergencyGenerator = ({ titleOnly, x, y }) => {
         </SvgGroup>
     );
 };
+
+const GalleyShed = ({ x, y }) => (
+    <SvgGroup x={x} y={y}>
+        <text className="Middle">GALLEY</text>
+        <text className="Middle" y={18.75}>SHED</text>
+    </SvgGroup>
+);
 
 ReactDOM.render(<SimVarProvider><ElecPage /></SimVarProvider>, getRenderTarget());
