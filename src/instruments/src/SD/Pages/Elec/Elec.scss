@@ -7,20 +7,21 @@
     stroke-width: 2.5px;
   }
 
-  rect {
-    &.Bus {
+  rect.Bus {
       fill: #636363;
-    }
   }
 
   text {
     fill: #EEEEEE;
     font-family: 'Roboto Mono', monospace;
-    line-height: 4.6875;
+    //line-height: 4.6875;
     white-space: pre;
     word-spacing: 0px;
-    font-size: 18.75px;
-    font-weight: 400;
+    font-size: 19px;
+
+    &.Big {
+      font-size: 26px;
+    }
 
     &.Middle {
       text-anchor: middle;

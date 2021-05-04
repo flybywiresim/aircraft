@@ -8,15 +8,29 @@ import './Elec.scss';
 
 setIsEcamPage('elec_page');
 
-// 3.75
-export const ElecPage = () => (
-    <EcamPage name="main-elec">
-        <PageTitle x={6} y={18} text="ELEC" />
-        <Battery number={1} x={108.75} y={10} />
-        <Battery number={2} x={405} y={10} />
-        <BatteryBus x={232.5} y={35} width={135} />
-    </EcamPage>
-);
+export const ElecPage = () => {
+    const [dc1IsPowered] = useSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool', 1000);
+    const [dc2IsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool', 1000);
+    const [dcEssIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'Bool', 1000);
+    const [ac1IsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'Bool', 1000);
+    const [ac2IsPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'Bool', 1000);
+    const [acEssIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'Bool', 1000);
+
+    return (
+        <EcamPage name="main-elec">
+            <PageTitle text="ELEC" x={6} y={18} />
+            <Battery number={1} x={108.75} y={10} />
+            <Battery number={2} x={405} y={10} />
+            <BatteryBus x={232.5} y={35} width={135} />
+            <Bus name="DC" number={1} isNormal={dc1IsPowered} x={6} y={90} width={86.25} />
+            <Bus name="DC" number={2} isNormal={dc2IsPowered} x={507.75} y={90} width={86.25} />
+            <Bus name="DC ESS" isNormal={dcEssIsPowered} x={232.5} y={116.25} width={135} />
+            <Bus name="AC" number={1} isNormal={ac1IsPowered} x={6} y={266.25} width={135} />
+            <Bus name="AC" number={2} isNormal={ac2IsPowered} x={459} y={266.25} width={135} />
+            <Bus name="AC ESS" isNormal={acEssIsPowered} x={232.5} y={266.25} width={135} />
+        </EcamPage>
+    );
+};
 
 export const Battery = ({ number, x, y }) => {
     const simVarNumber = 9 + number;
@@ -65,10 +79,19 @@ const Box = ({ width, height }) => (
     <rect className="Box" width={width} height={height} />
 );
 
-const Bus = ({ x, y, width, name, isNormal }) => (
+interface BusProps {
+    x: number,
+    y: number,
+    width: number,
+    name: string,
+    number?: number,
+    isNormal: boolean
+}
+const Bus = ({ x, y, width, name, number, isNormal } : BusProps) => (
     <SvgGroup x={x} y={y}>
         <rect className="Bus" width={width} height="26.25" />
-        <text className={`Bus Middle ${isNormal ? 'Green' : 'Amber'}`} dominantBaseline="middle" x="67.5" y="11.25">{name}</text>
+        <text className={`Bus ${number ? 'Right' : 'Middle'} ${isNormal ? 'Green' : 'Amber'}`} dominantBaseline="middle" x={width / 2} y="11.25">{name}</text>
+        {number ? <text className={`Bus Big ${isNormal ? 'Green' : 'Amber'}`} x={(width / 2) + 3.75} y="22">{number}</text> : null}
     </SvgGroup>
 );
 
