@@ -14,6 +14,7 @@ export const ElecPage = () => (
         <PageTitle x={6} y={18} text="ELEC" />
         <Battery number={1} x={108.75} y={10} />
         <Battery number={2} x={405} y={10} />
+        <BatteryBus x={232.5} y={35} width={135} />
     </EcamPage>
 );
 
@@ -63,5 +64,25 @@ const ElectricalProperty = ({ x, y, value, unit, isWithinNormalRange }) => (
 const Box = ({ width, height }) => (
     <rect className="Box" width={width} height={height} />
 );
+
+const Bus = ({ x, y, width, name, isNormal }) => (
+    <SvgGroup x={x} y={y}>
+        <rect className="Bus" width={width} height="26.25" />
+        <text className={`Bus Middle ${isNormal ? 'Green' : 'Amber'}`} dominantBaseline="middle" x="67.5" y="11.25">{name}</text>
+    </SvgGroup>
+);
+
+const BatteryBus = ({ x, y, width }) => {
+    const [isPowered] = useSimVar('L:A32NX_ELEC_DC_BAT_BUS_IS_POWERED', 'Bool', 1000);
+
+    const [bat1IsAuto] = useSimVar('L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO', 'Bool');
+    const [bat2IsAuto] = useSimVar('L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO', 'Bool');
+    const atLeastOneBatteryIsAuto = bat1IsAuto || bat2IsAuto;
+
+    const potentialIsWithinNormalRange = useSimVar('L:A32NX_ELEC_DC_BAT_BUS_POTENTIAL_NORMAL', 'Bool');
+
+    const name = atLeastOneBatteryIsAuto ? 'DC BAT' : 'XX';
+    return (<Bus x={x} y={y} width={width} name={name} isNormal={isPowered && potentialIsWithinNormalRange && atLeastOneBatteryIsAuto} />);
+};
 
 ReactDOM.render(<SimVarProvider><ElecPage /></SimVarProvider>, getRenderTarget());

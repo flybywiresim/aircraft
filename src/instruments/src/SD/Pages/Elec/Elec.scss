@@ -1,10 +1,16 @@
-@import "../../Common/definitions";
+@import "../../../Common/definitions";
 
 #main-elec {
   .Box {
     stroke: #EEEEEE;
     fill: none;
     stroke-width: 2.5px;
+  }
+
+  rect {
+    &.Bus {
+      fill: #636363;
+    }
   }
 
   text {
