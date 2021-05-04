@@ -19,6 +19,7 @@ export const ElecPage = () => {
     const [ac2IsPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'Bool', maxStaleness);
     const [acEssIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'Bool', maxStaleness);
     const [acEssShedBusIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED', 'Bool', maxStaleness);
+    const [externalPowerAvailable] = useSimVar('EXTERNAL POWER AVAILABLE:1', 'Bool', maxStaleness);
 
     return (
         <EcamPage name="main-elec">
@@ -35,6 +36,7 @@ export const ElecPage = () => {
             <EngineGenerator number={1} x={13.125} y={345} />
             <EngineGenerator number={2} x={493.125} y={345} />
             <ApuGenerator x={168.75} y={367.5} />
+            { externalPowerAvailable ? <ExternalPower x={315} y={390} /> : null }
         </EcamPage>
     );
 };
@@ -187,6 +189,25 @@ const ApuGenerator = ({ x, y }) => {
                 </>
             ) : apuGenTitle}
 
+        </SvgGroup>
+    );
+};
+
+const ExternalPower = ({ x, y }) => {
+    const [potential] = useSimVar('L:A32NX_ELEC_EXT_PWR_POTENTIAL', 'Volts', maxStaleness);
+    const [potentialWithinNormalRange] = useSimVar('L:A32NX_ELEC_EXT_PWR_POTENTIAL_NORMAL', 'Bool', maxStaleness);
+
+    const [frequency] = useSimVar('L:A32NX_ELEC_EXT_PWR_FREQUENCY', 'Hertz', maxStaleness);
+    const [frequencyWithinNormalRange] = useSimVar('L:A32NX_ELEC_EXT_PWR_FREQUENCY_NORMAL', 'Bool', maxStaleness);
+
+    const allParametersWithinNormalRange = potentialWithinNormalRange && frequencyWithinNormalRange;
+
+    return (
+        <SvgGroup x={x} y={y}>
+            <Box width={93.75} height={67.5} />
+            <text className={`Middle ${!allParametersWithinNormalRange ? 'Amber' : ''}`} x={46.875} y={18.75}>EXT PWR</text>
+            <ElectricalProperty x={52.5} y={41.25} value={Math.round(potential)} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
+            <ElectricalProperty x={52.5} y={63.75} value={Math.round(frequency)} unit="HZ" isWithinNormalRange={frequencyWithinNormalRange} />
         </SvgGroup>
     );
 };
