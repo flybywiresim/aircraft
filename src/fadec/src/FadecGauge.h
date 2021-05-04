@@ -44,6 +44,10 @@ class FadecGauge {
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelControls, "FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::FuelControls, "FUEL TANK CENTER QUANTITY", "Gallons");
 
+      // SimConnect Engine Start Definitions
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::EngineStartControls, "TURB ENG CORRECTED N2:1", "Percent");
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::EngineStartControls, "TURB ENG CORRECTED N2:2", "Percent");
+
       std::cout << "FADEC: SimConnect registrations complete." << std::endl;
       return true;
     }
