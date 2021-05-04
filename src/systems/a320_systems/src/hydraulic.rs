@@ -371,8 +371,12 @@ impl A320Hydraulic {
             &self.engine_driven_pump_2_controller,
         );
 
-        self.blue_electric_pump_controller
-            .update(overhead_panel, self.blue_loop.is_pressurised());
+        self.blue_electric_pump_controller.update(
+            overhead_panel,
+            self.blue_loop.is_pressurised(),
+            engine1.corrected_n2(),
+            engine2.corrected_n2(),
+        );
         self.blue_electric_pump.update(
             context,
             &self.blue_loop,
@@ -496,8 +500,10 @@ struct A320EngineDrivenPumpController {
     engine_number: usize,
     engine_master_on_id: String,
     engine_master_on: bool,
+    weight_on_wheels: bool,
     should_pressurise: bool,
     has_pressure_low_fault: bool,
+    is_pressure_low: bool,
 }
 impl A320EngineDrivenPumpController {
     fn new(engine_number: usize) -> Self {
@@ -505,14 +511,27 @@ impl A320EngineDrivenPumpController {
             engine_number,
             engine_master_on_id: format!("GENERAL ENG STARTER ACTIVE:{}", engine_number),
             engine_master_on: false,
+            weight_on_wheels: true,
             should_pressurise: true,
             has_pressure_low_fault: false,
+            is_pressure_low: true,
         }
     }
 
-    fn update_low_pressure_fault(&mut self, engine_n2: Ratio, pressure_switch_state: bool) {
+    fn update_low_pressure_state(&mut self, engine_n2: Ratio, pressure_switch_state: bool) {
+        // Faking edp section pressure low level as if engine is slow we shouldn't have pressure
+        let faked_is_edp_section_low_pressure = engine_n2.get::<percent>() < 5.;
+
+        // Faking low engine oil pressure using N2 slow level. TODO Get real oil pressure (treshold is 18psi)
+        let faked_is_engine_low_oil_pressure = engine_n2.get::<percent>() < 25.;
+
+        // TODO when edp section pressure is modeled we can remove fake low press and use dedicated pressure switch
+        self.is_pressure_low = self.should_pressurise()
+            && (!pressure_switch_state || faked_is_edp_section_low_pressure);
+
+        // Fault inhibited if on ground AND engine oil pressure is low (11KS1 elec relay)
         self.has_pressure_low_fault =
-            self.should_pressurise() && (!pressure_switch_state || engine_n2.get::<percent>() < 5.)
+            self.is_pressure_low && (!faked_is_engine_low_oil_pressure || !self.weight_on_wheels);
     }
 
     fn update(
@@ -532,7 +551,7 @@ impl A320EngineDrivenPumpController {
             self.should_pressurise = false;
         }
 
-        self.update_low_pressure_fault(engine_n2, pressure_switch_state);
+        self.update_low_pressure_state(engine_n2, pressure_switch_state);
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -547,13 +566,14 @@ impl PumpController for A320EngineDrivenPumpController {
 impl SimulationElement for A320EngineDrivenPumpController {
     fn read(&mut self, state: &mut SimulatorReader) {
         self.engine_master_on = state.read_bool(&self.engine_master_on_id);
+        self.weight_on_wheels = state.read_bool("SIM ON GROUND");
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
         if self.engine_number == 1 {
-            writer.write_bool("HYD_GREEN_EDPUMP_LOW_PRESS", self.has_pressure_low_fault());
+            writer.write_bool("HYD_GREEN_EDPUMP_LOW_PRESS", self.is_pressure_low);
         } else if self.engine_number == 2 {
-            writer.write_bool("HYD_YELLOW_EDPUMP_LOW_PRESS", self.has_pressure_low_fault());
+            writer.write_bool("HYD_YELLOW_EDPUMP_LOW_PRESS", self.is_pressure_low);
         } else {
             panic!("The A320 only supports two engines.");
         }
@@ -563,20 +583,30 @@ impl SimulationElement for A320EngineDrivenPumpController {
 struct A320BlueElectricPumpController {
     should_pressurise: bool,
     has_pressure_low_fault: bool,
+    is_pressure_low: bool,
     engine_1_master_on: bool,
     engine_2_master_on: bool,
+    weight_on_wheels: bool,
 }
 impl A320BlueElectricPumpController {
     fn new() -> Self {
         Self {
             should_pressurise: false,
             has_pressure_low_fault: false,
+            is_pressure_low: true,
             engine_1_master_on: false,
             engine_2_master_on: false,
+            weight_on_wheels: true,
         }
     }
 
-    fn update(&mut self, overhead_panel: &A320HydraulicOverheadPanel, pressure_switch_state: bool) {
+    fn update(
+        &mut self,
+        overhead_panel: &A320HydraulicOverheadPanel,
+        pressure_switch_state: bool,
+        engine1_n2: Ratio,
+        engine2_n2: Ratio,
+    ) {
         if overhead_panel.blue_epump_push_button.is_auto() {
             if self.engine_1_master_on
                 || self.engine_2_master_on
@@ -590,11 +620,23 @@ impl A320BlueElectricPumpController {
             self.should_pressurise = false;
         }
 
-        self.update_low_pressure_fault(pressure_switch_state);
+        self.update_low_pressure_state(pressure_switch_state, engine1_n2, engine2_n2);
     }
 
-    fn update_low_pressure_fault(&mut self, pressure_switch_state: bool) {
-        self.has_pressure_low_fault = self.should_pressurise() && !pressure_switch_state
+    fn update_low_pressure_state(
+        &mut self,
+        pressure_switch_state: bool,
+        engine1_n2: Ratio,
+        engine2_n2: Ratio,
+    ) {
+        // Faking low engine oil pressure using N2 slow level. TODO Get real oil pressure
+        let faked_is_engine_low_oil_pressure =
+            engine1_n2.get::<percent>() < 25. && engine2_n2.get::<percent>() < 25.;
+
+        self.is_pressure_low = self.should_pressurise() && !pressure_switch_state;
+
+        self.has_pressure_low_fault =
+            self.is_pressure_low && (!faked_is_engine_low_oil_pressure || !self.weight_on_wheels);
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -612,10 +654,11 @@ impl SimulationElement for A320BlueElectricPumpController {
     fn read(&mut self, state: &mut SimulatorReader) {
         self.engine_1_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:1");
         self.engine_2_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:2");
+        self.weight_on_wheels = state.read_bool("SIM ON GROUND");
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool("HYD_BLUE_EPUMP_LOW_PRESS", self.has_pressure_low_fault());
+        writer.write_bool("HYD_BLUE_EPUMP_LOW_PRESS", self.is_pressure_low);
     }
 }
 
@@ -628,6 +671,7 @@ impl Default for A320BlueElectricPumpController {
 struct A320YellowElectricPumpController {
     should_pressurise: bool,
     has_pressure_low_fault: bool,
+    is_pressure_low: bool,
     should_activate_yellow_pump_for_cargo_door_operation: DelayedFalseLogicGate,
 }
 impl A320YellowElectricPumpController {
@@ -638,6 +682,7 @@ impl A320YellowElectricPumpController {
         Self {
             should_pressurise: false,
             has_pressure_low_fault: false,
+            is_pressure_low: true,
             should_activate_yellow_pump_for_cargo_door_operation: DelayedFalseLogicGate::new(
                 Self::DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION,
             ),
@@ -663,11 +708,13 @@ impl A320YellowElectricPumpController {
                 .should_activate_yellow_pump_for_cargo_door_operation
                 .output();
 
-        self.update_low_pressure_fault(pressure_switch_state);
+        self.update_low_pressure_state(pressure_switch_state);
     }
 
-    fn update_low_pressure_fault(&mut self, pressure_switch_state: bool) {
-        self.has_pressure_low_fault = self.should_pressurise() && !pressure_switch_state
+    fn update_low_pressure_state(&mut self, pressure_switch_state: bool) {
+        self.is_pressure_low = self.should_pressurise() && !pressure_switch_state;
+
+        self.has_pressure_low_fault = self.is_pressure_low;
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -687,7 +734,7 @@ impl PumpController for A320YellowElectricPumpController {
 }
 impl SimulationElement for A320YellowElectricPumpController {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool("HYD_YELLOW_EPUMP_LOW_PRESS", self.has_pressure_low_fault());
+        writer.write_bool("HYD_YELLOW_EPUMP_LOW_PRESS", self.is_pressure_low);
     }
 }
 impl Default for A320YellowElectricPumpController {
@@ -1348,22 +1395,32 @@ mod tests {
                 Volume::new::<gallon>(self.simulation_test_bed.read_f64("HYD_YELLOW_RESERVOIR"))
             }
 
-            fn is_green_edp_fault_low(&mut self) -> bool {
+            fn is_green_edp_press_low(&mut self) -> bool {
                 self.simulation_test_bed
                     .read_bool("HYD_GREEN_EDPUMP_LOW_PRESS")
             }
 
-            fn is_yellow_edp_fault_low(&mut self) -> bool {
+            fn is_green_edp_press_low_fault(&mut self) -> bool {
+                self.simulation_test_bed
+                    .read_bool("OVHD_HYD_ENG_1_PUMP_PB_HAS_FAULT")
+            }
+
+            fn is_yellow_edp_press_low_fault(&mut self) -> bool {
+                self.simulation_test_bed
+                    .read_bool("OVHD_HYD_ENG_2_PUMP_PB_HAS_FAULT")
+            }
+
+            fn is_yellow_edp_press_low(&mut self) -> bool {
                 self.simulation_test_bed
                     .read_bool("HYD_YELLOW_EDPUMP_LOW_PRESS")
             }
 
-            fn is_yellow_epump_fault_low(&mut self) -> bool {
+            fn is_yellow_epump_press_low(&mut self) -> bool {
                 self.simulation_test_bed
                     .read_bool("HYD_YELLOW_EPUMP_LOW_PRESS")
             }
 
-            fn is_blue_epump_fault_low(&mut self) -> bool {
+            fn is_blue_epump_press_low(&mut self) -> bool {
                 self.simulation_test_bed
                     .read_bool("HYD_BLUE_EPUMP_LOW_PRESS")
             }
@@ -1962,6 +2019,134 @@ mod tests {
         }
 
         #[test]
+        fn green_edp_no_fault_on_ground_eng_off() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // EDP should be commanded on even without engine running
+            assert!(test_bed.is_green_edp_commanded_on());
+            // EDP should have no fault
+            assert!(!test_bed.is_green_edp_press_low_fault());
+        }
+
+        #[test]
+        fn green_edp_fault_not_on_ground_eng_off() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .engines_off()
+                .run_one_tick();
+
+            // EDP should be commanded on even without engine running
+            assert!(test_bed.is_green_edp_commanded_on());
+
+            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_yellow_pressurised());
+            // EDP should have a fault as we are in flight
+            assert!(test_bed.is_green_edp_press_low_fault());
+        }
+
+        #[test]
+        fn green_edp_fault_on_ground_eng_starting() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // EDP should be commanded on even without engine running
+            assert!(test_bed.is_green_edp_commanded_on());
+            // EDP should have no fault
+            assert!(!test_bed.is_green_edp_press_low_fault());
+
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(3.))
+                .run_one_tick();
+
+            assert!(!test_bed.is_green_edp_press_low_fault());
+
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(50.))
+                .run_one_tick();
+
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.is_green_edp_press_low_fault());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
+
+            // When finally pressurised no fault
+            assert!(test_bed.is_green_pressurised());
+            assert!(!test_bed.is_green_edp_press_low_fault());
+        }
+
+        #[test]
+        fn yellow_edp_no_fault_on_ground_eng_off() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // EDP should be commanded on even without engine running
+            assert!(test_bed.is_yellow_edp_commanded_on());
+            // EDP should have no fault
+            assert!(!test_bed.is_yellow_edp_press_low_fault());
+        }
+
+        #[test]
+        fn yellow_edp_fault_not_on_ground_eng_off() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .engines_off()
+                .run_one_tick();
+
+            // EDP should be commanded on even without engine running
+            assert!(test_bed.is_yellow_edp_commanded_on());
+
+            assert!(!test_bed.is_green_pressurised());
+            assert!(!test_bed.is_yellow_pressurised());
+            // EDP should have a fault as we are in flight
+            assert!(test_bed.is_yellow_edp_press_low_fault());
+        }
+
+        #[test]
+        fn yellow_edp_fault_on_ground_eng_starting() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // EDP should be commanded on even without engine running
+            assert!(test_bed.is_yellow_edp_commanded_on());
+            // EDP should have no fault
+            assert!(!test_bed.is_yellow_edp_press_low_fault());
+
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(3.))
+                .run_one_tick();
+
+            assert!(!test_bed.is_yellow_edp_press_low_fault());
+
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(50.))
+                .run_one_tick();
+
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_edp_press_low_fault());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
+
+            // When finally pressurised no fault
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_yellow_edp_press_low_fault());
+        }
+
+        #[test]
         fn green_edp_press_low_engine_off_to_on() {
             let mut test_bed = test_bed_with()
                 .engines_off()
@@ -1973,7 +2158,7 @@ mod tests {
             assert!(test_bed.is_green_edp_commanded_on());
 
             // EDP should be LOW pressure state
-            assert!(test_bed.is_green_edp_fault_low());
+            assert!(test_bed.is_green_edp_press_low());
 
             // Starting eng 1 N2 is low at start
             test_bed = test_bed
@@ -1981,7 +2166,7 @@ mod tests {
                 .run_one_tick();
 
             // Engine commanded on but pressure couldn't rise enough: we are in fault low
-            assert!(test_bed.is_green_edp_fault_low());
+            assert!(test_bed.is_green_edp_press_low());
 
             // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed
@@ -1991,13 +2176,13 @@ mod tests {
             // No more fault LOW expected
             assert!(test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
-            assert!(!test_bed.is_green_edp_fault_low());
+            assert!(!test_bed.is_green_edp_press_low());
 
             // Stoping pump, no fault expected
             test_bed = test_bed
                 .set_green_ed_pump(false)
                 .run_waiting_for(Duration::from_secs(1));
-            assert!(!test_bed.is_green_edp_fault_low());
+            assert!(!test_bed.is_green_edp_press_low());
         }
 
         #[test]
@@ -2012,14 +2197,14 @@ mod tests {
             assert!(test_bed.is_green_edp_commanded_on());
             assert!(test_bed.is_green_pressurised());
             // EDP should not be in fault low when engine running and pressure is ok
-            assert!(!test_bed.is_green_edp_fault_low());
+            assert!(!test_bed.is_green_edp_press_low());
 
             // Stoping eng 1 with N2 still turning
             test_bed = test_bed.stopping_eng1().run_one_tick();
 
             // Edp should still be in pressurized mode but as engine just stopped no fault
             assert!(test_bed.is_green_edp_commanded_on());
-            assert!(!test_bed.is_green_edp_fault_low());
+            assert!(!test_bed.is_green_edp_press_low());
 
             // Waiting for 25s pressure should drop and still no fault
             test_bed = test_bed
@@ -2028,7 +2213,7 @@ mod tests {
 
             assert!(!test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(500.));
-            assert!(test_bed.is_green_edp_fault_low());
+            assert!(test_bed.is_green_edp_press_low());
         }
 
         #[test]
@@ -2043,14 +2228,14 @@ mod tests {
             assert!(test_bed.is_yellow_edp_commanded_on());
             assert!(test_bed.is_yellow_pressurised());
             // EDP should not be in fault low when engine running and pressure is ok
-            assert!(!test_bed.is_yellow_edp_fault_low());
+            assert!(!test_bed.is_yellow_edp_press_low());
 
             // Stoping eng 2 with N2 still turning
             test_bed = test_bed.stopping_eng2().run_one_tick();
 
             // Edp should still be in pressurized mode but as engine just stopped no fault
             assert!(test_bed.is_yellow_edp_commanded_on());
-            assert!(!test_bed.is_yellow_edp_fault_low());
+            assert!(!test_bed.is_yellow_edp_press_low());
 
             // Waiting for 25s pressure should drop and still no fault
             test_bed = test_bed
@@ -2059,7 +2244,7 @@ mod tests {
 
             assert!(!test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(500.));
-            assert!(test_bed.is_yellow_edp_fault_low());
+            assert!(test_bed.is_yellow_edp_press_low());
         }
 
         #[test]
@@ -2074,7 +2259,7 @@ mod tests {
             assert!(test_bed.is_yellow_edp_commanded_on());
 
             // EDP should be LOW pressure state
-            assert!(test_bed.is_yellow_edp_fault_low());
+            assert!(test_bed.is_yellow_edp_press_low());
 
             // Starting eng 2 N2 is low at start
             test_bed = test_bed
@@ -2082,7 +2267,7 @@ mod tests {
                 .run_one_tick();
 
             // Engine commanded on but pressure couldn't rise enough: we are in fault low
-            assert!(test_bed.is_yellow_edp_fault_low());
+            assert!(test_bed.is_yellow_edp_press_low());
 
             // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed
@@ -2092,13 +2277,13 @@ mod tests {
             // No more fault LOW expected
             assert!(test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
-            assert!(!test_bed.is_yellow_edp_fault_low());
+            assert!(!test_bed.is_yellow_edp_press_low());
 
             // Stoping pump, no fault expected
             test_bed = test_bed
                 .set_yellow_ed_pump(false)
                 .run_waiting_for(Duration::from_secs(1));
-            assert!(!test_bed.is_yellow_edp_fault_low());
+            assert!(!test_bed.is_yellow_edp_press_low());
         }
 
         #[test]
@@ -2115,7 +2300,7 @@ mod tests {
             assert!(test_bed.is_yellow_edp_commanded_on());
 
             // EDP should be LOW pressure state
-            assert!(test_bed.is_yellow_edp_fault_low());
+            assert!(test_bed.is_yellow_edp_press_low());
 
             // Waiting for 20s pressure should be at 3000 psi
             test_bed = test_bed.run_waiting_for(Duration::from_secs(20));
@@ -2123,7 +2308,7 @@ mod tests {
             // Yellow pressurised but edp still off, we expect fault LOW press
             assert!(test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
-            assert!(test_bed.is_yellow_edp_fault_low());
+            assert!(test_bed.is_yellow_edp_press_low());
 
             // Starting eng 2 N2 is low at start
             test_bed = test_bed
@@ -2131,7 +2316,7 @@ mod tests {
                 .run_one_tick();
 
             // Engine commanded on but pressure couldn't rise enough: we are in fault low
-            assert!(test_bed.is_yellow_edp_fault_low());
+            assert!(test_bed.is_yellow_edp_press_low());
 
             // Waiting for 5s pressure should be at 3000 psi in EDP section
             test_bed = test_bed
@@ -2141,7 +2326,7 @@ mod tests {
             // No more fault LOW expected
             assert!(test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
-            assert!(!test_bed.is_yellow_edp_fault_low());
+            assert!(!test_bed.is_yellow_edp_press_low());
         }
 
         #[test]
@@ -2154,7 +2339,7 @@ mod tests {
                 .run_one_tick();
 
             // EDP should be LOW pressure state
-            assert!(test_bed.is_green_edp_fault_low());
+            assert!(test_bed.is_green_edp_press_low());
 
             // Waiting for 20s pressure should be at 2300+ psi thanks to ptu
             test_bed = test_bed.run_waiting_for(Duration::from_secs(20));
@@ -2164,7 +2349,7 @@ mod tests {
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2800.));
             assert!(test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2300.));
-            assert!(test_bed.is_green_edp_fault_low());
+            assert!(test_bed.is_green_edp_press_low());
 
             // Starting eng 1 N2 is low at start
             test_bed = test_bed
@@ -2172,7 +2357,7 @@ mod tests {
                 .run_one_tick();
 
             // Engine commanded on but pressure couldn't rise enough: we are in fault low
-            assert!(test_bed.is_green_edp_fault_low());
+            assert!(test_bed.is_green_edp_press_low());
 
             // Waiting for 5s pressure should be at 3000 psi in EDP section
             test_bed = test_bed
@@ -2182,11 +2367,11 @@ mod tests {
             // No more fault LOW expected
             assert!(test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
-            assert!(!test_bed.is_green_edp_fault_low());
+            assert!(!test_bed.is_green_edp_press_low());
         }
 
         #[test]
-        fn yellow_epump_fault_low_at_pump_on() {
+        fn yellow_epump_press_low_at_pump_on() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -2194,13 +2379,13 @@ mod tests {
                 .run_one_tick();
 
             // EDP should not be in fault low when cold start
-            assert!(!test_bed.is_yellow_epump_fault_low());
+            assert!(!test_bed.is_yellow_epump_press_low());
 
             // Starting epump
             test_bed = test_bed.set_yellow_e_pump(false).run_one_tick();
 
             // Pump commanded on but pressure couldn't rise enough: we are in fault low
-            assert!(test_bed.is_yellow_epump_fault_low());
+            assert!(test_bed.is_yellow_epump_press_low());
 
             // Waiting for 20s pressure should be at 3000 psi
             test_bed = test_bed.run_waiting_for(Duration::from_secs(20));
@@ -2208,17 +2393,17 @@ mod tests {
             // No more fault LOW expected
             assert!(test_bed.is_yellow_pressurised());
             assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2500.));
-            assert!(!test_bed.is_yellow_epump_fault_low());
+            assert!(!test_bed.is_yellow_epump_press_low());
 
             // Stoping epump, no fault expected
             test_bed = test_bed
                 .set_yellow_e_pump(true)
                 .run_waiting_for(Duration::from_secs(1));
-            assert!(!test_bed.is_yellow_epump_fault_low());
+            assert!(!test_bed.is_yellow_epump_press_low());
         }
 
         #[test]
-        fn blue_epump_fault_low_at_pump_on() {
+        fn blue_epump_press_low_at_pump_on() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -2226,13 +2411,13 @@ mod tests {
                 .run_one_tick();
 
             // EDP should not be in fault low when cold start
-            assert!(!test_bed.is_blue_epump_fault_low());
+            assert!(!test_bed.is_blue_epump_press_low());
 
             // Starting epump
             test_bed = test_bed.set_blue_e_pump_ovrd(true).run_one_tick();
 
             // Pump commanded on but pressure couldn't rise enough: we are in fault low
-            assert!(test_bed.is_blue_epump_fault_low());
+            assert!(test_bed.is_blue_epump_press_low());
 
             // Waiting for 10s pressure should be at 3000 psi
             test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
@@ -2240,13 +2425,13 @@ mod tests {
             // No more fault LOW expected
             assert!(test_bed.is_blue_pressurised());
             assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2900.));
-            assert!(!test_bed.is_blue_epump_fault_low());
+            assert!(!test_bed.is_blue_epump_press_low());
 
             // Stoping epump, no fault expected
             test_bed = test_bed
                 .set_blue_e_pump_ovrd(false)
                 .run_waiting_for(Duration::from_secs(1));
-            assert!(!test_bed.is_blue_epump_fault_low());
+            assert!(!test_bed.is_blue_epump_press_low());
         }
 
         #[test]
@@ -3031,27 +3216,31 @@ mod tests {
 
         #[test]
         fn controller_blue_epump_split_master_switch() {
+            let engine_on_n2 = Ratio::new::<percent>(50.);
+            let engine_off_n2 = Ratio::new::<percent>(1.);
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             overhead_panel.blue_epump_override_push_button.push_off();
 
             let mut blue_epump_controller = A320BlueElectricPumpController::new();
 
-            blue_epump_controller.update(&overhead_panel, true);
+            blue_epump_controller.update(&overhead_panel, true, engine_off_n2, engine_off_n2);
             assert!(!blue_epump_controller.should_pressurise());
 
             blue_epump_controller.engine_1_master_on = true;
             blue_epump_controller.engine_2_master_on = false;
-            blue_epump_controller.update(&overhead_panel, true);
+            blue_epump_controller.update(&overhead_panel, true, engine_on_n2, engine_off_n2);
             assert!(blue_epump_controller.should_pressurise());
 
             blue_epump_controller.engine_1_master_on = false;
             blue_epump_controller.engine_2_master_on = true;
-            blue_epump_controller.update(&overhead_panel, true);
+            blue_epump_controller.update(&overhead_panel, true, engine_off_n2, engine_on_n2);
             assert!(blue_epump_controller.should_pressurise());
         }
 
         #[test]
         fn controller_blue_epump_on_off_master_switch() {
+            let engine_on_n2 = Ratio::new::<percent>(50.);
+            let engine_off_n2 = Ratio::new::<percent>(1.);
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             overhead_panel.blue_epump_override_push_button.push_off();
 
@@ -3059,30 +3248,31 @@ mod tests {
 
             blue_epump_controller.engine_1_master_on = true;
             blue_epump_controller.engine_2_master_on = true;
-            blue_epump_controller.update(&overhead_panel, true);
+            blue_epump_controller.update(&overhead_panel, true, engine_on_n2, engine_on_n2);
             assert!(blue_epump_controller.should_pressurise());
 
             blue_epump_controller.engine_1_master_on = false;
             blue_epump_controller.engine_2_master_on = false;
-            blue_epump_controller.update(&overhead_panel, false);
+            blue_epump_controller.update(&overhead_panel, false, engine_off_n2, engine_off_n2);
             assert!(!blue_epump_controller.should_pressurise());
         }
 
         #[test]
         fn controller_blue_epump_override() {
+            let engine_off_n2 = Ratio::new::<percent>(1.);
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             let mut blue_epump_controller = A320BlueElectricPumpController::new();
 
             blue_epump_controller.engine_1_master_on = false;
             blue_epump_controller.engine_2_master_on = false;
             overhead_panel.blue_epump_override_push_button.push_on();
-            blue_epump_controller.update(&overhead_panel, true);
+            blue_epump_controller.update(&overhead_panel, true, engine_off_n2, engine_off_n2);
             assert!(blue_epump_controller.should_pressurise());
 
             blue_epump_controller.engine_1_master_on = false;
             blue_epump_controller.engine_2_master_on = false;
             overhead_panel.blue_epump_override_push_button.push_off();
-            blue_epump_controller.update(&overhead_panel, false);
+            blue_epump_controller.update(&overhead_panel, false, engine_off_n2, engine_off_n2);
             assert!(!blue_epump_controller.should_pressurise());
         }
 
