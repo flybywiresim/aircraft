@@ -230,20 +230,20 @@
                 </True>
             </Condition>
         </Component>
-      <Component ID="#NODE_ID_DECEL#" Node="#NODE_ID_DECEL#">
-		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-			<EMISSIVE_CODE>
-				(L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (A:AUTOBRAKES ACTIVE, Bool) (A:REJECTED TAKEOFF BRAKES ACTIVE, Bool) or and
-			</EMISSIVE_CODE>
-		</UseTemplate>
-	</Component>
-	<Component ID="#NODE_ID_ON#" Node="#NODE_ID_ON#">
-		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-			<EMISSIVE_CODE>
-				(L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# ==
-			</EMISSIVE_CODE>
-		</UseTemplate>
-	</Component>
+        <Component ID="#NODE_ID_DECEL#" Node="#NODE_ID_DECEL#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE>
+                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (A:AUTOBRAKES ACTIVE, Bool) (A:REJECTED TAKEOFF BRAKES ACTIVE, Bool) or and (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+        <Component ID="#NODE_ID_ON#" Node="#NODE_ID_ON#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE>
+                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
     </Template>
 
     <!--
