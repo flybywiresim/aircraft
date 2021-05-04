@@ -620,11 +620,17 @@ impl A320BlueElectricPumpController {
             self.should_pressurise = false;
         }
 
-        self.update_low_pressure_state(pressure_switch_state, engine1_n2, engine2_n2);
+        self.update_low_pressure_state(
+            overhead_panel,
+            pressure_switch_state,
+            engine1_n2,
+            engine2_n2,
+        );
     }
 
     fn update_low_pressure_state(
         &mut self,
+        overhead_panel: &A320HydraulicOverheadPanel,
         pressure_switch_state: bool,
         engine1_n2: Ratio,
         engine2_n2: Ratio,
@@ -635,8 +641,9 @@ impl A320BlueElectricPumpController {
 
         self.is_pressure_low = self.should_pressurise() && !pressure_switch_state;
 
-        self.has_pressure_low_fault =
-            self.is_pressure_low && (!faked_is_engine_low_oil_pressure || !self.weight_on_wheels);
+        self.has_pressure_low_fault = self.is_pressure_low
+            && ((!faked_is_engine_low_oil_pressure || !self.weight_on_wheels)
+                || overhead_panel.blue_epump_override_push_button_is_on());
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -1425,6 +1432,11 @@ mod tests {
                     .read_bool("HYD_BLUE_EPUMP_LOW_PRESS")
             }
 
+            fn is_blue_epump_press_low_fault(&mut self) -> bool {
+                self.simulation_test_bed
+                    .read_bool("OVHD_HYD_EPUMPB_PB_HAS_FAULT")
+            }
+
             fn get_brake_left_yellow_pressure(&mut self) -> Pressure {
                 Pressure::new::<psi>(
                     self.simulation_test_bed
@@ -2144,6 +2156,60 @@ mod tests {
             // When finally pressurised no fault
             assert!(test_bed.is_yellow_pressurised());
             assert!(!test_bed.is_yellow_edp_press_low_fault());
+        }
+
+        #[test]
+        fn blue_epump_no_fault_on_ground_eng_starting() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Blue epump should have no fault
+            assert!(!test_bed.is_blue_epump_press_low_fault());
+
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(3.))
+                .run_one_tick();
+
+            assert!(!test_bed.is_blue_epump_press_low_fault());
+
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(50.))
+                .run_one_tick();
+
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_epump_press_low_fault());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
+
+            // When finally pressurised no fault
+            assert!(test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_epump_press_low_fault());
+        }
+
+        #[test]
+        fn blue_epump_fault_on_ground_using_override() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Blue epump should have no fault
+            assert!(!test_bed.is_blue_epump_press_low_fault());
+
+            test_bed = test_bed.set_blue_e_pump_ovrd(true).run_one_tick();
+
+            // As we use override, this bypasses eng off fault inhibit so we have a fault
+            assert!(test_bed.is_blue_epump_press_low_fault());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
+
+            // When finally pressurised no fault
+            assert!(test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_epump_press_low_fault());
         }
 
         #[test]
