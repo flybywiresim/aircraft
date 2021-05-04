@@ -5,7 +5,7 @@ use uom::si::{
 
 use systems::hydraulic::{
     ElectricPump, EngineDrivenPump, HydFluid, HydraulicLoop, HydraulicLoopController,
-    PowerTransferUnit, PowerTransferUnitController, PumpController, RamAirTurbine,
+    PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController, RamAirTurbine,
     RamAirTurbineController,
 };
 use systems::overhead::{
@@ -29,9 +29,11 @@ pub(super) struct A320Hydraulic {
     yellow_loop: HydraulicLoop,
     yellow_loop_controller: A320HydraulicLoopController,
 
+    engine_driven_pump_1_pressure_switch: PressureSwitch,
     engine_driven_pump_1: EngineDrivenPump,
     engine_driven_pump_1_controller: A320EngineDrivenPumpController,
 
+    engine_driven_pump_2_pressure_switch: PressureSwitch,
     engine_driven_pump_2: EngineDrivenPump,
     engine_driven_pump_2_controller: A320EngineDrivenPumpController,
 
@@ -57,10 +59,10 @@ pub(super) struct A320Hydraulic {
     lag_time_accumulator: Duration,
 }
 impl A320Hydraulic {
-    const MIN_PRESS_BLUE_PRESSURISED_LO_HYST: f64 = 1450.0;
-    const MIN_PRESS_BLUE_PRESSURISED_HI_HYST: f64 = 1750.0;
-    const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1740.0;
-    const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 2200.0;
+    const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 1740.0;
+    const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2200.0;
+    const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
+    const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 1750.0;
 
     const HYDRAULIC_SIM_TIME_STEP: u64 = 100; // Refresh rate of hydraulic simulation in ms
     const ACTUATORS_SIM_TIME_STEP_MULT: u32 = 2; // Refresh rate of actuators as multiplier of hydraulics. 2 means double frequency update
@@ -79,8 +81,8 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(1.56),
                 HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
                 false,
-                Pressure::new::<psi>(Self::MIN_PRESS_BLUE_PRESSURISED_LO_HYST),
-                Pressure::new::<psi>(Self::MIN_PRESS_BLUE_PRESSURISED_HI_HYST),
+                Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
+                Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             ),
             blue_loop_controller: A320HydraulicLoopController::new(None),
             green_loop: HydraulicLoop::new(
@@ -112,9 +114,17 @@ impl A320Hydraulic {
             ),
             yellow_loop_controller: A320HydraulicLoopController::new(Some(2)),
 
+            engine_driven_pump_1_pressure_switch: PressureSwitch::new(
+                Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
+                Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
+            ),
             engine_driven_pump_1: EngineDrivenPump::new("GREEN"),
             engine_driven_pump_1_controller: A320EngineDrivenPumpController::new(1),
 
+            engine_driven_pump_2_pressure_switch: PressureSwitch::new(
+                Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
+                Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
+            ),
             engine_driven_pump_2: EngineDrivenPump::new("YELLOW"),
             engine_driven_pump_2_controller: A320EngineDrivenPumpController::new(2),
 
@@ -343,11 +353,13 @@ impl A320Hydraulic {
             &self.power_transfer_unit_controller,
         );
 
+        self.engine_driven_pump_1_pressure_switch
+            .update(self.green_loop.get_pressure());
         self.engine_driven_pump_1_controller.update(
             overhead_panel,
             engine_fire_overhead,
             engine1.corrected_n2(),
-            self.green_loop.is_pressurised(),
+            self.engine_driven_pump_1_pressure_switch.is_pressurised(),
         );
 
         self.engine_driven_pump_1.update(
@@ -357,11 +369,13 @@ impl A320Hydraulic {
             &self.engine_driven_pump_1_controller,
         );
 
+        self.engine_driven_pump_2_pressure_switch
+            .update(self.yellow_loop.get_pressure());
         self.engine_driven_pump_2_controller.update(
             overhead_panel,
             engine_fire_overhead,
             engine2.corrected_n2(),
-            self.yellow_loop.is_pressurised(),
+            self.engine_driven_pump_2_pressure_switch.is_pressurised(),
         );
 
         self.engine_driven_pump_2.update(

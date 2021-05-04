@@ -753,8 +753,8 @@ pub struct ElectricPump {
     pump: Pump,
 }
 impl ElectricPump {
-    const SPOOLUP_TIME: f64 = 4.0;
-    const SPOOLDOWN_TIME: f64 = 4.0;
+    const SPOOLUP_TIME: f64 = 1.;
+    const SPOOLDOWN_TIME: f64 = 3.0;
     const NOMINAL_SPEED: f64 = 7600.0;
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3050.0, 3500.0,
