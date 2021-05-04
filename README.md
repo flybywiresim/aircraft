@@ -25,6 +25,8 @@ Please note that this configuration may change in the future as the A32NX projec
 ### SimBrief Integration
 ✈[SimBrief A20N Airframe with the correct weights](https://www.simbrief.com/system/dispatch.php?sharefleet=eyJ0cyI6IjE2MjAxMTk4NTU0ODEiLCJiYXNldHlwZSI6IkEyME4iLCJjb21tZW50cyI6IkZCVyBBMzJOWCIsImljYW8iOiJBMjBOIiwibmFtZSI6IkEzMjBORU8gRkJXIiwiZW5naW5lcyI6IkxFQVAtMUEyNiIsInJlZyI6IkEyME4iLCJmaW4iOiIiLCJzZWxjYWwiOiIiLCJoZXhjb2RlIjoiIiwiY2F0IjoiTSIsInBlciI6IkMiLCJlcXVpcCI6IlNERTJFM0ZHSElKMVJXWFkiLCJ0cmFuc3BvbmRlciI6IkxCMSIsInBibiI6IkExQjFDMUQxTzFTMiIsImV4dHJhcm1rIjoiIiwibWF4cGF4IjoiMTgwIiwid2d0dW5pdHMiOiJLR1MiLCJvZXciOiI0MTAwNSIsIm16ZnciOiI2NDMwMCIsIm10b3ciOiI3OTQwMCIsIm1sdyI6IjY3NDAwIiwibWF4ZnVlbCI6IjE5MDQ1IiwicGF4d2d0IjoiMTA0IiwiZGVmYXVsdGNpIjoiIiwiZnVlbGZhY3RvciI6IlAwMCIsImNydWlzZW9mZnNldCI6IlAwMDAwIn0-) Credits: [@viniciusfont](https://github.com/viniciusfont)
 
+In the above profile change the aircrafts registration to your liking and save it to your fleet. Happy Landings!
+
 Pilot ID can be found in the Optional Entries section of the Dispatch Options page.
 
 ## Downloads
