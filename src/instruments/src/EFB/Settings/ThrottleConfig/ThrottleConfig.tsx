@@ -147,7 +147,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                     </div>
                 </div>
 
-                { parseInt(isDualAxis) === 1 && (
+                {parseInt(isDualAxis) === 1 && (
                     <div className="flex flex-row justify-center rounded-xl">
                         <div className="ml-4" />
 
@@ -176,7 +176,7 @@ const ThrottleConfig: React.FC<Props> = (props: Props) => {
                     </div>
                 )}
 
-                { parseInt(isDualAxis) === 0
+                {parseInt(isDualAxis) === 0
                     && (
                         <div className="flex flex-row ml-4 justify-center rounded-xl">
                             <BaseThrottleConfig

@@ -137,7 +137,7 @@ const FlightWidget = (props: FlightWidgetProps) => {
                         </button>
                         <button
                             type="button"
-                            className="ml-1 w-1/2 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none"
+                            className="ml-1 w-1/2 text-white bg-green-500 p-2 flex items-center justify-center rounded-lg focus:outline-none opacity-50"
                         >
                             <IconLink className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                             {' '}
