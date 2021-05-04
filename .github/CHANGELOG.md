@@ -6,6 +6,8 @@
 
 ## 0.7.0
 1. [HYD] First hydraulics systems integration - @crocket63 (crocket)
+1. [ENGINE] Fixed fuel consumption model - @Taz5150 (TazX [Z+2]#0405)
+1. [ENGINE] Fixed fuel flow being 0 at Start-up  - @Taz5150 (TazX [Z+2]#0405)
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
 1. [MCDU] Progress page only shows GPS Primary when it should - @Username23-23 (NONAmr2433 #8777)
 1. [ND] Add VOR/ADF needles to ILS arc display - @tracernz (Mike)
