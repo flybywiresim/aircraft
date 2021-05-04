@@ -7,6 +7,22 @@
     stroke-width: 2.5px;
   }
 
+  .Arrow {
+      stroke-width: 2.25px;
+  }
+
+  path {
+    stroke: #EEEEEE;
+
+    &.Green {
+      stroke: $display-green;
+    }
+
+    &.Amber {
+      stroke: $display-amber;
+    }
+  }
+
   rect.Bus {
       fill: #636363;
   }

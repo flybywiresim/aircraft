@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { PageTitle } from '../../Common/PageTitle';
@@ -55,13 +56,15 @@ export const Battery = ({ number, x, y }) => {
     const simVarNumber = 9 + number;
     const [isAuto] = useSimVar(`L:A32NX_OVHD_ELEC_BAT_${simVarNumber}_PB_IS_AUTO`, 'Bool', maxStaleness);
 
-    const [potential] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_POTENTIAL`, 'Volts');
-    const [potentialWithinNormalRange] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_POTENTIAL_NORMAL`, 'Bool');
+    const [potential] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_POTENTIAL`, 'Volts', maxStaleness);
+    const [potentialWithinNormalRange] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_POTENTIAL_NORMAL`, 'Bool', maxStaleness);
 
-    const [current] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_CURRENT`, 'Ampere');
-    const [currentWithinNormalRange] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_CURRENT_NORMAL`, 'Bool');
+    const [current] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_CURRENT`, 'Ampere', maxStaleness);
+    const [currentWithinNormalRange] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_CURRENT_NORMAL`, 'Bool', maxStaleness);
 
     const allParametersWithinNormalRange = potentialWithinNormalRange && currentWithinNormalRange;
+
+    const [staticInverterInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_15XE2_IS_CLOSED', 'Bool', maxStaleness);
 
     return (
         <SvgGroup x={x} y={y}>
@@ -75,6 +78,12 @@ export const Battery = ({ number, x, y }) => {
                         <ElectricalProperty x={52.5} y={65.625} value={Math.abs(current)} unit="A" isWithinNormalRange={currentWithinNormalRange} />
                     </>
                 ) : (<text className="Middle" dominantBaseline="middle" x={43.125} y={41.25}>OFF</text>) }
+            { number === 1 && staticInverterInUse ? (
+                <>
+                    <Arrow direction="right" x={92.57625} y={1.875} />
+                    <text className="Medium" x={108.75} y={15}>STAT INV</text>
+                </>
+            ) : null }
         </SvgGroup>
     );
 };
@@ -329,5 +338,23 @@ const GalleyShed = ({ x, y }) => (
         <text className="Middle" y={18.75}>SHED</text>
     </SvgGroup>
 );
+
+interface ArrowProps {
+    direction: 'up' | 'right',
+    green?: boolean,
+    amber?: boolean,
+    x: number,
+    y: number,
+}
+const Arrow = ({ direction, green, amber, x, y }: ArrowProps) => {
+    const classes = classNames('Arrow', { Green: green }, { Amber: amber });
+    switch (direction) {
+    default:
+    case 'up':
+        return <path className={classes} d={`M${x} ${y}h13.737375l-6.8685-8.99325z`} />;
+    case 'right':
+        return <path className={classes} d={`M${x} ${y}v13.737375l8.99325-6.8685z`} />;
+    }
+};
 
 ReactDOM.render(<SimVarProvider><ElecPage /></SimVarProvider>, getRenderTarget());
