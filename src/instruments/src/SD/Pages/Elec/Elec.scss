@@ -16,15 +16,19 @@
     font-family: 'Roboto Mono', monospace;
     font-size: 19px;
 
-    &.Bigger {
+    &.ExtraLarge {
       font-size: 26px;
     }
 
-    &.Big {
+    &.Large {
       font-size: 22px;
     }
 
-    &.Tiny {
+    &.Small {
+      font-size: 16.875px;
+    }
+
+    &.ExtraSmall {
       font-size: 15px;
     }
 

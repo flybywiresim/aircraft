@@ -20,6 +20,7 @@ export const ElecPage = () => {
     const [acEssIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'Bool', maxStaleness);
     const [acEssShedBusIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED', 'Bool', maxStaleness);
     const [externalPowerAvailable] = useSimVar('EXTERNAL POWER AVAILABLE:1', 'Bool', maxStaleness);
+    const [staticInverterInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_15XE2_IS_CLOSED', 'Bool', maxStaleness);
 
     return (
         <EcamPage name="main-elec">
@@ -36,7 +37,8 @@ export const ElecPage = () => {
             <EngineGenerator number={1} x={13.125} y={345} />
             <EngineGenerator number={2} x={493.125} y={345} />
             <ApuGenerator x={168.75} y={367.5} />
-            { externalPowerAvailable ? <ExternalPower x={315} y={390} /> : null }
+            { staticInverterInUse ? <StaticInverter x={315} y={390} /> : null }
+            { !staticInverterInUse && externalPowerAvailable ? <ExternalPower x={315} y={390} /> : null }
         </EcamPage>
     );
 };
@@ -57,7 +59,7 @@ export const Battery = ({ number, x, y }) => {
         <SvgGroup x={x} y={y}>
             <Box width={86.25} height={71.25} />
             <text className={`Right ${!allParametersWithinNormalRange && isAuto ? 'Amber' : ''}`} x={52.5} y={21.625}>BAT</text>
-            <text className={`Big ${!allParametersWithinNormalRange && isAuto ? 'Amber' : ''}`} x={56.25} y={21.625}>{number}</text>
+            <text className={`Large ${!allParametersWithinNormalRange && isAuto ? 'Amber' : ''}`} x={56.25} y={21.625}>{number}</text>
             { isAuto
                 ? (
                     <>
@@ -102,9 +104,9 @@ const Bus = ({ x, y, width, name, number, isNormal, isShed } : BusProps) => {
     return (
         <SvgGroup x={x} y={y}>
             <rect className="Bus" width={width} height={busHeight} />
-            <text className={`Big ${number ? 'Right' : 'Middle'} ${isNormal ? 'Green' : 'Amber'}`} dominantBaseline="middle" x={width / 2} y="10.5">{name}</text>
-            {number ? <text className={`Bigger ${isNormal ? 'Green' : 'Amber'}`} x={(width / 2) + 3.75} y="22">{number}</text> : null}
-            {isShed ? <text className="Middle Tiny Amber" dominantBaseline="middle" x={(width / 2)} y={busHeight + 8.25}>SHED</text> : null}
+            <text className={`Large ${number ? 'Right' : 'Middle'} ${isNormal ? 'Green' : 'Amber'}`} dominantBaseline="middle" x={width / 2} y="10.5">{name}</text>
+            {number ? <text className={`ExtraLarge ${isNormal ? 'Green' : 'Amber'}`} x={(width / 2) + 3.75} y="22">{number}</text> : null}
+            {isShed ? <text className="Middle ExtraSmall Amber" dominantBaseline="middle" x={(width / 2)} y={busHeight + 8.25}>SHED</text> : null}
         </SvgGroup>
     );
 };
@@ -140,7 +142,7 @@ const EngineGenerator = ({ number, x, y }) => {
             <Box width={86.25} height={93.75} />
 
             <text className={`Right ${!isOn || !allParametersWithinNormalRange ? 'Amber' : ''}`} x={54.375} y={22.5}>GEN</text>
-            <text className={`Big ${!isOn || !allParametersWithinNormalRange ? 'Amber' : ''}`} x={54.375 + 3.75} y={22.5}>{number}</text>
+            <text className={`Large ${!isOn || !allParametersWithinNormalRange ? 'Amber' : ''}`} x={54.375 + 3.75} y={22.5}>{number}</text>
             { isOn
                 ? (
                     <>
@@ -176,7 +178,7 @@ const ApuGenerator = ({ x, y }) => {
             { masterSwPbOn ? (
                 <>
                     <Box width={93.75} height={90} />
-                    <rect id="APUGEN_BOX" className="box" x="45" y="98" width="25" height="24" />
+                    <rect className="box" x="45" y="98" width="25" height="24" />
                     {apuGenTitle}
                     { genSwitchOn ? (
                         <>
@@ -200,12 +202,46 @@ const ExternalPower = ({ x, y }) => {
     const [frequency] = useSimVar('L:A32NX_ELEC_EXT_PWR_FREQUENCY', 'Hertz', maxStaleness);
     const [frequencyWithinNormalRange] = useSimVar('L:A32NX_ELEC_EXT_PWR_FREQUENCY_NORMAL', 'Bool', maxStaleness);
 
+    return (
+        <PotentialFrequencyBox
+            x={x}
+            y={y}
+            text="EXT PWR"
+            potential={potential}
+            potentialWithinNormalRange={potentialWithinNormalRange}
+            frequency={frequency}
+            frequencyWithinNormalRange={frequencyWithinNormalRange}
+        />
+    );
+};
+
+const StaticInverter = ({ x, y }) => {
+    const [potential] = useSimVar('L:A32NX_ELEC_STAT_INV_POTENTIAL', 'Volts', maxStaleness);
+    const [potentialWithinNormalRange] = useSimVar('L:A32NX_ELEC_STAT_INV_POTENTIAL_NORMAL', 'Bool', maxStaleness);
+
+    const [frequency] = useSimVar('L:A32NX_ELEC_STAT_INV_FREQUENCY', 'Hertz', maxStaleness);
+    const [frequencyWithinNormalRange] = useSimVar('L:A32NX_ELEC_STAT_INV_FREQUENCY_NORMAL', 'Bool', maxStaleness);
+
+    return (
+        <PotentialFrequencyBox
+            x={x}
+            y={y}
+            text="STAT INV"
+            potential={potential}
+            potentialWithinNormalRange={potentialWithinNormalRange}
+            frequency={frequency}
+            frequencyWithinNormalRange={frequencyWithinNormalRange}
+        />
+    );
+};
+
+const PotentialFrequencyBox = ({ x, y, text, potential, potentialWithinNormalRange, frequency, frequencyWithinNormalRange }) => {
     const allParametersWithinNormalRange = potentialWithinNormalRange && frequencyWithinNormalRange;
 
     return (
         <SvgGroup x={x} y={y}>
             <Box width={93.75} height={67.5} />
-            <text className={`Middle ${!allParametersWithinNormalRange ? 'Amber' : ''}`} x={46.875} y={18.75}>EXT PWR</text>
+            <text className={`Middle ${text.length > 7 ? 'Small' : ''} ${!allParametersWithinNormalRange ? 'Amber' : ''}`} x={46.875} y={18.75}>{text}</text>
             <ElectricalProperty x={52.5} y={41.25} value={Math.round(potential)} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
             <ElectricalProperty x={52.5} y={63.75} value={Math.round(frequency)} unit="HZ" isWithinNormalRange={frequencyWithinNormalRange} />
         </SvgGroup>
