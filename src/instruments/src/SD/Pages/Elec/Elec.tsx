@@ -34,6 +34,7 @@ export const ElecPage = () => {
             <Bus name="AC ESS" isNormal={acEssIsPowered} isShed={!acEssShedBusIsPowered} x={232.5} y={266.25} width={135} />
             <EngineGenerator number={1} x={13.125} y={345} />
             <EngineGenerator number={2} x={493.125} y={345} />
+            <ApuGenerator x={168.75} y={367.5} />
         </EcamPage>
     );
 };
@@ -147,6 +148,45 @@ const EngineGenerator = ({ number, x, y }) => {
                     </>
                 )
                 : <text className="Middle" dominantBaseline="middle" x={43.125} y={54.375}>OFF</text>}
+        </SvgGroup>
+    );
+};
+
+const ApuGenerator = ({ x, y }) => {
+    const [masterSwPbOn] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'Bool', maxStaleness);
+    const [genSwitchOn] = useSimVar('APU GENERATOR SWITCH:1', 'Bool', maxStaleness);
+
+    const [load] = useSimVar('L:A32NX_ELEC_APU_GEN_1_LOAD', 'Percent', maxStaleness);
+    const [loadWithinNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_LOAD_NORMAL', 'Bool', maxStaleness);
+
+    const [potential] = useSimVar('L:A32NX_ELEC_APU_GEN_1_POTENTIAL', 'Volts', maxStaleness);
+    const [potentialWithinNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_POTENTIAL_NORMAL', 'Bool', maxStaleness);
+
+    const [frequency] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY', 'Hertz', maxStaleness);
+    const [frequencyWithinNormalRange] = useSimVar('L:A32NX_ELEC_APU_GEN_1_FREQUENCY_NORMAL', 'Bool', maxStaleness);
+
+    const allParametersWithinNormalRange = loadWithinNormalRange && potentialWithinNormalRange && frequencyWithinNormalRange;
+
+    const apuGenTitle = <text className={`Middle ${!masterSwPbOn || (genSwitchOn && allParametersWithinNormalRange) ? '' : 'Amber'}`} x={46.875} y={18.75}>APU GEN</text>;
+
+    return (
+        <SvgGroup x={x} y={y}>
+            { masterSwPbOn ? (
+                <>
+                    <Box width={93.75} height={90} />
+                    <rect id="APUGEN_BOX" className="box" x="45" y="98" width="25" height="24" />
+                    {apuGenTitle}
+                    { genSwitchOn ? (
+                        <>
+                            <ElectricalProperty x={58.125} y={41.25} value={Math.round(load)} unit="%" isWithinNormalRange={loadWithinNormalRange} />
+                            <ElectricalProperty x={58.125} y={63.75} value={Math.round(potential)} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
+                            <ElectricalProperty x={58.125} y={86.25} value={Math.round(frequency)} unit="HZ" isWithinNormalRange={frequencyWithinNormalRange} />
+                        </>
+                    ) : <text className="Middle" dominantBaseline="middle" x={46.875} y={48.75}>OFF</text> }
+
+                </>
+            ) : apuGenTitle}
+
         </SvgGroup>
     );
 };
