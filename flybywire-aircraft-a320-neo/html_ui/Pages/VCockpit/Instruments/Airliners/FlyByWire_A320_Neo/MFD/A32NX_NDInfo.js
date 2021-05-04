@@ -132,7 +132,6 @@ class Jet_MFD_NDInfo extends HTMLElement {
         const refreshWindAngle = ((_windAngle != this.currentWindAngle) || _force);
         const refreshWindStrength = ((_windStrength != this.currentWindStrength) || _force);
         const refreshWindArrow = (refreshWindAngle || refreshWindStrength || (_planeAngle != this.currentPlaneAngle) || _force);
-        const windStrongEnough = (this.currentWindStrength >= Jet_MFD_NDInfo.MIN_WIND_STRENGTH_FOR_ARROW_DISPLAY) ? true : false;
         if (refreshWindAngle) {
             let startAngle = this.currentWindAngle;
             let endAngle = _windAngle;
@@ -144,19 +143,6 @@ class Jet_MFD_NDInfo extends HTMLElement {
             }
             const smoothedAngle = Utils.SmoothSin(startAngle, endAngle, 0.25, this._dTime);
             this.currentWindAngle = smoothedAngle % 360;
-            if (this.windDirection != null) {
-                if (windStrongEnough) {
-                    this.windDirection.textContent = this.currentWindAngle.toFixed(0).padStart(3, "0");
-                } else {
-                    this.windDirection.textContent = "---";
-                }
-            }
-        }
-        if (refreshWindStrength) {
-            this.currentWindStrength = _windStrength;
-            if (this.windStrength != null) {
-                this.windStrength.textContent = this.currentWindStrength.toString().padStart(2, "0");
-            }
         }
         if (refreshWindArrow) {
             this.currentPlaneAngle = _planeAngle;
@@ -434,7 +420,6 @@ class Jet_MFD_NDInfo extends HTMLElement {
         return null;
     }
 }
-Jet_MFD_NDInfo.MIN_WIND_STRENGTH_FOR_ARROW_DISPLAY = 2;
 class VORDMENavAid {
     constructor(_parent, _index) {
         this.parent = _parent;
