@@ -67,8 +67,8 @@ export const Battery = ({ number, x, y }) => {
             { isAuto
                 ? (
                     <>
-                        <ElectricalProperty x={52.5} y={43.125} value={Math.round(potential)} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
-                        <ElectricalProperty x={52.5} y={65.625} value={Math.abs(Math.round(current))} unit="A" isWithinNormalRange={currentWithinNormalRange} />
+                        <ElectricalProperty x={52.5} y={43.125} value={potential} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
+                        <ElectricalProperty x={52.5} y={65.625} value={Math.abs(current)} unit="A" isWithinNormalRange={currentWithinNormalRange} />
                     </>
                 ) : (<text className="Middle" dominantBaseline="middle" x={43.125} y={41.25}>OFF</text>) }
         </SvgGroup>
@@ -85,7 +85,7 @@ const SvgGroup = ({ x, y, children }) => <g transform={`translate(${x},${y})`}>{
 
 const ElectricalProperty = ({ x, y, value, unit, isWithinNormalRange }) => (
     <SvgGroup x={x} y={y}>
-        <text className={`Right ${isWithinNormalRange ? 'Green' : 'Amber'}`}>{value}</text>
+        <text className={`Right ${isWithinNormalRange ? 'Green' : 'Amber'}`}>{Math.round(value)}</text>
         <text className="Cyan" x={3.75}>{unit}</text>
     </SvgGroup>
 );
@@ -150,9 +150,9 @@ const EngineGenerator = ({ number, x, y }) => {
             { isOn
                 ? (
                     <>
-                        <ElectricalProperty x={54.375} y={45} value={Math.round(load)} unit="%" isWithinNormalRange={loadWithinNormalRange} />
-                        <ElectricalProperty x={54.375} y={67.5} value={Math.round(potential)} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
-                        <ElectricalProperty x={54.375} y={90} value={Math.round(frequency)} unit="HZ" isWithinNormalRange={frequencyWithinNormalRange} />
+                        <ElectricalProperty x={54.375} y={45} value={load} unit="%" isWithinNormalRange={loadWithinNormalRange} />
+                        <ElectricalProperty x={54.375} y={67.5} value={potential} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
+                        <ElectricalProperty x={54.375} y={90} value={frequency} unit="HZ" isWithinNormalRange={frequencyWithinNormalRange} />
                     </>
                 )
                 : <text className="Middle" dominantBaseline="middle" x={43.125} y={54.375}>OFF</text>}
@@ -185,9 +185,9 @@ const ApuGenerator = ({ x, y }) => {
                     {apuGenTitle}
                     { genSwitchOn ? (
                         <>
-                            <ElectricalProperty x={58.125} y={41.25} value={Math.round(load)} unit="%" isWithinNormalRange={loadWithinNormalRange} />
-                            <ElectricalProperty x={58.125} y={63.75} value={Math.round(potential)} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
-                            <ElectricalProperty x={58.125} y={86.25} value={Math.round(frequency)} unit="HZ" isWithinNormalRange={frequencyWithinNormalRange} />
+                            <ElectricalProperty x={58.125} y={41.25} value={load} unit="%" isWithinNormalRange={loadWithinNormalRange} />
+                            <ElectricalProperty x={58.125} y={63.75} value={potential} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
+                            <ElectricalProperty x={58.125} y={86.25} value={frequency} unit="HZ" isWithinNormalRange={frequencyWithinNormalRange} />
                         </>
                     ) : <text className="Middle" dominantBaseline="middle" x={46.875} y={48.75}>OFF</text> }
 
@@ -245,8 +245,8 @@ const PotentialFrequencyBox = ({ x, y, text, potential, potentialWithinNormalRan
         <SvgGroup x={x} y={y}>
             <Box width={93.75} height={67.5} />
             <text className={`Middle ${text.length > 7 ? 'Small' : ''} ${!allParametersWithinNormalRange ? 'Amber' : ''}`} x={46.875} y={18.75}>{text}</text>
-            <ElectricalProperty x={52.5} y={41.25} value={Math.round(potential)} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
-            <ElectricalProperty x={52.5} y={63.75} value={Math.round(frequency)} unit="HZ" isWithinNormalRange={frequencyWithinNormalRange} />
+            <ElectricalProperty x={52.5} y={41.25} value={potential} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
+            <ElectricalProperty x={52.5} y={63.75} value={frequency} unit="HZ" isWithinNormalRange={frequencyWithinNormalRange} />
         </SvgGroup>
     );
 };
@@ -283,8 +283,8 @@ const TransformerRectifier = ({ number, titleOnly, x, y }: TransformerRectifierP
                     <Box width={86.25} height={75} />
                     {title}
                     { number !== 3 ? <text className={`Large ${!allParametersWithinNormalRange ? 'Amber' : ''}`} x={53.75} y={24.375}>{number}</text> : null }
-                    <ElectricalProperty x={54.375} y={46.875} value={Math.round(potential)} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
-                    <ElectricalProperty x={54.375} y={69.375} value={Math.round(current)} unit="A" isWithinNormalRange={currentWithinNormalRange} />
+                    <ElectricalProperty x={54.375} y={46.875} value={potential} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
+                    <ElectricalProperty x={54.375} y={69.375} value={current} unit="A" isWithinNormalRange={currentWithinNormalRange} />
                 </>
             )}
 
