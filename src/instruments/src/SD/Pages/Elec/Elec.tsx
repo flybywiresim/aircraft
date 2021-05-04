@@ -21,6 +21,7 @@ export const ElecPage = () => {
     const [acEssShedBusIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED', 'Bool', maxStaleness);
     const [externalPowerAvailable] = useSimVar('EXTERNAL POWER AVAILABLE:1', 'Bool', maxStaleness);
     const [staticInverterInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_15XE2_IS_CLOSED', 'Bool', maxStaleness);
+    const [trEssInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_3PE_IS_CLOSED', 'Bool', maxStaleness);
 
     return (
         <EcamPage name="main-elec">
@@ -39,6 +40,9 @@ export const ElecPage = () => {
             <ApuGenerator x={168.75} y={367.5} />
             { staticInverterInUse ? <StaticInverter x={315} y={390} /> : null }
             { !staticInverterInUse && externalPowerAvailable ? <ExternalPower x={315} y={390} /> : null }
+            <TransformerRectifier number={1} x={13.125} y={161.25} />
+            <TransformerRectifier number={2} x={493.125} y={161.25} />
+            <TransformerRectifier number={3} x={213.75} y={161.25} titleOnly={!trEssInUse} />
         </EcamPage>
     );
 };
@@ -178,7 +182,6 @@ const ApuGenerator = ({ x, y }) => {
             { masterSwPbOn ? (
                 <>
                     <Box width={93.75} height={90} />
-                    <rect className="box" x="45" y="98" width="25" height="24" />
                     {apuGenTitle}
                     { genSwitchOn ? (
                         <>
@@ -244,6 +247,47 @@ const PotentialFrequencyBox = ({ x, y, text, potential, potentialWithinNormalRan
             <text className={`Middle ${text.length > 7 ? 'Small' : ''} ${!allParametersWithinNormalRange ? 'Amber' : ''}`} x={46.875} y={18.75}>{text}</text>
             <ElectricalProperty x={52.5} y={41.25} value={Math.round(potential)} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
             <ElectricalProperty x={52.5} y={63.75} value={Math.round(frequency)} unit="HZ" isWithinNormalRange={frequencyWithinNormalRange} />
+        </SvgGroup>
+    );
+};
+
+interface TransformerRectifierProps {
+    number: number,
+    titleOnly?: boolean,
+    x: number,
+    y:number
+}
+const TransformerRectifier = ({ number, titleOnly, x, y }: TransformerRectifierProps) => {
+    const [potential] = useSimVar(`L:A32NX_ELEC_TR_${number}_POTENTIAL`, 'Volts', maxStaleness);
+    const [potentialWithinNormalRange] = useSimVar(`L:A32NX_ELEC_TR_${number}_POTENTIAL_NORMAL`, 'Bool', maxStaleness);
+
+    const [current] = useSimVar(`L:A32NX_ELEC_TR_${number}_CURRENT`, 'Ampere', maxStaleness);
+    const [currentWithinNormalRange] = useSimVar(`L:A32NX_ELEC_TR_${number}_CURRENT_NORMAL`, 'Bool');
+
+    const allParametersWithinNormalRange = potentialWithinNormalRange && currentWithinNormalRange;
+
+    const title = (
+        <text
+            className={`Right ${!allParametersWithinNormalRange && !titleOnly ? 'Amber' : ''}`}
+            x={number === 3 ? 80 : 50}
+            y={24.375}
+        >
+            {number === 3 ? 'ESS TR' : 'TR'}
+        </text>
+    );
+
+    return (
+        <SvgGroup x={x} y={y}>
+            { titleOnly ? title : (
+                <>
+                    <Box width={86.25} height={75} />
+                    {title}
+                    { number !== 3 ? <text className={`Large ${!allParametersWithinNormalRange ? 'Amber' : ''}`} x={53.75} y={24.375}>{number}</text> : null }
+                    <ElectricalProperty x={54.375} y={46.875} value={Math.round(potential)} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
+                    <ElectricalProperty x={54.375} y={69.375} value={Math.round(current)} unit="A" isWithinNormalRange={currentWithinNormalRange} />
+                </>
+            )}
+
         </SvgGroup>
     );
 };
