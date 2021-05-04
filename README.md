@@ -29,7 +29,9 @@ The following aircraft configuration is currently simulated:
 Please note that this configuration may change in the future as the A32NX project evolves and changes.
 
 ### SimBrief Integration
-✈[SimBrief Airframe with the correct weights](https://www.simbrief.com/system/dispatch.php?sharefleet=eyJ0cyI6IjE2MDU4MjAwNzg5NDYiLCJiYXNldHlwZSI6IkEzMjAiLCJjb21tZW50cyI6IkZMWSBCWSBXSVJFIiwiaWNhbyI6IkEyME4iLCJuYW1lIjoiQTMyME5FTyBGQlciLCJlbmdpbmVzIjoiTEVBUC0xQTI2IiwicmVnIjoiQTIwTiIsImZpbiI6IiIsInNlbGNhbCI6IiIsImhleGNvZGUiOiIiLCJjYXQiOiJNIiwicGVyIjoiQyIsImVxdWlwIjoiU0RFM0ZHSElSV1kiLCJ0cmFuc3BvbmRlciI6IkxCMSIsInBibiI6IkExQjFDMUQxTzFTMSIsImV4dHJhcm1rIjoiIiwibWF4cGF4IjoiMTgwIiwid2d0dW5pdHMiOiJLR1MiLCJvZXciOiI0MTAwMCIsIm16ZnciOiI2MjUwMCIsIm10b3ciOiI3OTAwMCIsIm1sdyI6IjY2MDAwIiwibWF4ZnVlbCI6IjIxMjczIiwicGF4d2d0IjoiMTA0IiwiZGVmYXVsdGNpIjoiIiwiZnVlbGZhY3RvciI6IlAwMCIsImNydWlzZW9mZnNldCI6IlAwMDAwIn0-) Credits: [@viniciusfont](https://github.com/viniciusfont)
+✈[SimBrief A20N Airframe with the correct weights](https://www.simbrief.com/system/dispatch.php?sharefleet=eyJ0cyI6IjE2MjAxMzg2MDY1NDQiLCJiYXNldHlwZSI6IkEyME4iLCJjb21tZW50cyI6IkZCVyBBMzJOWCIsImljYW8iOiJBMjBOIiwibmFtZSI6IkEzMjBORU8gRkJXIiwiZW5naW5lcyI6IkxFQVAtMUEyNiIsInJlZyI6IkQtQUZCVyIsImZpbiI6IiIsInNlbGNhbCI6IiIsImhleGNvZGUiOiIiLCJjYXQiOiJNIiwicGVyIjoiQyIsImVxdWlwIjoiU0RFMkUzRkdISUoxUldYWSIsInRyYW5zcG9uZGVyIjoiTEIxIiwicGJuIjoiQTFCMUMxRDFPMVMyIiwiZXh0cmFybWsiOiIiLCJtYXhwYXgiOiIxODAiLCJ3Z3R1bml0cyI6IktHUyIsIm9ldyI6IjQxMDA1IiwibXpmdyI6IjY0MzAwIiwibXRvdyI6Ijc5NDAwIiwibWx3IjoiNjc0MDAiLCJtYXhmdWVsIjoiMTkwNDUiLCJwYXh3Z3QiOiIxMDQiLCJkZWZhdWx0Y2kiOiIiLCJmdWVsZmFjdG9yIjoiUDAwIiwiY3J1aXNlb2Zmc2V0IjoiUDAwMDAifQ--) Credits: [@viniciusfont](https://github.com/viniciusfont)
+
+In the above profile change the aircrafts registration to your liking and save it to your fleet. Happy Landings!
 
 Pilot ID can be found in the Optional Entries section of the Dispatch Options page.
 
@@ -53,6 +55,7 @@ You can view the changelog on the [releases page.](https://github.com/flybywires
 #### Unstable Master Branch Build
 
 This has the latest features, but is much more unstable, use at your own risk.
+
 
 [Download development build here.](https://github.com/flybywiresim/a32nx/releases/download/vmaster/A32NX-master.zip)
 
