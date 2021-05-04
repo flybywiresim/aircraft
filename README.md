@@ -60,7 +60,9 @@ This has the latest features, but is much more unstable, use at your own risk.
 
 #### Unstable Master Branch Build (with custom autopilot)
 
-This version is the same as the regular master/development version. However, this version comes with the (work in progress) LNAV and flight plan manager. **Expect issues with navigation and flight planning.** No support will be provided via Discord.
+#### Experimental Branch Build
+
+This branch is used from time-to-time for experimental features under heavy development. It's content will vary over time, and doesn't necessarily include everything in the master branch. No support will be provided via Discord, although users of the branch are advised to keep themselves updated with development progress via Discord.
 
 
 ## Installation
