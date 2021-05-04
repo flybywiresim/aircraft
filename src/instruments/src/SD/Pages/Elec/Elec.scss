@@ -14,13 +14,16 @@
   text {
     fill: #EEEEEE;
     font-family: 'Roboto Mono', monospace;
-    //line-height: 4.6875;
     white-space: pre;
     word-spacing: 0px;
     font-size: 19px;
 
     &.Big {
       font-size: 26px;
+    }
+
+    &.Tiny {
+      font-size: 15px;
     }
 
     &.Middle {

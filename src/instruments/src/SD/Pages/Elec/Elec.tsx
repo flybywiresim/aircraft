@@ -12,9 +12,11 @@ export const ElecPage = () => {
     const [dc1IsPowered] = useSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool', 1000);
     const [dc2IsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool', 1000);
     const [dcEssIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'Bool', 1000);
+    const [dcEssShedBusIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED', 'Bool', 1000);
     const [ac1IsPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'Bool', 1000);
     const [ac2IsPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'Bool', 1000);
     const [acEssIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'Bool', 1000);
+    const [acEssShedBusIsPowered] = useSimVar('L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED', 'Bool', 1000);
 
     return (
         <EcamPage name="main-elec">
@@ -24,10 +26,10 @@ export const ElecPage = () => {
             <BatteryBus x={232.5} y={35} width={135} />
             <Bus name="DC" number={1} isNormal={dc1IsPowered} x={6} y={90} width={86.25} />
             <Bus name="DC" number={2} isNormal={dc2IsPowered} x={507.75} y={90} width={86.25} />
-            <Bus name="DC ESS" isNormal={dcEssIsPowered} x={232.5} y={116.25} width={135} />
+            <Bus name="DC ESS" isNormal={dcEssIsPowered} isShed={!dcEssShedBusIsPowered} x={232.5} y={116.25} width={135} />
             <Bus name="AC" number={1} isNormal={ac1IsPowered} x={6} y={266.25} width={135} />
             <Bus name="AC" number={2} isNormal={ac2IsPowered} x={459} y={266.25} width={135} />
-            <Bus name="AC ESS" isNormal={acEssIsPowered} x={232.5} y={266.25} width={135} />
+            <Bus name="AC ESS" isNormal={acEssIsPowered} isShed={!acEssShedBusIsPowered} x={232.5} y={266.25} width={135} />
         </EcamPage>
     );
 };
@@ -86,14 +88,19 @@ interface BusProps {
     name: string,
     number?: number,
     isNormal: boolean
+    isShed?: boolean
 }
-const Bus = ({ x, y, width, name, number, isNormal } : BusProps) => (
-    <SvgGroup x={x} y={y}>
-        <rect className="Bus" width={width} height="26.25" />
-        <text className={`Bus ${number ? 'Right' : 'Middle'} ${isNormal ? 'Green' : 'Amber'}`} dominantBaseline="middle" x={width / 2} y="11.25">{name}</text>
-        {number ? <text className={`Bus Big ${isNormal ? 'Green' : 'Amber'}`} x={(width / 2) + 3.75} y="22">{number}</text> : null}
-    </SvgGroup>
-);
+const Bus = ({ x, y, width, name, number, isNormal, isShed } : BusProps) => {
+    const busHeight = 26.25;
+    return (
+        <SvgGroup x={x} y={y}>
+            <rect className="Bus" width={width} height={busHeight} />
+            <text className={`Bus ${number ? 'Right' : 'Middle'} ${isNormal ? 'Green' : 'Amber'}`} dominantBaseline="middle" x={width / 2} y="11.25">{name}</text>
+            {number ? <text className={`Bus Big ${isNormal ? 'Green' : 'Amber'}`} x={(width / 2) + 3.75} y="22">{number}</text> : null}
+            {isShed ? <text className="Middle Tiny Amber" dominantBaseline="middle" x={(width / 2)} y={busHeight + 8.25}>SHED</text> : null}
+        </SvgGroup>
+    );
+};
 
 const BatteryBus = ({ x, y, width }) => {
     const [isPowered] = useSimVar('L:A32NX_ELEC_DC_BAT_BUS_IS_POWERED', 'Bool', 1000);
