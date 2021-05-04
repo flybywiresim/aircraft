@@ -22,6 +22,7 @@ export const ElecPage = () => {
     const [externalPowerAvailable] = useSimVar('EXTERNAL POWER AVAILABLE:1', 'Bool', maxStaleness);
     const [staticInverterInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_15XE2_IS_CLOSED', 'Bool', maxStaleness);
     const [trEssInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_3PE_IS_CLOSED', 'Bool', maxStaleness);
+    const [emergencyGeneratorInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_2XE_IS_CLOSED', 'Bool', maxStaleness);
 
     return (
         <EcamPage name="main-elec">
@@ -43,6 +44,7 @@ export const ElecPage = () => {
             <TransformerRectifier number={1} x={13.125} y={161.25} />
             <TransformerRectifier number={2} x={493.125} y={161.25} />
             <TransformerRectifier number={3} x={213.75} y={161.25} titleOnly={!trEssInUse} />
+            <EmergencyGenerator titleOnly={!emergencyGeneratorInUse} x={330} y={161.25} />
         </EcamPage>
     );
 };
@@ -288,6 +290,33 @@ const TransformerRectifier = ({ number, titleOnly, x, y }: TransformerRectifierP
                 </>
             )}
 
+        </SvgGroup>
+    );
+};
+
+const EmergencyGenerator = ({ titleOnly, x, y }) => {
+    const [potential] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'Volts', maxStaleness);
+    const [potentialWithinNormalRange] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL_NORMAL', 'Bool', maxStaleness);
+
+    const [frequency] = useSimVar('L:A32NX_ELEC_EMER_GEN_FREQUENCY', 'Hertz', maxStaleness);
+    const [frequencyWithinNormalRange] = useSimVar('L:A32NX_ELEC_EMER_GEN_FREQUENCY_NORMAL', 'Bool');
+
+    const allParametersWithinNormalRange = potentialWithinNormalRange && frequencyWithinNormalRange;
+
+    return (
+        <SvgGroup x={x} y={y}>
+            {
+                titleOnly ? <text id="EMERGEN_OFFLINE" className="Medium" dominantBaseline="middle" x={0.9375} y={45}>EMER GEN</text>
+                    : (
+                        <>
+                            <Box width={103.125} height={75} />
+
+                            <text id="EMERGEN_TITLE" className={`Middle ${!allParametersWithinNormalRange ? 'Amber' : ''}`} x={51.5625} y={24.375}>EMER GEN</text>
+                            <ElectricalProperty x={63.75} y={46.875} value={potential} unit="V" isWithinNormalRange={potentialWithinNormalRange} />
+                            <ElectricalProperty x={63.75} y={69.375} value={frequency} unit="HZ" isWithinNormalRange={frequencyWithinNormalRange} />
+                        </>
+                    )
+            }
         </SvgGroup>
     );
 };
