@@ -53,6 +53,7 @@
 1. [FLIGHTMODEL] Fixed excessive weathervaning stability - @donstim (donbikes#4084)
 1. [AUTOPILOT] Improved ROLL OUT and G/S laws - @aguther (Andreas Guther)
 1. [FMGC] Added VS descent phase initiation - @MisterChocker (Leon)
+1. [SOUND] Added glareshield chrono button sound - @ImenesFBW (Imenes)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
