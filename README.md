@@ -29,7 +29,7 @@ The following aircraft configuration is currently simulated:
 Please note that this configuration may change in the future as the A32NX project evolves and changes.
 
 ### SimBrief Integration
-✈[SimBrief A20N Airframe with the correct weights](https://www.simbrief.com/system/dispatch.php?sharefleet=eyJ0cyI6IjE2MjAxMzg2MDY1NDQiLCJiYXNldHlwZSI6IkEyME4iLCJjb21tZW50cyI6IkZCVyBBMzJOWCIsImljYW8iOiJBMjBOIiwibmFtZSI6IkEzMjBORU8gRkJXIiwiZW5naW5lcyI6IkxFQVAtMUEyNiIsInJlZyI6IkQtQUZCVyIsImZpbiI6IiIsInNlbGNhbCI6IiIsImhleGNvZGUiOiIiLCJjYXQiOiJNIiwicGVyIjoiQyIsImVxdWlwIjoiU0RFMkUzRkdISUoxUldYWSIsInRyYW5zcG9uZGVyIjoiTEIxIiwicGJuIjoiQTFCMUMxRDFPMVMyIiwiZXh0cmFybWsiOiIiLCJtYXhwYXgiOiIxODAiLCJ3Z3R1bml0cyI6IktHUyIsIm9ldyI6IjQxMDA1IiwibXpmdyI6IjY0MzAwIiwibXRvdyI6Ijc5NDAwIiwibWx3IjoiNjc0MDAiLCJtYXhmdWVsIjoiMTkwNDUiLCJwYXh3Z3QiOiIxMDQiLCJkZWZhdWx0Y2kiOiIiLCJmdWVsZmFjdG9yIjoiUDAwIiwiY3J1aXNlb2Zmc2V0IjoiUDAwMDAifQ--) Credits: [@viniciusfont](https://github.com/viniciusfont)
+✈[SimBrief A20N Airframe with the correct weights](https://www.simbrief.com/system/dispatch.php?sharefleet=eyJ0cyI6IjE2MjAyMTYxMzY2MjciLCJiYXNldHlwZSI6IkEyME4iLCJjb21tZW50cyI6IkZCVyBBMzJOWCIsImljYW8iOiJBMjBOIiwibmFtZSI6IkEzMjBORU8gRkJXIiwiZW5naW5lcyI6IkxFQVAtMUEyNiIsInJlZyI6IkQtQUZCVyIsImZpbiI6IiIsInNlbGNhbCI6IiIsImhleGNvZGUiOiIiLCJjYXQiOiJNIiwicGVyIjoiQyIsImVxdWlwIjoiU0RFMkUzRkdISUoxUldYWSIsInRyYW5zcG9uZGVyIjoiTEIxIiwicGJuIjoiQTFCMUMxRDFPMVMyIiwiZXh0cmFybWsiOiIiLCJtYXhwYXgiOiIxODAiLCJ3Z3R1bml0cyI6IktHUyIsIm9ldyI6IjQxMDA1IiwibXpmdyI6IjY0MzAwIiwibXRvdyI6Ijc5MDAwIiwibWx3IjoiNjc0MDAiLCJtYXhmdWVsIjoiMTkwNDUiLCJwYXh3Z3QiOiIxMDQiLCJkZWZhdWx0Y2kiOiIiLCJmdWVsZmFjdG9yIjoiUDAwIiwiY3J1aXNlb2Zmc2V0IjoiUDAwMDAifQ--) Credits: [@viniciusfont](https://github.com/viniciusfont)
 
 In the above profile change the aircrafts registration to your liking and save it to your fleet. Happy Landings!
 
@@ -120,7 +120,7 @@ A: Yes, see [downloads.](#downloads)
 
 **Q: What liveries are available?**
 
-A: Liveries for the A32NX mod can be found on [Flightsim.to](https://flightsim.to). 
+A: Liveries for the A32NX mod can be found on [Flightsim.to](https://flightsim.to).
 **However, default A320neo liveries are not compatible on the A32NX.**
 
 **Q: When will it be released?**
@@ -141,7 +141,7 @@ A: No, it is a completely free aircraft, open-source.
 
 **Q: How do we report bugs?**
 
-A: You can report bugs to us via the [#support channel](https://discord.gg/snueqJjDUN) in the Discord server. Addtionally, you can start/create a GitHub issue (please make sure your issue doesn't already exist). 
+A: You can report bugs to us via the [#support channel](https://discord.gg/snueqJjDUN) in the Discord server. Addtionally, you can start/create a GitHub issue (please make sure your issue doesn't already exist).
 
 **Q: Why is my version not the same as what I see others using?**
 
