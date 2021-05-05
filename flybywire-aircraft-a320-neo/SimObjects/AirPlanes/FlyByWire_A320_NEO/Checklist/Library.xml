@@ -277,16 +277,16 @@
          <Sequence SeqType="Parallel">
             <Test>
                <TestValue>
-                  <Val Code="(L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO, Bool)" />
+                  <Val Code="(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO, Bool)" />
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO, Bool)" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO, Bool)" />
                <Instrument Id="BATTERY_MASTER_SWITCH_1" />
             </Test>
             <Test>
                <TestValue>
-                  <Val Code="(L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO, Bool)" />
+                  <Val Code="(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO, Bool)" />
                </TestValue>
-                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO, Bool)" />
+                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO, Bool)" />
                <Instrument Id="BATTERY_MASTER_SWITCH_2" />
             </Test>
          </Sequence>
@@ -2152,19 +2152,19 @@
             <Test>
                 <TestValue>
                     <Operator OpType="NOT">
-                        <Val Code="(L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO, Bool)" />
+                        <Val Code="(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO, Bool)" />
                     </Operator>
                 </TestValue>
-                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="0 (&gt;L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO, Bool)" />
+                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="0 (&gt;L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO, Bool)" />
                 <Instrument Id="BATTERY_MASTER_SWITCH_1" />
             </Test>
             <Test>
                 <TestValue>
                     <Operator OpType="NOT">
-                        <Val Code="(L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO, Bool)" />
+                        <Val Code="(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO, Bool)" />
                     </Operator>
                 </TestValue>
-                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="0 (&gt;L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO, Bool)" />
+                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="0 (&gt;L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO, Bool)" />
                 <Instrument Id="BATTERY_MASTER_SWITCH_2" />
             </Test>
          </Sequence>
@@ -2312,16 +2312,16 @@
         <Sequence SeqType="Parallel">
             <Test>
                <TestValue>
-                  <Val Code="(L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO, Bool)" />
+                  <Val Code="(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO, Bool)" />
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO, Bool)" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO, Bool)" />
                <Instrument Id="BATTERY_MASTER_SWITCH_1" />
             </Test>
             <Test>
                <TestValue>
-                  <Val Code="(L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO, Bool)" />
+                  <Val Code="(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO, Bool)" />
                </TestValue>
-                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO, Bool)" />
+                <Action Copilot="True" Condition="TestValueFalse" Once="true" Code="1 (&gt;L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO, Bool)" />
                <Instrument Id="BATTERY_MASTER_SWITCH_2" />
             </Test>
          </Sequence>

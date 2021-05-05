@@ -145,14 +145,13 @@ export const ElecPage = () => {
 };
 
 export const Battery = ({ x, y, number }) => {
-    const simVarNumber = 9 + number;
-    const [isAuto] = useSimVar(`L:A32NX_OVHD_ELEC_BAT_${simVarNumber}_PB_IS_AUTO`, 'Bool', maxStaleness);
+    const [isAuto] = useSimVar(`L:A32NX_OVHD_ELEC_BAT_${number}_PB_IS_AUTO`, 'Bool', maxStaleness);
 
-    const [potential] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_POTENTIAL`, 'Volts', maxStaleness);
-    const [potentialWithinNormalRange] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_POTENTIAL_NORMAL`, 'Bool', maxStaleness);
+    const [potential] = useSimVar(`L:A32NX_ELEC_BAT_${number}_POTENTIAL`, 'Volts', maxStaleness);
+    const [potentialWithinNormalRange] = useSimVar(`L:A32NX_ELEC_BAT_${number}_POTENTIAL_NORMAL`, 'Bool', maxStaleness);
 
-    const [current] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_CURRENT`, 'Ampere', maxStaleness);
-    const [currentWithinNormalRange] = useSimVar(`L:A32NX_ELEC_BAT_${simVarNumber}_CURRENT_NORMAL`, 'Bool', maxStaleness);
+    const [current] = useSimVar(`L:A32NX_ELEC_BAT_${number}_CURRENT`, 'Ampere', maxStaleness);
+    const [currentWithinNormalRange] = useSimVar(`L:A32NX_ELEC_BAT_${number}_CURRENT_NORMAL`, 'Bool', maxStaleness);
 
     const allParametersWithinNormalRange = potentialWithinNormalRange && currentWithinNormalRange;
 
@@ -182,7 +181,7 @@ export const Battery = ({ x, y, number }) => {
 
 const BatteryToBatBusWire = ({ x, y, number }) => {
     const [contactorClosed] = useSimVar(`L:A32NX_ELEC_CONTACTOR_6PB${number}_IS_CLOSED`, 'Bool', maxStaleness);
-    const [current] = useSimVar(`L:A32NX_ELEC_BAT_${9 + number}_CURRENT`, 'Ampere', maxStaleness);
+    const [current] = useSimVar(`L:A32NX_ELEC_BAT_${number}_CURRENT`, 'Ampere', maxStaleness);
     const [showArrowWhenContactorClosed] = useSimVar(`L:A32NX_ELEC_CONTACTOR_6PB${number}_SHOW_ARROW_WHEN_CLOSED`, 'Bool', maxStaleness);
 
     const showArrow = contactorClosed && showArrowWhenContactorClosed;
@@ -262,8 +261,8 @@ const Bus = ({ x, y, width, name, number, isNormal, isShed } : BusProps) => {
 const BatteryBus = ({ x, y, width }) => {
     const [isPowered] = useSimVar('L:A32NX_ELEC_DC_BAT_BUS_IS_POWERED', 'Bool', maxStaleness);
 
-    const [bat1IsAuto] = useSimVar('L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO', 'Bool', maxStaleness);
-    const [bat2IsAuto] = useSimVar('L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO', 'Bool', maxStaleness);
+    const [bat1IsAuto] = useSimVar('L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO', 'Bool', maxStaleness);
+    const [bat2IsAuto] = useSimVar('L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO', 'Bool', maxStaleness);
     const atLeastOneBatteryIsAuto = bat1IsAuto || bat2IsAuto;
 
     const potentialIsWithinNormalRange = useSimVar('L:A32NX_ELEC_DC_BAT_BUS_POTENTIAL_NORMAL', 'Bool', maxStaleness);

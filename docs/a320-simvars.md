@@ -558,8 +558,8 @@
     - Indicates if the push button's FAULT light should illuminate
     - {name}
         - APU_MASTER_SW
-        - ELEC_BAT_10
-        - ELEC_BAT_11
+        - ELEC_BAT_1
+        - ELEC_BAT_2
         - ELEC_IDG_1
         - ELEC_IDG_2
         - ELEC_ENG_GEN_1
@@ -573,8 +573,8 @@
     - Bool
     - True when the push button is AUTO
     - {name}
-        - ELEC_BAT_10
-        - ELEC_BAT_11
+        - ELEC_BAT_1
+        - ELEC_BAT_2
         - ELEC_BUS_TIE_PB
         - ELEC_GALY_AND_CAB
 
@@ -673,8 +673,8 @@
         - TR_1
         - TR_2
         - TR_3: TR ESS
-        - BAT_10: Battery 1
-        - BAT_11: Battery 2
+        - BAT_1
+        - BAT_2
 
 - A32NX_ELEC_{name}_POTENTIAL_NORMAL
     - Bool
@@ -689,8 +689,8 @@
         - TR_1
         - TR_2
         - TR_3: TR ESS
-        - BAT_10: Battery 1
-        - BAT_11: Battery 2
+        - BAT_1
+        - BAT_2
 
 - A32NX_ELEC_{name}_FREQUENCY:
     - Hertz
@@ -737,8 +737,8 @@
         - TR_1
         - TR_2
         - TR_3: TR ESS
-        - BAT_10: Battery 1 (negative when discharging, positive when charging)
-        - BAT_11: Battery 2 (negative when discharging, positive when charging)
+        - BAT_1: Battery 1 (negative when discharging, positive when charging)
+        - BAT_2: Battery 2 (negative when discharging, positive when charging)
 
 - A32NX_ELEC_{name}_CURRENT_NORMAL
     - Ampere
@@ -747,8 +747,8 @@
         - TR_1
         - TR_2
         - TR_3: TR ESS
-        - BAT_10: Battery 1
-        - BAT_11: Battery 2
+        - BAT_1: Battery 1
+        - BAT_2: Battery 2
 
 - A32NX_ELEC_ENG_GEN_{number}_IDG_OIL_OUTLET_TEMPERATURE
     - Celsius
