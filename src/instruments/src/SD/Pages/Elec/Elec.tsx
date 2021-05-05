@@ -44,6 +44,9 @@ export const ElecPage = () => {
     const [busTieContactor1Closed] = useSimVar('L:A32NX_ELEC_CONTACTOR_11XU1_IS_CLOSED', 'Bool', maxStaleness);
     const [busTieContactor2Closed] = useSimVar('L:A32NX_ELEC_CONTACTOR_11XU2_IS_CLOSED', 'Bool', maxStaleness);
 
+    const [idg1Connected] = useSimVar('L:A32NX_ELEC_ENG_GEN_1_IDG_IS_CONNECTED', 'Bool', maxStaleness);
+    const [idg2Connected] = useSimVar('L:A32NX_ELEC_ENG_GEN_2_IDG_IS_CONNECTED', 'Bool', maxStaleness);
+
     return (
         <EcamPage name="main-elec">
             <PageTitle text="ELEC" x={6} y={18} />
@@ -130,6 +133,13 @@ export const ElecPage = () => {
             <EmergencyGenerator titleOnly={!emergencyGeneratorInUse} x={330} y={161.25} />
 
             { galleyIsShed ? <GalleyShed x={300} y={483.75} /> : null }
+
+            <IntegratedDriveGeneratorTitle number={1} x={28.13} y={476.25} />
+            <IntegratedDriveGeneratorTemperature number={1} x={135} y={476.25} />
+            { !idg1Connected ? <IntegratedDriveGeneratorDisconnected x={29.13} y={495} /> : null }
+            <IntegratedDriveGeneratorTitle number={2} x={513.75} y={476.25} />
+            <IntegratedDriveGeneratorTemperature number={2} x={480} y={476.25} />
+            { !idg2Connected ? <IntegratedDriveGeneratorDisconnected x={518.75} y={495} /> : null }
         </EcamPage>
     );
 };
@@ -459,6 +469,28 @@ const GalleyShed = ({ x, y }) => (
         <text className="Middle" y={18.75}>SHED</text>
     </SvgGroup>
 );
+
+const IntegratedDriveGeneratorTitle = ({ number, x, y }) => {
+    const [connected] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_IDG_IS_CONNECTED`, 'Bool', maxStaleness);
+    return (
+        <SvgGroup x={x} y={y}>
+            <text className={!connected ? 'Amber' : ''}>IDG</text>
+            <text className={`Large ${!connected ? 'Amber' : ''}`} x={39.38}>{number}</text>
+        </SvgGroup>
+    );
+};
+
+const IntegratedDriveGeneratorTemperature = ({ number, x, y }) => {
+    const [temperature] = useSimVar(`L:A32NX_ELEC_ENG_GEN_${number}_IDG_OIL_OUTLET_TEMPERATURE`, 'Celsius', maxStaleness);
+    return (
+        <SvgGroup x={x} y={y}>
+            <text id="IDG2_TEMP_VALUE" className="Green Right">{Math.round(temperature)}</text>
+            <text id="IDG2_TEMP_UNIT" className="Cyan" x={3.75}>°C</text>
+        </SvgGroup>
+    );
+};
+
+const IntegratedDriveGeneratorDisconnected = ({ x, y }) => <text className="Amber" x={x} y={y}>DISC</text>;
 
 interface ArrowProps {
     direction: 'up' | 'down' | 'right' | 'left',
