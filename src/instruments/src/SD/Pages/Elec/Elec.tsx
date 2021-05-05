@@ -25,14 +25,93 @@ export const ElecPage = () => {
     const [trEssInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_3PE_IS_CLOSED', 'Bool', maxStaleness);
     const [emergencyGeneratorInUse] = useSimVar('L:A32NX_ELEC_CONTACTOR_2XE_IS_CLOSED', 'Bool', maxStaleness);
     const [galleyIsShed] = useSimVar('L:A32NX_ELEC_GALLEY_IS_SHED', 'Bool', maxStaleness);
+    const [tr1SuppliesDc1] = useSimVar('L:A32NX_ELEC_CONTACTOR_5PU1_IS_CLOSED', 'Bool', maxStaleness);
+    const [tr2SuppliesDc2] = useSimVar('L:A32NX_ELEC_CONTACTOR_5PU2_IS_CLOSED', 'Bool', maxStaleness);
+    const [ac1SuppliesAcEss] = useSimVar('L:A32NX_ELEC_CONTACTOR_3XC1_IS_CLOSED', 'Bool', maxStaleness);
+    const [ac2SuppliesAcEss] = useSimVar('L:A32NX_ELEC_CONTACTOR_3XC2_IS_CLOSED', 'Bool', maxStaleness);
+    const [dc1AndDcBatConnected] = useSimVar('L:A32NX_ELEC_CONTACTOR_1PC1_IS_CLOSED', 'Bool', maxStaleness);
+    const [dcBatAndDcEssConnected] = useSimVar('L:A32NX_ELEC_CONTACTOR_4PC_IS_CLOSED', 'Bool', maxStaleness);
+    const [dc2AndDcBatConnected] = useSimVar('L:A32NX_ELEC_CONTACTOR_1PC2_IS_CLOSED', 'Bool', maxStaleness);
+
+    const [emergencyGeneratorSupplies] = useSimVar('L:A32NX_ELEC_CONTACTOR_2XE_IS_CLOSED', 'Bool', maxStaleness);
+    const [acEssBusContactorClosed] = useSimVar('L:A32NX_ELEC_CONTACTOR_15XE1_IS_CLOSED', 'Bool', maxStaleness);
+    const [trEssSuppliesDcEss] = useSimVar('L:A32NX_ELEC_CONTACTOR_3PE_IS_CLOSED', 'Bool', maxStaleness);
+
+    const [externalPowerContactorClosed] = useSimVar('L:A32NX_ELEC_CONTACTOR_3XG_IS_CLOSED', 'Bool', maxStaleness);
+    const [apuGeneratorContactorClosed] = useSimVar('L:A32NX_ELEC_CONTACTOR_3XS_IS_CLOSED', 'Bool', maxStaleness);
+    const [generatorLineContactor1Closed] = useSimVar('L:A32NX_ELEC_CONTACTOR_9XU1_IS_CLOSED', 'Bool', maxStaleness);
+    const [generatorLineContactor2Closed] = useSimVar('L:A32NX_ELEC_CONTACTOR_9XU2_IS_CLOSED', 'Bool', maxStaleness);
+    const [busTieContactor1Closed] = useSimVar('L:A32NX_ELEC_CONTACTOR_11XU1_IS_CLOSED', 'Bool', maxStaleness);
+    const [busTieContactor2Closed] = useSimVar('L:A32NX_ELEC_CONTACTOR_11XU2_IS_CLOSED', 'Bool', maxStaleness);
 
     return (
         <EcamPage name="main-elec">
             <PageTitle text="ELEC" x={6} y={18} />
+
+            <BatteryToBatBusWire number={1} x={196.611875} y={50.77125} />
+            <BatteryToBatBusWire number={2} x={367.724375} y={50.77125} />
+
+            { tr1SuppliesDc1 ? <Wire description="TR1 to DC1" d="M56.25 117 v44.1 v-44.1" /> : null }
+            <Wire description="AC1 to TR1" amber={!ac1IsPowered} d="M56.25 238.35 v29 v-29" />
+
+            { tr2SuppliesDc2 ? <Wire description="TR2 to DC2" d="M536.25 117 v44.1 v-44.1" /> : null }
+            <Wire description="AC2 to TR2" amber={!ac2IsPowered} d="M536.25 238.35 v29 v-29" />
+
+            { ac1SuppliesAcEss ? <Wire description="AC1 to AC ESS" d="M138.57 279.32 h94.63 h-94.63" /> : null }
+            { ac2SuppliesAcEss ? <Wire description="AC2 to AC ESS" d="M367.5 279.32 h94.63 h-94.63" /> : null }
+
+            { dc1AndDcBatConnected && !dcBatAndDcEssConnected ? <Wire description="DC1 to DC BAT" d="M90.15 103.125 h168.69 v-41" /> : null }
+            { dc1AndDcBatConnected && dcBatAndDcEssConnected ? <Wire description="DC 1 to DC BAT and DC ESS" d="M90.15 103.125 h168.69 v-44 v58.40 v-14.4" /> : null }
+            { dc2AndDcBatConnected ? <Wire description="DC2 to DC BAT" d="M 341.16 103.125 h 166.66 h -166.66 v -42.52 v42.52" /> : null }
+
+            { acEssBusContactorClosed && !emergencyGeneratorSupplies ? <Wire description="AC ESS to ESS TR" d="M258.84 237.65 v 28.52 v -28.52" /> : null }
+            { trEssSuppliesDcEss ? <Wire description="ESS TR to DC ESS" d="M258.84 143.63 v 7.11 v -7.11" /> : null }
+            <Arrow description="ESS TR to DC ESS" green={trEssSuppliesDcEss} direction="up" x={258.84 - (arrowSize / 2)} y={157.58} />
+
+            { emergencyGeneratorSupplies ? <Wire description="EMER GEN to ESS TR" d="M 319.02 207.90 h -20.04 h 20.04" /> : null }
+            <Arrow description="EMER GEN to ESS TR" green={emergencyGeneratorSupplies} direction="left" x={326.25} y={214.77} />
+            { acEssBusContactorClosed && emergencyGeneratorSupplies ? (
+                <>
+                    <Wire description="EMER GEN to AC ESS" d="M 343.55 237.62 v 14.25 v -14.25" />
+                    <Arrow description="EMER GEN to AC ESS" green direction="down" x={350.42} y={252.87} />
+                </>
+            ) : null }
+
+            { externalPowerContactorClosed && busTieContactor1Closed && !busTieContactor2Closed ? (
+                <Wire description="EXT PWR to AC1" d="M56.44 302.81 v18.75 h305.10 v57.94" />
+            ) : null }
+            { externalPowerContactorClosed && !busTieContactor1Closed && busTieContactor2Closed ? (
+                <Wire description="EXT PWR to AC2" d="M536.25 302.81 v18.75 h-174.68 v57.94" />
+            ) : null }
+            { externalPowerContactorClosed && busTieContactor1Closed && busTieContactor2Closed ? (
+                <Wire description="EXT PWR to AC1 and AC2" d="M536.25 302.81 v18.75 h-174.68 v57.94 v-57.94 h-305.10 v-18.75" />
+            ) : null }
+
+            { apuGeneratorContactorClosed && busTieContactor1Closed && !busTieContactor2Closed ? (
+                <Wire description="APU GEN to AC1" d="M56.44 302.81 v18.75 h159.60 v35.67" />
+            ) : null }
+            { apuGeneratorContactorClosed && !busTieContactor1Closed && busTieContactor2Closed ? (
+                <Wire description="APU GEN to AC2" d="M536.25 302.81 v18.75 h-320.2 v35.67" />
+            ) : null }
+            { apuGeneratorContactorClosed && busTieContactor1Closed && busTieContactor2Closed ? (
+                <Wire description="APU GEN to AC1 and AC2" d="M536.25 302.81 v18.75 h-320.2 v35.67 v-35.67 h-159.60 v-18.75" />
+            ) : null }
+
+            { generatorLineContactor1Closed && !busTieContactor1Closed ? <Wire description="GEN1 to AC1" d="M56.44 302.81 v42.5 v-42.5" /> : null }
+            { generatorLineContactor1Closed && busTieContactor1Closed && busTieContactor2Closed
+                ? <Wire description="GEN1 to AC1 and AC2" d="M56.44 302.81 v42.5 v-23.75 h479.81 v-20.75" /> : null }
+
+            { generatorLineContactor2Closed && !busTieContactor2Closed ? <Wire description="GEN2 to AC2" d="M536.25 302.81 v42.5 v-42.5" /> : null }
+            { generatorLineContactor2Closed && busTieContactor1Closed && busTieContactor2Closed
+                ? <Wire description="GEN2 to AC1 and AC2" d="M536.25 302.81 v42.5 v-23.75 h-479.81 v-20.75" /> : null }
+
+            { generatorLineContactor1Closed || busTieContactor1Closed ? <Arrow description="AC1" green direction="up" x={56.25 - (arrowSize / 2)} y={303.77} /> : null }
+            { generatorLineContactor2Closed || busTieContactor2Closed ? <Arrow description="AC2" green direction="up" x={536.25 - (arrowSize / 2)} y={303.77} /> : null }
+            { externalPowerContactorClosed && (busTieContactor1Closed || busTieContactor2Closed) ? <Arrow description="EXT PWR" green direction="up" x={354.77} y={385.88} /> : null }
+            { apuGeneratorContactorClosed && (busTieContactor1Closed || busTieContactor2Closed) ? <Arrow description="APU GEN" green direction="up" x={209.09} y={363.75} /> : null }
+
             <Battery number={1} x={108.75} y={10} />
             <Battery number={2} x={405} y={10} />
-            <BatteryToBatBus number={1} x={196.611875} y={50.77125} />
-            <BatteryToBatBus number={2} x={367.724375} y={50.77125} />
             <BatteryBus x={232.5} y={35} width={135} />
             <Bus name="DC" number={1} isNormal={dc1IsPowered} x={6} y={90} width={86.25} />
             <Bus name="DC" number={2} isNormal={dc2IsPowered} x={507.75} y={90} width={86.25} />
@@ -49,6 +128,7 @@ export const ElecPage = () => {
             <TransformerRectifier number={2} x={493.125} y={161.25} />
             <TransformerRectifier number={3} x={213.75} y={161.25} titleOnly={!trEssInUse} />
             <EmergencyGenerator titleOnly={!emergencyGeneratorInUse} x={330} y={161.25} />
+
             { galleyIsShed ? <GalleyShed x={300} y={483.75} /> : null }
         </EcamPage>
     );
@@ -90,7 +170,7 @@ export const Battery = ({ number, x, y }) => {
     );
 };
 
-const BatteryToBatBus = ({ number, x, y }) => {
+const BatteryToBatBusWire = ({ number, x, y }) => {
     const [contactorClosed] = useSimVar(`L:A32NX_ELEC_CONTACTOR_6PB${number}_IS_CLOSED`, 'Bool', maxStaleness);
     const [current] = useSimVar(`L:A32NX_ELEC_BAT_${9 + number}_CURRENT`, 'Ampere', maxStaleness);
     const [showArrowWhenContactorClosed] = useSimVar(`L:A32NX_ELEC_CONTACTOR_6PB${number}_SHOW_ARROW_WHEN_CLOSED`, 'Bool', maxStaleness);
@@ -112,19 +192,19 @@ const BatteryToBatBus = ({ number, x, y }) => {
                     <>
                         { pointingRight ? (
                             <>
-                                <Wire amber={isDischarging} d="m 0.3 0 h 23.525625" />
+                                <Wire amber={isDischarging} d="M0.3 0 h24.53 h-24.53" />
                                 <Arrow direction="right" green={isCharging} amber={isDischarging} x={25.525625} y={-(arrowSize / 2)} />
                             </>
                         )
                             : (
                                 <>
-                                    <Wire amber={isDischarging} d="m 11.5 0 h 23.516625" />
+                                    <Wire amber={isDischarging} d="M11.5 0 h24.52 h-24.53" />
                                     <Arrow direction="left" green={isCharging} amber={isDischarging} x={10} y={arrowSize / 2} />
                                 </>
                             )}
 
                     </>
-                ) : <Wire d="m 0.3 0 h 35.150625" /> }
+                ) : <Wire d="M0.3 0 h36.15 h-36.15" /> }
         </SvgGroup>
     );
 };
@@ -381,28 +461,32 @@ const GalleyShed = ({ x, y }) => (
 );
 
 interface ArrowProps {
-    direction: 'up' | 'right' | 'left',
+    direction: 'up' | 'down' | 'right' | 'left',
     green?: boolean,
     amber?: boolean,
     x: number,
     y: number,
+    description?: string,
 }
 const Arrow = ({ direction, green, amber, x, y }: ArrowProps) => {
-    const classes = classNames('Arrow', { Green: green }, { Amber: amber });
+    const classes = classNames({ Green: green }, { Amber: amber });
     switch (direction) {
     default:
     case 'up':
-        return <path className={classes} d={`M${x} ${y}h${arrowSize}l-6.8685-8.99325z`} />;
+        return <path className={classes} d={`M${x} ${y}h${arrowSize} l-6.8685 -8.99325z`} />;
+    case 'down':
+        return <path className={classes} d={`M${x} ${y}h-${arrowSize} l6.8685 8.99325z`} />;
     case 'right':
-        return <path className={classes} d={`M${x} ${y}v${arrowSize}l8.99325-6.8685z`} />;
+        return <path className={classes} d={`M${x} ${y}v${arrowSize} l8.99325 -6.8685z`} />;
     case 'left':
-        return <path className={classes} d={`M${x} ${y}v-${arrowSize}l-8.99325 6.8685z`} />;
+        return <path className={classes} d={`M${x} ${y}v-${arrowSize} l-8.99325 6.8685z`} />;
     }
 };
 const arrowSize = 13.737375;
 
 interface WireProps {
     amber?: boolean,
+    description?: string,
     d: string
 }
 const Wire = ({ amber, d }: WireProps) => {

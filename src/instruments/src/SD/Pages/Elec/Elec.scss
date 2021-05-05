@@ -9,7 +9,7 @@
 
   path {
     stroke: #EEEEEE;
-    stroke-width: 2.75px;
+    stroke-width: 2.25px;
     stroke-linecap: square;
     stroke-linejoin: miter;
 
@@ -19,10 +19,6 @@
 
     &.Amber {
       stroke: $display-amber;
-    }
-
-    &.Arrow {
-      stroke-width: 2.25px;
     }
   }
 
