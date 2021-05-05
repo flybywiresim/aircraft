@@ -31,6 +31,8 @@ export const ElecPage = () => {
             <PageTitle text="ELEC" x={6} y={18} />
             <Battery number={1} x={108.75} y={10} />
             <Battery number={2} x={405} y={10} />
+            <BatteryToBatBus number={1} x={196.611875} y={50.77125} />
+            <BatteryToBatBus number={2} x={367.724375} y={50.77125} />
             <BatteryBus x={232.5} y={35} width={135} />
             <Bus name="DC" number={1} isNormal={dc1IsPowered} x={6} y={90} width={86.25} />
             <Bus name="DC" number={2} isNormal={dc2IsPowered} x={507.75} y={90} width={86.25} />
@@ -88,6 +90,45 @@ export const Battery = ({ number, x, y }) => {
     );
 };
 
+const BatteryToBatBus = ({ number, x, y }) => {
+    const [contactorClosed] = useSimVar(`L:A32NX_ELEC_CONTACTOR_6PB${number}_IS_CLOSED`, 'Bool', maxStaleness);
+    const [current] = useSimVar(`L:A32NX_ELEC_BAT_${9 + number}_CURRENT`, 'Ampere', maxStaleness);
+    const [showArrowWhenContactorClosed] = useSimVar(`L:A32NX_ELEC_CONTACTOR_6PB${number}_SHOW_ARROW_WHEN_CLOSED`, 'Bool', maxStaleness);
+
+    const showArrow = contactorClosed && showArrowWhenContactorClosed;
+    const isCharging = current > 0;
+    const isDischarging = current < 0;
+
+    const pointingRight = (number === 2 && isCharging) || (number === 1 && isDischarging);
+
+    if (!contactorClosed) {
+        return (<></>);
+    }
+
+    return (
+        <SvgGroup x={x} y={y}>
+            { showArrow
+                ? (
+                    <>
+                        { pointingRight ? (
+                            <>
+                                <Wire amber={isDischarging} d="m 0.3 0 h 23.525625" />
+                                <Arrow direction="right" green={isCharging} amber={isDischarging} x={25.525625} y={-(arrowSize / 2)} />
+                            </>
+                        )
+                            : (
+                                <>
+                                    <Wire amber={isDischarging} d="m 11.5 0 h 23.516625" />
+                                    <Arrow direction="left" green={isCharging} amber={isDischarging} x={10} y={arrowSize / 2} />
+                                </>
+                            )}
+
+                    </>
+                ) : <Wire d="m 0.3 0 h 35.150625" /> }
+        </SvgGroup>
+    );
+};
+
 const EcamPage = ({ name, children }) => (
     <svg id={name} version="1.1" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
         {children}
@@ -131,11 +172,11 @@ const Bus = ({ x, y, width, name, number, isNormal, isShed } : BusProps) => {
 const BatteryBus = ({ x, y, width }) => {
     const [isPowered] = useSimVar('L:A32NX_ELEC_DC_BAT_BUS_IS_POWERED', 'Bool', maxStaleness);
 
-    const [bat1IsAuto] = useSimVar('L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO', 'Bool');
-    const [bat2IsAuto] = useSimVar('L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO', 'Bool');
+    const [bat1IsAuto] = useSimVar('L:A32NX_OVHD_ELEC_BAT_10_PB_IS_AUTO', 'Bool', maxStaleness);
+    const [bat2IsAuto] = useSimVar('L:A32NX_OVHD_ELEC_BAT_11_PB_IS_AUTO', 'Bool', maxStaleness);
     const atLeastOneBatteryIsAuto = bat1IsAuto || bat2IsAuto;
 
-    const potentialIsWithinNormalRange = useSimVar('L:A32NX_ELEC_DC_BAT_BUS_POTENTIAL_NORMAL', 'Bool');
+    const potentialIsWithinNormalRange = useSimVar('L:A32NX_ELEC_DC_BAT_BUS_POTENTIAL_NORMAL', 'Bool', maxStaleness);
 
     const name = atLeastOneBatteryIsAuto ? 'DC BAT' : 'XX';
     return (<Bus x={x} y={y} width={width} name={name} isNormal={isPowered && potentialIsWithinNormalRange && atLeastOneBatteryIsAuto} />);
@@ -275,7 +316,7 @@ const TransformerRectifier = ({ number, titleOnly, x, y }: TransformerRectifierP
     const [potentialWithinNormalRange] = useSimVar(`L:A32NX_ELEC_TR_${number}_POTENTIAL_NORMAL`, 'Bool', maxStaleness);
 
     const [current] = useSimVar(`L:A32NX_ELEC_TR_${number}_CURRENT`, 'Ampere', maxStaleness);
-    const [currentWithinNormalRange] = useSimVar(`L:A32NX_ELEC_TR_${number}_CURRENT_NORMAL`, 'Bool');
+    const [currentWithinNormalRange] = useSimVar(`L:A32NX_ELEC_TR_${number}_CURRENT_NORMAL`, 'Bool', maxStaleness);
 
     const allParametersWithinNormalRange = potentialWithinNormalRange && currentWithinNormalRange;
 
@@ -310,7 +351,7 @@ const EmergencyGenerator = ({ titleOnly, x, y }) => {
     const [potentialWithinNormalRange] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL_NORMAL', 'Bool', maxStaleness);
 
     const [frequency] = useSimVar('L:A32NX_ELEC_EMER_GEN_FREQUENCY', 'Hertz', maxStaleness);
-    const [frequencyWithinNormalRange] = useSimVar('L:A32NX_ELEC_EMER_GEN_FREQUENCY_NORMAL', 'Bool');
+    const [frequencyWithinNormalRange] = useSimVar('L:A32NX_ELEC_EMER_GEN_FREQUENCY_NORMAL', 'Bool', maxStaleness);
 
     const allParametersWithinNormalRange = potentialWithinNormalRange && frequencyWithinNormalRange;
 
@@ -340,7 +381,7 @@ const GalleyShed = ({ x, y }) => (
 );
 
 interface ArrowProps {
-    direction: 'up' | 'right',
+    direction: 'up' | 'right' | 'left',
     green?: boolean,
     amber?: boolean,
     x: number,
@@ -351,10 +392,22 @@ const Arrow = ({ direction, green, amber, x, y }: ArrowProps) => {
     switch (direction) {
     default:
     case 'up':
-        return <path className={classes} d={`M${x} ${y}h13.737375l-6.8685-8.99325z`} />;
+        return <path className={classes} d={`M${x} ${y}h${arrowSize}l-6.8685-8.99325z`} />;
     case 'right':
-        return <path className={classes} d={`M${x} ${y}v13.737375l8.99325-6.8685z`} />;
+        return <path className={classes} d={`M${x} ${y}v${arrowSize}l8.99325-6.8685z`} />;
+    case 'left':
+        return <path className={classes} d={`M${x} ${y}v-${arrowSize}l-8.99325 6.8685z`} />;
     }
+};
+const arrowSize = 13.737375;
+
+interface WireProps {
+    amber?: boolean,
+    d: string
+}
+const Wire = ({ amber, d }: WireProps) => {
+    const classes = classNames({ Green: !amber }, { Amber: amber });
+    return <path className={classes} d={d} />;
 };
 
 ReactDOM.render(<SimVarProvider><ElecPage /></SimVarProvider>, getRenderTarget());

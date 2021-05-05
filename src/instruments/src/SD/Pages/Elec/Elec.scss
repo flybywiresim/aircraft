@@ -7,12 +7,11 @@
     stroke-width: 2.5px;
   }
 
-  .Arrow {
-      stroke-width: 2.25px;
-  }
-
   path {
     stroke: #EEEEEE;
+    stroke-width: 2.75px;
+    stroke-linecap: square;
+    stroke-linejoin: miter;
 
     &.Green {
       stroke: $display-green;
@@ -20,6 +19,10 @@
 
     &.Amber {
       stroke: $display-amber;
+    }
+
+    &.Arrow {
+      stroke-width: 2.25px;
     }
   }
 
