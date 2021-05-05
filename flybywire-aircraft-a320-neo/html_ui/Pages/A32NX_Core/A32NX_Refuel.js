@@ -5,7 +5,7 @@ class A32NX_Refuel {
     constructor() {}
 
     init() {
-        const totalFuelGallons = 6267;
+        const totalFuelGallons = 6243;
         const fuelWeight = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms");
         const usingMetrics = SimVar.GetSimVarValue("L:A32NX_CONFIG_USING_METRIC_UNIT", "Number");
         const centerCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons");
