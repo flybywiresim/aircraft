@@ -354,7 +354,7 @@ impl A320Hydraulic {
         );
 
         self.engine_driven_pump_1_pressure_switch
-            .update(self.green_loop.get_pressure());
+            .update(self.green_loop.pressure());
         self.engine_driven_pump_1_controller.update(
             overhead_panel,
             engine_fire_overhead,
@@ -370,7 +370,7 @@ impl A320Hydraulic {
         );
 
         self.engine_driven_pump_2_pressure_switch
-            .update(self.yellow_loop.get_pressure());
+            .update(self.yellow_loop.pressure());
         self.engine_driven_pump_2_controller.update(
             overhead_panel,
             engine_fire_overhead,
@@ -977,7 +977,7 @@ impl A320HydraulicBrakingLogic {
         alternate_circuit: &BrakeCircuit,
         landing_gear: &LandingGear,
     ) {
-        self.update_normal_braking_availability(&green_loop.get_pressure());
+        self.update_normal_braking_availability(&green_loop.pressure());
 
         let is_in_flight_gear_lever_up = !self.weight_on_wheels && !self.is_gear_lever_down;
         self.should_disable_auto_brake_when_retracting.update(
@@ -1018,9 +1018,9 @@ impl A320HydraulicBrakingLogic {
                     self.right_brake_yellow_output = 1.;
 
                     // Special case: parking brake on but yellow can't provide enough brakes: green are allowed to brake for emergency
-                    if alternate_circuit.get_brake_pressure_left().get::<psi>()
+                    if alternate_circuit.left_brake_pressure().get::<psi>()
                         < Self::MIN_PRESSURE_PARK_BRAKE_EMERGENCY
-                        || alternate_circuit.get_brake_pressure_right().get::<psi>()
+                        || alternate_circuit.right_brake_pressure().get::<psi>()
                             < Self::MIN_PRESSURE_PARK_BRAKE_EMERGENCY
                     {
                         self.left_brake_green_output = self.left_brake_pilot_input;
@@ -1290,7 +1290,7 @@ mod tests {
             }
 
             fn get_yellow_brake_accumulator_fluid_volume(&self) -> Volume {
-                self.hydraulics.braking_circuit_altn.get_acc_fluid_volume()
+                self.hydraulics.braking_circuit_altn.acc_fluid_volume()
             }
 
             fn is_nws_pin_inserted(&self) -> bool {

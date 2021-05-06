@@ -15,7 +15,7 @@ use crate::simulation::{SimulationElement, SimulationElementVisitor, SimulatorWr
 use crate::{engine::Engine, simulation::UpdateContext};
 
 pub mod brakecircuit;
-use crate::hydraulic::brakecircuit::ActuatorHydInterface;
+use crate::hydraulic::brakecircuit::Actuator;
 
 // Trait common to all hydraulic pumps
 // Max gives maximum available volume at that time as if it is a variable displacement
@@ -23,8 +23,8 @@ use crate::hydraulic::brakecircuit::ActuatorHydInterface;
 // Min will give minimum volume that will be outputed no matter what. example if there is a minimal displacement or
 // a fixed displacement (ie. elec pump)
 pub trait PressureSource {
-    fn get_delta_vol_max(&self) -> Volume;
-    fn get_delta_vol_min(&self) -> Volume;
+    fn delta_vol_max(&self) -> Volume;
+    fn delta_vol_min(&self) -> Volume;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ impl HydFluid {
         }
     }
 
-    pub fn get_bulk_mod(&self) -> Pressure {
+    pub fn bulk_mod(&self) -> Pressure {
         self.current_bulk
     }
 }
@@ -115,11 +115,11 @@ impl PowerTransferUnit {
         }
     }
 
-    pub fn get_flow(&self) -> VolumeRate {
+    pub fn flow(&self) -> VolumeRate {
         self.last_flow
     }
 
-    pub fn get_is_active(&self) -> bool {
+    pub fn is_active(&self) -> bool {
         self.is_active_right || self.is_active_left
     }
 
@@ -127,11 +127,11 @@ impl PowerTransferUnit {
         self.is_enabled
     }
 
-    pub fn get_is_active_left_to_right(&self) -> bool {
+    pub fn is_active_left_to_right(&self) -> bool {
         self.is_active_left
     }
 
-    pub fn get_is_active_right_to_left(&self) -> bool {
+    pub fn is_active_right_to_left(&self) -> bool {
         self.is_active_right
     }
 
@@ -143,7 +143,7 @@ impl PowerTransferUnit {
     ) {
         self.is_enabled = controller.should_enable();
 
-        let delta_p = loop_left.get_pressure() - loop_right.get_pressure();
+        let delta_p = loop_left.pressure() - loop_right.pressure();
 
         if !self.is_enabled
             || self.is_active_right && delta_p.get::<psi>() > -5.
@@ -208,7 +208,7 @@ impl SimulationElement for PowerTransferUnit {
         writer.write_bool("HYD_PTU_ACTIVE_R2L", self.is_active_right);
         writer.write_f64(
             "HYD_PTU_MOTOR_FLOW",
-            self.get_flow().get::<gallon_per_second>(),
+            self.flow().get::<gallon_per_second>(),
         );
         writer.write_bool("HYD_PTU_VALVE_OPENED", self.is_enabled());
     }
@@ -321,11 +321,11 @@ impl HydraulicAccumulator {
         volume_from_acc
     }
 
-    pub fn get_fluid_volume(&self) -> Volume {
+    pub fn fluid_volume(&self) -> Volume {
         self.fluid_volume
     }
 
-    pub fn get_raw_gas_press(&self) -> Pressure {
+    pub fn raw_gas_press(&self) -> Pressure {
         self.gas_pressure
     }
 }
@@ -417,39 +417,39 @@ impl HydraulicLoop {
         }
     }
 
-    pub fn get_current_flow(&self) -> VolumeRate {
+    pub fn current_flow(&self) -> VolumeRate {
         self.current_flow
     }
 
-    pub fn get_current_delta_vol(&self) -> Volume {
+    pub fn current_delta_vol(&self) -> Volume {
         self.current_delta_vol
     }
 
-    pub fn get_accumulator_gas_pressure(&self) -> Pressure {
+    pub fn accumulator_gas_pressure(&self) -> Pressure {
         self.accumulator.gas_pressure
     }
 
-    pub fn get_accumulator_fluid_volume(&self) -> Volume {
+    pub fn accumulator_fluid_volume(&self) -> Volume {
         self.accumulator.fluid_volume
     }
 
-    pub fn get_pressure(&self) -> Pressure {
+    pub fn pressure(&self) -> Pressure {
         self.loop_pressure
     }
 
-    pub fn get_reservoir_volume(&self) -> Volume {
+    pub fn reservoir_volume(&self) -> Volume {
         self.reservoir_volume
     }
 
-    pub fn get_loop_fluid_volume(&self) -> Volume {
+    pub fn loop_fluid_volume(&self) -> Volume {
         self.loop_volume
     }
 
-    pub fn get_max_volume(&self) -> Volume {
+    pub fn max_volume(&self) -> Volume {
         self.max_loop_volume
     }
 
-    pub fn get_accumulator_gas_volume(&self) -> Volume {
+    pub fn accumulator_gas_volume(&self) -> Volume {
         self.accumulator.gas_volume
     }
 
@@ -461,9 +461,9 @@ impl HydraulicLoop {
         drawn
     }
 
-    pub fn update_actuator_volumes<T: ActuatorHydInterface>(&mut self, actuator: &T) {
-        self.total_actuators_consumed_volume += actuator.get_used_volume();
-        self.total_actuators_returned_volume += actuator.get_reservoir_return();
+    pub fn update_actuator_volumes<T: Actuator>(&mut self, actuator: &T) {
+        self.total_actuators_consumed_volume += actuator.used_volume();
+        self.total_actuators_returned_volume += actuator.reservoir_return();
     }
 
     // Returns the max flow that can be output from reservoir in dt time
@@ -480,13 +480,13 @@ impl HydraulicLoop {
     // Method to update pressure of a loop. The more delta volume is added, the more pressure rises
     // directly from bulk modulus equation
     pub fn delta_pressure_from_delta_volume(&self, delta_vol: Volume) -> Pressure {
-        return delta_vol / self.high_pressure_volume * self.fluid.get_bulk_mod();
+        return delta_vol / self.high_pressure_volume * self.fluid.bulk_mod();
     }
 
     // Gives the exact volume of fluid needed to get to any target_press pressure
     pub fn vol_to_target(&self, target_press: Pressure) -> Volume {
         (target_press - self.loop_pressure) * (self.high_pressure_volume)
-            / self.fluid.get_bulk_mod()
+            / self.fluid.bulk_mod()
     }
 
     pub fn is_fire_shutoff_valve_opened(&self) -> bool {
@@ -558,17 +558,17 @@ impl HydraulicLoop {
 
         if self.fire_shutoff_valve_opened {
             for p in engine_driven_pumps {
-                delta_vol_max += p.get_delta_vol_max();
-                delta_vol_min += p.get_delta_vol_min();
+                delta_vol_max += p.delta_vol_max();
+                delta_vol_min += p.delta_vol_min();
             }
         }
         for p in electric_pumps {
-            delta_vol_max += p.get_delta_vol_max();
-            delta_vol_min += p.get_delta_vol_min();
+            delta_vol_max += p.delta_vol_max();
+            delta_vol_min += p.delta_vol_min();
         }
         for p in ram_air_pumps {
-            delta_vol_max += p.get_delta_vol_max();
-            delta_vol_min += p.get_delta_vol_min();
+            delta_vol_max += p.delta_vol_max();
+            delta_vol_min += p.delta_vol_min();
         }
 
         // Storing max pump capacity available. for now used in PTU model to limit it's input flow
@@ -656,10 +656,10 @@ impl HydraulicLoop {
 }
 impl SimulationElement for HydraulicLoop {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(&self.pressure_id, self.get_pressure().get::<psi>());
+        writer.write_f64(&self.pressure_id, self.pressure().get::<psi>());
         writer.write_f64(
             &self.reservoir_id,
-            self.get_reservoir_volume().get::<gallon>(),
+            self.reservoir_volume().get::<gallon>(),
         );
         if self.has_fire_valve {
             writer.write_bool(&self.fire_valve_id, self.is_fire_shutoff_valve_opened());
@@ -703,7 +703,7 @@ impl Pump {
         rpm: f64,
         controller: &T,
     ) {
-        let theoretical_displacement = self.calculate_displacement(line.get_pressure(), controller);
+        let theoretical_displacement = self.calculate_displacement(line.pressure(), controller);
 
         // Actual displacement is the calculated one with a low pass filter applied to mimic displacement transients dynamic
         self.current_displacement = (1.0 - self.displacement_dynamic) * self.current_displacement
@@ -736,11 +736,11 @@ impl Pump {
     }
 }
 impl PressureSource for Pump {
-    fn get_delta_vol_max(&self) -> Volume {
+    fn delta_vol_max(&self) -> Volume {
         self.delta_vol_max
     }
 
-    fn get_delta_vol_min(&self) -> Volume {
+    fn delta_vol_min(&self) -> Volume {
         self.delta_vol_min
     }
 }
@@ -775,7 +775,7 @@ impl ElectricPump {
         }
     }
 
-    pub fn get_rpm(&self) -> f64 {
+    pub fn rpm(&self) -> f64 {
         self.rpm
     }
 
@@ -805,11 +805,11 @@ impl ElectricPump {
     }
 }
 impl PressureSource for ElectricPump {
-    fn get_delta_vol_max(&self) -> Volume {
-        self.pump.get_delta_vol_max()
+    fn delta_vol_max(&self) -> Volume {
+        self.pump.delta_vol_max()
     }
-    fn get_delta_vol_min(&self) -> Volume {
-        self.pump.get_delta_vol_min()
+    fn delta_vol_min(&self) -> Volume {
+        self.pump.delta_vol_min()
     }
 }
 impl SimulationElement for ElectricPump {
@@ -868,11 +868,11 @@ impl EngineDrivenPump {
     }
 }
 impl PressureSource for EngineDrivenPump {
-    fn get_delta_vol_min(&self) -> Volume {
-        self.pump.get_delta_vol_min()
+    fn delta_vol_min(&self) -> Volume {
+        self.pump.delta_vol_min()
     }
-    fn get_delta_vol_max(&self) -> Volume {
-        self.pump.get_delta_vol_max()
+    fn delta_vol_max(&self) -> Volume {
+        self.pump.delta_vol_max()
     }
 }
 impl SimulationElement for EngineDrivenPump {
@@ -908,7 +908,7 @@ impl WindTurbine {
         }
     }
 
-    pub fn get_rpm(&self) -> f64 {
+    pub fn rpm(&self) -> f64 {
         self.rpm
     }
 
@@ -969,7 +969,7 @@ impl WindTurbine {
 }
 impl SimulationElement for WindTurbine {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64("HYD_RAT_RPM", self.get_rpm());
+        writer.write_f64("HYD_RAT_RPM", self.rpm());
     }
 }
 impl Default for WindTurbine {
@@ -1052,7 +1052,7 @@ impl RamAirTurbine {
         self.pump.update(
             context,
             line,
-            self.wind_turbine.get_rpm(),
+            self.wind_turbine.rpm(),
             &self.pump_controller,
         );
 
@@ -1063,7 +1063,7 @@ impl RamAirTurbine {
 
     pub fn update_physics(&mut self, delta_time: &Duration, indicated_airspeed: &Velocity) {
         // Calculate the ratio of current displacement vs max displacement as an image of the load of the pump
-        let displacement_ratio = self.get_delta_vol_max().get::<gallon>() / self.max_displacement;
+        let displacement_ratio = self.delta_vol_max().get::<gallon>() / self.max_displacement;
         self.wind_turbine.update(
             &delta_time,
             &indicated_airspeed,
@@ -1086,12 +1086,12 @@ impl RamAirTurbine {
     }
 }
 impl PressureSource for RamAirTurbine {
-    fn get_delta_vol_max(&self) -> Volume {
-        self.pump.get_delta_vol_max()
+    fn delta_vol_max(&self) -> Volume {
+        self.pump.delta_vol_max()
     }
 
-    fn get_delta_vol_min(&self) -> Volume {
-        self.pump.get_delta_vol_min()
+    fn delta_vol_min(&self) -> Volume {
+        self.pump.delta_vol_min()
     }
 }
 impl SimulationElement for RamAirTurbine {
@@ -1260,7 +1260,7 @@ mod tests {
                 );
                 println!(
                     "--------Acc Fluid Volume (L): {}",
-                    green_loop.accumulator.get_fluid_volume().get::<liter>()
+                    green_loop.accumulator.fluid_volume().get::<liter>()
                 );
                 println!(
                     "--------Acc Gas Volume (L): {}",
@@ -1268,7 +1268,7 @@ mod tests {
                 );
                 println!(
                     "--------Acc Gas Pressure (psi): {}",
-                    green_loop.accumulator.get_raw_gas_press().get::<psi>()
+                    green_loop.accumulator.raw_gas_press().get::<psi>()
                 );
             }
         }
@@ -1441,7 +1441,7 @@ mod tests {
                 println!("---PSI: {}", blue_loop.loop_pressure.get::<psi>());
                 println!("---RAT stow pos: {}", rat.position);
                 println!("---RAT RPM: {}", rat.wind_turbine.rpm);
-                println!("---RAT volMax: {}", rat.get_delta_vol_max().get::<gallon>());
+                println!("---RAT volMax: {}", rat.delta_vol_max().get::<gallon>());
                 println!(
                     "--------Reservoir Volume (g): {}",
                     blue_loop.reservoir_volume.get::<gallon>()
@@ -1731,7 +1731,7 @@ mod tests {
             ); //Update 10 times to stabilize displacement
 
             edp.update(context, &line, &eng, &engine_driven_pump_controller);
-            edp.get_delta_vol_max()
+            edp.delta_vol_max()
         }
 
         fn get_edp_predicted_delta_vol_when(
