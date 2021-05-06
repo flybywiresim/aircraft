@@ -6,11 +6,6 @@ use crate::{
 use std::f64::consts::E;
 use std::string::String;
 
-#[cfg(test)]
-use std::time::Duration;
-#[cfg(test)]
-use uom::si::acceleration::foot_per_second_squared;
-
 use uom::si::{f64::*, pressure::psi, volume::gallon};
 
 use super::Accumulator;
@@ -112,8 +107,8 @@ impl Actuator for BrakeActuator {
 }
 
 /// Brakes implementation. This tries to do a simple model with a possibility to have an accumulator (or not)
-/// Brake model is simplified as we just move brake position from 0 to 1 and take conrresponding fluid volume (vol = max_displacement * brake_position).
-/// So it's fairly simplified as we just end up with brake pressure = hyd_pressure * current_position
+/// Brake model is simplified as we just move brake actuator position from 0 to 1 and take corresponding fluid volume (vol = max_displacement * brake_position).
+/// So it's fairly simplified as we just end up with brake pressure = PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI * current_position
 pub struct BrakeCircuit {
     _id: String,
     id_left_press: String,
@@ -331,91 +326,13 @@ impl SimulationElement for BrakeCircuit {
 }
 
 #[cfg(test)]
-struct AutoBrakeController {
-    accel_targets: Vec<Acceleration>,
-
-    current_selected_mode: usize,
-
-    pub current_filtered_accel: Acceleration,
-
-    pub current_accel_error: Acceleration,
-    accel_error_prev: Acceleration,
-    current_integral_term: f64,
-
-    // Controller brake demand to satisfy autobrake mode [0:1]
-    current_brake_demand: f64,
-
-    is_enabled: bool,
-}
-#[cfg(test)]
-impl AutoBrakeController {
-    const LONG_ACC_FILTER_TIMECONST: f64 = 0.1;
-
-    const CONTROLLER_P_GAIN: f64 = 0.05;
-    const CONTROLLER_I_GAIN: f64 = 0.001;
-    const CONTROLLER_D_GAIN: f64 = 0.01;
-
-    fn new(accel_targets: Vec<Acceleration>) -> AutoBrakeController {
-        let num = accel_targets.len();
-        assert!(num > 0);
-        AutoBrakeController {
-            accel_targets,
-            current_selected_mode: 0,
-            current_filtered_accel: Acceleration::new::<foot_per_second_squared>(0.0),
-            current_accel_error: Acceleration::new::<foot_per_second_squared>(0.0),
-            accel_error_prev: Acceleration::new::<foot_per_second_squared>(0.0),
-            current_integral_term: 0.,
-            current_brake_demand: 0.,
-            is_enabled: false,
-        }
-    }
-
-    fn update(&mut self, delta_time: &Duration, context: &UpdateContext) {
-        self.current_filtered_accel = self.current_filtered_accel
-            + (context.long_accel() - self.current_filtered_accel)
-                * (1.
-                    - E.powf(
-                        -delta_time.as_secs_f64() / AutoBrakeController::LONG_ACC_FILTER_TIMECONST,
-                    ));
-
-        self.current_accel_error =
-            self.current_filtered_accel - self.accel_targets[self.current_selected_mode];
-
-        if self.is_enabled && context.is_on_ground() {
-            let pterm = self.current_accel_error.get::<foot_per_second_squared>()
-                * AutoBrakeController::CONTROLLER_P_GAIN;
-            let dterm = (self.current_accel_error - self.accel_error_prev)
-                .get::<foot_per_second_squared>()
-                * AutoBrakeController::CONTROLLER_D_GAIN;
-            self.current_integral_term += self.current_accel_error.get::<foot_per_second_squared>()
-                * AutoBrakeController::CONTROLLER_I_GAIN;
-
-            let current_brake_dmnd = pterm + self.current_integral_term + dterm;
-            self.current_brake_demand = current_brake_dmnd.min(1.).max(0.);
-        } else {
-            self.current_brake_demand = 0.0;
-            self.current_integral_term = 0.0;
-        }
-    }
-
-    #[cfg(test)]
-    fn brake_command(&self) -> f64 {
-        self.current_brake_demand
-    }
-
-    #[cfg(test)]
-    fn enable(&mut self) {
-        self.is_enabled = true;
-    }
-}
-
-#[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
         hydraulic::{Fluid, HydraulicLoop},
         simulation::UpdateContext,
     };
+    use std::time::Duration;
     use uom::si::{
         acceleration::foot_per_second_squared,
         length::foot,
@@ -694,25 +611,6 @@ mod tests {
         // After one second it should have reached the lower limit
         assert!(brake_circuit_primed.left_brake_pressure() <= pressure_limit);
         assert!(brake_circuit_primed.right_brake_pressure() <= pressure_limit);
-    }
-
-    #[test]
-    fn auto_brake_controller() {
-        let mut controller = AutoBrakeController::new(vec![
-            Acceleration::new::<foot_per_second_squared>(-1.5),
-            Acceleration::new::<foot_per_second_squared>(-3.),
-            Acceleration::new::<foot_per_second_squared>(-15.),
-        ]);
-        let context = context(Duration::from_secs_f64(0.));
-
-        assert!(controller.brake_command() <= 0.0);
-
-        controller.update(&context.delta(), &context);
-        assert!(controller.brake_command() <= 0.0);
-
-        controller.enable();
-        controller.update(&context.delta(), &context);
-        assert!(controller.brake_command() >= 0.0);
     }
 
     fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {

@@ -985,7 +985,7 @@ impl RamAirTurbine {
     ];
     const DISPLACEMENT_MAP: [f64; 9] = [1.15, 1.15, 1.15, 1.15, 1.15, 0.5, 0.0, 0.0, 0.0];
 
-    // 1 == no filtering. !!Warning, this will be affected by a different delta time
+    // 1 == no filtering. 0.1 == 90% filtering. 0.2==80%... !!Warning, filter frequency is time delta dependant.
     const DISPLACEMENT_DYNAMICS: f64 = 0.2;
 
     // Speed to go from 0 to 1 stow position per sec. 1 means full deploying in 1s
