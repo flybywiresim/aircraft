@@ -189,11 +189,15 @@ class SimConnectInterface {
 
   ClientDataAutothrust getClientDataAutothrust();
 
+  bool setClientDataFlyByWire(ClientDataFlyByWire output);
+  ClientDataFlyByWire getClientDataFlyByWire();
+
  private:
   enum ClientData {
     AUTOPILOT_STATE_MACHINE,
     AUTOPILOT_LAWS,
     AUTOTHRUST,
+    FLY_BY_WIRE,
     LOCAL_VARIABLES,
     LOCAL_VARIABLES_AUTOTHRUST,
   };
@@ -214,6 +218,7 @@ class SimConnectInterface {
   ClientDataAutopilotStateMachine clientDataAutopilotStateMachine = {};
   ClientDataAutopilotLaws clientDataAutopilotLaws = {};
   ClientDataAutothrust clientDataAutothrust = {};
+  ClientDataFlyByWire clientDataFlyByWire = {};
 
   double flightControlsKeyChangeAileron = 0.0;
   double flightControlsKeyChangeElevator = 0.0;

@@ -243,11 +243,17 @@ A32NX.FCU_EXPED_PUSH | Push EXPED button on FCU
 
 #### Not solved or missing
 
-* ❌ High speed protection
-* ❌ High angle of attack (AoA) protection
 * ❌ Alternative Law
 * ❌ Direct Law (in flight)
 * ❌ Simulation of hydraulic system missing -> when engines are off / electric pump is off control surfaces should not work
+* ❌ Pitch attitude and load factor limitation are currently not applied in high angle of attack (AoA) protection
+
+#### First implementation available
+
+* 🔸 High speed protection
+* 🔸 High angle of attack (AoA) protection
+* 🔸 V_LS, V_alpha_prot, V_alpha_max are not finished and will be further improved
+* 🔸 Increasing thrust rapidly while being in high alpha protection may additionally trigger alpha floor
 
 #### Considered solved
 
