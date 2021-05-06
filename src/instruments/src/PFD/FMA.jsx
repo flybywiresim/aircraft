@@ -344,7 +344,7 @@ const B1Cell = () => {
                 <path className="NormalStroke White" d="m34.656 1.8143h29.918v6.0476h-29.918z" />
             </ShowForSeconds>
             {inProtection && (activeVerticalMode === 14 || activeVerticalMode === 15)
-            && <path className="NormalStroke Amber" d="m34.656 1.8143h29.918v6.0476h-29.918z" />}
+            && <path className="NormalStroke Amber BlinkInfinite" d="m34.656 1.8143h29.918v6.0476h-29.918z" />}
             <text className="FontMedium MiddleAlign Green" x="49.498924" y="6.8785663" xmlSpace="preserve">{text}</text>
         </g>
     );

@@ -117,7 +117,7 @@
 			<Type>Warning</Type>
 			<SoundEvent>aural_stall</SoundEvent>
 			<Condition>
-				<Simvar name="STALL WARNING" unit="Bool"/>
+				<Simvar name="L:A32NX_STALL_WARNING" unit="Bool"/>
 			</Condition>
 		</Alert>
 	</VoicesAlerts>
