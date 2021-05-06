@@ -9,7 +9,7 @@ use std::string::String;
 #[cfg(test)]
 use std::time::Duration;
 #[cfg(test)]
-use uom::si::{acceleration::foot_per_second_squared};
+use uom::si::acceleration::foot_per_second_squared;
 
 use uom::si::{f64::*, pressure::psi, volume::gallon};
 
@@ -333,7 +333,6 @@ impl SimulationElement for BrakeCircuit {
 #[cfg(test)]
 struct AutoBrakeController {
     accel_targets: Vec<Acceleration>,
-    num_of_modes: usize,
 
     current_selected_mode: usize,
 
@@ -361,7 +360,6 @@ impl AutoBrakeController {
         assert!(num > 0);
         AutoBrakeController {
             accel_targets,
-            num_of_modes: num,
             current_selected_mode: 0,
             current_filtered_accel: Acceleration::new::<foot_per_second_squared>(0.0),
             current_accel_error: Acceleration::new::<foot_per_second_squared>(0.0),
