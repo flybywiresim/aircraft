@@ -1,0 +1,19 @@
+@import "../Common/definitions";
+
+@font-face {
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/fonts/ECAMFontRegular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.pfd-svg {
+  position: absolute;
+  width: 1280px;
+  height: 1280px;
+
+  background: $display-background;
+
+  font-family: "Ecam", monospace !important;
+}
