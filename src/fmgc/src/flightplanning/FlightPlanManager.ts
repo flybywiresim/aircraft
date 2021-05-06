@@ -23,10 +23,10 @@
  * SOFTWARE.
  */
 
-import { WTDataStore } from 'WorkingTitle';
 import { ManagedFlightPlan, GPS } from '../wtsdk';
 import { FlightPlanSegment } from './FlightPlanSegment';
 import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
+import { NXDataStore } from '../../../instruments/src/Common/persistence';
 
 /**
  * A system for managing flight plan data used by various instruments.
@@ -71,7 +71,7 @@ export class FlightPlanManager {
               plan.setParentInstrument(_parentInstrument);
               this._flightPlans = [];
               this._flightPlans.push(plan);
-              if (WTDataStore.get('WT_CJ4_FPSYNC', 0) !== 0) {
+              if (NXDataStore.get('WT_CJ4_FPSYNC', 0) !== 0) {
                   this.pauseSync();
                   await FlightPlanAsoboSync.LoadFromGame(this);
               }
