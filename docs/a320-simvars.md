@@ -1,5 +1,15 @@
 # A320neo Local SimVars
 
+## Contents
+
+1. [Uncategorized](#uncategorized)
+1. [Fly-By-Wire System](#fly-by-wire-system)
+1. [Autopilot System](#autopilot-system)
+1. [Autothrust System](#autothrust-system)
+1. [Throttle Mapping System](#throttle-mapping-system)
+
+## Uncategorized
+
 - A32NX_NO_SMOKING_MEMO
     - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM
     - Also is used for knowing when to play the no smoking chime sound
@@ -34,15 +44,15 @@
     - celsius
     - represents the reported brake temperature of the rear wheels by the sensor.
     - It can be different from the brake temperature when the brake fan has been used, because the brake fan will cool the sensor more than the brakes
-	- (which have much more energy to dissipate) therefore giving potentially erroneous readings that the pilots must take into account
+    - (which have much more energy to dissipate) therefore giving potentially erroneous readings that the pilots must take into account
 
 - A32NX_BRAKE_FAN
-	- boolean
-	- whether or not the brake fan is running (brake fan button pressed AND left main landing gear down and locked)
+    - boolean
+    - whether or not the brake fan is running (brake fan button pressed AND left main landing gear down and locked)
 
 - A32NX_BRAKE_FAN_BTN_PRESSED
-	- boolean
-	- whether or not the brake fan button is pressed
+    - boolean
+    - whether or not the brake fan button is pressed
 
 - A32NX_BRAKES_HOT
     - boolean
@@ -176,14 +186,6 @@
     - Bool
     - True if pitot heating auto
 
-- A32NX_EMERELECPWR_GEN1_FAULT
-    - Bool
-    - True if generator 1 line fault
-
-- A32NX_EMERELECPWR_GEN1_TOGGLE
-    - Bool
-    - True if generator 1 line is off
-
 - A32NX_EMERELECPWR_RAT_FAULT
     - Bool
     - True if RAT elec power fault
@@ -280,6 +282,7 @@
 - A32NX_FWC_FLIGHT_PHASE
     - Enum
     - Contains the numeric flight phase as determined by the FWC
+    - Input for: systems.wasm
 
 - A32NX_FWC_SKIP_STARTUP
     - Bool
@@ -398,7 +401,7 @@
     - Bool
     - Indicates if the APU fire button is RELEASED
 
- - A32NX_RMP_L_TOGGLE_SWITCH
+- A32NX_RMP_L_TOGGLE_SWITCH
     - Boolean
     - Whether the left radio management panel toggle switch is on or off.
 
@@ -455,104 +458,104 @@
     - Indicates whether the door slides are armed or not
 
 - A32NX_RAIN_REPELLENT_RIGHT_ON
-    -Bool
-    -True if rain repellent is activated on the right windshield.
+  - Bool
+  - True if rain repellent is activated on the right windshield.
 
 - A32NX_RAIN_REPELLENT_LEFT_ON
-    -Bool
-    -True if rain repellent is activated on the left windshield.
+  - Bool
+  - True if rain repellent is activated on the left windshield.
 
 - A32NX_RCDR_TEST
-    -Bool
-    -True if RCDR being tested.
+  - Bool
+  - True if RCDR being tested.
 
 - A32NX_RADAR_MULTISCAN_AUTO
-    -Bool
-    -True if multiscan switch is set to AUTO.
+  - Bool
+  - True if multiscan switch is set to AUTO.
 
 - A32NX_RADAR_GCS_AUTO
-    -Bool
-    -True if GCS switch is set to AUTO.
+  - Bool
+  - True if GCS switch is set to AUTO.
 
--A32NX_OXYGEN_MASKS_DEPLOYED
-    -Bool
-    -True if cabin oxygen masks have been deployed.
+- A32NX_OXYGEN_MASKS_DEPLOYED
+    - Bool
+    - True if cabin oxygen masks have been deployed.
 
--A32NX_RCDR_GROUND_CONTROL_ON
-    -Bool
-    -True if ground control is on.
+- A32NX_RCDR_GROUND_CONTROL_ON
+    - Bool
+    - True if ground control is on.
 
--A32NX_EMERELECPWR_MAN_ON
-    -Bool
-    -True if Ram Air Turbine has been manually deployed.
+- A32NX_EMERELECPWR_MAN_ON
+    - Bool
+    - True if Ram Air Turbine has been manually deployed.
 
--A32NX_EMERELECPWR_GEN_TEST
-    -Bool
-    -True if emergency generator is being tested.
+- A32NX_EMERELECPWR_GEN_TEST
+    - Bool
+    - True if emergency generator is being tested.
 
--A32NX_OXYGEN_PASSENGER_LIGHT_ON
-    -Bool
-    -True if cabin oxygen mask doors open.
+- A32NX_OXYGEN_PASSENGER_LIGHT_ON
+    - Bool
+    - True if cabin oxygen mask doors open.
 
--A32NX_OXYGEN_TMR_RESET
-    -Bool
-    -True if oxygen timer is being reset.
+- A32NX_OXYGEN_TMR_RESET
+    - Bool
+    - True if oxygen timer is being reset.
 
--A32NX_OXYGEN_TMR_RESET_FAULT
-    -Bool
-    -True if fault with oxygen timer.
+- A32NX_OXYGEN_TMR_RESET_FAULT
+    - Bool
+    - True if fault with oxygen timer.
 
--A32NX_APU_AUTOEXITING_RESET
-    -Bool
-    -True if APU autoexiting is being reset.
+- A32NX_APU_AUTOEXITING_RESET
+    - Bool
+    - True if APU autoexiting is being reset.
 
--A32NX_ELT_TEST_RESET
-    -Bool
-    -True if ELT is being tested/reset.
+- A32NX_ELT_TEST_RESET
+    - Bool
+    - True if ELT is being tested/reset.
 
--A32NX_ELT_ON
-    -Bool
-    -True if ELT is on.
+- A32NX_ELT_ON
+    - Bool
+    - True if ELT is on.
 
--A32NX_DLS_ON
-    -Bool
-    -True if data loading selector is on.
+- A32NX_DLS_ON
+    - Bool
+    - True if data loading selector is on.
 
--A32NX_CREW_HEAD_SET
-    -Bool
-    -True if CVR crew head set is being pressed.
+- A32NX_CREW_HEAD_SET
+    - Bool
+    - True if CVR crew head set is being pressed.
 
--A32NX_SVGEINT_OVRD_ON
-    -Bool
-    -True if SVGE INT OVRD is on.
+- A32NX_SVGEINT_OVRD_ON
+    - Bool
+    - True if SVGE INT OVRD is on.
 
--A32NX_AVIONICS_COMPLT_ON
-    -Bool
-    -True if avionics comp lt is on.
+- A32NX_AVIONICS_COMPLT_ON
+    - Bool
+    - True if avionics comp lt is on.
 
--A32NX_CARGOSMOKE_FWD_DISCHARGED
-    -Bool
-    -True if cargosmoke one bottle is discharged
+- A32NX_CARGOSMOKE_FWD_DISCHARGED
+    - Bool
+    - True if cargosmoke one bottle is discharged
 
--A32NX_CARGOSMOKE_AFT_DISCHARGED
-    -Bool
-    -True if cargosmoke two bottle is discharged
+- A32NX_CARGOSMOKE_AFT_DISCHARGED
+    - Bool
+    - True if cargosmoke two bottle is discharged
 
--A32NX_AIDS_PRINT_ON
-    -Bool
-    -True if AIDS print is on.
+- A32NX_AIDS_PRINT_ON
+    - Bool
+    - True if AIDS print is on.
 
--A32NX_DFDR_EVENT_ON
-    -Bool
-    -True if DFDR event is on.
+- A32NX_DFDR_EVENT_ON
+    - Bool
+    - True if DFDR event is on.
 
--A32NX_APU_AUTOEXITING_TEST_ON
-    -Bool
-    -True if APU AUTOEXITING is being tested.
+- A32NX_APU_AUTOEXITING_TEST_ON
+    - Bool
+    - True if APU AUTOEXITING is being tested.
 
--A32NX_APU_AUTOEXITING_TEST_OK
-    -Bool
-    -True if APU AUTOEXITING TEST returns OK.
+- A32NX_APU_AUTOEXITING_TEST_OK
+    - Bool
+    - True if APU AUTOEXITING TEST returns OK.
 
 - A32NX_OVHD_{name}_PB_IS_AVAILABLE
     - Bool
@@ -574,6 +577,7 @@
         - ELEC_AC_ESS_FEED
         - ELEC_GALY_AND_CAB
         - PNEU_APU_BLEED
+        - EMER_ELEC_GEN_1_LINE: a FAULT indicates SMOKE should illuminate.
 
 - A32NX_OVHD_{name}_PB_IS_AUTO
     - Bool
@@ -603,6 +607,7 @@
         - APU_MASTER_SW
         - ELEC_COMMERCIAL
         - PNEU_APU_BLEED
+        - EMER_ELEC_GEN_1_LINE
 
 - A32NX_ELEC_CONTACTOR_{name}_IS_CLOSED
     - Bool
@@ -632,6 +637,10 @@
         - 15XE1: Contactor between AC ESS BUS and TR ESS + EMER GEN
         - 15XE2: Contactor between the static inverter and AC ESS BUS
         - 10KA_AND_5KA: The two contactors leading to the APU start motor
+        - 14PU: Contactor from AC BUS 2 to TR2 and AC GND/FLT SVC BUS.
+        - 12XN: Contactor from EXT PWR to TR2 and AC GND/FLT SVC BUS.
+        - 3PX: Contactor from TR2 to DC GND/FLT SVC BUS.
+        - 8PN: Contactor from DC BUS 2 to DC GND/FLT SVC BUS.
 
 - A32NX_ELEC_CONTACTOR_{name}_SHOW_ARROW_WHEN_CLOSED
     - Bool
@@ -650,6 +659,7 @@
         - AC_ESS
         - AC_ESS_SHED
         - AC_STAT_INV
+        - AC_GND_FLT_SVC
         - DC_1
         - DC_2
         - DC_ESS
@@ -657,6 +667,7 @@
         - DC_BAT
         - DC_HOT_1
         - DC_HOT_2
+        - DC_GND_FLT_SVC
 
 
 - A32NX_ELEC_{name}_POTENTIAL
@@ -767,247 +778,247 @@
     - Enum
     - Holds the FMGCs current flight phase
     - Use FMGC_FLIGHT_PHASES to check for phases (import NXFMGCFlightPhases from A32NX_Utils)
-        Value | Meaning
-        --- | ---
-        PREFLIGHT | 0
-        TAKEOFF   | 1
-        CLIMB     | 2
-        CRUISE    | 3
-        DESCENT   | 4
-        APPROACH  | 5
-        GOAROUND  | 6
-        DONE      | 7
+      Value | Meaning
+      --- | ---
+      PREFLIGHT | 0
+      TAKEOFF   | 1
+      CLIMB     | 2
+      CRUISE    | 3
+      DESCENT   | 4
+      APPROACH  | 5
+      GOAROUND  | 6
+      DONE      | 7
 
 - A32NX_FLAPS_HANDLE_INDEX
     - Number
     - Indicates the physical flaps handle position
-        Value | Meaning
-        --- | ---
-        0 | 0
-        1 | 1 / 1+F
-        2 | 2
-        3 | 3
-        4 | 4
+      Value | Meaning
+      --- | ---
+      0 | 0
+      1 | 1 / 1+F
+      2 | 2
+      3 | 3
+      4 | 4
 
 - A32NX_FLAPS_HANDLE_PERCENT
     - Number
     - Indicates the position of the flaps handler in percent
-        Value | Position
-        --- | ---
-        0 | Retracted
-        1 | Full extension
+      Value | Position
+      --- | ---
+      0 | Retracted
+      1 | Full extension
 
 - A32NX_SPOILERS_ARMED
     - Bool
     - Indicates if the ground spoilers are armed
-        Value | Meaning
-        --- | ---
-        0 | disarmed
-        1 | armed
+      Value | Meaning
+      --- | ---
+      0 | disarmed
+      1 | armed
 
 - A32NX_SPOILERS_HANDLE_POSITION
     - Number
     - Indicates the physical handler position without arm/disarm
-        Value | Position
-        --- | ---
-        0 | Retracted
-        1 | Full extension
+      Value | Position
+      --- | ---
+      0 | Retracted
+      1 | Full extension
 
 - A32NX_PERFORMANCE_WARNING_ACTIVE
     - Bool
     - Indicates if performance warning is active
-        Value | Meaning
-        --- | ---
-        0 | inactive
-        1 | active
+      Value | Meaning
+      --- | ---
+      0 | inactive
+      1 | active
 
 ## Fly-By-Wire System
 
 - A32NX_SIDESTICK_POSITION_X
     - Number
     - Provides the direct sidestick position (lateral)
-        Value | Meaning
-        --- | ---
-        -1 | full left
-        0 | neutral
-        1 | full right
+      Value | Meaning
+      --- | ---
+      -1 | full left
+      0 | neutral
+      1 | full right
 
 - A32NX_SIDESTICK_POSITION_Y
     - Number
     - Provides the direct sidestick position (longitudinal)
-        Value | Meaning
-        --- | ---
-        -1 | full forward
-        0 | neutral
-        1 | full backward
+      Value | Meaning
+      --- | ---
+      -1 | full forward
+      0 | neutral
+      1 | full backward
 
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE
     - Enum
     - Indicates **engaged** lateral mode of the Flight Director / Autopilot
-        Mode | Value
-        --- | ---
-        NONE | 0
-        HDG | 10
-        TRACK | 11
-        NAV | 20
-        LOC_CPT | 30
-        LOC_TRACK | 31
-        LAND | 32
-        FLARE | 33
-        ROLL_OUT | 34
-        RWY | 40
-        RWY_TRACK | 41
-        GA_TRACK | 50
+      Mode | Value
+      --- | ---
+      NONE | 0
+      HDG | 10
+      TRACK | 11
+      NAV | 20
+      LOC_CPT | 30
+      LOC_TRACK | 31
+      LAND | 32
+      FLARE | 33
+      ROLL_OUT | 34
+      RWY | 40
+      RWY_TRACK | 41
+      GA_TRACK | 50
 
 - A32NX_FMA_LATERAL_ARMED
     - Bitmask
     - Indicates **armed** lateral mode of the Flight Director / Autopilot
-        Mode | Bit
-        --- | ---
-        NAV | 0
-        LOC | 1
+      Mode | Bit
+      --- | ---
+      NAV | 0
+      LOC | 1
 
 - A32NX_FMA_VERTICAL_MODE
     - Enum
     - Indicates **engaged** vertical mode of the Flight Director / Autopilot
-        Mode | Value
-        --- | ---
-        NONE | 0
-        ALT | 10
-        ALT_CPT | 11
-        OP_CLB | 12
-        OP_DES | 13
-        VS | 14
-        FPA | 15
-        ALT_CST | 20
-        ALT_CST_CPT | 21
-        CLB | 22
-        DES | 23
-        GS_CPT | 30
-        GS_TRACK | 31
-        LAND | 32
-        FLARE | 33
-        ROLL_OUT | 34
-        SRS | 40
-        SRS_GA | 41
+      Mode | Value
+      --- | ---
+      NONE | 0
+      ALT | 10
+      ALT_CPT | 11
+      OP_CLB | 12
+      OP_DES | 13
+      VS | 14
+      FPA | 15
+      ALT_CST | 20
+      ALT_CST_CPT | 21
+      CLB | 22
+      DES | 23
+      GS_CPT | 30
+      GS_TRACK | 31
+      LAND | 32
+      FLARE | 33
+      ROLL_OUT | 34
+      SRS | 40
+      SRS_GA | 41
 
 - A32NX_FMA_VERTICAL_ARMED
     - Bitmask
     - Indicates **armed** vertical mode of the Flight Director / Autopilot
-        Mode | Bit
-        --- | ---
-        ALT | 0
-        ALT_CST | 1
-        CLB | 2
-        DES | 3
-        GS | 4
+      Mode | Bit
+      --- | ---
+      ALT | 0
+      ALT_CST | 1
+      CLB | 2
+      DES | 3
+      GS | 4
 
 - A32NX_FMA_EXPEDITE_MODE
     - Boolean
     - Indicates if expedite mode is engaged
-        State | Value
-        --- | ---
-        OFF | 0
-        ON | 1
+      State | Value
+      --- | ---
+      OFF | 0
+      ON | 1
 
 - A32NX_FMA_SPEED_PROTECTION_MODE
     - Boolean
     - Indicates if V/S speed protection mode is engaged
-        State | Value
-        --- | ---
-        OFF | 0
-        ON | 1
+      State | Value
+      --- | ---
+      OFF | 0
+      ON | 1
 
 - A32NX_FMA_CRUISE_ALT_MODE
     - Boolean
     - Indicates if CRUISE ALT mode is engaged (ALT on cruise altitude = ALT CRZ)
-        State | Value
-        --- | ---
-        OFF | 0
-        ON | 1
+      State | Value
+      --- | ---
+      OFF | 0
+      ON | 1
 
 - A32NX_FMA_SOFT_ALT_MODE
     - Boolean
     - Indicates if SOFT ALT mode is engaged (allows deviation of +/- 50 ft to reduce thrust variations in cruise)
-        State | Value
-        --- | ---
-        OFF | 0
-        ON | 1
+      State | Value
+      --- | ---
+      OFF | 0
+      ON | 1
 
 - A32NX_ApproachCapability
     - Enum
     - Indicates the current approach/landing capability
-        Mode | Value
-        --- | ---
-        NONE | 0
-        CAT1 | 1
-        CAT2 | 2
-        CAT3 SINGLE | 3
-        CAT3 DUAL | 4
+      Mode | Value
+      --- | ---
+      NONE | 0
+      CAT1 | 1
+      CAT2 | 2
+      CAT3 SINGLE | 3
+      CAT3 DUAL | 4
 
 - A32NX_FLIGHT_DIRECTOR_BANK
     - Number (Degrees)
     - Indicates bank angle to be displayed by Flight Director
-        Sign | Direction
-        --- | ---
-        \+ | left
-        \- | right
+      Sign | Direction
+      --- | ---
+      \+ | left
+      \- | right
 
 - A32NX_FLIGHT_DIRECTOR_PITCH
     - Number (Degrees)
     - Indicates pitch angle to be displayed by Flight Director
-        Sign | Direction
-        --- | ---
-        \+ | down
-        \- | up
+      Sign | Direction
+      --- | ---
+      \+ | down
+      \- | up
 
 - A32NX_FLIGHT_DIRECTOR_YAW
     - Number (Degrees)
     - Indicates yaw to be displayed by Flight Director
-        Sign | Direction
-        --- | ---
-        \+ | left
-        \- | right
+      Sign | Direction
+      --- | ---
+      \+ | left
+      \- | right
 
 - A32NX_AUTOPILOT_AUTOLAND_WARNING
     - Boolean
     - Indicates if Autoland warning light is illuminated
     - Possible values:
-        State | Value
-        --- | ---
-        OFF | 0
-        ON | 1
+      State | Value
+      --- | ---
+      OFF | 0
+      ON | 1
 
 - A32NX_AUTOPILOT_ACTIVE
     - Boolean
     - Indicates if any Autopilot is engaged
     - Possible values:
-        State | Value
-        --- | ---
-        DISENGAGED | 0
-        ENGAGED | 1
+      State | Value
+      --- | ---
+      DISENGAGED | 0
+      ENGAGED | 1
 
 - A32NX_AUTOPILOT_{index}_ACTIVE
     - Boolean
     - Indicates if Autopilot {index} is enaged, first Autopilot has the index 1
     - Possible values:
-        State | Value
-        --- | ---
-        DISENGAGED | 0
-        ENGAGED | 1
+      State | Value
+      --- | ---
+      DISENGAGED | 0
+      ENGAGED | 1
 
 - A32NX_AUTOPILOT_AUTOTHRUST_MODE
     - Enum
     - Indicates the requested ATHR mode by the Autopilot
     - Possible values:
-        Mode | Value
-        --- | ---
-        NONE | 0
-        SPEED | 1
-        THRUST_IDLE | 2
-        THRUST_CLB | 3
+      Mode | Value
+      --- | ---
+      NONE | 0
+      SPEED | 1
+      THRUST_IDLE | 2
+      THRUST_CLB | 3
 
 - A32NX_AUTOPILOT_FPA_SELECTED
     - Number (Degrees)
@@ -1025,102 +1036,102 @@
 - A32NX_FCU_LOC_MODE_ACTIVE
     - Boolean
     - Indicates if LOC button on the FCU is illuminated
-        State | Value
-        --- | ---
-        OFF | 0
-        ON | 1
+      State | Value
+      --- | ---
+      OFF | 0
+      ON | 1
 
 - A32NX_FCU_APPR_MODE_ACTIVE
     - Boolean
     - Indicates if APPR button on the FCU is illuminated
     - Possible values:
-        State | Value
-        --- | ---
-        OFF | 0
-        ON | 1
+      State | Value
+      --- | ---
+      OFF | 0
+      ON | 1
 
 - A32NX_FCU_MODE_REVERSION_ACTIVE
     - Boolean
     - Triggers the FCU to synchronize to current V/S
-        State | Value
-        --- | ---
-        Inactive | 0
-        Revert | 1
+      State | Value
+      --- | ---
+      Inactive | 0
+      Revert | 1
 
 - A32NX_FCU_MODE_REVERSION_TRK_FPA_ACTIVE
     - Boolean
     - Triggers the FCU to revert to HDG/VS mode
-        State | Value
-        --- | ---
-        Inactive | 0
-        Revert | 1
+      State | Value
+      --- | ---
+      Inactive | 0
+      Revert | 1
 
 ## Autothrust System
 
 - A32NX_3D_THROTTLE_LEVER_POSITION_{index}
     - Number
     - Anmiation position of the throttles in 3D model
-        Position | Value
-        --- | ---
-        FULL REVERSE | 0
-        IDLE | 25
-        CLB | 50
-        FLX/MCT | 75
-        TOGA | 100
+      Position | Value
+      --- | ---
+      FULL REVERSE | 0
+      IDLE | 25
+      CLB | 50
+      FLX/MCT | 75
+      TOGA | 100
 
 - A32NX_AUTOTHRUST_STATUS
     - Enum
     - Indicates the current status of the ATHR system
-        Mode | Value
-        --- | ---
-        DISENGAGED | 0
-        ENGAGED_ARMED | 1
-        ENGAGED_ACTIVE | 2
+      Mode | Value
+      --- | ---
+      DISENGAGED | 0
+      ENGAGED_ARMED | 1
+      ENGAGED_ACTIVE | 2
 
 - A32NX_AUTOTHRUST_MODE
     - Enum
     - Indicates the current thrust mode of the ATHR system
-        Mode | Value
-        --- | ---
-        NONE | 0
-        MAN_TOGA | 1
-        MAN_GA_SOFT | 2
-        MAN_FLEX | 3
-        MAN_DTO | 4
-        MAN_MCT | 5
-        MAN_THR | 6
-        SPEED | 7
-        MACH | 8
-        THR_MCT | 9
-        THR_CLB | 10
-        THR_LVR | 11
-        THR_IDLE | 12
-        A_FLOOR | 13
-        TOGA_LK | 14
+      Mode | Value
+      --- | ---
+      NONE | 0
+      MAN_TOGA | 1
+      MAN_GA_SOFT | 2
+      MAN_FLEX | 3
+      MAN_DTO | 4
+      MAN_MCT | 5
+      MAN_THR | 6
+      SPEED | 7
+      MACH | 8
+      THR_MCT | 9
+      THR_CLB | 10
+      THR_LVR | 11
+      THR_IDLE | 12
+      A_FLOOR | 13
+      TOGA_LK | 14
 
 - A32NX_AUTOTHRUST_MODE_MESSAGE
     - Enum
     - Indicates ATHR related message to be displayed on the PFD
-        Mode | Value
-        --- | ---
-        NONE | 0
-        THR_LK | 1
-        LVR_TOGA | 2
-        LVR_CLB | 3
-        LVR_MCT | 4
-        LVR_ASYM | 5
+      Mode | Value
+      --- | ---
+      NONE | 0
+      THR_LK | 1
+      LVR_TOGA | 2
+      LVR_CLB | 3
+      LVR_MCT | 4
+      LVR_ASYM | 5
 
 - A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE
     - Enum
     - Indicates the type of current thrust limit
-        Mode | Value
-        --- | ---
-        NONE | 0
-        CLB | 1
-        MCT | 2
-        FLEX | 3
-        TOGA | 4
-        REVERSE | 5
+      Mode | Value
+      --- | ---
+      NONE | 0
+      CLB | 1
+      MCT | 2
+      FLEX | 3
+      TOGA | 4
+      REVERSE | 5
 
 - A32NX_AUTOTHRUST_THRUST_LIMIT
     - Number (% N1)
@@ -1133,10 +1144,10 @@
 - A32NX_AUTOTHRUST_REVERSE:{index}
     - Boolean
     - Indicates if reverse for engine {index} is requested
-        State | Value
-        --- | ---
-        NO REVERSE | 0
-        REVERSE | 1
+      State | Value
+      --- | ---
+      NO REVERSE | 0
+      REVERSE | 1
 
 - A32NX_AUTOTHRUST_N1_COMMANDED:{index}
     - Number (% N1)
@@ -1152,14 +1163,14 @@
 - A32NX_AUTOTHRUST_TLA:{index}
     - Number (Degrees)
     - Indicates the TLA of the throttle lever {index}, first throttle lever has index 1
-        Position | Value
-        --- | ---
-        REVERSE | -20
-        REV_IDLE | -6
-        IDLE | 0
-        CLB | 25
-        FLX/MCT | 35
-        TOGA | 45
+      Position | Value
+      --- | ---
+      REVERSE | -20
+      REV_IDLE | -6
+      IDLE | 0
+      CLB | 25
+      FLX/MCT | 35
+      TOGA | 45
 
 - A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:{index}
     - Boolean

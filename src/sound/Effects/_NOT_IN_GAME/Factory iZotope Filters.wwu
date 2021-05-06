@@ -17,7 +17,7 @@
 				</Effect>
 				<Effect Name="Lo_Pass_500Hz" ID="{2D6C0828-CEF7-4377-BE3C-39677CC3DFA2}" PluginName="iZotope Trash Filters" CompanyID="259" PluginID="6" PluginType="3">
 					<PropertyList>
-						<Property Name="Filter1Frequency" Type="Real32" Value="500"/>
+						<Property Name="Filter1Frequency" Type="Real32" Value="1790"/>
 						<Property Name="Filter1Resonance" Type="Real32" Value="0"/>
 						<Property Name="Filter1Type" Type="int32" Value="10"/>
 						<Property Name="Filter2Type" Type="int32" Value="0"/>

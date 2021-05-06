@@ -30,6 +30,10 @@ impl TransformerRectifier {
         self.failed = true;
     }
 
+    pub fn failed(&self) -> bool {
+        self.failed
+    }
+
     pub fn input_potential(&self) -> Potential {
         self.input_potential
     }

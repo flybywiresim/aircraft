@@ -5,6 +5,8 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.7.0
+1. [ENGINE] Fixed fuel consumption model - @Taz5150 (TazX [Z+2]#0405)
+1. [ENGINE] Fixed fuel flow being 0 at Start-up  - @Taz5150 (TazX [Z+2]#0405)
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
 1. [MCDU] Progress page only shows GPS Primary when it should - @Username23-23 (NONAmr2433 #8777)
 1. [ND] Add VOR/ADF needles to ILS arc display - @tracernz (Mike)
@@ -41,6 +43,16 @@
 1. [EFB] Added throttle calibration for autothrust system - @Saschl (saschl#9432)
 1. [ECAM] Add REFUELG message to upper ECAM when refuelling via fuel page on EFB - @sidnov (sidnov#8337)
 1. [EFB] Disabled LINK MCDU button on dashboard page - @ExampleWasTaken (ExampleWasTaken#0886)
+1. [MCDU] Do not show duplicate names page with 1 option, fix return key - @tracernz (Mike)
+1. [MCDU] Removed invalid chars from- and updated AOC TELEX warning message - @ExampleWasTaken (ExampleWasTaken#0886)
+1. [ND] Fix Behaviour of TAS and Wind Info displayed inflight and on Take-Off - @ChruutvoLuzi (ChruutvoLuzi#8902)
+1. [SOUND] Improved engine, ground roll, and ambience sounds - @hotshotp (Boris)
+1. [SOUND] Added CVR test sound - @hotshotp (Boris)
+1. [ELEC] Pushing the GEN 1 LINE push button to OFF opens the GEN 1 contactor - @davidwalschots (David Walschots)
+1. [ELEC] Add ground service electrical buses - @davidwalschots (David Walschots)
+1. [FLIGHTMODEL] Fixed excessive weathervaning stability - @donstim (donbikes#4084)
+1. [AUTOPILOT] Improved ROLL OUT and G/S laws - @aguther (Andreas Guther)
+1. [SOUND] Added glareshield chrono button sound - @ImenesFBW (Imenes)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)

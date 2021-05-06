@@ -4,7 +4,7 @@ import { createDeltaTimeCalculator, getSimVar, renderTarget } from '../util.js';
 export const FMA = ({ isAttExcessive }) => {
     const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
     const sharedModeActive = activeLateralMode === 32 || activeLateralMode === 33 || activeLateralMode === 34;
-    const engineMessage = getSimVar('L:A32NX_Engine_Message', 'enum');
+    const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
     const BC3Message = getSimVar('L:A32NX_BC3Message', 'enum');
     const AB3Message = (getSimVar('L:A32NX_MachPreselVal', 'mach') !== -1
         || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && BC3Message === 0 && engineMessage === 0;
@@ -220,7 +220,7 @@ const A3Cell = () => {
 };
 
 const AB3Cell = () => {
-    if (getSimVar('L:A32NX_Engine_Message', 'enum') !== 0) {
+    if (getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum') !== 0) {
         return null;
     }
     const machPresel = getSimVar('L:A32NX_MachPreselVal', 'mach');
