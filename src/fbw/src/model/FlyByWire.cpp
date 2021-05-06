@@ -304,7 +304,6 @@ void FlyByWireModelClass::step()
   FlyByWire_Y.out.sim.data.rk_dot_deg_s2 = rtb_Y_o;
   FlyByWire_Y.out.sim.data.pk_dot_deg_s2 = rtb_Y_dd;
   rtb_BusAssignment_c_sim_data_speeds_aoa_alpha_max_deg = rtb_LimiteriH;
-  FlyByWire_Y.out.sim.data_speeds_aoa.v_alpha_prot_kn = rtb_Limiterxi;
   FlyByWire_Y.out.sim.data_speeds_aoa.alpha_floor_deg = rtb_Gain1_h;
   if (FlyByWire_DWork.is_active_c1_FlyByWire == 0U) {
     FlyByWire_DWork.is_active_c1_FlyByWire = 1U;
@@ -438,27 +437,6 @@ void FlyByWireModelClass::step()
     }
   }
 
-  rtb_LimiteriH = rtb_GainTheta - std::cos(FlyByWire_P.Gain1_Gain_c * rtb_GainPhi) * FlyByWire_U.in.data.alpha_deg;
-  if (!FlyByWire_DWork.eventTime_not_empty_f) {
-    FlyByWire_DWork.eventTime_o = FlyByWire_U.in.time.simulation_time;
-    FlyByWire_DWork.eventTime_not_empty_f = true;
-  }
-
-  rtb_Min5 = FlyByWire_U.in.data.V_ias_kn / FlyByWire_U.in.data.V_mach;
-  u1 = rtb_Min5 * (look1_binlxpw(rtb_LimiteriH, FlyByWire_P.uDLookupTable_bp01Data, FlyByWire_P.uDLookupTable_tableData,
-    3U) + 0.01);
-  if (365.0 < u1) {
-    u1 = 365.0;
-  }
-
-  if (FlyByWire_U.in.data.V_ias_kn <= u1) {
-    FlyByWire_DWork.eventTime_o = FlyByWire_U.in.time.simulation_time;
-  } else {
-    if (FlyByWire_DWork.eventTime_o == 0.0) {
-      FlyByWire_DWork.eventTime_o = FlyByWire_U.in.time.simulation_time;
-    }
-  }
-
   FlyByWire_GetIASforMach4(FlyByWire_U.in.data.V_mach, FlyByWire_P.Constant6_Value, FlyByWire_U.in.data.V_ias_kn,
     &rtb_Y_o);
   if (FlyByWire_P.Constant5_Value < rtb_Y_o) {
@@ -467,11 +445,12 @@ void FlyByWireModelClass::step()
     rtb_Min3 = rtb_Y_o;
   }
 
+  rtb_LimiteriH = rtb_GainTheta - std::cos(FlyByWire_P.Gain1_Gain_c * rtb_GainPhi) * FlyByWire_U.in.data.alpha_deg;
   if (FlyByWire_U.in.data.autopilot_custom_on == 0.0) {
     rtb_Sum1_d5 = look1_binlxpw(rtb_LimiteriH, FlyByWire_P.uDLookupTable1_bp01Data, FlyByWire_P.uDLookupTable1_tableData,
       3U);
-    u1 = rtb_Min5 * look1_binlxpw(rtb_LimiteriH, FlyByWire_P.uDLookupTable2_bp01Data,
-      FlyByWire_P.uDLookupTable2_tableData, 3U);
+    u1 = FlyByWire_U.in.data.V_ias_kn / FlyByWire_U.in.data.V_mach * look1_binlxpw(rtb_LimiteriH,
+      FlyByWire_P.uDLookupTable2_bp01Data, FlyByWire_P.uDLookupTable2_tableData, 3U);
     if (rtb_Sum1_d5 < u1) {
       u1 = rtb_Sum1_d5;
     }
@@ -483,6 +462,25 @@ void FlyByWireModelClass::step()
 
   if ((FlyByWire_U.in.data.V_ias_kn < rtb_Min3) || (FlyByWire_U.in.data.autopilot_custom_on != 0.0)) {
     FlyByWire_DWork.sProtActive = 0.0;
+  }
+
+  if (!FlyByWire_DWork.eventTime_not_empty_f) {
+    FlyByWire_DWork.eventTime_o = FlyByWire_U.in.time.simulation_time;
+    FlyByWire_DWork.eventTime_not_empty_f = true;
+  }
+
+  u1 = FlyByWire_U.in.data.V_ias_kn / FlyByWire_U.in.data.V_mach * (look1_binlxpw(rtb_LimiteriH,
+    FlyByWire_P.uDLookupTable_bp01Data, FlyByWire_P.uDLookupTable_tableData, 3U) + 0.01);
+  if (365.0 < u1) {
+    u1 = 365.0;
+  }
+
+  if (FlyByWire_U.in.data.V_ias_kn <= u1) {
+    FlyByWire_DWork.eventTime_o = FlyByWire_U.in.time.simulation_time;
+  } else {
+    if (FlyByWire_DWork.eventTime_o == 0.0) {
+      FlyByWire_DWork.eventTime_o = FlyByWire_U.in.time.simulation_time;
+    }
   }
 
   FlyByWire_GetIASforMach4(FlyByWire_U.in.data.V_mach, FlyByWire_P.Constant8_Value, FlyByWire_U.in.data.V_ias_kn,
@@ -498,12 +496,14 @@ void FlyByWireModelClass::step()
   rtb_BusAssignment_a_sim_data_pk_deg_s = rtb_Y_h;
   rtb_BusAssignment_a_sim_data_qk_dot_deg_s2 = rtb_Y_e;
   FlyByWire_Y.out.sim.data_speeds_aoa.v_alpha_max_kn = rtb_Limiterxi2;
+  FlyByWire_Y.out.sim.data_speeds_aoa.v_alpha_prot_kn = rtb_Limiterxi;
   FlyByWire_Y.out.sim.data_speeds_aoa.alpha_filtered_deg = rtb_Limiterxi1;
   rtb_alpha_floor_inhib = ((FlyByWire_U.in.data.autopilot_master_on != 0.0) || (FlyByWire_U.in.data.slew_on != 0.0) ||
     (FlyByWire_U.in.data.pause_on != 0.0) || (FlyByWire_U.in.data.tracking_mode_on_override != 0.0));
   FlyByWire_Y.out.sim.data_computed.protection_ap_disc = (((rtb_on_ground == 0) && (((rtb_ap_special_disc != 0) &&
     (rtb_Limiterxi1 > rtb_BusAssignment_c_sim_data_speeds_aoa_alpha_max_deg)) || (rtb_Limiterxi1 > rtb_Switch + 0.25))) ||
-    (FlyByWire_U.in.time.simulation_time - FlyByWire_DWork.eventTime_o > 3.0));
+    (FlyByWire_U.in.time.simulation_time - FlyByWire_DWork.eventTime_o > 3.0) || (FlyByWire_DWork.sProtActive != 0.0) ||
+    (FlyByWire_DWork.sProtActive_n != 0.0));
   FlyByWire_eta_trim_limit_lofreeze(rtb_Gainpk2, FlyByWire_DWork.sProtActive_n, &rtb_Y_dd,
     &FlyByWire_DWork.sf_eta_trim_limit_lofreeze);
   if (FlyByWire_DWork.sProtActive_n > FlyByWire_P.Switch_Threshold_h) {
@@ -1144,9 +1144,9 @@ void FlyByWireModelClass::step()
                       &FlyByWire_DWork.sf_LagFilter_h);
   rtb_Limiterxi = rtb_Y_dd - rtb_Switch;
   if (0.0 > rtb_GainTheta - 22.5) {
-    rtb_Sum1_d5 = 0.0;
+    rtb_Y = 0.0;
   } else {
-    rtb_Sum1_d5 = rtb_GainTheta - 22.5;
+    rtb_Y = rtb_GainTheta - 22.5;
   }
 
   u1 = (std::abs(rtb_GainPhi) - 3.0) / 6.0;
@@ -1154,8 +1154,8 @@ void FlyByWireModelClass::step()
     u1 = 0.0;
   }
 
-  if (rtb_Sum1_d5 > u1) {
-    u1 = rtb_Sum1_d5;
+  if (rtb_Y > u1) {
+    u1 = rtb_Y;
   }
 
   FlyByWire_WashoutFilter(u1, FlyByWire_P.WashoutFilter_C1, FlyByWire_U.in.time.dt, &rtb_Y_dd,

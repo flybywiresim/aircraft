@@ -370,15 +370,15 @@ class FlyByWireModelClass {
     real_T alphafloor_tableData[24];
     real_T alphafloor_bp01Data[4];
     real_T alphafloor_bp02Data[6];
-    real_T Gain1_Gain_c;
-    real_T uDLookupTable_tableData[4];
-    real_T uDLookupTable_bp01Data[4];
     real_T Constant5_Value;
     real_T Constant6_Value;
+    real_T Gain1_Gain_c;
     real_T uDLookupTable1_tableData[4];
     real_T uDLookupTable1_bp01Data[4];
     real_T uDLookupTable2_tableData[4];
     real_T uDLookupTable2_bp01Data[4];
+    real_T uDLookupTable_tableData[4];
+    real_T uDLookupTable_bp01Data[4];
     real_T Constant7_Value;
     real_T Constant8_Value;
     real_T Switch_Threshold_h;
