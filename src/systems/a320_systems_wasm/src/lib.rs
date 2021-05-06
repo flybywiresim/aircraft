@@ -94,7 +94,10 @@ impl A320SimulatorReaderWriter {
             master_eng_1: AircraftVariable::from("GENERAL ENG STARTER ACTIVE", "Bool", 1)?,
             master_eng_2: AircraftVariable::from("GENERAL ENG STARTER ACTIVE", "Bool", 2)?,
             cargo_door_front_pos: AircraftVariable::from("EXIT OPEN", "Percent", 5)?,
-            cargo_door_back_pos: AircraftVariable::from("EXIT OPEN", "Percent", 3)?, //TODO It is the catering door for now
+
+            // TODO It is the catering door for now.
+            cargo_door_back_pos: AircraftVariable::from("EXIT OPEN", "Percent", 3)?,
+
             pushback_angle: AircraftVariable::from("PUSHBACK ANGLE", "Radian", 0)?,
             pushback_state: AircraftVariable::from("PUSHBACK STATE", "Enum", 0)?,
             anti_skid_activated: AircraftVariable::from("ANTISKID BRAKES ACTIVE", "Bool", 0)?,

@@ -4,8 +4,8 @@ use uom::si::{
 };
 
 use systems::hydraulic::{
-    ElectricPump, EngineDrivenPump, HydFluid, HydraulicLoop, HydraulicLoopController,
-    PowerTransferUnit, PowerTransferUnitController, PumpController, RamAirTurbine,
+    ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
+    PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController, RamAirTurbine,
     RamAirTurbineController,
 };
 use systems::overhead::{
@@ -16,7 +16,7 @@ use systems::simulation::{
 };
 use systems::{engine::Engine, landing_gear::LandingGear};
 use systems::{
-    hydraulic::brakecircuit::BrakeCircuit, shared::DelayedFalseLogicGate,
+    hydraulic::brake_circuit::BrakeCircuit, shared::DelayedFalseLogicGate,
     shared::DelayedTrueLogicGate,
 };
 
@@ -29,9 +29,11 @@ pub(super) struct A320Hydraulic {
     yellow_loop: HydraulicLoop,
     yellow_loop_controller: A320HydraulicLoopController,
 
+    engine_driven_pump_1_pressure_switch: PressureSwitch,
     engine_driven_pump_1: EngineDrivenPump,
     engine_driven_pump_1_controller: A320EngineDrivenPumpController,
 
+    engine_driven_pump_2_pressure_switch: PressureSwitch,
     engine_driven_pump_2: EngineDrivenPump,
     engine_driven_pump_2_controller: A320EngineDrivenPumpController,
 
@@ -57,13 +59,15 @@ pub(super) struct A320Hydraulic {
     lag_time_accumulator: Duration,
 }
 impl A320Hydraulic {
-    const MIN_PRESS_BLUE_PRESSURISED_LO_HYST: f64 = 1450.0;
-    const MIN_PRESS_BLUE_PRESSURISED_HI_HYST: f64 = 1750.0;
-    const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1740.0;
-    const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 2200.0;
+    const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 1740.0;
+    const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2200.0;
+    const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
+    const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 1750.0;
 
-    const HYDRAULIC_SIM_TIME_STEP: u64 = 100; // Refresh rate of hydraulic simulation in ms
-    const ACTUATORS_SIM_TIME_STEP_MULT: u32 = 2; // Refresh rate of actuators as multiplier of hydraulics. 2 means double frequency update
+    // Refresh rate of hydraulic simulation
+    const HYDRAULIC_SIM_TIME_STEP_MILLISECONDS: u64 = 100;
+    // Refresh rate of actuators as multiplier of hydraulics. 2 means double frequency update.
+    const ACTUATORS_SIM_TIME_STEP_MULTIPLIER: u32 = 2;
 
     pub(super) fn new() -> A320Hydraulic {
         A320Hydraulic {
@@ -77,10 +81,10 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(15.85),
                 Volume::new::<gallon>(8.0),
                 Volume::new::<gallon>(1.56),
-                HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                Fluid::new(Pressure::new::<pascal>(1450000000.0)),
                 false,
-                Pressure::new::<psi>(Self::MIN_PRESS_BLUE_PRESSURISED_LO_HYST),
-                Pressure::new::<psi>(Self::MIN_PRESS_BLUE_PRESSURISED_HI_HYST),
+                Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
+                Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             ),
             blue_loop_controller: A320HydraulicLoopController::new(None),
             green_loop: HydraulicLoop::new(
@@ -91,7 +95,7 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(26.41),
                 Volume::new::<gallon>(15.),
                 Volume::new::<gallon>(3.6),
-                HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                Fluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
                 Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
                 Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
@@ -105,16 +109,24 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(19.81),
                 Volume::new::<gallon>(10.0),
                 Volume::new::<gallon>(3.6),
-                HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                Fluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
                 Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
                 Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
             ),
             yellow_loop_controller: A320HydraulicLoopController::new(Some(2)),
 
+            engine_driven_pump_1_pressure_switch: PressureSwitch::new(
+                Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
+                Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
+            ),
             engine_driven_pump_1: EngineDrivenPump::new("GREEN"),
             engine_driven_pump_1_controller: A320EngineDrivenPumpController::new(1),
 
+            engine_driven_pump_2_pressure_switch: PressureSwitch::new(
+                Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
+                Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
+            ),
             engine_driven_pump_2: EngineDrivenPump::new("YELLOW"),
             engine_driven_pump_2_controller: A320EngineDrivenPumpController::new(2),
 
@@ -162,7 +174,8 @@ impl A320Hydraulic {
         engine_fire_overhead: &A320EngineFireOverheadPanel,
         landing_gear: &LandingGear,
     ) {
-        let min_hyd_loop_timestep = Duration::from_millis(Self::HYDRAULIC_SIM_TIME_STEP); //Hyd Sim rate = 10 Hz
+        let min_hyd_loop_timestep =
+            Duration::from_millis(Self::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS);
 
         self.total_sim_time_elapsed += context.delta();
 
@@ -215,8 +228,11 @@ impl A320Hydraulic {
             // This is the "fast" update loop refreshing ACTUATORS_SIM_TIME_STEP_MULT times faster
             // here put everything that needs higher simulation rates like physics solving
             let num_of_actuators_update_loops =
-                num_of_update_loops * Self::ACTUATORS_SIM_TIME_STEP_MULT;
-            let delta_time_physics = min_hyd_loop_timestep / Self::ACTUATORS_SIM_TIME_STEP_MULT; //If X times faster we divide step by X
+                num_of_update_loops * Self::ACTUATORS_SIM_TIME_STEP_MULTIPLIER;
+
+            // If X times faster we divide step by X
+            let delta_time_physics =
+                min_hyd_loop_timestep / Self::ACTUATORS_SIM_TIME_STEP_MULTIPLIER;
             for _ in 0..num_of_actuators_update_loops {
                 self.update_fast_rate(&context, &delta_time_physics);
             }
@@ -343,11 +359,13 @@ impl A320Hydraulic {
             &self.power_transfer_unit_controller,
         );
 
+        self.engine_driven_pump_1_pressure_switch
+            .update(self.green_loop.pressure());
         self.engine_driven_pump_1_controller.update(
             overhead_panel,
             engine_fire_overhead,
             engine1.corrected_n2(),
-            self.green_loop.is_pressurised(),
+            self.engine_driven_pump_1_pressure_switch.is_pressurised(),
         );
 
         self.engine_driven_pump_1.update(
@@ -357,11 +375,13 @@ impl A320Hydraulic {
             &self.engine_driven_pump_1_controller,
         );
 
+        self.engine_driven_pump_2_pressure_switch
+            .update(self.yellow_loop.pressure());
         self.engine_driven_pump_2_controller.update(
             overhead_panel,
             engine_fire_overhead,
             engine2.corrected_n2(),
-            self.yellow_loop.is_pressurised(),
+            self.engine_driven_pump_2_pressure_switch.is_pressurised(),
         );
 
         self.engine_driven_pump_2.update(
@@ -620,11 +640,17 @@ impl A320BlueElectricPumpController {
             self.should_pressurise = false;
         }
 
-        self.update_low_pressure_state(pressure_switch_state, engine1_n2, engine2_n2);
+        self.update_low_pressure_state(
+            overhead_panel,
+            pressure_switch_state,
+            engine1_n2,
+            engine2_n2,
+        );
     }
 
     fn update_low_pressure_state(
         &mut self,
+        overhead_panel: &A320HydraulicOverheadPanel,
         pressure_switch_state: bool,
         engine1_n2: Ratio,
         engine2_n2: Ratio,
@@ -635,8 +661,9 @@ impl A320BlueElectricPumpController {
 
         self.is_pressure_low = self.should_pressurise() && !pressure_switch_state;
 
-        self.has_pressure_low_fault =
-            self.is_pressure_low && (!faked_is_engine_low_oil_pressure || !self.weight_on_wheels);
+        self.has_pressure_low_fault = self.is_pressure_low
+            && ((!faked_is_engine_low_oil_pressure || !self.weight_on_wheels)
+                || overhead_panel.blue_epump_override_push_button_is_on());
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -840,7 +867,7 @@ impl A320RamAirTurbineController {
         // Todo check all other needed conditions this is faked with engine master while it should check elec buses
         self.should_deploy = !self.eng_1_master_on
             && !self.eng_2_master_on
-            //Todo get speed from ADIRS
+            // Todo get speed from ADIRS
             && context.indicated_airspeed() > Velocity::new::<knot>(100.)
     }
 }
@@ -856,7 +883,7 @@ impl SimulationElement for A320RamAirTurbineController {
     }
 }
 
-pub struct A320HydraulicBrakingLogic {
+struct A320HydraulicBrakingLogic {
     parking_brake_demand: bool,
     weight_on_wheels: bool,
     is_gear_lever_down: bool,
@@ -871,7 +898,7 @@ pub struct A320HydraulicBrakingLogic {
     anti_skid_activated: bool,
     autobrakes_setting: u8,
 }
-// Implements brakes computers logic
+/// Implements brakes computers logic
 impl A320HydraulicBrakingLogic {
     // Minimum pressure hysteresis on green until main switched on ALTN brakes
     // Feedback by Cpt. Chaos — 25/04/2021 #pilot-feedback
@@ -884,17 +911,22 @@ impl A320HydraulicBrakingLogic {
 
     const AUTOBRAKE_GEAR_RETRACTION_DURATION_S: f64 = 3.;
 
-    pub fn new() -> A320HydraulicBrakingLogic {
+    fn new() -> A320HydraulicBrakingLogic {
         A320HydraulicBrakingLogic {
-            parking_brake_demand: true, // Position of parking brake lever
+            // Position of parking brake lever
+            parking_brake_demand: true,
             weight_on_wheels: true,
             is_gear_lever_down: true,
             left_brake_pilot_input: 0.0,
             right_brake_pilot_input: 0.0,
-            left_brake_green_output: 0.0, // Actual command sent to left green circuit
-            left_brake_yellow_output: 1.0, // Actual command sent to left yellow circuit. Init 1 as considering park brake on on init
-            right_brake_green_output: 0.0, // Actual command sent to right green circuit
-            right_brake_yellow_output: 1.0, // Actual command sent to right yellow circuit. Init 1 as considering park brake on on init
+            // Actual command sent to left green circuit
+            left_brake_green_output: 0.0,
+            // Actual command sent to left yellow circuit. Init 1 as considering park brake on on init
+            left_brake_yellow_output: 1.0,
+            // Actual command sent to right green circuit
+            right_brake_green_output: 0.0,
+            // Actual command sent to right yellow circuit. Init 1 as considering park brake on on init
+            right_brake_yellow_output: 1.0,
             normal_brakes_available: false,
             should_disable_auto_brake_when_retracting: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::AUTOBRAKE_GEAR_RETRACTION_DURATION_S),
@@ -915,7 +947,7 @@ impl A320HydraulicBrakingLogic {
         }
     }
 
-    pub fn update_brake_pressure_limitation(
+    fn update_brake_pressure_limitation(
         &mut self,
         norm_brk: &mut BrakeCircuit,
         altn_brk: &mut BrakeCircuit,
@@ -925,11 +957,11 @@ impl A320HydraulicBrakingLogic {
             || self.right_brake_pilot_input > self.right_brake_yellow_output + 0.2;
 
         // Nominal braking from pedals is limited to 2538psi
-        norm_brk.set_brake_limit_ena(true);
+        norm_brk.set_brake_limit_active(true);
         norm_brk.set_brake_press_limit(Pressure::new::<psi>(2538.));
 
         if self.parking_brake_demand {
-            altn_brk.set_brake_limit_ena(true);
+            altn_brk.set_brake_limit_active(true);
 
             // If no pilot action, standard park brake pressure limit
             if !yellow_manual_braking_input {
@@ -940,23 +972,23 @@ impl A320HydraulicBrakingLogic {
             }
         } else if !self.anti_skid_activated {
             altn_brk.set_brake_press_limit(Pressure::new::<psi>(1160.));
-            altn_brk.set_brake_limit_ena(true);
+            altn_brk.set_brake_limit_active(true);
         } else {
             // Else if any manual braking we use standard limit
             altn_brk.set_brake_press_limit(Pressure::new::<psi>(2538.));
-            altn_brk.set_brake_limit_ena(true);
+            altn_brk.set_brake_limit_active(true);
         }
     }
 
-    // Updates final brake demands per hydraulic loop based on pilot pedal demands
-    pub fn update_brake_demands(
+    /// Updates final brake demands per hydraulic loop based on pilot pedal demands
+    fn update_brake_demands(
         &mut self,
         context: &UpdateContext,
         green_loop: &HydraulicLoop,
         alternate_circuit: &BrakeCircuit,
         landing_gear: &LandingGear,
     ) {
-        self.update_normal_braking_availability(&green_loop.get_pressure());
+        self.update_normal_braking_availability(&green_loop.pressure());
 
         let is_in_flight_gear_lever_up = !self.weight_on_wheels && !self.is_gear_lever_down;
         self.should_disable_auto_brake_when_retracting.update(
@@ -968,12 +1000,14 @@ impl A320HydraulicBrakingLogic {
             if self.should_disable_auto_brake_when_retracting.output() {
                 self.left_brake_green_output = 0.;
                 self.right_brake_green_output = 0.;
-                self.left_brake_yellow_output = 0.;
-                self.right_brake_yellow_output = 0.;
             } else {
-                self.left_brake_green_output = 0.2; // Slight brake pressure to stop the spinning wheels
-                self.right_brake_green_output = 0.2; // Slight brake pressure to stop the spinning wheels
+                // Slight brake pressure to stop the spinning wheels (have no pressure data available yet, 0.2 is random one)
+                self.left_brake_green_output = 0.2;
+                self.right_brake_green_output = 0.2;
             }
+
+            self.left_brake_yellow_output = 0.;
+            self.right_brake_yellow_output = 0.;
         } else {
             let green_used_for_brakes = self.normal_brakes_available
                 && self.anti_skid_activated
@@ -997,9 +1031,9 @@ impl A320HydraulicBrakingLogic {
                     self.right_brake_yellow_output = 1.;
 
                     // Special case: parking brake on but yellow can't provide enough brakes: green are allowed to brake for emergency
-                    if alternate_circuit.get_brake_pressure_left().get::<psi>()
+                    if alternate_circuit.left_brake_pressure().get::<psi>()
                         < Self::MIN_PRESSURE_PARK_BRAKE_EMERGENCY
-                        || alternate_circuit.get_brake_pressure_right().get::<psi>()
+                        || alternate_circuit.right_brake_pressure().get::<psi>()
                             < Self::MIN_PRESSURE_PARK_BRAKE_EMERGENCY
                     {
                         self.left_brake_green_output = self.left_brake_pilot_input;
@@ -1009,14 +1043,14 @@ impl A320HydraulicBrakingLogic {
             }
         }
 
-        //limiting final values
+        // Limiting final values
         self.left_brake_yellow_output = self.left_brake_yellow_output.min(1.).max(0.);
         self.right_brake_yellow_output = self.right_brake_yellow_output.min(1.).max(0.);
         self.left_brake_green_output = self.left_brake_green_output.min(1.).max(0.);
         self.right_brake_green_output = self.right_brake_green_output.min(1.).max(0.);
     }
 
-    pub fn send_brake_demands(&mut self, norm: &mut BrakeCircuit, altn: &mut BrakeCircuit) {
+    fn send_brake_demands(&mut self, norm: &mut BrakeCircuit, altn: &mut BrakeCircuit) {
         norm.set_brake_demand_left(self.left_brake_green_output);
         norm.set_brake_demand_right(self.right_brake_green_output);
         altn.set_brake_demand_left(self.left_brake_yellow_output);
@@ -1025,10 +1059,6 @@ impl A320HydraulicBrakingLogic {
 }
 
 impl SimulationElement for A320HydraulicBrakingLogic {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
-
     fn read(&mut self, state: &mut SimulatorReader) {
         self.parking_brake_demand = state.read_bool("BRAKE PARKING INDICATOR");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
@@ -1089,7 +1119,7 @@ impl PushbackTug {
         }
     }
 
-    pub fn update(&mut self) {
+    fn update(&mut self) {
         if self.is_pushing() {
             self.is_connected_to_nose_gear = true;
         } else if (self.state - PushbackTug::STATE_NO_PUSHBACK).abs() <= f64::EPSILON {
@@ -1194,12 +1224,12 @@ impl SimulationElement for A320HydraulicOverheadPanel {
     }
 }
 
-pub struct A320EngineFireOverheadPanel {
+pub(super) struct A320EngineFireOverheadPanel {
     eng1_fire_pb: FirePushButton,
     eng2_fire_pb: FirePushButton,
 }
 impl A320EngineFireOverheadPanel {
-    pub fn new() -> Self {
+    pub(super) fn new() -> Self {
         Self {
             eng1_fire_pb: FirePushButton::new("ENG1"),
             eng2_fire_pb: FirePushButton::new("ENG2"),
@@ -1269,7 +1299,9 @@ mod tests {
             }
 
             fn get_yellow_brake_accumulator_fluid_volume(&self) -> Volume {
-                self.hydraulics.braking_circuit_altn.get_acc_fluid_volume()
+                self.hydraulics
+                    .braking_circuit_altn
+                    .accumulator_fluid_volume()
             }
 
             fn is_nws_pin_inserted(&self) -> bool {
@@ -1345,7 +1377,7 @@ mod tests {
 
             fn run_one_tick(self) -> Self {
                 self.run_waiting_for(Duration::from_millis(
-                    A320Hydraulic::HYDRAULIC_SIM_TIME_STEP,
+                    A320Hydraulic::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS,
                 ))
             }
 
@@ -1423,6 +1455,11 @@ mod tests {
             fn is_blue_epump_press_low(&mut self) -> bool {
                 self.simulation_test_bed
                     .read_bool("HYD_BLUE_EPUMP_LOW_PRESS")
+            }
+
+            fn is_blue_epump_press_low_fault(&mut self) -> bool {
+                self.simulation_test_bed
+                    .read_bool("OVHD_HYD_EPUMPB_PB_HAS_FAULT")
             }
 
             fn get_brake_left_yellow_pressure(&mut self) -> Pressure {
@@ -2144,6 +2181,60 @@ mod tests {
             // When finally pressurised no fault
             assert!(test_bed.is_yellow_pressurised());
             assert!(!test_bed.is_yellow_edp_press_low_fault());
+        }
+
+        #[test]
+        fn blue_epump_no_fault_on_ground_eng_starting() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Blue epump should have no fault
+            assert!(!test_bed.is_blue_epump_press_low_fault());
+
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(3.))
+                .run_one_tick();
+
+            assert!(!test_bed.is_blue_epump_press_low_fault());
+
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(50.))
+                .run_one_tick();
+
+            assert!(!test_bed.is_blue_pressurised());
+            assert!(test_bed.is_blue_epump_press_low_fault());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
+
+            // When finally pressurised no fault
+            assert!(test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_epump_press_low_fault());
+        }
+
+        #[test]
+        fn blue_epump_fault_on_ground_using_override() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Blue epump should have no fault
+            assert!(!test_bed.is_blue_epump_press_low_fault());
+
+            test_bed = test_bed.set_blue_e_pump_ovrd(true).run_one_tick();
+
+            // As we use override, this bypasses eng off fault inhibit so we have a fault
+            assert!(test_bed.is_blue_epump_press_low_fault());
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs(10));
+
+            // When finally pressurised no fault
+            assert!(test_bed.is_blue_pressurised());
+            assert!(!test_bed.is_blue_epump_press_low_fault());
         }
 
         #[test]
