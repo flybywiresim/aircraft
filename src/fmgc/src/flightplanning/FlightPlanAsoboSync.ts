@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-import { WTDataStore } from 'WorkingTitle';
 import { FlightPlanManager } from './FlightPlanManager';
+import { NXDataStore } from '../../../instruments/src/Common/persistence';
 
 /** A class for syncing a flight plan with the game */
 export class FlightPlanAsoboSync {
@@ -108,7 +108,7 @@ export class FlightPlanAsoboSync {
   public static async SaveToGame(fpln: FlightPlanManager): Promise<void> {
       return new Promise(() => {
           const plan = fpln.getCurrentFlightPlan();
-          if (WTDataStore.get('WT_CJ4_FPSYNC', 0) !== 0 && (plan.checksum !== this.fpChecksum)) {
+          if (NXDataStore.get('WT_CJ4_FPSYNC', 0) !== 0 && (plan.checksum !== this.fpChecksum)) {
               // await Coherent.call("CREATE_NEW_FLIGHTPLAN");
               Coherent.call('SET_CURRENT_FLIGHTPLAN_INDEX', 0).catch(console.log);
               Coherent.call('CLEAR_CURRENT_FLIGHT_PLAN').catch(console.log);
