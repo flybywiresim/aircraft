@@ -23,10 +23,8 @@ export default class ChartFoxClient {
     public async getChartList(icao: string): Promise<ChartFoxAirportCharts> {
         if (ChartFoxClient.sufficientEnv()) {
             if (icao.length === 4) {
-                const chartJsonResp = await fetch(`https://chartfox.org/api/charts/grouped/${icao}?token=${ChartFoxClient.token}`, {
-                     method: 'POST'
-                }).catch(function() {
-                    console.log("Token Authentication Failed. #CF101");
+                const chartJsonResp = await fetch(`https://chartfox.org/api/charts/grouped/${icao}?token=${ChartFoxClient.token}`, { method: 'POST' }).catch(() => {
+                    console.log('Token Authentication Failed. #CF101');
                 });
 
                 if (chartJsonResp.ok) {
