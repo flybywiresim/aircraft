@@ -1,6 +1,6 @@
 use crate::{
     hydraulic::HydraulicLoop,
-    simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
+    simulation::{SimulationElement, SimulatorWriter, UpdateContext},
 };
 
 use std::f64::consts::E;
@@ -16,7 +16,7 @@ pub trait Actuator {
     fn reservoir_return(&self) -> Volume;
 }
 
-pub struct BrakeActuator {
+struct BrakeActuator {
     total_displacement: Volume,
     base_speed: f64,
 
@@ -32,7 +32,7 @@ impl BrakeActuator {
     const MIN_PRESSURE_ALLOWED_TO_MOVE_ACTUATOR_PSI: f64 = 50.;
     const PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI: f64 = 3100.;
 
-    pub fn new(total_displacement: Volume) -> Self {
+    fn new(total_displacement: Volume) -> Self {
         Self {
             total_displacement,
             base_speed: BrakeActuator::ACTUATOR_BASE_SPEED,
@@ -43,7 +43,7 @@ impl BrakeActuator {
         }
     }
 
-    pub fn set_position_demand(&mut self, required_position: f64) {
+    fn set_position_demand(&mut self, required_position: f64) {
         self.required_position = required_position;
     }
 
@@ -57,11 +57,11 @@ impl BrakeActuator {
         }
     }
 
-    pub fn get_applied_brake_pressure(&self) -> Pressure {
+    fn get_applied_brake_pressure(&self) -> Pressure {
         Pressure::new::<psi>(Self::PRESSURE_FOR_MAX_BRAKE_DEFLECTION_PSI) * self.current_position
     }
 
-    pub fn update(&mut self, context: &UpdateContext, received_pressure: Pressure) {
+    fn update(&mut self, context: &UpdateContext, received_pressure: Pressure) {
         let final_delta_position = self.update_position(context, received_pressure);
 
         if final_delta_position > 0. {
@@ -71,7 +71,7 @@ impl BrakeActuator {
         }
     }
 
-    pub fn reset_accumulators(&mut self) {
+    fn reset_accumulators(&mut self) {
         self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
         self.volume_to_res_accumulator = Volume::new::<gallon>(0.);
     }
@@ -107,9 +107,9 @@ impl Actuator for BrakeActuator {
     }
 }
 
-// Brakes implementation. This tries to do a simple model with a possibility to have an accumulator (or not)
-// Brake model is simplified as we just move brake position from 0 to 1 and take conrresponding fluid volume (vol = max_displacement * brake_position).
-// So it's fairly simplified as we just end up with brake pressure = hyd_pressure * current_position
+/// Brakes implementation. This tries to do a simple model with a possibility to have an accumulator (or not)
+/// Brake model is simplified as we just move brake position from 0 to 1 and take conrresponding fluid volume (vol = max_displacement * brake_position).
+/// So it's fairly simplified as we just end up with brake pressure = hyd_pressure * current_position
 pub struct BrakeCircuit {
     _id: String,
     id_left_press: String,
@@ -127,39 +127,18 @@ pub struct BrakeCircuit {
     pressure_limitation: Pressure,
     pressure_limitation_active: bool,
 
-    // Brake accumulator variables. Accumulator can have 0 volume if no accumulator
+    /// Brake accumulator variables. Accumulator can have 0 volume if no accumulator
     has_accumulator: bool,
     accumulator: Accumulator,
 
-    // Common vars to all actuators: will be used by the calling loop to know what is used
-    // and what comes back to  reservoir at each iteration
+    /// Common vars to all actuators: will be used by the calling loop to know what is used
+    /// and what comes back to  reservoir at each iteration
     volume_to_actuator_accumulator: Volume,
     volume_to_res_accumulator: Volume,
 
-    // Fluid pressure in brake circuit filtered for cockpit gauges
+    /// Fluid pressure in brake circuit filtered for cockpit gauges
     accumulator_fluid_pressure_sensor_filtered: Pressure,
 }
-
-impl SimulationElement for BrakeCircuit {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64(
-            &self.id_left_press,
-            self.left_brake_pressure().get::<psi>(),
-        );
-        writer.write_f64(
-            &self.id_right_press,
-            self.right_brake_pressure().get::<psi>(),
-        );
-        if self.has_accumulator {
-            writer.write_f64(&self.id_acc_press, self.accumulator_pressure().get::<psi>());
-        }
-    }
-}
-
 impl BrakeCircuit {
     const ACCUMULATOR_GAS_PRE_CHARGE: f64 = 1000.0; // Nitrogen PSI
     const ACCUMULATOR_PRESS_BREAKPTS: [f64; 10] = [
@@ -220,7 +199,7 @@ impl BrakeCircuit {
         self.pressure_limitation = pressure_limit;
     }
 
-    pub fn set_brake_limit_ena(&mut self, is_pressure_limit_active: bool) {
+    pub fn set_brake_limit_active(&mut self, is_pressure_limit_active: bool) {
         self.pressure_limitation_active = is_pressure_limit_active;
     }
 
@@ -254,8 +233,8 @@ impl BrakeCircuit {
 
         self.update_brake_actuators(context, actual_pressure_available);
 
-        let delta_vol = self.left_brake_actuator.used_volume()
-            + self.right_brake_actuator.used_volume();
+        let delta_vol =
+            self.left_brake_actuator.used_volume() + self.right_brake_actuator.used_volume();
 
         if self.has_accumulator {
             let mut volume_into_accumulator = Volume::new::<gallon>(0.);
@@ -300,6 +279,7 @@ impl BrakeCircuit {
     pub fn set_brake_demand_left(&mut self, brake_ratio: f64) {
         self.demanded_brake_position_left = brake_ratio.min(1.0).max(0.0);
     }
+
     pub fn set_brake_demand_right(&mut self, brake_ratio: f64) {
         self.demanded_brake_position_right = brake_ratio.min(1.0).max(0.0);
     }
@@ -307,11 +287,12 @@ impl BrakeCircuit {
     pub fn left_brake_pressure(&self) -> Pressure {
         self.pressure_applied_left
     }
+
     pub fn right_brake_pressure(&self) -> Pressure {
         self.pressure_applied_right
     }
 
-    pub fn accumulator_pressure(&self) -> Pressure {
+    fn accumulator_pressure(&self) -> Pressure {
         self.accumulator_fluid_pressure_sensor_filtered
     }
 
@@ -324,7 +305,6 @@ impl BrakeCircuit {
         self.volume_to_actuator_accumulator = Volume::new::<gallon>(0.);
     }
 }
-
 impl Actuator for BrakeCircuit {
     fn used_volume(&self) -> Volume {
         self.volume_to_actuator_accumulator
@@ -333,8 +313,20 @@ impl Actuator for BrakeCircuit {
         self.volume_to_res_accumulator
     }
 }
+impl SimulationElement for BrakeCircuit {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_f64(&self.id_left_press, self.left_brake_pressure().get::<psi>());
+        writer.write_f64(
+            &self.id_right_press,
+            self.right_brake_pressure().get::<psi>(),
+        );
+        if self.has_accumulator {
+            writer.write_f64(&self.id_acc_press, self.accumulator_pressure().get::<psi>());
+        }
+    }
+}
 
-pub struct AutoBrakeController {
+struct AutoBrakeController {
     accel_targets: Vec<Acceleration>,
     num_of_modes: usize,
 
@@ -347,11 +339,10 @@ pub struct AutoBrakeController {
     current_integral_term: f64,
 
     // Controller brake demand to satisfy autobrake mode [0:1]
-    current_brake_dmnd: f64,
+    current_brake_demand: f64,
 
     is_enabled: bool,
 }
-
 impl AutoBrakeController {
     const LONG_ACC_FILTER_TIMECONST: f64 = 0.1;
 
@@ -359,7 +350,7 @@ impl AutoBrakeController {
     const CONTROLLER_I_GAIN: f64 = 0.001;
     const CONTROLLER_D_GAIN: f64 = 0.01;
 
-    pub fn new(accel_targets: Vec<Acceleration>) -> AutoBrakeController {
+    fn new(accel_targets: Vec<Acceleration>) -> AutoBrakeController {
         let num = accel_targets.len();
         assert!(num > 0);
         AutoBrakeController {
@@ -370,12 +361,12 @@ impl AutoBrakeController {
             current_accel_error: Acceleration::new::<foot_per_second_squared>(0.0),
             accel_error_prev: Acceleration::new::<foot_per_second_squared>(0.0),
             current_integral_term: 0.,
-            current_brake_dmnd: 0.,
+            current_brake_demand: 0.,
             is_enabled: false,
         }
     }
 
-    pub fn update(&mut self, delta_time: &Duration, context: &UpdateContext) {
+    fn update(&mut self, delta_time: &Duration, context: &UpdateContext) {
         self.current_filtered_accel = self.current_filtered_accel
             + (context.long_accel() - self.current_filtered_accel)
                 * (1.
@@ -396,23 +387,19 @@ impl AutoBrakeController {
                 * AutoBrakeController::CONTROLLER_I_GAIN;
 
             let current_brake_dmnd = pterm + self.current_integral_term + dterm;
-            self.current_brake_dmnd = current_brake_dmnd.min(1.).max(0.);
+            self.current_brake_demand = current_brake_dmnd.min(1.).max(0.);
         } else {
-            self.current_brake_dmnd = 0.0;
+            self.current_brake_demand = 0.0;
             self.current_integral_term = 0.0;
         }
     }
 
-    pub fn brake_command(&self) -> f64 {
-        self.current_brake_dmnd
+    fn brake_command(&self) -> f64 {
+        self.current_brake_demand
     }
 
-    pub fn set_mode(&mut self, selected_mode: &usize) {
-        self.current_selected_mode = *selected_mode.min(&self.num_of_modes);
-    }
-
-    pub fn set_enable(&mut self, ena: bool) {
-        self.is_enabled = ena;
+    fn enable(&mut self) {
+        self.is_enabled = true;
     }
 }
 
@@ -552,9 +539,7 @@ mod tests {
                 < Pressure::new::<psi>(10.0)
         );
         assert!(brake_circuit_unprimed.accumulator.total_volume == init_max_vol);
-        assert!(
-            brake_circuit_unprimed.accumulator.fluid_volume() == Volume::new::<gallon>(0.0)
-        );
+        assert!(brake_circuit_unprimed.accumulator.fluid_volume() == Volume::new::<gallon>(0.0));
         assert!(brake_circuit_unprimed.accumulator.gas_volume == init_max_vol);
 
         let brake_circuit_primed = BrakeCircuit::new(
@@ -691,7 +676,7 @@ mod tests {
         assert!(brake_circuit_primed.left_brake_pressure() >= Pressure::new::<psi>(2900.));
         assert!(brake_circuit_primed.right_brake_pressure() >= Pressure::new::<psi>(2900.));
 
-        brake_circuit_primed.set_brake_limit_ena(true);
+        brake_circuit_primed.set_brake_limit_active(true);
         brake_circuit_primed.update(&context(Duration::from_secs_f64(0.1)), &hyd_loop);
 
         // Now we limit to 1200 but pressure shouldn't drop instantly
@@ -719,7 +704,7 @@ mod tests {
         controller.update(&context.delta(), &context);
         assert!(controller.brake_command() <= 0.0);
 
-        controller.set_enable(true);
+        controller.enable();
         controller.update(&context.delta(), &context);
         assert!(controller.brake_command() >= 0.0);
     }

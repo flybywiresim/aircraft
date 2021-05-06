@@ -14,8 +14,8 @@ use crate::shared::interpolation;
 use crate::simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter};
 use crate::{engine::Engine, simulation::UpdateContext};
 
-pub mod brakecircuit;
-use crate::hydraulic::brakecircuit::Actuator;
+pub mod brake_circuit;
+use crate::hydraulic::brake_circuit::Actuator;
 
 pub trait PressureSource {
     /// Gives the maximum available volume at that time as if it is a variable displacement
@@ -34,9 +34,7 @@ pub struct Fluid {
 }
 impl Fluid {
     pub fn new(bulk: Pressure) -> Self {
-        Self {
-            current_bulk: bulk,
-        }
+        Self { current_bulk: bulk }
     }
 
     pub fn bulk_mod(&self) -> Pressure {
@@ -109,10 +107,6 @@ impl PowerTransferUnit {
 
     pub fn flow(&self) -> VolumeRate {
         self.last_flow
-    }
-
-    pub fn is_active(&self) -> bool {
-        self.is_active_right || self.is_active_left
     }
 
     pub fn is_enabled(&self) -> bool {
@@ -198,10 +192,7 @@ impl SimulationElement for PowerTransferUnit {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_bool("HYD_PTU_ACTIVE_L2R", self.is_active_left);
         writer.write_bool("HYD_PTU_ACTIVE_R2L", self.is_active_right);
-        writer.write_f64(
-            "HYD_PTU_MOTOR_FLOW",
-            self.flow().get::<gallon_per_second>(),
-        );
+        writer.write_f64("HYD_PTU_MOTOR_FLOW", self.flow().get::<gallon_per_second>());
         writer.write_bool("HYD_PTU_VALVE_OPENED", self.is_enabled());
     }
 }
@@ -230,7 +221,7 @@ struct Accumulator {
 impl Accumulator {
     const FLOW_DYNAMIC_LOW_PASS: f64 = 0.7;
 
-    pub fn new(
+    fn new(
         gas_precharge: Pressure,
         total_volume: Volume,
         fluid_vol_at_init: Volume,
@@ -296,7 +287,7 @@ impl Accumulator {
             (self.gas_init_precharge * self.total_volume) / (self.total_volume - self.fluid_volume);
     }
 
-    pub fn get_delta_vol(&mut self, required_delta_vol: Volume) -> Volume {
+    fn get_delta_vol(&mut self, required_delta_vol: Volume) -> Volume {
         let mut volume_from_acc = Volume::new::<gallon>(0.0);
         if required_delta_vol > Volume::new::<gallon>(0.0) {
             volume_from_acc = self.fluid_volume.min(required_delta_vol);
@@ -312,11 +303,11 @@ impl Accumulator {
         volume_from_acc
     }
 
-    pub fn fluid_volume(&self) -> Volume {
+    fn fluid_volume(&self) -> Volume {
         self.fluid_volume
     }
 
-    pub fn raw_gas_press(&self) -> Pressure {
+    fn raw_gas_press(&self) -> Pressure {
         self.gas_pressure
     }
 }
@@ -448,21 +439,13 @@ impl HydraulicLoop {
         self.accumulator.gas_volume
     }
 
-    pub fn get_usable_reservoir_fluid(&self, amount: Volume) -> Volume {
-        let mut drawn = amount;
-        if amount > self.reservoir_volume {
-            drawn = self.reservoir_volume;
-        }
-        drawn
-    }
-
     pub fn update_actuator_volumes<T: Actuator>(&mut self, actuator: &T) {
         self.total_actuators_consumed_volume += actuator.used_volume();
         self.total_actuators_returned_volume += actuator.reservoir_return();
     }
 
-    // Returns the max flow that can be output from reservoir in dt time
-    pub fn get_usable_reservoir_flow(&self, amount: VolumeRate, delta_time: Time) -> VolumeRate {
+    /// Returns the max flow that can be output from reservoir in dt time
+    fn get_usable_reservoir_flow(&self, amount: VolumeRate, delta_time: Time) -> VolumeRate {
         let mut drawn = amount;
 
         let max_flow = self.reservoir_volume / delta_time;
@@ -472,16 +455,15 @@ impl HydraulicLoop {
         drawn
     }
 
-    // Method to update pressure of a loop. The more delta volume is added, the more pressure rises
-    // directly from bulk modulus equation
-    pub fn delta_pressure_from_delta_volume(&self, delta_vol: Volume) -> Pressure {
+    /// Method to update pressure of a loop. The more delta volume is added, the more pressure rises
+    /// directly from bulk modulus equation
+    fn delta_pressure_from_delta_volume(&self, delta_vol: Volume) -> Pressure {
         return delta_vol / self.high_pressure_volume * self.fluid.bulk_mod();
     }
 
-    // Gives the exact volume of fluid needed to get to any target_press pressure
-    pub fn vol_to_target(&self, target_press: Pressure) -> Volume {
-        (target_press - self.loop_pressure) * (self.high_pressure_volume)
-            / self.fluid.bulk_mod()
+    /// Gives the exact volume of fluid needed to get to any target_press pressure
+    fn vol_to_target(&self, target_press: Pressure) -> Volume {
+        (target_press - self.loop_pressure) * (self.high_pressure_volume) / self.fluid.bulk_mod()
     }
 
     pub fn is_fire_shutoff_valve_opened(&self) -> bool {
@@ -655,10 +637,7 @@ impl HydraulicLoop {
 impl SimulationElement for HydraulicLoop {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_f64(&self.pressure_id, self.pressure().get::<psi>());
-        writer.write_f64(
-            &self.reservoir_id,
-            self.reservoir_volume().get::<gallon>(),
-        );
+        writer.write_f64(&self.reservoir_id, self.reservoir_volume().get::<gallon>());
         if self.has_fire_valve {
             writer.write_bool(&self.fire_valve_id, self.is_fire_shutoff_valve_opened());
         }
@@ -798,10 +777,6 @@ impl ElectricPump {
         self.pump.update(context, line, self.rpm, controller);
         self.is_active = controller.should_pressurise();
     }
-
-    pub fn is_active(&self) -> bool {
-        self.is_active
-    }
 }
 impl PressureSource for ElectricPump {
     fn delta_vol_max(&self) -> Volume {
@@ -813,7 +788,7 @@ impl PressureSource for ElectricPump {
 }
 impl SimulationElement for ElectricPump {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.active_id, self.is_active());
+        writer.write_bool(&self.active_id, self.is_active);
     }
 }
 
@@ -863,10 +838,6 @@ impl EngineDrivenPump {
         self.pump.update(context, line, pump_rpm, controller);
         self.is_active = controller.should_pressurise();
     }
-
-    fn is_active(&self) -> bool {
-        self.is_active
-    }
 }
 impl PressureSource for EngineDrivenPump {
     fn delta_vol_min(&self) -> Volume {
@@ -878,11 +849,11 @@ impl PressureSource for EngineDrivenPump {
 }
 impl SimulationElement for EngineDrivenPump {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_bool(&self.active_id, self.is_active());
+        writer.write_bool(&self.active_id, self.is_active);
     }
 }
 
-pub struct WindTurbine {
+struct WindTurbine {
     position: f64,
     speed: f64,
     acceleration: f64,
@@ -899,7 +870,7 @@ impl WindTurbine {
     ];
     const PROP_ALPHA_MAP: [f64; 9] = [45., 45., 45., 45., 35., 25., 1., 1., 1.];
 
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             position: Self::STOWED_ANGLE,
             speed: 0.,
@@ -909,7 +880,7 @@ impl WindTurbine {
         }
     }
 
-    pub fn rpm(&self) -> f64 {
+    fn rpm(&self) -> f64 {
         self.rpm
     }
 
@@ -953,7 +924,7 @@ impl WindTurbine {
         self.torque_sum = 0.;
     }
 
-    pub fn update(
+    fn update(
         &mut self,
         delta_time: &Duration,
         indicated_speed: &Velocity,

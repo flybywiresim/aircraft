@@ -16,7 +16,7 @@ use systems::simulation::{
 };
 use systems::{engine::Engine, landing_gear::LandingGear};
 use systems::{
-    hydraulic::brakecircuit::BrakeCircuit, shared::DelayedFalseLogicGate,
+    hydraulic::brake_circuit::BrakeCircuit, shared::DelayedFalseLogicGate,
     shared::DelayedTrueLogicGate,
 };
 
@@ -174,7 +174,8 @@ impl A320Hydraulic {
         engine_fire_overhead: &A320EngineFireOverheadPanel,
         landing_gear: &LandingGear,
     ) {
-        let min_hyd_loop_timestep = Duration::from_millis(Self::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS);
+        let min_hyd_loop_timestep =
+            Duration::from_millis(Self::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS);
 
         self.total_sim_time_elapsed += context.delta();
 
@@ -230,7 +231,8 @@ impl A320Hydraulic {
                 num_of_update_loops * Self::ACTUATORS_SIM_TIME_STEP_MULTIPLIER;
 
             // If X times faster we divide step by X
-            let delta_time_physics = min_hyd_loop_timestep / Self::ACTUATORS_SIM_TIME_STEP_MULTIPLIER;
+            let delta_time_physics =
+                min_hyd_loop_timestep / Self::ACTUATORS_SIM_TIME_STEP_MULTIPLIER;
             for _ in 0..num_of_actuators_update_loops {
                 self.update_fast_rate(&context, &delta_time_physics);
             }
@@ -950,11 +952,11 @@ impl A320HydraulicBrakingLogic {
             || self.right_brake_pilot_input > self.right_brake_yellow_output + 0.2;
 
         // Nominal braking from pedals is limited to 2538psi
-        norm_brk.set_brake_limit_ena(true);
+        norm_brk.set_brake_limit_active(true);
         norm_brk.set_brake_press_limit(Pressure::new::<psi>(2538.));
 
         if self.parking_brake_demand {
-            altn_brk.set_brake_limit_ena(true);
+            altn_brk.set_brake_limit_active(true);
 
             // If no pilot action, standard park brake pressure limit
             if !yellow_manual_braking_input {
@@ -965,11 +967,11 @@ impl A320HydraulicBrakingLogic {
             }
         } else if !self.anti_skid_activated {
             altn_brk.set_brake_press_limit(Pressure::new::<psi>(1160.));
-            altn_brk.set_brake_limit_ena(true);
+            altn_brk.set_brake_limit_active(true);
         } else {
             // Else if any manual braking we use standard limit
             altn_brk.set_brake_press_limit(Pressure::new::<psi>(2538.));
-            altn_brk.set_brake_limit_ena(true);
+            altn_brk.set_brake_limit_active(true);
         }
     }
 
@@ -1050,10 +1052,6 @@ impl A320HydraulicBrakingLogic {
 }
 
 impl SimulationElement for A320HydraulicBrakingLogic {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
-
     fn read(&mut self, state: &mut SimulatorReader) {
         self.parking_brake_demand = state.read_bool("BRAKE PARKING INDICATOR");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
@@ -1294,7 +1292,9 @@ mod tests {
             }
 
             fn get_yellow_brake_accumulator_fluid_volume(&self) -> Volume {
-                self.hydraulics.braking_circuit_altn.accumulator_fluid_volume()
+                self.hydraulics
+                    .braking_circuit_altn
+                    .accumulator_fluid_volume()
             }
 
             fn is_nws_pin_inserted(&self) -> bool {
