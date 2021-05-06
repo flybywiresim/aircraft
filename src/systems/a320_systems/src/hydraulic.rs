@@ -883,7 +883,7 @@ impl SimulationElement for A320RamAirTurbineController {
     }
 }
 
-pub struct A320HydraulicBrakingLogic {
+struct A320HydraulicBrakingLogic {
     parking_brake_demand: bool,
     weight_on_wheels: bool,
     is_gear_lever_down: bool,
@@ -898,7 +898,7 @@ pub struct A320HydraulicBrakingLogic {
     anti_skid_activated: bool,
     autobrakes_setting: u8,
 }
-// Implements brakes computers logic
+/// Implements brakes computers logic
 impl A320HydraulicBrakingLogic {
     // Minimum pressure hysteresis on green until main switched on ALTN brakes
     // Feedback by Cpt. Chaos — 25/04/2021 #pilot-feedback
@@ -911,17 +911,22 @@ impl A320HydraulicBrakingLogic {
 
     const AUTOBRAKE_GEAR_RETRACTION_DURATION_S: f64 = 3.;
 
-    pub fn new() -> A320HydraulicBrakingLogic {
+    fn new() -> A320HydraulicBrakingLogic {
         A320HydraulicBrakingLogic {
-            parking_brake_demand: true, // Position of parking brake lever
+            // Position of parking brake lever
+            parking_brake_demand: true,
             weight_on_wheels: true,
             is_gear_lever_down: true,
             left_brake_pilot_input: 0.0,
             right_brake_pilot_input: 0.0,
-            left_brake_green_output: 0.0, // Actual command sent to left green circuit
-            left_brake_yellow_output: 1.0, // Actual command sent to left yellow circuit. Init 1 as considering park brake on on init
-            right_brake_green_output: 0.0, // Actual command sent to right green circuit
-            right_brake_yellow_output: 1.0, // Actual command sent to right yellow circuit. Init 1 as considering park brake on on init
+            // Actual command sent to left green circuit
+            left_brake_green_output: 0.0,
+            // Actual command sent to left yellow circuit. Init 1 as considering park brake on on init
+            left_brake_yellow_output: 1.0,
+            // Actual command sent to right green circuit
+            right_brake_green_output: 0.0,
+            // Actual command sent to right yellow circuit. Init 1 as considering park brake on on init
+            right_brake_yellow_output: 1.0,
             normal_brakes_available: false,
             should_disable_auto_brake_when_retracting: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::AUTOBRAKE_GEAR_RETRACTION_DURATION_S),
@@ -942,7 +947,7 @@ impl A320HydraulicBrakingLogic {
         }
     }
 
-    pub fn update_brake_pressure_limitation(
+    fn update_brake_pressure_limitation(
         &mut self,
         norm_brk: &mut BrakeCircuit,
         altn_brk: &mut BrakeCircuit,
@@ -975,8 +980,8 @@ impl A320HydraulicBrakingLogic {
         }
     }
 
-    // Updates final brake demands per hydraulic loop based on pilot pedal demands
-    pub fn update_brake_demands(
+    /// Updates final brake demands per hydraulic loop based on pilot pedal demands
+    fn update_brake_demands(
         &mut self,
         context: &UpdateContext,
         green_loop: &HydraulicLoop,
@@ -998,8 +1003,9 @@ impl A320HydraulicBrakingLogic {
                 self.left_brake_yellow_output = 0.;
                 self.right_brake_yellow_output = 0.;
             } else {
-                self.left_brake_green_output = 0.2; // Slight brake pressure to stop the spinning wheels
-                self.right_brake_green_output = 0.2; // Slight brake pressure to stop the spinning wheels
+                // Slight brake pressure to stop the spinning wheels
+                self.left_brake_green_output = 0.2;
+                self.right_brake_green_output = 0.2;
             }
         } else {
             let green_used_for_brakes = self.normal_brakes_available
@@ -1043,7 +1049,7 @@ impl A320HydraulicBrakingLogic {
         self.right_brake_green_output = self.right_brake_green_output.min(1.).max(0.);
     }
 
-    pub fn send_brake_demands(&mut self, norm: &mut BrakeCircuit, altn: &mut BrakeCircuit) {
+    fn send_brake_demands(&mut self, norm: &mut BrakeCircuit, altn: &mut BrakeCircuit) {
         norm.set_brake_demand_left(self.left_brake_green_output);
         norm.set_brake_demand_right(self.right_brake_green_output);
         altn.set_brake_demand_left(self.left_brake_yellow_output);
@@ -1112,7 +1118,7 @@ impl PushbackTug {
         }
     }
 
-    pub fn update(&mut self) {
+    fn update(&mut self) {
         if self.is_pushing() {
             self.is_connected_to_nose_gear = true;
         } else if (self.state - PushbackTug::STATE_NO_PUSHBACK).abs() <= f64::EPSILON {
@@ -1217,12 +1223,12 @@ impl SimulationElement for A320HydraulicOverheadPanel {
     }
 }
 
-pub struct A320EngineFireOverheadPanel {
+pub(super) struct A320EngineFireOverheadPanel {
     eng1_fire_pb: FirePushButton,
     eng2_fire_pb: FirePushButton,
 }
 impl A320EngineFireOverheadPanel {
-    pub fn new() -> Self {
+    pub(super) fn new() -> Self {
         Self {
             eng1_fire_pb: FirePushButton::new("ENG1"),
             eng2_fire_pb: FirePushButton::new("ENG2"),
