@@ -119,8 +119,8 @@ export default class NavigraphClient {
                     this.deviceCode = r.device_code;
                 });
             }
-        }).catch(function() {
-            console.log("Unable to Authorize Device. #NV101");
+        }).catch(() => {
+            console.log('Unable to Authorize Device. #NV101');
         });
     }
 
@@ -140,8 +140,8 @@ export default class NavigraphClient {
                     NXDataStore.set('NAVIGRAPH_REFRESH_TOKEN', refreshToken);
                 });
             }
-        }).catch(function() {
-            console.log("Token Authentication Failed. #NV102");
+        }).catch(() => {
+            console.log('Token Authentication Failed. #NV102');
         });
     }
 
@@ -252,12 +252,8 @@ export default class NavigraphClient {
 
     public async userInfo() {
         if (this.hasToken()) {
-            const userInfoResp = await fetch('https://identity.api.navigraph.com/connect/userinfo', {
-                headers: {
-                    Authorization: `Bearer ${this.accessToken}`
-                }
-            }).catch(function() {
-                console.log("Unable to Fetch User Info. #NV103");
+            const userInfoResp = await fetch('https://identity.api.navigraph.com/connect/userinfo', { headers: { Authorization: `Bearer ${this.accessToken}` } }).catch(() => {
+                console.log('Unable to Fetch User Info. #NV103');
             });
 
             if (userInfoResp.ok) {
@@ -272,12 +268,8 @@ export default class NavigraphClient {
 
     public async subscriptionStatus() {
         if (this.hasToken()) {
-            const subscriptionResp = await fetch('https://subscriptions.api.navigraph.com/2/subscriptions/valid', {
-                headers: {
-                    Authorization: `Bearer ${this.accessToken}`
-                }
-            }).catch(function() {
-                console.log("Unable to Fetch Subscription Status. #NV104");
+            const subscriptionResp = await fetch('https://subscriptions.api.navigraph.com/2/subscriptions/valid', { headers: { Authorization: `Bearer ${this.accessToken}` } }).catch(() => {
+                console.log('Unable to Fetch Subscription Status. #NV104');
             });
 
             if (subscriptionResp.ok) {
