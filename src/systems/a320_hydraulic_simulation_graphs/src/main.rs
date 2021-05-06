@@ -116,15 +116,15 @@ fn make_figure(h: &History) -> Figure {
                 Line2D::new(h.name_vector[idx].as_str())
                     .data(&h.time_vector, &cur_data)
                     .color("blue")
-                    //.marker("x")
-                    //.linestyle("--")
+                    // .marker("x")
+                    // .linestyle("--")
                     .linewidth(1.0),
             )
             .xlabel("Time [sec]")
             .ylabel(h.name_vector[idx].as_str())
             .legend("best")
             .xlim(0.0, *h.time_vector.last().unwrap());
-        //.ylim(-2.0, 2.0);
+        // .ylim(-2.0, 2.0);
 
         curr_axis = curr_axis.grid(true);
         all_axis.push(Some(curr_axis));
@@ -133,16 +133,18 @@ fn make_figure(h: &History) -> Figure {
     Figure::new().subplots(all_axis.len() as u32, 1, all_axis)
 }
 
-//History class to record a simulation
-pub struct History {
-    time_vector: Vec<f64>,      //Simulation time starting from 0
-    name_vector: Vec<String>,   //Name of each var saved
-    data_vector: Vec<Vec<f64>>, //Vector data for each var saved
+/// History class to record a simulation
+struct History {
+    /// Simulation time starting from 0
+    time_vector: Vec<f64>,
+    /// Name of each var saved
+    name_vector: Vec<String>,
+    /// Vector data for each var saved
+    data_vector: Vec<Vec<f64>>,
     _data_size: usize,
 }
-
 impl History {
-    pub fn new(names: Vec<String>) -> History {
+    fn new(names: Vec<String>) -> History {
         History {
             time_vector: Vec::new(),
             name_vector: names.clone(),
@@ -151,29 +153,29 @@ impl History {
         }
     }
 
-    //Sets initialisation values of each data before first step
-    pub fn init(&mut self, start_time: f64, values: Vec<f64>) {
+    /// Sets initialisation values of each data before first step
+    fn init(&mut self, start_time: f64, values: Vec<f64>) {
         self.time_vector.push(start_time);
         for v in values {
             self.data_vector.push(vec![v]);
         }
     }
 
-    //Updates all values and time vector
-    pub fn update(&mut self, delta_time: f64, values: Vec<f64>) {
+    /// Updates all values and time vector
+    fn update(&mut self, delta_time: f64, values: Vec<f64>) {
         self.time_vector
             .push(self.time_vector.last().unwrap() + delta_time);
         self.push_data(values);
     }
 
-    pub fn push_data(&mut self, values: Vec<f64>) {
+    fn push_data(&mut self, values: Vec<f64>) {
         for (idx, v) in values.iter().enumerate() {
             self.data_vector[idx].push(*v);
         }
     }
 
-    //Builds a graph using rust crate plotlib
-    pub fn _show(self) {
+    /// Builds a graph using rust crate plotlib
+    fn _show(self) {
         let mut v = ContinuousView::new()
             .x_range(0.0, *self.time_vector.last().unwrap())
             .y_range(0.0, 3500.0)
@@ -181,7 +183,7 @@ impl History {
             .y_label("Value");
 
         for cur_data in self.data_vector {
-            //Here build the 2 by Xsamples vector
+            // Here build the 2 by Xsamples vector
             let mut new_vector: Vec<(f64, f64)> = Vec::new();
             for (idx, sample) in self.time_vector.iter().enumerate() {
                 new_vector.push((*sample, cur_data[idx]));
@@ -197,8 +199,8 @@ impl History {
         Page::single(&v).save("scatter.svg").unwrap();
     }
 
-    //builds a graph using matplotlib python backend. PYTHON REQUIRED AS WELL AS MATPLOTLIB PACKAGE
-    pub fn show_matplotlib(&self, figure_title: &str, path: &str) {
+    /// Builds a graph using matplotlib python backend. PYTHON REQUIRED AS WELL AS MATPLOTLIB PACKAGE
+    fn show_matplotlib(&self, figure_title: &str, path: &str) {
         let fig = make_figure(&self);
 
         use rustplotlib::backend::Matplotlib;
@@ -217,7 +219,7 @@ impl History {
     }
 }
 
-//Runs engine driven pump, checks pressure OK, shut it down, check drop of pressure after 20s
+/// Runs engine driven pump, checks pressure OK, shut it down, check drop of pressure after 20s
 fn green_loop_edp_simulation(path: &str) {
     let green_loop_var_names = vec![
         "Loop Pressure".to_string(),
@@ -275,7 +277,7 @@ fn green_loop_edp_simulation(path: &str) {
     );
     for x in 0..600 {
         if x == 50 {
-            //After 5s
+            // After 5s
             assert!(green_loop.pressure() >= Pressure::new::<psi>(2850.0));
         }
         if x == 200 {
@@ -283,7 +285,7 @@ fn green_loop_edp_simulation(path: &str) {
             edp1_controller.command_depressurise();
         }
         if x >= 500 {
-            //Shutdown + 30s
+            // Shutdown + 30s
             assert!(green_loop.pressure() <= Pressure::new::<psi>(250.0));
         }
 
@@ -452,7 +454,7 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
     engine1.corrected_n2 = Ratio::new::<percent>(100.0);
     for x in 0..800 {
         if x == 10 {
-            //After 1s powering electric pump
+            // After 1s powering electric pump
             println!("------------YELLOW EPUMP ON------------");
             assert!(yellow_loop.pressure() <= Pressure::new::<psi>(50.0));
             assert!(yellow_loop.reservoir_volume() == yellow_res_at_start);
@@ -464,7 +466,7 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
         }
 
         if x == 110 {
-            //10s later enabling ptu
+            // 10s later enabling ptu
             println!("--------------PTU ENABLED--------------");
             assert!(yellow_loop.pressure() >= Pressure::new::<psi>(2950.0));
             assert!(yellow_loop.reservoir_volume() <= yellow_res_at_start);
@@ -476,14 +478,14 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
         }
 
         if x == 300 {
-            //@30s, ptu should be supplying green loop
+            // @30s, ptu should be supplying green loop
             println!("----------PTU SUPPLIES GREEN------------");
             assert!(yellow_loop.pressure() >= Pressure::new::<psi>(2400.0));
             assert!(green_loop.pressure() >= Pressure::new::<psi>(2400.0));
         }
 
         if x == 400 {
-            //@40s enabling edp
+            // @40s enabling edp
             println!("------------GREEN  EDP1  ON------------");
             assert!(yellow_loop.pressure() >= Pressure::new::<psi>(2600.0));
             assert!(green_loop.pressure() >= Pressure::new::<psi>(2000.0));
@@ -491,14 +493,14 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
         }
 
         if (500..=600).contains(&x) {
-            //10s later and during 10s, ptu should stay inactive
+            // 10s later and during 10s, ptu should stay inactive
             println!("------------IS PTU ACTIVE??------------");
             assert!(yellow_loop.pressure() >= Pressure::new::<psi>(2900.0));
             assert!(green_loop.pressure() >= Pressure::new::<psi>(2900.0));
         }
 
         if x == 600 {
-            //@60s diabling edp and epump
+            // @60s diabling edp and epump
             println!("-------------ALL PUMPS OFF------------");
             assert!(yellow_loop.pressure() >= Pressure::new::<psi>(2900.0));
             assert!(green_loop.pressure() >= Pressure::new::<psi>(2900.0));
@@ -507,7 +509,7 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
         }
 
         if x == 800 {
-            //@80s diabling edp and epump
+            // @80s diabling edp and epump
             println!("-----------IS PRESSURE OFF?-----------");
             assert!(yellow_loop.pressure() < Pressure::new::<psi>(50.0));
             assert!(green_loop.pressure() <= Pressure::new::<psi>(50.0));
@@ -705,12 +707,12 @@ fn yellow_epump_plus_edp2_with_ptu(path: &str) {
     engine2.corrected_n2 = Ratio::new::<percent>(100.0);
     for x in 0..800 {
         if x == 10 {
-            //After 1s powering electric pump
+            // After 1s powering electric pump
             epump_controller.command_pressurise();
         }
 
         if x == 110 {
-            //10s later enabling edp2
+            // 10s later enabling edp2
             edp2_controller.command_pressurise();
         }
 
@@ -796,7 +798,7 @@ fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
             Volume::new::<gallon>(26.41),
             Volume::new::<gallon>(10.0),
             Volume::new::<gallon>(3.83),
-            HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+            Fluid::new(Pressure::new::<pascal>(1450000000.0)),
             true,
             Pressure::new::<psi>(1450.),
             Pressure::new::<psi>(1750.),
@@ -809,7 +811,7 @@ fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
             Volume::new::<gallon>(10.2),
             Volume::new::<gallon>(8.0),
             Volume::new::<gallon>(3.3),
-            HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+            Fluid::new(Pressure::new::<pascal>(1450000000.0)),
             true,
             Pressure::new::<psi>(1450.),
             Pressure::new::<psi>(1750.),
@@ -822,7 +824,7 @@ fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
             Volume::new::<gallon>(15.85),
             Volume::new::<gallon>(8.0),
             Volume::new::<gallon>(1.5),
-            HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+            Fluid::new(Pressure::new::<pascal>(1450000000.0)),
             false,
             Pressure::new::<psi>(1450.),
             Pressure::new::<psi>(1750.),

@@ -363,13 +363,13 @@ mod interpolation_tests {
 
     #[test]
     fn interpolation_before_first_element_test() {
-        //We expect to get first element of YS1
+        // We expect to get first element of YS1
         assert!((interpolation(&XS1, &YS1, -500.0) - YS1[0]).abs() < f64::EPSILON);
     }
 
     #[test]
     fn interpolation_after_last_element_test() {
-        //We expect to get last element of YS1
+        // We expect to get last element of YS1
         assert!(
             (interpolation(&XS1, &YS1, 100000000.0) - *YS1.last().unwrap()).abs() < f64::EPSILON
         );
@@ -377,7 +377,7 @@ mod interpolation_tests {
 
     #[test]
     fn interpolation_first_element_test() {
-        //Giving first element of X tab we expect first of Y tab
+        // Giving first element of X tab we expect first of Y tab
         assert!(
             (interpolation(&XS1, &YS1, *XS1.first().unwrap()) - *YS1.first().unwrap()).abs()
                 < f64::EPSILON
@@ -386,7 +386,7 @@ mod interpolation_tests {
 
     #[test]
     fn interpolation_last_element_test() {
-        //Giving last element of X tab we expect last of Y tab
+        // Giving last element of X tab we expect last of Y tab
         assert!(
             (interpolation(&XS1, &YS1, *XS1.last().unwrap()) - *YS1.last().unwrap()).abs()
                 < f64::EPSILON

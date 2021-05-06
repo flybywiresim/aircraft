@@ -4,7 +4,7 @@ use uom::si::{
 };
 
 use systems::hydraulic::{
-    ElectricPump, EngineDrivenPump, HydFluid, HydraulicLoop, HydraulicLoopController,
+    ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
     PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PumpController, RamAirTurbine,
     RamAirTurbineController,
 };
@@ -64,8 +64,10 @@ impl A320Hydraulic {
     const MIN_PRESS_PRESSURISED_LO_HYST: f64 = 1450.0;
     const MIN_PRESS_PRESSURISED_HI_HYST: f64 = 1750.0;
 
-    const HYDRAULIC_SIM_TIME_STEP: u64 = 100; // Refresh rate of hydraulic simulation in ms
-    const ACTUATORS_SIM_TIME_STEP_MULT: u32 = 2; // Refresh rate of actuators as multiplier of hydraulics. 2 means double frequency update
+    // Refresh rate of hydraulic simulation
+    const HYDRAULIC_SIM_TIME_STEP_MILLISECONDS: u64 = 100;
+    // Refresh rate of actuators as multiplier of hydraulics. 2 means double frequency update.
+    const ACTUATORS_SIM_TIME_STEP_MULTIPLIER: u32 = 2;
 
     pub(super) fn new() -> A320Hydraulic {
         A320Hydraulic {
@@ -79,7 +81,7 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(15.85),
                 Volume::new::<gallon>(8.0),
                 Volume::new::<gallon>(1.56),
-                HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                Fluid::new(Pressure::new::<pascal>(1450000000.0)),
                 false,
                 Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
                 Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
@@ -93,7 +95,7 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(26.41),
                 Volume::new::<gallon>(15.),
                 Volume::new::<gallon>(3.6),
-                HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                Fluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
                 Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
                 Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
@@ -107,7 +109,7 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(19.81),
                 Volume::new::<gallon>(10.0),
                 Volume::new::<gallon>(3.6),
-                HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                Fluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
                 Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_LO_HYST),
                 Pressure::new::<psi>(Self::MIN_PRESS_PRESSURISED_HI_HYST),
@@ -172,7 +174,7 @@ impl A320Hydraulic {
         engine_fire_overhead: &A320EngineFireOverheadPanel,
         landing_gear: &LandingGear,
     ) {
-        let min_hyd_loop_timestep = Duration::from_millis(Self::HYDRAULIC_SIM_TIME_STEP); //Hyd Sim rate = 10 Hz
+        let min_hyd_loop_timestep = Duration::from_millis(Self::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS);
 
         self.total_sim_time_elapsed += context.delta();
 
@@ -225,8 +227,10 @@ impl A320Hydraulic {
             // This is the "fast" update loop refreshing ACTUATORS_SIM_TIME_STEP_MULT times faster
             // here put everything that needs higher simulation rates like physics solving
             let num_of_actuators_update_loops =
-                num_of_update_loops * Self::ACTUATORS_SIM_TIME_STEP_MULT;
-            let delta_time_physics = min_hyd_loop_timestep / Self::ACTUATORS_SIM_TIME_STEP_MULT; //If X times faster we divide step by X
+                num_of_update_loops * Self::ACTUATORS_SIM_TIME_STEP_MULTIPLIER;
+
+            // If X times faster we divide step by X
+            let delta_time_physics = min_hyd_loop_timestep / Self::ACTUATORS_SIM_TIME_STEP_MULTIPLIER;
             for _ in 0..num_of_actuators_update_loops {
                 self.update_fast_rate(&context, &delta_time_physics);
             }
@@ -861,7 +865,7 @@ impl A320RamAirTurbineController {
         // Todo check all other needed conditions this is faked with engine master while it should check elec buses
         self.should_deploy = !self.eng_1_master_on
             && !self.eng_2_master_on
-            //Todo get speed from ADIRS
+            // Todo get speed from ADIRS
             && context.indicated_airspeed() > Velocity::new::<knot>(100.)
     }
 }
@@ -1030,7 +1034,7 @@ impl A320HydraulicBrakingLogic {
             }
         }
 
-        //limiting final values
+        // Limiting final values
         self.left_brake_yellow_output = self.left_brake_yellow_output.min(1.).max(0.);
         self.right_brake_yellow_output = self.right_brake_yellow_output.min(1.).max(0.);
         self.left_brake_green_output = self.left_brake_green_output.min(1.).max(0.);
@@ -1290,7 +1294,7 @@ mod tests {
             }
 
             fn get_yellow_brake_accumulator_fluid_volume(&self) -> Volume {
-                self.hydraulics.braking_circuit_altn.acc_fluid_volume()
+                self.hydraulics.braking_circuit_altn.accumulator_fluid_volume()
             }
 
             fn is_nws_pin_inserted(&self) -> bool {
@@ -1366,7 +1370,7 @@ mod tests {
 
             fn run_one_tick(self) -> Self {
                 self.run_waiting_for(Duration::from_millis(
-                    A320Hydraulic::HYDRAULIC_SIM_TIME_STEP,
+                    A320Hydraulic::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS,
                 ))
             }
 

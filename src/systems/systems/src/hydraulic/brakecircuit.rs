@@ -9,7 +9,7 @@ use std::time::Duration;
 
 use uom::si::{acceleration::foot_per_second_squared, f64::*, pressure::psi, volume::gallon};
 
-use super::HydraulicAccumulator;
+use super::Accumulator;
 
 pub trait Actuator {
     fn used_volume(&self) -> Volume;
@@ -27,7 +27,6 @@ pub struct BrakeActuator {
     volume_to_actuator_accumulator: Volume,
     volume_to_res_accumulator: Volume,
 }
-
 impl BrakeActuator {
     const ACTUATOR_BASE_SPEED: f64 = 1.5; // movement in percent/100 per second. 1 means 0 to 1 in 1s
     const MIN_PRESSURE_ALLOWED_TO_MOVE_ACTUATOR_PSI: f64 = 50.;
@@ -99,7 +98,6 @@ impl BrakeActuator {
         final_delta_position
     }
 }
-
 impl Actuator for BrakeActuator {
     fn used_volume(&self) -> Volume {
         self.volume_to_actuator_accumulator
@@ -131,7 +129,7 @@ pub struct BrakeCircuit {
 
     // Brake accumulator variables. Accumulator can have 0 volume if no accumulator
     has_accumulator: bool,
-    accumulator: HydraulicAccumulator,
+    accumulator: Accumulator,
 
     // Common vars to all actuators: will be used by the calling loop to know what is used
     // and what comes back to  reservoir at each iteration
@@ -157,7 +155,7 @@ impl SimulationElement for BrakeCircuit {
             self.right_brake_pressure().get::<psi>(),
         );
         if self.has_accumulator {
-            writer.write_f64(&self.id_acc_press, self.acc_pressure().get::<psi>());
+            writer.write_f64(&self.id_acc_press, self.accumulator_pressure().get::<psi>());
         }
     }
 }
@@ -171,7 +169,8 @@ impl BrakeCircuit {
         [0.0, 0.001, 0.004, 0.006, 0.02, 0.05, 0.15, 0.35, 0.5, 0.5];
 
     // Filtered using time constant low pass: new_val = old_val + (new_val - old_val)* (1 - e^(-dt/TCONST))
-    const ACC_PRESSURE_SENSOR_FILTER_TIMECONST: f64 = 0.1; //Time constant of the filter used to measure brake circuit pressure
+    // Time constant of the filter used to measure brake circuit pressure
+    const ACC_PRESSURE_SENSOR_FILTER_TIMECONST: f64 = 0.1;
 
     pub fn new(
         id: &str,
@@ -201,7 +200,7 @@ impl BrakeCircuit {
             pressure_limitation: Pressure::new::<psi>(0.0),
             pressure_limitation_active: false,
             has_accumulator: has_accu,
-            accumulator: HydraulicAccumulator::new(
+            accumulator: Accumulator::new(
                 Pressure::new::<psi>(Self::ACCUMULATOR_GAS_PRE_CHARGE),
                 accumulator_volume,
                 accumulator_fluid_volume_at_init,
@@ -312,11 +311,11 @@ impl BrakeCircuit {
         self.pressure_applied_right
     }
 
-    pub fn acc_pressure(&self) -> Pressure {
+    pub fn accumulator_pressure(&self) -> Pressure {
         self.accumulator_fluid_pressure_sensor_filtered
     }
 
-    pub fn acc_fluid_volume(&self) -> Volume {
+    pub fn accumulator_fluid_volume(&self) -> Volume {
         self.accumulator.fluid_volume()
     }
 
@@ -421,7 +420,7 @@ impl AutoBrakeController {
 mod tests {
     use super::*;
     use crate::{
-        hydraulic::{HydFluid, HydraulicLoop},
+        hydraulic::{Fluid, HydraulicLoop},
         simulation::UpdateContext,
     };
     use uom::si::{
@@ -504,7 +503,7 @@ mod tests {
         brake_actuator.set_position_demand(1.2);
 
         let medium_pressure = Pressure::new::<psi>(1500.);
-        //Update position with 1500psi only: should not reach max displacement
+        // Update position with 1500psi only: should not reach max displacement.
         for loop_idx in 0..15 {
             brake_actuator.update(&context(Duration::from_secs_f64(0.1)), medium_pressure);
             println!(
@@ -735,7 +734,7 @@ mod tests {
                 Volume::new::<gallon>(26.41),
                 Volume::new::<gallon>(10.0),
                 Volume::new::<gallon>(3.83),
-                HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                Fluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
                 Pressure::new::<psi>(1450.0),
                 Pressure::new::<psi>(1750.0),
@@ -748,7 +747,7 @@ mod tests {
                 Volume::new::<gallon>(10.2),
                 Volume::new::<gallon>(8.0),
                 Volume::new::<gallon>(3.3),
-                HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                Fluid::new(Pressure::new::<pascal>(1450000000.0)),
                 true,
                 Pressure::new::<psi>(1450.0),
                 Pressure::new::<psi>(1750.0),
@@ -761,7 +760,7 @@ mod tests {
                 Volume::new::<gallon>(15.85),
                 Volume::new::<gallon>(8.0),
                 Volume::new::<gallon>(1.5),
-                HydFluid::new(Pressure::new::<pascal>(1450000000.0)),
+                Fluid::new(Pressure::new::<pascal>(1450000000.0)),
                 false,
                 Pressure::new::<psi>(1450.0),
                 Pressure::new::<psi>(1750.0),
