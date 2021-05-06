@@ -5,9 +5,13 @@ use crate::{
 
 use std::f64::consts::E;
 use std::string::String;
-use std::time::Duration;
 
-use uom::si::{acceleration::foot_per_second_squared, f64::*, pressure::psi, volume::gallon};
+#[cfg(test)]
+use std::time::Duration;
+#[cfg(test)]
+use uom::si::{acceleration::foot_per_second_squared};
+
+use uom::si::{f64::*, pressure::psi, volume::gallon};
 
 use super::Accumulator;
 
@@ -326,6 +330,7 @@ impl SimulationElement for BrakeCircuit {
     }
 }
 
+#[cfg(test)]
 struct AutoBrakeController {
     accel_targets: Vec<Acceleration>,
     num_of_modes: usize,
@@ -343,6 +348,7 @@ struct AutoBrakeController {
 
     is_enabled: bool,
 }
+#[cfg(test)]
 impl AutoBrakeController {
     const LONG_ACC_FILTER_TIMECONST: f64 = 0.1;
 
@@ -394,10 +400,12 @@ impl AutoBrakeController {
         }
     }
 
+    #[cfg(test)]
     fn brake_command(&self) -> f64 {
         self.current_brake_demand
     }
 
+    #[cfg(test)]
     fn enable(&mut self) {
         self.is_enabled = true;
     }
