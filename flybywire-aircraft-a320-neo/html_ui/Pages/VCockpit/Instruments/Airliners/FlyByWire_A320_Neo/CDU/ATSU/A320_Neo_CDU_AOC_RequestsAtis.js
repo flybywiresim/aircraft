@@ -121,9 +121,14 @@ class CDUAocRequestsAtis {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = async () => {
+            const icao = store["arpt1"] || store["arrIcao"];
+            if (icao === "") {
+                mcdu.addNewMessage(NXFictionalMessages.noAirportSpecified);
+                return;
+            }
             store["sendStatus"] = "QUEUED";
             updateView();
-            const icao = store["arpt1"] || store["arrIcao"];
+
             const lines = [];
             const newMessage = { "id": Date.now(), "type": "ATIS", "time": '00:00', "opened": null, "content": lines, };
             mcdu.clearUserInput();
