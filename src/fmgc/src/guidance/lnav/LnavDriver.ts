@@ -43,6 +43,8 @@ export class LnavDriver implements GuidanceComponent {
 
             const params = geometry.getGuidanceParameters(ppos, trueTrack);
 
+            SimVar.SetSimVarValue('L:A32NX_FG_CURRENT_LATERAL_LAW', 'number', params.law);
+
             if (params) {
                 switch (params.law) {
                 case ControlLaw.LATERAL_PATH:
