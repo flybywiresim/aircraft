@@ -989,12 +989,14 @@ impl A320HydraulicBrakingLogic {
             if self.should_disable_auto_brake_when_retracting.output() {
                 self.left_brake_green_output = 0.;
                 self.right_brake_green_output = 0.;
-                self.left_brake_yellow_output = 0.;
-                self.right_brake_yellow_output = 0.;
             } else {
-                self.left_brake_green_output = 0.2; // Slight brake pressure to stop the spinning wheels
-                self.right_brake_green_output = 0.2; // Slight brake pressure to stop the spinning wheels
+                // Slight brake pressure to stop the spinning wheels (have no pressure data available yet, 0.2 is random one)
+                self.left_brake_green_output = 0.2;
+                self.right_brake_green_output = 0.2;
             }
+
+            self.left_brake_yellow_output = 0.;
+            self.right_brake_yellow_output = 0.;
         } else {
             let green_used_for_brakes = self.normal_brakes_available
                 && self.anti_skid_activated
