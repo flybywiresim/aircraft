@@ -618,7 +618,6 @@
         </UseTemplate>
     </Template>
 
-
     <!-- ELAC switches -->
     <Template Name="FBW_AIRBUS_Push_ELAC_Template">
         <UseTemplate Name="FBW_Push_Toggle">
