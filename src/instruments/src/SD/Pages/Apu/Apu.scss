@@ -37,12 +37,16 @@
 
     .Line {
         stroke: #00FF00;
-        stroke-width: 2.5px
+        stroke-width: 2.5px;
+
+        &.White {
+            stroke: #EEEEEE;
+        }
     }
 
     .Circle {
         stroke: #00FF00;
         fill: none;
-        stroke-width: 2.5px
+        stroke-width: 2.5px;
     }
 }

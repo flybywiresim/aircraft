@@ -23,6 +23,9 @@ export const ApuPage = () => {
     // const [apuNValue] = useSimVar('L:A32NX_APU_N', 'Percent', 1000);
     // const [apuEgtValue] = useSimVar('L:A32NX_APU_EGT', 'Celsius', 1000);
 
+    const [apuFlapOpenPercentage] = useSimVar('L:A32NX_APU_FLAP_OPEN_PERCENTAGE', 'Percent', 1000);
+    const [lowFuelPressure] = useSimVar('L:A32NX_APU_LOW_FUEL_PRESSURE_FAULT', 'Bool', 1000);
+
     return (
         <EcamPage name="main-apu">
             <PageTitle x={283} y={33} text="APU" />
@@ -30,6 +33,10 @@ export const ApuPage = () => {
             <ApuGenBox x={105} y={109} load={apuGenLoad} voltage={apuGenVoltage} freq={apuGenFreq} />
             <AvailSig x={283} y={115} apuAvail={apuAvail} />
             <BleedBox x={420} y={163} pressure={apuBleedPressure} apuBleedOn={apuBleedOn} />
+            <Divider x={83} y={227} />
+
+            <ApuFlapOpen x={400} y={375} apuFlapOpenPercentage={apuFlapOpenPercentage} />
+            <LowFuelPressureInd x={409} y={315} lowFuelPressure={lowFuelPressure} />
         </EcamPage>
     );
 };
@@ -87,6 +94,30 @@ const AvailSig = ({ x, y, apuAvail }) => (
                 </>
             )
         }
+    </SvgGroup>
+);
+
+const Divider = ({ x, y }) => (
+    <SvgGroup x={x} y={y}>
+        <line className="Line White" x1="0" y1="0" x2="0" y2="26" />
+        <line className="Line White" x1="0" y1="0" x2="455" y2="0" />
+        <line className="Line White" x1="455" y1="0" x2="455" y2="26" />
+    </SvgGroup>
+);
+
+const ApuFlapOpen = ({ x, y, apuFlapOpenPercentage }) => {
+    const apuFlapOpen = apuFlapOpenPercentage === 100;
+
+    return (
+        <SvgGroup x={x} y={y}>
+            { apuFlapOpen && <text className="Green" x="0" y="0">FLAP OPEN</text> }
+        </SvgGroup>
+    );
+};
+
+const LowFuelPressureInd = ({ x, y, lowFuelPressure }) => (
+    <SvgGroup x={x} y={y}>
+        { lowFuelPressure && <text x="0" y="0" className="Green">FUEL LO PR</text> }
     </SvgGroup>
 );
 
