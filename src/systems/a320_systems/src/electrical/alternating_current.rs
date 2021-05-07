@@ -224,9 +224,8 @@ impl A320AlternatingCurrentElectrical {
     /// Determines if 15XE2 should be closed. 15XE2 is the contactor which connects
     /// the static inverter to the AC ESS BUS.
     fn should_close_15xe2_contactor(&self, context: &UpdateContext) -> bool {
-        self.ac_1_and_2_and_emergency_gen_unpowered_and_velocity_equal_to_or_greater_than_50_knots(
-            context,
-        )
+        self.ac_1_and_2_and_emergency_gen_unpowered()
+            && context.indicated_airspeed() >= Velocity::new::<knot>(50.)
     }
 
     pub fn debug_assert_invariants(&self) {
@@ -300,14 +299,6 @@ impl AlternatingCurrentState for A320AlternatingCurrentElectrical {
 
     fn ac_1_and_2_and_emergency_gen_unpowered(&self) -> bool {
         self.main_ac_buses_unpowered() && self.emergency_gen.is_unpowered()
-    }
-
-    fn ac_1_and_2_and_emergency_gen_unpowered_and_velocity_equal_to_or_greater_than_50_knots(
-        &self,
-        context: &UpdateContext,
-    ) -> bool {
-        self.ac_1_and_2_and_emergency_gen_unpowered()
-            && context.indicated_airspeed() >= Velocity::new::<knot>(50.)
     }
 
     fn tr_1(&self) -> &TransformerRectifier {
