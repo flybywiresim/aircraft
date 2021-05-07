@@ -183,12 +183,10 @@
                             let level = #AUTOBRAKE_LEVEL, number#;
 
 
-                            if onGround and autoBrakeSwitch == 0 {
-                                if autobrakesLevel == 0 {
-                                    autobrakesLevel = level;
+                            if autoBrakeSwitch &gt; 0 {
+                               if onGround or autoBrakeSwitch &lt; 4 {
+                                    autobrakesLevel = autoBrakeSwitch - 1;
                                 }
-                            } else if onGround or autoBrakeSwitch &lt; 4 {
-                                autobrakesLevel = autoBrakeSwitch - 1;
                             }
 
                             if autobrakesLevel != 0 {

@@ -59,7 +59,7 @@
 1. [FBW] Adapt pitch attitude protection for configuration - @aguther (Andreas Guther)
 1. [FBW] Realistic rudder pedals animation only following pilot input or trim - @aguther (Andreas Guther)
 1. [FCU] Added more custom events that can be triggered via SimConnect to control the FCU - @aguther (Andreas Guther)
-1. [MISC] Autobrake can be armed via keybindings
+1. [MISC] Autobrake can be armed via keybindings - @Saschl (saschl#9432)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
