@@ -1120,6 +1120,8 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
     init(root) {
         this.brightnessElement = this.gps.getChildById("Brightness");
         this.bugsElement = this.gps.getChildById("Bugs");
+        this.plus_state = false;
+        this.minus_state = false;
     }
     onEnter() {
     }
@@ -1131,23 +1133,53 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
     onExit() {
     }
     onEvent(_event) {
-        const brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
+        let brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
         const bright_gran = 0.05;
         const minimum = 0.15;
+        const maximum = 0.99;
         switch (_event) {
             case "BTN_BARO_PLUS":
-                if (this.bugsElement.getDisplay() === "none" && brightness < 1) {
-                    const new_brightness = brightness + bright_gran;
-                    SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
-                    this.brightnessElement.updateBrightness(new_brightness); //TODO: Remove line on model update
+                this.plus_state = !this.plus_state;
+                function brightness_up(t){
+                    if (t.bugsElement.getDisplay() === "none" && brightness < maximum) {
+                        const new_brightness = brightness + bright_gran;
+                        SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
+                        t.brightnessElement.updateBrightness(new_brightness); //TODO: Remove line on model update
+                    }
+                }
+                if (this.plus_state) {
+                    brightness_up(this);
+                    const bright_up_cont = setInterval(() => {
+                        brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
+                        if (this.plus_state) {
+                            brightness_up(this);
+                        } else {
+                            clearInterval(bright_up_cont);
+                        }
+                    }, 150);
                 }
                 break;
             case "BTN_BARO_MINUS":
-                if (this.bugsElement.getDisplay() === "none" && brightness > minimum) {
-                    const new_brightness = brightness - bright_gran;
-                    SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
-                    this.brightnessElement.updateBrightness(new_brightness); //TODO: Remove line on model update
+                this.minus_state = !this.minus_state;
+                function brightness_down(t){
+                    if (t.bugsElement.getDisplay() === "none" && brightness > minimum) {
+                        const new_brightness = brightness - bright_gran;
+                        SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
+                        t.brightnessElement.updateBrightness(new_brightness); //TODO: Remove line on model update
+                    }
                 }
+                if (this.minus_state) {
+                    brightness_down(this);
+                    const bright_down_cont = setInterval(() => {
+                        brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
+                        if (this.minus_state) {
+                            brightness_down(this);
+                        } else {
+                            clearInterval(bright_down_cont);
+                        }
+                    }, 150);
+                }
+
                 break;
         }
     }
@@ -1496,7 +1528,7 @@ class A320_Neo_SAI_AttResetIndicator extends HTMLElement {
 
         const att_x = 33.5;
         const boxHeight = 7;
-        const boxWidth = 30;
+        const boxWidth = 33;
         const boxRow = 64;
         const txt_off_x = 2.5;
         const txt_off_y = 6;
@@ -1589,6 +1621,8 @@ class A320_Neo_SAI_Bugs extends NavSystemElement {
         this.blink_status = false;
         this.current_bug = 0;
         this.getFrameCounter = A32NX_Util.createFrameCounter(check_interval);
+        this.plus_state = false;
+        this.minus_state = false;
     }
 
     onEnter() {
@@ -1614,17 +1648,23 @@ class A320_Neo_SAI_Bugs extends NavSystemElement {
                 this.bugsElement.togglePage();
                 break;
             case "BTN_BARO_PLUS":
-                this.blink_status = true;
-                if (this.bugsElement.getDisplay() !== "none") {
-                    this.bugsElement.freezeBugBox(this.current_bug);
-                    this.current_bug = (this.current_bug + 5) % 6;
+                this.plus_state = !this.plus_state;
+                if (this.plus_state) {
+                    this.blink_status = true;
+                    if (this.bugsElement.getDisplay() !== "none") {
+                        this.bugsElement.freezeBugBox(this.current_bug);
+                        this.current_bug = (this.current_bug + 5) % 6;
+                    }
                 }
                 break;
             case "BTN_BARO_MINUS":
-                this.blink_status = true;
-                if (this.bugsElement.getDisplay() !== "none") {
-                    this.bugsElement.freezeBugBox(this.current_bug);
-                    this.current_bug = (this.current_bug + 1) % 6;
+                this.minus_state = !this.minus_state;
+                if (this.minus_state) {
+                    this.blink_status = true;
+                    if (this.bugsElement.getDisplay() !== "none") {
+                        this.bugsElement.freezeBugBox(this.current_bug);
+                        this.current_bug = (this.current_bug + 1) % 6;
+                    }
                 }
                 break;
             case "KNOB_BARO_C":

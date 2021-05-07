@@ -824,13 +824,13 @@
                         <BTN_ID>BARO_LS</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_Push_BARO_Template">
+                    <UseTemplate Name="A32NX_Push_Held_BARO_Template">
                         <NODE_ID>PUSH_BARO_PLUS</NODE_ID>
                         <TOOLTIPID>Increase ISI brightness</TOOLTIPID>
                         <BTN_ID>BARO_PLUS</BTN_ID>
                         <ONLY_SEQ1/>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_Push_BARO_Template">
+                    <UseTemplate Name="A32NX_Push_Held_BARO_Template">
                         <NODE_ID>PUSH_BARO_MINUS</NODE_ID>
                         <TOOLTIPID>Decrease ISI brightness</TOOLTIPID>
                         <BTN_ID>BARO_MINUS</BTN_ID>
