@@ -180,8 +180,6 @@
                             alias disarmAutobrakesOnLgRetract = (L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT, bool);
                             alias autobrakesActivated = (L:A32NX_AUTOBRAKES_ACTIVATED, bool);
                             let autoBrakeSwitch = (A:AUTO BRAKE SWITCH CB, number);
-                            let level = #AUTOBRAKE_LEVEL, number#;
-
 
                             if autoBrakeSwitch &gt; 0 {
                                if onGround or autoBrakeSwitch &lt; 4 {
