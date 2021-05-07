@@ -30,6 +30,10 @@ const extraInstruments = [
         name: 'fctl-page',
         path: 'SD/Pages/Fctl',
     },
+    {
+        name: 'apu-page',
+        path: 'SD/Pages/Apu',
+    },
 ];
 
 function makePostcssPluginList(instrumentPath) {
