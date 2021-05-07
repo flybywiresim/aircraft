@@ -798,13 +798,6 @@ pub struct EngineDrivenPump {
     pump: Pump,
 }
 impl EngineDrivenPump {
-    // // According to the Type Certificate Data Sheet of LEAP 1A26
-    // // Max N2 rpm is 116.5% @ 19391 RPM
-    // // 100% @ 16645 RPM
-    // const LEAP_1A26_MAX_N2_RPM: f64 = 16645.0;
-    // // Gear ratio from primary gearbox input to EDP drive shaft
-    // const PUMP_N2_GEAR_RATIO: f64 = 0.211;
-
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3020.0, 3500.0,
     ];
