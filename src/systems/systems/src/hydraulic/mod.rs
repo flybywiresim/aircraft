@@ -4,15 +4,14 @@ use std::time::Duration;
 use uom::si::{
     f64::*,
     pressure::psi,
-    ratio::percent,
     velocity::knot,
     volume::{cubic_inch, gallon},
     volume_rate::gallon_per_second,
 };
 
 use crate::shared::interpolation;
+use crate::simulation::UpdateContext;
 use crate::simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter};
-use crate::{engine::Engine, simulation::UpdateContext};
 
 pub mod brake_circuit;
 use crate::hydraulic::brake_circuit::Actuator;
@@ -799,12 +798,6 @@ pub struct EngineDrivenPump {
     pump: Pump,
 }
 impl EngineDrivenPump {
-    // According to the Type Certificate Data Sheet of LEAP 1A26
-    // Max N2 rpm is 116.5% @ 19391 RPM
-    // 100% @ 16645 RPM
-    const LEAP_1A26_MAX_N2_RPM: f64 = 16645.0;
-    const PUMP_N2_GEAR_RATIO: f64 = 0.211;
-
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3020.0, 3500.0,
     ];
@@ -829,12 +822,9 @@ impl EngineDrivenPump {
         &mut self,
         context: &UpdateContext,
         line: &HydraulicLoop,
-        engine: &Engine,
+        pump_rpm: f64,
         controller: &T,
     ) {
-        let n2_rpm = engine.corrected_n2().get::<percent>() * Self::LEAP_1A26_MAX_N2_RPM / 100.;
-        let pump_rpm = n2_rpm * Self::PUMP_N2_GEAR_RATIO;
-
         self.pump.update(context, line, pump_rpm, controller);
         self.is_active = controller.should_pressurise();
     }
@@ -1092,7 +1082,7 @@ mod tests {
         length::foot,
         pressure::{pascal, psi},
         thermodynamic_temperature::degree_celsius,
-        volume::{gallon, liter},
+        volume::gallon,
     };
 
     struct TestHydraulicLoopController {
@@ -1120,44 +1110,10 @@ mod tests {
                 should_pressurise: true,
             }
         }
-
-        fn commanding_depressurise() -> Self {
-            Self {
-                should_pressurise: false,
-            }
-        }
-
-        fn command_pressurise(&mut self) {
-            self.should_pressurise = true;
-        }
-
-        fn command_depressurise(&mut self) {
-            self.should_pressurise = false;
-        }
     }
     impl PumpController for TestPumpController {
         fn should_pressurise(&self) -> bool {
             self.should_pressurise
-        }
-    }
-
-    struct TestPowerTransferUnitController {
-        should_enable: bool,
-    }
-    impl TestPowerTransferUnitController {
-        fn commanding_disabled() -> Self {
-            Self {
-                should_enable: false,
-            }
-        }
-
-        fn command_enable(&mut self) {
-            self.should_enable = true;
-        }
-    }
-    impl PowerTransferUnitController for TestPowerTransferUnitController {
-        fn should_enable(&self) -> bool {
-            self.should_enable
         }
     }
 
@@ -1182,170 +1138,6 @@ mod tests {
     }
 
     use super::*;
-    #[test]
-    /// Runs engine driven pump, checks pressure OK, shut it down, check drop of pressure after 20s
-    fn green_loop_edp_simulation() {
-        let mut edp1 = engine_driven_pump();
-        let mut green_loop = hydraulic_loop("GREEN");
-        let green_loop_controller =
-            TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
-
-        let init_n2 = Ratio::new::<percent>(55.0);
-        let engine1 = engine(init_n2);
-        let context = context(Duration::from_millis(100));
-        let mut pump_controller = TestPumpController::commanding_pressurise();
-
-        for x in 0..600 {
-            if x == 50 {
-                // After 5s
-                assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2850.0));
-            }
-            if x == 200 {
-                assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2850.0));
-                pump_controller.command_depressurise();
-            }
-            if x >= 500 {
-                // Shutdown + 30s
-                assert!(green_loop.loop_pressure <= Pressure::new::<psi>(250.0));
-            }
-
-            edp1.update(&context, &green_loop, &engine1, &pump_controller);
-            green_loop.update(
-                &context,
-                Vec::new(),
-                vec![&edp1],
-                Vec::new(),
-                Vec::new(),
-                &green_loop_controller,
-            );
-            if x % 20 == 0 {
-                println!("Iteration {}", x);
-                println!("-------------------------------------------");
-                println!("---PSI: {}", green_loop.loop_pressure.get::<psi>());
-                println!(
-                    "--------Reservoir Volume (g): {}",
-                    green_loop.reservoir_volume.get::<gallon>()
-                );
-                println!(
-                    "--------Loop Volume (g): {}",
-                    green_loop.loop_volume.get::<gallon>()
-                );
-                println!(
-                    "--------Acc Fluid Volume (L): {}",
-                    green_loop.accumulator.fluid_volume().get::<liter>()
-                );
-                println!(
-                    "--------Acc Gas Volume (L): {}",
-                    green_loop.accumulator.gas_volume.get::<liter>()
-                );
-                println!(
-                    "--------Acc Gas Pressure (psi): {}",
-                    green_loop.accumulator.raw_gas_press().get::<psi>()
-                );
-            }
-        }
-    }
-
-    #[test]
-    /// Runs electric pump, checks pressure OK, shut it down, check drop of pressure after 20s
-    fn yellow_loop_epump_simulation() {
-        let mut epump = electric_pump();
-        let mut yellow_loop = hydraulic_loop("YELLOW");
-        let yellow_loop_controller =
-            TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
-        let mut pump_controller = TestPumpController::commanding_pressurise();
-
-        let context = context(Duration::from_millis(100));
-        for x in 0..800 {
-            if x == 400 {
-                assert!(yellow_loop.loop_pressure >= Pressure::new::<psi>(2800.0));
-                pump_controller.command_depressurise();
-            }
-
-            if x >= 600 {
-                // X+200 after shutoff = X + 20seconds @ 100ms, so pressure shall be low
-                assert!(yellow_loop.loop_pressure <= Pressure::new::<psi>(200.0));
-            }
-            epump.update(&context, &yellow_loop, &pump_controller);
-            yellow_loop.update(
-                &context,
-                vec![&epump],
-                Vec::new(),
-                Vec::new(),
-                Vec::new(),
-                &yellow_loop_controller,
-            );
-            if x % 20 == 0 {
-                println!("Iteration {}", x);
-                println!("-------------------------------------------");
-                println!("---PSI: {}", yellow_loop.loop_pressure.get::<psi>());
-                println!("---RPM: {}", epump.rpm);
-                println!(
-                    "--------Reservoir Volume (g): {}",
-                    yellow_loop.reservoir_volume.get::<gallon>()
-                );
-                println!(
-                    "--------Loop Volume (g): {}",
-                    yellow_loop.loop_volume.get::<gallon>()
-                );
-                println!(
-                    "--------Acc Volume (g): {}",
-                    yellow_loop.accumulator.gas_volume.get::<gallon>()
-                );
-            }
-        }
-    }
-
-    #[test]
-    /// Runs electric pump, checks pressure OK, shut it down, check drop of pressure after 20s
-    fn blue_loop_epump_simulation() {
-        let mut epump = electric_pump();
-        let mut blue_loop = hydraulic_loop("BLUE");
-        let blue_loop_controller =
-            TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
-        let mut pump_controller = TestPumpController::commanding_pressurise();
-
-        let context = context(Duration::from_millis(100));
-        for x in 0..800 {
-            if x == 400 {
-                assert!(blue_loop.loop_pressure >= Pressure::new::<psi>(2800.0));
-                pump_controller.command_depressurise();
-            }
-
-            if x >= 600 {
-                // X+200 after shutoff = X + 20seconds @ 100ms, so pressure shall be low
-                assert!(blue_loop.loop_pressure <= Pressure::new::<psi>(100.0));
-            }
-            epump.update(&context, &blue_loop, &pump_controller);
-            blue_loop.update(
-                &context,
-                vec![&epump],
-                Vec::new(),
-                Vec::new(),
-                Vec::new(),
-                &blue_loop_controller,
-            );
-            if x % 20 == 0 {
-                println!("Iteration {}", x);
-                println!("-------------------------------------------");
-                println!("---PSI: {}", blue_loop.loop_pressure.get::<psi>());
-                println!("---RPM: {}", epump.rpm);
-                println!(
-                    "--------Reservoir Volume (g): {}",
-                    blue_loop.reservoir_volume.get::<gallon>()
-                );
-                println!(
-                    "--------Loop Volume (g): {}",
-                    blue_loop.loop_volume.get::<gallon>()
-                );
-                println!(
-                    "--------Acc Volume (g): {}",
-                    blue_loop.accumulator.gas_volume.get::<gallon>()
-                );
-            }
-        }
-    }
-
     #[test]
     /// Runs electric pump, checks pressure OK, shut it down, check drop of pressure after 20s
     fn blue_loop_rat_deploy_simulation() {
@@ -1427,156 +1219,6 @@ mod tests {
         }
     }
 
-    #[test]
-    /// Runs green edp and yellow epump, checks pressure OK,
-    /// shut green edp off, check drop of pressure and ptu effect
-    /// shut yellow epump, check drop of pressure in both loops
-    fn yellow_green_ptu_loop_simulation() {
-        let mut yellow_loop = hydraulic_loop("YELLOW");
-        let yellow_loop_controller =
-            TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
-
-        let mut electric_pump = electric_pump();
-        let mut electric_pump_controller = TestPumpController::commanding_depressurise();
-
-        let mut engine_driven_pump = engine_driven_pump();
-        let mut engine_driven_pump_controller = TestPumpController::commanding_depressurise();
-
-        let mut engine1 = engine(Ratio::new::<percent>(0.0));
-
-        let mut green_loop = hydraulic_loop("GREEN");
-        let green_loop_controller =
-            TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
-
-        let mut ptu = PowerTransferUnit::new();
-        let mut ptu_controller = TestPowerTransferUnitController::commanding_disabled();
-
-        let context = context(Duration::from_millis(100));
-
-        let yellow_res_at_start = yellow_loop.reservoir_volume;
-        let green_res_at_start = green_loop.reservoir_volume;
-
-        engine1.corrected_n2 = Ratio::new::<percent>(100.0);
-        for x in 0..800 {
-            if x == 10 {
-                // After 1s powering electric pump
-                println!("------------YELLOW EPUMP ON------------");
-                assert!(yellow_loop.loop_pressure <= Pressure::new::<psi>(50.0));
-                assert!(yellow_loop.reservoir_volume == yellow_res_at_start);
-
-                assert!(green_loop.loop_pressure <= Pressure::new::<psi>(50.0));
-                assert!(green_loop.reservoir_volume == green_res_at_start);
-
-                electric_pump_controller.command_pressurise();
-            }
-
-            if x == 110 {
-                // 10s later enabling ptu
-                println!("--------------PTU ENABLED--------------");
-                assert!(yellow_loop.loop_pressure >= Pressure::new::<psi>(2950.0));
-                assert!(yellow_loop.reservoir_volume <= yellow_res_at_start);
-
-                assert!(green_loop.loop_pressure <= Pressure::new::<psi>(50.0));
-                assert!(green_loop.reservoir_volume == green_res_at_start);
-
-                ptu_controller.command_enable();
-            }
-
-            if x == 300 {
-                // @30s, ptu should be supplying green loop
-                println!("----------PTU SUPPLIES GREEN------------");
-                assert!(yellow_loop.loop_pressure >= Pressure::new::<psi>(2400.0));
-                assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2400.0));
-            }
-
-            if x == 400 {
-                // @40s enabling edp
-                println!("------------GREEN  EDP1  ON------------");
-                assert!(yellow_loop.loop_pressure >= Pressure::new::<psi>(2600.0));
-                assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2000.0));
-                engine_driven_pump_controller.command_pressurise();
-            }
-
-            if (500..=600).contains(&x) {
-                // 10s later and during 10s, ptu should stay inactive
-                println!("------------IS PTU ACTIVE??------------");
-                assert!(yellow_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
-                assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
-                assert!(!ptu.is_active_left && !ptu.is_active_right);
-            }
-
-            if x == 600 {
-                // @60s diabling edp and epump
-                println!("-------------ALL PUMPS OFF------------");
-                assert!(yellow_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
-                assert!(green_loop.loop_pressure >= Pressure::new::<psi>(2900.0));
-                engine_driven_pump_controller.command_depressurise();
-                electric_pump_controller.command_depressurise();
-            }
-
-            if x == 800 {
-                // @80s disabling edp and epump
-                println!("-----------IS PRESSURE OFF?-----------");
-                assert!(yellow_loop.loop_pressure < Pressure::new::<psi>(50.0));
-                assert!(green_loop.loop_pressure <= Pressure::new::<psi>(50.0));
-
-                assert!(
-                    green_loop.reservoir_volume > Volume::new::<gallon>(0.0)
-                        && green_loop.reservoir_volume <= green_res_at_start
-                );
-                assert!(
-                    yellow_loop.reservoir_volume > Volume::new::<gallon>(0.0)
-                        && yellow_loop.reservoir_volume <= yellow_res_at_start
-                );
-            }
-
-            ptu.update(&green_loop, &yellow_loop, &ptu_controller);
-            engine_driven_pump.update(
-                &context,
-                &green_loop,
-                &engine1,
-                &engine_driven_pump_controller,
-            );
-            electric_pump.update(&context, &yellow_loop, &electric_pump_controller);
-
-            yellow_loop.update(
-                &context,
-                vec![&electric_pump],
-                Vec::new(),
-                Vec::new(),
-                vec![&ptu],
-                &yellow_loop_controller,
-            );
-            green_loop.update(
-                &context,
-                Vec::new(),
-                vec![&engine_driven_pump],
-                Vec::new(),
-                vec![&ptu],
-                &green_loop_controller,
-            );
-
-            if x % 20 == 0 {
-                println!("Iteration {}", x);
-                println!("-------------------------------------------");
-                println!("---PSI YELLOW: {}", yellow_loop.loop_pressure.get::<psi>());
-                println!("---RPM YELLOW: {}", electric_pump.rpm);
-                println!(
-                    "---Priming State: {}/{}",
-                    yellow_loop.loop_volume.get::<gallon>(),
-                    yellow_loop.max_loop_volume.get::<gallon>()
-                );
-                println!("---PSI GREEN: {}", green_loop.loop_pressure.get::<psi>());
-                println!("---N2  GREEN: {}", engine1.corrected_n2.get::<percent>());
-                println!(
-                    "---Priming State: {}/{}",
-                    green_loop.loop_volume.get::<gallon>(),
-                    green_loop.max_loop_volume.get::<gallon>()
-                );
-            }
-        }
-    }
-
     fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
         match loop_color {
             "GREEN" => HydraulicLoop::new(
@@ -1621,19 +1263,8 @@ mod tests {
         }
     }
 
-    fn electric_pump() -> ElectricPump {
-        ElectricPump::new("DEFAULT")
-    }
-
     fn engine_driven_pump() -> EngineDrivenPump {
         EngineDrivenPump::new("DEFAULT")
-    }
-
-    fn engine(n2: Ratio) -> Engine {
-        let mut engine = Engine::new(1);
-        engine.corrected_n2 = n2;
-
-        engine
     }
 
     fn context(delta_time: Duration) -> UpdateContext {
@@ -1650,7 +1281,6 @@ mod tests {
     #[cfg(test)]
     mod edp_tests {
         use super::*;
-        use uom::si::ratio::percent;
 
         #[test]
         fn starts_inactive() {
@@ -1659,12 +1289,12 @@ mod tests {
 
         #[test]
         fn zero_flow_above_3000_psi_after_25ms() {
-            let n2 = Ratio::new::<percent>(60.0);
+            let pump_rpm = 3300.;
             let pressure = Pressure::new::<psi>(3100.);
             let context = context(Duration::from_millis(25));
             let displacement = Volume::new::<cubic_inch>(0.);
             assert!(delta_vol_equality_check(
-                n2,
+                pump_rpm,
                 displacement,
                 pressure,
                 &context
@@ -1672,24 +1302,23 @@ mod tests {
         }
 
         fn delta_vol_equality_check(
-            n2: Ratio,
+            pump_rpm: f64,
             displacement: Volume,
             pressure: Pressure,
             context: &UpdateContext,
         ) -> bool {
-            let actual = get_edp_actual_delta_vol_when(n2, pressure, context);
-            let predicted = get_edp_predicted_delta_vol_when(n2, displacement, context);
+            let actual = get_edp_actual_delta_vol_when(pump_rpm, pressure, context);
+            let predicted = get_edp_predicted_delta_vol_when(pump_rpm, displacement, context);
             println!("Actual: {}", actual.get::<gallon>());
             println!("Predicted: {}", predicted.get::<gallon>());
             actual == predicted
         }
 
         fn get_edp_actual_delta_vol_when(
-            n2: Ratio,
+            pump_rpm: f64,
             pressure: Pressure,
             context: &UpdateContext,
         ) -> Volume {
-            let eng = engine(n2);
             let mut edp = engine_driven_pump();
             let mut line = hydraulic_loop("GREEN");
 
@@ -1698,22 +1327,20 @@ mod tests {
             edp.update(
                 &context.with_delta(Duration::from_secs(1)),
                 &line,
-                &eng,
+                pump_rpm,
                 &engine_driven_pump_controller,
             ); // Update 10 times to stabilize displacement
 
-            edp.update(context, &line, &eng, &engine_driven_pump_controller);
+            edp.update(context, &line, pump_rpm, &engine_driven_pump_controller);
             edp.delta_vol_max()
         }
 
         fn get_edp_predicted_delta_vol_when(
-            n2: Ratio,
+            pump_rpm: f64,
             displacement: Volume,
             context: &UpdateContext,
         ) -> Volume {
-            let n2_rpm = n2.get::<percent>() * EngineDrivenPump::LEAP_1A26_MAX_N2_RPM / 100.;
-            let edp_rpm = n2_rpm * EngineDrivenPump::PUMP_N2_GEAR_RATIO;
-            let expected_flow = Pump::calculate_flow(edp_rpm, displacement);
+            let expected_flow = Pump::calculate_flow(pump_rpm, displacement);
             expected_flow * context.delta_as_time()
         }
     }

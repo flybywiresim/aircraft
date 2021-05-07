@@ -1,4 +1,3 @@
-use systems::engine::Engine;
 use systems::simulation::UpdateContext;
 
 pub use systems::hydraulic::*;
@@ -9,7 +8,6 @@ use uom::si::{
     f64::*,
     length::foot,
     pressure::{pascal, psi},
-    ratio::percent,
     thermodynamic_temperature::degree_celsius,
     velocity::knot,
     volume::{gallon, liter},
@@ -229,7 +227,7 @@ fn green_loop_edp_simulation(path: &str) {
     ];
     let mut green_loop_history = History::new(green_loop_var_names);
 
-    let edp1_var_names = vec!["Delta Vol Max".to_string(), "n2 ratio".to_string()];
+    let edp1_var_names = vec!["Delta Vol Max".to_string(), "pump rpm".to_string()];
     let mut edp1_history = History::new(edp1_var_names);
 
     let mut edp1 = engine_driven_pump();
@@ -238,8 +236,7 @@ fn green_loop_edp_simulation(path: &str) {
     let mut green_loop = hydraulic_loop("GREEN");
     let green_loop_controller = TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
 
-    let init_n2 = Ratio::new::<percent>(55.0);
-    let engine1 = engine(init_n2);
+    let edp_rpm = 3000.;
     let context = context(Duration::from_millis(100));
 
     let green_acc_var_names = vec![
@@ -259,13 +256,7 @@ fn green_loop_edp_simulation(path: &str) {
             green_loop.current_flow().get::<gallon_per_second>(),
         ],
     );
-    edp1_history.init(
-        0.0,
-        vec![
-            edp1.delta_vol_max().get::<liter>(),
-            engine1.corrected_n2.get::<percent>() as f64,
-        ],
-    );
+    edp1_history.init(0.0, vec![edp1.delta_vol_max().get::<liter>(), edp_rpm]);
     accu_green_history.init(
         0.0,
         vec![
@@ -289,7 +280,7 @@ fn green_loop_edp_simulation(path: &str) {
             assert!(green_loop.pressure() <= Pressure::new::<psi>(250.0));
         }
 
-        edp1.update(&context, &green_loop, &engine1, &edp1_controller);
+        edp1.update(&context, &green_loop, edp_rpm, &edp1_controller);
         green_loop.update(
             &context,
             Vec::new(),
@@ -335,10 +326,7 @@ fn green_loop_edp_simulation(path: &str) {
         );
         edp1_history.update(
             context.delta_as_secs_f64(),
-            vec![
-                edp1.delta_vol_max().get::<liter>(),
-                engine1.corrected_n2.get::<percent>() as f64,
-            ],
+            vec![edp1.delta_vol_max().get::<liter>(), edp_rpm],
         );
         accu_green_history.update(
             context.delta_as_secs_f64(),
@@ -398,8 +386,6 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
     let mut edp1 = engine_driven_pump();
     let mut edp1_controller = TestPumpController::commanding_depressurise();
 
-    let mut engine1 = engine(Ratio::new::<percent>(0.0));
-
     let mut green_loop = hydraulic_loop("GREEN");
 
     let loop_controller = TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
@@ -451,7 +437,7 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
     let yellow_res_at_start = yellow_loop.reservoir_volume();
     let green_res_at_start = green_loop.reservoir_volume();
 
-    engine1.corrected_n2 = Ratio::new::<percent>(100.0);
+    let edp_rpm = 3300.;
     for x in 0..800 {
         if x == 10 {
             // After 1s powering electric pump
@@ -525,7 +511,7 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
         }
 
         ptu.update(&green_loop, &yellow_loop, &ptu_controller);
-        edp1.update(&context, &green_loop, &engine1, &edp1_controller);
+        edp1.update(&context, &green_loop, edp_rpm, &edp1_controller);
         epump.update(&context, &yellow_loop, &epump_controller);
 
         yellow_loop.update(
@@ -596,7 +582,7 @@ fn yellow_green_ptu_loop_simulation(path: &str) {
                 yellow_loop.max_volume().get::<gallon>()
             );
             println!("---PSI GREEN: {}", green_loop.pressure().get::<psi>());
-            println!("---N2  GREEN: {}", engine1.corrected_n2.get::<percent>());
+            println!("---EDP RPM GREEN: {}", edp_rpm);
             println!(
                 "---Priming State: {}/{}",
                 green_loop.loop_fluid_volume().get::<gallon>(),
@@ -654,7 +640,7 @@ fn yellow_epump_plus_edp2_with_ptu(path: &str) {
     let mut edp2 = engine_driven_pump();
     let mut edp2_controller = TestPumpController::commanding_depressurise();
 
-    let mut engine2 = engine(Ratio::new::<percent>(100.0));
+    let edp_rpm = 3300.;
 
     let mut green_loop = hydraulic_loop("GREEN");
 
@@ -704,7 +690,6 @@ fn yellow_epump_plus_edp2_with_ptu(path: &str) {
         ],
     );
 
-    engine2.corrected_n2 = Ratio::new::<percent>(100.0);
     for x in 0..800 {
         if x == 10 {
             // After 1s powering electric pump
@@ -720,7 +705,7 @@ fn yellow_epump_plus_edp2_with_ptu(path: &str) {
             println!("Gpress={}", green_loop.pressure().get::<psi>());
         }
         ptu.update(&green_loop, &yellow_loop, &ptu_controller);
-        edp2.update(&context, &yellow_loop, &engine2, &edp2_controller);
+        edp2.update(&context, &yellow_loop, edp_rpm, &edp2_controller);
         epump.update(&context, &yellow_loop, &epump_controller);
 
         yellow_loop.update(
@@ -838,13 +823,6 @@ fn electric_pump() -> ElectricPump {
 
 fn engine_driven_pump() -> EngineDrivenPump {
     EngineDrivenPump::new("DEFAULT")
-}
-
-fn engine(n2: Ratio) -> Engine {
-    let mut engine = Engine::new(1);
-    engine.corrected_n2 = n2;
-
-    engine
 }
 
 fn context(delta_time: Duration) -> UpdateContext {

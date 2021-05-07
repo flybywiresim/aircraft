@@ -1,6 +1,7 @@
 use std::time::Duration;
 use uom::si::{
-    f64::*, pressure::pascal, pressure::psi, ratio::percent, velocity::knot, volume::gallon,
+    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
+    ratio::percent, velocity::knot, volume::gallon,
 };
 
 use systems::hydraulic::{
@@ -14,6 +15,7 @@ use systems::overhead::{
 use systems::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, UpdateContext,
 };
+
 use systems::{engine::Engine, landing_gear::LandingGear};
 use systems::{
     hydraulic::brake_circuit::BrakeCircuit, shared::DelayedFalseLogicGate,
@@ -165,11 +167,11 @@ impl A320Hydraulic {
         }
     }
 
-    pub(super) fn update(
+    pub(super) fn update<T: Engine>(
         &mut self,
         context: &UpdateContext,
-        engine1: &Engine,
-        engine2: &Engine,
+        engine1: &T,
+        engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
         landing_gear: &LandingGear,
@@ -321,11 +323,11 @@ impl A320Hydraulic {
     fn update_blue_actuators_volume(&mut self) {}
 
     // All the core hydraulics updates that needs to be done at the slowest fixed step rate
-    fn update_fixed_step(
+    fn update_fixed_step<T: Engine>(
         &mut self,
         context: &UpdateContext,
-        engine1: &Engine,
-        engine2: &Engine,
+        engine1: &T,
+        engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
         landing_gear: &LandingGear,
@@ -365,13 +367,16 @@ impl A320Hydraulic {
             overhead_panel,
             engine_fire_overhead,
             engine1.corrected_n2(),
+            engine1.oil_pressure(),
             self.engine_driven_pump_1_pressure_switch.is_pressurised(),
         );
 
         self.engine_driven_pump_1.update(
             context,
             &self.green_loop,
-            &engine1,
+            engine1
+                .hydraulic_pump_output_speed()
+                .get::<revolution_per_minute>(),
             &self.engine_driven_pump_1_controller,
         );
 
@@ -381,21 +386,24 @@ impl A320Hydraulic {
             overhead_panel,
             engine_fire_overhead,
             engine2.corrected_n2(),
+            engine2.oil_pressure(),
             self.engine_driven_pump_2_pressure_switch.is_pressurised(),
         );
 
         self.engine_driven_pump_2.update(
             context,
             &self.yellow_loop,
-            &engine2,
+            engine2
+                .hydraulic_pump_output_speed()
+                .get::<revolution_per_minute>(),
             &self.engine_driven_pump_2_controller,
         );
 
         self.blue_electric_pump_controller.update(
             overhead_panel,
             self.blue_loop.is_pressurised(),
-            engine1.corrected_n2(),
-            engine2.corrected_n2(),
+            engine1.oil_pressure(),
+            engine2.oil_pressure(),
         );
         self.blue_electric_pump.update(
             context,
@@ -538,12 +546,17 @@ impl A320EngineDrivenPumpController {
         }
     }
 
-    fn update_low_pressure_state(&mut self, engine_n2: Ratio, pressure_switch_state: bool) {
+    fn update_low_pressure_state(
+        &mut self,
+        engine_n2: Ratio,
+        engine_oil_pressure: Pressure,
+        pressure_switch_state: bool,
+    ) {
         // Faking edp section pressure low level as if engine is slow we shouldn't have pressure
         let faked_is_edp_section_low_pressure = engine_n2.get::<percent>() < 5.;
 
-        // Faking low engine oil pressure using N2 slow level. TODO Get real oil pressure (treshold is 18psi)
-        let faked_is_engine_low_oil_pressure = engine_n2.get::<percent>() < 25.;
+        // Engine off state uses oil pressure threshold (treshold is 18psi)
+        let is_engine_low_oil_pressure = engine_oil_pressure.get::<psi>() < 18.;
 
         // TODO when edp section pressure is modeled we can remove fake low press and use dedicated pressure switch
         self.is_pressure_low = self.should_pressurise()
@@ -551,7 +564,7 @@ impl A320EngineDrivenPumpController {
 
         // Fault inhibited if on ground AND engine oil pressure is low (11KS1 elec relay)
         self.has_pressure_low_fault =
-            self.is_pressure_low && (!faked_is_engine_low_oil_pressure || !self.weight_on_wheels);
+            self.is_pressure_low && (!is_engine_low_oil_pressure || !self.weight_on_wheels);
     }
 
     fn update(
@@ -559,6 +572,7 @@ impl A320EngineDrivenPumpController {
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
         engine_n2: Ratio,
+        engine_oil_pressure: Pressure,
         pressure_switch_state: bool,
     ) {
         if overhead_panel.edp_push_button_is_auto(self.engine_number)
@@ -571,7 +585,7 @@ impl A320EngineDrivenPumpController {
             self.should_pressurise = false;
         }
 
-        self.update_low_pressure_state(engine_n2, pressure_switch_state);
+        self.update_low_pressure_state(engine_n2, engine_oil_pressure, pressure_switch_state);
     }
 
     fn has_pressure_low_fault(&self) -> bool {
@@ -624,8 +638,8 @@ impl A320BlueElectricPumpController {
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
         pressure_switch_state: bool,
-        engine1_n2: Ratio,
-        engine2_n2: Ratio,
+        engine1_oil_pressure: Pressure,
+        engine2_oil_pressure: Pressure,
     ) {
         if overhead_panel.blue_epump_push_button.is_auto() {
             if self.engine_1_master_on
@@ -643,8 +657,8 @@ impl A320BlueElectricPumpController {
         self.update_low_pressure_state(
             overhead_panel,
             pressure_switch_state,
-            engine1_n2,
-            engine2_n2,
+            engine1_oil_pressure,
+            engine2_oil_pressure,
         );
     }
 
@@ -652,17 +666,17 @@ impl A320BlueElectricPumpController {
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
         pressure_switch_state: bool,
-        engine1_n2: Ratio,
-        engine2_n2: Ratio,
+        engine1_oil_pressure: Pressure,
+        engine2_oil_pressure: Pressure,
     ) {
-        // Faking low engine oil pressure using N2 slow level. TODO Get real oil pressure
-        let faked_is_engine_low_oil_pressure =
-            engine1_n2.get::<percent>() < 25. && engine2_n2.get::<percent>() < 25.;
+        // Low engine oil pressure inhibits fault under 18psi level
+        let is_engine_low_oil_pressure =
+            engine1_oil_pressure.get::<psi>() < 18. && engine2_oil_pressure.get::<psi>() < 18.;
 
         self.is_pressure_low = self.should_pressurise() && !pressure_switch_state;
 
         self.has_pressure_low_fault = self.is_pressure_low
-            && ((!faked_is_engine_low_oil_pressure || !self.weight_on_wheels)
+            && ((!is_engine_low_oil_pressure || !self.weight_on_wheels)
                 || overhead_panel.blue_epump_override_push_button_is_on());
     }
 
@@ -1260,6 +1274,7 @@ mod tests {
 
     mod a320_hydraulics {
         use super::*;
+        use systems::engine::leap_engine::LeapEngine;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
             acceleration::foot_per_second_squared, length::foot, ratio::percent,
@@ -1267,8 +1282,8 @@ mod tests {
         };
 
         struct A320HydraulicsTestAircraft {
-            engine_1: Engine,
-            engine_2: Engine,
+            engine_1: LeapEngine,
+            engine_2: LeapEngine,
             hydraulics: A320Hydraulic,
             overhead: A320HydraulicOverheadPanel,
             engine_fire_overhead: A320EngineFireOverheadPanel,
@@ -1277,8 +1292,8 @@ mod tests {
         impl A320HydraulicsTestAircraft {
             fn new() -> Self {
                 Self {
-                    engine_1: Engine::new(1),
-                    engine_2: Engine::new(2),
+                    engine_1: LeapEngine::new(1),
+                    engine_2: LeapEngine::new(2),
                     hydraulics: A320Hydraulic::new(),
                     overhead: A320HydraulicOverheadPanel::new(),
                     engine_fire_overhead: A320EngineFireOverheadPanel::new(),
@@ -1328,13 +1343,6 @@ mod tests {
             fn is_yellow_pressurised(&self) -> bool {
                 self.hydraulics.is_yellow_pressurised()
             }
-
-            fn set_engine_1_n2(&mut self, n2: Ratio) {
-                self.engine_1.corrected_n2 = n2;
-            }
-            fn set_engine_2_n2(&mut self, n2: Ratio) {
-                self.engine_2.corrected_n2 = n2;
-            }
         }
 
         impl Aircraft for A320HydraulicsTestAircraft {
@@ -1353,6 +1361,8 @@ mod tests {
         }
         impl SimulationElement for A320HydraulicsTestAircraft {
             fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+                self.engine_1.accept(visitor);
+                self.engine_2.accept(visitor);
                 self.hydraulics.accept(visitor);
                 self.overhead.accept(visitor);
                 self.engine_fire_overhead.accept(visitor);
@@ -1509,6 +1519,14 @@ mod tests {
                 self.aircraft.get_yellow_brake_accumulator_fluid_volume()
             }
 
+            fn get_rat_position(&mut self) -> f64 {
+                self.simulation_test_bed.read_f64("HYD_RAT_STOW_POSITION")
+            }
+
+            fn get_rat_rpm(&mut self) -> f64 {
+                self.simulation_test_bed.read_f64("A32NX_HYD_RAT_RPM")
+            }
+
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
                 !self
                     .simulation_test_bed
@@ -1594,7 +1612,8 @@ mod tests {
             fn start_eng1(mut self, n2: Ratio) -> Self {
                 self.simulation_test_bed
                     .write_bool("GENERAL ENG STARTER ACTIVE:1", true);
-                self.aircraft.set_engine_1_n2(n2);
+                self.simulation_test_bed
+                    .write_f64("TURB ENG CORRECTED N2:1", n2.get::<percent>());
 
                 self
             }
@@ -1602,7 +1621,8 @@ mod tests {
             fn start_eng2(mut self, n2: Ratio) -> Self {
                 self.simulation_test_bed
                     .write_bool("GENERAL ENG STARTER ACTIVE:2", true);
-                self.aircraft.set_engine_2_n2(n2);
+                self.simulation_test_bed
+                    .write_f64("TURB ENG CORRECTED N2:2", n2.get::<percent>());
 
                 self
             }
@@ -1610,7 +1630,8 @@ mod tests {
             fn stop_eng1(mut self) -> Self {
                 self.simulation_test_bed
                     .write_bool("GENERAL ENG STARTER ACTIVE:1", false);
-                self.aircraft.set_engine_1_n2(Ratio::new::<percent>(0.));
+                self.simulation_test_bed
+                    .write_f64("TURB ENG CORRECTED N2:1", 0.);
 
                 self
             }
@@ -1618,7 +1639,8 @@ mod tests {
             fn stopping_eng1(mut self) -> Self {
                 self.simulation_test_bed
                     .write_bool("GENERAL ENG STARTER ACTIVE:1", false);
-                self.aircraft.set_engine_1_n2(Ratio::new::<percent>(25.));
+                self.simulation_test_bed
+                    .write_f64("TURB ENG CORRECTED N2:1", 25.);
 
                 self
             }
@@ -1626,7 +1648,8 @@ mod tests {
             fn stop_eng2(mut self) -> Self {
                 self.simulation_test_bed
                     .write_bool("GENERAL ENG STARTER ACTIVE:2", false);
-                self.aircraft.set_engine_2_n2(Ratio::new::<percent>(0.));
+                self.simulation_test_bed
+                    .write_f64("TURB ENG CORRECTED N2:2", 0.);
 
                 self
             }
@@ -1634,7 +1657,8 @@ mod tests {
             fn stopping_eng2(mut self) -> Self {
                 self.simulation_test_bed
                     .write_bool("GENERAL ENG STARTER ACTIVE:2", false);
-                self.aircraft.set_engine_2_n2(Ratio::new::<percent>(25.));
+                self.simulation_test_bed
+                    .write_f64("TURB ENG CORRECTED N2:2", 25.);
 
                 self
             }
@@ -3307,31 +3331,46 @@ mod tests {
 
         #[test]
         fn controller_blue_epump_split_master_switch() {
-            let engine_on_n2 = Ratio::new::<percent>(50.);
-            let engine_off_n2 = Ratio::new::<percent>(1.);
+            let engine_on_oil_pressure = Pressure::new::<psi>(30.);
+            let engine_off_oil_pressure = Pressure::new::<psi>(10.);
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             overhead_panel.blue_epump_override_push_button.push_off();
 
             let mut blue_epump_controller = A320BlueElectricPumpController::new();
 
-            blue_epump_controller.update(&overhead_panel, true, engine_off_n2, engine_off_n2);
+            blue_epump_controller.update(
+                &overhead_panel,
+                true,
+                engine_off_oil_pressure,
+                engine_off_oil_pressure,
+            );
             assert!(!blue_epump_controller.should_pressurise());
 
             blue_epump_controller.engine_1_master_on = true;
             blue_epump_controller.engine_2_master_on = false;
-            blue_epump_controller.update(&overhead_panel, true, engine_on_n2, engine_off_n2);
+            blue_epump_controller.update(
+                &overhead_panel,
+                true,
+                engine_on_oil_pressure,
+                engine_off_oil_pressure,
+            );
             assert!(blue_epump_controller.should_pressurise());
 
             blue_epump_controller.engine_1_master_on = false;
             blue_epump_controller.engine_2_master_on = true;
-            blue_epump_controller.update(&overhead_panel, true, engine_off_n2, engine_on_n2);
+            blue_epump_controller.update(
+                &overhead_panel,
+                true,
+                engine_off_oil_pressure,
+                engine_on_oil_pressure,
+            );
             assert!(blue_epump_controller.should_pressurise());
         }
 
         #[test]
         fn controller_blue_epump_on_off_master_switch() {
-            let engine_on_n2 = Ratio::new::<percent>(50.);
-            let engine_off_n2 = Ratio::new::<percent>(1.);
+            let engine_on_oil_pressure = Pressure::new::<psi>(30.);
+            let engine_off_oil_pressure = Pressure::new::<psi>(10.);
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             overhead_panel.blue_epump_override_push_button.push_off();
 
@@ -3339,31 +3378,51 @@ mod tests {
 
             blue_epump_controller.engine_1_master_on = true;
             blue_epump_controller.engine_2_master_on = true;
-            blue_epump_controller.update(&overhead_panel, true, engine_on_n2, engine_on_n2);
+            blue_epump_controller.update(
+                &overhead_panel,
+                true,
+                engine_on_oil_pressure,
+                engine_on_oil_pressure,
+            );
             assert!(blue_epump_controller.should_pressurise());
 
             blue_epump_controller.engine_1_master_on = false;
             blue_epump_controller.engine_2_master_on = false;
-            blue_epump_controller.update(&overhead_panel, false, engine_off_n2, engine_off_n2);
+            blue_epump_controller.update(
+                &overhead_panel,
+                false,
+                engine_off_oil_pressure,
+                engine_off_oil_pressure,
+            );
             assert!(!blue_epump_controller.should_pressurise());
         }
 
         #[test]
         fn controller_blue_epump_override() {
-            let engine_off_n2 = Ratio::new::<percent>(1.);
+            let engine_off_oil_pressure = Pressure::new::<psi>(10.);
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             let mut blue_epump_controller = A320BlueElectricPumpController::new();
 
             blue_epump_controller.engine_1_master_on = false;
             blue_epump_controller.engine_2_master_on = false;
             overhead_panel.blue_epump_override_push_button.push_on();
-            blue_epump_controller.update(&overhead_panel, true, engine_off_n2, engine_off_n2);
+            blue_epump_controller.update(
+                &overhead_panel,
+                true,
+                engine_off_oil_pressure,
+                engine_off_oil_pressure,
+            );
             assert!(blue_epump_controller.should_pressurise());
 
             blue_epump_controller.engine_1_master_on = false;
             blue_epump_controller.engine_2_master_on = false;
             overhead_panel.blue_epump_override_push_button.push_off();
-            blue_epump_controller.update(&overhead_panel, false, engine_off_n2, engine_off_n2);
+            blue_epump_controller.update(
+                &overhead_panel,
+                false,
+                engine_off_oil_pressure,
+                engine_off_oil_pressure,
+            );
             assert!(!blue_epump_controller.should_pressurise());
         }
 
@@ -3432,6 +3491,7 @@ mod tests {
                 &overhead_panel,
                 &fire_overhead_panel,
                 Ratio::new::<percent>(50.),
+                Pressure::new::<psi>(30.),
                 true,
             );
             assert!(edp1_controller.should_pressurise());
@@ -3441,6 +3501,7 @@ mod tests {
                 &overhead_panel,
                 &fire_overhead_panel,
                 Ratio::new::<percent>(50.),
+                Pressure::new::<psi>(30.),
                 true,
             );
             assert!(!edp1_controller.should_pressurise());
@@ -3450,6 +3511,7 @@ mod tests {
                 &overhead_panel,
                 &fire_overhead_panel,
                 Ratio::new::<percent>(50.),
+                Pressure::new::<psi>(30.),
                 true,
             );
             assert!(edp1_controller.should_pressurise());
@@ -3469,6 +3531,7 @@ mod tests {
                 &overhead_panel,
                 &fire_overhead_panel,
                 Ratio::new::<percent>(50.),
+                Pressure::new::<psi>(30.),
                 true,
             );
             assert!(edp1_controller.should_pressurise());
@@ -3478,6 +3541,7 @@ mod tests {
                 &overhead_panel,
                 &fire_overhead_panel,
                 Ratio::new::<percent>(50.),
+                Pressure::new::<psi>(10.),
                 true,
             );
             assert!(!edp1_controller.should_pressurise());
@@ -3496,6 +3560,7 @@ mod tests {
                 &overhead_panel,
                 &fire_overhead_panel,
                 Ratio::new::<percent>(50.),
+                Pressure::new::<psi>(30.),
                 true,
             );
             assert!(edp2_controller.should_pressurise());
@@ -3505,6 +3570,7 @@ mod tests {
                 &overhead_panel,
                 &fire_overhead_panel,
                 Ratio::new::<percent>(50.),
+                Pressure::new::<psi>(30.),
                 true,
             );
             assert!(!edp2_controller.should_pressurise());
@@ -3514,6 +3580,7 @@ mod tests {
                 &overhead_panel,
                 &fire_overhead_panel,
                 Ratio::new::<percent>(50.),
+                Pressure::new::<psi>(30.),
                 true,
             );
             assert!(edp2_controller.should_pressurise());
@@ -3533,6 +3600,7 @@ mod tests {
                 &overhead_panel,
                 &fire_overhead_panel,
                 Ratio::new::<percent>(50.),
+                Pressure::new::<psi>(30.),
                 true,
             );
             assert!(edp2_controller.should_pressurise());
@@ -3542,6 +3610,7 @@ mod tests {
                 &overhead_panel,
                 &fire_overhead_panel,
                 Ratio::new::<percent>(50.),
+                Pressure::new::<psi>(5.),
                 true,
             );
             assert!(!edp2_controller.should_pressurise());
@@ -3624,6 +3693,30 @@ mod tests {
             tug = detached_tug();
             ptu_controller.update(&context.with_delta(Duration::from_secs(1) + A320PowerTransferUnitController::DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK), &overhead_panel, &fwd_door, &aft_door,&tug);
             assert!(ptu_controller.should_enable());
+        }
+
+        #[test]
+        fn rat_does_not_deploy_on_ground_at_eng_off() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .start_eng1(Ratio::new::<percent>(50.))
+                .start_eng2(Ratio::new::<percent>(50.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.get_rat_position() <= 0.);
+            assert!(test_bed.get_rat_rpm() <= 1.);
+
+            // Stopping both engines
+            test_bed = test_bed
+                .stop_eng1()
+                .stop_eng2()
+                .run_waiting_for(Duration::from_secs(2));
+
+            // RAT has not deployed
+            assert!(test_bed.get_rat_position() <= 0.);
+            assert!(test_bed.get_rat_rpm() <= 1.);
         }
 
         fn context(delta_time: Duration) -> UpdateContext {
