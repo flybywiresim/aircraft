@@ -4,15 +4,14 @@ use std::time::Duration;
 use uom::si::{
     f64::*,
     pressure::psi,
-    ratio::percent,
     velocity::knot,
     volume::{cubic_inch, gallon},
     volume_rate::gallon_per_second,
 };
 
 use crate::shared::interpolation;
+use crate::simulation::UpdateContext;
 use crate::simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter};
-use crate::{engine::Engine, simulation::UpdateContext};
 
 pub mod brake_circuit;
 use crate::hydraulic::brake_circuit::Actuator;
@@ -799,11 +798,12 @@ pub struct EngineDrivenPump {
     pump: Pump,
 }
 impl EngineDrivenPump {
-    // According to the Type Certificate Data Sheet of LEAP 1A26
-    // Max N2 rpm is 116.5% @ 19391 RPM
-    // 100% @ 16645 RPM
-    const LEAP_1A26_MAX_N2_RPM: f64 = 16645.0;
-    const PUMP_N2_GEAR_RATIO: f64 = 0.211;
+    // // According to the Type Certificate Data Sheet of LEAP 1A26
+    // // Max N2 rpm is 116.5% @ 19391 RPM
+    // // 100% @ 16645 RPM
+    // const LEAP_1A26_MAX_N2_RPM: f64 = 16645.0;
+    // // Gear ratio from primary gearbox input to EDP drive shaft
+    // const PUMP_N2_GEAR_RATIO: f64 = 0.211;
 
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3000.0, 3020.0, 3500.0,
@@ -829,12 +829,9 @@ impl EngineDrivenPump {
         &mut self,
         context: &UpdateContext,
         line: &HydraulicLoop,
-        engine: &Engine,
+        pump_rpm: f64,
         controller: &T,
     ) {
-        let n2_rpm = engine.corrected_n2().get::<percent>() * Self::LEAP_1A26_MAX_N2_RPM / 100.;
-        let pump_rpm = n2_rpm * Self::PUMP_N2_GEAR_RATIO;
-
         self.pump.update(context, line, pump_rpm, controller);
         self.is_active = controller.should_pressurise();
     }
@@ -1190,8 +1187,8 @@ mod tests {
         let green_loop_controller =
             TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
 
-        let init_n2 = Ratio::new::<percent>(55.0);
-        let engine1 = engine(init_n2);
+        let init_rpm = 1900.;
+
         let context = context(Duration::from_millis(100));
         let mut pump_controller = TestPumpController::commanding_pressurise();
 
@@ -1209,7 +1206,7 @@ mod tests {
                 assert!(green_loop.loop_pressure <= Pressure::new::<psi>(250.0));
             }
 
-            edp1.update(&context, &green_loop, &engine1, &pump_controller);
+            edp1.update(&context, &green_loop, init_rpm, &pump_controller);
             green_loop.update(
                 &context,
                 Vec::new(),
@@ -1442,8 +1439,6 @@ mod tests {
         let mut engine_driven_pump = engine_driven_pump();
         let mut engine_driven_pump_controller = TestPumpController::commanding_depressurise();
 
-        let mut engine1 = engine(Ratio::new::<percent>(0.0));
-
         let mut green_loop = hydraulic_loop("GREEN");
         let green_loop_controller =
             TestHydraulicLoopController::commanding_open_fire_shutoff_valve();
@@ -1456,7 +1451,7 @@ mod tests {
         let yellow_res_at_start = yellow_loop.reservoir_volume;
         let green_res_at_start = green_loop.reservoir_volume;
 
-        engine1.corrected_n2 = Ratio::new::<percent>(100.0);
+        let edp_rpm = 3300.;
         for x in 0..800 {
             if x == 10 {
                 // After 1s powering electric pump
@@ -1534,7 +1529,7 @@ mod tests {
             engine_driven_pump.update(
                 &context,
                 &green_loop,
-                &engine1,
+                edp_rpm,
                 &engine_driven_pump_controller,
             );
             electric_pump.update(&context, &yellow_loop, &electric_pump_controller);
@@ -1567,7 +1562,7 @@ mod tests {
                     yellow_loop.max_loop_volume.get::<gallon>()
                 );
                 println!("---PSI GREEN: {}", green_loop.loop_pressure.get::<psi>());
-                println!("---N2  GREEN: {}", engine1.corrected_n2.get::<percent>());
+                println!("---N2  GREEN: {}", edp_rpm);
                 println!(
                     "---Priming State: {}/{}",
                     green_loop.loop_volume.get::<gallon>(),
@@ -1629,13 +1624,6 @@ mod tests {
         EngineDrivenPump::new("DEFAULT")
     }
 
-    fn engine(n2: Ratio) -> Engine {
-        let mut engine = Engine::new(1);
-        engine.corrected_n2 = n2;
-
-        engine
-    }
-
     fn context(delta_time: Duration) -> UpdateContext {
         UpdateContext::new(
             delta_time,
@@ -1650,7 +1638,6 @@ mod tests {
     #[cfg(test)]
     mod edp_tests {
         use super::*;
-        use uom::si::ratio::percent;
 
         #[test]
         fn starts_inactive() {
@@ -1659,12 +1646,12 @@ mod tests {
 
         #[test]
         fn zero_flow_above_3000_psi_after_25ms() {
-            let n2 = Ratio::new::<percent>(60.0);
+            let pump_rpm = 3300.;
             let pressure = Pressure::new::<psi>(3100.);
             let context = context(Duration::from_millis(25));
             let displacement = Volume::new::<cubic_inch>(0.);
             assert!(delta_vol_equality_check(
-                n2,
+                pump_rpm,
                 displacement,
                 pressure,
                 &context
@@ -1672,24 +1659,23 @@ mod tests {
         }
 
         fn delta_vol_equality_check(
-            n2: Ratio,
+            pump_rpm: f64,
             displacement: Volume,
             pressure: Pressure,
             context: &UpdateContext,
         ) -> bool {
-            let actual = get_edp_actual_delta_vol_when(n2, pressure, context);
-            let predicted = get_edp_predicted_delta_vol_when(n2, displacement, context);
+            let actual = get_edp_actual_delta_vol_when(pump_rpm, pressure, context);
+            let predicted = get_edp_predicted_delta_vol_when(pump_rpm, displacement, context);
             println!("Actual: {}", actual.get::<gallon>());
             println!("Predicted: {}", predicted.get::<gallon>());
             actual == predicted
         }
 
         fn get_edp_actual_delta_vol_when(
-            n2: Ratio,
+            pump_rpm: f64,
             pressure: Pressure,
             context: &UpdateContext,
         ) -> Volume {
-            let eng = engine(n2);
             let mut edp = engine_driven_pump();
             let mut line = hydraulic_loop("GREEN");
 
@@ -1698,22 +1684,20 @@ mod tests {
             edp.update(
                 &context.with_delta(Duration::from_secs(1)),
                 &line,
-                &eng,
+                pump_rpm,
                 &engine_driven_pump_controller,
             ); // Update 10 times to stabilize displacement
 
-            edp.update(context, &line, &eng, &engine_driven_pump_controller);
+            edp.update(context, &line, pump_rpm, &engine_driven_pump_controller);
             edp.delta_vol_max()
         }
 
         fn get_edp_predicted_delta_vol_when(
-            n2: Ratio,
+            pump_rpm: f64,
             displacement: Volume,
             context: &UpdateContext,
         ) -> Volume {
-            let n2_rpm = n2.get::<percent>() * EngineDrivenPump::LEAP_1A26_MAX_N2_RPM / 100.;
-            let edp_rpm = n2_rpm * EngineDrivenPump::PUMP_N2_GEAR_RATIO;
-            let expected_flow = Pump::calculate_flow(edp_rpm, displacement);
+            let expected_flow = Pump::calculate_flow(pump_rpm, displacement);
             expected_flow * context.delta_as_time()
         }
     }
