@@ -50,9 +50,9 @@ const ApuGenBox = ({ x, y, load, voltage, freq }) => (
         <text x={55} y={75} className="Cyan">V</text>
         <text x={55} y={105} className="Cyan">HZ</text>
 
-        <text x={50} y={45} className={`Right ${load === 0 ? 'Amber' : 'Green'}`}>{load}</text>
-        <text x={50} y={75} className={`Right ${voltage === 0 ? 'Amber' : 'Green'}`}>{voltage}</text>
-        <text x={50} y={105} className={`Right ${freq === 0 ? 'Amber' : 'Green'}`}>{freq}</text>
+        <text x={50} y={45} className={`Right ${load === 0 ? 'Amber' : 'Green'}`}>{load.toFixed()}</text>
+        <text x={50} y={75} className={`Right ${voltage === 0 ? 'Amber' : 'Green'}`}>{voltage.toFixed()}</text>
+        <text x={50} y={105} className={`Right ${freq === 0 ? 'Amber' : 'Green'}`}>{freq.toFixed()}</text>
     </SvgGroup>
 );
 
@@ -62,7 +62,7 @@ const BleedBox = ({ x, y, pressure, apuBleedOn }) => (
         <text x={22} y={19}>BLEED</text>
         <text x={53} y={44} className="Cyan">PSI</text>
 
-        <text x={51} y={44} className="Right Green">{pressure}</text>
+        <text x={51} y={44} className="Right Green">{pressure.toFixed()}</text>
 
         <line className="Line" x1="50" y1="-1" x2="50" y2="-22" />
         <circle className="Circle" cx="50" r="18px" cy="-40" />
