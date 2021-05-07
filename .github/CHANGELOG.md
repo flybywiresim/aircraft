@@ -50,6 +50,7 @@
 1. [ELEC] Add ground service electrical buses - @davidwalschots (David Walschots)
 1. [FLIGHTMODEL] Fixed excessive weathervaning stability - @donstim (donbikes#4084)
 1. [AUTOPILOT] Improved ROLL OUT and G/S laws - @aguther (Andreas Guther)
+1. [MISC] Standby instrument brightness buttons can now be held down rather than pressed to -/+ brightness - @2hwk (2Cas#1022)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
