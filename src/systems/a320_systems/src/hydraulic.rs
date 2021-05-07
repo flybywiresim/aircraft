@@ -1519,6 +1519,14 @@ mod tests {
                 self.aircraft.get_yellow_brake_accumulator_fluid_volume()
             }
 
+            fn get_rat_position(&mut self) -> f64 {
+                self.simulation_test_bed.read_f64("HYD_RAT_STOW_POSITION")
+            }
+
+            fn get_rat_rpm(&mut self) -> f64 {
+                self.simulation_test_bed.read_f64("A32NX_HYD_RAT_RPM")
+            }
+
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
                 !self
                     .simulation_test_bed
@@ -3685,6 +3693,30 @@ mod tests {
             tug = detached_tug();
             ptu_controller.update(&context.with_delta(Duration::from_secs(1) + A320PowerTransferUnitController::DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK), &overhead_panel, &fwd_door, &aft_door,&tug);
             assert!(ptu_controller.should_enable());
+        }
+
+        #[test]
+        fn rat_does_not_deploy_on_ground_at_eng_off() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .start_eng1(Ratio::new::<percent>(50.))
+                .start_eng2(Ratio::new::<percent>(50.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.get_rat_position() <= 0.);
+            assert!(test_bed.get_rat_rpm() <= 1.);
+
+            // Stopping both engines
+            test_bed = test_bed
+                .stop_eng1()
+                .stop_eng2()
+                .run_waiting_for(Duration::from_secs(2));
+
+            // RAT has not deployed
+            assert!(test_bed.get_rat_position() <= 0.);
+            assert!(test_bed.get_rat_rpm() <= 1.);
         }
 
         fn context(delta_time: Duration) -> UpdateContext {
