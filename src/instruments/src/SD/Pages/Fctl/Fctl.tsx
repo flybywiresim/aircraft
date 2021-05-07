@@ -7,7 +7,21 @@ import './Fctl.scss';
 
 setIsEcamPage('fctl_page');
 
-type HydraulicLetter = 'B' | 'Y' | 'G';
+interface ComponentPositionProps {
+    x: number,
+    y: number,
+}
+
+interface ComponentSidePositionProps {
+    side: 'left' | 'right'
+}
+
+interface HydraulicSystemPairProps {
+    leftHydraulicSystem: HydraulicSystem,
+    rightHydraulicSystem: HydraulicSystem,
+}
+
+type HydraulicSystem = 'B' | 'Y' | 'G';
 
 interface HydraulicSystemAvailable {
     available: boolean
@@ -35,49 +49,38 @@ export const FctlPage = () => {
     };
 
     return (
-        <>
-            <svg id="ecam-fctl" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
-                <text
-                    id="pageTitle"
-                    className="PageTitle"
-                    x="45"
-                    y="18"
-                    textAnchor="middle"
-                    alignmentBaseline="central"
-                >
-                    F/CTL
-                </text>
+        <svg id="ecam-fctl" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
+            <text x={45} y={18} className="PageTitle" textAnchor="middle" alignmentBaseline="central">F/CTL</text>
 
-                <HydraulicContext.Provider value={hydraulicContext}>
-                    <Spoilers x={98} y={14} />
+            <HydraulicContext.Provider value={hydraulicContext}>
+                <Spoilers x={98} y={14} />
 
-                    <Aileron x={72} y={153} side="left" hydLeft="B" hydRight="G" />
-                    <Aileron x={528} y={153} side="right" hydLeft="G" hydRight="B" />
+                <Aileron x={72} y={153} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
+                <Aileron x={528} y={153} side="right" leftHydraulicSystem="G" rightHydraulicSystem="B" />
 
-                    <text x={195} y={178} className="Note" textAnchor="middle" alignmentBaseline="central">ELAC</text>
-                    <Elac x={170} y={190} number={1} />
-                    <Elac x={194} y={206} number={2} />
+                <Note x={195} y={178}>ELAC</Note>
+                <Elac x={170} y={190} number={1} />
+                <Elac x={194} y={206} number={2} />
 
-                    <text x={350} y={178} className="Note" textAnchor="middle" alignmentBaseline="central">SEC</text>
-                    <Sec x={324} y={190} number={1} />
-                    <Sec x={348} y={206} number={2} />
-                    <Sec x={372} y={222} number={3} />
+                <Note x={350} y={178}>SEC</Note>
+                <Sec x={324} y={190} number={1} />
+                <Sec x={348} y={206} number={2} />
+                <Sec x={372} y={222} number={3} />
 
-                    <Elevator x={168} y={328} side="left" hydLeft="B" hydRight="G" />
-                    <Elevator x={432} y={328} side="right" hydLeft="Y" hydRight="B" />
+                <Elevator x={168} y={328} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
+                <Elevator x={432} y={328} side="right" leftHydraulicSystem="Y" rightHydraulicSystem="B" />
 
-                    <PitchTrim x={280} y={283} />
+                <PitchTrim x={280} y={283} />
 
-                    <Stabilizer x={268} y={357} />
+                <Stabilizer x={268} y={357} />
 
-                    <Rudder x={250} y={356} />
-                </HydraulicContext.Provider>
-            </svg>
-        </>
+                <Rudder x={250} y={356} />
+            </HydraulicContext.Provider>
+        </svg>
     );
 };
 
-const Spoilers = ({ x, y }) => {
+const Spoilers = ({ x = 0, y = 0 }: ComponentPositionProps) => {
     const [aileronLeftDeflectionState] = useSimVar('AILERON LEFT DEFLECTION PCT', 'percent over 100', 50);
     const [aileronRightDeflectionState] = useSimVar('AILERON RIGHT DEFLECTION PCT', 'percent over 100', 50);
 
@@ -96,23 +99,23 @@ const Spoilers = ({ x, y }) => {
 
     return (
         <SvgGroup x={x} y={y}>
-            <text x={202} y={93} className="Note" textAnchor="middle" alignmentBaseline="central">SPD BRK</text>
+            <Note x={202} y={93}>SPD BRK</Note>
 
-            <HydraulicIndicator x={171} y={0} letter="G" />
-            <HydraulicIndicator x={193} y={0} letter="B" />
-            <HydraulicIndicator x={215} y={0} letter="Y" />
+            <HydraulicIndicator x={171} y={0} type="G" />
+            <HydraulicIndicator x={193} y={0} type="B" />
+            <HydraulicIndicator x={215} y={0} type="Y" />
 
-            <Spoiler x={5} y={90} side="left" number={5} actuator="G" upWhenActuated={(spoilersArmed && leftSpoilerUp) || leftAileronUp} />
-            <Spoiler x={43} y={85} side="left" number={4} actuator="Y" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
-            <Spoiler x={81} y={80} side="left" number={3} actuator="B" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
-            <Spoiler x={119} y={75} side="left" number={2} actuator="Y" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
-            <Spoiler x={157} y={70} side="left" number={1} actuator="G" upWhenActuated={spoilersArmed && leftSpoilerUp} />
+            <Spoiler x={5} y={90} side="left" number={5} actuatedBy="G" upWhenActuated={(spoilersArmed && leftSpoilerUp) || leftAileronUp} />
+            <Spoiler x={43} y={85} side="left" number={4} actuatedBy="Y" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
+            <Spoiler x={81} y={80} side="left" number={3} actuatedBy="B" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
+            <Spoiler x={119} y={75} side="left" number={2} actuatedBy="Y" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
+            <Spoiler x={157} y={70} side="left" number={1} actuatedBy="G" upWhenActuated={spoilersArmed && leftSpoilerUp} />
 
-            <Spoiler x={247} y={70} side="right" number={1} actuator="G" upWhenActuated={spoilersArmed && rightSpoilerUp} />
-            <Spoiler x={285} y={75} side="right" number={2} actuator="Y" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
-            <Spoiler x={323} y={80} side="right" number={3} actuator="B" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
-            <Spoiler x={361} y={85} side="right" number={4} actuator="Y" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
-            <Spoiler x={399} y={90} side="right" number={5} actuator="G" upWhenActuated={(spoilersArmed && rightSpoilerUp) || rightAileronUp} />
+            <Spoiler x={247} y={70} side="right" number={1} actuatedBy="G" upWhenActuated={spoilersArmed && rightSpoilerUp} />
+            <Spoiler x={285} y={75} side="right" number={2} actuatedBy="Y" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
+            <Spoiler x={323} y={80} side="right" number={3} actuatedBy="B" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
+            <Spoiler x={361} y={85} side="right" number={4} actuatedBy="Y" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
+            <Spoiler x={399} y={90} side="right" number={5} actuatedBy="G" upWhenActuated={(spoilersArmed && rightSpoilerUp) || rightAileronUp} />
 
             <g id="leftSpeedbrakeGroup">
                 <path className="MainShape" d="M0 47 l0 -5 l140 -23 l0 5" />
@@ -127,36 +130,31 @@ const Spoilers = ({ x, y }) => {
     );
 };
 
-interface SpoilerProps {
+interface SpoilerProps extends ComponentPositionProps, ComponentSidePositionProps {
     number: number,
-    side: 'left' | 'right',
-    x: number,
-    y: number,
-    actuator: HydraulicLetter,
+    actuatedBy: HydraulicSystem,
     upWhenActuated: boolean,
 }
-const Spoiler = ({ number, side, x, y, actuator, upWhenActuated }: SpoilerProps) => {
+const Spoiler = ({ x, y, number, side, actuatedBy, upWhenActuated }: SpoilerProps) => {
     const hydraulics = useContext(HydraulicContext);
-    const showSpoiler = upWhenActuated && hydraulics[actuator].available;
+    const showSpoilerInUpPosition = upWhenActuated && hydraulics[actuatedBy].available;
 
     return (
         <SvgGroup x={x} y={y}>
             <path
-                className={hydraulics[actuator].available ? 'GreenShapeThick' : 'WarningShapeThick'}
+                className={hydraulics[actuatedBy].available ? 'GreenShapeThick' : 'WarningShapeThick'}
                 d={`M 0 0 l ${side === 'right' ? '-' : ''}15 0`}
             />
             <path
-                id={`arrow${number}_${side}`}
-                visibility={showSpoiler ? 'visible' : 'hidden'}
+                visibility={showSpoilerInUpPosition ? 'visible' : 'hidden'}
                 className="GreenShape"
                 d={`M ${side === 'left' ? 8 : -8} 0 l 0 -22 l -6 0 l 6 -12 l 6 12 l -6 0`}
             />
             <text
-                id={`num${number}_${side}`}
-                visibility={hydraulics[actuator].available ? 'hidden' : 'visible'}
-                className="Warning Medium"
                 x={side === 'left' ? 8 : -8}
                 y={-9}
+                visibility={hydraulics[actuatedBy].available ? 'hidden' : 'visible'}
+                className="Warning Medium"
                 textAnchor="middle"
                 alignmentBaseline="central"
             >
@@ -166,7 +164,7 @@ const Spoiler = ({ number, side, x, y, actuator, upWhenActuated }: SpoilerProps)
     );
 };
 
-const PitchTrim = ({ x, y }) => {
+const PitchTrim = ({ x, y }: ComponentPositionProps) => {
     const [rawPitchTrim] = useSimVar('ELEVATOR TRIM INDICATOR', 'Position 16k', 50);
 
     const adjustedPitchTrim = rawPitchTrim / 1213.6296;
@@ -177,7 +175,7 @@ const PitchTrim = ({ x, y }) => {
 
     return (
         <SvgGroup x={x} y={y}>
-            <text x={0} y={13} className="Note" textAnchor="middle" alignmentBaseline="central">PITCH TRIM</text>
+            <Note x={0} y={13}>PITCH TRIM</Note>
             <text x={1} y={35} className={`${hydraulicAvailableClass} Standard`} textAnchor="end" alignmentBaseline="central">{pitchIntegral}</text>
             <text x={5} y={35} className={`${hydraulicAvailableClass} Standard`} textAnchor="middle" alignmentBaseline="central">.</text>
             <text x={14} y={37} className={`${hydraulicAvailableClass} Small`} textAnchor="middle" alignmentBaseline="central">{pitchFractional}</text>
@@ -186,17 +184,17 @@ const PitchTrim = ({ x, y }) => {
                 {Math.sign(adjustedPitchTrim) === -1 ? 'DN' : 'UP'}
             </text>
 
-            <HydraulicIndicator x={80} y={0} letter="G" />
-            <HydraulicIndicator x={102} y={0} letter="Y" />
+            <HydraulicIndicator x={80} y={0} type="G" />
+            <HydraulicIndicator x={102} y={0} type="Y" />
         </SvgGroup>
     );
 };
 
-const Rudder = ({ x, y }) => {
+const Rudder = ({ x, y }: ComponentPositionProps) => {
     const [rudderDeflectionState] = useSimVar('RUDDER DEFLECTION PCT', 'percent over 100', 50);
     const rudderAngle = -rudderDeflectionState * 25;
 
-    // Update rudder limits
+    // Rudder limits
     const [indicatedAirspeedState] = useSimVar('AIRSPEED INDICATED', 'knots', 500);
     let maxAngleNorm = 1;
     if (indicatedAirspeedState > 380) {
@@ -213,14 +211,13 @@ const Rudder = ({ x, y }) => {
     const hydraulics = useContext(HydraulicContext);
     const hydraulicAvailableClass = hydraulics.G.available || hydraulics.B.available || hydraulics.Y.available ? 'GreenShape' : 'WarningShape';
 
-    // x=250 y=356
     return (
         <SvgGroup x={x} y={y}>
-            <text x={50} y={0} className="Note" textAnchor="middle" alignmentBaseline="central">RUD</text>
+            <Note x={50} y={0}>RUD</Note>
 
-            <HydraulicIndicator x={19} y={17} letter="G" />
-            <HydraulicIndicator x={41} y={17} letter="B" />
-            <HydraulicIndicator x={63} y={17} letter="Y" />
+            <HydraulicIndicator x={19} y={17} type="G" />
+            <HydraulicIndicator x={41} y={17} type="B" />
+            <HydraulicIndicator x={63} y={17} type="Y" />
 
             <path id="rudderPath" className="MainShape" d="M100 113 A 100 100 0 0 1 0 113" />
             <path id="rudderCenter" className="MainShape" d="m47 128 v 4 h 6 v-4" />
@@ -241,27 +238,20 @@ const Rudder = ({ x, y }) => {
             </g>
 
             <g id="rudderTrimCursor" transform={`rotate(${rudderTrimAngle} 50 24)`}>
-                <path id="rudderTrimCursor" className="RudderTrim" d="m50 134 v 8" />
+                <path className="RudderTrim" d="m50 134 v 8" />
             </g>
         </SvgGroup>
     );
 };
 
-const Stabilizer = ({ x, y }) => (
+const Stabilizer = ({ x, y }: ComponentPositionProps) => (
     <SvgGroup x={x} y={y}>
         <path id="stabLeft" className="MainShape" d="M0 0 l-55,4 l0,-18 l30,-15" />
         <path id="stabRight" className="MainShape" d="M64 0 l55,4 l0,-18 l-30,-15" />
     </SvgGroup>
 );
 
-interface AileronProps {
-    x: number,
-    y: number,
-    side: 'left' | 'right',
-    hydLeft: HydraulicLetter,
-    hydRight: HydraulicLetter,
-}
-const Aileron = ({ x, y, side, hydLeft, hydRight }: AileronProps) => {
+const Aileron = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps) => {
     const textPositionX = side === 'left' ? -40 : 40;
 
     const [aileronDeflection] = useSimVar(`AILERON ${side.toUpperCase()} DEFLECTION PCT`, 'percent over 100', 50);
@@ -273,49 +263,36 @@ const Aileron = ({ x, y, side, hydLeft, hydRight }: AileronProps) => {
 
     return (
         <SvgGroup x={x} y={y}>
-            <text className="Note" x={textPositionX} y={0} textAnchor="middle" alignmentBaseline="central">{side === 'left' ? 'L' : 'R'}</text>
-            <text className="Note" x={textPositionX} y={22} textAnchor="middle" alignmentBaseline="central">AIL</text>
+            <Note x={textPositionX} y={0}>{side === 'left' ? 'L' : 'R'}</Note>
+            <Note x={textPositionX} y={22}>AIL</Note>
 
-            <path className={hydraulics[hydLeft].available || hydraulics[hydRight].available ? 'GreenShape' : 'WarningShape'} d={cursorPath} />
+            <path className={hydraulics[leftHydraulicSystem].available || hydraulics[rightHydraulicSystem].available ? 'GreenShape' : 'WarningShape'} d={cursorPath} />
 
             <AileronAxis side={side} x={0} y={11} />
 
-            <HydraulicIndicator x={side === 'left' ? 22 : -62} y={93} letter={hydLeft} />
-            <HydraulicIndicator x={side === 'left' ? 44 : -40} y={93} letter={hydRight} />
+            <HydraulicIndicator x={side === 'left' ? 22 : -62} y={93} type={leftHydraulicSystem} />
+            <HydraulicIndicator x={side === 'left' ? 44 : -40} y={93} type={rightHydraulicSystem} />
         </SvgGroup>
     );
 };
 
-interface HydraulicIndicatorProps {
-    x: number,
-    y: number,
-    letter: HydraulicLetter,
+interface HydraulicIndicatorProps extends ComponentPositionProps {
+    type: HydraulicSystem,
 }
-const HydraulicIndicator = ({ x, y, letter }: HydraulicIndicatorProps) => {
-    const textPositionX = x + 9;
-    const textPositionY = y + 11;
-
+const HydraulicIndicator = ({ x, y, type }: HydraulicIndicatorProps) => {
     const hydraulics = useContext(HydraulicContext);
 
     return (
-        <>
-            <rect className="HydBgShape" x={x} y={y} width="18" height="24" rx="0" />
-            <text
-                className={hydraulics[letter].available ? 'Value Standard' : 'Warning Standard'}
-                x={textPositionX}
-                y={textPositionY}
-                textAnchor="middle"
-                alignmentBaseline="central"
-            >
-                {letter}
+        <SvgGroup x={x} y={y}>
+            <rect x={0} y={0} className="HydBgShape" width="18" height="24" rx="0" />
+            <text x={9} y={11} className={`Standard ${hydraulics[type].available ? 'Value' : 'Warning'}`} textAnchor="middle" alignmentBaseline="central">
+                {type}
             </text>
-        </>
+        </SvgGroup>
     );
 };
 
-interface ElacSecProps {
-    x: number,
-    y: number,
+interface ElacSecProps extends ComponentPositionProps {
     number: number,
 }
 
@@ -344,12 +321,7 @@ const ElacSecShape = ({ x, y, number, type }: ElacSecShapeProps) => {
     );
 };
 
-interface AileronAxisProps {
-    x: number,
-    y: number,
-    side: 'left' | 'right',
-}
-const AileronAxis = ({ x, y, side }: AileronAxisProps) => {
+const AileronAxis = ({ x, y, side }: ComponentPositionProps & ComponentSidePositionProps) => {
     const d1 = `M0 0 l${
         side === 'left' ? '-' : ''}8 0 l0 -20 l${
         side === 'right' ? '-' : ''}8 0 l0 120 l${side === 'left' ? '-' : ''}8 0 l0 -10 l${side === 'right' ? '-' : ''}8 0`;
@@ -367,14 +339,7 @@ const AileronAxis = ({ x, y, side }: AileronAxisProps) => {
     );
 };
 
-interface ElevatorProps {
-    side: 'left' | 'right',
-    x: number,
-    y: number,
-    hydLeft: HydraulicLetter,
-    hydRight: HydraulicLetter,
-}
-const Elevator = ({ x, y, side, hydLeft, hydRight }: ElevatorProps) => {
+const Elevator = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps) => {
     const textPositionX = side === 'left' ? -42 : 42;
     const textLetter = side === 'left' ? 'L' : 'R';
 
@@ -386,29 +351,24 @@ const Elevator = ({ x, y, side, hydLeft, hydRight }: ElevatorProps) => {
 
     return (
         <SvgGroup x={x} y={y}>
-            <text className="Note" x={textPositionX} y={0} textAnchor="middle" alignmentBaseline="central">{textLetter}</text>
-            <text className="Note" x={textPositionX} y={22} textAnchor="middle" alignmentBaseline="central">ELEV</text>
+            <Note x={textPositionX} y={0}>{textLetter}</Note>
+            <Note x={textPositionX} y={22}>ELEV</Note>
 
             <path
                 id={`${side}ElevatorCursor`}
-                className={hydraulics[hydLeft].available || hydraulics[hydRight].available ? 'GreenShape' : 'WarningShape'}
+                className={hydraulics[leftHydraulicSystem].available || hydraulics[rightHydraulicSystem].available ? 'GreenShape' : 'WarningShape'}
                 d={cursorPath}
             />
 
             <ElevatorAxis side={side} x={0} y={5} />
 
-            <HydraulicIndicator x={side === 'left' ? -60 : 18} y={79} letter={hydLeft} />
-            <HydraulicIndicator x={side === 'left' ? -38 : 40} y={79} letter={hydRight} />
+            <HydraulicIndicator x={side === 'left' ? -60 : 18} y={79} type={leftHydraulicSystem} />
+            <HydraulicIndicator x={side === 'left' ? -38 : 40} y={79} type={rightHydraulicSystem} />
         </SvgGroup>
     );
 };
 
-interface ElevatorAxisProps {
-    x: number
-    y: number,
-    side: 'left' | 'right',
-}
-const ElevatorAxis = ({ x, y, side }: ElevatorAxisProps) => {
+const ElevatorAxis = ({ x, y, side }: ComponentPositionProps & ComponentSidePositionProps) => {
     const d1 = `M0 0 l${
         side === 'left' ? '-' : ''}8 0 l0 -10 l${
         side === 'right' ? '-' : ''}8 0 l0 116 l${side === 'left' ? '-' : ''}8 0 l0 -10 l${side === 'right' ? '-' : ''}8 0`;
@@ -422,6 +382,10 @@ const ElevatorAxis = ({ x, y, side }: ElevatorAxisProps) => {
     );
 };
 
-const SvgGroup = ({ x, y, children }) => <g transform={`translate(${x},${y})`}>{children}</g>;
+const Note: React.FunctionComponent<ComponentPositionProps> = ({ x, y, children }) => (
+    <text x={x} y={y} className="Note" textAnchor="middle" alignmentBaseline="central">{children}</text>
+);
+
+const SvgGroup: React.FunctionComponent<ComponentPositionProps> = ({ x, y, children }) => <g transform={`translate(${x},${y})`}>{children}</g>;
 
 ReactDOM.render(<SimVarProvider><FctlPage /></SimVarProvider>, getRenderTarget());
