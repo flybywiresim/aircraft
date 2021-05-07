@@ -2,6 +2,29 @@
 #define RTW_HEADER_Autothrust_types_h_
 #include "rtwtypes.h"
 
+#ifndef DEFINED_TYPEDEF_FOR_athr_mode_
+#define DEFINED_TYPEDEF_FOR_athr_mode_
+
+typedef enum {
+  athr_mode_NONE = 0,
+  athr_mode_MAN_TOGA,
+  athr_mode_MAN_GA_SOFT,
+  athr_mode_MAN_FLEX,
+  athr_mode_MAN_DTO,
+  athr_mode_MAN_MCT,
+  athr_mode_MAN_THR,
+  athr_mode_SPEED,
+  athr_mode_MACH,
+  athr_mode_THR_MCT,
+  athr_mode_THR_CLB,
+  athr_mode_THR_LVR,
+  athr_mode_THR_IDLE,
+  athr_mode_A_FLOOR,
+  athr_mode_TOGA_LK
+} athr_mode;
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_athr_status_
 #define DEFINED_TYPEDEF_FOR_athr_status_
 
@@ -119,29 +142,6 @@ typedef enum {
   athr_thrust_limit_type_TOGA,
   athr_thrust_limit_type_REVERSE
 } athr_thrust_limit_type;
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_athr_mode_
-#define DEFINED_TYPEDEF_FOR_athr_mode_
-
-typedef enum {
-  athr_mode_NONE = 0,
-  athr_mode_MAN_TOGA,
-  athr_mode_MAN_GA_SOFT,
-  athr_mode_MAN_FLEX,
-  athr_mode_MAN_DTO,
-  athr_mode_MAN_MCT,
-  athr_mode_MAN_THR,
-  athr_mode_SPEED,
-  athr_mode_MACH,
-  athr_mode_THR_MCT,
-  athr_mode_THR_CLB,
-  athr_mode_THR_LVR,
-  athr_mode_THR_IDLE,
-  athr_mode_A_FLOOR,
-  athr_mode_TOGA_LK
-} athr_mode;
 
 #endif
 
