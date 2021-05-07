@@ -1,6 +1,14 @@
 # A320neo Custom Events
 
+## Contents
+
+1. [Autopilot](#autopilot)
+    1. [Non internal events](#non-internal-events)
+    1. [Internal events - not to be used for mapping](#internal-events---not-to-be-used-for-mapping)
+1. [Throttle Mapping System](#throttle-mapping-system)
+
 ## Autopilot
+### Non internal events
 
 - A32NX.FCU_AP_{index}_PUSH
     - Trigger when button AP {index} is pushed on FCU
