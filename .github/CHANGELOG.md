@@ -5,8 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.7.0
-1. [HYD] First hydraulics systems integration - @crocket63 (crocket)
-    First building block, more to come. Hydraulics do not impact the sim YET
+1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
 1. [MCDU] Progress page only shows GPS Primary when it should - @Username23-23 (NONAmr2433 #8777)
 1. [ND] Add VOR/ADF needles to ILS arc display - @tracernz (Mike)
