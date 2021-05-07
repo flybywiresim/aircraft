@@ -18,6 +18,8 @@ impl LeapEngine {
     // Gear ratio from primary gearbox input to EDP drive shaft
     const PUMP_N2_GEAR_RATIO: f64 = 0.211;
 
+    const MIN_IDLE_N2_THRESHOLD: f64 = 60.;
+
     pub fn new(number: usize) -> LeapEngine {
         LeapEngine {
             corrected_n2_id: format!("TURB ENG CORRECTED N2:{}", number),
@@ -58,5 +60,9 @@ impl Engine for LeapEngine {
 
     fn oil_pressure(&self) -> Pressure {
         self.oil_pressure
+    }
+
+    fn is_above_minimum_idle(&self) -> bool {
+        self.corrected_n2 >= Ratio::new::<percent>(LeapEngine::MIN_IDLE_N2_THRESHOLD)
     }
 }
