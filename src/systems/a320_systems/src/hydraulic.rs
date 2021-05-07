@@ -404,6 +404,8 @@ impl A320Hydraulic {
             self.blue_loop.is_pressurised(),
             engine1.oil_pressure(),
             engine2.oil_pressure(),
+            engine1.is_above_minimum_idle(),
+            engine2.is_above_minimum_idle(),
         );
         self.blue_electric_pump.update(
             context,
@@ -534,6 +536,8 @@ struct A320EngineDrivenPumpController {
     is_pressure_low: bool,
 }
 impl A320EngineDrivenPumpController {
+    const MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT: f64 = 18.;
+
     fn new(engine_number: usize) -> Self {
         Self {
             engine_number,
@@ -556,7 +560,8 @@ impl A320EngineDrivenPumpController {
         let faked_is_edp_section_low_pressure = engine_n2.get::<percent>() < 5.;
 
         // Engine off state uses oil pressure threshold (treshold is 18psi)
-        let is_engine_low_oil_pressure = engine_oil_pressure.get::<psi>() < 18.;
+        let is_engine_low_oil_pressure = engine_oil_pressure.get::<psi>()
+            < Self::MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT;
 
         // TODO when edp section pressure is modeled we can remove fake low press and use dedicated pressure switch
         self.is_pressure_low = self.should_pressurise()
@@ -618,18 +623,16 @@ struct A320BlueElectricPumpController {
     should_pressurise: bool,
     has_pressure_low_fault: bool,
     is_pressure_low: bool,
-    engine_1_master_on: bool,
-    engine_2_master_on: bool,
     weight_on_wheels: bool,
 }
 impl A320BlueElectricPumpController {
+    const MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT: f64 = 18.;
+
     fn new() -> Self {
         Self {
             should_pressurise: false,
             has_pressure_low_fault: false,
             is_pressure_low: true,
-            engine_1_master_on: false,
-            engine_2_master_on: false,
             weight_on_wheels: true,
         }
     }
@@ -640,10 +643,13 @@ impl A320BlueElectricPumpController {
         pressure_switch_state: bool,
         engine1_oil_pressure: Pressure,
         engine2_oil_pressure: Pressure,
+        engine1_above_min_idle: bool,
+        engine2_above_min_idle: bool,
     ) {
         if overhead_panel.blue_epump_push_button.is_auto() {
-            if self.engine_1_master_on
-                || self.engine_2_master_on
+            if !self.weight_on_wheels
+                || engine1_above_min_idle
+                || engine2_above_min_idle
                 || overhead_panel.blue_epump_override_push_button_is_on()
             {
                 self.should_pressurise = true;
@@ -670,8 +676,10 @@ impl A320BlueElectricPumpController {
         engine2_oil_pressure: Pressure,
     ) {
         // Low engine oil pressure inhibits fault under 18psi level
-        let is_engine_low_oil_pressure =
-            engine1_oil_pressure.get::<psi>() < 18. && engine2_oil_pressure.get::<psi>() < 18.;
+        let is_engine_low_oil_pressure = engine1_oil_pressure.get::<psi>()
+            < Self::MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT
+            && engine2_oil_pressure.get::<psi>()
+                < Self::MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT;
 
         self.is_pressure_low = self.should_pressurise() && !pressure_switch_state;
 
@@ -693,8 +701,6 @@ impl PumpController for A320BlueElectricPumpController {
 
 impl SimulationElement for A320BlueElectricPumpController {
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.engine_1_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:1");
-        self.engine_2_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:2");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
     }
 
@@ -1568,8 +1574,8 @@ mod tests {
                     .set_indicated_altitude(Length::new::<foot>(2500.));
                 self.simulation_test_bed
                     .set_indicated_airspeed(Velocity::new::<knot>(180.));
-                self.start_eng1(Ratio::new::<percent>(60.))
-                    .start_eng2(Ratio::new::<percent>(60.))
+                self.start_eng1(Ratio::new::<percent>(80.))
+                    .start_eng2(Ratio::new::<percent>(80.))
                     .set_gear_up()
                     .set_park_brake(false)
             }
@@ -1880,7 +1886,7 @@ mod tests {
 
             // Not all engines on or off should disable ptu if on ground and park brake on
             test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(50.))
+                .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
             assert!(!test_bed.is_ptu_enabled());
             test_bed = test_bed.set_park_brake(false).run_one_tick();
@@ -2041,7 +2047,7 @@ mod tests {
 
             // Starting eng 1
             test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(50.))
+                .start_eng1(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
             // ALMOST No pressure
@@ -2056,7 +2062,7 @@ mod tests {
 
             // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(50.))
+                .start_eng1(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(5));
 
             assert!(test_bed.is_green_pressurised());
@@ -2130,7 +2136,7 @@ mod tests {
             assert!(!test_bed.is_green_edp_press_low_fault());
 
             test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(50.))
+                .start_eng1(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
             assert!(!test_bed.is_green_pressurised());
@@ -2194,7 +2200,7 @@ mod tests {
             assert!(!test_bed.is_yellow_edp_press_low_fault());
 
             test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(50.))
+                .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
             assert!(!test_bed.is_yellow_pressurised());
@@ -2225,7 +2231,7 @@ mod tests {
             assert!(!test_bed.is_blue_epump_press_low_fault());
 
             test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(50.))
+                .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
             assert!(!test_bed.is_blue_pressurised());
@@ -2285,7 +2291,7 @@ mod tests {
 
             // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(50.))
+                .start_eng1(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(5));
 
             // No more fault LOW expected
@@ -2386,7 +2392,7 @@ mod tests {
 
             // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(50.))
+                .start_eng2(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(5));
 
             // No more fault LOW expected
@@ -2435,7 +2441,7 @@ mod tests {
 
             // Waiting for 5s pressure should be at 3000 psi in EDP section
             test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(50.))
+                .start_eng2(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(5));
 
             // No more fault LOW expected
@@ -2450,7 +2456,7 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .set_park_brake(false)
-                .start_eng2(Ratio::new::<percent>(60.))
+                .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
             // EDP should be LOW pressure state
@@ -2476,7 +2482,7 @@ mod tests {
 
             // Waiting for 5s pressure should be at 3000 psi in EDP section
             test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(50.))
+                .start_eng1(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(5));
 
             // No more fault LOW expected
@@ -2558,10 +2564,10 @@ mod tests {
                 .set_ptu_state(false)
                 .run_one_tick();
 
-            // Starting eng 1
+            // Starting eng 1 and eng 2
             test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(50.))
-                .start_eng2(Ratio::new::<percent>(50.))
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
 
             // ALMOST No pressure
@@ -2601,7 +2607,7 @@ mod tests {
 
             // Starting eng 1
             test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(50.))
+                .start_eng2(Ratio::new::<percent>(80.))
                 .run_one_tick();
             // ALMOST No pressure
             assert!(!test_bed.is_green_pressurised());
@@ -2615,7 +2621,7 @@ mod tests {
 
             // Waiting for 5s pressure should be at 3000 psi
             test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(50.))
+                .start_eng2(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(5));
 
             assert!(!test_bed.is_green_pressurised());
@@ -2674,7 +2680,7 @@ mod tests {
             // Now doing cycles of pressurisation on EDP and ePump
             for _ in 1..6 {
                 test_bed = test_bed
-                    .start_eng2(Ratio::new::<percent>(50.))
+                    .start_eng2(Ratio::new::<percent>(80.))
                     .run_waiting_for(Duration::from_secs(50));
 
                 assert!(test_bed.yellow_pressure() < Pressure::new::<psi>(3100.));
@@ -2728,7 +2734,7 @@ mod tests {
 
             // Starting EDP wait for pressure rise to make sure system is primed
             test_bed = test_bed
-                .start_eng1(Ratio::new::<percent>(50.))
+                .start_eng1(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(20));
             assert!(test_bed.is_green_pressurised());
             assert!(test_bed.green_pressure() < Pressure::new::<psi>(3500.));
@@ -2747,7 +2753,7 @@ mod tests {
             // Now doing cycles of pressurisation on EDP
             for _ in 1..6 {
                 test_bed = test_bed
-                    .start_eng1(Ratio::new::<percent>(50.))
+                    .start_eng1(Ratio::new::<percent>(80.))
                     .run_waiting_for(Duration::from_secs(50));
 
                 assert!(test_bed.green_pressure() < Pressure::new::<psi>(3500.));
@@ -2800,7 +2806,7 @@ mod tests {
             // Now doing cycles of pressurisation on epump relying on auto run of epump when eng is on
             for _ in 1..6 {
                 test_bed = test_bed
-                    .start_eng1(Ratio::new::<percent>(50.))
+                    .start_eng1(Ratio::new::<percent>(80.))
                     .run_waiting_for(Duration::from_secs(50));
 
                 assert!(test_bed.blue_pressure() < Pressure::new::<psi>(3500.));
@@ -2817,7 +2823,7 @@ mod tests {
 
                 // Now engine 2 is used
                 test_bed = test_bed
-                    .start_eng2(Ratio::new::<percent>(50.))
+                    .start_eng2(Ratio::new::<percent>(80.))
                     .run_waiting_for(Duration::from_secs(50));
 
                 assert!(test_bed.blue_pressure() < Pressure::new::<psi>(3500.));
@@ -2857,8 +2863,8 @@ mod tests {
 
             // Starting eng 1
             test_bed = test_bed
-                .start_eng2(Ratio::new::<percent>(50.))
-                .start_eng1(Ratio::new::<percent>(50.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .start_eng1(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(5));
 
             // Waiting for 5s pressure should be at 3000 psi
@@ -3330,7 +3336,42 @@ mod tests {
         }
 
         #[test]
-        fn controller_blue_epump_split_master_switch() {
+        fn controller_blue_epump_activates_when_no_weight_on_wheels() {
+            let engine_off_oil_pressure = Pressure::new::<psi>(10.);
+            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+            overhead_panel.blue_epump_override_push_button.push_off();
+
+            let mut blue_epump_controller = A320BlueElectricPumpController::new();
+
+            let eng1_above_idle = false;
+            let eng2_above_idle = false;
+            blue_epump_controller.weight_on_wheels = false;
+
+            blue_epump_controller.update(
+                &overhead_panel,
+                true,
+                engine_off_oil_pressure,
+                engine_off_oil_pressure,
+                eng1_above_idle,
+                eng2_above_idle,
+            );
+            assert!(blue_epump_controller.should_pressurise());
+
+            blue_epump_controller.weight_on_wheels = true;
+
+            blue_epump_controller.update(
+                &overhead_panel,
+                true,
+                engine_off_oil_pressure,
+                engine_off_oil_pressure,
+                eng1_above_idle,
+                eng2_above_idle,
+            );
+            assert!(!blue_epump_controller.should_pressurise());
+        }
+
+        #[test]
+        fn controller_blue_epump_split_engine_states() {
             let engine_on_oil_pressure = Pressure::new::<psi>(30.);
             let engine_off_oil_pressure = Pressure::new::<psi>(10.);
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
@@ -3338,37 +3379,45 @@ mod tests {
 
             let mut blue_epump_controller = A320BlueElectricPumpController::new();
 
+            let eng1_above_idle = false;
+            let eng2_above_idle = false;
             blue_epump_controller.update(
                 &overhead_panel,
                 true,
                 engine_off_oil_pressure,
                 engine_off_oil_pressure,
+                eng1_above_idle,
+                eng2_above_idle,
             );
             assert!(!blue_epump_controller.should_pressurise());
 
-            blue_epump_controller.engine_1_master_on = true;
-            blue_epump_controller.engine_2_master_on = false;
+            let eng1_above_idle = true;
+            let eng2_above_idle = false;
             blue_epump_controller.update(
                 &overhead_panel,
                 true,
                 engine_on_oil_pressure,
                 engine_off_oil_pressure,
+                eng1_above_idle,
+                eng2_above_idle,
             );
             assert!(blue_epump_controller.should_pressurise());
 
-            blue_epump_controller.engine_1_master_on = false;
-            blue_epump_controller.engine_2_master_on = true;
+            let eng1_above_idle = false;
+            let eng2_above_idle = true;
             blue_epump_controller.update(
                 &overhead_panel,
                 true,
                 engine_off_oil_pressure,
                 engine_on_oil_pressure,
+                eng1_above_idle,
+                eng2_above_idle,
             );
             assert!(blue_epump_controller.should_pressurise());
         }
 
         #[test]
-        fn controller_blue_epump_on_off_master_switch() {
+        fn controller_blue_epump_on_off_engines() {
             let engine_on_oil_pressure = Pressure::new::<psi>(30.);
             let engine_off_oil_pressure = Pressure::new::<psi>(10.);
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
@@ -3376,23 +3425,27 @@ mod tests {
 
             let mut blue_epump_controller = A320BlueElectricPumpController::new();
 
-            blue_epump_controller.engine_1_master_on = true;
-            blue_epump_controller.engine_2_master_on = true;
+            let eng1_above_idle = true;
+            let eng2_above_idle = true;
             blue_epump_controller.update(
                 &overhead_panel,
                 true,
                 engine_on_oil_pressure,
                 engine_on_oil_pressure,
+                eng1_above_idle,
+                eng2_above_idle,
             );
             assert!(blue_epump_controller.should_pressurise());
 
-            blue_epump_controller.engine_1_master_on = false;
-            blue_epump_controller.engine_2_master_on = false;
+            let eng1_above_idle = false;
+            let eng2_above_idle = false;
             blue_epump_controller.update(
                 &overhead_panel,
                 false,
                 engine_off_oil_pressure,
                 engine_off_oil_pressure,
+                eng1_above_idle,
+                eng2_above_idle,
             );
             assert!(!blue_epump_controller.should_pressurise());
         }
@@ -3400,28 +3453,33 @@ mod tests {
         #[test]
         fn controller_blue_epump_override() {
             let engine_off_oil_pressure = Pressure::new::<psi>(10.);
+
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             let mut blue_epump_controller = A320BlueElectricPumpController::new();
 
-            blue_epump_controller.engine_1_master_on = false;
-            blue_epump_controller.engine_2_master_on = false;
+            let eng1_above_idle = false;
+            let eng2_above_idle = false;
             overhead_panel.blue_epump_override_push_button.push_on();
             blue_epump_controller.update(
                 &overhead_panel,
                 true,
                 engine_off_oil_pressure,
                 engine_off_oil_pressure,
+                eng1_above_idle,
+                eng2_above_idle,
             );
             assert!(blue_epump_controller.should_pressurise());
 
-            blue_epump_controller.engine_1_master_on = false;
-            blue_epump_controller.engine_2_master_on = false;
+            let eng1_above_idle = false;
+            let eng2_above_idle = false;
             overhead_panel.blue_epump_override_push_button.push_off();
             blue_epump_controller.update(
                 &overhead_panel,
                 false,
                 engine_off_oil_pressure,
                 engine_off_oil_pressure,
+                eng1_above_idle,
+                eng2_above_idle,
             );
             assert!(!blue_epump_controller.should_pressurise());
         }
@@ -3700,8 +3758,8 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
-                .start_eng1(Ratio::new::<percent>(50.))
-                .start_eng2(Ratio::new::<percent>(50.))
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(10));
 
             assert!(test_bed.is_blue_pressurised());
