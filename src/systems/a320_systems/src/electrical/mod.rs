@@ -304,10 +304,6 @@ trait AlternatingCurrentState {
     fn ac_bus_2_powered(&self) -> bool;
     fn tr_1_and_2_available(&self) -> bool;
     fn ac_1_and_2_and_emergency_gen_unpowered(&self) -> bool;
-    fn ac_1_and_2_and_emergency_gen_unpowered_and_velocity_equal_to_or_greater_than_50_knots(
-        &self,
-        context: &UpdateContext,
-    ) -> bool;
     fn emergency_generator_available(&self) -> bool;
     fn tr_1(&self) -> &TransformerRectifier;
     fn tr_2(&self) -> &TransformerRectifier;
@@ -1445,13 +1441,14 @@ mod a320_electrical_circuit_tests {
         let test_bed = test_bed_with()
             .bat_1_auto()
             .bat_2_auto()
+            .on_the_ground()
             .and()
             .airspeed(Velocity::new::<knot>(49.))
             .run_waiting_for(Duration::from_secs(1_000));
 
         assert!(test_bed
             .static_inverter_input()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
     }
 
     #[test]

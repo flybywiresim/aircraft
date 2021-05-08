@@ -16,6 +16,8 @@ class A32NX_Speeds {
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_ALPHA_MAX_CALC", "number", 0);
         this.lastGw = 50;
         this.lastFhi = -1;
         this.curFhi = -1;
@@ -31,7 +33,7 @@ class A32NX_Speeds {
         /** Using true fhi for comparison */
         const isTo = fhi === SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_FLAPS", "number");
         /** Change fhi to differentiate between 1 and 1 + F */
-        if (fhi === 1 && SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") < 9.99) {
+        if (fhi === 1 && SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum") === 1) {
             fhi = 5;
         }
         const gw = this.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg")) / 1000;
@@ -66,6 +68,8 @@ class A32NX_Speeds {
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", speeds.gd);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", speeds.vmax);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", speeds.vfeN);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC", "number", speeds.vs * 1.1);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_ALPHA_MAX_CALC", "number", speeds.vs * 1.03);
     }
 
     /**

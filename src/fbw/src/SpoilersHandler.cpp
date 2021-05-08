@@ -37,10 +37,11 @@ void SpoilersHandler::setSimulationVariables(double simulationTime_new,
                                              double thrustLeverAngle_2_new,
                                              double landingGearCompression_1_new,
                                              double landingGearCompression_2_new,
-                                             double flapsHandleIndex_new) {
+                                             double flapsHandleIndex_new,
+                                             bool isAngleOfAttackProtectionActive_new) {
   update(simulationTime_new, isArmed, handlePosition, isAutopilotEngaged_new, airspeed_new, thrustLeverAngle_1_new, thrustLeverAngle_2_new,
          getGearStrutCompressionFromAnimation(landingGearCompression_1_new),
-         getGearStrutCompressionFromAnimation(landingGearCompression_2_new), flapsHandleIndex_new);
+         getGearStrutCompressionFromAnimation(landingGearCompression_2_new), flapsHandleIndex_new, isAngleOfAttackProtectionActive_new);
 }
 
 void SpoilersHandler::onEventSpoilersOn() {
@@ -81,7 +82,7 @@ void SpoilersHandler::onEventSpoilersArmSet(bool value) {
 
 void SpoilersHandler::update(bool isArmed_new, double handlePosition_new) {
   update(simulationTime, isArmed_new, handlePosition_new, isAutopilotEngaged, airspeed, thrustLeverAngle_1, thrustLeverAngle_2,
-         landingGearCompression_1, landingGearCompression_2, flapsHandleIndex);
+         landingGearCompression_1, landingGearCompression_2, flapsHandleIndex, isAngleOfAttackProtectionActive);
 }
 
 void SpoilersHandler::update(double simulationTime_new,
@@ -93,10 +94,12 @@ void SpoilersHandler::update(double simulationTime_new,
                              double thrustLeverAngle_2_new,
                              double landingGearCompression_1_new,
                              double landingGearCompression_2_new,
-                             double flapsHandleIndex_new) {
+                             double flapsHandleIndex_new,
+                             bool isAngleOfAttackProtectionActive_new) {
   // inhibit condition -------------------------------------------------------------------------------------------------
 
-  if ((flapsHandleIndex == FLAPS_HANDLE_INDEX_FULL) || areAboveMct(thrustLeverAngle_1_new, thrustLeverAngle_2_new)) {
+  if ((flapsHandleIndex == FLAPS_HANDLE_INDEX_FULL) || areAboveMct(thrustLeverAngle_1_new, thrustLeverAngle_2_new) ||
+      isAngleOfAttackProtectionActive_new) {
     if (!conditionInhibit) {
       simPosition = POSITION_RETRACTED;
     }
@@ -144,6 +147,7 @@ void SpoilersHandler::update(double simulationTime_new,
   landingGearCompression_1 = landingGearCompression_1_new;
   landingGearCompression_2 = landingGearCompression_2_new;
   flapsHandleIndex = flapsHandleIndex_new;
+  isAngleOfAttackProtectionActive = isAngleOfAttackProtectionActive_new;
 
   // conditions --------------------------------------------------------------------------------------------------------
 
