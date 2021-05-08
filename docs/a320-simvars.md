@@ -1088,6 +1088,18 @@
       Inactive | 0
       Revert | 1
 
+- A320_Neo_FCU_SPEED_SET_DATA
+    - Number
+    - Used as data transport for event `H:A320_Neo_FCU_SPEED_SET`
+
+- A320_Neo_FCU_HDG_SET_DATA
+    - Number
+    - Used as data transport for event `H:A320_Neo_FCU_HDG_SET`
+
+- A320_Neo_FCU_VS_SET_DATA
+    - Number
+    - Used as data transport for event `H:A320_Neo_FCU_VS_SET`
+
 ## Autothrust System
 
 - A32NX_3D_THROTTLE_LEVER_POSITION_{index}

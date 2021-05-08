@@ -58,6 +58,7 @@
 1. [FBW] New high angle of attack and high speed protection - @lukecologne (luke), @aguther (Andreas Guther)
 1. [FBW] Adapt pitch attitude protection for configuration - @aguther (Andreas Guther)
 1. [FBW] Realistic rudder pedals animation only following pilot input or trim - @aguther (Andreas Guther)
+1. [FCU] Added more custom events that can be triggered via SimConnect to control the FCU - @aguther (Andreas Guther)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
