@@ -1448,7 +1448,7 @@ mod a320_electrical_circuit_tests {
 
         assert!(test_bed
             .static_inverter_input()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
     }
 
     #[test]
