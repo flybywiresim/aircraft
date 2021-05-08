@@ -54,6 +54,7 @@ const NXSystemMessages = {
 
 const NXFictionalMessages = {
     noSimBriefUser:         new McduMessage("NO SIMBRIEF USER", false, false),
+    noAirportSpecified:     new McduMessage("NO AIRPORT SPECIFIED", false, false),
     fltNbrInUse:            new McduMessage("FLT NBR IN USE", false, false),
     notYetImplemented:      new McduMessage("NOT YET IMPLEMENTED", false, false),
     recipientNotFound:      new McduMessage("RECIPIENT NOT FOUND", false, false),
