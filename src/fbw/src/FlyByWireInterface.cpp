@@ -192,6 +192,7 @@ void FlyByWireInterface::setupLocalVariables() {
   // register L variables for the sidestick
   idSideStickPositionX = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_X");
   idSideStickPositionY = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_Y");
+  idRudderPedalPosition = make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_POSITION");
 
   // register L variable for custom fly-by-wire interface
   idFmaLateralMode = make_unique<LocalVariable>("A32NX_FMA_LATERAL_MODE");
@@ -942,6 +943,8 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     flyByWireInput.in.input.delta_eta_pos = simInput.inputs[0];
     flyByWireInput.in.input.delta_xi_pos = simInput.inputs[1];
     flyByWireInput.in.input.delta_zeta_pos = simInput.inputs[2];
+    // set rudder pedals position
+    idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
 
     // step the model -------------------------------------------------------------------------------------------------
     flyByWire.setExternalInputs(&flyByWireInput);
