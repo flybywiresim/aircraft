@@ -1,16 +1,17 @@
 import React from 'react';
+import { Layer } from '@instruments/common/utils';
+import { ControlLaw } from '@fmgc/guidance/ControlLaws';
 import { useSimVar } from '../Common/simVars';
-import { ControlLaw } from '../../../fmgc/src/guidance/ControlLaws';
 import { useCurrentFlightPlan } from '../Common/flightplan';
 
 export const DebugInfo: React.FC = () => {
-    const [law] = useSimVar('L:A32NX_FG_CURRENT_LATERAL_LAW', 'number');
-    const [xte] = useSimVar('L:A32NX_FG_CROSS_TRACK_ERROR', 'number');
-    const [tae] = useSimVar('L:A32NX_FG_TRACK_ANGLE_ERROR', 'number');
-    const [phi] = useSimVar('L:A32NX_FG_PHI_COMMAND', 'number');
+    const [law] = useSimVar('L:A32NX_FG_CURRENT_LATERAL_LAW', 'number', 1_000);
+    const [xte] = useSimVar('L:A32NX_FG_CROSS_TRACK_ERROR', 'number', 100);
+    const [tae] = useSimVar('L:A32NX_FG_TRACK_ANGLE_ERROR', 'number', 100);
+    const [phi] = useSimVar('L:A32NX_FG_PHI_COMMAND', 'number', 100);
 
     return (
-        <>
+        <Layer>
             <text x={420} y={25} fontSize={24} fill="cyan" textAnchor="middle">debug</text>
 
             <text x={25} y={25} fontSize={22} fill="green">
@@ -18,7 +19,7 @@ export const DebugInfo: React.FC = () => {
                 {' '}
                 {law}
                 {' '}
-                {ControlLaw[String(law)]}
+                {ControlLaw[law]}
             </text>
             <text x={25} y={50} fontSize={22} fill="red">
                 xte:
@@ -37,7 +38,7 @@ export const DebugInfo: React.FC = () => {
             </text>
 
             <DebugLegs />
-        </>
+        </Layer>
     );
 };
 
