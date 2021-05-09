@@ -282,6 +282,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idAutothrustN1_c_1 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:1");
   idAutothrustN1_c_2 = make_unique<LocalVariable>("A32NX_AUTOTHRUST_N1_COMMANDED:2");
 
+  engineEngineIdleN1 = make_unique<LocalVariable>("A32NX_ENGINE_IDLE_N1");
   engineEngine1EGT = make_unique<LocalVariable>("A32NX_ENGINE_EGT:1");
   engineEngine2EGT = make_unique<LocalVariable>("A32NX_ENGINE_EGT:2");
   engineEngine1FF = make_unique<LocalVariable>("A32NX_ENGINE_FF:1");
@@ -1069,12 +1070,12 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
         simData.ap_V_c_kn,
         idFmgcV_LS->get(),
         idFmgcV_MAX->get(),
-        -45,   // REV
-        19.5,  // IDLE
-        80,    // CLB
-        81,    // FLX
-        81,    // MCT
-        85,    // TOGA
+        -45,                        // REV
+        engineEngineIdleN1->get(),  // IDLE
+        80,                         // CLB
+        81,                         // FLX
+        81,                         // MCT
+        85,                         // TOGA
         idFmgcFlexTemperature->get(),
         autopilotStateMachineOutput.autothrust_mode,
         simData.is_mach_mode_active,
@@ -1132,7 +1133,7 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.V_LS_kn = idFmgcV_LS->get();
     autoThrustInput.in.input.V_MAX_kn = idFmgcV_MAX->get();
     autoThrustInput.in.input.thrust_limit_REV_percent = -45;
-    autoThrustInput.in.input.thrust_limit_IDLE_percent = 19.5;
+    autoThrustInput.in.input.thrust_limit_IDLE_percent = engineEngineIdleN1->get();
     autoThrustInput.in.input.thrust_limit_CLB_percent = 80.0;
     autoThrustInput.in.input.thrust_limit_MCT_percent = 81.0;
     autoThrustInput.in.input.thrust_limit_FLEX_percent = 81.0;

@@ -25,6 +25,7 @@
 #include "EngineControl.h"
 #include "RegPolynomials.h"
 #include "SimVars.h"
+#include "Tables.h"
 #include "common.h"
 
 using namespace std;

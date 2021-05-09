@@ -213,7 +213,7 @@ void AutothrustModelClass::step()
     Autothrust_P.uDLookupTable_bp02Data, Autothrust_P.uDLookupTable_tableData, Autothrust_P.uDLookupTable_maxIndex, 2U),
     Autothrust_P.RateLimiterVariableTs_up, Autothrust_P.RateLimiterVariableTs_lo, Autothrust_U.in.time.dt,
     Autothrust_P.RateLimiterVariableTs_InitialCondition, &rtb_Switch_m, &Autothrust_DWork.sf_RateLimiter_b);
-  rtb_Sum_c = Autothrust_P.Constant_Value + rtb_Switch_m;
+  rtb_Sum_c = Autothrust_U.in.input.thrust_limit_IDLE_percent + rtb_Switch_m;
   rtb_Switch1_k = look2_binlcpw(Autothrust_U.in.data.TAT_degC, Autothrust_U.in.data.H_ft,
     Autothrust_P.OATCornerPoint_bp01Data, Autothrust_P.OATCornerPoint_bp02Data, Autothrust_P.OATCornerPoint_tableData,
     Autothrust_P.OATCornerPoint_maxIndex, 26U);
