@@ -5,7 +5,10 @@ mod pneumatic;
 mod power_consumption;
 
 use self::{fuel::A320Fuel, pneumatic::A320PneumaticOverheadPanel};
-use electrical::{A320Electrical, A320ElectricalOverheadPanel, A320ElectricalUpdateArguments};
+use electrical::{
+    A320Electrical, A320ElectricalOverheadPanel, A320ElectricalUpdateArguments,
+    A320EmergencyElectricalOverheadPanel,
+};
 use hydraulic::A320Hydraulic;
 use power_consumption::A320PowerConsumption;
 use systems::{
@@ -25,6 +28,7 @@ pub struct A320 {
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
     pneumatic_overhead: A320PneumaticOverheadPanel,
     electrical_overhead: A320ElectricalOverheadPanel,
+    emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel,
     fuel: A320Fuel,
     engine_1: Engine,
     engine_2: Engine,
@@ -42,6 +46,7 @@ impl A320 {
             apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(),
             pneumatic_overhead: A320PneumaticOverheadPanel::new(),
             electrical_overhead: A320ElectricalOverheadPanel::new(),
+            emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel::new(),
             fuel: A320Fuel::new(),
             engine_1: Engine::new(1),
             engine_2: Engine::new(2),
@@ -78,6 +83,7 @@ impl Aircraft for A320 {
             context,
             &self.ext_pwr,
             &self.electrical_overhead,
+            &self.emergency_electrical_overhead,
             &mut A320ElectricalUpdateArguments::new(
                 [self.engine_1.corrected_n2(), self.engine_2.corrected_n2()],
                 [
@@ -114,6 +120,7 @@ impl SimulationElement for A320 {
         self.apu_fire_overhead.accept(visitor);
         self.apu_overhead.accept(visitor);
         self.electrical_overhead.accept(visitor);
+        self.emergency_electrical_overhead.accept(visitor);
         self.fuel.accept(visitor);
         self.pneumatic_overhead.accept(visitor);
         self.engine_1.accept(visitor);

@@ -4,7 +4,7 @@ import { createDeltaTimeCalculator, getSimVar, renderTarget } from '../util.js';
 export const FMA = ({ isAttExcessive }) => {
     const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
     const sharedModeActive = activeLateralMode === 32 || activeLateralMode === 33 || activeLateralMode === 34;
-    const engineMessage = getSimVar('L:A32NX_Engine_Message', 'enum');
+    const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
     const BC3Message = getSimVar('L:A32NX_BC3Message', 'enum');
     const AB3Message = (getSimVar('L:A32NX_MachPreselVal', 'mach') !== -1
         || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && BC3Message === 0 && engineMessage === 0;
@@ -220,7 +220,7 @@ const A3Cell = () => {
 };
 
 const AB3Cell = () => {
-    if (getSimVar('L:A32NX_Engine_Message', 'enum') !== 0) {
+    if (getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum') !== 0) {
         return null;
     }
     const machPresel = getSimVar('L:A32NX_MachPreselVal', 'mach');
@@ -344,7 +344,7 @@ const B1Cell = () => {
                 <path className="NormalStroke White" d="m34.656 1.8143h29.918v6.0476h-29.918z" />
             </ShowForSeconds>
             {inProtection && (activeVerticalMode === 14 || activeVerticalMode === 15)
-            && <path className="NormalStroke Amber" d="m34.656 1.8143h29.918v6.0476h-29.918z" />}
+            && <path className="NormalStroke Amber BlinkInfinite" d="m34.656 1.8143h29.918v6.0476h-29.918z" />}
             <text className="FontMedium MiddleAlign Green" x="49.498924" y="6.8785663" xmlSpace="preserve">{text}</text>
         </g>
     );
