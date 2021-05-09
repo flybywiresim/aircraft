@@ -45,6 +45,7 @@ jobs:
     if: github.event.pull_request.draft == false
     env:
       A32NX_PRODUCTION_BUILD: 1
+      A32NX_INSTRUMENTS_BUILD_WORKERS: 2
       ZIP_NAME: A32NX.zip
       BUILD_DIR_NAME: zip-build
     steps:
