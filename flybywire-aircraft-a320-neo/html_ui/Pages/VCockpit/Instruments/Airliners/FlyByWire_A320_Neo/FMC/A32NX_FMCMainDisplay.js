@@ -2536,7 +2536,6 @@ class FMCMainDisplay extends BaseAirliners {
         return true;
     }
 
-    //TODO: fix this functionality
     trySetPreSelectedClimbSpeed(s) {
         const isNextPhase = this.currentFlightPhase === FmgcFlightPhases.TAKEOFF;
         if (s === FMCMainDisplay.clrValue) {
@@ -2568,7 +2567,6 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    //TODO: fix this functionality
     trySetPreSelectedCruiseSpeed(s) {
         const isNextPhase = this.currentFlightPhase === FmgcFlightPhases.CLIMB;
         if (s === FMCMainDisplay.clrValue) {
@@ -2600,7 +2598,6 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    //TODO: fix this functionality
     trySetPreSelectedDescentSpeed(s) {
         const isNextPhase = this.currentFlightPhase === FmgcFlightPhases.CRUISE;
         if (s === FMCMainDisplay.clrValue) {
