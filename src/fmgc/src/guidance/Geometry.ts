@@ -1,6 +1,5 @@
+import { Degrees, NauticalMiles } from '@typings/types';
 import { ControlLaw, GuidanceParameters } from './ControlLaws';
-import { Degrees, NauticalMiles } from '../../../../typings/types';
-import { MathUtils } from '../flightplanning/MathUtils';
 
 export const EARTH_RADIUS_NM = 3440.1;
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
