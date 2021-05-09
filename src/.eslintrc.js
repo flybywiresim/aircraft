@@ -54,6 +54,7 @@ module.exports = {
         'no-continue': 'off',
         'no-return-assign': 'off',
         'radix': 'off',
+        'max-classes-per-file': 'off',
 
         // buggy
         'prefer-destructuring': 'off',
