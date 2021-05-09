@@ -219,7 +219,7 @@ class A32NX_Boarding {
         }
 
         let msDelay = 1000;
-        if (boardingRate == 1) {
+        if (boardingRate === 1) {
             msDelay = 500;
         }
 

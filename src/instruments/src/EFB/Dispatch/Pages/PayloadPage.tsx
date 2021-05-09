@@ -18,15 +18,15 @@
  */
 
 import React, { useCallback, useState } from 'react';
-import { round } from 'lodash';
-import { IconPlayerPlay, IconHandStop } from '@tabler/icons';
+import round from 'lodash/round';
+import { IconPlayerPlay, IconHandStop, IconLoader } from '@tabler/icons';
 import { useSimVar, useSplitSimVar } from '../../../Common/simVars';
 import { useSimVarSyncedPersistentProperty } from '../../../Common/persistence';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
 import TargetSelector from './TargetSelector';
 import { getSimbriefData } from '../../SimbriefApi';
-import '../Styles/Payload.scss';
 import { SelectGroup, SelectItem } from '../../Components/Form/Select';
+import '../Styles/Payload.scss';
 
 const MAX_SEAT_AVAILABLE = 174;
 const PAX_WEIGHT = 84;
@@ -52,6 +52,7 @@ interface CargoStation {
     stationIndex: number;
     position: number;
     setPayload: (newValueOrSetter: any) => void;
+    visible: boolean;
 }
 
 const PayloadPage = () => {
@@ -70,6 +71,8 @@ const PayloadPage = () => {
     const [paxTargetRows21_27, setPaxTargetRows21_27] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_21_27_DESIRED', 'Number');
     const [paxTotalRows21_27, _setPaxTotalRows21_27] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_21_27', 'Number');
 
+    const [pilot, setPilot] = useSimVar('PAYLOAD STATION WEIGHT:1', 'kilograms');
+    const [firstOfficer, setFirstOfficer] = useSimVar('PAYLOAD STATION WEIGHT:2', 'kilograms');
     const [fwdBag, setFwdBag] = useSimVar('PAYLOAD STATION WEIGHT:7', 'kilograms');
     const [aftCont, setAftCont] = useSimVar('PAYLOAD STATION WEIGHT:8', 'kilograms');
     const [aftBag, setAftBag] = useSimVar('PAYLOAD STATION WEIGHT:9', 'kilograms');
@@ -77,8 +80,10 @@ const PayloadPage = () => {
 
     const [jetWayActive, setJetWayActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_JETWAY', 'bool', 1000);
     const [_rampActive, setRampActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
-    const [cargoActive, setCargoActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 'K:REQUEST_LUGGAGE', 'bool', 1000);
-    const [cateringActive, setCateringActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 'K:REQUEST_CATERING', 'bool', 1000);
+    // const [cargoActive, setCargoActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 'K:REQUEST_LUGGAGE', 'bool', 1000);
+    // const [cateringActive, setCateringActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 'K:REQUEST_CATERING', 'bool', 1000);
+
+    const [fetchingFromSimBrief, setFetchingFromSimBrief] = useState<boolean>(false);
 
     const paxStations: {[index: string]: PaxStation} = {
         rows1_6: {
@@ -132,6 +137,24 @@ const PayloadPage = () => {
     };
 
     const payloadStations: {[index: string]: CargoStation} = {
+        pilot: {
+            name: 'PILOT',
+            weight: 84,
+            stationIndex: 0 + 1,
+            position: 42.36,
+            currentWeight: pilot,
+            setPayload: setPilot,
+            visible: false,
+        },
+        firstOfficer: {
+            name: 'FIRST OFFICER',
+            weight: 84,
+            stationIndex: 1 + 1,
+            position: 42.36,
+            currentWeight: firstOfficer,
+            setPayload: setFirstOfficer,
+            visible: false,
+        },
         fwdBag: {
             name: 'FWD BAGGAGE/CONTAINER',
             weight: 3402,
@@ -139,6 +162,7 @@ const PayloadPage = () => {
             position: 18.28,
             currentWeight: fwdBag,
             setPayload: setFwdBag,
+            visible: true,
         },
         aftCont: {
             name: 'AFT CONTAINER',
@@ -147,6 +171,7 @@ const PayloadPage = () => {
             position: -15.96,
             currentWeight: aftCont,
             setPayload: setAftCont,
+            visible: true,
         },
         aftBag: {
             name: 'AFT BAGGAGE',
@@ -155,6 +180,7 @@ const PayloadPage = () => {
             position: -27.10,
             currentWeight: aftBag,
             setPayload: setAftBag,
+            visible: true,
         },
         aftBulk: {
             name: 'COMP 5 - AFT BULK/LOOSE',
@@ -163,6 +189,7 @@ const PayloadPage = () => {
             position: -37.35,
             currentWeight: aftBulk,
             setPayload: setAftBulk,
+            visible: true,
         },
     };
 
@@ -192,39 +219,40 @@ const PayloadPage = () => {
         return 2.20462;
     };
 
-    const lbsToKg = (value) => (+value * 0.453592).toString();
+    const lbsToKg = (value: number) => value * 0.453592;
 
-    /**
-     * So I have a suggestion: From Simbrief, get weights. If pax_weight < 104 KG (84+20), throw error.
-     * Other wise, if pax_weight > 104 KG...then bag_weight = pax_weight - 84. Therefore, weight in cabins = pax_count * 84 KG.
-     * Weight in holds = pax_count * bag_weight + cargo
-     * Then start distributing from the rear towards the forward. Ideally, we want to end up with slight rear CG.
-     */
     async function fetchSimbriefData() {
+        console.log('fetchSimbriefData');
+
         const simbriefUsername = window.localStorage.getItem('SimbriefUsername');
 
         if (!simbriefUsername) {
             return;
         }
 
-        console.log('Fetching simbriefData');
+        setFetchingFromSimBrief(true);
+
         const simbriefData = await getSimbriefData(simbriefUsername);
-        console.info(simbriefData);
 
         const { weights, units } = simbriefData;
         const { passengerCount } = weights;
 
         let cargo = units === 'kgs' ? weights.cargo : round(lbsToKg(weights.cargo));
-        const passengerWeight = units === 'kgs' ? weights.passengerWeight : lbsToKg(weights.passengerWeight);
+        const passengerWeight = units === 'kgs' ? weights.passengerWeight : round(lbsToKg(weights.passengerWeight));
 
         if (passengerWeight < 104) {
             // Passenger weight is too low. TODO display an error message
+            // In this case, we consider 104kg and the weights values
+            // from simbrief will be different from the simulator
         } else if (passengerWeight > 104) {
+            // If the passenger weight is greater than 104kg, we use the excess as cargo
             cargo += (+passengerWeight - 104) * passengerCount;
         }
 
         await setCargo(cargo);
         await setPax(passengerCount);
+
+        setFetchingFromSimBrief(false);
     }
 
     async function setCargo(cargoWeight) {
@@ -241,7 +269,7 @@ const PayloadPage = () => {
         }
 
         for (const station of Object.values(payloadStations).reverse()) {
-            // I want extricly to wait until each iteration is finished before start another
+            // We want strictly to wait until each iteration is finished before start another
             // eslint-disable-next-line no-await-in-loop
             await fillStation(station, weightRemaining);
         }
@@ -249,7 +277,6 @@ const PayloadPage = () => {
 
     async function setPax(numberOfPax) {
         console.log('setPax', numberOfPax);
-        // setPaxTarget(Number(numberOfPax));
 
         let paxRemaining = parseInt(numberOfPax);
 
@@ -365,10 +392,16 @@ const PayloadPage = () => {
 
     function calculateEta() {
         if (round(totalPaxTarget) === totalCurrentPax() || boardingRate === 2) {
-            return ' 0';
+            return 0;
         }
-        const estimatedTimeSeconds = totalPaxTarget * 1000 / 1000;
-        return ` ${Math.round(estimatedTimeSeconds / 60)} min`;
+
+        let msDelay = 1000;
+        if (boardingRate === 1) {
+            msDelay = 500;
+        }
+
+        const estimatedTimeSeconds = totalPaxTarget / (1000 / msDelay);
+        return Math.round(estimatedTimeSeconds / 60);
     }
 
     /**
@@ -377,8 +410,8 @@ const PayloadPage = () => {
     function getZfwcg() {
         const currentPaxWeight = PAX_WEIGHT + BAG_WEIGHT;
 
-        const leMacZ = -5.233333; // Value from Debug Weight
-        const macSize = 14.0623; // Value from Debug Aircraft Sim Tunning
+        const leMacZ = -5.39; // Value from Debug Weight
+        const macSize = 13.45; // Value from Debug Aircraft Sim Tunning
 
         const emptyWeight = 90400 * 0.453592; // Value from flight_model.cfg to kgs
         const emptyPosition = -8.75; // Value from flight_model.cfg
@@ -421,27 +454,29 @@ const PayloadPage = () => {
     }
 
     function renderPayloadStations() {
-        return Object.entries(payloadStations).map(([stationKey, station]) => (
+        const entries = Object.entries(payloadStations).filter(([_, station]) => station.visible);
+        return entries.map(([stationKey, station], index) => (
             <>
                 <TargetSelector
                     key={stationKey}
                     name={station.name}
                     placeholder={round(station.currentWeight).toString()}
                     max={station.weight}
-                    value={round(station.currentWeight).toString()}
+                    value={round(station.currentWeight)}
                     current={round(station.currentWeight)}
                     onChange={(value) => {
                         station.setPayload(value);
                     }}
                 />
-                <div className="station-separation-line" />
+                {index !== (entries.length - 1) && <div className="station-separation-line" />}
             </>
         ));
     }
 
     function renderPaxStations() {
-        return Object.entries(paxStations).map(([stationKey, station]) => (
-            <>
+        const entries = Object.entries(paxStations);
+        return entries.map(([stationKey, station], index) => (
+            <div className="my-4">
                 <TargetSelector
                     key={stationKey}
                     name={station.name}
@@ -453,19 +488,18 @@ const PayloadPage = () => {
                         station.setPaxTargetRows(value);
                     }}
                 />
-                <div className="station-separation-line" />
-            </>
+                {index !== (entries.length - 1) && <div className="station-separation-line" />}
+            </div>
         ));
     }
 
     return (
         <div style={{ position: 'relative' }}>
             <div
-                className="bg-gray-800 rounded-xl text-white shadow-lg mr-4 overflow-x-hidden justify-center align-middle items-center"
-                style={{ position: 'absolute', right: '250px', top: '-58px', width: '400px' }}
+                className="bg-gray-800 rounded-xl text-white shadow-lg overflow-x-hidden justify-center align-middle items-center boarding-time-panel"
             >
-                <div className="mb-3.5 flex flex-row justify-between items-center">
-                    <span className="text-lg text-gray-300">Refuel Time</span>
+                <div className="mb-3.5 flex flex-row justify-between items-center px-4">
+                    <span className="text-lg text-gray-300">Boarding Time</span>
                     <SelectGroup>
                         <SelectItem selected={boardingRate === 2} onSelect={() => setBoardingRate(2)}>Instant</SelectItem>
                         <SelectItem selected={boardingRate === 1} onSelect={() => setBoardingRate(1)}>Fast</SelectItem>
@@ -476,16 +510,17 @@ const PayloadPage = () => {
             <button
                 type="button"
                 onClick={() => fetchSimbriefData()}
-                className="w-full text-lg text-white font-medium bg-blue-500 p-2 flex items-center justify-center rounded-lg mb-2 focus:outline-none"
-                style={{ position: 'absolute', right: '27px', top: '-65px', width: '200px' }}
+                className="w-full text-lg text-white font-medium bg-blue-500 p-2 flex items-center justify-center rounded-lg mb-2 focus:outline-none simbrief-button"
             >
+                {fetchingFromSimBrief && <IconLoader className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />}
+                {' '}
                 FROM SIMBRIEF
             </button>
             <div className="px-6">
                 <div className="flex w-full">
                     <div className="w-1/2">
 
-                        <div className="text-white px-6">
+                        <div className="text-white px-6 mb-4">
                             <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden boarding-panel-info">
                                 <TargetSelector
                                     key="boarding"
@@ -508,14 +543,16 @@ const PayloadPage = () => {
                                     </div>
                                     <span className="eta-label">
                                         Est:
-                                        {calculateEta()}
+                                        {calculateEta().toString()}
+                                        {' '}
+                                        min
                                     </span>
                                 </div>
                             </div>
                         </div>
 
                         <div className="text-white px-6">
-                            <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden mt-4 boarding-panel-info">
+                            <div className="bg-gray-800 rounded-xl px-6 text-white shadow-lg mr-4 overflow-x-hidden boarding-panel-info">
                                 {renderPaxStations()}
                             </div>
                         </div>
