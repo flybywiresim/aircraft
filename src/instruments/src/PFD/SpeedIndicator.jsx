@@ -74,7 +74,7 @@ const VProtBug = (offset) => (
     </g>
 );
 
-export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude, VAlphaLim, VAlphaProt, VLs, VMax, showBars }) => {
+export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude, VLs, VMax, showBars }) => {
     if (!getSimVar('L:A32NX_ADIRS_PFD_ALIGNED_FIRST', 'Bool')) {
         return (
             <>
@@ -85,10 +85,13 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
         );
     }
 
+    const ValphaProtection = getSimVar('L:A32NX_SPEEDS_ALPHA_PROTECTION', 'number');
+    const ValphaMax = getSimVar('L:A32NX_SPEEDS_ALPHA_MAX', 'number');
+
     const bugs = [];
 
     if (showBars) {
-        bugs.push(...BarberpoleIndicator(airspeed, VAlphaProt, false, DisplayRange, VAlphaProtBar, 2.923));
+        bugs.push(...BarberpoleIndicator(airspeed, ValphaProtection, false, DisplayRange, VAlphaProtBar, 2.923));
     }
     bugs.push(...BarberpoleIndicator(airspeed, VMax, true, DisplayRange, VMaxBar, 5.040));
 
@@ -141,8 +144,8 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
             {showBars
                 && (
                     <>
-                        <VLsBar airspeed={airspeed} VLs={VLs} VAlphaProt={VAlphaProt} />
-                        <VAlphaLimBar airspeed={airspeed} VAlphalim={VAlphaLim} />
+                        <VLsBar airspeed={airspeed} VLs={VLs} VAlphaProt={ValphaProtection} />
+                        <VAlphaLimBar airspeed={airspeed} VAlphalim={ValphaMax} />
                     </>
                 )}
         </g>

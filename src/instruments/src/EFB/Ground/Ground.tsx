@@ -169,7 +169,6 @@ export const Ground = ({
             </div>
             <img className="airplane w-full" src={fuselage} alt="fuselage" />
             <div className="left-72 grid grid-cols-2 control-grid absolute top-16">
-
                 <div>
                     <h1 className="text-white font-medium text-xl text-center pb-1">Pax</h1>
                     <Button
