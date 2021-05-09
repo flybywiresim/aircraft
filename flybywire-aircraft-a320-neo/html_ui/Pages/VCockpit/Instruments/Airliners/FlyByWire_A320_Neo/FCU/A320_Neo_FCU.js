@@ -398,6 +398,22 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         }
     }
 
+    onPreSelSpeed(isMach) {
+        clearTimeout(this._resetSelectionTimeout);
+        SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
+        this.inSelection = false;
+        this.isSelectedValueActive = false;
+        this.isTargetManaged = false;
+        this.isMachActive = isMach;
+        if (isMach) {
+            this.selectedValue = SimVar.GetSimVarValue("L:A32NX_MachPreselVal", "mach");
+            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
+        } else {
+            this.selectedValue = SimVar.GetSimVarValue("L:A32NX_SpeedPreselVal", "knots");
+            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
+        }
+    }
+
     getRotationSpeed() {
         if (this._rotaryEncoderCurrentSpeed < 1
             || (Date.now() - this._rotaryEncoderPreviousTimestamp) > this._rotaryEncoderTimeout) {
@@ -442,23 +458,9 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         } else if (_event === "SPEED_TOGGLE_SPEED_MACH") {
             this.onSwitchSpeedMach();
         } else if (_event === "USE_PRE_SEL_SPEED") {
-            clearTimeout(this._resetSelectionTimeout);
-            SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
-            this.inSelection = false;
-            this.isSelectedValueActive = false;
-            this.isTargetManaged = false;
-            this.isMachActive = false;
-            this.selectedValue = SimVar.GetSimVarValue("L:A32NX_SpeedPreselVal", "knots");
-            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
+            this.onPreSelSpeed(false);
         } else if (_event === "USE_PRE_SEL_MACH") {
-            clearTimeout(this._resetSelectionTimeout);
-            SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
-            this.inSelection = false;
-            this.isSelectedValueActive = false;
-            this.isTargetManaged = false;
-            this.isMachActive = true;
-            this.selectedValue = SimVar.GetSimVarValue("L:A32NX_MachPreselVal", "mach");
-            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
+            this.onPreSelSpeed(true);
         }
     }
 }
