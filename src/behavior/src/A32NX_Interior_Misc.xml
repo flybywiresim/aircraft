@@ -166,20 +166,28 @@
                    at least currently, the autobrake system is activating and deactivating during bounced landings.
                    CONSIDER: If the autobrake system is rewritten to accurately simulate the real-life system, can we remove the delay?
                    -->
-            <Condition Check="AUTOBRAKE_LEVEL" Match="0">
-                <False>
+            <Condition Check="AUTOBRAKE_LEVEL" Match="1">
+                <True>
                     <UseTemplate Name="ASOBO_GT_Update">
                         <FREQUENCY>1</FREQUENCY>
                         <UPDATE_CODE type="rnp">
                             alias onGround = (A:SIM ON GROUND, bool);
+                            alias groundSpeed = (A:GROUND VELOCITY, number);
+                            alias autobrakeControl = (K:SET_AUTOBRAKE_CONTROL, number);
                             alias autobrakesLevel = (L:XMLVAR_Autobrakes_Level, number);
                             alias lgUpWaitCounter = (L:A32NX_LG_UP_WAIT_COUNTER, number);
                             alias onGroundWaitCounter = (L:A32NX_ON_GROUND_WAIT_COUNTER, number);
                             alias disarmAutobrakesOnLgRetract = (L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT, bool);
                             alias autobrakesActivated = (L:A32NX_AUTOBRAKES_ACTIVATED, bool);
+                            let autoBrakeSwitch = (A:AUTO BRAKE SWITCH CB, number);
 
-                            if onGround and (A:AUTO BRAKE SWITCH CB, number) == 4 {
-                                autobrakesLevel = 3;
+                            if autoBrakeSwitch &gt; 0 {
+                                if onGround or autoBrakeSwitch &lt; 4 {
+                                    autobrakesLevel = autoBrakeSwitch - 1;
+                                }
+                                if !onGround and autoBrakeSwitch == 4 {
+                                   autobrakeControl = 0;
+                                }
                             }
 
                             if autobrakesLevel != 0 {
@@ -195,6 +203,11 @@
 
                                 if onGround {
                                     disarmAutobrakesOnLgRetract = true;
+
+                                    if groundSpeed &lt; 10 {
+                                      autobrakeControl = 0;
+                                    }
+
                                     if onGroundWaitCounter == 30 {
                                         if (A:AUTOBRAKES ACTIVE, bool) {
                                             autobrakesActivated = true;
@@ -213,19 +226,21 @@
                             }
                         </UPDATE_CODE>
                     </UseTemplate>
-                </False>
+                </True>
             </Condition>
         </Component>
         <Component ID="#NODE_ID_DECEL#" Node="#NODE_ID_DECEL#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <EMISSIVE_CODE>(A:AUTO BRAKE SWITCH CB, Enum) 1 != (A:ACCELERATION BODY Z, feet per second squared) #REF_DECEL_FPSS# &lt;= and (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and</EMISSIVE_CODE>
+                <EMISSIVE_CODE>
+                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (A:AUTOBRAKES ACTIVE, Bool) (A:REJECTED TAKEOFF BRAKES ACTIVE, Bool) or and (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                </EMISSIVE_CODE>
                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
             </UseTemplate>
         </Component>
         <Component ID="#NODE_ID_ON#" Node="#NODE_ID_ON#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and
+                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
