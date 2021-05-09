@@ -372,7 +372,6 @@ class FMCMainDisplay extends BaseAirliners {
                 }
 
                 /** Activate pre selected speed/mach */
-                // this.activatePreSelSpeedMach(_lastFlightPhase === FmgcFlightPhases.GOAROUND ? ... : this.preSelectedClbSpeed);
                 if (_lastFlightPhase === FmgcFlightPhases.TAKEOFF) {
                     this.activatePreSelSpeedMach(this.preSelectedClbSpeed);
                 }
