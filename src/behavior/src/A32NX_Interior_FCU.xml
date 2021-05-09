@@ -288,6 +288,7 @@
                     } els{
                         (&gt;H:A320_Neo_FCU_VS_INC_VS)
                     }
+                    (&gt;H:A320_Neo_CDU_VS)
                 </CLOCKWISE_CODE>
                 <ANTICLOCKWISE_CODE>
                     (L:A32NX_TRK_FPA_MODE_ACTIVE, bool) 1 == if{
@@ -295,12 +296,15 @@
                     } els{
                         (&gt;H:A320_Neo_FCU_VS_DEC_VS)
                     }
+                    (&gt;H:A320_Neo_CDU_VS)
                 </ANTICLOCKWISE_CODE>
                 <PULL_CODE>
                     (&gt;H:A320_Neo_FCU_VS_PULL)
+                    (&gt;H:A320_Neo_CDU_VS)
                 </PULL_CODE>
                 <PUSH_CODE>
                     (&gt;H:A320_Neo_FCU_VS_PUSH)
+                    (&gt;H:A320_Neo_CDU_VS)
                 </PUSH_CODE>
                 <CENTER_RADIUS>0</CENTER_RADIUS>
                 <WWISE_EVENT_1>QNHknob</WWISE_EVENT_1>
