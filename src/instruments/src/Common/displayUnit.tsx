@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { NXDataStore } from '@shared/persistence';
 import { useSimVar } from './simVars';
 import { useUpdate } from './hooks';
+
 import './common.scss';
-import { NXDataStore } from './persistence';
 
 type DisplayUnitProps = {
     electricitySimvar: string
@@ -46,7 +47,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
             setTimer(null);
         } else if (state === DisplayUnitState.Off && (potentiometer !== 0 && electricityState !== 0)) {
             setState(DisplayUnitState.Selftest);
-            setTimer(NXDataStore.get('CONFIG_SELF_TEST_TIME', '15'));
+            setTimer(NXDataStore.get<number>('CONFIG_SELF_TEST_TIME', 15));
         } else if (state === DisplayUnitState.Selftest && (potentiometer === 0 || electricityState === 0)) {
             setState(DisplayUnitState.Off);
             setTimer(null);

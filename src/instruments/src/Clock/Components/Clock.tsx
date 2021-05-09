@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useSimVar } from '../../Common/simVars';
-import { useInteractionEvent } from '../../Common/hooks';
+import { useSimVar } from '@instruments/common/simVars';
+import { useInteractionEvent } from '@instruments/common/hooks';
 
 const secondsToDisplay = (seconds: number): number[] => {
     const displayTime = [0, 0, 0];

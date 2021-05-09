@@ -4,6 +4,8 @@ const os = require('os');
 const fs = require('fs');
 const image = require('@rollup/plugin-image');
 const { babel } = require('@rollup/plugin-babel');
+const { typescriptPaths } = require('rollup-plugin-typescript-paths');
+const sucrase = require('@rollup/plugin-sucrase');
 const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const replace = require('@rollup/plugin-replace');
@@ -80,6 +82,7 @@ module.exports = getInstrumentsToCompile()
         const config = JSON.parse(fs.readFileSync(`${__dirname}/src/${path}/config.json`));
 
         return {
+            watch: true,
             input: `${__dirname}/src/${path}/${config.index}`,
             output: {
                 file: `${TMPDIR}/${name}-gen.js`,
@@ -103,6 +106,7 @@ module.exports = getInstrumentsToCompile()
                     compact: false,
                     extensions,
                 }),
+                typescriptPaths({ tsConfigPath: `${__dirname}/../tsconfig.json` }),
                 replace({ 'process.env.NODE_ENV': '"production"' }),
                 postcss({
                     use: { sass: {} },
