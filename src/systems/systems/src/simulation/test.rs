@@ -1,3 +1,4 @@
+use rand::Rng;
 use std::{collections::HashMap, time::Duration};
 use uom::si::{
     acceleration::foot_per_second_squared, f64::*, length::foot,
@@ -62,6 +63,29 @@ impl SimulationTestBed {
     pub fn run_aircraft<T: Aircraft>(&mut self, aircraft: &mut T) {
         let mut simulation = Simulation::new(aircraft, &mut self.reader_writer);
         simulation.tick(self.delta);
+    }
+
+    /// Runs a multiple [`Simulation`] ticks by subdividing given delta on the provided [`Aircraft`].
+    ///
+    /// [`Aircraft`]: ../trait.Aircraft.html
+    /// [`Simulation`]: ../struct.Simulation.html
+    pub fn run_aircraft_multiple_frames<T: Aircraft>(&mut self, aircraft: &mut T) {
+        let mut simulation = Simulation::new(aircraft, &mut self.reader_writer);
+
+        let mut rng = rand::thread_rng();
+
+        let mut executed_duration = Duration::from_secs(0);
+        while executed_duration < self.delta {
+            let current_delta = Duration::from_millis(rng.gen_range(12..200));
+
+            if executed_duration + current_delta > self.delta {
+                simulation.tick((executed_duration + current_delta) - self.delta);
+                break;
+            } else {
+                simulation.tick(current_delta);
+            }
+            executed_duration += current_delta;
+        }
     }
 
     /// Runs a single [`Simulation`] tick on the provided [`SimulationElement`], executing

@@ -1391,15 +1391,18 @@ mod tests {
                 }
             }
 
-            fn run_one_tick(self) -> Self {
-                self.run_waiting_for(Duration::from_millis(
+            fn run_one_tick(mut self) -> Self {
+                self.simulation_test_bed.set_delta(Duration::from_millis(
                     A320Hydraulic::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS,
-                ))
+                ));
+                self.simulation_test_bed.run_aircraft(&mut self.aircraft);
+                self
             }
 
             fn run_waiting_for(mut self, delta: Duration) -> Self {
                 self.simulation_test_bed.set_delta(delta);
-                self.simulation_test_bed.run_aircraft(&mut self.aircraft);
+                self.simulation_test_bed
+                    .run_aircraft_multiple_frames(&mut self.aircraft);
                 self
             }
 
