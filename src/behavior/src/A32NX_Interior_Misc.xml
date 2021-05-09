@@ -182,8 +182,11 @@
                             let autoBrakeSwitch = (A:AUTO BRAKE SWITCH CB, number);
 
                             if autoBrakeSwitch &gt; 0 {
-                               if onGround or autoBrakeSwitch &lt; 4 {
+                                if onGround or autoBrakeSwitch &lt; 4 {
                                     autobrakesLevel = autoBrakeSwitch - 1;
+                                }
+                                if !onGround and autoBrakeSwitch == 4 {
+                                   autobrakeControl = 0;
                                 }
                             }
 
