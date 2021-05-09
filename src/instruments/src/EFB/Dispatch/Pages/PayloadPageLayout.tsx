@@ -236,45 +236,36 @@ const PayloadPage = () => {
     }
 
     function renderPayloadStations() {
-        return Object.entries(payloadStations).map(([stationKey, station], index) => (
+        return Object.entries(payloadStations).map(([stationKey, station]) => (
             <>
-                <h2 className="text-2xl font-medium">{station.name}</h2>
-                {/* <IconFriends className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> */}
-                <p className="mt-2 text-lg">
-                    {station.currentWeight}
-                    {' '}
-                    /
-                    {' '}
-                    {station.weight}
-                    {' '}
-                    {currentUnit()}
-                </p>
-                <span className="mt-2 text-lg">
-                    <Slider
-                        min={0}
-                        max={station.weight}
-                        value={station.currentWeight}
-                        onInput={(value) => {}}
-                        className="w-48"
-                    />
-                    <span className="fuel-content-label">Current weight :</span>
-                    <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(station.currentWeight / station.weight) * 100} />
-                </span>
+                <TargetSelector
+                    key={stationKey}
+                    name={station.name}
+                    placeholder={station.totalPaxTarget}
+                    max={station.weight}
+                    value={station.currentWeight}
+                    completed={(100 / station.weight) * 100}
+                    onChange={() => {}}
+                />
+                <div className="station-separation-line" />
             </>
         ));
     }
 
     function renderPaxStations() {
         return Object.entries(paxStations).map(([stationKey, station]) => (
-            <TargetSelector
-                key={stationKey}
-                name={station.name}
-                placeholder={station.totalPaxTarget}
-                max={station.seats}
-                value={station.paxTargetRows}
-                completed={(100 / station.seats) * 100}
-                onChange={() => {}}
-            />
+            <>
+                <TargetSelector
+                    key={stationKey}
+                    name={station.name}
+                    placeholder={station.totalPaxTarget}
+                    max={station.seats}
+                    value={station.paxTargetRows}
+                    completed={(100 / station.seats) * 100}
+                    onChange={() => {}}
+                />
+                <div className="station-separation-line" />
+            </>
         ));
     }
 
@@ -318,10 +309,48 @@ const PayloadPage = () => {
 
                 </div>
                 <div className="w-1/2">
-                    <div className="text-white px-6">
-                        <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden">
-                            {renderPayloadStations()}
+                    <div className="flex flex-wrap -mx-3 overflow-hidden mb-4">
+
+                        <div className="px-3 w-1/4 overflow-hidden">
+                            <div className="bg-gray-800 rounded-xl text-white shadow-lg weights-panel-info p-6 overflow-hidden">
+                                <h3 className="font-medium">ZFW CG:</h3>
+                                <div className="flex py-3">
+                                    30.0% MAC
+                                </div>
+                            </div>
                         </div>
+
+                        <div className="px-3 w-1/4 overflow-hidden">
+                            <div className="bg-gray-800 rounded-xl text-white shadow-lg weights-panel-info p-6 overflow-hidden">
+                                <h3 className="font-medium">ZFW:</h3>
+                                <div className="flex py-3">
+                                    44.500 KG
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="px-3 w-1/4 overflow-hidden">
+                            <div className="bg-gray-800 rounded-xl text-white shadow-lg weights-panel-info p-6 overflow-hidden">
+                                <h3 className="font-medium">PAYLOAD:</h3>
+                                <div className="flex py-3">
+                                    44.500 KG
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="px-3 w-1/4 overflow-hidden">
+                            <div className="bg-gray-800 rounded-xl text-white shadow-lg weights-panel-info p-6 overflow-hidden">
+                                <h3 className="font-medium">CARGO:</h3>
+                                <div className="flex py-3">
+                                    44.500 KG
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg overflow-x-hidden">
+                        {renderPayloadStations()}
                     </div>
                 </div>
             </div>

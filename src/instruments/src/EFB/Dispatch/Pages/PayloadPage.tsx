@@ -17,94 +17,152 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { IconBox, IconMan, IconLifebuoy, IconFriends, IconScale, IconPlayerPlay, IconHandStop } from '@tabler/icons';
+import React, { useCallback, useState } from 'react';
 import { round } from 'lodash';
-import { Slider } from '../../Components/Form/Slider';
-import nose from '../../Assets/320neo-outline-nose.svg';
-import Fuselage from './Fuselage';
-import { RootState } from '../../Store';
-import { SelectGroup, SelectItem } from '../../Components/Form/Select';
+import { IconPlayerPlay, IconHandStop } from '@tabler/icons';
+import { useSimVar, useSplitSimVar } from '../../../Common/simVars';
 import { useSimVarSyncedPersistentProperty } from '../../../Common/persistence';
-import { ProgressBar } from '../../Components/Progress/Progress';
-import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
-import '../Styles/Payload.scss';
 import Button, { BUTTON_TYPE } from '../../Components/Button/Button';
-import { useSimVar } from '../../../Common/simVars';
 import TargetSelector from './TargetSelector';
+import { getSimbriefData } from '../../SimbriefApi';
+import '../Styles/Payload.scss';
+import { SelectGroup, SelectItem } from '../../Components/Form/Select';
 
 const MAX_SEAT_AVAILABLE = 174;
 const PAX_WEIGHT = 84;
 const BAG_WEIGHT = 20;
 
+interface PaxStation {
+    name: string;
+    seats: number;
+    weight: number;
+    stationIndex: number;
+    position: number;
+    seatsRange: Array<number>;
+    paxTotalRows: number;
+    paxTargetRows: number;
+    setPaxTargetRows: (newValueOrSetter: any) => void;
+    setPaxTotalRow: (newValueOrSetter: any) => void;
+}
+
+interface CargoStation {
+    name: string;
+    weight: number;
+    currentWeight: number;
+    stationIndex: number;
+    position: number;
+    setPayload: (newValueOrSetter: any) => void;
+}
+
 const PayloadPage = () => {
     const [boardingStartedByUser, setBoardingStartedByUser] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool');
     const [boardingRate, setBoardingRate] = useSimVarSyncedPersistentProperty('L:A32NX_BOARDING_RATE_SETTING', 'Number', 'BOARDING_RATE_SETTING');
 
-    const [paxTarget, setPaxTarget] = useSimVar('L:A32NX_PAX_TOTAL_DESIRED', 'Number');
-    const [paxTotal, setPaxTotal] = useSimVar('L:A32NX_PAX_TOTAL', 'Number');
-
     const [paxTargetRows1_6, setPaxTargetRows1_6] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6_DESIRED', 'Number');
-    const [paxTotalRows1_6, setPaxTotalRows1_6] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6', 'Number');
+    const [paxTotalRows1_6, _setPaxTotalRows1_6] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6', 'Number');
 
     const [paxTargetRows7_13, setPaxTargetRows7_13] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13_DESIRED', 'Number');
-    const [paxTotalRows7_13, setPaxTotalRows7_13] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13', 'Number');
+    const [paxTotalRows7_13, _setPaxTotalRows7_13] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13', 'Number');
 
     const [paxTargetRows14_20, setPaxTargetRows14_20] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_20_DESIRED', 'Number');
-    const [paxTotalRows14_20, setPaxTotalRows14_20] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_20', 'Number');
+    const [paxTotalRows14_20, _setPaxTotalRows14_20] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_20', 'Number');
 
     const [paxTargetRows21_27, setPaxTargetRows21_27] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_21_27_DESIRED', 'Number');
-    const [paxTotalRows21_27, setPaxTotalRows21_27] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_21_27', 'Number');
+    const [paxTotalRows21_27, _setPaxTotalRows21_27] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_21_27', 'Number');
 
-    const paxStations: {[index: string]: Station} = {
+    const [fwdBag, setFwdBag] = useSimVar('PAYLOAD STATION WEIGHT:7', 'kilograms');
+    const [aftCont, setAftCont] = useSimVar('PAYLOAD STATION WEIGHT:8', 'kilograms');
+    const [aftBag, setAftBag] = useSimVar('PAYLOAD STATION WEIGHT:9', 'kilograms');
+    const [aftBulk, setAftBulk] = useSimVar('PAYLOAD STATION WEIGHT:10', 'kilograms');
+
+    const [jetWayActive, setJetWayActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_JETWAY', 'bool', 1000);
+    const [_rampActive, setRampActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
+    const [cargoActive, setCargoActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 'K:REQUEST_LUGGAGE', 'bool', 1000);
+    const [cateringActive, setCateringActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 'K:REQUEST_CATERING', 'bool', 1000);
+
+    const paxStations: {[index: string]: PaxStation} = {
         rows1_6: {
             name: 'ECONOMY ROWS 1-6',
             seats: 36,
             weight: 3024,
-            pax: 0,
-            paxTarget: 0,
             stationIndex: 2 + 1,
             position: 21.98,
             seatsRange: [1, 36],
             paxTotalRows: paxTotalRows1_6,
             paxTargetRows: paxTargetRows1_6,
+            setPaxTotalRow: setPaxTargetRows1_6,
+            setPaxTargetRows: setPaxTargetRows1_6,
         },
         rows7_13: {
             name: 'ECONOMY ROWS 7-13',
             seats: 42,
             weight: 3530,
-            pax: 0,
-            paxTarget: 0,
             stationIndex: 3 + 1,
             position: 2.86,
             seatsRange: [37, 78],
             paxTotalRows: paxTotalRows7_13,
             paxTargetRows: paxTargetRows7_13,
+            setPaxTotalRow: setPaxTargetRows7_13,
+            setPaxTargetRows: setPaxTargetRows7_13,
         },
         rows14_20: {
             name: 'ECONOMY ROWS 14-20',
             seats: 48,
             weight: 4032,
-            pax: 0,
-            paxTarget: 0,
             stationIndex: 4 + 1,
             position: -15.34,
             seatsRange: [79, 126],
             paxTotalRows: paxTotalRows14_20,
             paxTargetRows: paxTargetRows14_20,
+            setPaxTotalRow: setPaxTargetRows14_20,
+            setPaxTargetRows: setPaxTargetRows14_20,
         },
         rows21_27: {
             name: 'ECONOMY ROWS 21-27',
             seats: 48,
             weight: 4032,
-            pax: 0,
-            paxTarget: 0,
             stationIndex: 5 + 1,
             position: -32.81,
             seatsRange: [127, 174],
             paxTotalRows: paxTotalRows21_27,
             paxTargetRows: paxTargetRows21_27,
+            setPaxTotalRow: setPaxTargetRows21_27,
+            setPaxTargetRows: setPaxTargetRows21_27,
+        },
+    };
+
+    const payloadStations: {[index: string]: CargoStation} = {
+        fwdBag: {
+            name: 'FWD BAGGAGE/CONTAINER',
+            weight: 3402,
+            stationIndex: 6 + 1,
+            position: 18.28,
+            currentWeight: fwdBag,
+            setPayload: setFwdBag,
+        },
+        aftCont: {
+            name: 'AFT CONTAINER',
+            weight: 2426,
+            stationIndex: 7 + 1,
+            position: -15.96,
+            currentWeight: aftCont,
+            setPayload: setAftCont,
+        },
+        aftBag: {
+            name: 'AFT BAGGAGE',
+            weight: 2110,
+            stationIndex: 8 + 1,
+            position: -27.10,
+            currentWeight: aftBag,
+            setPayload: setAftBag,
+        },
+        aftBulk: {
+            name: 'COMP 5 - AFT BULK/LOOSE',
+            weight: 1497,
+            stationIndex: 9 + 1,
+            position: -37.35,
+            currentWeight: aftBulk,
+            setPayload: setAftBulk,
         },
     };
 
@@ -115,14 +173,10 @@ const PayloadPage = () => {
     const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 1_000);
     const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 1_000);
 
-    const dispatch = useDispatch();
-
-    const payload = useSelector((state: RootState) => state.payload);
-
     const zfwcg = getZfwcg().toFixed(2);
 
-    // const totalPax = Object.values(payload).map((station) => station.pax).reduce((acc, cur) => acc + cur);
-    const totalPaxTarget = Object.values(payload).map((station) => station.paxTarget).reduce((acc, cur) => acc + cur);
+    const totalPax = Object.values(paxStations).map((station) => station.paxTotalRows).reduce((acc, cur) => acc + cur);
+    const totalPaxTarget = Object.values(paxStations).map((station) => station.paxTargetRows).reduce((acc, cur) => acc + cur);
 
     const [usingMetrics, setUsingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
     const currentUnit = () => {
@@ -138,38 +192,81 @@ const PayloadPage = () => {
         return 2.20462;
     };
 
-    function setPax(numberOfPax) {
+    const lbsToKg = (value) => (+value * 0.453592).toString();
+
+    /**
+     * So I have a suggestion: From Simbrief, get weights. If pax_weight < 104 KG (84+20), throw error.
+     * Other wise, if pax_weight > 104 KG...then bag_weight = pax_weight - 84. Therefore, weight in cabins = pax_count * 84 KG.
+     * Weight in holds = pax_count * bag_weight + cargo
+     * Then start distributing from the rear towards the forward. Ideally, we want to end up with slight rear CG.
+     */
+    async function fetchSimbriefData() {
+        const simbriefUsername = window.localStorage.getItem('SimbriefUsername');
+
+        if (!simbriefUsername) {
+            return;
+        }
+
+        console.log('Fetching simbriefData');
+        const simbriefData = await getSimbriefData(simbriefUsername);
+        console.info(simbriefData);
+
+        const { weights, units } = simbriefData;
+        const { passengerCount } = weights;
+
+        let cargo = units === 'kgs' ? weights.cargo : round(lbsToKg(weights.cargo));
+        const passengerWeight = units === 'kgs' ? weights.passengerWeight : lbsToKg(weights.passengerWeight);
+
+        if (passengerWeight < 104) {
+            // Passenger weight is too low. TODO display an error message
+        } else if (passengerWeight > 104) {
+            cargo += (+passengerWeight - 104) * passengerCount;
+        }
+
+        await setCargo(cargo);
+        await setPax(passengerCount);
+    }
+
+    async function setCargo(cargoWeight) {
+        console.log('setCargo', cargoWeight);
+
+        let weightRemaining = parseInt(cargoWeight);
+
+        async function fillStation(station: CargoStation, weightToFill) {
+            const weight = Math.min(weightToFill, station.weight);
+
+            await station.setPayload(weight);
+
+            weightRemaining -= weight;
+        }
+
+        for (const station of Object.values(payloadStations).reverse()) {
+            // I want extricly to wait until each iteration is finished before start another
+            // eslint-disable-next-line no-await-in-loop
+            await fillStation(station, weightRemaining);
+        }
+    }
+
+    async function setPax(numberOfPax) {
         console.log('setPax', numberOfPax);
-        setPaxTarget(Number(numberOfPax));
+        // setPaxTarget(Number(numberOfPax));
 
         let paxRemaining = parseInt(numberOfPax);
 
-        function fillStation(stationKey, paxToFill, setPaxTargetRows) {
-            const pax = Math.min(paxToFill, payload[stationKey].seats);
-            // changeStationPax(pax, stationKey);
+        async function fillStation(station: PaxStation, paxToFill) {
+            const pax = Math.min(paxToFill, station.seats);
 
-            setPaxTargetRows(pax);
+            await station.setPaxTargetRows(pax);
 
-            changeStationPaxTarget(pax, stationKey);
             paxRemaining -= pax;
         }
 
-        fillStation('rows21_27', paxRemaining, setPaxTargetRows21_27);
-        fillStation('rows14_20', paxRemaining, setPaxTargetRows14_20);
+        await fillStation(paxStations.rows21_27, paxRemaining);
+        await fillStation(paxStations.rows14_20, paxRemaining);
 
         const remainingByTwo = Math.trunc(paxRemaining / 2);
-        fillStation('rows1_6', remainingByTwo, setPaxTargetRows1_6);
-        fillStation('rows7_13', paxRemaining, setPaxTargetRows7_13);
-
-        // setPayload(numberOfPax);
-    }
-
-    function getPayload() {
-        const weightPerPax = PAX_WEIGHT + BAG_WEIGHT;
-
-        const payload = weightPerPax * paxTotal;
-
-        return payload;
+        await fillStation(paxStations.rows1_6, remainingByTwo);
+        await fillStation(paxStations.rows7_13, paxRemaining);
     }
 
     function setSeatColors() {
@@ -215,7 +312,7 @@ const PayloadPage = () => {
     }
 
     function totalCurrentPax() {
-        return paxTotal;
+        return totalPax;
     }
 
     function formatBoardingStatusClass(baseClass:string, text:boolean) {
@@ -226,7 +323,7 @@ const PayloadPage = () => {
         if (airplaneCanRefuel()) {
             if (totalPaxTarget === totalCurrentPax() || !boardingStartedByUser) {
                 if (boardingStartedByUser) {
-                    setBoardingStartedByUser(false);
+                    // setBoardingStartedByUser(false);
                 }
                 return `${baseClass} completed${suffix}`;
             }
@@ -253,6 +350,15 @@ const PayloadPage = () => {
 
     function toggleBoardingState() {
         if (airplaneCanRefuel()) {
+            if (!boardingStartedByUser) {
+                if (jetWayActive < 0.5) {
+                    setJetWayActive(1);
+                    setRampActive(1);
+                }
+            } else if (jetWayActive > 0.5) {
+                setJetWayActive(1);
+                setRampActive(1);
+            }
             setBoardingStartedByUser(!boardingStartedByUser);
         }
     }
@@ -261,19 +367,15 @@ const PayloadPage = () => {
         if (round(totalPaxTarget) === totalCurrentPax() || boardingRate === 2) {
             return ' 0';
         }
-        const estimatedTimeSeconds = 0;
-        return ` ${Math.round(estimatedTimeSeconds / 60)}`;
+        const estimatedTimeSeconds = totalPaxTarget * 1000 / 1000;
+        return ` ${Math.round(estimatedTimeSeconds / 60)} min`;
     }
-
-    // useEffect(() => {
-    //     setSeatColors();
-    // }, []);
 
     /**
      * Calculate %MAC ZWFCG of all stations
      */
     function getZfwcg() {
-        const currentPaxWeight = PAX_WEIGHT;
+        const currentPaxWeight = PAX_WEIGHT + BAG_WEIGHT;
 
         const leMacZ = -5.233333; // Value from Debug Weight
         const macSize = 14.0623; // Value from Debug Aircraft Sim Tunning
@@ -282,14 +384,14 @@ const PayloadPage = () => {
         const emptyPosition = -8.75; // Value from flight_model.cfg
         const emptyMoment = emptyPosition * emptyWeight;
 
-        const paxTotalMass = Object.values(payload).map((station) => station.pax * currentPaxWeight).reduce((acc, cur) => acc + cur, 0);
-        const paxTotalMoment = Object.values(payload).map((station) => (station.pax * currentPaxWeight) * station.position).reduce((acc, cur) => acc + cur, 0);
+        const paxTotalMass = Object.values(paxStations).map((station) => station.paxTargetRows * currentPaxWeight).reduce((acc, cur) => acc + cur, 0);
+        const paxTotalMoment = Object.values(paxStations).map((station) => (station.paxTargetRows * currentPaxWeight) * station.position).reduce((acc, cur) => acc + cur, 0);
 
-        // const payloadTotalMass = Object.values(payloadStations).map((station) => station.currentWeight).reduce((acc, cur) => acc + cur, 0);
-        // const payloadTotalMoment = Object.values(payloadStations).map((station) => station.currentWeight * station.position).reduce((acc, cur) => acc + cur, 0);
+        const payloadTotalMass = Object.values(payloadStations).map((station) => station.currentWeight).reduce((acc, cur) => acc + cur, 0);
+        const payloadTotalMoment = Object.values(payloadStations).map((station) => station.currentWeight * station.position).reduce((acc, cur) => acc + cur, 0);
 
-        const totalMass = emptyWeight + paxTotalMass;
-        const totalMoment = emptyMoment + paxTotalMoment;
+        const totalMass = emptyWeight + paxTotalMass + payloadTotalMass;
+        const totalMoment = emptyMoment + paxTotalMoment + payloadTotalMoment;
 
         const cgPosition = totalMoment / totalMass;
         const cgPositionToLemac = cgPosition - leMacZ;
@@ -298,47 +400,42 @@ const PayloadPage = () => {
         return cgPercentMac;
     }
 
-    const changeStationPax = useCallback((value: number, stationKey: string) => {
-        dispatch({
-            type: 'PAYLOAD_SET_STATION_PAX',
-            payload: { value, stationKey },
-        });
-    }, [dispatch]);
+    function getTotalCargo() {
+        const cargoTotalMass = Object.values(payloadStations).map((station) => station.currentWeight).reduce((acc, cur) => acc + cur, 0);
 
-    const changeStationPaxTarget = useCallback((value: number, stationKey: string) => {
-        dispatch({
-            type: 'PAYLOAD_SET_STATION_PAX_TARGET',
-            payload: { value, stationKey },
-        });
-    }, [dispatch]);
+        return cargoTotalMass;
+    }
 
-    function renderStations() {
-        return Object.entries(paxStations).map(([stationKey, station], index) => (
-            <div id={`${stationKey}-slider`}>
-                <h3 className={`text-xl font-medium flex items-center ${index !== 0 && 'mt-6'}`}>
-                    <IconFriends className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" />
-                    {' '}
-                    {station.name}
-                </h3>
-                <p className="mt-2 text-lg">
-                    {station.paxTargetRows}
-                    {' '}
-                    /
-                    {' '}
-                    {station.seats}
-                </p>
-                <span className="mt-2 text-lg">
-                    <Slider
-                        min={0}
-                        max={station.seats}
-                        value={station.paxTargetRows}
-                        onInput={(value) => changeStationPax(value, stationKey)}
-                        className="w-48"
-                    />
-                    <span className="fuel-content-label">Current passengers :</span>
-                    <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(station.paxTotalRows / station.seats) * 100} />
-                </span>
-            </div>
+    function getTotalPayload() {
+        const currentPaxWeight = PAX_WEIGHT + BAG_WEIGHT;
+
+        const paxTotalMass = Object.values(paxStations).map((station) => station.paxTargetRows * currentPaxWeight).reduce((acc, cur) => acc + cur, 0);
+        const cargoTotalMass = getTotalCargo();
+
+        return paxTotalMass + cargoTotalMass;
+    }
+
+    function getZfw() {
+        const emptyWeight = 90400 * 0.453592; // Value from flight_model.cfg to kgs
+        return emptyWeight + getTotalPayload();
+    }
+
+    function renderPayloadStations() {
+        return Object.entries(payloadStations).map(([stationKey, station]) => (
+            <>
+                <TargetSelector
+                    key={stationKey}
+                    name={station.name}
+                    placeholder={round(station.currentWeight).toString()}
+                    max={station.weight}
+                    value={round(station.currentWeight).toString()}
+                    current={round(station.currentWeight)}
+                    onChange={(value) => {
+                        station.setPayload(value);
+                    }}
+                />
+                <div className="station-separation-line" />
+            </>
         ));
     }
 
@@ -348,12 +445,12 @@ const PayloadPage = () => {
                 <TargetSelector
                     key={stationKey}
                     name={station.name}
-                    placeholder={station.totalPaxTarget}
+                    placeholder={station.paxTargetRows.toString()}
                     max={station.seats}
                     value={station.paxTargetRows}
-                    completed={(100 / station.seats) * 100}
+                    current={station.paxTotalRows}
                     onChange={(value) => {
-                        setPax(value);
+                        station.setPaxTargetRows(value);
                     }}
                 />
                 <div className="station-separation-line" />
@@ -362,21 +459,41 @@ const PayloadPage = () => {
     }
 
     return (
-        <div className="flex mt-8">
-            <div className="w-1/2">
-
-                <div className="text-white px-6">
-                    <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden">
+        <div style={{ position: 'relative' }}>
+            <div
+                className="bg-gray-800 rounded-xl text-white shadow-lg mr-4 overflow-x-hidden justify-center align-middle items-center"
+                style={{ position: 'absolute', right: '250px', top: '-58px', width: '400px' }}
+            >
+                <div className="mb-3.5 flex flex-row justify-between items-center">
+                    <span className="text-lg text-gray-300">Refuel Time</span>
+                    <SelectGroup>
+                        <SelectItem selected={boardingRate === 2} onSelect={() => setBoardingRate(2)}>Instant</SelectItem>
+                        <SelectItem selected={boardingRate === 1} onSelect={() => setBoardingRate(1)}>Fast</SelectItem>
+                        <SelectItem selected={boardingRate === 0} onSelect={() => setBoardingRate(0)}>Real</SelectItem>
+                    </SelectGroup>
+                </div>
+            </div>
+            <button
+                type="button"
+                onClick={() => fetchSimbriefData()}
+                className="w-full text-lg text-white font-medium bg-blue-500 p-2 flex items-center justify-center rounded-lg mb-2 focus:outline-none"
+                style={{ position: 'absolute', right: '27px', top: '-65px', width: '200px' }}
+            >
+                FROM SIMBRIEF
+            </button>
+            <div className="px-6">
+                <div className="flex w-full">
+                    <div className="w-1/2">
 
                         <div className="text-white px-6">
-                            <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden fuel-tank-info refuel-info">
+                            <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden boarding-panel-info">
                                 <TargetSelector
                                     key="boarding"
                                     name="Boarding"
                                     placeholder=""
                                     max={MAX_SEAT_AVAILABLE}
-                                    value={totalPaxTarget.toString()}
-                                    completed={(paxTotal / MAX_SEAT_AVAILABLE) * 100}
+                                    value={totalPaxTarget}
+                                    current={totalPax}
                                     onChange={(value) => {
                                         setPax(value);
                                     }}
@@ -392,21 +509,70 @@ const PayloadPage = () => {
                                     <span className="eta-label">
                                         Est:
                                         {calculateEta()}
-                                        min
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        {renderPaxStations()}
-
+                        <div className="text-white px-6">
+                            <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden mt-4 boarding-panel-info">
+                                {renderPaxStations()}
+                            </div>
+                        </div>
                     </div>
-                </div>
+                    <div className="w-1/2">
+                        <div className="flex flex-wrap -mx-3 overflow-hidden mb-4">
 
-            </div>
-            <div className="w-1/2">
-                <div className="text-white px-6">
-                    <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg mr-4 overflow-x-hidden" />
+                            <div className="px-3 w-1/4 overflow-hidden">
+                                <div className="bg-gray-800 rounded-xl text-white shadow-lg weights-panel-info p-6 overflow-hidden">
+                                    <h3 className="text-xl font-medium flex items-center">ZFW CG:</h3>
+                                    <span className="mt-2 text-lg">
+                                        {zfwcg}
+                                        {' '}
+                                        %
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="px-3 w-1/4 overflow-hidden">
+                                <div className="bg-gray-800 rounded-xl text-white shadow-lg weights-panel-info p-6 overflow-hidden">
+                                    <h3 className="text-xl font-medium flex items-center">ZFW:</h3>
+                                    <span className="mt-2 text-lg">
+                                        {round(getZfw())}
+                                        {' '}
+                                        KG
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="px-3 w-1/4 overflow-hidden">
+                                <div className="bg-gray-800 rounded-xl text-white shadow-lg weights-panel-info p-6 overflow-hidden">
+                                    <h3 className="text-xl font-medium flex items-center">PAYLOAD:</h3>
+                                    <span className="mt-2 text-lg">
+                                        {round(getTotalPayload())}
+                                        {' '}
+                                        KG
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="px-3 w-1/4 overflow-hidden">
+                                <div className="bg-gray-800 rounded-xl text-white shadow-lg weights-panel-info p-6 overflow-hidden">
+                                    <h3 className="text-xl font-medium flex items-center">CARGO:</h3>
+                                    <span className="mt-2 text-lg">
+                                        {round(getTotalCargo())}
+                                        {' '}
+                                        KG
+                                    </span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg overflow-x-hidden">
+                            {renderPayloadStations()}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

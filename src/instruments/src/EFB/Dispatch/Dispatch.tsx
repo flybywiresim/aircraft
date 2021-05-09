@@ -2,7 +2,7 @@ import React from 'react';
 
 import OverviewPage from './Pages/OverviewPage';
 import LoadsheetPage from './Pages/LoadsheetPage';
-import PayloadPage from './Pages/PayloadPageLayout';
+import PayloadPage from './Pages/PayloadPage';
 import { Navbar } from '../Components/Navbar';
 import { FuelPage } from './Pages/FuelPage';
 

@@ -7,8 +7,8 @@ interface StationSelectorProps {
     name: string;
     placeholder: string;
     max: number;
-    value: string;
-    completed: number;
+    value: number;
+    current: number;
     onChange: (value: any) => void;
 }
 
@@ -18,23 +18,23 @@ const TargetSelector = (props: StationSelectorProps) => {
         placeholder,
         max,
         value,
-        completed,
+        current,
         onChange,
     } = props;
     return (
         <>
-            <h3 className="font-medium">{name}</h3>
-            <div className="flex mt-n5">
-                <div className="fuel-progress">
+            <h3 className="text-xl font-medium flex items-center">{name}</h3>
+            <div className="flex mt-n5 items-center content-center">
+                <div className="flex fuel-progress">
                     <Slider
                         min={0}
                         max={max}
-                        value={parseInt(value)}
+                        value={value}
                         onInput={onChange}
                         className="w-48"
                     />
                 </div>
-                <div className="station-input pad50 ml-4 mt-4">
+                <div className="flex station-input pad50 ml-4 mt-4">
                     <SimpleInput
                         label=""
                         noLeftMargin
@@ -51,12 +51,12 @@ const TargetSelector = (props: StationSelectorProps) => {
                     </div>
                 </div>
             </div>
-            <span className="fuel-content-label">Current:</span>
+            <h3>Current:</h3>
             <div className="flex mt-n5 current-fuel-line">
-                <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={completed} />
+                <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(current / max) * 100} />
                 <div className="fuel-label">
                     <label className="fuel-content-label" htmlFor="fuel-label">
-                        100
+                        {current}
                         {' '}
                         /
                         {' '}
