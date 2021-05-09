@@ -1,12 +1,5 @@
 @import "../../Assets/Efb.scss";
 
-.wrapper {
-  flex-grow: 1;
-  // this lets us use position:absolute in widgets
-  position: relative;
-  padding: 1rem;
-}
-
 .boarding-info {
   // position: absolute;
   width: 100%;
@@ -19,140 +12,18 @@
 
 .weights-panel-info {
   width: 100%;
-  height: 157px;
+  height: 163px;
 }
 
-.outter {
-  top: 37%;
-}
-.vent {
-  z-index: 1000;
-  top: 32.7em;
-}
-.right-tanks-info {
-  right: 0.6rem;
-}
-.center-tanks-info {
-  left: 36.25%;
-  top: 40%;
-}
-.visible-tank {
-  position: absolute;
-  z-index: 1;
-}
-.center-tank {
-  left: 39rem;
-  bottom: 3rem;
-  width: 135px;
-  top: 26rem;
-  height: 104px;
-}
-
-.inner-left-tank {
-  left: 20rem;
-  bottom: 3rem;
-  width: 300px;
-  top: 19.55rem;
-  height: 202px;
-}
-
-.inner-right-tank {
-  left: 47.65rem;
-  bottom: 3rem;
-  width: 300px;
-  top: 6.95rem;
-  height: 202px;
-}
-.outer-left-tank {
-  left: 12.5rem;
-  bottom: 3rem;
-  width: 119px;
-  top: 3.7rem;
-  height: 92px;
-}
-.outer-right-tank {
-  left: 66.5rem;
-  bottom: 3rem;
-  width: 119px;
-  top: -2.05rem;
-  height: 92px;
-}
-
-.hiding-block {
-  position: absolute;
-  z-index: 2;
-  background-color: #182130;
-}
-
-.hiding-block-top-left {
-  width: 636px;
-  height: 133px;
-  transform: rotate(-26.5deg);
-  top: -16.8rem;
-}
-.hiding-block-bottom-left {
-  width: 493px;
-  left: 10rem;
-  height: 126px;
-  transform: rotate(-18.5deg);
-  top: -14.3rem;
-}
-.hiding-block-top-right {
-  width: 636px;
-  left: 47rem;
-  height: 133px;
-  transform: rotate(26.5deg);
-  top: -32.8rem;
-}
-.hiding-block-bottom-right {
-  width: 493px;
-  left: 45.5rem;
-  height: 126px;
-  transform: rotate(18.5deg);
-  top: -30.5rem;
-}
-
-.mt-n5 {
-  margin-top: -0.5rem;
-}
-.pad15 {
-  padding-left: 15px;
-}
-.actual-fuel {
-  background: -webkit-linear-gradient(top, #3b82f6 50%, #ffffff00 0%);
-  background: -moz-linear-gradient(top, #3b82f6 50%, #ffffff00 0%);
-  background: -ms-linear-gradient(top, #3b82f6 50%, #ffffff00 0%);
-  background: -o-linear-gradient(top, #3b82f6 50%, #ffffff00 0%);
-  background: linear-gradient(to top, #3b82f6 50%, #ffffff00 0%);
-}
-.station-input{
-  position: relative;
-}
-.fuel-label {
-  float: right;
-  margin-top: -2px;
-}
 .total-label {
   position: absolute;
   top: 10px;
-  margin-top: -2%;
-  margin-left: 65%;
+  right: 2px;
+  text-align: right;
   font-size: 17px;
   color: #9ca3af;
 }
-.manage-refuel {
-  position: absolute;
-  left: 84%;
-  top: 29%;
-}
-.separation-line-boarding {
-  position: absolute;
-  left: 79%;
-  top: 11%;
-  height: 78%;
-  width: 1px;
-  background-color: white;
-}
+
 .station-separation-line {
   position: relative;
   height: 1px;
@@ -160,107 +31,18 @@
   background-color: white;
   margin-top: 10px;
 }
-.max-capacity-label {
-  display: block;
-}
-.airplane-fuel {
-  height: 54%;
-  max-width: 95%;
-  // position the image in the center of the screen while still being able to position elements on top of it
-  // basically this should be a background but I couldn't figure that out with rotation and sizing
+
+.simbrief-button {
   position: absolute;
-  left: 0;
-  right: 0;
-  margin-left: auto;
-  margin-right: auto;
-  top: 34rem;
-  z-index: 3;
+  right: 27px;
+  top: -65px;
+  width: 200px;
 }
 
-.refuel-icon {
-  height: 3.5rem;
-  width: 3.5rem;
-  margin: auto;
-  right: calc(55% + 18rem);
-  top: 21rem;
-  grid-template-columns: minmax(0, 1fr);
-  @apply p-2;
-  @apply rounded-lg;
-  color: #232b3d;
-  grid-gap: 0.5rem;
-}
-
-.refuel-icon > button > svg {
-  height: 100%;
-  width: 100%;
-}
-
-.refuel-speed {
+.boarding-time-panel {
   position: absolute;
-  padding: 1rem;
-  padding-bottom: 0rem;
-  z-index: 1000;
-  bottom: 2rem;
-  left: 37%;
-  width: 23rem;
-  height: 7.75%;
-}
-
-.completed {
-  background-color: #3b82f6 !important;
-}
-.refuel {
-  background-color: #10b981 !important;
-}
-.defuel {
-  background-color: #e4a700 !important;
-}
-.disabled {
-  background-color: #9aa2ad !important;
-}
-
-.completed-text {
-  color: #84acef !important;
-}
-.refuel-text {
-  color: #10b981 !important;
-}
-.defuel-text {
-  color: #e4a700 !important;
-}
-.disabled-text {
-  color: #9aa2ad !important;
-}
-
-.eta-label {
-  position: absolute;
-  width: 7.7em;
-  text-align: center;
-  margin-top: 17%;
-  font-size: 18px;
-  margin-left: -73%;
-}
-
-.fuel-content-label {
-  font-size: 18px;
-}
-
-.available {
-  position: relative;
-}
-
-.refuel-button {
-  border: none;
-  padding: 0 !important;
-  height: 100%;
-  width: 100%;
-}
-
-.refuel-button:active {
-  @apply transform;
-  @apply translate-y-0;
-}
-
-.current-fuel-line {
-  margin-top: -5px;
+  right: 250px;
+  top: -65px;
+  width: 400px;
+  height: 48px;
 }
