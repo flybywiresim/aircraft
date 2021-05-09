@@ -361,6 +361,10 @@ void FlyByWireModelClass::step()
         FlyByWire_DWork.is_c15_FlyByWire = FlyByWire_IN_Landing100ft;
         rtb_alpha_floor_inhib = 1;
         rtb_ap_special_disc = 1;
+      } else if (rtb_on_ground != 0) {
+        FlyByWire_DWork.is_c15_FlyByWire = FlyByWire_IN_Landed;
+        rtb_alpha_floor_inhib = 1;
+        rtb_ap_special_disc = 0;
       } else {
         rtb_alpha_floor_inhib = 0;
         rtb_ap_special_disc = 0;
@@ -379,13 +383,13 @@ void FlyByWireModelClass::step()
       break;
 
      case FlyByWire_IN_Landing100ft:
-      if (rtb_on_ground != 0) {
-        FlyByWire_DWork.is_c15_FlyByWire = FlyByWire_IN_Landed;
-        rtb_alpha_floor_inhib = 1;
-        rtb_ap_special_disc = 0;
-      } else if (FlyByWire_U.in.data.H_radio_ft > 100.0) {
+      if (FlyByWire_U.in.data.H_radio_ft > 100.0) {
         FlyByWire_DWork.is_c15_FlyByWire = FlyByWire_IN_Flying;
         rtb_alpha_floor_inhib = 0;
+        rtb_ap_special_disc = 0;
+      } else if (rtb_on_ground != 0) {
+        FlyByWire_DWork.is_c15_FlyByWire = FlyByWire_IN_Landed;
+        rtb_alpha_floor_inhib = 1;
         rtb_ap_special_disc = 0;
       } else {
         rtb_alpha_floor_inhib = 1;
@@ -394,7 +398,11 @@ void FlyByWireModelClass::step()
       break;
 
      default:
-      if (FlyByWire_U.in.data.H_radio_ft > 100.0) {
+      if (rtb_on_ground != 0) {
+        FlyByWire_DWork.is_c15_FlyByWire = FlyByWire_IN_Landed;
+        rtb_alpha_floor_inhib = 1;
+        rtb_ap_special_disc = 0;
+      } else if (FlyByWire_U.in.data.H_radio_ft > 100.0) {
         FlyByWire_DWork.is_c15_FlyByWire = FlyByWire_IN_Flying;
         rtb_alpha_floor_inhib = 0;
         rtb_ap_special_disc = 0;
