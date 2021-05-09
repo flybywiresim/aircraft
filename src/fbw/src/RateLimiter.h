@@ -1,5 +1,7 @@
 #include <stdlib.h>
 
+#pragma once
+
 class RateLimiter {
  public:
   void setRate(double rate) { changeRate = abs(rate); }
