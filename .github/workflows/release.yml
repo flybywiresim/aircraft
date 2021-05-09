@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       A32NX_PRODUCTION_BUILD: 1
+      A32NX_INSTRUMENTS_BUILD_WORKERS: 2
       RELEASE_ZIP_NAME: A32NX-stable.zip
       BUILD_DIR_NAME: stable
     steps:
