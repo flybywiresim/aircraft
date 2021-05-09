@@ -34,7 +34,7 @@ const TargetSelector = (props: StationSelectorProps) => {
                         className="w-48"
                     />
                 </div>
-                <div className="flex station-input pad50 ml-4 mt-4">
+                <div className="flex station-input pad50 ml-4 mt-4 relative">
                     <SimpleInput
                         label=""
                         noLeftMargin
@@ -51,7 +51,7 @@ const TargetSelector = (props: StationSelectorProps) => {
                     </div>
                 </div>
             </div>
-            <h3>Current:</h3>
+            <h3 className="text-sm font-medium flex items-center">Current:</h3>
             <div className="flex mt-n5 current-fuel-line">
                 <ProgressBar height="10px" width="200px" displayBar={false} isLabelVisible={false} bgcolor="#3b82f6" completed={(current / max) * 100} />
                 <div className="fuel-label">
