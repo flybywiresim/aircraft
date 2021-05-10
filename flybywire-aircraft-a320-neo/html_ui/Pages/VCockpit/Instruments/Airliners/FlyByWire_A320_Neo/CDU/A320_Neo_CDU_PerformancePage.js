@@ -171,7 +171,7 @@ class CDUPerformancePage {
                     transAltCell += "[s-text]";
                 }
             } else {
-                transAltCell = "{cyan}[\xa0\xa0\xa0]{end}";
+                transAltCell = "{cyan}[]{end}";
             }
             mcdu.onLeftInput[3] = (value) => {
                 if (mcdu.setTakeOffTransAltitude(value)) {
@@ -703,9 +703,10 @@ class CDUPerformancePage {
             }
         };
 
+        const closeToDest = mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().liveDistanceTo <= 180;
+
         // check if we even have an destination airport
         const hasDestination = !!mcdu.flightPlanManager.getDestination();
-        const closeToDest = mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().liveDistanceTo <= 180;
 
         let qnhCell = "[\xa0\xa0][color]cyan";
         if (isFinite(mcdu.perfApprQNH)) {
@@ -752,19 +753,16 @@ class CDUPerformancePage {
 
         let transAltCell = "[\xa0]".padEnd(5, "\xa0");
         if (hasDestination) {
-            const transAltitude = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
-            if (isFinite(transAltitude)) {
-                transAltCell = transAltitude.toFixed(0);
-                if (!mcdu.perfApprTransAltPilotEntered) {
-                    transAltCell = `{small}${transAltCell}{end}`;
-                }
+            const apprTransAlt = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+            if (!mcdu.perfApprTransAltPilotEntered) {
+                transAltCell = `{small}${apprTransAlt}{end}`;
             }
-            mcdu.onLeftInput[3] = (value) => {
-                if (mcdu.setPerfApprTransAlt(value)) {
-                    CDUPerformancePage.ShowAPPRPage(mcdu);
-                }
-            };
         }
+        mcdu.onLeftInput[3] = (value) => {
+            if (mcdu.setPerfApprTransAlt(value)) {
+                CDUPerformancePage.ShowAPPRPage(mcdu);
+            }
+        };
 
         let vappCell = "---";
         let vlsCell = "---";

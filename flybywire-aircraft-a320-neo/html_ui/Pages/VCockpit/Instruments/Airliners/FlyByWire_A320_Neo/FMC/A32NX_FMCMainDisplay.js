@@ -9,6 +9,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.coRoute = "";
         this.tmpOrigin = "";
         this.transitionAltitude = NaN;
+        this.transitionAltitudeIsPilotEntered = false;
         this.perfTOTemp = NaN;
         this._overridenFlapApproachSpeed = NaN;
         this._overridenSlatApproachSpeed = NaN;
@@ -196,7 +197,8 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.flightPhaseManager = new A32NX_FlightPhaseManager(this);
 
-        this.offlineTACore = new A32NX_Transition();
+        this.transitionAltitudeCore = new A32NX_Transition();
+        this.transitionAltitudeCore.init();
 
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
@@ -298,6 +300,7 @@ class FMCMainDisplay extends BaseAirliners {
         const flightPhaseManagerDelta = this.flightPhaseUpdateThrottler.canUpdate(_deltaTime);
         if (flightPhaseManagerDelta !== -1) {
             this.flightPhaseManager.checkFlightPhase(flightPhaseManagerDelta);
+            this.transitionAltitudeCore.update();
         }
         this._checkFlightPlan--;
         if (this._checkFlightPlan <= 0) {
@@ -323,6 +326,8 @@ class FMCMainDisplay extends BaseAirliners {
         if (this._flightGuidance) {
             this._flightGuidance.update(_deltaTime);
         }
+
+        this.trySetTransitionAltitude();
     }
 
     /**
@@ -1871,20 +1876,23 @@ class FMCMainDisplay extends BaseAirliners {
     setTakeOffTransAltitude(input) {
         if (input === FMCMainDisplay.clrValue && this.transitionAltitudeIsPilotEntered) {
             this.transitionAltitudeIsPilotEntered = false;
-            this.updateDepartArrive(true);
+            this.transitionAltitudeCore.remote = true;
             return true;
         }
+
         if (input === FMCMainDisplay.clrValue && !this.transitionAltitudeIsPilotEntered) {
             this.transitionAltitude = NaN;
             this.transitionAltitudeIsPilotEntered = false;
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 0);
             return true;
         }
+
         if (!/^\d{4,5}$/.test(input)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
-        const value = Math.round(parseInt(s) / 10) * 10;
+
+        const value = Math.round(parseInt(input) / 10) * 10;
         if (value < 1000 || value > 45000) {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
@@ -2594,27 +2602,30 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprTransAlt(input) {
         if (input === FMCMainDisplay.clrValue && this.perfApprTransAltPilotEntered) {
             this.perfApprTransAltPilotEntered = false;
-            this.updateDepartArrive(true);
+            this.transitionAltitudeCore.remote = true;
             return true;
         }
+
         if (input === FMCMainDisplay.clrValue && !this.perfApprTransAltPilotEntered) {
-            this.perfApprTransAlt = NaN;
+            this.transitionAltitude = NaN;
             this.perfApprTransAltPilotEntered = false;
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 0);
             return true;
         }
+
         if (!/^\d{4,5}$/.test(input)) {
             this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
-        const value = Math.round(parseInt(s) / 10) * 10;
+
+        const value = Math.round(parseInt(input) / 10) * 10;
         if (value < 1000 || value > 45000) {
             this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
 
-        this.perfApprTransAlt = value;
-        this.perfApprTransAltPilotEntered = true;
+        this.transitionAltitude = value;
+        this.transitionAltitudeIsPilotEntered = true;
         SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", value);
         return true;
     }
@@ -3711,85 +3722,11 @@ class FMCMainDisplay extends BaseAirliners {
     representsDecimalNumber(str) {
         return /^[+-]?\d*(?:\.\d+)?$/.test(str);
     }
-}
-
-updateTransitionAltitude(icao, phase) {
-    NXApi.getAirportInfo(icao)
-        .then((data) => {
-            this.transitionAltitude = data.transAlt;
-            if (this.transitionAltitude === -1) {
-                if (phase === "origin") {
-                    SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
-                    return;
-                }
-                if (phase === "destination") {
-                    SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
-                    return;
-                }
-            } else {
-                if (phase === "origin") {
-                    SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", this.transitionAltitude);
-                    return;
-                }
-                if (phase === "destination") {
-                    SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", this.transitionAltitude);
-                    return;
-                }
-            }
-        });
-}
-// Only update when changing origin & destination airport
-updateDepartArrive(mode) {
-    if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident) {
-        if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
-            const originAirport = this.flightPlanManager.getOrigin().ident;
-            const destinationAirport = this.flightPlanManager.getDestination().ident;
-            if (!this.offlineTACore.offline) {
-                if ((this.currentOrigin !== originAirport) || this.apiRequestError || mode) {
-                    try {
-                        this.updateTransitionAltitude(originAirport, "origin");
-                        this.apiRequestError = false;
-                    } catch (error) {
-                        console.log(error);
-                        SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 18000);
-                        setTimeout(this.apiRequestError = true, 3000);
-                    }
-                    this.currentOrigin = originAirport;
-                }
-                if ((this.currentDestination !== destinationAirport) || this.apiRequestError || mode) {
-                    try {
-                        this.updateTransitionAltitude(destinationAirport, "destination");
-                        this.apiRequestError = false;
-                    } catch (error) {
-                        console.log(error);
-                        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 18000);
-                        setTimeout(this.apiRequestError = true, 3000);
-                    }
-                    this.currentDestination = destinationAirport;
-                }
-                if (isFinite(this.perfApprQNH) && isFinite(transitionLevel)) {
-                    if (mcdu.perfApprQNH < 500) {
-                        this.offlineTACore.transitionLevel(this.perfApprQNH.toFixed(2), "inhg");
-                    } else {
-                        this.offlineTACore.transitionLevel(this.perfApprQNH.toFixed(0), "hpa");
-                    }
-                }
-            } else {
-                if (this.currentOrigin !== originAirport) {
-                    this.offlineTACore.updateOfflineTransitionAltitude(originAirport, "origin");
-                    this.currentOrigin = originAirport;
-                }
-                if (this.currentDestination !== destinationAirport) {
-                    this.offlineTACore.updateOfflineTransitionAltitude(destinationAirport, "destination");
-                    this.currentDestination = destinationAirport;
-                }
-                if (isFinite(this.perfApprQNH) && isFinite(transitionLevel)) {
-                    if (mcdu.perfApprQNH < 500) {
-                        this.offlineTACore.transitionLevel(this.perfApprQNH.toFixed(2), "inhg");
-                    } else {
-                        this.offlineTACore.transitionLevel(this.perfApprQNH.toFixed(0), "hpa");
-                    }
-                }
+    trySetTransitionAltitude() {
+        if (this.flightPlanManager.getOrigin() && this.flightPlanManager.getOrigin().ident) {
+            if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().ident) {
+                this.transitionAltitudeCore.originAirport = this.flightPlanManager.getOrigin().ident;
+                this.transitionAltitudeCore.destinationAirport = this.flightPlanManager.getDestination().ident;
             }
         }
     }
