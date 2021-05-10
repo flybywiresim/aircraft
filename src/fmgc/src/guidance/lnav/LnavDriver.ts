@@ -1,8 +1,8 @@
+import { LateralMode, VerticalMode } from '@shared/autopilot';
 import { GuidanceComponent } from '../GuidanceComponent';
 import { ControlLaw } from '../ControlLaws';
 import { Leg, TFLeg } from '../Geometry';
 import { GuidanceController } from '../GuidanceController';
-import { LateralMode, VerticalMode } from '../../utils/Enums';
 
 export class LnavDriver implements GuidanceComponent {
     private guidanceController: GuidanceController;
@@ -118,7 +118,6 @@ export class LnavDriver implements GuidanceComponent {
         const lateralModel = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Enum');
         const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Enum');
 
-        // Lateral mode is NAV
         if (lateralModel === LateralMode.NAV) {
             // Set HDG (current heading)
             SimVar.SetSimVarValue('H:A320_Neo_FCU_HDG_PULL', 'number', 0);
