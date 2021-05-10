@@ -207,10 +207,24 @@
     </Template>
 
     <Template Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
-        <UseTemplate Name="FBW_Push_Held">
-            <HOLD_SIMVAR>K:AUTO_THROTTLE_DISCONNECT</HOLD_SIMVAR>
-            <TOOLTIPID>Disc. A/THR</TOOLTIPID>
-        </UseTemplate>
+        <DefaultTemplateParameters>
+            <WWISE_EVENT_1>yoke_push_button_on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>yoke_push_button_off</WWISE_EVENT_2>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
+                <TOOLTIPID>Disc. A/THR</TOOLTIPID>
+                <LEFT_SINGLE_CODE>
+                    1 (&gt;K:AUTO_THROTTLE_DISCONNECT)
+                    1 (&gt;L:PUSH_THROTTLE_BUTTON_#ID#)
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:PUSH_THROTTLE_BUTTON_#ID#)
+                </LEFT_LEAVE_CODE>
+            </UseTemplate>
+        </Component>
     </Template>
 
 </ModelBehaviors>

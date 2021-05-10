@@ -60,6 +60,7 @@ class A32NX_FWC {
         // master warning & caution buttons
         this.warningPressed = false;
         this.cautionPressed = false;
+        this.warningPriority = false;
 
         // altitude warning
         this.previousTargetAltitude = NaN;
@@ -67,6 +68,19 @@ class A32NX_FWC {
         this._wasAboveThreshold = false;
         this._wasInRange = false;
         this._wasReach200ft = false;
+
+        // autopilot warning
+        this.AutothrottleWarningCanceled = false;
+        this.AutopilotWarningCanceled = false;
+        this.athrdeltaTime = 0;
+        this.apdeltaTime = 0;
+
+        // AUTOPILOT DISCONNECT
+        this.ATHRDisconnectByThrottle = false;
+        this.APDisconnectedBySidestick = false;
+
+        //update throttler
+        this.updateThrottler = new UpdateThrottler(200);
     }
 
     update(_deltaTime, _core) {
@@ -76,7 +90,12 @@ class A32NX_FWC {
         this._updateButtons(_deltaTime);
         this._updateTakeoffMemo(_deltaTime);
         this._updateLandingMemo(_deltaTime);
-        this._updateAltitudeWarning();
+        this._autopilotDisconnect(_deltaTime);
+
+        if (this.updateThrottler.canUpdate(_deltaTime) !== -1) {
+            this._checkLandingGear();
+            this._updateAltitudeWarning();
+        }
     }
 
     _resetPulses() {
@@ -102,15 +121,38 @@ class A32NX_FWC {
         const inhibOverride = this.memoFlightPhaseInhibOvrd_memo.write(recall, this.flightPhaseEndedPulse);
         SimVar.SetSimVarValue("L:A32NX_FWC_INHIBOVRD", "Bool", inhibOverride);
 
+        const overspeed = Simplane.getIndicatedSpeed() > (SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") + 4);
+        const ldgNotDown = SimVar.GetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool");
+
         if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_R", "Bool")) {
             this.warningPressed = true;
+            if (!overspeed && !ldgNotDown) {
+                SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", false);
+                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
+            }
         } else {
             this.warningPressed = false;
         }
         if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT_R", "Bool")) {
             this.cautionPressed = true;
+            SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
+            SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
         } else {
             this.cautionPressed = false;
+        }
+
+        if (ldgNotDown || overspeed) {
+            this.warningPriority = true;
+        } else {
+            this.warningPriority = false;
+        }
+
+        if (SimVar.GetSimVarValue("L:PUSH_THROTTLE_BUTTON_1", "Bool") || SimVar.GetSimVarValue("L:PUSH_THROTTLE_BUTTON_2", "Bool")) {
+            this.ATHRDisconnectByThrottle = true;
+        }
+
+        if (SimVar.GetSimVarValue("L:PUSH_SIDESTICK_AUTOPILOT_1", "Bool") || SimVar.GetSimVarValue("L:PUSH_SIDESTICK_AUTOPILOT_2", "Bool")) {
+            this.APDisconnectedBySidestick = true;
         }
     }
 
@@ -419,5 +461,118 @@ class A32NX_FWC {
             }
         }
         return true;
+    }
+
+    _autopilotDisconnect(_deltaTime) {
+        const AP_STATUS = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_ACTIVE", "Bool");
+        const ATHR_STATUS = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_STATUS", "Enum");
+
+        /*
+        *   AUTOTHRUST DISCONNECT
+        *   BY FCU & THROTTLE
+        */
+
+        if (ATHR_STATUS !== 0) {
+            // AUTOTHRUST CONNECTED
+            SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT", "Bool", false);
+            SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool", false);
+            SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
+
+            this.AutothrottleWarningCanceled = false;
+            this.ATHRDisconnectByThrottle = false;
+            this.athrdeltaTime = 0;
+        } else if (ATHR_STATUS === 0 && !this.AutothrottleWarningCanceled) {
+            if (this.ATHRDisconnectByThrottle) {
+                // AUTOTHRUST DISCONNECTED BY THROTTLE PUSH BUTTON
+                SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT", "Bool", true);
+                SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", true);
+                this.athrdeltaTime += _deltaTime;
+
+                if (this.cautionPressed || (this.athrdeltaTime / 1000) >= 3) {
+                    this.AutothrottleWarningCanceled = true;
+                    this.ATHRDisconnectByThrottle = false;
+                    SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT", "Bool", false);
+                    SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
+                    this.athrdeltaTime = 0;
+                }
+            } else if (!this.ATHRDisconnectByThrottle && !this.AutothrottleWarningCanceled) {
+                // AUTOTHRUST DISCONNECTED BY FCU
+                SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool", true);
+                if (this.cautionPressed) {
+                    SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
+                }
+            }
+        }
+
+        /*
+        *   AUTOPILOT DISCONNECT
+        *   BY FCU & SIDESTICK
+        */
+
+        if (AP_STATUS) {
+            // AUTOPILOT CONNECTED
+            this.apdeltaTime = 0;
+            this.AutopilotWarningCanceled = false;
+            this.APDisconnectedBySidestick = false;
+            SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_FCU", "Bool", false);
+            SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_SIDESTICK", "Bool", false);
+            if (!this.warningPriority) {
+                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
+            }
+        } else {
+            if (this.APDisconnectedBySidestick && !this.AutopilotWarningCanceled) {
+                // AUTOPILOT DISCONNECTED BY SIDESTICK
+                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_SIDESTICK", "Bool", true);
+                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
+                this.apdeltaTime += _deltaTime;
+                if (this.warningPressed || (this.apdeltaTime / 1000) >= 3) {
+                    this.AutopilotWarningCanceled = true;
+                    SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_SIDESTICK", "Bool", false);
+                    if (!this.warningPriority) {
+                        SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
+                    }
+                    this.apdeltaTime = 0;
+                }
+            } else if (!this.APDisconnectedBySidestick && !this.AutopilotWarningCanceled) {
+                // AUTOPILOT DISCONNECTED BY FCU
+                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_FCU", "Bool", true);
+                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
+                if (this.warningPressed) {
+                    this.AutopilotWarningCanceled = true;
+                    if (!this.warningPriority) {
+                        SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
+                    }
+                }
+            }
+        }
+    }
+
+    _checkLandingGear(_deltaTime) {
+        const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
+        const eng1N1 = SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent");
+        const eng2N1 = SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent");
+        const isLandingGearLockedDown = SimVar.GetSimVarValue("GEAR POSITION:0", "Enum") > 0.9;
+        const isTogaFlexMct1 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:1", "number") > 4;
+        const isTogaFlexMct2 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:2", "number") > 4;
+        const flapPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        const isEngine1Shutdown = (SimVar.GetSimVarValue("TURB ENG N1:1", "Percent") < 15 || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:1", "Bool") == 0) && !Simplane.getIsGrounded();
+        const isEngine2Shutdown = (SimVar.GetSimVarValue("TURB ENG N1:2", "Percent") < 15 || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:2", "Bool") == 0) && !Simplane.getIsGrounded();
+
+        if (!isLandingGearLockedDown && radioHeight < 750 && !(this.flightPhase === 3 || this.flightPhase === 4 || this.flightPhase === 5)) {
+            if (eng1N1 < 75 && eng2N1 < 75) {
+                SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
+            } else if (isEngine1Shutdown && eng2N1 < 97) {
+                SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
+            } else if (isEngine2Shutdown && eng2N1 < 97) {
+                SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
+            } else if (!(isTogaFlexMct1 && isTogaFlexMct2) && flapPosition >= 1) {
+                //this situation can't cancelled with master warning. but after fwc rewrite, will fixed.
+                SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
+            } else {
+                SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
+            }
+        } else {
+            SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
+        }
     }
 }

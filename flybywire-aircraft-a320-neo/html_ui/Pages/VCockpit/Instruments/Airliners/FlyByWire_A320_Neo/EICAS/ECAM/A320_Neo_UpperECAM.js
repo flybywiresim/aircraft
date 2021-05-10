@@ -491,6 +491,51 @@ var A320_Neo_UpperECAM;
                             },
                         ]
                     },
+                    {
+                        name: "L/G",
+                        messages: [
+                            {
+                                message: "GEAR NOT DOWN",
+                                level: 3,
+                                page: "WHEEL",
+                                isActive: () => (
+                                    this.getCachedSimVar("L:A32NX_LDG_NOT_DOWN", "Bool")
+                                )
+                            },
+                        ]
+                    },
+                    {
+                        name: "AUTO FLT",
+                        messages: [
+                            {
+                                message: "AP OFF",
+                                level: 2,
+                                warning: false,
+                                isActive: () => (
+                                    this.getCachedSimVar("L:A32NX_AUTOPILOT_DISCONNECT_BY_FCU", "Bool")
+                                ),
+                            },
+                        ]
+                    },
+                    {
+                        name: "AUTO FLT",
+                        messages: [
+                            {
+                                message: "A/THR OFF",
+                                level: 2,
+                                isActive: () => (
+                                    this.getCachedSimVar("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool")
+                                ),
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "THR LEVERS",
+                                        action: "MOVE",
+                                    }
+                                ]
+                            }
+                        ]
+                    },
                     //Ground
                     {
                         name: "ENG 1 FIRE",
@@ -1190,10 +1235,26 @@ var A320_Neo_UpperECAM;
                         isActive: () => this.leftEcamMessagePanel.landASAP === 3 && !Simplane.getIsGrounded()
                     },
                     {
+                        message: "AP OFF",
+                        style: "fail-3",
+                        important: true,
+                        isActive: () => {
+                            return this.getCachedSimVar("L:A32NX_AUTOPILOT_DISCONNECT_BY_SIDESTICK", "Bool");
+                        }
+                    },
+                    {
                         message: "LAND ASAP",
                         style: "fail-2",
                         important: true,
                         isActive: () => this.leftEcamMessagePanel.landASAP === 2 && !Simplane.getIsGrounded()
+                    },
+                    {
+                        message: "A/THR OFF",
+                        style: "InfoCaution",
+                        important: true,
+                        isActive: () => {
+                            return this.getCachedSimVar("L:A32NX_ATHR_DISCONNECT", "Bool");
+                        }
                     },
                     {
                         message: "T.O. INHIBIT",
