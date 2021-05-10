@@ -1,18 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { FlightPlanManager, ManagedFlightPlan } from '../../../fmgc/src';
+import { FlightPlanManager, ManagedFlightPlan } from '@shared/flightplan';
 import { useSimVar } from './simVars';
 import { getRootElement } from './defaults';
-
-export const useFlightPlanManager = (): FlightPlanManager => {
-    const [flightPlanManager] = useState(() => new FlightPlanManager(getRootElement()));
-
-    return flightPlanManager;
-};
 
 const FlightPlanContext = React.createContext<{ flightPlanManager: FlightPlanManager }>(undefined as any);
 
 export const FlightPlanProvider: React.FC = ({ children }) => {
-    const flightPlanManager = useFlightPlanManager();
+    const [flightPlanManager] = useState(() => new FlightPlanManager(getRootElement()));
 
     return (
         <FlightPlanContext.Provider value={{ flightPlanManager }}>
@@ -21,6 +15,8 @@ export const FlightPlanProvider: React.FC = ({ children }) => {
     );
 };
 
+export const useFlightPlanManager = (): FlightPlanManager => useContext(FlightPlanContext).flightPlanManager;
+
 export const useFlightPlanVersion = (): number => {
     const [version] = useSimVar(FlightPlanManager.FlightPlanVersionKey, 'number');
 
@@ -28,7 +24,7 @@ export const useFlightPlanVersion = (): number => {
 };
 
 export const useCurrentFlightPlan = (): ManagedFlightPlan => {
-    const flightPlanManager = useContext(FlightPlanContext).flightPlanManager;
+    const flightPlanManager = useFlightPlanManager();
 
     const flightPlanVersion = useFlightPlanVersion();
     const [currentFlightPlan, setCurrentFlightPlan] = useState<ManagedFlightPlan>(() => flightPlanManager.getCurrentFlightPlan());
