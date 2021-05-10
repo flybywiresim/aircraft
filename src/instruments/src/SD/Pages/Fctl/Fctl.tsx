@@ -4,6 +4,9 @@ import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 
 import './Fctl.scss';
+import { PageTitle } from '../../Common/PageTitle';
+import { EcamPage } from '../../Common/EcamPage';
+import { SvgGroup } from '../../Common/SvgGroup';
 
 setIsEcamPage('fctl_page');
 
@@ -49,8 +52,8 @@ export const FctlPage = () => {
     };
 
     return (
-        <svg id="ecam-fctl" viewBox="0 0 600 600" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
-            <text x={45} y={18} className="PageTitle" textAnchor="middle" alignmentBaseline="central">F/CTL</text>
+        <EcamPage name="ecam-fctl">
+            <PageTitle x={6} y={18} text="F/CTL" />
 
             <HydraulicContext.Provider value={hydraulicContext}>
                 <Spoilers x={98} y={14} />
@@ -76,7 +79,7 @@ export const FctlPage = () => {
 
                 <Rudder x={250} y={356} />
             </HydraulicContext.Provider>
-        </svg>
+        </EcamPage>
     );
 };
 
@@ -117,15 +120,13 @@ const Spoilers = ({ x = 0, y = 0 }: ComponentPositionProps) => {
             <Spoiler x={361} y={85} side="right" number={4} actuatedBy="Y" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
             <Spoiler x={399} y={90} side="right" number={5} actuatedBy="G" upWhenActuated={(spoilersArmed && rightSpoilerUp) || rightAileronUp} />
 
-            <g id="leftSpeedbrakeGroup">
-                <path className="MainShape" d="M0 47 l0 -5 l140 -23 l0 5" />
-                <path className="MainShape" d="M37 96 l0 5 l105 -12 l0 -5" />
-            </g>
+            {/* Left spoiler wing shape */}
+            <path className="MainShape" d="M0 47 l0 -5 l140 -23 l0 5" />
+            <path className="MainShape" d="M37 96 l0 5 l105 -12 l0 -5" />
 
-            <g id="rightSpeedbrakeGroup">
-                <path className="MainShape" d="M404 47 l0 -5 l-140 -23 l0 5" />
-                <path className="MainShape" d="M367 96 l0 5 l-105 -12 l0 -5" />
-            </g>
+            {/* Right spoiler wing shape */}
+            <path className="MainShape" d="M404 47 l0 -5 l-140 -23 l0 5" />
+            <path className="MainShape" d="M367 96 l0 5 l-105 -12 l0 -5" />
         </SvgGroup>
     );
 };
@@ -385,7 +386,5 @@ const ElevatorAxis = ({ x, y, side }: ComponentPositionProps & ComponentSidePosi
 const Note: React.FunctionComponent<ComponentPositionProps> = ({ x, y, children }) => (
     <text x={x} y={y} className="Note" textAnchor="middle" alignmentBaseline="central">{children}</text>
 );
-
-const SvgGroup: React.FunctionComponent<ComponentPositionProps> = ({ x, y, children }) => <g transform={`translate(${x},${y})`}>{children}</g>;
 
 ReactDOM.render(<SimVarProvider><FctlPage /></SimVarProvider>, getRenderTarget());
