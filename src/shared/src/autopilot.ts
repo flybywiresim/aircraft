@@ -1,4 +1,6 @@
-export enum LateralMode {
+import { ControlLaw } from '@fmgc/guidance/ControlLaws';
+
+enum LateralMode {
     NONE = 0,
     HDG = 10,
     TRACK = 11,
@@ -13,7 +15,7 @@ export enum LateralMode {
     GA_TRACK = 50,
 }
 
-export enum VerticalMode {
+enum VerticalMode {
     NONE = 0,
     ALT = 10,
     ALT_CPT = 11,
@@ -33,3 +35,9 @@ export enum VerticalMode {
     SRS = 40,
     SRS_GA = 41,
 }
+
+export {
+    ControlLaw,
+    LateralMode,
+    VerticalMode,
+};
