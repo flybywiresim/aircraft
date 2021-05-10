@@ -206,17 +206,19 @@ const PayloadPage = () => {
     const totalPaxTarget = Object.values(paxStations).map((station) => station.paxTargetRows).reduce((acc, cur) => acc + cur);
 
     const [usingMetrics, setUsingMetrics] = useSimVarSyncedPersistentProperty('L:A32NX_CONFIG_USING_METRIC_UNIT', 'Number', 'CONFIG_USING_METRIC_UNIT');
+
     const currentUnit = () => {
         if (usingMetrics === 1) {
             return 'KG';
         }
         return 'LB';
     };
-    const convertUnit = () => {
+
+    const convertUnit = (unitInMetrics) => {
         if (usingMetrics === 1) {
             return 1;
         }
-        return 2.20462;
+        return unitInMetrics * 2.20462;
     };
 
     const lbsToKg = (value: number) => value * 0.453592;
@@ -575,9 +577,9 @@ const PayloadPage = () => {
                                 <div className="bg-gray-800 rounded-xl text-white shadow-lg weights-panel-info p-6 overflow-hidden">
                                     <h3 className="text-xl font-medium flex items-center">ZFW:</h3>
                                     <span className="mt-2 text-lg">
-                                        {round(getZfw())}
+                                        {round(convertUnit(getZfw()))}
                                         {' '}
-                                        KG
+                                        {currentUnit()}
                                     </span>
                                 </div>
                             </div>
@@ -586,9 +588,9 @@ const PayloadPage = () => {
                                 <div className="bg-gray-800 rounded-xl text-white shadow-lg weights-panel-info p-6 overflow-hidden">
                                     <h3 className="text-xl font-medium flex items-center">PAYLOAD:</h3>
                                     <span className="mt-2 text-lg">
-                                        {round(getTotalPayload())}
+                                        {round(convertUnit(getTotalPayload()))}
                                         {' '}
-                                        KG
+                                        {currentUnit()}
                                     </span>
                                 </div>
                             </div>
@@ -597,9 +599,9 @@ const PayloadPage = () => {
                                 <div className="bg-gray-800 rounded-xl text-white shadow-lg weights-panel-info p-6 overflow-hidden">
                                     <h3 className="text-xl font-medium flex items-center">CARGO:</h3>
                                     <span className="mt-2 text-lg">
-                                        {round(getTotalCargo())}
+                                        {round(convertUnit(getTotalCargo()))}
                                         {' '}
-                                        KG
+                                        {currentUnit()}
                                     </span>
                                 </div>
                             </div>
