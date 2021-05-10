@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
+import { DisplayUnit } from '@instruments/common/displayUnit';
+import { FlightPlanProvider } from '@instruments/common/flightplan';
 import { render } from '../Common';
-import { DisplayUnit } from '../Common/displayUnit';
 import { ArcMode } from './ArcMode';
 import { DebugInfo } from './DebugInfo';
-import { FlightPlanProvider } from '../Common/flightplan';
 
 import './styles.scss';
 
