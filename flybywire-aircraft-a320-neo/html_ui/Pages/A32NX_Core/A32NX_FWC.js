@@ -57,19 +57,19 @@ class A32NX_FWC {
         // ESDL 1. 0.320
         this.memoLdgInhibit_conf01 = new NXLogic_ConfirmNode(3, true); // CONF 01
 
-        // master warning & caution buttons
+        // Master Warning & Caution
         this.warningPressed = false;
         this.cautionPressed = false;
         this.warningPriority = false;
 
-        // altitude warning
+        // Altitude Warning
         this.previousTargetAltitude = NaN;
         this._wasBellowThreshold = false;
         this._wasAboveThreshold = false;
         this._wasInRange = false;
         this._wasReach200ft = false;
 
-        // autopilot warning
+        // Autopilot Warning
         this.AutothrottleWarningCanceled = false;
         this.AutopilotWarningCanceled = false;
         this.athrdeltaTime = 0;
@@ -79,7 +79,11 @@ class A32NX_FWC {
         this.ATHRDisconnectByThrottle = false;
         this.APDisconnectedBySidestick = false;
 
-        //update throttler
+        // Initial SimVarValue
+        SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_FCU", "Bool", false);
+        SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool", false);
+
+        // Update Throttler
         this.updateThrottler = new UpdateThrottler(200);
     }
 
