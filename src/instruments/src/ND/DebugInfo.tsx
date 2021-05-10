@@ -1,8 +1,8 @@
 import React from 'react';
 import { Layer } from '@instruments/common/utils';
 import { ControlLaw } from '@fmgc/guidance/ControlLaws';
-import { useSimVar } from '../Common/simVars';
-import { useCurrentFlightPlan } from '../Common/flightplan';
+import { useSimVar } from '@instruments/common/simVars';
+import { useCurrentFlightPlan } from '@instruments/common/flightplan';
 
 export const DebugInfo: React.FC = () => {
     const [law] = useSimVar('L:A32NX_FG_CURRENT_LATERAL_LAW', 'number', 1_000);
