@@ -512,6 +512,7 @@
 
         <UseTemplate Name="FBW_ECAM_PAGE_BUTTON_Template">
             <BASE_NAME>STS</BASE_NAME>
+            <Part_ID>STS</Part_ID>
             <GROUP_INDEX>11</GROUP_INDEX> <!--Change to positive to activate-->
             <TOOLTIPID>Display STS informations on ECAM</TOOLTIPID>
         </UseTemplate>

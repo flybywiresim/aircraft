@@ -1,4 +1,32 @@
 /**
+ * The following functions are used to determine whether a flight phase can be changed or not
+ */
+function canInitiateTO(_fmc) {
+    const ra = Simplane.getAltitudeAboveGround();
+    return Math.round(ra / 100) !== Math.round(Simplane.getAltitude() / 100) && ra > 1.5 ||
+    (
+        Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 &&
+        !isNaN(_fmc.v2Speed) &&
+        (
+            (
+                SimVar.GetSimVarValue("ENG N1 RPM:1", "percent") > .85 &&
+                SimVar.GetSimVarValue("ENG N1 RPM:2", "percent") > .85
+            ) ||
+            Math.abs(Simplane.getGroundSpeed()) > 80
+        )
+    );
+}
+
+function canInitiateDes(_fmc, _ignoreAlt = false) {
+    const fl = Math.round(Simplane.getAltitude() / 100);
+    const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
+    const dest = _fmc.flightPlanManager.getDestination();
+    // Can initiate descent? OR Can initiate early descent?
+    return ((!!dest && dest.liveDistanceTo < 200 || !dest) && (fcuSelFl < _fmc.cruiseFlightLevel || (_ignoreAlt && fcuSelFl < fl)))
+        || (!!dest && dest.liveDistanceTo >= 200 && fl > 200 && fcuSelFl <= 200);
+}
+
+/**
  * The A32NX_FlightPhaseManager handles the FMGCs flight phases.
  * It does so by creating a unique flight phase object for every FMGC flight phase.
  *
@@ -81,35 +109,41 @@ class A32NX_FlightPhaseManager {
         }
     }
 
-    handleFcuInput() {
-        const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet") / 100;
-        const fl = Math.round(Simplane.getAltitude() / 100);
-
+    handleFcuAltKnobPushPull() {
         // Try Initiate climb
         if (this.fmc.currentFlightPhase === FmgcFlightPhases.TAKEOFF) {
             this.changeFlightPhase(FmgcFlightPhases.CLIMB);
             return;
         }
 
-        if (this.fmc.currentFlightPhase === FmgcFlightPhases.CLIMB || this.fmc.currentFlightPhase === FmgcFlightPhases.CRUISE) {
-            const dest = this.fmc.flightPlanManager.getDestination();
-            // Try initiate descent
-            if (
-                (!!dest && dest.liveDistanceTo < 200 || !dest) &&
-                fcuSelFl < this.fmc.cruiseFlightLevel
-            ) {
-                this.changeFlightPhase(FmgcFlightPhases.DESCENT);
-                return;
-            }
+        if ((this.fmc.currentFlightPhase === FmgcFlightPhases.CLIMB || this.fmc.currentFlightPhase === FmgcFlightPhases.CRUISE) && canInitiateDes(this.fmc)) {
+            this.changeFlightPhase(FmgcFlightPhases.DESCENT);
+        }
+    }
 
-            // Try initiate early descent
-            if (
-                !!dest && dest.liveDistanceTo >= 200 &&
-                fl > 200 &&
-                fcuSelFl < 200
-            ) {
-                this.changeFlightPhase(FmgcFlightPhases.DESCENT);
+    handleFcuAltKnobTurn() {
+        if (this.fmc.currentFlightPhase === FmgcFlightPhases.CRUISE) {
+            const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+            if (canInitiateDes(this.fmc, true) && (activeVerticalMode === 13 || activeVerticalMode === 14 || activeVerticalMode === 15 || activeVerticalMode === 23)) {
+                this.fmc.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.DESCENT);
             }
+        }
+    }
+
+    handleFcuVSKnob() {
+        if (this.fmc.currentFlightPhase === FmgcFlightPhases.CLIMB || this.fmc.currentFlightPhase === FmgcFlightPhases.CRUISE) {
+            /** a timeout of 100ms is required in order to receive the updated autopilot vertical mode */
+            setTimeout(() => {
+                const activeVerticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+                const VS = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
+                if (activeVerticalMode === 14 && VS < 0) {
+                    if (canInitiateDes(this.fmc, true)) {
+                        this.changeFlightPhase(FmgcFlightPhases.DESCENT);
+                    } else {
+                        this.fmc._onStepClimbDescent();
+                    }
+                }
+            }, 100);
         }
     }
 
@@ -142,24 +176,7 @@ class A32NX_FlightPhase_PreFlight {
     }
 
     check(_deltaTime, _fmc) {
-        const ra = Simplane.getAltitudeAboveGround();
-
-        return this.takeoffConfirmation.write(
-            // we try to detect a false lift off (during terrain loading) from a true liftoff e.g. during takeoff. (temporary solution only)
-            Math.round(ra / 100) !== Math.round(Simplane.getAltitude() / 100) && ra > 1.5 ||
-            (
-                Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 &&
-                !isNaN(_fmc.v2Speed) &&
-                (
-                    (
-                        SimVar.GetSimVarValue("ENG N1 RPM:1", "percent") > .85 &&
-                        SimVar.GetSimVarValue("ENG N1 RPM:2", "percent") > .85
-                    ) ||
-                    Math.abs(Simplane.getGroundSpeed()) > 80
-                )
-            ),
-            _deltaTime
-        );
+        return this.takeoffConfirmation.write(canInitiateTO(_fmc), _deltaTime);
     }
 }
 
@@ -231,7 +248,6 @@ class A32NX_FlightPhase_Climb {
     }
 }
 
-//TODO: implement ability to initiate descent with V/S knob
 class A32NX_FlightPhase_Cruise {
     constructor() {
         this.nextFmgcFlightPhase = FmgcFlightPhases.DONE;
@@ -347,22 +363,6 @@ class A32NX_FlightPhase_Done {
     }
 
     check(_deltaTime, _fmc) {
-        const ra = Simplane.getAltitudeAboveGround();
-
-        return this.takeoffConfirmation.write(
-            Math.round(ra / 100) !== Math.round(Simplane.getAltitude() / 100) && ra > 1.5 ||
-            (
-                Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35 &&
-                !isNaN(_fmc.v2Speed) &&
-                (
-                    (
-                        SimVar.GetSimVarValue("ENG N1 RPM:1", "percent") > .85 &&
-                        SimVar.GetSimVarValue("ENG N1 RPM:2", "percent") > .85
-                    ) ||
-                    Math.abs(Simplane.getGroundSpeed()) > 80
-                )
-            ),
-            _deltaTime
-        );
+        return this.takeoffConfirmation.write(canInitiateTO(_fmc), _deltaTime);
     }
 }

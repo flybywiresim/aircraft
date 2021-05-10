@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "../FlapsHandler.h"
+#include "../LocalVariable.h"
 #include "../SpoilersHandler.h"
 #include "../ThrottleAxisMapping.h"
 #include "SimConnectData.h"
@@ -36,16 +37,31 @@ class SimConnectInterface {
     TOGGLE_FLIGHT_DIRECTOR,
     A32NX_FCU_AP_1_PUSH,
     A32NX_FCU_AP_2_PUSH,
+    A32NX_FCU_AP_DISCONNECT_PUSH,
+    A32NX_FCU_ATHR_PUSH,
+    A32NX_FCU_ATHR_DISCONNECT_PUSH,
+    A32NX_FCU_SPD_INC,
+    A32NX_FCU_SPD_DEC,
+    A32NX_FCU_SPD_SET,
     A32NX_FCU_SPD_PUSH,
     A32NX_FCU_SPD_PULL,
     A32NX_FCU_SPD_MACH_TOGGLE_PUSH,
+    A32NX_FCU_HDG_INC,
+    A32NX_FCU_HDG_DEC,
+    A32NX_FCU_HDG_SET,
     A32NX_FCU_HDG_PUSH,
     A32NX_FCU_HDG_PULL,
     A32NX_FCU_TRK_FPA_TOGGLE_PUSH,
     A32NX_FCU_TO_AP_HDG_PUSH,
     A32NX_FCU_TO_AP_HDG_PULL,
+    A32NX_FCU_ALT_INC,
+    A32NX_FCU_ALT_DEC,
+    A32NX_FCU_ALT_SET,
     A32NX_FCU_ALT_PUSH,
     A32NX_FCU_ALT_PULL,
+    A32NX_FCU_VS_INC,
+    A32NX_FCU_VS_DEC,
+    A32NX_FCU_VS_SET,
     A32NX_FCU_VS_PUSH,
     A32NX_FCU_VS_PULL,
     A32NX_FCU_TO_AP_VS_PUSH,
@@ -189,11 +205,15 @@ class SimConnectInterface {
 
   ClientDataAutothrust getClientDataAutothrust();
 
+  bool setClientDataFlyByWire(ClientDataFlyByWire output);
+  ClientDataFlyByWire getClientDataFlyByWire();
+
  private:
   enum ClientData {
     AUTOPILOT_STATE_MACHINE,
     AUTOPILOT_LAWS,
     AUTOTHRUST,
+    FLY_BY_WIRE,
     LOCAL_VARIABLES,
     LOCAL_VARIABLES_AUTOTHRUST,
   };
@@ -214,10 +234,15 @@ class SimConnectInterface {
   ClientDataAutopilotStateMachine clientDataAutopilotStateMachine = {};
   ClientDataAutopilotLaws clientDataAutopilotLaws = {};
   ClientDataAutothrust clientDataAutothrust = {};
+  ClientDataFlyByWire clientDataFlyByWire = {};
 
   double flightControlsKeyChangeAileron = 0.0;
   double flightControlsKeyChangeElevator = 0.0;
   double flightControlsKeyChangeRudder = 0.0;
+
+  std::unique_ptr<LocalVariable> idFcuEventSetSPEED;
+  std::unique_ptr<LocalVariable> idFcuEventSetHDG;
+  std::unique_ptr<LocalVariable> idFcuEventSetVS;
 
   bool prepareSimDataSimConnectDataDefinitions();
 

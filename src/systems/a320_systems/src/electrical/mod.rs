@@ -304,10 +304,6 @@ trait AlternatingCurrentState {
     fn ac_bus_2_powered(&self) -> bool;
     fn tr_1_and_2_available(&self) -> bool;
     fn ac_1_and_2_and_emergency_gen_unpowered(&self) -> bool;
-    fn ac_1_and_2_and_emergency_gen_unpowered_and_velocity_equal_to_or_greater_than_50_knots(
-        &self,
-        context: &UpdateContext,
-    ) -> bool;
     fn emergency_generator_available(&self) -> bool;
     fn tr_1(&self) -> &TransformerRectifier;
     fn tr_2(&self) -> &TransformerRectifier;
@@ -331,8 +327,8 @@ pub(super) struct A320ElectricalOverheadPanel {
 impl A320ElectricalOverheadPanel {
     pub fn new() -> A320ElectricalOverheadPanel {
         A320ElectricalOverheadPanel {
-            bat_1: AutoOffFaultPushButton::new_auto("ELEC_BAT_10"),
-            bat_2: AutoOffFaultPushButton::new_auto("ELEC_BAT_11"),
+            bat_1: AutoOffFaultPushButton::new_auto("ELEC_BAT_1"),
+            bat_2: AutoOffFaultPushButton::new_auto("ELEC_BAT_2"),
             idg_1: FaultReleasePushButton::new_in("ELEC_IDG_1"),
             idg_2: FaultReleasePushButton::new_in("ELEC_IDG_2"),
             gen_1: OnOffFaultPushButton::new_on("ELEC_ENG_GEN_1"),
@@ -543,10 +539,10 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.dc_ess_shed_bus_output().is_unpowered());
         assert!(test_bed
             .hot_bus_1_output()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_single(PotentialOrigin::Battery(11)));
+            .is_single(PotentialOrigin::Battery(2)));
         assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
@@ -597,10 +593,10 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::TransformerRectifier(1)));
         assert!(test_bed
             .hot_bus_1_output()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_single(PotentialOrigin::Battery(11)));
+            .is_single(PotentialOrigin::Battery(2)));
         assert!(test_bed
             .dc_gnd_flt_service_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
@@ -653,10 +649,10 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::TransformerRectifier(1)));
         assert!(test_bed
             .hot_bus_1_output()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_single(PotentialOrigin::Battery(11)));
+            .is_single(PotentialOrigin::Battery(2)));
         assert!(test_bed
             .dc_gnd_flt_service_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
@@ -709,10 +705,10 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::TransformerRectifier(1)));
         assert!(test_bed
             .hot_bus_1_output()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_single(PotentialOrigin::Battery(11)));
+            .is_single(PotentialOrigin::Battery(2)));
         assert!(test_bed
             .dc_gnd_flt_service_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
@@ -765,10 +761,10 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::TransformerRectifier(1)));
         assert!(test_bed
             .hot_bus_1_output()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_single(PotentialOrigin::Battery(11)));
+            .is_single(PotentialOrigin::Battery(2)));
         assert!(test_bed
             .dc_gnd_flt_service_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
@@ -824,10 +820,10 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::TransformerRectifier(1)));
         assert!(test_bed
             .hot_bus_1_output()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_single(PotentialOrigin::Battery(11)));
+            .is_single(PotentialOrigin::Battery(2)));
         assert!(test_bed
             .dc_gnd_flt_service_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
@@ -844,7 +840,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.ac_ess_shed_bus_output().is_unpowered());
         assert!(test_bed
             .static_inverter_input()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .ac_stat_inv_bus_output()
             .is_single(PotentialOrigin::StaticInverter));
@@ -860,14 +856,14 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.dc_bat_bus_output().is_unpowered());
         assert!(test_bed
             .dc_ess_bus_output()
-            .is_single(PotentialOrigin::Battery(11)));
+            .is_single(PotentialOrigin::Battery(2)));
         assert!(test_bed.dc_ess_shed_bus_output().is_unpowered());
         assert!(test_bed
             .hot_bus_1_output()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_single(PotentialOrigin::Battery(11)));
+            .is_single(PotentialOrigin::Battery(2)));
         assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
@@ -904,10 +900,10 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::TransformerRectifier(3)));
         assert!(test_bed
             .hot_bus_1_output()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_single(PotentialOrigin::Battery(11)));
+            .is_single(PotentialOrigin::Battery(2)));
         assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
@@ -960,10 +956,10 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::TransformerRectifier(3)));
         assert!(test_bed
             .hot_bus_1_output()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_single(PotentialOrigin::Battery(11)));
+            .is_single(PotentialOrigin::Battery(2)));
         assert!(test_bed
             .dc_gnd_flt_service_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
@@ -1014,10 +1010,10 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::TransformerRectifier(3)));
         assert!(test_bed
             .hot_bus_1_output()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_single(PotentialOrigin::Battery(11)));
+            .is_single(PotentialOrigin::Battery(2)));
         assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
@@ -1065,10 +1061,10 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::TransformerRectifier(3)));
         assert!(test_bed
             .hot_bus_1_output()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_single(PotentialOrigin::Battery(11)));
+            .is_single(PotentialOrigin::Battery(2)));
         assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
@@ -1110,10 +1106,10 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::TransformerRectifier(3)));
         assert!(test_bed
             .hot_bus_1_output()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_single(PotentialOrigin::Battery(11)));
+            .is_single(PotentialOrigin::Battery(2)));
         assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
@@ -1137,7 +1133,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.ac_gnd_flt_service_bus_output().is_unpowered());
         assert!(test_bed
             .static_inverter_input()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed
             .ac_stat_inv_bus_output()
             .is_single(PotentialOrigin::StaticInverter));
@@ -1148,17 +1144,17 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.dc_bus_2_output().is_unpowered());
         assert!(test_bed
             .dc_bat_bus_output()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed
             .dc_ess_bus_output()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed.dc_ess_shed_bus_output().is_unpowered());
         assert!(test_bed
             .hot_bus_1_output()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
@@ -1182,7 +1178,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.ac_ess_shed_bus_output().is_unpowered());
         assert!(test_bed
             .static_inverter_input()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed
             .ac_stat_inv_bus_output()
             .is_single(PotentialOrigin::StaticInverter));
@@ -1194,17 +1190,17 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.dc_bus_2_output().is_unpowered());
         assert!(test_bed
             .dc_bat_bus_output()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed
             .dc_ess_bus_output()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed.dc_ess_shed_bus_output().is_unpowered());
         assert!(test_bed
             .hot_bus_1_output()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed.dc_gnd_flt_service_bus_output().is_unpowered());
     }
 
@@ -1223,7 +1219,7 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.ac_ess_shed_bus_output().is_unpowered());
         assert!(test_bed
             .static_inverter_input()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed
             .ac_stat_inv_bus_output()
             .is_single(PotentialOrigin::StaticInverter));
@@ -1237,17 +1233,17 @@ mod a320_electrical_circuit_tests {
         assert!(test_bed.dc_bus_2_output().is_unpowered());
         assert!(test_bed
             .dc_bat_bus_output()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed
             .dc_ess_bus_output()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed.dc_ess_shed_bus_output().is_unpowered());
         assert!(test_bed
             .hot_bus_1_output()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed
             .hot_bus_2_output()
-            .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         assert!(test_bed
             .dc_gnd_flt_service_bus_output()
             .is_single(PotentialOrigin::TransformerRectifier(2)));
@@ -1445,13 +1441,14 @@ mod a320_electrical_circuit_tests {
         let test_bed = test_bed_with()
             .bat_1_auto()
             .bat_2_auto()
+            .on_the_ground()
             .and()
             .airspeed(Velocity::new::<knot>(49.))
             .run_waiting_for(Duration::from_secs(1_000));
 
         assert!(test_bed
             .static_inverter_input()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
     }
 
     #[test]
@@ -1463,7 +1460,7 @@ mod a320_electrical_circuit_tests {
 
         assert!(test_bed
             .static_inverter_input()
-            .is_single(PotentialOrigin::Battery(10)));
+            .is_single(PotentialOrigin::Battery(1)));
         assert!(test_bed
             .ac_ess_bus_output()
             .is_single(PotentialOrigin::StaticInverter));
@@ -2377,25 +2374,25 @@ mod a320_electrical_circuit_tests {
 
         fn bat_1_off(mut self) -> Self {
             self.simulation_test_bed
-                .write_bool("OVHD_ELEC_BAT_10_PB_IS_AUTO", false);
+                .write_bool("OVHD_ELEC_BAT_1_PB_IS_AUTO", false);
             self
         }
 
         fn bat_1_auto(mut self) -> Self {
             self.simulation_test_bed
-                .write_bool("OVHD_ELEC_BAT_10_PB_IS_AUTO", true);
+                .write_bool("OVHD_ELEC_BAT_1_PB_IS_AUTO", true);
             self
         }
 
         fn bat_2_off(mut self) -> Self {
             self.simulation_test_bed
-                .write_bool("OVHD_ELEC_BAT_11_PB_IS_AUTO", false);
+                .write_bool("OVHD_ELEC_BAT_2_PB_IS_AUTO", false);
             self
         }
 
         fn bat_2_auto(mut self) -> Self {
             self.simulation_test_bed
-                .write_bool("OVHD_ELEC_BAT_11_PB_IS_AUTO", true);
+                .write_bool("OVHD_ELEC_BAT_2_PB_IS_AUTO", true);
             self
         }
 

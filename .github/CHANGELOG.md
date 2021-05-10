@@ -52,8 +52,14 @@
 1. [ELEC] Add ground service electrical buses - @davidwalschots (David Walschots)
 1. [FLIGHTMODEL] Fixed excessive weathervaning stability - @donstim (donbikes#4084)
 1. [AUTOPILOT] Improved ROLL OUT and G/S laws - @aguther (Andreas Guther)
+1. [FMGC] Added VS descent phase initiation - @MisterChocker (Leon)
 1. [SOUND] Added glareshield chrono button sound - @ImenesFBW (Imenes)
 1. [MCDU] Disallow ATIS request when no airport is specified - @ExampleWasTaken (ExampleWasTaken#0886)
+1. [FBW] New high angle of attack and high speed protection - @lukecologne (luke), @aguther (Andreas Guther)
+1. [FBW] Adapt pitch attitude protection for configuration - @aguther (Andreas Guther)
+1. [FBW] Realistic rudder pedals animation only following pilot input or trim - @aguther (Andreas Guther)
+1. [FCU] Added more custom events that can be triggered via SimConnect to control the FCU - @aguther (Andreas Guther)
+1. [MISC] Autobrake can be armed via keybindings - @Saschl (saschl#9432)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)

@@ -525,4 +525,132 @@
             </UseTemplate>
         </Component>
     </Template>
+
+    <Template Name="FBW_HANDLING_RudderPedals_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="FBW_HANDLING_RudderPedals_SubTemplate"></UseTemplate>
+    </Template>
+
+    <Template Name="FBW_HANDLING_RudderPedals_SubTemplate">
+        <DefaultTemplateParameters>
+            <ANIM_NAME>HANDLING_RudderPedals</ANIM_NAME>
+            <ANIM_LAG>400</ANIM_LAG>
+            <!-- Each rudder pedal root node is shared for pilot & copilot (L & R) but brakes are splitted -->
+            <NODE_ID>HANDLING_RudderPedals_1</NODE_ID> <!-- any valid node -->
+            <NODE_ID_L_BRAKE_1>HANDLING_RudderPedals_1_1_Brake</NODE_ID_L_BRAKE_1>
+            <NODE_ID_L_BRAKE_2>HANDLING_RudderPedals_2_1_Brake</NODE_ID_L_BRAKE_2>
+            <NODE_ID_R_BRAKE_1>HANDLING_RudderPedals_1_2_Brake</NODE_ID_R_BRAKE_1>
+            <NODE_ID_R_BRAKE_2>HANDLING_RudderPedals_2_2_Brake</NODE_ID_R_BRAKE_2>
+            <NODE_ID_L_RUDDER>HANDLING_RudderPedals_1</NODE_ID_L_RUDDER>
+            <NODE_ID_R_RUDDER>HANDLING_RudderPedals_2</NODE_ID_R_RUDDER>
+            <PART_ID_BRAKES>HANDLING_RudderPedals</PART_ID_BRAKES>
+            <PART_ID_RUDDERS>HANDLING_RudderPedals</PART_ID_RUDDERS>
+            <DIFFERENTIATE_BRAKE_ANIM_L_R>True</DIFFERENTIATE_BRAKE_ANIM_L_R>
+            <USE_BRAKE />
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_GT_Highlight_Template">
+            <HIGHLIGHT_NODE_ID>#NODE_ID_L_BRAKE_1#</HIGHLIGHT_NODE_ID>
+            <PART_ID>#PART_ID_BRAKES#</PART_ID>
+        </UseTemplate>
+        <UseTemplate Name="ASOBO_GT_Highlight_Template">
+            <HIGHLIGHT_NODE_ID>#NODE_ID_L_BRAKE_2#</HIGHLIGHT_NODE_ID>
+            <PART_ID>#PART_ID_BRAKES#</PART_ID>
+        </UseTemplate>
+        <UseTemplate Name="ASOBO_GT_Highlight_Template">
+            <HIGHLIGHT_NODE_ID>#NODE_ID_R_BRAKE_1#</HIGHLIGHT_NODE_ID>
+            <PART_ID>#PART_ID_BRAKES#</PART_ID>
+        </UseTemplate>
+        <UseTemplate Name="ASOBO_GT_Highlight_Template">
+            <HIGHLIGHT_NODE_ID>#NODE_ID_R_BRAKE_2#</HIGHLIGHT_NODE_ID>
+            <PART_ID>#PART_ID_BRAKES#</PART_ID>
+        </UseTemplate>
+        <UseTemplate Name="ASOBO_GT_Highlight_Template">
+            <HIGHLIGHT_NODE_ID>#NODE_ID_L_RUDDER#</HIGHLIGHT_NODE_ID>
+            <PART_ID>#PART_ID_RUDDERS#</PART_ID>
+        </UseTemplate>
+        <UseTemplate Name="ASOBO_GT_Highlight_Template">
+            <HIGHLIGHT_NODE_ID>#NODE_ID_R_RUDDER#</HIGHLIGHT_NODE_ID>
+            <PART_ID>#PART_ID_RUDDERS#</PART_ID>
+        </UseTemplate>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <DefaultTemplateParameters>
+                <Condition Check="USE_BRAKE">
+                    <Condition Valid="DIFFERENTIATE_BRAKE_ANIM_L_R">
+                        <True>
+                            <BRAKE_ANIM_NAME_L>HANDLING_RudderPedals_Brake_L</BRAKE_ANIM_NAME_L>
+                            <BRAKE_ANIM_NAME_R>HANDLING_RudderPedals_Brake_R</BRAKE_ANIM_NAME_R>
+                        </True>
+                        <False>
+                            <BRAKE_ANIM_NAME>HANDLING_RudderPedals_Brake</BRAKE_ANIM_NAME>
+                        </False>
+                    </Condition>
+                </Condition>
+            </DefaultTemplateParameters>
+            <OverrideTemplateParameters>
+                <Condition Valid="NO_PART_ID_ON_ANIM_NODE">
+                    <PART_ID></PART_ID>
+                </Condition>
+            </OverrideTemplateParameters>
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <ID>1</ID>
+                <ANIM_LENGTH>200</ANIM_LENGTH>
+                <ANIM_CODE>(L:A32NX_RUDDER_PEDAL_POSITION, number) 100 +</ANIM_CODE>
+                <!-- [-100, 100] + 100 => [0, 200] -->
+            </UseTemplate>
+            <Condition Check="USE_BRAKE">
+                <UseTemplate Name="FBW_HANDLING_RudderPedals_Brake_Template">
+                    <Condition Valid="DIFFERENTIATE_BRAKE_ANIM_L_R">
+                        <True>
+                            <ANIM_NAME_L>#BRAKE_ANIM_NAME_L#</ANIM_NAME_L>
+                            <ANIM_NAME_R>#BRAKE_ANIM_NAME_R#</ANIM_NAME_R>
+                        </True>
+                        <False>
+                            <ANIM_NAME>#BRAKE_ANIM_NAME#</ANIM_NAME>
+                        </False>
+                    </Condition>
+                </UseTemplate>
+            </Condition>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_HANDLING_RudderPedals_Brake_Template">
+        <DefaultTemplateParameters>
+            <ANIM_LENGTH>100</ANIM_LENGTH>
+            <ANIM_NAME_L>HANDLING_RudderPedals_Brake_L</ANIM_NAME_L>
+            <ANIM_NAME_R>HANDLING_RudderPedals_Brake_R</ANIM_NAME_R>
+        </DefaultTemplateParameters>
+        <OverrideTemplateParameters>
+            <Condition Valid="DONT_BRAKE_ON_PARKINGBRAKE">
+                <True>
+                    <SIMVAR_END> EX1</SIMVAR_END>
+                </True>
+                <False>
+                    <SIMVAR_END></SIMVAR_END>
+                </False>
+            </Condition>
+        </OverrideTemplateParameters>
+        <Condition Valid="DIFFERENTIATE_BRAKE_ANIM_L_R">
+            <True>
+                <UseTemplate Name="ASOBO_GT_Anim_Sim">
+                    <ANIM_NAME>#ANIM_NAME_L#</ANIM_NAME>
+                    <ANIM_SIMVAR>BRAKE LEFT POSITION#SIMVAR_END#</ANIM_SIMVAR>
+                    <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+                </UseTemplate>
+                <UseTemplate Name="ASOBO_GT_Anim_Sim">
+                    <ANIM_NAME>#ANIM_NAME_R#</ANIM_NAME>
+                    <ANIM_SIMVAR>BRAKE RIGHT POSITION#SIMVAR_END#</ANIM_SIMVAR>
+                    <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+                </UseTemplate>
+            </True>
+            <False>
+                <UseTemplate Name="ASOBO_GT_Anim_Sim">
+                    <ANIM_SIMVAR>BRAKE LEFT POSITION#SIMVAR_END#</ANIM_SIMVAR>
+                    <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+                </UseTemplate>
+            </False>
+        </Condition>
+    </Template>
+
 </ModelBehaviors>

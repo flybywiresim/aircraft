@@ -73,6 +73,7 @@ class FlyByWireInterface {
 
   FlyByWireModelClass flyByWire;
   FlyByWireModelClass::ExternalInputs_FlyByWire_T flyByWireInput = {};
+  fbw_output flyByWireOutput;
 
   AutopilotStateMachineModelClass autopilotStateMachine;
   AutopilotStateMachineModelClass::ExternalInputs_AutopilotStateMachine_T autopilotStateMachineInput = {};
@@ -96,6 +97,12 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idSideStickPositionX;
   std::unique_ptr<LocalVariable> idSideStickPositionY;
+  std::unique_ptr<LocalVariable> idRudderPedalPosition;
+
+  std::unique_ptr<LocalVariable> idSpeedAlphaProtection;
+  std::unique_ptr<LocalVariable> idSpeedAlphaMax;
+
+  std::unique_ptr<LocalVariable> idAlphaMaxPercentage;
 
   std::unique_ptr<LocalVariable> idFmaLateralMode;
   std::unique_ptr<LocalVariable> idFmaLateralArmed;

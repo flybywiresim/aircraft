@@ -5,8 +5,7 @@ class A32NX_Refuel {
     constructor() {}
 
     init() {
-        console.log('A32NX_Refuel init');
-        const totalFuelGallons = 6243;
+        const totalFuelGallons = 6267;
         const fuelWeight = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms");
         const usingMetrics = SimVar.GetSimVarValue("L:A32NX_CONFIG_USING_METRIC_UNIT", "Number");
         const centerCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons");
@@ -59,16 +58,16 @@ class A32NX_Refuel {
         const LOutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK LEFT AUX QUANTITY", "Gallons");
         const RInnCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT MAIN QUANTITY", "Gallons");
         const ROutCurrentSimVar = SimVar.GetSimVarValue("FUEL TANK RIGHT AUX QUANTITY", "Gallons");
-        let centerCurrent = centerCurrentSimVar + 6;
-        let LInnCurrent = LInnCurrentSimVar + 7;
-        let LOutCurrent = LOutCurrentSimVar + 1;
-        let RInnCurrent = RInnCurrentSimVar + 7;
-        let ROutCurrent = ROutCurrentSimVar + 1;
-        const centerTarget = centerTargetSimVar + 6;
-        const LInnTarget = LInnTargetSimVar + 7;
-        const LOutTarget = LOutTargetSimVar + 1;
-        const RInnTarget = RInnTargetSimVar + 7;
-        const ROutTarget = ROutTargetSimVar + 1;
+        let centerCurrent = centerCurrentSimVar;
+        let LInnCurrent = LInnCurrentSimVar;
+        let LOutCurrent = LOutCurrentSimVar;
+        let RInnCurrent = RInnCurrentSimVar;
+        let ROutCurrent = ROutCurrentSimVar;
+        const centerTarget = centerTargetSimVar;
+        const LInnTarget = LInnTargetSimVar;
+        const LOutTarget = LOutTargetSimVar;
+        const RInnTarget = RInnTargetSimVar;
+        const ROutTarget = ROutTargetSimVar;
         if (refuelRate == 2) {
             SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", centerTarget);
             SimVar.SetSimVarValue("FUEL TANK LEFT MAIN QUANTITY", "Gallons", LInnTarget);
