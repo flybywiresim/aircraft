@@ -168,7 +168,7 @@
         <Sound WwiseData="true" WwiseEvent="apustartinitext" ConeHeading="180" Continuous="true" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_N" Units="PERCENT" Index="0">
             <WwiseRTPC LocalVar="A32NX_APU_N" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_APU_PCT_RPM_DERIVED" />
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
-            <Range LowerBound="1.0" LowerBound="55.0" />
+            <Range LowerBound="1.0" UpperBound="55.0" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="apuflapopenext" FadeOutType="2" FadeOutTime="1" Continuous="true" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_APU_FLAP_OPEN_PERCENTAGE" Units="PERCENT" Index="0">
@@ -197,52 +197,42 @@
 
         <!-- COCKPIT LOOPS SOUNDS ========================================================================================== -->
 
-        <Sound WwiseData="true" WwiseEvent="TRUnit" Continuous="false" SimVar="ELECTRICAL MAIN BUS VOLTAGE" NodeName="PEDALS_LEFT" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
-            <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE" />
-            <Requires LocalVar="A32NX_AVIONICS_STARTUP_SOUNDS_INHIBIT" Units="Bool" Index="0">
-                <Range UpperBound="0" />
-            </Requires >
+        <Sound WwiseData="true" WwiseEvent="TRUnit" Continuous="false" LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1" NodeName="PEDALS_LEFT">
+            <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="transformers" Continuous="false" SimVar="ELECTRICAL MAIN BUS VOLTAGE" NodeName="PEDALS_LEFT" Units="VOLTS" Index="1">
-            <Range LowerBound="24" />
-            <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE" />
-            <Requires LocalVar="A32NX_AVIONICS_STARTUP_SOUNDS_INHIBIT" Units="Bool" Index="0">
-                <Range UpperBound="0" />
-            </Requires >
+        <Sound WwiseData="true" WwiseEvent="transformers" Continuous="true" LocalVar="A32NX_ELEC_DC_ESS_BUS_IS_POWERED" Units="Bool" Index="1" NodeName="PEDALS_LEFT">
+            <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseEvent="AVvent" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" FadeOutType="1" FadeOutTime="1" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
-            <Requires LocalVar="A32NX_AVIONICS_STARTUP_SOUNDS_INHIBIT" Units="Bool" Index="0">
-                <Range UpperBound="0" />
-            </Requires >
+        <Sound WwiseEvent="AVvent" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" FadeOutType="1" FadeOutTime="1" LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseEvent="AVventext" WwiseData="true" NodeName="SOUND_BLOWER_EXTRACT" Continuous="false" FadeOutType="1" FadeOutTime="1" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
-            <Requires LocalVar="A32NX_AVIONICS_STARTUP_SOUNDS_INHIBIT" Units="Bool" Index="0">
-                <Range UpperBound="0" />
-            </Requires >
+        <Sound WwiseEvent="fanwhine" WwiseData="true" Continuous="true" NodeName="PEDALS_LEFT" FadeOutType="1" FadeOutTime="1" LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
+        </Sound>
+
+        <Sound WwiseEvent="AVventext" WwiseData="true" NodeName="SOUND_BLOWER_EXTRACT" Continuous="true" FadeOutType="1" FadeOutTime="1" LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
-        <Sound WwiseEvent="AVventloop" WwiseData="true" Continuous="true" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="0.5" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
-            <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE" />
+        <Sound WwiseEvent="AVventloop" WwiseData="true" Continuous="true" NodeName="PEDALS_LEFT" FadeOutType="1" FadeOutTime="1" LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseEvent="cabfans" WwiseData="true" NodeName="HublotIn002" FadeOutType="2" FadeOutTime="4" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
+        <Sound WwiseEvent="cabfans" WwiseData="true" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" FadeOutType="2" FadeOutTime="4" LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
             <Requires LocalVar="A32NX_VENTILATION_CABFANS_TOGGLE">
                 <Range LowerBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseEvent="rearcabfans" WwiseData="true" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" FadeOutType="2" FadeOutTime="4" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
+        <Sound WwiseEvent="rearcabfans" WwiseData="true" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" FadeOutType="2" FadeOutTime="4" LocalVar="A32NX_ELEC_AC_2_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
             <Requires LocalVar="A32NX_VENTILATION_CABFANS_TOGGLE">
                 <Range LowerBound="1" />
@@ -250,35 +240,54 @@
         </Sound>
 
 
-        <Sound WwiseData="true" WwiseEvent="brakefan" NodeName="BASE_LEFT" FadeOutType="2" FadeOutTime="2" LocalVar="A32NX_BRAKE_FAN" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="brakefan" NodeName="BASE_LEFT" FadeOutType="2" FadeOutTime="1" LocalVar="A32NX_BRAKE_FAN" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+                <Range LowerBound="1" />
             </Requires>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="brakefan2" NodeName="BASE_RIGHT" FadeOutType="2" FadeOutTime="2" LocalVar="A32NX_BRAKE_FAN" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="brakefan2" NodeName="BASE_RIGHT" FadeOutType="2" FadeOutTime="1" LocalVar="A32NX_BRAKE_FAN" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+                <Range LowerBound="1" />
             </Requires>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="brakefanshut" NodeName="BASE_LEFT" Continuous="false" LocalVar="A32NX_BRAKE_FAN" Units="BOOL" Index="0">
+            <Range UpperBound="0" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="brakefan2shut" NodeName="BASE_RIGHT" Continuous="false" LocalVar="A32NX_BRAKE_FAN" Units="BOOL" Index="0">
+            <Range UpperBound="0" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
+        </Sound>
+
 
         <Sound WwiseData="true" WwiseEvent="packscockpit" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="2" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="packscabin" FadeOutType="2" FadeOutTime="2" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="packscabin" FadeOutType="2" FadeOutTime="1" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="pack1ext" NodeName="SOUND_PACK_OUTFLOW_LEFT" FadeOutType="2" FadeOutTime="2" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="packscabinshut" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0" Continuous="false">
+            <Range UpperBound="0" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="pack1ext" NodeName="SOUND_PACK_OUTFLOW_LEFT" FadeOutType="2" FadeOutTime="1" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
@@ -286,7 +295,15 @@
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="pack2ext" NodeName="SOUND_PACK_OUTFLOW_RIGHT" FadeOutType="2" FadeOutTime="2" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0">
+        <Sound WwiseData="true" Continuous="false" WwiseEvent="pack1extshut" NodeName="SOUND_PACK_OUTFLOW_LEFT" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0">
+            <Range UpperBound="0" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
+            <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="pack2ext" NodeName="SOUND_PACK_OUTFLOW_RIGHT" FadeOutType="2" FadeOutTime="1" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
@@ -294,42 +311,36 @@
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="SCREEN_PFD_L" ViewPoint="Inside" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+        <Sound WwiseData="true" Continuous="false" WwiseEvent="pack2extshut" NodeName="SOUND_PACK_OUTFLOW_LEFT" LocalVar="32NX_PACKS_1_IS_SUPPLYING" Units="BOOL" Index="0">
             <Range UpperBound="0" />
-            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
-                <Range LowerBound="1" />
-            </Requires>
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
+            <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="SCREEN_PFD_R" ViewPoint="Inside" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="SCREEN_PFD_L" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
             <Range UpperBound="0" />
-            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
-                <Range LowerBound="1" />
-            </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="SCREEN_PFD_L" ViewPoint="Inside" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="SCREEN_PFD_R" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
+            <Range UpperBound="0" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="SCREEN_PFD_L" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="SCREEN_PFD_R" ViewPoint="Inside" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+        <Sound WwiseData="true" WwiseEvent="APLock" NodeName="SCREEN_PFD_R" ViewPoint="Inside" Continuous="false" LocalVar="A32NX_AUTOPILOT_ACTIVE" Units="BOOL" Index="0">
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseEvent="CIDSchimes" WwiseData="true" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" Continuous="false" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="24" />
-            <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
-            <Requires LocalVar="A32NX_AVIONICS_STARTUP_SOUNDS_INHIBIT" Units="Bool" Index="0">
-                <Range UpperBound="0" />
-            </Requires>
+        <Sound WwiseEvent="CIDSchimes" WwiseData="true" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" Continuous="false" LocalVar="A32NX_ELEC_DC_ESS_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseEvent="FMGCtest" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
-            <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
-            <Requires LocalVar="A32NX_AVIONICS_STARTUP_SOUNDS_INHIBIT" Units="Bool" Index="0">
-                <Range UpperBound="0" />
-            </Requires >
+        <Sound WwiseEvent="FMGCtest" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="gearleverclick" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" SimVar="GEAR HANDLE POSITION" Units="BOOLEAN" Index="0">
@@ -340,22 +351,78 @@
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseEvent="Loudrelay" WwiseData="true" NodeName="FUSES01" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
+
+
+        <Sound WwiseData="true" WwiseEvent="batteryrelay" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_DC_BAT_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="batteryrelay" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="24" />
-            <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE" />
+        <Sound WwiseData="true" WwiseEvent="batteryrelay2" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_DC_ESS_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseEvent="startbeep" WwiseData="true" Continuous="false" NodeName="FUSES01" ViewPoint="Inside" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
-            <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+        <Sound WwiseData="true" WwiseEvent="batteryrelayoff" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_DC_ESS_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseEvent="bluesystem" WwiseData="true" NodeName="SOUND_ENGINE_RIGHT" Continuous="false" SimVar="TURB ENG N2" Units="percent" Index="2">
-            <Range LowerBound="47" />
+        <Sound WwiseData="true" WwiseEvent="batteryrelayoff2" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_DC_BAT_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range UpperBound="0" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_3XG_IS_CLOSED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_3XS_IS_CLOSED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="transfer_01" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_9XU1_IS_CLOSED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="transfer_01" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_9XU2_IS_CLOSED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_11XU1_IS_CLOSED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_11XU2_IS_CLOSED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_3XG_IS_CLOSED" Units="Bool" Index="1">
+            <Range UpperBound="0" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_3XS_IS_CLOSED" Units="Bool" Index="1">
+            <Range UpperBound="0" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="transfer_01" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_9XU1_IS_CLOSED" Units="Bool" Index="1">
+            <Range UpperBound="0" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="transfer_01" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_9XU2_IS_CLOSED" Units="Bool" Index="1">
+            <Range UpperBound="0" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_11XU1_IS_CLOSED" Units="Bool" Index="1">
+            <Range UpperBound="0" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="transfer" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_CONTACTOR_11XU2_IS_CLOSED" Units="Bool" Index="1">
+            <Range UpperBound="0" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="doorlocks" Continuous="false" ViewPoint="Inside" NodeName="FUSES01" LocalVar="A32NX_ELEC_DC_2_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
+        </Sound>
+
+        <Sound WwiseEvent="startbeep" WwiseData="true" Continuous="false" NodeName="FUSES01" ViewPoint="Inside" LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
         </Sound>
 
         <!-- ENGINE SOUNDS (CFM LEAP-1A) ======================================================================================== -->
@@ -363,28 +430,30 @@
         <Sound WwiseEvent="LSpool" WwiseData="true" NodeName="SOUND_ENGINE_LEFT" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="0" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
         <Sound WwiseEvent="RSpool" WwiseData="true" NodeName="SOUND_ENGINE_RIGHT" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="0" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
         <Sound WwiseEvent="ISpoolL" WwiseData="true" NodeName="SOUND_ENGINE_LEFT" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="2" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
         <Sound WwiseEvent="ISpoolR" WwiseData="true" NodeName="SOUND_ENGINE_RIGHT" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="2" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
@@ -414,18 +483,15 @@
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
-
-        <Sound WwiseEvent="RumbleLowL" NodeName="SOUND_ENGINE_LEFT" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true">
+        <Sound WwiseEvent="LowRumbleL"  NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" ConeHeading="180" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
-        <Sound WwiseEvent="RumbleLowR" NodeName="SOUND_ENGINE_RIGHT" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="2" Continuous="true">
+        <Sound WwiseEvent="LowRumbleR"  NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" ConeHeading="180" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
@@ -433,12 +499,14 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
         </Sound>
 
         <Sound WwiseEvent="ISpoolHighR" WwiseData="true" NodeName="SOUND_ENGINE_RIGHT" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
         </Sound>
 
         <Sound WwiseEvent="ISpoolHighLEXT" WwiseData="true" NodeName="SOUND_ENGINE_LEFT" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true">
@@ -524,14 +592,12 @@
         <Sound WwiseEvent="FlyOverL" WwiseData="true" NodeName="SOUND_ENGINE_LEFT" ConeHeading="180.0" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
         <Sound WwiseEvent="FlyOverR" WwiseData="true" NodeName="SOUND_ENGINE_RIGHT" ConeHeading="180.0" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
@@ -585,40 +651,20 @@
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
-        <Sound WwiseEvent="RevWindL" NodeName="SOUND_ENGINE_LEFT" FadeOutType="2" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="1" Continuous="true">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
-        </Sound>
-
-        <Sound WwiseEvent="RevWindR" NodeName="SOUND_ENGINE_RIGHT" FadeOutType="2" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" Continuous="true">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
-        </Sound>
-
         <Sound WwiseEvent="StartL" NodeName="SOUND_ENGINE_LEFT" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="1" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
-            <Requires SimVar="GENERAL ENG STARTER ACTIVE" Units="BOOLEAN" Index="1">
-                <Range LowerBound="1" />
-            </Requires>
         </Sound>
 
         <Sound WwiseEvent="StartR" NodeName="SOUND_ENGINE_RIGHT" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="2" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="2" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
-            <Requires SimVar="GENERAL ENG STARTER ACTIVE" Units="BOOLEAN" Index="2">
-                <Range LowerBound="1" />
-            </Requires>
         </Sound>
 
         <Sound WwiseEvent="StartVL" NodeName="SOUND_ENGINE_LEFT" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" Continuous="true">
@@ -640,7 +686,7 @@
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="1" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
@@ -649,7 +695,7 @@
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="2" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
@@ -702,21 +748,23 @@
         </Sound>
 
         <Sound WwiseEvent="BoomL" WwiseData="true" Continuous="false" NodeName="SOUND_ENGINE_LEFT" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1">
-            <Range LowerBound="25.4" UpperBound="32" />
+            <Range LowerBound="26" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
+            <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
+            <WwiseRTPC LocalVar="A32NX_CRANK_PHASE_SKIPPED" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_COLD_START" />
             <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="1">
                 <Range LowerBound="40" />
             </Requires>
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
-            <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
         <Sound WwiseEvent="BoomR" WwiseData="true" Continuous="false" NodeName="SOUND_ENGINE_RIGHT" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="2">
-            <Range LowerBound="25.4" UpperBound="32" />
+            <Range LowerBound="26" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
+            <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
+            <WwiseRTPC LocalVar="A32NX_CRANK_PHASE_SKIPPED" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_COLD_START" />
             <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="2">
                 <Range LowerBound="40" />
             </Requires>
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
-            <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
         <Sound WwiseEvent="StartBassL" WwiseData="true" Continuous="false" NodeName="SOUND_ENGINE_LEFT" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1">
@@ -725,7 +773,7 @@
                 <Range LowerBound="40" />
             </Requires>
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
         </Sound>
 
@@ -740,19 +788,19 @@
         </Sound>
 
         <Sound WwiseEvent="BoomLEXT" WwiseData="true" Continuous="false" NodeName="SOUND_ENGINE_LEFT" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1">
-            <Range LowerBound="25.4" UpperBound="40" />
+            <Range LowerBound="20" />
+            <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
             <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="1">
                 <Range LowerBound="40" />
             </Requires>
-            <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
         <Sound WwiseEvent="BoomREXT" WwiseData="true" Continuous="false" NodeName="SOUND_ENGINE_RIGHT" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2">
-            <Range LowerBound="25.4" UpperBound="40" />
+            <Range LowerBound="20" />
+            <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
             <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="2">
                 <Range LowerBound="40" />
             </Requires>
-            <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
         <Sound WwiseEvent="FFlowL" WwiseData="true" NodeName="SOUND_ENGINE_LEFT" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" Continuous="true">
@@ -762,6 +810,7 @@
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="1" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
             <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
+            <WwiseRTPC LocalVar="A32NX_CRANK_PHASE_SKIPPED" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_COLD_START" />
             <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="1">
                 <Range LowerBound="40" />
             </Requires>
@@ -774,9 +823,26 @@
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="2" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
             <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
             <WwiseRTPC LocalVar="A32NX_SOUND_INTERIOR_ENGINE" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_INTERIOR_ENG_VOLUME" />
+            <WwiseRTPC LocalVar="A32NX_CRANK_PHASE_SKIPPED" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_COLD_START" />
             <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="2">
                 <Range LowerBound="40" />
             </Requires>
+        </Sound>
+
+        <Sound WwiseEvent="StartInitL" NodeName="SOUND_ENGINE_LEFT" FadeOutType="1" FadeOutTime="0.5" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" Continuous="false">
+            <Range LowerBound="1" />
+            <Requires SimVar="GENERAL ENG STARTER ACTIVE" Units="BOOLEAN" Index="1">
+                <Range LowerBound="1" />
+            </Requires>
+            <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
+        </Sound>
+
+        <Sound WwiseEvent="StartInitR" NodeName="SOUND_ENGINE_RIGHT" FadeOutType="1" FadeOutTime="0.5" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" Continuous="false">
+            <Range LowerBound="1" />
+            <Requires SimVar="GENERAL ENG STARTER ACTIVE" Units="BOOLEAN" Index="2">
+                <Range LowerBound="1" />
+            </Requires>
+            <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
         <Sound WwiseEvent="StartLEXT" NodeName="SOUND_ENGINE_LEFT" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" Continuous="true">
@@ -784,9 +850,6 @@
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="1" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
-            <Requires SimVar="GENERAL ENG STARTER ACTIVE" Units="BOOLEAN" Index="1">
-                <Range LowerBound="1" />
-            </Requires>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
@@ -795,9 +858,6 @@
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="2" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
-            <Requires SimVar="GENERAL ENG STARTER ACTIVE" Units="BOOLEAN" Index="2">
-                <Range LowerBound="1" />
-            </Requires>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
         </Sound>
 
@@ -807,6 +867,9 @@
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="1" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
+            <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="1">
+                <Range LowerBound="40" />
+            </Requires>
         </Sound>
 
         <Sound WwiseEvent="Start2REXT" NodeName="SOUND_ENGINE_RIGHT" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" Continuous="true">
@@ -815,6 +878,9 @@
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="2" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
+            <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="2">
+                <Range LowerBound="40" />
+            </Requires>
         </Sound>
 
         <Sound WwiseEvent="FFlowLEXT" WwiseData="true" NodeName="SOUND_ENGINE_LEFT" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" Continuous="true">
@@ -824,6 +890,7 @@
                 <Range LowerBound="40" />
             </Requires>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
+            <WwiseRTPC LocalVar="A32NX_CRANK_PHASE_SKIPPED" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_COLD_START" />
         </Sound>
 
         <Sound WwiseEvent="FFlowREXT" WwiseData="true" NodeName="SOUND_ENGINE_RIGHT" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" Continuous="true">
@@ -833,6 +900,7 @@
                 <Range LowerBound="40" />
             </Requires>
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
+            <WwiseRTPC LocalVar="A32NX_CRANK_PHASE_SKIPPED" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_COLD_START" />
         </Sound>
 
         <Sound WwiseEvent="idlehighL" WwiseData="true" NodeName="SOUND_ENGINE_LEFT" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
@@ -875,35 +943,39 @@
 
         <!-- FUEL PUMP SOUNDS ========================================================================================== -->
 
-        <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" NodeName="WING_BONE_LEFT_01" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="2">
+        <Sound WwiseEvent="outerfuelpumps" WwiseData="true" Continuous="true" NodeName="WING_BONE_LEFT_01" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="6">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
+            <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
         <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" NodeName="WING_BONE_LEFT_01" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="3">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
+            <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
         <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" NodeName="WING_BONE_RIGHT_01" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="5">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
+            <Requires LocalVar="A32NX_ELEC_AC_2_BUS_IS_POWERED" Units="Bool" Index="1">
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
-        <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" NodeName="WING_BONE_RIGHT_01" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="6">
+        <Sound WwiseEvent="outerfuelpumps" WwiseData="true" Continuous="true" NodeName="WING_BONE_RIGHT_01" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="2">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <WwiseRTPC SimVar="AIRSPEED TRUE" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_TRUE" />
+            <Requires LocalVar="A32NX_ELEC_AC_2_BUS_IS_POWERED" Units="Bool" Index="1">
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
@@ -911,8 +983,8 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
@@ -920,8 +992,8 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
@@ -929,8 +1001,8 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <Requires LocalVar="A32NX_ELEC_AC_2_BUS_IS_POWERED" Units="Bool" Index="1">
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
@@ -938,8 +1010,8 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC LocalVar="A32NX_SOUND_EXTERIOR_MASTER" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_EXTERIOR_VOLUME" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <Requires LocalVar="A32NX_ELEC_AC_2_BUS_IS_POWERED" Units="Bool" Index="1">
+                <Range LowerBound="1" />
             </Requires>
         </Sound>
 
@@ -967,7 +1039,7 @@
                 <Range LowerBound="1" />
             </Requires>
             <Requires SimVar="GROUND VELOCITY" Units="KNOTS" Index="0">
-                <Range LowerBound="80" />
+                <Range LowerBound="50" />
             </Requires>
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
@@ -982,7 +1054,7 @@
 
 
         <Sound WwiseData="true" WwiseEvent="NWheelSpinAboveGround" NodeName="PEDALS_LEFT" ViewPoint="Inside" Continuous="false" SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0">
-            <Range UpperBound="50" />
+            <Range UpperBound="60" />
             <WwiseRTPC SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_ANIMATION_POSITION" />
             <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
         </Sound>
@@ -1000,8 +1072,8 @@
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="panelrattle" ViewPoint="Inside" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="1" SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0">
-            <Range LowerBound="51" />
+        <Sound WwiseData="true" WwiseEvent="panelrattle" ViewPoint="Inside" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="15" SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0">
+            <Range LowerBound="70" />
             <Requires SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
                 <Range LowerBound="1" />
             </Requires>
@@ -1216,56 +1288,56 @@
 
         <!-- INSTRUMENTS FOLEYS  =========================================================================  -->
 
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+            <Range LowerBound="0.00" UpperBound="0.00" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+            <Range LowerBound="0.25" UpperBound="0.25" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+            <Range LowerBound="0.50" UpperBound="0.50" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+            <Range LowerBound="0.75" UpperBound="0.75" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" LocalVar="A32NX_FLAPS_HANDLE_PERCENT" Units="NUMBER" Index="1">
+            <Range LowerBound="1.00" UpperBound="1.00" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="Spoiler0" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_HANDLE_POSITION" Units="NUMBER" Index="1">
             <Range LowerBound="0" UpperBound="0" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
-            <Range LowerBound="25" UpperBound="25" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
-            <Range LowerBound="50" UpperBound="50" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
-            <Range LowerBound="75" UpperBound="75" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
-            <Range LowerBound="100" UpperBound="100" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="Spoiler0" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS HANDLE POSITION" Units="PERCENT" Index="1">
-            <Range LowerBound="0" UpperBound="0" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
-            <Requires SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+            <Requires LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
                 <Range UpperBound="0" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="Spoiler50" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS HANDLE POSITION" Units="PERCENT" Index="1">
-            <Range LowerBound="49" UpperBound="51" />
+        <Sound WwiseData="true" WwiseEvent="Spoiler50" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_HANDLE_POSITION" Units="NUMBER" Index="1">
+            <Range LowerBound="0.49" UpperBound="0.51" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
-            <Requires SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+            <Requires LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
                 <Range UpperBound="0" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="Spoiler100" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS HANDLE POSITION" Units="PERCENT" Index="1">
-            <Range LowerBound="99" />
+        <Sound WwiseData="true" WwiseEvent="Spoiler100" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_HANDLE_POSITION" Units="NUMBER" Index="1">
+            <Range LowerBound="0.99" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
-            <Requires SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+            <Requires LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
                 <Range UpperBound="0" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="SpoilerARM" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+        <Sound WwiseData="true" WwiseEvent="SpoilerARM" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
             <Range LowerBound="1" UpperBound="1" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="SpoilerDISARM" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+        <Sound WwiseData="true" WwiseEvent="SpoilerDISARM" NodeName="LEVER_SPEEDBRAKE" Continuous="false" LocalVar="A32NX_SPOILERS_ARMED" Units="BOOL" Index="1">
             <Range LowerBound="0" UpperBound="0" />
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="METERS PER SECOND" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
@@ -1280,31 +1352,31 @@
             <WwiseRTPC LocalVar="XMLVAR_Throttle2Position" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE2_LEVER_POSITION" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
-            <Range LowerBound="2.9" UpperBound="3.1" />
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
+            <Range LowerBound="73" UpperBound="77" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
-            <Range LowerBound="2.9" UpperBound="3.1" />
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
+            <Range LowerBound="73" UpperBound="77" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="TOGAdetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
-            <Range LowerBound="1.9" UpperBound="2.1" />
+        <Sound WwiseData="true" WwiseEvent="TOGAdetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
+            <Range LowerBound="48" UpperBound="52" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="TOGAdetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
-            <Range LowerBound="1.9" UpperBound="2.1" />
+        <Sound WwiseData="true" WwiseEvent="TOGAdetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
+            <Range LowerBound="48" UpperBound="52" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
-            <Range LowerBound="0.9" UpperBound="1.1" />
-            <Range LowerBound="3.9" />
+        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_1" Units="PERCENT">
+            <Range LowerBound="23" UpperBound="27" />
+            <Range LowerBound="98" />
             <Range UpperBound="0" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
-            <Range LowerBound="0.9" UpperBound="1.1" />
-            <Range LowerBound="3.9" />
+        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="A32NX_3D_THROTTLE_LEVER_POSITION_2" Units="PERCENT">
+            <Range LowerBound="23" UpperBound="27" />
+            <Range LowerBound="98" />
             <Range UpperBound="0" />
         </Sound>
 
@@ -1340,13 +1412,14 @@
         <!-- Miscellaneous ==========================================================================================  -->
 
         <!-- Play sound whenever the seat belts switch position changes -->
-        <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" Units="BOOLEAN" Index="1" ViewPoint="Inside" Continuous="false">
-            <Range LowerBound="1" />
+
+        <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" ViewPoint="Inside" Continuous="false">
+            <Range UpperBound="0" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" Units="BOOLEAN" Index="1" ViewPoint="Inside" Continuous="false">
-            <Range UpperBound="0" />
+        <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" ViewPoint="Inside" Continuous="false">
+            <Range LowerBound="1" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE" />
         </Sound>
 
@@ -1363,29 +1436,29 @@
 
         <Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_fwd" LocalVar="PUSH_OVHD_CALLS_FWD" Continuous="false">
             <Range LowerBound="1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
             </Requires>
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_fwd" LocalVar="PUSH_OVHD_CALLS_ALL" Continuous="false">
             <Range LowerBound="1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
             </Requires>
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_aft" LocalVar="PUSH_OVHD_CALLS_AFT" Continuous="false">
             <Range LowerBound="1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
             </Requires>
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="emercabincall" NodeName="PUSH_OVHD_ELEC_BAT1" LocalVar="A32NX_CALLS_EMER_ON" Continuous="false">
             <Range LowerBound="1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
+            <Requires LocalVar="A32NX_ELEC_AC_1_BUS_IS_POWERED" Units="Bool" Index="1">
+            <Range LowerBound="1" />
             </Requires>
         </Sound>
 
@@ -1411,6 +1484,13 @@
             <Range LowerBound="1" />
             <Requires LocalVar="AIRLINER_FLIGHT_PHASE">
                 <Range LowerBound="6" UpperBound="6" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="cvr_test" NodeName="PEDALS_LEFT" LocalVar="A32NX_RCDR_TEST" Continuous="true">
+            <Range LowerBound="1" />
+            <Requires LocalVar="A32NX_RCDR_GROUND_CONTROL_ON" Units="Bool" Index="1">
+            <Range LowerBound="1" />
             </Requires>
         </Sound>
 
@@ -1447,26 +1527,19 @@
             </Requires>
         </Sound>
 
-        <!-- Autopilot & Autothrottle warning =============================================================-->
+        <!-- Autopilot warning =====================================================================-->
 
-        <Sound WwiseData="true" WwiseEvent="improved_tone_caution" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ATHR_DISC" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="cavcharge" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_CAVCHARGE" Continuous="true">
             <Range LowerBound="1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
                 <Range LowerBound="28" />
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
-            <Range UpperBound="0" />
-            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
-                <Range LowerBound="1" />
-            </Requires>
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
-            <Range UpperBound="0" />
-            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
-                <Range LowerBound="1" />
+        <Sound WwiseData="true" WwiseEvent="3click" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_TRIPLE_CLICK" Continuous="false">
+            <Range LowerBound="1" />
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
             </Requires>
         </Sound>
 
@@ -1502,13 +1575,28 @@
         <Sound WwiseData="true" WwiseEvent="aural_500ft" />
         <Sound WwiseData="true" WwiseEvent="aural_1000ft" />
         <Sound WwiseData="true" WwiseEvent="aural_2500ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_minimums" />
-        <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="WIPER_BASE_L" />
-        <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="aural_retard" />
         <Sound WwiseData="true" WwiseEvent="aural_v1" />
         <Sound WwiseEvent="cavcharge" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
         <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
+
+        <!-- New RA callouts ====================================================================================-->
+        <Sound WwiseData="true" WwiseEvent="new_5" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_10" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_20" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_30" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_40" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_50" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_100" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_200" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_300" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_400" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_500" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_1000" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_2500" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_retard" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="WIPER_BASE_L" />
 
     </AvionicSounds>
 
