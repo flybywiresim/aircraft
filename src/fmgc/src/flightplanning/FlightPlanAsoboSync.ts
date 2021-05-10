@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
+import { NXDataStore } from '@shared/persistence';
 import { FlightPlanManager } from './FlightPlanManager';
-import { NXDataStore } from '../../../instruments/src/Common/persistence';
 
 /** A class for syncing a flight plan with the game */
 export class FlightPlanAsoboSync {
