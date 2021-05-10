@@ -3822,7 +3822,13 @@
 
         <Component ID="SAFETY">
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
-                <LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_WARNING)</LEFT_SINGLE_CODE>
+                <LEFT_SINGLE_CODE>
+                    0 (&gt;L:A32NX_MASTER_WARNING)
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
+                </LEFT_LEAVE_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
                 <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
@@ -3840,7 +3846,13 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
                 <ID>Caution</ID>
-                <LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_CAUTION)</LEFT_SINGLE_CODE>
+                <LEFT_SINGLE_CODE>
+                    0 (&gt;L:A32NX_MASTER_CAUTION)
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
+                </LEFT_LEAVE_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
                 <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
@@ -3857,7 +3869,13 @@
                 <NO_SEQ2/>
             </UseTemplate>
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
-                <LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_WARNING)</LEFT_SINGLE_CODE>
+                <LEFT_SINGLE_CODE>
+                    0 (&gt;L:A32NX_MASTER_WARNING)
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_R)
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_R)
+                </LEFT_LEAVE_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
                 <EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
@@ -3875,7 +3893,13 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
                 <ID>Caution</ID>
-                <LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_CAUTION)</LEFT_SINGLE_CODE>
+                <LEFT_SINGLE_CODE>
+                    0 (&gt;L:A32NX_MASTER_CAUTION)
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_R)
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_R)
+                </LEFT_LEAVE_CODE>
                 <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
                 <EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</EMISSIVE_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
@@ -3890,25 +3914,6 @@
                 <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
                 <AIRBUS_TYPE/>
                 <NO_SEQ2/>
-            </UseTemplate>
-        </Component>
-
-        <Component ID="Warning">
-            <UseTemplate Name="FBW_Push_Held">
-                <NODE_ID>PUSH_AUTOPILOT_MASTERAWARN_L</NODE_ID>
-                <HOLD_SIMVAR>L:PUSH_AUTOPILOT_MASTERAWARN_L</HOLD_SIMVAR>
-            </UseTemplate>
-            <UseTemplate Name="FBW_Push_Held">
-                <NODE_ID>PUSH_AUTOPILOT_MASTERAWARN_R</NODE_ID>
-                <HOLD_SIMVAR>L:PUSH_AUTOPILOT_MASTERAWARN_R</HOLD_SIMVAR>
-            </UseTemplate>
-            <UseTemplate Name="FBW_Push_Held">
-                <NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_L</NODE_ID>
-                <HOLD_SIMVAR>L:PUSH_AUTOPILOT_MASTERCAUT_L</HOLD_SIMVAR>
-            </UseTemplate>
-            <UseTemplate Name="FBW_Push_Held">
-                <NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_R</NODE_ID>
-                <HOLD_SIMVAR>L:PUSH_AUTOPILOT_MASTERCAUT_R</HOLD_SIMVAR>
             </UseTemplate>
         </Component>
 
