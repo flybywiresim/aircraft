@@ -1,62 +1,65 @@
 @import "../../../Common/definitions.scss";
 
 #door-page {
-  .Hide {
-    display: none;
-  }
 
-  .WarningShape {
-    fill: $display-amber;
-    stroke: $display-amber;
-    stroke-width: 2;
-  }
 
-  .MainShape {
-    fill: transparent;
-    stroke: $display-light-grey;
-    stroke-width: 2;
-  }
-
-  .DoorShape {
-    fill: transparent;
-    stroke: $display-green;
-    stroke-width: 2;
-  }
-
-  #texts {
-    .Title {
-      font-size: $font-size-title;
-      fill: $display-white;
+    .Hide {
+        display:none;
     }
 
-    .Slide {
-      font-size: $font-size-medium;
-      fill: $display-white;
+    .WarningShape {
+        fill: $display-amber;
+        stroke: $display-amber;
+        stroke-width: 2;
     }
 
-    .Warning {
-      font-size: $font-size-larger;
-      fill: $display-amber;
+    .MainShape {
+        fill: transparent;
+        stroke: $display-light-grey;
+        stroke-width: 2;
     }
 
-    .OxyWarn {
-      font-size: $font-size-xlarge;
-      fill: $display-amber;
+    .DoorShape {
+        fill: transparent;
+        stroke: $display-green;
+        stroke-width: 2;
     }
 
-    .Oxygen {
-      font-size: $font-size-xlarge;
-      fill: $display-white;
-    }
+    #texts {
 
-    .Unit {
-      font-size: $font-size-larger;
-      fill: $display-cyan;
-    }
+        .Title {
+            font-size: $font-size-title;
+            fill: $display-white;
+        }
 
-    .Value {
-      font-size: $font-size-xlarge;
-      fill: $display-green;
+        .Slide {
+            font-size: $font-size-medium;
+            fill: $display-white;
+        }
+
+        .Warning {
+            font-size: $font-size-larger;
+            fill: $display-amber;
+        }
+
+        .OxyWarn {
+            font-size: $font-size-xlarge;
+            fill: $display-amber;
+        }
+
+        .Oxygen {
+            font-size: $font-size-xlarge;
+            fill: $display-white;
+        }
+
+        .Unit {
+            font-size: $font-size-larger;
+            fill: $display-cyan;
+        }
+
+        .Value {
+            font-size: $font-size-xlarge;
+            fill: $display-green;
+        }
     }
-  }
 }

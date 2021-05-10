@@ -58,10 +58,6 @@ export const usePersistentProperty = (propertyName: string, defaultValue?: strin
         rawPropertySetter(defaultValue);
     }
 
-    if (defaultValue !== undefined && propertyValue === undefined) {
-        rawPropertySetter(defaultValue);
-    }
-
     const propertySetter = (value: string) => {
         NXDataStore.set(propertyName, value);
         rawPropertySetter(value);
