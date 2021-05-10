@@ -948,6 +948,15 @@
       0 | neutral
       1 | full backward
 
+- A32NX_RUDDER_PEDAL_POSITION
+    - Number
+    - Provides the rudder pedal position
+      Value | Meaning
+      --- | ---
+      -100 | full left
+      0 | neutral
+      100 | full right
+
 - A32NX_ALPHA_MAX_PERCENTAGE
     - Number (0.0 -> 1.0)
     - Percentage of current (filtered) alpha to alpha max
@@ -1166,6 +1175,18 @@
       --- | ---
       Inactive | 0
       Revert | 1
+
+- A320_Neo_FCU_SPEED_SET_DATA
+    - Number
+    - Used as data transport for event `H:A320_Neo_FCU_SPEED_SET`
+
+- A320_Neo_FCU_HDG_SET_DATA
+    - Number
+    - Used as data transport for event `H:A320_Neo_FCU_HDG_SET`
+
+- A320_Neo_FCU_VS_SET_DATA
+    - Number
+    - Used as data transport for event `H:A320_Neo_FCU_VS_SET`
 
 ## Autothrust System
 

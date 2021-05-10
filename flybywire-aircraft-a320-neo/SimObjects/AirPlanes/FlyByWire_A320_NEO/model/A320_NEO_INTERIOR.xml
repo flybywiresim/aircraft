@@ -423,7 +423,7 @@
         </Component>
 
         <Component ID="Front_Sides">
-            <UseTemplate Name="ASOBO_HANDLING_RudderPedals_Template">
+            <UseTemplate Name="FBW_HANDLING_RudderPedals_Template">
                 <RUDDERPEDALS_TYPE>MIXED</RUDDERPEDALS_TYPE>
                 <NODE_ID_L_RUDDER>PEDALS_LEFT</NODE_ID_L_RUDDER>
                 <NODE_ID_R_RUDDER>PEDALS_RIGHT</NODE_ID_R_RUDDER>
