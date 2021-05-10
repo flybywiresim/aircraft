@@ -291,11 +291,13 @@ pub enum ElectricalBusType {
     AlternatingCurrentEssential,
     AlternatingCurrentEssentialShed,
     AlternatingCurrentStaticInverter,
+    AlternatingCurrentGndFltService,
     DirectCurrent(u8),
     DirectCurrentEssential,
     DirectCurrentEssentialShed,
     DirectCurrentBattery,
     DirectCurrentHot(u8),
+    DirectCurrentGndFltService,
 }
 impl Display for ElectricalBusType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -304,11 +306,13 @@ impl Display for ElectricalBusType {
             ElectricalBusType::AlternatingCurrentEssential => write!(f, "AC_ESS"),
             ElectricalBusType::AlternatingCurrentEssentialShed => write!(f, "AC_ESS_SHED"),
             ElectricalBusType::AlternatingCurrentStaticInverter => write!(f, "AC_STAT_INV"),
+            ElectricalBusType::AlternatingCurrentGndFltService => write!(f, "AC_GND_FLT_SVC"),
             ElectricalBusType::DirectCurrent(number) => write!(f, "DC_{}", number),
             ElectricalBusType::DirectCurrentEssential => write!(f, "DC_ESS"),
             ElectricalBusType::DirectCurrentEssentialShed => write!(f, "DC_ESS_SHED"),
             ElectricalBusType::DirectCurrentBattery => write!(f, "DC_BAT"),
             ElectricalBusType::DirectCurrentHot(number) => write!(f, "DC_HOT_{}", number),
+            ElectricalBusType::DirectCurrentGndFltService => write!(f, "DC_GND_FLT_SVC"),
         }
     }
 }
@@ -926,7 +930,7 @@ mod tests {
 
             fn powered_by_battery_at(&mut self, potential: ElectricPotential) {
                 self.bus.powered_by(&BatteryStub::new(Potential::single(
-                    PotentialOrigin::Battery(10),
+                    PotentialOrigin::Battery(1),
                     potential,
                 )));
             }
@@ -942,10 +946,8 @@ mod tests {
         #[test]
         fn or_powered_by_both_batteries_results_in_both() {
             let potential = ElectricPotential::new::<volt>(28.);
-            let bat_1 =
-                BatteryStub::new(Potential::single(PotentialOrigin::Battery(10), potential));
-            let bat_2 =
-                BatteryStub::new(Potential::single(PotentialOrigin::Battery(11), potential));
+            let bat_1 = BatteryStub::new(Potential::single(PotentialOrigin::Battery(1), potential));
+            let bat_2 = BatteryStub::new(Potential::single(PotentialOrigin::Battery(2), potential));
 
             let mut bus = electrical_bus();
 
@@ -961,32 +963,30 @@ mod tests {
 
             assert!(bus
                 .input_potential()
-                .is_pair(PotentialOrigin::Battery(10), PotentialOrigin::Battery(11)));
+                .is_pair(PotentialOrigin::Battery(1), PotentialOrigin::Battery(2)));
         }
 
         #[test]
         fn or_powered_by_both_batteries_results_in_battery_with_highest_voltage() {
             let bat_1 = BatteryStub::new(Potential::single(
-                PotentialOrigin::Battery(10),
+                PotentialOrigin::Battery(1),
                 ElectricPotential::new::<volt>(28.),
             ));
             let bat_2 = BatteryStub::new(Potential::single(
-                PotentialOrigin::Battery(11),
+                PotentialOrigin::Battery(2),
                 ElectricPotential::new::<volt>(25.),
             ));
 
             let mut bus = electrical_bus();
             execute_or_powered_by_both_batteries(&mut bus, bat_1, bat_2);
 
-            assert!(bus
-                .input_potential()
-                .is_single(PotentialOrigin::Battery(10)));
+            assert!(bus.input_potential().is_single(PotentialOrigin::Battery(1)));
         }
 
         #[test]
         fn or_powered_by_battery_1_results_in_bat_1_output() {
             let bat_1 = BatteryStub::new(Potential::single(
-                PotentialOrigin::Battery(10),
+                PotentialOrigin::Battery(1),
                 ElectricPotential::new::<volt>(28.),
             ));
             let bat_2 = BatteryStub::new(Potential::none());
@@ -994,25 +994,21 @@ mod tests {
             let mut bus = electrical_bus();
             execute_or_powered_by_both_batteries(&mut bus, bat_1, bat_2);
 
-            assert!(bus
-                .input_potential()
-                .is_single(PotentialOrigin::Battery(10)));
+            assert!(bus.input_potential().is_single(PotentialOrigin::Battery(1)));
         }
 
         #[test]
         fn or_powered_by_battery_2_results_in_bat_2_output() {
             let bat_1 = BatteryStub::new(Potential::none());
             let bat_2 = BatteryStub::new(Potential::single(
-                PotentialOrigin::Battery(11),
+                PotentialOrigin::Battery(2),
                 ElectricPotential::new::<volt>(28.),
             ));
 
             let mut bus = electrical_bus();
             execute_or_powered_by_both_batteries(&mut bus, bat_1, bat_2);
 
-            assert!(bus
-                .input_potential()
-                .is_single(PotentialOrigin::Battery(11)));
+            assert!(bus.input_potential().is_single(PotentialOrigin::Battery(2)));
         }
 
         #[test]

@@ -16,6 +16,7 @@ pub(super) struct A320PowerConsumption {
     ac_ess_bus_consumer: FlightPhasePowerConsumer,
     ac_ess_shed_bus_consumer: FlightPhasePowerConsumer,
     ac_stat_inv_bus_consumer: FlightPhasePowerConsumer,
+    ac_gnd_flt_service_consumer: FlightPhasePowerConsumer,
     dc_bus_1_consumer: FlightPhasePowerConsumer,
     dc_bus_2_consumer: FlightPhasePowerConsumer,
     dc_ess_bus_consumer: FlightPhasePowerConsumer,
@@ -23,11 +24,11 @@ pub(super) struct A320PowerConsumption {
     dc_bat_bus_consumer: FlightPhasePowerConsumer,
     dc_hot_bus_1_consumer: FlightPhasePowerConsumer,
     dc_hot_bus_2_consumer: FlightPhasePowerConsumer,
+    dc_gnd_flt_service_consumer: FlightPhasePowerConsumer,
 }
 impl A320PowerConsumption {
     pub fn new() -> Self {
         // The watts in this function are all provided by komp.
-        // They include a 0.8 power factor correction.
         Self {
             ac_bus_1_consumer: FlightPhasePowerConsumer::from(
                 ElectricalBusType::AlternatingCurrent(1),
@@ -64,27 +65,27 @@ impl A320PowerConsumption {
             .demand([
                 (
                     PowerConsumerFlightPhase::BeforeStart,
-                    Power::new::<watt>(31678.2),
+                    Power::new::<watt>(26960.2),
                 ),
                 (
                     PowerConsumerFlightPhase::AfterStart,
-                    Power::new::<watt>(25398.8),
+                    Power::new::<watt>(21735.8),
                 ),
                 (
                     PowerConsumerFlightPhase::Takeoff,
-                    Power::new::<watt>(27811.),
+                    Power::new::<watt>(25183.),
                 ),
                 (
                     PowerConsumerFlightPhase::Flight,
-                    Power::new::<watt>(32161.9),
+                    Power::new::<watt>(29777.4),
                 ),
                 (
                     PowerConsumerFlightPhase::Landing,
-                    Power::new::<watt>(25782.),
+                    Power::new::<watt>(22119.),
                 ),
                 (
                     PowerConsumerFlightPhase::TaxiIn,
-                    Power::new::<watt>(28138.8),
+                    Power::new::<watt>(24475.8),
                 ),
             ]),
             ac_ess_bus_consumer: FlightPhasePowerConsumer::from(
@@ -137,6 +138,23 @@ impl A320PowerConsumption {
                 (PowerConsumerFlightPhase::Flight, Power::new::<watt>(135.)),
                 (PowerConsumerFlightPhase::Landing, Power::new::<watt>(135.)),
                 (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(135.)),
+            ]),
+            ac_gnd_flt_service_consumer: FlightPhasePowerConsumer::from(
+                ElectricalBusType::AlternatingCurrentGndFltService,
+            )
+            .demand([
+                (
+                    PowerConsumerFlightPhase::BeforeStart,
+                    Power::new::<watt>(4718.),
+                ),
+                (
+                    PowerConsumerFlightPhase::AfterStart,
+                    Power::new::<watt>(3663.),
+                ),
+                (PowerConsumerFlightPhase::Takeoff, Power::new::<watt>(2628.)),
+                (PowerConsumerFlightPhase::Flight, Power::new::<watt>(2628.)),
+                (PowerConsumerFlightPhase::Landing, Power::new::<watt>(2628.)),
+                (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(3663.)),
             ]),
             dc_bus_1_consumer: FlightPhasePowerConsumer::from(ElectricalBusType::DirectCurrent(1))
                 .demand([
@@ -253,6 +271,23 @@ impl A320PowerConsumption {
                 (PowerConsumerFlightPhase::Landing, Power::new::<watt>(24.3)),
                 (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(24.3)),
             ]),
+            dc_gnd_flt_service_consumer: FlightPhasePowerConsumer::from(
+                ElectricalBusType::DirectCurrentGndFltService,
+            )
+            .demand([
+                (
+                    PowerConsumerFlightPhase::BeforeStart,
+                    Power::new::<watt>(168.),
+                ),
+                (
+                    PowerConsumerFlightPhase::AfterStart,
+                    Power::new::<watt>(84.),
+                ),
+                (PowerConsumerFlightPhase::Takeoff, Power::new::<watt>(84.)),
+                (PowerConsumerFlightPhase::Flight, Power::new::<watt>(84.)),
+                (PowerConsumerFlightPhase::Landing, Power::new::<watt>(112.)),
+                (PowerConsumerFlightPhase::TaxiIn, Power::new::<watt>(84.)),
+            ]),
         }
     }
 
@@ -262,6 +297,7 @@ impl A320PowerConsumption {
         self.ac_ess_bus_consumer.update(context);
         self.ac_ess_shed_bus_consumer.update(context);
         self.ac_stat_inv_bus_consumer.update(context);
+        self.ac_gnd_flt_service_consumer.update(context);
         self.dc_bus_1_consumer.update(context);
         self.dc_bus_2_consumer.update(context);
         self.dc_ess_bus_consumer.update(context);
@@ -269,6 +305,7 @@ impl A320PowerConsumption {
         self.dc_bat_bus_consumer.update(context);
         self.dc_hot_bus_1_consumer.update(context);
         self.dc_hot_bus_2_consumer.update(context);
+        self.dc_gnd_flt_service_consumer.update(context);
     }
 }
 impl SimulationElement for A320PowerConsumption {
@@ -278,6 +315,7 @@ impl SimulationElement for A320PowerConsumption {
         self.ac_ess_bus_consumer.accept(visitor);
         self.ac_ess_shed_bus_consumer.accept(visitor);
         self.ac_stat_inv_bus_consumer.accept(visitor);
+        self.ac_gnd_flt_service_consumer.accept(visitor);
         self.dc_bus_1_consumer.accept(visitor);
         self.dc_bus_2_consumer.accept(visitor);
         self.dc_ess_bus_consumer.accept(visitor);
@@ -285,6 +323,7 @@ impl SimulationElement for A320PowerConsumption {
         self.dc_bat_bus_consumer.accept(visitor);
         self.dc_hot_bus_1_consumer.accept(visitor);
         self.dc_hot_bus_2_consumer.accept(visitor);
+        self.dc_gnd_flt_service_consumer.accept(visitor);
 
         visitor.visit(self);
     }

@@ -1036,22 +1036,17 @@ class FMCMainDisplay extends BaseAirliners {
             this._onModeManagedHeading();
         }
         if (_event === "MODE_SELECTED_ALTITUDE") {
-            this.flightPhaseManager.handleFcuInput();
+            this.flightPhaseManager.handleFcuAltKnobPushPull();
             this._onModeSelectedAltitude();
-
-            if (this.currentFlightPhase === FmgcFlightPhases.CRUISE) {
-                this._onStepClimbDescent(Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100);
-            }
+            this._onStepClimbDescent();
         }
         if (_event === "MODE_MANAGED_ALTITUDE") {
-            this.flightPhaseManager.handleFcuInput();
+            this.flightPhaseManager.handleFcuAltKnobPushPull();
             this._onModeManagedAltitude();
-
-            if (this.currentFlightPhase === FmgcFlightPhases.CRUISE) {
-                this._onStepClimbDescent(Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100);
-            }
+            this._onStepClimbDescent();
         }
         if (_event === "AP_DEC_ALT" || _event === "AP_INC_ALT") {
+            this.flightPhaseManager.handleFcuAltKnobTurn();
             if (this.currentFlightPhase === FmgcFlightPhases.CLIMB) {
                 const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
                 if (this._activeCruiseFlightLevelDefaulToFcu || fcuFl >= this._cruiseFlightLevel) {
@@ -1068,6 +1063,9 @@ class FMCMainDisplay extends BaseAirliners {
                 Coherent.call("HEADING_BUG_SET", 1, currentHeading);
             }
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
+        }
+        if (_event === "VS") {
+            this.flightPhaseManager.handleFcuVSKnob();
         }
     }
 
@@ -1112,9 +1110,17 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    _onStepClimbDescent(_targetFl) {
-        // Only show the message on step climbs
-        if (_targetFl > this.cruiseFlightLevel) {
+    _onStepClimbDescent() {
+        if (!(this.currentFlightPhase === FmgcFlightPhases.CLIMB || this.currentFlightPhase === FmgcFlightPhases.CRUISE)) {
+            return;
+        }
+
+        const _targetFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
+
+        if (
+            (this.currentFlightPhase === FmgcFlightPhases.CLIMB && _targetFl >= this.cruiseFlightLevel) ||
+            (this.currentFlightPhase === FmgcFlightPhases.CRUISE && _targetFl !== this.cruiseFlightLevel)
+        ) {
             this.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(_targetFl * 100));
         }
         this.cruiseFlightLevel = _targetFl;

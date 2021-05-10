@@ -230,6 +230,13 @@ struct ClientDataAutothrust {
   double mode_message;
 };
 
+struct ClientDataFlyByWire {
+  double alpha_floor_command;
+  double protection_ap_disc;
+  double v_alpha_prot_kn;
+  double v_alpha_max_kn;
+};
+
 struct ClientDataLocalVariables {
   double flightPhase;
   double V2;

@@ -278,7 +278,7 @@
                 <Block SubjectTT="AT 10000FT">
                     <Checkpoint ReferenceId="A320_CLIMB_LANDING_LIGHTS"/>
                     <Checkpoint ReferenceId="A320_CLIMB_SEATBELT_SIGNS"/>
-                    <Checkpoint ReferenceId="A320_CLIMB_EDIS"/>
+                    <Checkpoint ReferenceId="A320_CLIMB_EFIS"/>
                     <Checkpoint ReferenceId="A320_CLIMB_ECAM_MEMO"/>
                     <Checkpoint ReferenceId="A320_CLIMB_RAD_NAV"/>
                     <Checkpoint ReferenceId="A320_CLIMB_SEC_FPLAN"/>
