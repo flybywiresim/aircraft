@@ -65,6 +65,7 @@
 1. [ELEC] RAT & EMER GEN fault light illuminates when applicable - @davidwalschots (David Walschots)
 1. [FBW] Realistic rudder trim deflection and reset rate - @aguther (Andreas Guther)
 1. [FBW] Elevator trim wheels no longer move when stop is reached - @aguther (Andreas Guther)
+1. [AP] Improved V/S and FPA speed protection mode - @aguther (Andreas Guther)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
