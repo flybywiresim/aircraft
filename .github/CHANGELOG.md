@@ -61,6 +61,8 @@
 1. [FCU] Added more custom events that can be triggered via SimConnect to control the FCU - @aguther (Andreas Guther)
 1. [MISC] Autobrake can be armed via keybindings - @Saschl (saschl#9432)
 1. [FWC] Fix pushing of MASTER WARN and MASTER CAUT not disabling aural warnings - @davidwalschots (David Walschots)
+1. [ELEC] EMER ELEC PWR overhead MAN ON push button triggers emergency generator start (RAT not yet simulated) - @davidwalschots (David Walschots)
+1. [ELEC] RAT & EMER GEN fault light illuminates when applicable - @davidwalschots (David Walschots)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
