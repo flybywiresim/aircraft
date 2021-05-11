@@ -1251,14 +1251,17 @@
                     <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
-                <!-- TODO: Seatbelt Light DUMMY -->
-                <UseTemplate Name="A32NX_GT_Switch_Dummy">
+                <Update Once="True">
+                    (L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position) 1 == (A:CABIN SEATBELTS ALERT SWITCH, bool) 0 == and if{
+                      (&gt;K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE)
+                    }
+                </Update>
+                <UseTemplate Name="FBW_GT_Switch">
                     <NODE_ID>SWITCH_OVHD_INTLT_SEATBELT</NODE_ID>
-                    <PART_ID>Seatbelt_Switch</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_SEATBELT</ANIM_NAME>
+                    <ANIM_SIMVAR>CABIN SEATBELTS ALERT SWITCH</ANIM_SIMVAR>
                     <LIGHT_TYPE>SEATBELT</LIGHT_TYPE>
-                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                    <SWITCH_POSITION_VAR>XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position</SWITCH_POSITION_VAR>
+                    <EVENTID>CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE</EVENTID>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_SEATBELT_OFF</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_SEATBELT_ON</ANIMTIP_1>
                     <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
