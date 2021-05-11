@@ -572,8 +572,8 @@
     - Indicates if the push button's FAULT light should illuminate
     - {name}
         - APU_MASTER_SW
-        - ELEC_BAT_10
-        - ELEC_BAT_11
+        - ELEC_BAT_1
+        - ELEC_BAT_2
         - ELEC_IDG_1
         - ELEC_IDG_2
         - ELEC_ENG_GEN_1
@@ -587,8 +587,8 @@
     - Bool
     - True when the push button is AUTO
     - {name}
-        - ELEC_BAT_10
-        - ELEC_BAT_11
+        - ELEC_BAT_1
+        - ELEC_BAT_2
         - ELEC_BUS_TIE_PB
         - ELEC_GALY_AND_CAB
 
@@ -687,8 +687,8 @@
         - TR_1
         - TR_2
         - TR_3: TR ESS
-        - BAT_10: Battery 1
-        - BAT_11: Battery 2
+        - BAT_1
+        - BAT_2
 
 - A32NX_ELEC_{name}_POTENTIAL_NORMAL
     - Bool
@@ -703,8 +703,8 @@
         - TR_1
         - TR_2
         - TR_3: TR ESS
-        - BAT_10: Battery 1
-        - BAT_11: Battery 2
+        - BAT_1
+        - BAT_2
 
 - A32NX_ELEC_{name}_FREQUENCY:
     - Hertz
@@ -751,8 +751,8 @@
         - TR_1
         - TR_2
         - TR_3: TR ESS
-        - BAT_10: Battery 1 (negative when discharging, positive when charging)
-        - BAT_11: Battery 2 (negative when discharging, positive when charging)
+        - BAT_1: Battery 1 (negative when discharging, positive when charging)
+        - BAT_2: Battery 2 (negative when discharging, positive when charging)
 
 - A32NX_ELEC_{name}_CURRENT_NORMAL
     - Ampere
@@ -761,8 +761,8 @@
         - TR_1
         - TR_2
         - TR_3: TR ESS
-        - BAT_10: Battery 1
-        - BAT_11: Battery 2
+        - BAT_1: Battery 1
+        - BAT_2: Battery 2
 
 - A32NX_ELEC_ENG_GEN_{number}_IDG_OIL_OUTLET_TEMPERATURE
     - Celsius
@@ -947,6 +947,15 @@
       -1 | full forward
       0 | neutral
       1 | full backward
+
+- A32NX_RUDDER_PEDAL_POSITION
+    - Number
+    - Provides the rudder pedal position
+      Value | Meaning
+      --- | ---
+      -100 | full left
+      0 | neutral
+      100 | full right
 
 - A32NX_ALPHA_MAX_PERCENTAGE
     - Number (0.0 -> 1.0)
@@ -1166,6 +1175,18 @@
       --- | ---
       Inactive | 0
       Revert | 1
+
+- A320_Neo_FCU_SPEED_SET_DATA
+    - Number
+    - Used as data transport for event `H:A320_Neo_FCU_SPEED_SET`
+
+- A320_Neo_FCU_HDG_SET_DATA
+    - Number
+    - Used as data transport for event `H:A320_Neo_FCU_HDG_SET`
+
+- A320_Neo_FCU_VS_SET_DATA
+    - Number
+    - Used as data transport for event `H:A320_Neo_FCU_VS_SET`
 
 ## Autothrust System
 
