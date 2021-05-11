@@ -65,7 +65,6 @@
 1. [ELEC] RAT & EMER GEN fault light illuminates when applicable - @davidwalschots (David Walschots)
 1. [MISC] Seatbelt sign state can be toggled via external events - @Saschl (saschl#9432)
 
-
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
 1. [SOUND] Improved engine startup and fly by sound - @hotshotp (Boris#9134)
