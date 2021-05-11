@@ -1577,7 +1577,7 @@
         <Sound WwiseData="true" WwiseEvent="aural_2500ft" />
         <Sound WwiseData="true" WwiseEvent="aural_retard" />
         <Sound WwiseData="true" WwiseEvent="aural_v1" />
-        <Sound WwiseEvent="cavcharge" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
+        <Sound WwiseEvent="cavcharge" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="true" />
         <Sound WwiseEvent="3click" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" />
 
         <!-- New RA callouts ====================================================================================-->
