@@ -218,10 +218,10 @@
                 <TOOLTIPID>Disc. A/THR</TOOLTIPID>
                 <LEFT_SINGLE_CODE>
                     1 (&gt;K:AUTO_THROTTLE_DISCONNECT)
-                    1 (&gt;L:PUSH_THROTTLE_BUTTON_#ID#)
+                    1 (&gt;L:PUSH_THROTTLE_BUTTON)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
-                    0 (&gt;L:PUSH_THROTTLE_BUTTON_#ID#)
+                    0 (&gt;L:PUSH_THROTTLE_BUTTON)
                 </LEFT_LEAVE_CODE>
             </UseTemplate>
         </Component>

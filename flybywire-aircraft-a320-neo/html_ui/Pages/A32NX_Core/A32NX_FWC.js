@@ -128,19 +128,17 @@ class A32NX_FWC {
         const overspeed = Simplane.getIndicatedSpeed() > (SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") + 4);
         const ldgNotDown = SimVar.GetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool");
 
-        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN_R", "Bool")) {
+        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN", "Bool")) {
             this.warningPressed = true;
             if (!overspeed && !ldgNotDown) {
                 SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", false);
-                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
             }
         } else {
             this.warningPressed = false;
         }
-        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT_L", "Bool") || SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT_R", "Bool")) {
+        if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERCAUT", "Bool")) {
             this.cautionPressed = true;
             SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
-            SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
         } else {
             this.cautionPressed = false;
         }
@@ -151,11 +149,11 @@ class A32NX_FWC {
             this.warningPriority = false;
         }
 
-        if (SimVar.GetSimVarValue("L:PUSH_THROTTLE_BUTTON_1", "Bool") || SimVar.GetSimVarValue("L:PUSH_THROTTLE_BUTTON_2", "Bool")) {
+        if (SimVar.GetSimVarValue("L:PUSH_THROTTLE_BUTTON", "Bool")) {
             this.ATHRDisconnectByThrottle = true;
         }
 
-        if (SimVar.GetSimVarValue("L:PUSH_SIDESTICK_AUTOPILOT_1", "Bool") || SimVar.GetSimVarValue("L:PUSH_SIDESTICK_AUTOPILOT_2", "Bool")) {
+        if (SimVar.GetSimVarValue("L:PUSH_SIDESTICK_AUTOPILOT", "Bool")) {
             this.APDisconnectedBySidestick = true;
         }
     }
