@@ -42,8 +42,6 @@ class AutopilotStateMachineModelClass {
     real_T local_H_fcu_ft;
     real_T local_H_constraint_ft;
     real_T local_H_GA_init_ft;
-    real_T out_H_dot_c_fpm;
-    real_T out_FPA_c_deg;
     real_T eventTime;
     real_T eventTime_i;
     real_T eventTime_p;
@@ -82,8 +80,6 @@ class AutopilotStateMachineModelClass {
     boolean_T wereAllEnginesOperative_not_empty;
     boolean_T wereAllEnginesOperative_d;
     boolean_T wereAllEnginesOperative_not_empty_a;
-    boolean_T out_H_dot_c_fpm_not_empty;
-    boolean_T out_FPA_c_deg_not_empty;
     boolean_T verticalSpeedCancelMode;
     boolean_T sAP1;
     boolean_T sAP2;
