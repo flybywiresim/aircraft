@@ -1004,9 +1004,11 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   } else {
     outputEtaTrim.eta_trim_deg = elevatorTrimHandler->getPosition();
   }
-  if (!simConnectInterface.sendData(outputEtaTrim)) {
-    std::cout << "WASM: Write data failed!" << endl;
-    return false;
+  if (!flyByWireOutput.sim.data_computed.tracking_mode_on && (flyByWireEnabled || !flyByWireOutput.output.eta_trim_deg_should_write)) {
+    if (!simConnectInterface.sendData(outputEtaTrim)) {
+      std::cout << "WASM: Write data failed!" << endl;
+      return false;
+    }
   }
 
   SimOutputZetaTrim outputZetaTrim = {};
@@ -1017,9 +1019,11 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   } else {
     outputZetaTrim.zeta_trim_pos = rudderTrimHandler->getPosition();
   }
-  if (!simConnectInterface.sendData(outputZetaTrim)) {
-    std::cout << "WASM: Write data failed!" << endl;
-    return false;
+  if (!flyByWireOutput.sim.data_computed.tracking_mode_on && (flyByWireEnabled || !flyByWireOutput.output.zeta_trim_pos_should_write)) {
+    if (!simConnectInterface.sendData(outputZetaTrim)) {
+      std::cout << "WASM: Write data failed!" << endl;
+      return false;
+    }
   }
 
   // calculate alpha max percentage
