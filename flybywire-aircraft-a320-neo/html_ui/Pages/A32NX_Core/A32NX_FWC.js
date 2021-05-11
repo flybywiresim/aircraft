@@ -70,15 +70,14 @@ class A32NX_FWC {
         this._wasReach200ft = false;
 
         // Autopilot Warning
-        // Warning Canceled is True to avoid unnecessary warning.
         this.AutothrottleWarningCanceled = true;
         this.AutopilotWarningCanceled = true;
         this.athrdeltaTime = 0;
         this.apdeltaTime = 0;
 
         // AUTOPILOT DISCONNECT
-        this.ATHRDisconnectByThrottle = false;
-        this.APDisconnectedBySidestick = false;
+        this.ATHRDisconnectByThrottle = true;
+        this.APDisconnectedBySidestick = true;
 
         // Update Throttler
         this.updateThrottler = new UpdateThrottler(200);
