@@ -509,20 +509,17 @@ var A320_Neo_UpperECAM;
                         messages: [
                             {
                                 message: "AP OFF",
-                                level: 2,
+                                level: 3,
                                 warning: false,
+                                alwaysShowCategory: true,
                                 isActive: () => (
                                     this.getCachedSimVar("L:A32NX_AUTOPILOT_DISCONNECT_BY_FCU", "Bool")
                                 ),
                             },
-                        ]
-                    },
-                    {
-                        name: "AUTO FLT",
-                        messages: [
                             {
                                 message: "A/THR OFF",
                                 level: 2,
+                                alwaysShowCategory: true,
                                 isActive: () => (
                                     this.getCachedSimVar("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool")
                                 ),
@@ -533,7 +530,7 @@ var A320_Neo_UpperECAM;
                                         action: "MOVE",
                                     }
                                 ]
-                            }
+                            },
                         ]
                     },
                     //Ground
@@ -1253,7 +1250,7 @@ var A320_Neo_UpperECAM;
                         style: "InfoCaution",
                         important: true,
                         isActive: () => {
-                            return this.getCachedSimVar("L:A32NX_ATHR_DISCONNECT", "Bool");
+                            return this.getCachedSimVar("L:A32NX_ATHR_DISCONNECT_BY_THROTTLE", "Bool");
                         }
                     },
                     {
@@ -2919,7 +2916,7 @@ var A320_Neo_UpperECAM;
                             if (!_category) {
                                 break;
                             }
-                            if (this.activeCategories.includes(_category)) {
+                            if (this.activeCategories.includes(_category) && !_alwaysShowCategory) {
                                 for (var i = 0; i < _category.length; i++) {
                                     msgOutput = "&nbsp;" + msgOutput;
                                 }
@@ -2984,7 +2981,7 @@ var A320_Neo_UpperECAM;
                         }
                         if (!this.clearedMessages.includes(message.id)) {
                             this.hasActiveFailures = true;
-                            if (message.level == 3) {
+                            if (message.level == 3 && message.warning) {
                                 this.hasWarnings = true;
                             }
                             if (message.level == 2) {

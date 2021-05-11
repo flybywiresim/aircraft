@@ -70,18 +70,15 @@ class A32NX_FWC {
         this._wasReach200ft = false;
 
         // Autopilot Warning
-        this.AutothrottleWarningCanceled = false;
-        this.AutopilotWarningCanceled = false;
+        // Warning Canceled is True to avoid unnecessary warning.
+        this.AutothrottleWarningCanceled = true;
+        this.AutopilotWarningCanceled = true;
         this.athrdeltaTime = 0;
         this.apdeltaTime = 0;
 
         // AUTOPILOT DISCONNECT
         this.ATHRDisconnectByThrottle = false;
         this.APDisconnectedBySidestick = false;
-
-        // Initial SimVarValue
-        SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_FCU", "Bool", false);
-        SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool", false);
 
         // Update Throttler
         this.updateThrottler = new UpdateThrottler(200);
@@ -476,7 +473,7 @@ class A32NX_FWC {
 
         if (ATHR_STATUS !== 0) {
             // AUTOTHRUST CONNECTED
-            SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT", "Bool", false);
+            SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_THROTTLE", "Bool", false);
             SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool", false);
             SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
 
@@ -486,22 +483,22 @@ class A32NX_FWC {
         } else if (ATHR_STATUS === 0 && !this.AutothrottleWarningCanceled) {
             if (this.ATHRDisconnectByThrottle) {
                 // AUTOTHRUST DISCONNECTED BY THROTTLE PUSH BUTTON
-                SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT", "Bool", true);
+                SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_THROTTLE", "Bool", true);
                 SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", true);
                 this.athrdeltaTime += _deltaTime;
 
                 if (this.cautionPressed || (this.athrdeltaTime / 1000) >= 3) {
                     this.AutothrottleWarningCanceled = true;
                     this.ATHRDisconnectByThrottle = false;
-                    SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT", "Bool", false);
                     SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
+                    SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_THROTTLE", "Bool", false);
                     this.athrdeltaTime = 0;
                 }
             } else if (!this.ATHRDisconnectByThrottle && !this.AutothrottleWarningCanceled) {
                 // AUTOTHRUST DISCONNECTED BY FCU
                 SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool", true);
                 if (this.cautionPressed) {
-                    SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
+                    SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool", false);
                 }
             }
         }
