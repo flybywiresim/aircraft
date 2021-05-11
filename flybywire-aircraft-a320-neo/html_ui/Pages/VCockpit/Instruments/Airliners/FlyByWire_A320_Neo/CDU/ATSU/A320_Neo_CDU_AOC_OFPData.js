@@ -16,10 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const MAX_SEAT_AVAILABLE = 162;
-const PAX_WEIGHT = 84;
-const BAG_WEIGHT = 20;
-
 /**
  * AOC - OFP WEIGHT
  * Fetch and display weight data to be loaded to the aircraft via the MCDU
@@ -73,7 +69,7 @@ class CDUAocOfpData {
         }
 
         const display = [
-            ["PERF/W&B", "1", "2", "AOC"],
+            ["W/B", "1", "2", "AOC"],
             ["BLOCK FUEL"],
             [blockFuel],
             ["TAXI FUEL"],
@@ -181,10 +177,20 @@ class CDUAocOfpData {
         mcdu.page.Current = mcdu.page.AOCOfpData2;
         mcdu.activeSystem = 'ATSU';
 
+        function updateView() {
+            if (mcdu.page.Current === mcdu.page.AOCOfpData2) {
+                CDUAocOfpData.ShowPage2(mcdu);
+            }
+        }
+
+        mcdu.refreshPageCallback = () => {
+            updateView();
+        };
+        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
+
+        const boardingStartedByUser = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool");
+
         let zfwcg = "__._[color]amber";
-        let noPax = "___[color]white";
-        let paxWeight = "___[color]white";
-        let bagWeight = "___[color]white";
         let requestButton = "SEND*[color]cyan";
         let loadButton = "START*[color]cyan";
 
@@ -192,261 +198,114 @@ class CDUAocOfpData {
             requestButton = "SEND [color]cyan";
         }
 
-        if (mcdu.aocWeight.loading) {
-            loadButton = "LOAD [color]cyan";
+        if (boardingStartedByUser) {
+            loadButton = "STOP*[color]yellow";
         }
 
-        const currentZfwcg = mcdu.aocWeight.zfwcg || getZfwcg(mcdu);
+        function buildStationValue(station) {
+            const targetPax = SimVar.GetSimVarValue(`${station.simVar}_DESIRED`, "Number");
+            const pax = SimVar.GetSimVarValue(station.simVar, "Number");
+
+            const suffix = targetPax === pax ? "[color]green" : "[color]cyan";
+
+            return new CDU_SingleValueField(mcdu,
+                "int",
+                `${targetPax} (${pax})`,
+                {
+                    emptyValue: "__[color]amber",
+                    suffix: suffix,
+                    maxLength: 2,
+                    minValue: 0,
+                    maxValue: station.seats,
+                },
+                async (value) => {
+                    await SimVar.SetSimVarValue(`${station.simVar}_DESIRED`, "Number", value);
+                    updateView();
+                }
+            );
+        }
+
+        async function setTargetPax(numberOfPax) {
+            console.log('setPax', numberOfPax);
+
+            let paxRemaining = parseInt(numberOfPax);
+
+            async function fillStation(station, paxToFill) {
+                console.log('fillStation', station.name, paxToFill);
+
+                const pax = Math.min(paxToFill, station.seats);
+                station.pax = pax;
+
+                await SimVar.SetSimVarValue(`${station.simVar}_DESIRED`, "Number", parseInt(pax));
+
+                paxRemaining -= pax;
+            }
+
+            await fillStation(paxStations['rows21_27'], paxRemaining);
+            await fillStation(paxStations['rows14_20'], paxRemaining);
+
+            const remainingByTwo = Math.trunc(paxRemaining / 2);
+            await fillStation(paxStations['rows1_6'], remainingByTwo);
+            await fillStation(paxStations['rows7_13'], paxRemaining);
+
+            return;
+        }
+
+        const currentZfwcg = getZfwcg();
         if (currentZfwcg !== undefined) {
-            const cgColor = currentZfwcg >= 16 && currentZfwcg <= 40 ? 'cyan' : 'red';
-            const size = mcdu.aocWeight.zfwcg ? 'big' : 'small';
-            zfwcg = `{${size}}${currentZfwcg.toFixed(1)}{end}[color]${cgColor}`;
+            const cgColor = currentZfwcg >= 16 && currentZfwcg <= 40 ? 'green' : 'red';
+            zfwcg = `${currentZfwcg.toFixed(1)}{end}[color]${cgColor}`;
         }
 
-        const currentNoPax = mcdu.aocWeight.noPax || mcdu.simbrief.paxCount || 0;
-        if (currentNoPax !== undefined) {
-            const size = mcdu.aocWeight.noPax ? 'big' : 'small';
-            noPax = `{${size}}${currentNoPax}{end}[color]green`;
-        }
+        function buildTotalPaxValue() {
+            const currentPax = Object.values(paxStations).map((station) => SimVar.GetSimVarValue(station.simVar, "Number")).reduce((acc, cur) => acc + cur);
+            const paxTarget = Object.values(paxStations).map((station) => SimVar.GetSimVarValue(`${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
 
-        const currentPaxWeight = mcdu.aocWeight.paxWeight || mcdu.simbrief.paxWeight || PAX_WEIGHT;
-        if (currentPaxWeight !== undefined) {
-            const size = currentPaxWeight != PAX_WEIGHT ? 'big' : 'small';
-            paxWeight = `{${size}}${currentPaxWeight}{end}[color]green`;
-        }
+            const suffix = paxTarget === currentPax ? "[color]green" : "[color]cyan";
 
-        const currentBagWeight = mcdu.aocWeight.baggageUnitWeight || BAG_WEIGHT;
-        if (currentBagWeight !== undefined) {
-            const size = currentBagWeight != BAG_WEIGHT ? 'big' : 'small';
-            bagWeight = `{${size}}${currentBagWeight}{end}[color]green`;
-        }
+            return new CDU_SingleValueField(mcdu,
+                "int",
+                `${currentPax} (${paxTarget})`,
+                {
+                    emptyValue: "__[color]amber",
+                    suffix: suffix,
+                    maxLength: 3,
+                    minValue: 0,
+                    maxValue: MAX_SEAT_AVAILABLE,
+                },
+                async (value) => {
+                    await setTargetPax(value);
+                    updateView();
+                }
+            );
 
-        function updateView() {
-            if (mcdu.page.Current === mcdu.page.AOCOfpData2) {
-                CDUAocOfpData.ShowPage2(mcdu);
-            }
-        }
-
-        function setPax(numberOfPax) {
-            let paxLeft = parseInt(numberOfPax);
-
-            function fillStation(station, paxToFill) {
-                station.pax = Math.min(paxToFill, station.seats);
-                paxLeft -= station.pax;
-            }
-
-            fillStation(mcdu.paxStations["rows21_27"], paxLeft);
-            fillStation(mcdu.paxStations["rows14_20"], paxLeft);
-
-            const toBeFilledInLastStations = paxLeft / 2;
-            fillStation(mcdu.paxStations["rows7_13"], toBeFilledInLastStations);
-            fillStation(mcdu.paxStations["rows1_6"], toBeFilledInLastStations);
-
-            setPayload(numberOfPax);
-        }
-
-        function setPayload(numberOfPax) {
-            const noPax = parseInt(numberOfPax);
-            const currentBagWeight = mcdu.aocWeight.baggageUnitWeight || BAG_WEIGHT;
-
-            const bagWeightLeft = parseFloat(currentBagWeight) * noPax;
-
-            function fillStation(station, bagWeightLeft) {
-                station.currentWeight = Math.min(bagWeightLeft, station.weight);
-                bagWeightLeft -= station.currentWeight;
-            }
-
-            // FWD BAGGAGE/CONTAINER / AFT BAGGAGE
-            fillStation(mcdu.payloadStations["fwdBag"], bagWeightLeft);
-            fillStation(mcdu.payloadStations["aftBag"], bagWeightLeft);
-
-            // AFT CONTAINER / AFT BULK
-            fillStation(mcdu.payloadStations["aftCont"], 0);
-            fillStation(mcdu.payloadStations["aftBulk"], 0);
-        }
-
-        function showPaxNo(paxNo) {
-            return `{small}{cyan}${paxNo}{end} (${paxNo * currentPaxWeight} ${mcdu.simbrief.units || ''}){end}`;
         }
 
         const display = [
-            ["W&B", "2", "2", "AOC"],
-            ["[ROWS 1-6]", "ZFWCG"],
-            [showPaxNo(mcdu.paxStations["rows1_6"].pax), zfwcg],
-            ["[ROWS 7-13]", "NO PAX"],
-            [showPaxNo(mcdu.paxStations["rows7_13"].pax), noPax],
-            ["[ROWS 14-20]", "PAX WEIGHT"],
-            [showPaxNo(mcdu.paxStations["rows14_20"].pax), paxWeight],
-            ["[ROWS 21-27]", "BAG WEIGHT"],
-            [showPaxNo(mcdu.paxStations["rows21_27"].pax), bagWeight],
-            ["", "OFP REQUEST[color]cyan"],
-            [, requestButton],
-            ["", "BOARDING/LOAD"],
+            ["W/B", "2", "2", "AOC"],
+            ["TOTAL PAX", "PAYLOAD"],
+            [buildTotalPaxValue(), `${Math.round(getTotalPayload())}[color]green`],
+            [paxStations.rows1_6.name, "ZFW"],
+            [buildStationValue(paxStations.rows1_6), `${Math.round(getZfw())}[color]green`],
+            [paxStations.rows7_13.name, "ZFW CG"],
+            [buildStationValue(paxStations.rows7_13), zfwcg],
+            [paxStations.rows14_20.name, "CARGO"],
+            [buildStationValue(paxStations.rows14_20), `${Math.round(getTotalCargo())} >[color]cyan`],
+            [paxStations.rows21_27.name, "OFP REQUEST"],
+            [buildStationValue(paxStations.rows21_27), requestButton],
+            ["", "BOARDING"],
             ["<AOC MENU", loadButton]
         ];
         mcdu.setTemplate(display);
-
-        mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onLeftInput[0] = (value) => {
-            const station = mcdu.paxStations["rows1_6"];
-            if (value === FMCMainDisplay.clrValue) {
-                station.pax = 0;
-                updateView();
-                return true;
-            }
-            if (value >= 0 && value <= station.seats) {
-                station.pax = parseInt(value);
-                updateView();
-                return true;
-            }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
-
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onLeftInput[1] = (value) => {
-            const station = mcdu.paxStations["rows7_13"];
-            if (value === FMCMainDisplay.clrValue) {
-                station.pax = 0;
-                updateView();
-                return true;
-            }
-            if (value >= 0 && value <= station.seats) {
-                station.pax = parseInt(value);
-                updateView();
-                return true;
-            }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
-
-        mcdu.leftInputDelay[2] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onLeftInput[2] = (value) => {
-            const station = mcdu.paxStations["rows14_20"];
-            if (value === FMCMainDisplay.clrValue) {
-                station.pax = 0;
-                updateView();
-                return true;
-            }
-            if (value >= 0 && value <= station.seats) {
-                station.pax = parseInt(value);
-                updateView();
-                return true;
-            }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
-
-        mcdu.leftInputDelay[3] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onLeftInput[3] = (value) => {
-            const station = mcdu.paxStations["rows21_27"];
-            if (value === FMCMainDisplay.clrValue) {
-                station.pax = 0;
-                updateView();
-                return true;
-            }
-            if (value >= 0 && value <= station.seats) {
-                station.pax = parseInt(value);
-                updateView();
-                return true;
-            }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
-
-        mcdu.rightInputDelay[1] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onRightInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                mcdu.aocWeight.noPax = 0;
-                setPax(0);
-                updateView();
-                return true;
-            }
-            if (value >= 0 && value <= MAX_SEAT_AVAILABLE) {
-                mcdu.aocWeight.noPax = value;
-                setPax(value);
-                updateView();
-                return true;
-            }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
-
-        mcdu.rightInputDelay[2] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onRightInput[2] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                mcdu.aocWeight.paxWeight = PAX_WEIGHT;
-                updateView();
-                return true;
-            }
-            if (value) {
-                mcdu.aocWeight.paxWeight = value;
-                updateView();
-                return true;
-            }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
-
-        mcdu.rightInputDelay[3] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onRightInput[3] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                mcdu.aocWeight.baggageUnitWeight = BAG_WEIGHT;
-                updateView();
-                return true;
-            }
-            if (value) {
-                mcdu.aocWeight.baggageUnitWeight = value;
-                updateView();
-                return true;
-            }
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
-            return false;
-        };
 
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelayBasic();
         };
         mcdu.onRightInput[4] = () => {
             getSimBriefOfp(mcdu, updateView, () => {
-                if (parseInt(mcdu.simbrief.paxWeight) < PAX_WEIGHT) {
-                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
-                }
-
-                // Reset aocWeight object state
-                mcdu.aocWeight = {
-                    blockFuel: undefined,
-                    estZfw: undefined,
-                    taxiFuel: undefined,
-                    tripFuel: undefined,
-                    payload: undefined,
-                    noPax: undefined,
-                    baggageUnitWeight: undefined,
-                    paxWeight: undefined,
-                };
-
-                const baggageUnitWeight = mcdu.simbrief.paxWeight - PAX_WEIGHT;
-
-                mcdu.aocWeight.baggageUnitWeight = baggageUnitWeight;
-                mcdu.aocWeight.paxWeight = PAX_WEIGHT;
-
-                setPax(mcdu.simbrief.paxCount);
-
-                updateView();
+                setTargetPax(mcdu.simbrief.paxCount).then(() => {
+                    updateView();
+                });
             });
         };
 
@@ -454,7 +313,7 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onRightInput[5] = async () => {
-            await loadPayload(mcdu);
+            await SimVar.SetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool", !boardingStartedByUser);
 
             updateView();
         };
@@ -470,24 +329,6 @@ class CDUAocOfpData {
             CDUAocOfpData.ShowPage(mcdu);
         };
     }
-}
-
-async function loadPayload(mcdu) {
-    const currentPaxWeight = mcdu.aocWeight.paxWeight || mcdu.simbrief.paxWeight || PAX_WEIGHT;
-
-    mcdu.aocWeight.loading = true;
-
-    for (const station of Object.values(mcdu.paxStations)) {
-        await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "kilograms", station.pax * currentPaxWeight);
-    }
-
-    for (const station of Object.values(mcdu.payloadStations)) {
-        await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "kilograms", station.currentWeight);
-    }
-
-    mcdu.aocWeight.loading = false;
-
-    return;
 }
 
 async function loadFuel(mcdu, updateView) {
@@ -523,31 +364,145 @@ async function loadFuel(mcdu, updateView) {
     updateView();
 }
 
-/**
- * Calculate %MAC ZWFCG of all stations
- */
-function getZfwcg(mcdu) {
-    const currentPaxWeight = mcdu.aocWeight.paxWeight || mcdu.simbrief.paxWeight || PAX_WEIGHT;
+const paxStations = {
+    rows1_6: {
+        name: 'ROWS [1-6]',
+        seats: 36,
+        weight: 3024,
+        stationIndex: 2 + 1,
+        position: 21.98,
+        seatsRange: [1, 36],
+        simVar: "L:A32NX_PAX_TOTAL_ROWS_1_6",
+    },
+    rows7_13: {
+        name: 'ROWS [7-13]',
+        seats: 42,
+        weight: 3530,
+        stationIndex: 3 + 1,
+        position: 2.86,
+        seatsRange: [37, 78],
+        simVar: "L:A32NX_PAX_TOTAL_ROWS_7_13",
+    },
+    rows14_20: {
+        name: 'ROWS [14-20]',
+        seats: 48,
+        weight: 4032,
+        stationIndex: 4 + 1,
+        position: -15.34,
+        seatsRange: [79, 126],
+        simVar: "L:A32NX_PAX_TOTAL_ROWS_14_20",
+    },
+    rows21_27: {
+        name: 'ROWS [21-27]',
+        seats: 48,
+        weight: 4032,
+        stationIndex: 5 + 1,
+        position: -32.81,
+        seatsRange: [127, 174],
+        simVar: "L:A32NX_PAX_TOTAL_ROWS_21_27",
+    },
+};
 
-    const leMacZ = -5.233333; // Value from Debug Weight
-    const macSize = 14.0623; // Value from Debug Aircraft Sim Tunning
+const cargoStations = {
+    pilot: {
+        name: 'PILOT',
+        weight: 84,
+        stationIndex: 0 + 1,
+        position: 42.36,
+        visible: false,
+        simVar: 'PAYLOAD STATION WEIGHT:1',
+    },
+    firstOfficer: {
+        name: 'FIRST OFFICER',
+        weight: 84,
+        stationIndex: 1 + 1,
+        position: 42.36,
+        visible: false,
+        simVar: 'PAYLOAD STATION WEIGHT:2',
+    },
+    fwdBag: {
+        name: '[FWD BAGGAGE/CONTAINER]',
+        weight: 3402,
+        stationIndex: 6 + 1,
+        position: 18.28,
+        visible: true,
+        simVar: 'PAYLOAD STATION WEIGHT:7',
+    },
+    aftCont: {
+        name: '[AFT CONTAINER]',
+        weight: 2426,
+        stationIndex: 7 + 1,
+        position: -15.96,
+        visible: true,
+        simVar: 'PAYLOAD STATION WEIGHT:8',
+    },
+    aftBag: {
+        name: '[AFT BAGGAGE]',
+        weight: 2110,
+        stationIndex: 8 + 1,
+        position: -27.10,
+        visible: true,
+        simVar: 'PAYLOAD STATION WEIGHT:9',
+    },
+    aftBulk: {
+        name: '[COMP 5 - AFT BULK/LOOSE]',
+        weight: 1497,
+        stationIndex: 9 + 1,
+        position: -37.35,
+        visible: true,
+        simVar: 'PAYLOAD STATION WEIGHT:10',
+    },
+};
+
+const MAX_SEAT_AVAILABLE = 162;
+const PAX_WEIGHT = 84;
+const BAG_WEIGHT = 20;
+
+/**
+     * Calculate %MAC ZWFCG of all stations
+     */
+function getZfwcg() {
+    const currentPaxWeight = PAX_WEIGHT + BAG_WEIGHT;
+
+    const leMacZ = -5.39; // Value from Debug Weight
+    const macSize = 13.45; // Value from Debug Aircraft Sim Tunning
 
     const emptyWeight = 90400 * 0.453592; // Value from flight_model.cfg to kgs
     const emptyPosition = -8.75; // Value from flight_model.cfg
     const emptyMoment = emptyPosition * emptyWeight;
 
-    const paxTotalMass = Object.values(mcdu.paxStations).map(station => station.pax * currentPaxWeight).reduce((acc, cur) => acc + cur, 0);
-    const paxTotalMoment = Object.values(mcdu.paxStations).map(station => (station.pax * currentPaxWeight) * station.position).reduce((acc, cur) => acc + cur, 0);
+    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`${station.simVar}_DESIRED`, "Number") * currentPaxWeight)).reduce((acc, cur) => acc + cur, 0);
+    const paxTotalMoment = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`${station.simVar}_DESIRED`, "Number") * currentPaxWeight) * station.position).reduce((acc, cur) => acc + cur, 0);
 
-    const payloadTotalMass = Object.values(mcdu.payloadStations).map(station => station.currentWeight).reduce((acc, cur) => acc + cur, 0);
-    const payloadTotalMoment = Object.values(mcdu.payloadStations).map(station => station.currentWeight * station.position).reduce((acc, cur) => acc + cur, 0);
+    const payloadTotalMass = Object.values(cargoStations).map((station) => SimVar.GetSimVarValue(station.simVar, "Number")).reduce((acc, cur) => acc + cur, 0);
+    const payloadTotalMoment = Object.values(cargoStations).map((station) => (SimVar.GetSimVarValue(station.simVar, "Number") * station.position)).reduce((acc, cur) => acc + cur, 0);
 
     const totalMass = emptyWeight + paxTotalMass + payloadTotalMass;
     const totalMoment = emptyMoment + paxTotalMoment + payloadTotalMoment;
 
     const cgPosition = totalMoment / totalMass;
     const cgPositionToLemac = cgPosition - leMacZ;
-    const cgPercentMac = -100 * cgPositionToLemac / macSize;
+    const cgPercentMac = -100 * (cgPositionToLemac / macSize);
 
     return cgPercentMac;
+}
+
+function getTotalCargo() {
+    const cargoTotalMass = Object.values(cargoStations).filter((station) => station.visible).map((station) => SimVar.GetSimVarValue(station.simVar, "Number")).reduce((acc, cur) => acc + cur, 0);
+
+    return cargoTotalMass;
+}
+
+function getTotalPayload() {
+    const currentPaxWeight = PAX_WEIGHT + BAG_WEIGHT;
+
+    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`${station.simVar}_DESIRED`, "Number") * currentPaxWeight)).reduce((acc, cur) => acc + cur, 0);
+    const cargoTotalMass = getTotalCargo();
+
+    return paxTotalMass + cargoTotalMass;
+}
+
+function getZfw() {
+    const emptyWeight = 90400 * 0.453592; // Value from flight_model.cfg to kgs
+    return emptyWeight + getTotalPayload();
 }
