@@ -60,6 +60,7 @@
 1. [FBW] Realistic rudder pedals animation only following pilot input or trim - @aguther (Andreas Guther)
 1. [FCU] Added more custom events that can be triggered via SimConnect to control the FCU - @aguther (Andreas Guther)
 1. [MISC] Autobrake can be armed via keybindings - @Saschl (saschl#9432)
+1. [FWC] Fix pushing of MASTER WARN and MASTER CAUT not disabling aural warnings - @davidwalschots (David Walschots)
 1. [FWC] Add Additional Warnings(Autopilot & Autothrottle Disconnect / L/G NOT DOWN ) - @Kimbyeongjang (김병장#7165)
 
 ## 0.6.0
