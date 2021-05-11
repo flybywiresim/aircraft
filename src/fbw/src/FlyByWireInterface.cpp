@@ -354,6 +354,7 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          idFmgcV2->get(),
                                                          idFmgcV_APP->get(),
                                                          idFmgcV_LS->get(),
+                                                         idFmgcV_MAX->get(),
                                                          customFlightGuidanceEnabled ? 1.0 : simData.gpsIsFlightPlanActive,
                                                          idFmgcAltitudeConstraint->get(),
                                                          idFmgcThrustReductionAltitude->get(),
