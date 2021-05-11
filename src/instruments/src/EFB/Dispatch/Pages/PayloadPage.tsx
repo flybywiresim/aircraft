@@ -216,7 +216,7 @@ const PayloadPage = () => {
 
     const convertUnit = (unitInMetrics) => {
         if (usingMetrics === 1) {
-            return 1;
+            return unitInMetrics;
         }
         return unitInMetrics * 2.20462;
     };
@@ -436,7 +436,7 @@ const PayloadPage = () => {
     }
 
     function getTotalCargo() {
-        const cargoTotalMass = Object.values(payloadStations).map((station) => station.currentWeight).reduce((acc, cur) => acc + cur, 0);
+        const cargoTotalMass = Object.values(payloadStations).filter((station) => station.visible).map((station) => station.currentWeight).reduce((acc, cur) => acc + cur, 0);
 
         return cargoTotalMass;
     }
