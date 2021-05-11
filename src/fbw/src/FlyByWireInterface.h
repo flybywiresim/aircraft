@@ -6,6 +6,7 @@
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
+#include "ElevatorTrimHandler.h"
 #include "EngineData.h"
 #include "FlapsHandler.h"
 #include "FlightDataRecorder.h"
@@ -13,9 +14,11 @@
 #include "InterpolatingLookupTable.h"
 #include "LocalVariable.h"
 #include "RateLimiter.h"
+#include "RudderTrimHandler.h"
 #include "SimConnectInterface.h"
 #include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
+
 class FlyByWireInterface {
  public:
   bool connect();
@@ -204,6 +207,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSpoilersArmed;
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
+
+  std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
+  std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
 
   void loadConfiguration();
   void setupLocalVariables();

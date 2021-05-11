@@ -12,6 +12,8 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
                                   const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                                   std::shared_ptr<FlapsHandler> flapsHandler,
                                   std::shared_ptr<SpoilersHandler> spoilersHandler,
+                                  std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
+                                  std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
                                   double keyChangeAileron,
                                   double keyChangeElevator,
                                   double keyChangeRudder) {
@@ -31,6 +33,10 @@ bool SimConnectInterface::connect(bool autopilotStateMachineEnabled,
     this->flapsHandler = flapsHandler;
     // store spoilers handler
     this->spoilersHandler = spoilersHandler;
+    // store elevator trim handler
+    this->elevatorTrimHandler = elevatorTrimHandler;
+    // store rudder trim handler
+    this->rudderTrimHandler = rudderTrimHandler;
     // store key change value for each axis
     flightControlsKeyChangeAileron = keyChangeAileron;
     flightControlsKeyChangeElevator = keyChangeElevator;
@@ -72,6 +78,10 @@ void SimConnectInterface::disconnect() {
     // info message
     cout << "WASM: Disconnected" << endl;
   }
+}
+
+void SimConnectInterface::setSampleTime(double sampleTime) {
+  this->sampleTime = sampleTime;
 }
 
 bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
@@ -207,6 +217,12 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_RIGHT, "RUDDER_RIGHT", flyByWireEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_AXIS_MINUS, "RUDDER_AXIS_MINUS", flyByWireEnabled);
 
+  result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_TRIM_LEFT, "RUDDER_TRIM_LEFT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_TRIM_RESET, "RUDDER_TRIM_RESET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_TRIM_RIGHT, "RUDDER_TRIM_RIGHT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_TRIM_SET, "RUDDER_TRIM_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::RUDDER_TRIM_SET_EX1, "RUDDER_TRIM_SET_EX1", true);
+
   result &= addInputDataDefinition(hSimConnect, 0, Events::AILERON_SET, "AILERON_SET", flyByWireEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AILERONS_LEFT, "AILERONS_LEFT", flyByWireEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AILERONS_RIGHT, "AILERONS_RIGHT", flyByWireEnabled);
@@ -216,6 +232,11 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(bool autopilo
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEVATOR_SET, "ELEVATOR_SET", flyByWireEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_DOWN, "ELEV_DOWN", flyByWireEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_UP, "ELEV_UP", flyByWireEnabled);
+
+  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_DN, "ELEV_TRIM_DN", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_UP, "ELEV_TRIM_UP", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEVATOR_TRIM_SET, "ELEVATOR_TRIM_SET", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::AXIS_ELEV_TRIM_SET, "AXIS_ELEV_TRIM_SET", true);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MASTER, "AP_MASTER", autopilotStateMachineEnabled);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_OFF, "AUTOPILOT_OFF", false);
@@ -504,6 +525,10 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   result &= SimConnect_CreateClientData(hSimConnect, ClientData::FLY_BY_WIRE, sizeof(ClientDataFlyByWire),
                                         SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
   // add data definitions
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
+                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
                                                  SIMCONNECT_CLIENTDATATYPE_FLOAT64);
   result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::FLY_BY_WIRE, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
@@ -906,6 +931,27 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       simInput.inputs[AXIS_RUDDER_SET] = -1.0 * (static_cast<long>(event->dwData) / 16384.0);
       break;
 
+    case Events::RUDDER_TRIM_LEFT: {
+      rudderTrimHandler->onEventRudderTrimLeft(sampleTime);
+      break;
+    }
+    case Events::RUDDER_TRIM_RESET: {
+      rudderTrimHandler->onEventRudderTrimReset();
+      break;
+    }
+    case Events::RUDDER_TRIM_RIGHT: {
+      rudderTrimHandler->onEventRudderTrimRight(sampleTime);
+      break;
+    }
+    case Events::RUDDER_TRIM_SET: {
+      rudderTrimHandler->onEventRudderTrimSet(static_cast<long>(event->dwData));
+      break;
+    }
+    case Events::RUDDER_TRIM_SET_EX1: {
+      rudderTrimHandler->onEventRudderTrimSet(static_cast<long>(event->dwData));
+      break;
+    }
+
     case Events::AILERON_SET:
       simInput.inputs[AXIS_AILERONS_SET] = static_cast<long>(event->dwData) / 16384.0;
       break;
@@ -934,6 +980,23 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::ELEV_UP:
       simInput.inputs[AXIS_ELEVATOR_SET] = fmax(-1.0, simInput.inputs[AXIS_ELEVATOR_SET] - flightControlsKeyChangeElevator);
       break;
+
+    case Events::ELEV_TRIM_DN: {
+      elevatorTrimHandler->onEventElevatorTrimDown();
+      break;
+    }
+    case Events::ELEV_TRIM_UP: {
+      elevatorTrimHandler->onEventElevatorTrimUp();
+      break;
+    }
+    case Events::ELEVATOR_TRIM_SET: {
+      elevatorTrimHandler->onEventElevatorTrimSet(static_cast<long>(event->dwData));
+      break;
+    }
+    case Events::AXIS_ELEV_TRIM_SET: {
+      elevatorTrimHandler->onEventElevatorTrimAxisSet(static_cast<long>(event->dwData));
+      break;
+    }
 
     case Events::AUTOPILOT_OFF: {
       simInputAutopilot.AP_disconnect = 1;
