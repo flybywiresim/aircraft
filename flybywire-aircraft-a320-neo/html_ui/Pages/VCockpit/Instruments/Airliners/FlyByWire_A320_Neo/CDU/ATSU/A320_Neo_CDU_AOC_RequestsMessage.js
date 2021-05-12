@@ -1,7 +1,8 @@
 class CDUAocRequestsMessage {
     static ShowPage(mcdu, message, offset = 0) {
         mcdu.clearDisplay();
-        const lines = message["content"];
+        let lines = [];
+        message["content"].forEach(element => lines.push(element.replace(/,/g, "")));
         if (!message["opened"]) {
             let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
             if (timeValue) {
