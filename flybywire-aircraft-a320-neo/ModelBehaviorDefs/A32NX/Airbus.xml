@@ -1155,6 +1155,7 @@
     <Template Name="A32NX_Push_Held_BARO_Template">
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="FBW_Push_Held">
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                 <WWISE_EVENT_1>autopilot_push_button_on</WWISE_EVENT_1>
                 <WWISE_EVENT_2>autopilot_push_button_off</WWISE_EVENT_2>
                 <PART_ID>#NODE_ID#</PART_ID>
