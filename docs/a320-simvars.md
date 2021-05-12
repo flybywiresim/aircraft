@@ -114,45 +114,41 @@
     - Bool
     - True if pedestal door video button is being held
 
-- A32NX_HYD_ENG1PUMP_FAULT
+- A32NX_OVHD_HYD_{name}_PUMP_PB_HAS_FAULT
     - Bool
-    - True if engine 1 hyd pump fault
+    - True if engine {name} hyd pump fault
+    - {name}
+        - ENG_1
+        - ENG_2
 
-- A32NX_HYD_ENG1PUMP_TOGGLE
+- A32NX_OVHD_HYD_{name}_PUMP_PB_IS_AUTO
     - Bool
-    - True if engine 1 hyd pump is on
+    - True if {name} hyd pump is on
+    - {name}
+        - ENG_1
+        - ENG_2
 
-- A32NX_HYD_ENG2PUMP_FAULT
+- A32NX_OVHD_HYD_{name}_PB_HAS_FAULT
     - Bool
-    - True if engine 2 hyd pump fault
+    - True if elec {name} hyd pump fault
+    - {name}
+        - EPUMPB
+        - EPUMPY
 
-- A32NX_HYD_ENG2PUMP_TOGGLE
+- A32NX_OVHD_HYD_{name}_PB_IS_AUTO
     - Bool
-    - True if engine 2 hyd pump is on
+    - True if elec {name} hyd pump is on/auto
+    - {name}
+        - EPUMPB
+        - EPUMPY
 
-- A32NX_HYD_ELECPUMP_FAULT
-    - Bool
-    - True if elec hyd pump fault
-
-- A32NX_HYD_ELECPUMP_TOGGLE
-    - Bool
-    - True if elec hyd pump is on/auto
-
-- A32NX_HYD_PTU_FAULT
+- A32NX_OVHD_HYD_PTU_PB_HAS_FAULT
     - Bool
     - True if PTU fault
 
-- A32NX_HYD_PTU_TOGGLE
+- A32NX_OVHD_HYD_PTU_PB_IS_AUTO
     - Bool
     - True if PTU system on/auto
-
-- A32NX_HYD_ELECPUMPY_FAULT
-    - Bool
-    - True if yellow elec hyd pump fault
-
-- A32NX_HYD_ELECPUMPY_TOGGLE
-    - Bool
-    - True if yellow elec hyd pump is on/auto
 
 - A32NX_ENGMANSTART1_TOGGLE
     - Bool
@@ -226,7 +222,7 @@
     - Bool
     - True if PFD metric altitude enabled
 
-- A32NX_OVHD_HYD_BLUEPUMP_OVRD
+- A32NX_OVHD_HYD_EPUMPY_OVRD_PB_IS_ON
     - Bool
     - True if "BLUE PUMP OVRD" switch is off
 
@@ -781,6 +777,98 @@
     - {number}
         - 1
         - 2
+
+- A32NX_HYD_{loop_name}_PRESSURE
+    - Psi
+    - Current pressure in the {loop_name} hydraulic circuit
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_RESERVOIR
+    - Gallon
+    - Current fluid level in the {loop_name} hydraulic circuit reservoir
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_EDPUMP_ACTIVE
+    - Bool
+    - Engine driven pump of {loop_name} hydraulic circuit is active
+    - {loop_name}
+        - GREEN
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_EDPUMP_LOW_PRESS
+    - Bool
+    - Engine driven pump of {loop_name} hydraulic circuit is active but pressure is too low
+    - {loop_name}
+        - GREEN
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_EPUMP_ACTIVE
+    - Bool
+    - Electric pump of {loop_name} hydraulic circuit is active
+    - {loop_name}
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
+    - Bool
+    - Electric pump of {loop_name} hydraulic circuit is active but pressure is too low
+    - {loop_name}
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_FIRE_VALVE_OPENED
+    - Bool
+    - Engine driven pump of {loop_name} hydraulic circuit can receive hydraulic fluid
+    - {loop_name}
+        - GREEN
+        - YELLOW
+
+- A32NX_HYD_PTU_VALVE_OPENED
+    - Bool
+    - Power Transfer Unit can receive fluid from yellow and green circuits
+
+- A32NX_HYD_PTU_ACTIVE_{motor_side}
+    - Bool
+    - Power Transfer Unit is trying to transfer hydraulic power from either yellow to green (R2L) or green to yellow (L2R) circuits
+    - {motor_side}
+        - L2R
+        - R2L
+
+- A32NX_HYD_PTU_MOTOR_FLOW
+    - Gallon per second
+    - Power Transfer Unit instantaneous flow in motor side
+
+- A32NX_HYD_RAT_STOW_POSITION
+    - Percent over 100
+    - RAT position, from fully stowed (0) to fully deployed (1)
+
+- A32NX_HYD_RAT_RPM
+    - Rpm
+    - RAT propeller current RPM
+
+- A32NX_HYD_BRAKE_NORM_{brake_side}_PRESS
+    - Psi
+    - Current pressure in brake slave circuit on green brake circuit
+    - {brake_side}
+        - LEFT
+        - RIGHT
+
+- A32NX_HYD_BRAKE_ALTN_{brake_side}_PRESS
+    - Psi
+    - Current pressure in brake slave circuit on yellow alternate brake circuit
+    - {brake_side}
+        - LEFT
+        - RIGHT
+
+- A32NX_HYD_BRAKE_ALTN_ACC_PRESS
+    - Psi
+    - Current pressure in brake accumulator on yellow alternate brake circuit
 
 - A32NX_FMGC_FLIGHT_PHASE
     - Enum
