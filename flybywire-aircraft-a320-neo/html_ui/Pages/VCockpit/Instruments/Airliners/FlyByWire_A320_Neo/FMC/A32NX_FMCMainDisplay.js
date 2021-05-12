@@ -1120,9 +1120,9 @@ class FMCMainDisplay extends BaseAirliners {
             (this.currentFlightPhase === FmgcFlightPhases.CRUISE && _targetFl !== this.cruiseFlightLevel)
         ) {
             this.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(_targetFl * 100));
+            this.cruiseFlightLevel = _targetFl;
+            this._cruiseFlightLevel = _targetFl;
         }
-        this.cruiseFlightLevel = _targetFl;
-        this._cruiseFlightLevel = _targetFl;
     }
 
     /* END OF FMS EVENTS */
