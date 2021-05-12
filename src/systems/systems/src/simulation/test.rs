@@ -1,5 +1,8 @@
 use std::{collections::HashMap, time::Duration};
-use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, velocity::knot};
+use uom::si::{
+    acceleration::foot_per_second_squared, f64::*, length::foot,
+    thermodynamic_temperature::degree_celsius, velocity::knot,
+};
 
 use crate::electrical::consumption::SuppliedPower;
 
@@ -165,6 +168,13 @@ impl SimulationTestBed {
     pub fn set_on_ground(&mut self, on_ground: bool) {
         self.reader_writer
             .write_bool(UpdateContext::IS_ON_GROUND_KEY, on_ground);
+    }
+
+    pub fn set_long_acceleration(&mut self, accel: Acceleration) {
+        self.reader_writer.write_f64(
+            UpdateContext::ACCEL_BODY_Z_KEY,
+            accel.get::<foot_per_second_squared>(),
+        );
     }
 
     pub fn supplied_power_fn<T: Fn() -> SuppliedPower + 'static>(
