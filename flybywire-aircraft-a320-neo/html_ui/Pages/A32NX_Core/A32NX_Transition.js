@@ -20,12 +20,11 @@ class A32NX_Transition {
 
     update() {
         if (this.remote) {
-            console.log("TRANSITION REMOTE START");
-            this.forceTASetting("Origin", this.originAirport);
-            this.forceTASetting("Destination", this.destinationAirport);
+            this.trySetTA("Origin", this.originAirport);
+            this.trySetTA("Destination", this.destinationAirport);
             this.remote = false;
         }
-        this.normalTASetting();
+        this.TAUpdate();
     }
 
     async loadJSON(location) {
@@ -44,20 +43,20 @@ class A32NX_Transition {
         return result;
     }
 
-    normalTASetting() {
+    TAUpdate() {
         if (this.originAirport !== "" && this.destinationAirport !== "") {
             if (this.originAirport !== this.savedOriginAirport) {
-                this.forceTASetting("Origin", this.originAirport);
+                this.trySetTA("Origin", this.originAirport);
                 this.savedOriginAirport = this.originAirport;
             }
             if (this.destinationAirport !== this.savedDestinationAirport) {
-                this.forceTASetting("Destination", this.destinationAirport);
+                this.trySetTA("Destination", this.destinationAirport);
                 this.savedDestinationAirport = this.destinationAirport;
             }
         }
     }
 
-    forceTASetting(mode, icao) {
+    trySetTA(mode, icao) {
         if (mode === "Origin") {
             const varName = "L:AIRLINER_TRANS_ALT";
             const ta = this.search(icao)[0].transitionAltitude;
