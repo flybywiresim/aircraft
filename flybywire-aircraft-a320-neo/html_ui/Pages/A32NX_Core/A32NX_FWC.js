@@ -130,6 +130,7 @@ class A32NX_FWC {
         if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN", "Bool")) {
             this.warningPressed = true;
             if (!this.warningPriority) {
+                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
                 SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", false);
             }
         } else {
@@ -481,6 +482,7 @@ class A32NX_FWC {
             SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool", false);
             SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
 
+            // Reset Values
             this.AutothrottleWarningCanceled = false;
             this.ATHRDisconnectByThrottle = false;
             this.athrdeltaTime = 0;
@@ -491,6 +493,7 @@ class A32NX_FWC {
                 SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", true);
                 this.athrdeltaTime += _deltaTime;
 
+                // Stop warning when press Master Caution or pass 3 sec
                 if (this.cautionPressed || (this.athrdeltaTime / 1000) >= 3) {
                     this.AutothrottleWarningCanceled = true;
                     this.ATHRDisconnectByThrottle = false;
@@ -501,6 +504,8 @@ class A32NX_FWC {
             } else if (!this.ATHRDisconnectByThrottle && !this.AutothrottleWarningCanceled) {
                 // AUTOTHRUST DISCONNECTED BY FCU
                 SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool", true);
+
+                // Stop Warning when press Master Caution
                 if (this.cautionPressed) {
                     SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_FCU", "Bool", false);
                 }
@@ -514,14 +519,17 @@ class A32NX_FWC {
 
         if (AP_STATUS) {
             // AUTOPILOT CONNECTED
+            SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_FCU", "Bool", false);
+            SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_SIDESTICK", "Bool", false);
+
+            // Reset Values
             this.apdeltaTime = 0;
             this.AutopilotWarningCanceled = false;
             this.APDisconnectedBySidestick = false;
             this.pressSidestickTwice = false;
             this.currentAPCapability = SimVar.GetSimVarValue("L:A32NX_ApproachCapability", "Enum");
-            SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_FCU", "Bool", false);
-            SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_SIDESTICK", "Bool", false);
-            SimVar.SetSimVarValue("L:A32NX_TRIPLE_CLICK", "Bool", false);
+
+            // If there is a Prioirty Warning, DO NOT STOP WAWRNING
             if (!this.warningPriority) {
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
             }
@@ -531,9 +539,13 @@ class A32NX_FWC {
                 SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_SIDESTICK", "Bool", true);
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
                 this.apdeltaTime += _deltaTime;
+
+                // Stop warning when press Master Warning or pass 3 sec
                 if (this.warningPressed || (this.apdeltaTime / 1000) >= 3) {
                     this.AutopilotWarningCanceled = true;
                     SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_SIDESTICK", "Bool", false);
+
+                    // If there is a Prioirty Warning, DO NOT STOP WAWRNING
                     if (!this.warningPriority) {
                         SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
                     }
@@ -543,8 +555,12 @@ class A32NX_FWC {
                 // AUTOPILOT DISCONNECTED BY FCU
                 SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_FCU", "Bool", true);
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
+
+                // Stop warning when press Master Warning
                 if (this.warningPressed) {
                     this.AutopilotWarningCanceled = true;
+
+                    // If there is a Prioirty Warning, DO NOT STOP WAWRNING
                     if (!this.warningPriority) {
                         SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
                     }
@@ -555,14 +571,26 @@ class A32NX_FWC {
 
     _autopilotWarning(_deltaTime, _core) {
         const AP_STATUS = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_ACTIVE", "Bool");
+        const AP_Disconnect_By = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_FCU", "Bool");
 
         if (!AP_STATUS && !this.pressSidestickTwice) {
-            _core.soundManager.addPeriodicSound(soundList.cavcharge, 0.3);
+            if (AP_Disconnect_By) {
+                _core.soundManager.addPeriodicSound(soundList.cavcharge, 0.3);
+            } else {
+                if (this.apdeltaTime <= 1.5) {
+                    _core.soundManager.addPeriodicSound(soundList.cavcharge, 0.3);
+                } else {
+                    !this.pressSidestickTwice = true;
+                }
+            }
         } else {
             _core.soundManager.removePeriodicSound(soundList.cavcharge);
             if(this.currentAPCapability > SimVar.GetSimVarValue("L:A32NX_ApproachCapability", "Enum")) {
                 SimVar.SetSimVarValue("L:A32NX_TRIPLE_CLICK", "Bool", true);
             }
+        }
+        if (AP_STATUS) {
+            SimVar.SetSimVarValue("L:A32NX_TRIPLE_CLICK", "Bool", false);
         }
     }
 
