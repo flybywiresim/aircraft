@@ -1,4 +1,7 @@
-use super::{alternating_current::A320AlternatingCurrentElectrical, A320ElectricalOverheadPanel};
+use super::{
+    alternating_current::A320AlternatingCurrentElectrical, A320ElectricalOverheadPanel,
+    AlternatingCurrentState,
+};
 use systems::simulation::UpdateContext;
 
 pub(super) struct MainGalley {
@@ -19,7 +22,7 @@ impl MainGalley {
         alternating_current: &A320AlternatingCurrentElectrical,
         overhead: &A320ElectricalOverheadPanel,
     ) {
-        self.is_shed = alternating_current.main_ac_buses_unpowered()
+        self.is_shed = alternating_current.ac_bus_1_and_2_unpowered()
             || alternating_current.main_ac_buses_powered_by_single_engine_generator_only()
             || (alternating_current.main_ac_buses_powered_by_apu_generator_only()
                 && context.is_in_flight())
@@ -45,7 +48,7 @@ impl SecondaryGalley {
         alternating_current: &A320AlternatingCurrentElectrical,
         overhead: &A320ElectricalOverheadPanel,
     ) {
-        self.is_shed = alternating_current.main_ac_buses_unpowered()
+        self.is_shed = alternating_current.ac_bus_1_and_2_unpowered()
             || overhead.commercial_is_off()
             || overhead.galy_and_cab_is_off();
     }

@@ -240,6 +240,7 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   out << "athr.data_computed.ATHR_push" << delimiter;
   out << "athr.data_computed.ATHR_disabled" << delimiter;
   out << "athr.input.ATHR_push" << delimiter;
+  out << "athr.input.ATHR_disconnect" << delimiter;
   out << "athr.input.TLA_1_deg" << delimiter;
   out << "athr.input.TLA_2_deg" << delimiter;
   out << "athr.input.V_c_kn" << delimiter;
@@ -696,6 +697,7 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   out << static_cast<unsigned int>(athr.data_computed.ATHR_push) << delimiter;
   out << static_cast<unsigned int>(athr.data_computed.ATHR_disabled) << delimiter;
   out << static_cast<unsigned int>(athr.input.ATHR_push) << delimiter;
+  out << static_cast<unsigned int>(athr.input.ATHR_disconnect) << delimiter;
   out << athr.input.TLA_1_deg << delimiter;
   out << athr.input.TLA_2_deg << delimiter;
   out << athr.input.V_c_kn << delimiter;

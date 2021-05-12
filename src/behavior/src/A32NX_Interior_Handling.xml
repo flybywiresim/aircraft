@@ -404,17 +404,9 @@
                     <UseTemplate Name = "ASOBO_GT_Switch_3States">
                         <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                         <SWITCH_POSITION_VAR>XMLVAR_RudderTrim</SWITCH_POSITION_VAR>
-                        <MOMENTARY_REPEAT_FREQUENCY>15</MOMENTARY_REPEAT_FREQUENCY>
-                        <CODE_POS_0>
-                            (L:A32NX_AUTOPILOT_ACTIVE, Bool) ! if{
-                                (&gt;K:RUDDER_TRIM_LEFT)
-                            }
-                        </CODE_POS_0>
-                        <CODE_POS_2>
-                            (L:A32NX_AUTOPILOT_ACTIVE, Bool) ! if{
-                                (&gt;K:RUDDER_TRIM_RIGHT)
-                            }
-                        </CODE_POS_2>
+                        <MOMENTARY_REPEAT_FREQUENCY>40</MOMENTARY_REPEAT_FREQUENCY>
+                        <CODE_POS_0>(&gt;K:RUDDER_TRIM_LEFT)</CODE_POS_0>
+                        <CODE_POS_2>(&gt;K:RUDDER_TRIM_RIGHT)</CODE_POS_2>
                         <MOMENTARY_SWITCH/>
                         <STATE_MAX_TIMER>0.1</STATE_MAX_TIMER>
                         <STATE0_TIMER>0.1</STATE0_TIMER>
@@ -427,7 +419,7 @@
                         <Component ID="#RESET_PUSH_NODE_ID#" Node="#RESET_PUSH_NODE_ID#">
                             <UseTemplate Name = "ASOBO_GT_Push_Button">
                                 <ANIM_NAME>#RESET_PUSH_ANIM_NAME#</ANIM_NAME>
-                                <LEFT_SINGLE_CODE>0 (&gt;K:RUDDER_TRIM_SET)</LEFT_SINGLE_CODE>
+                                <LEFT_SINGLE_CODE>(&gt;K:RUDDER_TRIM_RESET)</LEFT_SINGLE_CODE>
                                 <WWISE_EVENT_1>rudder_trim_rest_push_button_on</WWISE_EVENT_1>
                                 <WWISE_EVENT_2>rudder_trim_rest_push_button_on</WWISE_EVENT_2>
                                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.RUDDER_TRIM_RESET</TOOLTIPID>

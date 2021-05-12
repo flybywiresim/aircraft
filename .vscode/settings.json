@@ -28,6 +28,10 @@
     "editor.defaultFormatter": "dbaeumer.vscode-eslint",
     "editor.formatOnSave": true
   },
+  "[rust]": {
+    "editor.defaultFormatter": "matklad.rust-analyzer",
+    "editor.formatOnSave": true
+  },
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },

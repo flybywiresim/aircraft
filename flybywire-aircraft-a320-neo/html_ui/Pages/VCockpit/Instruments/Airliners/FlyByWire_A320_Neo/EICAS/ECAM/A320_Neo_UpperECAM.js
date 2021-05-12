@@ -1193,7 +1193,7 @@ var A320_Neo_UpperECAM;
                     },
                     {
                         message: "SEAT BELTS",
-                        isActive: () => this.getCachedSimVar("L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position", "Bool")
+                        isActive: () => this.getCachedSimVar("A:CABIN SEATBELTS ALERT SWITCH", "Bool")
                     },
                     {
                         message: "NO SMOKING",
@@ -1486,7 +1486,7 @@ var A320_Neo_UpperECAM;
                     "ON",
                     "ON",
                     () => (
-                        SimVar.GetSimVarValue("L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position", "Bool") &&
+                        SimVar.GetSimVarValue("A:CABIN SEATBELTS ALERT SWITCH", "Bool") &&
                         SimVar.GetSimVarValue("L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position", "Enum") !== 2
                     )
                 ),
@@ -1534,7 +1534,7 @@ var A320_Neo_UpperECAM;
                     "ON",
                     "ON",
                     () => (
-                        SimVar.GetSimVarValue("L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position", "Bool") &&
+                        SimVar.GetSimVarValue("A:CABIN SEATBELTS ALERT SWITCH", "Bool") &&
                         SimVar.GetSimVarValue("L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position", "Enum") !== 2
                     )
                 ),
