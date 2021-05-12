@@ -1529,13 +1529,6 @@
 
         <!-- Autopilot warning =====================================================================-->
 
-        <Sound WwiseData="true" WwiseEvent="cavcharge" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_CAVCHARGE" Continuous="true">
-            <Range LowerBound="1" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
-        </Sound>
-
         <Sound WwiseData="true" WwiseEvent="3click" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_TRIPLE_CLICK" Continuous="false">
             <Range LowerBound="1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">

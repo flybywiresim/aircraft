@@ -78,6 +78,8 @@ class A32NX_FWC {
         // AUTOPILOT DISCONNECT
         this.ATHRDisconnectByThrottle = true;
         this.APDisconnectedBySidestick = true;
+        this.pressSidestickTwice = true;
+        this.currentAPCapability = 0;
 
         // Update Throttler
         this.updateThrottler = new UpdateThrottler(200);
@@ -91,6 +93,7 @@ class A32NX_FWC {
         this._updateTakeoffMemo(_deltaTime);
         this._updateLandingMemo(_deltaTime);
         this._autopilotDisconnect(_deltaTime);
+        this._autopilotWarning(_deltaTime, _core);
 
         if (this.updateThrottler.canUpdate(_deltaTime) !== -1) {
             this._checkLandingGear();
@@ -126,7 +129,7 @@ class A32NX_FWC {
 
         if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN", "Bool")) {
             this.warningPressed = true;
-            if (!overspeed && !ldgNotDown) {
+            if (!this.warningPriority) {
                 SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", false);
             }
         } else {
@@ -148,9 +151,11 @@ class A32NX_FWC {
         if (SimVar.GetSimVarValue("L:PUSH_THROTTLE_BUTTON", "Bool")) {
             this.ATHRDisconnectByThrottle = true;
         }
-
         if (SimVar.GetSimVarValue("L:PUSH_SIDESTICK_AUTOPILOT", "Bool")) {
             this.APDisconnectedBySidestick = true;
+        }
+        if (this.APDisconnectedBySidestick && SimVar.GetSimVarValue("L:PUSH_SIDESTICK_AUTOPILOT", "Bool")) {
+            this.pressSidestickTwice = true;
         }
     }
 
@@ -512,8 +517,11 @@ class A32NX_FWC {
             this.apdeltaTime = 0;
             this.AutopilotWarningCanceled = false;
             this.APDisconnectedBySidestick = false;
+            this.pressSidestickTwice = false;
+            this.currentAPCapability = SimVar.GetSimVarValue("L:A32NX_ApproachCapability", "Enum");
             SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_FCU", "Bool", false);
             SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_SIDESTICK", "Bool", false);
+            SimVar.SetSimVarValue("L:A32NX_TRIPLE_CLICK", "Bool", false);
             if (!this.warningPriority) {
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
             }
@@ -541,6 +549,19 @@ class A32NX_FWC {
                         SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
                     }
                 }
+            }
+        }
+    }
+
+    _autopilotWarning(_deltaTime, _core) {
+        const AP_STATUS = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_ACTIVE", "Bool");
+
+        if (!AP_STATUS && !this.pressSidestickTwice) {
+            _core.soundManager.addPeriodicSound(soundList.cavcharge, 0.3);
+        } else {
+            _core.soundManager.removePeriodicSound(soundList.cavcharge);
+            if(this.currentAPCapability > SimVar.GetSimVarValue("L:A32NX_ApproachCapability", "Enum")) {
+                SimVar.SetSimVarValue("L:A32NX_TRIPLE_CLICK", "Bool", true);
             }
         }
     }
