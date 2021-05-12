@@ -5,11 +5,14 @@ mod pneumatic;
 mod power_consumption;
 
 use self::{fuel::A320Fuel, pneumatic::A320PneumaticOverheadPanel};
+
 use electrical::{
     A320Electrical, A320ElectricalOverheadPanel, A320ElectricalUpdateArguments,
     A320EmergencyElectricalOverheadPanel,
 };
-use hydraulic::A320Hydraulic;
+
+use hydraulic::{A320EngineFireOverheadPanel, A320Hydraulic, A320HydraulicOverheadPanel};
+
 use power_consumption::A320PowerConsumption;
 use systems::{
     apu::{
@@ -17,7 +20,7 @@ use systems::{
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
     electrical::{consumption::SuppliedPower, ElectricalSystem, ExternalPowerSource},
-    engine::Engine,
+    engine::{leap_engine::LeapEngine, Engine},
     landing_gear::LandingGear,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -30,12 +33,14 @@ pub struct A320 {
     electrical_overhead: A320ElectricalOverheadPanel,
     emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel,
     fuel: A320Fuel,
-    engine_1: Engine,
-    engine_2: Engine,
+    engine_1: LeapEngine,
+    engine_2: LeapEngine,
+    engine_fire_overhead: A320EngineFireOverheadPanel,
     electrical: A320Electrical,
     power_consumption: A320PowerConsumption,
     ext_pwr: ExternalPowerSource,
     hydraulic: A320Hydraulic,
+    hydraulic_overhead: A320HydraulicOverheadPanel,
     landing_gear: LandingGear,
 }
 impl A320 {
@@ -48,12 +53,14 @@ impl A320 {
             electrical_overhead: A320ElectricalOverheadPanel::new(),
             emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel::new(),
             fuel: A320Fuel::new(),
-            engine_1: Engine::new(1),
-            engine_2: Engine::new(2),
+            engine_1: LeapEngine::new(1),
+            engine_2: LeapEngine::new(2),
+            engine_fire_overhead: A320EngineFireOverheadPanel::new(),
             electrical: A320Electrical::new(),
             power_consumption: A320PowerConsumption::new(),
             ext_pwr: ExternalPowerSource::new(),
             hydraulic: A320Hydraulic::new(),
+            hydraulic_overhead: A320HydraulicOverheadPanel::new(),
             landing_gear: LandingGear::new(),
         }
     }
@@ -102,11 +109,23 @@ impl Aircraft for A320 {
 
         self.electrical_overhead
             .update_after_electrical(&self.electrical);
+        self.emergency_electrical_overhead
+            .update_after_electrical(context, &self.electrical);
         self.apu_overhead.update_after_apu(&self.apu);
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-        self.hydraulic.update(context);
+        self.hydraulic.update(
+            context,
+            &self.engine_1,
+            &self.engine_2,
+            &self.hydraulic_overhead,
+            &self.engine_fire_overhead,
+            &self.landing_gear,
+        );
+
+        self.hydraulic_overhead.update(&self.hydraulic);
+
         self.power_consumption.update(context);
     }
 
@@ -125,9 +144,12 @@ impl SimulationElement for A320 {
         self.pneumatic_overhead.accept(visitor);
         self.engine_1.accept(visitor);
         self.engine_2.accept(visitor);
+        self.engine_fire_overhead.accept(visitor);
         self.electrical.accept(visitor);
         self.power_consumption.accept(visitor);
         self.ext_pwr.accept(visitor);
+        self.hydraulic.accept(visitor);
+        self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);
 
         visitor.visit(self);
