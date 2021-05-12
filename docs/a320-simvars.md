@@ -980,6 +980,14 @@
       CAT3 SINGLE | 3
       CAT3 DUAL | 4
 
+- A32NX_FLIGHT_DIRECTOR_TYPE
+    - Enum
+    - Indicates the currently enabled Flight Director type
+      Type | Value
+      --- | ---
+      0 | Traditional (dual bars)
+      1 | V-bars
+
 - A32NX_FLIGHT_DIRECTOR_BANK
     - Number (Degrees)
     - Indicates bank angle to be displayed by Flight Director

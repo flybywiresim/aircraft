@@ -67,6 +67,7 @@
 1. [FBW] Elevator trim wheels no longer move when stop is reached - @aguther (Andreas Guther)
 1. [AP] Improved V/S and FPA speed protection mode - @aguther (Andreas Guther)
 1. [MISC] Seatbelt sign state can be toggled via external events - @Saschl (saschl#9432)
+1. [FD] Add V-bars flight director option - @Benjozork (Benjamin Dupont)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
