@@ -6,8 +6,9 @@ use super::{
 use systems::electrical::Potential;
 use systems::{
     electrical::{
-        Battery, BatteryChargeLimiter, BatteryChargeLimiterArguments, Contactor, ElectricalBus,
-        ElectricalBusType, PotentialSource, PotentialTarget, StaticInverter,
+        consumption::SuppliedPower, Battery, BatteryChargeLimiter, BatteryChargeLimiterArguments,
+        Contactor, ElectricalBus, ElectricalBusType, PotentialSource, PotentialTarget,
+        StaticInverter,
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -54,10 +55,10 @@ impl A320DirectCurrentElectrical {
             dc_bat_bus_to_dc_ess_bus_contactor: Contactor::new("4PC"),
             dc_ess_shed_bus: ElectricalBus::new(ElectricalBusType::DirectCurrentEssentialShed),
             dc_ess_shed_contactor: Contactor::new("8PH"),
-            battery_1: Battery::full(10),
+            battery_1: Battery::full(1),
             battery_1_contactor: Contactor::new("6PB1"),
             battery_1_charge_limiter: BatteryChargeLimiter::new("6PB1"),
-            battery_2: Battery::full(11),
+            battery_2: Battery::full(2),
             battery_2_contactor: Contactor::new("6PB2"),
             battery_2_charge_limiter: BatteryChargeLimiter::new("6PB2"),
             hot_bus_2_to_dc_ess_bus_contactor: Contactor::new("2XB2"),
@@ -274,38 +275,6 @@ impl A320DirectCurrentElectrical {
             == self.hot_bus_2_to_dc_ess_bus_contactor.is_closed()
     }
 
-    pub fn dc_bus_1(&self) -> &ElectricalBus {
-        &self.dc_bus_1
-    }
-
-    pub fn dc_bus_2(&self) -> &ElectricalBus {
-        &self.dc_bus_2
-    }
-
-    pub fn dc_ess_bus(&self) -> &ElectricalBus {
-        &self.dc_ess_bus
-    }
-
-    pub fn dc_ess_shed_bus(&self) -> &ElectricalBus {
-        &self.dc_ess_shed_bus
-    }
-
-    pub fn dc_bat_bus(&self) -> &ElectricalBus {
-        &self.dc_bat_bus
-    }
-
-    pub fn hot_bus_1(&self) -> &ElectricalBus {
-        &self.hot_bus_1
-    }
-
-    pub fn hot_bus_2(&self) -> &ElectricalBus {
-        &self.hot_bus_2
-    }
-
-    pub fn dc_gnd_flt_service_bus(&self) -> &ElectricalBus {
-        &self.dc_gnd_flt_service_bus
-    }
-
     #[cfg(test)]
     pub fn battery_1_input_potential(&self) -> Potential {
         self.battery_1.input_potential()
@@ -324,6 +293,17 @@ impl A320DirectCurrentElectrical {
     #[cfg(test)]
     pub fn empty_battery_2(&mut self) {
         self.battery_2 = Battery::empty(2);
+    }
+
+    pub fn add_supplied_power(&self, state: &mut SuppliedPower) {
+        state.add_bus(&self.dc_bus_1);
+        state.add_bus(&self.dc_bus_2);
+        state.add_bus(&self.dc_ess_bus);
+        state.add_bus(&self.dc_ess_shed_bus);
+        state.add_bus(&self.dc_bat_bus);
+        state.add_bus(&self.hot_bus_1);
+        state.add_bus(&self.hot_bus_2);
+        state.add_bus(&self.dc_gnd_flt_service_bus);
     }
 }
 impl DirectCurrentState for A320DirectCurrentElectrical {

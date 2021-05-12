@@ -20,6 +20,8 @@ bool FlyByWireInterface::connect() {
   // setup handlers
   flapsHandler = make_shared<FlapsHandler>();
   spoilersHandler = make_shared<SpoilersHandler>();
+  elevatorTrimHandler = make_shared<ElevatorTrimHandler>();
+  rudderTrimHandler = make_shared<RudderTrimHandler>();
 
   // initialize model
   autopilotStateMachine.initialize();
@@ -32,8 +34,8 @@ bool FlyByWireInterface::connect() {
 
   // connect to sim connect
   return simConnectInterface.connect(autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis, flapsHandler,
-                                     spoilersHandler, flightControlsKeyChangeAileron, flightControlsKeyChangeElevator,
-                                     flightControlsKeyChangeRudder);
+                                     spoilersHandler, elevatorTrimHandler, rudderTrimHandler, flightControlsKeyChangeAileron,
+                                     flightControlsKeyChangeElevator, flightControlsKeyChangeRudder);
 }
 
 void FlyByWireInterface::disconnect() {
@@ -192,6 +194,7 @@ void FlyByWireInterface::setupLocalVariables() {
   // register L variables for the sidestick
   idSideStickPositionX = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_X");
   idSideStickPositionY = make_unique<LocalVariable>("A32NX_SIDESTICK_POSITION_Y");
+  idRudderPedalPosition = make_unique<LocalVariable>("A32NX_RUDDER_PEDAL_POSITION");
 
   // register L variable for custom fly-by-wire interface
   idFmaLateralMode = make_unique<LocalVariable>("A32NX_FMA_LATERAL_MODE");
@@ -303,6 +306,9 @@ void FlyByWireInterface::setupLocalVariables() {
 }
 
 bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
+  // set sample time
+  simConnectInterface.setSampleTime(sampleTime);
+
   // reset input
   simConnectInterface.resetSimInputAutopilot();
 
@@ -348,6 +354,7 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          idFmgcV2->get(),
                                                          idFmgcV_APP->get(),
                                                          idFmgcV_LS->get(),
+                                                         idFmgcV_MAX->get(),
                                                          customFlightGuidanceEnabled ? 1.0 : simData.gpsIsFlightPlanActive,
                                                          idFmgcAltitudeConstraint->get(),
                                                          idFmgcThrustReductionAltitude->get(),
@@ -942,6 +949,8 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     flyByWireInput.in.input.delta_eta_pos = simInput.inputs[0];
     flyByWireInput.in.input.delta_xi_pos = simInput.inputs[1];
     flyByWireInput.in.input.delta_zeta_pos = simInput.inputs[2];
+    // set rudder pedals position
+    idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
 
     // step the model -------------------------------------------------------------------------------------------------
     flyByWire.setExternalInputs(&flyByWireInput);
@@ -967,28 +976,6 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
         std::cout << "WASM: Write data failed!" << endl;
         return false;
       }
-
-      if (flyByWireOutput.output.eta_trim_deg_should_write) {
-        // object to write without trim
-        SimOutputEtaTrim output = {flyByWireOutput.output.eta_trim_deg};
-
-        // send data via sim connect
-        if (!simConnectInterface.sendData(output)) {
-          std::cout << "WASM: Write data failed!" << endl;
-          return false;
-        }
-      }
-
-      if (flyByWireOutput.output.zeta_trim_pos_should_write) {
-        // object to write without trim
-        SimOutputZetaTrim output = {flyByWireOutput.output.zeta_trim_pos};
-
-        // send data via sim connect
-        if (!simConnectInterface.sendData(output)) {
-          std::cout << "WASM: Write data failed!" << endl;
-          return false;
-        }
-      }
     }
   } else {
     // send data to client data to be read by simulink
@@ -1001,10 +988,43 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
     simConnectInterface.setClientDataAutopilotLaws(clientDataLaws);
     // read data
     auto clientDataFlyByWire = simConnectInterface.getClientDataFlyByWire();
+    flyByWireOutput.output.eta_trim_deg_should_write = clientDataFlyByWire.eta_trim_deg_should_write;
+    flyByWireOutput.output.zeta_trim_pos_should_write = clientDataFlyByWire.zeta_trim_pos_should_write;
+    flyByWireOutput.sim.data_computed.tracking_mode_on = simData.slew_on || pauseDetected || idExternalOverride->get() == 1;
     flyByWireOutput.sim.data_computed.alpha_floor_command = clientDataFlyByWire.alpha_floor_command;
     flyByWireOutput.sim.data_computed.protection_ap_disc = clientDataFlyByWire.protection_ap_disc;
     flyByWireOutput.sim.data_speeds_aoa.v_alpha_prot_kn = clientDataFlyByWire.v_alpha_prot_kn;
     flyByWireOutput.sim.data_speeds_aoa.v_alpha_max_kn = clientDataFlyByWire.v_alpha_max_kn;
+  }
+
+  // set trim values
+  SimOutputEtaTrim outputEtaTrim = {};
+  if (flyByWireOutput.output.eta_trim_deg_should_write) {
+    outputEtaTrim.eta_trim_deg = flyByWireOutput.output.eta_trim_deg;
+    elevatorTrimHandler->synchronizeValue(outputEtaTrim.eta_trim_deg);
+  } else {
+    outputEtaTrim.eta_trim_deg = elevatorTrimHandler->getPosition();
+  }
+  if (!flyByWireOutput.sim.data_computed.tracking_mode_on && (flyByWireEnabled || !flyByWireOutput.output.eta_trim_deg_should_write)) {
+    if (!simConnectInterface.sendData(outputEtaTrim)) {
+      std::cout << "WASM: Write data failed!" << endl;
+      return false;
+    }
+  }
+
+  SimOutputZetaTrim outputZetaTrim = {};
+  rudderTrimHandler->update(sampleTime);
+  if (flyByWireOutput.output.zeta_trim_pos_should_write) {
+    outputZetaTrim.zeta_trim_pos = flyByWireOutput.output.zeta_trim_pos;
+    rudderTrimHandler->synchronizeValue(outputZetaTrim.zeta_trim_pos);
+  } else {
+    outputZetaTrim.zeta_trim_pos = rudderTrimHandler->getPosition();
+  }
+  if (!flyByWireOutput.sim.data_computed.tracking_mode_on && (flyByWireEnabled || !flyByWireOutput.output.zeta_trim_pos_should_write)) {
+    if (!simConnectInterface.sendData(outputZetaTrim)) {
+      std::cout << "WASM: Write data failed!" << endl;
+      return false;
+    }
   }
 
   // calculate alpha max percentage

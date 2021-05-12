@@ -1,0 +1,19 @@
+[package]
+name = "a320_hydraulic_simulation_graphs"
+version = "0.1.0"
+authors = ["davydecorps <38904654+crocket63@users.noreply.github.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+systems = { path = "../systems" }
+a320_systems = { path = "../a320_systems" }
+uom = "0.30.0"
+rand = "0.8.0"
+ntest = "0.7.2"
+num-derive = "0.3.3"
+num-traits = "0.2.14"
+itertools = "0.10.0"
+plotlib = "0.5.1"
+rustplotlib = "0.0.4"
