@@ -1122,6 +1122,9 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         this.bugsElement = this.gps.getChildById("Bugs");
         this.plus_state = false;
         this.minus_state = false;
+        this.maximum = 0.99;
+        this.minimum = 0.15;
+        this.bright_gran = 0.05;
     }
     onEnter() {
     }
@@ -1132,27 +1135,34 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
     }
     onExit() {
     }
+    getBrightness() {
+        return SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
+    }
+    setBrightness(b) {
+        SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", b);
+        this.brightnessElement.updateBrightness(b); //TODO: Remove line on model update
+    }
+    brightnessUp() {
+        const brightness = this.getBrightness();
+        if (this.bugsElement.getDisplay() === "none" && brightness < this.maximum) {
+            this.setBrightness(brightness + this.bright_gran);
+        }
+    }
+    brightnessDown() {
+        const brightness = this.getBrightness();
+        if (this.bugsElement.getDisplay() === "none" && brightness > this.minimum) {
+            this.setBrightness(brightness - this.bright_gran);
+        }
+    }
     onEvent(_event) {
-        let brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
-        const bright_gran = 0.05;
-        const minimum = 0.15;
-        const maximum = 0.99;
         switch (_event) {
             case "BTN_BARO_PLUS":
                 this.plus_state = !this.plus_state;
-                function brightness_up(t){
-                    if (t.bugsElement.getDisplay() === "none" && brightness < maximum) {
-                        const new_brightness = brightness + bright_gran;
-                        SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
-                        t.brightnessElement.updateBrightness(new_brightness); //TODO: Remove line on model update
-                    }
-                }
                 if (this.plus_state) {
-                    brightness_up(this);
+                    this.brightnessUp();
                     const bright_up_cont = setInterval(() => {
-                        brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
                         if (this.plus_state) {
-                            brightness_up(this);
+                            this.brightnessUp();
                         } else {
                             clearInterval(bright_up_cont);
                         }
@@ -1161,19 +1171,11 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
                 break;
             case "BTN_BARO_MINUS":
                 this.minus_state = !this.minus_state;
-                function brightness_down(t){
-                    if (t.bugsElement.getDisplay() === "none" && brightness > minimum) {
-                        const new_brightness = brightness - bright_gran;
-                        SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
-                        t.brightnessElement.updateBrightness(new_brightness); //TODO: Remove line on model update
-                    }
-                }
                 if (this.minus_state) {
-                    brightness_down(this);
+                    this.brightnessDown();
                     const bright_down_cont = setInterval(() => {
-                        brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
                         if (this.minus_state) {
-                            brightness_down(this);
+                            this.brightnessDown();
                         } else {
                             clearInterval(bright_down_cont);
                         }
