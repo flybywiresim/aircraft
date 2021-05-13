@@ -7,15 +7,92 @@ use msfs::{
 use std::collections::HashMap;
 use systems::simulation::{Simulation, SimulatorReaderWriter};
 
+//use msfs::sim_connect::data_definition;
+use msfs::sim_connect::SimConnectRecv;
+
+#[msfs::sim_connect::data_definition]
+struct InputOutputBrakeLeft {
+    #[name = "BRAKE LEFT POSITION"]
+    #[unit = "position"]
+    brake_left: f64,
+}
+#[msfs::sim_connect::data_definition]
+struct InputOutputBrakeRight {
+    #[name = "BRAKE LEFT POSITION"]
+    #[unit = "Position"]
+    brake_right: f64,
+}
+struct BrakeInput {
+    brake_left: f64,
+    brake_right: f64,
+}
+impl BrakeInput {
+    const MIN_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = -16384.;
+    const MAX_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = 16384.;
+
+    const RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 =
+        Self::MAX_BRAKE_RAW_VAL_FROM_SIMCONNECT - Self::MIN_BRAKE_RAW_VAL_FROM_SIMCONNECT;
+    const OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = 16384.;
+
+    pub fn new() -> Self {
+        Self {
+            brake_left: 0.,
+            brake_right: 0.,
+        }
+    }
+
+    fn set_brake_left(&mut self, simconnect_value: u32) {
+        let casted_value = (simconnect_value as i32) as f64;
+        let scaled_value = (casted_value + Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT)
+            / Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT;
+        self.brake_left = scaled_value.min(1.).max(0.);
+    }
+
+    fn set_brake_right(&mut self, simconnect_value: u32) {
+        let casted_value = (simconnect_value as i32) as f64;
+        let scaled_value = (casted_value + Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT)
+            / Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT;
+        self.brake_right = scaled_value.min(1.).max(0.);
+    }
+}
+
 #[msfs::gauge(name=systems)]
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error>> {
+    // Testing simconnect input masking
+    let mut sim = gauge.open_simconnect("systems")?;
+    let id_brake_left = sim.map_client_event_to_sim_event("AXIS_LEFT_BRAKE_SET", true)?;
+    let id_brake_right = sim.map_client_event_to_sim_event("AXIS_RIGHT_BRAKE_SET", true)?;
+
     let mut reader_writer = A320SimulatorReaderWriter::new()?;
     let mut a320 = A320::new();
     let mut simulation = Simulation::new(&mut a320, &mut reader_writer);
 
+    let mut brake_inputs = BrakeInput::new();
+
     while let Some(event) = gauge.next_event().await {
-        if let MSFSEvent::PreDraw(d) = event {
-            simulation.tick(d.delta_time());
+        match event {
+            MSFSEvent::PreDraw(d) => simulation.tick(d.delta_time()),
+
+            MSFSEvent::SimConnect(recv) => match recv {
+                SimConnectRecv::Event(e) => {
+                    if e.id() == id_brake_left {
+                        brake_inputs.set_brake_left(e.data());
+                        println!(
+                            "eventid_simconnect brakeleft!!   L={} R= {}",
+                            brake_inputs.brake_left, brake_inputs.brake_right
+                        );
+                    }
+                    if e.id() == id_brake_right {
+                        brake_inputs.set_brake_right(e.data());
+                        println!(
+                            "eventid_simconnect brakeleft!!   L={} R= {}",
+                            brake_inputs.brake_left, brake_inputs.brake_right
+                        );
+                    }
+                }
+                _ => {}
+            },
+            _ => {}
         }
     }
 
