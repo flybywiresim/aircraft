@@ -14,8 +14,8 @@ class A32NX_Transition {
         this.destinationAirport = "";
 
         // Saved Airport
-        this.savedOriginAirport = "NULL";
-        this.savedDestinationAirport = "NULL";
+        this.savedOriginAirport = "";
+        this.savedDestinationAirport = "";
     }
 
     update() {
