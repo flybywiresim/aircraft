@@ -1,25 +1,26 @@
-import classNames from 'classnames';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { PageTitle } from '../../Common/PageTitle';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 
 import './Wheel.scss';
+import classNames from 'classnames';
 
 setIsEcamPage('wheel_page');
 
 const maxStaleness = 300;
 
+interface ComponentPositionProps {
+    x: number,
+    y: number,
+}
+
 const GearDoorJoint = ({ x, y }) => (
     <ellipse className="gear-door-joint" cx={x} cy={y} rx={2.6} ry={2.6} />
 );
 
-const GearDoor = ({ x, y, type }) => {
-    const [landingGearPosition] = useSimVar(`GEAR ${type.toUpperCase()} POSITION`, 'Percent Over 100', maxStaleness);
-
-    const inTransit = landingGearPosition >= 0.1 && landingGearPosition <= 0.9;
-
+const GearDoor = ({ x, y, type, inTransit }) => {
     if (type === 'center') {
         return (
             <SvgGroup x={x} y={y}>
@@ -59,49 +60,111 @@ const GearDoor = ({ x, y, type }) => {
     );
 };
 
-const LandingGearPositionIndicators = ({ x, y, type }) => {
+const LandingGearPositionIndicators = ({ x, y, inTransit }) => (
+    <SvgGroup x={x} y={y} className="gear-lgcius">
+        <g className={`shape gear-lgciu-1 color-${!inTransit ? 'green' : 'red'}`}>
+            <polygon points="0,0 22,0 22,29" />
+            <path d="m 6 0 v 8" />
+            <path d="m 11 0 v 14" />
+            <path d="m 16.5 0 v 22" />
+        </g>
+
+        <g className={`shape gear-lgciu-2 color-${!inTransit ? 'green' : 'red'}`}>
+            <polygon points="30,0 52,0 30,29" />
+            <path d="m 36 0 v 22" />
+            <path d="m 41 0 v 14" />
+            <path d="m 46 0 v 8" />
+        </g>
+        <g className="shape gear-failed-lgicu-1">
+            <path d="m 0 0 h 22" />
+
+            <text className="gear-failed-lgciu-xx" x={13} y={16} fontSize={17}>XX</text>
+        </g>
+
+        <g className="shape gear-failed-lgicu-2">
+            <path d="m 30 0 h 22" />
+
+            <text className="gear-failed-lgciu-xx" x={39} y={16} fontSize={17}>XX</text>
+        </g>
+    </SvgGroup>
+);
+
+const Gear = ({ x, y, type }) => {
     const [landingGearPosition] = useSimVar(`GEAR ${type.toUpperCase()} POSITION`, 'Percent Over 100', maxStaleness);
 
-    const isDown = landingGearPosition === 1;
-    const isUp = landingGearPosition === 0;
+    const [status, setStatus] = useState({
+        inTransit: false,
+        positionIndicatorVisible: false,
+    });
 
-    // x = 97
-    // y = 278
-    return !isUp ? (
-        <SvgGroup x={x} y={y} className="gear-lgcius">
-            <g className={`shape gear-lgciu-1 color-${isDown ? 'green' : 'red'}`}>
-                <polygon points="0,0 22,0 22,29" />
-                <path d="m 6 0 v 8" />
-                <path d="m 11 0 v 14" />
-                <path d="m 16.5 0 v 22" />
-            </g>
+    useEffect(() => {
+        const isUp = landingGearPosition === 0;
+        const isDown = landingGearPosition === 1;
 
-            <g className={`shape gear-lgciu-2 color-${isDown ? 'green' : 'red'}`}>
-                <polygon points="30,0 52,0 30,29" />
-                <path d="m 36 0 v 22" />
-                <path d="m 41 0 v 14" />
-                <path d="m 46 0 v 8" />
-            </g>
-            <g className="shape gear-failed-lgicu-1">
-                <path d="m 0 0 h 22" />
+        setStatus({
+            inTransit: !isDown && !isUp && ((landingGearPosition >= 0.1 && landingGearPosition <= 0.9) || status.inTransit),
+            positionIndicatorVisible: !isUp && (landingGearPosition >= 0.1 || status.positionIndicatorVisible),
+        });
+    }, [landingGearPosition]);
 
-                <text className="gear-failed-lgciu-xx" x={13} y={16} fontSize={17}>XX</text>
-            </g>
+    return (
+        <g transform="scale(1.1)">
+            <SvgGroup x={x} y={y}>
+                <GearDoor x={0} y={0} type={type} inTransit={status.inTransit} />
+                { status.positionIndicatorVisible ? <LandingGearPositionIndicators x={35} y={7} inTransit={status.inTransit} /> : null }
+            </SvgGroup>
+        </g>
+    );
+};
 
-            <g className="shape gear-failed-lgicu-2">
-                <path d="m 30 0 h 22" />
+interface WheelArchProps extends ComponentPositionProps {
+    type: 'top' | 'bottom',
+    green?: boolean,
+    amber?: boolean
+}
+const WheelArch = ({ x, y, type, green, amber }: WheelArchProps) => {
+    const classes = classNames('wheel-set-brake-arch', { green: green && !amber }, { amber });
 
-                <text className="gear-failed-lgciu-xx" x={39} y={16} fontSize={17}>XX</text>
-            </g>
+    if (type === 'top') {
+        // eslint-disable-next-line max-len
+        return <path className={classes} strokeLinecap="round" d={`m${x} ${y}c-5.6511 0.0126-11.216 1.6606-15.547 4.4688-3.4807 2.2398-5.759 5.205-6.3809 8.4629l1.4258 0.27149c0.52976-2.7753 2.5075-5.4347 5.7422-7.5156v-2e-3h2e-3c4.0708-2.6394 9.3921-4.2224 14.762-4.2344 5.3729-0.0113 10.936 1.5183 15.041 4.0859 3.2313 2.0193 5.2676 4.6167 5.8984 7.3418l1.4121-0.32617c-0.73917-3.193-3.0677-6.0756-6.541-8.2461v2e-3c-4.382-2.741-10.167-4.3204-15.815-4.3086z`} />;
+    }
+
+    // eslint-disable-next-line max-len
+    return <path className={classes} stroke="#dadadf" strokeLinecap="round" d={`m${x} ${y}c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.3921 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.815 3.4005z`} />;
+};
+
+const Wheels = ({ x, y, left, right }) => {
+    const brakeAmberThreshold = 300;
+
+    return (
+        <SvgGroup x={x} y={y}>
+            <WheelArch x={40} y={60} type="top" green={left.hottest && left.temperature > 100} amber={left.hottest && left.temperature > 300} />
+            <WheelArch x={138} y={60} type="top" green={right.hottest && right.temperature > 100} amber={right.hottest && right.temperature > 300} />
+
+            <WheelArch x={40} y={227} type="bottom" />
+            <WheelArch x={138} y={227} type="bottom" />
+
+            <text className="wheel-set-brake-celsius-marker" x={73} y={57}>°C</text>
+            <text className="wheel-set-brake-rel-marker" x={77} y={81}>REL</text>
+
+            <text className={`wheel-set-brake-temp${left.temperature > brakeAmberThreshold ? '-amber' : ''}`} x={51} y={59}>{Math.max(0, Math.round(left.temperature / 5) * 5)}</text>
+            <text className={`wheel-set-brake-temp${right.temperature > brakeAmberThreshold ? '-amber' : ''}`} x={134} y={59}>{Math.max(0, Math.round(right.temperature / 5) * 5)}</text>
+
+            <text className="wheel-set-brake-number" x={33} y={81}>{left.number}</text>
+            <text className="wheel-set-brake-number" x={116} y={81}>{right.number}</text>
         </SvgGroup>
-    ) : null;
+    );
 };
 
 export const WheelPage = () => {
-    const [brake1] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_1', 'Celsius', maxStaleness);
-    const [brake2] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_2', 'Celsius', maxStaleness);
-    const [brake3] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_3', 'Celsius', maxStaleness);
-    const [brake4] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_4', 'Celsius', maxStaleness);
+    const temperatures: number[] = [];
+    for (let brakeNumber = 1; brakeNumber <= 4; brakeNumber++) {
+        const [temperature] = useSimVar(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_${brakeNumber}`, 'celsius', maxStaleness);
+        temperatures.push(temperature);
+    }
+
+    const maxTemperatureIndex = temperatures.reduce((maxIndex, element, index, array) => (element > array[maxIndex] ? index : maxIndex), 0);
 
     return (
         <EcamPage name="main-wheel">
@@ -131,86 +194,25 @@ export const WheelPage = () => {
 
             <AutoBrake x={300} y={460} />
 
-            {/* <!-- LG indicators --> */}
+            <Gear x={18} y={210} type="left" />
+            <Wheels
+                x={12}
+                y={318}
+                left={{ number: 1, temperature: temperatures[0], hottest: maxTemperatureIndex === 0 }}
+                right={{ number: 2, temperature: temperatures[1], hottest: maxTemperatureIndex === 1 }}
+            />
 
-            {/* <!-- Left gear --> */}
-            <g id="gear-left" className="blinking-gear">
-                <GearDoor x={62.06} y={271.07} type="left" />
-                <LandingGearPositionIndicators x={97} y={278} type="left" />
-            </g>
+            <Gear x={210} y={107} type="center" />
+            <WheelArch x={298} y={370} type="bottom" />
+            <WheelArch x={406} y={370} type="bottom" />
 
-            {/* <!-- Center gear --> */}
-            <g id="gear-center" className="blinking-gear">
-                <GearDoor x={232.38} y={133.91} type="center" />
-                <LandingGearPositionIndicators x={267} y={140} type="center" />
-
-                <g id="center-brake-arches">
-                    {/* eslint-disable-next-line max-len */}
-                    <path className="wheel-set-brake-arch" strokeWidth="2" d="m352.97 10.47c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.3921 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.815 3.4005z" />
-                    {/* eslint-disable-next-line max-len */}
-                    <path className="wheel-set-brake-arch" strokeWidth="2" d="m249.97 10.47c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.392 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.814 3.4005z" />
-                </g>
-            </g>
-
-            {/* <!-- Right gear --> */}
-            <g id="gear-right" className="blinking-gear">
-                <GearDoor x={410.24} y={271.07} type="right" />
-                <LandingGearPositionIndicators x={445} y={278} type="right" />
-            </g>
-
-            {/* <!-- Brake temperatures --> */}
-
-            {/* <!-- Wheel set #1 --> */}
-            <g id="wheel-set-brake-left">
-                {/* <!-- Arches --> */}
-                {/* eslint-disable-next-line max-len */}
-                <path id="indicator-arch-1" className="wheel-set-brake-arch" strokeLinecap="round" d="m12.25 372.69c-5.6511 0.0126-11.216 1.6606-15.547 4.4688-3.4807 2.2398-5.759 5.205-6.3809 8.4629l1.4258 0.27149c0.52976-2.7753 2.5075-5.4347 5.7422-7.5156v-2e-3h2e-3c4.0708-2.6394 9.3921-4.2224 14.762-4.2344 5.3729-0.0113 10.936 1.5183 15.041 4.0859 3.2313 2.0193 5.2676 4.6167 5.8984 7.3418l1.4121-0.32617c-0.73917-3.193-3.0677-6.0756-6.541-8.2461v2e-3c-4.382-2.741-10.167-4.3204-15.815-4.3086z" />
-                {/* eslint-disable-next-line max-len */}
-                <path id="indicator-arch-2" className="wheel-set-brake-arch" strokeLinecap="round" d="m110 372.69c-5.6511 0.0126-11.216 1.6606-15.547 4.4688-3.4807 2.2398-5.759 5.205-6.3809 8.4629l1.4258 0.27149c0.52976-2.7753 2.5075-5.4347 5.7422-7.5156v-2e-3h2e-3c4.0708-2.6394 9.3921-4.2224 14.762-4.2344 5.3729-0.0113 10.936 1.5183 15.041 4.0859 3.2313 2.0193 5.2676 4.6167 5.8984 7.3418l1.4121-0.32617c-0.73917-3.193-3.0677-6.0756-6.541-8.2461v2e-3c-4.382-2.741-10.167-4.3205-15.814-4.3086z" />
-
-                {/* eslint-disable-next-line max-len */}
-                <path className="wheel-set-brake-arch" stroke="#dadadf" strokeLinecap="round" d="m12.25 540.47c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.3921 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.815 3.4005z" />
-                {/* eslint-disable-next-line max-len */}
-                <path className="wheel-set-brake-arch" stroke="#dadadf" strokeLinecap="round" d="m110 540.47c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.392 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.814 3.4005z" />
-
-                {/* <!-- Markers --> */}
-                <text className="wheel-set-brake-celsius-marker" x="85" y="397">°C</text>
-                <text className="wheel-set-brake-rel-marker" x="89" y="420">REL</text>
-
-                {/* <!-- Temperatures --> */}
-                <text id="wheel-brake-temp-1" className="wheel-set-brake-temp" x="65" y="398">xx</text>
-                <text id="wheel-brake-temp-2" className="wheel-set-brake-temp" x="147" y="398">xx</text>
-
-                {/* <!-- wheel numbers --> */}
-                <text className="wheel-set-brake-number" x="45" y="420">1</text>
-                <text className="wheel-set-brake-number" x="128" y="420">2</text>
-            </g>
-
-            {/* <!-- Wheel set #2 --> */}
-            <g id="wheel-set-brake-right">
-                {/* <!-- Arches --> */}
-                {/* eslint-disable-next-line max-len */}
-                <path id="indicator-arch-3" className="wheel-set-brake-arch" strokeLinecap="round" d="m510.13 372.69c-5.6511 0.0126-11.216 1.6606-15.547 4.4688-3.4807 2.2398-5.759 5.205-6.3809 8.4629l1.4258 0.27149c0.52976-2.7753 2.5075-5.4347 5.7422-7.5156v-2e-3h2e-3c4.0708-2.6394 9.3921-4.2224 14.762-4.2344 5.3729-0.0113 10.936 1.5183 15.041 4.0859 3.2313 2.0193 5.2676 4.6167 5.8984 7.3418l1.4121-0.32617c-0.73917-3.193-3.0677-6.0756-6.541-8.2461v2e-3c-4.382-2.741-10.167-4.3205-15.814-4.3086z" />
-                {/* eslint-disable-next-line max-len */}
-                <path id="indicator-arch-4" className="wheel-set-brake-arch" strokeLinecap="round" d="m608.43 372.69c-5.6511 0.0126-11.216 1.6606-15.547 4.4688-3.4807 2.2398-5.759 5.205-6.3809 8.4629l1.4258 0.27149c0.52976-2.7753 2.5075-5.4347 5.7422-7.5156v-2e-3h2e-3c4.0708-2.6394 9.3921-4.2224 14.762-4.2344 5.3729-0.0113 10.936 1.5183 15.041 4.0859 3.2313 2.0193 5.2676 4.6167 5.8984 7.3418l1.4121-0.32617c-0.73917-3.193-3.0677-6.0756-6.541-8.2461v2e-3c-4.382-2.741-10.167-4.3205-15.814-4.3086z" />
-
-                {/* eslint-disable-next-line max-len */}
-                <path className="wheel-set-brake-arch" stroke="#dadadf" strokeLinecap="round" d="m510.13 540.47c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.392 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.814 3.4005z" />
-                {/* eslint-disable-next-line max-len */}
-                <path className="wheel-set-brake-arch" stroke="#dadadf" strokeLinecap="round" d="m608.43 540.47c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.392 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.814 3.4005z" />
-
-                {/* <!-- Markers --> */}
-                <text className="wheel-set-brake-celsius-marker" x="510" y="397">°C</text>
-                <text className="wheel-set-brake-rel-marker" x="515" y="420">REL</text>
-
-                {/* <!-- Temperatures --> */}
-                <text id="wheel-brake-temp-3" className="wheel-set-brake-temp" x="488" y="398">xx</text>
-                <text id="wheel-brake-temp-4" className="wheel-set-brake-temp" x="572" y="398">xx</text>
-
-                {/* <!-- Wheel numbers --> */}
-                <text className="wheel-set-brake-number" x="470" y="420">3</text>
-                <text className="wheel-set-brake-number" x="555" y="420">4</text>
-            </g>
+            <Gear x={401} y={210} type="right" />
+            <Wheels
+                x={436}
+                y={318}
+                left={{ number: 3, temperature: temperatures[2], hottest: maxTemperatureIndex === 2 }}
+                right={{ number: 4, temperature: temperatures[3], hottest: maxTemperatureIndex === 3 }}
+            />
         </EcamPage>
     );
 };
