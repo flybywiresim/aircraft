@@ -182,10 +182,6 @@
     - Bool
     - True if pitot heating auto
 
-- A32NX_EMERELECPWR_RAT_FAULT
-    - Bool
-    - True if RAT elec power fault
-
 - A32NX_EVAC_COMMAND_FAULT
     - Bool
     - True if evac command fault
@@ -489,10 +485,6 @@
     - Bool
     - True if ground control is on.
 
-- A32NX_EMERELECPWR_MAN_ON
-    - Bool
-    - True if Ram Air Turbine has been manually deployed.
-
 - A32NX_EMERELECPWR_GEN_TEST
     - Bool
     - True if emergency generator is being tested.
@@ -582,6 +574,14 @@
         - ELEC_GALY_AND_CAB
         - PNEU_APU_BLEED
         - EMER_ELEC_GEN_1_LINE: a FAULT indicates SMOKE should illuminate.
+
+- A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_HAS_FAULT
+    - Bool
+    - Indicates if the RAT & EMER GEN FAULT light should illuminate
+
+- A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_IS_PRESSED
+    - Bool
+    - True if Ram Air Turbine has been manually deployed.
 
 - A32NX_OVHD_{name}_PB_IS_AUTO
     - Bool

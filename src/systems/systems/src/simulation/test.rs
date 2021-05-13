@@ -144,6 +144,13 @@ impl SimulationTestBed {
         );
     }
 
+    pub fn indicated_airspeed(&mut self) -> Velocity {
+        Velocity::new::<knot>(
+            self.reader_writer
+                .read_f64(UpdateContext::INDICATED_AIRSPEED_KEY),
+        )
+    }
+
     pub fn set_indicated_altitude(&mut self, indicated_altitude: Length) {
         self.reader_writer.write_f64(
             UpdateContext::INDICATED_ALTITUDE_KEY,
