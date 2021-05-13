@@ -93,7 +93,6 @@ class A32NX_FWC {
         this._updateTakeoffMemo(_deltaTime);
         this._updateLandingMemo(_deltaTime);
         this._autopilotDisconnect(_deltaTime);
-        this._autopilotWarning(_deltaTime, _core);
 
         if (this.updateThrottler.canUpdate(_deltaTime) !== -1) {
             this._checkLandingGear();
@@ -566,31 +565,6 @@ class A32NX_FWC {
                     }
                 }
             }
-        }
-    }
-
-    _autopilotWarning(_deltaTime, _core) {
-        const AP_STATUS = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_ACTIVE", "Bool");
-        const AP_Disconnect_By = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_FCU", "Bool");
-
-        if (!AP_STATUS && !this.pressSidestickTwice) {
-            if (AP_Disconnect_By) {
-                _core.soundManager.addPeriodicSound(soundList.cavcharge, 0.3);
-            } else {
-                if (this.apdeltaTime <= 1.5) {
-                    _core.soundManager.addPeriodicSound(soundList.cavcharge, 0.3);
-                } else {
-                    !this.pressSidestickTwice = true;
-                }
-            }
-        } else {
-            _core.soundManager.removePeriodicSound(soundList.cavcharge);
-            if(this.currentAPCapability > SimVar.GetSimVarValue("L:A32NX_ApproachCapability", "Enum")) {
-                SimVar.SetSimVarValue("L:A32NX_TRIPLE_CLICK", "Bool", true);
-            }
-        }
-        if (AP_STATUS) {
-            SimVar.SetSimVarValue("L:A32NX_TRIPLE_CLICK", "Bool", false);
         }
     }
 

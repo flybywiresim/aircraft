@@ -161,9 +161,5 @@ const soundList = {
     alt_5: {
         name: "new_5",
         length: 0.3
-    },
-    cavcharge: {
-        name: "cavcharge",
-        length: 0.2
     }
 };
