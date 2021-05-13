@@ -76,6 +76,7 @@ impl SimulationTestBed {
 
         let mut executed_duration = Duration::from_secs(0);
         while executed_duration < self.delta {
+            // Randomly set delta for 12 to 200ms, giving a simulated 83 to 5 fps refresh
             let current_delta = Duration::from_millis(rng.gen_range(12..200));
 
             if executed_duration + current_delta > self.delta {
