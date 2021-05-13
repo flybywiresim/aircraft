@@ -115,7 +115,6 @@ impl PowerConsumer {
         }
     }
 
-    #[cfg(test)]
     /// Determine if the power consumer has potential powering
     /// it during this simulation tick.
     /// If this function is called before power has been supplied to it

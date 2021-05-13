@@ -2,6 +2,8 @@ use systems::simulation::UpdateContext;
 
 pub use systems::hydraulic::*;
 
+use systems::electrical::ElectricalBusType;
+
 use std::time::Duration;
 use uom::si::{
     acceleration::foot_per_second_squared,
@@ -818,7 +820,7 @@ fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
 }
 
 fn electric_pump() -> ElectricPump {
-    ElectricPump::new("DEFAULT")
+    ElectricPump::new("DEFAULT",ElectricalBusType::AlternatingCurrentEssential)
 }
 
 fn engine_driven_pump() -> EngineDrivenPump {

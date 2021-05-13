@@ -21,6 +21,7 @@ use systems::{
     hydraulic::brake_circuit::BrakeCircuit, shared::DelayedFalseLogicGate,
     shared::DelayedTrueLogicGate,
 };
+use systems::electrical::ElectricalBusType;
 
 pub(super) struct A320Hydraulic {
     hyd_brake_logic: A320HydraulicBrakingLogic,
@@ -132,10 +133,10 @@ impl A320Hydraulic {
             engine_driven_pump_2: EngineDrivenPump::new("YELLOW"),
             engine_driven_pump_2_controller: A320EngineDrivenPumpController::new(2),
 
-            blue_electric_pump: ElectricPump::new("BLUE"),
+            blue_electric_pump: ElectricPump::new("BLUE",ElectricalBusType::AlternatingCurrentEssentialShed),
             blue_electric_pump_controller: A320BlueElectricPumpController::new(),
 
-            yellow_electric_pump: ElectricPump::new("YELLOW"),
+            yellow_electric_pump: ElectricPump::new("YELLOW",ElectricalBusType::AlternatingCurrent(2)),
             yellow_electric_pump_controller: A320YellowElectricPumpController::new(),
 
             forward_cargo_door: Door::new(5),
