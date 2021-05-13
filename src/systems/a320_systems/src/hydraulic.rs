@@ -57,6 +57,8 @@ pub(super) struct A320Hydraulic {
 
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
+    brake_output_generator: A320BrakingForceSimulationOutput,
+
     total_sim_time_elapsed: Duration,
     lag_time_accumulator: Duration,
 }
@@ -161,6 +163,8 @@ impl A320Hydraulic {
                 Volume::new::<gallon>(0.5),
                 Volume::new::<gallon>(0.13),
             ),
+
+            brake_output_generator: A320BrakingForceSimulationOutput::new(),
 
             total_sim_time_elapsed: Duration::new(0, 0),
             lag_time_accumulator: Duration::new(0, 0),
@@ -293,6 +297,9 @@ impl A320Hydraulic {
 
         // Tug has its angle changing on each frame and we'd like to detect this
         self.pushback_tug.update();
+
+        self.brake_output_generator
+            .update_forces(&self.braking_circuit_norm, &self.braking_circuit_altn);
     }
 
     // All the higher frequency updates like physics
@@ -496,6 +503,7 @@ impl SimulationElement for A320Hydraulic {
 
         self.braking_circuit_norm.accept(visitor);
         self.braking_circuit_altn.accept(visitor);
+        self.brake_output_generator.accept(visitor);
 
         visitor.visit(self);
     }
@@ -1084,9 +1092,51 @@ impl SimulationElement for A320HydraulicBrakingLogic {
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
         self.is_gear_lever_down = state.read_bool("GEAR HANDLE POSITION");
         self.anti_skid_activated = state.read_bool("ANTISKID BRAKES ACTIVE");
-        self.left_brake_pilot_input = state.read_f64("BRAKE LEFT POSITION") / 100.0;
-        self.right_brake_pilot_input = state.read_f64("BRAKE RIGHT POSITION") / 100.0;
+        self.left_brake_pilot_input = state.read_f64("BRAKE LEFT POSITION");
+        self.right_brake_pilot_input = state.read_f64("BRAKE RIGHT POSITION");
         self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
+        println!(
+            "HYD: brake inputs to sim= L({}) R({})",
+            self.left_brake_pilot_input * 100.,
+            self.right_brake_pilot_input * 100.
+        )
+    }
+}
+
+struct A320BrakingForceSimulationOutput {
+    left_brake_force: f64,
+    right_brake_force: f64,
+}
+impl A320BrakingForceSimulationOutput {
+    pub fn new() -> Self {
+        A320BrakingForceSimulationOutput {
+            left_brake_force: 0.,
+            right_brake_force: 0.,
+        }
+    }
+
+    pub fn update_forces(&mut self, norm_brakes: &BrakeCircuit, altn_brakes: &BrakeCircuit) {
+        let left_force_norm = norm_brakes.left_brake_pressure().get::<psi>() / 3000.;
+        let left_force_altn = altn_brakes.left_brake_pressure().get::<psi>() / 3000.;
+        self.left_brake_force = left_force_norm + left_force_altn;
+        self.left_brake_force = self.left_brake_force.max(0.).min(1.);
+
+        let right_force_norm = norm_brakes.right_brake_pressure().get::<psi>() / 3000.;
+        let right_force_altn = altn_brakes.right_brake_pressure().get::<psi>() / 3000.;
+        self.right_brake_force = right_force_norm + right_force_altn;
+        self.right_brake_force = self.right_brake_force.max(0.).min(1.);
+    }
+}
+
+impl SimulationElement for A320BrakingForceSimulationOutput {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_f64("BRAKE LEFT POSITION", self.left_brake_force * 100.);
+        writer.write_f64("BRAKE RIGHT POSITION", self.right_brake_force * 100.);
+        println!(
+            "HYD: brake output to sim= L({}) R({})",
+            self.left_brake_force * 100.,
+            self.right_brake_force * 100.
+        )
     }
 }
 
@@ -1754,13 +1804,13 @@ mod tests {
 
             fn set_left_brake(mut self, position_percent: Ratio) -> Self {
                 self.simulation_test_bed
-                    .write_f64("BRAKE LEFT POSITION", position_percent.get::<percent>());
+                    .write_f64("MASKED BRAKE LEFT AXIS", position_percent.get::<percent>());
                 self
             }
 
             fn set_right_brake(mut self, position_percent: Ratio) -> Self {
                 self.simulation_test_bed
-                    .write_f64("BRAKE RIGHT POSITION", position_percent.get::<percent>());
+                    .write_f64("MASKED BRAKE RIGHT AXIS", position_percent.get::<percent>());
                 self
             }
 

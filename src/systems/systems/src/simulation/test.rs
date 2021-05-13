@@ -257,13 +257,45 @@ impl<'a, T: SimulationElement, U: Fn(&mut T, &UpdateContext)> SimulationElement
     }
 }
 
+pub struct TestBrakeInput {
+    brake_left: f64,
+    brake_right: f64,
+}
+impl TestBrakeInput {
+    pub fn new() -> Self {
+        Self {
+            brake_left: 0.,
+            brake_right: 0.,
+        }
+    }
+
+    pub fn set_brake_left_percent(&mut self, percent_value: f64) {
+        let scaled_value = percent_value / 100.;
+        self.brake_left = scaled_value.min(1.).max(0.);
+    }
+
+    pub fn set_brake_right_percent(&mut self, percent_value: f64) {
+        let scaled_value = percent_value / 100.;
+        self.brake_right = scaled_value.min(1.).max(0.);
+    }
+
+    pub fn brake_left(&self) -> f64 {
+        self.brake_left
+    }
+
+    pub fn brake_right(&self) -> f64 {
+        self.brake_right
+    }
+}
 struct TestReaderWriter {
     variables: HashMap<String, f64>,
+    masked_brake_input: TestBrakeInput,
 }
 impl TestReaderWriter {
     fn new() -> Self {
         Self {
             variables: HashMap::new(),
+            masked_brake_input: TestBrakeInput::new(),
         }
     }
 
@@ -289,12 +321,27 @@ impl TestReaderWriter {
 }
 impl SimulatorReaderWriter for TestReaderWriter {
     fn read(&mut self, name: &str) -> f64 {
-        *self.variables.get(name).unwrap_or(&0.)
+        if name.contains("BRAKE LEFT POSITION") {
+            self.masked_brake_input.brake_left()
+        } else if name.contains("BRAKE RIGHT POSITION") {
+            self.masked_brake_input.brake_right()
+        } else {
+            *self.variables.get(name).unwrap_or(&0.)
+        }
     }
 
     fn write(&mut self, name: &str, value: f64) {
-        self.variables.insert(name.to_owned(), value);
+        if name.contains("MASKED BRAKE LEFT AXIS") {
+            self.masked_brake_input.set_brake_left_percent(value);
+        } else if name.contains("MASKED BRAKE RIGHT AXIS") {
+            self.masked_brake_input.set_brake_right_percent(value);
+        } else {
+            self.variables.insert(name.to_owned(), value);
+        }
     }
+
+    fn update_brake_input_left(&mut self, _left_raw_val: u32) {}
+    fn update_brake_input_right(&mut self, _right_raw_val: u32) {}
 }
 impl Default for TestReaderWriter {
     fn default() -> Self {

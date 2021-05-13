@@ -18,6 +18,9 @@ pub trait SimulatorReaderWriter {
     fn read(&mut self, name: &str) -> f64;
     /// Writes a variable with the given name to the simulator.
     fn write(&mut self, name: &str, value: f64);
+
+    fn update_brake_input_left(&mut self, left_raw_val: u32);
+    fn update_brake_input_right(&mut self, right_raw_val: u32);
 }
 
 /// An [`Aircraft`] that can be simulated by the [`Simulation`].
@@ -235,6 +238,16 @@ impl<'a, T: Aircraft, U: SimulatorReaderWriter> Simulation<'a, T, U> {
         let mut writer = SimulatorWriter::new(self.simulator_read_writer);
         let mut visitor = SimulationToSimulatorVisitor::new(&mut writer);
         self.aircraft.accept(&mut visitor);
+    }
+
+    pub fn update_brake_input_left(&mut self, raw_left_val: u32) {
+        self.simulator_read_writer
+            .update_brake_input_left(raw_left_val);
+    }
+
+    pub fn update_brake_input_right(&mut self, raw_right_val: u32) {
+        self.simulator_read_writer
+            .update_brake_input_right(raw_right_val);
     }
 }
 

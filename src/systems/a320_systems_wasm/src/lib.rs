@@ -41,18 +41,36 @@ impl BrakeInput {
         }
     }
 
-    fn set_brake_left(&mut self, simconnect_value: u32) {
+    pub fn set_brake_left(&mut self, simconnect_value: u32) {
         let casted_value = (simconnect_value as i32) as f64;
         let scaled_value = (casted_value + Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT)
             / Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT;
         self.brake_left = scaled_value.min(1.).max(0.);
     }
 
-    fn set_brake_right(&mut self, simconnect_value: u32) {
+    pub fn set_brake_left_percent(&mut self, percent_value: f64) {
+        let scaled_value = percent_value / 100.;
+        self.brake_left = scaled_value.min(1.).max(0.);
+    }
+
+    pub fn set_brake_right(&mut self, simconnect_value: u32) {
         let casted_value = (simconnect_value as i32) as f64;
         let scaled_value = (casted_value + Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT)
             / Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT;
         self.brake_right = scaled_value.min(1.).max(0.);
+    }
+
+    pub fn set_brake_right_percent(&mut self, percent_value: f64) {
+        let scaled_value = percent_value / 100.;
+        self.brake_right = scaled_value.min(1.).max(0.);
+    }
+
+    pub fn brake_left(&mut self) -> f64 {
+        self.brake_left
+    }
+
+    pub fn brake_right(&mut self) -> f64 {
+        self.brake_right
     }
 }
 
@@ -67,8 +85,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
     let mut a320 = A320::new();
     let mut simulation = Simulation::new(&mut a320, &mut reader_writer);
 
-    let mut brake_inputs = BrakeInput::new();
-
     while let Some(event) = gauge.next_event().await {
         match event {
             MSFSEvent::PreDraw(d) => simulation.tick(d.delta_time()),
@@ -76,18 +92,20 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
             MSFSEvent::SimConnect(recv) => match recv {
                 SimConnectRecv::Event(e) => {
                     if e.id() == id_brake_left {
-                        brake_inputs.set_brake_left(e.data());
-                        println!(
-                            "eventid_simconnect brakeleft!!   L={} R= {}",
-                            brake_inputs.brake_left, brake_inputs.brake_right
-                        );
+                        simulation.update_brake_input_left(e.data());
+                        // brake_inputs.set_brake_left(e.data());
+                        // println!(
+                        //     "eventid_simconnect brakeleft!!   L={} R= {}",
+                        //     brake_inputs.brake_left, brake_inputs.brake_right
+                        // );
                     }
                     if e.id() == id_brake_right {
-                        brake_inputs.set_brake_right(e.data());
-                        println!(
-                            "eventid_simconnect brakeleft!!   L={} R= {}",
-                            brake_inputs.brake_left, brake_inputs.brake_right
-                        );
+                        simulation.update_brake_input_right(e.data());
+                        // brake_inputs.set_brake_right(e.data());
+                        // println!(
+                        //     "eventid_simconnect brakeleft!!   L={} R= {}",
+                        //     brake_inputs.brake_left, brake_inputs.brake_right
+                        // );
                     }
                 }
                 _ => {}
@@ -126,9 +144,8 @@ struct A320SimulatorReaderWriter {
     pushback_angle: AircraftVariable,
     pushback_state: AircraftVariable,
     anti_skid_activated: AircraftVariable,
-    left_brake_command: AircraftVariable,
-    right_brake_command: AircraftVariable,
     longitudinal_accel: AircraftVariable,
+    masked_brake_input: BrakeInput,
 }
 impl A320SimulatorReaderWriter {
     fn new() -> Result<Self, Box<dyn std::error::Error>> {
@@ -178,13 +195,12 @@ impl A320SimulatorReaderWriter {
             pushback_angle: AircraftVariable::from("PUSHBACK ANGLE", "Radian", 0)?,
             pushback_state: AircraftVariable::from("PUSHBACK STATE", "Enum", 0)?,
             anti_skid_activated: AircraftVariable::from("ANTISKID BRAKES ACTIVE", "Bool", 0)?,
-            left_brake_command: AircraftVariable::from("BRAKE LEFT POSITION", "Percent", 0)?,
-            right_brake_command: AircraftVariable::from("BRAKE RIGHT POSITION", "Percent", 0)?,
             longitudinal_accel: AircraftVariable::from(
                 "ACCELERATION BODY Z",
                 "feet per second squared",
                 0,
             )?,
+            masked_brake_input: BrakeInput::new(),
         })
     }
 }
@@ -215,8 +231,8 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
             "PUSHBACK ANGLE" => self.pushback_angle.get(),
             "PUSHBACK STATE" => self.pushback_state.get(),
             "ANTISKID BRAKES ACTIVE" => self.anti_skid_activated.get(),
-            "BRAKE LEFT POSITION" => self.left_brake_command.get(),
-            "BRAKE RIGHT POSITION" => self.right_brake_command.get(),
+            "BRAKE LEFT POSITION" => self.masked_brake_input.brake_left(),
+            "BRAKE RIGHT POSITION" => self.masked_brake_input.brake_right(),
             "ACCELERATION BODY Z" => self.longitudinal_accel.get(),
             _ => {
                 lookup_named_variable(&mut self.dynamic_named_variables, "A32NX_", name).get_value()
@@ -233,6 +249,13 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
             lookup_named_variable(&mut self.dynamic_named_variables, "A32NX_", name);
 
         named_variable.set_value(value);
+    }
+
+    fn update_brake_input_left(&mut self, left_raw_val: u32) {
+        self.masked_brake_input.set_brake_left(left_raw_val);
+    }
+    fn update_brake_input_right(&mut self, right_raw_val: u32) {
+        self.masked_brake_input.set_brake_right(right_raw_val);
     }
 }
 
