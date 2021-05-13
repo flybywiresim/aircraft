@@ -5,7 +5,10 @@
 #include <string>
 #include <vector>
 
+#include "../ElevatorTrimHandler.h"
 #include "../FlapsHandler.h"
+#include "../LocalVariable.h"
+#include "../RudderTrimHandler.h"
 #include "../SpoilersHandler.h"
 #include "../ThrottleAxisMapping.h"
 #include "SimConnectData.h"
@@ -22,6 +25,11 @@ class SimConnectInterface {
     RUDDER_CENTER,
     RUDDER_RIGHT,
     RUDDER_AXIS_MINUS,
+    RUDDER_TRIM_LEFT,
+    RUDDER_TRIM_RESET,
+    RUDDER_TRIM_RIGHT,
+    RUDDER_TRIM_SET,
+    RUDDER_TRIM_SET_EX1,
     AILERON_SET,
     AILERONS_LEFT,
     AILERONS_RIGHT,
@@ -29,6 +37,10 @@ class SimConnectInterface {
     ELEVATOR_SET,
     ELEV_DOWN,
     ELEV_UP,
+    ELEV_TRIM_DN,
+    ELEV_TRIM_UP,
+    ELEVATOR_TRIM_SET,
+    AXIS_ELEV_TRIM_SET,
     AP_MASTER,
     AUTOPILOT_OFF,
     AUTOPILOT_ON,
@@ -36,16 +48,31 @@ class SimConnectInterface {
     TOGGLE_FLIGHT_DIRECTOR,
     A32NX_FCU_AP_1_PUSH,
     A32NX_FCU_AP_2_PUSH,
+    A32NX_FCU_AP_DISCONNECT_PUSH,
+    A32NX_FCU_ATHR_PUSH,
+    A32NX_FCU_ATHR_DISCONNECT_PUSH,
+    A32NX_FCU_SPD_INC,
+    A32NX_FCU_SPD_DEC,
+    A32NX_FCU_SPD_SET,
     A32NX_FCU_SPD_PUSH,
     A32NX_FCU_SPD_PULL,
     A32NX_FCU_SPD_MACH_TOGGLE_PUSH,
+    A32NX_FCU_HDG_INC,
+    A32NX_FCU_HDG_DEC,
+    A32NX_FCU_HDG_SET,
     A32NX_FCU_HDG_PUSH,
     A32NX_FCU_HDG_PULL,
     A32NX_FCU_TRK_FPA_TOGGLE_PUSH,
     A32NX_FCU_TO_AP_HDG_PUSH,
     A32NX_FCU_TO_AP_HDG_PULL,
+    A32NX_FCU_ALT_INC,
+    A32NX_FCU_ALT_DEC,
+    A32NX_FCU_ALT_SET,
     A32NX_FCU_ALT_PUSH,
     A32NX_FCU_ALT_PULL,
+    A32NX_FCU_VS_INC,
+    A32NX_FCU_VS_DEC,
+    A32NX_FCU_VS_SET,
     A32NX_FCU_VS_PUSH,
     A32NX_FCU_VS_PULL,
     A32NX_FCU_TO_AP_VS_PUSH,
@@ -137,11 +164,15 @@ class SimConnectInterface {
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                std::shared_ptr<FlapsHandler> flapsHandler,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
+               std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
+               std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
                double keyChangeAileron,
                double keyChangeElevator,
                double keyChangeRudder);
 
   void disconnect();
+
+  void setSampleTime(double sampleTime);
 
   bool requestReadData();
 
@@ -189,17 +220,23 @@ class SimConnectInterface {
 
   ClientDataAutothrust getClientDataAutothrust();
 
+  bool setClientDataFlyByWire(ClientDataFlyByWire output);
+  ClientDataFlyByWire getClientDataFlyByWire();
+
  private:
   enum ClientData {
     AUTOPILOT_STATE_MACHINE,
     AUTOPILOT_LAWS,
     AUTOTHRUST,
+    FLY_BY_WIRE,
     LOCAL_VARIABLES,
     LOCAL_VARIABLES_AUTOTHRUST,
   };
 
   bool isConnected = false;
   HANDLE hSimConnect = 0;
+
+  double sampleTime = 0;
 
   SimData simData = {};
   SimInput simInput = {};
@@ -210,14 +247,21 @@ class SimConnectInterface {
 
   std::shared_ptr<FlapsHandler> flapsHandler;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
+  std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
+  std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
 
   ClientDataAutopilotStateMachine clientDataAutopilotStateMachine = {};
   ClientDataAutopilotLaws clientDataAutopilotLaws = {};
   ClientDataAutothrust clientDataAutothrust = {};
+  ClientDataFlyByWire clientDataFlyByWire = {};
 
   double flightControlsKeyChangeAileron = 0.0;
   double flightControlsKeyChangeElevator = 0.0;
   double flightControlsKeyChangeRudder = 0.0;
+
+  std::unique_ptr<LocalVariable> idFcuEventSetSPEED;
+  std::unique_ptr<LocalVariable> idFcuEventSetHDG;
+  std::unique_ptr<LocalVariable> idFcuEventSetVS;
 
   bool prepareSimDataSimConnectDataDefinitions();
 

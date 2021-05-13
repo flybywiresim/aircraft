@@ -5,9 +5,9 @@ use super::{
 use std::time::Duration;
 use systems::{
     electrical::{
-        Contactor, ElectricalBus, ElectricalBusType, EmergencyGenerator, EngineGenerator,
-        ExternalPowerSource, Potential, PotentialOrigin, PotentialSource, PotentialTarget,
-        TransformerRectifier,
+        consumption::SuppliedPower, Contactor, ElectricalBus, ElectricalBusType,
+        EmergencyGenerator, EngineGenerator, ExternalPowerSource, Potential, PotentialOrigin,
+        PotentialSource, PotentialTarget, TransformerRectifier,
     },
     shared::DelayedTrueLogicGate,
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
@@ -70,20 +70,21 @@ impl A320AlternatingCurrentElectrical {
         emergency_overhead: &A320EmergencyElectricalOverheadPanel,
         arguments: &mut A320ElectricalUpdateArguments<'a>,
     ) {
+        self.main_power_sources
+            .update(context, ext_pwr, overhead, emergency_overhead, arguments);
+
+        if (self.ac_bus_1_and_2_unpowered()
+            && context.indicated_airspeed() > Velocity::new::<knot>(100.))
+            || emergency_overhead.rat_and_emer_gen_man_on()
+        {
+            self.emergency_gen.start();
+        }
+
         self.emergency_gen.update(
             context,
             arguments.is_blue_hydraulic_circuit_pressurised()
                 && context.indicated_airspeed() > Velocity::new::<knot>(100.),
         );
-
-        self.main_power_sources
-            .update(context, ext_pwr, overhead, emergency_overhead, arguments);
-
-        if self.main_ac_buses_unpowered()
-            && context.indicated_airspeed() > Velocity::new::<knot>(100.)
-        {
-            self.emergency_gen.start();
-        }
 
         self.ac_bus_1
             .powered_by(&self.main_power_sources.ac_bus_1_electric_sources());
@@ -120,7 +121,7 @@ impl A320AlternatingCurrentElectrical {
             .powered_by(&self.ac_ess_feed_contactors.electric_sources());
 
         self.emergency_gen_contactor.close_when(
-            self.main_ac_buses_unpowered() && self.emergency_gen.output_within_normal_parameters(),
+            self.ac_bus_1_and_2_unpowered() && self.emergency_gen.output_within_normal_parameters(),
         );
         self.emergency_gen_contactor.powered_by(&self.emergency_gen);
 
@@ -216,17 +217,11 @@ impl A320AlternatingCurrentElectrical {
                     .is_single(PotentialOrigin::ApuGenerator(1)))
     }
 
-    /// Whether or not both AC BUS 1 and AC BUS 2 are unpowered.
-    pub fn main_ac_buses_unpowered(&self) -> bool {
-        self.ac_bus_1.is_unpowered() && self.ac_bus_2.is_unpowered()
-    }
-
     /// Determines if 15XE2 should be closed. 15XE2 is the contactor which connects
     /// the static inverter to the AC ESS BUS.
     fn should_close_15xe2_contactor(&self, context: &UpdateContext) -> bool {
-        self.ac_1_and_2_and_emergency_gen_unpowered_and_velocity_equal_to_or_greater_than_50_knots(
-            context,
-        )
+        self.ac_1_and_2_and_emergency_gen_unpowered()
+            && context.indicated_airspeed() >= Velocity::new::<knot>(50.)
     }
 
     pub fn debug_assert_invariants(&self) {
@@ -236,30 +231,6 @@ impl A320AlternatingCurrentElectrical {
     fn static_inverter_or_emergency_gen_powers_ac_ess_bus(&self) -> bool {
         !(self.static_inv_to_ac_ess_bus_contactor.is_closed()
             && self.ac_ess_to_tr_ess_contactor.is_closed())
-    }
-
-    pub fn ac_bus_1(&self) -> &ElectricalBus {
-        &self.ac_bus_1
-    }
-
-    pub fn ac_bus_2(&self) -> &ElectricalBus {
-        &self.ac_bus_2
-    }
-
-    pub fn ac_ess_bus(&self) -> &ElectricalBus {
-        &self.ac_ess_bus
-    }
-
-    pub fn ac_ess_shed_bus(&self) -> &ElectricalBus {
-        &self.ac_ess_shed_bus
-    }
-
-    pub fn ac_stat_inv_bus(&self) -> &ElectricalBus {
-        &self.ac_stat_inv_bus
-    }
-
-    pub fn ac_gnd_flt_service_bus(&self) -> &ElectricalBus {
-        &self.ac_gnd_flt_service_bus
     }
 
     #[cfg(test)]
@@ -284,6 +255,23 @@ impl A320AlternatingCurrentElectrical {
     pub fn gen_2_contactor_open(&self) -> bool {
         self.main_power_sources.gen_2_contactor_open()
     }
+
+    pub fn emergency_generator_contactor_is_closed(&self) -> bool {
+        self.emergency_gen_contactor.is_closed()
+    }
+
+    pub fn ac_ess_bus_is_powered(&self) -> bool {
+        self.ac_ess_bus.is_powered()
+    }
+
+    pub fn add_supplied_power(&self, state: &mut SuppliedPower) {
+        state.add_bus(&self.ac_bus_1);
+        state.add_bus(&self.ac_bus_2);
+        state.add_bus(&self.ac_ess_bus);
+        state.add_bus(&self.ac_ess_shed_bus);
+        state.add_bus(&self.ac_stat_inv_bus);
+        state.add_bus(&self.ac_gnd_flt_service_bus);
+    }
 }
 impl AlternatingCurrentState for A320AlternatingCurrentElectrical {
     fn ac_bus_1_and_2_unpowered(&self) -> bool {
@@ -299,15 +287,7 @@ impl AlternatingCurrentState for A320AlternatingCurrentElectrical {
     }
 
     fn ac_1_and_2_and_emergency_gen_unpowered(&self) -> bool {
-        self.main_ac_buses_unpowered() && self.emergency_gen.is_unpowered()
-    }
-
-    fn ac_1_and_2_and_emergency_gen_unpowered_and_velocity_equal_to_or_greater_than_50_knots(
-        &self,
-        context: &UpdateContext,
-    ) -> bool {
-        self.ac_1_and_2_and_emergency_gen_unpowered()
-            && context.indicated_airspeed() >= Velocity::new::<knot>(50.)
+        self.ac_bus_1_and_2_unpowered() && self.emergency_gen.is_unpowered()
     }
 
     fn tr_1(&self) -> &TransformerRectifier {
