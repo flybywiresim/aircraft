@@ -109,6 +109,8 @@ impl Aircraft for A320 {
 
         self.electrical_overhead
             .update_after_electrical(&self.electrical);
+        self.emergency_electrical_overhead
+            .update_after_electrical(context, &self.electrical);
         self.apu_overhead.update_after_apu(&self.apu);
     }
 
