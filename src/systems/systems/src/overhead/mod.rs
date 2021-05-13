@@ -240,11 +240,76 @@ impl AutoOffFaultPushButton {
         self.has_fault
     }
 
-    fn set_fault(&mut self, value: bool) {
+    pub fn set_fault(&mut self, value: bool) {
         self.has_fault = value;
     }
 }
 impl SimulationElement for AutoOffFaultPushButton {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write_bool(&self.is_auto_id, self.is_auto());
+        writer.write_bool(&self.has_fault_id, self.has_fault());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.set_auto(reader.read_bool(&self.is_auto_id));
+        self.set_fault(reader.read_bool(&self.has_fault_id));
+    }
+}
+
+pub struct AutoOnFaultPushButton {
+    is_auto_id: String,
+    has_fault_id: String,
+
+    is_auto: bool,
+    has_fault: bool,
+}
+impl AutoOnFaultPushButton {
+    pub fn new_auto(name: &str) -> Self {
+        Self::new(name, true)
+    }
+
+    pub fn new_on(name: &str) -> Self {
+        Self::new(name, false)
+    }
+
+    fn new(name: &str, is_auto: bool) -> Self {
+        Self {
+            is_auto_id: format!("OVHD_{}_PB_IS_AUTO", name),
+            has_fault_id: format!("OVHD_{}_PB_HAS_FAULT", name),
+            is_auto,
+            has_fault: false,
+        }
+    }
+
+    pub fn push_on(&mut self) {
+        self.is_auto = false;
+    }
+
+    pub fn push_auto(&mut self) {
+        self.is_auto = true;
+    }
+
+    pub fn is_auto(&self) -> bool {
+        self.is_auto
+    }
+
+    pub fn is_on(&self) -> bool {
+        !self.is_auto
+    }
+
+    pub fn set_auto(&mut self, value: bool) {
+        self.is_auto = value;
+    }
+
+    pub fn has_fault(&self) -> bool {
+        self.has_fault
+    }
+
+    pub fn set_fault(&mut self, value: bool) {
+        self.has_fault = value;
+    }
+}
+impl SimulationElement for AutoOnFaultPushButton {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_bool(&self.is_auto_id, self.is_auto());
         writer.write_bool(&self.has_fault_id, self.has_fault());
