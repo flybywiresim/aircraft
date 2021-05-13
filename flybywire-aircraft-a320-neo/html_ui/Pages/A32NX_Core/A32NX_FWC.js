@@ -124,6 +124,12 @@ class A32NX_FWC {
         const overspeed = Simplane.getIndicatedSpeed() > (SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") + 4);
         const ldgNotDown = SimVar.GetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool");
 
+        if (ldgNotDown || overspeed) {
+            this.warningPriority = true;
+        } else {
+            this.warningPriority = false;
+        }
+
         if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN", "Bool")) {
             this.warningPressed = true;
             if (!this.warningPriority) {
@@ -138,12 +144,6 @@ class A32NX_FWC {
             SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", false);
         } else {
             this.cautionPressed = false;
-        }
-
-        if (ldgNotDown || overspeed) {
-            this.warningPriority = true;
-        } else {
-            this.warningPriority = false;
         }
 
         if (SimVar.GetSimVarValue("L:PUSH_THROTTLE_BUTTON", "Bool")) {
