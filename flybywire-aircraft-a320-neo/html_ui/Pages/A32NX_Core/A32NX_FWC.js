@@ -78,8 +78,6 @@ class A32NX_FWC {
         // AUTOPILOT DISCONNECT
         this.ATHRDisconnectByThrottle = true;
         this.APDisconnectedBySidestick = true;
-        this.pressSidestickTwice = true;
-        this.currentAPCapability = 0;
 
         // Update Throttler
         this.updateThrottler = new UpdateThrottler(200);
@@ -153,9 +151,6 @@ class A32NX_FWC {
         }
         if (SimVar.GetSimVarValue("L:PUSH_SIDESTICK_AUTOPILOT", "Bool")) {
             this.APDisconnectedBySidestick = true;
-        }
-        if (this.APDisconnectedBySidestick && SimVar.GetSimVarValue("L:PUSH_SIDESTICK_AUTOPILOT", "Bool")) {
-            this.pressSidestickTwice = true;
         }
     }
 
@@ -525,8 +520,6 @@ class A32NX_FWC {
             this.apdeltaTime = 0;
             this.AutopilotWarningCanceled = false;
             this.APDisconnectedBySidestick = false;
-            this.pressSidestickTwice = false;
-            this.currentAPCapability = SimVar.GetSimVarValue("L:A32NX_ApproachCapability", "Enum");
 
             // If there is a Prioirty Warning, DO NOT STOP WAWRNING
             if (!this.warningPriority) {
