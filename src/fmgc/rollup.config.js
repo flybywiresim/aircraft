@@ -50,22 +50,19 @@ module.exports = {
                 },
             ],
         }),
+        replace({ 'process.env.NODE_ENV': JSON.stringify('production') }),
         nodeResolve({ extensions }),
         commonjs(),
+        typescriptPaths({
+            tsConfigPath: `${__dirname}/../tsconfig.json`,
+            preserveExtensions: true,
+        }),
         babel({
             presets: ['@babel/preset-typescript', ['@babel/preset-env', { targets: { browsers: ['safari 11'] } }]],
             plugins: [
                 '@babel/plugin-proposal-class-properties',
             ],
             extensions,
-        }),
-        typescriptPaths({
-            tsConfigPath: join(src, 'tsconfig.json'),
-            preserveExtensions: true,
-        }),
-        replace({
-            'process.env.NODE_ENV': '"production"',
-            'preventAssignment': true,
         }),
     ],
     output: {
