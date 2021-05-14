@@ -6,9 +6,9 @@ import { MathUtils } from '@shared/MathUtils';
 import { Layer } from '@instruments/common/utils';
 import { MapParameters } from './utils/MapParameters';
 
-export type FlightPathProps = { mapParams: MapParameters }
+export type FlightPathProps = { xOffset?: number, yOffset?: number, mapParams: MapParameters }
 
-export const FlightPath: React.FC<FlightPathProps> = ({ mapParams }) => {
+export const FlightPlan: React.FC<FlightPathProps> = ({ xOffset = 0, yOffset = 0, mapParams }) => {
     const flightPlanManager = useFlightPlanManager();
     const [guidanceManager] = useState(() => new GuidanceManager(flightPlanManager));
     const flightPlan = useCurrentFlightPlan();
@@ -16,19 +16,31 @@ export const FlightPath: React.FC<FlightPathProps> = ({ mapParams }) => {
     const [geometry, setGeometry] = useState(() => guidanceManager.getMultipleLegGeometry(false));
 
     useEffect(() => {
-        setGeometry(guidanceManager.getMultipleLegGeometry());
+        setGeometry(guidanceManager.getMultipleLegGeometry(false));
     }, [flightPlan]);
 
     if (geometry) {
         return (
-            <Layer>
-                <text x={490} y={475} fill="green" fontSize={24}>{flightPlan.originAirfield.ident}</text>
-                <path d={makePathFromGeometry(geometry, mapParams)} stroke="green" strokeWidth={2} />
+            <Layer x={xOffset} y={yOffset}>
+                {flightPlanManager.getAllVisibleWaypoints().map((waypoint) => <Waypoint key={waypoint.ident} waypoint={waypoint} mapParams={mapParams} />)}
+                <path d={makePathFromGeometry(geometry, mapParams)} stroke="#00ff00" strokeWidth={2} fill="none" />
             </Layer>
         );
     }
 
     return null;
+};
+
+const Waypoint: React.FC<{ waypoint: WayPoint, mapParams: MapParameters }> = ({ waypoint, mapParams }) => {
+    const [x, y] = mapParams.coordinatesToXYy(waypoint.infos.coordinates);
+
+    return (
+        <g className="GtLayer">
+            <rect x={x - 4} y={y - 4} width={8} height={8} stroke="#00ff00" strokeWidth={2} transform={`rotate(45 ${x} ${y})`} />
+
+            <text x={x + 15} y={y + 10} fontSize={20} fill="#00ff00">{waypoint.ident}</text>
+        </g>
+    );
 };
 
 /**
