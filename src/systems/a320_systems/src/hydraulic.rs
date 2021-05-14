@@ -1096,7 +1096,7 @@ impl SimulationElement for A320HydraulicBrakingLogic {
         self.right_brake_pilot_input = state.read_f64("BRAKE RIGHT POSITION");
         self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
         println!(
-            "HYD: brake inputs to sim= L({}) R({})",
+            "HYD: brake inputs from sim= L({}) R({})",
             self.left_brake_pilot_input * 100.,
             self.right_brake_pilot_input * 100.
         )

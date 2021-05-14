@@ -21,6 +21,8 @@ pub trait SimulatorReaderWriter {
 
     fn update_brake_input_left(&mut self, left_raw_val: u32);
     fn update_brake_input_right(&mut self, right_raw_val: u32);
+    fn get_brake_output_left(&mut self) -> f64;
+    fn get_brake_output_right(&mut self) -> f64;
 }
 
 /// An [`Aircraft`] that can be simulated by the [`Simulation`].
@@ -248,6 +250,14 @@ impl<'a, T: Aircraft, U: SimulatorReaderWriter> Simulation<'a, T, U> {
     pub fn update_brake_input_right(&mut self, raw_right_val: u32) {
         self.simulator_read_writer
             .update_brake_input_right(raw_right_val);
+    }
+
+    pub fn get_brake_output_left(&mut self) -> f64 {
+        self.simulator_read_writer.get_brake_output_left()
+    }
+
+    pub fn get_brake_output_right(&mut self) -> f64 {
+        self.simulator_read_writer.get_brake_output_right()
     }
 }
 

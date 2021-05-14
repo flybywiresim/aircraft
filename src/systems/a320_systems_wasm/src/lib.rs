@@ -7,8 +7,7 @@ use msfs::{
 use std::collections::HashMap;
 use systems::simulation::{Simulation, SimulatorReaderWriter};
 
-//use msfs::sim_connect::data_definition;
-use msfs::sim_connect::SimConnectRecv;
+use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
 
 #[msfs::sim_connect::data_definition]
 struct InputOutputBrakeLeft {
@@ -18,13 +17,16 @@ struct InputOutputBrakeLeft {
 }
 #[msfs::sim_connect::data_definition]
 struct InputOutputBrakeRight {
-    #[name = "BRAKE LEFT POSITION"]
+    #[name = "BRAKE RIGHT POSITION"]
     #[unit = "Position"]
     brake_right: f64,
 }
 struct BrakeInput {
-    brake_left: f64,
-    brake_right: f64,
+    brake_left_sim_input: f64,
+    brake_right_sim_input: f64,
+
+    brake_left_output_to_sim: f64,
+    brake_right_output_to_sim: f64,
 }
 impl BrakeInput {
     const MIN_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = -16384.;
@@ -36,8 +38,10 @@ impl BrakeInput {
 
     pub fn new() -> Self {
         Self {
-            brake_left: 0.,
-            brake_right: 0.,
+            brake_left_sim_input: 0.,
+            brake_right_sim_input: 0.,
+            brake_left_output_to_sim: 0.,
+            brake_right_output_to_sim: 0.,
         }
     }
 
@@ -45,32 +49,70 @@ impl BrakeInput {
         let casted_value = (simconnect_value as i32) as f64;
         let scaled_value = (casted_value + Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT)
             / Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT;
-        self.brake_left = scaled_value.min(1.).max(0.);
+        self.brake_left_sim_input = scaled_value.min(1.).max(0.);
     }
 
     pub fn set_brake_left_percent(&mut self, percent_value: f64) {
         let scaled_value = percent_value / 100.;
-        self.brake_left = scaled_value.min(1.).max(0.);
+        self.brake_left_sim_input = scaled_value.min(1.).max(0.);
     }
 
     pub fn set_brake_right(&mut self, simconnect_value: u32) {
         let casted_value = (simconnect_value as i32) as f64;
         let scaled_value = (casted_value + Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT)
             / Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT;
-        self.brake_right = scaled_value.min(1.).max(0.);
+        self.brake_right_sim_input = scaled_value.min(1.).max(0.);
     }
 
     pub fn set_brake_right_percent(&mut self, percent_value: f64) {
         let scaled_value = percent_value / 100.;
-        self.brake_right = scaled_value.min(1.).max(0.);
+        self.brake_right_sim_input = scaled_value.min(1.).max(0.);
     }
 
     pub fn brake_left(&mut self) -> f64 {
-        self.brake_left
+        self.brake_left_sim_input
     }
 
     pub fn brake_right(&mut self) -> f64 {
-        self.brake_right
+        self.brake_right_sim_input
+    }
+
+    pub fn set_brake_right_output(&mut self, brake_force_factor: f64) {
+        println!("set_brake_right_output({})", brake_force_factor);
+        self.brake_right_output_to_sim = brake_force_factor;
+    }
+
+    pub fn set_brake_left_output(&mut self, brake_force_factor: f64) {
+        println!("set_brake_left_output({})", brake_force_factor);
+        self.brake_left_output_to_sim = brake_force_factor;
+    }
+
+    pub fn get_brake_right_output_converted_in_simconnect_format(&mut self) -> f64 {
+        let back_to_position_format = ((self.brake_right_output_to_sim / 100.)
+            * Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT)
+            - Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT;
+        let to_i32 = back_to_position_format as i32;
+        let to_u32 = to_i32 as u32;
+
+        println!(
+            "get_brake_right_output_...({} -> {})",
+            self.brake_right_output_to_sim, to_u32 as f64
+        );
+        to_u32 as f64
+    }
+
+    pub fn get_brake_left_output_converted_in_simconnect_format(&mut self) -> f64 {
+        let back_to_position_format = ((self.brake_left_output_to_sim / 100.)
+            * Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT)
+            - Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT;
+        let to_i32 = back_to_position_format as i32;
+        let to_u32 = to_i32 as u32;
+
+        println!(
+            "get_brake_left_output_...({} -> {})",
+            self.brake_left_output_to_sim, to_u32 as f64
+        );
+        to_u32 as f64
     }
 }
 
@@ -93,25 +135,30 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
                 SimConnectRecv::Event(e) => {
                     if e.id() == id_brake_left {
                         simulation.update_brake_input_left(e.data());
-                        // brake_inputs.set_brake_left(e.data());
-                        // println!(
-                        //     "eventid_simconnect brakeleft!!   L={} R= {}",
-                        //     brake_inputs.brake_left, brake_inputs.brake_right
-                        // );
+                        println!("raw left val received= ({:X})", e.data());
                     }
                     if e.id() == id_brake_right {
                         simulation.update_brake_input_right(e.data());
-                        // brake_inputs.set_brake_right(e.data());
-                        // println!(
-                        //     "eventid_simconnect brakeleft!!   L={} R= {}",
-                        //     brake_inputs.brake_left, brake_inputs.brake_right
-                        // );
+                        println!("raw right val received= ({:X})", e.data());
                     }
                 }
                 _ => {}
             },
             _ => {}
         }
+
+        sim.set_data_on_sim_object(
+            SIMCONNECT_OBJECT_ID_USER,
+            &InputOutputBrakeLeft {
+                brake_left: simulation.get_brake_output_left(),
+            },
+        )?;
+        sim.set_data_on_sim_object(
+            SIMCONNECT_OBJECT_ID_USER,
+            &InputOutputBrakeRight {
+                brake_right: simulation.get_brake_output_right(),
+            },
+        )?;
     }
 
     Ok(())
@@ -245,10 +292,16 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
             self.electrical_bus_connections.update(name, value);
         }
 
-        let named_variable =
-            lookup_named_variable(&mut self.dynamic_named_variables, "A32NX_", name);
+        if name.contains("BRAKE LEFT POSITION") {
+            self.masked_brake_input.set_brake_left_output(value);
+        } else if name.contains("BRAKE RIGHT POSITION") {
+            self.masked_brake_input.set_brake_right_output(value);
+        } else {
+            let named_variable =
+                lookup_named_variable(&mut self.dynamic_named_variables, "A32NX_", name);
 
-        named_variable.set_value(value);
+            named_variable.set_value(value);
+        }
     }
 
     fn update_brake_input_left(&mut self, left_raw_val: u32) {
@@ -256,6 +309,14 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
     }
     fn update_brake_input_right(&mut self, right_raw_val: u32) {
         self.masked_brake_input.set_brake_right(right_raw_val);
+    }
+    fn get_brake_output_left(&mut self) -> f64 {
+        self.masked_brake_input
+            .get_brake_left_output_converted_in_simconnect_format()
+    }
+    fn get_brake_output_right(&mut self) -> f64 {
+        self.masked_brake_input
+            .get_brake_right_output_converted_in_simconnect_format()
     }
 }
 
