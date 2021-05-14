@@ -510,7 +510,7 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "AP OFF",
                                 level: 3,
-                                warningoff: true,
+                                warningOff: true,
                                 alwaysShowCategory: true,
                                 isActive: () => (
                                     this.getCachedSimVar("L:A32NX_AUTOPILOT_DISCONNECT_BY_FCU", "Bool")
@@ -2983,7 +2983,7 @@ var A320_Neo_UpperECAM;
                         }
                         if (!this.clearedMessages.includes(message.id)) {
                             this.hasActiveFailures = true;
-                            if (message.level == 3 && !message.warningoff) {
+                            if (message.level == 3 && !message.warningOff) {
                                 this.hasWarnings = true;
                             }
                             if (message.level == 2) {
