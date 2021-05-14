@@ -234,41 +234,7 @@ boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_RWY_TO_RWY_TRK(
     (!BusAssignment->data.nav_valid) || (std::abs(R) > 20.0);
 }
 
-void AutopilotStateMachineModelClass::AutopilotStateMachine_RWY_TRK_entry(const ap_sm_output *BusAssignment)
-{
-  AutopilotStateMachine_B.out_g.mode = lateral_mode_RWY_TRACK;
-  AutopilotStateMachine_B.out_g.law = lateral_law_TRACK;
-  AutopilotStateMachine_B.out_g.Psi_c_deg = BusAssignment->data.Psi_magnetic_track_deg;
-}
-
-void AutopilotStateMachineModelClass::AutopilotStateMachine_GA_TRK_entry(const ap_sm_output *BusAssignment)
-{
-  AutopilotStateMachine_B.out_g.mode = lateral_mode_GA_TRACK;
-  AutopilotStateMachine_B.out_g.law = lateral_law_TRACK;
-  AutopilotStateMachine_B.out_g.Psi_c_deg = BusAssignment->data.Psi_magnetic_track_deg;
-  AutopilotStateMachine_B.out_g.mode_reversion_TRK_FPA = true;
-}
-
-void AutopilotStateMachineModelClass::AutopilotStateMachine_GA_TRK_during(void)
-{
-  AutopilotStateMachine_B.out_g.mode_reversion_TRK_FPA = false;
-}
-
-boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_OFF_TO_HDG(const ap_sm_output *BusAssignment)
-{
-  return (BusAssignment->data_computed.time_since_lift_off >= 5.0) && (BusAssignment->input.FD_active ||
-    (BusAssignment->output.enabled_AP1 != 0.0) || (BusAssignment->output.enabled_AP2 != 0.0)) &&
-    (BusAssignment->input.HDG_pull || (!BusAssignment->lateral.armed.NAV));
-}
-
-boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_OFF_TO_NAV(const ap_sm_output *BusAssignment)
-{
-  return (BusAssignment->input.FD_active || (BusAssignment->output.enabled_AP1 != 0.0) ||
-          (BusAssignment->output.enabled_AP2 != 0.0)) && BusAssignment->lateral.armed.NAV &&
-    BusAssignment->lateral.condition.NAV;
-}
-
-boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_OFF_TO_RWY(const ap_sm_output *BusAssignment)
+boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_RWY_TO_OFF(const ap_sm_output *BusAssignment)
 {
   real_T R;
   real_T r;
@@ -305,11 +271,290 @@ boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_OFF_TO_RWY(cons
     R = -r;
   }
 
+  return (!BusAssignment->data.nav_valid) && (std::abs(R) > 20.0);
+}
+
+void AutopilotStateMachineModelClass::AutopilotStateMachine_RWY_TRK_entry(const ap_sm_output *BusAssignment)
+{
+  AutopilotStateMachine_B.out_g.mode = lateral_mode_RWY_TRACK;
+  AutopilotStateMachine_B.out_g.law = lateral_law_TRACK;
+  AutopilotStateMachine_B.out_g.Psi_c_deg = BusAssignment->data.Psi_magnetic_track_deg;
+}
+
+void AutopilotStateMachineModelClass::AutopilotStateMachine_GA_TRK_entry(const ap_sm_output *BusAssignment)
+{
+  AutopilotStateMachine_B.out_g.mode = lateral_mode_GA_TRACK;
+  AutopilotStateMachine_B.out_g.law = lateral_law_TRACK;
+  AutopilotStateMachine_B.out_g.Psi_c_deg = BusAssignment->data.Psi_magnetic_track_deg;
+  AutopilotStateMachine_B.out_g.mode_reversion_TRK_FPA = true;
+}
+
+void AutopilotStateMachineModelClass::AutopilotStateMachine_ON(const ap_sm_output *BusAssignment)
+{
+  boolean_T guard1 = false;
+  boolean_T guard2 = false;
+  if (AutopilotStateMachine_X_TO_OFF(BusAssignment)) {
+    AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+    AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+    AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_OFF;
+    AutopilotStateMachine_OFF_entry();
+  } else if (AutopilotStateMachine_X_TO_GA_TRK(BusAssignment)) {
+    AutopilotStateMachine_B.out_g.mode_reversion_TRK_FPA = true;
+    AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+    AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+    AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_GA_TRK;
+    AutopilotStateMachine_GA_TRK_entry(BusAssignment);
+  } else {
+    guard1 = false;
+    guard2 = false;
+    switch (AutopilotStateMachine_DWork.is_ON_c) {
+     case AutopilotStateMachine_IN_HDG:
+      if (AutopilotStateMachine_ON_TO_NAV(BusAssignment)) {
+        AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NAV;
+        AutopilotStateMachine_NAV_entry();
+      } else if (AutopilotStateMachine_ON_TO_LOC(BusAssignment)) {
+        AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_LOC;
+        AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_LOC_CPT;
+        AutopilotStateMachine_LOC_CPT_entry();
+      } else {
+        AutopilotStateMachine_HDG_during(BusAssignment);
+      }
+      break;
+
+     case AutopilotStateMachine_IN_LOC:
+      if (BusAssignment->data.H_radio_ft > 400.0) {
+        if (AutopilotStateMachine_ON_TO_HDG(BusAssignment)) {
+          AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+          AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
+          AutopilotStateMachine_HDG_entry(BusAssignment);
+        } else if (AutopilotStateMachine_ON_TO_NAV(BusAssignment)) {
+          AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+          AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NAV;
+          AutopilotStateMachine_NAV_entry();
+        } else {
+          guard2 = true;
+        }
+      } else {
+        guard2 = true;
+      }
+      break;
+
+     case AutopilotStateMachine_IN_NAV:
+      if (AutopilotStateMachine_NAV_TO_HDG(BusAssignment)) {
+        AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
+        AutopilotStateMachine_HDG_entry(BusAssignment);
+      } else {
+        if (AutopilotStateMachine_ON_TO_LOC(BusAssignment)) {
+          AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_LOC;
+          AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_LOC_CPT;
+          AutopilotStateMachine_LOC_CPT_entry();
+        }
+      }
+      break;
+
+     case AutopilotStateMachine_IN_RWY:
+      if (AutopilotStateMachine_RWY_TO_RWY_TRK(BusAssignment)) {
+        AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_RWY_TRK;
+        AutopilotStateMachine_RWY_TRK_entry(BusAssignment);
+      } else if (AutopilotStateMachine_ON_TO_HDG(BusAssignment)) {
+        AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
+        AutopilotStateMachine_HDG_entry(BusAssignment);
+      } else if (AutopilotStateMachine_ON_TO_NAV(BusAssignment)) {
+        AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NAV;
+        AutopilotStateMachine_NAV_entry();
+      } else {
+        if (AutopilotStateMachine_RWY_TO_OFF(BusAssignment)) {
+          AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+          AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_OFF;
+          AutopilotStateMachine_OFF_entry();
+        }
+      }
+      break;
+
+     default:
+      if (AutopilotStateMachine_ON_TO_HDG(BusAssignment)) {
+        AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
+        AutopilotStateMachine_HDG_entry(BusAssignment);
+      } else {
+        if (AutopilotStateMachine_ON_TO_NAV(BusAssignment)) {
+          AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NAV;
+          AutopilotStateMachine_NAV_entry();
+        }
+      }
+      break;
+    }
+
+    if (guard2) {
+      switch (AutopilotStateMachine_DWork.is_LOC) {
+       case AutopilotStateMachine_IN_FLARE:
+        if (BusAssignment->lateral.condition.ROLL_OUT) {
+          AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_ROLL_OUT;
+          AutopilotStateMachine_ROLL_OUT_entry();
+        }
+        break;
+
+       case AutopilotStateMachine_IN_LAND:
+        if (BusAssignment->lateral.condition.FLARE) {
+          AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_FLARE;
+          AutopilotStateMachine_FLARE_entry();
+        }
+        break;
+
+       case AutopilotStateMachine_IN_LOC_CPT:
+        if (AutopilotStateMachine_LOC_TO_X(BusAssignment)) {
+          if (BusAssignment->data.on_ground == 0.0) {
+            AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+            AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
+            AutopilotStateMachine_HDG_entry(BusAssignment);
+          } else if (BusAssignment->data.on_ground != 0.0) {
+            AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+            AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+            AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_OFF;
+            AutopilotStateMachine_OFF_entry();
+          } else {
+            guard1 = true;
+          }
+        } else {
+          guard1 = true;
+        }
+        break;
+
+       case AutopilotStateMachine_IN_LOC_TRACK:
+        if (BusAssignment->lateral.condition.LAND) {
+          AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_LAND;
+          AutopilotStateMachine_LAND_entry();
+        } else {
+          if (AutopilotStateMachine_LOC_TO_X(BusAssignment)) {
+            if (BusAssignment->data.on_ground == 0.0) {
+              AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+              AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
+              AutopilotStateMachine_HDG_entry(BusAssignment);
+            } else {
+              if (BusAssignment->data.on_ground != 0.0) {
+                AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+                AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+                AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_OFF;
+                AutopilotStateMachine_OFF_entry();
+              }
+            }
+          }
+        }
+        break;
+
+       default:
+        if (!BusAssignment->lateral.condition.ROLL_OUT) {
+          if (BusAssignment->data.on_ground == 0.0) {
+            AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+            AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
+            AutopilotStateMachine_HDG_entry(BusAssignment);
+          } else {
+            if (BusAssignment->data.on_ground != 0.0) {
+              AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+              AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+              AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_OFF;
+              AutopilotStateMachine_OFF_entry();
+            }
+          }
+        }
+        break;
+      }
+    }
+
+    if (guard1) {
+      if (BusAssignment->lateral.condition.LOC_TRACK) {
+        AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_LOC_TRACK;
+        AutopilotStateMachine_LOC_TRACK_entry();
+      }
+    }
+  }
+}
+
+void AutopilotStateMachineModelClass::AutopilotStateMachine_GA_TRK_during(void)
+{
+  AutopilotStateMachine_B.out_g.mode_reversion_TRK_FPA = false;
+}
+
+boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_OFF_TO_HDG(const ap_sm_output *BusAssignment)
+{
+  return (BusAssignment->data_computed.time_since_lift_off >= 5.0) && (BusAssignment->input.FD_active ||
+    (BusAssignment->output.enabled_AP1 != 0.0) || (BusAssignment->output.enabled_AP2 != 0.0)) &&
+    (BusAssignment->input.HDG_pull || (!BusAssignment->lateral.armed.NAV));
+}
+
+boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_OFF_TO_NAV(const ap_sm_output *BusAssignment)
+{
   return (BusAssignment->input.FD_active || (BusAssignment->output.enabled_AP1 != 0.0) ||
-          (BusAssignment->output.enabled_AP2 != 0.0)) && (BusAssignment->data.V2_kn > 100.0) &&
-    (BusAssignment->data.flaps_handle_index >= 1.0) && (BusAssignment->data_computed.time_since_touchdown >= 30.0) &&
-    ((BusAssignment->data.throttle_lever_1_pos >= 35.0) || (BusAssignment->data.throttle_lever_2_pos >= 35.0)) &&
-    BusAssignment->data.nav_valid && ((std::abs(BusAssignment->data.nav_loc_error_deg) <= 0.4) && (std::abs(R) <= 20.0));
+          (BusAssignment->output.enabled_AP2 != 0.0)) && BusAssignment->lateral.armed.NAV &&
+    BusAssignment->lateral.condition.NAV;
+}
+
+boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_OFF_TO_RWY(const ap_sm_output *BusAssignment)
+{
+  real_T R;
+  real_T r;
+  real_T x;
+  boolean_T y;
+  x = (BusAssignment->data.Psi_magnetic_deg - (BusAssignment->data.nav_loc_deg + 360.0)) + 360.0;
+  if (x == 0.0) {
+    r = 0.0;
+  } else {
+    r = std::fmod(x, 360.0);
+    if (r == 0.0) {
+      r = 0.0;
+    } else {
+      if (x < 0.0) {
+        r += 360.0;
+      }
+    }
+  }
+
+  x = std::abs(-r);
+  if (360.0 - x == 0.0) {
+    R = 0.0;
+  } else {
+    R = std::fmod(360.0 - x, 360.0);
+    if (R == 0.0) {
+      R = 0.0;
+    } else {
+      if (360.0 - x < 0.0) {
+        R += 360.0;
+      }
+    }
+  }
+
+  if ((BusAssignment->input.FD_active || (BusAssignment->output.enabled_AP1 != 0.0) ||
+       (BusAssignment->output.enabled_AP2 != 0.0)) && (BusAssignment->data.V2_kn > 100.0) &&
+      (BusAssignment->data.flaps_handle_index >= 1.0) && (BusAssignment->data_computed.time_since_touchdown >= 30.0) &&
+      ((BusAssignment->data.throttle_lever_1_pos >= 35.0) || (BusAssignment->data.throttle_lever_2_pos >= 35.0)) &&
+      BusAssignment->data.nav_valid) {
+    if (std::abs(BusAssignment->data.nav_loc_error_deg) <= 0.4) {
+      if (x < std::abs(R)) {
+        R = -r;
+      }
+
+      if (std::abs(R) <= 20.0) {
+        if (!AutopilotStateMachine_DWork.eventTime_not_empty) {
+          AutopilotStateMachine_DWork.eventTime = BusAssignment->time.simulation_time;
+          AutopilotStateMachine_DWork.eventTime_not_empty = true;
+        }
+
+        if ((!(BusAssignment->vertical_previous.output.mode == vertical_mode_SRS)) ||
+            (AutopilotStateMachine_DWork.eventTime == 0.0)) {
+          AutopilotStateMachine_DWork.eventTime = BusAssignment->time.simulation_time;
+        }
+
+        y = (BusAssignment->time.simulation_time - AutopilotStateMachine_DWork.eventTime >= 0.9);
+      } else {
+        y = false;
+      }
+    } else {
+      y = false;
+    }
+  } else {
+    y = false;
+  }
+
+  return y;
 }
 
 boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_OFF_TO_RWY_TRK(const ap_sm_output *BusAssignment)
@@ -1156,7 +1401,25 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_ROLL_OUT_entry_o(voi
 boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_GS_TO_X(void)
 {
   return AutopilotStateMachine_B.BusAssignment_g.input.LOC_push ||
-    AutopilotStateMachine_B.BusAssignment_g.input.APPR_push;
+    AutopilotStateMachine_B.BusAssignment_g.input.APPR_push || AutopilotStateMachine_B.BusAssignment_g.input.VS_pull ||
+    ((AutopilotStateMachine_B.BusAssignment_g.lateral_previous.output.mode != lateral_mode_LOC_CPT) &&
+     (AutopilotStateMachine_B.BusAssignment_g.lateral_previous.output.mode != lateral_mode_LOC_TRACK) &&
+     (AutopilotStateMachine_B.BusAssignment_g.lateral_previous.output.mode != lateral_mode_LAND));
+}
+
+boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_GS_TO_X_MR(void)
+{
+  return AutopilotStateMachine_B.BusAssignment_g.input.LOC_push ||
+    AutopilotStateMachine_B.BusAssignment_g.input.APPR_push ||
+    ((AutopilotStateMachine_B.BusAssignment_g.lateral_previous.output.mode != lateral_mode_LOC_CPT) &&
+     (AutopilotStateMachine_B.BusAssignment_g.lateral_previous.output.mode != lateral_mode_LOC_TRACK) &&
+     (AutopilotStateMachine_B.BusAssignment_g.lateral_previous.output.mode != lateral_mode_LAND));
+}
+
+boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_GS_TO_ALT(void)
+{
+  return AutopilotStateMachine_B.BusAssignment_g.input.ALT_push ||
+    AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull;
 }
 
 void AutopilotStateMachineModelClass::AutopilotStateMachine_GS_TRACK_entry(void)
@@ -1188,8 +1451,12 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_FLARE_entry_g(void)
 
 void AutopilotStateMachineModelClass::AutopilotStateMachine_GS(void)
 {
+  real_T tmp;
   boolean_T guard1 = false;
+  boolean_T guard2 = false;
+  boolean_T tmp_0;
   guard1 = false;
+  guard2 = false;
   switch (AutopilotStateMachine_DWork.is_GS) {
    case AutopilotStateMachine_IN_FLARE:
     if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ROLL_OUT) {
@@ -1200,6 +1467,7 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_GS(void)
 
    case AutopilotStateMachine_IN_GS_CPT:
     if (AutopilotStateMachine_GS_TO_X()) {
+      AutopilotStateMachine_B.out.mode_reversion = AutopilotStateMachine_GS_TO_X_MR();
       if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground == 0.0) {
         AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
         AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_VS;
@@ -1218,24 +1486,50 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_GS(void)
     break;
 
    case AutopilotStateMachine_IN_GS_TRACK:
-    if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.LAND) {
-      AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_LAND_k;
-      AutopilotStateMachine_LAND_entry_i();
-    } else {
-      if (AutopilotStateMachine_GS_TO_X()) {
-        if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground == 0.0) {
+    if (AutopilotStateMachine_GS_TO_ALT()) {
+      if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.GS &&
+          AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_CPT) {
+        AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_GS;
+        AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_GS_CPT;
+        AutopilotStateMachine_GS_CPT_entry();
+      } else {
+        tmp = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft -
+          AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft;
+        tmp_0 = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
+                  AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push) &&
+                 AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active);
+        if (tmp_0 && (tmp < -50.0)) {
           AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-          AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_VS;
-          AutopilotStateMachine_VS_entry();
+          AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_DES;
+          AutopilotStateMachine_OP_DES_entry();
+        } else if (tmp_0 && (tmp > 50.0)) {
+          AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+          AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_CLB;
+          AutopilotStateMachine_OP_CLB_entry();
         } else {
-          if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground != 0.0) {
+          tmp = std::abs(AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft -
+                         AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft);
+          if (AutopilotStateMachine_B.BusAssignment_g.input.ALT_push &&
+              AutopilotStateMachine_B.BusAssignment_g.vertical.condition.CLB &&
+              AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active &&
+              ((AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft == 0.0) || (tmp > 50.0))) {
             AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-            AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_o;
-            AutopilotStateMachine_OFF_entry_p();
+            AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_CLB;
+            AutopilotStateMachine_CLB_entry();
+          } else if (AutopilotStateMachine_B.BusAssignment_g.input.ALT_push &&
+                     AutopilotStateMachine_B.BusAssignment_g.vertical.condition.DES &&
+                     AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active &&
+                     ((AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft == 0.0) || (tmp > 50.0))) {
+            AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+            AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_DES;
+            AutopilotStateMachine_DES_entry();
+          } else {
+            guard2 = true;
           }
         }
       }
+    } else {
+      guard2 = true;
     }
     break;
 
@@ -1264,10 +1558,77 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_GS(void)
     break;
   }
 
+  if (guard2) {
+    if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.LAND) {
+      AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_LAND_k;
+      AutopilotStateMachine_LAND_entry_i();
+    } else {
+      if (AutopilotStateMachine_GS_TO_X()) {
+        AutopilotStateMachine_B.out.mode_reversion = AutopilotStateMachine_GS_TO_X_MR();
+        if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground == 0.0) {
+          AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+          AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_VS;
+          AutopilotStateMachine_VS_entry();
+        } else {
+          if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground != 0.0) {
+            AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+            AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+            AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_OFF_o;
+            AutopilotStateMachine_OFF_entry_p();
+          }
+        }
+      }
+    }
+  }
+
   if (guard1) {
     if (AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_TRACK) {
       AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_GS_TRACK;
       AutopilotStateMachine_GS_TRACK_entry();
+    } else {
+      if (AutopilotStateMachine_GS_TO_ALT()) {
+        if (AutopilotStateMachine_B.BusAssignment_g.vertical.armed.GS &&
+            AutopilotStateMachine_B.BusAssignment_g.vertical.condition.GS_CPT) {
+          AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_GS;
+          AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_GS_CPT;
+          AutopilotStateMachine_GS_CPT_entry();
+        } else {
+          tmp = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft -
+            AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft;
+          tmp_0 = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
+                    AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push) &&
+                   AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active);
+          if (tmp_0 && (tmp < -50.0)) {
+            AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+            AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_DES;
+            AutopilotStateMachine_OP_DES_entry();
+          } else if (tmp_0 && (tmp > 50.0)) {
+            AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+            AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_CLB;
+            AutopilotStateMachine_OP_CLB_entry();
+          } else {
+            tmp = std::abs(AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft -
+                           AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft);
+            if (AutopilotStateMachine_B.BusAssignment_g.input.ALT_push &&
+                AutopilotStateMachine_B.BusAssignment_g.vertical.condition.CLB &&
+                AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active &&
+                ((AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft == 0.0) || (tmp > 50.0))) {
+              AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+              AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_CLB;
+              AutopilotStateMachine_CLB_entry();
+            } else {
+              if (AutopilotStateMachine_B.BusAssignment_g.input.ALT_push &&
+                  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.DES &&
+                  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active &&
+                  ((AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft == 0.0) || (tmp > 50.0))) {
+                AutopilotStateMachine_DWork.is_GS = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
+                AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_DES;
+                AutopilotStateMachine_DES_entry();
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -1472,7 +1833,7 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_exit_internal_ON(voi
   }
 }
 
-void AutopilotStateMachineModelClass::AutopilotStateMachine_ON(void)
+void AutopilotStateMachineModelClass::AutopilotStateMachine_ON_l(void)
 {
   real_T tmp;
   boolean_T guard1 = false;
@@ -1742,9 +2103,8 @@ void AutopilotStateMachineModelClass::step()
   int32_T rtb_Divide_0;
   int32_T rtb_on_ground;
   boolean_T conditionSoftAlt;
+  boolean_T engageCondition;
   boolean_T guard1 = false;
-  boolean_T guard2 = false;
-  boolean_T guard3 = false;
   boolean_T rtb_AND;
   boolean_T rtb_BusAssignment1_input_APPR_push;
   boolean_T rtb_BusAssignment1_input_LOC_push;
@@ -1755,7 +2115,6 @@ void AutopilotStateMachineModelClass::step()
   boolean_T rtb_cLAND;
   boolean_T sCLB_tmp;
   boolean_T speedTargetChanged;
-  boolean_T state_h_tmp;
   boolean_T throttleCondition;
   AutopilotStateMachine_DWork.DelayInput1_DSTATE_a = (static_cast<int32_T>
     (AutopilotStateMachine_U.in.input.AP_ENGAGE_push) > static_cast<int32_T>
@@ -1894,15 +2253,15 @@ void AutopilotStateMachineModelClass::step()
   }
 
   rtb_y_j = AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_i;
-  if (!AutopilotStateMachine_DWork.eventTime_not_empty) {
-    AutopilotStateMachine_DWork.eventTime = AutopilotStateMachine_U.in.time.simulation_time;
-    AutopilotStateMachine_DWork.eventTime_not_empty = true;
+  if (!AutopilotStateMachine_DWork.eventTime_not_empty_b) {
+    AutopilotStateMachine_DWork.eventTime_n = AutopilotStateMachine_U.in.time.simulation_time;
+    AutopilotStateMachine_DWork.eventTime_not_empty_b = true;
   }
 
   if (((!(AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_SRS)) &&
        (!(AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_SRS_GA))) ||
-      (AutopilotStateMachine_DWork.eventTime == 0.0)) {
-    AutopilotStateMachine_DWork.eventTime = AutopilotStateMachine_U.in.time.simulation_time;
+      (AutopilotStateMachine_DWork.eventTime_n == 0.0)) {
+    AutopilotStateMachine_DWork.eventTime_n = AutopilotStateMachine_U.in.time.simulation_time;
   }
 
   rtb_Saturation = AutopilotStateMachine_P.Constant_Value_j / AutopilotStateMachine_U.in.time.dt;
@@ -2028,7 +2387,7 @@ void AutopilotStateMachineModelClass::step()
     AutopilotStateMachine_DWork.timeConditionSoftAlt = AutopilotStateMachine_U.in.time.simulation_time;
   }
 
-  conditionSoftAlt = ((AutopilotStateMachine_U.in.data.H_radio_ft > 100.0) && (rtb_y_j > 5.0));
+  engageCondition = ((AutopilotStateMachine_U.in.data.H_radio_ft > 100.0) && (rtb_y_j > 5.0));
   speedTargetChanged = ((AutopilotStateMachine_DWork.Delay_DSTATE.armed.LOC ||
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LOC_CPT) ||
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LOC_TRACK) ||
@@ -2041,13 +2400,17 @@ void AutopilotStateMachineModelClass::step()
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_LAND) ||
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_FLARE) ||
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_ROLL_OUT)));
-  if (AutopilotStateMachine_DWork.DelayInput1_DSTATE_a && conditionSoftAlt) {
-    state_h_tmp = !AutopilotStateMachine_DWork.sAP2;
-    if ((!AutopilotStateMachine_DWork.sAP1) && state_h_tmp) {
+  conditionSoftAlt = ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_ROLL_OUT) ||
+                      (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_ROLL_OUT));
+  rtb_cLAND = ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_GA_TRACK) &&
+               (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_SRS_GA));
+  if (AutopilotStateMachine_DWork.DelayInput1_DSTATE_a && engageCondition) {
+    engageCondition = !AutopilotStateMachine_DWork.sAP2;
+    if ((!AutopilotStateMachine_DWork.sAP1) && engageCondition) {
       AutopilotStateMachine_DWork.sAP1 = true;
     } else {
       if (speedTargetChanged) {
-        if (AutopilotStateMachine_DWork.sAP1 && state_h_tmp) {
+        if (AutopilotStateMachine_DWork.sAP1 && engageCondition) {
           AutopilotStateMachine_DWork.sAP2 = true;
         } else {
           AutopilotStateMachine_DWork.sAP1 = ((AutopilotStateMachine_DWork.sAP2 && (!AutopilotStateMachine_DWork.sAP1)) ||
@@ -2057,7 +2420,7 @@ void AutopilotStateMachineModelClass::step()
     }
   } else if (AutopilotStateMachine_DWork.DelayInput1_DSTATE_p) {
     if (!AutopilotStateMachine_DWork.sAP1) {
-      if (conditionSoftAlt) {
+      if (engageCondition) {
         AutopilotStateMachine_DWork.sAP1 = true;
         AutopilotStateMachine_DWork.sAP2 = (speedTargetChanged && AutopilotStateMachine_DWork.sAP2);
       }
@@ -2067,7 +2430,7 @@ void AutopilotStateMachineModelClass::step()
     }
   } else if (AutopilotStateMachine_DWork.DelayInput1_DSTATE_b) {
     if (!AutopilotStateMachine_DWork.sAP2) {
-      if (conditionSoftAlt) {
+      if (engageCondition) {
         AutopilotStateMachine_DWork.sAP2 = true;
         AutopilotStateMachine_DWork.sAP1 = (speedTargetChanged && AutopilotStateMachine_DWork.sAP1);
       }
@@ -2075,18 +2438,29 @@ void AutopilotStateMachineModelClass::step()
       AutopilotStateMachine_DWork.sAP1 = false;
       AutopilotStateMachine_DWork.sAP2 = false;
     }
-  } else if (AutopilotStateMachine_DWork.DelayInput1_DSTATE_d) {
+  } else if (AutopilotStateMachine_DWork.DelayInput1_DSTATE_d || ((!conditionSoftAlt) &&
+              AutopilotStateMachine_DWork.sRollOutActive) || ((rtb_on_ground != 0) && rtb_cLAND &&
+              (!AutopilotStateMachine_DWork.sGoAroundModeActive))) {
     AutopilotStateMachine_DWork.sAP1 = false;
     AutopilotStateMachine_DWork.sAP2 = false;
   } else {
-    if ((!speedTargetChanged) && AutopilotStateMachine_DWork.sLandModeArmedOrActive && AutopilotStateMachine_DWork.sAP1 &&
-        AutopilotStateMachine_DWork.sAP2) {
+    engageCondition = !rtb_cLAND;
+    if ((!speedTargetChanged) && AutopilotStateMachine_DWork.sLandModeArmedOrActive && engageCondition &&
+        AutopilotStateMachine_DWork.sAP1 && AutopilotStateMachine_DWork.sAP2) {
       AutopilotStateMachine_DWork.sAP1 = true;
       AutopilotStateMachine_DWork.sAP2 = false;
+    } else {
+      if (engageCondition && AutopilotStateMachine_DWork.sGoAroundModeActive && AutopilotStateMachine_DWork.sAP1 &&
+          AutopilotStateMachine_DWork.sAP2) {
+        AutopilotStateMachine_DWork.sAP1 = true;
+        AutopilotStateMachine_DWork.sAP2 = false;
+      }
     }
   }
 
   AutopilotStateMachine_DWork.sLandModeArmedOrActive = speedTargetChanged;
+  AutopilotStateMachine_DWork.sRollOutActive = conditionSoftAlt;
+  AutopilotStateMachine_DWork.sGoAroundModeActive = rtb_cLAND;
   AutopilotStateMachine_DWork.state_h = ((AutopilotStateMachine_U.in.data.is_flight_plan_available &&
     (!AutopilotStateMachine_DWork.Delay_DSTATE.condition.NAV) && AutopilotStateMachine_DWork.DelayInput1_DSTATE_e &&
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_NAV) &&
@@ -2094,9 +2468,9 @@ void AutopilotStateMachineModelClass::step()
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_LOC_TRACK) &&
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_LAND) &&
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode != lateral_mode_FLARE)) || AutopilotStateMachine_DWork.state_h);
-  state_h_tmp = !AutopilotStateMachine_DWork.Delay_DSTATE.armed.LOC;
+  engageCondition = !AutopilotStateMachine_DWork.Delay_DSTATE.armed.LOC;
   AutopilotStateMachine_DWork.state_h = ((!AutopilotStateMachine_DWork.DelayInput1_DSTATE_g) &&
-    ((AutopilotStateMachine_U.in.data.H_radio_ft >= 30.0) || (!rtb_AND)) && state_h_tmp &&
+    ((AutopilotStateMachine_U.in.data.H_radio_ft >= 30.0) || (!rtb_AND)) && engageCondition &&
     (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_NAV)) &&
     (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LAND)) &&
     (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_FLARE)) &&
@@ -2117,7 +2491,7 @@ void AutopilotStateMachineModelClass::step()
     rtb_BusAssignment1_input_APPR_push) && rtb_cGA && rtb_cFLARE) || AutopilotStateMachine_DWork.state_d);
   speedTargetChanged = !rtb_BusAssignment1_input_APPR_push;
   conditionSoftAlt = !rtb_BusAssignment1_input_LOC_push;
-  AutopilotStateMachine_DWork.state_d = ((conditionSoftAlt || state_h_tmp || rtb_cLAND) && (speedTargetChanged ||
+  AutopilotStateMachine_DWork.state_d = ((conditionSoftAlt || engageCondition || rtb_cLAND) && (speedTargetChanged ||
     rtb_cFLARE) && (!AutopilotStateMachine_DWork.Delay_DSTATE.armed.NAV) && rtb_cGA &&
     (AutopilotStateMachine_U.in.data.throttle_lever_1_pos != 45.0) &&
     (AutopilotStateMachine_U.in.data.throttle_lever_2_pos != 45.0) && AutopilotStateMachine_DWork.state_d);
@@ -2195,8 +2569,8 @@ void AutopilotStateMachineModelClass::step()
     AutopilotStateMachine_DWork.eventTime_not_empty_m = true;
   }
 
-  state_h_tmp = !AutopilotStateMachine_U.in.data.nav_valid;
-  if (state_h_tmp || (!AutopilotStateMachine_U.in.data.nav_loc_valid) || ((std::abs
+  engageCondition = !AutopilotStateMachine_U.in.data.nav_valid;
+  if (engageCondition || (!AutopilotStateMachine_U.in.data.nav_loc_valid) || ((std::abs
         (AutopilotStateMachine_U.in.data.nav_loc_error_deg) >= 0.2) ||
        ((!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LOC_CPT)) &&
         (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LOC_TRACK)))) ||
@@ -2204,7 +2578,16 @@ void AutopilotStateMachineModelClass::step()
     AutopilotStateMachine_DWork.eventTime_a = AutopilotStateMachine_U.in.time.simulation_time;
   }
 
-  rtb_cLAND = ((AutopilotStateMachine_U.in.data.H_radio_ft <= 400.0) &&
+  if (!AutopilotStateMachine_DWork.eventTime_not_empty_i) {
+    AutopilotStateMachine_DWork.eventTime_iz = AutopilotStateMachine_U.in.time.simulation_time;
+    AutopilotStateMachine_DWork.eventTime_not_empty_i = true;
+  }
+
+  if ((AutopilotStateMachine_U.in.data.H_radio_ft >= 400.0) || (AutopilotStateMachine_DWork.eventTime_iz == 0.0)) {
+    AutopilotStateMachine_DWork.eventTime_iz = AutopilotStateMachine_U.in.time.simulation_time;
+  }
+
+  rtb_cLAND = ((AutopilotStateMachine_U.in.time.simulation_time - AutopilotStateMachine_DWork.eventTime_iz >= 1.2) &&
                ((AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LOC_TRACK) ||
                 (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LAND)) &&
                ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_GS_TRACK) ||
@@ -2486,7 +2869,7 @@ void AutopilotStateMachineModelClass::step()
     AutopilotStateMachine_DWork.eventTime_not_empty_e = true;
   }
 
-  if (state_h_tmp || (!AutopilotStateMachine_U.in.data.nav_gs_valid) || ((std::abs
+  if (engageCondition || (!AutopilotStateMachine_U.in.data.nav_gs_valid) || ((std::abs
         (AutopilotStateMachine_U.in.data.nav_gs_error_deg) >= 0.4) ||
        ((!(AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_GS_CPT)) &&
         (!(AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_GS_TRACK)))) ||
@@ -2586,7 +2969,7 @@ void AutopilotStateMachineModelClass::step()
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_touchdown = rtb_y_a;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_lift_off = rtb_y_j;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.time_since_SRS = AutopilotStateMachine_U.in.time.simulation_time
-    - AutopilotStateMachine_DWork.eventTime;
+    - AutopilotStateMachine_DWork.eventTime_n;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.H_fcu_in_selection =
     AutopilotStateMachine_DWork.DelayInput1_DSTATE_o;
   AutopilotStateMachine_B.BusAssignment_g.data_computed.H_constraint_valid = rtb_Y_j;
@@ -2688,12 +3071,12 @@ void AutopilotStateMachineModelClass::step()
   AutopilotStateMachine_B.BusAssignment_g.vertical.armed.CLB = AutopilotStateMachine_DWork.sCLB;
   AutopilotStateMachine_B.BusAssignment_g.vertical.armed.DES = AutopilotStateMachine_DWork.sDES;
   AutopilotStateMachine_B.BusAssignment_g.vertical.armed.GS = AutopilotStateMachine_DWork.state_j;
-  state_h_tmp = !AutopilotStateMachine_DWork.DelayInput1_DSTATE_o;
-  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT = ((dPsi_2 < 20.0) && state_h_tmp);
+  engageCondition = !AutopilotStateMachine_DWork.DelayInput1_DSTATE_o;
+  AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT = ((dPsi_2 < 20.0) && engageCondition);
   AutopilotStateMachine_B.BusAssignment_g.vertical.condition.ALT_CST =
     ((AutopilotStateMachine_U.in.input.H_constraint_ft != 0.0) && (AutopilotStateMachine_U.in.input.H_constraint_ft !=
       AutopilotStateMachine_U.in.input.H_fcu_ft) && ((std::abs(AutopilotStateMachine_U.in.input.H_constraint_ft -
-        AutopilotStateMachine_U.in.data.H_ind_ft) < 20.0) && state_h_tmp));
+        AutopilotStateMachine_U.in.data.H_ind_ft) < 20.0) && engageCondition));
   AutopilotStateMachine_B.BusAssignment_g.vertical.condition.CLB = ((rtb_y_j > 5.0) &&
     (AutopilotStateMachine_U.in.input.H_fcu_ft - AutopilotStateMachine_U.in.data.H_ind_ft > 50.0) &&
     (AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_NAV) &&
@@ -2737,8 +3120,6 @@ void AutopilotStateMachineModelClass::step()
     AutopilotStateMachine_OFF_entry();
   } else {
     guard1 = false;
-    guard2 = false;
-    guard3 = false;
     switch (AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine) {
      case AutopilotStateMachine_IN_GA_TRK:
       if (AutopilotStateMachine_U.in.data.H_radio_ft > 100.0) {
@@ -2751,10 +3132,10 @@ void AutopilotStateMachineModelClass::step()
           AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NAV;
           AutopilotStateMachine_NAV_entry();
         } else {
-          guard2 = true;
+          guard1 = true;
         }
       } else {
-        guard2 = true;
+        guard1 = true;
       }
       break;
 
@@ -2784,171 +3165,11 @@ void AutopilotStateMachineModelClass::step()
       break;
 
      default:
-      if (AutopilotStateMachine_X_TO_OFF(&AutopilotStateMachine_B.BusAssignment_g)) {
-        AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-        AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-        AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_OFF;
-        AutopilotStateMachine_OFF_entry();
-      } else if (AutopilotStateMachine_X_TO_GA_TRK(&AutopilotStateMachine_B.BusAssignment_g)) {
-        AutopilotStateMachine_B.out_g.mode_reversion_TRK_FPA = true;
-        AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-        AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-        AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_GA_TRK;
-        AutopilotStateMachine_GA_TRK_entry(&AutopilotStateMachine_B.BusAssignment_g);
-      } else {
-        switch (AutopilotStateMachine_DWork.is_ON_c) {
-         case AutopilotStateMachine_IN_HDG:
-          if (AutopilotStateMachine_ON_TO_NAV(&AutopilotStateMachine_B.BusAssignment_g)) {
-            AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NAV;
-            AutopilotStateMachine_NAV_entry();
-          } else if (AutopilotStateMachine_ON_TO_LOC(&AutopilotStateMachine_B.BusAssignment_g)) {
-            AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_LOC;
-            AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_LOC_CPT;
-            AutopilotStateMachine_LOC_CPT_entry();
-          } else {
-            AutopilotStateMachine_HDG_during(&AutopilotStateMachine_B.BusAssignment_g);
-          }
-          break;
-
-         case AutopilotStateMachine_IN_LOC:
-          if (AutopilotStateMachine_B.BusAssignment_g.data.H_radio_ft > 400.0) {
-            if (AutopilotStateMachine_ON_TO_HDG(&AutopilotStateMachine_B.BusAssignment_g)) {
-              AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-              AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
-              AutopilotStateMachine_HDG_entry(&AutopilotStateMachine_B.BusAssignment_g);
-            } else if (AutopilotStateMachine_ON_TO_NAV(&AutopilotStateMachine_B.BusAssignment_g)) {
-              AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-              AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NAV;
-              AutopilotStateMachine_NAV_entry();
-            } else {
-              guard3 = true;
-            }
-          } else {
-            guard3 = true;
-          }
-          break;
-
-         case AutopilotStateMachine_IN_NAV:
-          if (AutopilotStateMachine_NAV_TO_HDG(&AutopilotStateMachine_B.BusAssignment_g)) {
-            AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
-            AutopilotStateMachine_HDG_entry(&AutopilotStateMachine_B.BusAssignment_g);
-          } else {
-            if (AutopilotStateMachine_ON_TO_LOC(&AutopilotStateMachine_B.BusAssignment_g)) {
-              AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_LOC;
-              AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_LOC_CPT;
-              AutopilotStateMachine_LOC_CPT_entry();
-            }
-          }
-          break;
-
-         case AutopilotStateMachine_IN_RWY:
-          if (AutopilotStateMachine_RWY_TO_RWY_TRK(&AutopilotStateMachine_B.BusAssignment_g)) {
-            AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_RWY_TRK;
-            AutopilotStateMachine_RWY_TRK_entry(&AutopilotStateMachine_B.BusAssignment_g);
-          } else if (AutopilotStateMachine_ON_TO_HDG(&AutopilotStateMachine_B.BusAssignment_g)) {
-            AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
-            AutopilotStateMachine_HDG_entry(&AutopilotStateMachine_B.BusAssignment_g);
-          } else {
-            if (AutopilotStateMachine_ON_TO_NAV(&AutopilotStateMachine_B.BusAssignment_g)) {
-              AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NAV;
-              AutopilotStateMachine_NAV_entry();
-            }
-          }
-          break;
-
-         default:
-          if (AutopilotStateMachine_ON_TO_HDG(&AutopilotStateMachine_B.BusAssignment_g)) {
-            AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
-            AutopilotStateMachine_HDG_entry(&AutopilotStateMachine_B.BusAssignment_g);
-          } else {
-            if (AutopilotStateMachine_ON_TO_NAV(&AutopilotStateMachine_B.BusAssignment_g)) {
-              AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NAV;
-              AutopilotStateMachine_NAV_entry();
-            }
-          }
-          break;
-        }
-      }
+      AutopilotStateMachine_ON(&AutopilotStateMachine_B.BusAssignment_g);
       break;
     }
 
-    if (guard3) {
-      switch (AutopilotStateMachine_DWork.is_LOC) {
-       case AutopilotStateMachine_IN_FLARE:
-        if (AutopilotStateMachine_B.BusAssignment_g.lateral.condition.ROLL_OUT) {
-          AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_ROLL_OUT;
-          AutopilotStateMachine_ROLL_OUT_entry();
-        }
-        break;
-
-       case AutopilotStateMachine_IN_LAND:
-        if (AutopilotStateMachine_B.BusAssignment_g.lateral.condition.FLARE) {
-          AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_FLARE;
-          AutopilotStateMachine_FLARE_entry();
-        }
-        break;
-
-       case AutopilotStateMachine_IN_LOC_CPT:
-        if (AutopilotStateMachine_LOC_TO_X(&AutopilotStateMachine_B.BusAssignment_g)) {
-          if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground == 0.0) {
-            AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-            AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
-            AutopilotStateMachine_HDG_entry(&AutopilotStateMachine_B.BusAssignment_g);
-          } else if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground != 0.0) {
-            AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-            AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-            AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_OFF;
-            AutopilotStateMachine_OFF_entry();
-          } else {
-            guard1 = true;
-          }
-        } else {
-          guard1 = true;
-        }
-        break;
-
-       case AutopilotStateMachine_IN_LOC_TRACK:
-        if (AutopilotStateMachine_B.BusAssignment_g.lateral.condition.LAND) {
-          AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_LAND;
-          AutopilotStateMachine_LAND_entry();
-        } else {
-          if (AutopilotStateMachine_LOC_TO_X(&AutopilotStateMachine_B.BusAssignment_g)) {
-            if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground == 0.0) {
-              AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-              AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
-              AutopilotStateMachine_HDG_entry(&AutopilotStateMachine_B.BusAssignment_g);
-            } else {
-              if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground != 0.0) {
-                AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-                AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-                AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_OFF;
-                AutopilotStateMachine_OFF_entry();
-              }
-            }
-          }
-        }
-        break;
-
-       default:
-        if (!AutopilotStateMachine_B.BusAssignment_g.lateral.condition.ROLL_OUT) {
-          if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground == 0.0) {
-            AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-            AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_HDG;
-            AutopilotStateMachine_HDG_entry(&AutopilotStateMachine_B.BusAssignment_g);
-          } else {
-            if (AutopilotStateMachine_B.BusAssignment_g.data.on_ground != 0.0) {
-              AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-              AutopilotStateMachine_DWork.is_ON_c = AutopilotStateMachine_IN_NO_ACTIVE_CHILD;
-              AutopilotStateMachine_DWork.is_c1_AutopilotStateMachine = AutopilotStateMachine_IN_OFF;
-              AutopilotStateMachine_OFF_entry();
-            }
-          }
-        }
-        break;
-      }
-    }
-
-    if (guard2) {
+    if (guard1) {
       if ((!AutopilotStateMachine_B.BusAssignment_g.input.FD_active) &&
           (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP1 == 0.0) &&
           (AutopilotStateMachine_B.BusAssignment_g.output.enabled_AP2 == 0.0) &&
@@ -2957,13 +3178,6 @@ void AutopilotStateMachineModelClass::step()
         AutopilotStateMachine_OFF_entry();
       } else {
         AutopilotStateMachine_GA_TRK_during();
-      }
-    }
-
-    if (guard1) {
-      if (AutopilotStateMachine_B.BusAssignment_g.lateral.condition.LOC_TRACK) {
-        AutopilotStateMachine_DWork.is_LOC = AutopilotStateMachine_IN_LOC_TRACK;
-        AutopilotStateMachine_LOC_TRACK_entry();
       }
     }
   }
@@ -3017,7 +3231,7 @@ void AutopilotStateMachineModelClass::step()
       break;
 
      case AutopilotStateMachine_IN_ON_p:
-      AutopilotStateMachine_ON();
+      AutopilotStateMachine_ON_l();
       break;
 
      default:
@@ -3030,14 +3244,14 @@ void AutopilotStateMachineModelClass::step()
       } else {
         rtb_DataTypeConversion2_f = AutopilotStateMachine_B.BusAssignment_g.input.H_fcu_ft -
           AutopilotStateMachine_B.BusAssignment_g.data.H_ind_ft;
-        state_h_tmp = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
-                        AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push) &&
-                       AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active);
-        if (state_h_tmp && (rtb_DataTypeConversion2_f < -50.0)) {
+        engageCondition = ((AutopilotStateMachine_B.BusAssignment_g.input.ALT_pull ||
+                            AutopilotStateMachine_B.BusAssignment_g.input.EXPED_push) &&
+                           AutopilotStateMachine_B.BusAssignment_g.vertical.condition.H_fcu_active);
+        if (engageCondition && (rtb_DataTypeConversion2_f < -50.0)) {
           AutopilotStateMachine_DWork.is_c6_AutopilotStateMachine = AutopilotStateMachine_IN_ON_p;
           AutopilotStateMachine_DWork.is_ON = AutopilotStateMachine_IN_OP_DES;
           AutopilotStateMachine_OP_DES_entry();
-        } else if (state_h_tmp && (rtb_DataTypeConversion2_f > 50.0)) {
+        } else if (engageCondition && (rtb_DataTypeConversion2_f > 50.0)) {
           guard1 = true;
         } else {
           rtb_DataTypeConversion2_f = std::abs(AutopilotStateMachine_B.BusAssignment_g.input.H_constraint_ft -
