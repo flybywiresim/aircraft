@@ -5,8 +5,6 @@
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.THROTTLE_CONTROL</TOOLTIPID>
             <POSITION_TYPE>O</POSITION_TYPE>
             <POSITION_VAR>Position</POSITION_VAR>
-            <ANIM_NAME>ENGINE_Lever_Throttle_#NODE_ID#</ANIM_NAME>
-            <NODE_ID>ENGINE_Lever_Throttle_#NODE_ID#</NODE_ID>
             <PART_ID>ENGINE_Lever_Throttle</PART_ID>
             <USE_TRAJECTORY_DRAG_MODE>true</USE_TRAJECTORY_DRAG_MODE>
         </DefaultTemplateParameters>
