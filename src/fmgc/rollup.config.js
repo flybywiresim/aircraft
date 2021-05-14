@@ -25,6 +25,7 @@
 'use strict';
 
 const babel = require('@rollup/plugin-babel').default;
+const { typescriptPaths } = require('rollup-plugin-typescript-paths');
 const commonjs = require('@rollup/plugin-commonjs');
 const nodeResolve = require('@rollup/plugin-node-resolve').default;
 const replace = require('@rollup/plugin-replace');
@@ -44,7 +45,12 @@ module.exports = {
             ],
         }),
         replace({ 'process.env.NODE_ENV': JSON.stringify('production') }),
+        nodeResolve({ extensions }),
         commonjs(),
+        typescriptPaths({
+            tsConfigPath: `${__dirname}/../tsconfig.json`,
+            preserveExtensions: true,
+        }),
         babel({
             presets: ['@babel/preset-typescript', ['@babel/preset-env', { targets: { browsers: ['safari 11'] } }]],
             plugins: [
@@ -52,7 +58,6 @@ module.exports = {
             ],
             extensions,
         }),
-        nodeResolve({ extensions }),
     ],
     external: ['MSFS', 'WorkingTitle'],
     output: {
