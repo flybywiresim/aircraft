@@ -1,4 +1,4 @@
-import { useState } from 'react/cjs/react.production.min.js';
+import { useState } from 'react';
 import { getSimVar, useInteractionEvent } from '../util.js';
 import { EngPage } from './Pages/Eng.jsx';
 import { BleedPage } from './Pages/Bleed.jsx';
