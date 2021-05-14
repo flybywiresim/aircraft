@@ -9,15 +9,20 @@ export class LnavDriver implements GuidanceComponent {
 
     private lastAvail: boolean;
 
+    private lastLaw: ControlLaw;
+
     private lastXTE: number;
 
     private lastTAE: number;
 
     private lastPhi: number;
 
+    private ppos: LatLongAlt = new LatLongAlt();
+
     constructor(guidanceController: GuidanceController) {
         this.guidanceController = guidanceController;
         this.lastAvail = null;
+        this.lastLaw = null;
         this.lastXTE = null;
         this.lastTAE = null;
         this.lastPhi = null;
@@ -33,17 +38,18 @@ export class LnavDriver implements GuidanceComponent {
         const geometry = this.guidanceController.guidanceManager.getActiveLegPathGeometry();
 
         if (geometry !== null) {
-            const ppos = new LatLongAlt(
-                SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'),
-                SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'),
-                0,
-            );
+            this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
+            this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
             const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
-            const params = geometry.getGuidanceParameters(ppos, trueTrack);
+            const params = geometry.getGuidanceParameters(this.ppos, trueTrack);
 
-            SimVar.SetSimVarValue('L:A32NX_FG_CURRENT_LATERAL_LAW', 'number', params.law);
+            if (this.lastLaw !== params.law) {
+                this.lastLaw = params.law;
+
+                SimVar.SetSimVarValue('L:A32NX_FG_CURRENT_LATERAL_LAW', 'number', params.law);
+            }
 
             if (params) {
                 switch (params.law) {
@@ -69,9 +75,6 @@ export class LnavDriver implements GuidanceComponent {
                         SimVar.SetSimVarValue('L:A32NX_FG_PHI_COMMAND', 'degree', phiCommand);
                         this.lastPhi = phiCommand;
                     }
-                    /* console.log(
-                                `XTE=${crossTrackError} TAE=${trackAngleError} phi=${phiCommand}`
-                            ); */
                     break;
                 default:
                     throw new Error(`Invalid control law: ${params.law}`);
@@ -80,7 +83,7 @@ export class LnavDriver implements GuidanceComponent {
                 available = true;
             }
 
-            if (geometry.shouldSequenceLeg(ppos)) {
+            if (geometry.shouldSequenceLeg(this.ppos)) {
                 const currentLeg = geometry.legs.get(1);
 
                 if (currentLeg instanceof TFLeg && currentLeg.to.endsInDiscontinuity) {
