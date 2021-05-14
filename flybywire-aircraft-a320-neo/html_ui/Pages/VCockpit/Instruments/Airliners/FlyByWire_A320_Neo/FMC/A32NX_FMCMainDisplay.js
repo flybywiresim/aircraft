@@ -431,7 +431,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._forceNextAltitudeUpdate = false;
         this._lastUpdateAPTime = NaN;
         this.updateAutopilotCooldown = 0;
-        this._lastHasReachFlex = false;
         this._apMasterStatus = false;
         this._lastRequestedFLCModeWaypointIndex = -1;
         this._cruiseFlightLevel = undefined;
@@ -732,9 +731,6 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                 }
             } else if (verticalMode === 13) {
-                const T = _convertCtoK(Simplane.getAmbientTemperature());
-                const p = SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar");
-                //this.managedSpeedTarget = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number") === 0 ? Math.min(340, _convertMachToKCas(.8, T, p)) : SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") - 10;
                 this.managedSpeedTarget = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number") === 0 ? Math.min(340, SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", 0.8)) : SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") - 10;
             }
             vPfd = this.managedSpeedTarget;
@@ -936,14 +932,7 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:AIRLINER_FMC_FORCE_NEXT_UPDATE", "number", 0);
             this.updateAutopilotCooldown = -1;
         }
-        if (apLogicOn && this.currentFlightPhase >= FmgcFlightPhases.TAKEOFF) {
-            if (this.isHeadingManaged()) {
-                const heading = SimVar.GetSimVarValue("GPS COURSE TO STEER", "degree", "FMC");
-                if (isFinite(heading)) {
-                    Coherent.call("HEADING_BUG_SET", 2, heading);
-                }
-            }
-        }
+
         if (this.updateAutopilotCooldown < 0) {
             this.updatePerfSpeeds();
             this.updateManagedSpeed();
@@ -972,78 +961,13 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
 
-            const currentHasReachedFlex = Math.max(SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number"), SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "number")) >= 35;
-            if (currentHasReachedFlex !== this._lastHasReachFlex) {
-                this._lastHasReachFlex = currentHasReachedFlex;
-                console.log("Current Has Reached Flex = " + currentHasReachedFlex);
-                if (currentHasReachedFlex) {
-                    if (!SimVar.GetSimVarValue("AUTOPILOT THROTTLE ARM", "boolean")) {
-                        //SimVar.SetSimVarValue("K:AUTO_THROTTLE_ARM", "number", 1);
-                    }
-                }
-            }
-            const currentAltitude = Simplane.getAltitude();
-            const groundSpeed = Simplane.getGroundSpeed();
-            const apTargetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
-            let showTopOfClimb = false;
-            let topOfClimbLlaHeading;
-            const planeCoordinates = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
-            if (apTargetAltitude > currentAltitude + 40) {
-                const vSpeed = Simplane.getVerticalSpeed();
-                const climbDuration = (apTargetAltitude - currentAltitude) / vSpeed / 60;
-                const climbDistance = climbDuration * groundSpeed;
-                if (climbDistance > 1) {
-                    topOfClimbLlaHeading = this.flightPlanManager.getCoordinatesHeadingAtDistanceAlongFlightPlan(climbDistance);
-                    if (topOfClimbLlaHeading) {
-                        showTopOfClimb = true;
-                    }
-                }
-            }
-            if (showTopOfClimb) {
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number", 1);
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_LAT_TOP_CLIMB", "number", topOfClimbLlaHeading.lla.lat);
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_LONG_TOP_CLIMB", "number", topOfClimbLlaHeading.lla.long);
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_HEADING_TOP_CLIMB", "number", topOfClimbLlaHeading.heading);
-            } else {
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number", 0);
-            }
-            SimVar.SetSimVarValue("SIMVAR_AUTOPILOT_AIRSPEED_MIN_CALCULATED", "knots", Simplane.getStallProtectionMinSpeed());
-            SimVar.SetSimVarValue("SIMVAR_AUTOPILOT_AIRSPEED_MAX_CALCULATED", "knots", Simplane.getMaxSpeed(Aircraft.A320_NEO));
             if (this.isAltitudeManaged()) {
                 const prevWaypoint = this.flightPlanManager.getPreviousActiveWaypoint();
                 const nextWaypoint = this.flightPlanManager.getActiveWaypoint();
+
                 if (prevWaypoint && nextWaypoint) {
-                    let targetAltitude = nextWaypoint.legAltitude1;
-                    if (nextWaypoint.legAltitudeDescription === 4) {
-                        targetAltitude = Math.max(nextWaypoint.legAltitude1, nextWaypoint.legAltitude2);
-                    }
-                    let showTopOfDescent = false;
-                    let topOfDescentLat;
-                    let topOfDescentLong;
-                    let topOfDescentHeading;
-                    if (currentAltitude > targetAltitude + 40) {
-                        let vSpeed = Math.abs(Math.min(0, Simplane.getVerticalSpeed()));
-                        if (vSpeed < 200) {
-                            vSpeed = 2000;
-                        }
-                        const descentDuration = Math.abs(targetAltitude - currentAltitude) / vSpeed / 60;
-                        const descentDistance = descentDuration * groundSpeed;
-                        const distanceToTarget = Avionics.Utils.computeGreatCircleDistance(prevWaypoint.infos.coordinates, nextWaypoint.infos.coordinates);
-                        showTopOfDescent = true;
-                        const f = 1 - descentDistance / distanceToTarget;
-                        topOfDescentLat = Avionics.Utils.lerpAngle(prevWaypoint.infos.lat, nextWaypoint.infos.lat, f);
-                        topOfDescentLong = Avionics.Utils.lerpAngle(prevWaypoint.infos.long, nextWaypoint.infos.long, f);
-                        topOfDescentHeading = nextWaypoint.bearingInFP;
-                    }
-                    if (showTopOfDescent) {
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 1);
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_LAT_TOP_DSCNT", "number", topOfDescentLat);
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_LONG_TOP_DSCNT", "number", topOfDescentLong);
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_HEADING_TOP_DSCNT", "number", topOfDescentHeading);
-                    } else {
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 0);
-                    }
                     const activeWpIdx = this.flightPlanManager.getActiveWaypointIndex();
+
                     if (activeWpIdx !== this.activeWpIdx) {
                         this.activeWpIdx = activeWpIdx;
                         this.updateConstraints();
