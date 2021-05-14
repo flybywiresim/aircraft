@@ -849,10 +849,10 @@ export class FlightPlanManager {
         if (this._flightPlans[flightPlanIndex].directTo.isActive) {
             const directToWaypointIndex = this._flightPlans[flightPlanIndex].directTo.planWaypointIndex;
 
-            return allWaypoints.slice(directToWaypointIndex, allWaypoints.length - 1);
+            return allWaypoints.slice(Math.max(this.getActiveWaypointIndex() - 1, directToWaypointIndex), allWaypoints.length - 1);
         }
 
-        return allWaypoints;
+        return allWaypoints.slice(this.getActiveWaypointIndex() - 1, allWaypoints.length - 1);
     }
 
     /**
