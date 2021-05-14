@@ -1,6 +1,4 @@
-<Include File="Common.xml"/>
-
-
+<ModelBehaviors>
     <Template Name="A32NX_ENGINE_Turbine_Template">
         <DefaultTemplateParameters>
             <ID>1</ID>
@@ -71,19 +69,19 @@
         </UseTemplate>
     </Template>
     <Template Name="A32NX_ENGINE_Turbine_Slow_Visibility_Template">
-    <UseTemplate Name="ASOBO_GT_Visibility">
-        <VISIBILITY_CODE>
-            (A:TURB ENG N1:#ID#, Percent) #MIN_N1_PCT_FOR_SLOW# &gt;
-            (A:TURB ENG N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR# &lt; and
-        </VISIBILITY_CODE>
-    </UseTemplate>
+        <UseTemplate Name="ASOBO_GT_Visibility">
+            <VISIBILITY_CODE>
+                (A:TURB ENG N1:#ID#, Percent) #MIN_N1_PCT_FOR_SLOW# &gt;
+                (A:TURB ENG N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR# &lt; and
+            </VISIBILITY_CODE>
+        </UseTemplate>
     </Template>
     <Template Name="A32NX_ENGINE_Turbine_Blurred_Visibility_Template">
         <UseTemplate Name="ASOBO_GT_Visibility">
             <VISIBILITY_CODE>(A:TURB ENG N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR# &gt;</VISIBILITY_CODE>
         </UseTemplate>
     </Template>
-        <!-- Base visibility template for turbines -->
+    <!-- Base visibility template for turbines -->
     <Template Name="A32NX_ENGINE_Turbine_Visibility_Base_Template">
         <Condition NotEmpty="NODE_ID">
             <True>
@@ -160,3 +158,4 @@
         </UseTemplate>
         <UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents"/>
     </Template>
+</ModelBehaviors>
