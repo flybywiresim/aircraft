@@ -5,8 +5,10 @@
 #include <string>
 #include <vector>
 
+#include "../ElevatorTrimHandler.h"
 #include "../FlapsHandler.h"
 #include "../LocalVariable.h"
+#include "../RudderTrimHandler.h"
 #include "../SpoilersHandler.h"
 #include "../ThrottleAxisMapping.h"
 #include "SimConnectData.h"
@@ -23,6 +25,11 @@ class SimConnectInterface {
     RUDDER_CENTER,
     RUDDER_RIGHT,
     RUDDER_AXIS_MINUS,
+    RUDDER_TRIM_LEFT,
+    RUDDER_TRIM_RESET,
+    RUDDER_TRIM_RIGHT,
+    RUDDER_TRIM_SET,
+    RUDDER_TRIM_SET_EX1,
     AILERON_SET,
     AILERONS_LEFT,
     AILERONS_RIGHT,
@@ -30,6 +37,10 @@ class SimConnectInterface {
     ELEVATOR_SET,
     ELEV_DOWN,
     ELEV_UP,
+    ELEV_TRIM_DN,
+    ELEV_TRIM_UP,
+    ELEVATOR_TRIM_SET,
+    AXIS_ELEV_TRIM_SET,
     AP_MASTER,
     AUTOPILOT_OFF,
     AUTOPILOT_ON,
@@ -153,11 +164,15 @@ class SimConnectInterface {
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                std::shared_ptr<FlapsHandler> flapsHandler,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
+               std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
+               std::shared_ptr<RudderTrimHandler> rudderTrimHandler,
                double keyChangeAileron,
                double keyChangeElevator,
                double keyChangeRudder);
 
   void disconnect();
+
+  void setSampleTime(double sampleTime);
 
   bool requestReadData();
 
@@ -221,6 +236,8 @@ class SimConnectInterface {
   bool isConnected = false;
   HANDLE hSimConnect = 0;
 
+  double sampleTime = 0;
+
   SimData simData = {};
   SimInput simInput = {};
   SimInputAutopilot simInputAutopilot = {};
@@ -230,6 +247,8 @@ class SimConnectInterface {
 
   std::shared_ptr<FlapsHandler> flapsHandler;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
+  std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
+  std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
 
   ClientDataAutopilotStateMachine clientDataAutopilotStateMachine = {};
   ClientDataAutopilotLaws clientDataAutopilotLaws = {};

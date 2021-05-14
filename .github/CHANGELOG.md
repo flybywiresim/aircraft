@@ -5,6 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.7.0
+1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [ENGINE] Fixed fuel consumption model - @Taz5150 (TazX [Z+2]#0405)
 1. [ENGINE] Fixed fuel flow being 0 at Start-up  - @Taz5150 (TazX [Z+2]#0405)
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
@@ -60,6 +61,14 @@
 1. [FBW] Realistic rudder pedals animation only following pilot input or trim - @aguther (Andreas Guther)
 1. [FCU] Added more custom events that can be triggered via SimConnect to control the FCU - @aguther (Andreas Guther)
 1. [MISC] Autobrake can be armed via keybindings - @Saschl (saschl#9432)
+1. [FWC] Fix pushing of MASTER WARN and MASTER CAUT not disabling aural warnings - @davidwalschots (David Walschots)
+1. [ELEC] EMER ELEC PWR overhead MAN ON push button triggers emergency generator start (RAT not yet simulated) - @davidwalschots (David Walschots)
+1. [ELEC] RAT & EMER GEN fault light illuminates when applicable - @davidwalschots (David Walschots)
+1. [FBW] Realistic rudder trim deflection and reset rate - @aguther (Andreas Guther)
+1. [FBW] Elevator trim wheels no longer move when stop is reached - @aguther (Andreas Guther)
+1. [AP] Improved V/S and FPA speed protection mode - @aguther (Andreas Guther)
+1. [MISC] Seatbelt sign state can be toggled via external events - @Saschl (saschl#9432)
+1. [MISC] Standby instrument brightness buttons can now be held down rather than pressed to -/+ brightness - @2hwk (2Cas#1022)
 1. [MISC] Add Transition Altitude & Level DB - @Kimbyeongjang (김병장#7165)
 
 ## 0.6.0
