@@ -464,9 +464,9 @@ class A32NX_FWC {
     _autopilotDisconnect(_deltaTime) {
         const AP_STATUS = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_ACTIVE", "Bool");
         const ATHR_STATUS = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_STATUS", "Enum");
-        const THR_POSITION_1 = SimVar.GetSimVarValue("L:A32NX_3D_THROTTLE_LEVER_POSITION_1", "Number");
-        const THR_POSITION_2 = SimVar.GetSimVarValue("L:A32NX_3D_THROTTLE_LEVER_POSITION_1", "Number");
-        const Thrust_IDLE = (THR_POSITION_1 && THR_POSITION_2) ? true : false;
+        const THR_POSITION_1 = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "Number");
+        const THR_POSITION_2 = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:2", "Number");
+        const Thrust_IDLE = (THR_POSITION_1 < 2.6 && THR_POSITION_2 < 2.6) ? true : false;
 
         /*
         *   AUTOTHRUST DISCONNECT
@@ -484,7 +484,7 @@ class A32NX_FWC {
             this.ATHRDisconnectByThrottle = false;
             this.athrdeltaTime = 0;
         } else if (ATHR_STATUS === 0 && !this.AutothrottleWarningCanceled) {
-            if (this.ATHRDisconnectByThrottle) {
+            if (this.ATHRDisconnectByThrottle || Thrust_IDLE) {
                 // AUTOTHRUST DISCONNECTED BY THROTTLE PUSH BUTTON
                 SimVar.SetSimVarValue("L:A32NX_ATHR_DISCONNECT_BY_THROTTLE", "Bool", true);
                 SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", true);

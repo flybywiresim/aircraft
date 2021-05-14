@@ -528,6 +528,8 @@ var A320_Neo_UpperECAM;
                                         style: "action",
                                         message: "THR LEVERS",
                                         action: "MOVE",
+                                        isCompleted: () => {
+                                        }
                                     }
                                 ]
                             },
