@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use super::{EmergencyElec, PotentialSource, ProvideCurrent};
+use super::{EmergencyElectrical, PotentialSource, ProvideCurrent};
 use crate::{
     shared::DelayedTrueLogicGate,
     simulation::{SimulationElement, SimulatorWriter, UpdateContext},
@@ -113,7 +113,7 @@ impl BatteryChargeLimiter {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        emergency_elec: &EmergencyElec,
+        emergency_elec: &EmergencyElectrical,
         arguments: &BatteryChargeLimiterArguments,
     ) {
         self.arrow.update(context, arguments);
@@ -143,7 +143,7 @@ trait BatteryStateObserver {
     fn update(
         self: Box<Self>,
         context: &UpdateContext,
-        emergency_elec: &EmergencyElec,
+        emergency_elec: &EmergencyElectrical,
         arguments: &BatteryChargeLimiterArguments,
     ) -> Box<dyn BatteryStateObserver>;
 }
@@ -173,7 +173,7 @@ impl BatteryStateObserver for OffPushButtonObserver {
     fn update(
         mut self: Box<Self>,
         context: &UpdateContext,
-        _: &EmergencyElec,
+        _: &EmergencyElectrical,
         arguments: &BatteryChargeLimiterArguments,
     ) -> Box<dyn BatteryStateObserver> {
         self.bcl_startup_delay
@@ -242,7 +242,7 @@ impl OpenContactorObserver {
     fn should_close(
         &self,
         context: &UpdateContext,
-        emergency_elec: &EmergencyElec,
+        emergency_elec: &EmergencyElectrical,
         arguments: &BatteryChargeLimiterArguments,
     ) -> bool {
         !self.open_due_to_exceeding_emergency_elec_closing_time_allowance
@@ -263,7 +263,7 @@ impl OpenContactorObserver {
 
     fn emergency_elec_inhibited(
         &self,
-        emergency_elec: &EmergencyElec,
+        emergency_elec: &EmergencyElectrical,
         arguments: &BatteryChargeLimiterArguments,
     ) -> bool {
         emergency_elec.is_active()
@@ -299,7 +299,7 @@ impl BatteryStateObserver for OpenContactorObserver {
     fn update(
         mut self: Box<Self>,
         context: &UpdateContext,
-        emergency_elec: &EmergencyElec,
+        emergency_elec: &EmergencyElectrical,
         arguments: &BatteryChargeLimiterArguments,
     ) -> Box<dyn BatteryStateObserver> {
         self.update_state(context, arguments);
@@ -383,7 +383,7 @@ impl ClosedContactorObserver {
 
     fn should_open_due_to_exceeding_emergency_elec_closed_time_allowance(
         &self,
-        emergency_elec: &EmergencyElec,
+        emergency_elec: &EmergencyElectrical,
     ) -> bool {
         emergency_elec.is_active() && self.beyond_emergency_elec_closed_time_allowance()
     }
@@ -391,7 +391,7 @@ impl ClosedContactorObserver {
     fn should_open(
         &self,
         context: &UpdateContext,
-        emergency_elec: &EmergencyElec,
+        emergency_elec: &EmergencyElectrical,
         arguments: &BatteryChargeLimiterArguments,
     ) -> bool {
         if emergency_elec.is_active() {
@@ -447,7 +447,7 @@ impl BatteryStateObserver for ClosedContactorObserver {
     fn update(
         mut self: Box<Self>,
         context: &UpdateContext,
-        emergency_elec: &EmergencyElec,
+        emergency_elec: &EmergencyElectrical,
         arguments: &BatteryChargeLimiterArguments,
     ) -> Box<dyn BatteryStateObserver> {
         self.update_state(context, arguments);
@@ -521,7 +521,7 @@ mod tests {
             electrical::{
                 battery::Battery,
                 consumption::{PowerConsumer, SuppliedPower},
-                Contactor, ElectricalBus, ElectricalBusType, EmergencyElecElectricalSystem,
+                AlternatingCurrentBusesState, Contactor, ElectricalBus, ElectricalBusType,
                 Potential, PotentialOrigin, PotentialTarget,
             },
             simulation::{test::SimulationTestBed, Aircraft, SimulationElementVisitor},
@@ -767,7 +767,7 @@ mod tests {
                 self.ac_buses_powered = false;
             }
         }
-        impl EmergencyElecElectricalSystem for TestElectricalSystem {
+        impl AlternatingCurrentBusesState for TestElectricalSystem {
             fn ac_buses_unpowered(&self) -> bool {
                 !self.ac_buses_powered
             }
@@ -785,7 +785,7 @@ mod tests {
             battery_push_button_auto: bool,
             gear_is_down: bool,
             emergency_generator_available: bool,
-            emergency_elec: EmergencyElec,
+            emergency_elec: EmergencyElectrical,
             electrical_system: TestElectricalSystem,
         }
         impl TestAircraft {
@@ -802,7 +802,7 @@ mod tests {
                     battery_push_button_auto: true,
                     gear_is_down: false,
                     emergency_generator_available: false,
-                    emergency_elec: EmergencyElec::new(),
+                    emergency_elec: EmergencyElectrical::new(),
                     electrical_system: TestElectricalSystem::new(),
                 }
             }

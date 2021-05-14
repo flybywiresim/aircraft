@@ -472,22 +472,22 @@ pub trait ProvideLoad {
     fn load_normal(&self) -> bool;
 }
 
-pub trait EmergencyElecElectricalSystem {
+pub trait AlternatingCurrentBusesState {
     fn ac_buses_unpowered(&self) -> bool;
 }
 
 /// Determines if and for how long the aircraft is in an emergency electrical situation.
-pub struct EmergencyElec {
+pub struct EmergencyElectrical {
     is_active_for_duration: Duration,
 }
-impl EmergencyElec {
+impl EmergencyElectrical {
     pub fn new() -> Self {
         Self {
             is_active_for_duration: Duration::from_secs(0),
         }
     }
 
-    pub fn update<T: EmergencyElecElectricalSystem>(
+    pub fn update<T: AlternatingCurrentBusesState>(
         &mut self,
         context: &UpdateContext,
         arguments: &T,

@@ -7,7 +7,7 @@ use systems::electrical::Potential;
 use systems::{
     electrical::{
         consumption::SuppliedPower, Battery, BatteryChargeLimiter, BatteryChargeLimiterArguments,
-        Contactor, ElectricalBus, ElectricalBusType, EmergencyElec, EmergencyGenerator,
+        Contactor, ElectricalBus, ElectricalBusType, EmergencyElectrical, EmergencyGenerator,
         PotentialSource, PotentialTarget, StaticInverter,
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
@@ -78,12 +78,12 @@ impl A320DirectCurrentElectrical {
         }
     }
 
-    pub fn update_with_alternating_current_state<'a, T: AlternatingCurrentState>(
+    pub fn update<'a, T: AlternatingCurrentState>(
         &mut self,
         context: &UpdateContext,
         overhead: &A320ElectricalOverheadPanel,
         ac_state: &T,
-        emergency_elec: &EmergencyElec,
+        emergency_elec: &EmergencyElectrical,
         emergency_generator: &EmergencyGenerator,
         arguments: &mut A320ElectricalUpdateArguments<'a>,
     ) {

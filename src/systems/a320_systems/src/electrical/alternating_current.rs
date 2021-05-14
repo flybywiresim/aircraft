@@ -5,9 +5,9 @@ use super::{
 use std::time::Duration;
 use systems::{
     electrical::{
-        consumption::SuppliedPower, Contactor, ElectricalBus, ElectricalBusType,
-        EmergencyElecElectricalSystem, EmergencyGenerator, EngineGenerator, ExternalPowerSource,
-        Potential, PotentialOrigin, PotentialSource, PotentialTarget, TransformerRectifier,
+        consumption::SuppliedPower, AlternatingCurrentBusesState, Contactor, ElectricalBus,
+        ElectricalBusType, EmergencyGenerator, EngineGenerator, ExternalPowerSource, Potential,
+        PotentialOrigin, PotentialSource, PotentialTarget, TransformerRectifier,
     },
     shared::DelayedTrueLogicGate,
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
@@ -70,6 +70,11 @@ impl A320AlternatingCurrentElectrical {
     ) {
         self.main_power_sources
             .update(context, ext_pwr, overhead, emergency_overhead, arguments);
+
+        self.ac_bus_1
+            .powered_by(&self.main_power_sources.ac_bus_1_electric_sources());
+        self.ac_bus_2
+            .powered_by(&self.main_power_sources.ac_bus_2_electric_sources());
     }
 
     pub fn update<'a>(
@@ -79,11 +84,6 @@ impl A320AlternatingCurrentElectrical {
         overhead: &A320ElectricalOverheadPanel,
         emergency_generator: &EmergencyGenerator,
     ) {
-        self.ac_bus_1
-            .powered_by(&self.main_power_sources.ac_bus_1_electric_sources());
-        self.ac_bus_2
-            .powered_by(&self.main_power_sources.ac_bus_2_electric_sources());
-
         self.ac_bus_2_to_tr_2_contactor.powered_by(&self.ac_bus_2);
         self.ac_bus_2_to_tr_2_contactor
             .close_when(self.ac_bus_2.is_powered() && !self.tr_2.failed());
@@ -293,7 +293,7 @@ impl AlternatingCurrentState for A320AlternatingCurrentElectrical {
         &self.tr_ess
     }
 }
-impl EmergencyElecElectricalSystem for A320AlternatingCurrentElectrical {
+impl AlternatingCurrentBusesState for A320AlternatingCurrentElectrical {
     fn ac_buses_unpowered(&self) -> bool {
         self.ac_bus_1_and_2_unpowered()
     }
