@@ -211,7 +211,6 @@
             <WWISE_EVENT_1>yoke_push_button_on</WWISE_EVENT_1>
             <WWISE_EVENT_2>yoke_push_button_off</WWISE_EVENT_2>
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
-            <ID>1</ID>
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button_Held">

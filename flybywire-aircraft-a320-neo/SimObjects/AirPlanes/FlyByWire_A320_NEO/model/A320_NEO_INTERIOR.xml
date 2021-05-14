@@ -236,12 +236,10 @@
             <UseTemplate Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
                 <NODE_ID>PUSH_THROTTLE_1</NODE_ID>
                 <ANIM_NAME>PUSH_THROTTLE_1</ANIM_NAME>
-                <ID>1</ID>
             </UseTemplate>
             <UseTemplate Name="FBW_AutoThrottle_Instinctive_Disconnect_Template">
                 <NODE_ID>PUSH_THROTTLE_2</NODE_ID>
                 <ANIM_NAME>PUSH_THROTTLE_2</ANIM_NAME>
-                <ID>2</ID>
             </UseTemplate>
 
             <UseTemplate Name="FBW_HANDLING_Wheel_ElevatorTrim_Template">
