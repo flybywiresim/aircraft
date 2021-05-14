@@ -3116,7 +3116,7 @@
                 <TYPE>AIRBUS</TYPE>
                 <NODE_ID>KNOB_AUTOPILOT_L1</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_L1</ANIM_NAME>
-                <KNOB_POSITION_VAR>A320_Neo_MFD_Range_1</KNOB_POSITION_VAR>
+                <KNOB_POSITION_VAR>A32NX_EFIS_L_ND_RANGE</KNOB_POSITION_VAR>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRLINER_Knob_ND_Template">
@@ -3131,7 +3131,7 @@
                 <TYPE>AIRBUS</TYPE>
                 <NODE_ID>KNOB_AUTOPILOT_R1</NODE_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_R1</ANIM_NAME>
-                <KNOB_POSITION_VAR>A320_Neo_MFD_Range_2</KNOB_POSITION_VAR>
+                <KNOB_POSITION_VAR>A32NX_EFIS_R_ND_RANGE</KNOB_POSITION_VAR>
             </UseTemplate>
 
             <UseTemplate Name="FBW_AIRBUS_Push_CSTR_Template">
