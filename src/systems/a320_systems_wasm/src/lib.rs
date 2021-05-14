@@ -87,7 +87,7 @@ impl BrakeInput {
         self.brake_left_output_to_sim = brake_force_factor;
     }
 
-    pub fn get_brake_right_output_converted_in_simconnect_format(&mut self) -> f64 {
+    pub fn get_brake_right_output_converted_in_simconnect_format(&mut self) -> u32 {
         let back_to_position_format = ((self.brake_right_output_to_sim / 100.)
             * Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT)
             - Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT;
@@ -96,12 +96,12 @@ impl BrakeInput {
 
         println!(
             "get_brake_right_output_...({} -> {})",
-            self.brake_right_output_to_sim, to_u32 as f64
+            self.brake_right_output_to_sim, to_u32
         );
-        to_u32 as f64
+        to_u32
     }
 
-    pub fn get_brake_left_output_converted_in_simconnect_format(&mut self) -> f64 {
+    pub fn get_brake_left_output_converted_in_simconnect_format(&mut self) -> u32 {
         let back_to_position_format = ((self.brake_left_output_to_sim / 100.)
             * Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT)
             - Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT;
@@ -110,9 +110,9 @@ impl BrakeInput {
 
         println!(
             "get_brake_left_output_...({} -> {})",
-            self.brake_left_output_to_sim, to_u32 as f64
+            self.brake_left_output_to_sim, to_u32
         );
-        to_u32 as f64
+        to_u32
     }
 }
 
@@ -147,18 +147,24 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
             _ => {}
         }
 
-        sim.set_data_on_sim_object(
+        sim.transmit_client_event(
             SIMCONNECT_OBJECT_ID_USER,
-            &InputOutputBrakeLeft {
-                brake_left: simulation.get_brake_output_left(),
-            },
+            id_brake_left,
+            simulation.get_brake_output_left(),
         )?;
-        sim.set_data_on_sim_object(
+
+        sim.transmit_client_event(
             SIMCONNECT_OBJECT_ID_USER,
-            &InputOutputBrakeRight {
-                brake_right: simulation.get_brake_output_right(),
-            },
+            id_brake_right,
+            simulation.get_brake_output_right(),
         )?;
+
+        // sim.set_data_on_sim_object(
+        //     SIMCONNECT_OBJECT_ID_USER,
+        //     &InputOutputBrakeRight {
+        //         brake_right: simulation.get_brake_output_right(),
+        //     },
+        // )?;
     }
 
     Ok(())
@@ -310,11 +316,11 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
     fn update_brake_input_right(&mut self, right_raw_val: u32) {
         self.masked_brake_input.set_brake_right(right_raw_val);
     }
-    fn get_brake_output_left(&mut self) -> f64 {
+    fn get_brake_output_left(&mut self) -> u32 {
         self.masked_brake_input
             .get_brake_left_output_converted_in_simconnect_format()
     }
-    fn get_brake_output_right(&mut self) -> f64 {
+    fn get_brake_output_right(&mut self) -> u32 {
         self.masked_brake_input
             .get_brake_right_output_converted_in_simconnect_format()
     }

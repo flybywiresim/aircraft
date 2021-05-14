@@ -342,11 +342,11 @@ impl SimulatorReaderWriter for TestReaderWriter {
 
     fn update_brake_input_left(&mut self, _left_raw_val: u32) {}
     fn update_brake_input_right(&mut self, _right_raw_val: u32) {}
-    fn get_brake_output_left(&mut self) -> f64 {
-        0.
+    fn get_brake_output_left(&mut self) -> u32 {
+        0
     }
-    fn get_brake_output_right(&mut self) -> f64 {
-        0.
+    fn get_brake_output_right(&mut self) -> u32 {
+        0
     }
 }
 impl Default for TestReaderWriter {
@@ -465,104 +465,5 @@ mod tests {
             element.update_called_before_or_after_receive_power(),
             Some(CallOrder::Before)
         );
-    }
-
-    #[test]
-    /// Tests data conversions to simconnect format
-    fn send_brake_force_to_simconnect() {
-        let min_pedal_axis_value = u32::MAX - 16383;
-        let middle_pedal_axis_value = 0 as u32;
-        let max_pedal_axis_value = 16383 as u32;
-
-        let received_min_as_f64 = min_pedal_axis_value as f64;
-        let received_mid_as_f64 = middle_pedal_axis_value as f64;
-        let received_max_as_f64 = max_pedal_axis_value as f64;
-
-        println!(
-            "received f64= min{}->hex{:X} mid{}->hex{:X} max{}->hex{:X}",
-            received_min_as_f64,
-            received_min_as_f64 as u32,
-            received_mid_as_f64,
-            received_mid_as_f64 as u32,
-            received_max_as_f64,
-            received_max_as_f64 as u32,
-        );
-
-        let min_pedal_axis_value_from_systems = 0.;
-        let middle_pedal_axis_value_from_systems = 0.5;
-        let max_pedal_axis_value_from_systems = 1.;
-
-        println!(
-            "sending f64= min{} -> {} mid{} -> {} max{} -> {}",
-            min_pedal_axis_value_from_systems,
-            get_brake_output_converted_in_simconnect_format(min_pedal_axis_value_from_systems),
-            middle_pedal_axis_value_from_systems,
-            get_brake_output_converted_in_simconnect_format(middle_pedal_axis_value_from_systems),
-            max_pedal_axis_value_from_systems,
-            get_brake_output_converted_in_simconnect_format(max_pedal_axis_value_from_systems),
-        );
-
-        println!(
-            "converting back u32= min{} -> {} mid{} -> {} max{} -> {}",
-            min_pedal_axis_value_from_systems,
-            get_brake_output_converted_in_simconnect_format(min_pedal_axis_value_from_systems)
-                as u32,
-            middle_pedal_axis_value_from_systems,
-            get_brake_output_converted_in_simconnect_format(middle_pedal_axis_value_from_systems)
-                as u32,
-            max_pedal_axis_value_from_systems,
-            get_brake_output_converted_in_simconnect_format(max_pedal_axis_value_from_systems)
-                as u32,
-        );
-
-        println!(
-            "sending f64 V2 test= min{}->{} mid{}->{} max{}->{}",
-            min_pedal_axis_value_from_systems,
-            get_brake_output_converted_in_simconnect_format_v2(min_pedal_axis_value_from_systems),
-            middle_pedal_axis_value_from_systems,
-            get_brake_output_converted_in_simconnect_format_v2(
-                middle_pedal_axis_value_from_systems
-            ),
-            max_pedal_axis_value_from_systems,
-            get_brake_output_converted_in_simconnect_format_v2(max_pedal_axis_value_from_systems),
-        );
-    }
-
-    fn get_brake_output_converted_in_simconnect_format(system_axis_value: f64) -> f64 {
-        const MIN_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = -16384.;
-        const MAX_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = 16384.;
-
-        const RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 =
-            MAX_BRAKE_RAW_VAL_FROM_SIMCONNECT - MIN_BRAKE_RAW_VAL_FROM_SIMCONNECT;
-        const OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = 16384.;
-
-        let back_to_position_format = (system_axis_value * RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT)
-            - OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT;
-        let to_i32 = back_to_position_format as i32;
-        let to_u32 = to_i32 as u32;
-
-        println!(
-            "get_brake_right_output_...({} -> {})",
-            system_axis_value, to_u32 as f64
-        );
-        to_u32 as f64
-    }
-
-    fn get_brake_output_converted_in_simconnect_format_v2(system_axis_value: f64) -> f64 {
-        const MIN_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = -16384.;
-        const MAX_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = 16384.;
-
-        const RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 =
-            MAX_BRAKE_RAW_VAL_FROM_SIMCONNECT - MIN_BRAKE_RAW_VAL_FROM_SIMCONNECT;
-        const OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = 16384.;
-
-        let back_to_position_format = (system_axis_value * RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT)
-            - OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT;
-
-        println!(
-            "get_brake_right_output_...({} -> {})",
-            system_axis_value, back_to_position_format
-        );
-        back_to_position_format
     }
 }
