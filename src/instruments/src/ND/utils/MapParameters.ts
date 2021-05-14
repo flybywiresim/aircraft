@@ -6,6 +6,8 @@ export class MapParameters {
 
     public nmWidth: number;
 
+    public pxWidth: number;
+
     public angularWidth: number;
 
     public angularWidthNorth: number;
@@ -22,11 +24,16 @@ export class MapParameters {
 
     public cosMapUpDirection: number;
 
-    public sinMapUpDirection: number;
+    public sinMapUpDirection;
 
-    compute(centerCoordinates: Coordinates, nmWidth: number, mapUpDirectionDeg: number): void {
+    public version = 0;
+
+    compute(centerCoordinates: Coordinates, nmWidth: number, pxWidth: number, mapUpDirectionDeg: number): void {
+        this.version++;
+
         this.centerCoordinates = centerCoordinates;
         this.nmWidth = nmWidth;
+        this.pxWidth = pxWidth;
         this.angularWidth = nmWidth / 60 / Math.cos(centerCoordinates.lat * MathUtils.DEEGREES_TO_RADIANS);
         this.angularHeight = nmWidth / 60;
         this.bottomLeftCoordinates.lat = centerCoordinates.lat - this.angularHeight * 0.5;
@@ -42,11 +49,11 @@ export class MapParameters {
     }
 
     coordinatesToXYy(coordinates: Coordinates): Xy {
-        const xNorth = (coordinates.long - this.centerCoordinates.long) / this.angularWidthNorth * 1000;
-        const xSouth = (coordinates.long - this.centerCoordinates.long) / this.angularWidthSouth * 1000;
+        const xNorth = (coordinates.long - this.centerCoordinates.long) / this.angularWidthNorth * this.pxWidth;
+        const xSouth = (coordinates.long - this.centerCoordinates.long) / this.angularWidthSouth * this.pxWidth;
         let deltaLat = (coordinates.lat - this.centerCoordinates.lat) / this.angularHeight;
 
-        const y = -deltaLat * 1000;
+        const y = -deltaLat * this.pxWidth;
         deltaLat += 0.5;
 
         const x = xNorth * deltaLat + xSouth * (1 - deltaLat);
@@ -54,18 +61,18 @@ export class MapParameters {
         // If not north up
         if (this.mapUpDirectionRadian !== 0) {
             return [
-                x * this.cosMapUpDirection - y * this.sinMapUpDirection + 500,
-                x * this.sinMapUpDirection + y * this.cosMapUpDirection + 500,
+                x * this.cosMapUpDirection - y * this.sinMapUpDirection + (this.pxWidth / 2),
+                x * this.sinMapUpDirection + y * this.cosMapUpDirection + (this.pxWidth / 2),
             ];
         }
 
         return [
-            x + 500,
-            x + 500,
+            x + (this.pxWidth / 2),
+            x + (this.pxWidth / 2),
         ];
     }
 
     nmToPixels(nm: number): number {
-        return nm / this.nmWidth * 1000;
+        return (nm / this.nmWidth) * this.pxWidth;
     }
 }
