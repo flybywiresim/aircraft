@@ -1,7 +1,9 @@
 import React from 'react';
 
-export const Layer: React.FC = ({ children }) => (
-    <g transform="translate(0, 0)">
+export type LayerProps = { x: number, y: number }
+
+export const Layer: React.FC<LayerProps> = ({ x = 0, y = 0, children }) => (
+    <g transform={`translate(${x}, ${y})`}>
         {children}
     </g>
 );
