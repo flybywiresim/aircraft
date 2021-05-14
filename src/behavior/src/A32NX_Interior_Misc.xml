@@ -517,6 +517,7 @@
                     (L:A32NX_AUTOPILOT_ACTIVE, Bool) if{
                         (&gt;K:AUTOPILOT_OFF)
                         1 (&gt;L:PUSH_SIDESTICK_AUTOPILOT)
+                        1 (&gt;L:A32NX_AUTOPILOT_DISCONNECT_BY_SIDESTICK)
                     } els{
                         1 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)
                     }
