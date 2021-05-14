@@ -1,6 +1,4 @@
 <ModelBehaviors>
-    <Include File="Common.xml"/>
-
     <Template Name="A32NX_ENGINE_Turbine_Template">
         <DefaultTemplateParameters>
             <ID>1</ID>
