@@ -3825,6 +3825,7 @@
         <Component ID="SAFETY">
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
                 <LEFT_SINGLE_CODE>
+                    0 (&gt;L:A32NX_MASTER_WARNING)
                     1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
@@ -3848,6 +3849,7 @@
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
                 <ID>Caution</ID>
                 <LEFT_SINGLE_CODE>
+                    0 (&gt;L:A32NX_MASTER_CAUTION)
                     1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
