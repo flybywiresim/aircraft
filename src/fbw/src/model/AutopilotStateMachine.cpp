@@ -1401,7 +1401,8 @@ void AutopilotStateMachineModelClass::AutopilotStateMachine_ROLL_OUT_entry_o(voi
 boolean_T AutopilotStateMachineModelClass::AutopilotStateMachine_GS_TO_X(void)
 {
   return AutopilotStateMachine_B.BusAssignment_g.input.LOC_push ||
-    AutopilotStateMachine_B.BusAssignment_g.input.APPR_push || AutopilotStateMachine_B.BusAssignment_g.input.VS_pull ||
+    AutopilotStateMachine_B.BusAssignment_g.input.APPR_push || AutopilotStateMachine_B.BusAssignment_g.input.VS_push ||
+    AutopilotStateMachine_B.BusAssignment_g.input.VS_pull ||
     ((AutopilotStateMachine_B.BusAssignment_g.lateral_previous.output.mode != lateral_mode_LOC_CPT) &&
      (AutopilotStateMachine_B.BusAssignment_g.lateral_previous.output.mode != lateral_mode_LOC_TRACK) &&
      (AutopilotStateMachine_B.BusAssignment_g.lateral_previous.output.mode != lateral_mode_LAND));
