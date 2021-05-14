@@ -60,7 +60,6 @@ class A32NX_FWC {
         // Master Warning & Caution
         this.warningPressed = false;
         this.cautionPressed = false;
-        this.warningPriority = false;
 
         // Altitude Warning
         this.previousTargetAltitude = NaN;
@@ -80,8 +79,7 @@ class A32NX_FWC {
         this.apDisconnectedBySidestick = true;
 
         // Update Throttler
-        this.warningUpdateThrottler = new UpdateThrottler(200);
-        this.soundUpdateThrottler = new UpdateThrottler(200);
+        this.updateThrottler = new UpdateThrottler(200);
     }
 
     update(_deltaTime, _core) {
@@ -91,6 +89,7 @@ class A32NX_FWC {
         this._updateButtons(_deltaTime);
         this._updateTakeoffMemo(_deltaTime);
         this._updateLandingMemo(_deltaTime);
+        this._updateOverspeedWarning();
         this._autopilotDisconnect(_deltaTime);
 
         if (this.updateThrottler.canUpdate(_deltaTime) !== -1) {
@@ -121,17 +120,6 @@ class A32NX_FWC {
 
         const inhibOverride = this.memoFlightPhaseInhibOvrd_memo.write(recall, this.flightPhaseEndedPulse);
         SimVar.SetSimVarValue("L:A32NX_FWC_INHIBOVRD", "Bool", inhibOverride);
-
-        const overspeed = Simplane.getIndicatedSpeed() > (SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") + 4);
-        const ldgNotDown = SimVar.GetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool");
-
-        if (ldgNotDown || overspeed) {
-            SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", true);
-            this.warningPriority = true;
-        } else {
-            SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", false);
-            this.warningPriority = false;
-        }
 
         if (SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_MASTERAWARN", "Bool")) {
             this.warningPressed = true;
@@ -360,6 +348,14 @@ class A32NX_FWC {
         SimVar.SetSimVarValue("L:A32NX_FWC_LDGMEMO", "Bool", this.ldgMemo);
     }
 
+    _updateOverspeedWarning() {
+        if (Simplane.getIndicatedSpeed() > (SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") + 4)) {
+            SimVar.SetSimVarValue("L:A32NX_OVERSPEED", "Bool", true);
+        } else {
+            SimVar.SetSimVarValue("L:A32NX_OVERSPEED", "Bool", false);
+        }
+    }
+
     _updateAltitudeWarning() {
         const indicatedAltitude = Simplane.getAltitude();
         const shortAlert = SimVar.GetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool");
@@ -521,11 +517,6 @@ class A32NX_FWC {
             this.apDeltaTime = 0;
             this.apWarningCanceled = false;
             this.apDisconnectedBySidestick = false;
-
-            // If there is a Prioirty Warning, DO NOT STOP WAWRNING
-            if (!this.warningPriority) {
-                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
-            }
         } else {
             if (this.apDisconnectedBySidestick && !this.apWarningCanceled) {
                 // AUTOPILOT DISCONNECTED BY SIDESTICK
@@ -537,11 +528,6 @@ class A32NX_FWC {
                 if (this.warningPressed || (this.apDeltaTime / 1000) >= 3) {
                     this.apWarningCanceled = true;
                     SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_DISCONNECT_BY_SIDESTICK", "Bool", false);
-
-                    // If there is a Prioirty Warning, DO NOT STOP WAWRNING
-                    if (!this.warningPriority) {
-                        SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
-                    }
                     this.apDeltaTime = 0;
                 }
             } else if (!this.apDisconnectedBySidestick && !this.apWarningCanceled) {
@@ -554,9 +540,6 @@ class A32NX_FWC {
                     this.apWarningCanceled = true;
 
                     // If there is a Prioirty Warning, DO NOT STOP WAWRNING
-                    if (!this.warningPriority) {
-                        SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
-                    }
                 }
             }
         }
@@ -566,6 +549,8 @@ class A32NX_FWC {
         const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
         const isLandingGearLockedDown = SimVar.GetSimVarValue("GEAR POSITION:0", "Enum") > 0.9;
         if (!isLandingGearLockedDown && radioHeight < 750 && !(this.flightPhase === 3 || this.flightPhase === 4 || this.flightPhase === 5)) {
+            SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
+
             // Condition 1. Both Engine N1 RPM lower than 75%
             const eng1N1 = SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent");
             const eng2N1 = SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent");
@@ -595,7 +580,7 @@ class A32NX_FWC {
                 SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", true);
                 return;
             }
-            SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
         }
+        SimVar.SetSimVarValue("L:A32NX_LDG_NOT_DOWN", "Bool", false);
     }
 }
