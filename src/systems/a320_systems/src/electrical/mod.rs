@@ -9,8 +9,9 @@ use self::{
 };
 use systems::{
     electrical::{
-        consumption::SuppliedPower, ElectricalSystem, EngineGeneratorUpdateArguments,
-        ExternalPowerSource, Potential, StaticInverter, TransformerRectifier,
+        consumption::SuppliedPower, ElectricalSystem, EmergencyElec, EmergencyGenerator,
+        EngineGeneratorUpdateArguments, ExternalPowerSource, Potential, StaticInverter,
+        TransformerRectifier,
     },
     overhead::{
         AutoOffFaultPushButton, FaultIndication, FaultReleasePushButton, MomentaryPushButton,
@@ -98,6 +99,8 @@ pub(super) struct A320Electrical {
     direct_current: A320DirectCurrentElectrical,
     main_galley: MainGalley,
     secondary_galley: SecondaryGalley,
+    emergency_elec: EmergencyElec,
+    emergency_gen: EmergencyGenerator,
 }
 impl A320Electrical {
     pub fn new() -> A320Electrical {
@@ -106,6 +109,8 @@ impl A320Electrical {
             direct_current: A320DirectCurrentElectrical::new(),
             main_galley: MainGalley::new(),
             secondary_galley: SecondaryGalley::new(),
+            emergency_elec: EmergencyElec::new(),
+            emergency_gen: EmergencyGenerator::new(),
         }
     }
 
@@ -117,18 +122,41 @@ impl A320Electrical {
         emergency_overhead: &A320EmergencyElectricalOverheadPanel,
         arguments: &mut A320ElectricalUpdateArguments<'a>,
     ) {
+        self.alternating_current.update_main_power_sources(
+            context,
+            ext_pwr,
+            overhead,
+            emergency_overhead,
+            arguments,
+        );
+
+        self.emergency_elec
+            .update(context, &self.alternating_current);
+
+        if (self.emergency_elec.is_active()) || emergency_overhead.rat_and_emer_gen_man_on() {
+            self.emergency_gen.start();
+        }
+
+        self.emergency_gen
+            .update(context, arguments.is_blue_hydraulic_circuit_pressurised());
+
         self.alternating_current
-            .update(context, ext_pwr, overhead, emergency_overhead, arguments);
+            .update(context, ext_pwr, overhead, &self.emergency_gen);
 
         self.direct_current.update_with_alternating_current_state(
             context,
             overhead,
             &self.alternating_current,
+            &self.emergency_elec,
+            &self.emergency_gen,
             arguments,
         );
 
-        self.alternating_current
-            .update_with_direct_current_state(context, &self.direct_current);
+        self.alternating_current.update_after_direct_current(
+            context,
+            &self.emergency_gen,
+            &self.direct_current,
+        );
 
         self.main_galley
             .update(context, &self.alternating_current, overhead);
@@ -172,7 +200,7 @@ impl A320Electrical {
 
     #[cfg(test)]
     fn attempt_emergency_gen_start(&mut self) {
-        self.alternating_current.attempt_emergency_gen_start();
+        self.emergency_gen.start();
     }
 
     #[cfg(test)]
@@ -232,6 +260,8 @@ impl SimulationElement for A320Electrical {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.alternating_current.accept(visitor);
         self.direct_current.accept(visitor);
+        self.emergency_gen.accept(visitor);
+
         visitor.visit(self);
     }
 
@@ -248,8 +278,6 @@ trait AlternatingCurrentState {
     fn ac_bus_1_and_2_unpowered(&self) -> bool;
     fn ac_bus_2_powered(&self) -> bool;
     fn tr_1_and_2_available(&self) -> bool;
-    fn ac_1_and_2_and_emergency_gen_unpowered(&self) -> bool;
-    fn emergency_generator_available(&self) -> bool;
     fn tr_1(&self) -> &TransformerRectifier;
     fn tr_2(&self) -> &TransformerRectifier;
     fn tr_ess(&self) -> &TransformerRectifier;
@@ -2249,7 +2277,7 @@ mod a320_electrical_circuit_tests {
                         self.overhead.idg_2_push_button_released(),
                     ],
                     &mut self.apu,
-                    true,
+                    context.indicated_airspeed() > Velocity::new::<knot>(100.),
                     self.apu_master_sw_pb_on,
                     self.apu_start_pb_on,
                     true,
