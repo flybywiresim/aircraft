@@ -87,7 +87,7 @@ export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManage
             <path id="AltTapeOutline" className="NormalStroke White" d="m117.75 123.56h17.83m-4.7345-85.473v85.473m-13.096-85.473h17.83" />
             <LinearDeviationIndicator alt={altitude} linearDeviation={NaN} />
             <SelectedAltIndicator currentAlt={altitude} targetAlt={targetAlt} altIsManaged={altIsManaged} mode={mode} />
-            <AltimeterIndicator mode={mode} />
+            <AltimeterIndicator mode={mode} currentAlt={altitude} />
             <MetricAltIndicator altitude={altitude} MDA={MDA} targetAlt={targetAlt} altIsManaged={altIsManaged} />
             <path id="AltReadoutBackground" className="BlackFill" d="m130.85 85.308h-13.13v-8.9706h13.13v-2.671h8.8647v14.313h-8.8647z" />
             <RadioAltIndicator radioAlt={radioAlt} />
@@ -162,7 +162,50 @@ const LinearDeviationIndicator = ({ linearDeviation, alt }) => {
     );
 };
 
-const AltimeterIndicator = ({ mode }) => {
+function shouldAltimeterFlashing(mode, currentAlt) {
+    if (Simplane.getIsGrounded()) {
+        return false;
+    }
+
+    const phase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
+    const transitionAltitudeSimVarName = phase <= 3 ? 'L:AIRLINER_TRANS_ALT' : 'L:AIRLINER_APPR_TRANS_ALT';
+
+    const transitionAltitude = getSimVar(transitionAltitudeSimVarName, 'Number');
+
+    return transitionAltitude
+        && ((transitionAltitude <= currentAlt && mode !== 'STD') || (transitionAltitude >= currentAlt && mode === 'STD'));
+}
+
+const AltimeterIndicator = ({ mode, currentAlt }) => {
+    const units = Simplane.getPressureSelectedUnits();
+    const pressure = Simplane.getPressureValue(units);
+
+    let text;
+    if (units === 'millibar') {
+        text = Math.round(pressure).toString();
+    } else {
+        text = pressure.toFixed(2);
+    }
+
+    if (shouldAltimeterFlashing(mode, currentAlt)) {
+        if (mode === 'STD') {
+            return (
+                <g id="STDAltimeterModeGroup">
+                    <path className="NormalStroke Yellow BlinkInfinite" d="m124.79 131.74h13.096v7.0556h-13.096z" />
+                    <text className="FontMedium Cyan AlignLeft BlinkInfinite" x="125.99706" y="137.20053">STD</text>
+                </g>
+            );
+        }
+        return (
+            <g id="AltimeterGroup">
+                {mode === 'QFE'
+                && <path className="NormalStroke White BlinkInfinite" d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z" />}
+                <text id="AltimeterModeText" className="FontMedium White BlinkInfinite" x="118.29047" y="138.03368">{mode}</text>
+                <text id="AltimeterSettingText" className="FontMedium MiddleAlign Cyan BlinkInfinite" x="140.86115" y="138.03368">{text}</text>
+            </g>
+        );
+    }
+
     if (mode === 'STD') {
         return (
             <g id="STDAltimeterModeGroup">
@@ -170,15 +213,6 @@ const AltimeterIndicator = ({ mode }) => {
                 <text className="FontMedium Cyan AlignLeft" x="125.99706" y="137.20053">STD</text>
             </g>
         );
-    }
-
-    const units = Simplane.getPressureSelectedUnits();
-    const pressure = Simplane.getPressureValue(units);
-    let text;
-    if (units === 'millibar') {
-        text = Math.round(pressure).toString();
-    } else {
-        text = pressure.toFixed(2);
     }
 
     return (
