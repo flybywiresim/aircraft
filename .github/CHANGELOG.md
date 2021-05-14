@@ -68,6 +68,7 @@
 1. [FBW] Elevator trim wheels no longer move when stop is reached - @aguther (Andreas Guther)
 1. [AP] Improved V/S and FPA speed protection mode - @aguther (Andreas Guther)
 1. [MISC] Seatbelt sign state can be toggled via external events - @Saschl (saschl#9432)
+1. [MISC] Standby instrument brightness buttons can now be held down rather than pressed to -/+ brightness - @2hwk (2Cas#1022)
 1. [PFD] Add QNH Flashing - @Kimbyeongjang (김병장#7165)
 
 ## 0.6.0
