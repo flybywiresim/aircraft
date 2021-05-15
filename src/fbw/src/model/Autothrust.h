@@ -24,6 +24,7 @@ class AutothrustModelClass {
     real_T pY;
     real_T pU;
     real_T eventTime;
+    real_T eventTime_h;
     real_T eventTime_f;
     athr_mode pMode;
     athr_status pStatus;
@@ -46,8 +47,9 @@ class AutothrustModelClass {
     boolean_T pUseAutoThrustControl;
     boolean_T pY_not_empty;
     boolean_T pU_not_empty;
-    boolean_T latch;
     boolean_T eventTime_not_empty;
+    boolean_T latch;
+    boolean_T eventTime_not_empty_i;
     boolean_T eventTime_not_empty_g;
     rtDW_RateLimiter_Autothrust_T sf_RateLimiter_p;
     rtDW_RateLimiter_Autothrust_T sf_RateLimiter_f;
@@ -69,7 +71,6 @@ class AutothrustModelClass {
     real_T ScheduledGain2_BreakpointsForDimension1[2];
     real_T ScheduledGain1_BreakpointsForDimension1[2];
     real_T ScheduledGain_BreakpointsForDimension1[2];
-    real_T ScheduledGain3_BreakpointsForDimension1[4];
     real_T ScheduledGain4_BreakpointsForDimension1[2];
     real_T LagFilter_C1;
     real_T DiscreteDerivativeVariableTs_Gain;
@@ -95,7 +96,6 @@ class AutothrustModelClass {
     real_T ScheduledGain2_Table[2];
     real_T ScheduledGain1_Table[2];
     real_T ScheduledGain_Table[2];
-    real_T ScheduledGain3_Table[4];
     real_T ScheduledGain4_Table[2];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T DiscreteTimeIntegratorVariableTs1_UpperLimit;

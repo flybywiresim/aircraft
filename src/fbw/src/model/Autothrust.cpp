@@ -315,18 +315,18 @@ void AutothrustModelClass::step()
   rtb_Switch_m = look2_binlxpw(Autothrust_U.in.data.TAT_degC, Autothrust_U.in.data.H_ft,
     Autothrust_P.MaximumTakeOff_bp01Data, Autothrust_P.MaximumTakeOff_bp02Data, Autothrust_P.MaximumTakeOff_tableData,
     Autothrust_P.MaximumTakeOff_maxIndex, 36U) + rtb_Switch_dx;
-  if (!Autothrust_DWork.eventTime_not_empty) {
-    Autothrust_DWork.eventTime = Autothrust_U.in.time.simulation_time;
-    Autothrust_DWork.eventTime_not_empty = true;
+  if (!Autothrust_DWork.eventTime_not_empty_i) {
+    Autothrust_DWork.eventTime_h = Autothrust_U.in.time.simulation_time;
+    Autothrust_DWork.eventTime_not_empty_i = true;
   }
 
   rtb_NOT = !Autothrust_U.in.input.ATHR_disconnect;
-  if (rtb_NOT || (Autothrust_DWork.eventTime == 0.0)) {
-    Autothrust_DWork.eventTime = Autothrust_U.in.time.simulation_time;
+  if (rtb_NOT || (Autothrust_DWork.eventTime_h == 0.0)) {
+    Autothrust_DWork.eventTime_h = Autothrust_U.in.time.simulation_time;
   }
 
   Autothrust_DWork.Memory_PreviousInput = Autothrust_P.Logic_table[(((static_cast<uint32_T>
-    (Autothrust_U.in.time.simulation_time - Autothrust_DWork.eventTime >= Autothrust_P.CompareToConstant_const_k) << 1)
+    (Autothrust_U.in.time.simulation_time - Autothrust_DWork.eventTime_h >= Autothrust_P.CompareToConstant_const_k) << 1)
     + false) << 1) + Autothrust_DWork.Memory_PreviousInput];
   if (!Autothrust_DWork.eventTime_not_empty_g) {
     Autothrust_DWork.eventTime_f = Autothrust_U.in.time.simulation_time;
@@ -657,28 +657,59 @@ void AutothrustModelClass::step()
   Autothrust_DWork.pY = (2.0 - rtb_Switch_f_idx_0) / (rtb_Switch_f_idx_0 + 2.0) * Autothrust_DWork.pY + (rtb_y_i * ca +
     Autothrust_DWork.pU * ca);
   Autothrust_DWork.pU = rtb_y_i;
-  if (Autothrust_U.in.input.mode_requested > Autothrust_P.Saturation_UpperSat_l) {
-    rtb_y_i = Autothrust_P.Saturation_UpperSat_l;
-  } else if (Autothrust_U.in.input.mode_requested < Autothrust_P.Saturation_LowerSat_i) {
-    rtb_y_i = Autothrust_P.Saturation_LowerSat_i;
-  } else {
-    rtb_y_i = Autothrust_U.in.input.mode_requested;
+  if (!Autothrust_DWork.eventTime_not_empty) {
+    Autothrust_DWork.eventTime = Autothrust_U.in.time.simulation_time;
+    Autothrust_DWork.eventTime_not_empty = true;
   }
 
-  switch (static_cast<int32_T>(rtb_y_i)) {
+  rtb_y_i = std::abs(rtb_y_jh);
+  if (rtb_y_i > 5.0) {
+    Autothrust_DWork.eventTime = Autothrust_U.in.time.simulation_time;
+  } else {
+    if (Autothrust_DWork.eventTime == 0.0) {
+      Autothrust_DWork.eventTime = Autothrust_U.in.time.simulation_time;
+    }
+  }
+
+  if (Autothrust_U.in.input.mode_requested > Autothrust_P.Saturation_UpperSat_l) {
+    rtb_Switch_f_idx_0 = Autothrust_P.Saturation_UpperSat_l;
+  } else if (Autothrust_U.in.input.mode_requested < Autothrust_P.Saturation_LowerSat_i) {
+    rtb_Switch_f_idx_0 = Autothrust_P.Saturation_LowerSat_i;
+  } else {
+    rtb_Switch_f_idx_0 = Autothrust_U.in.input.mode_requested;
+  }
+
+  switch (static_cast<int32_T>(rtb_Switch_f_idx_0)) {
    case 0:
     rtb_Switch_dx = Autothrust_P.Constant1_Value;
     break;
 
    case 1:
-    rtb_Switch_dx = ((Autothrust_DWork.pY * look1_binlxpw(static_cast<real_T>
+    if (10.0 < rtb_y_i) {
+      rtb_y_i = 10.0;
+    }
+
+    rtb_Switch_f_idx_0 = Autothrust_U.in.time.simulation_time - Autothrust_DWork.eventTime;
+    if (0.0 > rtb_Switch_f_idx_0) {
+      rtb_Switch_f_idx_0 = 0.0;
+    }
+
+    if (1.0 > rtb_y_i) {
+      rtb_y_i = 1.0;
+    }
+
+    if (15.0 < rtb_Switch_f_idx_0) {
+      rtb_Switch_f_idx_0 = 15.0;
+    }
+
+    rtb_Switch_dx = ((1.0 - (rtb_y_i - 1.0) * 0.1111111111111111) * 0.5 * (0.066666666666666666 * rtb_Switch_f_idx_0) *
+                     rtb_y_jh + (Autothrust_DWork.pY * look1_binlxpw(static_cast<real_T>
       (Autothrust_U.in.input.is_approach_mode_active), Autothrust_P.ScheduledGain1_BreakpointsForDimension1,
       Autothrust_P.ScheduledGain1_Table, 1U) + rtb_Switch_dx * look1_binlxpw(static_cast<real_T>
       (Autothrust_U.in.input.is_approach_mode_active), Autothrust_P.ScheduledGain_BreakpointsForDimension1,
-      Autothrust_P.ScheduledGain_Table, 1U)) + rtb_y_jh * look1_binlxpw(std::abs(rtb_y_jh),
-      Autothrust_P.ScheduledGain3_BreakpointsForDimension1, Autothrust_P.ScheduledGain3_Table, 3U)) * look1_binlxpw(
-      static_cast<real_T>(Autothrust_U.in.input.is_alt_soft_mode_active),
-      Autothrust_P.ScheduledGain4_BreakpointsForDimension1, Autothrust_P.ScheduledGain4_Table, 1U);
+      Autothrust_P.ScheduledGain_Table, 1U))) * look1_binlxpw(static_cast<real_T>
+      (Autothrust_U.in.input.is_alt_soft_mode_active), Autothrust_P.ScheduledGain4_BreakpointsForDimension1,
+      Autothrust_P.ScheduledGain4_Table, 1U);
     break;
 
    case 2:
@@ -735,18 +766,18 @@ void AutothrustModelClass::step()
     Autothrust_DWork.Delay_DSTATE_j = Autothrust_DWork.Delay_DSTATE_k;
   }
 
-  rtb_Switch_dx = Autothrust_DWork.Delay_DSTATE_k - Autothrust_DWork.Delay_DSTATE_j;
-  rtb_Switch_m = Autothrust_P.Constant2_Value * Autothrust_U.in.time.dt;
-  if (rtb_Switch_dx < rtb_Switch_m) {
-    rtb_Switch_m = rtb_Switch_dx;
+  rtb_Switch_m = Autothrust_DWork.Delay_DSTATE_k - Autothrust_DWork.Delay_DSTATE_j;
+  rtb_y_i = Autothrust_P.Constant2_Value * Autothrust_U.in.time.dt;
+  if (rtb_Switch_m < rtb_y_i) {
+    rtb_y_i = rtb_Switch_m;
   }
 
-  rtb_Switch_dx = Autothrust_U.in.time.dt * Autothrust_P.Constant3_Value;
-  if (rtb_Switch_m > rtb_Switch_dx) {
-    rtb_Switch_dx = rtb_Switch_m;
+  rtb_Switch_f_idx_0 = Autothrust_U.in.time.dt * Autothrust_P.Constant3_Value;
+  if (rtb_y_i > rtb_Switch_f_idx_0) {
+    rtb_Switch_f_idx_0 = rtb_y_i;
   }
 
-  Autothrust_DWork.Delay_DSTATE_j += rtb_Switch_dx;
+  Autothrust_DWork.Delay_DSTATE_j += rtb_Switch_f_idx_0;
   if (Autothrust_DWork.pUseAutoThrustControl) {
     if ((Autothrust_DWork.pMode == Autothrust_P.CompareToConstant2_const_h) || (Autothrust_DWork.pMode ==
          Autothrust_P.CompareToConstant3_const)) {
