@@ -90,7 +90,7 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
 
             <Update Frequency = "10">
-                (#TOGGLE_VAR#) if#{
+                (#TOGGLE_VAR#) if{
                     (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / + 1 min (&gt;O:_ButtonAnimVar)
                 } els{
                     (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / - (#TOGGLE_VAR#) max (&gt;O:_ButtonAnimVar)
