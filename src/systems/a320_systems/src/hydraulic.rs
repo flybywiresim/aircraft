@@ -869,7 +869,11 @@ impl PowerTransferUnitController for A320PowerTransferUnitController {
 }
 impl SimulationElement for A320PowerTransferUnitController {
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.parking_brake_lever_pos = state.read_bool("BRAKE PARKING INDICATOR");
+        self.parking_brake_lever_pos = state.read_bool("BRAKE PARKING POSITION");
+        // println!(
+        //     "PARKING BRAKE LEVER POS:{} in PTU",
+        //     self.parking_brake_lever_pos
+        // );
         self.eng_1_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:1");
         self.eng_2_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:2");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
@@ -1088,15 +1092,17 @@ impl A320HydraulicBrakingLogic {
 
 impl SimulationElement for A320HydraulicBrakingLogic {
     fn read(&mut self, state: &mut SimulatorReader) {
-        self.parking_brake_demand = state.read_bool("BRAKE PARKING INDICATOR");
+        self.parking_brake_demand = state.read_bool("BRAKE PARKING POSITION");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
         self.is_gear_lever_down = state.read_bool("GEAR HANDLE POSITION");
         self.anti_skid_activated = state.read_bool("ANTISKID BRAKES ACTIVE");
         self.left_brake_pilot_input = state.read_f64("BRAKE LEFT POSITION");
         self.right_brake_pilot_input = state.read_f64("BRAKE RIGHT POSITION");
         self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
-        let demand = state.read_f64("BRAKE PARKING INDICATOR");
-        println!("park demand in hydraulics:{}", demand);
+        // println!(
+        //     "park demand in hydraulics BRAKES{}",
+        //     self.parking_brake_demand
+        // );
         // println!(
         //     "HYD: brake inputs from sim= L({}) R({})",
         //     self.left_brake_pilot_input * 100.,
@@ -1108,6 +1114,7 @@ impl SimulationElement for A320HydraulicBrakingLogic {
 struct A320BrakingForceSimulationOutput {
     left_brake_force: f64,
     right_brake_force: f64,
+    park_brake_lever_is_set: bool,
     ground_surface_type: f64,
 }
 impl A320BrakingForceSimulationOutput {
@@ -1115,6 +1122,7 @@ impl A320BrakingForceSimulationOutput {
         A320BrakingForceSimulationOutput {
             left_brake_force: 0.,
             right_brake_force: 0.,
+            park_brake_lever_is_set: true,
             ground_surface_type: 4.,
         }
     }
@@ -1136,11 +1144,14 @@ impl SimulationElement for A320BrakingForceSimulationOutput {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_f64("BRAKE LEFT POSITION", self.left_brake_force * 100.);
         writer.write_f64("BRAKE RIGHT POSITION", self.right_brake_force * 100.);
+        writer.write_bool("PARK_BRAKE_LEVER_POS", self.park_brake_lever_is_set);
+        //println!("A320BrakingForceSimulationOutput WRITE: PARK_BRAKE_LEVER_POS {}",self.park_brake_lever_is_set);
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {
         self.ground_surface_type = state.read_f64("SURFACE TYPE");
-        //println!("Current surface: {}", self.ground_surface_type);
+        self.park_brake_lever_is_set = state.read_bool("BRAKE PARKING POSITION");
+        //println!("A320BrakingForceSimulationOutput READ: PARK_BRAKE_LEVER_POS {}",self.park_brake_lever_is_set);
     }
 }
 

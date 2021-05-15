@@ -348,6 +348,7 @@ impl SimulatorReaderWriter for TestReaderWriter {
     fn get_brake_output_right(&mut self) -> u32 {
         0
     }
+    fn receive_a_park_brake_event(&mut self) {}
 }
 impl Default for TestReaderWriter {
     fn default() -> Self {

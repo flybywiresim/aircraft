@@ -27,6 +27,8 @@ struct BrakeInput {
 
     brake_left_output_to_sim: f64,
     brake_right_output_to_sim: f64,
+
+    parking_brake_lever_is_set: bool,
 }
 impl BrakeInput {
     const MIN_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = -16384.;
@@ -42,6 +44,7 @@ impl BrakeInput {
             brake_right_sim_input: 0.,
             brake_left_output_to_sim: 0.,
             brake_right_output_to_sim: 0.,
+            parking_brake_lever_is_set: true,
         }
     }
 
@@ -87,6 +90,14 @@ impl BrakeInput {
         self.brake_left_output_to_sim = brake_force_factor;
     }
 
+    pub fn receive_a_park_brake_event(&mut self) {
+        self.parking_brake_lever_is_set = !self.parking_brake_lever_is_set;
+        // println!(
+        //     "receive_a_park_brake_event!!, Park brake input set to {}",
+        //     self.parking_brake_lever_is_set
+        // );
+    }
+
     pub fn get_brake_right_output_converted_in_simconnect_format(&mut self) -> u32 {
         let back_to_position_format = ((self.brake_right_output_to_sim / 100.)
             * Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT)
@@ -114,6 +125,14 @@ impl BrakeInput {
         // );
         to_u32
     }
+
+    pub fn is_park_brake_set(&self) -> f64 {
+        if self.parking_brake_lever_is_set {
+            1.
+        } else {
+            0.
+        }
+    }
 }
 
 #[msfs::gauge(name=systems)]
@@ -122,7 +141,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
     let mut sim = gauge.open_simconnect("systems")?;
     let id_brake_left = sim.map_client_event_to_sim_event("AXIS_LEFT_BRAKE_SET", true)?;
     let id_brake_right = sim.map_client_event_to_sim_event("AXIS_RIGHT_BRAKE_SET", true)?;
-    let id_parking_brake = sim.map_client_event_to_sim_event("PARKING_BRAKES", false)?;
+    let id_parking_brake = sim.map_client_event_to_sim_event("PARKING_BRAKES", true)?;
 
     let mut reader_writer = A320SimulatorReaderWriter::new()?;
     let mut a320 = A320::new();
@@ -143,8 +162,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
                         //println!("raw right val received= ({:X})", e.data());
                     }
                     if e.id() == id_parking_brake {
-                        //simulation.update_brake_input_right(e.data());
-                        println!("park brake received= ({})", e.data());
+                        simulation.receive_a_park_brake_event();
+                        //println!("park brake event received!!!");
                     }
                 }
                 _ => {}
@@ -187,7 +206,6 @@ struct A320SimulatorReaderWriter {
     fuel_tank_left_main_quantity: AircraftVariable,
     sim_on_ground: AircraftVariable,
     unlimited_fuel: AircraftVariable,
-    parking_brake_demand: AircraftVariable,
     master_eng_1: AircraftVariable,
     master_eng_2: AircraftVariable,
     cargo_door_front_pos: AircraftVariable,
@@ -236,7 +254,6 @@ impl A320SimulatorReaderWriter {
             )?,
             sim_on_ground: AircraftVariable::from("SIM ON GROUND", "Bool", 0)?,
             unlimited_fuel: AircraftVariable::from("UNLIMITED FUEL", "Bool", 0)?,
-            parking_brake_demand: AircraftVariable::from("BRAKE PARKING INDICATOR", "Bool", 0)?,
             master_eng_1: AircraftVariable::from("GENERAL ENG STARTER ACTIVE", "Bool", 1)?,
             master_eng_2: AircraftVariable::from("GENERAL ENG STARTER ACTIVE", "Bool", 2)?,
             cargo_door_front_pos: AircraftVariable::from("EXIT OPEN", "Percent", 5)?,
@@ -278,7 +295,7 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
             "SIM ON GROUND" => self.sim_on_ground.get(),
             "GENERAL ENG STARTER ACTIVE:1" => self.master_eng_1.get(),
             "GENERAL ENG STARTER ACTIVE:2" => self.master_eng_2.get(),
-            "BRAKE PARKING INDICATOR" => self.parking_brake_demand.get(),
+            "BRAKE PARKING POSITION" => self.masked_brake_input.is_park_brake_set(),
             "EXIT OPEN:5" => self.cargo_door_front_pos.get(),
             "EXIT OPEN:3" => self.cargo_door_back_pos.get(),
             "PUSHBACK ANGLE" => self.pushback_angle.get(),
@@ -324,6 +341,9 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
     fn get_brake_output_right(&mut self) -> u32 {
         self.masked_brake_input
             .get_brake_right_output_converted_in_simconnect_format()
+    }
+    fn receive_a_park_brake_event(&mut self) {
+        self.masked_brake_input.receive_a_park_brake_event();
     }
 }
 
