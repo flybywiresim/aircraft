@@ -54,6 +54,7 @@
             -->
 
             <SEQ1_CODE>(L:A32NX_ADIRS_#ID#_FAULT, Bool)</SEQ1_CODE>
+            <TOGGLE_SIMVAR />
 
             <DUMMY_BUTTON/>
         </UseTemplate>

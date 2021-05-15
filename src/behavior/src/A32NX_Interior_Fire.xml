@@ -71,6 +71,7 @@
                     1 (&gt;#TOGGLE_VAR#) #LEFT_SINGLE_CODE#
                     }
                 </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
             </UseTemplate>
         </Component>
     </Template>
@@ -115,6 +116,7 @@
                         (#TOGGLE_VAR#) ! (&gt;#TOGGLE_VAR#)
                     } #LEFT_SINGLE_CODE#
                 </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
             </UseTemplate>
         </Component>
     </Template>

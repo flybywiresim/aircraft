@@ -777,6 +777,7 @@
         <UseTemplate Name="FBW_Push_Toggle">
             <SEQ1_CODE>0</SEQ1_CODE>
             <SEQ2_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position) 2 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_CODE>
+            <TOGGLE_SIMVAR />
             <DUMMY_BUTTON/>
         </UseTemplate>
     </Template>
@@ -1139,7 +1140,7 @@
                 <ANIM_NAME>#NODE_ID#</ANIM_NAME>
                 <PART_ID>#NODE_ID#</PART_ID>
                 <LEFT_SINGLE_CODE>0 (&gt;H:A320_Neo_SAI_BTN_#BTN_ID#)</LEFT_SINGLE_CODE>
-                <LEFT_LEAVE_CODE>1 (&gt;H:A320_Neo_SAI_BTN_#BTN_ID#) </LEFT_LEAVE_CODE>
+                <LEFT_LEAVE_CODE>1 (&gt;H:A320_Neo_SAI_BTN_#BTN_ID#)</LEFT_LEAVE_CODE>
                 <WWISE_EVENT_1>autopilot_push_button_on</WWISE_EVENT_1>
                 <WWISE_EVENT_2>autopilot_push_button_off</WWISE_EVENT_2>
                 <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>

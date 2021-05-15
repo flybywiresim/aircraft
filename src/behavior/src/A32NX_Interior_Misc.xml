@@ -581,6 +581,7 @@
         <Component ID="#CLICKZONE_NODE_ID#" Node="#CLICKZONE_NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>(L:XMLVAR_#NODE_ID#_HIDDEN) ! (&gt;L:XMLVAR_#NODE_ID#_HIDDEN)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
             </UseTemplate>
         </Component>
     </Template>
