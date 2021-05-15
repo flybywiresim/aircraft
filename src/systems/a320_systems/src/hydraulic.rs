@@ -1095,23 +1095,27 @@ impl SimulationElement for A320HydraulicBrakingLogic {
         self.left_brake_pilot_input = state.read_f64("BRAKE LEFT POSITION");
         self.right_brake_pilot_input = state.read_f64("BRAKE RIGHT POSITION");
         self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
-        println!(
-            "HYD: brake inputs from sim= L({}) R({})",
-            self.left_brake_pilot_input * 100.,
-            self.right_brake_pilot_input * 100.
-        )
+        let demand = state.read_f64("BRAKE PARKING INDICATOR");
+        println!("park demand in hydraulics:{}", demand);
+        // println!(
+        //     "HYD: brake inputs from sim= L({}) R({})",
+        //     self.left_brake_pilot_input * 100.,
+        //     self.right_brake_pilot_input * 100.
+        // )
     }
 }
 
 struct A320BrakingForceSimulationOutput {
     left_brake_force: f64,
     right_brake_force: f64,
+    ground_surface_type: f64,
 }
 impl A320BrakingForceSimulationOutput {
     pub fn new() -> Self {
         A320BrakingForceSimulationOutput {
             left_brake_force: 0.,
             right_brake_force: 0.,
+            ground_surface_type: 4.,
         }
     }
 
@@ -1132,11 +1136,11 @@ impl SimulationElement for A320BrakingForceSimulationOutput {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_f64("BRAKE LEFT POSITION", self.left_brake_force * 100.);
         writer.write_f64("BRAKE RIGHT POSITION", self.right_brake_force * 100.);
-        println!(
-            "HYD: brake output to sim= L({}) R({})",
-            self.left_brake_force * 100.,
-            self.right_brake_force * 100.
-        )
+    }
+
+    fn read(&mut self, state: &mut SimulatorReader) {
+        self.ground_surface_type = state.read_f64("SURFACE TYPE");
+        //println!("Current surface: {}", self.ground_surface_type);
     }
 }
 

@@ -78,12 +78,12 @@ impl BrakeInput {
     }
 
     pub fn set_brake_right_output(&mut self, brake_force_factor: f64) {
-        println!("set_brake_right_output({})", brake_force_factor);
+        //println!("set_brake_right_output({})", brake_force_factor);
         self.brake_right_output_to_sim = brake_force_factor;
     }
 
     pub fn set_brake_left_output(&mut self, brake_force_factor: f64) {
-        println!("set_brake_left_output({})", brake_force_factor);
+        //println!("set_brake_left_output({})", brake_force_factor);
         self.brake_left_output_to_sim = brake_force_factor;
     }
 
@@ -94,10 +94,10 @@ impl BrakeInput {
         let to_i32 = back_to_position_format as i32;
         let to_u32 = to_i32 as u32;
 
-        println!(
-            "get_brake_right_output_...({} -> {})",
-            self.brake_right_output_to_sim, to_u32
-        );
+        // println!(
+        //     "get_brake_right_output_...({} -> {})",
+        //     self.brake_right_output_to_sim, to_u32
+        //);
         to_u32
     }
 
@@ -108,10 +108,10 @@ impl BrakeInput {
         let to_i32 = back_to_position_format as i32;
         let to_u32 = to_i32 as u32;
 
-        println!(
-            "get_brake_left_output_...({} -> {})",
-            self.brake_left_output_to_sim, to_u32
-        );
+        // println!(
+        //     "get_brake_left_output_...({} -> {})",
+        //     self.brake_left_output_to_sim, to_u32
+        // );
         to_u32
     }
 }
@@ -122,6 +122,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
     let mut sim = gauge.open_simconnect("systems")?;
     let id_brake_left = sim.map_client_event_to_sim_event("AXIS_LEFT_BRAKE_SET", true)?;
     let id_brake_right = sim.map_client_event_to_sim_event("AXIS_RIGHT_BRAKE_SET", true)?;
+    let id_parking_brake = sim.map_client_event_to_sim_event("PARKING_BRAKES", false)?;
 
     let mut reader_writer = A320SimulatorReaderWriter::new()?;
     let mut a320 = A320::new();
@@ -135,11 +136,15 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
                 SimConnectRecv::Event(e) => {
                     if e.id() == id_brake_left {
                         simulation.update_brake_input_left(e.data());
-                        println!("raw left val received= ({:X})", e.data());
+                        //println!("raw left val received= ({:X})", e.data());
                     }
                     if e.id() == id_brake_right {
                         simulation.update_brake_input_right(e.data());
-                        println!("raw right val received= ({:X})", e.data());
+                        //println!("raw right val received= ({:X})", e.data());
+                    }
+                    if e.id() == id_parking_brake {
+                        //simulation.update_brake_input_right(e.data());
+                        println!("park brake received= ({})", e.data());
                     }
                 }
                 _ => {}
@@ -158,13 +163,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
             id_brake_right,
             simulation.get_brake_output_right(),
         )?;
-
-        // sim.set_data_on_sim_object(
-        //     SIMCONNECT_OBJECT_ID_USER,
-        //     &InputOutputBrakeRight {
-        //         brake_right: simulation.get_brake_output_right(),
-        //     },
-        // )?;
     }
 
     Ok(())
@@ -198,6 +196,7 @@ struct A320SimulatorReaderWriter {
     pushback_state: AircraftVariable,
     anti_skid_activated: AircraftVariable,
     longitudinal_accel: AircraftVariable,
+    surface_type: AircraftVariable,
     masked_brake_input: BrakeInput,
 }
 impl A320SimulatorReaderWriter {
@@ -253,6 +252,7 @@ impl A320SimulatorReaderWriter {
                 "feet per second squared",
                 0,
             )?,
+            surface_type: AircraftVariable::from("SURFACE TYPE", "Enum", 0)?,
             masked_brake_input: BrakeInput::new(),
         })
     }
@@ -287,6 +287,7 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
             "BRAKE LEFT POSITION" => self.masked_brake_input.brake_left(),
             "BRAKE RIGHT POSITION" => self.masked_brake_input.brake_right(),
             "ACCELERATION BODY Z" => self.longitudinal_accel.get(),
+            "SURFACE TYPE" => self.surface_type.get(),
             _ => {
                 lookup_named_variable(&mut self.dynamic_named_variables, "A32NX_", name).get_value()
             }
