@@ -1018,7 +1018,7 @@ class CDUPerformancePage {
     }
     static getSelectedTitleAndValue(_isPhaseActive, _isSelected, _preSel) {
         if (_isPhaseActive) {
-            return _isSelected ? ["SELECTED", "" + (Simplane.getAutoPilotMachModeActive() ? SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', Simplane.getAutoPilotMachHoldValue()) : Simplane.getAutoPilotAirspeedHoldValue())] : ["", ""];
+            return _isSelected ? ["SELECTED", "" + Math.round(Simplane.getAutoPilotMachModeActive() ? SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', Simplane.getAutoPilotMachHoldValue()) : Simplane.getAutoPilotAirspeedHoldValue())] : ["", ""];
         } else {
             return ["PRESEL", isFinite(_preSel) ? "" + _preSel : "*[ ]"];
         }
