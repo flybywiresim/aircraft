@@ -21,10 +21,6 @@
 .control-grid {
   grid-gap: 1rem;
 }
-
-.stop {
-  grid-column: 2 / 3;
-}
 button:active {
   @apply transform;
   @apply translate-y-1;

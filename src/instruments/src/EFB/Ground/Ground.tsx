@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import React, { useEffect, useState } from 'react';
-import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir } from '@tabler/icons';
+import { IconCornerDownLeft, IconCornerDownRight, IconArrowUp, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir } from '@tabler/icons';
 import './Ground.scss';
 import fuselage from '../Assets/320neo-outline-upright.svg';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
@@ -28,6 +28,7 @@ export const Ground = ({
 
     const [fuelingActive, setFuelingActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:9', 'Percent over 100', 'K:REQUEST_FUEL_KEY', 'bool', 1000);
     const [tugHeading, setTugHeading] = useSplitSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 'K:KEY_TUG_HEADING', 'UINT32', 1000);
+    const [tugSpeed, setTugSpeed] = useSplitSimVar('VELOCITY BODY Z', 'feet per second', 'K:KEY_TUG_SPEED', 'FLOAT64', 1000);
     const [pushBack, setPushBack] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 1000);
     const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 'K:REQUEST_POWER_SUPPLY', 'bool', 1000);
 
@@ -68,6 +69,10 @@ export const Ground = ({
         if (tugRequestOnly) {
             setTugRequestOnly(false);
         }
+
+        const directionSign = (direction > 90 && direction < 270) ? -1 : 1;
+        setTugSpeed(directionSign * Math.abs(tugSpeed));
+
         const tugHeading = getTugHeading(direction);
         // KEY_TUG_HEADING is an unsigned integer, so let's convert
         /* eslint no-bitwise: ["error", { "allow": ["&"] }] */
@@ -269,8 +274,18 @@ export const Ground = ({
                         <IconTir size="2.825rem" stroke="1.5" />
                     </Button>
                 </div>
-
-                <div className="stop">
+                <div>
+                    <h1 className="text-white font-medium text-xl text-center">Direction</h1>
+                    <Button
+                        id="up"
+                        type={BUTTON_TYPE.NONE}
+                        onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(180), e)}
+                        className={applySelected('w-32 up', 'up')}
+                    >
+                        <IconArrowUp size="2.825rem" stroke="1.5" />
+                    </Button>
+                </div>
+                <div>
                     <h1 className="text-white font-medium text-xl text-center">Pushback</h1>
                     <Button
                         id="stop"
