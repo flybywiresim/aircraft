@@ -167,7 +167,7 @@ class SvgWaypointElement extends SvgMapElement {
                 context.fillStyle = map.config.airportLabelColor;
             } else {
                 context.fillStyle = map.config.waypointLabelColor;
-			}
+            }
         } else {
             context.fillStyle = "white";
         }
