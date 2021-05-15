@@ -117,7 +117,7 @@ class SvgWaypointElement extends SvgMapElement {
         this._image.setAttribute("height", "100%");
         if (!isActiveWaypoint) {
             this._image.setAttributeNS("http://www.w3.org/1999/xlink", "href", map.config.imagesDir + this.imageFileName());
-		} else {
+        } else {
             this._image.setAttributeNS("http://www.w3.org/1999/xlink", "href", map.config.imagesDir + "ICON_MAP_INTERSECTION_ACTIVE.png");
         }
         this._lastIsActiveWaypoint = isActiveWaypoint;
@@ -145,7 +145,7 @@ class SvgWaypointElement extends SvgMapElement {
             canvas.setAttribute("height", (this._textHeight + map.config.waypointLabelBackgroundPaddingTop / map.overdrawFactor + map.config.waypointLabelBackgroundPaddingBottom / map.overdrawFactor).toFixed(0) + "px");
             this._label.appendChild(canvas);
             map.textLayer.appendChild(this._label);
-		} else {
+        } else {
             canvas = this._label.querySelector("canvas");
         }
         if (!canvas) {
@@ -159,16 +159,16 @@ class SvgWaypointElement extends SvgMapElement {
         if (!isActiveWaypoint) {
             if (this.source instanceof IntersectionInfo) {
                 context.fillStyle = map.config.intersectionLabelColor;
-			} else if (this.source instanceof VORInfo) {
+            } else if (this.source instanceof VORInfo) {
                 context.fillStyle = map.config.vorLabelColor;
-			} else if (this.source instanceof NDBInfo) {
+            } else if (this.source instanceof NDBInfo) {
                 context.fillStyle = map.config.ndbLabelColor;
-			} else if (this.source instanceof AirportInfo) {
+            } else if (this.source instanceof AirportInfo) {
                 context.fillStyle = map.config.airportLabelColor;
-			} else {
+            } else {
                 context.fillStyle = map.config.waypointLabelColor;
 			}
-		} else {
+        } else {
             context.fillStyle = "white";
         }
         context.font = fontSize + "px " + map.config.waypointLabelFontFamily;
@@ -177,9 +177,9 @@ class SvgWaypointElement extends SvgMapElement {
     updateDraw(map) {
         if (this.coordinates) {
             map.coordinatesToXYToRef(this.coordinates, this);
-		} else if (isFinite(this.source.latitudeFP) && isFinite(this.source.longitudeFP)) {
+        } else if (isFinite(this.source.latitudeFP) && isFinite(this.source.longitudeFP)) {
             map.coordinatesToXYToRef(new LatLongAlt(this.source.latitudeFP, this.source.longitudeFP), this);
-		} else {
+        } else {
             const pos = map.bearingDistanceToXY(this.bearing, this.distance);
             this.x = pos.x;
             this.y = pos.y;
@@ -191,7 +191,7 @@ class SvgWaypointElement extends SvgMapElement {
             if (this._image) {
                 if (!isActiveWaypoint) {
                     this._image.setAttributeNS("http://www.w3.org/1999/xlink", "href", map.config.imagesDir + this.imageFileName());
-				} else {
+                } else {
                     this._image.setAttributeNS("http://www.w3.org/1999/xlink", "href", map.config.imagesDir + "ICON_MAP_INTERSECTION_ACTIVE.png");
                 }
             }
@@ -202,7 +202,7 @@ class SvgWaypointElement extends SvgMapElement {
                 if (this.minimize) {
                     this._image.setAttribute("width", fastToFixed(map.config.waypointIconSize / map.overdrawFactor * 0.5, 0));
                     this._image.setAttribute("height", fastToFixed(map.config.waypointIconSize / map.overdrawFactor * 0.5, 0));
-				} else {
+                } else {
                     this._image.setAttribute("width", fastToFixed(map.config.waypointIconSize / map.overdrawFactor, 0));
                     this._image.setAttribute("height", fastToFixed(map.config.waypointIconSize / map.overdrawFactor, 0));
                 }
@@ -261,7 +261,7 @@ class SvgWaypointElement extends SvgMapElement {
                     this._label.setAttribute("x", textX + "");
                     this._label.setAttribute("y", textY + "");
                     this.needRepaint = false;
-				} else {
+                } else {
                     this.needRepaint = true;
                 }
             }
