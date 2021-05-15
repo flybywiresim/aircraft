@@ -153,7 +153,6 @@ class AutothrustModelClass {
     real_T Gain1_Gain;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
-    real_T Constant_Value;
     real_T uDLookupTable_tableData[4];
     real_T uDLookupTable_bp01Data[2];
     real_T uDLookupTable_bp02Data[2];
