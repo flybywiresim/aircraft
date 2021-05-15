@@ -500,10 +500,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     updateManagedSpeed() {
-        if (!this.isAirspeedManaged()) {
-            return;
-        }
-
         let vPfd = 0;
         let isMach = false;
 
@@ -628,6 +624,10 @@ class FMCMainDisplay extends BaseAirliners {
                 SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
             }
             this.managedSpeedTargetIsMach = isMach;
+        }
+
+        if (!this.isAirspeedManaged()) {
+            return;
         }
 
         // Overspeed protection
