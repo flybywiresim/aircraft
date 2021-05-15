@@ -17,6 +17,7 @@
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
             <SEQ1_POWERED>1</SEQ1_POWERED>
+            <NO_SEQ2 />
         </DefaultTemplateParameters>
 
         <Component ID="SWITCH_MP#DCDU_SIDE#_DIM" Node="SWITCH_MP#DCDU_SIDE#_DIM">
@@ -94,6 +95,7 @@
     <Template Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
         <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
             <HTML_EVENT_ID>INOP</HTML_EVENT_ID>
+            <NO_SEQ2 />
         </UseTemplate>
     </Template>
 

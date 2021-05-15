@@ -911,55 +911,46 @@
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_MS0MINUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_MS0PLUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_L1</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_L2</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_PRINT</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_POEMINUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_POEPLUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_R1</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_R2</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
                 </Component>
 
@@ -973,61 +964,51 @@
                     <UseTemplate Name="FBW_Airbus_DCDU_Brightness_Switch">
                         <DCDU_SIDE>R</DCDU_SIDE>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_MS0MINUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_MS0PLUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_L1</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_L2</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_PRINT</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_POEMINUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_POEPLUS</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_R1</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
 
                     <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_R2</NODE_ID>
                         <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <NO_SEQ2 />
                     </UseTemplate>
                 </Component>
 
