@@ -207,9 +207,10 @@
                         </False>
                     </Condition>
                 </True>
+            </Condition>
 
-                <!-- No custom code - assume usage of TOGGLE_SIMVAR -->
-                <False>
+            <Condition Check="TOGGLE_SIMVAR">
+                <True>
                     <LEFT_SINGLE_CODE>(#TOGGLE_SIMVAR#, Bool) ! (&gt;#TOGGLE_SIMVAR#)</LEFT_SINGLE_CODE>
                     <Condition Check="MOMENTARY">
                         <False>
@@ -230,7 +231,7 @@
                             </Condition>
                         </False>
                     </Condition>
-                </False>
+                </True>
             </Condition>
 
             <Condition Check="DISABLE_SEQ1">
