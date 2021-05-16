@@ -1173,6 +1173,11 @@ class FMCMainDisplay extends BaseAirliners {
         this._cruiseFlightLevel = _targetFl;
     }
 
+    /***
+     * Executed on every alt knob turn, checks whether or not the crz fl can be changed to the newly selected fcu altitude
+     * It creates a timeout to simulate real life delay which resets every time the fcu knob alt increases or decreases.
+     * @private
+     */
     _onTrySetCruiseFlightLevel() {
         if (!(this.currentFlightPhase === FmgcFlightPhases.CLIMB || this.currentFlightPhase === FmgcFlightPhases.CRUISE)) {
             return;
