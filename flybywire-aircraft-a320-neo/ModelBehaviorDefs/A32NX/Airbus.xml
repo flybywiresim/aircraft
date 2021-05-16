@@ -777,7 +777,6 @@
         <UseTemplate Name="FBW_Push_Toggle">
             <SEQ1_CODE>0</SEQ1_CODE>
             <SEQ2_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position) 2 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_CODE>
-            <TOGGLE_SIMVAR />
             <DUMMY_BUTTON/>
         </UseTemplate>
     </Template>

@@ -1747,7 +1747,6 @@
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                            <TOGGLE_SIMVAR />
                             <DUMMY_BUTTON/>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Push_Toggle">
@@ -1757,7 +1756,6 @@
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                            <TOGGLE_SIMVAR />
                             <DUMMY_BUTTON/>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Push_Toggle">
@@ -1767,7 +1765,6 @@
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                             <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                             <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                            <TOGGLE_SIMVAR />
                             <DUMMY_BUTTON/>
                         </UseTemplate>
 
@@ -1837,7 +1834,6 @@
                         <!-- RAT & EMER GEN -->
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_EMERELECPWR_RAT</NODE_ID>
-                            <TOGGLE_SIMVAR />
                             <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                             <SEQ1_CODE>(L:A32NX_OVHD_EMER_ELEC_RAT_AND_EMER_GEN_HAS_FAULT, Bool)</SEQ1_CODE>
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2232,7 +2228,6 @@
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_ENGN1MODE_1</NODE_ID>
                             <LOCK_NODE_ID>LOCK_OVHD_ENGN1MODE_1</LOCK_NODE_ID>
-                            <TOGGLE_SIMVAR />
                             <SEQ_POWERED>0</SEQ_POWERED>
                             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                             <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2244,7 +2239,6 @@
                         <!-- 2 SHOULD NOT BE USED; IS NOT IN REAL AIRCRAFT-->
                         <UseTemplate Name="FBW_Push_Toggle">
                             <NODE_ID>PUSH_OVHD_ENGN1MODE_2</NODE_ID>
-                            <TOGGLE_SIMVAR />
                             <LOCK_NODE_ID>LOCK_OVHD_ENGN1MODE_2</LOCK_NODE_ID>
                             <SEQ_POWERED>0</SEQ_POWERED>
                             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
@@ -3976,7 +3970,6 @@
                 <LEFT_SINGLE_CODE>(&gt;H:A32NX_CHRONO_RST)</LEFT_SINGLE_CODE>
                 <NO_SEQ1 />
                 <NO_SEQ2 />
-                <TOGGLE_SIMVAR />
             </UseTemplate>
 
             <UseTemplate Name="FBW_Push_Toggle">
@@ -3986,7 +3979,6 @@
                 <LEFT_SINGLE_CODE>(&gt;H:A32NX_CHRONO_TOGGLE)</LEFT_SINGLE_CODE>
                 <NO_SEQ1 />
                 <NO_SEQ2 />
-                <TOGGLE_SIMVAR />
             </UseTemplate>
 
             <UseTemplate Name="FBW_Push_Held">
