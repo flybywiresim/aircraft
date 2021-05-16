@@ -39,6 +39,7 @@
                     (L:A32NX_PAGES_PRINTED) 1 + (&gt;L:A32NX_PAGES_PRINTED)
                     0 (&gt;L:A32NX_PRINT_PAGE_OFFSET)
                 </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Visibility_Code">
                 <VISIBILITY_CODE>(#TOGGLE_VAR#)</VISIBILITY_CODE>
@@ -67,6 +68,7 @@
                 <LEFT_SINGLE_CODE>
                     (#PAGE_OFFSET_VAR#) #DIRECTION# + (&gt;#PAGE_OFFSET_VAR#)
                 </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Visibility_Code">
                 <VISIBILITY_CODE>
@@ -90,6 +92,7 @@
                 <LEFT_SINGLE_CODE>
                     1 (&gt;L:A32NX_DISCARD_PAGE)
                 </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Visibility_Code">
                 <VISIBILITY_CODE>
