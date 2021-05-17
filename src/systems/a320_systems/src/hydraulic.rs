@@ -1,7 +1,7 @@
 use std::time::Duration;
 use uom::si::{
     angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
-    ratio::percent, velocity::knot, volume::gallon,
+    ratio::percent, volume::gallon,
 };
 
 use systems::hydraulic::{
@@ -179,6 +179,7 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
         landing_gear: &LandingGear,
+        is_in_emergency_elec: bool,
     ) {
         let min_hyd_loop_timestep =
             Duration::from_millis(Self::HYDRAULIC_SIM_TIME_STEP_MILLISECONDS);
@@ -228,6 +229,7 @@ impl A320Hydraulic {
                     overhead_panel,
                     engine_fire_overhead,
                     landing_gear,
+                    is_in_emergency_elec,
                 );
             }
 
@@ -335,6 +337,7 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
         landing_gear: &LandingGear,
+        is_in_emergency_elec: bool,
     ) {
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.hyd_brake_logic.update_brake_demands(
@@ -430,7 +433,8 @@ impl A320Hydraulic {
             &self.yellow_electric_pump_controller,
         );
 
-        self.ram_air_turbine_controller.update(context);
+        self.ram_air_turbine_controller
+            .update(&overhead_panel, is_in_emergency_elec);
         self.ram_air_turbine
             .update(context, &self.blue_loop, &self.ram_air_turbine_controller);
 
@@ -948,26 +952,41 @@ impl SimulationElement for A320PowerTransferUnitController {
 }
 
 struct A320RamAirTurbineController {
+    is_solenoid_1_powered: bool,
+    solenoid_1_bus: ElectricalBusType,
+
+    is_solenoid_2_powered: bool,
+    solenoid_2_bus: ElectricalBusType,
+
     should_deploy: bool,
     eng_1_master_on: bool,
     eng_2_master_on: bool,
 }
 impl A320RamAirTurbineController {
+    const POWER_BUS_SOLENOID_1: ElectricalBusType = ElectricalBusType::DirectCurrentHot(1);
+    const POWER_BUS_SOLENOID_2: ElectricalBusType = ElectricalBusType::DirectCurrentHot(2);
+
     fn new() -> Self {
         Self {
+            is_solenoid_1_powered: false,
+            solenoid_1_bus: Self::POWER_BUS_SOLENOID_1,
+
+            is_solenoid_2_powered: false,
+            solenoid_2_bus: Self::POWER_BUS_SOLENOID_2,
+
             should_deploy: false,
             eng_1_master_on: false,
             eng_2_master_on: false,
         }
     }
 
-    fn update(&mut self, context: &UpdateContext) {
-        // RAT Deployment
-        // Todo check all other needed conditions this is faked with engine master while it should check elec buses
-        self.should_deploy = !self.eng_1_master_on
-            && !self.eng_2_master_on
-            // Todo get speed from ADIRS
-            && context.indicated_airspeed() > Velocity::new::<knot>(100.)
+    fn update(&mut self, overhead_panel: &A320HydraulicOverheadPanel, is_in_emergency_elec: bool) {
+        let should_deploy_solenoid_1_if_powered = overhead_panel.rat_push_button.is_auto();
+
+        let should_deploy_solenoid_2_if_powered = is_in_emergency_elec;
+
+        self.should_deploy = (self.is_solenoid_1_powered && should_deploy_solenoid_1_if_powered)
+            || (self.is_solenoid_2_powered && should_deploy_solenoid_2_if_powered);
     }
 }
 impl RamAirTurbineController for A320RamAirTurbineController {
@@ -979,6 +998,15 @@ impl SimulationElement for A320RamAirTurbineController {
     fn read(&mut self, state: &mut SimulatorReader) {
         self.eng_1_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:1");
         self.eng_2_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:2");
+    }
+
+    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
+        self.is_solenoid_1_powered = supplied_power
+            .potential_of(&self.solenoid_1_bus)
+            .is_powered();
+        self.is_solenoid_2_powered = supplied_power
+            .potential_of(&self.solenoid_2_bus)
+            .is_powered();
     }
 }
 
@@ -1439,6 +1467,7 @@ mod tests {
                     &self.overhead,
                     &self.engine_fire_overhead,
                     &self.landing_gear,
+                    false,
                 );
 
                 self.overhead.update(&self.hydraulics);
