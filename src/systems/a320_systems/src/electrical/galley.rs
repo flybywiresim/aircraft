@@ -16,6 +16,7 @@ impl MainGalley {
         self.is_shed
     }
 
+    #[allow(clippy::suspicious_operation_groupings)]
     pub fn update(
         &mut self,
         context: &UpdateContext,

@@ -294,6 +294,8 @@ impl AuxiliaryPowerUnitOverheadPanel {
         apu: &AuxiliaryPowerUnit<T, U>,
     ) {
         self.start.set_available(apu.is_available());
+
+        #[allow(clippy::suspicious_operation_groupings)]
         if self.start_is_on()
             && (apu.is_available()
                 || apu.has_fault()
