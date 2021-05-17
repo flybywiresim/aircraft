@@ -184,10 +184,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
     let mut a320 = A320::new();
     let mut simulation = Simulation::new(&mut a320, &mut reader_writer);
 
-    let mut key_brake_event = false;
-    let mut key_brake_left_event = false;
-    let mut key_brake_right_event = false;
-
     while let Some(event) = gauge.next_event().await {
         match event {
             MSFSEvent::PreDraw(d) => {
@@ -223,15 +219,12 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
                     if e.id() == id_brake_keyboard {
                         simulation.set_brake_left_key_pressed();
                         simulation.set_brake_right_key_pressed();
-                        key_brake_event = true;
                     }
                     if e.id() == id_brake_left_keyboard {
                         simulation.set_brake_left_key_pressed();
-                        key_brake_left_event = true;
                     }
                     if e.id() == id_brake_right_keyboard {
                         simulation.set_brake_right_key_pressed();
-                        key_brake_right_event = true;
                     }
                 }
                 _ => {}
