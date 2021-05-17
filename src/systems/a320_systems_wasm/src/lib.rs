@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use systems::simulation::{Simulation, SimulatorReaderWriter};
 
 use msfs::sim_connect::{SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
-
+use std::time::Duration;
 #[msfs::sim_connect::data_definition]
 struct InputOutputBrakeLeft {
     #[name = "BRAKE LEFT POSITION"]
@@ -26,6 +26,8 @@ struct BrakeInput {
     brake_right_sim_input: f64,
     brake_left_sim_input_keyboard: f64,
     brake_right_sim_input_keyboard: f64,
+    left_key_pressed: bool,
+    right_key_pressed: bool,
 
     brake_left_output_to_sim: f64,
     brake_right_output_to_sim: f64,
@@ -33,6 +35,9 @@ struct BrakeInput {
     parking_brake_lever_is_set: bool,
 }
 impl BrakeInput {
+    const KEYBOARD_PRESS_SPEED: f64 = 0.5;
+    const KEYBOARD_RELEASE_SPEED: f64 = 0.3;
+
     const MIN_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = -16384.;
     const MAX_BRAKE_RAW_VAL_FROM_SIMCONNECT: f64 = 16384.;
 
@@ -46,6 +51,8 @@ impl BrakeInput {
             brake_right_sim_input: 0.,
             brake_left_sim_input_keyboard: 0.,
             brake_right_sim_input_keyboard: 0.,
+            left_key_pressed: false,
+            right_key_pressed: false,
 
             brake_left_output_to_sim: 0.,
             brake_right_output_to_sim: 0.,
@@ -62,21 +69,35 @@ impl BrakeInput {
     }
 
     pub fn set_brake_left_key_pressed(&mut self) {
-        self.brake_left_sim_input_keyboard += 0.1;
-        self.brake_left_sim_input_keyboard.min(1.).max(0.);
-    }
-    pub fn set_brake_left_key_released(&mut self) {
-        self.brake_left_sim_input_keyboard -= 0.1;
-        self.brake_left_sim_input_keyboard.min(1.).max(0.);
+        self.left_key_pressed = true;
     }
 
     pub fn set_brake_right_key_pressed(&mut self) {
-        self.brake_right_sim_input_keyboard += 0.1;
-        self.brake_right_sim_input_keyboard.min(1.).max(0.);
+        self.right_key_pressed = true;
     }
-    pub fn set_brake_right_key_released(&mut self) {
-        self.brake_right_sim_input_keyboard -= 0.1;
-        self.brake_right_sim_input_keyboard.min(1.).max(0.);
+
+    pub fn update_keyboard_inputs(&mut self, delta: &Duration) {
+        if self.left_key_pressed {
+            self.brake_left_sim_input_keyboard += delta.as_secs_f64() * Self::KEYBOARD_PRESS_SPEED;
+        } else {
+            self.brake_left_sim_input_keyboard -=
+                delta.as_secs_f64() * Self::KEYBOARD_RELEASE_SPEED;
+        }
+
+        if self.right_key_pressed {
+            self.brake_right_sim_input_keyboard += delta.as_secs_f64() * Self::KEYBOARD_PRESS_SPEED;
+        } else {
+            self.brake_right_sim_input_keyboard -=
+                delta.as_secs_f64() * Self::KEYBOARD_RELEASE_SPEED;
+        }
+
+        self.brake_right_sim_input_keyboard = self.brake_right_sim_input_keyboard.min(1.).max(0.);
+        self.brake_left_sim_input_keyboard = self.brake_left_sim_input_keyboard.min(1.).max(0.);
+    }
+
+    pub fn reset_keyboard_events(&mut self) {
+        self.left_key_pressed = false;
+        self.right_key_pressed = false;
     }
 
     pub fn set_brake_left_percent(&mut self, percent_value: f64) {
@@ -164,14 +185,15 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
     let mut simulation = Simulation::new(&mut a320, &mut reader_writer);
 
     let mut key_brake_event = false;
-
     let mut key_brake_left_event = false;
     let mut key_brake_right_event = false;
 
     while let Some(event) = gauge.next_event().await {
         match event {
             MSFSEvent::PreDraw(d) => {
+                simulation.update_keyboard_inputs(&d.delta_time());
                 simulation.tick(d.delta_time());
+                simulation.reset_keyboard_events();
 
                 // We want to send our brake commands once per refresh event, thus doing it after a draw event
                 sim.transmit_client_event(
@@ -185,26 +207,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
                     id_brake_right,
                     simulation.get_brake_output_right(),
                 )?;
-
-                // Clearing keyboard events
-                if key_brake_event {
-                    key_brake_event = false;
-                    simulation.update_brake_input_right(0 - 16384);
-                    simulation.update_brake_input_left(0 - 16384);
-                    //println!("CLEAR_BRAKE");
-                }
-
-                if key_brake_left_event {
-                    key_brake_left_event = false;
-                    simulation.update_brake_input_left(0 - 16384);
-                    //println!("CLEAR_BRAKELEFT");
-                }
-
-                if key_brake_right_event {
-                    key_brake_right_event = false;
-                    //println!("CLEAR_BRAKERIGHT");
-                    simulation.update_brake_input_right(0 - 16384);
-                }
             }
 
             MSFSEvent::SimConnect(recv) => match recv {
@@ -219,19 +221,16 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error
                         simulation.receive_a_park_brake_event();
                     }
                     if e.id() == id_brake_keyboard {
-                        println!("BRAKE");
-                        simulation.update_brake_input_right(16384);
-                        simulation.update_brake_input_left(16384);
+                        simulation.set_brake_left_key_pressed();
+                        simulation.set_brake_right_key_pressed();
                         key_brake_event = true;
                     }
                     if e.id() == id_brake_left_keyboard {
-                        println!("BRAKELEFT");
-                        simulation.update_brake_input_left(16384);
+                        simulation.set_brake_left_key_pressed();
                         key_brake_left_event = true;
                     }
                     if e.id() == id_brake_right_keyboard {
-                        println!("BRAKERIGHT");
-                        simulation.update_brake_input_right(16384);
+                        simulation.set_brake_right_key_pressed();
                         key_brake_right_event = true;
                     }
                 }
@@ -406,15 +405,17 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
     fn set_brake_left_key_pressed(&mut self) {
         self.masked_brake_input.set_brake_left_key_pressed();
     }
-    fn set_brake_left_key_released(&mut self) {
-        self.masked_brake_input.set_brake_left_key_released();
-    }
 
     fn set_brake_right_key_pressed(&mut self) {
         self.masked_brake_input.set_brake_right_key_pressed();
     }
-    fn set_brake_right_key_released(&mut self) {
-        self.masked_brake_input.set_brake_left_key_released();
+
+    fn update_keyboard_inputs(&mut self, delta: &Duration) {
+        self.masked_brake_input.update_keyboard_inputs(delta);
+    }
+
+    fn reset_keyboard_events(&mut self) {
+        self.masked_brake_input.reset_keyboard_events();
     }
 }
 

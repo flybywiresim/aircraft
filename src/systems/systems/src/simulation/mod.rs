@@ -26,10 +26,11 @@ pub trait SimulatorReaderWriter {
     fn receive_a_park_brake_event(&mut self);
 
     fn set_brake_left_key_pressed(&mut self);
-    fn set_brake_left_key_released(&mut self);
 
     fn set_brake_right_key_pressed(&mut self);
-    fn set_brake_right_key_released(&mut self);
+
+    fn update_keyboard_inputs(&mut self, delta: &Duration);
+    fn reset_keyboard_events(&mut self);
 }
 
 /// An [`Aircraft`] that can be simulated by the [`Simulation`].
@@ -269,6 +270,21 @@ impl<'a, T: Aircraft, U: SimulatorReaderWriter> Simulation<'a, T, U> {
 
     pub fn receive_a_park_brake_event(&mut self) {
         self.simulator_read_writer.receive_a_park_brake_event();
+    }
+
+    pub fn set_brake_left_key_pressed(&mut self) {
+        self.simulator_read_writer.set_brake_left_key_pressed();
+    }
+
+    pub fn set_brake_right_key_pressed(&mut self) {
+        self.simulator_read_writer.set_brake_right_key_pressed();
+    }
+
+    pub fn update_keyboard_inputs(&mut self, delta: &Duration) {
+        self.simulator_read_writer.update_keyboard_inputs(delta);
+    }
+    pub fn reset_keyboard_events(&mut self) {
+        self.simulator_read_writer.reset_keyboard_events();
     }
 }
 

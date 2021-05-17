@@ -351,10 +351,11 @@ impl SimulatorReaderWriter for TestReaderWriter {
     fn receive_a_park_brake_event(&mut self) {}
 
     fn set_brake_left_key_pressed(&mut self) {}
-    fn set_brake_left_key_released(&mut self) {}
 
     fn set_brake_right_key_pressed(&mut self) {}
-    fn set_brake_right_key_released(&mut self) {}
+
+    fn update_keyboard_inputs(&mut self, _delta: &Duration) {}
+    fn reset_keyboard_events(&mut self) {}
 }
 
 impl Default for TestReaderWriter {
