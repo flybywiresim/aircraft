@@ -8,7 +8,7 @@ mod engine_generator;
 mod external_power_source;
 mod static_inverter;
 mod transformer_rectifier;
-use std::{cmp::Ordering, fmt::Display, hash::Hash};
+use std::{cmp::Ordering, fmt::Display, hash::Hash, time::Duration};
 
 pub use battery::Battery;
 pub use battery_charge_limiter::{BatteryChargeLimiter, BatteryChargeLimiterArguments};
@@ -22,9 +22,10 @@ use itertools::Itertools;
 pub use static_inverter::StaticInverter;
 pub use transformer_rectifier::TransformerRectifier;
 
-use crate::simulation::{SimulationElement, SimulatorWriter};
+use crate::simulation::{SimulationElement, SimulatorWriter, UpdateContext};
 use uom::si::{
     electric_current::ampere, electric_potential::volt, f64::*, frequency::hertz, ratio::percent,
+    velocity::knot,
 };
 
 use self::consumption::SuppliedPower;
@@ -469,6 +470,49 @@ pub trait ProvideFrequency {
 pub trait ProvideLoad {
     fn load(&self) -> Ratio;
     fn load_normal(&self) -> bool;
+}
+
+pub trait AlternatingCurrentBusesState {
+    fn ac_buses_unpowered(&self) -> bool;
+}
+
+/// Determines if and for how long the aircraft is in an emergency electrical situation.
+pub struct EmergencyElectrical {
+    is_active_for_duration: Duration,
+}
+impl EmergencyElectrical {
+    pub fn new() -> Self {
+        Self {
+            is_active_for_duration: Duration::from_secs(0),
+        }
+    }
+
+    pub fn update<T: AlternatingCurrentBusesState>(
+        &mut self,
+        context: &UpdateContext,
+        arguments: &T,
+    ) {
+        if arguments.ac_buses_unpowered()
+            && context.indicated_airspeed() > Velocity::new::<knot>(100.)
+        {
+            self.is_active_for_duration += context.delta();
+        } else {
+            self.is_active_for_duration = Duration::from_secs(0)
+        }
+    }
+
+    pub fn is_active(&self) -> bool {
+        self.is_active_for_duration > Duration::from_secs(0)
+    }
+
+    fn active_duration(&self) -> Duration {
+        self.is_active_for_duration
+    }
+}
+impl Default for EmergencyElectrical {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[cfg(test)]
