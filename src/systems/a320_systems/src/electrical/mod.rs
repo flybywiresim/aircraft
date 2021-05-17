@@ -9,8 +9,9 @@ use self::{
 };
 use systems::{
     electrical::{
-        consumption::SuppliedPower, ElectricalSystem, EngineGeneratorUpdateArguments,
-        ExternalPowerSource, Potential, StaticInverter, TransformerRectifier,
+        consumption::SuppliedPower, ElectricalSystem, EmergencyElectrical, EmergencyGenerator,
+        EngineGeneratorUpdateArguments, ExternalPowerSource, Potential, StaticInverter,
+        TransformerRectifier,
     },
     overhead::{
         AutoOffFaultPushButton, FaultIndication, FaultReleasePushButton, MomentaryPushButton,
@@ -19,7 +20,7 @@ use systems::{
     shared::AuxiliaryPowerUnitElectrical,
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
-use uom::si::{f64::*, velocity::knot};
+use uom::si::f64::*;
 
 pub(super) struct A320ElectricalUpdateArguments<'a> {
     engine_corrected_n2: [Ratio; 2],
@@ -98,6 +99,8 @@ pub(super) struct A320Electrical {
     direct_current: A320DirectCurrentElectrical,
     main_galley: MainGalley,
     secondary_galley: SecondaryGalley,
+    emergency_elec: EmergencyElectrical,
+    emergency_gen: EmergencyGenerator,
 }
 impl A320Electrical {
     pub fn new() -> A320Electrical {
@@ -106,6 +109,8 @@ impl A320Electrical {
             direct_current: A320DirectCurrentElectrical::new(),
             main_galley: MainGalley::new(),
             secondary_galley: SecondaryGalley::new(),
+            emergency_elec: EmergencyElectrical::new(),
+            emergency_gen: EmergencyGenerator::new(),
         }
     }
 
@@ -117,18 +122,41 @@ impl A320Electrical {
         emergency_overhead: &A320EmergencyElectricalOverheadPanel,
         arguments: &mut A320ElectricalUpdateArguments<'a>,
     ) {
-        self.alternating_current
-            .update(context, ext_pwr, overhead, emergency_overhead, arguments);
-
-        self.direct_current.update_with_alternating_current_state(
+        self.alternating_current.update_main_power_sources(
             context,
+            ext_pwr,
             overhead,
-            &self.alternating_current,
+            emergency_overhead,
             arguments,
         );
 
+        self.emergency_elec
+            .update(context, &self.alternating_current);
+
+        if (self.emergency_elec.is_active()) || emergency_overhead.rat_and_emer_gen_man_on() {
+            self.emergency_gen.start();
+        }
+
+        self.emergency_gen
+            .update(context, arguments.is_blue_hydraulic_circuit_pressurised());
+
         self.alternating_current
-            .update_with_direct_current_state(context, &self.direct_current);
+            .update(context, ext_pwr, overhead, &self.emergency_gen);
+
+        self.direct_current.update(
+            context,
+            overhead,
+            &self.alternating_current,
+            &self.emergency_elec,
+            &self.emergency_gen,
+            arguments,
+        );
+
+        self.alternating_current.update_after_direct_current(
+            context,
+            &self.emergency_gen,
+            &self.direct_current,
+        );
 
         self.main_galley
             .update(context, &self.alternating_current, overhead);
@@ -136,10 +164,6 @@ impl A320Electrical {
             .update(&self.alternating_current, overhead);
 
         self.debug_assert_invariants();
-    }
-
-    fn ac_1_and_2_bus_unpowered(&self) -> bool {
-        self.alternating_current.ac_bus_1_and_2_unpowered()
     }
 
     fn emergency_generator_contactor_is_closed(&self) -> bool {
@@ -172,7 +196,7 @@ impl A320Electrical {
 
     #[cfg(test)]
     fn attempt_emergency_gen_start(&mut self) {
-        self.alternating_current.attempt_emergency_gen_start();
+        self.emergency_gen.start();
     }
 
     #[cfg(test)]
@@ -217,6 +241,10 @@ impl A320Electrical {
     pub fn gen_2_contactor_open(&self) -> bool {
         self.alternating_current.gen_2_contactor_open()
     }
+
+    pub fn in_emergency_elec(&self) -> bool {
+        self.emergency_elec.is_active()
+    }
 }
 impl ElectricalSystem for A320Electrical {
     fn get_supplied_power(&self) -> SuppliedPower {
@@ -232,6 +260,8 @@ impl SimulationElement for A320Electrical {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.alternating_current.accept(visitor);
         self.direct_current.accept(visitor);
+        self.emergency_gen.accept(visitor);
+
         visitor.visit(self);
     }
 
@@ -248,8 +278,6 @@ trait AlternatingCurrentState {
     fn ac_bus_1_and_2_unpowered(&self) -> bool;
     fn ac_bus_2_powered(&self) -> bool;
     fn tr_1_and_2_available(&self) -> bool;
-    fn ac_1_and_2_and_emergency_gen_unpowered(&self) -> bool;
-    fn emergency_generator_available(&self) -> bool;
     fn tr_1(&self) -> &TransformerRectifier;
     fn tr_2(&self) -> &TransformerRectifier;
     fn tr_ess(&self) -> &TransformerRectifier;
@@ -393,10 +421,9 @@ impl A320EmergencyElectricalOverheadPanel {
         electrical: &A320Electrical,
     ) {
         self.rat_and_emergency_gen_fault.set_fault(
-            electrical.ac_1_and_2_bus_unpowered()
+            electrical.in_emergency_elec()
                 && !electrical.emergency_generator_contactor_is_closed()
-                && !context.is_on_ground()
-                && context.indicated_airspeed() > Velocity::new::<knot>(100.),
+                && !context.is_on_ground(),
         );
     }
 
@@ -2249,7 +2276,7 @@ mod a320_electrical_circuit_tests {
                         self.overhead.idg_2_push_button_released(),
                     ],
                     &mut self.apu,
-                    true,
+                    context.indicated_airspeed() > Velocity::new::<knot>(100.),
                     self.apu_master_sw_pb_on,
                     self.apu_start_pb_on,
                     true,
