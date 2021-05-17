@@ -509,6 +509,11 @@ impl EmergencyElectrical {
         self.is_active_for_duration
     }
 }
+impl Default for EmergencyElectrical {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 #[cfg(test)]
 mod tests {

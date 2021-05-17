@@ -77,7 +77,7 @@ impl A320AlternatingCurrentElectrical {
             .powered_by(&self.main_power_sources.ac_bus_2_electric_sources());
     }
 
-    pub fn update<'a>(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         ext_pwr: &ExternalPowerSource,
