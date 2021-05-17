@@ -398,6 +398,22 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         }
     }
 
+    onPreSelSpeed(isMach) {
+        clearTimeout(this._resetSelectionTimeout);
+        SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
+        this.inSelection = false;
+        this.isSelectedValueActive = false;
+        this.isTargetManaged = false;
+        this.isMachActive = isMach;
+        if (isMach) {
+            this.selectedValue = SimVar.GetSimVarValue("L:A32NX_MachPreselVal", "mach");
+            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_ON", "number", 1);
+        } else {
+            this.selectedValue = SimVar.GetSimVarValue("L:A32NX_SpeedPreselVal", "knots");
+            SimVar.SetSimVarValue("K:AP_MANAGED_SPEED_IN_MACH_OFF", "number", 1);
+        }
+    }
+
     getRotationSpeed() {
         if (this._rotaryEncoderCurrentSpeed < 1
             || (Date.now() - this._rotaryEncoderPreviousTimestamp) > this._rotaryEncoderTimeout) {
@@ -430,8 +446,21 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.onPush();
         } else if (_event === "SPEED_PULL") {
             this.onPull();
+        } else if (_event === "SPEED_SET") {
+            const value = SimVar.GetSimVarValue("L:A320_Neo_FCU_SPEED_SET_DATA", "number");
+            if (this.isMachActive) {
+                this.selectedValue = this.clampMach(value / 100.0);
+            } else {
+                this.selectedValue = this.clampSpeed(value);
+            }
+            this.isSelectedValueActive = true;
+            this.onRotate();
         } else if (_event === "SPEED_TOGGLE_SPEED_MACH") {
             this.onSwitchSpeedMach();
+        } else if (_event === "USE_PRE_SEL_SPEED") {
+            this.onPreSelSpeed(false);
+        } else if (_event === "USE_PRE_SEL_MACH") {
+            this.onPreSelSpeed(true);
         }
     }
 }
@@ -736,6 +765,10 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
             this.onPush();
         } else if (_event === "HDG_PULL") {
             this.onPull();
+        } else if (_event === "HDG_SET") {
+            this.selectedValue = SimVar.GetSimVarValue("L:A320_Neo_FCU_HDG_SET_DATA", "number") % 360;
+            this.isSelectedValueActive = true;
+            this.onRotate();
         }
     }
 }
@@ -876,6 +909,10 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
     }
 
     onPush() {
+        const mode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "Number");
+        if (mode >= 32 && _mode <= 34) {
+            return;
+        }
         clearTimeout(this._resetSelectionTimeout);
         this.forceUpdate = true;
 
@@ -1055,6 +1092,21 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             this.onPush();
         } else if (_event === "VS_PULL") {
             this.onPull();
+        } else if (_event === "VS_SET") {
+            const value = SimVar.GetSimVarValue("L:A320_Neo_FCU_VS_SET_DATA", "number");
+            if (this.isFPAMode) {
+                if (Math.abs(value) < 100 || value == 0) {
+                    this.selectedFpa = Utils.Clamp(Math.round(value) / 10, -this.ABS_MINMAX_FPA, this.ABS_MINMAX_FPA);
+                    this.currentState = A320_Neo_FCU_VSpeed_State.Selecting;
+                    this.onRotate();
+                }
+            } else {
+                if (Math.abs(value) >= 100 || value == 0) {
+                    this.selectedVs = Utils.Clamp(Math.round(value), -this.ABS_MINMAX_VS, this.ABS_MINMAX_VS);
+                    this.currentState = A320_Neo_FCU_VSpeed_State.Selecting;
+                    this.onRotate();
+                }
+            }
         }
     }
     onFPAModeChanged(_newValue) {

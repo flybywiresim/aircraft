@@ -1,23 +1,28 @@
 use std::time::Duration;
-use uom::si::{f64::*, length::foot, thermodynamic_temperature::degree_celsius, velocity::knot};
+use uom::si::{
+    acceleration::foot_per_second_squared, f64::*, length::foot,
+    thermodynamic_temperature::degree_celsius, time::second, velocity::knot,
+};
 
 use super::SimulatorReader;
 
 /// Provides data unowned by any system in the aircraft system simulation
 /// for the purpose of handling a simulation tick.
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct UpdateContext {
     delta: Duration,
     indicated_airspeed: Velocity,
     indicated_altitude: Length,
     ambient_temperature: ThermodynamicTemperature,
     is_on_ground: bool,
+    longitudinal_acceleration: Acceleration,
 }
 impl UpdateContext {
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
     pub(crate) const INDICATED_AIRSPEED_KEY: &'static str = "AIRSPEED INDICATED";
     pub(crate) const INDICATED_ALTITUDE_KEY: &'static str = "INDICATED ALTITUDE";
     pub(crate) const IS_ON_GROUND_KEY: &'static str = "SIM ON GROUND";
+    pub(crate) const ACCEL_BODY_Z_KEY: &'static str = "ACCELERATION BODY Z";
 
     pub fn new(
         delta: Duration,
@@ -25,6 +30,7 @@ impl UpdateContext {
         indicated_altitude: Length,
         ambient_temperature: ThermodynamicTemperature,
         is_on_ground: bool,
+        longitudinal_acceleration: Acceleration,
     ) -> UpdateContext {
         UpdateContext {
             delta,
@@ -32,6 +38,7 @@ impl UpdateContext {
             indicated_altitude,
             ambient_temperature,
             is_on_ground,
+            longitudinal_acceleration,
         }
     }
 
@@ -49,6 +56,9 @@ impl UpdateContext {
             ),
             is_on_ground: reader.read_bool(UpdateContext::IS_ON_GROUND_KEY),
             delta: delta_time,
+            longitudinal_acceleration: Acceleration::new::<foot_per_second_squared>(
+                reader.read_f64(UpdateContext::ACCEL_BODY_Z_KEY),
+            ),
         }
     }
 
@@ -58,6 +68,14 @@ impl UpdateContext {
 
     pub fn delta(&self) -> Duration {
         self.delta
+    }
+
+    pub fn delta_as_secs_f64(&self) -> f64 {
+        self.delta.as_secs_f64()
+    }
+
+    pub fn delta_as_time(&self) -> Time {
+        Time::new::<second>(self.delta.as_secs_f64())
     }
 
     pub fn indicated_airspeed(&self) -> Velocity {
@@ -74,5 +92,16 @@ impl UpdateContext {
 
     pub fn is_on_ground(&self) -> bool {
         self.is_on_ground
+    }
+
+    pub fn long_accel(&self) -> Acceleration {
+        self.longitudinal_acceleration
+    }
+
+    pub fn with_delta(&self, delta: Duration) -> Self {
+        let mut copy: UpdateContext = *self;
+        copy.delta = delta;
+
+        copy
     }
 }

@@ -49,7 +49,7 @@
     <Behaviors>
         <Include ModelBehaviorFile="Asobo\Exterior.xml"/>
         <Include ModelBehaviorFile="Asobo\Generic\FX.xml"/>
-        <Include Path="A32NX\A32NX_Exterior.xml"/>
+        <Include Path="A32NX\generated\A32NX_Exterior.xml"/>
         <Component ID="LIGHTING">
             <UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
                 <LIGHT_TYPE>LANDING</LIGHT_TYPE>

@@ -11,8 +11,8 @@ import Dashboard from './Dashboard/Dashboard';
 import Dispatch from './Dispatch/Dispatch';
 import Ground from './Ground/Ground';
 import Performance from './Performance/Performance';
-import Settings from './Settings/Settings';
 import Navigation from './Navigation/Navigation';
+import Settings from './Settings/Settings';
 import store from './Store';
 
 type TimeState = {
