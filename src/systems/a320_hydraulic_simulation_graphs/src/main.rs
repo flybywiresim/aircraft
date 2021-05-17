@@ -820,7 +820,7 @@ fn hydraulic_loop(loop_color: &str) -> HydraulicLoop {
 }
 
 fn electric_pump() -> ElectricPump {
-    ElectricPump::new("DEFAULT",ElectricalBusType::AlternatingCurrentEssential)
+    ElectricPump::new("DEFAULT", ElectricalBusType::AlternatingCurrentEssential)
 }
 
 fn engine_driven_pump() -> EngineDrivenPump {

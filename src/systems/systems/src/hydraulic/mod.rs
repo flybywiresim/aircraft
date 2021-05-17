@@ -9,13 +9,11 @@ use uom::si::{
     volume_rate::gallon_per_second,
 };
 
+use crate::electrical::consumption::PowerConsumer;
+use crate::electrical::ElectricalBusType;
 use crate::shared::interpolation;
 use crate::simulation::UpdateContext;
 use crate::simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter};
-use crate::electrical::consumption::{
- PowerConsumer,
-};
-use crate::electrical::ElectricalBusType;
 
 pub mod brake_circuit;
 use crate::hydraulic::brake_circuit::Actuator;
