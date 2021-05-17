@@ -177,6 +177,7 @@
 1. [MISC] Added registration decal - @tyler58546(tyler58546), @DarkOfNova (DarkOfNova)
 1. [OVHD] Implement even more additional overhead button/switch functionality (MASK MAN ON, EMER ELEC PWR MAN ON, Cargo smoke DISCH, etc.) - @ErickSharp (Erick Torres)
 1. [CDU] Fix ILS frequencies not autofilling - @pareil6 (pareil6)
+1. [EFB] Landing performance calculations page - @matt-winfield (TheMightyMat#0585)
 1. [LIGHTS] Improved Exterior Lights - @Snapmatics (Harry)
 1. [SOUND] Added custom sounds to multiple buttons and Throttle Lever Reverse Locks - @ImenesFBW (Imenes)
 1. [MCDU] Added custom MCDU font - @tyler58546 (tyler58546)

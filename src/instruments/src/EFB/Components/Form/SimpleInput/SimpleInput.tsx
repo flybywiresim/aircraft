@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FC, useEffect, useState } from 'react';
 
 type SimpleInputProps = {
     label?: string,
@@ -9,79 +9,94 @@ type SimpleInputProps = {
     max?: number,
     number?: boolean,
     noLeftMargin?: boolean,
-    reverse?: boolean // Flip label/input order,
-    className?: string
+    padding?: number,
+    decimalPrecision?: number,
+    reverse?: boolean, // Flip label/input order,
+    className?: string,
 };
 
-type SimpleInputState = {
-    value: string
-};
+const SimpleInput: FC<SimpleInputProps> = (props) => {
+    const [displayValue, setDisplayValue] = useState<string>(props.value?.toString() ?? '');
+    const [focused, setFocused] = useState(false);
 
-export default class SimpleInput extends React.Component<SimpleInputProps, SimpleInputState> {
-    constructor(props: SimpleInputProps) {
-        super(props);
-
-        this.state = { value: this.props.value ? this.props.value : '' };
-    }
-
-    public componentDidUpdate(prevProps: SimpleInputProps): void {
-        if (this.props.value !== undefined && prevProps.value !== this.props.value) {
-            // setState is safe as wrapped in condition
-            this.setState({ // eslint-disable-line react/no-did-update-set-state
-                value: this.props.value,
-            });
+    useEffect(() => {
+        if (props.value === undefined || props.value === '') {
+            setDisplayValue('');
+            return;
         }
-    }
+        if (focused) return;
+        setDisplayValue(getConstrainedValue(props.value));
+    }, [props.value]);
 
-    private onChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    const onChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         let originalValue = event.currentTarget.value;
 
-        if (this.props.number) {
+        if (props.number) {
             originalValue = originalValue.replace(/[^\d.-]/g, ''); // Replace all non-numeric characters
         }
 
-        this.props.onChange?.(originalValue);
-        this.setState({ value: originalValue });
-    }
+        props.onChange?.(originalValue);
+        setDisplayValue(originalValue);
+    };
 
-    private onFocusOut(event: React.FocusEvent<HTMLInputElement>): void {
+    const onFocus = (): void => {
+        setFocused(true);
+    };
+
+    const onFocusOut = (event: React.FocusEvent<HTMLInputElement>): void => {
         const { value } = event.currentTarget;
-        const constrainedValue = this.getConstrainedValue(value);
+        const constrainedValue = getConstrainedValue(value);
 
-        this.props.onChange?.(constrainedValue);
-        this.setState({ value: constrainedValue });
-    }
+        setDisplayValue(constrainedValue);
+        setFocused(true);
+    };
 
-    private getConstrainedValue(value: string): string {
+    const getConstrainedValue = (value: string): string => {
         let constrainedValue = value;
         let numericValue = parseFloat(value);
 
         if (!Number.isNaN(numericValue)) {
-            if (this.props.min !== undefined && numericValue < this.props.min) {
-                numericValue = this.props.min;
-            } else if (this.props.max !== undefined && numericValue > this.props.max) {
-                numericValue = this.props.max;
+            if (props.min !== undefined && numericValue < props.min) {
+                numericValue = props.min;
+            } else if (props.max !== undefined && numericValue > props.max) {
+                numericValue = props.max;
             }
 
-            constrainedValue = numericValue.toString();
+            if (props.decimalPrecision !== undefined) {
+                const fixed = numericValue.toFixed(props.decimalPrecision);
+                constrainedValue = parseFloat(fixed).toString(); // Have to re-parse to remove trailing 0s
+            } else {
+                constrainedValue = numericValue.toString();
+            }
+            constrainedValue = pad(constrainedValue);
         }
         return constrainedValue;
-    }
+    };
 
-    render() {
-        return (
-            <div className={`flex ${this.props.className} ${this.props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
-                <div className={`flex flex-grow ${this.props.noLeftMargin ? '' : 'm-2.5'} items-center ${this.props.reverse ? 'justify-start' : 'justify-end'}`}>{this.props.label ?? ''}</div>
-                <div className="flex items-center">
-                    <input
-                        className="w-28 text-lg bg-gray-900 px-3 py-1.5 rounded"
-                        value={this.state.value}
-                        placeholder={this.props.placeholder ?? ''}
-                        onChange={(event) => this.onChange(event)}
-                        onBlur={(event) => this.onFocusOut(event)}
-                    />
-                </div>
+    const pad = (value: string): string => {
+        if (props.padding === undefined) return value;
+        const split = value.split('.');
+        while (split[0].length < props.padding) {
+            split[0] = `0${split[0]}`;
+        }
+        return split.join('.');
+    };
+
+    return (
+        <div className={`flex ${props.className} ${props.reverse ? 'flex-row-reverse' : 'flex-row'}`}>
+            <div className={`flex flex-grow ${props.noLeftMargin ? '' : 'm-2.5'} items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
+            <div className="flex items-center">
+                <input
+                    className="w-28 text-lg bg-gray-900 px-3 py-1.5 rounded"
+                    value={displayValue}
+                    placeholder={props.placeholder ?? ''}
+                    onChange={onChange}
+                    onFocus={onFocus}
+                    onBlur={onFocusOut}
+                />
             </div>
-        );
-    }
-}
+        </div>
+    );
+};
+
+export default SimpleInput;
