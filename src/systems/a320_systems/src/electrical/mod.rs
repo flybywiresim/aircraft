@@ -16,7 +16,7 @@ use systems::{
         AutoOffFaultPushButton, FaultIndication, FaultReleasePushButton, MomentaryPushButton,
         NormalAltnFaultPushButton, OnOffAvailablePushButton, OnOffFaultPushButton,
     },
-    shared::AuxiliaryPowerUnitElectrical,
+    shared::{AuxiliaryPowerUnitElectrical, EngineFirePushButtons},
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
 use uom::si::{f64::*, velocity::knot};
@@ -29,8 +29,10 @@ pub(super) struct A320ElectricalUpdateArguments<'a> {
     apu_master_sw_pb_on: bool,
     apu_start_pb_on: bool,
     landing_gear_is_up_and_locked: bool,
+    engine_fire_push_buttons: &'a dyn EngineFirePushButtons,
 }
 impl<'a> A320ElectricalUpdateArguments<'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         engine_corrected_n2: [Ratio; 2],
         idg_push_buttons_released: [bool; 2],
@@ -39,6 +41,7 @@ impl<'a> A320ElectricalUpdateArguments<'a> {
         apu_master_sw_pb_on: bool,
         apu_start_pb_on: bool,
         landing_gear_is_up_and_locked: bool,
+        engine_fire_push_buttons: &'a dyn EngineFirePushButtons,
     ) -> Self {
         Self {
             engine_corrected_n2,
@@ -48,6 +51,7 @@ impl<'a> A320ElectricalUpdateArguments<'a> {
             apu_master_sw_pb_on,
             apu_start_pb_on,
             landing_gear_is_up_and_locked,
+            engine_fire_push_buttons,
         }
     }
 
@@ -81,6 +85,10 @@ impl<'a> A320ElectricalUpdateArguments<'a> {
 
     fn landing_gear_is_up_and_locked(&self) -> bool {
         self.landing_gear_is_up_and_locked
+    }
+
+    fn engine_fire_push_button_is_released(&self, engine_number: usize) -> bool {
+        self.engine_fire_push_buttons.is_released(engine_number)
     }
 }
 impl<'a> EngineGeneratorUpdateArguments for A320ElectricalUpdateArguments<'a> {
@@ -2033,6 +2041,37 @@ mod a320_electrical_circuit_tests {
             .is_single(PotentialOrigin::EmergencyGenerator));
     }
 
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    fn when_engine_fire_push_button_released_and_only_that_engine_is_running_nothing_powers_ac_buses(
+        #[case] number: usize,
+    ) {
+        let mut test_bed = test_bed_with()
+            .running_engine(number)
+            .and()
+            .released_engine_fire_push_button(number)
+            .run();
+
+        assert!(test_bed.ac_bus_output(1).is_unpowered());
+        assert!(test_bed.ac_bus_output(2).is_unpowered());
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    fn when_gen_contactor_open_due_to_engine_fire_push_button_released_gen_push_button_has_fault(
+        #[case] number: usize,
+    ) {
+        let mut test_bed = test_bed_with()
+            .running_engine(number)
+            .and()
+            .released_engine_fire_push_button(number)
+            .run();
+
+        assert!(test_bed.gen_has_fault(number));
+    }
+
     fn test_bed_with() -> A320ElectricalTestBed {
         test_bed()
     }
@@ -2098,6 +2137,26 @@ mod a320_electrical_circuit_tests {
         }
     }
 
+    struct TestEngineFirePushButtons {
+        is_released: [bool; 2],
+    }
+    impl TestEngineFirePushButtons {
+        fn new() -> Self {
+            Self {
+                is_released: [false, false],
+            }
+        }
+
+        fn release(&mut self, engine_number: usize) {
+            self.is_released[engine_number - 1] = true;
+        }
+    }
+    impl EngineFirePushButtons for TestEngineFirePushButtons {
+        fn is_released(&self, engine_number: usize) -> bool {
+            self.is_released[engine_number - 1]
+        }
+    }
+
     struct A320ElectricalTestAircraft {
         engine_running: [bool; 2],
         ext_pwr: ExternalPowerSource,
@@ -2107,6 +2166,7 @@ mod a320_electrical_circuit_tests {
         apu_master_sw_pb_on: bool,
         apu_start_pb_on: bool,
         apu: TestApu,
+        engine_fire_push_buttons: TestEngineFirePushButtons,
     }
     impl A320ElectricalTestAircraft {
         fn new() -> Self {
@@ -2119,6 +2179,7 @@ mod a320_electrical_circuit_tests {
                 apu_master_sw_pb_on: false,
                 apu_start_pb_on: false,
                 apu: TestApu::new(),
+                engine_fire_push_buttons: TestEngineFirePushButtons::new(),
             }
         }
 
@@ -2193,6 +2254,10 @@ mod a320_electrical_circuit_tests {
         fn battery_2_input(&self) -> Potential {
             self.elec.battery_2_input_potential()
         }
+
+        fn release_engine_fire_push_button(&mut self, engine_number: usize) {
+            self.engine_fire_push_buttons.release(engine_number);
+        }
     }
     impl Aircraft for A320ElectricalTestAircraft {
         fn update_before_power_distribution(&mut self, context: &UpdateContext) {
@@ -2215,6 +2280,7 @@ mod a320_electrical_circuit_tests {
                     self.apu_master_sw_pb_on,
                     self.apu_start_pb_on,
                     true,
+                    &self.engine_fire_push_buttons,
                 ),
             );
             self.overhead.update_after_electrical(&self.elec);
@@ -2340,6 +2406,11 @@ mod a320_electrical_circuit_tests {
         fn gen_off(mut self, number: usize) -> Self {
             self.simulation_test_bed
                 .write_bool(&format!("OVHD_ELEC_ENG_GEN_{}_PB_IS_ON", number), false);
+            self
+        }
+
+        fn released_engine_fire_push_button(mut self, engine_number: usize) -> Self {
+            self.aircraft.release_engine_fire_push_button(engine_number);
             self
         }
 

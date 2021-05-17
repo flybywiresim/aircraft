@@ -44,6 +44,11 @@ impl SimulationElement for EngineFireOverheadPanel {
         visitor.visit(self);
     }
 }
+impl Default for EngineFireOverheadPanel {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 #[cfg(test)]
 mod engine_fire_overhead_panel_tests {
