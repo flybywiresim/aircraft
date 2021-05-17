@@ -1,7 +1,7 @@
 use std::time::Duration;
 use uom::si::{
-    angular_velocity::revolution_per_minute, f64::*, pressure::pascal, pressure::psi,
-    ratio::percent, velocity::knot, volume::gallon,
+    acceleration::meter_per_second_squared, angular_velocity::revolution_per_minute, f64::*,
+    pressure::pascal, pressure::psi, ratio::percent, velocity::knot, volume::gallon,
 };
 
 use systems::hydraulic::{
@@ -298,8 +298,12 @@ impl A320Hydraulic {
         // Tug has its angle changing on each frame and we'd like to detect this
         self.pushback_tug.update();
 
-        self.brake_output_generator
-            .update_forces(&self.braking_circuit_norm, &self.braking_circuit_altn);
+        self.brake_output_generator.update_forces(
+            &context,
+            &self.braking_circuit_norm,
+            &self.braking_circuit_altn,
+            &self.hyd_brake_logic,
+        );
     }
 
     // All the higher frequency updates like physics
@@ -870,10 +874,6 @@ impl PowerTransferUnitController for A320PowerTransferUnitController {
 impl SimulationElement for A320PowerTransferUnitController {
     fn read(&mut self, state: &mut SimulatorReader) {
         self.parking_brake_lever_pos = state.read_bool("BRAKE PARKING POSITION");
-        // println!(
-        //     "PARKING BRAKE LEVER POS:{} in PTU",
-        //     self.parking_brake_lever_pos
-        // );
         self.eng_1_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:1");
         self.eng_2_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:2");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
@@ -1099,35 +1099,47 @@ impl SimulationElement for A320HydraulicBrakingLogic {
         self.left_brake_pilot_input = state.read_f64("BRAKE LEFT POSITION");
         self.right_brake_pilot_input = state.read_f64("BRAKE RIGHT POSITION");
         self.autobrakes_setting = state.read_f64("AUTOBRAKES SETTING").floor() as u8;
-        // println!(
-        //     "park demand in hydraulics BRAKES{}",
-        //     self.parking_brake_demand
-        // );
-        // println!(
-        //     "HYD: brake inputs from sim= L({}) R({})",
-        //     self.left_brake_pilot_input * 100.,
-        //     self.right_brake_pilot_input * 100.
-        // )
     }
 }
 
 struct A320BrakingForceSimulationOutput {
+    left_brake_pedal_position: f64,
+    right_brake_pedal_position: f64,
+
     left_brake_force: f64,
     right_brake_force: f64,
+
     park_brake_lever_is_set: bool,
     ground_surface_type: f64,
+    acceleration: f64,
 }
 impl A320BrakingForceSimulationOutput {
     pub fn new() -> Self {
         A320BrakingForceSimulationOutput {
+            left_brake_pedal_position: 0.,
+            right_brake_pedal_position: 0.,
+
             left_brake_force: 0.,
             right_brake_force: 0.,
+
             park_brake_lever_is_set: true,
+
             ground_surface_type: 4.,
+            acceleration: 0.,
         }
     }
 
-    pub fn update_forces(&mut self, norm_brakes: &BrakeCircuit, altn_brakes: &BrakeCircuit) {
+    pub fn update_forces(
+        &mut self,
+        context: &UpdateContext,
+        norm_brakes: &BrakeCircuit,
+        altn_brakes: &BrakeCircuit,
+        brake_logic: &A320HydraulicBrakingLogic,
+    ) {
+        // Updating raw pilots inputs just to update pedals animation in the sim
+        self.left_brake_pedal_position = brake_logic.left_brake_pilot_input;
+        self.right_brake_pedal_position = brake_logic.right_brake_pilot_input;
+
         let left_force_norm = norm_brakes.left_brake_pressure().get::<psi>() / 3000.;
         let left_force_altn = altn_brakes.left_brake_pressure().get::<psi>() / 3000.;
         self.left_brake_force = left_force_norm + left_force_altn;
@@ -1137,21 +1149,35 @@ impl A320BrakingForceSimulationOutput {
         let right_force_altn = altn_brakes.right_brake_pressure().get::<psi>() / 3000.;
         self.right_brake_force = right_force_norm + right_force_altn;
         self.right_brake_force = self.right_brake_force.max(0.).min(1.);
+
+        let accel = context.long_accel().get::<meter_per_second_squared>();
+
+        self.acceleration = self.acceleration
+            + (accel - self.acceleration)
+                * (1. - std::f64::consts::E.powf(-context.delta_as_secs_f64() / 0.1));
+        println!("DECEL:{:.1}m/s2", self.acceleration);
     }
 }
 
 impl SimulationElement for A320BrakingForceSimulationOutput {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write_f64("BRAKE LEFT POSITION", self.left_brake_force * 100.);
-        writer.write_f64("BRAKE RIGHT POSITION", self.right_brake_force * 100.);
+        writer.write_f64("BRAKE LEFT POSITION", self.left_brake_force);
+        writer.write_f64("BRAKE RIGHT POSITION", self.right_brake_force);
         writer.write_bool("PARK_BRAKE_LEVER_POS", self.park_brake_lever_is_set);
-        //println!("A320BrakingForceSimulationOutput WRITE: PARK_BRAKE_LEVER_POS {}",self.park_brake_lever_is_set);
+
+        writer.write_f64(
+            "LEFT_BRAKE_PEDAL_INPUT",
+            self.left_brake_pedal_position * 100.,
+        );
+        writer.write_f64(
+            "RIGHT_BRAKE_PEDAL_INPUT",
+            self.right_brake_pedal_position * 100.,
+        );
     }
 
     fn read(&mut self, state: &mut SimulatorReader) {
         self.ground_surface_type = state.read_f64("SURFACE TYPE");
         self.park_brake_lever_is_set = state.read_bool("BRAKE PARKING POSITION");
-        //println!("A320BrakingForceSimulationOutput READ: PARK_BRAKE_LEVER_POS {}",self.park_brake_lever_is_set);
     }
 }
 
@@ -1736,7 +1762,7 @@ mod tests {
 
             fn set_park_brake(mut self, is_set: bool) -> Self {
                 self.simulation_test_bed
-                    .write_bool("BRAKE PARKING INDICATOR", is_set);
+                    .write_bool("BRAKE PARKING POSITION", is_set);
                 self
             }
 

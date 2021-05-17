@@ -24,6 +24,8 @@ struct InputOutputBrakeRight {
 struct BrakeInput {
     brake_left_sim_input: f64,
     brake_right_sim_input: f64,
+    brake_left_sim_input_keyboard: f64,
+    brake_right_sim_input_keyboard: f64,
 
     brake_left_output_to_sim: f64,
     brake_right_output_to_sim: f64,
@@ -42,8 +44,12 @@ impl BrakeInput {
         Self {
             brake_left_sim_input: 0.,
             brake_right_sim_input: 0.,
+            brake_left_sim_input_keyboard: 0.,
+            brake_right_sim_input_keyboard: 0.,
+
             brake_left_output_to_sim: 0.,
             brake_right_output_to_sim: 0.,
+
             parking_brake_lever_is_set: true,
         }
     }
@@ -53,6 +59,24 @@ impl BrakeInput {
         let scaled_value = (casted_value + Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT)
             / Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT;
         self.brake_left_sim_input = scaled_value.min(1.).max(0.);
+    }
+
+    pub fn set_brake_left_key_pressed(&mut self) {
+        self.brake_left_sim_input_keyboard += 0.1;
+        self.brake_left_sim_input_keyboard.min(1.).max(0.);
+    }
+    pub fn set_brake_left_key_released(&mut self) {
+        self.brake_left_sim_input_keyboard -= 0.1;
+        self.brake_left_sim_input_keyboard.min(1.).max(0.);
+    }
+
+    pub fn set_brake_right_key_pressed(&mut self) {
+        self.brake_right_sim_input_keyboard += 0.1;
+        self.brake_right_sim_input_keyboard.min(1.).max(0.);
+    }
+    pub fn set_brake_right_key_released(&mut self) {
+        self.brake_right_sim_input_keyboard -= 0.1;
+        self.brake_right_sim_input_keyboard.min(1.).max(0.);
     }
 
     pub fn set_brake_left_percent(&mut self, percent_value: f64) {
@@ -74,55 +98,43 @@ impl BrakeInput {
 
     pub fn brake_left(&mut self) -> f64 {
         self.brake_left_sim_input
+            .max(self.brake_left_sim_input_keyboard)
     }
 
     pub fn brake_right(&mut self) -> f64 {
         self.brake_right_sim_input
+            .max(self.brake_right_sim_input_keyboard)
     }
 
     pub fn set_brake_right_output(&mut self, brake_force_factor: f64) {
-        //println!("set_brake_right_output({})", brake_force_factor);
         self.brake_right_output_to_sim = brake_force_factor;
     }
 
     pub fn set_brake_left_output(&mut self, brake_force_factor: f64) {
-        //println!("set_brake_left_output({})", brake_force_factor);
         self.brake_left_output_to_sim = brake_force_factor;
     }
 
     pub fn receive_a_park_brake_event(&mut self) {
         self.parking_brake_lever_is_set = !self.parking_brake_lever_is_set;
-        // println!(
-        //     "receive_a_park_brake_event!!, Park brake input set to {}",
-        //     self.parking_brake_lever_is_set
-        // );
     }
 
     pub fn get_brake_right_output_converted_in_simconnect_format(&mut self) -> u32 {
-        let back_to_position_format = ((self.brake_right_output_to_sim / 100.)
+        let back_to_position_format = ((self.brake_right_output_to_sim)
             * Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT)
             - Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT;
         let to_i32 = back_to_position_format as i32;
         let to_u32 = to_i32 as u32;
 
-        // println!(
-        //     "get_brake_right_output_...({} -> {})",
-        //     self.brake_right_output_to_sim, to_u32
-        //);
         to_u32
     }
 
     pub fn get_brake_left_output_converted_in_simconnect_format(&mut self) -> u32 {
-        let back_to_position_format = ((self.brake_left_output_to_sim / 100.)
+        let back_to_position_format = ((self.brake_left_output_to_sim)
             * Self::RANGE_BRAKE_RAW_VAL_FROM_SIMCONNECT)
             - Self::OFFSET_BRAKE_RAW_VAL_FROM_SIMCONNECT;
         let to_i32 = back_to_position_format as i32;
         let to_u32 = to_i32 as u32;
 
-        // println!(
-        //     "get_brake_left_output_...({} -> {})",
-        //     self.brake_left_output_to_sim, to_u32
-        // );
         to_u32
     }
 
@@ -137,51 +149,96 @@ impl BrakeInput {
 
 #[msfs::gauge(name=systems)]
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn std::error::Error>> {
-    // Testing simconnect input masking
     let mut sim = gauge.open_simconnect("systems")?;
+
+    // SimConnect inputs masking
     let id_brake_left = sim.map_client_event_to_sim_event("AXIS_LEFT_BRAKE_SET", true)?;
     let id_brake_right = sim.map_client_event_to_sim_event("AXIS_RIGHT_BRAKE_SET", true)?;
     let id_parking_brake = sim.map_client_event_to_sim_event("PARKING_BRAKES", true)?;
+    let id_brake_keyboard = sim.map_client_event_to_sim_event("BRAKES", true)?;
+    let id_brake_left_keyboard = sim.map_client_event_to_sim_event("BRAKES_LEFT", true)?;
+    let id_brake_right_keyboard = sim.map_client_event_to_sim_event("BRAKES_RIGHT", true)?;
 
     let mut reader_writer = A320SimulatorReaderWriter::new()?;
     let mut a320 = A320::new();
     let mut simulation = Simulation::new(&mut a320, &mut reader_writer);
 
+    let mut key_brake_event = false;
+
+    let mut key_brake_left_event = false;
+    let mut key_brake_right_event = false;
+
     while let Some(event) = gauge.next_event().await {
         match event {
-            MSFSEvent::PreDraw(d) => simulation.tick(d.delta_time()),
+            MSFSEvent::PreDraw(d) => {
+                simulation.tick(d.delta_time());
+
+                // We want to send our brake commands once per refresh event, thus doing it after a draw event
+                sim.transmit_client_event(
+                    SIMCONNECT_OBJECT_ID_USER,
+                    id_brake_left,
+                    simulation.get_brake_output_left(),
+                )?;
+
+                sim.transmit_client_event(
+                    SIMCONNECT_OBJECT_ID_USER,
+                    id_brake_right,
+                    simulation.get_brake_output_right(),
+                )?;
+
+                // Clearing keyboard events
+                if key_brake_event {
+                    key_brake_event = false;
+                    simulation.update_brake_input_right(0 - 16384);
+                    simulation.update_brake_input_left(0 - 16384);
+                    //println!("CLEAR_BRAKE");
+                }
+
+                if key_brake_left_event {
+                    key_brake_left_event = false;
+                    simulation.update_brake_input_left(0 - 16384);
+                    //println!("CLEAR_BRAKELEFT");
+                }
+
+                if key_brake_right_event {
+                    key_brake_right_event = false;
+                    //println!("CLEAR_BRAKERIGHT");
+                    simulation.update_brake_input_right(0 - 16384);
+                }
+            }
 
             MSFSEvent::SimConnect(recv) => match recv {
                 SimConnectRecv::Event(e) => {
                     if e.id() == id_brake_left {
                         simulation.update_brake_input_left(e.data());
-                        //println!("raw left val received= ({:X})", e.data());
                     }
                     if e.id() == id_brake_right {
                         simulation.update_brake_input_right(e.data());
-                        //println!("raw right val received= ({:X})", e.data());
                     }
                     if e.id() == id_parking_brake {
                         simulation.receive_a_park_brake_event();
-                        //println!("park brake event received!!!");
+                    }
+                    if e.id() == id_brake_keyboard {
+                        println!("BRAKE");
+                        simulation.update_brake_input_right(16384);
+                        simulation.update_brake_input_left(16384);
+                        key_brake_event = true;
+                    }
+                    if e.id() == id_brake_left_keyboard {
+                        println!("BRAKELEFT");
+                        simulation.update_brake_input_left(16384);
+                        key_brake_left_event = true;
+                    }
+                    if e.id() == id_brake_right_keyboard {
+                        println!("BRAKERIGHT");
+                        simulation.update_brake_input_right(16384);
+                        key_brake_right_event = true;
                     }
                 }
                 _ => {}
             },
             _ => {}
         }
-
-        sim.transmit_client_event(
-            SIMCONNECT_OBJECT_ID_USER,
-            id_brake_left,
-            simulation.get_brake_output_left(),
-        )?;
-
-        sim.transmit_client_event(
-            SIMCONNECT_OBJECT_ID_USER,
-            id_brake_right,
-            simulation.get_brake_output_right(),
-        )?;
     }
 
     Ok(())
@@ -344,6 +401,20 @@ impl SimulatorReaderWriter for A320SimulatorReaderWriter {
     }
     fn receive_a_park_brake_event(&mut self) {
         self.masked_brake_input.receive_a_park_brake_event();
+    }
+
+    fn set_brake_left_key_pressed(&mut self) {
+        self.masked_brake_input.set_brake_left_key_pressed();
+    }
+    fn set_brake_left_key_released(&mut self) {
+        self.masked_brake_input.set_brake_left_key_released();
+    }
+
+    fn set_brake_right_key_pressed(&mut self) {
+        self.masked_brake_input.set_brake_right_key_pressed();
+    }
+    fn set_brake_right_key_released(&mut self) {
+        self.masked_brake_input.set_brake_left_key_released();
     }
 }
 

@@ -613,36 +613,14 @@
             <ANIM_NAME_L>HANDLING_RudderPedals_Brake_L</ANIM_NAME_L>
             <ANIM_NAME_R>HANDLING_RudderPedals_Brake_R</ANIM_NAME_R>
         </DefaultTemplateParameters>
-        <OverrideTemplateParameters>
-            <Condition Valid="DONT_BRAKE_ON_PARKINGBRAKE">
-                <True>
-                    <SIMVAR_END> EX1</SIMVAR_END>
-                </True>
-                <False>
-                    <SIMVAR_END></SIMVAR_END>
-                </False>
-            </Condition>
-        </OverrideTemplateParameters>
-        <Condition Valid="DIFFERENTIATE_BRAKE_ANIM_L_R">
-            <True>
-                <UseTemplate Name="ASOBO_GT_Anim_Sim">
-                    <ANIM_NAME>#ANIM_NAME_L#</ANIM_NAME>
-                    <ANIM_SIMVAR>BRAKE LEFT POSITION#SIMVAR_END#</ANIM_SIMVAR>
-                    <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
-                </UseTemplate>
-                <UseTemplate Name="ASOBO_GT_Anim_Sim">
-                    <ANIM_NAME>#ANIM_NAME_R#</ANIM_NAME>
-                    <ANIM_SIMVAR>BRAKE RIGHT POSITION#SIMVAR_END#</ANIM_SIMVAR>
-                    <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
-                </UseTemplate>
-            </True>
-            <False>
-                <UseTemplate Name="ASOBO_GT_Anim_Sim">
-                    <ANIM_SIMVAR>BRAKE LEFT POSITION#SIMVAR_END#</ANIM_SIMVAR>
-                    <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
-                </UseTemplate>
-            </False>
-        </Condition>
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <ANIM_NAME>#ANIM_NAME_L#</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_LEFT_BRAKE_PEDAL_INPUT,number)</ANIM_CODE>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <ANIM_NAME>#ANIM_NAME_R#</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_RIGHT_BRAKE_PEDAL_INPUT,number)</ANIM_CODE>
+            </UseTemplate>
     </Template>
 
 </ModelBehaviors>

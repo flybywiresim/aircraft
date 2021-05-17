@@ -24,6 +24,12 @@ pub trait SimulatorReaderWriter {
     fn get_brake_output_left(&mut self) -> u32;
     fn get_brake_output_right(&mut self) -> u32;
     fn receive_a_park_brake_event(&mut self);
+
+    fn set_brake_left_key_pressed(&mut self);
+    fn set_brake_left_key_released(&mut self);
+
+    fn set_brake_right_key_pressed(&mut self);
+    fn set_brake_right_key_released(&mut self);
 }
 
 /// An [`Aircraft`] that can be simulated by the [`Simulation`].

@@ -349,7 +349,14 @@ impl SimulatorReaderWriter for TestReaderWriter {
         0
     }
     fn receive_a_park_brake_event(&mut self) {}
+
+    fn set_brake_left_key_pressed(&mut self) {}
+    fn set_brake_left_key_released(&mut self) {}
+
+    fn set_brake_right_key_pressed(&mut self) {}
+    fn set_brake_right_key_released(&mut self) {}
 }
+
 impl Default for TestReaderWriter {
     fn default() -> Self {
         Self::new()
