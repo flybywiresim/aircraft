@@ -1155,7 +1155,7 @@ impl A320BrakingForceSimulationOutput {
         self.acceleration = self.acceleration
             + (accel - self.acceleration)
                 * (1. - std::f64::consts::E.powf(-context.delta_as_secs_f64() / 0.1));
-        println!("DECEL:{:.1}m/s2", self.acceleration);
+        //println!("DECEL:{:.1}m/s2", self.acceleration);
     }
 }
 
