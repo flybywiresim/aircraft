@@ -1,0 +1,80 @@
+@import "../../../Common/definitions";
+
+#hyd-page {
+
+  .PageTitle {
+    font-size: 24px;
+    text-decoration: underline;
+    fill: $display-white;
+    text-anchor: middle !important;
+  }
+
+  .EngineNumber {
+    font-size: 24px;
+    text-anchor: middle !important;
+  };
+
+  text {
+    &.Title {
+        font-size: 22px;
+        fill: $display-white;
+        text-anchor: middle !important;
+    }
+
+      &.Pressure {
+          font-size: 22px;
+          fill: $display-green;
+          text-anchor: middle !important;
+      }
+
+      &.Psi {
+        font-size: 16px;
+        fill: $display-cyan;
+        text-anchor: middle !important;
+      }
+
+      &.RatPtuElec {
+        font-size: 18px;
+        text-anchor: middle !important;
+      }
+  }
+
+  .NoFill {
+    fill: none;
+  }
+
+  .FillGreen {
+    fill: $display-green;
+  }
+
+  .FillAmber {
+    fill: $display-amber;
+  }
+
+  .FillWhite {
+    fill: $display-white;
+  }
+
+  .FillBlack {
+    fill: $display-background;
+  }
+
+  .GreenLine {
+    stroke: $display-green;
+    stroke-width: 2;
+  }
+
+  .AmberLine {
+    stroke: $display-amber;
+    stroke-width: 2;
+  }
+
+  .WhiteLine {
+    stroke: $display-white;
+    stroke-width: 2;
+  }
+
+  .Hide {
+    display: none;
+  }
+}

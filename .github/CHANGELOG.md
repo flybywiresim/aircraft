@@ -71,6 +71,7 @@
 1. [MISC] Standby instrument brightness buttons can now be held down rather than pressed to -/+ brightness - @2hwk (2Cas#1022)
 1. [AP] Fixed and improved mode transitions related to LAND modes - @aguther (Andreas Guther)
 1. [ENGINE] Adapt engine IDLE N1 based on environmental conditions - @Taz5150 (TazX [Z+2]#0405), @aguther (Andreas Guther)
+1. [ECAM] Added hydraulics page on SD - @RichardPilbery (tricky_dicky[Z+0]#3571)
 
 ## 0.6.0
 1. [CDU] Added WIND page - @tyler58546 (tyler58546)
