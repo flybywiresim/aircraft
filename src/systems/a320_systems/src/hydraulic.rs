@@ -531,6 +531,8 @@ impl HydraulicLoopController for A320HydraulicLoopController {
 }
 
 struct A320EngineDrivenPumpController {
+    is_powered: bool,
+    powering_buses: Vec<ElectricalBusType>,
     engine_number: usize,
     engine_master_on_id: String,
     engine_master_on: bool,
@@ -541,9 +543,25 @@ struct A320EngineDrivenPumpController {
 }
 impl A320EngineDrivenPumpController {
     const MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT: f64 = 18.;
+    const YELLOW_EDP_POWER_BUS1: ElectricalBusType = ElectricalBusType::DirectCurrent(2);
+    const YELLOW_EDP_POWER_BUS2: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
+    const GREEN_EDP_POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
 
     fn new(engine_number: usize) -> Self {
+        let power_buses;
+        if engine_number == 1 {
+            power_buses = vec![Self::GREEN_EDP_POWER_BUS];
+        } else if engine_number == 2 {
+            power_buses = vec![Self::YELLOW_EDP_POWER_BUS1, Self::YELLOW_EDP_POWER_BUS2];
+        } else {
+            panic!("The A320 only supports two engines.");
+        }
+
+        assert!(power_buses.len() > 0 && power_buses.len() <= 2);
+
         Self {
+            is_powered: false,
+            powering_buses: power_buses,
             engine_number,
             engine_master_on_id: format!("GENERAL ENG STARTER ACTIVE:{}", engine_number),
             engine_master_on: false,
@@ -584,15 +602,19 @@ impl A320EngineDrivenPumpController {
         engine_oil_pressure: Pressure,
         pressure_switch_state: bool,
     ) {
+        let mut should_pressurise_if_powered = false;
         if overhead_panel.edp_push_button_is_auto(self.engine_number)
             && !engine_fire_overhead.fire_push_button_is_released(self.engine_number)
         {
-            self.should_pressurise = true;
+            should_pressurise_if_powered = true;
         } else if overhead_panel.edp_push_button_is_off(self.engine_number)
             || engine_fire_overhead.fire_push_button_is_released(self.engine_number)
         {
-            self.should_pressurise = false;
+            should_pressurise_if_powered = false;
         }
+
+        // Inverted logic, no power means solenoid valve always leave pump in pressurise mode
+        self.should_pressurise = !self.is_powered || should_pressurise_if_powered;
 
         self.update_low_pressure_state(engine_n2, engine_oil_pressure, pressure_switch_state);
     }
@@ -617,6 +639,23 @@ impl SimulationElement for A320EngineDrivenPumpController {
             writer.write_bool("HYD_GREEN_EDPUMP_LOW_PRESS", self.is_pressure_low);
         } else if self.engine_number == 2 {
             writer.write_bool("HYD_YELLOW_EDPUMP_LOW_PRESS", self.is_pressure_low);
+        } else {
+            panic!("The A320 only supports two engines.");
+        }
+    }
+
+    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
+        if self.engine_number == 1 {
+            self.is_powered = supplied_power
+                .potential_of(&self.powering_buses[0])
+                .is_powered();
+        } else if self.engine_number == 2 {
+            self.is_powered = supplied_power
+                .potential_of(&self.powering_buses[0])
+                .is_powered()
+                || supplied_power
+                    .potential_of(&self.powering_buses[1])
+                    .is_powered();
         } else {
             panic!("The A320 only supports two engines.");
         }
