@@ -253,7 +253,9 @@ impl<'a, T: SimulationElement, U: Fn(&mut T, &UpdateContext)> SimulationElement
     for TestAircraft<'a, T, U>
 {
     fn accept<W: SimulationElementVisitor>(&mut self, visitor: &mut W) {
-        visitor.visit(self.element);
+        self.element.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 

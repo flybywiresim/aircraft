@@ -11,7 +11,7 @@ use electrical::{
     A320EmergencyElectricalOverheadPanel,
 };
 
-use hydraulic::{A320EngineFireOverheadPanel, A320Hydraulic, A320HydraulicOverheadPanel};
+use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 
 use power_consumption::A320PowerConsumption;
 use systems::{
@@ -20,7 +20,7 @@ use systems::{
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
     electrical::{consumption::SuppliedPower, ElectricalSystem, ExternalPowerSource},
-    engine::{leap_engine::LeapEngine, Engine},
+    engine::{leap_engine::LeapEngine, Engine, EngineFireOverheadPanel},
     landing_gear::LandingGear,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -35,7 +35,7 @@ pub struct A320 {
     fuel: A320Fuel,
     engine_1: LeapEngine,
     engine_2: LeapEngine,
-    engine_fire_overhead: A320EngineFireOverheadPanel,
+    engine_fire_overhead: EngineFireOverheadPanel,
     electrical: A320Electrical,
     power_consumption: A320PowerConsumption,
     ext_pwr: ExternalPowerSource,
@@ -55,7 +55,7 @@ impl A320 {
             fuel: A320Fuel::new(),
             engine_1: LeapEngine::new(1),
             engine_2: LeapEngine::new(2),
-            engine_fire_overhead: A320EngineFireOverheadPanel::new(),
+            engine_fire_overhead: EngineFireOverheadPanel::new(),
             electrical: A320Electrical::new(),
             power_consumption: A320PowerConsumption::new(),
             ext_pwr: ExternalPowerSource::new(),

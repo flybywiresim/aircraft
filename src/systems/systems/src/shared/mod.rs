@@ -20,6 +20,11 @@ pub trait AuxiliaryPowerUnitElectrical: PotentialSource + ApuStartContactorsCont
     fn output_within_normal_parameters(&self) -> bool;
 }
 
+pub trait EngineFirePushButtons {
+    /// Indicates if the fire push button of the given engine is released.
+    fn is_released(&self, engine_number: usize) -> bool;
+}
+
 #[derive(FromPrimitive)]
 pub(crate) enum FwcFlightPhase {
     ElecPwr = 1,
