@@ -16,7 +16,7 @@ use systems::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, UpdateContext,
 };
 
-use systems::electrical::ElectricalBusType;
+use systems::electrical::{consumption::SuppliedPower, ElectricalBusType};
 use systems::{engine::Engine, landing_gear::LandingGear};
 use systems::{
     hydraulic::brake_circuit::BrakeCircuit, shared::DelayedFalseLogicGate,
@@ -624,6 +624,8 @@ impl SimulationElement for A320EngineDrivenPumpController {
 }
 
 struct A320BlueElectricPumpController {
+    is_powered: bool,
+    powering_bus: ElectricalBusType,
     should_pressurise: bool,
     has_pressure_low_fault: bool,
     is_pressure_low: bool,
@@ -631,9 +633,12 @@ struct A320BlueElectricPumpController {
 }
 impl A320BlueElectricPumpController {
     const MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT: f64 = 18.;
+    const POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
 
     fn new() -> Self {
         Self {
+            is_powered: false,
+            powering_bus: Self::POWER_BUS,
             should_pressurise: false,
             has_pressure_low_fault: false,
             is_pressure_low: true,
@@ -650,19 +655,22 @@ impl A320BlueElectricPumpController {
         engine1_above_min_idle: bool,
         engine2_above_min_idle: bool,
     ) {
+        let mut should_pressurise_if_powered = false;
         if overhead_panel.blue_epump_push_button.is_auto() {
             if !self.weight_on_wheels
                 || engine1_above_min_idle
                 || engine2_above_min_idle
                 || overhead_panel.blue_epump_override_push_button_is_on()
             {
-                self.should_pressurise = true;
+                should_pressurise_if_powered = true;
             } else {
-                self.should_pressurise = false;
+                should_pressurise_if_powered = false;
             }
         } else if overhead_panel.blue_epump_push_button_is_off() {
-            self.should_pressurise = false;
+            should_pressurise_if_powered = false;
         }
+
+        self.should_pressurise = self.is_powered && should_pressurise_if_powered;
 
         self.update_low_pressure_state(
             overhead_panel,
@@ -711,6 +719,10 @@ impl SimulationElement for A320BlueElectricPumpController {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_bool("HYD_BLUE_EPUMP_LOW_PRESS", self.is_pressure_low);
     }
+
+    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
+        self.is_powered = supplied_power.potential_of(&self.powering_bus).is_powered();
+    }
 }
 
 impl Default for A320BlueElectricPumpController {
@@ -720,6 +732,8 @@ impl Default for A320BlueElectricPumpController {
 }
 
 struct A320YellowElectricPumpController {
+    is_powered: bool,
+    powering_bus: ElectricalBusType,
     should_pressurise: bool,
     has_pressure_low_fault: bool,
     is_pressure_low: bool,
@@ -729,8 +743,12 @@ impl A320YellowElectricPumpController {
     const DURATION_OF_YELLOW_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
         Duration::from_secs(20);
 
+    const POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrent(2);
+
     fn new() -> Self {
         Self {
+            is_powered: false,
+            powering_bus: Self::POWER_BUS,
             should_pressurise: false,
             has_pressure_low_fault: false,
             is_pressure_low: true,
@@ -754,10 +772,11 @@ impl A320YellowElectricPumpController {
                 forward_cargo_door.has_moved() || aft_cargo_door.has_moved(),
             );
 
-        self.should_pressurise = overhead_panel.yellow_epump_push_button.is_on()
+        self.should_pressurise = (overhead_panel.yellow_epump_push_button.is_on()
             || self
                 .should_activate_yellow_pump_for_cargo_door_operation
-                .output();
+                .output())
+            && self.is_powered;
 
         self.update_low_pressure_state(pressure_switch_state);
     }
@@ -787,6 +806,10 @@ impl SimulationElement for A320YellowElectricPumpController {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write_bool("HYD_YELLOW_EPUMP_LOW_PRESS", self.is_pressure_low);
     }
+
+    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
+        self.is_powered = supplied_power.potential_of(&self.powering_bus).is_powered();
+    }
 }
 impl Default for A320YellowElectricPumpController {
     fn default() -> Self {
@@ -795,6 +818,8 @@ impl Default for A320YellowElectricPumpController {
 }
 
 struct A320PowerTransferUnitController {
+    is_powered: bool,
+    powering_bus: ElectricalBusType,
     should_enable: bool,
     should_inhibit_ptu_after_cargo_door_operation: DelayedFalseLogicGate,
     nose_wheel_steering_pin_inserted: DelayedFalseLogicGate,
@@ -809,8 +834,12 @@ impl A320PowerTransferUnitController {
     const DURATION_AFTER_WHICH_NWS_PIN_IS_REMOVED_AFTER_PUSHBACK: Duration =
         Duration::from_secs(15);
 
+    const POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrentGndFltService;
+
     fn new() -> Self {
         Self {
+            is_powered: false,
+            powering_bus: Self::POWER_BUS,
             should_enable: false,
             should_inhibit_ptu_after_cargo_door_operation: DelayedFalseLogicGate::new(
                 Self::DURATION_OF_PTU_INHIBIT_AFTER_CARGO_DOOR_OPERATION,
@@ -844,13 +873,16 @@ impl A320PowerTransferUnitController {
         let ptu_inhibited = self.should_inhibit_ptu_after_cargo_door_operation.output()
             && overhead_panel.yellow_epump_push_button_is_auto();
 
-        self.should_enable = overhead_panel.ptu_push_button_is_auto()
+        let should_enable_if_powered = overhead_panel.ptu_push_button_is_auto()
             && (!self.weight_on_wheels
                 || self.eng_1_master_on && self.eng_2_master_on
                 || !self.eng_1_master_on && !self.eng_2_master_on
                 || (!self.parking_brake_lever_pos
                     && !self.nose_wheel_steering_pin_inserted.output()))
             && !ptu_inhibited;
+
+        // This is negative logic here. If no power, ptu is laways ON
+        self.should_enable = !self.is_powered || should_enable_if_powered;
     }
 
     #[cfg(test)]
@@ -869,6 +901,10 @@ impl SimulationElement for A320PowerTransferUnitController {
         self.eng_1_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:1");
         self.eng_2_master_on = state.read_bool("GENERAL ENG STARTER ACTIVE:2");
         self.weight_on_wheels = state.read_bool("SIM ON GROUND");
+    }
+
+    fn receive_power(&mut self, supplied_power: &SuppliedPower) {
+        self.is_powered = supplied_power.potential_of(&self.powering_bus).is_powered();
     }
 }
 
