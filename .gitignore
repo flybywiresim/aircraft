@@ -30,6 +30,8 @@
 .DS_Store
 node_modules
 /src/sound/.cache
+/src/instruments/devServer/bundles
+/src/instruments/devServer/instruments.json
 /src/instruments/src/EFB/dist
 /src/autothrottle/target
 /flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/*.gltf

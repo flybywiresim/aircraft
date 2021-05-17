@@ -106,7 +106,10 @@ module.exports = getInstrumentsToCompile()
                     compact: false,
                     extensions,
                 }),
-                typescriptPaths({ tsConfigPath: `${__dirname}/../tsconfig.json` }),
+                typescriptPaths({
+                    tsConfigPath: `${__dirname}/../tsconfig.json`,
+                    preserveExtensions: true,
+                }),
                 replace({ 'process.env.NODE_ENV': '"production"' }),
                 postcss({
                     use: { sass: {} },
