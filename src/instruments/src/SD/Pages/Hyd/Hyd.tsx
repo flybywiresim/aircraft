@@ -379,7 +379,6 @@ const HydReservoir = ({ system, x, y, fluidLevel, setHydLevel } : HydReservoirPr
     const fluidHeight = y - (fluidLevelPerPixel * fluidLevelInLitres);
 
     useEffect(() => {
-        console.log(`colour ${system} fluid level ${fluidLevelInLitres} values low ${values[0].low}`);
         if (fluidLevelInLitres < values[0].low) {
             setHydLevel(true);
         } else {
