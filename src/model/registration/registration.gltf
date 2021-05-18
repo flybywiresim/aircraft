@@ -15,7 +15,7 @@
                 0.012040370143949986
             ],
             "type": "VEC3",
-            "name": "x0_COCKPIT_DECAL_SELCAL _vertices#0_POSITION"
+            "name": "x0_COCKPIT_DECAL_SELCAL_vertices#0_POSITION"
         },
         {
             "bufferView": 0,
@@ -23,7 +23,7 @@
             "componentType": 5120,
             "count": 4,
             "type": "VEC4",
-            "name": "x0_COCKPIT_DECAL_SELCAL _vertices#0_TANGENT"
+            "name": "x0_COCKPIT_DECAL_SELCAL_vertices#0_TANGENT"
         },
         {
             "bufferView": 0,
@@ -31,7 +31,7 @@
             "componentType": 5120,
             "count": 4,
             "type": "VEC4",
-            "name": "x0_COCKPIT_DECAL_SELCAL _vertices#0_NORMAL"
+            "name": "x0_COCKPIT_DECAL_SELCAL_vertices#0_NORMAL"
         },
         {
             "bufferView": 0,
@@ -39,7 +39,7 @@
             "componentType": 5122,
             "count": 4,
             "type": "VEC2",
-            "name": "x0_COCKPIT_DECAL_SELCAL _vertices#0_TEXCOORD_0"
+            "name": "x0_COCKPIT_DECAL_SELCAL_vertices#0_TEXCOORD_0"
         },
         {
             "bufferView": 0,
@@ -47,7 +47,7 @@
             "componentType": 5122,
             "count": 4,
             "type": "VEC2",
-            "name": "x0_COCKPIT_DECAL_SELCAL _vertices#0_TEXCOORD_1"
+            "name": "x0_COCKPIT_DECAL_SELCAL_vertices#0_TEXCOORD_1"
         },
         {
             "bufferView": 0,
@@ -55,14 +55,14 @@
             "componentType": 5123,
             "count": 4,
             "type": "VEC4",
-            "name": "x0_COCKPIT_DECAL_SELCAL _vertices#0_COLOR_0"
+            "name": "x0_COCKPIT_DECAL_SELCAL_vertices#0_COLOR_0"
         },
         {
             "bufferView": 1,
             "componentType": 5123,
             "count": 6,
             "type": "SCALAR",
-            "name": "x0_COCKPIT_DECAL_SELCAL _indices#0"
+            "name": "x0_COCKPIT_DECAL_SELCAL_indices#0"
         }
     ],
     "asset": {
@@ -106,11 +106,36 @@
     ],
     "extensionsUsed": [
         "ASOBO_normal_map_convention",
-        "ASOBO_asset_optimized"
+        "ASOBO_asset_optimized",
+        "ASOBO_material_blend_gbuffer",
+        "MSFT_texture_dds"
     ],
+    "extensionsRequired": ["MSFT_texture_dds"],
     "materials": [
         {
-            "name": "glTFValidator_Added_Default_Material"
+            "name": "DECALSALPHA",
+            "alphaMode": "BLEND",
+            "normalTexture": {
+                "index": 2
+            },
+            "occlusionTexture": {
+                "index": 1
+            },
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 0
+                },
+                "metallicRoughnessTexture": {
+                    "index": 1
+                }
+            },
+            "extensions": {
+                "ASOBO_material_blend_gbuffer": {
+                    "emissiveBlendFactor": 0,
+                    "metallicBlendFactor": 0,
+                    "occlusionBlendFactor": 0
+                }
+            }
         }
     ],
     "meshes": [
@@ -126,7 +151,7 @@
                         "TEXCOORD_1": 4
                     },
                     "indices": 6,
-                    "material": "DECALSALPHA",
+                    "material": 0,
                     "mode": 4,
                     "extras": {
                         "ASOBO_primitive": {
@@ -137,7 +162,7 @@
                     }
                 }
             ],
-            "name": "x0_COCKPIT_DECAL_SELCAL "
+            "name": "x0_COCKPIT_DECAL_SELCAL"
         }
     ],
     "nodes": [
@@ -160,9 +185,7 @@
     "scene": 0,
     "scenes": [
         {
-            "nodes": [
-                0
-            ],
+            "nodes": [0],
             "name": "Scene"
         }
     ],
@@ -170,6 +193,43 @@
         {
             "byteLength": 156,
             "uri": "registration.bin"
+        }
+    ],
+    "textures": [
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 0
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 1
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 2
+                }
+            }
+        }
+    ],
+    "images": [
+        {
+            "uri": "A320NEO_COCKPIT_DECALSALPHA_ALBD.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "A320NEO_COCKPIT_DECALSALPHA_COMP.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "A320NEO_COCKPIT_DECALSALPHA_NORM.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
         }
     ]
 }
