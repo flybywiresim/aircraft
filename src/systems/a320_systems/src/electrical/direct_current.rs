@@ -7,8 +7,8 @@ use systems::electrical::Potential;
 use systems::{
     electrical::{
         consumption::SuppliedPower, Battery, BatteryChargeLimiter, BatteryChargeLimiterArguments,
-        Contactor, ElectricalBus, ElectricalBusType, PotentialSource, PotentialTarget,
-        StaticInverter,
+        Contactor, ElectricalBus, ElectricalBusType, EmergencyElectrical, EmergencyGenerator,
+        PotentialSource, PotentialTarget, StaticInverter,
     },
     shared::{AuxiliaryPowerUnitElectrical, EngineCorrectedN2, EngineFirePushButtons},
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
@@ -79,7 +79,7 @@ impl A320DirectCurrentElectrical {
         }
     }
 
-    pub fn update_with_alternating_current_state<
+    pub fn update<
         'a,
         T: AlternatingCurrentState,
         U: EngineCorrectedN2,
@@ -90,6 +90,8 @@ impl A320DirectCurrentElectrical {
         context: &UpdateContext,
         overhead: &A320ElectricalOverheadPanel,
         ac_state: &T,
+        emergency_elec: &EmergencyElectrical,
+        emergency_generator: &EmergencyGenerator,
         arguments: &mut A320ElectricalUpdateArguments<'a, U, V, W>,
     ) {
         self.tr_1_contactor.close_when(ac_state.tr_1().is_powered());
@@ -144,6 +146,7 @@ impl A320DirectCurrentElectrical {
 
         self.battery_1_charge_limiter.update(
             context,
+            emergency_elec,
             &BatteryChargeLimiterArguments::new(
                 ac_state.ac_bus_1_and_2_unpowered(),
                 &self.battery_1,
@@ -153,7 +156,7 @@ impl A320DirectCurrentElectrical {
                 arguments.apu_is_available(),
                 overhead.bat_1_is_auto(),
                 arguments.landing_gear_is_up_and_locked(),
-                ac_state.emergency_generator_available(),
+                emergency_generator.is_powered(),
             ),
         );
         self.battery_1_contactor
@@ -161,6 +164,7 @@ impl A320DirectCurrentElectrical {
 
         self.battery_2_charge_limiter.update(
             context,
+            emergency_elec,
             &BatteryChargeLimiterArguments::new(
                 ac_state.ac_bus_1_and_2_unpowered(),
                 &self.battery_2,
@@ -170,7 +174,7 @@ impl A320DirectCurrentElectrical {
                 arguments.apu_is_available(),
                 overhead.bat_2_is_auto(),
                 arguments.landing_gear_is_up_and_locked(),
-                ac_state.emergency_generator_available(),
+                emergency_generator.is_powered(),
             ),
         );
         self.battery_2_contactor
@@ -206,7 +210,8 @@ impl A320DirectCurrentElectrical {
 
         arguments.apu_start_motor_powered_by(self.apu_start_contactors.output());
 
-        let should_close_2xb_contactor = self.should_close_2xb_contactors(context, ac_state);
+        let should_close_2xb_contactor =
+            self.should_close_2xb_contactors(context, emergency_generator, ac_state);
         self.hot_bus_1_to_static_inv_contactor
             .close_when(should_close_2xb_contactor);
         self.hot_bus_1_to_static_inv_contactor
@@ -241,9 +246,11 @@ impl A320DirectCurrentElectrical {
     fn should_close_2xb_contactors<T: AlternatingCurrentState>(
         &self,
         context: &UpdateContext,
+        emergency_generator: &EmergencyGenerator,
         ac_state: &T,
     ) -> bool {
-        ac_state.ac_1_and_2_and_emergency_gen_unpowered()
+        ac_state.ac_bus_1_and_2_unpowered()
+            && !emergency_generator.is_powered()
             && ((context.indicated_airspeed() < Velocity::new::<knot>(50.)
                 && self.batteries_connected_to_bat_bus())
                 || context.indicated_airspeed() >= Velocity::new::<knot>(50.))
