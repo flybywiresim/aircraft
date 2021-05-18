@@ -17,7 +17,7 @@ use systems::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, UpdateContext,
 };
 
-use super::A320EmergencyElectricalOverheadPanel;
+use super::electrical::A320EmergencyElectricalOverheadStates;
 
 use systems::electrical::{consumption::SuppliedPower, ElectricalBusType};
 use systems::{engine::Engine, landing_gear::LandingGear};
@@ -191,8 +191,8 @@ impl A320Hydraulic {
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
-        emergency_electrical_overhead: &A320EmergencyElectricalOverheadPanel,
         landing_gear: &LandingGear,
+        rat_and_emer_gen_man_on: &impl A320EmergencyElectricalOverheadStates,
         is_in_emergency_elec: bool,
     ) {
         let min_hyd_loop_timestep =
@@ -211,7 +211,7 @@ impl A320Hydraulic {
         self.update_every_frame(
             &context,
             &overhead_panel,
-            &emergency_electrical_overhead,
+            rat_and_emer_gen_man_on,
             is_in_emergency_elec,
         );
 
@@ -311,11 +311,11 @@ impl A320Hydraulic {
     }
 
     // Update with same refresh rate as the sim
-    fn update_at_every_frames(
+    fn update_every_frame(
         &mut self,
         context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
-        emergency_electrical_overhead: &A320EmergencyElectricalOverheadPanel,
+        rat_and_emer_gen_man_on: &impl A320EmergencyElectricalOverheadStates,
         is_in_emergency_elec: bool,
     ) {
         // Updating rat stowed pos on all frames in case it's used for graphics
@@ -324,7 +324,7 @@ impl A320Hydraulic {
         // Uses external conditions and momentary button: better to check each frame
         self.ram_air_turbine_controller.update(
             &overhead_panel,
-            &emergency_electrical_overhead,
+            rat_and_emer_gen_man_on.rat_and_emer_gen_man_on(),
             is_in_emergency_elec,
         );
 
@@ -1002,13 +1002,12 @@ impl A320RamAirTurbineController {
     fn update(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
-        emergency_electrical_overhead: &A320EmergencyElectricalOverheadPanel,
+        rat_and_emer_gen_man_on: bool,
         is_in_emergency_elec: bool,
     ) {
         let should_solenoid_1_deploy_if_powered = overhead_panel.rat_man_on_push_button_is_on();
 
-        let should_solenoid_2_deploy_if_powered =
-            is_in_emergency_elec || emergency_electrical_overhead.rat_and_emer_gen_man_on();
+        let should_solenoid_2_deploy_if_powered = is_in_emergency_elec || rat_and_emer_gen_man_on;
 
         self.should_deploy = (self.is_solenoid_1_powered && should_solenoid_1_deploy_if_powered)
             || (self.is_solenoid_2_powered && should_solenoid_2_deploy_if_powered);
@@ -1424,13 +1423,36 @@ mod tests {
             ratio::percent, thermodynamic_temperature::degree_celsius, velocity::knot,
         };
 
+        struct A320TestEmergencyElectricalOverheadPanel {
+            rat_and_emer_gen_man_on: MomentaryPushButton,
+        }
+
+        impl A320TestEmergencyElectricalOverheadPanel {
+            pub fn new() -> Self {
+                A320TestEmergencyElectricalOverheadPanel {
+                    rat_and_emer_gen_man_on: MomentaryPushButton::new("EMER_ELEC_RAT_AND_EMER_GEN"),
+                }
+            }
+        }
+        impl SimulationElement for A320TestEmergencyElectricalOverheadPanel {
+            fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+                self.rat_and_emer_gen_man_on.accept(visitor);
+
+                visitor.visit(self);
+            }
+        }
+        impl A320EmergencyElectricalOverheadStates for A320TestEmergencyElectricalOverheadPanel {
+            fn rat_and_emer_gen_man_on(&self) -> bool {
+                self.rat_and_emer_gen_man_on.is_pressed()
+            }
+        }
         struct A320HydraulicsTestAircraft {
             engine_1: LeapEngine,
             engine_2: LeapEngine,
             hydraulics: A320Hydraulic,
             overhead: A320HydraulicOverheadPanel,
             engine_fire_overhead: A320EngineFireOverheadPanel,
-            emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel,
+            emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
             landing_gear: LandingGear,
 
             // Electric buses states to be able to kill them dynamically
@@ -1452,7 +1474,7 @@ mod tests {
                     hydraulics: A320Hydraulic::new(),
                     overhead: A320HydraulicOverheadPanel::new(),
                     engine_fire_overhead: A320EngineFireOverheadPanel::new(),
-                    emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel::new(),
+                    emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel::new(),
                     landing_gear: LandingGear::new(),
                     is_ac_ground_service_alive: true,
                     is_dc_ground_service_alive: true,
@@ -1552,8 +1574,8 @@ mod tests {
                     &self.engine_2,
                     &self.overhead,
                     &self.engine_fire_overhead,
-                    &self.emergency_electrical_overhead,
                     &self.landing_gear,
+                    &self.emergency_electrical_overhead,
                     is_in_emergency_elec,
                 );
 
@@ -1673,6 +1695,7 @@ mod tests {
                 self.overhead.accept(visitor);
                 self.engine_fire_overhead.accept(visitor);
                 self.landing_gear.accept(visitor);
+                self.emergency_electrical_overhead.accept(visitor);
 
                 visitor.visit(self);
             }

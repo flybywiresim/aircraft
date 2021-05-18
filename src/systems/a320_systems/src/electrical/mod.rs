@@ -444,7 +444,15 @@ impl SimulationElement for A320EmergencyElectricalOverheadPanel {
         visitor.visit(self);
     }
 }
-
+// Trait used to share RAT MAN button with hydraulics logic without ELEC type dependencies
+pub trait A320EmergencyElectricalOverheadStates {
+    fn rat_and_emer_gen_man_on(&self) -> bool;
+}
+impl A320EmergencyElectricalOverheadStates for A320EmergencyElectricalOverheadPanel {
+    fn rat_and_emer_gen_man_on(&self) -> bool {
+        self.rat_and_emer_gen_man_on.is_pressed()
+    }
+}
 #[cfg(test)]
 mod a320_electrical {
     use super::*;
