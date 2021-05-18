@@ -5,6 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.7.0
+1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [ENGINE] Fixed fuel consumption model - @Taz5150 (TazX [Z+2]#0405)
 1. [ENGINE] Fixed fuel flow being 0 at Start-up  - @Taz5150 (TazX [Z+2]#0405)
