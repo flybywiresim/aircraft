@@ -7,8 +7,7 @@ mod power_consumption;
 use self::{fuel::A320Fuel, pneumatic::A320PneumaticOverheadPanel};
 
 use electrical::{
-    A320Electrical, A320ElectricalOverheadPanel, A320ElectricalUpdateArguments,
-    A320EmergencyElectricalOverheadPanel,
+    A320Electrical, A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
 };
 
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
@@ -91,15 +90,12 @@ impl Aircraft for A320 {
             &self.ext_pwr,
             &self.electrical_overhead,
             &self.emergency_electrical_overhead,
-            &mut A320ElectricalUpdateArguments::new(
-                [&self.engine_1, &self.engine_2],
-                &mut self.apu,
-                self.hydraulic.is_blue_pressurised(),
-                self.apu_overhead.master_is_on(),
-                self.apu_overhead.start_is_on(),
-                self.landing_gear.is_up_and_locked(),
-                &self.engine_fire_overhead,
-            ),
+            &mut self.apu,
+            &self.apu_overhead,
+            &self.engine_fire_overhead,
+            [&self.engine_1, &self.engine_2],
+            &self.hydraulic,
+            &self.landing_gear,
         );
 
         self.apu.update_after_electrical();

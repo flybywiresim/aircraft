@@ -7,102 +7,23 @@ use self::{
     direct_current::A320DirectCurrentElectrical,
     galley::{MainGalley, SecondaryGalley},
 };
+#[cfg(test)]
+use systems::electrical::Potential;
 use systems::{
     electrical::{
         consumption::SuppliedPower, ElectricalSystem, EmergencyElectrical, EmergencyGenerator,
-        EngineGeneratorPushButtons, ExternalPowerSource, Potential, StaticInverter,
-        TransformerRectifier,
+        EngineGeneratorPushButtons, ExternalPowerSource, StaticInverter, TransformerRectifier,
     },
     overhead::{
         AutoOffFaultPushButton, FaultIndication, FaultReleasePushButton, MomentaryPushButton,
         NormalAltnFaultPushButton, OnOffAvailablePushButton, OnOffFaultPushButton,
     },
-    shared::{AuxiliaryPowerUnitElectrical, EngineCorrectedN2, EngineFirePushButtons},
+    shared::{
+        ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EngineCorrectedN2,
+        EngineFirePushButtons, LandingGearPosition, RamAirTurbineHydraulicLoopPressurised,
+    },
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
-
-pub(super) struct A320ElectricalUpdateArguments<
-    'a,
-    T: EngineCorrectedN2,
-    U: AuxiliaryPowerUnitElectrical,
-    V: EngineFirePushButtons,
-> {
-    engines: [&'a T; 2],
-    apu: &'a mut U,
-    is_blue_hydraulic_circuit_pressurised: bool,
-    apu_master_sw_pb_on: bool,
-    apu_start_pb_on: bool,
-    landing_gear_is_up_and_locked: bool,
-    engine_fire_push_buttons: &'a V,
-}
-impl<'a, T: EngineCorrectedN2, U: AuxiliaryPowerUnitElectrical, V: EngineFirePushButtons>
-    A320ElectricalUpdateArguments<'a, T, U, V>
-{
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        engines: [&'a T; 2],
-        apu: &'a mut U,
-        is_blue_hydraulic_circuit_pressurised: bool,
-        apu_master_sw_pb_on: bool,
-        apu_start_pb_on: bool,
-        landing_gear_is_up_and_locked: bool,
-        engine_fire_push_buttons: &'a V,
-    ) -> Self {
-        Self {
-            engines,
-            apu,
-            is_blue_hydraulic_circuit_pressurised,
-            apu_master_sw_pb_on,
-            apu_start_pb_on,
-            landing_gear_is_up_and_locked,
-            engine_fire_push_buttons,
-        }
-    }
-
-    fn apu(&mut self) -> &mut dyn AuxiliaryPowerUnitElectrical {
-        self.apu
-    }
-
-    fn should_close_apu_start_contactors(&self) -> bool {
-        self.apu.should_close_start_contactors()
-    }
-
-    fn apu_start_motor_powered_by(&mut self, source: Potential) {
-        self.apu.start_motor_powered_by(source);
-    }
-
-    fn apu_master_sw_pb_on(&self) -> bool {
-        self.apu_master_sw_pb_on
-    }
-
-    fn apu_start_pb_on(&self) -> bool {
-        self.apu_start_pb_on
-    }
-
-    fn apu_is_available(&self) -> bool {
-        self.apu.is_available()
-    }
-
-    fn is_blue_hydraulic_circuit_pressurised(&self) -> bool {
-        self.is_blue_hydraulic_circuit_pressurised
-    }
-
-    fn landing_gear_is_up_and_locked(&self) -> bool {
-        self.landing_gear_is_up_and_locked
-    }
-
-    fn engine_fire_push_button_is_released(&self, engine_number: usize) -> bool {
-        self.engine_fire_push_buttons.is_released(engine_number)
-    }
-
-    fn engine_fire_push_buttons(&self) -> &V {
-        self.engine_fire_push_buttons
-    }
-
-    fn engine(&self, number: usize) -> &T {
-        &self.engines[number - 1]
-    }
-}
 
 pub(super) struct A320Electrical {
     alternating_current: A320AlternatingCurrentElectrical,
@@ -124,25 +45,28 @@ impl A320Electrical {
         }
     }
 
-    pub fn update<
-        'a,
-        T: EngineCorrectedN2,
-        U: AuxiliaryPowerUnitElectrical,
-        V: EngineFirePushButtons,
-    >(
+    #[allow(clippy::too_many_arguments)]
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         ext_pwr: &ExternalPowerSource,
         overhead: &A320ElectricalOverheadPanel,
         emergency_overhead: &A320EmergencyElectricalOverheadPanel,
-        arguments: &mut A320ElectricalUpdateArguments<'a, T, U, V>,
+        apu: &mut impl AuxiliaryPowerUnitElectrical,
+        apu_overhead: &(impl ApuMaster + ApuStart),
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
+        engines: [&impl EngineCorrectedN2; 2],
+        hydraulic: &impl RamAirTurbineHydraulicLoopPressurised,
+        landing_gear: &impl LandingGearPosition,
     ) {
         self.alternating_current.update_main_power_sources(
             context,
             ext_pwr,
             overhead,
             emergency_overhead,
-            arguments,
+            apu,
+            engine_fire_push_buttons,
+            engines,
         );
 
         self.emergency_elec
@@ -152,8 +76,7 @@ impl A320Electrical {
             self.emergency_gen.start();
         }
 
-        self.emergency_gen
-            .update(context, arguments.is_blue_hydraulic_circuit_pressurised());
+        self.emergency_gen.update(context, hydraulic);
 
         self.alternating_current
             .update(context, ext_pwr, overhead, &self.emergency_gen);
@@ -164,7 +87,9 @@ impl A320Electrical {
             &self.alternating_current,
             &self.emergency_elec,
             &self.emergency_gen,
-            arguments,
+            apu,
+            apu_overhead,
+            landing_gear,
         );
 
         self.alternating_current.update_after_direct_current(
@@ -482,7 +407,7 @@ mod a320_electrical_circuit_tests {
     use std::time::Duration;
     use systems::{
         electrical::{
-            ElectricalBusType, ExternalPowerSource, PotentialOrigin, PotentialSource,
+            ElectricalBusType, ExternalPowerSource, Potential, PotentialOrigin, PotentialSource,
             INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
         },
         shared::ApuStartContactorsController,
@@ -2213,15 +2138,77 @@ mod a320_electrical_circuit_tests {
         }
     }
 
+    struct TestApuOverhead {
+        master_sw_pb_on: bool,
+        start_pb_on: bool,
+    }
+    impl TestApuOverhead {
+        fn new() -> Self {
+            Self {
+                master_sw_pb_on: false,
+                start_pb_on: false,
+            }
+        }
+
+        fn set_apu_master_sw_pb_on(&mut self) {
+            self.master_sw_pb_on = true;
+        }
+
+        fn set_start_pb_on(&mut self) {
+            self.start_pb_on = true;
+        }
+    }
+    impl ApuMaster for TestApuOverhead {
+        fn master_sw_is_on(&self) -> bool {
+            self.master_sw_pb_on
+        }
+    }
+    impl ApuStart for TestApuOverhead {
+        fn start_is_on(&self) -> bool {
+            self.start_pb_on
+        }
+    }
+
+    struct TestHydraulicSystem {
+        is_rat_hydraulic_loop_pressurised: bool,
+    }
+    impl TestHydraulicSystem {
+        fn new(is_rat_hydraulic_loop_pressurised: bool) -> Self {
+            Self {
+                is_rat_hydraulic_loop_pressurised,
+            }
+        }
+    }
+    impl RamAirTurbineHydraulicLoopPressurised for TestHydraulicSystem {
+        fn is_rat_hydraulic_loop_pressurised(&self) -> bool {
+            self.is_rat_hydraulic_loop_pressurised
+        }
+    }
+
+    struct TestLandingGear {}
+    impl TestLandingGear {
+        fn new() -> Self {
+            Self {}
+        }
+    }
+    impl LandingGearPosition for TestLandingGear {
+        fn is_up_and_locked(&self) -> bool {
+            true
+        }
+
+        fn is_down_and_locked(&self) -> bool {
+            false
+        }
+    }
+
     struct A320ElectricalTestAircraft {
         engines: [TestEngine; 2],
         ext_pwr: ExternalPowerSource,
         elec: A320Electrical,
         overhead: A320ElectricalOverheadPanel,
         emergency_overhead: A320EmergencyElectricalOverheadPanel,
-        apu_master_sw_pb_on: bool,
-        apu_start_pb_on: bool,
         apu: TestApu,
+        apu_overhead: TestApuOverhead,
         engine_fire_push_buttons: TestEngineFirePushButtons,
     }
     impl A320ElectricalTestAircraft {
@@ -2232,9 +2219,8 @@ mod a320_electrical_circuit_tests {
                 elec: A320Electrical::new(),
                 overhead: A320ElectricalOverheadPanel::new(),
                 emergency_overhead: A320EmergencyElectricalOverheadPanel::new(),
-                apu_master_sw_pb_on: false,
-                apu_start_pb_on: false,
                 apu: TestApu::new(),
+                apu_overhead: TestApuOverhead::new(),
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
             }
         }
@@ -2252,11 +2238,11 @@ mod a320_electrical_circuit_tests {
         }
 
         fn set_apu_master_sw_pb_on(&mut self) {
-            self.apu_master_sw_pb_on = true;
+            self.apu_overhead.set_apu_master_sw_pb_on();
         }
 
         fn set_apu_start_pb_on(&mut self) {
-            self.apu_start_pb_on = true;
+            self.apu_overhead.set_start_pb_on();
         }
 
         fn command_closing_of_start_contactors(&mut self) {
@@ -2322,15 +2308,14 @@ mod a320_electrical_circuit_tests {
                 &self.ext_pwr,
                 &self.overhead,
                 &self.emergency_overhead,
-                &mut A320ElectricalUpdateArguments::new(
-                    [&self.engines[0], &self.engines[1]],
-                    &mut self.apu,
+                &mut self.apu,
+                &self.apu_overhead,
+                &self.engine_fire_push_buttons,
+                [&self.engines[0], &self.engines[1]],
+                &TestHydraulicSystem::new(
                     context.indicated_airspeed() > Velocity::new::<knot>(100.),
-                    self.apu_master_sw_pb_on,
-                    self.apu_start_pb_on,
-                    true,
-                    &self.engine_fire_push_buttons,
                 ),
+                &TestLandingGear::new(),
             );
             self.overhead.update_after_electrical(&self.elec);
             self.emergency_overhead

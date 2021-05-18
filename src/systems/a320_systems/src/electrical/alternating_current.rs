@@ -1,6 +1,6 @@
 use super::{
-    A320ElectricalOverheadPanel, A320ElectricalUpdateArguments,
-    A320EmergencyElectricalOverheadPanel, AlternatingCurrentState, DirectCurrentState,
+    A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel, AlternatingCurrentState,
+    DirectCurrentState,
 };
 use std::time::Duration;
 use systems::{
@@ -63,21 +63,26 @@ impl A320AlternatingCurrentElectrical {
         }
     }
 
-    pub fn update_main_power_sources<
-        'a,
-        T: EngineCorrectedN2,
-        U: AuxiliaryPowerUnitElectrical,
-        V: EngineFirePushButtons,
-    >(
+    #[allow(clippy::too_many_arguments)]
+    pub fn update_main_power_sources(
         &mut self,
         context: &UpdateContext,
         ext_pwr: &ExternalPowerSource,
         overhead: &A320ElectricalOverheadPanel,
         emergency_overhead: &A320EmergencyElectricalOverheadPanel,
-        arguments: &mut A320ElectricalUpdateArguments<'a, T, U, V>,
+        apu: &impl AuxiliaryPowerUnitElectrical,
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
+        engines: [&impl EngineCorrectedN2; 2],
     ) {
-        self.main_power_sources
-            .update(context, ext_pwr, overhead, emergency_overhead, arguments);
+        self.main_power_sources.update(
+            context,
+            ext_pwr,
+            overhead,
+            emergency_overhead,
+            apu,
+            engine_fire_push_buttons,
+            engines,
+        );
 
         self.ac_bus_1
             .powered_by(&self.main_power_sources.ac_bus_1_electric_sources());
@@ -352,38 +357,28 @@ impl A320MainPowerSources {
         }
     }
 
-    fn update<
-        'a,
-        T: EngineCorrectedN2,
-        U: AuxiliaryPowerUnitElectrical,
-        V: EngineFirePushButtons,
-    >(
+    #[allow(clippy::too_many_arguments)]
+    fn update(
         &mut self,
         context: &UpdateContext,
         ext_pwr: &ExternalPowerSource,
         overhead: &A320ElectricalOverheadPanel,
         emergency_overhead: &A320EmergencyElectricalOverheadPanel,
-        arguments: &mut A320ElectricalUpdateArguments<'a, T, U, V>,
+        apu: &impl AuxiliaryPowerUnitElectrical,
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
+        engines: [&impl EngineCorrectedN2; 2],
     ) {
-        self.engine_1_gen.update(
-            context,
-            arguments.engine(1),
-            overhead,
-            arguments.engine_fire_push_buttons(),
-        );
-        self.engine_2_gen.update(
-            context,
-            arguments.engine(2),
-            overhead,
-            arguments.engine_fire_push_buttons(),
-        );
+        self.engine_1_gen
+            .update(context, engines[0], overhead, engine_fire_push_buttons);
+        self.engine_2_gen
+            .update(context, engines[1], overhead, engine_fire_push_buttons);
 
         let gen_1_provides_power = overhead.generator_is_on(1)
             && emergency_overhead.generator_1_line_is_on()
-            && !arguments.engine_fire_push_button_is_released(1)
+            && !engine_fire_push_buttons.is_released(1)
             && self.engine_1_gen.output_within_normal_parameters();
         let gen_2_provides_power = overhead.generator_is_on(2)
-            && !arguments.engine_fire_push_button_is_released(2)
+            && !engine_fire_push_buttons.is_released(2)
             && self.engine_2_gen.output_within_normal_parameters();
         let only_one_engine_gen_is_powered = gen_1_provides_power ^ gen_2_provides_power;
         let both_engine_gens_provide_power = gen_1_provides_power && gen_2_provides_power;
@@ -391,7 +386,7 @@ impl A320MainPowerSources {
             && ext_pwr.output_within_normal_parameters()
             && !both_engine_gens_provide_power;
         let apu_gen_provides_power = overhead.apu_generator_is_on()
-            && arguments.apu().output_within_normal_parameters()
+            && apu.output_within_normal_parameters()
             && !ext_pwr_provides_power
             && !both_engine_gens_provide_power;
 
@@ -412,7 +407,7 @@ impl A320MainPowerSources {
                     || (apu_or_ext_pwr_provides_power && !gen_2_provides_power)),
         );
 
-        self.apu_gen_contactor.powered_by(arguments.apu());
+        self.apu_gen_contactor.powered_by(apu);
         self.ext_pwr_contactor.powered_by(ext_pwr);
 
         self.engine_generator_contactors[0].powered_by(&self.engine_1_gen);

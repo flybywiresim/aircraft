@@ -4,10 +4,6 @@ use uom::si::{
     ratio::percent, velocity::knot, volume::gallon,
 };
 
-use systems::overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton, OnOffFaultPushButton};
-use systems::simulation::{
-    SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, UpdateContext,
-};
 use systems::{
     hydraulic::{
         ElectricPump, EngineDrivenPump, Fluid, HydraulicLoop, HydraulicLoopController,
@@ -15,6 +11,17 @@ use systems::{
         RamAirTurbine, RamAirTurbineController,
     },
     shared::EngineFirePushButtons,
+};
+use systems::{
+    overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton, OnOffFaultPushButton},
+    shared::RamAirTurbineHydraulicLoopPressurised,
+};
+use systems::{
+    shared::LandingGearPosition,
+    simulation::{
+        SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
+        UpdateContext,
+    },
 };
 
 use systems::{engine::Engine, landing_gear::LandingGear};
@@ -273,7 +280,7 @@ impl A320Hydraulic {
             .nose_wheel_steering_pin_is_inserted()
     }
 
-    pub(super) fn is_blue_pressurised(&self) -> bool {
+    fn is_blue_pressurised(&self) -> bool {
         self.blue_loop.is_pressurised()
     }
 
@@ -463,6 +470,11 @@ impl A320Hydraulic {
 
         self.braking_circuit_norm.update(context, &self.green_loop);
         self.braking_circuit_altn.update(context, &self.yellow_loop);
+    }
+}
+impl RamAirTurbineHydraulicLoopPressurised for A320Hydraulic {
+    fn is_rat_hydraulic_loop_pressurised(&self) -> bool {
+        self.is_blue_pressurised()
     }
 }
 impl SimulationElement for A320Hydraulic {

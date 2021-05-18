@@ -5,7 +5,7 @@ use super::{
 use crate::{
     electrical::PotentialSource,
     pneumatic::{BleedAirValveController, Valve},
-    shared::ApuStartContactorsController,
+    shared::{ApuMaster, ApuStart, ApuStartContactorsController},
     simulation::UpdateContext,
 };
 use std::time::Duration;
@@ -59,7 +59,7 @@ impl ElectronicControlBox {
         fire_overhead: &AuxiliaryPowerUnitFireOverheadPanel,
         apu_bleed_is_on: bool,
     ) {
-        self.master_is_on = overhead.master_is_on();
+        self.master_is_on = overhead.master_sw_is_on();
         self.start_is_on = overhead.start_is_on();
         self.bleed_is_on = apu_bleed_is_on;
         self.fire_button_is_released = fire_overhead.fire_button_is_released();

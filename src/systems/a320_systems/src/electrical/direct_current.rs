@@ -1,7 +1,4 @@
-use super::{
-    A320ElectricalOverheadPanel, A320ElectricalUpdateArguments, AlternatingCurrentState,
-    DirectCurrentState,
-};
+use super::{A320ElectricalOverheadPanel, AlternatingCurrentState, DirectCurrentState};
 #[cfg(test)]
 use systems::electrical::Potential;
 use systems::{
@@ -10,7 +7,7 @@ use systems::{
         Contactor, ElectricalBus, ElectricalBusType, EmergencyElectrical, EmergencyGenerator,
         PotentialSource, PotentialTarget, StaticInverter,
     },
-    shared::{AuxiliaryPowerUnitElectrical, EngineCorrectedN2, EngineFirePushButtons},
+    shared::{ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, LandingGearPosition},
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::{f64::*, velocity::knot};
@@ -79,20 +76,17 @@ impl A320DirectCurrentElectrical {
         }
     }
 
-    pub fn update<
-        'a,
-        T: AlternatingCurrentState,
-        U: EngineCorrectedN2,
-        V: AuxiliaryPowerUnitElectrical,
-        W: EngineFirePushButtons,
-    >(
+    #[allow(clippy::too_many_arguments)]
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         overhead: &A320ElectricalOverheadPanel,
-        ac_state: &T,
+        ac_state: &impl AlternatingCurrentState,
         emergency_elec: &EmergencyElectrical,
         emergency_generator: &EmergencyGenerator,
-        arguments: &mut A320ElectricalUpdateArguments<'a, U, V, W>,
+        apu: &mut impl AuxiliaryPowerUnitElectrical,
+        apu_overhead: &(impl ApuMaster + ApuStart),
+        landing_gear: &impl LandingGearPosition,
     ) {
         self.tr_1_contactor.close_when(ac_state.tr_1().is_powered());
         self.tr_1_contactor.powered_by(ac_state.tr_1());
@@ -151,11 +145,11 @@ impl A320DirectCurrentElectrical {
                 ac_state.ac_bus_1_and_2_unpowered(),
                 &self.battery_1,
                 &self.dc_bat_bus,
-                arguments.apu_master_sw_pb_on(),
-                arguments.apu_start_pb_on(),
-                arguments.apu_is_available(),
+                apu_overhead.master_sw_is_on(),
+                apu_overhead.start_is_on(),
+                apu.is_available(),
                 overhead.bat_1_is_auto(),
-                arguments.landing_gear_is_up_and_locked(),
+                landing_gear.is_up_and_locked(),
                 emergency_generator.is_powered(),
             ),
         );
@@ -169,11 +163,11 @@ impl A320DirectCurrentElectrical {
                 ac_state.ac_bus_1_and_2_unpowered(),
                 &self.battery_2,
                 &self.dc_bat_bus,
-                arguments.apu_master_sw_pb_on(),
-                arguments.apu_start_pb_on(),
-                arguments.apu_is_available(),
+                apu_overhead.master_sw_is_on(),
+                apu_overhead.start_is_on(),
+                apu.is_available(),
                 overhead.bat_2_is_auto(),
-                arguments.landing_gear_is_up_and_locked(),
+                landing_gear.is_up_and_locked(),
                 emergency_generator.is_powered(),
             ),
         );
@@ -205,10 +199,10 @@ impl A320DirectCurrentElectrical {
         self.apu_start_contactors.close_when(
             self.battery_1_contactor.is_closed()
                 && self.battery_2_contactor.is_closed()
-                && arguments.should_close_apu_start_contactors(),
+                && apu.should_close_start_contactors(),
         );
 
-        arguments.apu_start_motor_powered_by(self.apu_start_contactors.output());
+        apu.start_motor_powered_by(self.apu_start_contactors.output());
 
         let should_close_2xb_contactor =
             self.should_close_2xb_contactors(context, emergency_generator, ac_state);

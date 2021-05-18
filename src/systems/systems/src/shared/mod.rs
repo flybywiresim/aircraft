@@ -25,6 +25,23 @@ pub trait EngineFirePushButtons {
     fn is_released(&self, engine_number: usize) -> bool;
 }
 
+pub trait ApuMaster {
+    fn master_sw_is_on(&self) -> bool;
+}
+
+pub trait ApuStart {
+    fn start_is_on(&self) -> bool;
+}
+
+pub trait RamAirTurbineHydraulicLoopPressurised {
+    fn is_rat_hydraulic_loop_pressurised(&self) -> bool;
+}
+
+pub trait LandingGearPosition {
+    fn is_up_and_locked(&self) -> bool;
+    fn is_down_and_locked(&self) -> bool;
+}
+
 pub trait EngineCorrectedN2 {
     fn corrected_n2(&self) -> Ratio;
 }

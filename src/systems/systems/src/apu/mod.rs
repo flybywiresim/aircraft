@@ -6,7 +6,7 @@ use crate::{
     electrical::{Potential, PotentialSource, PotentialTarget, ProvideFrequency, ProvidePotential},
     overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
     pneumatic::{BleedAirValve, BleedAirValveState, Valve},
-    shared::{ApuStartContactorsController, AuxiliaryPowerUnitElectrical},
+    shared::{ApuMaster, ApuStart, ApuStartContactorsController, AuxiliaryPowerUnitElectrical},
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
 #[cfg(test)]
@@ -297,19 +297,21 @@ impl AuxiliaryPowerUnitOverheadPanel {
         if self.start_is_on()
             && (apu.is_available()
                 || apu.has_fault()
-                || (!self.master_is_on() && !apu.is_starting()))
+                || (!self.master_sw_is_on() && !apu.is_starting()))
         {
             self.start.turn_off();
         }
 
         self.master.set_fault(apu.has_fault());
     }
-
-    pub fn master_is_on(&self) -> bool {
+}
+impl ApuMaster for AuxiliaryPowerUnitOverheadPanel {
+    fn master_sw_is_on(&self) -> bool {
         self.master.is_on()
     }
-
-    pub fn start_is_on(&self) -> bool {
+}
+impl ApuStart for AuxiliaryPowerUnitOverheadPanel {
+    fn start_is_on(&self) -> bool {
         self.start.is_on()
     }
 }
