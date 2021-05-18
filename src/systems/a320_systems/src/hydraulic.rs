@@ -208,7 +208,7 @@ impl A320Hydraulic {
             time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
 
         // Here we update everything requiring same refresh as the sim calls us, more likely visual stuff
-        self.update_at_every_frames(
+        self.update_every_frame(
             &context,
             &overhead_panel,
             &emergency_electrical_overhead,
