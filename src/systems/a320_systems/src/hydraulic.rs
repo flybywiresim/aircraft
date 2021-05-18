@@ -127,14 +127,23 @@ impl A320Hydraulic {
                 Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
             ),
             engine_driven_pump_1: EngineDrivenPump::new("GREEN"),
-            engine_driven_pump_1_controller: A320EngineDrivenPumpController::new(1),
+            engine_driven_pump_1_controller: A320EngineDrivenPumpController::new(
+                1,
+                vec![A320EngineDrivenPumpController::GREEN_EDP_POWER_BUS],
+            ),
 
             engine_driven_pump_2_pressure_switch: PressureSwitch::new(
                 Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_HI_HYST),
                 Pressure::new::<psi>(Self::MIN_PRESS_EDP_SECTION_LO_HYST),
             ),
             engine_driven_pump_2: EngineDrivenPump::new("YELLOW"),
-            engine_driven_pump_2_controller: A320EngineDrivenPumpController::new(2),
+            engine_driven_pump_2_controller: A320EngineDrivenPumpController::new(
+                2,
+                vec![
+                    A320EngineDrivenPumpController::YELLOW_EDP_POWER_BUS1,
+                    A320EngineDrivenPumpController::YELLOW_EDP_POWER_BUS2,
+                ],
+            ),
 
             blue_electric_pump: ElectricPump::new("BLUE", ElectricalBusType::AlternatingCurrent(1)),
             blue_electric_pump_controller: A320BlueElectricPumpController::new(),
@@ -566,20 +575,11 @@ struct A320EngineDrivenPumpController {
 }
 impl A320EngineDrivenPumpController {
     const MIN_ENGINE_OIL_PRESS_THRESHOLD_TO_INHIBIT_FAULT: f64 = 18.;
-    const YELLOW_EDP_POWER_BUS1: ElectricalBusType = ElectricalBusType::DirectCurrent(2);
-    const YELLOW_EDP_POWER_BUS2: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
-    const GREEN_EDP_POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
+    pub const YELLOW_EDP_POWER_BUS1: ElectricalBusType = ElectricalBusType::DirectCurrent(2);
+    pub const YELLOW_EDP_POWER_BUS2: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
+    pub const GREEN_EDP_POWER_BUS: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
 
-    fn new(engine_number: usize) -> Self {
-        let power_buses;
-        if engine_number == 1 {
-            power_buses = vec![Self::GREEN_EDP_POWER_BUS];
-        } else if engine_number == 2 {
-            power_buses = vec![Self::YELLOW_EDP_POWER_BUS1, Self::YELLOW_EDP_POWER_BUS2];
-        } else {
-            panic!("The A320 only supports two engines.");
-        }
-
+    fn new(engine_number: usize, power_buses: Vec<ElectricalBusType>) -> Self {
         assert!(!power_buses.is_empty() && power_buses.len() <= 2);
 
         Self {
@@ -1833,7 +1833,7 @@ mod tests {
                 self.simulation_test_bed.read_f64("A32NX_HYD_RAT_RPM")
             }
 
-            fn get_rat_deploy_command(&mut self) -> bool {
+            fn rat_deploy_commanded(&mut self) -> bool {
                 self.aircraft.is_rat_commanded_to_deploy()
             }
 
@@ -3038,7 +3038,7 @@ mod tests {
                 .dc_ess_lost()
                 .run_waiting_for(Duration::from_secs(15));
 
-            // Now solenoid defaults to pressurised
+            // Now solenoid defaults to pressurised without power
             assert!(test_bed.is_yellow_pressurised());
         }
 
@@ -3914,9 +3914,19 @@ mod tests {
                 eng2_above_idle,
             );
             assert!(!blue_epump_controller.should_pressurise());
+        }
 
-            // No power case
+        #[test]
+        fn controller_blue_epump_override_without_power() {
+            let engine_off_oil_pressure = Pressure::new::<psi>(10.);
+
+            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+            let mut blue_epump_controller = A320BlueElectricPumpController::new();
+
+            let eng1_above_idle = false;
+            let eng2_above_idle = false;
             overhead_panel.blue_epump_override_push_button.push_on();
+
             blue_epump_controller.is_powered = false;
             blue_epump_controller.update(
                 &overhead_panel,
@@ -3951,6 +3961,17 @@ mod tests {
             overhead_panel.yellow_epump_push_button.push_auto();
             yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
             assert!(!yellow_epump_controller.should_pressurise());
+        }
+
+        #[test]
+        fn controller_yellow_epump_unpowered_cant_command_pump() {
+            let fwd_door = Door::new(1);
+            let aft_door = Door::new(2);
+            let context = context(Duration::from_millis(100));
+
+            let mut overhead_panel = A320HydraulicOverheadPanel::new();
+
+            let mut yellow_epump_controller = A320YellowElectricPumpController::new();
 
             // If unpowered no possible control of the pump
             yellow_epump_controller.is_powered = false;
@@ -3995,7 +4016,10 @@ mod tests {
             let fire_overhead_panel = A320EngineFireOverheadPanel::new();
             overhead_panel.edp1_push_button.push_auto();
 
-            let mut edp1_controller = A320EngineDrivenPumpController::new(1);
+            let mut edp1_controller = A320EngineDrivenPumpController::new(
+                1,
+                vec![A320EngineDrivenPumpController::GREEN_EDP_POWER_BUS],
+            );
             edp1_controller.is_powered = true;
 
             edp1_controller.engine_master_on = true;
@@ -4037,7 +4061,10 @@ mod tests {
             overhead_panel.edp1_push_button.push_auto();
             fire_overhead_panel.eng1_fire_pb.set(false);
 
-            let mut edp1_controller = A320EngineDrivenPumpController::new(1);
+            let mut edp1_controller = A320EngineDrivenPumpController::new(
+                1,
+                vec![A320EngineDrivenPumpController::GREEN_EDP_POWER_BUS],
+            );
             edp1_controller.is_powered = true;
             edp1_controller.engine_master_on = true;
 
@@ -4067,7 +4094,13 @@ mod tests {
             let fire_overhead_panel = A320EngineFireOverheadPanel::new();
             overhead_panel.edp2_push_button.push_auto();
 
-            let mut edp2_controller = A320EngineDrivenPumpController::new(2);
+            let mut edp2_controller = A320EngineDrivenPumpController::new(
+                2,
+                vec![
+                    A320EngineDrivenPumpController::YELLOW_EDP_POWER_BUS1,
+                    A320EngineDrivenPumpController::YELLOW_EDP_POWER_BUS2,
+                ],
+            );
             edp2_controller.is_powered = true;
             edp2_controller.engine_master_on = true;
 
@@ -4108,7 +4141,13 @@ mod tests {
             overhead_panel.edp2_push_button.push_auto();
             fire_overhead_panel.eng2_fire_pb.set(false);
 
-            let mut edp2_controller = A320EngineDrivenPumpController::new(2);
+            let mut edp2_controller = A320EngineDrivenPumpController::new(
+                2,
+                vec![
+                    A320EngineDrivenPumpController::YELLOW_EDP_POWER_BUS1,
+                    A320EngineDrivenPumpController::YELLOW_EDP_POWER_BUS2,
+                ],
+            );
             edp2_controller.is_powered = true;
             edp2_controller.engine_master_on = true;
 
@@ -4225,7 +4264,6 @@ mod tests {
             assert!(test_bed.get_rat_position() <= 0.);
             assert!(test_bed.get_rat_rpm() <= 1.);
 
-            // Killing AC buses
             test_bed = test_bed
                 .ac_bus_1_lost()
                 .ac_bus_2_lost()
@@ -4245,24 +4283,21 @@ mod tests {
                 .start_eng2(Ratio::new::<percent>(80.))
                 .run_waiting_for(Duration::from_secs(10));
 
-            assert!(!test_bed.get_rat_deploy_command());
+            assert!(!test_bed.rat_deploy_commanded());
 
-            // Killing AC1 bus
             test_bed = test_bed
                 .ac_bus_1_lost()
                 .run_waiting_for(Duration::from_secs(2));
 
-            // RAT has not deployed
-            assert!(!test_bed.get_rat_deploy_command());
+            assert!(!test_bed.rat_deploy_commanded());
 
-            //Now all AC off
+            // Now all AC off should deploy RAT in flight
             test_bed = test_bed
                 .ac_bus_1_lost()
                 .ac_bus_2_lost()
                 .run_waiting_for(Duration::from_secs(2));
 
-            // RAT avail
-            assert!(test_bed.get_rat_deploy_command());
+            assert!(test_bed.rat_deploy_commanded());
         }
 
         #[test]
@@ -4284,7 +4319,7 @@ mod tests {
                 .ac_bus_2_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
-            // Blue epump working as not plugged on AC2
+            // Blue epump still working as it's not plugged on AC2
             assert!(test_bed.is_blue_pressurised());
 
             test_bed = test_bed
@@ -4315,7 +4350,7 @@ mod tests {
                 .ac_bus_1_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
-            // Yellow epump working as not plugged on AC2 or AC1
+            // Yellow epump still working as not plugged on AC2 or AC1
             assert!(test_bed.is_yellow_pressurised());
 
             test_bed = test_bed
