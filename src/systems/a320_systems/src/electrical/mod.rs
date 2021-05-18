@@ -95,6 +95,10 @@ impl<'a, T: EngineCorrectedN2, U: AuxiliaryPowerUnitElectrical, V: EngineFirePus
         self.engine_fire_push_buttons.is_released(engine_number)
     }
 
+    fn engine_fire_push_buttons(&self) -> &V {
+        self.engine_fire_push_buttons
+    }
+
     fn engine(&self, number: usize) -> &T {
         &self.engines[number - 1]
     }

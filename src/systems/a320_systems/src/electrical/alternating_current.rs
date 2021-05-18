@@ -374,10 +374,18 @@ impl A320MainPowerSources {
         emergency_overhead: &A320EmergencyElectricalOverheadPanel,
         arguments: &mut A320ElectricalUpdateArguments<'a, T, U, V>,
     ) {
-        self.engine_1_gen
-            .update(context, arguments.engine(1), overhead);
-        self.engine_2_gen
-            .update(context, arguments.engine(2), overhead);
+        self.engine_1_gen.update(
+            context,
+            arguments.engine(1),
+            overhead,
+            arguments.engine_fire_push_buttons(),
+        );
+        self.engine_2_gen.update(
+            context,
+            arguments.engine(2),
+            overhead,
+            arguments.engine_fire_push_buttons(),
+        );
 
         let gen_1_provides_power = overhead.generator_is_on(1)
             && emergency_overhead.generator_1_line_is_on()

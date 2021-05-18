@@ -3,7 +3,7 @@ use super::{
     Potential, PotentialOrigin, PotentialSource, ProvideFrequency, ProvideLoad, ProvidePotential,
 };
 use crate::{
-    shared::{calculate_towards_target_temperature, EngineCorrectedN2},
+    shared::{calculate_towards_target_temperature, EngineCorrectedN2, EngineFirePushButtons},
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
 use std::cmp::min;
@@ -34,13 +34,15 @@ impl EngineGenerator {
         }
     }
 
-    pub fn update<T: EngineCorrectedN2, U: EngineGeneratorPushButtons>(
+    pub fn update<T: EngineCorrectedN2, U: EngineGeneratorPushButtons, V: EngineFirePushButtons>(
         &mut self,
         context: &UpdateContext,
         engine: &T,
-        overhead: &U,
+        generator_buttons: &U,
+        fire_buttons: &V,
     ) {
-        self.idg.update(context, engine, overhead);
+        self.idg
+            .update(context, engine, generator_buttons, fire_buttons);
     }
 
     /// Indicates if the provided electricity's potential and frequency
@@ -112,6 +114,7 @@ struct IntegratedDriveGenerator {
     oil_outlet_temperature: ThermodynamicTemperature,
     is_connected_id: String,
     connected: bool,
+    activated: bool,
     number: usize,
 
     time_above_threshold_in_milliseconds: u64,
@@ -129,22 +132,27 @@ impl IntegratedDriveGenerator {
             oil_outlet_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
             is_connected_id: format!("ELEC_ENG_GEN_{}_IDG_IS_CONNECTED", number),
             connected: true,
+            activated: true,
             number,
 
             time_above_threshold_in_milliseconds: 0,
         }
     }
 
-    pub fn update<T: EngineCorrectedN2, U: EngineGeneratorPushButtons>(
+    pub fn update<T: EngineCorrectedN2, U: EngineGeneratorPushButtons, V: EngineFirePushButtons>(
         &mut self,
         context: &UpdateContext,
         engine: &T,
-        overhead: &U,
+        generator_buttons: &U,
+        fire_buttons: &V,
     ) {
-        if overhead.idg_push_button_is_released(self.number) {
+        if generator_buttons.idg_push_button_is_released(self.number) {
             // The IDG cannot be reconnected.
             self.connected = false;
         }
+
+        self.activated = generator_buttons.engine_gen_push_button_is_on(self.number)
+            && !fire_buttons.is_released(self.number);
 
         self.update_stable_time(context, engine.corrected_n2());
         self.update_temperature(
@@ -160,6 +168,11 @@ impl IntegratedDriveGenerator {
 
     fn update_stable_time(&mut self, context: &UpdateContext, corrected_n2: Ratio) {
         if !self.connected {
+            self.time_above_threshold_in_milliseconds = 0;
+            return;
+        }
+
+        if !self.activated {
             self.time_above_threshold_in_milliseconds = 0;
             return;
         }
@@ -290,6 +303,22 @@ mod tests {
         }
     }
 
+    struct TestFireOverhead {
+        engine_fire_push_button_is_released: bool,
+    }
+    impl TestFireOverhead {
+        fn new(engine_fire_push_button_is_released: bool) -> Self {
+            Self {
+                engine_fire_push_button_is_released,
+            }
+        }
+    }
+    impl EngineFirePushButtons for TestFireOverhead {
+        fn is_released(&self, _: usize) -> bool {
+            self.engine_fire_push_button_is_released
+        }
+    }
+
     #[cfg(test)]
     mod engine_generator_tests {
         use super::*;
@@ -335,7 +364,9 @@ mod tests {
         struct TestAircraft {
             engine_gen: EngineGenerator,
             running: bool,
+            gen_push_button_on: bool,
             idg_push_button_released: bool,
+            fire_push_button_released: bool,
             consumer: PowerConsumer,
             generator_output_within_normal_parameters_before_processing_power_consumption_report:
                 bool,
@@ -345,7 +376,9 @@ mod tests {
                 Self {
                     engine_gen: EngineGenerator::new(1),
                     running,
+                    gen_push_button_on: true,
                     idg_push_button_released: false,
+                    fire_push_button_released: false,
                     consumer: PowerConsumer::from(ElectricalBusType::AlternatingCurrent(1)),
                     generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
                 }
@@ -361,6 +394,14 @@ mod tests {
 
             fn disconnect_idg(&mut self) {
                 self.idg_push_button_released = true;
+            }
+
+            fn gen_push_button_off(&mut self) {
+                self.gen_push_button_on = false;
+            }
+
+            fn release_fire_push_button(&mut self) {
+                self.fire_push_button_released = true;
             }
 
             fn generator_is_powered(&self) -> bool {
@@ -392,7 +433,8 @@ mod tests {
                 self.engine_gen.update(
                     context,
                     &TestEngine::new(Ratio::new::<percent>(if self.running { 80. } else { 0. })),
-                    &TestOverhead::new(true, self.idg_push_button_released),
+                    &TestOverhead::new(self.gen_push_button_on, self.idg_push_button_released),
+                    &TestFireOverhead::new(self.fire_push_button_released),
                 );
 
                 self.generator_output_within_normal_parameters_before_processing_power_consumption_report = self.engine_gen.output_within_normal_parameters();
@@ -454,10 +496,65 @@ mod tests {
         }
 
         #[test]
+        fn when_engine_running_but_generator_off_provides_no_output() {
+            let mut aircraft = TestAircraft::with_running_engine();
+            let mut test_bed = EngineGeneratorTestBed::new();
+
+            aircraft.gen_push_button_off();
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert!(!aircraft.generator_is_powered());
+        }
+
+        #[test]
+        fn when_engine_running_but_fire_push_button_released_provides_no_output() {
+            let mut aircraft = TestAircraft::with_running_engine();
+            let mut test_bed = EngineGeneratorTestBed::new();
+
+            aircraft.release_fire_push_button();
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert!(!aircraft.generator_is_powered());
+        }
+
+        #[test]
         fn when_engine_shutdown_frequency_not_normal() {
             let mut aircraft = TestAircraft::with_shutdown_engine();
             let mut test_bed = EngineGeneratorTestBed::new();
 
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert!(!test_bed.frequency_is_normal());
+        }
+
+        #[test]
+        fn when_engine_running_but_idg_disconnected_frequency_not_normal() {
+            let mut aircraft = TestAircraft::with_running_engine();
+            let mut test_bed = EngineGeneratorTestBed::new();
+
+            aircraft.disconnect_idg();
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert!(!test_bed.frequency_is_normal());
+        }
+
+        #[test]
+        fn when_engine_running_but_generator_off_frequency_not_normal() {
+            let mut aircraft = TestAircraft::with_running_engine();
+            let mut test_bed = EngineGeneratorTestBed::new();
+
+            aircraft.gen_push_button_off();
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert!(!test_bed.frequency_is_normal());
+        }
+
+        #[test]
+        fn when_engine_running_but_fire_push_button_released_frequency_not_normal() {
+            let mut aircraft = TestAircraft::with_running_engine();
+            let mut test_bed = EngineGeneratorTestBed::new();
+
+            aircraft.release_fire_push_button();
             test_bed.run_aircraft(&mut aircraft);
 
             assert!(!test_bed.frequency_is_normal());
@@ -484,6 +581,39 @@ mod tests {
         }
 
         #[test]
+        fn when_engine_running_but_idg_disconnected_potential_not_normal() {
+            let mut aircraft = TestAircraft::with_running_engine();
+            let mut test_bed = EngineGeneratorTestBed::new();
+
+            aircraft.disconnect_idg();
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert!(!test_bed.potential_is_normal());
+        }
+
+        #[test]
+        fn when_engine_running_but_generator_off_provides_potential_not_normal() {
+            let mut aircraft = TestAircraft::with_running_engine();
+            let mut test_bed = EngineGeneratorTestBed::new();
+
+            aircraft.gen_push_button_off();
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert!(!test_bed.potential_is_normal());
+        }
+
+        #[test]
+        fn when_engine_running_but_fire_push_button_released_potential_not_normal() {
+            let mut aircraft = TestAircraft::with_running_engine();
+            let mut test_bed = EngineGeneratorTestBed::new();
+
+            aircraft.release_fire_push_button();
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert!(!test_bed.potential_is_normal());
+        }
+
+        #[test]
         fn when_engine_running_potential_normal() {
             let mut aircraft = TestAircraft::with_running_engine();
             let mut test_bed = EngineGeneratorTestBed::new();
@@ -498,6 +628,39 @@ mod tests {
             let mut aircraft = TestAircraft::with_shutdown_engine();
             let mut test_bed = EngineGeneratorTestBed::new();
 
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
+        }
+
+        #[test]
+        fn when_engine_running_but_idg_disconnected_has_no_load() {
+            let mut aircraft = TestAircraft::with_running_engine();
+            let mut test_bed = EngineGeneratorTestBed::new();
+
+            aircraft.disconnect_idg();
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
+        }
+
+        #[test]
+        fn when_engine_running_but_generator_off_has_no_load() {
+            let mut aircraft = TestAircraft::with_running_engine();
+            let mut test_bed = EngineGeneratorTestBed::new();
+
+            aircraft.gen_push_button_off();
+            test_bed.run_aircraft(&mut aircraft);
+
+            assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
+        }
+
+        #[test]
+        fn when_engine_running_but_fire_push_button_released_has_no_load() {
+            let mut aircraft = TestAircraft::with_running_engine();
+            let mut test_bed = EngineGeneratorTestBed::new();
+
+            aircraft.release_fire_push_button();
             test_bed.run_aircraft(&mut aircraft);
 
             assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
@@ -649,6 +812,7 @@ mod tests {
                     context,
                     &TestEngine::new(Ratio::new::<percent>(80.)),
                     &TestOverhead::new(true, false),
+                    &TestFireOverhead::new(false),
                 )
             });
 
@@ -665,6 +829,7 @@ mod tests {
                     context,
                     &TestEngine::new(Ratio::new::<percent>(80.)),
                     &TestOverhead::new(true, false),
+                    &TestFireOverhead::new(false),
                 )
             });
 
@@ -680,6 +845,7 @@ mod tests {
                     context,
                     &TestEngine::new(Ratio::new::<percent>(80.)),
                     &TestOverhead::new(true, true),
+                    &TestFireOverhead::new(false),
                 )
             });
 
@@ -688,6 +854,7 @@ mod tests {
                     context,
                     &TestEngine::new(Ratio::new::<percent>(80.)),
                     &TestOverhead::new(true, false),
+                    &TestFireOverhead::new(false),
                 )
             });
 
@@ -705,6 +872,7 @@ mod tests {
                     context,
                     &TestEngine::new(Ratio::new::<percent>(80.)),
                     &TestOverhead::new(true, false),
+                    &TestFireOverhead::new(false),
                 )
             });
 
@@ -722,6 +890,7 @@ mod tests {
                     context,
                     &TestEngine::new(Ratio::new::<percent>(80.)),
                     &TestOverhead::new(true, true),
+                    &TestFireOverhead::new(false),
                 )
             });
 
@@ -738,6 +907,7 @@ mod tests {
                     context,
                     &TestEngine::new(Ratio::new::<percent>(80.)),
                     &TestOverhead::new(true, false),
+                    &TestFireOverhead::new(false),
                 )
             });
 
@@ -748,6 +918,7 @@ mod tests {
                     context,
                     &TestEngine::new(Ratio::new::<percent>(0.)),
                     &TestOverhead::new(true, false),
+                    &TestFireOverhead::new(false),
                 )
             });
 
