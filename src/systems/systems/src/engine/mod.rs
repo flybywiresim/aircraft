@@ -2,14 +2,13 @@ use uom::si::f64::*;
 
 use crate::{
     overhead::FirePushButton,
-    shared::EngineFirePushButtons,
+    shared::{EngineCorrectedN2, EngineFirePushButtons},
     simulation::{SimulationElement, SimulationElementVisitor},
 };
 
 pub mod leap_engine;
 
-pub trait Engine {
-    fn corrected_n2(&self) -> Ratio;
+pub trait Engine: EngineCorrectedN2 {
     fn hydraulic_pump_output_speed(&self) -> AngularVelocity;
     fn oil_pressure(&self) -> Pressure;
     fn is_above_minimum_idle(&self) -> bool;
@@ -29,10 +28,7 @@ impl EngineFireOverheadPanel {
 }
 impl EngineFirePushButtons for EngineFireOverheadPanel {
     fn is_released(&self, engine_number: usize) -> bool {
-        match self.engine_fire_push_buttons.get(engine_number - 1) {
-            Some(button) => button.is_released(),
-            None => false,
-        }
+        self.engine_fire_push_buttons[engine_number - 1].is_released()
     }
 }
 impl SimulationElement for EngineFireOverheadPanel {
@@ -84,12 +80,5 @@ mod engine_fire_overhead_panel_tests {
         test_bed.run(&mut panel, |_, _| {});
 
         assert_eq!(panel.is_released(1), true);
-    }
-
-    #[test]
-    fn fire_push_button_is_released_returns_false_when_engine_number_out_of_range() {
-        let panel = EngineFireOverheadPanel::new();
-
-        assert_eq!(panel.is_released(9999), false);
     }
 }

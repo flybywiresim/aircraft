@@ -1,9 +1,9 @@
 use super::{
-    consumption::PowerConsumptionReport, ElectricalStateWriter, Potential, PotentialOrigin,
-    PotentialSource, ProvideFrequency, ProvideLoad, ProvidePotential,
+    consumption::PowerConsumptionReport, ElectricalStateWriter, EngineGeneratorPushButtons,
+    Potential, PotentialOrigin, PotentialSource, ProvideFrequency, ProvideLoad, ProvidePotential,
 };
 use crate::{
-    shared::calculate_towards_target_temperature,
+    shared::{calculate_towards_target_temperature, EngineCorrectedN2},
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
 use std::cmp::min;
@@ -11,11 +11,6 @@ use uom::si::{
     electric_potential::volt, f64::*, frequency::hertz, power::watt, ratio::percent,
     thermodynamic_temperature::degree_celsius,
 };
-
-pub trait EngineGeneratorUpdateArguments {
-    fn engine_corrected_n2(&self, number: usize) -> Ratio;
-    fn idg_push_button_released(&self, number: usize) -> bool;
-}
 
 pub const INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS: u64 = 500;
 
@@ -39,12 +34,13 @@ impl EngineGenerator {
         }
     }
 
-    pub fn update<T: EngineGeneratorUpdateArguments>(
+    pub fn update<T: EngineCorrectedN2, U: EngineGeneratorPushButtons>(
         &mut self,
         context: &UpdateContext,
-        arguments: &T,
+        engine: &T,
+        overhead: &U,
     ) {
-        self.idg.update(context, arguments);
+        self.idg.update(context, engine, overhead);
     }
 
     /// Indicates if the provided electricity's potential and frequency
@@ -139,20 +135,21 @@ impl IntegratedDriveGenerator {
         }
     }
 
-    pub fn update<T: EngineGeneratorUpdateArguments>(
+    pub fn update<T: EngineCorrectedN2, U: EngineGeneratorPushButtons>(
         &mut self,
         context: &UpdateContext,
-        arguments: &T,
+        engine: &T,
+        overhead: &U,
     ) {
-        if arguments.idg_push_button_released(self.number) {
+        if overhead.idg_push_button_is_released(self.number) {
             // The IDG cannot be reconnected.
             self.connected = false;
         }
 
-        self.update_stable_time(context, arguments.engine_corrected_n2(self.number));
+        self.update_stable_time(context, engine.corrected_n2());
         self.update_temperature(
             context,
-            self.get_target_temperature(context, arguments.engine_corrected_n2(self.number)),
+            self.get_target_temperature(context, engine.corrected_n2()),
         );
     }
 
@@ -255,25 +252,41 @@ fn clamp<T: PartialOrd>(value: T, min: T, max: T) -> T {
 mod tests {
     use super::*;
 
-    struct UpdateArguments {
-        engine_corrected_n2: Ratio,
-        idg_push_button_released: bool,
+    struct TestEngine {
+        corrected_n2: Ratio,
     }
-    impl UpdateArguments {
-        fn new(engine_corrected_n2: Ratio, idg_push_button_released: bool) -> Self {
+    impl TestEngine {
+        fn new(engine_corrected_n2: Ratio) -> Self {
             Self {
-                engine_corrected_n2,
-                idg_push_button_released,
+                corrected_n2: engine_corrected_n2,
             }
         }
     }
-    impl EngineGeneratorUpdateArguments for UpdateArguments {
-        fn engine_corrected_n2(&self, _: usize) -> Ratio {
-            self.engine_corrected_n2
+    impl EngineCorrectedN2 for TestEngine {
+        fn corrected_n2(&self) -> Ratio {
+            self.corrected_n2
+        }
+    }
+
+    struct TestOverhead {
+        engine_gen_push_button_is_on: bool,
+        idg_push_button_is_released: bool,
+    }
+    impl TestOverhead {
+        fn new(engine_gen_push_button_is_on: bool, idg_push_button_is_released: bool) -> Self {
+            Self {
+                engine_gen_push_button_is_on,
+                idg_push_button_is_released,
+            }
+        }
+    }
+    impl EngineGeneratorPushButtons for TestOverhead {
+        fn engine_gen_push_button_is_on(&self, _: usize) -> bool {
+            self.engine_gen_push_button_is_on
         }
 
-        fn idg_push_button_released(&self, _: usize) -> bool {
-            self.idg_push_button_released
+        fn idg_push_button_is_released(&self, _: usize) -> bool {
+            self.idg_push_button_is_released
         }
     }
 
@@ -378,10 +391,8 @@ mod tests {
             fn update_before_power_distribution(&mut self, context: &UpdateContext) {
                 self.engine_gen.update(
                     context,
-                    &UpdateArguments::new(
-                        Ratio::new::<percent>(if self.running { 80. } else { 0. }),
-                        self.idg_push_button_released,
-                    ),
+                    &TestEngine::new(Ratio::new::<percent>(if self.running { 80. } else { 0. })),
+                    &TestOverhead::new(true, self.idg_push_button_released),
                 );
 
                 self.generator_output_within_normal_parameters_before_processing_power_consumption_report = self.engine_gen.output_within_normal_parameters();
@@ -636,7 +647,8 @@ mod tests {
             test_bed.run(&mut idg, |element, context| {
                 element.update(
                     context,
-                    &UpdateArguments::new(Ratio::new::<percent>(80.), false),
+                    &TestEngine::new(Ratio::new::<percent>(80.)),
+                    &TestOverhead::new(true, false),
                 )
             });
 
@@ -651,7 +663,8 @@ mod tests {
             test_bed.run(&mut idg, |element, context| {
                 element.update(
                     context,
-                    &UpdateArguments::new(Ratio::new::<percent>(80.), false),
+                    &TestEngine::new(Ratio::new::<percent>(80.)),
+                    &TestOverhead::new(true, false),
                 )
             });
 
@@ -665,14 +678,16 @@ mod tests {
             test_bed.run(&mut idg, |element, context| {
                 element.update(
                     context,
-                    &UpdateArguments::new(Ratio::new::<percent>(80.), true),
+                    &TestEngine::new(Ratio::new::<percent>(80.)),
+                    &TestOverhead::new(true, true),
                 )
             });
 
             test_bed.run(&mut idg, |element, context| {
                 element.update(
                     context,
-                    &UpdateArguments::new(Ratio::new::<percent>(80.), false),
+                    &TestEngine::new(Ratio::new::<percent>(80.)),
+                    &TestOverhead::new(true, false),
                 )
             });
 
@@ -688,7 +703,8 @@ mod tests {
             test_bed.run(&mut idg, |element, context| {
                 element.update(
                     context,
-                    &UpdateArguments::new(Ratio::new::<percent>(80.), false),
+                    &TestEngine::new(Ratio::new::<percent>(80.)),
+                    &TestOverhead::new(true, false),
                 )
             });
 
@@ -704,7 +720,8 @@ mod tests {
             test_bed.run(&mut idg, |element, context| {
                 element.update(
                     context,
-                    &UpdateArguments::new(Ratio::new::<percent>(80.), true),
+                    &TestEngine::new(Ratio::new::<percent>(80.)),
+                    &TestOverhead::new(true, true),
                 )
             });
 
@@ -719,7 +736,8 @@ mod tests {
             test_bed.run(&mut idg, |element, context| {
                 element.update(
                     context,
-                    &UpdateArguments::new(Ratio::new::<percent>(80.), false),
+                    &TestEngine::new(Ratio::new::<percent>(80.)),
+                    &TestOverhead::new(true, false),
                 )
             });
 
@@ -728,7 +746,8 @@ mod tests {
             test_bed.run(&mut idg, |element, context| {
                 element.update(
                     context,
-                    &UpdateArguments::new(Ratio::new::<percent>(0.), false),
+                    &TestEngine::new(Ratio::new::<percent>(0.)),
+                    &TestOverhead::new(true, false),
                 )
             });
 

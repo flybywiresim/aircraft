@@ -10,6 +10,7 @@ use systems::{
         Contactor, ElectricalBus, ElectricalBusType, PotentialSource, PotentialTarget,
         StaticInverter,
     },
+    shared::{AuxiliaryPowerUnitElectrical, EngineCorrectedN2, EngineFirePushButtons},
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::{f64::*, velocity::knot};
@@ -78,12 +79,18 @@ impl A320DirectCurrentElectrical {
         }
     }
 
-    pub fn update_with_alternating_current_state<'a, T: AlternatingCurrentState>(
+    pub fn update_with_alternating_current_state<
+        'a,
+        T: AlternatingCurrentState,
+        U: EngineCorrectedN2,
+        V: AuxiliaryPowerUnitElectrical,
+        W: EngineFirePushButtons,
+    >(
         &mut self,
         context: &UpdateContext,
         overhead: &A320ElectricalOverheadPanel,
         ac_state: &T,
-        arguments: &mut A320ElectricalUpdateArguments<'a>,
+        arguments: &mut A320ElectricalUpdateArguments<'a, U, V, W>,
     ) {
         self.tr_1_contactor.close_when(ac_state.tr_1().is_powered());
         self.tr_1_contactor.powered_by(ac_state.tr_1());

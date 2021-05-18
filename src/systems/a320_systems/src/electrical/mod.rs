@@ -9,43 +9,47 @@ use self::{
 };
 use systems::{
     electrical::{
-        consumption::SuppliedPower, ElectricalSystem, EngineGeneratorUpdateArguments,
+        consumption::SuppliedPower, ElectricalSystem, EngineGeneratorPushButtons,
         ExternalPowerSource, Potential, StaticInverter, TransformerRectifier,
     },
     overhead::{
         AutoOffFaultPushButton, FaultIndication, FaultReleasePushButton, MomentaryPushButton,
         NormalAltnFaultPushButton, OnOffAvailablePushButton, OnOffFaultPushButton,
     },
-    shared::{AuxiliaryPowerUnitElectrical, EngineFirePushButtons},
+    shared::{AuxiliaryPowerUnitElectrical, EngineCorrectedN2, EngineFirePushButtons},
     simulation::{SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext},
 };
 use uom::si::{f64::*, velocity::knot};
 
-pub(super) struct A320ElectricalUpdateArguments<'a> {
-    engine_corrected_n2: [Ratio; 2],
-    idg_push_buttons_released: [bool; 2],
-    apu: &'a mut dyn AuxiliaryPowerUnitElectrical,
+pub(super) struct A320ElectricalUpdateArguments<
+    'a,
+    T: EngineCorrectedN2,
+    U: AuxiliaryPowerUnitElectrical,
+    V: EngineFirePushButtons,
+> {
+    engines: [&'a T; 2],
+    apu: &'a mut U,
     is_blue_hydraulic_circuit_pressurised: bool,
     apu_master_sw_pb_on: bool,
     apu_start_pb_on: bool,
     landing_gear_is_up_and_locked: bool,
-    engine_fire_push_buttons: &'a dyn EngineFirePushButtons,
+    engine_fire_push_buttons: &'a V,
 }
-impl<'a> A320ElectricalUpdateArguments<'a> {
+impl<'a, T: EngineCorrectedN2, U: AuxiliaryPowerUnitElectrical, V: EngineFirePushButtons>
+    A320ElectricalUpdateArguments<'a, T, U, V>
+{
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        engine_corrected_n2: [Ratio; 2],
-        idg_push_buttons_released: [bool; 2],
-        apu: &'a mut dyn AuxiliaryPowerUnitElectrical,
+        engines: [&'a T; 2],
+        apu: &'a mut U,
         is_blue_hydraulic_circuit_pressurised: bool,
         apu_master_sw_pb_on: bool,
         apu_start_pb_on: bool,
         landing_gear_is_up_and_locked: bool,
-        engine_fire_push_buttons: &'a dyn EngineFirePushButtons,
+        engine_fire_push_buttons: &'a V,
     ) -> Self {
         Self {
-            engine_corrected_n2,
-            idg_push_buttons_released,
+            engines,
             apu,
             is_blue_hydraulic_circuit_pressurised,
             apu_master_sw_pb_on,
@@ -90,14 +94,9 @@ impl<'a> A320ElectricalUpdateArguments<'a> {
     fn engine_fire_push_button_is_released(&self, engine_number: usize) -> bool {
         self.engine_fire_push_buttons.is_released(engine_number)
     }
-}
-impl<'a> EngineGeneratorUpdateArguments for A320ElectricalUpdateArguments<'a> {
-    fn engine_corrected_n2(&self, number: usize) -> Ratio {
-        self.engine_corrected_n2[number - 1]
-    }
 
-    fn idg_push_button_released(&self, number: usize) -> bool {
-        self.idg_push_buttons_released[number - 1]
+    fn engine(&self, number: usize) -> &T {
+        &self.engines[number - 1]
     }
 }
 
@@ -117,13 +116,18 @@ impl A320Electrical {
         }
     }
 
-    pub fn update<'a>(
+    pub fn update<
+        'a,
+        T: EngineCorrectedN2,
+        U: AuxiliaryPowerUnitElectrical,
+        V: EngineFirePushButtons,
+    >(
         &mut self,
         context: &UpdateContext,
         ext_pwr: &ExternalPowerSource,
         overhead: &A320ElectricalOverheadPanel,
         emergency_overhead: &A320EmergencyElectricalOverheadPanel,
-        arguments: &mut A320ElectricalUpdateArguments<'a>,
+        arguments: &mut A320ElectricalUpdateArguments<'a, T, U, V>,
     ) {
         self.alternating_current
             .update(context, ext_pwr, overhead, emergency_overhead, arguments);
@@ -218,12 +222,8 @@ impl A320Electrical {
         self.direct_current.empty_battery_2();
     }
 
-    pub fn gen_1_contactor_open(&self) -> bool {
-        self.alternating_current.gen_1_contactor_open()
-    }
-
-    pub fn gen_2_contactor_open(&self) -> bool {
-        self.alternating_current.gen_2_contactor_open()
+    pub fn gen_contactor_open(&self, number: usize) -> bool {
+        self.alternating_current.gen_contactor_open(number)
     }
 }
 impl ElectricalSystem for A320Electrical {
@@ -266,10 +266,8 @@ trait AlternatingCurrentState {
 pub(super) struct A320ElectricalOverheadPanel {
     bat_1: AutoOffFaultPushButton,
     bat_2: AutoOffFaultPushButton,
-    idg_1: FaultReleasePushButton,
-    idg_2: FaultReleasePushButton,
-    gen_1: OnOffFaultPushButton,
-    gen_2: OnOffFaultPushButton,
+    idgs: [FaultReleasePushButton; 2],
+    generators: [OnOffFaultPushButton; 2],
     apu_gen: OnOffFaultPushButton,
     bus_tie: AutoOffFaultPushButton,
     ac_ess_feed: NormalAltnFaultPushButton,
@@ -282,10 +280,14 @@ impl A320ElectricalOverheadPanel {
         A320ElectricalOverheadPanel {
             bat_1: AutoOffFaultPushButton::new_auto("ELEC_BAT_1"),
             bat_2: AutoOffFaultPushButton::new_auto("ELEC_BAT_2"),
-            idg_1: FaultReleasePushButton::new_in("ELEC_IDG_1"),
-            idg_2: FaultReleasePushButton::new_in("ELEC_IDG_2"),
-            gen_1: OnOffFaultPushButton::new_on("ELEC_ENG_GEN_1"),
-            gen_2: OnOffFaultPushButton::new_on("ELEC_ENG_GEN_2"),
+            idgs: [
+                FaultReleasePushButton::new_in("ELEC_IDG_1"),
+                FaultReleasePushButton::new_in("ELEC_IDG_2"),
+            ],
+            generators: [
+                OnOffFaultPushButton::new_on("ELEC_ENG_GEN_1"),
+                OnOffFaultPushButton::new_on("ELEC_ENG_GEN_2"),
+            ],
             apu_gen: OnOffFaultPushButton::new_on("ELEC_APU_GEN"),
             bus_tie: AutoOffFaultPushButton::new_auto("ELEC_BUS_TIE"),
             ac_ess_feed: NormalAltnFaultPushButton::new_normal("ELEC_AC_ESS_FEED"),
@@ -299,18 +301,16 @@ impl A320ElectricalOverheadPanel {
         self.ac_ess_feed
             .set_fault(!electrical.ac_ess_bus_is_powered());
 
-        self.gen_1
-            .set_fault(electrical.gen_1_contactor_open() && self.gen_1.is_on());
-        self.gen_2
-            .set_fault(electrical.gen_2_contactor_open() && self.gen_2.is_on());
+        self.generators
+            .iter_mut()
+            .enumerate()
+            .for_each(|(index, gen)| {
+                gen.set_fault(electrical.gen_contactor_open(index + 1) && gen.is_on());
+            });
     }
 
-    fn generator_1_is_on(&self) -> bool {
-        self.gen_1.is_on()
-    }
-
-    fn generator_2_is_on(&self) -> bool {
-        self.gen_2.is_on()
+    fn generator_is_on(&self, number: usize) -> bool {
+        self.generators[number - 1].is_on()
     }
 
     pub fn external_power_is_available(&self) -> bool {
@@ -352,23 +352,26 @@ impl A320ElectricalOverheadPanel {
     fn galy_and_cab_is_off(&self) -> bool {
         self.galy_and_cab.is_off()
     }
-
-    pub fn idg_1_push_button_released(&self) -> bool {
-        self.idg_1.is_released()
+}
+impl EngineGeneratorPushButtons for A320ElectricalOverheadPanel {
+    fn engine_gen_push_button_is_on(&self, number: usize) -> bool {
+        self.generators[number - 1].is_on()
     }
 
-    pub fn idg_2_push_button_released(&self) -> bool {
-        self.idg_2.is_released()
+    fn idg_push_button_is_released(&self, number: usize) -> bool {
+        self.idgs[number - 1].is_released()
     }
 }
 impl SimulationElement for A320ElectricalOverheadPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.bat_1.accept(visitor);
         self.bat_2.accept(visitor);
-        self.idg_1.accept(visitor);
-        self.idg_2.accept(visitor);
-        self.gen_1.accept(visitor);
-        self.gen_2.accept(visitor);
+        self.idgs.iter_mut().for_each(|idg| {
+            idg.accept(visitor);
+        });
+        self.generators.iter_mut().for_each(|gen| {
+            gen.accept(visitor);
+        });
         self.apu_gen.accept(visitor);
         self.bus_tie.accept(visitor);
         self.ac_ess_feed.accept(visitor);
@@ -2157,8 +2160,30 @@ mod a320_electrical_circuit_tests {
         }
     }
 
+    struct TestEngine {
+        is_running: bool,
+    }
+    impl TestEngine {
+        fn new() -> Self {
+            Self { is_running: false }
+        }
+
+        fn run(&mut self) {
+            self.is_running = true;
+        }
+
+        fn stop(&mut self) {
+            self.is_running = false;
+        }
+    }
+    impl EngineCorrectedN2 for TestEngine {
+        fn corrected_n2(&self) -> Ratio {
+            Ratio::new::<percent>(if self.is_running { 80. } else { 0. })
+        }
+    }
+
     struct A320ElectricalTestAircraft {
-        engine_running: [bool; 2],
+        engines: [TestEngine; 2],
         ext_pwr: ExternalPowerSource,
         elec: A320Electrical,
         overhead: A320ElectricalOverheadPanel,
@@ -2171,7 +2196,7 @@ mod a320_electrical_circuit_tests {
     impl A320ElectricalTestAircraft {
         fn new() -> Self {
             Self {
-                engine_running: [false, false],
+                engines: [TestEngine::new(), TestEngine::new()],
                 ext_pwr: ExternalPowerSource::new(),
                 elec: A320Electrical::new(),
                 overhead: A320ElectricalOverheadPanel::new(),
@@ -2184,11 +2209,11 @@ mod a320_electrical_circuit_tests {
         }
 
         fn running_engine(&mut self, number: usize) {
-            self.engine_running[number - 1] = true;
+            self.engines[number - 1].run();
         }
 
         fn stopped_engine(&mut self, number: usize) {
-            self.engine_running[number - 1] = false;
+            self.engines[number - 1].stop();
         }
 
         fn running_apu(&mut self) {
@@ -2267,14 +2292,7 @@ mod a320_electrical_circuit_tests {
                 &self.overhead,
                 &self.emergency_overhead,
                 &mut A320ElectricalUpdateArguments::new(
-                    [
-                        Ratio::new::<percent>(if self.engine_running[0] { 80. } else { 0. }),
-                        Ratio::new::<percent>(if self.engine_running[1] { 80. } else { 0. }),
-                    ],
-                    [
-                        self.overhead.idg_1_push_button_released(),
-                        self.overhead.idg_2_push_button_released(),
-                    ],
+                    [&self.engines[0], &self.engines[1]],
                     &mut self.apu,
                     true,
                     self.apu_master_sw_pb_on,

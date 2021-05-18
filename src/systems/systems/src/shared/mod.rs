@@ -25,6 +25,10 @@ pub trait EngineFirePushButtons {
     fn is_released(&self, engine_number: usize) -> bool;
 }
 
+pub trait EngineCorrectedN2 {
+    fn corrected_n2(&self) -> Ratio;
+}
+
 #[derive(FromPrimitive)]
 pub(crate) enum FwcFlightPhase {
     ElecPwr = 1,

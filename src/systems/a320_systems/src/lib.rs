@@ -20,7 +20,7 @@ use systems::{
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
     electrical::{consumption::SuppliedPower, ElectricalSystem, ExternalPowerSource},
-    engine::{leap_engine::LeapEngine, Engine, EngineFireOverheadPanel},
+    engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
     landing_gear::LandingGear,
     simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -92,11 +92,7 @@ impl Aircraft for A320 {
             &self.electrical_overhead,
             &self.emergency_electrical_overhead,
             &mut A320ElectricalUpdateArguments::new(
-                [self.engine_1.corrected_n2(), self.engine_2.corrected_n2()],
-                [
-                    self.electrical_overhead.idg_1_push_button_released(),
-                    self.electrical_overhead.idg_2_push_button_released(),
-                ],
+                [&self.engine_1, &self.engine_2],
                 &mut self.apu,
                 self.hydraulic.is_blue_pressurised(),
                 self.apu_overhead.master_is_on(),

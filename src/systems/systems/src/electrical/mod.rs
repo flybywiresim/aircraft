@@ -14,8 +14,7 @@ pub use battery::Battery;
 pub use battery_charge_limiter::{BatteryChargeLimiter, BatteryChargeLimiterArguments};
 pub use emergency_generator::EmergencyGenerator;
 pub use engine_generator::{
-    EngineGenerator, EngineGeneratorUpdateArguments,
-    INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
+    EngineGenerator, INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
 };
 pub use external_power_source::ExternalPowerSource;
 use itertools::Itertools;
@@ -31,6 +30,11 @@ use self::consumption::SuppliedPower;
 
 pub trait ElectricalSystem {
     fn get_supplied_power(&self) -> SuppliedPower;
+}
+
+pub trait EngineGeneratorPushButtons {
+    fn engine_gen_push_button_is_on(&self, number: usize) -> bool;
+    fn idg_push_button_is_released(&self, number: usize) -> bool;
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
