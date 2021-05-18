@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import React, { useEffect, useState } from 'react';
 import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+import { ptuArray, levels } from './common';
 
 setIsEcamPage('hyd_page');
 
@@ -106,11 +107,9 @@ export const HydPage = () => {
                 setPressures(true);
                 setPtuActive(0);
             } else if (pressureDifferential > 200 && maxPressure > 1450 && !ptuActive) {
-                console.log('Pressure differ > 200');
                 setPtuActive(1);
                 setPressures();
             } else if (negativePressureDifferential <= -500 && ptuActive) {
-                console.log('Pressure differential is < -500');
                 setPressures(true);
                 setPtuActive(0);
             }
@@ -120,7 +119,7 @@ export const HydPage = () => {
         } else {
             setPtuScenario(ptuAvailable ? 'normal' : 'PTU-off');
         }
-    }, [greenPressure, yellowPressure, yellowElectricPumpStatus]);
+    }, [greenPressure, yellowPressure, yellowElectricPumpStatus, ptuAvailable]);
 
     const y = 45;
 
@@ -228,11 +227,11 @@ const HydSys = ({ title, pressure, hydLevel, x, y, fireValve, pumpPBStatus, yell
     function checkPumpLowPressure(pump) {
         switch (pump) {
         case 'GREEN':
-            return (greenPumpLowPressure && greenPumpActive) || !greenPumpActive;
+            return greenPumpLowPressure || !greenPumpActive;
         case 'BLUE':
-            return (bluePumpLowPressure && bluePumpActive) || !bluePumpActive;
+            return bluePumpLowPressure || !bluePumpActive;
         case 'YELLOW':
-            return (yellowPumpLowPressure && yellowPumpActive) || !yellowPumpActive;
+            return yellowPumpLowPressure || !yellowPumpActive;
         default:
             return 1;
         }
@@ -363,11 +362,6 @@ type HydReservoirProps = {
 }
 
 const HydReservoir = ({ system, x, y, fluidLevel, setHydLevel } : HydReservoirProps) => {
-    const levels = [
-        { system: 'GREEN', max: 14.5, low: 3.5, norm: 2.6 },
-        { system: 'BLUE', max: 6.5, low: 2.4, norm: 1.6 },
-        { system: 'YELLOW', max: 12.5, low: 3.5, norm: 2.6 },
-    ];
     const fluidLevelInLitres = fluidLevel * 3.79;
 
     const values = levels.filter((item) => item.system === system);
@@ -413,318 +407,9 @@ type PTUProps = {
 const PTU = ({ x, y, ptuScenario } : PTUProps) => {
     const semiCircleD = `M${x - 16},${y} C${x - 16},${y + 24} ${x + 16},${y + 24} ${x + 16},${y}`;
 
-    // Highest to lowest priority
-    // 1. PTU valve control off (all amber, no fill)
-
-    const ptuArray = [
-        {
-            scenario: 'PTU-off',
-            format: [
-                {
-                    id: 'ptu1',
-                    className: 'Hide',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu2',
-                    className: 'AmberLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu3',
-                    className: 'AmberLine NoFill',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu4',
-                    className: 'AmberLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu5',
-                    className: 'Hide',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'triangle1',
-                    className: '',
-                    colour: 'Amber',
-                    orientation: -90,
-                    fill: 0,
-                },
-                {
-                    id: 'triangle2',
-                    className: '',
-                    colour: 'Amber',
-                    orientation: -90,
-                    fill: 0,
-                },
-                {
-                    id: 'triangle3',
-                    className: '',
-                    colour: 'Amber',
-                    orientation: 90,
-                    fill: 0,
-                },
-            ],
-        },
-        {
-            scenario: 'normal',
-            format: [
-                {
-                    id: 'ptu1',
-                    className: 'Hide',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu2',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu3',
-                    className: 'GreenLine NoFill',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu4',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu5',
-                    className: 'GreenLine Hide',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'triangle1',
-                    className: '',
-                    colour: 'Green',
-                    orientation: -90,
-                    fill: 0,
-                },
-                {
-                    id: 'triangle2',
-                    className: '',
-                    colour: 'Green',
-                    orientation: -90,
-                    fill: 0,
-                },
-                {
-                    id: 'triangle3',
-                    className: '',
-                    colour: 'Green',
-                    orientation: 90,
-                    fill: 0,
-                },
-            ],
-        },
-        {
-            scenario: 'elec-pump',
-            format: [
-                {
-                    id: 'ptu1',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu2',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu3',
-                    className: 'GreenLine NoFill',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu4',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu5',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'triangle1',
-                    className: 'FillGreen',
-                    colour: 'Green',
-                    orientation: -90,
-                    fill: 1,
-                },
-                {
-                    id: 'triangle2',
-                    className: 'FillGreen',
-                    colour: 'Green',
-                    orientation: -90,
-                    fill: 1,
-                },
-                {
-                    id: 'triangle3',
-                    className: 'FillGreen',
-                    colour: 'Green',
-                    orientation: -90,
-                    fill: 1,
-                },
-            ],
-        },
-        {
-            scenario: 'right-to-left',
-            format: [
-                {
-                    id: 'ptu1',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu2',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu3',
-                    className: 'GreenLine NoFill',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu4',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu5',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'triangle1',
-                    className: 'FillGreen',
-                    colour: 'Green',
-                    orientation: -90,
-                    fill: 1,
-                },
-                {
-                    id: 'triangle2',
-                    className: 'FillGreen',
-                    colour: 'Green',
-                    orientation: -90,
-                    fill: 1,
-                },
-                {
-                    id: 'triangle3',
-                    className: 'FillGreen',
-                    colour: 'Green',
-                    orientation: -90,
-                    fill: 1,
-                },
-            ],
-        },
-        {
-            scenario: 'left-to-right',
-            format: [
-                {
-                    id: 'ptu1',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu2',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu3',
-                    className: 'GreenLine NoFill',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu4',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'ptu5',
-                    className: 'GreenLine',
-                    colour: '',
-                    orientation: 0,
-                    fill: 0,
-                },
-                {
-                    id: 'triangle1',
-                    className: 'FillGreen',
-                    colour: 'Green',
-                    orientation: 90,
-                    fill: 1,
-                },
-                {
-                    id: 'triangle2',
-                    className: 'FillGreen',
-                    colour: 'Green',
-                    orientation: 90,
-                    fill: 1,
-                },
-                {
-                    id: 'triangle3',
-                    className: 'FillGreen',
-                    colour: 'Green',
-                    orientation: 90,
-                    fill: 1,
-                },
-            ],
-        },
-    ];
-
     const result: any = ptuArray.find(({ scenario }) => scenario === ptuScenario);
+    console.log(ptuScenario);
+    console.log(JSON.stringify(result));
     const ptu1 = result.format.find(({ id }) => id === 'ptu1');
     const ptu2 = result.format.find(({ id }) => id === 'ptu2');
     const ptu3 = result.format.find(({ id }) => id === 'ptu3');
