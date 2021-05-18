@@ -10,11 +10,14 @@ use systems::hydraulic::{
     RamAirTurbineController,
 };
 use systems::overhead::{
-    AutoOffFaultPushButton, AutoOnFaultPushButton, FirePushButton, OnOffFaultPushButton,
+    AutoOffFaultPushButton, AutoOnFaultPushButton, FirePushButton, MomentaryPushButton,
+    OnOffFaultPushButton,
 };
 use systems::simulation::{
     SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, UpdateContext,
 };
+
+use super::A320EmergencyElectricalOverheadPanel;
 
 use systems::electrical::{consumption::SuppliedPower, ElectricalBusType};
 use systems::{engine::Engine, landing_gear::LandingGear};
@@ -171,6 +174,7 @@ impl A320Hydraulic {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub(super) fn update<T: Engine>(
         &mut self,
         context: &UpdateContext,
@@ -178,6 +182,7 @@ impl A320Hydraulic {
         engine2: &T,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
+        emergency_electrical_overhead: &A320EmergencyElectricalOverheadPanel,
         landing_gear: &LandingGear,
         is_in_emergency_elec: bool,
     ) {
@@ -194,7 +199,12 @@ impl A320Hydraulic {
             time_to_catch.as_secs_f64() / min_hyd_loop_timestep.as_secs_f64();
 
         // Here we update everything requiring same refresh as the sim calls us, more likely visual stuff
-        self.update_at_every_frames(&context);
+        self.update_at_every_frames(
+            &context,
+            &overhead_panel,
+            &emergency_electrical_overhead,
+            is_in_emergency_elec,
+        );
 
         if number_of_steps_floating_point < 1.0 {
             // Can't do a full time step
@@ -229,7 +239,6 @@ impl A320Hydraulic {
                     overhead_panel,
                     engine_fire_overhead,
                     landing_gear,
-                    is_in_emergency_elec,
                 );
             }
 
@@ -293,9 +302,22 @@ impl A320Hydraulic {
     }
 
     // Update with same refresh rate as the sim
-    fn update_at_every_frames(&mut self, context: &UpdateContext) {
+    fn update_at_every_frames(
+        &mut self,
+        context: &UpdateContext,
+        overhead_panel: &A320HydraulicOverheadPanel,
+        emergency_electrical_overhead: &A320EmergencyElectricalOverheadPanel,
+        is_in_emergency_elec: bool,
+    ) {
         // Updating rat stowed pos on all frames in case it's used for graphics
         self.ram_air_turbine.update_position(&context.delta());
+
+        // Uses external conditions and momentary button: better to check each frame
+        self.ram_air_turbine_controller.update(
+            &overhead_panel,
+            &emergency_electrical_overhead,
+            is_in_emergency_elec,
+        );
 
         // Tug has its angle changing on each frame and we'd like to detect this
         self.pushback_tug.update();
@@ -337,7 +359,6 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_overhead: &A320EngineFireOverheadPanel,
         landing_gear: &LandingGear,
-        is_in_emergency_elec: bool,
     ) {
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.hyd_brake_logic.update_brake_demands(
@@ -433,8 +454,6 @@ impl A320Hydraulic {
             &self.yellow_electric_pump_controller,
         );
 
-        self.ram_air_turbine_controller
-            .update(&overhead_panel, is_in_emergency_elec);
         self.ram_air_turbine
             .update(context, &self.blue_loop, &self.ram_air_turbine_controller);
 
@@ -561,7 +580,7 @@ impl A320EngineDrivenPumpController {
             panic!("The A320 only supports two engines.");
         }
 
-        assert!(power_buses.len() > 0 && power_buses.len() <= 2);
+        assert!(!power_buses.is_empty() && power_buses.len() <= 2);
 
         Self {
             is_powered: false,
@@ -980,13 +999,19 @@ impl A320RamAirTurbineController {
         }
     }
 
-    fn update(&mut self, overhead_panel: &A320HydraulicOverheadPanel, is_in_emergency_elec: bool) {
-        let should_deploy_solenoid_1_if_powered = overhead_panel.rat_push_button.is_auto();
+    fn update(
+        &mut self,
+        overhead_panel: &A320HydraulicOverheadPanel,
+        emergency_electrical_overhead: &A320EmergencyElectricalOverheadPanel,
+        is_in_emergency_elec: bool,
+    ) {
+        let should_solenoid_1_deploy_if_powered = overhead_panel.rat_man_on_push_button_is_on();
 
-        let should_deploy_solenoid_2_if_powered = is_in_emergency_elec;
+        let should_solenoid_2_deploy_if_powered =
+            is_in_emergency_elec || emergency_electrical_overhead.rat_and_emer_gen_man_on();
 
-        self.should_deploy = (self.is_solenoid_1_powered && should_deploy_solenoid_1_if_powered)
-            || (self.is_solenoid_2_powered && should_deploy_solenoid_2_if_powered);
+        self.should_deploy = (self.is_solenoid_1_powered && should_solenoid_1_deploy_if_powered)
+            || (self.is_solenoid_2_powered && should_solenoid_2_deploy_if_powered);
     }
 }
 impl RamAirTurbineController for A320RamAirTurbineController {
@@ -1277,7 +1302,7 @@ pub(super) struct A320HydraulicOverheadPanel {
     edp2_push_button: AutoOffFaultPushButton,
     blue_epump_push_button: AutoOffFaultPushButton,
     ptu_push_button: AutoOffFaultPushButton,
-    rat_push_button: AutoOffFaultPushButton,
+    rat_push_button: MomentaryPushButton,
     yellow_epump_push_button: AutoOnFaultPushButton,
     blue_epump_override_push_button: OnOffFaultPushButton,
 }
@@ -1288,7 +1313,7 @@ impl A320HydraulicOverheadPanel {
             edp2_push_button: AutoOffFaultPushButton::new_auto("HYD_ENG_2_PUMP"),
             blue_epump_push_button: AutoOffFaultPushButton::new_auto("HYD_EPUMPB"),
             ptu_push_button: AutoOffFaultPushButton::new_auto("HYD_PTU"),
-            rat_push_button: AutoOffFaultPushButton::new_off("HYD_RAT"),
+            rat_push_button: MomentaryPushButton::new("HYD_RAT_MAN_ON"),
             yellow_epump_push_button: AutoOnFaultPushButton::new_auto("HYD_EPUMPY"),
             blue_epump_override_push_button: OnOffFaultPushButton::new_off("HYD_EPUMPY_OVRD"),
         }
@@ -1335,6 +1360,10 @@ impl A320HydraulicOverheadPanel {
 
     fn blue_epump_push_button_is_off(&self) -> bool {
         self.blue_epump_push_button.is_off()
+    }
+
+    fn rat_man_on_push_button_is_on(&self) -> bool {
+        self.rat_push_button.is_pressed()
     }
 }
 impl SimulationElement for A320HydraulicOverheadPanel {
@@ -1387,11 +1416,12 @@ mod tests {
 
     mod a320_hydraulics {
         use super::*;
+        use systems::electrical::{Potential, PotentialOrigin};
         use systems::engine::leap_engine::LeapEngine;
         use systems::simulation::{test::SimulationTestBed, Aircraft};
         use uom::si::{
-            acceleration::foot_per_second_squared, length::foot, ratio::percent,
-            thermodynamic_temperature::degree_celsius, velocity::knot,
+            acceleration::foot_per_second_squared, electric_potential::volt, length::foot,
+            ratio::percent, thermodynamic_temperature::degree_celsius, velocity::knot,
         };
 
         struct A320HydraulicsTestAircraft {
@@ -1400,7 +1430,19 @@ mod tests {
             hydraulics: A320Hydraulic,
             overhead: A320HydraulicOverheadPanel,
             engine_fire_overhead: A320EngineFireOverheadPanel,
+            emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel,
             landing_gear: LandingGear,
+
+            // Electric buses states to be able to kill them dynamically
+            is_ac_ground_service_alive: bool,
+            is_dc_ground_service_alive: bool,
+            is_ac_1_alive: bool,
+            is_ac_2_alive: bool,
+            is_dc_1_alive: bool,
+            is_dc_2_alive: bool,
+            is_dc_ess_alive: bool,
+            is_dc_hot_1_alive: bool,
+            is_dc_hot_2_alive: bool,
         }
         impl A320HydraulicsTestAircraft {
             fn new() -> Self {
@@ -1410,8 +1452,22 @@ mod tests {
                     hydraulics: A320Hydraulic::new(),
                     overhead: A320HydraulicOverheadPanel::new(),
                     engine_fire_overhead: A320EngineFireOverheadPanel::new(),
+                    emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel::new(),
                     landing_gear: LandingGear::new(),
+                    is_ac_ground_service_alive: true,
+                    is_dc_ground_service_alive: true,
+                    is_ac_1_alive: true,
+                    is_ac_2_alive: true,
+                    is_dc_1_alive: true,
+                    is_dc_2_alive: true,
+                    is_dc_ess_alive: true,
+                    is_dc_hot_1_alive: true,
+                    is_dc_hot_2_alive: true,
                 }
+            }
+
+            fn is_rat_commanded_to_deploy(&self) -> bool {
+                self.hydraulics.ram_air_turbine_controller.should_deploy()
             }
 
             fn is_green_edp_commanded_on(&self) -> bool {
@@ -1456,21 +1512,157 @@ mod tests {
             fn is_yellow_pressurised(&self) -> bool {
                 self.hydraulics.is_yellow_pressurised()
             }
+
+            fn ac_bus_1_power_state(&mut self, bus_is_alive: bool) {
+                self.is_ac_1_alive = bus_is_alive;
+            }
+            fn ac_bus_2_power_state(&mut self, bus_is_alive: bool) {
+                self.is_ac_2_alive = bus_is_alive;
+            }
+
+            fn dc_ground_service_power_state(&mut self, bus_is_alive: bool) {
+                self.is_dc_ground_service_alive = bus_is_alive;
+            }
+
+            fn ac_ground_service_power_state(&mut self, bus_is_alive: bool) {
+                self.is_ac_ground_service_alive = bus_is_alive;
+            }
+
+            fn dc_bus_2_power_state(&mut self, bus_is_alive: bool) {
+                self.is_dc_2_alive = bus_is_alive;
+            }
+            fn dc_ess_power_state(&mut self, bus_is_alive: bool) {
+                self.is_dc_ess_alive = bus_is_alive;
+            }
         }
 
         impl Aircraft for A320HydraulicsTestAircraft {
             fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+                let is_in_emergency_elec = context.indicated_airspeed().get::<knot>() >= 100.
+                    && !self
+                        .get_supplied_power()
+                        .is_powered(&ElectricalBusType::AlternatingCurrent(1))
+                    && !self
+                        .get_supplied_power()
+                        .is_powered(&ElectricalBusType::AlternatingCurrent(2));
+
                 self.hydraulics.update(
                     context,
                     &self.engine_1,
                     &self.engine_2,
                     &self.overhead,
                     &self.engine_fire_overhead,
+                    &self.emergency_electrical_overhead,
                     &self.landing_gear,
-                    false,
+                    is_in_emergency_elec,
                 );
 
                 self.overhead.update(&self.hydraulics);
+            }
+
+            fn get_supplied_power(&mut self) -> SuppliedPower {
+                let mut supplied_power = SuppliedPower::new();
+                supplied_power.add(
+                    ElectricalBusType::AlternatingCurrent(1),
+                    if self.is_ac_1_alive {
+                        Potential::single(
+                            PotentialOrigin::EngineGenerator(1),
+                            ElectricPotential::new::<volt>(115.),
+                        )
+                    } else {
+                        Potential::none()
+                    },
+                );
+                supplied_power.add(
+                    ElectricalBusType::AlternatingCurrent(2),
+                    if self.is_ac_2_alive {
+                        Potential::single(
+                            PotentialOrigin::EngineGenerator(2),
+                            ElectricPotential::new::<volt>(115.),
+                        )
+                    } else {
+                        Potential::none()
+                    },
+                );
+                supplied_power.add(
+                    ElectricalBusType::AlternatingCurrentGndFltService,
+                    if self.is_ac_ground_service_alive {
+                        Potential::single(
+                            PotentialOrigin::EngineGenerator(2),
+                            ElectricPotential::new::<volt>(115.),
+                        )
+                    } else {
+                        Potential::none()
+                    },
+                );
+                supplied_power.add(
+                    ElectricalBusType::DirectCurrentGndFltService,
+                    if self.is_dc_ground_service_alive {
+                        Potential::single(
+                            PotentialOrigin::Battery(1),
+                            ElectricPotential::new::<volt>(28.),
+                        )
+                    } else {
+                        Potential::none()
+                    },
+                );
+                supplied_power.add(
+                    ElectricalBusType::DirectCurrent(1),
+                    if self.is_dc_1_alive {
+                        Potential::single(
+                            PotentialOrigin::Battery(1),
+                            ElectricPotential::new::<volt>(28.),
+                        )
+                    } else {
+                        Potential::none()
+                    },
+                );
+                supplied_power.add(
+                    ElectricalBusType::DirectCurrent(2),
+                    if self.is_dc_2_alive {
+                        Potential::single(
+                            PotentialOrigin::Battery(2),
+                            ElectricPotential::new::<volt>(28.),
+                        )
+                    } else {
+                        Potential::none()
+                    },
+                );
+                supplied_power.add(
+                    ElectricalBusType::DirectCurrentEssential,
+                    if self.is_dc_ess_alive {
+                        Potential::single(
+                            PotentialOrigin::Battery(2),
+                            ElectricPotential::new::<volt>(28.),
+                        )
+                    } else {
+                        Potential::none()
+                    },
+                );
+                supplied_power.add(
+                    ElectricalBusType::DirectCurrentHot(1),
+                    if self.is_dc_hot_1_alive {
+                        Potential::single(
+                            PotentialOrigin::Battery(1),
+                            ElectricPotential::new::<volt>(28.),
+                        )
+                    } else {
+                        Potential::none()
+                    },
+                );
+                supplied_power.add(
+                    ElectricalBusType::DirectCurrentHot(2),
+                    if self.is_dc_hot_2_alive {
+                        Potential::single(
+                            PotentialOrigin::Battery(1),
+                            ElectricPotential::new::<volt>(28.),
+                        )
+                    } else {
+                        Potential::none()
+                    },
+                );
+
+                supplied_power
             }
         }
         impl SimulationElement for A320HydraulicsTestAircraft {
@@ -1639,6 +1831,10 @@ mod tests {
 
             fn get_rat_rpm(&mut self) -> f64 {
                 self.simulation_test_bed.read_f64("A32NX_HYD_RAT_RPM")
+            }
+
+            fn get_rat_deploy_command(&mut self) -> bool {
+                self.aircraft.is_rat_commanded_to_deploy()
             }
 
             fn is_fire_valve_eng1_closed(&mut self) -> bool {
@@ -1843,6 +2039,40 @@ mod tests {
                 self
             }
 
+            fn ac_bus_1_lost(mut self) -> Self {
+                self.aircraft.ac_bus_1_power_state(false);
+                self
+            }
+
+            fn ac_bus_2_lost(mut self) -> Self {
+                self.aircraft.ac_bus_2_power_state(false);
+                self
+            }
+
+            fn dc_ground_service_lost(mut self) -> Self {
+                self.aircraft.dc_ground_service_power_state(false);
+                self
+            }
+            fn dc_ground_service_avail(mut self) -> Self {
+                self.aircraft.dc_ground_service_power_state(true);
+                self
+            }
+
+            fn ac_ground_service_lost(mut self) -> Self {
+                self.aircraft.ac_ground_service_power_state(false);
+                self
+            }
+
+            fn dc_bus_2_lost(mut self) -> Self {
+                self.aircraft.dc_bus_2_power_state(false);
+                self
+            }
+
+            fn dc_ess_lost(mut self) -> Self {
+                self.aircraft.dc_ess_power_state(false);
+                self
+            }
+
             fn set_cold_dark_inputs(self) -> Self {
                 self.set_blue_e_pump_ovrd(false)
                     .set_eng1_fire_button(false)
@@ -2004,6 +2234,29 @@ mod tests {
             assert!(!test_bed.is_ptu_enabled());
             test_bed = test_bed.set_gear_compressed_switch(false).run_one_tick();
             assert!(test_bed.is_ptu_enabled());
+        }
+
+        #[test]
+        fn ptu_unpowered_cant_inhibit() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Enabled on cold start
+            assert!(test_bed.is_ptu_enabled());
+
+            // Ptu push button disables PTU accordingly
+            test_bed = test_bed.set_ptu_state(false).run_one_tick();
+            assert!(!test_bed.is_ptu_enabled());
+
+            // No power on closing valve : ptu become active
+            test_bed = test_bed.dc_ground_service_lost().run_one_tick();
+            assert!(test_bed.is_ptu_enabled());
+
+            test_bed = test_bed.dc_ground_service_avail().run_one_tick();
+            assert!(!test_bed.is_ptu_enabled());
         }
 
         #[test]
@@ -2753,6 +3006,73 @@ mod tests {
         }
 
         #[test]
+        fn yellow_edp_solenoid_unpowered() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Starting eng 2
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(15));
+
+            assert!(test_bed.is_yellow_pressurised());
+
+            // Stoping EDP
+            test_bed = test_bed
+                .set_yellow_ed_pump(false)
+                .run_waiting_for(Duration::from_secs(15));
+
+            assert!(!test_bed.is_yellow_pressurised());
+
+            test_bed = test_bed
+                .dc_bus_2_lost()
+                .run_waiting_for(Duration::from_secs(15));
+
+            // Yellow solenoid has backup power from DC ESS BUS
+            assert!(!test_bed.is_yellow_pressurised());
+
+            test_bed = test_bed
+                .dc_ess_lost()
+                .run_waiting_for(Duration::from_secs(15));
+
+            // Now solenoid defaults to pressurised
+            assert!(test_bed.is_yellow_pressurised());
+        }
+
+        #[test]
+        fn green_edp_solenoid_unpowered() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            // Starting eng 1
+            test_bed = test_bed
+                .start_eng1(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(15));
+
+            assert!(test_bed.is_green_pressurised());
+
+            // Stoping EDP
+            test_bed = test_bed
+                .set_green_ed_pump(false)
+                .run_waiting_for(Duration::from_secs(15));
+
+            assert!(!test_bed.is_green_pressurised());
+
+            test_bed = test_bed
+                .dc_ess_lost()
+                .run_waiting_for(Duration::from_secs(15));
+
+            // Now solenoid defaults to pressurised
+            assert!(test_bed.is_green_pressurised());
+        }
+
+        #[test]
         // Checks numerical stability of reservoir level: level should remain after multiple pressure cycles
         fn yellow_loop_reservoir_coherency() {
             let mut test_bed = test_bed_with()
@@ -3450,6 +3770,7 @@ mod tests {
             overhead_panel.blue_epump_override_push_button.push_off();
 
             let mut blue_epump_controller = A320BlueElectricPumpController::new();
+            blue_epump_controller.is_powered = true;
 
             let eng1_above_idle = false;
             let eng2_above_idle = false;
@@ -3486,6 +3807,7 @@ mod tests {
             overhead_panel.blue_epump_override_push_button.push_off();
 
             let mut blue_epump_controller = A320BlueElectricPumpController::new();
+            blue_epump_controller.is_powered = true;
 
             let eng1_above_idle = false;
             let eng2_above_idle = false;
@@ -3532,6 +3854,7 @@ mod tests {
             overhead_panel.blue_epump_override_push_button.push_off();
 
             let mut blue_epump_controller = A320BlueElectricPumpController::new();
+            blue_epump_controller.is_powered = true;
 
             let eng1_above_idle = true;
             let eng2_above_idle = true;
@@ -3564,6 +3887,7 @@ mod tests {
 
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
             let mut blue_epump_controller = A320BlueElectricPumpController::new();
+            blue_epump_controller.is_powered = true;
 
             let eng1_above_idle = false;
             let eng2_above_idle = false;
@@ -3590,6 +3914,19 @@ mod tests {
                 eng2_above_idle,
             );
             assert!(!blue_epump_controller.should_pressurise());
+
+            // No power case
+            overhead_panel.blue_epump_override_push_button.push_on();
+            blue_epump_controller.is_powered = false;
+            blue_epump_controller.update(
+                &overhead_panel,
+                false,
+                engine_off_oil_pressure,
+                engine_off_oil_pressure,
+                eng1_above_idle,
+                eng2_above_idle,
+            );
+            assert!(!blue_epump_controller.should_pressurise());
         }
 
         #[test]
@@ -3601,6 +3938,7 @@ mod tests {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
 
             let mut yellow_epump_controller = A320YellowElectricPumpController::new();
+            yellow_epump_controller.is_powered = true;
 
             overhead_panel.yellow_epump_push_button.push_auto();
             yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
@@ -3613,6 +3951,12 @@ mod tests {
             overhead_panel.yellow_epump_push_button.push_auto();
             yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
             assert!(!yellow_epump_controller.should_pressurise());
+
+            // If unpowered no possible control of the pump
+            yellow_epump_controller.is_powered = false;
+            overhead_panel.yellow_epump_push_button.push_on();
+            yellow_epump_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, true);
+            assert!(!yellow_epump_controller.should_pressurise());
         }
 
         #[test]
@@ -3622,6 +3966,7 @@ mod tests {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
 
             let mut yellow_epump_controller = A320YellowElectricPumpController::new();
+            yellow_epump_controller.is_powered = true;
 
             overhead_panel.yellow_epump_push_button.push_auto();
             assert!(!yellow_epump_controller.should_pressurise());
@@ -3651,6 +3996,8 @@ mod tests {
             overhead_panel.edp1_push_button.push_auto();
 
             let mut edp1_controller = A320EngineDrivenPumpController::new(1);
+            edp1_controller.is_powered = true;
+
             edp1_controller.engine_master_on = true;
 
             edp1_controller.update(
@@ -3691,6 +4038,7 @@ mod tests {
             fire_overhead_panel.eng1_fire_pb.set(false);
 
             let mut edp1_controller = A320EngineDrivenPumpController::new(1);
+            edp1_controller.is_powered = true;
             edp1_controller.engine_master_on = true;
 
             edp1_controller.update(
@@ -3720,6 +4068,7 @@ mod tests {
             overhead_panel.edp2_push_button.push_auto();
 
             let mut edp2_controller = A320EngineDrivenPumpController::new(2);
+            edp2_controller.is_powered = true;
             edp2_controller.engine_master_on = true;
 
             edp2_controller.update(
@@ -3760,6 +4109,7 @@ mod tests {
             fire_overhead_panel.eng2_fire_pb.set(false);
 
             let mut edp2_controller = A320EngineDrivenPumpController::new(2);
+            edp2_controller.is_powered = true;
             edp2_controller.engine_master_on = true;
 
             edp2_controller.update(
@@ -3790,7 +4140,7 @@ mod tests {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
 
             let mut ptu_controller = A320PowerTransferUnitController::new();
-
+            ptu_controller.is_powered = true;
             overhead_panel.ptu_push_button.push_auto();
 
             ptu_controller.update(
@@ -3838,6 +4188,7 @@ mod tests {
             let mut overhead_panel = A320HydraulicOverheadPanel::new();
 
             let mut ptu_controller = A320PowerTransferUnitController::new();
+            ptu_controller.is_powered = true;
             overhead_panel.ptu_push_button.push_auto();
 
             ptu_controller.update(&context, &overhead_panel, &fwd_door, &aft_door, &tug);
@@ -3874,15 +4225,105 @@ mod tests {
             assert!(test_bed.get_rat_position() <= 0.);
             assert!(test_bed.get_rat_rpm() <= 1.);
 
-            // Stopping both engines
+            // Killing AC buses
             test_bed = test_bed
-                .stop_eng1()
-                .stop_eng2()
+                .ac_bus_1_lost()
+                .ac_bus_2_lost()
                 .run_waiting_for(Duration::from_secs(2));
 
             // RAT has not deployed
             assert!(test_bed.get_rat_position() <= 0.);
             assert!(test_bed.get_rat_rpm() <= 1.);
+        }
+
+        #[test]
+        fn rat_deploys_on_both_ac_lost() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            assert!(!test_bed.get_rat_deploy_command());
+
+            // Killing AC1 bus
+            test_bed = test_bed
+                .ac_bus_1_lost()
+                .run_waiting_for(Duration::from_secs(2));
+
+            // RAT has not deployed
+            assert!(!test_bed.get_rat_deploy_command());
+
+            //Now all AC off
+            test_bed = test_bed
+                .ac_bus_1_lost()
+                .ac_bus_2_lost()
+                .run_waiting_for(Duration::from_secs(2));
+
+            // RAT avail
+            assert!(test_bed.get_rat_deploy_command());
+        }
+
+        #[test]
+        fn blue_epump_unavailable_if_unpowered() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            // Blue epump working
+            assert!(test_bed.is_blue_pressurised());
+
+            test_bed = test_bed
+                .ac_bus_2_lost()
+                .run_waiting_for(Duration::from_secs(25));
+
+            // Blue epump working as not plugged on AC2
+            assert!(test_bed.is_blue_pressurised());
+
+            test_bed = test_bed
+                .ac_bus_1_lost()
+                .run_waiting_for(Duration::from_secs(25));
+
+            // Blue epump has stopped
+            assert!(!test_bed.is_blue_pressurised());
+        }
+
+        #[test]
+        fn yellow_epump_unavailable_if_unpowered() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs(10));
+
+            // Yellow epump working
+            assert!(test_bed.is_yellow_pressurised());
+
+            test_bed = test_bed
+                .ac_bus_2_lost()
+                .ac_bus_1_lost()
+                .run_waiting_for(Duration::from_secs(25));
+
+            // Yellow epump working as not plugged on AC2 or AC1
+            assert!(test_bed.is_yellow_pressurised());
+
+            test_bed = test_bed
+                .ac_ground_service_lost()
+                .run_waiting_for(Duration::from_secs(25));
+
+            // Yellow epump has stopped
+            assert!(!test_bed.is_yellow_pressurised());
         }
 
         fn context(delta_time: Duration) -> UpdateContext {

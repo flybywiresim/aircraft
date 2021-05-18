@@ -121,6 +121,7 @@ impl Aircraft for A320 {
             &self.engine_2,
             &self.hydraulic_overhead,
             &self.engine_fire_overhead,
+            &self.emergency_electrical_overhead,
             &self.landing_gear,
             self.electrical.in_emergency_elec(),
         );

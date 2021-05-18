@@ -1889,7 +1889,7 @@
                         <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
                         <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
                         <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                        <SWITCH_POSITION_VAR>A32NX_HYD_RATMANONLOCK_TOGGLE</SWITCH_POSITION_VAR>
+                        <SWITCH_POSITION_VAR>A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED</SWITCH_POSITION_VAR>
                     </UseTemplate>
 
                     <!-- BLUE ELEC PUMP -->
