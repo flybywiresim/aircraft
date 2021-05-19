@@ -2,6 +2,7 @@
 
 #include "RegPolynomials.h"
 #include "SimVars.h"
+#include "Tables.h"
 #include "common.h"
 
 class EngineControl {
@@ -27,11 +28,13 @@ private:
 	double engineIgniter;
 
 	double cn1;
-	double cn2;
+	double n2;
+	double idleN1;
+	double idleN2;
 	double mach;
-	double altitude;
-	double egtNX;
-	double flowNX;
+	double pressAltitude;
+	double cegtNX;
+	double cflowNX;
 	double Imbalance;
 	int EngineImbalanced;
 	double FFImbalanced;
@@ -70,22 +73,6 @@ private:
 	double FuelTotalActual;
 	double FuelTotalPre;
 
-	// Engine Start Procedure
-	void engineStartProcedure(int idx) {
-		EngineStartData starterCurves;
-
-		if (idx == 1) {
-			starterCurves.StartCN2Left = 1;
-		}
-		else {
-			starterCurves.StartCN2Right = 1;
-		}
-
-
-		SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::EngineStartControls, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(starterCurves), &starterCurves);
-
-	}
-
 	// Engine Imbalance Coded Digital Word:
 	// 00 - Engine, 00 - N2, 00 - FuelFlow, 00 - EGT
 	// Generates a random engine imbalance. Next steps: make realistic imbalance due to wear
@@ -117,22 +104,55 @@ private:
 		}
 	}
 
-	// FBW Exhaust Gas Temperature (in º Celsius)
-	// Updates EGT with realistic values visualized in the ECAM
-	void updateEGT(int idx, double cn1, double cff, double mach, double altitude, double ambientTemp) {
-		egtNX = poly->egtNX(cn1, cff, mach, altitude);
+	// Engine Start Procedure
+	void engineStartProcedure(int idx, double n2, double pressAltitude, double ambientTemp) {
+		idleN2 = simVars->getEngineIdleN2();
 
 		if (idx == 1) {
-			simVars->setEngine1EGT(egtNX * ratios->theta2(mach, ambientTemp));
+			simVars->setEngine1N2(poly->n2NX(n2, idleN2));
 		}
 		else {
-			simVars->setEngine2EGT(egtNX * ratios->theta2(mach, ambientTemp));
+			simVars->setEngine2N2(poly->n2NX(n2, idleN2));
+		}
+
+		// Checking Engine Idle condition
+		if (n2 >= idleN2) {
+			if (idx == 1) {
+				simVars->setEngine1State(1);
+			}
+			else {
+				simVars->setEngine2State(1);
+			}
+		}
+	}
+
+	// FBW Engine RPM (N1 and N2)
+	// Updates Engine N1 and N2 with our own algorithm for start-up and shutdown
+	void updateRPM(int idx, double n2) {
+		if (idx == 1) {
+			simVars->setEngine1N2(n2);
+		}
+		else {
+			simVars->setEngine2N2(n2);
+		}
+	}
+
+	// FBW Exhaust Gas Temperature (in º Celsius)
+	// Updates EGT with realistic values visualized in the ECAM
+	void updateEGT(int idx, double cn1, double cff, double mach, double pressAltitude, double ambientTemp) {
+		cegtNX = poly->cegtNX(cn1, cff, mach, pressAltitude);
+
+		if (idx == 1) {
+			simVars->setEngine1EGT(cegtNX * ratios->theta2(mach, ambientTemp));
+		}
+		else {
+			simVars->setEngine2EGT(cegtNX * ratios->theta2(mach, ambientTemp));
 		}
 	}
 
 	// FBW Fuel FLow (in Kg/h)
 	// Updates Fuel Flow with realistic values
-	double updateFF(int idx, double cn1, double mach, double altitude, double ambientTemp) {
+	double updateFF(int idx, double cn1, double mach, double pressAltitude, double ambientTemp) {
 		flow_out = 0;
 
 		// Engine Imbalance
@@ -140,19 +160,19 @@ private:
 		EngineImbalanced = imbalance_extractor(Imbalance, 0);
 		FFImbalanced = imbalance_extractor(Imbalance, 2);
 
-		flowNX = poly->flowNX(idx, cn1, mach, altitude);  // in lbs/hr.
+		cflowNX = poly->cflowNX(cn1, mach, pressAltitude);  // in lbs/hr.
 
 		// Checking engine imbalance
-		if (EngineImbalanced != idx || flowNX < 1) {
+		if (EngineImbalanced != idx || cflowNX < 1) {
 			FFImbalanced = 0;
 		}
 
 		// Checking Fuel Logic and final Fuel Flow
-		if (flowNX < 1) {
+		if (cflowNX < 1) {
 			flow_out = 0;
 		}
 		else {
-			flow_out = (flowNX * 0.453592 * ratios->delta2(mach, ambientTemp) * sqrt(ratios->theta2(mach, ambientTemp))) - FFImbalanced;
+			flow_out = (cflowNX * 0.453592 * ratios->delta2(mach, ambientTemp) * sqrt(ratios->theta2(mach, ambientTemp))) - FFImbalanced;
 		}
 
 		if (idx == 1) {
@@ -162,7 +182,7 @@ private:
 			simVars->setEngine2FF(flow_out);
 		}
 
-		return flowNX;
+		return cflowNX;
 	}
 
 	// FBW Fuel Consumption and Tankering
@@ -355,44 +375,50 @@ public:
 		else {
 			simVars->setEngine2State(0);
 		}
-
 	}
 
 	void update(double deltaTime) {
 		// Per cycle Initial Conditions
 		idx = 2;
 		mach = simVars->getMach();
-		altitude = simVars->getPlaneAltitude();
+		pressAltitude = simVars->getPressureAltitude();
 		ambientTemp = simVars->getAmbientTemperature();
+		idleN1 = IdleCN1(pressAltitude, ambientTemp) * sqrt(ratios->theta2(mach, ambientTemp));
+		idleN2 = IdleCN2(pressAltitude, ambientTemp) * sqrt((273.15 + ambientTemp) / 288.15);
+		simVars->setEngineIdleN1(idleN1);
+		simVars->setEngineIdleN2(idleN2);
+
+
 
 		// Timer timer;
 		while (idx != 0) {
 			engineStarter = simVars->getEngineStarter(idx);
 			engineIgniter = simVars->getEngineIgniter(idx);
-			cn2 = simVars->getCN2(idx);
+			n2 = simVars->getN2(idx);
 
 			// Are we starting the engine?
 			if (idx == 1) {
 				EngineState = simVars->getEngine1State();
-				if (engineStarter && engineIgniter && cn2 > 0 && EngineState != 1) {
-					simVars->setEngine1State(0);
+				if (engineStarter && engineIgniter && n2 > 0 && EngineState != 1) {
+					simVars->setEngine1State(2);
 				}
 			}
 			else {
 				EngineState = simVars->getEngine2State();
-				if (engineStarter && engineIgniter && cn2 > 0 && EngineState != 1) {
-					simVars->setEngine2State(0);
+				if (engineStarter && engineIgniter && n2 > 0 && EngineState != 1) {
+					simVars->setEngine2State(2);
 				}
 			}
 
 			switch (int(EngineState)) {
 			case 2:
-				engineStartProcedure(idx);
+				engineStartProcedure(idx, n2, pressAltitude, ambientTemp);
 				break;
 			default:
 				cn1 = simVars->getCN1(idx);
-				cff = updateFF(idx, cn1, mach, altitude, ambientTemp);
-				updateEGT(idx, cn1, cff, mach, altitude, ambientTemp);
+				updateRPM(idx, n2);
+				cff = updateFF(idx, cn1, mach, pressAltitude, ambientTemp);
+				updateEGT(idx, cn1, cff, mach, pressAltitude, ambientTemp);
 			}
 			idx--;
 		}

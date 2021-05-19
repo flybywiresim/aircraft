@@ -1674,7 +1674,7 @@ pub mod tests {
                 .released_apu_fire_pb()
                 .run(Duration::from_secs(1));
 
-            assert!(test_bed.is_inoperable(), true);
+            assert_eq!(test_bed.is_inoperable(), true);
         }
 
         #[test]

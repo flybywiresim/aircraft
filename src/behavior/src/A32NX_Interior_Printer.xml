@@ -16,7 +16,7 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
 
             <Update Frequency = "50">
-                (#TOGGLE_VAR#) if#{
+                (#TOGGLE_VAR#) if{
                     (O:_ButtonAnimVar) 0.002 #ANIM_DURATION# / + 1 min (&gt;O:_ButtonAnimVar)
                 } els{
                     0.3 (&gt;O:_ButtonAnimVar)
@@ -39,6 +39,7 @@
                     (L:A32NX_PAGES_PRINTED) 1 + (&gt;L:A32NX_PAGES_PRINTED)
                     0 (&gt;L:A32NX_PRINT_PAGE_OFFSET)
                 </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Visibility_Code">
                 <VISIBILITY_CODE>(#TOGGLE_VAR#)</VISIBILITY_CODE>
@@ -67,10 +68,11 @@
                 <LEFT_SINGLE_CODE>
                     (#PAGE_OFFSET_VAR#) #DIRECTION# + (&gt;#PAGE_OFFSET_VAR#)
                 </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Visibility_Code">
                 <VISIBILITY_CODE>
-                    #DIRECTION# 0 &lt; if#{
+                    #DIRECTION# 0 &lt; if{
                         (L:A32NX_PAGES_PRINTED) (L:A32NX_PRINT_PAGE_OFFSET) + 1 - 0 &gt;
                     } els{
                         (L:A32NX_PAGES_PRINTED) (L:A32NX_PRINT_PAGE_OFFSET) + 1 - (L:A32NX_PAGES_PRINTED) 1 - &lt;
@@ -90,6 +92,7 @@
                 <LEFT_SINGLE_CODE>
                     1 (&gt;L:A32NX_DISCARD_PAGE)
                 </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Visibility_Code">
                 <VISIBILITY_CODE>

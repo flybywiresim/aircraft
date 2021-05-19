@@ -38,10 +38,6 @@ class PFD extends Component {
         this.AirspeedAccRateLimiter = new RateLimiter(1.2, -1.2);
 
         this.LSButtonPressed = false;
-
-        // for testing only
-        setSimVar('L:A32NX_MachPreselVal', -1, 'mach');
-        setSimVar('L:A32NX_SpeedPreselVal', -1, 'knots');
     }
 
     componentDidMount() {
