@@ -207,7 +207,7 @@ impl SimulationElement for A320Electrical {
     }
 }
 
-trait DirectCurrentState {
+trait A320DirectCurrentElectricalSystem {
     fn static_inverter(&self) -> &StaticInverter;
 }
 
@@ -2713,10 +2713,7 @@ mod a320_electrical_circuit_tests {
         /// As power sources can take some time before they become available
         /// by wrapping the functions that enable such a power sources we ensure it cannot
         /// trigger the deployment of the RAT or start of EMER GEN.
-        fn without_triggering_emergency_elec<T: FnMut(Self) -> Self>(
-            mut self,
-            mut func: T,
-        ) -> Self {
+        fn without_triggering_emergency_elec(mut self, mut func: impl FnMut(Self) -> Self) -> Self {
             let ias = self.simulation_test_bed.indicated_airspeed();
             self.simulation_test_bed
                 .set_indicated_airspeed(Velocity::new::<knot>(0.));

@@ -1,6 +1,6 @@
 use super::{
-    A320AlternatingCurrentElectricalSystem, A320ElectricalOverheadPanel,
-    A320EmergencyElectricalOverheadPanel, DirectCurrentState,
+    A320AlternatingCurrentElectricalSystem, A320DirectCurrentElectricalSystem,
+    A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
 };
 use std::time::Duration;
 use systems::{
@@ -152,11 +152,11 @@ impl A320AlternatingCurrentElectrical {
         self.update_shedding(emergency_generator);
     }
 
-    pub fn update_after_direct_current<T: DirectCurrentState>(
+    pub fn update_after_direct_current(
         &mut self,
         context: &UpdateContext,
         emergency_generator: &EmergencyGenerator,
-        dc_state: &T,
+        dc_state: &impl A320DirectCurrentElectricalSystem,
     ) {
         self.ac_stat_inv_bus.powered_by(dc_state.static_inverter());
         self.static_inv_to_ac_ess_bus_contactor

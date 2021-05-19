@@ -25,7 +25,7 @@ impl AirIntakeFlap {
         }
     }
 
-    pub fn update<T: AirIntakeFlapController>(&mut self, context: &UpdateContext, controller: &T) {
+    pub fn update(&mut self, context: &UpdateContext, controller: &impl AirIntakeFlapController) {
         if controller.should_open_air_intake_flap()
             && self.open_amount < Ratio::new::<percent>(100.)
         {

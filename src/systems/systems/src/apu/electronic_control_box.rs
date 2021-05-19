@@ -72,7 +72,7 @@ impl ElectronicControlBox {
         self.air_intake_flap_fully_open = air_intake_flap.is_fully_open();
     }
 
-    pub fn update_start_motor_state<T: PotentialSource>(&mut self, start_motor: &T) {
+    pub fn update_start_motor_state(&mut self, start_motor: &impl PotentialSource) {
         self.start_motor_is_powered = start_motor.is_powered();
 
         if self.should_close_start_contactors() && !self.start_motor_is_powered {
@@ -100,10 +100,10 @@ impl ElectronicControlBox {
         }
     }
 
-    pub fn update_bleed_air_valve_state<T: Valve>(
+    pub fn update_bleed_air_valve_state(
         &mut self,
         context: &UpdateContext,
-        bleed_air_valve: &T,
+        bleed_air_valve: &impl Valve,
     ) {
         if bleed_air_valve.is_open() {
             self.bleed_air_valve_last_open_time_ago = Duration::from_secs(0);

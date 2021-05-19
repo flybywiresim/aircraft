@@ -34,12 +34,12 @@ impl EngineGenerator {
         }
     }
 
-    pub fn update<T: EngineCorrectedN2, U: EngineGeneratorPushButtons, V: EngineFirePushButtons>(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
-        engine: &T,
-        generator_buttons: &U,
-        fire_buttons: &V,
+        engine: &impl EngineCorrectedN2,
+        generator_buttons: &impl EngineGeneratorPushButtons,
+        fire_buttons: &impl EngineFirePushButtons,
     ) {
         self.idg
             .update(context, engine, generator_buttons, fire_buttons);
@@ -139,12 +139,12 @@ impl IntegratedDriveGenerator {
         }
     }
 
-    pub fn update<T: EngineCorrectedN2, U: EngineGeneratorPushButtons, V: EngineFirePushButtons>(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
-        engine: &T,
-        generator_buttons: &U,
-        fire_buttons: &V,
+        engine: &impl EngineCorrectedN2,
+        generator_buttons: &impl EngineGeneratorPushButtons,
+        fire_buttons: &impl EngineFirePushButtons,
     ) {
         if generator_buttons.idg_push_button_is_released(self.number) {
             // The IDG cannot be reconnected.
@@ -340,7 +340,7 @@ mod tests {
                 }
             }
 
-            fn run_aircraft<T: Aircraft>(&mut self, aircraft: &mut T) {
+            fn run_aircraft(&mut self, aircraft: &mut impl Aircraft) {
                 self.test_bed.run_aircraft(aircraft);
             }
 

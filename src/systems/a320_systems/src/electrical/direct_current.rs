@@ -1,5 +1,6 @@
 use super::{
-    A320AlternatingCurrentElectricalSystem, A320ElectricalOverheadPanel, DirectCurrentState,
+    A320AlternatingCurrentElectricalSystem, A320DirectCurrentElectricalSystem,
+    A320ElectricalOverheadPanel,
 };
 #[cfg(test)]
 use systems::electrical::Potential;
@@ -310,7 +311,7 @@ impl A320DirectCurrentElectrical {
         state.add_bus(&self.dc_gnd_flt_service_bus);
     }
 }
-impl DirectCurrentState for A320DirectCurrentElectrical {
+impl A320DirectCurrentElectricalSystem for A320DirectCurrentElectrical {
     fn static_inverter(&self) -> &StaticInverter {
         &self.static_inverter
     }

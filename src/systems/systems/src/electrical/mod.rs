@@ -420,49 +420,49 @@ impl ElectricalStateWriter {
         }
     }
 
-    pub fn write_direct<T: ProvideCurrent + ProvidePotential>(
+    pub fn write_direct(
         &self,
-        source: &T,
+        source: &(impl ProvideCurrent + ProvidePotential),
         writer: &mut SimulatorWriter,
     ) {
         self.write_current(source, writer);
         self.write_potential(source, writer);
     }
 
-    pub fn write_alternating<T: ProvidePotential + ProvideFrequency>(
+    pub fn write_alternating(
         &self,
-        source: &T,
+        source: &(impl ProvidePotential + ProvideFrequency),
         writer: &mut SimulatorWriter,
     ) {
         self.write_potential(source, writer);
         self.write_frequency(source, writer);
     }
 
-    pub fn write_alternating_with_load<T: ProvidePotential + ProvideFrequency + ProvideLoad>(
+    pub fn write_alternating_with_load(
         &self,
-        source: &T,
+        source: &(impl ProvidePotential + ProvideFrequency + ProvideLoad),
         writer: &mut SimulatorWriter,
     ) {
         self.write_alternating(source, writer);
         self.write_load(source, writer);
     }
 
-    fn write_current<T: ProvideCurrent>(&self, source: &T, writer: &mut SimulatorWriter) {
+    fn write_current(&self, source: &impl ProvideCurrent, writer: &mut SimulatorWriter) {
         writer.write_f64(&self.current_id, source.current().get::<ampere>());
         writer.write_bool(&self.current_normal_id, source.current_normal());
     }
 
-    fn write_potential<T: ProvidePotential>(&self, source: &T, writer: &mut SimulatorWriter) {
+    fn write_potential(&self, source: &impl ProvidePotential, writer: &mut SimulatorWriter) {
         writer.write_f64(&self.potential_id, source.potential().get::<volt>());
         writer.write_bool(&self.potential_normal_id, source.potential_normal());
     }
 
-    fn write_frequency<T: ProvideFrequency>(&self, source: &T, writer: &mut SimulatorWriter) {
+    fn write_frequency(&self, source: &impl ProvideFrequency, writer: &mut SimulatorWriter) {
         writer.write_f64(&self.frequency_id, source.frequency().get::<hertz>());
         writer.write_bool(&self.frequency_normal_id, source.frequency_normal());
     }
 
-    fn write_load<T: ProvideLoad>(&self, source: &T, writer: &mut SimulatorWriter) {
+    fn write_load(&self, source: &impl ProvideLoad, writer: &mut SimulatorWriter) {
         writer.write_f64(&self.load_id, source.load().get::<percent>());
         writer.write_bool(&self.load_normal_id, source.load_normal());
     }

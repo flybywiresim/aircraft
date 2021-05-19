@@ -119,7 +119,7 @@ mod emergency_generator_tests {
             }
         }
 
-        fn run_aircraft<T: Aircraft>(&mut self, aircraft: &mut T, delta: Duration) {
+        fn run_aircraft(&mut self, aircraft: &mut impl Aircraft, delta: Duration) {
             self.test_bed.set_delta(delta);
             self.test_bed.run_aircraft(aircraft);
         }
