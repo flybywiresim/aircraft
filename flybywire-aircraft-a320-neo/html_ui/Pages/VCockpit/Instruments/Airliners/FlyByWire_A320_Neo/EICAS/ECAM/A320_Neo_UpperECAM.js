@@ -529,6 +529,7 @@ var A320_Neo_UpperECAM;
                                         message: "THR LEVERS",
                                         action: "MOVE",
                                         isCompleted: () => {
+                                            this.getCachedSimVar("L:A32NX_AUTOTHRUST_TLA:1", "number");
                                         }
                                     }
                                 ]

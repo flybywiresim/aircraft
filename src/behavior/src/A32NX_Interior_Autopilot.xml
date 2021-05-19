@@ -218,9 +218,9 @@
                 <LEFT_SINGLE_CODE>
                     1 (&gt;K:AUTO_THROTTLE_DISCONNECT)
                     1 (&gt;L:PUSH_THROTTLE_BUTTON)
-                    1 (&gt;L:A32NX_ATHR_DISCONNECT_BY_THROTTLE)
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE>
+                    0 (&gt;K:AUTO_THROTTLE_DISCONNECT)
                     0 (&gt;L:PUSH_THROTTLE_BUTTON)
                 </LEFT_LEAVE_CODE>
             </UseTemplate>
