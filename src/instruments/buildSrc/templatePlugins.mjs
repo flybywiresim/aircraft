@@ -1,24 +1,20 @@
 import instrumentTemplate from '@flybywiresim/rollup-plugin-msfs';
 import ecamPageTemplate from '../ecam-page-template/rollup.js';
+import { Directories } from "./directories.mjs";
 
 export function getTemplatePlugin({ name, config, imports = [], isInstrument }) {
     if (isInstrument) {
         return instrumentTemplate({
             name,
+            elementName: `a32nx-${name.toLowerCase()}`,
             config,
             imports,
-            getCssBundle() {
-                return fs.readFileSync(`${TMPDIR}/${name}-gen.css`).toString();
-            },
-            outputDir: `${__dirname}/../../flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/generated`,
+            outputDir: `${Directories.root}/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX`,
         });
     } else {
         return ecamPageTemplate({
             name,
-            getCssBundle() {
-                return fs.readFileSync(`${TMPDIR}/${name}-gen.css`).toString();
-            },
-            outputDir: `${__dirname}/../../flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/generated/EcamPages`,
+            outputDir: `${Directories.root}/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/EcamPages/`,
         });
     }
 }

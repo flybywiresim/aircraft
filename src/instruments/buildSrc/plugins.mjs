@@ -1,5 +1,4 @@
 import fs from 'fs';
-import os from 'os';
 import image from '@rollup/plugin-image';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
@@ -8,7 +7,7 @@ import { typescriptPaths } from 'rollup-plugin-typescript-paths';
 import replace from '@rollup/plugin-replace';
 import postcss from 'rollup-plugin-postcss';
 import tailwindcss from 'tailwindcss';
-import {Directories} from "./directories.mjs";
+import { Directories } from "./directories.mjs";
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
@@ -31,10 +30,10 @@ function babel() {
     });
 }
 
-function postCss(instrumentFolder, instrumentName) {
-    let plugins = [];
+function postCss(instrumentName, instrumentFolder) {
+    let plugins;
 
-    const tailwindConfigPath = `${__dirname}/../src/${instrumentFolder}/tailwind.config.js`;
+    const tailwindConfigPath = `${Directories.instruments}/src/${instrumentFolder}/tailwind.config.js`;
 
     if (fs.existsSync(tailwindConfigPath)) {
         plugins = [
@@ -53,7 +52,7 @@ function postCss(instrumentFolder, instrumentName) {
     });
 }
 
-export function baseCompile(instrumentFolder, instrumentName) {
+export function baseCompile(instrumentName, instrumentFolder) {
     return [
         image(),
         nodeResolve({extensions}),
@@ -64,6 +63,6 @@ export function baseCompile(instrumentFolder, instrumentName) {
             preserveExtensions: true,
         }),
         replace({'process.env.NODE_ENV': '"production"'}),
-        postCss(instrumentFolder, instrumentName),
+        postCss(instrumentName, instrumentFolder),
     ]
 }

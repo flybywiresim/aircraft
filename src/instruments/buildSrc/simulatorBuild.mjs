@@ -30,16 +30,16 @@ const ecamPages = [
 ];
 
 function getInputs() {
-    const baseInstruments = fs.readdirSync(Directories.instruments, { withFileTypes: true })
+    const baseInstruments = fs.readdirSync(`${Directories.instruments}/src`, {withFileTypes: true})
         .filter((d) => d.isDirectory() && fs.existsSync(`${Directories.instruments}/src/${d.name}/config.json`));
 
     return [
-        ...baseInstruments.map(({ name }) => ({ path: name, name, isInstrument: true })),
-        ...ecamPages.map((def) => ({ ...def, isInstrument: false })),
+        ...baseInstruments.map(({name}) => ({path: name, name, isInstrument: true})),
+        ...ecamPages.map((def) => ({...def, isInstrument: false})),
     ];
 }
 
-module.exports = getInputs()
+export default getInputs()
     .map(({ path, name, isInstrument }) => {
         const config = JSON.parse(fs.readFileSync(`${Directories.instruments}/src/${path}/config.json`));
 
@@ -47,11 +47,11 @@ module.exports = getInputs()
             watch: true,
             input: `${Directories.instruments}/src/${path}/${config.index}`,
             output: {
-                file: `${TMPDIR}/${name}-gen.js`,
+                file: `bundle.js`,
                 format: 'iife',
             },
             plugins: [
-                ...baseCompile(path, name),
+                ...baseCompile(name, path),
                 getTemplatePlugin({name, path, imports: ['/JS/dataStorage.js'], config, isInstrument}),
             ],
         };

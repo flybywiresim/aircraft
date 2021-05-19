@@ -27,7 +27,7 @@
     "@flybywiresim/fragmenter": "^0.5.1",
     "@flybywiresim/igniter": "^1.1.4",
     "@flybywiresim/rnp": "^2.1.0",
-    "@flybywiresim/rollup-plugin-msfs": "~0.1.4",
+    "@flybywiresim/rollup-plugin-msfs": "~0.3.0",
     "@rollup/plugin-babel": "^5.2.1",
     "@rollup/plugin-commonjs": "^15.1.0",
     "@rollup/plugin-image": "~2.0.6",

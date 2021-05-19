@@ -1,14 +1,12 @@
 'use strict';
 
 import fs from 'fs';
-import { baseCompile } from './plugins.mjs';
 import serve from 'rollup-plugin-serve';
 import liveReload from 'rollup-plugin-livereload';
-import { Directories } from "./directories.mjs";
+import { baseCompile } from './plugins.mjs';
+import { Directories } from './directories.mjs';
 
-const __dirname = new URL('.', import.meta.url).pathname;
-
-process.chdir(`${__dirname}/../..`);
+process.chdir(Directories.src);
 
 function getInputs() {
     const baseInstruments = fs.readdirSync(`${Directories.instruments}/src`, { withFileTypes: true })
@@ -23,7 +21,7 @@ function getInputs() {
 }
 
 const builds = getInputs()
-    .map(({path}) => {
+    .map(({ path }) => {
         const config = JSON.parse(fs.readFileSync(`${Directories.instruments}/src/${path}/config.json`));
 
         return {
